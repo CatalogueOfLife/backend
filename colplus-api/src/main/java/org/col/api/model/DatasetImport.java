@@ -14,7 +14,6 @@ import org.gbif.dwc.terms.Term;
  */
 public class DatasetImport extends ImportMetrics<ImportState> {
   
-  private Integer datasetKey;
   
   private URI downloadUri;
   
@@ -32,14 +31,6 @@ public class DatasetImport extends ImportMetrics<ImportState> {
   private Integer verbatimCount;
   
   private Map<Term, Integer> verbatimByTypeCount = Maps.newHashMap();
-  
-  public Integer getDatasetKey() {
-    return datasetKey;
-  }
-  
-  public void setDatasetKey(Integer datasetKey) {
-    this.datasetKey = datasetKey;
-  }
   
   public URI getDownloadUri() {
     return downloadUri;
@@ -87,8 +78,7 @@ public class DatasetImport extends ImportMetrics<ImportState> {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     DatasetImport that = (DatasetImport) o;
-    return Objects.equals(datasetKey, that.datasetKey) &&
-        Objects.equals(downloadUri, that.downloadUri) &&
+    return Objects.equals(downloadUri, that.downloadUri) &&
         Objects.equals(download, that.download) &&
         Objects.equals(md5, that.md5) &&
         Objects.equals(verbatimCount, that.verbatimCount) &&
@@ -97,12 +87,12 @@ public class DatasetImport extends ImportMetrics<ImportState> {
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), datasetKey, downloadUri, download, md5, verbatimCount, verbatimByTypeCount);
+    return Objects.hash(super.hashCode(), downloadUri, download, md5, verbatimCount, verbatimByTypeCount);
   }
   
   @Override
   public String attempt() {
-    return datasetKey + " - " + getAttempt();
+    return getDatasetKey() + " - " + getAttempt();
   }
   
 }

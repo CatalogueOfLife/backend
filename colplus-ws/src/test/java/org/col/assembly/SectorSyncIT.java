@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.sql.SQLException;
 import java.util.List;
 
 import com.google.common.base.Charsets;
@@ -14,18 +15,23 @@ import org.col.api.model.Sector;
 import org.col.api.model.SimpleName;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Datasets;
+import org.col.api.vocab.Origin;
 import org.col.dao.DatasetImportDao;
 import org.col.dao.NamesTreeDao;
 import org.col.dao.TreeRepoRule;
 import org.col.db.PgSetupRule;
 import org.col.db.mapper.NameUsageMapper;
 import org.col.db.mapper.SectorMapper;
+import org.col.db.mapper.TaxonMapper;
 import org.col.db.mapper.TestDataRule;
 import org.col.db.tree.TextTreePrinter;
 import org.col.es.NameUsageIndexService;
 import org.col.importer.PgImportRule;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
@@ -34,17 +40,22 @@ import static org.junit.Assert.assertFalse;
 
 public class SectorSyncIT {
   
+  public final static PgSetupRule pg = new PgSetupRule();
+  public final static TestDataRule dataRule = TestDataRule.draft();
+  public final static PgImportRule importRule = PgImportRule.create(
+      NomCode.BOTANICAL,
+        DataFormat.ACEF,  1,
+        DataFormat.COLDP, 0,
+      NomCode.ZOOLOGICAL,
+        DataFormat.ACEF,  5, 6,
+        DataFormat.COLDP, 2
+  );
+  public final static TreeRepoRule treeRepoRule = new TreeRepoRule();
+  
   @ClassRule
-  public static PgSetupRule pg = new PgSetupRule();
-  
-  final PgImportRule importRule = PgImportRule.create(DataFormat.ACEF, 1, 5, 6);
-  final TreeRepoRule treeRepoRule = new TreeRepoRule();
-  final TestDataRule dataRule = TestDataRule.draft();
-  
-  
-  @Rule
-  public TestRule chain= RuleChain
-      .outerRule(dataRule)
+  public final static TestRule chain = RuleChain
+      .outerRule(pg)
+      .around(dataRule)
       .around(treeRepoRule)
       .around(importRule);
 
@@ -52,9 +63,12 @@ public class SectorSyncIT {
   NamesTreeDao treeDao;
   
   @Before
-  public void init () {
+  public void init () throws IOException, SQLException {
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     treeDao = new NamesTreeDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
+    // reset draft
+    dataRule.truncateDraft();
+    dataRule.loadData(true);
   }
   
   
@@ -67,6 +81,12 @@ public class SectorSyncIT {
       List<NameUsageBase> taxa = session.getMapper(NameUsageMapper.class).listByName(datasetKey, name, rank);
       if (taxa.size() > 1) throw new IllegalStateException("Multiple taxa found for name="+name);
       return taxa.get(0);
+    }
+  }
+  
+  NameUsageBase getByID(String id) {
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      return session.getMapper(TaxonMapper.class).get(Datasets.DRAFT_COL, id);
     }
   }
   
@@ -86,16 +106,16 @@ public class SectorSyncIT {
   void syncAll() throws IOException {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       for (Sector s : session.getMapper(SectorMapper.class).list(null)) {
-        sync(s.getKey());
+        sync(s);
       }
     }
   }
   
-  void sync(int sectorKey) {
+  void sync(Sector s) {
     
-    SectorSync ss = new SectorSync(sectorKey, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao,
+    SectorSync ss = new SectorSync(s, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
-    System.out.println("\n*** SECTOR SYNC " + sectorKey + " ***");
+    System.out.println("\n*** SECTOR SYNC " + s.getKey() + " ***");
     ss.run();
   }
   
@@ -127,6 +147,30 @@ public class SectorSyncIT {
 
     syncAll();
     assertTree("cat1_5_6.txt");
+  
+    NameUsageBase vogelii   = getByName(Datasets.DRAFT_COL, Rank.SUBSPECIES, "Astragalus vogelii subsp. vogelii");
+    assertEquals(1, (int) vogelii.getSectorKey());
+  
+    NameUsageBase sp   = getByID(vogelii.getParentId());
+    assertEquals(Origin.SOURCE, vogelii.getOrigin());
+  }
+  
+  @Test
+  public void testImplicitGenus() throws Exception {
+    print(Datasets.DRAFT_COL);
+    print(datasetKey(0, DataFormat.COLDP));
+    print(datasetKey(2, DataFormat.COLDP));
+    
+    NameUsageBase asteraceae   = getByName(datasetKey(0, DataFormat.COLDP), Rank.FAMILY, "Asteraceae");
+    NameUsageBase tracheophyta = getByName(Datasets.DRAFT_COL, Rank.PHYLUM, "Tracheophyta");
+    createSector(Sector.Mode.ATTACH, asteraceae, tracheophyta);
+  
+    NameUsageBase coleoptera = getByName(datasetKey(2, DataFormat.COLDP), Rank.ORDER, "Coleoptera");
+    NameUsageBase insecta = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
+    createSector(Sector.Mode.ATTACH, coleoptera, insecta);
+    
+    syncAll();
+    assertTree("cat0_2.txt");
   }
  
   void assertTree(String filename) throws IOException {

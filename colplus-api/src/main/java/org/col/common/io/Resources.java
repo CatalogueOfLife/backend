@@ -1,14 +1,12 @@
 package org.col.common.io;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import com.google.common.base.Charsets;
+import org.apache.commons.io.IOUtils;
 
 /**
  * Common routines to access classpath resources via the system class loader.
@@ -27,6 +25,13 @@ public class Resources {
   public static boolean exists(String resourceName) {
     URL url = ClassLoader.getSystemResource(resourceName);
     return url != null;
+  }
+  
+  /**
+   * @return single string of the entire classpath resource encoded in UTF8
+   */
+  public static String toString(String resourceName) throws IOException {
+    return IOUtils.toString(stream(resourceName), Charsets.UTF_8);
   }
 
   /**

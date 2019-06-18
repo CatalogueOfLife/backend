@@ -11,9 +11,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.IssueContainer;
 import org.col.api.model.Name;
 import org.col.api.model.NameAccordingTo;
+import org.col.api.util.ObjectUtils;
 import org.col.api.vocab.Issue;
 import org.gbif.nameparser.NameParserGBIF;
 import org.gbif.nameparser.Warnings;
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.api.UnparsableNameException;
@@ -62,11 +64,13 @@ public class NameParser implements Parser<NameAccordingTo> {
   public Optional<ParsedName> parseAuthorship(String authorship) {
     if (Strings.isNullOrEmpty(authorship)) return Optional.of(new ParsedName());
     try {
-      return Optional.of(PARSER_INTERNAL.parse("Abies alba " + authorship, Rank.SPECIES));
-      
+      ParsedName pn = PARSER_INTERNAL.parse("Abies alba " + authorship, Rank.SPECIES);
+      if (pn.getState() == ParsedName.State.COMPLETE) {
+        return Optional.of(pn);
+      }
     } catch (UnparsableNameException e) {
-      return Optional.empty();
     }
+    return Optional.empty();
   }
   
   /**
@@ -148,6 +152,20 @@ public class NameParser implements Parser<NameAccordingTo> {
     return Optional.of(nat);
   }
   
+  public Optional<NameType> determineType(Name name) {
+    String sciname = name.canonicalNameComplete();
+    if (StringUtils.isBlank(sciname)) {
+      return Optional.of(NameType.NO_NAME);
+    }
+    try {
+      ParsedName pn = PARSER_INTERNAL.parse(sciname, name.getRank());
+      return Optional.of(ObjectUtils.coalesce(pn.getType(), NameType.SCIENTIFIC));
+    
+    } catch (UnparsableNameException e) {
+      return Optional.of(ObjectUtils.coalesce(e.getType(), NameType.SCIENTIFIC));
+    }
+  }
+  
   /**
    * Uses an existing name instance to populate from a ParsedName instance
    */
@@ -158,7 +176,7 @@ public class NameParser implements Parser<NameAccordingTo> {
     n.setSpecificEpithet(pn.getSpecificEpithet());
     n.setInfraspecificEpithet(pn.getInfraspecificEpithet());
     n.setCultivarEpithet(pn.getCultivarEpithet());
-    n.setStrain(pn.getStrain());
+    n.setAppendedPhrase(pn.getStrain());
     n.setCombinationAuthorship(pn.getCombinationAuthorship());
     n.setBasionymAuthorship(pn.getBasionymAuthorship());
     n.setSanctioningAuthor(pn.getSanctioningAuthor());

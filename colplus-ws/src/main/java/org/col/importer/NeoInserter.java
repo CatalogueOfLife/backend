@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.col.api.model.Dataset;
@@ -17,8 +16,8 @@ import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.Issue;
 import org.col.common.collection.DefaultMap;
 import org.col.csv.CsvReader;
-import org.col.img.ImageServiceFS;
 import org.col.img.ImageService;
+import org.col.img.ImageServiceFS;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NodeBatchProcessor;
 import org.col.importer.neo.model.NeoNameRel;
@@ -103,6 +102,9 @@ public abstract class NeoInserter {
       } else {
         rec.addIssue(Issue.NOT_INTERPRETED);
       }
+      // processing might already have flagged issues, load and merge them
+      VerbatimRecord old = store.getVerbatim(rec.getKey());
+      rec.addIssues(old.getIssues());
       store.put(rec);
       counter.incrementAndGet();
     });
@@ -112,7 +114,7 @@ public abstract class NeoInserter {
   
   protected <T extends VerbatimEntity> void insertEntities(final CsvReader reader, final Term classTerm,
                                                            Function<VerbatimRecord, Optional<T>> interpret,
-                                                           Consumer<T> add
+                                                           Function<T, Boolean> add
   ) {
     processVerbatim(reader, classTerm, rec -> {
       interruptIfCancelled("NeoInserter interrupted, exit early");
@@ -120,8 +122,7 @@ public abstract class NeoInserter {
       if (opt.isPresent()) {
         T obj = opt.get();
         obj.setVerbatimKey(rec.getKey());
-        add.accept(obj);
-        return true;
+        return add.apply(obj);
       }
       return false;
     });
@@ -190,6 +191,6 @@ public abstract class NeoInserter {
   
   protected abstract NodeBatchProcessor relationProcessor();
   
-  protected abstract Optional<Dataset> readMetadata();
+  public abstract Optional<Dataset> readMetadata();
   
 }

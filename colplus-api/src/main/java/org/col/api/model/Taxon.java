@@ -21,8 +21,6 @@ public class Taxon extends NameUsageBase {
   private Boolean recent;
   private Set<Lifezone> lifezones = EnumSet.noneOf(Lifezone.class);
   private URI webpage;
-  private Integer speciesEstimate;
-  private String speciesEstimateReferenceId;
   private Integer childCount;
 
   @Override
@@ -86,22 +84,6 @@ public class Taxon extends NameUsageBase {
     this.childCount = childCount;
   }
   
-  public Integer getSpeciesEstimate() {
-    return speciesEstimate;
-  }
-  
-  public void setSpeciesEstimate(Integer speciesEstimate) {
-    this.speciesEstimate = speciesEstimate;
-  }
-  
-  public String getSpeciesEstimateReferenceId() {
-    return speciesEstimateReferenceId;
-  }
-  
-  public void setSpeciesEstimateReferenceId(String speciesEstimateReferenceId) {
-    this.speciesEstimateReferenceId = speciesEstimateReferenceId;
-  }
-  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -113,13 +95,11 @@ public class Taxon extends NameUsageBase {
         Objects.equals(recent, taxon.recent) &&
         Objects.equals(lifezones, taxon.lifezones) &&
         Objects.equals(webpage, taxon.webpage) &&
-        Objects.equals(speciesEstimate, taxon.speciesEstimate) &&
-        Objects.equals(speciesEstimateReferenceId, taxon.speciesEstimateReferenceId) &&
         Objects.equals(childCount, taxon.childCount);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), accordingToDate, fossil, recent, lifezones, webpage, speciesEstimate, speciesEstimateReferenceId, childCount);
+    return Objects.hash(super.hashCode(), accordingToDate, fossil, recent, lifezones, webpage, childCount);
   }
 }

@@ -96,7 +96,7 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
   
   private String cultivarEpithet;
   
-  private String strain;
+  private String appendedPhrase;
   
   /**
    * A bacterial candidate name. Candidatus is a provisional status for incompletely described
@@ -164,7 +164,7 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
   private Origin origin;
   
   /**
-   * The kind of name classified in broad catagories based on their syntactical structure
+   * The kind of name classified in broad categories based on their syntactical structure
    */
   private NameType type;
   
@@ -202,7 +202,7 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
     this.specificEpithet = n.specificEpithet;
     this.infraspecificEpithet = n.infraspecificEpithet;
     this.cultivarEpithet = n.cultivarEpithet;
-    this.strain = n.strain;
+    this.appendedPhrase = n.appendedPhrase;
     this.candidatus = n.candidatus;
     this.notho = n.notho;
     this.combinationAuthorship = n.combinationAuthorship;
@@ -231,7 +231,7 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
     pn.setSpecificEpithet(n.getSpecificEpithet());
     pn.setInfraspecificEpithet(n.getInfraspecificEpithet());
     pn.setCultivarEpithet(n.getCultivarEpithet());
-    pn.setStrain(n.getStrain());
+    pn.setStrain(n.getAppendedPhrase());
     pn.setCombinationAuthorship(n.getCombinationAuthorship());
     pn.setBasionymAuthorship(n.getBasionymAuthorship());
     pn.setSanctioningAuthor(n.getSanctioningAuthor());
@@ -522,12 +522,12 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
     this.cultivarEpithet = cultivarEpithet;
   }
   
-  public String getStrain() {
-    return strain;
+  public String getAppendedPhrase() {
+    return appendedPhrase;
   }
   
-  public void setStrain(String strain) {
-    this.strain = strain;
+  public void setAppendedPhrase(String appendedPhrase) {
+    this.appendedPhrase = appendedPhrase;
   }
   
   public boolean isCandidatus() {
@@ -675,21 +675,28 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
     return isParsed() ? NameFormatter.canonicalWithoutAuthorship(toParsedName(this))
         : getScientificName();
   }
-  
-  /**
-   * @See NameFormatter.canonicalMinimal()
-   */
-  public String canonicalNameMinimal() {
-    return isParsed() ? NameFormatter.canonicalMinimal(toParsedName(this)) : getScientificName();
-  }
-  
+ 
   /**
    * @See NameFormatter.canonicalComplete()
    */
   public String canonicalNameComplete() {
-    return isParsed() ? NameFormatter.canonicalComplete(toParsedName(this)) : getScientificName();
+    return isParsed() ? NameFormatter.canonicalComplete(toParsedName(this)) : scientificNameAuthorship();
   }
   
+  /**
+   * @return the scientificName plus authorship from cached fields, not parsed ones.
+   */
+  @JsonIgnore
+  public String scientificNameAuthorship() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(scientificName);
+    if (authorship != null) {
+      sb.append(" ");
+      sb.append(authorship);
+    }
+    return sb.toString();
+  }
+
   /**
    * @return the complete canonical name formatted with basic html tags
    */
@@ -725,7 +732,7 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
         Objects.equals(specificEpithet, name.specificEpithet) &&
         Objects.equals(infraspecificEpithet, name.infraspecificEpithet) &&
         Objects.equals(cultivarEpithet, name.cultivarEpithet) &&
-        Objects.equals(strain, name.strain) &&
+        Objects.equals(appendedPhrase, name.appendedPhrase) &&
         notho == name.notho &&
         Objects.equals(combinationAuthorship, name.combinationAuthorship) &&
         Objects.equals(basionymAuthorship, name.basionymAuthorship) &&
@@ -744,7 +751,11 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
   
   @Override
   public int hashCode() {
-    return Objects.hash(id, datasetKey, sectorKey, homotypicNameId, nameIndexId, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, strain, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, publishedInYear, origin, type, webpage, fossil, remarks);
+    return Objects.hash(id, datasetKey, sectorKey, homotypicNameId, nameIndexId, scientificName, authorship, rank,
+        uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, appendedPhrase,
+        candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus,
+        publishedInId, publishedInPage, publishedInYear,
+        origin, type, webpage, fossil, remarks);
   }
   
   @Override
@@ -760,47 +771,57 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
     }
     
     if (this.type != null) {
+      if (id != null) {
+        sb.append(" ");
+      }
       sb.append("[");
       sb.append(this.type);
-      sb.append("] ");
+      sb.append("]");
     }
     
-    if (this.uninomial != null) {
-      sb.append(" U:").append(this.uninomial);
-    }
-    
-    if (this.genus != null) {
-      sb.append(" G:").append(this.genus);
-    }
-    
-    if (this.infragenericEpithet != null) {
-      sb.append(" IG:").append(this.infragenericEpithet);
-    }
-    
-    if (this.specificEpithet != null) {
-      sb.append(" S:").append(this.specificEpithet);
-    }
-    
-    sb.append(" R:").append(this.rank);
-    
-    if (this.infraspecificEpithet != null) {
-      sb.append(" IS:").append(this.infraspecificEpithet);
-    }
-    
-    if (this.cultivarEpithet != null) {
-      sb.append(" CV:").append(this.cultivarEpithet);
-    }
-    
-    if (this.strain != null) {
-      sb.append(" STR:").append(this.strain);
-    }
-    
-    if (this.combinationAuthorship != null) {
-      sb.append(" A:").append(this.combinationAuthorship);
-    }
-    
-    if (this.basionymAuthorship != null) {
-      sb.append(" BA:").append(this.basionymAuthorship);
+    if (isParsed()) {
+      if (this.uninomial != null) {
+        sb.append(" U:").append(this.uninomial);
+      }
+      
+      if (this.genus != null) {
+        sb.append(" G:").append(this.genus);
+      }
+      
+      if (this.infragenericEpithet != null) {
+        sb.append(" IG:").append(this.infragenericEpithet);
+      }
+      
+      if (this.specificEpithet != null) {
+        sb.append(" S:").append(this.specificEpithet);
+      }
+      
+      sb.append(" R:").append(this.rank);
+      
+      if (this.infraspecificEpithet != null) {
+        sb.append(" IS:").append(this.infraspecificEpithet);
+      }
+      
+      if (this.cultivarEpithet != null) {
+        sb.append(" CV:").append(this.cultivarEpithet);
+      }
+      
+      if (this.appendedPhrase != null) {
+        sb.append(" AP:").append(this.appendedPhrase);
+      }
+      
+      if (this.combinationAuthorship != null) {
+        sb.append(" A:").append(this.combinationAuthorship);
+      }
+      
+      if (this.basionymAuthorship != null) {
+        sb.append(" BA:").append(this.basionymAuthorship);
+      }
+      
+    } else {
+      sb.append(" SN:").append(this.scientificName);
+      sb.append(" AUTH:").append(this.authorship);
+  
     }
     
     if (this.publishedInId != null) {

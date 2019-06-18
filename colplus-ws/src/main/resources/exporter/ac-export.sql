@@ -1,23 +1,45 @@
 DROP TABLE IF EXISTS __scrutinizer;
+DROP TABLE IF EXISTS __ref_keys;
 DROP TABLE IF EXISTS __tax_keys;
-DROP TABLE IF EXISTS __syn_keys;
 DROP TABLE IF EXISTS __classification;
 DROP TABLE IF EXISTS __classification2;
+DROP TABLE IF EXISTS __coverage;
+DROP TABLE IF EXISTS __coverage2;
 DROP SEQUENCE IF EXISTS __record_id_seq;
 DROP SEQUENCE IF EXISTS __unassigned_seq;
 
 
+CREATE TABLE __coverage AS
+    -- ATTACH MODE
+    SELECT s.dataset_key, subject_rank AS rank, subject_name AS name, array_to_string(classification(3, target_id, true), ' - ') AS classification
+    FROM sector s JOIN name_usage_3 t ON s.target_id=t.id
+    WHERE s.mode=0
+  UNION ALL
+    -- MERGE MODE
+    SELECT s.dataset_key, target_rank AS rank, target_name AS name, array_to_string(classification(3, target_id, false), ' - ') AS classification
+    FROM sector s JOIN name_usage_3 t ON s.target_id=t.id
+    WHERE s.mode=1;
+
+CREATE TABLE __coverage2 AS
+    SELECT dataset_key, string_agg(classification || ' - ' || groups, ';\n') AS coverage FROM (
+        SELECT dataset_key, classification, string_agg(name, ', ') AS groups FROM __coverage GROUP BY dataset_key, classification
+    ) AS foo GROUP BY dataset_key;
+CREATE INDEX ON __coverage2 (dataset_key);
+
+
+
 COPY (
+(
 SELECT DISTINCT ON (d.key)
+ d.key - 1000 AS record_id,
  coalesce(d.alias || ': ' || d.title, d.title) AS database_name_displayed,
- d.key AS record_id,
  coalesce(d.alias, d.title) AS database_name,
  d.title AS database_full_name,
  d.website AS web_site,
  array_to_string(d.organisations, '; ') AS organization,
  d.contact AS contact_person,
  d.group AS taxa,
- NULL AS taxonomic_coverage,
+ cov.coverage AS taxonomic_coverage,
  d.description AS abstract,
  d.version AS version,
  coalesce(d.released, CURRENT_DATE) AS release_date,
@@ -31,28 +53,66 @@ SELECT DISTINCT ON (d.key)
  i.vernacular_count AS common_names,
  i.name_count AS total_names,
  0 AS is_new,
- coverage AS coverage,
+ 'Global' AS coverage,
  completeness AS completeness,
  confidence AS confidence
 FROM dataset d
     JOIN dataset_import i ON i.dataset_key=d.key
+    LEFT JOIN __coverage2 cov ON cov.dataset_key=d.key
 WHERE d.key IN (SELECT distinct dataset_key FROM sector)
 ORDER BY d.key ASC, i.attempt DESC
-) TO 'databases.csv';
+)
 
+UNION ALL
+
+SELECT
+ 500 AS record_id,
+ 'CoL Management Classification' AS database_name_displayed,
+ '' AS database_name,
+ 'A Higher Level Classification of All Living Organisms' AS database_full_name,
+ 'http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0119248' AS web_site,
+ 'CoL Hierarchy Panel' AS organization,
+ NULL AS contact_person,
+ 'Biota' AS taxa,
+ 'Animalia, Archaea, Bacteria, Chromista, Fungi, Plantae, Protozoa' AS taxonomic_coverage,
+ --'abs' AS abstract,
+ '"We present a consensus classification of life to embrace the more than 1.6 million species already provided by more than 3,000 taxonomists? expert opinions in a unified and coherent, hierarchically ranked system known as the Catalogue of Life (CoL). The intent of this collaborative effort is to provide a hierarchical classification serving not only the needs of the CoL''s database providers but also the diverse public-domain user community, most of whom are familiar with the Linnaean conceptual system of ordering taxon relationships. This classification is neither phylogenetic nor evolutionary but instead represents a consensus view that accommodates taxonomic choices and practical compromises among diverse expert opinions, public usages, and conflicting evidence about the boundaries between taxa and the ranks of major taxa, including kingdoms. Certain key issues, some not fully resolved, are addressed in particular. Beyond its immediate use as a management tool for the CoL and ITIS (Integrated Taxonomic Information System), it is immediately valuable as a reference for taxonomic and biodiversity research, as a tool for societal communication, and as a classificatory ""backbone"" for biodiversity databases, museum collections, libraries, and textbooks. Such a modern comprehensive hierarchy has not previously existed at this level of specificity." <i>PLoS ONE 10(4): e0119248. doi:10.1371/jou</i>' AS abstract,
+ '2015' AS version,
+ '2015-04-29' AS release_date,
+ NULL AS SpeciesCount,
+ NULL AS SpeciesEst,
+ 'Ruggiero M.A., Gordon D.P., Orrell T.M., Bailly N., Bourgoin T., Brusca R.C., Cavalier-Smith T., Guiry M.D., Kirk P.M.' AS authors_editors,
+ NULL AS accepted_species_names,
+ NULL AS accepted_infraspecies_names,
+ NULL AS species_synonyms,
+ NULL AS infraspecies_synonyms,
+ NULL AS common_names,
+ NULL AS total_names,
+ 0 AS is_new,
+ 'Global' AS coverage,
+ NULL AS completeness,
+ NULL AS confidence
+
+) TO 'databases.csv';
 
 -- create reference int keys
 CREATE TABLE __ref_keys (key serial, id text UNIQUE);
 INSERT INTO __ref_keys (id) SELECT id FROM reference_{{datasetKey}};
 
--- TODO references.csv
+-- references
 COPY (
   SELECT rk.key AS record_id, 
-    csl->>'author' AS author, 
-    csl#>>'{issued,literal}' AS year, 
-    csl->>'title' AS title, 
-    csl->>'containerTitle' AS source, 
-    s.dataset_key AS database_id, 
+    coalesce(
+      csl-> 'author' ->0 ->> 'literal',
+      (SELECT string_agg((aJson->>'given') || ' ' || (aJson->>'family'), ', ') FROM jsonb_array_elements(csl->'author') AS aJson)
+    ) AS author,
+    coalesce(
+      csl#>>'{issued,literal}',
+      (csl#> '{issued,date-parts}'->0->0)::text
+    ) AS year,
+    csl->>'title' AS title,
+    csl->>'container-title  ' AS source,
+    coalesce(s.dataset_key, 1500) - 1000 AS database_id,
     r.id AS reference_code
   FROM reference_{{datasetKey}} r
     JOIN __ref_keys rk ON rk.id=r.id
@@ -60,6 +120,20 @@ COPY (
     
 ) TO 'references.csv';
 
+
+-- estimates
+COPY (
+  SELECT e.subject_id AS name_code,
+    e.subject_name AS name,
+    e.subject_rank AS rank,
+    e.estimate,
+    r.citation AS source,
+    e.created AS inserted,
+    e.modified AS updated
+  FROM estimate e
+    LEFT JOIN reference_{{datasetKey}} r ON r.id=e.reference_id
+  WHERE e.subject_id IS NOT NULL
+) TO 'estimates.csv';
 
 
 -- create usage int keys using a reusable sequence
@@ -75,7 +149,7 @@ INSERT INTO __scrutinizer (name, dataset_key)
             LEFT JOIN sector s ON t.sector_key=s.key
         WHERE t.according_to IS NOT NULL;
 COPY (
-    SELECT key AS record_id, name AS specialist_name, null AS specialist_code, dataset_key AS database_id FROM __scrutinizer
+    SELECT key AS record_id, name AS specialist_name, null AS specialist_code, coalesce(dataset_key, 1500) - 1000 AS database_id FROM __scrutinizer
 ) TO 'specialists.csv';
 
 
@@ -92,12 +166,12 @@ COPY (
     SELECT NULL AS record_id, 
         id AS name_code, 
         CASE WHEN lfz=0 THEN 'brackish' WHEN lfz=1 THEN 'freshwater' WHEN lfz=2 THEN 'marine' WHEN lfz=3 THEN 'terrestrial' END AS lifezone, 
-        dataset_key AS database_id
+        coalesce(dataset_key, 1500) - 1000 AS database_id
     FROM lifezones_x
 ) TO 'lifezone.csv';
 
 
--- create a flattened classification table for all taxa
+-- create a flattened classification table for all usages incl taxa AND synonyms
 CREATE TABLE __classification AS (
 WITH RECURSIVE tree AS(
     SELECT
@@ -146,15 +220,18 @@ DELETE FROM __classification WHERE rank < 'family'::rank;
 -- now we have only families and below left
 
 -- create incertae sedis families if missing
-CREATE TABLE __classification2 (LIKE __classification);
 CREATE SEQUENCE __unassigned_seq START 1;
 CREATE INDEX ON __classification (family_id);
-INSERT INTO __classification2 (key, dataset_key, id, family_id, rank, kingdom, phylum ,class, "order", superfamily, family)
-    SELECT DISTINCT nextval('__record_id_seq'), dataset_key, 'inc.sed-' || nextval('__unassigned_seq'), 'inc.sed-' || currval('__unassigned_seq'), 'family'::rank, kingdom, phylum ,class, "order", superfamily, 'Not assigned'
-        FROM __classification
-        WHERE family_id IS NULL;
 CREATE INDEX ON __classification (dataset_key, coalesce(kingdom,''), coalesce(phylum,''), coalesce(class,''), coalesce("order",''), coalesce(superfamily))
     WHERE family_id=NULL;
+CREATE TABLE __classification2 (LIKE __classification);
+ALTER  TABLE __classification2 ALTER COLUMN key SET DEFAULT nextval('__record_id_seq');
+ALTER  TABLE __classification2 ALTER COLUMN id  SET DEFAULT 'inc.sed-' || nextval('__unassigned_seq');
+ALTER  TABLE __classification2 ALTER COLUMN family_id  SET DEFAULT 'inc.sed-' || currval('__unassigned_seq');
+INSERT  INTO __classification2 (dataset_key, rank, kingdom, phylum ,class, "order", superfamily, family)
+    SELECT DISTINCT dataset_key, 'family'::rank, kingdom, phylum ,class, "order", superfamily, 'Not assigned'
+        FROM __classification
+        WHERE family_id IS NULL;
 CREATE UNIQUE INDEX ON __classification2 (dataset_key, coalesce(kingdom,''), coalesce(phylum,''), coalesce(class,''), coalesce("order",''), coalesce(superfamily));
 UPDATE __classification c SET family_id=f.id
     FROM __classification2 f
@@ -166,21 +243,20 @@ UPDATE __classification c SET family_id=f.id
         AND coalesce(c."order",'')    =coalesce(f."order",'')
         AND coalesce(c.superfamily,'')=coalesce(f.superfamily,'');
 INSERT INTO __classification SELECT * FROM __classification2;
-CREATE INDEX ON __classification (id);
+CREATE UNIQUE INDEX ON __classification (id);
 
--- TODO rank marker table !!!
 
 -- families export
 COPY (
 SELECT key AS record_id,
       NULL AS hierarchy_code,
       kingdom, 
-      phylum, 
-      class, 
-      "order", 
-      family, 
+      coalesce(phylum, 'Not assigned') AS phylum,
+      coalesce(class, 'Not assigned') AS class,
+      coalesce("order", 'Not assigned') AS "order",
+      coalesce(family, 'Not assigned') AS family,
       superfamily, 
-      dataset_key AS database_id, 
+      coalesce(dataset_key, 1500) - 1000 AS database_id,
       id AS family_code, 
       1 AS is_accepted_name
     FROM __classification
@@ -190,15 +266,15 @@ SELECT key AS record_id,
 
 COPY (
 SELECT
-  c.key AS record_id,
+  tk.key AS record_id,
   t.id AS name_code,
   t.webpage AS web_site,
   n.genus AS genus,
   n.infrageneric_epithet AS subgenus,
   n.specific_epithet AS species,
-  c.species_id AS infraspecies_parent_name_code,
+  CASE WHEN n.rank > 'species'::rank THEN c.species_id ELSE NULL END AS infraspecies_parent_name_code,
   n.infraspecific_epithet AS infraspecies,
-  n.rank AS infraspecies_marker, -- TODO
+  CASE WHEN n.rank > 'species'::rank THEN r.marker ELSE NULL END AS infraspecies_marker,  -- uses __ranks table created in AcExporter java code!
   n.authorship AS author,
   CASE WHEN t.is_synonym THEN t.parent_id ELSE t.id END AS accepted_name_code,
   t.remarks AS comment,
@@ -210,7 +286,7 @@ SELECT
        WHEN t.status=4 THEN 3
   END AS sp2000_status_id, -- 1=ACCEPTED, 2=AMBIGUOUS_SYNONYM, 3=MISAPPLIED, 4=PROVISIONALLY_ACCEPTED, 5=SYNONYM
                            -- Java: ACCEPTED,PROVISIONALLY_ACCEPTED,SYNONYM,AMBIGUOUS_SYNONYM,MISAPPLIED
-  c.dataset_key AS database_id,
+  CASE WHEN t.is_synonym THEN coalesce(cs.dataset_key, 1500) - 1000 ELSE coalesce(c.dataset_key, 1500) - 1000 END AS database_id,
   sc.key AS specialist_id,
   cf.key AS family_id,
   NULL AS specialist_code,
@@ -223,9 +299,12 @@ SELECT
   t.recent::int AS has_modern
 FROM name_{{datasetKey}} n
     JOIN name_usage_{{datasetKey}} t ON n.id=t.name_id
-    JOIN __classification c ON t.id=c.id
-    JOIN __classification cf ON c.family_id=cf.id
+    LEFT JOIN __classification c  ON t.id=c.id
+    LEFT JOIN __classification cs ON t.parent_id=cs.id
+    LEFT JOIN __classification cf ON c.family_id=cf.id
+    LEFT JOIN __ranks r ON n.rank=r.key
     LEFT JOIN __scrutinizer sc ON t.according_to=sc.name AND c.dataset_key=sc.dataset_key
+    LEFT JOIN __tax_keys tk ON t.id=tk.id
 WHERE n.rank >= 'species'::rank
 
 ) TO 'scientific_names.csv';
@@ -233,19 +312,20 @@ WHERE n.rank >= 'species'::rank
 
 -- common_names 
 COPY (
-  SELECT NULL AS record_id, 
+  SELECT nextval('__record_id_seq') AS record_id,
     v.taxon_id AS name_code, 
     v.name AS common_name, 
     v.latin AS transliteration, 
-    v.language, 
-    v.country, 
+    lang.english AS language,
+    trim(v.country) AS country,
     NULL AS area, 
     rk.key as reference_id,
-    s.dataset_key AS database_id, 
+    coalesce(s.dataset_key, 1500) - 1000 AS database_id,
     NULL AS is_infraspecies,
     r.id as reference_code 
   FROM vernacular_name_{{datasetKey}} v
     JOIN name_usage_{{datasetKey}} t ON t.id=v.taxon_id
+    LEFT JOIN __languages lang on lang.iso3=v.language
     LEFT JOIN reference_{{datasetKey}} r ON r.id=v.reference_id
     LEFT JOIN __ref_keys rk ON rk.id=r.id
     LEFT JOIN sector s ON t.sector_key=s.key
@@ -254,12 +334,12 @@ COPY (
 
 -- distribution
 COPY (
-  SELECT NULL AS record_id, 
+  SELECT nextval('__record_id_seq') AS record_id,
     d.taxon_id AS name_code, 
     d.area AS distribution, 
     CASE WHEN d.gazetteer=0 THEN 'TDWG' WHEN d.gazetteer=1 THEN 'ISO' WHEN d.gazetteer=2 THEN 'FAO' ELSE 'TEXT' END AS StandardInUse,
     CASE WHEN d.status=0 THEN 'Native' WHEN d.status=1 THEN 'Domesticated' WHEN d.status=2 THEN 'Alien' WHEN d.status=3 THEN 'Uncertain' END AS DistributionStatus,
-    s.dataset_key AS database_id
+    coalesce(s.dataset_key, 1500) - 1000 AS database_id
   FROM distribution_{{datasetKey}} d
       JOIN name_usage_{{datasetKey}} t ON t.id=d.taxon_id
       LEFT JOIN sector s ON t.sector_key=s.key
@@ -268,12 +348,12 @@ COPY (
 
 -- scientific_name_references.csv
 COPY (
-  SELECT NULL AS record_id, 
+  SELECT nextval('__record_id_seq') AS record_id,
     t.id AS name_code,
     'NomRef' AS reference_type, -- NomRef, TaxAccRef, ComNameRef
     rk.key AS reference_id,
     r.id AS reference_code,
-    s.dataset_key AS database_id
+    coalesce(s.dataset_key, 1500) - 1000 AS database_id
   FROM name_{{datasetKey}} n
     JOIN name_usage_{{datasetKey}} t ON t.name_id=n.id
     JOIN reference_{{datasetKey}} r ON r.id=n.published_in_id
@@ -282,12 +362,12 @@ COPY (
 
   UNION
 
-  SELECT NULL AS record_id, 
+  SELECT nextval('__record_id_seq') AS record_id,
     tr.taxon_id AS name_code,
     'TaxAccRef' AS reference_type, -- NomRef, TaxAccRef, ComNameRef
     rk.key AS reference_id,
     r.id AS reference_code,
-    s.dataset_key AS database_id
+    coalesce(s.dataset_key, 1500) - 1000 AS database_id
   FROM usage_reference_{{datasetKey}} tr
     JOIN reference_{{datasetKey}} r ON r.id=tr.reference_id
     JOIN __ref_keys rk ON rk.id=r.id
@@ -302,5 +382,9 @@ DROP TABLE __ref_keys;
 DROP TABLE __tax_keys;
 DROP TABLE __classification;
 DROP TABLE __classification2;
+DROP TABLE __coverage;
+DROP TABLE __coverage2;
+DROP TABLE IF EXISTS __ranks;
+DROP TABLE IF EXISTS __languages;
 DROP SEQUENCE __record_id_seq;
 DROP SEQUENCE __unassigned_seq;

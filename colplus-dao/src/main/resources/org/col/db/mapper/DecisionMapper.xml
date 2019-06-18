@@ -11,6 +11,9 @@
     ${alias}subject_name AS ${prefix}subject_name,
     ${alias}subject_authorship AS ${prefix}subject_authorship,
     ${alias}subject_rank AS ${prefix}subject_rank,
+    ${alias}subject_code AS ${prefix}subject_code,
+    ${alias}subject_status AS ${prefix}subject_status,
+    ${alias}subject_parent AS ${prefix}subject_parent,
     ${alias}note AS ${prefix}note,
     ${alias}modified AS ${prefix}modified,
     ${alias}modified_by AS ${prefix}modified_by,
@@ -37,6 +40,9 @@
     subject_name,
     subject_authorship,
     subject_rank,
+    subject_code,
+    subject_status,
+    subject_parent,
     note,
     modified,
     modified_by,
@@ -54,6 +60,9 @@
     #{subject.name},
     #{subject.authorship},
     #{subject.rank}::rank,
+    #{subject.code},
+    #{subject.status},
+    #{subject.parent},
     #{note},
     now(),
     #{modifiedBy},
@@ -73,7 +82,7 @@
     <id property="key" column="key" />
     <result property="name" column="name" typeHandler="org.col.db.type2.JsonNameHandler" />
     <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneSetTypeHandler" />
-    <association property="subject" javaType="SimpleName" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="subject_" />
+    <association property="subject" javaType="SimpleName" autoMapping="true" columnPrefix="subject_" />
   </resultMap>
 
   <select id="list" resultMap="decisionResultMap">

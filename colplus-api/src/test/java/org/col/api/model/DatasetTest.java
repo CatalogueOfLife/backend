@@ -42,7 +42,6 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.getOrganisations().add("bla");
     d.setContact("foo");
     d.setNotes("cuzdsghazugbe67wqt6c g cuzdsghazugbe67wqt6c g  nhjs");
-    d.setNamesIndexContributor(true);
     return d;
   }
   

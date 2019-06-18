@@ -41,8 +41,8 @@ import org.col.es.NameUsageIndexService;
 import org.col.es.NameUsageIndexServiceEs;
 import org.col.es.NameUsageSearchService;
 import org.col.gbifsync.GbifSync;
-import org.col.img.ImageServiceFS;
 import org.col.img.ImageService;
+import org.col.img.ImageServiceFS;
 import org.col.importer.ContinuousImporter;
 import org.col.importer.ImportManager;
 import org.col.matching.NameIndex;
@@ -158,17 +158,10 @@ public class WsServer extends Application<WsServerConfig> {
     final ImageService imgService = new ImageServiceFS(cfg.img);
   
     // name index
-    NameIndex ni;
-    if (cfg.namesIndexFile == null) {
-      LOG.info("Use volatile in memory names index");
-      ni = NameIndexFactory.memory(getSqlSessionFactory(), aNormalizer);
-    } else {
-      LOG.info("Use persistent names index at {}", cfg.namesIndexFile.getAbsolutePath());
-      ni = NameIndexFactory.persistent(cfg.namesIndexFile, getSqlSessionFactory(), aNormalizer);
-    }
+    NameIndex ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, getSqlSessionFactory(), aNormalizer);
     env.lifecycle().manage(new ManagedCloseable(ni));
     env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));
-
+    
     final DatasetImportDao diDao = new DatasetImportDao(getSqlSessionFactory(), cfg.textTreeRepo);
     
     // async importer
@@ -198,7 +191,11 @@ public class WsServer extends Application<WsServerConfig> {
     // assembly
     AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), diDao, indexService, env.metrics());
     env.lifecycle().manage(assembly);
-  
+    
+    // link assembly and import manager so they are aware of each other
+    importManager.setAssemblyCoordinator(assembly);
+    assembly.setImportManager(importManager);
+    
     // diff
     DiffService diff = new DiffService(getSqlSessionFactory(), diDao.getTreeDao());
     env.healthChecks().register("diff", new DiffHealthCheck(diff));
@@ -222,7 +219,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.jersey().register(new NameSearchResource(nuss));
     env.jersey().register(new ParserResource());
     env.jersey().register(new ReferenceResource(rdao));
-    env.jersey().register(new SectorResource(getSqlSessionFactory(), diDao, diff));
+    env.jersey().register(new SectorResource(getSqlSessionFactory(), diDao, diff, assembly));
     env.jersey().register(new SynonymResource(sdao));
     env.jersey().register(new TaxonResource(tdao));
     env.jersey().register(new TreeResource(tdao));

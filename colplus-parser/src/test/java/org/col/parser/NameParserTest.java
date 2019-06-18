@@ -59,7 +59,7 @@ public class NameParserTest {
   @Test
   public void parseInfraSpecies() throws Exception {
     
-    assertName("Abies alba ssp. alpina Mill.", "Abies alba subsp. alpina")
+    assertName("Abies alba ssp. alpina Mill.", "Abies alba alpina")
         .infraSpecies("Abies", "alba", Rank.SUBSPECIES, "alpina")
         .combAuthors(null, "Mill.")
         .nothingElse();

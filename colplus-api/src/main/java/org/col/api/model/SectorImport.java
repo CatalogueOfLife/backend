@@ -1,11 +1,10 @@
 package org.col.api.model;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.common.base.Predicates;
+import com.google.common.collect.EvictingQueue;
 
 public class SectorImport extends ImportMetrics<SectorImport.State> {
   
@@ -16,8 +15,31 @@ public class SectorImport extends ImportMetrics<SectorImport.State> {
       return this != FINISHED && this != FAILED && this != CANCELED;
     }
   }
-
+  
+  private String type;
   private int sectorKey;
+  private final Queue<String> warnings = EvictingQueue.create(10);
+  
+  public Collection<String> getWarnings() {
+    return warnings;
+  }
+  
+  public void setWarnings(Collection<String> warnings) {
+    this.warnings.clear();
+    this.warnings.addAll(warnings);
+  }
+  
+  public void addWarning(String warning) {
+    warnings.add(warning);
+  }
+  
+  public String getType() {
+    return type;
+  }
+  
+  public void setType(String type) {
+    this.type = type;
+  }
   
   public int getSectorKey() {
     return sectorKey;
@@ -33,12 +55,15 @@ public class SectorImport extends ImportMetrics<SectorImport.State> {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     SectorImport that = (SectorImport) o;
-    return sectorKey == that.sectorKey;
+    // we dont include warnings as we dont persist them
+    return sectorKey == that.sectorKey &&
+        Objects.equals(type, that.type);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey);
+    // we dont include warnings as we dont persist them
+    return Objects.hash(super.hashCode(), type, sectorKey);
   }
   
   public static List<State> runningStates() {
@@ -55,7 +80,7 @@ public class SectorImport extends ImportMetrics<SectorImport.State> {
   
   @Override
   public String attempt() {
-    return getSectorKey() + " - " + getAttempt();
+    return getType() + " " + getSectorKey() + " - " + getAttempt();
   }
   
 }

@@ -10,6 +10,11 @@ import org.col.db.DatasetCRUD;
 
 public interface DatasetCRUDMapper<V extends DatasetEntity> extends DatasetCRUD<V> {
   
+  /**
+   * @return true if at least one record for the given dataset exists
+   */
+  boolean hasData(@Param("datasetKey") int datasetKey);
+
   int count(@Param("datasetKey") int datasetKey);
   
   List<V> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);

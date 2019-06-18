@@ -56,7 +56,7 @@ abstract class ParserTestBase<T> {
    * Override to test specific unparsable values
    */
   List<String> unparsableValues() {
-    return Lists.newArrayList(".", "?", "---", "öüä", "#67#", "wtf", "nothing");
+    return Lists.newArrayList(".", "?", "---", "öüäi", "#67#", "wtff", "nothing");
   }
   
   /**

@@ -123,7 +123,7 @@ public class NeoDb implements ReferenceStore {
           .valueSerializer(new MapDbObjectSerializer(Reference.class, pool, 128))
           .createOrOpen();
       refIndexCitation = mapDb.hashMap("refIndexCitation")
-          .keySerializer(Serializer.STRING_ASCII)
+          .keySerializer(Serializer.STRING)
           .valueSerializer(Serializer.STRING)
           .createOrOpen();
       
@@ -189,15 +189,6 @@ public class NeoDb implements ReferenceStore {
   
   public GraphDatabaseService getNeo() {
     return neo;
-  }
-  
-  public void setIdGeneratorPrefix(String prefix) {
-    if (this.idGen.getCounter() > 0) {
-      // we had issues ids already with the previous generator, continue with its
-      
-    }
-    this.idGen = Preconditions.checkNotNull(idGen);
-    // update previous ids
   }
   
   public Dataset getDataset() {
@@ -592,7 +583,7 @@ public class NeoDb implements ReferenceStore {
   public Iterable<VerbatimRecord> verbatimList() {
     return verbatim.values();
   }
-  
+
   @Override
   public Reference refById(String id) {
     if (id != null) {
@@ -1031,10 +1022,7 @@ public class NeoDb implements ReferenceStore {
             )
         )
     );
-    if (idGen.getCounter() > 0) {
-      // TODO: update references, anything else should have source ids at this point
-      
-    }
+    // TODO: update references, anything else should have source ids at this point
     LOG.info("ID generator updated with unique prefix {}", idGen.getPrefix());
   }
   

@@ -86,9 +86,9 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       assertEquals("Crepis pulchra", t.usage.getName().getScientificName());
 
       // check vernaculars
-      Map<Language, String> expV = jersey.repackaged.com.google.common.collect.Maps.newHashMap();
-      expV.put(Language.GERMAN, "Schöner Pippau");
-      expV.put(Language.ENGLISH, "smallflower hawksbeard");
+      Map<String, String> expV = jersey.repackaged.com.google.common.collect.Maps.newHashMap();
+      expV.put("deu", "Schöner Pippau");
+      expV.put("eng", "smallflower hawksbeard");
       assertEquals(expV.size(), t.vernacularNames.size());
       for (VernacularName vn : t.vernacularNames) {
         assertEquals(expV.remove(vn.getLanguage()), vn.getName());
@@ -225,8 +225,8 @@ public class NormalizerDwcaIT extends NormalizerITBase {
 
       Map<String, String> expectedAccepted = Maps.newHashMap();
       expectedAccepted.put("1000", "Calendula arvensis");
-      expectedAccepted.put("10000", "Calendula incana subsp. incana");
-      expectedAccepted.put("10002", "Calendula incana subsp. maderensis");
+      expectedAccepted.put("10000", "Calendula incana incana");
+      expectedAccepted.put("10002", "Calendula incana maderensis");
 
       for (RankedUsage acc : store.accepted(syn.node)) {
         assertEquals(expectedAccepted.remove(store.names().objByNode(acc.nameNode).getId()), acc.name);

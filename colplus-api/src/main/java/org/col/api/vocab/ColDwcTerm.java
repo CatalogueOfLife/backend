@@ -14,9 +14,7 @@ public enum ColDwcTerm implements Term, AlternativeNames {
   relationType,
   publishedIn,
   publishedInID,
-  relationRemarks,
-  speciesEstimate,
-  speciesEstimateReference;
+  relationRemarks;
   
   private static final String PREFIX = "coldwc";
   private static final String NS = "http://rs.col.plus/terms/dwc/";

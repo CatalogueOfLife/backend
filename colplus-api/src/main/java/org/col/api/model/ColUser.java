@@ -180,4 +180,9 @@ public class ColUser implements GlobalEntity, Principal {
     
     return Objects.hash(key, username, firstname, lastname, email, orcid, country, roles, settings, lastLogin, created, deleted);
   }
+  
+  @Override
+  public String toString() {
+    return username + " {" + key + "}";
+  }
 }

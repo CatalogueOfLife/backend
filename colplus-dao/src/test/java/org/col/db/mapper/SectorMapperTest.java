@@ -5,10 +5,10 @@ import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Sector;
 import org.col.db.MybatisTestUtils;
+import org.gbif.nameparser.api.NomCode;
 import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.DATASET11;
-import static org.col.api.TestEntityGenerator.newNameRef;
 import static org.junit.Assert.*;
 
 public class SectorMapperTest extends GlobalCRUDMapperTest<Sector, SectorMapper> {
@@ -79,8 +79,9 @@ public class SectorMapperTest extends GlobalCRUDMapperTest<Sector, SectorMapper>
     Sector d = new Sector();
     d.setDatasetKey(datasetKey);
     d.setMode(Sector.Mode.ATTACH);
-    d.setSubject(newNameRef());
-    d.setTarget(newNameRef());
+    d.setCode(NomCode.ZOOLOGICAL);
+    d.setSubject(TestEntityGenerator.newSimpleName());
+    d.setTarget(TestEntityGenerator.newSimpleNameWithoutStatusParent());
     d.setNote(RandomUtils.randomUnicodeString(1024));
     d.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());
     d.setModifiedBy(TestEntityGenerator.USER_EDITOR.getKey());

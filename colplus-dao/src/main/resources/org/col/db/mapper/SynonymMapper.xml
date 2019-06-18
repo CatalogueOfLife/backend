@@ -61,9 +61,25 @@
     </select>
 
     <select id="count" resultType="integer">
-        <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
-            <property name="column" value="synonym_count"/>
-        </include>
+        <if test="datasetKey &lt; 10">
+            SELECT count(*)
+            FROM name_usage_${datasetKey}
+            WHERE is_synonym
+        </if>
+        <if test="datasetKey &gt;= 10">
+            <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
+                <property name="column" value="synonym_count"/>
+            </include>
+        </if>
+    </select>
+
+    <select id="hasData" resultType="boolean">
+        SELECT exists(
+            SELECT id
+            FROM name_usage_${datasetKey}
+            WHERE is_synonym
+            LIMIT 1
+        )
     </select>
 
     <select id="list" resultMap="synonymResultMap">

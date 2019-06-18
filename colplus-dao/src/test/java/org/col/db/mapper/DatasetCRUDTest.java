@@ -21,6 +21,12 @@ abstract class DatasetCRUDTest<T extends DatasetEntity, M extends DatasetCRUDMap
   abstract T removeDbCreatedProps(T obj);
   
   @Test
+  public void getNull() throws Exception {
+    assertNull(mapper().get(datasetKey, null));
+    assertNull(mapper().get(datasetKey, ""));
+  }
+  
+  @Test
   public void roundtrip() throws Exception {
     T u1 = createTestEntity();
     mapper().create(u1);

@@ -1,9 +1,7 @@
 package org.col.importer.reference;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
@@ -42,11 +40,14 @@ public class ReferenceFactory {
   private static final String initials = "(?:\\p{Lu}(?:\\. ?| ))*";
   // comma separated authors with (initials/firstname) surnames
   private static final Splitter AUTHOR_SPLITTER = Splitter.on(CharMatcher.anyOf(",&")).trimResults();
-  private static final Pattern AUTHORS_PATTERN = Pattern.compile("^("+initials+") *("+ name +")$");
-  private static final Pattern AUTHORS_PREFIX = Pattern.compile("^((?:\\p{Ll}{1,5} ){1,2})(\\p{Lu})");
+  private static final Pattern AUTHOR_PATTERN = Pattern.compile("^("+initials+") *("+ name +")$");
+  // comma separated authors with surname, initials
+  private static final Pattern AUTHOR_PATTERN_SN_FN = Pattern.compile("^(" + name + "), *(" + initials + ")$");
   // semicolon separated authors with lastname, firstnames
   private static final Splitter AUTHOR_SPLITTER_SEMI = Splitter.on(';').trimResults();
   private static final Pattern AUTHORS_PATTERN_SEMI = Pattern.compile("^("+ name +")(?:, ?("+initials+"|"+name+"))?$");
+  // author parsing
+  private static final Pattern AUTHOR_PREFIX = Pattern.compile("^((?:\\p{Ll}{1,5} ){1,2})(\\p{Lu})");
 
   private final Integer datasetKey;
   private final ReferenceStore store;
@@ -89,17 +90,21 @@ public class ReferenceFactory {
    * @param details     title of periodicals, volume number, and other common bibliographic details
    * @return
    */
-  public Reference fromACEF(String referenceID, String authors, String year, String title, String details, IssueContainer issues) {
-    Reference ref = fromAny(referenceID, null, authors, year, title, details, null, issues);
+  public static Reference fromACEF(int datasetKey, String referenceID, String authors, String year, String title, String details, IssueContainer issues) {
+    Reference ref = fromAny(datasetKey, referenceID, null, authors, year, title, details, null, issues);
     if (ref.getCsl() != null && !StringUtils.isBlank(details)) {
       issues.addIssue(Issue.CITATION_CONTAINER_TITLE_UNPARSED);
     }
     return ref;
   }
   
-  public Reference fromColDP(String id, String citation, String authors, String year, String title, String source, String details,
+  public Reference fromACEF(String referenceID, String authors, String year, String title, String details, IssueContainer issues) {
+    return fromACEF(datasetKey, referenceID, authors, year, title, details, issues);
+  }
+  
+  public static Reference fromColDP(int datasetKey, String id, String citation, String authors, String year, String title, String source, String details,
                              String doi, String link, IssueContainer issues) {
-    Reference ref = fromAny(id, citation, authors, year, title, source, details, issues);
+    Reference ref = fromAny(datasetKey, id, citation, authors, year, title, source, details, issues);
     // add extra link & doi
     if (doi != null || link != null) {
       if (ref.getCsl() == null) {
@@ -112,8 +117,13 @@ public class ReferenceFactory {
     return ref;
   }
   
-  private Reference fromAny(String ID, String citation, String authors, String year, String title, String source, String details, IssueContainer issues) {
-    Reference ref = newReference(ID);
+  public Reference fromColDP(String id, String citation, String authors, String year, String title, String source, String details,
+                             String doi, String link, IssueContainer issues) {
+    return fromColDP(datasetKey, id, citation, authors, year, title, source, details, doi, link, issues);
+  }
+  
+  private static Reference fromAny(int datasetKey, String ID, String citation, String authors, String year, String title, String source, String details, IssueContainer issues) {
+    Reference ref = newReference(datasetKey, ID);
     ref.setYear(parseYear(year));
     if (hasContent(authors, year, title, source)) {
       CslData csl = new CslData();
@@ -136,14 +146,14 @@ public class ReferenceFactory {
   }
   
   public Reference fromCsl(CslData csl) {
-    Reference ref = newReference(csl.getId());
+    Reference ref = newReference(datasetKey, csl.getId());
     ref.setCsl(csl);
     //TODO: generate default citation string
     updateIntYearFromCsl(ref);
     return ref;
   }
   
-  public static void updateIntYearFromCsl(Reference ref) {
+  private static void updateIntYearFromCsl(Reference ref) {
     if (ref.getCsl().getIssued() != null) {
       CslDate issued = ref.getCsl().getIssued();
       if (issued.getDateParts() != null) {
@@ -173,7 +183,7 @@ public class ReferenceFactory {
                           IssueContainer issues) {
     Reference ref = find(identifier, bibliographicCitation);
     if (ref == null) {
-      ref = newReference(identifier);
+      ref = newReference(datasetKey, identifier);
       if (!StringUtils.isBlank(bibliographicCitation)) {
         ref.setCitation(bibliographicCitation);
       }
@@ -212,7 +222,7 @@ public class ReferenceFactory {
     }
     Reference ref = find(publishedInID, citation);
     if (ref == null) {
-      ref = newReference(publishedInID);
+      ref = newReference(datasetKey, publishedInID);
       if (!StringUtils.isEmpty(publishedIn)) {
         ref.setCitation(citation);
         issues.addIssue(Issue.CITATION_UNPARSED);
@@ -225,7 +235,7 @@ public class ReferenceFactory {
   public Reference fromCitation(String id, String citation, IssueContainer issues) {
     Reference ref = find(id, citation);
     if (ref == null) {
-      ref = newReference(id);
+      ref = newReference(datasetKey, id);
       if (!StringUtils.isEmpty(citation)) {
         ref.setCitation(citation);
         issues.addIssue(Issue.CITATION_UNPARSED);
@@ -291,15 +301,16 @@ public class ReferenceFactory {
    * @param authorString
    * @return
    */
-  private static CslName[] parseAuthors(String authorString, IssueContainer issues) {
+  @VisibleForTesting
+  static CslName[] parseAuthors(String authorString, IssueContainer issues) {
     if (StringUtils.isBlank(authorString)) {
       return null;
     }
     authorString = NORM_WHITESPACE.matcher(authorString).replaceAll(" ");
     List<CslName> names = new ArrayList<>();
-    // comma with initials?
+    // comma with initials in front?
     for (String a : AUTHOR_SPLITTER.split(authorString)) {
-      Matcher m = AUTHORS_PATTERN.matcher(a);
+      Matcher m = AUTHOR_PATTERN.matcher(a);
       if (m.find()) {
         names.add(buildName(m.group(1), m.group(2)));
       } else {
@@ -307,15 +318,33 @@ public class ReferenceFactory {
         break;
       }
     }
-    // semicolons?
-    if (names.isEmpty() && authorString.contains(";")) {
-      for (String a : AUTHOR_SPLITTER_SEMI.split(authorString)) {
-        Matcher m = AUTHORS_PATTERN_SEMI.matcher(a);
-        if (m.find()) {
-          names.add(buildName(m.group(2), m.group(1)));
-        } else {
-          names.clear();
-          break;
+    if (names.isEmpty()) {
+      // comma with initials behind?
+      Iterator<String> iter = AUTHOR_SPLITTER.split(authorString).iterator();
+      try {
+        while (iter.hasNext()) {
+          String a = iter.next() + "," + iter.next();
+          Matcher m = AUTHOR_PATTERN_SN_FN.matcher(a);
+          if (m.find()) {
+            names.add(buildName(m.group(2), m.group(1)));
+          } else {
+            names.clear();
+            break;
+          }
+        }
+      } catch (NoSuchElementException e) {
+        names.clear();
+      }
+      // semicolons?
+      if (names.isEmpty() && authorString.contains(";")) {
+        for (String a : AUTHOR_SPLITTER_SEMI.split(authorString)) {
+          Matcher m = AUTHORS_PATTERN_SEMI.matcher(a);
+          if (m.find()) {
+            names.add(buildName(m.group(2), m.group(1)));
+          } else {
+            names.clear();
+            break;
+          }
         }
       }
     }
@@ -335,7 +364,7 @@ public class ReferenceFactory {
     if (given != null) {
       name.setGiven(StringUtils.trimToNull(given));
     }
-    Matcher pre = AUTHORS_PREFIX.matcher(family);
+    Matcher pre = AUTHOR_PREFIX.matcher(family);
     if (pre.find()) {
       family = pre.replaceFirst(pre.group(2));
       name.setNonDroppingParticle(StringUtils.trimToNull(pre.group(1)));
@@ -409,7 +438,7 @@ public class ReferenceFactory {
     }
   }
 
-  public Reference newReference(String id) {
+  private static Reference newReference(int datasetKey, String id) {
     Reference ref = new Reference();
     ref.setId(id);
     ref.setDatasetKey(datasetKey);

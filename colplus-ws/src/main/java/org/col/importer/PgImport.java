@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -18,6 +20,7 @@ import org.col.common.tax.AuthorshipNormalizer;
 import org.col.config.ImporterConfig;
 import org.col.db.mapper.*;
 import org.col.importer.neo.NeoDb;
+import org.col.importer.neo.NeoDbUtils;
 import org.col.importer.neo.model.Labels;
 import org.col.importer.neo.model.NeoName;
 import org.col.importer.neo.model.NeoUsage;
@@ -42,7 +45,8 @@ public class PgImport implements Callable<Boolean> {
   private final SqlSessionFactory sessionFactory;
   private final AuthorshipNormalizer aNormalizer;
   private final Dataset dataset;
-  private BiMap<Integer, Integer> verbatimKeys = HashBiMap.create();
+  private final BiMap<Integer, Integer> verbatimKeys = HashBiMap.create();
+  private final Map<String, Integer> proParteIds = new HashMap();
   private final AtomicInteger nCounter = new AtomicInteger(0);
   private final AtomicInteger tCounter = new AtomicInteger(0);
   private final AtomicInteger sCounter = new AtomicInteger(0);
@@ -141,21 +145,30 @@ public class PgImport implements Callable<Boolean> {
       LOG.info("Updating dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
       DatasetMapper mapper = session.getMapper(DatasetMapper.class);
       Dataset old = mapper.get(dataset.getKey());
-      if (dataset.getTitle() != null) {
-        // make sure we keep a title even if old
-        old.setTitle(dataset.getTitle());
-      }
-      old.setAuthorsAndEditors(dataset.getAuthorsAndEditors());
-      old.setContact(dataset.getContact());
-      old.setDescription(dataset.getDescription());
-      old.setWebsite(dataset.getWebsite());
-      old.setLicense(dataset.getLicense());
-      old.setOrganisations(dataset.getOrganisations());
-      old.setReleased(dataset.getReleased());
-      old.setVersion(dataset.getVersion());
+      copyIfNotNull(dataset::getAlias, old::setAlias);
+      copyIfNotNull(dataset::getAuthorsAndEditors, old::setAuthorsAndEditors);
+      copyIfNotNull(dataset::getCompleteness, old::setCompleteness);
+      copyIfNotNull(dataset::getConfidence, old::setConfidence);
+      copyIfNotNull(dataset::getContact, old::setContact);
+      copyIfNotNull(dataset::getDescription, old::setDescription);
+      copyIfNotNull(dataset::getGroup, old::setGroup);
+      copyIfNotNull(dataset::getLicense, old::setLicense);
+      copyIfNotNull(dataset::getOrganisations, old::setOrganisations);
+      copyIfNotNull(dataset::getReleased, old::setReleased);
+      copyIfNotNull(dataset::getTitle, old::setTitle);
+      copyIfNotNull(dataset::getType, old::setType);
+      copyIfNotNull(dataset::getVersion, old::setVersion);
+      copyIfNotNull(dataset::getWebsite, old::setWebsite);
       
       mapper.update(old);
       session.commit();
+    }
+  }
+  
+  private <T> void copyIfNotNull(Supplier<T> getter, Consumer<T> setter) {
+    T val = getter.get();
+    if (val != null) {
+      setter.accept(val);
     }
   }
   
@@ -325,6 +338,16 @@ public class PgImport implements Callable<Boolean> {
   
           // insert taxon or synonym
           if (u.isSynonym()) {
+            if (NeoDbUtils.isProParteSynonym(n)) {
+              if (proParteIds.containsKey(u.getId())){
+                // we had that id before, append a suffix
+                int cnt = proParteIds.get(u.getId());
+                u.setId(u.getId() + "-pp" + cnt++);
+                proParteIds.put(u.getId(), cnt);
+              } else {
+                proParteIds.put(u.getId(), 2);
+              }
+            }
             synMapper.create(u.getSynonym());
             sCounter.incrementAndGet();
 

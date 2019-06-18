@@ -8,7 +8,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import org.gbif.utils.file.csv.CSVReader;
-import org.gbif.utils.file.csv.CSVReaderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,10 +59,6 @@ public abstract class EnumParser<T extends Enum> extends ParserBase<T> {
     }
     // finally add native mappings, overriding anything found in files
     addNativeEnumMappings();
-  }
-  
-  protected CSVReader dictReader(String resourceFilename) throws IOException {
-    return CSVReaderFactory.build(getClass().getResourceAsStream("/parser/dicts/" + resourceFilename), "UTF8", ",", null, 0);
   }
   
   private void addNativeEnumMappings() {

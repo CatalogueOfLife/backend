@@ -53,7 +53,7 @@ public class NameTest extends SerdeTestBase<Name> {
     n.setSpecificEpithet("alba");
     n.setNotho(NamePart.SPECIFIC);
     n.setRank(Rank.SUBSPECIES);
-    assertEquals("Abies × alba subsp.", n.canonicalNameComplete());
+    assertEquals("Abies × alba ssp.", n.canonicalNameComplete());
     
     n.setInfraspecificEpithet("alpina");
     n.getCombinationAuthorship().setYear("1999");

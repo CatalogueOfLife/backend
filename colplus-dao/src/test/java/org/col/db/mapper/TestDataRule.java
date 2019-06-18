@@ -18,6 +18,7 @@ import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.ColUser;
+import org.col.api.vocab.Datasets;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.common.tax.SciNameNormalizer;
@@ -57,29 +58,34 @@ public class TestDataRule extends ExternalResource {
   private final Supplier<SqlSessionFactory> sqlSessionFactorySupplier;
   
   public enum TestData {
-    NONE(null, null, 3),
+    NONE(null, null, null,2,3),
     
     // apple datasetKey=11
-    APPLE(11, 3,3, 11, 12),
+    APPLE(11, 3,2, 2,3,11,12),
   
     // tree datasetKey=11
-    TREE(11, 2, 3, 11),
+    TREE(11, 2, 2, 2,3,11),
   
     // basic draft hierarchy
-    DRAFT(3, 1, 3),
+    DRAFT(3, 1, 2,2,3),
+  
+    // basic draft hierarchy
+    DRAFT_WITH_SECTORS(3, 2, 3,2,3),
 
     /**
      * Inits the datasets table with real col data from colplus-repo
      */
-    DATASETS(2, 3);
+    DATASETS(2, 3, null);
   
     public final Integer key;
     public final Integer sciNameColumn;
+    public final Integer taxStatusColumn;
     final Set<Integer> datasetKeys;
     
-    TestData(Integer key, Integer sciNameColumn, Integer... datasetKeys) {
+    TestData(Integer key, Integer sciNameColumn, Integer taxStatusColumn, Integer... datasetKeys) {
       this.key = key;
       this.sciNameColumn = sciNameColumn;
+      this.taxStatusColumn = taxStatusColumn;
       if (datasetKeys == null) {
         this.datasetKeys = Collections.EMPTY_SET;
       } else {
@@ -116,8 +122,8 @@ public class TestDataRule extends ExternalResource {
     return new TestDataRule(TestData.DRAFT);
   }
   
-  public static TestDataRule draft(SqlSessionFactory sqlSessionFactory) {
-    return new TestDataRule(TestData.DRAFT, () -> sqlSessionFactory);
+  public static TestDataRule draftWithSectors() {
+    return new TestDataRule(TestData.DRAFT_WITH_SECTORS);
   }
 
   public static TestDataRule datasets() {
@@ -134,7 +140,7 @@ public class TestDataRule extends ExternalResource {
   }
   
   public TestDataRule(TestData testData) {
-    this(testData, () -> PgSetupRule.getSqlSessionFactory());
+    this(testData, PgSetupRule::getSqlSessionFactory);
   }
   
   public <T> T getMapper(Class<T> mapperClazz) {
@@ -151,13 +157,13 @@ public class TestDataRule extends ExternalResource {
   
   @Override
   protected void before() throws Throwable {
-    super.before();
     LOG.info("Loading {} test data", testData);
+    super.before();
     session = sqlSessionFactorySupplier.get().openSession(false);
+    truncate();
     // create required partitions to load data
     partition();
-    truncate();
-    loadData();
+    loadData(false);
     // finally create a test user to use in tests
     session.getMapper(UserMapper.class).create(TEST_USER);
     session.commit();
@@ -177,26 +183,47 @@ public class TestDataRule extends ExternalResource {
   
   private void truncate() throws SQLException {
     System.out.println("Truncate tables");
-    java.sql.Statement st = session.getConnection().createStatement();
-    st.execute("TRUNCATE coluser CASCADE");
-    st.execute("TRUNCATE dataset CASCADE");
-    session.getConnection().commit();
-    st.close();
+    try (java.sql.Statement st = session.getConnection().createStatement()) {
+      st.execute("TRUNCATE coluser CASCADE");
+      st.execute("TRUNCATE dataset CASCADE");
+      st.execute("TRUNCATE sector CASCADE");
+      st.execute("TRUNCATE estimate CASCADE");
+      st.execute("TRUNCATE decision  CASCADE");
+      session.getConnection().commit();
+    }
   }
   
-  private void loadData() throws SQLException, IOException {
-    // common data for all tests and even the empty one
+  public void truncateDraft() throws SQLException {
+    System.out.println("Truncate draft partition tables");
+    try (java.sql.Statement st = session.getConnection().createStatement()) {
+      st.execute("TRUNCATE sector CASCADE");
+      for (String table : new String[]{"name", "name_usage"}) {
+        st.execute("TRUNCATE " + table + "_"+ Datasets.DRAFT_COL +" CASCADE");
+      }
+      session.getConnection().commit();
+    }
+  }
+  
+  /**
+   * @param skipGlobalTable if true only loads tables partitioned by datasetKey
+   */
+  public void loadData(final boolean skipGlobalTable) throws SQLException, IOException {
     session.getConnection().commit();
-    
+  
+    ScriptRunner runner = new ScriptRunner(session.getConnection());
+    runner.setSendFullScript(true);
+  
+    if (!skipGlobalTable){
+      // common data for all tests and even the empty one
+      runner.runScript(Resources.getResourceAsReader(PgConfig.DATA_FILE));
+    }
+  
     if (testData != TestData.NONE) {
       System.out.format("Load %s test data\n\n", testData);
       
-      ScriptRunner runner = new ScriptRunner(session.getConnection());
-      runner.setSendFullScript(true);
       
       if (testData == TestData.DATASETS) {
         // known datasets
-        runner.runScript(Resources.getResourceAsReader(PgConfig.DATA_FILE));
         runner.runScript(Resources.getResourceAsReader(PgConfig.DATASETS_FILE));
   
       } else {
@@ -210,10 +237,12 @@ public class TestDataRule extends ExternalResource {
             pgc = (PgConnection) c;
           }
   
-          String dRes = resData + "/dataset.csv";
-          URL url = PgCopyUtils.class.getResource(dRes);
-          if (url != null) {
-            PgCopyUtils.copy(pgc, "dataset", dRes);
+          if (!skipGlobalTable){
+            String dRes = resData + "/dataset.csv";
+            URL url = PgCopyUtils.class.getResource(dRes);
+            if (url != null) {
+              PgCopyUtils.copy(pgc, "dataset", dRes);
+            }
           }
           copyTable(pgc, "verbatim");
           copyTable(pgc, "reference",
@@ -246,7 +275,7 @@ public class TestDataRule extends ExternalResource {
                   "origin", Origin.SOURCE
               ),
               ImmutableMap.<String, Function<String[], String>>of(
-                  "is_synonym", TestDataRule::isSynonym
+                  "is_synonym", this::isSynonym
               )
           );
           copyTable(pgc, "usage_reference");
@@ -273,8 +302,8 @@ public class TestDataRule extends ExternalResource {
     }
   }
   
-  private static String isSynonym(String[] row) {
-    int statusKey = Integer.valueOf(row[2]);
+  private String isSynonym(String[] row) {
+    int statusKey = Integer.valueOf(row[testData.taxStatusColumn]);
     TaxonomicStatus ts = TaxonomicStatus.values()[statusKey];
     return String.valueOf(ts.isSynonym());
   }

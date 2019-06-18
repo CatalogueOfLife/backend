@@ -134,6 +134,11 @@ public class VerbatimRecord implements IssueContainer, GlobalEntity, Serializabl
   public void addIssues(Collection<Issue> issues) {
     this.issues.addAll(issues);
   }
+  
+  @Override
+  public boolean removeIssue(Issue issue) {
+    return issues.remove(issue);
+  }
 
   @Override
   public boolean hasIssue(Issue issue) {
@@ -167,6 +172,18 @@ public class VerbatimRecord implements IssueContainer, GlobalEntity, Serializabl
   }
   
   /**
+   * @return true if at least one term exists and is not null or an empty string
+   */
+  public boolean hasAny(Term... terms) {
+    for (Term t : terms) {
+      if (hasTerm(t)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * @return the raw value without any unescaping
    */
   public String getRaw(Term term) {
@@ -184,6 +201,11 @@ public class VerbatimRecord implements IssueContainer, GlobalEntity, Serializabl
       return unescape(val);
     }
     return null;
+  }
+  
+  public String getOrDefault(Term term, String defaultValue) {
+    String val = get(term);
+    return val == null ? defaultValue : val;
   }
   
   public int size() {

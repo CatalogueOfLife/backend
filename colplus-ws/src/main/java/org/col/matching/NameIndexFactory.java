@@ -4,6 +4,8 @@ package org.col.matching;
 import java.io.File;
 import java.io.IOException;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.Name;
@@ -28,7 +30,7 @@ public class NameIndexFactory {
       }
       
       @Override
-      public int size() {
+      public long size() {
         return 0;
       }
       
@@ -39,8 +41,22 @@ public class NameIndexFactory {
     };
   }
   
+  /**
+   * Returns a persistent index if location is given, otherwise an in memory one
+   */
+  public static NameIndex persistentOrMemory(@Nullable File location, SqlSessionFactory sqlFactory, AuthorshipNormalizer aNormalizer) throws IOException {
+    NameIndex ni;
+    if (location == null) {
+      ni = memory(sqlFactory, aNormalizer);
+    } else {
+      ni = persistent(location, sqlFactory, aNormalizer);
+    }
+    return ni;
+  }
+  
   public static NameIndex memory(SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) {
-    return new NameIndexMapDB(DBMaker.memoryDB(), authorshipNormalizer, Datasets.DRAFT_COL, sqlFactory);
+    LOG.info("Use volatile in memory names index");
+    return new NameIndexMapDB(DBMaker.memoryDB(), authorshipNormalizer, Datasets.NAME_INDEX, sqlFactory);
   }
 
   /**
@@ -49,11 +65,14 @@ public class NameIndexFactory {
   public static NameIndex persistent(File location, SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) throws IOException {
     if (!location.exists()) {
       FileUtils.forceMkdirParent(location);
+      LOG.info("Create persistent names index at {}", location.getAbsolutePath());
+    } else {
+      LOG.info("Open persistent names index at {}", location.getAbsolutePath());
     }
     DBMaker.Maker maker = DBMaker
         .fileDB(location)
         .fileMmapEnableIfSupported();
-    return new NameIndexMapDB(maker, authorshipNormalizer, Datasets.DRAFT_COL, sqlFactory);
+    return new NameIndexMapDB(maker, authorshipNormalizer, Datasets.NAME_INDEX, sqlFactory);
   }
   
 }

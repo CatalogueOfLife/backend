@@ -11,6 +11,7 @@ import org.col.api.model.ColUser;
 import org.col.api.model.Sector;
 import org.col.api.model.SectorImport;
 import org.col.db.mapper.NameUsageMapper;
+import org.col.db.mapper.SectorImportMapper;
 import org.col.db.mapper.SectorMapper;
 import org.col.es.NameUsageIndexService;
 import org.slf4j.Logger;
@@ -23,10 +24,10 @@ public class SectorDelete extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorDelete.class);
   private Set<Integer> visitedSectors = new HashSet<>();
   
-  public SectorDelete(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService,
+  public SectorDelete(Sector s, SqlSessionFactory factory, NameUsageIndexService indexService,
                       Consumer<SectorRunnable> successCallback,
-                      BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) {
-    super(sectorKey, factory, indexService, successCallback, errorCallback, user);
+                      BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) throws IllegalArgumentException {
+    super(s, factory, indexService, successCallback, errorCallback, user);
   }
   
   @Override
@@ -52,7 +53,8 @@ public class SectorDelete extends SectorRunnable {
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
       int count = um.deleteBySector(catalogueKey, sectorKey);
       LOG.info("Deleted {} existing taxa with their synonyms and related information from sector {}", count, sectorKey);
-    
+  
+      session.getMapper(SectorImportMapper.class).delete(sectorKey);
       session.getMapper(SectorMapper.class).delete(sectorKey);
       LOG.info("Deleted sector {}", sectorKey);
     }

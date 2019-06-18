@@ -1,11 +1,14 @@
 package org.col.resources;
 
+import java.io.*;
 import java.util.List;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
 import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
@@ -46,6 +49,7 @@ public class AssemblyResource {
   @GET
   @Path("/sync")
   public ResultPage<SectorImport> list(@QueryParam("sectorKey") Integer sectorKey,
+                                       @QueryParam("datasetKey") Integer datasetKey,
                                        @QueryParam("state") List<SectorImport.State> states,
                                        @QueryParam("running") Boolean running,
                                        @Valid @BeanParam Page page,
@@ -54,15 +58,15 @@ public class AssemblyResource {
       states = running ? SectorImport.runningStates() : SectorImport.finishedStates();
     }
     SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
-    return new ResultPage<>(page, sim.count(sectorKey, states), sim.list(sectorKey, states, page));
+    return new ResultPage<>(page, sim.count(sectorKey, datasetKey, states), sim.list(sectorKey, datasetKey, states, page));
   }
   
   @POST
   @Path("/sync")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void sync(@PathParam("catKey") int catKey, SyncRequest sector, @Auth ColUser user) {
+  public void sync(@PathParam("catKey") int catKey, SyncRequest request, @Auth ColUser user) {
     requireDraft(catKey);
-    assembly.syncSector(sector.getSectorKey(), user);
+    assembly.sync(request, user);
   }
   
   @DELETE
@@ -82,22 +86,30 @@ public class AssemblyResource {
     requireDraft(catKey);
     return session.getMapper(SectorImportMapper.class).get(sectorKey, attempt);
   }
-
-  @DELETE
-  @Path("/sector/{key}")
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void deleteSector(@PathParam("catKey") int catKey, @PathParam("key") int sectorKey, @Auth ColUser user) {
-    requireDraft(catKey);
-    assembly.deleteSector(sectorKey, user);
-  }
   
   @POST
   @Path("/exportAC")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void exportAC(@PathParam("catKey") int catKey, @Auth ColUser user) throws Exception {
+  @Produces(MediaType.TEXT_PLAIN)
+  public Response exportAC(@PathParam("catKey") int catKey, @Auth ColUser user) {
     requireDraft(catKey);
-    exporter.export(catKey);
-    throw new UnsupportedOperationException("not implemented yet");
+  
+    StreamingOutput stream = new StreamingOutput() {
+      @Override
+      public void write(OutputStream os) throws IOException, WebApplicationException {
+        Writer writer = new OutputStreamWriter(os);
+        try {
+          exporter.export(catKey, writer);
+        } catch (Throwable e) {
+          writer.append("\n\n");
+          PrintWriter pw = new PrintWriter(writer);
+          e.printStackTrace(pw);
+          pw.flush();
+        }
+        writer.flush();
+      }
+    };
+    return Response.ok(stream).build();
   }
 
   

@@ -11,9 +11,7 @@
         ${alias}.fossil AS ${prefix}fossil,
         ${alias}.recent AS ${prefix}recent,
         ${alias}.lifezones AS ${prefix}lifezones,
-        ${alias}.webpage AS ${prefix}webpage,
-        ${alias}.species_estimate AS ${prefix}species_estimate,
-        ${alias}.species_estimate_reference_id AS ${prefix}species_estimate_reference_id
+        ${alias}.webpage AS ${prefix}webpage
     </sql>
 
     <sql id="SELECT">
@@ -34,9 +32,7 @@
         fossil,
         recent,
         lifezones,
-        webpage,
-        species_estimate,
-        species_estimate_reference_id
+        webpage
     </sql>
 
     <sql id="PROPS">
@@ -45,9 +41,7 @@
         #{fossil},
         #{recent},
         #{lifezones, typeHandler=org.col.db.type.LifezoneSetTypeHandler},
-        #{webpage, typeHandler=org.col.db.type.UriTypeHandler},
-        #{speciesEstimate},
-        #{speciesEstimateReferenceId}
+        #{webpage, typeHandler=org.col.db.type.UriTypeHandler}
     </sql>
 
     <sql id="FROM">
@@ -67,9 +61,25 @@
 
 
     <select id="count" resultType="integer">
-        <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
-            <property name="column" value="taxon_count"/>
-        </include>
+        <if test="datasetKey &lt; 10">
+            SELECT count(*)
+            FROM name_usage_${datasetKey}
+            WHERE NOT is_synonym
+        </if>
+        <if test="datasetKey &gt;= 10">
+            <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
+                <property name="column" value="taxon_count"/>
+            </include>
+        </if>
+    </select>
+
+    <select id="hasData" resultType="boolean">
+        SELECT exists(
+            SELECT id
+            FROM name_usage_${datasetKey}
+            WHERE NOT is_synonym
+            LIMIT 1
+        )
     </select>
 
     <select id="countChildren" resultType="integer">
@@ -147,13 +157,13 @@
 
     <select id="classificationCounts" resultMap="taxonCountResultMap">
         WITH RECURSIVE x AS(
-        SELECT id, parent_id, dataset_sectors
-        FROM name_usage_${datasetKey} u
-        WHERE u.id = #{id}
+            SELECT id, parent_id, dataset_sectors
+            FROM name_usage_${datasetKey} u
+            WHERE u.id = #{id}
         UNION
-        SELECT u.id, u.parent_id, u.dataset_sectors
-        FROM name_usage_${datasetKey} u, x
-        WHERE u.id = x.parent_id
+            SELECT u.id, u.parent_id, u.dataset_sectors
+            FROM name_usage_${datasetKey} u, x
+            WHERE u.id = x.parent_id
         )
         SELECT id, dataset_sectors
         FROM x
@@ -252,7 +262,7 @@
 
     <update id="updateDatasetSectorCount">
         UPDATE name_usage_${datasetKey}
-        SET dataset_sectors = to_jsonb( #{count, typeHandler=org.col.db.type.FastutilIntIntHandler} )
+        SET dataset_sectors = to_jsonb( #{count, typeHandler=org.col.db.type.FastutilIntIntHandler}::jsonb )
         WHERE id = #{id}
     </update>
 

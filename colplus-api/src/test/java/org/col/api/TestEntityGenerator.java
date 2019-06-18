@@ -234,12 +234,12 @@ public class TestEntityGenerator {
     VernacularName vn = new VernacularName();
     vn.setName(name);
     vn.setLatin(name);
-    vn.setLanguage(Language.ENGLISH);
+    vn.setLanguage("eng");
     vn.setCountry(Country.UNITED_KINGDOM);
     return vn;
   }
 
-  public static VernacularName newVernacularName(String name, Language lang) {
+  public static VernacularName newVernacularName(String name, String lang) {
     VernacularName vn = new VernacularName();
     vn.setName(name);
     vn.setLatin(name);
@@ -280,8 +280,6 @@ public class TestEntityGenerator {
     t.setRecent(true);
     t.setRemarks("Foo == Bar");
     t.setChildCount(0);
-    t.setSpeciesEstimate(81);
-    t.setSpeciesEstimateReferenceId(REF1.getId());
     return t;
   }
 
@@ -355,7 +353,7 @@ public class TestEntityGenerator {
     }
     n.setCandidatus(true);
     n.setCultivarEpithet("Red Rose");
-    n.setStrain("ACTT 675213");
+    n.setAppendedPhrase("ACTT 675213");
     n.setWebpage(URI.create("http://gbif.org"));
     n.setNotho(NamePart.SPECIFIC);
     n.setFossil(true);
@@ -398,8 +396,11 @@ public class TestEntityGenerator {
   public static Reference newReference() {
     return newReference(RandomUtils.randomLatinString(25));
   }
-
+  
   public static Reference newReference(String title) {
+    return newReference(title, "John","Smith",  "Betty","Jones");
+  }
+  public static Reference newReference(String title, String... authorParts) {
     Reference r = setUserDate(new Reference());
     r.setId("r" + ID_GEN.getAndIncrement());
     r.setDatasetKey(TestEntityGenerator.DATASET11.getKey());
@@ -410,15 +411,14 @@ public class TestEntityGenerator {
     csl.setContainerTitle("Nature");
     csl.setVolume("556");
     csl.setAbstrct("a very long article you should read");
-    CslName author1 = new CslName();
-    author1.setGiven("John");
-    author1.setFamily("Smith");
-    author1.setLiteral("John Smith");
-    CslName author2 = new CslName();
-    author2.setGiven("Betty");
-    author2.setFamily("Jones");
-    author2.setLiteral("Jones, Betty");
-    csl.setAuthor(new CslName[] {author1, author2});
+    List<CslName> authors = new ArrayList<>();
+    for (int idx = 0; idx < authorParts.length; idx=idx+2) {
+      CslName author = new CslName();
+      author.setGiven(authorParts[idx]);
+      author.setFamily(authorParts[idx+1]);
+      authors.add(author);
+    }
+    csl.setAuthor(authors.toArray(new CslName[0]));
     CslDate date = new CslDate();
     date.setDateParts(new int[][] {{2014, 8, 12}});
     date.setLiteral("2014-8-12");
@@ -464,17 +464,27 @@ public class TestEntityGenerator {
     rec.addIssue(Issue.POTENTIAL_VARIANT);
     return rec;
   }
-
-  public static SimpleName newNameRef() {
-    return newNameRef(RandomUtils.randomLatinString(5));
+  
+  public static SimpleName newSimpleNameWithoutStatusParent() {
+    SimpleName sn = newSimpleName(RandomUtils.randomLatinString(5));
+    sn.setStatus(null);
+    sn.setParent(null);
+    return sn;
   }
 
-  public static SimpleName newNameRef(String id) {
+  public static SimpleName newSimpleName() {
+    return newSimpleName(RandomUtils.randomLatinString(5));
+  }
+
+  public static SimpleName newSimpleName(String id) {
     SimpleName n = new SimpleName();
     n.setId(id);
     n.setName(RandomUtils.randomSpecies());
     n.setAuthorship(RandomUtils.randomAuthorship().toString());
     n.setRank(Rank.SPECIES);
+    n.setStatus(TaxonomicStatus.ACCEPTED);
+    n.setParent(RandomUtils.randomGenus());
+    n.setCode(NomCode.ZOOLOGICAL);
     return n;
   }
 
@@ -485,7 +495,7 @@ public class TestEntityGenerator {
         Issue.DISTRIBUTION_AREA_INVALID);
     nuw.setIssues(issues);
     nuw.setVernacularNames(
-        Arrays.asList(newVernacularName("zeemeeuw", Language.DUTCH), newVernacularName("seagull")));
+        Arrays.asList(newVernacularName("zeemeeuw", "nel"), newVernacularName("seagull")));
     return nuw;
   }
 

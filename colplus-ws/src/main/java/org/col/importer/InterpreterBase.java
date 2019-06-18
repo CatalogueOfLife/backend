@@ -2,8 +2,11 @@ package org.col.importer;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.Year;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 import com.google.common.base.CharMatcher;
@@ -36,6 +39,9 @@ public class InterpreterBase {
   protected static final Splitter MULTIVAL = Splitter.on(CharMatcher.anyOf(";|,")).trimResults();
   private static final Transliterator transLatin = Transliterator.getInstance("Any-Latin");
   private static final Transliterator transAscii = Transliterator.getInstance("Latin-ASCII");
+  private static final int MIN_YEAR = 1500;
+  private static final int MAX_YEAR = Year.now().getValue() + 10;
+  private static final Pattern YEAR_PATTERN = Pattern.compile("^(\\d{3,4})\\s*(\\?)?(?!\\d)");
   
   protected final NeoDb store;
   protected final Dataset dataset;
@@ -225,29 +231,48 @@ public class InterpreterBase {
     return x == null || !x.contains(" ");
   }
   
+  private static String lowercaseEpithet(String epithet, IssueContainer issues) {
+    if (epithet != null) {
+      if (epithet.trim().contains(" ")) {
+        issues.addIssue(Issue.MULTI_WORD_EPITHET);
+        
+      } else if (!epithet.equals(epithet.toLowerCase())) {
+        issues.addIssue(Issue.UPPERCASE_EPITHET);
+        return epithet.toLowerCase();
+      }
+    }
+    return epithet;
+  }
+  
   public Optional<NameAccordingTo> interpretName(final String id, final String vrank, final String sciname, final String authorship,
                                                  final String genus, final String infraGenus, final String species, final String infraspecies,
+                                                 final String cultivar,final String phrase,
                                                  String nomCode, String nomStatus, String link, String remarks, VerbatimRecord v) {
     final boolean isAtomized = ObjectUtils.anyNotNull(genus, infraGenus, species, infraspecies);
-    
-    NameAccordingTo nat;
-    
     Name atom = new Name();
     atom.setType(NameType.SCIENTIFIC);
     atom.setGenus(genus);
     atom.setInfragenericEpithet(infraGenus);
-    atom.setSpecificEpithet(species);
-    atom.setInfraspecificEpithet(infraspecies);
+    atom.setSpecificEpithet(lowercaseEpithet(species, v));
+    atom.setInfraspecificEpithet(lowercaseEpithet(infraspecies, v));
+    atom.setCultivarEpithet(cultivar);
+    atom.setAppendedPhrase(phrase);
+    return interpretName(id, vrank, sciname, authorship, isAtomized, atom, nomCode, nomStatus, link, remarks, v);
+  }
+  
+  Optional<NameAccordingTo> interpretName(final String id, final String vrank, final String sciname, final String authorship,
+                                                  final boolean isAtomized, final Name atom,
+                                                  String nomCode, String nomStatus, String link, String remarks, VerbatimRecord v) {
+    NameAccordingTo nat;
     
     // parse rank
     Rank rank = SafeParser.parse(RankParser.PARSER, vrank).orElse(Rank.UNRANKED, Issue.RANK_INVALID, v);
     atom.setRank(rank);
     // populate uninomial?
-    if (!atom.isBinomial() && rank.isSupraspecific() && genus != null) {
-      atom.setUninomial(genus);
+    if (!atom.isBinomial() && rank.isSupraspecific() && atom.getGenus() != null) {
+      atom.setUninomial(atom.getGenus());
       atom.setGenus(null);
     }
-
     // we can getUsage the scientific name in various ways.
     // we parse all names from the scientificName + optional authorship
     // or use the atomized parts which we also use to validate the parsing result.
@@ -264,7 +289,9 @@ public class InterpreterBase {
       // hybrid, placeholder, garbage)
       Optional<NameAccordingTo> natFromAtom = NameParser.PARSER.parse(atom.canonicalNameComplete(), rank, v);
       if (!natFromAtom.isPresent()) {
-        LOG.warn("Failed to parse {} {} ({}) from given atoms. Use name atoms directly: {}/{}/{}/{}", rank, atom.canonicalNameComplete(), id, genus, infraGenus, species, infraspecies);
+        LOG.warn("Failed to parse {} {} ({}) from given atoms. Use name atoms directly: {}/{}/{}/{}", rank, atom.canonicalNameComplete(), id,
+            atom.getGenus(), atom.getInfragenericEpithet(), atom.getSpecificEpithet(), atom.getInfraspecificEpithet()
+        );
         v.addIssue(Issue.PARSED_NAME_DIFFERS);
         nat = new NameAccordingTo();
         nat.setName(atom);
@@ -283,7 +310,10 @@ public class InterpreterBase {
             v.addIssue(Issue.PARSED_NAME_DIFFERS);
             
             // use original name atoms if they do not contain a space
-            if (hasNoSpace(genus) && hasNoSpace(infraGenus) && hasNoSpace(species) && hasNoSpace(infraspecies)) {
+            if (hasNoSpace(atom.getGenus())
+                && hasNoSpace(atom.getInfragenericEpithet())
+                && hasNoSpace(atom.getSpecificEpithet())
+                && hasNoSpace(atom.getInfraspecificEpithet())) {
               nat.getName().setUninomial(atom.getUninomial());
               nat.getName().setGenus(atom.getGenus());
               nat.getName().setInfragenericEpithet(atom.getInfragenericEpithet());
@@ -339,5 +369,32 @@ public class InterpreterBase {
         }
       }
     }
+  }
+  
+  protected static Integer parseYear(Term term, VerbatimRecord v) {
+    return parseYear(v.get(term), v);
+  }
+  
+  protected static Integer parseYear(String year, IssueContainer issues) {
+    if (!StringUtils.isBlank(year)) {
+      Matcher m = YEAR_PATTERN.matcher(year.trim());
+      if (m.find()) {
+        Integer y;
+        if (m.group(2) != null) {
+          // convert ? to a zero
+          y = Integer.parseInt(m.group(1)+"0");
+        } else {
+          y = Integer.parseInt(m.group(1));
+        }
+        if (y < MIN_YEAR || y > MAX_YEAR) {
+          issues.addIssue(Issue.UNLIKELY_YEAR);
+        }
+        return y;
+      
+      } else {
+        issues.addIssue(Issue.UNPARSABLE_YEAR);
+      }
+    }
+    return null;
   }
 }

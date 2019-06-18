@@ -181,7 +181,40 @@ public class DuplicateDaoTest {
       
       System.out.println(watch);
     }
+  
+    @Test
+    public void duplicateNames() {
+    int minSize = 2;
+    List<Duplicate> dups = findNames(MatchingMode.STRICT, minSize, datasetKey, null, null, null, new Page(0, 10));
+    assertCompleteBareName(10, dups, minSize);
     
+    Page p = new Page(0, 100);
+
+    dups = findNames(MatchingMode.STRICT, minSize, datasetKey, NameCategory.BINOMIAL, null, null, p);
+    show(dups);
+    assertCompleteBareName(15, dups, minSize);
+  
+    dups = findNames(MatchingMode.STRICT, minSize, datasetKey, null, ranks(Rank.SUBSPECIES), null, p);
+    show(dups);
+    assertCompleteBareName(4, dups, minSize);
+    
+    
+    // FUZZY mode
+    dups = findNames(MatchingMode.FUZZY, minSize, datasetKey, null, null, null, p);
+    show(dups);
+    assertCompleteBareName(23, dups, minSize);
+  
+    dups = findNames(MatchingMode.FUZZY, minSize, datasetKey, null, ranks(Rank.SPECIES, Rank.SUBSPECIES), null, p);
+    show(dups);
+    assertCompleteBareName(23, dups, minSize);
+  
+    dups = findNames(MatchingMode.FUZZY, minSize, datasetKey, null, ranks(Rank.SPECIES, Rank.SUBSPECIES), true, p);
+    show(dups);
+    assertCompleteBareName(4, dups, minSize);
+
+    System.out.println(watch);
+  }
+
     private static Set<Rank> ranks(Rank... rank) {
       if (rank == null) {
         return Collections.EMPTY_SET;
@@ -195,12 +228,22 @@ public class DuplicateDaoTest {
       } else {
         watch.resume();
       }
-  
-      List<Duplicate> result = dao.find(mode, minSize, datasetKey, sectorDatasetKey, category, ranks, status, authorshipDifferent, parentDifferent, withDecision, page);
+      List<Duplicate> result = dao.findUsages(mode, minSize, datasetKey, sectorDatasetKey, category, ranks, status, authorshipDifferent, parentDifferent, null, null, withDecision, page);
       watch.suspend();
       return result;
     }
-    
+  
+    private List<Duplicate> findNames(MatchingMode mode, Integer minSize, int datasetKey, NameCategory category, Set<Rank> ranks, Boolean authorshipDifferent, Page page) {
+    if (!watch.isStarted()) {
+      watch.start();
+    } else {
+      watch.resume();
+    }
+    List<Duplicate> result = dao.findNames(mode, minSize, datasetKey, category, ranks, null, null, authorshipDifferent, page);
+    watch.suspend();
+    return result;
+  }
+
     private static void assertComplete(int expectedSize, List<Duplicate> dups, int minSize) {
       assertEquals(expectedSize, dups.size());
       for (Duplicate d : dups) {
@@ -209,6 +252,7 @@ public class DuplicateDaoTest {
           assertNotNull(u.getUsage().getId());
           assertNotNull(u.getUsage().getName());
           assertNotNull(u.getUsage().getName().getScientificName());
+          assertNotNull(u.getUsage().getName().getId());
           if (u.getUsage().isSynonym()) {
             Synonym s = (Synonym) u.getUsage();
             assertNotNull(s.getAccepted());
@@ -218,6 +262,20 @@ public class DuplicateDaoTest {
         }
       }
     }
+  
+  private static void assertCompleteBareName(int expectedSize, List<Duplicate> dups, int minSize) {
+    assertEquals(expectedSize, dups.size());
+    for (Duplicate d : dups) {
+      assertTrue(d.getUsages().size() >= minSize);
+      for (Duplicate.UsageDecision u : d.getUsages()) {
+        assertNull(u.getUsage().getId());
+        assertNotNull(u.getUsage().getName());
+        assertNotNull(u.getUsage().getName().getScientificName());
+        assertNotNull(u.getUsage().getName().getId());
+        assertTrue(u.getUsage().isBareName());
+      }
+    }
+  }
     
     private static void show(List<Duplicate> dups) {
       System.out.println("---  ---  ---  ---");
@@ -230,7 +288,7 @@ public class DuplicateDaoTest {
           if (u.getUsage().isSynonym()) {
             Synonym s = (Synonym) u.getUsage();
             System.out.println(", pid="+s.getParentId() + ", acc="+s.getAccepted().getName().getScientificName());
-          } else {
+          } else if (u.getUsage().isTaxon()){
             Taxon t = (Taxon) u.getUsage();
             System.out.println(", pid="+t.getParentId());
           }

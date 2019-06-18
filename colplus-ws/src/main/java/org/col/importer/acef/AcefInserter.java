@@ -1,14 +1,22 @@
 package org.col.importer.acef;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import javax.annotation.Nullable;
 
 import com.google.common.base.Splitter;
+import org.col.api.model.Dataset;
+import org.col.api.model.Reference;
+import org.col.api.model.VerbatimRecord;
+import org.col.api.vocab.DataFormat;
+import org.col.api.vocab.Issue;
+import org.col.common.date.FuzzyDate;
 import org.col.img.ImageService;
 import org.col.importer.NeoInserter;
 import org.col.importer.NormalizationFailedException;
@@ -17,13 +25,7 @@ import org.col.importer.neo.NodeBatchProcessor;
 import org.col.importer.neo.model.NeoName;
 import org.col.importer.neo.model.NeoUsage;
 import org.col.importer.reference.ReferenceFactory;
-import org.col.api.model.Dataset;
-import org.col.api.model.Reference;
-import org.col.api.model.VerbatimRecord;
-import org.col.api.vocab.DataFormat;
-import org.col.api.vocab.Issue;
-import org.col.parser.ReferenceTypeParser;
-import org.col.parser.SafeParser;
+import org.col.parser.*;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
 import org.neo4j.graphdb.Transaction;
@@ -65,7 +67,7 @@ public class AcefInserter extends NeoInserter {
       // species
       insertEntities(reader, AcefTerm.AcceptedSpecies,
           inter::interpretSpecies,
-          store::createNameAndUsage
+          u -> store.createNameAndUsage(u) != null
       );
       
       // infraspecies
@@ -74,13 +76,13 @@ public class AcefInserter extends NeoInserter {
       // so we cannot update the scientific name yet - we do this in the relation inserter instead!
       insertEntities(reader, AcefTerm.AcceptedInfraSpecificTaxa,
           inter::interpretInfraspecies,
-          store::createNameAndUsage
+          u -> store.createNameAndUsage(u) != null
       );
       
       // synonyms
       insertEntities(reader, AcefTerm.Synonyms,
           inter::interpretSynonym,
-          store::createNameAndUsage
+          u -> store.createNameAndUsage(u) != null
       );
   
       insertTaxonEntities(reader, AcefTerm.Distribution,
@@ -130,13 +132,15 @@ public class AcefInserter extends NeoInserter {
     String taxonID = emptyToNull(rec.get(AcefTerm.ID));
     String referenceID = emptyToNull(rec.get(AcefTerm.ReferenceID));
     String refTypeRaw = emptyToNull(rec.get(AcefTerm.ReferenceType)); // NomRef, TaxAccRef, ComNameRef
-    ReferenceTypeParser.ReferenceType refType = SafeParser.parse(ReferenceTypeParser.PARSER, refTypeRaw).orNull();
+    // we default to TaxAccRef, see https://github.com/Sp2000/colplus-repo/issues/33#issuecomment-500610124
+    ReferenceTypeParser.ReferenceType refType = SafeParser.parse(ReferenceTypeParser.PARSER, refTypeRaw)
+        .orElse(ReferenceTypeParser.ReferenceType.TaxAccRef, Issue.REFTYPE_INVALID, rec);
     
     // lookup NeoTaxon and reference
     NeoUsage u = store.usages().objByID(taxonID);
     Reference ref = store.refById(referenceID);
     Set<Issue> issues = EnumSet.noneOf(Issue.class);
-    if (u != null && ref != null && refType != null) {
+    if (u != null && ref != null) {
       switch (refType) {
         case NomRef:
           NeoName nn = store.nameByUsage(u.node);
@@ -164,9 +168,6 @@ public class AcefInserter extends NeoInserter {
       if (ref == null) {
         issues.add(Issue.REFERENCE_ID_INVALID);
       }
-      if (refType == null) {
-        issues.add(Issue.REFTYPE_INVALID);
-      }
     }
     // persist new issue?
     if (!issues.isEmpty()) {
@@ -180,39 +181,67 @@ public class AcefInserter extends NeoInserter {
    * Reads the dataset metadata and puts it into the store
    */
   @Override
-  protected Optional<Dataset> readMetadata() {
+  public Optional<Dataset> readMetadata() {
     Dataset d = null;
     Optional<VerbatimRecord> metadata = reader.readFirstRow(AcefTerm.SourceDatabase);
     if (metadata.isPresent()) {
-      VerbatimRecord dr = metadata.get();
+      VerbatimMeta dr = new VerbatimMeta(metadata.get());
       d = new Dataset();
       d.setTitle(dr.get(AcefTerm.DatabaseFullName));
       d.setAlias(dr.get(AcefTerm.DatabaseShortName));
       d.setVersion(dr.get(AcefTerm.DatabaseVersion));
       d.setGroup(dr.get(AcefTerm.GroupNameInEnglish));
       d.setDescription(dr.get(AcefTerm.Abstract));
-      setSilently(d::setReleased, dr::getDate, AcefTerm.ReleaseDate);
-      setSilently(d::setCompleteness, dr::getInt, AcefTerm.Completeness);
-      setSilently(d::setConfidence, dr::getInt, AcefTerm.Confidence);
-      setSilently(d::setLogo, dr::getURI, AcefTerm.LogoFileName);
-      setSilently(d::setWebsite, dr::getURI, AcefTerm.HomeURL);
-      // TODO: transform contact ORCIDSs
+      d.setReleased(dr.getDate(AcefTerm.ReleaseDate));
+      d.setCompleteness(dr.getInt(AcefTerm.Completeness));
+      d.setConfidence(dr.getInt(AcefTerm.Confidence));
+      // TODO: consume local logo file
+      d.setLogo(dr.getURI(AcefTerm.LogoFileName));
+      d.setWebsite(dr.getURI(AcefTerm.HomeURL));
+      d.setType(dr.get(AcefTerm.Coverage, DatasetTypeParser.PARSER));
       d.setContact(dr.get(AcefTerm.ContactPerson));
       d.setAuthorsAndEditors(dr.get(AcefTerm.AuthorsEditors, COMMA_SPLITTER));
+      d.setOrganisations(dr.get(AcefTerm.Organisation, COMMA_SPLITTER));
       d.setDataFormat(DataFormat.ACEF);
     }
-    // lookout for logo file
-    reader.logo().ifPresent(l -> {
-    
-    });
     return Optional.ofNullable(d);
   }
   
-  private <T> void setSilently(Consumer<T> setter, Function<Term, T> accessor, AcefTerm term) {
-    try {
-      setter.accept(accessor.apply(term));
-    } catch (RuntimeException e) {
-      LOG.debug("Could not read {}", term, e);
+  static class VerbatimMeta {
+    final VerbatimRecord v;
+    
+    VerbatimMeta(VerbatimRecord record) {
+      this.v = record;
+    }
+  
+    public String get(Term term) {
+      return v.get(term);
+    }
+  
+    @Nullable
+    public List<String> get(Term term, Splitter splitter) {
+      return v.get(term, splitter);
+    }
+  
+    public <T> T get(Term term, Parser<T> parser) {
+      return SafeParser.parse(parser, v.get(term)).orNull();
+    }
+  
+    public <T> T get(Term term, Parser<T> parser, T defaultValue) {
+      return SafeParser.parse(parser, v.get(term)).orElse(defaultValue);
+    }
+
+    public URI getURI(Term term) {
+      return SafeParser.parse(UriParser.PARSER, v.get(term)).orNull();
+    }
+  
+    public Integer getInt(Term term) {
+      return SafeParser.parse(IntegerParser.PARSER, v.get(term)).orNull();
+    }
+  
+    public LocalDate getDate(Term term) {
+      Optional<FuzzyDate> opt = SafeParser.parse(DateParser.PARSER, v.get(term)).getOptional();
+      return opt.map(FuzzyDate::toLocalDate).orElse(null);
     }
   }
   

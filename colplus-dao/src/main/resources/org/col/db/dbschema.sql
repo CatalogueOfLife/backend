@@ -41,13 +41,16 @@ CREATE TYPE rank AS ENUM (
   'subcohort',
   'infracohort',
   'magnorder',
-  'superorder',
   'grandorder',
+  'superorder',
   'order',
   'suborder',
   'infraorder',
   'parvorder',
+  'megafamily',
+  'grandfamily',
   'superfamily',
+  'epifamily',
   'family',
   'subfamily',
   'infrafamily',
@@ -96,6 +99,7 @@ CREATE TYPE rank AS ENUM (
   'unranked'
 );
 
+
 CREATE TABLE coluser (
   key serial PRIMARY KEY,
   username TEXT UNIQUE,
@@ -132,14 +136,12 @@ CREATE TABLE dataset (
   data_format INTEGER,
   data_access TEXT,
   "group" TEXT,
-  coverage INTEGER,
   confidence INTEGER CHECK (confidence > 0 AND confidence <= 5),
   completeness INTEGER CHECK (completeness >= 0 AND completeness <= 100),
   origin INTEGER NOT NULL,
   import_frequency INTEGER NOT NULL DEFAULT 7,
   code INTEGER,
   notes text,
-  names_index_contributor BOOLEAN NOT NULL DEFAULT FALSE,
   last_data_import_attempt INTEGER,
   deleted TIMESTAMP WITHOUT TIME ZONE,
   doc tsvector,
@@ -212,11 +214,16 @@ CREATE TABLE sector (
   subject_name TEXT,
   subject_authorship TEXT,
   subject_rank rank,
+  subject_code INTEGER,
+  subject_status INTEGER,
+  subject_parent TEXT,
   target_id TEXT,
   target_name TEXT,
   target_authorship TEXT,
   target_rank rank,
+  target_code INTEGER,
   mode INTEGER NOT NULL,
+  code INTEGER,
   note TEXT,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   created_by INTEGER NOT NULL,
@@ -228,6 +235,7 @@ CREATE TABLE sector (
 CREATE TABLE sector_import (
   sector_key INTEGER NOT NULL REFERENCES sector,
   attempt INTEGER NOT NULL,
+  type TEXT NOT NULL,
   state INTEGER NOT NULL,
   error TEXT,
   started TIMESTAMP WITHOUT TIME ZONE,
@@ -262,6 +270,9 @@ CREATE TABLE decision (
   subject_name TEXT,
   subject_authorship TEXT,
   subject_rank rank,
+  subject_code INTEGER,
+  subject_status INTEGER,
+  subject_parent TEXT,
   mode INTEGER NOT NULL,
   status INTEGER,
   name JSONB,
@@ -276,6 +287,22 @@ CREATE TABLE decision (
   UNIQUE (dataset_key, subject_id)
 );
 
+CREATE TABLE estimate (
+  key serial PRIMARY KEY,
+  subject_id TEXT,
+  subject_name TEXT,
+  subject_authorship TEXT,
+  subject_rank rank,
+  subject_code INTEGER,
+  estimate INTEGER,
+  type INTEGER,
+  reference_id TEXT,
+  note TEXT,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  created_by INTEGER NOT NULL,
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified_by INTEGER NOT NULL
+);
 --
 -- PARTITIONED DATA TABLES
 --
@@ -298,11 +325,24 @@ CREATE TABLE reference (
   csl JSONB,
   citation TEXT,
   year int,
+  doc tsvector,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   created_by INTEGER NOT NULL,
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified_by INTEGER NOT NULL
 ) PARTITION BY LIST (dataset_key);
+
+
+CREATE OR REPLACE FUNCTION reference_doc_update() RETURNS trigger AS $$
+BEGIN
+    NEW.doc :=
+      jsonb_to_tsvector('simple2', coalesce(NEW.csl,'{}'::jsonb), '["string", "numeric"]') ||
+      to_tsvector('simple2', coalesce(NEW.citation,'')) ||
+      to_tsvector('simple2', coalesce(NEW.year::text,''));
+    RETURN NEW;
+END
+$$
+LANGUAGE plpgsql;
 
 
 CREATE TABLE name (
@@ -323,7 +363,7 @@ CREATE TABLE name (
   specific_epithet TEXT,
   infraspecific_epithet TEXT,
   cultivar_epithet TEXT,
-  strain TEXT,
+  appended_phrase TEXT,
   candidatus BOOLEAN DEFAULT FALSE,
   notho integer,
   basionym_authors TEXT[] DEFAULT '{}',
@@ -390,8 +430,6 @@ CREATE TABLE name_usage (
   recent BOOLEAN,
   lifezones INTEGER[] DEFAULT '{}',
   webpage TEXT,
-  species_estimate INTEGER,
-  species_estimate_reference_id TEXT,
   remarks TEXT,
   dataset_sectors JSONB,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
@@ -523,6 +561,38 @@ CREATE AGGREGATE array_agg_nonull(ANYELEMENT) (
     INITCOND = '{}'
 );
 
+CREATE OR REPLACE FUNCTION array_reverse(anyarray) RETURNS anyarray AS $$
+SELECT ARRAY(
+    SELECT $1[i]
+    FROM generate_subscripts($1,1) AS s(i)
+    ORDER BY i DESC
+);
+$$ LANGUAGE 'sql' STRICT IMMUTABLE;
+
+
+-- return all parent names as an array
+CREATE OR REPLACE FUNCTION classification(v_dataset_key INTEGER, v_id TEXT, v_inc_self BOOLEAN) RETURNS TEXT[] AS $$
+	declare seql TEXT;
+	declare parents TEXT[];
+BEGIN
+    seql := 'WITH RECURSIVE x AS ('
+        || 'SELECT t.id, n.scientific_name, t.parent_id FROM name_usage_' || v_dataset_key || ' t '
+        || '  JOIN name_' || v_dataset_key || ' n ON n.id=t.name_id WHERE t.id = $1'
+        || ' UNION ALL '
+        || 'SELECT t.id, n.scientific_name, t.parent_id FROM x, name_usage_' || v_dataset_key || ' t '
+        || '  JOIN name_' || v_dataset_key || ' n ON n.id=t.name_id WHERE t.id = x.parent_id'
+        || ') SELECT array_agg(scientific_name) FROM x';
+
+    IF NOT v_inc_self THEN
+        seql := seql || ' WHERE id != $1';
+    END IF;
+
+    EXECUTE seql
+    INTO parents
+    USING v_id;
+    RETURN (array_reverse(parents));
+END;
+$$ LANGUAGE plpgsql;
 
 
 -- INDICES for non partitioned tables

@@ -11,8 +11,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import org.col.api.model.*;
+import org.col.api.vocab.Issue;
+import org.col.api.vocab.MatchType;
+import org.col.api.vocab.Origin;
+import org.col.api.vocab.TaxonomicStatus;
+import org.col.common.collection.IterUtils;
+import org.col.common.collection.MapUtils;
+import org.col.common.tax.MisappliedNameMatcher;
 import org.col.img.ImageService;
 import org.col.importer.acef.AcefInserter;
 import org.col.importer.coldp.ColdpInserter;
@@ -24,14 +31,7 @@ import org.col.importer.neo.model.*;
 import org.col.importer.neo.traverse.Traversals;
 import org.col.importer.reference.ReferenceFactory;
 import org.col.matching.NameIndex;
-import org.col.api.model.*;
-import org.col.api.vocab.Issue;
-import org.col.api.vocab.MatchType;
-import org.col.api.vocab.Origin;
-import org.col.api.vocab.TaxonomicStatus;
-import org.col.common.collection.IterUtils;
-import org.col.common.collection.MapUtils;
-import org.col.common.tax.MisappliedNameMatcher;
+import org.col.parser.NameParser;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.*;
@@ -45,12 +45,6 @@ import org.slf4j.LoggerFactory;
  */
 public class Normalizer implements Callable<Boolean> {
   private static final Logger LOG = LoggerFactory.getLogger(Normalizer.class);
-  private static final Map<MatchType, Issue> MATCH_ISSUES = ImmutableMap.of(
-      MatchType.VARIANT, Issue.NAME_MATCH_VARIANT,
-      MatchType.INSERTED, Issue.NAME_MATCH_INSERTED,
-      MatchType.AMBIGUOUS, Issue.NAME_MATCH_AMBIGUOUS,
-      MatchType.NONE, Issue.NAME_MATCH_NONE
-  );
   private final Dataset dataset;
   private final Path sourceDir;
   private final NeoDb store;
@@ -272,7 +266,7 @@ public class Normalizer implements Callable<Boolean> {
     // if synonym negate the verbatim key to track status without needing more memory
     final Map<String, Integer> nameIds = new HashMap<>();
     store.names().all().forEach(t -> {
-      NameMatch m = index.match(t.name, dataset.isNamesIndexContributor() || dataset.getContributesTo()!=null, false);
+      NameMatch m = index.match(t.name, true, false);
       if (m.hasMatch()) {
         t.name.setNameIndexId(m.getName().getId());
         store.names().update(t);
@@ -286,8 +280,8 @@ public class Normalizer implements Callable<Boolean> {
           }
         }
       }
-      if (MATCH_ISSUES.containsKey(m.getType())) {
-        store.addIssues(t.name, MATCH_ISSUES.get(m.getType()));
+      if (m.getType().issue != null) {
+        store.addIssues(t.name, m.getType().issue);
       }
       counts.get(m.getType()).incrementAndGet();
     });
@@ -677,7 +671,8 @@ public class Normalizer implements Callable<Boolean> {
     Name n = new Name();
     n.setUninomial(uninomial);
     n.setRank(rank);
-    n.setType(NameType.SCIENTIFIC);
+    // determine type - can e.g. be placeholders
+    n.setType(NameParser.PARSER.determineType(n).orElse(NameType.SCIENTIFIC));
     n.updateNameCache();
     t.usage.setName(n);
     // store both, which creates a single new neo node

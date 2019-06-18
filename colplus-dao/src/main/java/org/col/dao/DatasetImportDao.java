@@ -176,7 +176,17 @@ public class DatasetImportDao {
     di.setTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(key)));
     di.setUsagesByStatusCount(DatasetImportDao.countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(key)));
     di.setVerbatimByTypeCount(countMap(DatasetImportDao::parseTerm, mapper.countVerbatimByType(key)));
-    di.setVernacularsByLanguageCount(countMap(Language::fromIsoCode, mapper.countVernacularsByLanguage(key)));
+    di.setVernacularsByLanguageCount(countMap(mapper.countVernacularsByLanguage(key)));
+  }
+  
+  public static Map<String, Integer> countMap(List<StringCount> counts) {
+    Map<String, Integer> map = new HashMap<>(counts.size());
+    for (StringCount cnt : counts) {
+      if (cnt.getKey() != null) {
+        map.put(cnt.getKey(), cnt.getCount());
+      }
+    }
+    return map;
   }
   
   public static <K extends Enum> Map<K, Integer> countMap(Class<K> clazz, List<IntCount> counts) {

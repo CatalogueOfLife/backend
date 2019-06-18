@@ -15,7 +15,7 @@
     <logger name="org.col" level="INFO"/>
     <logger name="org.col.admin" level="DEBUG"/>
     <logger name="org.col.csv" level="DEBUG"/>
-    <logger name="org.col.org.col.common.io" level="DEBUG"/>
+    <logger name="org.col.common.io" level="DEBUG"/>
 
     <!--
     <logger name="org.col.db.mapper.TaxonMapper" level="DEBUG"/>

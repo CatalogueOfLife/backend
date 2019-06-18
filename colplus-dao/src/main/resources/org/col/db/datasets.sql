@@ -6,8 +6,8 @@
 --------------------------
 
 -- origin:  0=EXTERNAL, 1=UPLOADED, 2=MANAGED
-INSERT INTO dataset (key, origin, type, names_index_contributor, title, import_frequency, created_by, modified_by, data_format, data_access)
-SELECT x.id+1000, 0, 1, true, 'GSD ' || x.id, 1, 0, 0, 1, 'https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/' || x.id || '.tar.gz'
+INSERT INTO dataset (key, origin, type, title, import_frequency, created_by, modified_by, data_format, data_access)
+SELECT x.id+1000, 0, 1, 'GSD ' || x.id, 1, 0, 0, 1, 'https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/' || x.id || '.tar.gz'
 FROM (SELECT unnest(array[
 10,
 100,
@@ -389,47 +389,30 @@ UPDATE dataset SET alias='Animal biodiversity', title='An Outline of Higher-leve
 --          0=dwca, 1=acef, 2=tcs, 3=coldp
 
 -- use keys from range 1000-1500 for CoL GSD IDs+1000
-INSERT INTO dataset (key, origin, type, names_index_contributor, code, title, import_frequency, created_by, modified_by, data_format, data_access) VALUES
-('1027', 0, 1, true,  4, 'Scarabs',           1, 0, 0, 1, 'https://github.com/Sp2000/data-scarabs/archive/master.zip'),
-('1055', 0, 1, true,  4, 'LDL Neuropterida',  1, 0, 0, 1, 'https://github.com/Sp2000/data-neuropterida/archive/master.zip'),
-('1074', 0, 1, true,  1, 'ELPT',              1, 0, 0, 1, 'https://github.com/Sp2000/data-elpt/archive/master.zip'),
-('1140', 0, 0, true,  1, 'World Ferns',       1, 0, 0, 1, 'https://github.com/Sp2000/data-world-ferns/archive/master.zip'),
-('1141', 0, 0, true,  1, 'World Plants',      1, 0, 0, 1, 'https://github.com/Sp2000/data-world-plants/archive/master.zip'),
-('1163', 0, 1, true,  1, 'Cycads',            1, 0, 0, 3, 'https://github.com/gdower/data-cycads/archive/master.zip'),
+INSERT INTO dataset (key, origin, type, code, title, import_frequency, created_by, modified_by, data_format, data_access) VALUES
+('1027', 0, 1, 4, 'Scarabs',           1, 0, 0, 1, 'https://github.com/Sp2000/data-scarabs/archive/master.zip'),
+('1055', 0, 1, 4, 'LDL Neuropterida',  1, 0, 0, 1, 'https://github.com/Sp2000/data-neuropterida/archive/master.zip'),
+('1074', 0, 1, 1, 'ELPT',              1, 0, 0, 1, 'https://github.com/Sp2000/data-elpt/archive/master.zip'),
+('1140', 0, 0, 1, 'World Ferns',       1, 0, 0, 1, 'https://github.com/Sp2000/data-world-ferns/archive/master.zip'),
+('1141', 0, 0, 1, 'World Plants',      1, 0, 0, 1, 'https://github.com/Sp2000/data-world-plants/archive/master.zip'),
+('1163', 0, 1, 1, 'Cycads',            1, 0, 0, 3, 'https://github.com/gdower/data-cycads/archive/master.zip'),
 
-('1202', 0, 1, true,  4, 'WoRMS Amphipoda',   1, 0, 0, 1, 'https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/202.tar.gz'),
-('1203', 0, 1, true,  4, 'ThripsWiki',        1, 0, 0, 1, 'https://github.com/Sp2000/data-thrips/archive/master.zip'),
-('1204', 0, 1, true,  4, 'StaphBase',         1, 0, 0, 3, 'https://github.com/Sp2000/data-staphbase/archive/master.zip');
+('1202', 0, 1, 4, 'WoRMS Amphipoda',   1, 0, 0, 1, 'https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/202.tar.gz'),
+('1203', 0, 1, 4, 'ThripsWiki',        1, 0, 0, 1, 'https://github.com/Sp2000/data-thrips/archive/master.zip'),
+('1204', 0, 1, 4, 'StaphBase',         1, 0, 0, 3, 'https://github.com/Sp2000/data-staphbase/archive/master.zip'),
+('1206', 0, 1, 4, 'Sepidiini',         1, 0, 0, 1, 'https://github.com/gdower/data-sepidiini/archive/master.zip');
 
-UPDATE dataset set alias=title WHERE key IN (1027,1055,1074,1140,1141,1163,1202,1203,1204, 1600,1601,1602,1700);
+UPDATE dataset set alias=title WHERE key IN (1027,1055,1074,1140,1141,1163,1202,1203,1204,1206,1600,1601,1602,1700);
 
-INSERT INTO dataset (key, origin, type, names_index_contributor, code, title, alias, import_frequency, created_by, modified_by, data_format, data_access)
-VALUES ('1000', 0, 1, true, null, 'Col Hierarchy', 'ColH', 1, 0, 0, 3, 'https://github.com/Sp2000/col-hierarchy/archive/master.zip');
-
-
---------------------------
--- TESTS
---   from https://github.com/Sp2000/data-unit-tests
--- use ID range 1700-1799
-ALTER SEQUENCE dataset_key_seq RESTART WITH 1700;
---------------------------
-
-
-INSERT INTO dataset (alias, title, origin, type, created_by, modified_by)
-SELECT x.alias, 'Unit Test: ' || x.alias, 0, 4, 0, 0
-    FROM (SELECT unnest(array['A1','A27','A3','A4','A5','A6','A99','B1','B2','B3','B4','B5','B6','B7','B8','B9']) AS alias) AS x;
-
-UPDATE dataset SET
-    website='https://github.com/Sp2000/colplus-backend/issues/193',
-    data_access='https://github.com/Sp2000/data-unit-tests/raw/master/' || alias || '.zip',
-    data_format=3,
-    import_frequency=1
-WHERE key >= 1700 and key < 1800;
+INSERT INTO dataset (key, origin, type, code, title, alias, import_frequency, created_by, modified_by, data_format, data_access)
+VALUES ('1000', 0, 1, null, 'Col Hierarchy', 'ColH', 1, 0, 0, 3, 'https://github.com/Sp2000/col-hierarchy/archive/master.zip');
 
 
 --------------------------
 -- TEST DATASETS
 --   since late 2018 managed in their own github repos
+-- use ID range 1700-1799
+ALTER SEQUENCE dataset_key_seq RESTART WITH 1700;
 --------------------------
 
 -- for enums we use the int ordinal, i.e. array index starting with 0:
@@ -441,9 +424,6 @@ WHERE key >= 1700 and key < 1800;
 --          0=bacterial, 1=botanical, 2=cultivars, 3=virus, 4=zoological
 -- data_format:  http://api.col.plus/vocab/dataformat
 --          0=dwca, 1=acef, 2=tcs, 3=coldp
-
--- use keys from range 1000-1500 for CoL GSD IDs+1000		      
-			      
 INSERT INTO dataset (origin, type, code, title, import_frequency, created_by, modified_by, data_format, data_access) VALUES
 (0, 4, 1, 'ColDP Example',           7, 0, 0, 3, 'https://github.com/Sp2000/coldp/archive/master.zip'),
 (0, 4, 4, 'Testing Data ACEF',       7, 0, 0, 1, 'https://github.com/Sp2000/data-testing/archive/master.zip'),
@@ -513,7 +493,5 @@ INSERT INTO dataset (gbif_key, created_by, modified_by, origin, code, data_forma
     ('f43069fe-38c1-43e3-8293-37583dcf5547', 12, 12, 0, 1,    0, 'https://svampe.databasen.org/dwc/DMS_Fun_taxa.zip', 'Danish Mycological Society - Checklist of Fungi'),
     ('56c83fd9-533b-4b77-a67a-cf521816866e', 12, 12, 0, 4,    0, 'http://ipt.pensoft.net/archive.do?r=tenebrionidae_north_america', 'Catalogue of Tenebrionidae (Coleoptera) of North America');
 
-UPDATE dataset SET
-    names_index_contributor = true,
-    import_frequency = 7
+UPDATE dataset SET import_frequency = 7
 WHERE key >= 2000;

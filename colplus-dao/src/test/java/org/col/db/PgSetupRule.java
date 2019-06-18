@@ -53,6 +53,7 @@ public class PgSetupRule extends ExternalResource {
   
   @Override
   protected void before() throws Throwable {
+    LOG.info("run PgSetupRule wipe={}", wipe);
     super.before();
     try {
       cfg = YamlUtils.read(PgConfig.class, "/pg-test.yaml");
@@ -106,6 +107,7 @@ public class PgSetupRule extends ExternalResource {
     setupMybatis(cfg);
     
     // setup draft/names index partition
+    partition(Datasets.NAME_INDEX);
     partition(Datasets.DRAFT_COL);
   }
   

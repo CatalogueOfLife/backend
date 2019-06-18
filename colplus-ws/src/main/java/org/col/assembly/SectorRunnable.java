@@ -9,12 +9,13 @@ import java.util.function.Consumer;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
+import org.col.api.util.ObjectUtils;
 import org.col.api.vocab.Datasets;
 import org.col.common.util.LoggingUtils;
-import org.col.api.util.ObjectUtils;
 import org.col.db.mapper.DecisionMapper;
 import org.col.db.mapper.SectorImportMapper;
 import org.col.db.mapper.SectorMapper;
@@ -41,23 +42,23 @@ abstract class SectorRunnable implements Runnable {
   final ColUser user;
   final SectorImport state = new SectorImport();
   
-  SectorRunnable(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService,
+  SectorRunnable(Sector s, SqlSessionFactory factory, NameUsageIndexService indexService,
                       Consumer<SectorRunnable> successCallback,
-                      BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) {
+                      BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) throws IllegalArgumentException {
     this.user = Preconditions.checkNotNull(user);
     try (SqlSession session = factory.openSession(true)) {
+      TaxonMapper tm = session.getMapper(TaxonMapper.class);
       // check if sector actually exists
-      Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
-      this.sector = ObjectUtils.checkNotNull(s, "Sector "+sectorKey+" does not exist");
+      this.sector = ObjectUtils.checkNotNull(s, "Sector required");
       this.datasetKey = sector.getDatasetKey();
-      // check if target actually exists
-      Taxon target = ObjectUtils.checkNotNull(session.getMapper(TaxonMapper.class).get(catalogueKey, sector.getTarget().getId()),
-          "Sector " + sectorKey + " does have a non existing target id for catalogue " + catalogueKey
-      );
+      // #ssert that target actually exists. Subject might be bad - not needed for deletes!
+      assertTargetID(tm);
       // lookup next attempt
-      List<SectorImport> imports = session.getMapper(SectorImportMapper.class).list(sectorKey, null, new Page(0,1));
+      List<SectorImport> imports = session.getMapper(SectorImportMapper.class).list(s.getKey(), null,null, new Page(0,1));
       state.setAttempt(imports == null || imports.isEmpty() ? 1 : imports.get(0).getAttempt() + 1);
-      state.setSectorKey(sectorKey);
+      state.setSectorKey(s.getKey());
+      state.setDatasetKey(datasetKey);
+      state.setType(getClass().getSimpleName());
       state.setState(SectorImport.State.WAITING);
     }
     this.factory = factory;
@@ -66,12 +67,31 @@ abstract class SectorRunnable implements Runnable {
     this.errorCallback = errorCallback;
   }
   
+  private Taxon assertTargetID(TaxonMapper tm) throws IllegalArgumentException {
+    ObjectUtils.checkNotNull(sector.getTarget(), sector + " does not have any target");
+    // check if target actually exists
+    return ObjectUtils.checkNotNull(tm.get(catalogueKey, sector.getTarget().getId()), "Sector " + sector.getKey() + " does have a non existing target id");
+  }
+  
+  void assertSubjectID() throws IllegalArgumentException {
+    try (SqlSession session = factory.openSession(true)) {
+      TaxonMapper tm = session.getMapper(TaxonMapper.class);
+      // check if subject actually exists
+      ObjectUtils.checkNotNull(sector.getSubject(), sector + " does not have any subject");
+      String msg = "Sector " + sector.getKey() + " does have a non existing subject " + sector.getSubject() + " for dataset " + sector.getDatasetKey();
+      try {
+        ObjectUtils.checkNotNull(tm.get(sector.getDatasetKey(), sector.getSubject().getId()), msg);
+      } catch (PersistenceException e) {
+        throw new IllegalArgumentException(msg, e);
+      }
+    }
+  }
+  
   @Override
   public void run() {
     LoggingUtils.setSectorMDC(sector.getKey(), state.getAttempt(), getClass());
     try {
       state.setStarted(LocalDateTime.now());
-  
       init();
       doWork();
       successCallback.accept(this);

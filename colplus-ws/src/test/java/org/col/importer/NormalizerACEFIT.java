@@ -4,13 +4,15 @@ import java.net.URI;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
+import org.col.api.model.*;
+import org.col.api.vocab.*;
 import org.col.importer.neo.model.Labels;
 import org.col.importer.neo.model.NeoName;
 import org.col.importer.neo.model.NeoUsage;
+import org.col.importer.neo.model.RankedUsage;
 import org.col.importer.neo.traverse.Traversals;
-import org.col.api.model.*;
-import org.col.api.vocab.*;
 import org.gbif.dwc.terms.AcefTerm;
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -90,7 +92,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
       assertEquals(3, t.vernacularNames.size());
       Set<String> names = Sets.newHashSet("Ramkurthi", "Ram Kurthi", "отчество");
       for (VernacularName v : t.vernacularNames) {
-        assertEquals(v.getName().startsWith("R") ? Language.HINDI : Language.RUSSIAN,
+        assertEquals(v.getName().startsWith("R") ? "hin": "rus",
             v.getLanguage());
         assertTrue(names.remove(v.getName()));
       }
@@ -222,6 +224,53 @@ public class NormalizerACEFIT extends NormalizerITBase {
       
       v = vByLine(AcefTerm.AcceptedInfraSpecificTaxa, 2);
       assertTrue(v.hasIssue(Issue.PARENT_ID_INVALID));
+  
+  
+      u = usageByID("1-1");
+      assertEquals("Anterhynchium alecto lalepi", u.usage.getName().getScientificName());
+      assertEquals("(Cheesm.i.l.)", u.usage.getName().getAuthorship());
+      v = verbatim(u.usage.getName());
+      
+      assertTrue(v.hasIssue(Issue.UNPARSABLE_AUTHORSHIP));
+    }
+  }
+  
+  @Test
+  public void acefInfrspecies() throws Exception {
+    normalize(10);
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoUsage u = usageByID("Scr-13-.01-.01-.00-.001-.001-.014-.b");
+      assertEquals("Odontotrypes farkaci habaensis", u.usage.getName().getScientificName());
+      assertEquals("Ochi, Kon & Bai, 2018", u.usage.getName().authorshipComplete());
+      assertEquals(Rank.INFRASPECIFIC_NAME, u.usage.getName().getRank());
+
+      // this is a duplicate ID and we expect the subspecies to be dropped in favor of the species
+      u = usageByID("Scr-04-.01-.01-.00-.002-.000-.009-.b");
+      assertEquals("Aegialia conferta", u.usage.getName().getScientificName());
+      assertEquals("Brown, 1931", u.usage.getName().authorshipComplete());
+      assertEquals(Rank.SPECIES, u.usage.getName().getRank());
+
+      VerbatimRecord v = verbatim(u.usage.getName());
+      assertTrue(v.hasIssue(Issue.ID_NOT_UNIQUE));
+      assertFalse(v.hasIssue(Issue.NOT_INTERPRETED));
+  
+  
+      int counter = 0;
+      for (VerbatimRecord vr : store.verbatimList()) {
+        counter++;
+        if (vr.getType() == AcefTerm.AcceptedInfraSpecificTaxa) {
+          if (vr.get(AcefTerm.AcceptedTaxonID).equals("Scr-04-.01-.01-.00-.002-.000-.009-.b")) {
+            // this is the duplicate
+            assertEquals("nigrella", vr.get(AcefTerm.InfraSpeciesEpithet));
+            assertTrue(vr.hasIssue(Issue.NOT_INTERPRETED));
+            assertTrue(vr.hasIssue(Issue.ID_NOT_UNIQUE));
+  
+          } else {
+            assertEquals("habaensis", vr.get(AcefTerm.InfraSpeciesEpithet));
+          }
+        }
+      }
+      assertEquals(5, counter);
     }
   }
   
@@ -261,6 +310,48 @@ public class NormalizerACEFIT extends NormalizerITBase {
   }
   
   /**
+   * Makes sure placeholder names in the denormed ACEF classification get flagged
+   */
+  @Test
+  public void acefNotAssigned() throws Exception {
+    normalize(16);
+    try (Transaction tx = store.getNeo().beginTx()) {
+      assertPlaceholderInParents("411000");
+      assertPlaceholderInParents("410933");
+      assertPlaceholderInParents("291295");
+    }
+  }
+  
+  /**
+   * Makes sure placeholder names in the denormed ACEF classification get flagged
+   */
+  @Test
+  public void reimportFailed() throws Exception {
+    try {
+      normalize(17);
+      fail("Expected to fail normalization");
+    } catch (Exception e) {
+      // expected
+      // close neo store if open
+      if (store != null) {
+        store.close();
+      }
+    }
+    normalize(16);
+  }
+  
+  void assertPlaceholderInParents(String id) {
+    NeoUsage t = usageByID(id);
+    for (RankedUsage u : store.parents(t.node)) {
+      NeoName n = store.names().objByNode(u.nameNode);
+      if (NameType.PLACEHOLDER == n.name.getType()) {
+        return;
+      }
+    }
+    fail("No placeholder name found in parents of " + id);
+  }
+  
+  /**
    * Full Systema Diptera dataset with 170.000 names. Takes 2 minutes, be patient
    */
   @Test
@@ -277,7 +368,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
   @Test
   @Ignore("external dependency")
   public void testGsdGithub() throws Exception {
-    normalize(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/19.tar.gz"));
+    normalize(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/201.tar.gz"));
   }
   
 }

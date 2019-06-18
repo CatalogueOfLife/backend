@@ -18,22 +18,31 @@ public interface SectorImportMapper {
   /**
    * Retrieves the full import with the entire potentially very large text tree and names id set.
    */
-  SectorImport get(@Param("key") int sectorKey, @Param("attempt") int attempt);
+  SectorImport get(@Param("sectorKey") int sectorKey, @Param("attempt") int attempt);
   
   /**
    * Count all imports by their state
    */
-  int count(@Param("key") @Nullable Integer sectorKey, @Param("states") Collection<SectorImport.State> states);
+  int count(@Param("sectorKey") @Nullable Integer sectorKey,
+            @Param("datasetKey") @Nullable Integer datasetKey,
+            @Param("states") Collection<SectorImport.State> states);
   
   /**
    * List all imports optionally filtered by their sectorKey and state(s).
    * Ordered by starting date from latest to historical.
    */
-  List<SectorImport> list(@Param("key") @Nullable Integer sectorKey,
-                           @Param("states") @Nullable Collection<SectorImport.State> states,
-                           @Param("page") Page page);
+  List<SectorImport> list(@Param("sectorKey") @Nullable Integer sectorKey,
+                          @Param("datasetKey") @Nullable Integer datasetKey,
+                          @Param("states") @Nullable Collection<SectorImport.State> states,
+                          @Param("page") Page page);
   
   void create(@Param("imp") SectorImport sectorImport);
+  
+  /**
+   * Deletes all imports for the given sector
+   */
+  int delete(@Param("key") int sectorKey);
+  
   
   Integer countDescription(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countDistribution(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);

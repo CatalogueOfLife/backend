@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.col.api.jackson.PermissiveEnumSerde;
 import org.col.api.model.*;
+import org.col.api.search.NameSearchParameter;
 import org.col.api.vocab.AreaStandard;
 import org.col.img.ImgConfig;
 import org.gbif.dwc.terms.Term;
@@ -46,7 +47,8 @@ public class VocabResource {
           ImgConfig.Scale.class,
           EditorialDecision.Mode.class,
           Sector.Mode.class,
-          SectorImport.State.class)) {
+          SectorImport.State.class,
+          NameSearchParameter.class)) {
         add(enums, clazz);
       }
       

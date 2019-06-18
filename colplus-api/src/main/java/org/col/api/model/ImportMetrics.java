@@ -11,8 +11,10 @@ import org.gbif.nameparser.api.Rank;
 
 public class ImportMetrics<T extends Enum> implements ImportAttempt {
   
+  private Integer datasetKey;
+
   /**
-   * Sequential attempt number starting with 1 for each dataset
+   * Sequential attempt number starting with 1 for each dataset/sector
    */
   private int attempt;
 
@@ -47,11 +49,19 @@ public class ImportMetrics<T extends Enum> implements ImportAttempt {
   private Map<Rank, Integer> namesByRankCount = Maps.newHashMap();
   private Map<NomRelType, Integer> nameRelationsByTypeCount = Maps.newHashMap();
   private Map<Gazetteer, Integer> distributionsByGazetteerCount = Maps.newHashMap();
-  private Map<Language, Integer> vernacularsByLanguageCount = Maps.newHashMap();
+  private Map<String, Integer> vernacularsByLanguageCount = Maps.newHashMap();
   private Map<MediaType, Integer> mediaByTypeCount = Maps.newHashMap();
   private Map<TaxonomicStatus, Integer> usagesByStatusCount = Maps.newHashMap();
   private Map<Rank, Integer> taxaByRankCount = Maps.newHashMap();
   private Map<Issue, Integer> issuesCount = Maps.newHashMap();
+  
+  public Integer getDatasetKey() {
+    return datasetKey;
+  }
+  
+  public void setDatasetKey(Integer datasetKey) {
+    this.datasetKey = datasetKey;
+  }
   
   @Override
   public int getAttempt() {
@@ -213,11 +223,11 @@ public class ImportMetrics<T extends Enum> implements ImportAttempt {
     this.distributionsByGazetteerCount = distributionsByGazetteerCount;
   }
   
-  public Map<Language, Integer> getVernacularsByLanguageCount() {
+  public Map<String, Integer> getVernacularsByLanguageCount() {
     return vernacularsByLanguageCount;
   }
   
-  public void setVernacularsByLanguageCount(Map<Language, Integer> vernacularsByLanguageCount) {
+  public void setVernacularsByLanguageCount(Map<String, Integer> vernacularsByLanguageCount) {
     this.vernacularsByLanguageCount = vernacularsByLanguageCount;
   }
   
@@ -293,7 +303,7 @@ public class ImportMetrics<T extends Enum> implements ImportAttempt {
   
   @Override
   public int hashCode() {
-    return Objects.hash(attempt, state, started, finished, error, nameCount, taxonCount, synonymCount, referenceCount, descriptionCount, distributionCount, mediaCount, vernacularCount, namesByTypeCount, namesByStatusCount, namesByOriginCount, namesByRankCount, nameRelationsByTypeCount, distributionsByGazetteerCount, vernacularsByLanguageCount, mediaByTypeCount, usagesByStatusCount, taxaByRankCount, issuesCount);
+    return Objects.hash(datasetKey, attempt, state, started, finished, error, nameCount, taxonCount, synonymCount, referenceCount, descriptionCount, distributionCount, mediaCount, vernacularCount, namesByTypeCount, namesByStatusCount, namesByOriginCount, namesByRankCount, nameRelationsByTypeCount, distributionsByGazetteerCount, vernacularsByLanguageCount, mediaByTypeCount, usagesByStatusCount, taxaByRankCount, issuesCount);
   }
   
   @Override

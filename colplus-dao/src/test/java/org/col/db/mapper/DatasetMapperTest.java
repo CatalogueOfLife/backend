@@ -22,7 +22,7 @@ import org.javers.core.diff.Diff;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.col.api.TestEntityGenerator.newNameRef;
+import static org.col.api.TestEntityGenerator.newSimpleName;
 import static org.junit.Assert.*;
 
 /**
@@ -33,12 +33,11 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
   public DatasetMapperTest() {
     super(DatasetMapper.class);
   }
-
-  private static Dataset create() {
+  
+  public static Dataset create() {
     Dataset d = new Dataset();
     d.applyUser(Users.DB_INIT);
     d.setType(DatasetType.GLOBAL);
-    d.setNamesIndexContributor(true);
     d.setGbifKey(UUID.randomUUID());
     d.setTitle(RandomUtils.randomLatinString(80));
     d.setDescription(RandomUtils.randomLatinString(500));
@@ -95,16 +94,16 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 
   @Test
   public void count() throws Exception {
-    assertEquals(3, mapper().count(null));
+    assertEquals(5, mapper().count(null));
 
     mapper().create(create());
     mapper().create(create());
     // even thogh not committed we are in the same session so we see the new
     // datasets already
-    assertEquals(5, mapper().count(null));
+    assertEquals(7, mapper().count(null));
 
     commit();
-    assertEquals(5, mapper().count(null));
+    assertEquals(7, mapper().count(null));
   }
 
   @Test
@@ -130,6 +129,8 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 
   private List<Dataset> createExpected() throws Exception {
     List<Dataset> ds = Lists.newArrayList();
+    ds.add(mapper().get(Datasets.COL));
+    ds.add(mapper().get(Datasets.NAME_INDEX));
     ds.add(mapper().get(Datasets.DRAFT_COL));
     ds.add(mapper().get(TestEntityGenerator.DATASET11.getKey()));
     ds.add(mapper().get(TestEntityGenerator.DATASET12.getKey()));
@@ -174,7 +175,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     // next page (d9)
     p.next();
     res = removeCreated(mapper().list(p));
-    assertEquals(0, res.size());
+    assertEquals(2, res.size());
   }
 
   @Test
@@ -209,8 +210,8 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     Sector s = new Sector();
     s.setDatasetKey(datasetKey);
     s.setMode(Sector.Mode.ATTACH);
-    s.setSubject(newNameRef());
-    s.setTarget(newNameRef());
+    s.setSubject(TestEntityGenerator.newSimpleName());
+    s.setTarget(TestEntityGenerator.newSimpleName());
     s.setNote(RandomUtils.randomUnicodeString(128));
     s.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());
     s.setModifiedBy(TestEntityGenerator.USER_EDITOR.getKey());
@@ -240,10 +241,10 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 
     // apple.sql contains one dataset from 2017
     query.setCreated(LocalDate.parse("2018-02-01"));
-    assertEquals(5, mapper().search(query, new Page()).size());
+    assertEquals(8, mapper().search(query, new Page()).size());
 
     query.setCreated(LocalDate.parse("2016-02-01"));
-    assertEquals(7, mapper().search(query, new Page()).size());
+    assertEquals(9, mapper().search(query, new Page()).size());
 
     query.setReleased(LocalDate.parse("2007-11-21"));
     query.setModified(LocalDate.parse("2031-12-31"));
@@ -361,7 +362,6 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     ds.getOrganisations().add(organisation);
     ds.setDescription(description);
     ds.setType(DatasetType.GLOBAL);
-    ds.setNamesIndexContributor(true);
     mapper().create(TestEntityGenerator.setUserDate(ds));
     return ds.getKey();
   }

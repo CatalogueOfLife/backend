@@ -10,7 +10,6 @@ import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.col.api.constraints.AbsoluteURI;
 import org.col.api.constraints.NotBlank;
@@ -60,7 +59,6 @@ public class Dataset extends DataEntity implements GlobalEntity {
   private String notes;
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   private Set<Integer> contributesTo;
-  private boolean namesIndexContributor;
   private LocalDateTime imported;
   private LocalDateTime deleted;
   
@@ -73,7 +71,7 @@ public class Dataset extends DataEntity implements GlobalEntity {
   }
   
   public void setType(DatasetType type) {
-    this.type = Preconditions.checkNotNull(type);
+    this.type = type;
   }
   
   public void setKey(Integer key) {
@@ -272,14 +270,6 @@ public class Dataset extends DataEntity implements GlobalEntity {
     contributesTo.add(catalogueKey);
   }
 
-  public boolean isNamesIndexContributor() {
-    return namesIndexContributor;
-  }
-  
-  public void setNamesIndexContributor(boolean namesIndexContributor) {
-    this.namesIndexContributor = namesIndexContributor;
-  }
-  
   /**
    * Time the data of the dataset was last changed in the Clearinghouse,
    * i.e. time of the last import that changed at least one record.
@@ -344,7 +334,7 @@ public class Dataset extends DataEntity implements GlobalEntity {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     Dataset dataset = (Dataset) o;
-    return namesIndexContributor == dataset.namesIndexContributor &&
+    return
         Objects.equals(key, dataset.key) &&
         type == dataset.type &&
         Objects.equals(title, dataset.title) &&
@@ -378,7 +368,7 @@ public class Dataset extends DataEntity implements GlobalEntity {
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, type, title, alias, gbifKey, gbifPublisherKey, description, organisations, contact, authorsAndEditors, license, version, released, citation, website, group, logo, dataFormat, dataAccess, origin, importFrequency, code, size, confidence, completeness, notes, contributesTo, namesIndexContributor, imported, deleted);
+    return Objects.hash(super.hashCode(), key, type, title, alias, gbifKey, gbifPublisherKey, description, organisations, contact, authorsAndEditors, license, version, released, citation, website, group, logo, dataFormat, dataAccess, origin, importFrequency, code, size, confidence, completeness, notes, contributesTo, imported, deleted);
   }
   
   @Override

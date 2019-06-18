@@ -9,8 +9,6 @@
         t.id,
         t.parent_id,
         t.status,
-        t.species_estimate,
-        t.species_estimate_reference_id,
         (select count(*) from name_usage_${datasetKey} WHERE parent_id=t.id AND NOT is_synonym) AS child_count,
         t.dataset_sectors,
         <include refid="org.col.db.mapper.NameMapper.minimalNameCols">
@@ -23,21 +21,31 @@
                 <include refid="org.col.db.mapper.DecisionMapper.SelectVar">
                     <property name="alias" value="ed."/>
                     <property name="prefix" value="ed_"/>
-                </include>
+                </include>,
+                NULL AS est_key
             </when>
             <otherwise>
                 t.sector_key,
-                NULL AS ed_key
+                NULL AS ed_key,
+                <include refid="org.col.db.mapper.EstimateMapper.SelectVar">
+                    <property name="alias" value="est."/>
+                    <property name="prefix" value="est_"/>
+                </include>
             </otherwise>
         </choose>
     </sql>
 
     <sql id="FROM">
         name_usage_${datasetKey} t JOIN name_${datasetKey} n ON t.name_id=n.id
-        <if test="datasetKey != @org.col.api.vocab.Datasets@DRAFT_COL">
-            LEFT JOIN decision ed ON ed.subject_id=t.id AND ed.dataset_key=#{datasetKey}
-            LEFT JOIN sector    s ON  s.subject_id=t.id AND  s.dataset_key=#{datasetKey}
-        </if>
+        <choose>
+            <when test="datasetKey != @org.col.api.vocab.Datasets@DRAFT_COL">
+                LEFT JOIN sector    s ON  s.subject_id=t.id AND  s.dataset_key=#{datasetKey}
+                LEFT JOIN decision ed ON ed.subject_id=t.id AND ed.dataset_key=#{datasetKey}
+            </when>
+            <otherwise>
+                LEFT JOIN estimate est ON est.subject_id=t.id
+            </otherwise>
+        </choose>
     </sql>
 
     <resultMap id="treeResultMap" type="org.col.api.model.TreeNode$TreeNodeMybatis" autoMapping="true">
@@ -45,6 +53,7 @@
         <result property="datasetSectors" column="dataset_sectors" />
         <association property="_name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" />
         <association property="decision" javaType="EditorialDecision" resultMap="org.col.db.mapper.DecisionMapper.decisionResultMap" columnPrefix="ed_"/>
+        <collection property="estimates" ofType="SpeciesEstimate" resultMap="org.col.db.mapper.EstimateMapper.estimateResultMap" columnPrefix="est_"/>
     </resultMap>
 
     <select id="get" resultMap="treeResultMap">

@@ -24,7 +24,7 @@ public interface NameIndex extends AutoCloseable {
   /**
    * @return the number of names in the index
    */
-  int size();
+  long size();
   
   /**
    * Adds a name to the index

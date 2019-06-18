@@ -60,53 +60,91 @@ public class ReferenceFactoryTest {
   @Test
   public void authors() {
     // comma
-    Reference r = rf.fromColDP("id", null, "C.Ulloa Ulloa, P.  Acevedo-Rodríguez, S. G. Beck,  M. J.  de Belgrano, R. Bernal, P. E. Berry, L. Brako, M. dé Celis, G. Davidse, S. R. Gradstein, O. Hokche, B. León, S. de la León-Yánez, R. E. Magill, D. A. Neill, M. H. Nee, P. H. Raven, Stimmel, M. T. Strong, J. L. Villaseñor Ríos, J. L. Zarucchi, F. O. Zuloaga & P. M. Jørgensen", null, null, null, null, doi, link, issues);
-    assertEquals(23, r.getCsl().getAuthor().length);
+    CslName[] authors = ReferenceFactory.parseAuthors("C.Ulloa Ulloa, P.  Acevedo-Rodríguez, S. G. Beck,  M. J.  de Belgrano, R. Bernal, P. E. Berry, L. Brako, M. dé Celis, G. Davidse, S. R. Gradstein, O. Hokche, B. León, S. de la León-Yánez, R. E. Magill, D. A. Neill, M. H. Nee, P. H. Raven, Stimmel, M. T. Strong, J. L. Villaseñor Ríos, J. L. Zarucchi, F. O. Zuloaga & P. M. Jørgensen", issues);
+    assertEquals(23, authors.length);
 
-    CslName a = r.getCsl().getAuthor()[1];
+    CslName a = authors[1];
     assertEquals("P.", a.getGiven());
     assertNull(a.getNonDroppingParticle());
     assertEquals("Acevedo-Rodríguez", a.getFamily());
   
-    a = r.getCsl().getAuthor()[3];
+    a = authors[3];
     assertEquals("M. J.", a.getGiven());
     assertEquals("de", a.getNonDroppingParticle());
     assertEquals("Belgrano", a.getFamily());
   
-    a = r.getCsl().getAuthor()[12];
+    a = authors[12];
     assertEquals("S.", a.getGiven());
     assertEquals("de la", a.getNonDroppingParticle());
     assertEquals("León-Yánez", a.getFamily());
   
   
     // semicolon
-    r = rf.fromColDP("id", null, "Ulloa, C.; Acevedo-Rodríguez, P.; Beck, Sigmund; de la Belgrano, Maria Josef; Simmel", null, null, null, null, doi, link, issues);
-    assertEquals(5, r.getCsl().getAuthor().length);
+    authors = ReferenceFactory.parseAuthors("Ulloa, C.; Acevedo-Rodríguez, P.; Beck, Sigmund; de la Belgrano, Maria Josef; Simmel", issues);
+    assertEquals(5, authors.length);
   
-    a = r.getCsl().getAuthor()[0];
+    a = authors[0];
     assertEquals("C.", a.getGiven());
     assertNull(a.getNonDroppingParticle());
     assertEquals("Ulloa", a.getFamily());
 
-    a = r.getCsl().getAuthor()[1];
+    a = authors[1];
     assertEquals("P.", a.getGiven());
     assertNull(a.getNonDroppingParticle());
     assertEquals("Acevedo-Rodríguez", a.getFamily());
   
-    a = r.getCsl().getAuthor()[2];
+    a = authors[2];
     assertEquals("Sigmund", a.getGiven());
     assertNull(a.getNonDroppingParticle());
     assertEquals("Beck", a.getFamily());
   
-    a = r.getCsl().getAuthor()[3];
+    a = authors[3];
     assertEquals("Maria Josef", a.getGiven());
     assertEquals("de la", a.getNonDroppingParticle());
     assertEquals("Belgrano", a.getFamily());
   
-    a = r.getCsl().getAuthor()[4];
+    a = authors[4];
     assertNull(a.getGiven());
     assertNull(a.getNonDroppingParticle());
     assertEquals("Simmel", a.getFamily());
+  
+  
+    authors = ReferenceFactory.parseAuthors("Sautya, S., Tabachnick, K.R., Ingole, B.", issues);
+    assertEquals(3, authors.length);
+  
+    a = authors[0];
+    assertEquals("S.", a.getGiven());
+    assertNull(a.getNonDroppingParticle());
+    assertEquals("Sautya", a.getFamily());
+  
+    a = authors[1];
+    assertEquals("K.R.", a.getGiven());
+    assertNull(a.getNonDroppingParticle());
+    assertEquals("Tabachnick", a.getFamily());
+  
+    a = authors[2];
+    assertEquals("B.", a.getGiven());
+    assertNull(a.getNonDroppingParticle());
+    assertEquals("Ingole", a.getFamily());
+  
+  
+    authors = ReferenceFactory.parseAuthors("Sautya,S., Tabachnick,K.R.,Ingole,B.", issues);
+    assertEquals(3, authors.length);
+  
+    a = authors[0];
+    assertEquals("S.", a.getGiven());
+    assertNull(a.getNonDroppingParticle());
+    assertEquals("Sautya", a.getFamily());
+  
+    a = authors[1];
+    assertEquals("K.R.", a.getGiven());
+    assertNull(a.getNonDroppingParticle());
+    assertEquals("Tabachnick", a.getFamily());
+  
+    a = authors[2];
+    assertEquals("B.", a.getGiven());
+    assertNull(a.getNonDroppingParticle());
+    assertEquals("Ingole", a.getFamily());
   }
   
   @Test
@@ -126,8 +164,9 @@ public class ReferenceFactoryTest {
     assertEquals(2008, (int) r.getYear());
     assertNotNull(r.getCsl());
     assertEquals("My great garden", r.getCsl().getTitle());
-    assertEquals("Dembridge, M.", r.getCsl().getAuthor()[0].getLiteral());
-    assertNotNull(r.getCsl().getIssued());
+    assertEquals("Dembridge", r.getCsl().getAuthor()[0].getFamily());
+    assertEquals("M.", r.getCsl().getAuthor()[0].getGiven());
+    assertEquals(2008, r.getCsl().getIssued().getDateParts()[0][0]);
     assertEquals("Journal of Herbs", r.getCsl().getContainerTitle());
   }
   

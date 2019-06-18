@@ -33,5 +33,10 @@ public class WsServerConfigTest {
     }, "config-test.yaml");
     assertNotNull(cfg.auth);
     Assertions.assertThat(cfg.auth).isInstanceOf(MapAuthenticationFactory.class);
+    
+    String version = cfg.versionString();
+    System.out.println(version);
+    assertNotNull(version);
+    assertFalse(version.contains("{"));
   }
 }

@@ -5,34 +5,43 @@
 <mapper namespace="org.col.db.mapper.SectorImportMapper">
 
     <sql id="SELECT">
-        sector_key,
-        attempt,
+        si.type,
+        si.sector_key,
+        si.attempt,
         <include refid="org.col.db.mapper.DatasetImportMapper.metricsCols"/>
     </sql>
 
     <sql id="COLS">
+        type,
         sector_key,
         attempt,
         <include refid="org.col.db.mapper.DatasetImportMapper.metricsCols"/>
     </sql>
 
     <sql id="PROPS">
+        #{imp.type},
         #{imp.sectorKey},
         #{imp.attempt},
         <include refid="org.col.db.mapper.DatasetImportMapper.metricsProps"/>
     </sql>
 
     <sql id="FROM">
-      sector_import
+      sector_import si
+        <if test="datasetKey != null">
+            JOIN sector s ON s.key=si.sector_key
+        </if>
     </sql>
 
     <sql id="WHERE">
         <where>
-            <if test="key != null">
-                sector_key = #{key}
+            <if test="sectorKey != null">
+                si.sector_key = #{sectorKey}
+            </if>
+            <if test="datasetKey != null">
+                AND s.dataset_key = #{datasetKey}
             </if>
             <if test="states != null &amp;&amp; !states.isEmpty()">
-                AND state IN
+                AND si.state IN
                 <foreach item="state" collection="states" open="(" separator="," close=")">
                     #{state}
                 </foreach>
@@ -48,8 +57,8 @@
 
     <select id="get" resultMap="sectorImportResultMap">
         SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE sector_key=#{key} AND attempt=#{attempt}
+        FROM sector_import si
+        WHERE sector_key=#{sectorKey} AND attempt=#{attempt}
     </select>
 
     <select id="count" resultType="integer">
@@ -70,6 +79,11 @@
         INSERT INTO sector_import (<include refid="COLS" />)
           VALUES (<include refid="PROPS" />)
     </insert>
+
+    <delete id="delete" parameterType="map">
+        DELETE FROM sector_import
+        WHERE sector_key=#{key}
+    </delete>
 
     <select id="countDescription" resultType="integer">
         SELECT count(*)

@@ -47,7 +47,14 @@ public class SafeParser<T> {
   public boolean isEmpty() {
     return result != null && !result.isPresent();
   }
-
+  
+  /**
+   * Returns the optional value.
+   */
+  public Optional<T> getOptional() {
+    return result;
+  }
+  
   /**
    * Returns a value and throws if it is not present.
    * Make sure it is present before calling this!

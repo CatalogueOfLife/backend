@@ -1,8 +1,11 @@
 package org.col.api.model;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import org.col.api.vocab.EstimateType;
 import org.col.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.Rank;
 
@@ -19,11 +22,10 @@ public class TreeNode implements DatasetEntity {
   private Rank rank;
   private TaxonomicStatus status;
   private int childCount;
-  private Integer speciesEstimate;
-  private String speciesEstimateReferenceId;
+  private List<SpeciesEstimate> estimates;
   private Integer sectorKey;
   private Decision decision;
-  private Int2IntMap datasetSectors;
+  private Int2IntOpenHashMap datasetSectors;
   
   /**
    * Exposes a structured name instance as a full name with html markup
@@ -99,22 +101,28 @@ public class TreeNode implements DatasetEntity {
     this.childCount = childCount;
   }
   
-  public Integer getSpeciesEstimate() {
-    return speciesEstimate;
+  public List<SpeciesEstimate> getEstimates() {
+    return estimates;
   }
   
-  public void setSpeciesEstimate(Integer speciesEstimate) {
-    this.speciesEstimate = speciesEstimate;
+  public void setEstimates(List<SpeciesEstimate> estimates) {
+    this.estimates = estimates;
   }
   
-  public String getSpeciesEstimateReferenceId() {
-    return speciesEstimateReferenceId;
+  /**
+   * @return the average of the listed DESCRIBED_SPECIES_LIVING estimates
+   */
+  public Integer getEstimate() {
+    if (estimates == null || estimates.isEmpty()) {
+      return null;
+    }
+    double avg = estimates.stream()
+        .filter(e -> e.getEstimate() != null)
+        .filter(e -> e.getType() == EstimateType.DESCRIBED_SPECIES_LIVING)
+        .collect(Collectors.averagingInt(SpeciesEstimate::getEstimate));
+    return avg == 0 ? null : (int) avg;
   }
-  
-  public void setSpeciesEstimateReferenceId(String speciesEstimateReferenceId) {
-    this.speciesEstimateReferenceId = speciesEstimateReferenceId;
-  }
-  
+
   public Integer getSectorKey() {
     return sectorKey;
   }
@@ -131,11 +139,11 @@ public class TreeNode implements DatasetEntity {
     this.decision = decision;
   }
   
-  public Int2IntMap getDatasetSectors() {
+  public Int2IntOpenHashMap getDatasetSectors() {
     return datasetSectors;
   }
   
-  public void setDatasetSectors(Int2IntMap datasetSectors) {
+  public void setDatasetSectors(Int2IntOpenHashMap datasetSectors) {
     this.datasetSectors = datasetSectors;
   }
   
@@ -151,8 +159,7 @@ public class TreeNode implements DatasetEntity {
         Objects.equals(name, treeNode.name) &&
         rank == treeNode.rank &&
         status == treeNode.status &&
-        Objects.equals(speciesEstimate, treeNode.speciesEstimate) &&
-        Objects.equals(speciesEstimateReferenceId, treeNode.speciesEstimateReferenceId) &&
+        Objects.equals(estimates, treeNode.estimates) &&
         Objects.equals(sectorKey, treeNode.sectorKey) &&
         Objects.equals(decision, treeNode.decision) &&
         Objects.equals(datasetSectors, treeNode.datasetSectors);
@@ -160,6 +167,6 @@ public class TreeNode implements DatasetEntity {
   
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, id, parentId, name, rank, status, childCount, speciesEstimate, speciesEstimateReferenceId, sectorKey, decision, datasetSectors);
+    return Objects.hash(datasetKey, id, parentId, name, rank, status, childCount, estimates, sectorKey, decision, datasetSectors);
   }
 }

@@ -2,21 +2,14 @@ package org.col.dao;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
 import org.col.api.search.DatasetSearchRequest;
 import org.col.api.vocab.Datasets;
-import org.col.api.vocab.Origin;
-import org.col.api.vocab.TaxonomicStatus;
 import org.col.api.vocab.Users;
-import org.col.db.mapper.DatasetMapper;
-import org.col.db.mapper.DecisionMapper;
-import org.col.db.mapper.SectorMapper;
-import org.col.db.mapper.TaxonMapper;
-import org.gbif.nameparser.api.NameType;
+import org.col.db.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +20,8 @@ public class DecisionRematcher {
   private final TaxonMapper tm;
   private final DatasetMapper dm;
   private final SectorMapper sm;
-  private final DecisionMapper em;
+  private final DecisionMapper dem;
+  private final EstimateMapper esm;
   private final MatchingDao mdao;
   private final int user = Users.DB_INIT;
   
@@ -43,7 +37,8 @@ public class DecisionRematcher {
     tm = session.getMapper(TaxonMapper.class);
     dm = session.getMapper(DatasetMapper.class);
     sm = session.getMapper(SectorMapper.class);
-    em = session.getMapper(DecisionMapper.class);
+    dem = session.getMapper(DecisionMapper.class);
+    esm = session.getMapper(EstimateMapper.class);
     mdao = new MatchingDao(session);
   }
   
@@ -55,7 +50,8 @@ public class DecisionRematcher {
     datasets  = 0;
   }
   
-  public void matchAll() {
+  private void matchAll() {
+    LOG.info("Rematch all sectors");
     clearCounter();
     try {
       execForEachDataset(DecisionRematcher.class.getDeclaredMethod("matchDatasetNoLogs", int.class));
@@ -91,50 +87,36 @@ public class DecisionRematcher {
       NameUsage t = matchUniquely(s, Datasets.DRAFT_COL, s.getTarget());
       if (t != null) {
         s.getTarget().setId(t.getId());
-        if (s.getMode() == Sector.Mode.ATTACH) {
-          // create single, new child
-          Taxon c = newTaxon(Datasets.DRAFT_COL, s.getSubject());
-          c.setSectorKey(s.getKey());
-          TaxonDao.copyTaxon(session, c, s.getTargetAsDatasetID(), user, Collections.emptySet());
-        } else {
-          // mark 2 children as coming from this sector...
-          for (Taxon c : tm.children(Datasets.DRAFT_COL, t.getId(), new Page(0,2))) {
-            c.setSectorKey(s.getKey());
-            tm.update(c);
-          }
-        }
       } else {
         success = false;
       }
     }
     
-    if (success) {
-      sm.update(s);
-    }
+    sm.update(s);
     return success;
-  }
-  
-  private Taxon newTaxon(int datasetKey, SimpleName sn){
-    Taxon t = new Taxon();
-    t.setDatasetKey(datasetKey);
-    t.setStatus(TaxonomicStatus.ACCEPTED);
-    
-    Name n = new Name();
-    t.setName(n);
-    n.setDatasetKey(datasetKey);
-    n.setScientificName(sn.getName());
-    n.setAuthorship(sn.getAuthorship());
-    n.setRank(sn.getRank());
-    n.setType(NameType.SCIENTIFIC);
-    n.setOrigin(Origin.SOURCE);
-    return t;
   }
   
   public boolean matchDecision(EditorialDecision ed) {
     NameUsage u = matchUniquely(ed, ed.getDatasetKey(), ed.getSubject());
     boolean success = u != null;
-    ed.getSubject().setId(u.getId());
-    em.update(ed);
+    if (success) {
+      ed.getSubject().setId(u.getId());
+    } else {
+      ed.getSubject().setId(null);
+    }
+    dem.update(ed);
+    return success;
+  }
+  
+  public boolean matchEstimate(SpeciesEstimate est) {
+    NameUsage u = matchUniquely(est, Datasets.DRAFT_COL, est.getSubject());
+    boolean success = u != null;
+    if (success) {
+      est.getSubject().setId(u.getId());
+    } else {
+      est.getSubject().setId(null);
+    }
+    esm.update(est);
     return success;
   }
   
@@ -172,6 +154,19 @@ public class DecisionRematcher {
     }
   }
   
+  public void matchBrokenEstimates() {
+    boolean first = true;
+    int failed = 0;
+    int total = 0;
+    for (SpeciesEstimate s : esm.broken()) {
+      if (!matchEstimate(s)) {
+        failed++;
+      }
+      total++;
+    }
+    LOG.info("Rematched {} broken estimate subjects. {} failed", total, failed);
+  }
+  
   public void matchBrokenSectorTargets() {
     clearCounter();
     // just rematch datasets which have sectors
@@ -183,7 +178,8 @@ public class DecisionRematcher {
     }
   }
   
-  public void matchDataset(final int datasetKey) {
+  public void matchDatasetSubjects(final int datasetKey) {
+    LOG.info("Rematch all subects in dataset {}", datasetKey);
     matchDatasetNoLogs(datasetKey);
     LOG.info("Rematched {} sectors from dataset {}, {} failed", sectorTotal, datasetKey, sectorFailed);
     LOG.info("Rematched {} decisions from dataset {}, {} failed", decisionTotal, datasetKey, decisionFailed);
@@ -198,7 +194,7 @@ public class DecisionRematcher {
       sectorTotal++;
     }
     
-    for (EditorialDecision e : em.list(datasetKey, null)) {
+    for (EditorialDecision e : dem.list(datasetKey, null)) {
       if (!matchDecision(e)){
         decisionFailed++;
       }
@@ -207,7 +203,7 @@ public class DecisionRematcher {
   }
   
   private NameUsage matchUniquely(Decision d, int datasetKey, SimpleName sn){
-    List<NameUsage> matches = mdao.matchDataset(sn, datasetKey);
+    List<? extends NameUsage> matches = mdao.matchDataset(sn, datasetKey);
     if (matches.isEmpty()) {
       LOG.warn("{} {} cannot be rematched to dataset {} - lost {}", d.getClass().getSimpleName(), d.getKey(), datasetKey, sn);
     } else if (matches.size() > 1) {

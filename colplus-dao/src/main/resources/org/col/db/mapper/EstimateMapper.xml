@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.col.db.mapper.EstimateMapper">
+
+  <sql id="SelectVar">
+    ${alias}key AS ${prefix}key,
+    ${alias}subject_id AS ${prefix}subject_id,
+    ${alias}subject_name AS ${prefix}subject_name,
+    ${alias}subject_authorship AS ${prefix}subject_authorship,
+    ${alias}subject_rank AS ${prefix}subject_rank,
+    ${alias}subject_code AS ${prefix}subject_code,
+    ${alias}note AS ${prefix}note,
+    ${alias}modified AS ${prefix}modified,
+    ${alias}modified_by AS ${prefix}modified_by,
+    ${alias}created AS ${prefix}created,
+    ${alias}created_by AS ${prefix}created_by,
+    ${alias}estimate AS ${prefix}estimate,
+    ${alias}type AS ${prefix}type,
+    ${alias}reference_id AS ${prefix}reference_id
+  </sql>
+
+  <sql id="SELECT">
+    <include refid="org.col.db.mapper.EstimateMapper.SelectVar">
+      <property name="alias" value="est."/>
+      <property name="prefix" value=""/>
+    </include>
+  </sql>
+
+  <sql id="COLS">
+    subject_id,
+    subject_name,
+    subject_authorship,
+    subject_rank,
+    subject_code,
+    note,
+    modified,
+    modified_by,
+    estimate,
+    type,
+    reference_id
+  </sql>
+
+  <sql id="PROPS">
+    #{subject.id},
+    #{subject.name},
+    #{subject.authorship},
+    #{subject.rank}::rank,
+    #{subject.code},
+    #{note},
+    now(),
+    #{modifiedBy},
+    #{estimate},
+    #{type},
+    #{referenceId}
+  </sql>
+
+  <sql id="FROM">
+    estimate est
+  </sql>
+
+  <resultMap id="estimateResultMap" type="SpeciesEstimate" autoMapping="true">
+    <id property="key" column="key" />
+    <association property="subject" javaType="SimpleName" autoMapping="true" columnPrefix="subject_" />
+  </resultMap>
+
+  <select id="get" resultMap="estimateResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    WHERE key = #{key}
+  </select>
+
+  <select id="getById" resultMap="estimateResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    WHERE subject_id = #{id}
+  </select>
+
+  <insert id="create" parameterType="SpeciesEstimate" useGeneratedKeys="true" keyProperty="key">
+    INSERT INTO estimate ( <include refid="COLS" />, created_by )
+    VALUES ( <include refid="PROPS" />, #{createdBy} )
+  </insert>
+
+  <update id="update" parameterType="SpeciesEstimate">
+    UPDATE estimate
+    SET (<include refid="COLS" />) = (<include refid="PROPS" />)
+    WHERE key = #{key}
+  </update>
+
+  <delete id="delete" parameterType="map">
+    DELETE FROM estimate
+    WHERE key = #{key}
+  </delete>
+
+  <select id="broken" resultMap="estimateResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+      LEFT JOIN name_usage_3 t ON t.id=est.subject_id
+    WHERE t.id IS NULL
+    ORDER BY est.key
+  </select>
+
+</mapper>

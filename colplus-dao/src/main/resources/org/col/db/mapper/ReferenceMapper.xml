@@ -46,6 +46,27 @@
         reference_${datasetKey} r
     </sql>
 
+    <sql id="SEARCH_WHERE">
+        <if test="req != null">
+            <where>
+                <if test="req.q != null">
+                    r.doc @@ plainto_tsquery('simple2', #{req.q})
+                </if>
+                <if test="req.year != null">
+                    AND r.year=#{req.year}
+                </if>
+                <if test="req.sectorKey != null">
+                    AND
+                    <choose>
+                        <when test="req.getSectorKeyInt() != null">r.sector_key = #{req.getSectorKeyInt()}</when>
+                        <when test="req.getSectorKeyIsNull()">r.sector_key IS NULL</when>
+                        <otherwise>r.sector_key IS NOT NULL</otherwise>
+                    </choose>
+                </if>
+            </where>
+        </if>
+    </sql>
+
     <!-- A mapping to Reference, mostly auto mapped -->
     <resultMap id="referenceResultMap" type="Reference" autoMapping="true">
         <id property="id" column="id" />
@@ -54,9 +75,20 @@
     </resultMap>
 
     <select id="count" resultType="integer">
-        <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
-            <property name="column" value="reference_count"/>
-        </include>
+        <if test="datasetKey &lt; 10">
+            SELECT count(*) FROM reference_${datasetKey}
+        </if>
+        <if test="datasetKey &gt;= 10">
+            <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
+                <property name="column" value="reference_count"/>
+            </include>
+        </if>
+    </select>
+
+    <select id="hasData" resultType="boolean">
+        SELECT exists(
+        SELECT id FROM <include refid="FROM" /> LIMIT 1
+        )
     </select>
 
     <select id="list" resultMap="referenceResultMap">
@@ -83,6 +115,39 @@
         <if test="sectorKey != null">
             AND r.sector_key=#{sectorKey}
         </if>
+    </select>
+
+    <select id="search" resultMap="referenceResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        <include refid="SEARCH_WHERE" />
+        ORDER BY
+        <choose>
+            <when test="req == null || req.sortBy == null">
+                r.id
+            </when>
+            <otherwise>
+                <bind name="sortBy" value="req.sortBy.name()" />
+                <choose>
+                    <when test="sortBy == 'RELEVANCE'">
+                        ts_rank_cd(doc, plainto_tsquery('simple2', #{req.q}))
+                    </when>
+                    <when test="sortBy == 'YEAR'">
+                        r.year DESC NULLs LAST, r.id
+                    </when>
+                    <otherwise>
+                        r.id
+                    </otherwise>
+                </choose>
+            </otherwise>
+        </choose>
+        <include refid="org.col.db.mapper.Common.limit"/>
+    </select>
+
+    <select id="searchCount" resultType="integer">
+        SELECT COUNT(*)
+        FROM <include refid="FROM" />
+        <include refid="SEARCH_WHERE" />
     </select>
 
     <select id="get" resultMap="referenceResultMap">

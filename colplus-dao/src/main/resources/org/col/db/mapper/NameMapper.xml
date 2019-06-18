@@ -15,7 +15,7 @@
         ${alias}.specific_epithet AS ${prefix}specific_epithet,
         ${alias}.infraspecific_epithet AS ${prefix}infraspecific_epithet,
         ${alias}.cultivar_epithet AS ${prefix}cultivar_epithet,
-        ${alias}.strain AS ${prefix}strain,
+        ${alias}.appended_phrase AS ${prefix}appended_phrase,
         ${alias}.candidatus AS ${prefix}candidatus,
         ${alias}.notho AS ${prefix}notho,
         ${alias}.basionym_authors AS ${prefix}basionym_authors,
@@ -75,7 +75,7 @@
         specific_epithet,
         infraspecific_epithet,
         cultivar_epithet,
-        strain,
+        appended_phrase,
         candidatus,
         notho,
         basionym_authors,
@@ -116,7 +116,7 @@
         #{specificEpithet},
         #{infraspecificEpithet},
         #{cultivarEpithet},
-        #{strain},
+        #{appendedPhrase},
         #{candidatus},
         #{notho},
         #{basionymAuthorship.authors, typeHandler=org.col.db.type.StringArrayTypeHandler},
@@ -158,9 +158,20 @@
     </resultMap>
 
     <select id="count" resultType="integer">
-        <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
-            <property name="column" value="name_count"/>
-        </include>
+        <if test="datasetKey &lt; 10">
+            SELECT count(*) FROM name_${datasetKey}
+        </if>
+        <if test="datasetKey &gt;= 10">
+            <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
+                <property name="column" value="name_count"/>
+            </include>
+        </if>
+    </select>
+
+    <select id="hasData" resultType="boolean">
+        SELECT exists(
+            SELECT id FROM <include refid="FROM" /> LIMIT 1
+        )
     </select>
 
     <select id="list" resultMap="nameResultMap">
@@ -180,8 +191,7 @@
     <!--  select all names of a dataset
      Using a optimal fetchsize to enable low memory footprint while keeping good performance using a resulthandler
     -->
-    <select id="processDataset" parameterType="map" resultMap="nameResultMap" resultOrdered="true"
-            fetchSize="10000" resultSetType="FORWARD_ONLY">
+    <select id="processDataset" parameterType="map" resultMap="nameResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         ORDER BY id
@@ -229,6 +239,12 @@
     <update id="update" parameterType="Name" keyProperty="id">
         UPDATE name_${datasetKey}
         SET (<include refid="COLS" />, created, modified) = (<include refid="PROPS" />, now(), now())
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateMatch" parameterType="map" keyProperty="id">
+        UPDATE name_${datasetKey}
+        SET (name_index_id, modified) = (#{nameIndexID}, now())
         WHERE id = #{id}
     </update>
 

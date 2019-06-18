@@ -203,7 +203,7 @@ public class ImportJob implements Runnable {
   
         LOG.info("Updating sectors and decisions for dataset {}", datasetKey);
         try(SqlSession session = factory.openSession(true)) {
-          new DecisionRematcher(session).matchDataset(datasetKey);
+          new DecisionRematcher(session).matchDatasetSubjects(datasetKey);
         }
   
         LOG.info("Dataset import {} completed in {}", datasetKey,

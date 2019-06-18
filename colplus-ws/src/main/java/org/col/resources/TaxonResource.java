@@ -5,6 +5,7 @@ import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
 
 import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
@@ -19,7 +20,7 @@ import org.slf4j.LoggerFactory;
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class TaxonResource extends DatasetEntityResource<Taxon> {
-  
+  private static String ROOT_PARAM = "root";
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(TaxonResource.class);
   private final TaxonDao dao;
@@ -29,10 +30,12 @@ public class TaxonResource extends DatasetEntityResource<Taxon> {
     this.dao = dao;
   }
   
-  @GET
-  public ResultPage<Taxon> list(@PathParam("datasetKey") int datasetKey,
-                                @QueryParam("root") boolean root,
-                                @Valid @BeanParam Page page) {
+  @Override
+  public ResultPage<Taxon> list(int datasetKey, @Valid Page page, UriInfo uri) {
+    boolean root = false;
+    if (uri.getQueryParameters().containsKey(ROOT_PARAM)) {
+      root = Boolean.parseBoolean(uri.getQueryParameters().getFirst(ROOT_PARAM));
+    }
     return root ? dao.listRoot(datasetKey, page) : dao.list(datasetKey, page);
   }
   

@@ -26,6 +26,7 @@ public class TreeRepoRule extends ExternalResource {
   
   @Override
   public void after() {
+    LOG.info("run TreeRepoRule at {}", repo.getAbsolutePath());
     super.after();
     try {
       if (repo != null && repo.exists()) {

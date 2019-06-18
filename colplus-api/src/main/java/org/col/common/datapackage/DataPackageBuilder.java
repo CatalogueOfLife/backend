@@ -43,7 +43,6 @@ public class DataPackageBuilder {
       .put(ColdpTerm.type, NomRelType.class)
       .put(ColdpTerm.code, NomCode.class)
       .put(ColdpTerm.country, Country.class)
-      .put(ColdpTerm.language, Language.class)
       .put(ColdpTerm.format, DataFormat.class)
       .put(ColdpTerm.gazetteer, Gazetteer.class)
       .put(ColdpTerm.rank, Rank.class)
@@ -138,8 +137,6 @@ public class DataPackageBuilder {
     switch (t) {
       case country:
         return enumValues(Country.class, Country::getIso2LetterCode);
-      case language:
-        return enumValues(Language.class, Language::getIso3LetterCode);
     }
     
     Class<? extends Enum> enumClass;

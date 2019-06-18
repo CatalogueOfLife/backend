@@ -125,7 +125,7 @@
         DELETE FROM name_usage_${datasetKey} WHERE sector_key = #{sectorKey}
     </delete>
 
-    <select id="processTree" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    <select id="processTree" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
         WITH RECURSIVE x AS(
         SELECT <include refid="SELECT" />
         <if test="depthFirst">

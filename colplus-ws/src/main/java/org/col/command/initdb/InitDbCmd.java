@@ -19,21 +19,21 @@ import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.WsServerConfig;
-import org.col.api.model.Dataset;
-import org.col.api.model.DatasetImport;
 import org.col.api.vocab.*;
 import org.col.common.io.PathUtils;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.col.common.tax.SciNameNormalizer;
-import org.col.dao.DatasetImportDao;
 import org.col.dao.TaxonDao;
 import org.col.db.MybatisFactory;
 import org.col.db.PgConfig;
-import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.DatasetPartitionMapper;
 import org.col.es.EsClientFactory;
 import org.col.es.EsUtil;
 import org.col.es.NameUsageIndexService;
 import org.col.es.NameUsageIndexServiceEs;
+import org.col.matching.DatasetMatcher;
+import org.col.matching.NameIndex;
+import org.col.matching.NameIndexFactory;
 import org.col.postgres.PgCopyUtils;
 import org.elasticsearch.client.RestClient;
 import org.gbif.nameparser.api.NameType;
@@ -127,13 +127,6 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
     if (cfg.normalizer.archiveDir.exists()) {
       FileUtils.cleanDirectory(cfg.normalizer.archiveDir);
     }
-  
-    if (cfg.namesIndexFile != null && cfg.namesIndexFile.exists()) {
-      LOG.info("Clear names index {}", cfg.namesIndexFile);
-      if (!cfg.namesIndexFile.delete()){
-        LOG.warn("Failed to remove names index {}", cfg.namesIndexFile);
-      }
-    }
 
     // load draft catalogue data
     HikariConfig hikari = cfg.db.hikariConfig();
@@ -180,6 +173,15 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
         .put("created_by", Users.DB_INIT)
         .put("modified_by", Users.DB_INIT)
         .build());
+    PgCopyUtils.copy(pgc, "reference_"+Datasets.DRAFT_COL, "/org/col/db/draft/reference.csv", ImmutableMap.<String, Object>builder()
+        .put("dataset_key", Datasets.DRAFT_COL)
+        .put("created_by", Users.DB_INIT)
+        .put("modified_by", Users.DB_INIT)
+        .build());
+    PgCopyUtils.copy(pgc, "estimate", "/org/col/db/draft/estimate.csv", ImmutableMap.<String, Object>builder()
+        .put("created_by", Users.DB_INIT)
+        .put("modified_by", Users.DB_INIT)
+        .build());
     // id,homotypic_name_id,rank,scientific_name,uninomial
     PgCopyUtils.copy(pgc, "name_"+Datasets.DRAFT_COL, "/org/col/db/draft/name.csv", ImmutableMap.<String, Object>builder()
           .put("dataset_key", Datasets.DRAFT_COL)
@@ -205,16 +207,13 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
         .put("modified_by", Users.DB_INIT)
         .build());
   
-    LOG.info("Build import metrics for draft CoL and index into ES");
-    Dataset draft;
-    try (SqlSession session = factory.openSession(true)) {
-      draft = session.getMapper(DatasetMapper.class).get(Datasets.DRAFT_COL);
+    LOG.info("Match draft CoL to names index");
+    // we create a new names index denovo to write new hierarchy names into the names index dataset
+    AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
+    try (NameIndex ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, factory, aNormalizer)) {
+      DatasetMatcher matcher = new DatasetMatcher(factory, ni, false);
+      matcher.match(Datasets.DRAFT_COL);
     }
-    DatasetImportDao dao = new DatasetImportDao(factory, cfg.textTreeRepo);
-    DatasetImport di = dao.create(draft);
-    dao.updateMetrics(di);
-    di.setState(ImportState.FINISHED);
-    dao.update(di);
   }
   
   private static void updateSearchIndex(WsServerConfig cfg, SqlSessionFactory factory) throws Exception {
@@ -235,7 +234,7 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
 
   public static void setupStandardPartitions(SqlSession session) {
     DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
-    for (int key : new int[]{Datasets.COL, Datasets.DRAFT_COL}) {
+    for (int key : new int[]{Datasets.COL, Datasets.NAME_INDEX, Datasets.DRAFT_COL}) {
       LOG.info("Create catalogue partition {}", key);
       pm.delete(key);
       pm.create(key);
