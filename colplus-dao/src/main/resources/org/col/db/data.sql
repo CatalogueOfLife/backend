@@ -1,6 +1,6 @@
 -- bots
 INSERT INTO coluser (key, username, firstname, lastname, roles, created) VALUES
-    (-1, 'tester', 'Tim', 'Test', '{ADMIN, EDITOR, USER}', now()),
+    (-1, 'tester', 'Tim', 'Test', '{0,1,2}', now()),
     (0, 'dbinit', 'DB', 'Init', '{}', now()),
     (10, 'importer', 'Importer', 'Bot', '{}', now()),
     (11, 'matcher', 'Name', 'Matcher', '{}', now()),
