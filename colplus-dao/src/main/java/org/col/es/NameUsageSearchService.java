@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.annotations.VisibleForTesting;
 
 import org.col.api.model.Page;
-import org.col.api.search.AutoCompleteResponse;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchResponse;
 import org.col.es.model.EsNameUsage;
@@ -50,10 +49,6 @@ public class NameUsageSearchService {
     }
   }
   
-  public AutoCompleteResponse autoComplete(String q) {
-    return null;
-  }
-
   /**
    * Returns the raw Elasticsearch documents matching the specified query, with payloads still pruned and zipped. Useful and fast if you're
    * only interested in the indexed fields. Since this method is currently only used internally, you can (and must) compose the

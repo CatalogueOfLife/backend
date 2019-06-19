@@ -80,13 +80,13 @@ public class NameUsageServiceSortingTest extends EsReadTestBase {
     NameUsageTransfer transfer = new NameUsageTransfer();
     EsNameUsage enu = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
     // Overwrite to test ordering by scientific name
-    enu.setScientificName(Arrays.asList("B"));
+    enu.setScientificNameWN("B");
     insert(client, indexName, enu);
     enu = transfer.toDocument(TestEntityGenerator.newNameUsageSynonymWrapper());
-    enu.setScientificName(Arrays.asList("C"));
+    enu.setScientificNameWN("C");
     insert(client, indexName, enu);
     enu = transfer.toDocument(TestEntityGenerator.newNameUsageBareNameWrapper());
-    enu.setScientificName(Arrays.asList("A"));
+    enu.setScientificNameWN("A");
     insert(client, indexName, enu);
     refreshIndex(client, indexName);
     assertEquals(3, EsUtil.count(client, indexName));
@@ -105,13 +105,13 @@ public class NameUsageServiceSortingTest extends EsReadTestBase {
     NameUsageTransfer transfer = new NameUsageTransfer();
     EsNameUsage enu = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
     // Overwrite to test ordering by scientific name
-    enu.setScientificName(Arrays.asList("B"));
+    enu.setScientificNameWN("B");
     insert(client, indexName, enu);
     enu = transfer.toDocument(TestEntityGenerator.newNameUsageSynonymWrapper());
-    enu.setScientificName(Arrays.asList("C"));
+    enu.setScientificNameWN("C");
     insert(client, indexName, enu);
     enu = transfer.toDocument(TestEntityGenerator.newNameUsageBareNameWrapper());
-    enu.setScientificName(Arrays.asList("A"));
+    enu.setScientificNameWN("A");
     insert(client, indexName, enu);
     refreshIndex(client, indexName);
     assertEquals(3, EsUtil.count(client, indexName));
@@ -131,7 +131,7 @@ public class NameUsageServiceSortingTest extends EsReadTestBase {
     NameUsageTransfer transfer = new NameUsageTransfer();
 
     EsSearchRequest esr = EsSearchRequest.emptyRequest();
-    esr.setSort(Arrays.asList(new SortField("scientificName", false), new SortField("rank", false)));
+    esr.setSort(Arrays.asList(new SortField("scientificNameWN", false), new SortField("rank", false)));
 
     // Create name usage in the order we expect them to come out, then shuffle.
     Name n = new Name();

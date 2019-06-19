@@ -3,7 +3,6 @@ package org.col.es;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -23,7 +22,26 @@ import org.col.common.tax.SciNameNormalizer;
 import org.col.es.model.EsNameUsage;
 import org.col.es.model.Monomial;
 
-import static org.col.api.vocab.NameField.*;
+import static org.col.api.vocab.NameField.BASIONYM_AUTHORS;
+import static org.col.api.vocab.NameField.BASIONYM_EX_AUTHORS;
+import static org.col.api.vocab.NameField.BASIONYM_YEAR;
+import static org.col.api.vocab.NameField.CANDIDATUS;
+import static org.col.api.vocab.NameField.COMBINATION_AUTHORS;
+import static org.col.api.vocab.NameField.COMBINATION_EX_AUTHORS;
+import static org.col.api.vocab.NameField.COMBINATION_YEAR;
+import static org.col.api.vocab.NameField.CULTIVAR_EPITHET;
+import static org.col.api.vocab.NameField.GENUS;
+import static org.col.api.vocab.NameField.INFRAGENERIC_EPITHET;
+import static org.col.api.vocab.NameField.INFRASPECIFIC_EPITHET;
+import static org.col.api.vocab.NameField.NOM_STATUS;
+import static org.col.api.vocab.NameField.NOTHO;
+import static org.col.api.vocab.NameField.PUBLISHED_IN_ID;
+import static org.col.api.vocab.NameField.PUBLISHED_IN_PAGE;
+import static org.col.api.vocab.NameField.REMARKS;
+import static org.col.api.vocab.NameField.SANCTIONING_AUTHOR;
+import static org.col.api.vocab.NameField.SPECIFIC_EPITHET;
+import static org.col.api.vocab.NameField.UNINOMIAL;
+import static org.col.api.vocab.NameField.WEBPAGE;
 import static org.col.common.collection.CollectionUtils.notEmpty;
 import static org.col.es.EsModule.NAME_USAGE_WRITER;
 
@@ -163,7 +181,7 @@ public class NameUsageTransfer {
       enu.setPayload(NAME_USAGE_WRITER.writeValueAsString(nuw));
     }
     return enu;
-  }
+  } 
 
   static void saveClassification(NameUsageWrapper from, EsNameUsage to) {
     if (notEmpty(from.getClassification())) {
@@ -180,25 +198,17 @@ public class NameUsageTransfer {
     }
   }
 
+
   private static void saveScientificName(NameUsageWrapper from, EsNameUsage to) {
-    if (from.getUsage().getName().getScientificName() == null) {
-      return;
-    }
+    String w = normalizeWeakly(from.getUsage().getName().getScientificName());
+    String s = normalizeStrongly(from.getUsage().getName().getScientificName());
+    to.setScientificNameWN(w);
     /*
-     * Don't waste time indexing the same ngram tokens twice. Only index the weakly/strongly normalized variant if it differs from the
-     * original name. This if-logic is replicated at query time (see QTranslator).
+     * Don't waste time indexing the same ngram tokens twice. Only index the strongly normalized variant if it differs from the weakly
+     * normalized variant. This if-logic is replicated at query time (see QTranslator).
      */
-    String name = from.getUsage().getName().getScientificName().toLowerCase();
-    String strong = normalizeStrongly(name);
-    if (strong.equals(name)) {
-      to.setScientificName(Arrays.asList(name));
-    } else {
-      String weak = normalizeWeakly(from.getUsage().getName().getScientificName());
-      if (name.equals(weak) || weak.equals(strong)) {
-        to.setScientificName(Arrays.asList(name, strong));
-      } else {
-        to.setScientificName(Arrays.asList(name, weak, strong));
-      }
+    if (!w.equals(s)) {
+      to.setScientificNameSN(s);
     }
   }
 
@@ -236,7 +246,6 @@ public class NameUsageTransfer {
     addIfSet(fields, SANCTIONING_AUTHOR, name.getSanctioningAuthor());
     addIfSet(fields, WEBPAGE, name.getWebpage());
     addIfSet(fields, SPECIFIC_EPITHET, name.getSpecificEpithet());
-    addIfSet(fields, APPENDED_PHRASE, name.getAppendedPhrase());
     addIfSet(fields, UNINOMIAL, name.getUninomial());
     if (name.isCandidatus()) {
       fields.add(CANDIDATUS);
