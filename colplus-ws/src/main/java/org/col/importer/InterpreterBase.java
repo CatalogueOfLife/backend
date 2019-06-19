@@ -299,13 +299,13 @@ public class InterpreterBase {
         nat = natFromAtom.get();
         // if parsed compare with original atoms
         if (nat.getName().isParsed()) {
-          if ( (
+          if (
               !Objects.equals(atom.getUninomial(), nat.getName().getUninomial()) ||
-              !Objects.equals(atom.getGenus(), nat.getName().getGenus())) ||
+              !Objects.equals(atom.getGenus(), nat.getName().getGenus()) ||
               !Objects.equals(atom.getInfragenericEpithet(), nat.getName().getInfragenericEpithet()) ||
               !Objects.equals(atom.getSpecificEpithet(), nat.getName().getSpecificEpithet()) ||
               !Objects.equals(atom.getInfraspecificEpithet(), nat.getName().getInfraspecificEpithet())
-              ) {
+            ) {
             LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", nat.getName().canonicalNameComplete(), atom.canonicalNameComplete());
             v.addIssue(Issue.PARSED_NAME_DIFFERS);
             
@@ -319,6 +319,11 @@ public class InterpreterBase {
               nat.getName().setInfragenericEpithet(atom.getInfragenericEpithet());
               nat.getName().setSpecificEpithet(atom.getSpecificEpithet());
               nat.getName().setInfraspecificEpithet(atom.getInfraspecificEpithet());
+              // we have a parsed name, so its not virus or hybrid, but parsing could have detected something weird
+              if (NameType.SCIENTIFIC != nat.getName().getType()) {
+                LOG.info("Use type=scientific for {} even though parsed name of type {}", nat.getName().canonicalNameComplete(), nat.getName().getType());
+                nat.getName().setType(NameType.SCIENTIFIC);
+              }
             }
           }
         } else if (!Strings.isNullOrEmpty(authorship)) {
