@@ -1,30 +1,28 @@
 package org.col.importer;
 
 import java.net.URI;
-import java.util.Queue;
-import java.util.Set;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.codahale.metrics.MetricRegistry;
-import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import io.dropwizard.client.HttpClientBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.col.WsServerConfig;
-import org.col.common.tax.AuthorshipNormalizer;
-import org.col.dao.TreeRepoRule;
-import org.col.matching.NameIndexFactory;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.api.vocab.*;
-import org.col.db.PgSetupRule;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.col.dao.DatasetImportDao;
+import org.col.dao.TreeRepoRule;
+import org.col.db.PgSetupRule;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.TestDataRule;
 import org.col.img.ImageServiceFS;
+import org.col.matching.NameIndexFactory;
 import org.gbif.nameparser.api.NomCode;
 import org.junit.*;
 import org.slf4j.Logger;
@@ -100,9 +98,9 @@ public class ImportManagerTest {
     d.setType(DatasetType.GLOBAL);
     d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setTitle("Moss Bug Base");
-    d.setCode(NomCode.BOTANICAL);
-    d.setDataFormat(DataFormat.ACEF);
-    d.setDataAccess(URI.create("https://github.com/Sp2000/colplus-repo/raw/master/ACEF/76.tar.gz"));
+    d.setCode(NomCode.BACTERIAL);
+    d.setDataFormat(DataFormat.DWCA);
+    d.setDataAccess(URI.create("http://rs.gbif.org/datasets/dsmz.zip"));
     d.setCreatedBy(TestDataRule.TEST_USER.getKey());
     d.setModifiedBy(TestDataRule.TEST_USER.getKey());
   
@@ -119,7 +117,7 @@ public class ImportManagerTest {
   
     LOG.warn("SUBMIT");
     importManager.submit(new ImportRequest(d1.getKey(), Users.IMPORTER));
-    Thread.sleep(100);
+    Thread.sleep(50);
     
     LOG.warn("CHECK");
     assertTrue(importManager.hasEmptyQueue());
@@ -127,7 +125,7 @@ public class ImportManagerTest {
  
     // cancel
     LOG.warn("CANCEL");
-    importManager.cancel(d1.getKey(), null);
+    importManager.cancel(d1.getKey(), -1);
     TimeUnit.MILLISECONDS.sleep(500);
     LOG.warn("CHECK");
     assertTrue(importManager.hasEmptyQueue());
@@ -136,13 +134,15 @@ public class ImportManagerTest {
   
   @Test
   public void submitAndCancel() throws Exception {
+    final List<ImportState> runningStates = ImportState.runningStates();
+    
     final Dataset d1 = createExternal();
     final Dataset d2 = createExternal();
     final Dataset d3 = createExternal();
     final Dataset d4 = createExternal();
   
     importManager.submit(new ImportRequest(d1.getKey(), Users.IMPORTER));
-    Thread.sleep(100);
+    Thread.sleep(50);
     assertTrue(importManager.hasEmptyQueue());
     assertTrue(importManager.hasRunning());
     ResultPage<DatasetImport> imports = diDao.list(new Page());
@@ -151,14 +151,13 @@ public class ImportManagerTest {
     assertEquals(1, imports.getResult().get(0).getAttempt());
     assertEquals(d1.getDataAccess(), imports.getResult().get(0).getDownloadUri());
   
-    Set<ImportState> runningStates = Sets.newHashSet(ImportState.DOWNLOADING, ImportState.PROCESSING, ImportState.INSERTING);
     assertTrue(runningStates.contains( imports.getResult().get(0).getState() ));
 
     importManager.submit(new ImportRequest(d2.getKey(), Users.IMPORTER));
     importManager.submit(new ImportRequest(d3.getKey(), Users.IMPORTER));
     importManager.submit(new ImportRequest(d4.getKey(), Users.IMPORTER, false, true));
-    Thread.sleep(100);
     importManager.hasRunning();
+    Thread.sleep(50);
     imports = diDao.list(new Page());
     assertEquals(2, imports.size());
     assertEquals(d2.getKey(), imports.getResult().get(0).getDatasetKey());
@@ -167,23 +166,23 @@ public class ImportManagerTest {
     assertEquals(d1.getKey(), imports.getResult().get(1).getDatasetKey());
     
     assertFalse(importManager.hasEmptyQueue());
-    Queue<ImportRequest> queue = importManager.queue();
+    List<ImportRequest> queue = importManager.queue();
     // d4 has priority
-    assertEquals((int)d4.getKey(), queue.peek().datasetKey);
+    assertEquals((int)d4.getKey(), queue.get(0).datasetKey);
   
     // cancel d4
-    importManager.cancel(d4.getKey(), null);
+    importManager.cancel(d4.getKey(), -1);
     Thread.sleep(100);
     queue = importManager.queue();
     assertEquals(1, queue.size());
-    assertEquals((int)d3.getKey(), queue.peek().datasetKey);
+    assertEquals((int)d3.getKey(), queue.get(0).datasetKey);
   
     imports = diDao.list(new Page());
     assertEquals(d2.getKey(), imports.getResult().get(0).getDatasetKey());
     assertEquals(d1.getKey(), imports.getResult().get(1).getDatasetKey());
   
     // cancel d1
-    importManager.cancel(d1.getKey(), null);
+    importManager.cancel(d1.getKey(), -1);
     TimeUnit.SECONDS.sleep(1);
     assertTrue(importManager.hasEmptyQueue());
     imports = diDao.list(new Page());

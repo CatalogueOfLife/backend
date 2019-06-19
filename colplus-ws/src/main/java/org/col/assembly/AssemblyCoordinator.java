@@ -30,8 +30,6 @@ import org.gbif.nameparser.utils.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.col.WsServer.MILLIS_TO_DIE;
-
 public class AssemblyCoordinator implements Managed {
   static  final Comparator<Sector> SECTOR_ORDER = Comparator.comparing(Sector::getTarget, Comparator.nullsLast(SimpleName::compareTo));
   private static final Logger LOG = LoggerFactory.getLogger(AssemblyCoordinator.class);
@@ -86,7 +84,7 @@ public class AssemblyCoordinator implements Managed {
       df.future.cancel(true);
     }
     // fully shutdown threadpool within given time
-    ExecutorUtils.shutdown(exec, MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
+    ExecutorUtils.shutdown(exec, ExecutorUtils.MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
   }
   
   public void setImportManager(ImportManager importManager) {
@@ -133,7 +131,7 @@ public class AssemblyCoordinator implements Managed {
     throw new IllegalArgumentException("Dataset empty. Cannot sync " + s);
   }
   
-  public void sync(SyncRequest request, ColUser user) throws IllegalArgumentException {
+  public void sync(RequestScope request, ColUser user) throws IllegalArgumentException {
     if (request.getAll() != null && request.getAll()) {
       syncAll(user);
     } else {

@@ -106,7 +106,7 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
       version = new Properties();
       version.load(Resources.reader("version/git.properties"));
     } catch (Exception e) {
-      LOG.warn("Failed to load versions properties", e);
+      LOG.warn("Failed to load versions properties: {}", e.getMessage());
       version = null;
     }
   }

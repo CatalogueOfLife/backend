@@ -12,6 +12,9 @@ import org.slf4j.LoggerFactory;
 public class ExecutorUtils {
   private static final Logger LOG = LoggerFactory.getLogger(ExecutorUtils.class);
   
+  // milliseconds to wait during shutdown before forcing a shutdown
+  public static final int MILLIS_TO_DIE = 12000;
+  
   /**
    * Shutdown executor with a 10s timeout.
    */

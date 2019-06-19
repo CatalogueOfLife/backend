@@ -2,25 +2,25 @@ package org.col.assembly;
 
 import java.util.Objects;
 
-public class SyncRequest {
+public class RequestScope {
   private Boolean all;
   private Integer sectorKey;
   private Integer datasetKey;
   
-  public static SyncRequest all() {
-    SyncRequest req = new SyncRequest();
+  public static RequestScope all() {
+    RequestScope req = new RequestScope();
     req.setAll(true);
     return req;
   }
   
-  public static SyncRequest sector(int sectorKey) {
-    SyncRequest req = new SyncRequest();
+  public static RequestScope sector(int sectorKey) {
+    RequestScope req = new RequestScope();
     req.setSectorKey(sectorKey);
     return req;
   }
   
-  public static SyncRequest dataset(int datasetKey) {
-    SyncRequest req = new SyncRequest();
+  public static RequestScope dataset(int datasetKey) {
+    RequestScope req = new RequestScope();
     req.setDatasetKey(datasetKey);
     return req;
   }
@@ -53,7 +53,7 @@ public class SyncRequest {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    SyncRequest that = (SyncRequest) o;
+    RequestScope that = (RequestScope) o;
     return Objects.equals(all, that.all) &&
         Objects.equals(sectorKey, that.sectorKey) &&
         Objects.equals(datasetKey, that.datasetKey);

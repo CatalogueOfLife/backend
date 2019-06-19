@@ -9,9 +9,10 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
@@ -21,6 +22,7 @@ import io.dropwizard.lifecycle.Managed;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.WsServerConfig;
 import org.col.api.exception.NotFoundException;
 import org.col.api.model.ColUser;
 import org.col.api.model.Dataset;
@@ -30,10 +32,9 @@ import org.col.api.vocab.DatasetOrigin;
 import org.col.api.vocab.ImportState;
 import org.col.api.vocab.Users;
 import org.col.assembly.AssemblyCoordinator;
-import org.col.common.concurrent.ExecutorUtils;
+import org.col.common.concurrent.PBQThreadPoolExecutor;
 import org.col.common.concurrent.StartNotifier;
 import org.col.common.io.DownloadUtil;
-import org.col.WsServerConfig;
 import org.col.common.tax.AuthorshipNormalizer;
 import org.col.dao.DatasetImportDao;
 import org.col.db.mapper.DatasetMapper;
@@ -45,8 +46,6 @@ import org.gbif.nameparser.utils.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.col.WsServer.MILLIS_TO_DIE;
-
 /**
  * Manages import task scheduling, removing and listing
  */
@@ -54,10 +53,9 @@ public class ImportManager implements Managed {
   private static final Logger LOG = LoggerFactory.getLogger(ImportManager.class);
   public static final String THREAD_NAME = "dataset-importer";
   
-  private ThreadPoolExecutor exec;
+  private PBQThreadPoolExecutor<ImportJob> exec;
   private AssemblyCoordinator assemblyCoordinator;
-  private final PriorityBlockingQueue<ImportRequest> queue = new PriorityBlockingQueue<ImportRequest>();
-  private final Map<Integer, Future> futures = new ConcurrentHashMap<Integer, Future>();
+  private final Map<Integer, PBQThreadPoolExecutor.ComparableFutureTask> futures = new ConcurrentHashMap<>();
   private final WsServerConfig cfg;
   private final DownloadUtil downloader;
   private final SqlSessionFactory factory;
@@ -87,17 +85,18 @@ public class ImportManager implements Managed {
   }
   
   /**
-   * Lists the current queue
+   * Lists the ImportRequests of the current queue
    */
-  public Queue<ImportRequest> queue() {
-    return queue;
+  public List<ImportRequest> queue() {
+    return exec.getQueue().stream()
+        .map(ImportJob::getRequest)
+        .collect(Collectors.toList());
   }
   
   /**
    * Cancels a running import job by its dataset key
    */
-  public void cancel(int datasetKey, ColUser user) {
-    queue.remove(new ImportRequest(datasetKey, Users.IMPORTER));
+  public void cancel(int datasetKey, int user) {
     Future f = futures.remove(datasetKey);
     if (f != null) {
       f.cancel(true);
@@ -138,16 +137,22 @@ public class ImportManager implements Managed {
    *                                  or dataset does not exist or is of origin managed
    */
   private synchronized ImportRequest submitValidDataset(final ImportRequest req) throws IllegalArgumentException {
-    // is this dataset already scheduled?
-    if (futures.containsKey(req.datasetKey)) {
-      LOG.info("Dataset {} already queued for import", req.datasetKey);
-      throw new IllegalArgumentException("Dataset " + req.datasetKey + " already queued for import");
-      
-    } else if (queue.size() >= cfg.importer.maxQueue) {
-      LOG.info("Import queued at max {} already. Skip dataset {}", queue.size(), req.datasetKey);
+    if (exec.queueSize() >= cfg.importer.maxQueue) {
+      LOG.info("Import queued at max {} already. Skip dataset {}", exec.queueSize(), req.datasetKey);
       throw new IllegalArgumentException("Import queue full, skip dataset " + req.datasetKey);
+    } else if (futures.containsKey(req.datasetKey)) {
+      // this dataset is already scheduled. Force a prio import?
+      LOG.info("Dataset {} already queued for import", req.datasetKey);
+      PBQThreadPoolExecutor.ComparableFutureTask f = futures.get(req.datasetKey);
+      if (req.priority && exec.isQueued(f)){
+        cancel(req.datasetKey, req.createdBy);
+        LOG.info("Resubmit dataset {} for import with priority", req.datasetKey);
+      } else {
+        throw new IllegalArgumentException("Dataset " + req.datasetKey + " already queued for import");
+      }
     }
-    // is a sector from this dataset currently being synced?
+    
+      // is a sector from this dataset currently being synced?
     if (assemblyCoordinator != null) {
       Integer sectorKey = assemblyCoordinator.hasSyncingSector(req.datasetKey);
       if (sectorKey != null) {
@@ -156,8 +161,7 @@ public class ImportManager implements Managed {
       }
     }
     
-    queue.add(req);
-    futures.put(req.datasetKey, exec.submit(createImport(req)));
+    futures.put(req.datasetKey, exec.submit(createImport(req), req.priority));
     LOG.info("Queued import for dataset {}", req.datasetKey);
     return req;
   }
@@ -239,7 +243,6 @@ public class ImportManager implements Managed {
             @Override
             public void started() {
               req.start();
-              queue.remove(req);
             }
           }, this::successCallBack, this::errorCallBack);
       return job;
@@ -250,7 +253,7 @@ public class ImportManager implements Managed {
    * @return true if queue is empty
    */
   public boolean hasEmptyQueue() {
-    return queue.isEmpty();
+    return exec.hasEmptyQueue();
   }
   
   /**
@@ -271,11 +274,11 @@ public class ImportManager implements Managed {
   public void start() throws Exception {
     LOG.info("Starting import manager with {} import threads and a queue of {} max.",
         cfg.importer.threads, cfg.importer.maxQueue);
-    exec = new ThreadPoolExecutor(cfg.importer.threads, cfg.importer.threads, 60L, TimeUnit.SECONDS,
-        new LinkedBlockingQueue<>(cfg.importer.maxQueue),
+  
+    exec = new PBQThreadPoolExecutor<>(cfg.importer.threads, 60L, TimeUnit.SECONDS,
+        new PriorityBlockingQueue<>(cfg.importer.maxQueue),
         new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true),
         new ThreadPoolExecutor.AbortPolicy());
-    exec.allowCoreThreadTimeOut(true);
     
     // read hanging imports in db, truncate if half inserted and add as new requests to the queue
     cancelAndReschedule(ImportState.DOWNLOADING, false);
@@ -316,6 +319,6 @@ public class ImportManager implements Managed {
       f.cancel(true);
     }
     // fully shutdown threadpool within given time
-    ExecutorUtils.shutdown(exec, MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
+    exec.stop();
   }
 }

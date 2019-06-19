@@ -62,9 +62,7 @@ import static org.col.es.EsConfig.ES_INDEX_NAME_USAGE;
 
 public class WsServer extends Application<WsServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(WsServer.class);
-  // milliseconds to wait during shutdown before forcing a shutdown
-  public static final int MILLIS_TO_DIE = 12000;
-  
+
   private final MybatisBundle mybatis = new MybatisBundle();
   private final AuthBundle auth = new AuthBundle();
   protected CloseableHttpClient httpClient;
@@ -207,7 +205,7 @@ public class WsServer extends Application<WsServerConfig> {
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory());
     
     // resources
-    env.jersey().register(new AdminResource(getSqlSessionFactory(), new DownloadUtil(httpClient), cfg.normalizer, imgService, tdao));
+    env.jersey().register(new AdminResource(getSqlSessionFactory(), new DownloadUtil(httpClient), cfg.normalizer, imgService, indexService, tdao));
     env.jersey().register(new AssemblyResource(assembly, exporter));
     env.jersey().register(new DataPackageResource());
     env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService, cfg, new DownloadUtil(httpClient), diff));

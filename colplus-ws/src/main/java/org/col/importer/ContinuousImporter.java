@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 import io.dropwizard.lifecycle.Managed;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.common.concurrent.ExecutorUtils;
 import org.col.config.ImporterConfig;
 import org.col.api.model.Dataset;
 import org.col.api.vocab.Users;
@@ -15,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import static org.col.WsServer.MILLIS_TO_DIE;
 
 /**
  * A scheduler for new import jobs that runs continuously in the background
@@ -125,6 +125,6 @@ public class ContinuousImporter implements Managed {
   @Override
   public void stop() throws Exception {
     job.terminate();
-    thread.join(MILLIS_TO_DIE);
+    thread.join(ExecutorUtils.MILLIS_TO_DIE);
   }
 }

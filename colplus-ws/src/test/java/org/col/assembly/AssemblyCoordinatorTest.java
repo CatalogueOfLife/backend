@@ -58,7 +58,7 @@ public class AssemblyCoordinatorTest {
       sm.create(sector);
     }
 
-    coord.sync(SyncRequest.sector(sector.getKey()), TestEntityGenerator.USER_EDITOR);
+    coord.sync(RequestScope.sector(sector.getKey()), TestEntityGenerator.USER_EDITOR);
   }
   
   @Test
@@ -80,7 +80,7 @@ public class AssemblyCoordinatorTest {
       sm.create(sector);
     }
     
-    coord.sync(SyncRequest.all(), TestEntityGenerator.USER_EDITOR);
+    coord.sync(RequestScope.all(), TestEntityGenerator.USER_EDITOR);
   }
   
 }

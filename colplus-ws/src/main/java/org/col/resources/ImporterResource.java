@@ -3,7 +3,6 @@ package org.col.resources;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Queue;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
@@ -50,7 +49,7 @@ public class ImporterResource {
   
   @GET
   @Path("queue")
-  public Queue<ImportRequest> queue() {
+  public List<ImportRequest> queue() {
     return importManager.queue();
   }
   
@@ -76,7 +75,7 @@ public class ImporterResource {
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void cancel(@PathParam("key") int datasetKey, @Auth ColUser user) {
-    importManager.cancel(datasetKey, user);
+    importManager.cancel(datasetKey, user.getKey());
   }
   
 }

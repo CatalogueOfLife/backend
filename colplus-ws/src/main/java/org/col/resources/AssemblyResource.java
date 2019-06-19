@@ -19,7 +19,7 @@ import org.col.api.model.SectorImport;
 import org.col.api.vocab.Datasets;
 import org.col.assembly.AssemblyCoordinator;
 import org.col.assembly.AssemblyState;
-import org.col.assembly.SyncRequest;
+import org.col.assembly.RequestScope;
 import org.col.command.export.AcExporter;
 import org.col.db.mapper.SectorImportMapper;
 import org.col.dw.auth.Roles;
@@ -64,7 +64,7 @@ public class AssemblyResource {
   @POST
   @Path("/sync")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void sync(@PathParam("catKey") int catKey, SyncRequest request, @Auth ColUser user) {
+  public void sync(@PathParam("catKey") int catKey, RequestScope request, @Auth ColUser user) {
     requireDraft(catKey);
     assembly.sync(request, user);
   }

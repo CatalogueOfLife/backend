@@ -28,6 +28,9 @@ The CoL backend consists of 2 [Dropwizard](https://www.dropwizard.io/) applicati
 For development tests you can also run the application straight from your IDE 
 by executing the main `WsServer.java` or `AdminServer.java` class and passing it the right arguments `server /path/to/config.yml`
 
+In order to avoid real authentication against the GBIF registry you can change the AuthBundle and use a LocalAuthFilter
+instead of the real AuthFilter. This authenticates every request with a test account with full admin privileges.
+
 
 ## Health Check
 To see your applications health enter url `http://localhost:8081/healthcheck`

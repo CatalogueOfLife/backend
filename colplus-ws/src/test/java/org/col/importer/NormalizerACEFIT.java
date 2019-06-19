@@ -230,8 +230,15 @@ public class NormalizerACEFIT extends NormalizerITBase {
       assertEquals("Anterhynchium alecto lalepi", u.usage.getName().getScientificName());
       assertEquals("(Cheesm.i.l.)", u.usage.getName().getAuthorship());
       v = verbatim(u.usage.getName());
-      
       assertTrue(v.hasIssue(Issue.UNPARSABLE_AUTHORSHIP));
+  
+      u = usageByID("2");
+      assertEquals("Foa fo", u.usage.getName().getScientificName());
+      assertEquals("Jordan & Seale, 1905", u.usage.getName().getAuthorship());
+      assertTrue(u.getNeoName().name.isParsed());
+      assertEquals(NameType.SCIENTIFIC, u.getNeoName().name.getType());
+      v = verbatim(u.usage.getName());
+      assertFalse(v.hasIssue(Issue.UNPARSABLE_AUTHORSHIP));
     }
   }
   

@@ -16,12 +16,6 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.WsServerConfig;
-import org.col.common.tax.AuthorshipNormalizer;
-import org.col.dao.DecisionRematcher;
-import org.col.img.ImageService;
-import org.col.importer.neo.NeoDb;
-import org.col.importer.neo.NeoDbFactory;
-import org.col.matching.NameIndex;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.api.vocab.DatasetOrigin;
@@ -32,10 +26,16 @@ import org.col.common.io.CompressionUtil;
 import org.col.common.io.DownloadUtil;
 import org.col.common.lang.Exceptions;
 import org.col.common.lang.InterruptedRuntimeException;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.col.common.util.LoggingUtils;
 import org.col.dao.DatasetImportDao;
+import org.col.dao.DecisionRematcher;
 import org.col.es.NameUsageIndexService;
+import org.col.img.ImageService;
 import org.col.img.LogoUpdateJob;
+import org.col.importer.neo.NeoDb;
+import org.col.importer.neo.NeoDbFactory;
+import org.col.matching.NameIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,6 +103,10 @@ public class ImportJob implements Runnable {
     } else if (dataset.getOrigin() == DatasetOrigin.UPLOADED && !cfg.normalizer.source(datasetKey).exists()) {
       throw new IllegalArgumentException("Dataset " + datasetKey + " is lacking an uploaded archive");
     }
+  }
+  
+  public ImportRequest getRequest() {
+    return req;
   }
   
   @Override
