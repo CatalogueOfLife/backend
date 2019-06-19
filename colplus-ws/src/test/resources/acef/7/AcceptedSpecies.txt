@@ -1,4 +1,0 @@
-AcceptedTaxonID	Phylum	Genus	SpeciesEpithet	AuthorString	GSDNameStatus	Sp2000NameStatus	LTSSpecialist	LTSDate
-1	Arthropoda	Latrodectus	tredecimguttatus	(Rossi, 1790)	valid	accepted name	Olaf	2010
-2	Arthropoda	Latrodectus	null	(Fabricius, 1775)	valid	accepted name	Olaf	2010
-3	Arthropoda	Null	bactus	\N	valid	accepted name	Olaf	2010

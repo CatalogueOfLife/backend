@@ -1,8 +1,0 @@
-ID	AcceptedTaxonID	Genus	SubGenusName	SpeciesEpithet	AuthorString	InfraSpeciesEpithet	InfraSpeciesMarker	InfraSpeciesAuthorString	GSDNameStatus	Sp2000NameStatus	GSDNameGUID
-s1	i1	Acacia		gerrardii	Benth.	najdensis	var.	Chaudhary	Synonym	Synonym	urn:lsid:ildis.org:TaxonName:36798569
-s2	2	Astragalus		caprinus	L.	hirsutus	subsp.	(Desf.) Maire	Synonym	Synonym	urn:lsid:ildis.org:TaxonName:36785674
-s3	2	Astragalus		caprinus	L.	eu-caprinus	subsp.	Maire	Synonym	Synonym	urn:lsid:ildis.org:TaxonName:34667985
-s4	2	Astragalus		caprinus	L.	hirsutus	var.	DC.	Synonym	Synonym	urn:lsid:ildis.org:TaxonName:34779785
-s5	2	Astragalus		deserti-syriaci	Eig				Synonym	Synonym	urn:lsid:ildis.org:TaxonName:34767978
-s6	2	Astragalus		beersabeensis	Eig				Synonym	Synonym	urn:lsid:ildis.org:TaxonName:38377856
-s7	22	Astragalus		nonexistus	DC.				Synonym	Synonym	urn:lsid:ildis.org:TaxonName:38377856321

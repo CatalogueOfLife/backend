@@ -1,6 +1,0 @@
-AcceptedTaxonID	ParentSpeciesID	InfraSpeciesEpithet	InfraSpeciesAuthorString	InfraSpeciesMarker	GSDNameStatus	Sp2000NameStatus	IsExtinct	HasPreHolocene	HasModern	LifeZone	AdditionalData	LTSSpecialist	LTSDate	InfraSpeciesURL	GSDTaxonGUID	GSDNameGUID
-i1	1	najdensis	(Chaudhary) Boulos	var.	Accepted name	Accepted name	0	0	1	Terrestrial		Novoselova M.				urn:lsid:ildis.org:TaxonName:896798569
-i2	1	atollensis	(St.John) Sachet	subsp.	Accepted name	Accepted name	0	0	1	Terrestrial		Novoselova M.				urn:lsid:ildis.org:TaxonName:897978565
-i3	1	lefkarensis	Meikle & Kirchhoff	subsp.	Accepted name	Accepted name	0	0	1	Terrestrial		Novoselova M.				urn:lsid:ildis.org:TaxonName:896797856
-i4	1	longifolia	(Willd.) Forther & Podlech	subsp.	Accepted name	Accepted name	0	0	1	Terrestrial		Novoselova M.				urn:lsid:ildis.org:TaxonName:897785634
-i5	1	nucleiferus	(Boiss.) Chamberlain	subsp.	Accepted name	Accepted name	0	0	1	Terrestrial		Novoselova M.				urn:lsid:ildis.org:TaxonName:896978563

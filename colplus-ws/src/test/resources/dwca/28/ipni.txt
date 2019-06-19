@@ -1,6 +1,0 @@
-1	2	Axonopus jesuiticus (A.A.Araújo) Valls
-2	1	Axonopus compressus var. jesuiticus A.A.Araújo
-10	11	Xonopus uiticus (A.A.Araújo) Valls
-11	12	Xonopus compressus var. uiticus A.A.Araújo
-12	10	Conopus compressus var. uiticus (A.A.Araújo) Krill
-13	11	Conopus uiticus (A.A.Araújo) Terror

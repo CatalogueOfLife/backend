@@ -1,2 +1,0 @@
-taxonID	identifier	references	created
-1001	https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Crepis_pulchra.jpg/908px-Crepis_pulchra.jpg	https://en.wikipedia.org/wiki/File:Crepis_pulchra.jpg	2010-03-19

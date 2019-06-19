@@ -1,8 +1,0 @@
-taxonID	vernacularName	language	source
-1	Pflanzen	German	???
-10	Korbblütler	de	
-10	daisy family	english	
-100	Pippau	deu	wikipedia
-100	hawksbeard	en	wikipedia
-1000	Schöner Pippau	ger	wikipedia
-1000	smallflower hawksbeard	en	wikipedia

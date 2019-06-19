@@ -1,6 +1,0 @@
-AcceptedTaxonID
-1
-1
-3
-3
-3

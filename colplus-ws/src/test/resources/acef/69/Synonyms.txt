@@ -1,5 +1,0 @@
-ID	AcceptedTaxonID	Genus	SubGenusName	SpeciesEpithet	AuthorString	InfraSpeciesEpithet	InfraSpeciesMarker	InfraSpeciesAuthorString	GSDNameStatus	Sp2000NameStatus	GSDNameGUID
-Rho-140	Rho-61	Rhodacarus	\N	guevarai	Guevara-Benitez, 1974	\N	\N	\N	\N	synonym	\N
-Rho-141	Rho-86	Rhodacarella	\N	cavernicola	Moraza, 2004	\N	\N	\N	\N	synonym	\N
-Rho-142	Rho-117	Rhodacarus	\N	elbius.	Karg, 1971	\N	\N	\N	\N	synonym	\N
-Rho-143	Rho-118	Rhodacarus	\N	ancorae	Karg, 1971	\N	\N	\N	\N	synonym	\N

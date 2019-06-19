@@ -1,1 +1,0 @@
-Test spotting of file named in plural

@@ -1,5 +1,0 @@
-AcceptedTaxonID	Kingdom	Phylum	Family	Genus	SpeciesEpithet	AuthorString	GSDNameStatus	Sp2000NameStatus	LTSSpecialist	LTSDate
-MD1	Animalia	Arthropoda	Theridiidae	Latrodectus	tredecimguttatus	(Rossi, 1790)	valid	accepted name	Olaf	2010
-MD2	Animalia	Arthropoda	Theridiidae	Latrodectus	mactans	(Fabricius, 1775)	valid	accepted name	Olaf	2010
-MD3	Animalia	Arthropoda	Theridiidae	Latrodectus	variolus	Walckenaer, 1837	valid	accepted name	Olaf	2010
-MD4	Animalia	Arthropoda	Theridiidae	Latrodectus	hesperus	Chamberlin & Ivie, 1935	valid	accepted name	Olaf	2010

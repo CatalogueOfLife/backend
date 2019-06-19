@@ -1,1 +1,0 @@
-"AcceptedTaxonID","parentID","InfraSpeciesEpithet","InfraSpeciesMarker","InfraSpeciesAuthorString","GSDNameStatus","Sp2000NameStatus","IsExtinct","HasPreHolocene","HasModern","LifeZone","AdditionalData","LTSSpecialist","LTSDate","InfraSpeciesURL","GSDTaxonGUID","GSDNameGUID"

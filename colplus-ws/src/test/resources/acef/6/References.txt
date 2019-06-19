@@ -1,6 +1,0 @@
-ReferenceID;Authors;Year;Title;Source;Details
-Fabricius1775;Fabricius, J. C.;1775;Systema entomologiae, sistens insectorum classes, ordines, genera, species, adiectis, synonymis, locis descriptionibus observationibus. Flensburg and Lipsiae, 832 pp.;;(Araneae, pp. 431-441)
-Walckenaer1805;Walckenaer, CA;1805;Table of the aranid or essential characters of the tribes, genera, families and races contained in the genus Aranea of ​​Linnaeus, with the designation of the species included in each of these divisions . Paris, 88 pp;;
-doi:10.5431/aramit3707;Jäger, P.;2009;Latrodectus mactans nach Deutschland eingeschleppt (Araneae: Theridiidae).;Arachnologische Mitteilungen 37;35-38.
-Gómez-Rodríguez2012;Gómez-Rodríguez, J. F. & Salazar O., C. A.;2012;Arañas de la región montañosa de Miquihuana, Tamaulipas: listado faunístico y registros nuevos.;Dugesiana 19;1-7.
-Kaston1970;Kaston BJ;1970;Comparative biology of American black widow spiders.;Transactions of the San Diego Society of Natural History 16;33-82.

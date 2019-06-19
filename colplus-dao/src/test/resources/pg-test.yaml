@@ -1,5 +1,0 @@
-host: ${db.host}
-port: 5432
-database: ${db.database}
-user: ${db.user}
-password: ${db.password}

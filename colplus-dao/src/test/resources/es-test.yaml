@@ -1,6 +1,0 @@
-hosts: ${es.hosts}
-ports: ${es.ports}
-nameUsage:
-  modelClass: org.col.es.model.EsNameUsage
-  numShards: 1
-  numReplicas: 0

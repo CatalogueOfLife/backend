@@ -1,4 +1,0 @@
-type: gbif
-api: "${gbif.api}"
-appkey: ${gbif.appkey}
-secret: "${gbif.secret}"

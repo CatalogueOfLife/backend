@@ -1,3 +1,0 @@
-324805	Trametes modesta	(Kunze ex Fr.) Ryvarden	sp.	198666	324805	\N		Norw. Jl Bot. 19: 236 (1972)	Trametes	Polyporaceae	Polyporales	Incertae sedis	Agaricomycetes	Agaricomycotina	Basidiomycota	Fungi
-140283	Polystictus substipitatus	(Murrill) Sacc. & Trotter	sp.	208383	324805	\N		Syll. fung. (Abellini) 21: 318 (1912)	Polystictus	Hymenochaetaceae	Hymenochaetales	Incertae sedis	Agaricomycetes	Agaricomycotina	Basidiomycota	Fungi
-198666	Polyporus modestus	Kunze ex Fr.	sp.	198666	324805	\N		Linnaea 5: 519 (1830)	Polyporus	Polyporaceae	Polyporales	Incertae sedis	Agaricomycetes	Agaricomycotina	Basidiomycota	Fungi
