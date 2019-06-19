@@ -65,6 +65,13 @@
     <association property="subject" javaType="SimpleName" autoMapping="true" columnPrefix="subject_" />
   </resultMap>
 
+  <select id="list" resultMap="estimateResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    ORDER BY est.key
+    <include refid="org.col.db.mapper.Common.limit" />
+  </select>
+
   <select id="get" resultMap="estimateResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />

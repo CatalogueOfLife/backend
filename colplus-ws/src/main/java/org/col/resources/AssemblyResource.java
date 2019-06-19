@@ -19,7 +19,7 @@ import org.col.api.model.SectorImport;
 import org.col.api.vocab.Datasets;
 import org.col.assembly.AssemblyCoordinator;
 import org.col.assembly.AssemblyState;
-import org.col.assembly.RequestScope;
+import org.col.api.model.RequestScope;
 import org.col.command.export.AcExporter;
 import org.col.db.mapper.SectorImportMapper;
 import org.col.dw.auth.Roles;

@@ -1,4 +1,4 @@
-package org.col.assembly;
+package org.col.api.model;
 
 import java.util.Objects;
 

@@ -11,7 +11,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.ColUser;
 import org.col.api.model.SpeciesEstimate;
-import org.col.dao.DecisionRematcher;
+import org.col.dao.SubjectRematcher;
 import org.col.dao.EstimateDao;
 import org.col.db.mapper.EstimateMapper;
 import org.col.dw.auth.Roles;
@@ -35,7 +35,7 @@ public class EstimateResource extends GlobalEntityResource<SpeciesEstimate> {
   @Path("/{key}/rematch")
   public SpeciesEstimate rematch(@PathParam("key") Integer key, @Context SqlSession session, @Auth ColUser user) {
     SpeciesEstimate est = get(key);
-    new DecisionRematcher(session).matchEstimate(est);
+    new SubjectRematcher(session).matchEstimate(est);
     session.commit();
     return est;
   }
@@ -51,7 +51,7 @@ public class EstimateResource extends GlobalEntityResource<SpeciesEstimate> {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   @Path("/broken/rematch")
   public void rematchBroken(@Context SqlSession session, @Auth ColUser user) {
-    DecisionRematcher matcher = new DecisionRematcher(session);
+    SubjectRematcher matcher = new SubjectRematcher(session);
     matcher.matchBrokenEstimates();
     session.commit();
   }

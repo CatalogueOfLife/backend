@@ -130,7 +130,7 @@ abstract class SectorRunnable implements Runnable {
   private void loadDecisions() {
     try (SqlSession session = factory.openSession(true)) {
       DecisionMapper dm = session.getMapper(DecisionMapper.class);
-      for (EditorialDecision ed : dm.list(datasetKey, null)) {
+      for (EditorialDecision ed : dm.listByDataset(datasetKey, null)) {
         decisions.put(ed.getSubject().getId(), ed);
       }
     }

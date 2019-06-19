@@ -13,7 +13,6 @@ import java.util.function.Consumer;
 import com.google.common.base.Preconditions;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
-import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.WsServerConfig;
 import org.col.api.model.Dataset;
@@ -29,7 +28,7 @@ import org.col.common.lang.InterruptedRuntimeException;
 import org.col.common.tax.AuthorshipNormalizer;
 import org.col.common.util.LoggingUtils;
 import org.col.dao.DatasetImportDao;
-import org.col.dao.DecisionRematcher;
+import org.col.dao.SubjectRematcher;
 import org.col.es.NameUsageIndexService;
 import org.col.img.ImageService;
 import org.col.img.LogoUpdateJob;
@@ -206,9 +205,7 @@ public class ImportJob implements Runnable {
         indexService.indexDataset(datasetKey);
   
         LOG.info("Updating sectors and decisions for dataset {}", datasetKey);
-        try(SqlSession session = factory.openSession(true)) {
-          new DecisionRematcher(session).matchDatasetSubjects(datasetKey);
-        }
+        new SubjectRematcher(factory, req.createdBy).matchDatasetSubjects(datasetKey);
   
         LOG.info("Dataset import {} completed in {}", datasetKey,
             DurationFormatUtils.formatDurationHMS(Duration.between(di.getStarted(), LocalDateTime.now()).toMillis()));

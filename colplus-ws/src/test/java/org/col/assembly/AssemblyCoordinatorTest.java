@@ -4,6 +4,7 @@ import com.codahale.metrics.MetricRegistry;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Dataset;
+import org.col.api.model.RequestScope;
 import org.col.api.model.Sector;
 import org.col.api.model.SimpleName;
 import org.col.api.vocab.Datasets;

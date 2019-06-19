@@ -151,6 +151,7 @@
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
     ORDER BY target_rank, key
+    <include refid="org.col.db.mapper.Common.limit" />
   </select>
 
   <select id="listByDataset" resultMap="sectorResultMap">

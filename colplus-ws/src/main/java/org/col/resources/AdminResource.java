@@ -11,7 +11,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.ColUser;
 import org.col.api.vocab.Datasets;
-import org.col.assembly.RequestScope;
+import org.col.api.model.RequestScope;
 import org.col.common.io.DownloadUtil;
 import org.col.config.NormalizerConfig;
 import org.col.dao.TaxonDao;

@@ -14,10 +14,11 @@ import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.ColUser;
+import org.col.api.model.RematchRequest;
 import org.col.api.model.Sector;
 import org.col.assembly.AssemblyCoordinator;
 import org.col.dao.DatasetImportDao;
-import org.col.dao.DecisionRematcher;
+import org.col.dao.SubjectRematcher;
 import org.col.dao.SectorDao;
 import org.col.db.mapper.SectorMapper;
 import org.col.db.tree.DiffService;
@@ -75,21 +76,10 @@ public class SectorResource extends GlobalEntityResource<Sector> {
   
   @POST
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  @Path("/broken/rematch")
-  public void rematchDataset(@Context SqlSession session, @Auth ColUser user) {
-    DecisionRematcher matcher = new DecisionRematcher(session);
-    matcher.matchBrokenSectorTargets();
+  @Path("/rematch")
+  public void rematch(RematchRequest req, @Context SqlSession session, @Auth ColUser user) {
+    new SubjectRematcher(session).match(req);
     session.commit();
-  }
-  
-  @POST
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  @Path("/{key}/rematch")
-  public Sector rematch(@PathParam("key") Integer key, @Context SqlSession session, @Auth ColUser user) {
-    Sector s = get(key);
-    new DecisionRematcher(session).matchSector(s, true, true);
-    session.commit();
-    return s;
   }
   
   @GET

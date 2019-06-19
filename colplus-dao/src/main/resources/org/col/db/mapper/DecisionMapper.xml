@@ -88,6 +88,13 @@
   <select id="list" resultMap="decisionResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
+    ORDER BY ed.key
+    <include refid="org.col.db.mapper.Common.limit" />
+  </select>
+
+  <select id="listByDataset" resultMap="decisionResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
     <where>
       <if test="datasetKey != null">
         ed.dataset_key = #{datasetKey}

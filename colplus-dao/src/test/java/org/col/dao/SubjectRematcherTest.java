@@ -1,8 +1,10 @@
 package org.col.dao;
 
 import org.apache.ibatis.session.SqlSession;
+import org.col.api.model.RematchRequest;
 import org.col.api.model.Sector;
 import org.col.api.model.SimpleName;
+import org.col.api.vocab.Users;
 import org.col.db.MybatisTestUtils;
 import org.col.db.PgSetupRule;
 import org.col.db.mapper.TestDataRule;
@@ -13,7 +15,7 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
-public class DecisionRematcherTest {
+public class SubjectRematcherTest {
   
   @ClassRule
   public static PgSetupRule pg = new PgSetupRule();
@@ -42,31 +44,35 @@ public class DecisionRematcherTest {
         new SimpleName(null, "Lepidoptera", Rank.ORDER)
     );
   
+    SubjectRematcher rem = new SubjectRematcher(PgSetupRule.getSqlSessionFactory(), Users.TESTER);
+    rem.matchDatasetSubjects(datasetKey);
+  
+    Sector s1b;
+    Sector s2b;
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
-      DecisionRematcher rem = new DecisionRematcher(session);
-      
-      rem.matchDatasetSubjects(datasetKey);
-
-      Sector s1b = sm.get(s1);
+      s1b = sm.get(s1);
       Assert.assertNotNull(s1b.getSubject().getId());
       Assert.assertNull(s1b.getTarget().getId());
-
-      Sector s2b = sm.get(s2);
+  
+      s2b = sm.get(s2);
       Assert.assertNotNull(s2b.getSubject().getId());
       Assert.assertNull(s2b.getTarget().getId());
-  
-      rem.matchBrokenSectorTargets();
-      Sector s1c = sm.get(s1);
-      Assert.assertEquals(s1b.getSubject().getId(), s1c.getSubject().getId());
-      Assert.assertNotNull(s1c.getTarget().getId());
-  
-      Sector s2c = sm.get(s2);
-      Assert.assertEquals(s2b.getSubject().getId(), s2c.getSubject().getId());
-      Assert.assertNotNull(s2c.getTarget().getId());
-  
     }
   
+    rem.match(RematchRequest.all());
+
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      SectorMapper sm = session.getMapper(SectorMapper.class);
+
+      Sector s1c = sm.get(s1);
+      Assert.assertNull(s1c.getSubject().getId());
+      Assert.assertEquals("t4", s1c.getTarget().getId());
+  
+      Sector s2c = sm.get(s2);
+      Assert.assertNull(s2c.getSubject().getId());
+      Assert.assertEquals("t5", s2c.getTarget().getId());
+    }
   }
   
   static int createSector(Sector.Mode mode, int datasetKey, SimpleName src, SimpleName target) {

@@ -7,14 +7,12 @@ import java.util.function.Function;
 import com.google.common.base.Preconditions;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.api.model.Dataset;
-import org.col.api.model.EditorialDecision;
-import org.col.api.model.Page;
-import org.col.api.model.Sector;
+import org.col.api.model.*;
 import org.col.api.search.DatasetSearchRequest;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.DecisionMapper;
 import org.col.db.Pageable;
+import org.col.db.mapper.EstimateMapper;
 import org.col.db.mapper.SectorMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +33,10 @@ public class Pager<T> implements Iterable<T> {
   
   public static Iterable<EditorialDecision> decisions(final SqlSessionFactory factory) {
     return pager(100, DecisionMapper.class, factory);
+  }
+  
+  public static Iterable<SpeciesEstimate> estimates(final SqlSessionFactory factory) {
+    return pager(100, EstimateMapper.class, factory);
   }
 
   public static Iterable<Sector> sectors(final SqlSessionFactory factory) {

@@ -28,9 +28,9 @@ public class DecisionMapperTest extends GlobalCRUDMapperTest<EditorialDecision, 
     mapper().create(d2);
     commit();
     
-    assertEquals(2, mapper().list(null, null).size());
-    assertEquals(2, mapper().list(datasetKey, null).size());
-    assertEquals(1, mapper().list(datasetKey, TestEntityGenerator.TAXON1.getId()).size());
+    assertEquals(2, mapper().listByDataset(null, null).size());
+    assertEquals(2, mapper().listByDataset(datasetKey, null).size());
+    assertEquals(1, mapper().listByDataset(datasetKey, TestEntityGenerator.TAXON1.getId()).size());
     assertEquals(1, mapper().subjectBroken(datasetKey).size());
   }
   

@@ -12,7 +12,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.ColUser;
 import org.col.api.model.EditorialDecision;
 import org.col.dao.DecisionDao;
-import org.col.dao.DecisionRematcher;
+import org.col.dao.SubjectRematcher;
 import org.col.db.mapper.DecisionMapper;
 import org.col.dw.auth.Roles;
 import org.col.es.NameUsageIndexService;
@@ -33,7 +33,7 @@ public class DecisionResource extends GlobalEntityResource<EditorialDecision> {
   
   @GET
   public List<EditorialDecision> list(@Context SqlSession session, @QueryParam("datasetKey") Integer datasetKey, @QueryParam("id") String id) {
-    return session.getMapper(DecisionMapper.class).list(datasetKey, id);
+    return session.getMapper(DecisionMapper.class).listByDataset(datasetKey, id);
   }
   
   @GET
@@ -48,7 +48,7 @@ public class DecisionResource extends GlobalEntityResource<EditorialDecision> {
   @Path("/{key}/rematch")
   public EditorialDecision rematch(@PathParam("key") Integer key, @Context SqlSession session, @Auth ColUser user) {
     EditorialDecision ed = get(key);
-    new DecisionRematcher(session).matchDecision(ed);
+    new SubjectRematcher(session).matchDecision(ed);
     session.commit();
     return ed;
   }
