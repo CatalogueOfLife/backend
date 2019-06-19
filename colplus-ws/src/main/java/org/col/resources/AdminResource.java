@@ -10,10 +10,12 @@ import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.ColUser;
-import org.col.api.vocab.Datasets;
+import org.col.api.model.RematchRequest;
 import org.col.api.model.RequestScope;
+import org.col.api.vocab.Datasets;
 import org.col.common.io.DownloadUtil;
 import org.col.config.NormalizerConfig;
+import org.col.dao.SubjectRematcher;
 import org.col.dao.TaxonDao;
 import org.col.dw.auth.Roles;
 import org.col.es.NameUsageIndexService;
@@ -78,6 +80,14 @@ public class AdminResource {
     } else {
       throw new IllegalArgumentException("Only all or datasetKey properties are supported");
     }
+  }
+  
+  @POST
+  @Path("/rematch")
+  public SubjectRematcher rematch(RematchRequest req, @Auth ColUser user) {
+    SubjectRematcher matcher = new SubjectRematcher(factory, user.getKey());
+    matcher.match(req);
+    return matcher;
   }
   
   class IndexJob implements Runnable {

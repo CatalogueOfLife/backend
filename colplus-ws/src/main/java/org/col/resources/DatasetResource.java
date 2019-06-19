@@ -49,11 +49,9 @@ public class DatasetResource extends GlobalEntityResource<Dataset> {
   private final ImageService imgService;
   private final DatasetImportDao diDao;
   private final DiffService diff;
-  private final SqlSessionFactory factory;
   
   public DatasetResource(SqlSessionFactory factory, ImageService imgService, WsServerConfig cfg, DownloadUtil downloader, DiffService diff) {
-    super(Dataset.class, new DatasetDao(factory, downloader, imgService, cfg.normalizer::scratchFile));
-    this.factory = factory;
+    super(Dataset.class, new DatasetDao(factory, downloader, imgService, cfg.normalizer::scratchFile), factory);
     this.dao = (DatasetDao) super.dao;
     this.imgService = imgService;
     this.diDao = new DatasetImportDao(factory, cfg.textTreeRepo);

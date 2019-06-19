@@ -15,15 +15,12 @@ public class SubjectRematcher {
   private static final Logger LOG = LoggerFactory.getLogger(SubjectRematcher.class);
   
   private final SqlSessionFactory factory;
-  private SqlSession session;
   private DatasetMapper dm;
   private SectorMapper sm;
   private DecisionMapper dem;
   private EstimateMapper esm;
   private MatchingDao mdao;
   private final int userKey;
-  
-  
   
   private MatchCounter sectors   = new MatchCounter();
   private MatchCounter decisions = new MatchCounter();
@@ -37,7 +34,6 @@ public class SubjectRematcher {
   }
   
   private void init(SqlSession session) {
-    this.session = session;
     dm = session.getMapper(DatasetMapper.class);
     sm = session.getMapper(SectorMapper.class);
     dem = session.getMapper(DecisionMapper.class);
@@ -90,12 +86,16 @@ public class SubjectRematcher {
       datasetKeys.add(s.getDatasetKey());
       matchSector(s);
     });
-
-    LOG.info("Found {} distinct datasets in all sectors to rematch", datasetKeys.size());
-    datasetKeys.forEach(this::matchDatasetDecision);
   
+    Pager.decisions(factory).forEach(d -> {
+      datasetKeys.add(d.getDatasetKey());
+      matchDecision(d);
+    });
+    
     LOG.info("Rematch all estimates for draft catalogue");
     Pager.estimates(factory).forEach(this::matchEstimate);
+
+    datasets = datasetKeys.size();
   }
   
   public void match(RematchRequest req) {
@@ -116,6 +116,19 @@ public class SubjectRematcher {
       } else if (Boolean.TRUE.equals(req.getAll())) {
         matchAll();
       }
+      session.commit();
+    }
+    log();
+  }
+  
+  public void matchDatasetSubjects(final int datasetKey) {
+    LOG.info("Rematch all sector subjects in dataset {}", datasetKey);
+    try(SqlSession session = factory.openSession(true)) {
+      init(session);
+      for (Sector s : sm.listByDataset(datasetKey)) {
+        matchSectorSubjectOnly(s);
+      }
+      matchDatasetDecision(datasetKey);
       session.commit();
     }
     log();
@@ -232,19 +245,6 @@ public class SubjectRematcher {
     matchDatasetDecision(datasetKey);
   }
   
-  public void matchDatasetSubjects(final int datasetKey) {
-    LOG.info("Rematch all sector subjects in dataset {}", datasetKey);
-    try(SqlSession session = factory.openSession(true)) {
-      init(session);
-      for (Sector s : sm.listByDataset(datasetKey)) {
-        matchSectorSubjectOnly(s);
-      }
-      matchDatasetDecision(datasetKey);
-      session.commit();
-    }
-    log();
-  }
-  
   private void matchDatasetDecision(final int datasetKey) {
     LOG.info("Rematch all decision subjects in dataset {}", datasetKey);
     datasets++;
@@ -254,6 +254,7 @@ public class SubjectRematcher {
   }
   
   private void log() {
+    LOG.info("Found {} distinct datasets during rematching", datasets);
     log("sectors", sectors);
     log("decisions", decisions);
     log("estimates", estimates);

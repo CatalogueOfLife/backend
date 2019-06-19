@@ -8,6 +8,7 @@ import javax.ws.rs.core.MediaType;
 
 import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.exception.NotFoundException;
 import org.col.api.model.*;
 import org.col.dao.GlobalEntityDao;
@@ -22,13 +23,15 @@ public abstract class GlobalEntityResource<T extends GlobalEntity & UserManaged>
 
   private final Class<T> objClass;
   protected final GlobalEntityDao<T, ?> dao;
+  protected final SqlSessionFactory factory;
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(GlobalEntityResource.class);
 
-  public GlobalEntityResource(Class<T> objClass, GlobalEntityDao<T, ?> dao) {
+  public GlobalEntityResource(Class<T> objClass, GlobalEntityDao<T, ?> dao, SqlSessionFactory factory) {
     this.objClass = objClass;
     this.dao = dao;
+    this.factory = factory;
   }
   
   /**

@@ -14,11 +14,9 @@ import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.ColUser;
-import org.col.api.model.RematchRequest;
 import org.col.api.model.Sector;
 import org.col.assembly.AssemblyCoordinator;
 import org.col.dao.DatasetImportDao;
-import org.col.dao.SubjectRematcher;
 import org.col.dao.SectorDao;
 import org.col.db.mapper.SectorMapper;
 import org.col.db.tree.DiffService;
@@ -34,14 +32,12 @@ public class SectorResource extends GlobalEntityResource<Sector> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorResource.class);
-  private final SqlSessionFactory factory;
   private final DatasetImportDao diDao;
   private final DiffService diff;
   private final AssemblyCoordinator assembly;
   
   public SectorResource(SqlSessionFactory factory, DatasetImportDao diDao, DiffService diffService, AssemblyCoordinator assembly) {
-    super(Sector.class, new SectorDao(factory));
-    this.factory = factory;
+    super(Sector.class, new SectorDao(factory), factory);
     this.diDao = diDao;
     this.diff = diffService;
     this.assembly = assembly;
@@ -72,14 +68,6 @@ public class SectorResource extends GlobalEntityResource<Sector> {
     } else {
       return mapper.subjectBroken(datasetKey);
     }
-  }
-  
-  @POST
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  @Path("/rematch")
-  public void rematch(RematchRequest req, @Context SqlSession session, @Auth ColUser user) {
-    new SubjectRematcher(session).match(req);
-    session.commit();
   }
   
   @GET
