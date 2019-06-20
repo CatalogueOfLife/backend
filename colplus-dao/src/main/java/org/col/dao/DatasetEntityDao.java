@@ -52,6 +52,10 @@ public class DatasetEntityDao<T extends DatasetEntity & UserManaged, M extends D
   
   public String create(T obj, int user) {
     obj.applyUser(user);
+    if (obj.getId() == null) {
+      // create random id for new object
+      obj.setId(UUID.randomUUID().toString());
+    }
     try (SqlSession session = factory.openSession(false)) {
       M mapper = session.getMapper(mapperClass);
       mapper.create(obj);
