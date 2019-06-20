@@ -453,6 +453,7 @@ CREATE TABLE vernacular_name (
   latin TEXT,
   language CHAR(3),
   country CHAR(2),
+  area TEXT,
   reference_id TEXT,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   created_by INTEGER NOT NULL,

@@ -131,6 +131,7 @@ public class DwcInterpreter extends InterpreterBase {
         DwcTerm.vernacularName,
         null,
         DcTerm.language,
+        DwcTerm.locality,
         DwcTerm.countryCode, DwcTerm.country
     );
   }

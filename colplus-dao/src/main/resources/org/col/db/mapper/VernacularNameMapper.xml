@@ -11,6 +11,7 @@
     vn.latin,
     vn.language,
     vn.country,
+    vn.area,
     vn.reference_id,
     vn.created,
     vn.created_by,
@@ -26,6 +27,7 @@
     latin,
     language,
     country,
+    area,
     reference_id,
     created_by,
     modified_by
@@ -39,6 +41,7 @@
     #{obj.latin},
     #{obj.language},
     #{obj.country},
+    #{obj.area},
     #{obj.referenceId},
     #{obj.createdBy},
     #{obj.modifiedBy}
@@ -51,7 +54,6 @@
   <resultMap id="vernacularNameResultMap" type="VernacularName" autoMapping="true">
     <id property="key" column="key" />
   </resultMap>
-
 
   <select id="listByTaxon" resultMap="vernacularNameResultMap">
     SELECT <include refid="SELECT" />

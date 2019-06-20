@@ -16,6 +16,7 @@ public class VernacularName extends DataEntity implements Referenced, VerbatimEn
   @Size(min = 3, max = 3)
   private String language;
   private Country country;
+  private String area;
   private String referenceId;
   
   public Integer getKey() {
@@ -71,6 +72,14 @@ public class VernacularName extends DataEntity implements Referenced, VerbatimEn
     this.country = country;
   }
   
+  public String getArea() {
+    return area;
+  }
+  
+  public void setArea(String area) {
+    this.area = area;
+  }
+  
   @Override
   public String getReferenceId() {
     return referenceId;
@@ -85,6 +94,7 @@ public class VernacularName extends DataEntity implements Referenced, VerbatimEn
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
     VernacularName that = (VernacularName) o;
     return Objects.equals(key, that.key) &&
         Objects.equals(verbatimKey, that.verbatimKey) &&
@@ -92,13 +102,13 @@ public class VernacularName extends DataEntity implements Referenced, VerbatimEn
         Objects.equals(latin, that.latin) &&
         Objects.equals(language, that.language) &&
         country == that.country &&
+        Objects.equals(area, that.area) &&
         Objects.equals(referenceId, that.referenceId);
   }
   
   @Override
   public int hashCode() {
-    
-    return Objects.hash(key, verbatimKey, name, latin, language, country, referenceId);
+    return Objects.hash(super.hashCode(), key, verbatimKey, name, latin, language, country, area, referenceId);
   }
   
   @Override

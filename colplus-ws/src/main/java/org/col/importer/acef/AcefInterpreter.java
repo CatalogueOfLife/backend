@@ -70,6 +70,7 @@ public class AcefInterpreter extends InterpreterBase {
         AcefTerm.CommonName,
         AcefTerm.TransliteratedName,
         AcefTerm.Language,
+        AcefTerm.Area,
         AcefTerm.Country
     );
   }

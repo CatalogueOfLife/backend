@@ -318,7 +318,7 @@ COPY (
     v.latin AS transliteration, 
     trim(v.language) AS language,
     trim(v.country) AS country,
-    NULL AS area, 
+    trim(v.area) AS area,
     rk.key as reference_id,
     coalesce(s.dataset_key, 1500) - 1000 AS database_id,
     NULL AS is_infraspecies,

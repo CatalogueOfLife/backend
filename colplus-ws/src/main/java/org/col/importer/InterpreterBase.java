@@ -71,7 +71,7 @@ public class InterpreterBase {
   }
 
   protected List<VernacularName> interpretVernacular(VerbatimRecord rec, BiConsumer<VernacularName, VerbatimRecord> addReference,
-                                                     Term name, Term translit, Term lang, Term... countryTerms) {
+                                                     Term name, Term translit, Term lang, Term area, Term... countryTerms) {
     String vname = rec.get(name);
     if (vname != null) {
       VernacularName vn = new VernacularName();
@@ -83,6 +83,9 @@ public class InterpreterBase {
       }
       if (lang != null) {
         vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(lang)).orNull());
+      }
+      if (area != null) {
+        vn.setArea(rec.get(area));
       }
       vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.getFirst(countryTerms)).orNull());
   
