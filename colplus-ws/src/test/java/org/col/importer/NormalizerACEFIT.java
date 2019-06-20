@@ -74,35 +74,37 @@ public class NormalizerACEFIT extends NormalizerITBase {
   public void acefSample() throws Exception {
     normalize(1);
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t = usageByID("14649");
-      assertEquals("Zapoteca formosa", t.usage.getName().getScientificName());
-      assertEquals("(Kunth) H.M.Hern.", t.usage.getName().authorshipComplete());
-      assertEquals(Rank.SPECIES, t.usage.getName().getRank());
-      assertEquals("Fabaceae", t.classification.getFamily());
+      NeoUsage u = usageByID("14649");
+      Taxon t = (Taxon) u.usage;
+      assertEquals("Zapoteca formosa", u.usage.getName().getScientificName());
+      assertEquals("(Kunth) H.M.Hern.", u.usage.getName().authorshipComplete());
+      assertEquals(Rank.SPECIES, u.usage.getName().getRank());
+      assertEquals("Fabaceae", u.classification.getFamily());
+      assertEquals(Sets.newHashSet(Lifezone.values()), t.getLifezones());
       
       // distributions
-      assertEquals(3, t.distributions.size());
+      assertEquals(3, u.distributions.size());
       Set<String> areas = Sets.newHashSet("AGE-BA", "BZC-MS", "BZC-MT");
-      for (Distribution d : t.distributions) {
+      for (Distribution d : u.distributions) {
         assertEquals(Gazetteer.TDWG, d.getGazetteer());
         assertTrue(areas.remove(d.getArea()));
       }
       
       // vernacular
-      assertEquals(3, t.vernacularNames.size());
+      assertEquals(3, u.vernacularNames.size());
       Set<String> names = Sets.newHashSet("Ramkurthi", "Ram Kurthi", "отчество");
-      for (VernacularName v : t.vernacularNames) {
+      for (VernacularName v : u.vernacularNames) {
         assertEquals(v.getName().startsWith("R") ? "hin": "rus",
             v.getLanguage());
         assertTrue(names.remove(v.getName()));
       }
       
       // denormed family
-      t = byName("Fabaceae", null);
-      assertEquals("Fabaceae", t.usage.getName().getScientificName());
-      assertEquals("Fabaceae", t.usage.getName().canonicalNameComplete());
-      assertNull(t.usage.getName().authorshipComplete());
-      assertEquals(Rank.FAMILY, t.usage.getName().getRank());
+      u = byName("Fabaceae", null);
+      assertEquals("Fabaceae", u.usage.getName().getScientificName());
+      assertEquals("Fabaceae", u.usage.getName().canonicalNameComplete());
+      assertNull(u.usage.getName().authorshipComplete());
+      assertEquals(Rank.FAMILY, u.usage.getName().getRank());
     }
   }
   
