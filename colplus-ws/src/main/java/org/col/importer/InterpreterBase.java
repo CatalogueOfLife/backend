@@ -36,7 +36,7 @@ import static org.col.parser.SafeParser.parse;
 public class InterpreterBase {
   
   private static final Logger LOG = LoggerFactory.getLogger(InterpreterBase.class);
-  protected static final Splitter MULTIVAL = Splitter.on(CharMatcher.anyOf(";|,")).trimResults();
+  protected static final Splitter MULTIVAL = Splitter.on(CharMatcher.anyOf(";|,@")).trimResults().omitEmptyStrings();
   private static final Transliterator transLatin = Transliterator.getInstance("Any-Latin");
   private static final Transliterator transAscii = Transliterator.getInstance("Latin-ASCII");
   private static final int MIN_YEAR = 1500;
