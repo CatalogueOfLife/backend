@@ -43,7 +43,8 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
   private final ReferenceMapper rm;
   private final TaxonMapper tm;
   private final NameMapper nm;
-  private int counter = 0;
+  private int sCounter = 0;
+  private int tCounter = 0;
   private final Usage target;
   private final Map<RanKnName, Usage> implicits = new HashMap<>();
   private final Map<String, Usage> ids = new HashMap<>();
@@ -216,18 +217,19 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
     DatasetID orig;
     DatasetID parentDID = new DatasetID(catalogueKey, parent.id);
     if (u.isTaxon()) {
+      state.setTaxonCount(++tCounter);
       orig = TaxonDao.copyTaxon(session, (Taxon) u, parentDID, user.getKey(), COPY_DATA, this::lookupReference, this::lookupReference);
     } else {
+      state.setSynonymCount(++sCounter);
       orig = SynonymDao.copySynonym(session, (Synonym) u, parentDID, user.getKey(), this::lookupReference);
     }
     // remember old to new id mapping
     ids.put(orig.getId(), usage(u));
     
     // commit in batches
-    if (counter++ % 2000 == 0) {
+    if ((sCounter + tCounter) % 1000 == 0) {
       session.commit();
     }
-    state.setTaxonCount(counter);
   }
   
   private boolean skipUsage(NameUsageBase u) {
