@@ -22,7 +22,11 @@ public class LanguageParserTest extends ParserTestBase<String> {
     assertParse("deu", "deutsch");
     assertParse("deu", "GER");
     assertParse("eng", "en");
-
+  
+    for (String x : new String[]{"Limburgan", "Limburger", "Limburgish", "Lim", "li"}) {
+      assertParse("lim", x);
+    }
+    
     assertUnparsable("unknown");
     assertUnparsable("zz");
   }
