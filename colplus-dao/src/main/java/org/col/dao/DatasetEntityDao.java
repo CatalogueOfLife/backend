@@ -44,7 +44,7 @@ public class DatasetEntityDao<T extends DatasetEntity & UserManaged, M extends D
     try (SqlSession session = factory.openSession()) {
       M mapper = session.getMapper(mapperClass);
       List<T> result = mapper.list(datasetKey, p);
-      int total = result.size() == p.getLimit() ? mapper.count(datasetKey) : result.size();
+      int total = result.size() == p.getLimit() ? mapper.count(datasetKey) : p.getOffset() + result.size();
       return new ResultPage<>(p, total, result);
     }
   }
