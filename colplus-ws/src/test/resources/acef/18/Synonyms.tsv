@@ -1,0 +1,3 @@
+"ID"	"AcceptedTaxonID"	"Genus"	"SubGenusName"	"SpeciesEpithet"	"AuthorString"	"InfraSpeciesEpithet"	"InfraSpeciesMarker"	"InfraSpeciesAuthorString"	"GSDNameStatus"	"Sp2000NameStatus"	"GSDNameGUID"
+"146661"	"48827"	"Bagrus"	""	"macronema"	"Bleeker, 1846"	""	""	""	""	"ambiguous synonym"	"146661"
+"146660"	"48827"	"Hypselobagrus"	""	"macronema"	"(Bleeker, 1846)"	""	""	""	""	"ambiguous synonym"	"146660"

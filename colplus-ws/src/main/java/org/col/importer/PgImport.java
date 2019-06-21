@@ -92,9 +92,7 @@ public class PgImport implements Callable<Boolean> {
 
   private void partition() throws InterruptedException {
     interruptIfCancelled();
-    try (SqlSession session = sessionFactory.openSession(false)) {
-      partition(session, dataset.getKey());
-    }
+    partition(sessionFactory, dataset.getKey());
   }
   
   /**
@@ -102,42 +100,45 @@ public class PgImport implements Callable<Boolean> {
    * To avoid table deadlocks we synchronize this method!
    * See https://github.com/Sp2000/colplus-backend/issues/127
    */
-  static synchronized void partition(SqlSession session, int datasetKey) {
+  static synchronized void partition(SqlSessionFactory factory, int datasetKey) {
     LOG.info("Create empty partition for dataset {}", datasetKey);
-    DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
-    // first remove
-    mapper.delete(datasetKey);
-    
-    // then create
-    mapper.create(datasetKey);
-    session.commit();
-  }
-  
-  /**
-   * Builds indices and finally attaches partitions to main tables.
-   * To avoid table deadlocks on the main table we synchronize this method.
-   */
-  static synchronized void attach(SqlSession session, int datasetKey) {
-      LOG.info("Build partition indices for dataset {}", datasetKey);
+    try (SqlSession session = factory.openSession(false)) {
       DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
-    
-      // build indices and add dataset bound constraints
-      mapper.buildIndices(datasetKey);
-    
-      // attach to main table
-      mapper.attach(datasetKey);
+      // first remove
+      mapper.delete(datasetKey);
+      
+      // then create
+      mapper.create(datasetKey);
       session.commit();
+    }
+    
   }
   
   /**
    * Builds indices and finally attaches partitions to main tables.
    * To avoid table deadlocks on the main table we synchronize this method.
    */
-  private synchronized void attach() {
-    interruptIfCancelled();
-    try (SqlSession session = sessionFactory.openSession(true)) {
-      attach(session, dataset.getKey());
+  static synchronized void attach(SqlSessionFactory factory, int datasetKey) {
+    LOG.info("Build partition indices for dataset {}", datasetKey);
+    try (SqlSession session = factory.openSession(true)) {
+      // build indices and add dataset bound constraints
+      session.getMapper(DatasetPartitionMapper.class).buildIndices(datasetKey);
     }
+    
+    try (SqlSession session = factory.openSession(true)) {
+      // attach to main table - this requires an AccessExclusiveLock on all main tables
+      // see https://github.com/Sp2000/colplus-backend/issues/387
+      session.getMapper(DatasetPartitionMapper.class).attach(datasetKey);
+    }
+  }
+  
+  /**
+   * Builds indices and finally attaches partitions to main tables.
+   * To avoid table deadlocks on the main table we synchronize this method.
+   */
+  private void attach() {
+    interruptIfCancelled();
+    attach(sessionFactory, dataset.getKey());
   }
   
   private void updateMetadata() {

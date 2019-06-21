@@ -112,7 +112,7 @@ public class PgSetupRule extends ExternalResource {
   }
   
   public static void partition(int key) {
-    try (SqlSession session = sqlSessionFactory.openSession()) {
+    try (SqlSession session = sqlSessionFactory.openSession(true)) {
       DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
       pm.delete(key);
       pm.create(key);

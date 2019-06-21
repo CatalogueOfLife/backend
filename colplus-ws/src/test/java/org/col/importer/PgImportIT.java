@@ -48,6 +48,7 @@ public class PgImportIT {
   private Dataset dataset;
   private VerbatimRecordMapper vMapper;
   private boolean fullInit = true;
+  SynonymDao sdao;
   TaxonDao tdao;
   NameDao ndao;
   ReferenceDao rdao;
@@ -74,7 +75,8 @@ public class PgImportIT {
       InitDbCmd.setupStandardPartitions(testDataRule.getSqlSession());
       testDataRule.commit();
     }
-    
+  
+    sdao = new SynonymDao(PgSetupRule.getSqlSessionFactory());
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory());
     ndao = new NameDao(PgSetupRule.getSqlSessionFactory(), aNormalizer);
     rdao = new ReferenceDao(PgSetupRule.getSqlSessionFactory());
@@ -598,6 +600,24 @@ public class PgImportIT {
   
   }
   
+  /**
+   * Rich FishBase extract
+   * https://github.com/Sp2000/ConversionTool/issues/6
+   */
+  @Test
+  public void acefSynonymRefs() throws Exception {
+    normalizeAndImport(ACEF, 18);
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      Taxon t  = tdao.get(dataset.getKey(), "48827");
+  
+      Synonym s  = sdao.get(dataset.getKey(), "146661");
+      assertEquals(t.getId(), s.getParentId());
+      assertEquals(TaxonomicStatus.AMBIGUOUS_SYNONYM, s.getStatus());
+
+      //TODO: check for synonym references !!!
+    }
+  }
+  
   @Test
   @Ignore("manual test for debugging entire imports")
   public void testExternalManually() throws Exception {
@@ -605,7 +625,9 @@ public class PgImportIT {
     dataset.setContributesTo(null);
     
     //normalizeAndImport(URI.create("https://github.com/mdoering/data-ina/archive/master.zip"), COLDP);
-    normalizeAndImport(URI.create("http://data.canadensys.net/ipt/archive.do?r=vascan"), DataFormat.DWCA);
+    //normalizeAndImport(URI.create("http://data.canadensys.net/ipt/archive.do?r=vascan"), DataFormat.DWCA);
+    normalizeAndImportArchive(new File("/Users/markus/Downloads/10.tar.gz"), ACEF);
+  
     //normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/higher-classification.dwca.zip"), DWCA);
     //normalizeAndImportFolder(new File("/Users/markus/code/col+/data-staphbase/coldp"), COLDP);
     //normalizeAndImport(URI.create("https://plutof.ut.ee/ipt/archive.do?r=unite_sh"), DataFormat.DWCA);

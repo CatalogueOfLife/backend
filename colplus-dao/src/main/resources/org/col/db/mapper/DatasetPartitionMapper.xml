@@ -4,35 +4,18 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.col.db.mapper.DatasetPartitionMapper">
 
-    <update id="create" parameterType="map">
-        CREATE TABLE verbatim_${key} (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-        CREATE TABLE reference_${key} (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-        CREATE TABLE name_${key} (LIKE name INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-        CREATE TABLE name_rel_${key} (LIKE name_rel INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-        CREATE TABLE name_usage_${key} (LIKE name_usage INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-        CREATE TABLE usage_reference_${key} (LIKE usage_reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-        CREATE TABLE description_${key} (LIKE description INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-        CREATE TABLE distribution_${key} (LIKE distribution INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-        CREATE TABLE media_${key} (LIKE media INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-        CREATE TABLE vernacular_name_${key} (LIKE vernacular_name INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-
-        CREATE TRIGGER name_trigger_${key} BEFORE INSERT OR UPDATE
-        ON name_${key} FOR EACH ROW
-        WHEN (NEW.homotypic_name_id IS NULL)
-        EXECUTE PROCEDURE homotypic_name_id_default();
+    <update id="createTable" parameterType="map" >
+        CREATE TABLE ${table}_${key} (LIKE ${table} INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+        <if test="table == 'name'">
+            CREATE TRIGGER name_trigger_${key} BEFORE INSERT OR UPDATE
+            ON name_${key} FOR EACH ROW
+            WHEN (NEW.homotypic_name_id IS NULL)
+            EXECUTE PROCEDURE homotypic_name_id_default();
+        </if>
     </update>
 
-    <update id="attach" parameterType="map">
-        ALTER TABLE verbatim ATTACH PARTITION verbatim_${key} FOR VALUES IN ( ${key} );
-        ALTER TABLE reference ATTACH PARTITION reference_${key} FOR VALUES IN ( ${key} );
-        ALTER TABLE name ATTACH PARTITION name_${key} FOR VALUES IN ( ${key} );
-        ALTER TABLE name_rel ATTACH PARTITION name_rel_${key} FOR VALUES IN ( ${key} );
-        ALTER TABLE name_usage ATTACH PARTITION name_usage_${key} FOR VALUES IN ( ${key} );
-        ALTER TABLE usage_reference ATTACH PARTITION usage_reference_${key} FOR VALUES IN ( ${key} );
-        ALTER TABLE distribution ATTACH PARTITION distribution_${key} FOR VALUES IN ( ${key} );
-        ALTER TABLE description ATTACH PARTITION description_${key} FOR VALUES IN ( ${key} );
-        ALTER TABLE vernacular_name ATTACH PARTITION vernacular_name_${key} FOR VALUES IN ( ${key} );
-        ALTER TABLE media ATTACH PARTITION media_${key} FOR VALUES IN ( ${key} );
+    <update id="attachTable" parameterType="map" >
+        ALTER TABLE ${table} ATTACH PARTITION ${table}_${key} FOR VALUES IN ( ${key} )
     </update>
 
     <update id="buildIndices" parameterType="map">
@@ -99,20 +82,11 @@
         </if>
     </update>
 
-    <update id="delete" parameterType="map">
-        <if test="key == @org.col.api.vocab.Datasets@DRAFT_COL">
+    <update id="deleteTable" parameterType="map">
+        <if test="table=='reference' and key == @org.col.api.vocab.Datasets@DRAFT_COL">
             ALTER TABLE estimate DROP CONSTRAINT IF EXISTS estimate_reference_fk;
         </if>
-        DROP TABLE IF EXISTS description_${key};
-        DROP TABLE IF EXISTS distribution_${key};
-        DROP TABLE IF EXISTS media_${key};
-        DROP TABLE IF EXISTS vernacular_name_${key};
-        DROP TABLE IF EXISTS usage_reference_${key};
-        DROP TABLE IF EXISTS name_usage_${key};
-        DROP TABLE IF EXISTS name_rel_${key};
-        DROP TABLE IF EXISTS name_${key};
-        DROP TABLE IF EXISTS reference_${key};
-        DROP TABLE IF EXISTS verbatim_${key};
+        DROP TABLE IF EXISTS ${table}_${key};
     </update>
 
 </mapper>

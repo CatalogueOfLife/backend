@@ -8,7 +8,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.Lists;
-import org.apache.ibatis.session.SqlSession;
 import org.col.common.concurrent.ExecutorUtils;
 import org.col.db.PgSetupRule;
 import org.col.db.mapper.TestDataRule;
@@ -40,15 +39,11 @@ public class PgImportTest {
     @Override
     public Boolean call() throws Exception {
       System.out.println("START " + datasetKey);
-      try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(false)) {
-        System.out.println("PARTITION " + datasetKey);
-        PgImport.partition(session, datasetKey);
-  
-        System.out.println("INDEX & ATTACH " + datasetKey);
-        PgImport.attach(session, datasetKey);
-        
-        session.commit();
-      }
+      System.out.println("PARTITION " + datasetKey);
+      PgImport.partition(PgSetupRule.getSqlSessionFactory(), datasetKey);
+
+      System.out.println("INDEX & ATTACH " + datasetKey);
+      PgImport.attach(PgSetupRule.getSqlSessionFactory(), datasetKey);
       System.out.println("FINISHED " + datasetKey);
       return true;
     }
