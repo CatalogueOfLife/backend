@@ -3,7 +3,6 @@ package org.col.parser;
 import java.io.IOException;
 import java.util.Map;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.utils.file.csv.CSVReader;
@@ -41,9 +40,6 @@ public class LanguageParser extends ParserBase<String> {
   
         String iso = row[isoCol];
         if (iso != null) {
-          if (iso.equalsIgnoreCase("eng") || iso.equalsIgnoreCase("enc")) {
-            System.out.println(resFile + ": " + Joiner.on(";").join(row));
-          }
           if (forceCol != null) {
             add(row[forceCol], iso, true);
           }

@@ -212,6 +212,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.jersey().register(new DecisionResource(getSqlSessionFactory(), indexService));
     env.jersey().register(new DocsResource(cfg));
     env.jersey().register(new DuplicateResource());
+    env.jersey().register(new EstimateResource(getSqlSessionFactory()));
     env.jersey().register(new MatchingResource(ni));
     env.jersey().register(new NameResource(nuss, ndao));
     env.jersey().register(new NameSearchResource(nuss));
