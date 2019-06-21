@@ -48,7 +48,7 @@
   </sql>
 
   <sql id="FROM">
-    vernacular_name vn
+    vernacular_name_${datasetKey} vn
   </sql>
 
   <resultMap id="vernacularNameResultMap" type="VernacularName" autoMapping="true">
@@ -58,16 +58,14 @@
   <select id="listByTaxon" resultMap="vernacularNameResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE vn.dataset_key = #{datasetKey}
-      AND vn.taxon_id = #{taxonId}
+    WHERE vn.taxon_id = #{taxonId}
     ORDER BY name
   </select>
 
   <select id="get" resultMap="vernacularNameResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE vn.dataset_key = #{datasetKey}
-      AND vn.key = #{key}
+    WHERE vn.key = #{key}
   </select>
 
   <insert id="create" parameterType="VernacularName" useGeneratedKeys="true" keyProperty="obj.key">

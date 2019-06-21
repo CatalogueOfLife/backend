@@ -58,7 +58,7 @@
   </sql>
 
   <sql id="FROM">
-    media m
+    media_${datasetKey} m
   </sql>
 
   <resultMap id="mediaResultMap" type="Media" autoMapping="true">
@@ -69,14 +69,14 @@
   <select id="listByTaxon" resultMap="mediaResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE m.taxon_id = #{taxonId} AND m.dataset_key = #{datasetKey}
+    WHERE m.taxon_id = #{taxonId}
     ORDER BY m.key
   </select>
 
   <select id="get" resultMap="mediaResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE m.key = #{key} AND m.dataset_key = #{datasetKey}
+    WHERE m.key = #{key}
   </select>
 
   <insert id="create" parameterType="Media" useGeneratedKeys="true" keyProperty="obj.key">
