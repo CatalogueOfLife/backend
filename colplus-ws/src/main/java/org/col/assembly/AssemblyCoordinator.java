@@ -207,17 +207,12 @@ public class AssemblyCoordinator implements Managed {
     syncs.remove(sync.getSectorKey());
   }
   
-
-  
-  public void cancel(int sectorKey, ColUser user) {
+  public synchronized void cancel(int sectorKey, ColUser user) {
     if (syncs.containsKey(sectorKey)) {
-      syncs.get(sectorKey).state.setState(SectorImport.State.CANCELED);
       LOG.info("Sync of sector {} cancelled by user {}", sectorKey, user);
-      syncs.get(sectorKey).future.cancel(true);
+      syncs.remove(sectorKey).future.cancel(true);
     }
   }
-  
-  
   
   private int syncAll(ColUser user) {
     LOG.warn("Sync all sectors triggered by user {}", user);
