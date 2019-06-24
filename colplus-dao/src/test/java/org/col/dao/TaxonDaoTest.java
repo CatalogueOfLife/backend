@@ -39,7 +39,7 @@ public class TaxonDaoTest extends DaoTestBase {
     
     // See apple.sql
     assertEquals("root-1", info.getTaxon().getId());
-    assertEquals(1, info.getReferences().size());
+    assertEquals(1, info.getTaxon().getReferenceIds().size());
     assertEquals(3, info.getVernacularNames().size());
     assertEquals(2, info.getReferences().size());
     

@@ -362,13 +362,14 @@ COPY (
   UNION
 
   SELECT nextval('__record_id_seq') AS record_id,
-    tr.taxon_id AS name_code,
+    u.id AS name_code,
     'TaxAccRef' AS reference_type, -- NomRef, TaxAccRef, ComNameRef
     rk.key AS reference_id,
     r.id AS reference_code,
     coalesce(s.dataset_key, 1500) - 1000 AS database_id
-  FROM name_usage_{{datasetKey}} t ON t.name_id=n.id
-    JOIN reference_{{datasetKey}} r ON r.id=tr.reference_id
+  FROM
+    (SELECT id, UNNEST(reference_ids) AS rid FROM name_usage_{{datasetKey}}) u
+    JOIN reference_{{datasetKey}} r ON r.id=u.rid
     JOIN __ref_keys rk ON rk.id=r.id
     LEFT JOIN sector s ON r.sector_key=s.key
 
