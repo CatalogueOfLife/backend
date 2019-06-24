@@ -3,6 +3,7 @@ package org.col.parser;
 import java.io.IOException;
 import java.util.Map;
 
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.utils.file.csv.CSVReader;
@@ -17,19 +18,20 @@ public class LanguageParser extends ParserBase<String> {
   private static final Logger LOG = LoggerFactory.getLogger(LanguageParser.class);
   public static String ISO_CODE_FILE = "iso-639-3_Name_Index_20190408.tab";
   
-  public static final Parser<String> PARSER = new LanguageParser();
+  public static final LanguageParser PARSER = new LanguageParser();
   
   private final Map<String, String> mapping = Maps.newHashMap();
+  private final Map<String, String> titles;
   
   public LanguageParser() {
     super(String.class);
     addMappings();
+    titles = ImmutableSortedMap.copyOf(buildTitles());
   }
   
   private void addMapping(String resFile, int isoCol, Integer forceCol, int... valCols) {
-    try {
-      LOG.info("Reading language mapping {}", resFile);
-      CSVReader reader = dictReader(resFile);
+    LOG.info("Reading language mapping {}", resFile);
+    try (CSVReader reader = dictReader(resFile)) {
       while (reader.hasNext()) {
         String[] row = reader.next();
         if (row.length == 0) continue;
@@ -48,8 +50,6 @@ public class LanguageParser extends ParserBase<String> {
           }
         }
       }
-      reader.close();
-
     } catch (IOException e) {
       LOG.error("Failed to load {} mappings", resFile, e);
     }
@@ -66,6 +66,32 @@ public class LanguageParser extends ParserBase<String> {
     addMapping("language-native.tab", 0,  null, 1,2);
     // custom manually curated entries: ISO3	VALUE
     addMapping("language-custom.tab", 0,  1);
+  }
+  
+  private Map<String, String> buildTitles(){
+    // Id	Print_Name	Inverted_Name
+    final int isoCol = 0;
+    final int titleCol = 1;
+    Map<String, String> titles = Maps.newHashMap();
+    try (CSVReader reader = dictReader(ISO_CODE_FILE)){
+      LOG.info("Reading language code titles from {}", ISO_CODE_FILE);
+      while (reader.hasNext()) {
+        String[] row = reader.next();
+        if (row.length == 0) continue;
+        String iso = row[isoCol];
+        if (iso != null) {
+          titles.put(iso.trim(), row[titleCol]);
+        }
+      }
+    
+    } catch (IOException e) {
+      LOG.error("Failed to load language titles from {}", ISO_CODE_FILE, e);
+    }
+    return titles;
+  }
+  
+  public Map<String, String> getTitles() {
+    return titles;
   }
   
   /**

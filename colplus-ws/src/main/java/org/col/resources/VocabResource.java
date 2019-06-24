@@ -19,6 +19,7 @@ import org.col.api.model.*;
 import org.col.api.search.NameSearchParameter;
 import org.col.api.vocab.AreaStandard;
 import org.col.img.ImgConfig;
+import org.col.parser.LanguageParser;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.nameparser.api.Rank;
@@ -97,7 +98,19 @@ public class VocabResource {
     
     return terms;
   }
-
+  
+  @GET
+  @Path("language")
+  public Map<String, String> languageTitles() {
+    return LanguageParser.PARSER.getTitles();
+  }
+  
+  @GET
+  @Path("language/{code}")
+  public String languageTitle(@PathParam("code") String code) {
+    return LanguageParser.PARSER.getTitles().get(code.trim().toLowerCase());
+  }
+  
   @GET
   @Path("{name}")
   public List<Map<String, String>> values(@PathParam("name") String name) throws IllegalAccessException {
