@@ -31,10 +31,7 @@ import org.col.matching.authorship.AuthorComparator;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.mapdb.Atomic;
-import org.mapdb.DB;
-import org.mapdb.DBMaker;
-import org.mapdb.Serializer;
+import org.mapdb.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,42 +78,51 @@ public class NameIndexMapDB implements NameIndex {
   /**
    * @param datasetKey the dataset the names index is stored in
    * @param sqlFactory sql session factory to talk to the data store backend if needed for inserts or initial loading
+   * @throws IllegalStateException when db is in a bad state
    */
   public NameIndexMapDB(DBMaker.Maker dbMaker, AuthorshipNormalizer normalizer, int datasetKey, SqlSessionFactory sqlFactory) {
-    this.db = dbMaker.make();
-    this.authComp = new AuthorComparator(normalizer);
-    this.datasetKey = datasetKey;
-    this.sqlFactory = Preconditions.checkNotNull(sqlFactory);
-    dao = new NameDao(sqlFactory, normalizer);
+      this.db = dbMaker.make();
+      this.authComp = new AuthorComparator(normalizer);
+      this.datasetKey = datasetKey;
+      this.sqlFactory = Preconditions.checkNotNull(sqlFactory);
+      dao = new NameDao(sqlFactory, normalizer);
     
-    pool = new KryoPool.Builder(new NameIndexKryoFactory())
-        .softReferences()
-        .build();
-    counter = db.atomicLong("counter", 0)
-        .createOrOpen();
-    names = db.hashMap("names")
-        .keySerializer(Serializer.STRING_ASCII)
-        .valueSerializer(new MapDbObjectSerializer<>(NameList.class, pool, 128))
-        //.counterEnable()
-        //.valueInline()
-        //.valuesOutsideNodesEnable()
-        .createOrOpen();
-    
-    if (names.size() == 0) {
-      loadFromPg();
-    } else {
-      // verify postgres and MapDb store match up - otherwise trust postgres
-      long pgCount = countPg();
-      if (pgCount != counter.get()) {
-        LOG.warn("Existing name index contains {} names, but postgres has {}", counter, pgCount);
+      pool = new KryoPool.Builder(new NameIndexKryoFactory())
+          .softReferences()
+          .build();
+      counter = db.atomicLong("counter", 0)
+          .createOrOpen();
+      names = db.hashMap("names")
+          .keySerializer(Serializer.STRING_ASCII)
+          .valueSerializer(new MapDbObjectSerializer<>(NameList.class, pool, 128))
+          //.counterEnable()
+          //.valueInline()
+          //.valuesOutsideNodesEnable()
+          .createOrOpen();
+  
+      try {
+        if (names.size() == 0) {
+          loadFromPg();
+        } else {
+          // verify postgres and MapDb store match up - otherwise trust postgres
+          long pgCount = countPg();
+          if (pgCount != counter.get()) {
+            LOG.warn("Existing name index contains {} names, but postgres has {}", counter, pgCount);
+            names.clear();
+            counter.set(0);
+            loadFromPg();
+          }
+        }
+      } catch (DBException e) {
+        LOG.error("Error opening mapdb. Reload from Postgres!", e);
         names.clear();
         counter.set(0);
         loadFromPg();
       }
+
+      idGen = new IdGenerator("", counter::incrementAndGet);
+      LOG.info("Started name index mapdb with {} names", counter);
     }
-    idGen = new IdGenerator("", counter::incrementAndGet);
-    LOG.info("Started name index mapdb with {} names", counter);
-  }
   
   private long countPg() {
     try (SqlSession s = sqlFactory.openSession()) {
