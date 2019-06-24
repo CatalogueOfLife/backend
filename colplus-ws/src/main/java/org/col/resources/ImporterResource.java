@@ -12,7 +12,6 @@ import io.dropwizard.auth.Auth;
 import org.col.api.model.ColUser;
 import org.col.api.model.DatasetImport;
 import org.col.api.model.Page;
-import org.col.api.model.ResultPage;
 import org.col.api.vocab.ImportState;
 import org.col.dao.DatasetImportDao;
 import org.col.dw.auth.Roles;
@@ -37,29 +36,28 @@ public class ImporterResource {
   }
   
   @GET
-  public ResultPage<DatasetImport> list(@QueryParam("datasetKey") Integer datasetKey,
+  public List<DatasetImport> list(@QueryParam("datasetKey") Integer datasetKey,
                                         @QueryParam("state") List<ImportState> states,
                                         @QueryParam("running") Boolean running,
                                         @Valid @BeanParam Page page) {
     if (running != null) {
       states = running ? ImportState.runningStates() : ImportState.finishedStates();
     }
-    return dao.list(datasetKey, states, page);
-  }
-  
-  @GET
-  @Path("queue")
-  public List<ImportRequest> queue() {
-    return importManager.queue();
+    return importManager.listImports(datasetKey, states, page);
   }
   
   @POST
-  @Path("queue")
   @Consumes(MediaType.APPLICATION_JSON)
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public ImportRequest schedule(@Auth ColUser user, @Valid ImportRequest request) {
     request.createdBy = user.getKey();
     return importManager.submit(request);
+  }
+  
+  @GET
+  @Path("{key}")
+  public DatasetImport get(@PathParam("key") int datasetKey){
+    return dao.getLast(datasetKey);
   }
   
   @POST

@@ -132,6 +132,10 @@ public class ImportJob implements Runnable {
     return di == null ? null : di.getAttempt();
   }
   
+  public DatasetImport getDatasetImport() {
+    return di;
+  }
+  
   private void updateState(ImportState state) {
     di.setState(state);
     dao.update(di);
@@ -147,7 +151,7 @@ public class ImportJob implements Runnable {
     NeoDb store = null;
     
     try {
-      last = dao.getLast(dataset);
+      last = dao.getLast(dataset.getKey());
       di = dao.create(dataset);
       LoggingUtils.setDatasetMDC(datasetKey, getAttempt(), getClass());
       LOG.info("Start new import attempt {} for {} dataset {}: {}", di.getAttempt(), dataset.getOrigin(), datasetKey, dataset.getTitle());

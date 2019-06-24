@@ -112,10 +112,10 @@ public class DatasetImportDao {
     }
   }
   
-  public DatasetImport getLast(Dataset d) {
+  public DatasetImport getLast(int datasetKey) {
     try (SqlSession session = factory.openSession(true)) {
       Page p = new Page(0, 1);
-      List<DatasetImport> imports = session.getMapper(DatasetImportMapper.class).list(d.getKey(), null, p);
+      List<DatasetImport> imports = session.getMapper(DatasetImportMapper.class).list(datasetKey, null, p);
       return imports == null || imports.isEmpty() ? null : imports.get(0);
     }
   }

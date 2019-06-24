@@ -24,9 +24,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.WsServerConfig;
 import org.col.api.exception.NotFoundException;
-import org.col.api.model.ColUser;
-import org.col.api.model.Dataset;
-import org.col.api.model.DatasetImport;
+import org.col.api.model.*;
 import org.col.api.util.PagingUtil;
 import org.col.api.vocab.DatasetOrigin;
 import org.col.api.vocab.ImportState;
@@ -62,6 +60,7 @@ public class ImportManager implements Managed {
   private final NameIndex index;
   private final AuthorshipNormalizer aNormalizer;
   private final NameUsageIndexService indexService;
+  private final DatasetImportDao dao;
   private final ImageService imgService;
   private final Timer importTimer;
   private final Counter failed;
@@ -76,6 +75,7 @@ public class ImportManager implements Managed {
     this.aNormalizer = aNormalizer;
     this.imgService = imgService;
     this.indexService = indexService;
+    this.dao = new DatasetImportDao(factory, cfg.textTreeRepo);
     importTimer = registry.timer("org.col.import.timer");
     failed = registry.counter("org.col.import.failed");
   }
@@ -93,6 +93,88 @@ public class ImportManager implements Managed {
         .collect(Collectors.toList());
   }
   
+  public int queueSize() {
+    return exec.queueSize();
+  }
+  
+  /**
+   * Pages through all queued, running and historical imports.
+   * See https://github.com/Sp2000/colplus-backend/issues/404
+   */
+  public List<DatasetImport> listImports(Integer datasetKey, List<ImportState> states, Page page) {
+    List<DatasetImport> running  = running(datasetKey, states);
+    if (running.size() >= page.getLimitWithOffest()) {
+      // we can answer the request from the queue alone!
+      removeOffset(running, page.getOffset());
+    
+    } else {
+      int offset = Math.max(0, page.getOffset() - running.size());
+      int limit  = Math.min(page.getLimit(), page.getLimitWithOffest() - running.size());
+      Page histPage = new Page(offset, limit);
+      ResultPage<DatasetImport> historical = dao.list(datasetKey, states, histPage);
+      // merge both lists
+      removeOffset(running, page.getOffset());
+      running.addAll(historical.getResult());
+    }
+    return running;
+  }
+  
+  private void removeOffset(List<DatasetImport> list, int offset) {
+    while (offset > 0 && !list.isEmpty()) {
+      list.remove(0);
+      offset--;
+    }
+  }
+  
+  private static DatasetImport fromFuture(PBQThreadPoolExecutor.ComparableFutureTask f) {
+    ImportJob job = (ImportJob) f.getTask();
+    DatasetImport di = job.getDatasetImport();
+    if (di != null) {
+      di = new DatasetImport();
+      di.setDatasetKey(job.getDatasetKey());
+      di.setAttempt(job.getAttempt());
+      di.setState(ImportState.WAITING);
+    }
+    return di;
+  }
+  
+  private List<DatasetImport> running(final Integer datasetKey, final List<ImportState> states) {
+    return futures.values().stream()
+        .map(ImportManager::fromFuture)
+        .filter( di -> {
+          if (datasetKey != null && !datasetKey.equals(di.getDatasetKey())) {
+            return false;
+          }
+          if (states != null && !states.contains(di.getState())) {
+            return false;
+          }
+          return true;
+        })
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * @return true if queue is empty
+   */
+  public boolean hasEmptyQueue() {
+    return exec.hasEmptyQueue();
+  }
+  
+  /**
+   * @return true if imports are running or queued
+   */
+  public boolean hasRunning() {
+    return !futures.isEmpty();
+  }
+  
+  /**
+   * @return true if import for given dataset is running or queued
+   */
+  public boolean isRunning(int datasetKey) {
+    return futures.containsKey(datasetKey);
+  }
+  
+  
   /**
    * Cancels a running import job by its dataset key
    */
@@ -100,6 +182,7 @@ public class ImportManager implements Managed {
     Future f = futures.remove(datasetKey);
     if (f != null) {
       f.cancel(true);
+      exec.purge();
       LOG.info("Canceled import for dataset {} by user {}", datasetKey, user);
   
     } else {
@@ -249,27 +332,6 @@ public class ImportManager implements Managed {
     }
   }
   
-  /**
-   * @return true if queue is empty
-   */
-  public boolean hasEmptyQueue() {
-    return exec.hasEmptyQueue();
-  }
-  
-  /**
-   * @return true if imports are running or queued
-   */
-  public boolean hasRunning() {
-    return !futures.isEmpty();
-  }
-  
-  /**
-   * @return true if import for given dataset is running or queued
-   */
-  public boolean isRunning(int datasetKey) {
-    return futures.containsKey(datasetKey);
-  }
-
   @Override
   public void start() throws Exception {
     LOG.info("Starting import manager with {} import threads and a queue of {} max.",

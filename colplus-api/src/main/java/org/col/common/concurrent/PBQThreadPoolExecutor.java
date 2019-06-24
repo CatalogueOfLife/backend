@@ -83,6 +83,10 @@ public class PBQThreadPoolExecutor<R extends Runnable> {
         .collect(Collectors.toList());
   }
   
+  public void purge() {
+    exec.purge();
+  }
+  
   public ComparableFutureTask submit(R task, boolean priority) {
     if (task == null)
       throw new NullPointerException();
