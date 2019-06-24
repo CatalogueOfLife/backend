@@ -154,7 +154,7 @@ public class AcefInserter extends NeoInserter {
           store.names().update(nn);
           break;
         case TaxAccRef:
-          u.bibliography.add(ref.getId());
+          u.usage.getReferenceIds().add(ref.getId());
           store.usages().update(u);
           break;
         case ComNameRef:

@@ -21,7 +21,6 @@ public class Taxon extends NameUsageBase {
   private Boolean recent;
   private Set<Lifezone> lifezones = EnumSet.noneOf(Lifezone.class);
   private URI webpage;
-  private Integer childCount;
 
   @Override
   public void setStatus(TaxonomicStatus status) {
@@ -76,14 +75,6 @@ public class Taxon extends NameUsageBase {
     this.webpage = webpage;
   }
   
-  public Integer getChildCount() {
-    return childCount;
-  }
-  
-  public void setChildCount(Integer childCount) {
-    this.childCount = childCount;
-  }
-  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -94,12 +85,11 @@ public class Taxon extends NameUsageBase {
         Objects.equals(fossil, taxon.fossil) &&
         Objects.equals(recent, taxon.recent) &&
         Objects.equals(lifezones, taxon.lifezones) &&
-        Objects.equals(webpage, taxon.webpage) &&
-        Objects.equals(childCount, taxon.childCount);
+        Objects.equals(webpage, taxon.webpage);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), accordingToDate, fossil, recent, lifezones, webpage, childCount);
+    return Objects.hash(super.hashCode(), accordingToDate, fossil, recent, lifezones, webpage);
   }
 }

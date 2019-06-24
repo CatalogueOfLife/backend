@@ -14,6 +14,7 @@
         ${alias}.origin AS ${prefix}origin,
         ${alias}.parent_id AS ${prefix}parent_id,
         ${alias}.according_to AS ${prefix}according_to,
+        ${alias}.reference_ids AS ${prefix}reference_ids,
         ${alias}.remarks AS ${prefix}remarks,
         ${alias}.created AS ${prefix}created,
         ${alias}.created_by AS ${prefix}created_by,
@@ -51,6 +52,7 @@
         is_synonym,
         origin,
         according_to,
+        reference_ids,
         remarks,
         created_by,
         modified_by
@@ -66,6 +68,7 @@
         #{status.synonym},
         #{origin},
         #{accordingTo},
+        #{referenceIds},
         #{remarks},
         #{createdBy},
         #{modifiedBy}

@@ -56,14 +56,14 @@ public class NormalizerACEFIT extends NormalizerITBase {
       assertTrue(t.classification.isEmpty());
       assertEquals(0, t.vernacularNames.size());
       assertEquals(0, t.distributions.size());
-      assertEquals(0, t.bibliography.size());
+      assertEquals(0, t.usage.getReferenceIds().size());
       
       NeoUsage acc = accepted(t.node);
       assertEquals(1, acc.vernacularNames.size());
       assertEquals(2, acc.distributions.size());
       assertEquals(0, acc.descriptions.size());
       assertEquals(0, acc.media.size());
-      assertEquals(2, acc.bibliography.size());
+      assertEquals(2, acc.usage.getReferenceIds().size());
       
       VernacularName v = acc.vernacularNames.get(0);
       assertEquals("Beer bean", v.getName());

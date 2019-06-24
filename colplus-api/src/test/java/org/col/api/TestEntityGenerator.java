@@ -279,7 +279,6 @@ public class TestEntityGenerator {
     t.setParentId(TAXON1.getId());
     t.setRecent(true);
     t.setRemarks("Foo == Bar");
-    t.setChildCount(0);
     return t;
   }
 

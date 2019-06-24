@@ -367,7 +367,7 @@ COPY (
     rk.key AS reference_id,
     r.id AS reference_code,
     coalesce(s.dataset_key, 1500) - 1000 AS database_id
-  FROM usage_reference_{{datasetKey}} tr
+  FROM name_usage_{{datasetKey}} t ON t.name_id=n.id
     JOIN reference_{{datasetKey}} r ON r.id=tr.reference_id
     JOIN __ref_keys rk ON rk.id=r.id
     LEFT JOIN sector s ON r.sector_key=s.key

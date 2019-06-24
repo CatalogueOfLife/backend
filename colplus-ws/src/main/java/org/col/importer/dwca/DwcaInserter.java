@@ -80,7 +80,7 @@ public class DwcaInserter extends NeoInserter {
           DwcaTerm.ID,
           (t, r) -> {
             if (store.create(r)) {
-              t.bibliography.add(r.getId());
+              t.usage.getReferenceIds().add(r.getId());
             } else {
           
             }

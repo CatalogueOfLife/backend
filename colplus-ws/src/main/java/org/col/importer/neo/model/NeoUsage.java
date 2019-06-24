@@ -2,11 +2,9 @@ package org.col.importer.neo.model;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import org.col.api.model.*;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
@@ -38,7 +36,6 @@ public class NeoUsage implements NeoNode, DatasetEntity, VerbatimEntity {
   public List<Distribution> distributions = Lists.newArrayList();
   public List<Media> media = Lists.newArrayList();
   public List<VernacularName> vernacularNames = Lists.newArrayList();
-  public Set<String> bibliography = Sets.newHashSet();
 
   // extra stuff not covered by above for normalizer only
   public Classification classification;
@@ -170,7 +167,6 @@ public class NeoUsage implements NeoNode, DatasetEntity, VerbatimEntity {
         Objects.equals(distributions, neoUsage.distributions) &&
         Objects.equals(media, neoUsage.media) &&
         Objects.equals(vernacularNames, neoUsage.vernacularNames) &&
-        Objects.equals(bibliography, neoUsage.bibliography) &&
         Objects.equals(classification, neoUsage.classification) &&
         Objects.equals(remarks, neoUsage.remarks);
   }
@@ -178,6 +174,6 @@ public class NeoUsage implements NeoNode, DatasetEntity, VerbatimEntity {
   @Override
   public int hashCode() {
     
-    return Objects.hash(node, usage, descriptions, distributions, media, vernacularNames, bibliography, classification, remarks);
+    return Objects.hash(node, usage, descriptions, distributions, media, vernacularNames, classification, remarks);
   }
 }

@@ -13,7 +13,6 @@ public interface DatasetPartitionMapper {
       "name",
       "name_rel",
       "name_usage",
-      "usage_reference",
       "description",
       "distribution",
       "media",

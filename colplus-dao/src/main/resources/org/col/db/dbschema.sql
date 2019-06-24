@@ -426,6 +426,7 @@ CREATE TABLE name_usage (
   origin INTEGER NOT NULL,
   according_to TEXT,
   according_to_date DATE,
+  reference_ids TEXT[] DEFAULT '{}',
   fossil BOOLEAN,
   recent BOOLEAN,
   lifezones INTEGER[] DEFAULT '{}',
@@ -438,11 +439,6 @@ CREATE TABLE name_usage (
   modified_by INTEGER NOT NULL
 ) PARTITION BY LIST (dataset_key);
 
-CREATE TABLE usage_reference (
-  dataset_key INTEGER NOT NULL,
-  taxon_id TEXT NOT NULL,
-  reference_id TEXT NOT NULL
-) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE vernacular_name (
   key serial NOT NULL,

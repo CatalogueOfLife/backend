@@ -104,7 +104,7 @@ public class TextTreePrinter implements ResultHandler<NameUsageBase> {
     try {
       session = factory.openSession(true);
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-      num.processTree(datasetKey, sectorKey, startID, null, lowestRank, true, true, this);
+      num.processTree(datasetKey, sectorKey, startID, null, lowestRank, true, true,this);
 
     } finally {
       writer.flush();

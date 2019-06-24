@@ -1,11 +1,8 @@
 package org.col.dao;
 
-import java.util.function.Function;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.api.model.DatasetID;
 import org.col.api.model.Name;
 import org.col.api.model.Reference;
 import org.col.api.model.Synonym;
@@ -25,25 +22,6 @@ public class SynonymDao extends DatasetEntityDao<Synonym, SynonymMapper> {
   
   private static String devNull(Reference r) {
     return null;
-  }
-  
-  /**
-   * @param syn             the source synonym to copy
-   * @param accepted        the new accepted taxon to attach the copied synonym to
-   * @param user
-   * @param lookupReference
-   */
-  public static DatasetID copySynonym(final SqlSession session, final Synonym syn, final DatasetID accepted, int user,
-                                 Function<Reference, String> lookupReference) {
-    final DatasetID orig = new DatasetID(syn);
-    syn.setDatasetKey(accepted.getDatasetKey());
-    TaxonDao.copyName(session, syn, accepted.getDatasetKey(), user, lookupReference);
-    newKey(syn);
-    syn.applyUser(user, true);
-    syn.setOrigin(Origin.SOURCE);
-    syn.setParentId(accepted.getId());
-    session.getMapper(SynonymMapper.class).create(syn);
-    return orig;
   }
   
   /**

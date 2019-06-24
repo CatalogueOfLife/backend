@@ -338,6 +338,7 @@ public class PgImport implements Callable<Boolean> {
           }
   
           // insert taxon or synonym
+          NameUsageBase usage;
           if (u.isSynonym()) {
             if (NeoDbUtils.isProParteSynonym(n)) {
               if (proParteIds.containsKey(u.getId())){
@@ -351,50 +352,46 @@ public class PgImport implements Callable<Boolean> {
             }
             synMapper.create(u.getSynonym());
             sCounter.incrementAndGet();
+            usage = u.getSynonym();
 
           } else {
-            Taxon tax = u.getTaxon();
-            taxonMapper.create(updateUser(tax));
+            taxonMapper.create(updateUser(u.getTaxon()));
             tCounter.incrementAndGet();
-            String taxonId = tax.getId();
+            usage = u.getTaxon();
 
             // push new postgres key onto stack for this taxon as we traverse in depth first
-            parentIds.push(taxonId);
+            parentIds.push(usage.getId());
             
             // insert vernacular
             for (VernacularName vn : u.vernacularNames) {
               updateVerbatimUserEntity(vn);
-              vernacularMapper.create(vn, taxonId, dataset.getKey());
+              vernacularMapper.create(vn, usage.getId(), dataset.getKey());
               vCounter.incrementAndGet();
             }
             
             // insert distributions
             for (Distribution d : u.distributions) {
               updateVerbatimUserEntity(d);
-              distributionMapper.create(d, taxonId, dataset.getKey());
+              distributionMapper.create(d, usage.getId(), dataset.getKey());
               diCounter.incrementAndGet();
             }
   
             // insert descriptions
             for (Description d : u.descriptions) {
               updateVerbatimUserEntity(d);
-              descriptionMapper.create(d, taxonId, dataset.getKey());
+              descriptionMapper.create(d, usage.getId(), dataset.getKey());
               deCounter.incrementAndGet();
             }
   
             // insert media
             for (Media m : u.media) {
               updateVerbatimUserEntity(m);
-              mediaMapper.create(m, taxonId, dataset.getKey());
+              mediaMapper.create(m, usage.getId(), dataset.getKey());
               mCounter.incrementAndGet();
             }
             
-            // link bibliography
-            for (String id : u.bibliography) {
-              refMapper.linkToTaxon(dataset.getKey(), taxonId, id);
-            }
           }
-          
+
           // commit in batches
           if (counter++ % batchSize == 0) {
             interruptIfCancelled();

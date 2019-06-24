@@ -39,7 +39,7 @@ public class TaxonDaoTest extends DaoTestBase {
     
     // See apple.sql
     assertEquals("root-1", info.getTaxon().getId());
-    assertEquals(1, info.getTaxonReferences().size());
+    assertEquals(1, info.getReferences().size());
     assertEquals(3, info.getVernacularNames().size());
     assertEquals(2, info.getReferences().size());
     
@@ -47,7 +47,7 @@ public class TaxonDaoTest extends DaoTestBase {
     info.getReferences().values().forEach(r -> refKeys1.add(r.getId()));
     
     Set<String> refKeys2 = new HashSet<>();
-    refKeys2.addAll(info.getTaxonReferences());
+    refKeys2.addAll(info.getTaxon().getReferenceIds());
     
     Stream.concat(
         info.getDescriptions().stream(),

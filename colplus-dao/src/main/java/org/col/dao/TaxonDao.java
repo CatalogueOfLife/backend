@@ -2,6 +2,7 @@ package org.col.dao;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
@@ -44,7 +45,7 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
   }
 
   public static DatasetID copyTaxon(SqlSession session, final Taxon t, final DatasetID target, int user, Set<EntityType> include) {
-    return copyTaxon(session, t, target, user, include, TaxonDao::devNull, TaxonDao::devNull);
+    return copyUsage(session, t, target, user, include, TaxonDao::devNull, TaxonDao::devNull);
   }
   
   /**
@@ -57,7 +58,7 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
    *
    * @return the original source taxon id
    */
-  public static DatasetID copyTaxon(final SqlSession session, final Taxon t, final DatasetID targetParent, int user,
+  public static <T extends NameUsageBase> DatasetID copyUsage(final SqlSession session, final T t, final DatasetID targetParent, int user,
                                     Set<EntityType> include,
                                     Function<Reference, String> lookupReference,
                                     Function<String, String> lookupByIdReference) {
@@ -68,11 +69,23 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
     t.applyUser(user, true);
     t.setOrigin(Origin.SOURCE);
     t.setParentId(targetParent.getId());
-    session.getMapper(TaxonMapper.class).create(t);
+  
+    // update reference links
+    t.setReferenceIds(
+        t.getReferenceIds().stream()
+            .map(lookupByIdReference)
+            .collect(Collectors.toList())
+    );
+
+    if (t instanceof Taxon) {
+      session.getMapper(TaxonMapper.class).create( (Taxon) t);
+    } else {
+      session.getMapper(SynonymMapper.class).create( (Synonym) t);
+    }
     
     // copy related entities
     for (EntityType type : include) {
-      if (extMapper.containsKey(type)) {
+      if (t.isTaxon() && extMapper.containsKey(type)) {
         final TaxonExtensionMapper<GlobalEntity> mapper = (TaxonExtensionMapper<GlobalEntity>) session.getMapper(extMapper.get(type));
         mapper.listByTaxon(orig.getDatasetKey(), orig.getId()).forEach(e -> {
           e.setKey(null);
@@ -86,14 +99,6 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
           mapper.create(e, t.getId(), targetParent.getDatasetKey());
         });
         
-      } else if (EntityType.REFERENCE == type) {
-        // taxon ref links
-        final ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
-        for (String rid : rm.listByTaxon(orig.getDatasetKey(), orig.getId())) {
-          String ridCopy = lookupByIdReference.apply(rid);
-          rm.linkToTaxon(t.getDatasetKey(), t.getId(), ridCopy);
-        }
-  
       } else if (EntityType.NAME_RELATION == type) {
         // TODO copy name rels
       }
@@ -118,7 +123,7 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
     session.getMapper(NameMapper.class).create(n);
   }
   
-  private static Taxon setKeys(Taxon t, int datasetKey) {
+  private static NameUsageBase setKeys(NameUsageBase t, int datasetKey) {
     t.setDatasetKey(datasetKey);
     return newKey(t);
   }
@@ -222,6 +227,7 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
       return null;
     }
   
+    SynonymMapper sm = session.getMapper(SynonymMapper.class);
     DistributionMapper dim = session.getMapper(DistributionMapper.class);
     VernacularNameMapper vm = session.getMapper(VernacularNameMapper.class);
     DescriptionMapper dem = session.getMapper(DescriptionMapper.class);
@@ -230,21 +236,25 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
   
     TaxonInfo info = new TaxonInfo();
     info.setTaxon(taxon);
-    info.setTaxonReferences(rm.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
-    
+    // all reference keys so we can select their details at the end
+    Set<String> refIds = new HashSet<>(taxon.getReferenceIds());
+    refIds.add(taxon.getName().getPublishedInId());
+
+    // synonyms
+    info.setSynonyms(sm.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
+    info.getSynonyms().forEach(s -> refIds.addAll(s.getReferenceIds()));
+
     // add all supplementary taxon infos
     info.setDescriptions(dem.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
-    info.setDistributions(dim.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
-    info.setMedia(mm.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
-    info.setVernacularNames(vm.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
-    
-    // all reference keys so we can select their details at the end
-    Set<String> refIds = new HashSet<>();
-    refIds.add(taxon.getName().getPublishedInId());
-    refIds.addAll(info.getTaxonReferences());
     info.getDescriptions().forEach(d -> refIds.add(d.getReferenceId()));
+    
+    info.setDistributions(dim.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
     info.getDistributions().forEach(d -> refIds.add(d.getReferenceId()));
+    
+    info.setMedia(mm.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
     info.getMedia().forEach(m -> refIds.add(m.getReferenceId()));
+    
+    info.setVernacularNames(vm.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
     info.getVernacularNames().forEach(d -> refIds.add(d.getReferenceId()));
     // make sure we did not add null by accident
     refIds.remove(null);

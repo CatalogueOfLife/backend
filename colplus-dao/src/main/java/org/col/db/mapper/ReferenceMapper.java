@@ -12,23 +12,13 @@ import org.col.api.search.ReferenceSearchRequest;
  *
  */
 public interface ReferenceMapper extends DatasetCRUDMapper<Reference> {
-
-	/**
-	 * @return all bibliographic reference ids for the given taxon
-	 */
-	List<String> listByTaxon(@Param("datasetKey") int datasetKey, @Param("taxonId") String taxonId);
-
+	
 	/**
    * Selects a number of distinct references from a single dataset by their keys
    *
    * @param ids must contain at least one value, not allowed to be empty !!!
    */
   List<Reference> listByIds(@Param("datasetKey") int datasetKey, @Param("ids") Set<String> ids);
-  
-  /**
-   * Links a reference to a taxon
-   */
-  void linkToTaxon(@Param("datasetKey") int datasetKey, @Param("taxonId") String taxonId, @Param("referenceId") String referenceId);
 	
 	/**
 	 * @return all bibliographic reference from a dataset by its full citation, optionally limited to a single sector

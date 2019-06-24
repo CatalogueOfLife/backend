@@ -278,7 +278,6 @@ public class TestDataRule extends ExternalResource {
                   "is_synonym", this::isSynonym
               )
           );
-          copyTable(pgc, "usage_reference");
           copyTable(pgc, "distribution",
               ImmutableMap.<String, Object>of(
                   "created_by", 0,

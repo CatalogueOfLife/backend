@@ -393,8 +393,7 @@ public class Normalizer implements Callable<Boolean> {
           if (!u.distributions.isEmpty() ||
               !u.descriptions.isEmpty() ||
               !u.media.isEmpty() ||
-              !u.vernacularNames.isEmpty() ||
-              !u.bibliography.isEmpty()
+              !u.vernacularNames.isEmpty()
           ) {
             // getUsage a real neo4j node (store.allUsages() only populates a dummy with an id)
             Node n = store.getNeo().getNodeById(u.node.getId());
@@ -405,7 +404,6 @@ public class Normalizer implements Callable<Boolean> {
               acc.descriptions.addAll(u.descriptions);
               acc.media.addAll(u.media);
               acc.vernacularNames.addAll(u.vernacularNames);
-              acc.bibliography.addAll(u.bibliography);
               store.usages().update(acc);
               hasAccepted.set(true);
             });
@@ -414,7 +412,6 @@ public class Normalizer implements Callable<Boolean> {
             u.descriptions.clear();
             u.media.clear();
             u.vernacularNames.clear();
-            u.bibliography.clear();
             store.addIssues(u.usage, Issue.SYNONYM_DATA_MOVED);
             store.usages().update(u);
             if (hasAccepted.get()) {

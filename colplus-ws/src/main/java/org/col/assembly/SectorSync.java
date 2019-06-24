@@ -185,7 +185,7 @@ public class SectorSync extends SectorRunnable {
     ){
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
       LOG.info("Traverse taxon tree, blocking {} nodes", blockedIds.size());
-      um.processTree(datasetKey, null, sector.getSubject().getId(), blockedIds, null, true, false, treeHandler);
+      um.processTree(datasetKey, null, sector.getSubject().getId(), blockedIds, null, true,false, treeHandler);
     }
   }
   

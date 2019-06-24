@@ -59,7 +59,6 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     assertNotNull(s2);
     
     // remove child count for comparison
-    t.setChildCount(null);
     s2.setAccepted(null);
     TestEntityGenerator.nullifyUserDate(s1);
     TestEntityGenerator.nullifyUserDate(s2);

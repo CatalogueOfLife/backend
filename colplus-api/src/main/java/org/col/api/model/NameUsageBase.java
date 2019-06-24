@@ -1,5 +1,7 @@
 package org.col.api.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
@@ -29,6 +31,10 @@ public abstract class NameUsageBase extends DataEntity implements NameUsage, Dat
   private String parentId;
   private String accordingTo;
   private String remarks;
+  /**
+   * All bibliographic reference ids for the given name usage
+   */
+  private List<String> referenceIds = new ArrayList<>();
   
   public String getId() {
     return id;
@@ -140,6 +146,14 @@ public abstract class NameUsageBase extends DataEntity implements NameUsage, Dat
     this.sectorKey = sectorKey;
   }
   
+  public List<String> getReferenceIds() {
+    return referenceIds;
+  }
+  
+  public void setReferenceIds(List<String> referenceIds) {
+    this.referenceIds = referenceIds;
+  }
+  
   public SimpleName toSimpleName() {
     return new SimpleName(id, name.getScientificName(), name.getAuthorship(), name.getRank());
   }
@@ -159,11 +173,12 @@ public abstract class NameUsageBase extends DataEntity implements NameUsage, Dat
         origin == taxon.origin &&
         Objects.equals(parentId, taxon.parentId) &&
         Objects.equals(accordingTo, taxon.accordingTo) &&
+        Objects.equals(referenceIds, taxon.referenceIds) &&
         Objects.equals(remarks, taxon.remarks);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), id, datasetKey, sectorKey, verbatimKey, name, status, origin, parentId, accordingTo, remarks);
+    return Objects.hash(super.hashCode(), id, datasetKey, sectorKey, verbatimKey, name, status, origin, parentId, accordingTo, remarks, referenceIds);
   }
 }

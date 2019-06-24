@@ -54,7 +54,6 @@ public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
   Taxon createTestEntity() {
     Taxon t = TestEntityGenerator.newTaxon();
     // manually set the child count which is populated on read only
-    t.setChildCount(0);
     t.setSectorKey(sector.getKey());
     return t;
   }

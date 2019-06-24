@@ -11,20 +11,18 @@ import java.util.Objects;
 public class TaxonInfo {
   
   private Taxon taxon;
+  private List<Synonym> synonyms;
   private List<Distribution> distributions;
   private List<VernacularName> vernacularNames;
   private List<Media> media;
   private List<Description> descriptions;
   
   /**
-   * All bibliographic reference ids for the given taxon
-   */
-  private List<String> taxonReferences;
-  /**
    * Lookup of referernceID to reference so the same reference can be shared across different objects
    * saving json serialization size.
    */
   private Map<String, Reference> references = new HashMap<>();
+  
   
   public Taxon getTaxon() {
     return taxon;
@@ -34,12 +32,12 @@ public class TaxonInfo {
     this.taxon = taxon;
   }
   
-  public List<String> getTaxonReferences() {
-    return taxonReferences;
+  public List<Synonym> getSynonyms() {
+    return synonyms;
   }
   
-  public void setTaxonReferences(List<String> taxonReferences) {
-    this.taxonReferences = taxonReferences;
+  public void setSynonyms(List<Synonym> synonyms) {
+    this.synonyms = synonyms;
   }
   
   public List<VernacularName> getVernacularNames() {
@@ -106,17 +104,17 @@ public class TaxonInfo {
     if (o == null || getClass() != o.getClass()) return false;
     TaxonInfo taxonInfo = (TaxonInfo) o;
     return Objects.equals(taxon, taxonInfo.taxon) &&
+        Objects.equals(synonyms, taxonInfo.synonyms) &&
         Objects.equals(distributions, taxonInfo.distributions) &&
         Objects.equals(vernacularNames, taxonInfo.vernacularNames) &&
         Objects.equals(media, taxonInfo.media) &&
         Objects.equals(descriptions, taxonInfo.descriptions) &&
-        Objects.equals(taxonReferences, taxonInfo.taxonReferences) &&
         Objects.equals(references, taxonInfo.references);
   }
   
   @Override
   public int hashCode() {
     
-    return Objects.hash(taxon, distributions, vernacularNames, media, descriptions, taxonReferences, references);
+    return Objects.hash(taxon, synonyms, distributions, vernacularNames, media, descriptions, references);
   }
 }

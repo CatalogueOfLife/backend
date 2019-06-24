@@ -1,7 +1,6 @@
 package org.col.api.model;
 
 import java.util.Objects;
-import javax.annotation.Nonnull;
 
 import com.google.common.base.Preconditions;
 import org.col.api.vocab.TaxonomicStatus;
@@ -12,7 +11,6 @@ import org.col.api.vocab.TaxonomicStatus;
  */
 public class Synonym extends NameUsageBase {
   
-  @Nonnull
   private Taxon accepted;
   
   @Override

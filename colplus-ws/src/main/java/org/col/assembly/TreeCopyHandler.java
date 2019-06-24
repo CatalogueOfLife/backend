@@ -12,7 +12,6 @@ import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.dao.DatasetEntityDao;
 import org.col.dao.ReferenceDao;
-import org.col.dao.SynonymDao;
 import org.col.dao.TaxonDao;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.ReferenceMapper;
@@ -216,15 +215,15 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
     // copy usage with all associated information. This assigns a new id !!!
     DatasetID orig;
     DatasetID parentDID = new DatasetID(catalogueKey, parent.id);
-    if (u.isTaxon()) {
-      state.setTaxonCount(++tCounter);
-      orig = TaxonDao.copyTaxon(session, (Taxon) u, parentDID, user.getKey(), COPY_DATA, this::lookupReference, this::lookupReference);
-    } else {
-      state.setSynonymCount(++sCounter);
-      orig = SynonymDao.copySynonym(session, (Synonym) u, parentDID, user.getKey(), this::lookupReference);
-    }
+    orig = TaxonDao.copyUsage(session, u, parentDID, user.getKey(), COPY_DATA, this::lookupReference, this::lookupReference);
     // remember old to new id mapping
     ids.put(orig.getId(), usage(u));
+    // counter
+    if (u.isTaxon()) {
+      state.setTaxonCount(++tCounter);
+    } else {
+      state.setSynonymCount(++sCounter);
+    }
     
     // commit in batches
     if ((sCounter + tCounter) % 1000 == 0) {

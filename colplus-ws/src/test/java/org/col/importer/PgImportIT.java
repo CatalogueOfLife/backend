@@ -35,6 +35,7 @@ import org.junit.*;
 import static org.col.api.TestEntityGenerator.setUserDate;
 import static org.col.api.vocab.DataFormat.*;
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -338,7 +339,7 @@ public class PgImportIT {
       
       assertEquals(1, t.getVernacularNames().size());
       assertEquals(2, t.getDistributions().size());
-      assertEquals(2, t.getTaxonReferences().size());
+      assertEquals(2, t.getReferences().size());
       
       VernacularName v = t.getVernacularNames().get(0);
       assertEquals("Beer bean", v.getName());
@@ -419,7 +420,6 @@ public class PgImportIT {
       
       t = tdao.get(dataset.getKey(), "Rho-61");
       assertEquals("Multidentorhodacarus denticulatus (Berlese, 1920)", t.getName().canonicalNameComplete());
-      t.setChildCount(null);
       assertEquals(t, syn.getAccepted());
     }
   }
@@ -448,8 +448,8 @@ public class PgImportIT {
       // with the designation of the species included in each of these divisions . Paris, 88 pp",
       // pubIn.getCsl().getTitle());
       
-      assertEquals(3, info.getTaxonReferences().size());
-      for (String refId : info.getTaxonReferences()) {
+      assertEquals(3, info.getReferences().size());
+      for (String refId : info.getTaxon().getReferenceIds()) {
         Reference r = info.getReference(refId);
         assertNotNull(r);
       }
@@ -561,10 +561,10 @@ public class PgImportIT {
       // one root
       assertEquals(1, tdao.listRoot(dataset.getKey(), new Page()).getResult().size());
   
-      SynonymMapper sm = session.getMapper(SynonymMapper.class);
-      List<Synonym> syns = sm.listByNameID(dataset.getKey(), "1006-s3");
+      NameUsageMapper um = session.getMapper(NameUsageMapper.class);
+      List<NameUsageBase> syns = um.listByNameID(dataset.getKey(), "1006-s3");
       assertEquals(1, syns.size());
-      Synonym s3 = syns.get(0);
+      Synonym s3 = (Synonym) syns.get(0);
       assertEquals("Leonida taraxacoida Vill.", s3.getName().canonicalNameComplete());
       assertEquals("1006", s3.getAccepted().getId());
       assertEquals("Leontodon taraxacoides (Vill.) Mérat", s3.getAccepted().getName().canonicalNameComplete());
@@ -609,11 +609,13 @@ public class PgImportIT {
     normalizeAndImport(ACEF, 18);
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       Taxon t  = tdao.get(dataset.getKey(), "48827");
+      assertEquals(2, t.getReferenceIds().size());
   
       Synonym s  = sdao.get(dataset.getKey(), "146661");
       assertEquals(t.getId(), s.getParentId());
       assertEquals(TaxonomicStatus.AMBIGUOUS_SYNONYM, s.getStatus());
-
+      assertEquals(1, s.getReferenceIds().size());
+      assertEquals("10418", s.getReferenceIds().get(0));
       //TODO: check for synonym references !!!
     }
   }
