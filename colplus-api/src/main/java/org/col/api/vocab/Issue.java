@@ -239,6 +239,12 @@ public enum Issue {
   VERNACULAR_NAME_INVALID(VERNACULAR, Level.ERROR,
       "A vernacular name extension record attached to this name usage is empty or clearly not a name."),
   
+  VERNACULAR_LANGUAGE_INVALID(VERNACULAR, Level.WARNING,
+      "A vernacular name extension record attached to this name usage has an unparsable language."),
+  
+  VERNACULAR_COUNTRY_INVALID(VERNACULAR, Level.WARNING,
+      "A vernacular name extension record attached to this name usage has an unparsable country."),
+
   VERNACULAR_NAME_TRANSLITERATED(VERNACULAR, Level.INFO,
       "Transliterated vernacular name missing and generated automatically. " +
           "Assembled Catalogue specific issue."),

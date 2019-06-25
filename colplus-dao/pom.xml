@@ -52,6 +52,12 @@
 			<artifactId>mybatis</artifactId>
 		</dependency>
 
+		<!-- unicode, transliterations -->
+		<dependency>
+			<groupId>com.ibm.icu</groupId>
+			<artifactId>icu4j</artifactId>
+		</dependency>
+
 		<!-- other -->
 		<dependency>
 			<groupId>com.univocity</groupId>

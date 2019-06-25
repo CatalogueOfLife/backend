@@ -339,7 +339,7 @@ public class PgImportIT {
       
       assertEquals(1, t.getVernacularNames().size());
       assertEquals(2, t.getDistributions().size());
-      assertEquals(2, t.getReferences().size());
+      assertEquals(3, t.getReferences().size());
       
       VernacularName v = t.getVernacularNames().get(0);
       assertEquals("Beer bean", v.getName());
@@ -448,7 +448,7 @@ public class PgImportIT {
       // with the designation of the species included in each of these divisions . Paris, 88 pp",
       // pubIn.getCsl().getTitle());
       
-      assertEquals(3, info.getReferences().size());
+      assertEquals(4, info.getReferences().size());
       for (String refId : info.getTaxon().getReferenceIds()) {
         Reference r = info.getReference(refId);
         assertNotNull(r);

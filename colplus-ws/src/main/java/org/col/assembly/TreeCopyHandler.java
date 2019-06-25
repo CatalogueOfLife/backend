@@ -10,9 +10,9 @@ import org.col.api.vocab.Datasets;
 import org.col.api.vocab.EntityType;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
+import org.col.dao.CatCopy;
 import org.col.dao.DatasetEntityDao;
 import org.col.dao.ReferenceDao;
-import org.col.dao.TaxonDao;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.ReferenceMapper;
 import org.col.db.mapper.TaxonMapper;
@@ -215,7 +215,7 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
     // copy usage with all associated information. This assigns a new id !!!
     DatasetID orig;
     DatasetID parentDID = new DatasetID(catalogueKey, parent.id);
-    orig = TaxonDao.copyUsage(session, u, parentDID, user.getKey(), COPY_DATA, this::lookupReference, this::lookupReference);
+    orig = CatCopy.copyUsage(session, u, parentDID, user.getKey(), COPY_DATA, this::lookupReference, this::lookupReference);
     // remember old to new id mapping
     ids.put(orig.getId(), usage(u));
     // counter

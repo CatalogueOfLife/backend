@@ -13,7 +13,6 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.ibm.icu.text.Transliterator;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.*;
@@ -37,8 +36,6 @@ public class InterpreterBase {
   
   private static final Logger LOG = LoggerFactory.getLogger(InterpreterBase.class);
   protected static final Splitter MULTIVAL = Splitter.on(CharMatcher.anyOf(";|,@")).trimResults().omitEmptyStrings();
-  private static final Transliterator transLatin = Transliterator.getInstance("Any-Latin");
-  private static final Transliterator transAscii = Transliterator.getInstance("Latin-ASCII");
   private static final int MIN_YEAR = 1500;
   private static final int MAX_YEAR = Year.now().getValue() + 10;
   private static final Pattern YEAR_PATTERN = Pattern.compile("^(\\d{3,4})\\s*(\\?)?(?!\\d)");
@@ -62,14 +59,6 @@ public class InterpreterBase {
     return true;
   }
   
-  protected String latinName(String name) {
-    return transLatin.transform(name);
-  }
-  
-  protected String asciiName(String name) {
-    return transAscii.transform(latinName(name));
-  }
-
   protected List<VernacularName> interpretVernacular(VerbatimRecord rec, BiConsumer<VernacularName, VerbatimRecord> addReference,
                                                      Term name, Term translit, Term lang, Term area, Term... countryTerms) {
     String vname = rec.get(name);
@@ -82,19 +71,15 @@ public class InterpreterBase {
         vn.setLatin(rec.get(translit));
       }
       if (lang != null) {
-        vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(lang)).orNull());
+        vn.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(lang)).orNull(Issue.VERNACULAR_LANGUAGE_INVALID, rec));
       }
       if (area != null) {
         vn.setArea(rec.get(area));
       }
-      vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.getFirst(countryTerms)).orNull());
+      vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.getFirst(countryTerms)).orNull(Issue.VERNACULAR_COUNTRY_INVALID, rec));
   
       addReference.accept(vn, rec);
   
-      if (StringUtils.isBlank(vn.getLatin())) {
-        vn.setLatin(latinName(vn.getName()));
-        rec.addIssue(Issue.VERNACULAR_NAME_TRANSLITERATED);
-      }
       return Lists.newArrayList(vn);
     }
     return Collections.emptyList();
