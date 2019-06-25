@@ -10,12 +10,13 @@ import org.col.api.model.CslData;
 import org.col.api.model.Reference;
 
 public class CslUtil {
+  private static final String CITATION_STYLE = "apa";
   private final static ReferenceProvider provider = new ReferenceProvider();
   private final static CSL csl;
   
   static {
     try {
-      csl = new CSL(provider, "apa");
+      csl = new CSL(provider, CITATION_STYLE);
       csl.setOutputFormat("text");
     } catch (IOException e) {
       throw new IllegalStateException("APA CSL processor could not be created", e);

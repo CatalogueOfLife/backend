@@ -32,7 +32,7 @@ public class ReferenceFactoryTest {
   public void citation() {
     assertEquals("M.Döring. Guess what? (2001).", rf.buildCitation("M.Döring", "2001", "Guess what?", null, null));
   }
-  
+
   @Test
   public void fromACEF() {
     Reference r = rf.fromACEF("referenceID", "authors", "1920", "title", "details", issues);

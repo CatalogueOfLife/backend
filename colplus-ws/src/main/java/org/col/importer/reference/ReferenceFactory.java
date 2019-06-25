@@ -12,9 +12,10 @@ import com.google.common.base.Splitter;
 import org.apache.commons.lang3.CharSet;
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.*;
-import org.col.api.vocab.Issue;
-import org.col.common.date.FuzzyDate;
 import org.col.api.util.ObjectUtils;
+import org.col.api.vocab.Issue;
+import org.col.common.csl.CslUtil;
+import org.col.common.date.FuzzyDate;
 import org.col.importer.neo.NeoDb;
 import org.col.parser.DateParser;
 import org.col.parser.UnparsableException;
@@ -33,6 +34,7 @@ import static org.col.common.text.StringUtils.hasContent;
 public class ReferenceFactory {
   
   private static final Logger LOG = LoggerFactory.getLogger(ReferenceFactory.class);
+
   private static final Pattern YEAR_PATTERN = Pattern.compile("(^|\\D+)(\\d{4})($|\\D+)");
   private static final CharSet PUNCTUATIONS = CharSet.getInstance(".?!;:,");
   private static final Pattern NORM_WHITESPACE = Pattern.compile("\\s{2,}");
@@ -148,7 +150,8 @@ public class ReferenceFactory {
   public static Reference fromCsl(int datasetKey, CslData csl) {
     Reference ref = newReference(datasetKey, csl.getId());
     ref.setCsl(csl);
-    //TODO: generate default citation string
+    // generate default APA citation string - THIS IS SLOOOOOWWW
+    ref.setCitation(CslUtil.buildCitation(csl));
     updateIntYearFromCsl(ref);
     return ref;
   }

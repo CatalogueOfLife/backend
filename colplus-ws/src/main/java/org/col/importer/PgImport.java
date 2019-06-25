@@ -15,6 +15,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.Users;
+import org.col.common.csl.CslUtil;
 import org.col.common.lang.InterruptedRuntimeException;
 import org.col.common.tax.AuthorshipNormalizer;
 import org.col.config.ImporterConfig;
@@ -231,6 +232,10 @@ public class PgImport implements Callable<Boolean> {
         r.setDatasetKey(dataset.getKey());
         updateVerbatimUserEntity(r);
         updateUser(r);
+        if (r.getCitation() == null && r.getCsl() != null) {
+          // build citation from csl
+          r.setCitation(CslUtil.buildCitation(r.getCsl()));
+        }
         mapper.create(r);
         rCounter.incrementAndGet();
         if (counter++ % batchSize == 0) {

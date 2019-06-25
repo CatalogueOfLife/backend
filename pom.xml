@@ -44,7 +44,8 @@
             versions for many things including: commons-lang3, guava, jersey, commons-text, servlet api, httpclient,
             liquibase, freemarker, jetty, jackson, metrics, etc. -->
         <assertj.version>3.11.1</assertj.version>
-        <citeproc.version>1.0.1</citeproc.version>
+        <!-- 1.1.0-SNAPSHOT released on commit 1d5bf0e hosted at GBIF -->
+        <citeproc.version>1.1.0-1d5bf0e</citeproc.version>
         <commons-collections4.version>4.3</commons-collections4.version>
         <commons-compress.version>1.18</commons-compress.version>
         <commons-io.version>2.6</commons-io.version>
