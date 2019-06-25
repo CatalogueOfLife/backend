@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
@@ -142,10 +143,10 @@ public class ImportManager implements Managed {
     return futures.values().stream()
         .map(ImportManager::fromFuture)
         .filter( di -> {
-          if (datasetKey != null && !datasetKey.equals(di.getDatasetKey())) {
+          if (datasetKey != null && !Objects.equals(datasetKey, di.getDatasetKey())) {
             return false;
           }
-          if (states != null && !states.contains(di.getState())) {
+          if (states != null && di.getState() != null && !states.contains(di.getState())) {
             return false;
           }
           return true;
