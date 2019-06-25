@@ -155,7 +155,7 @@ public class ColdpInserter extends NeoInserter {
         try {
           CslData csl = CslDataConverter.toCslData(cslItem);
           csl.setId(id); // maybe superfluous but safe
-          Reference ref = refFactory.fromCsl(csl);
+          Reference ref = ReferenceFactory.fromCsl(datasetKey, csl);
           ref.setVerbatimKey(v.getKey());
           store.create(ref);
 
@@ -196,7 +196,7 @@ public class ColdpInserter extends NeoInserter {
               throw new IllegalArgumentException("Missing required CSL id field");
             }
           }
-          Reference ref = refFactory.fromCsl(csl);
+          Reference ref = ReferenceFactory.fromCsl(datasetKey, csl);
           ref.setVerbatimKey(v.getKey());
           store.create(ref);
           

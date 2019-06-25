@@ -145,7 +145,7 @@ public class ReferenceFactory {
     return ref;
   }
   
-  public Reference fromCsl(CslData csl) {
+  public static Reference fromCsl(int datasetKey, CslData csl) {
     Reference ref = newReference(datasetKey, csl.getId());
     ref.setCsl(csl);
     //TODO: generate default citation string

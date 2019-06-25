@@ -1,6 +1,7 @@
 package org.col.resources;
 
 import java.util.UUID;
+import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -12,6 +13,7 @@ import org.col.api.model.*;
 import org.col.api.model.coldp.ColdpReference;
 import org.col.api.search.ReferenceSearchRequest;
 import org.col.dao.ReferenceDao;
+import org.col.dw.auth.Roles;
 import org.col.dw.jersey.MoreMediaTypes;
 import org.col.importer.reference.ReferenceFactory;
 import org.slf4j.Logger;
@@ -45,11 +47,25 @@ public class ReferenceResource extends DatasetEntityResource<Reference>  {
    */
   @POST
   @Consumes(MoreMediaTypes.APP_JSON_COLDP)
-  //@RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public String createColdp(@PathParam("datasetKey") int datasetKey, @Valid ColdpReference obj, @Auth ColUser user) {
     final String id = UUID.randomUUID().toString();
     Reference ref = ReferenceFactory.fromColDP(datasetKey, id, obj.getCitation(), obj.getAuthor(), obj.getYear(), obj.getTitle(),
         obj.getSource(), obj.getDetails(), obj.getDoi(), obj.getLink(), IssueContainer.DevNullLogging.dataset(datasetKey));
+    return dao.create(ref, user.getKey());
+  }
+  
+  /**
+   * @return the primary key of the object. Together with the CreatedResponseFilter will return a 201 location
+   */
+  @POST
+  @Consumes(MoreMediaTypes.APP_JSON_CSL)
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public String createCsl(@PathParam("datasetKey") int datasetKey, @Valid CslData csl, @Auth ColUser user) {
+    if (csl.getId() == null) {
+      csl.setId(UUID.randomUUID().toString());
+    }
+    Reference ref = ReferenceFactory.fromCsl(datasetKey, csl);
     return dao.create(ref, user.getKey());
   }
 }
