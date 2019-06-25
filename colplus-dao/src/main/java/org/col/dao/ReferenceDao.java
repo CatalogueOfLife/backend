@@ -1,6 +1,7 @@
 package org.col.dao;
 
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
@@ -11,6 +12,7 @@ import org.col.api.model.Page;
 import org.col.api.model.Reference;
 import org.col.api.model.ResultPage;
 import org.col.api.search.ReferenceSearchRequest;
+import org.col.common.csl.CslUtil;
 import org.col.db.mapper.ReferenceMapper;
 
 public class ReferenceDao extends DatasetEntityDao<Reference, ReferenceMapper> {
@@ -29,6 +31,26 @@ public class ReferenceDao extends DatasetEntityDao<Reference, ReferenceMapper> {
       ref.setPage(page);
     }
     return ref;
+  }
+  
+  @Override
+  public String create(Reference r, int user) {
+    if (r.getCitation() == null && r.getCsl() != null) {
+      // build citation from csl
+      r.setCitation(CslUtil.buildCitation(r.getCsl()));
+    }
+    return super.create(r, user);
+  }
+  
+  @Override
+  protected void updateBefore(Reference r, Reference old, int user, ReferenceMapper mapper, SqlSession session) {
+    if (r.getCitation() == null && r.getCsl() != null) {
+      // build citation from csl
+      r.setCitation(CslUtil.buildCitation(r.getCsl()));
+    } else if (Objects.equals(r.getCitation(), old.getCitation()) && !Objects.equals(r.getCsl(), old.getCsl())) {
+      // csl changed, but citation is still the same
+      r.setCitation(CslUtil.buildCitation(r.getCsl()));
+    }
   }
   
   /**
