@@ -14,6 +14,7 @@ import jersey.repackaged.com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
+import org.col.api.search.ReferenceSearchRequest;
 import org.col.api.vocab.*;
 import org.col.command.initdb.InitDbCmd;
 import org.col.common.tax.AuthorshipNormalizer;
@@ -343,6 +344,15 @@ public class PgImportIT {
       
       VernacularName v = t.getVernacularNames().get(0);
       assertEquals("Beer bean", v.getName());
+      
+      // make sure references get indexed during imports
+      // https://github.com/Sp2000/colplus-backend/issues/25
+      ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
+      ReferenceSearchRequest req = ReferenceSearchRequest.byQuery("Canarias");
+      List<Reference> out = rm.search(dataset.getKey(), req, new Page());
+      assertEquals(1, out.size());
+      assertEquals("24", out.get(0).getId());
+  
     }
   }
   
