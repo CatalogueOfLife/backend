@@ -111,7 +111,7 @@ COPY (
       (csl#> '{issued,date-parts}'->0->0)::text
     ) AS year,
     csl->>'title' AS title,
-    csl->>'container-title  ' AS source,
+    csl->>'container-title' AS source,
     coalesce(s.dataset_key, 1500) - 1000 AS database_id,
     r.id AS reference_code
   FROM reference_{{datasetKey}} r
