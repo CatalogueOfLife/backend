@@ -27,6 +27,7 @@ public class DecisionDao extends GlobalEntityDao<EditorialDecision, DecisionMapp
   @Override
   protected void createAfter(EditorialDecision obj, int user, DecisionMapper mapper, SqlSession session) {
     if (obj.getSubject().getId() != null) {
+      session.commit();
       indexService.indexTaxa(obj.getDatasetKey(), Lists.newArrayList(obj.getSubject().getId()));
     }
   }

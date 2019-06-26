@@ -12,6 +12,7 @@ import com.google.common.collect.Lists;
 import org.col.api.model.*;
 import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.*;
+import org.col.common.csl.CslUtil;
 import org.col.common.tax.AuthorshipNormalizer;
 import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
@@ -423,6 +424,7 @@ public class TestEntityGenerator {
     date.setLiteral("2014-8-12");
     csl.setAccessed(date);
     csl.setCategories(new String[] {"A", "B", "C"});
+    r.setCitation(CslUtil.buildCitation(csl));
     return r;
   }
 

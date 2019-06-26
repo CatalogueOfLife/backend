@@ -82,7 +82,7 @@ public class ReferenceDao extends DatasetEntityDao<Reference, ReferenceMapper> {
     try (SqlSession session = factory.openSession()) {
       ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
       List<Reference> result = mapper.search(datasetKey, req, page);
-      int total = result.size() == page.getLimit() ? mapper.searchCount(datasetKey, req) : result.size();
+      int total = result.size() == page.getLimit() ? mapper.searchCount(datasetKey, req) : page.getOffset() + result.size();
       return new ResultPage<>(page, total, result);
     }
   }
