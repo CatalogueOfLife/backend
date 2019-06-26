@@ -17,7 +17,7 @@ public interface EstimateMapper extends GlobalCRUDMapper<SpeciesEstimate> {
    */
   List<SpeciesEstimate> broken();
   
-  int count(@Nullable @Param("rank") Rank rank
+  int searchCount(@Nullable @Param("rank") Rank rank
       , @Nullable @Param("min") Integer min
       , @Nullable @Param("max") Integer max);
   
