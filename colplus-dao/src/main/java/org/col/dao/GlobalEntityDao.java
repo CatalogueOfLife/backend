@@ -45,7 +45,7 @@ public class GlobalEntityDao<T extends GlobalEntity, M extends GlobalCRUDMapper<
     try (SqlSession session = factory.openSession()) {
       M mapper = session.getMapper(mapperClass);
       List<T> result = mapper.list(p);
-      int total = result.size() == p.getLimit() ? mapper.count() : result.size();
+      int total = result.size() == p.getLimit() ? mapper.count() : page.getOffset() + result.size();
       return new ResultPage<>(p, total, result);
     }
   }

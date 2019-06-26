@@ -108,4 +108,21 @@
     ORDER BY est.key
   </select>
 
+  <select id="search" resultMap="estimateResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    <where>
+      <if test="rank != null">
+        est.subject_rank = #{rank}
+      </if>
+      <if test="min != null">
+        AND est.estimate &gt;= #{min}
+      </if>
+      <if test="max != null">
+        AND est.estimate &lt;= #{max}
+      </if>
+    </where>
+    ORDER BY est.subject_rank, est.subject_name
+  </select>
+
 </mapper>
