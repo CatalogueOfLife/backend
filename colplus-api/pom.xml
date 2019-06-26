@@ -59,13 +59,11 @@
         </dependency>
         <dependency>
             <groupId>org.citationstyles</groupId>
-            <artifactId>styles</artifactId>
-            <version>1.0</version>
+            <artifactId>locales</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.citationstyles</groupId>
-            <artifactId>locales</artifactId>
-            <version>1.0</version>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
         </dependency>
 
         <!-- javax -->

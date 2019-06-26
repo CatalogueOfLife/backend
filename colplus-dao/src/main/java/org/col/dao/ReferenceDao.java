@@ -35,8 +35,8 @@ public class ReferenceDao extends DatasetEntityDao<Reference, ReferenceMapper> {
   
   @Override
   public String create(Reference r, int user) {
+    // build default citation from csl
     if (r.getCitation() == null && r.getCsl() != null) {
-      // build citation from csl
       r.setCitation(CslUtil.buildCitation(r.getCsl()));
     }
     return super.create(r, user);

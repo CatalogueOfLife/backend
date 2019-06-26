@@ -23,6 +23,7 @@ import org.col.command.export.AcExporter;
 import org.col.command.export.ExportCmd;
 import org.col.command.initdb.InitDbCmd;
 import org.col.command.neoshell.ShellCmd;
+import org.col.common.csl.CslUtil;
 import org.col.common.io.DownloadUtil;
 import org.col.common.tax.AuthorshipNormalizer;
 import org.col.dao.*;
@@ -32,6 +33,7 @@ import org.col.dw.auth.AuthBundle;
 import org.col.dw.cors.CorsBundle;
 import org.col.dw.db.MybatisBundle;
 import org.col.dw.es.ManagedEsClient;
+import org.col.dw.health.CslUtilsHealthCheck;
 import org.col.dw.health.DiffHealthCheck;
 import org.col.dw.health.NameParserHealthCheck;
 import org.col.dw.health.NamesIndexHealthCheck;
@@ -135,6 +137,11 @@ public class WsServer extends Application<WsServerConfig> {
     // name parser
     NameParser.PARSER.register(env.metrics());
     env.healthChecks().register("name-parser", new NameParserHealthCheck());
+    
+    // time CSL Util
+    CslUtil.register(env.metrics());
+    env.healthChecks().register("csl-utils", new CslUtilsHealthCheck());
+    
     
     // authorship lookup & norm
     AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
