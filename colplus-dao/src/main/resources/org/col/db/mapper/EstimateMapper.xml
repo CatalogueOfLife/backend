@@ -112,7 +112,7 @@
   <sql id="WHERE">
     <where>
       <if test="rank != null">
-        est.subject_rank = #{rank}
+        est.subject_rank = #{rank}::rank
       </if>
       <if test="min != null">
         AND est.estimate &gt;= #{min}
