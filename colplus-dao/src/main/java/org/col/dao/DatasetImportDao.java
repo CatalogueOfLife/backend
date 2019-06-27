@@ -58,10 +58,11 @@ public class DatasetImportDao {
   public ResultPage<DatasetImport> list(Integer datasetKey, Collection<ImportState> states, Page page) {
     try (SqlSession session = factory.openSession(true)) {
       DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
-      return new ResultPage<>(page, mapper.count(datasetKey, states), mapper.list(datasetKey, states, page));
+      List<DatasetImport> result = mapper.list(datasetKey, states, page);
+      return new ResultPage<>(page, result, () -> mapper.count(datasetKey, states));
     }
   }
-  
+
   /**
    * Create a new downloading dataset import with the next attempt
    */

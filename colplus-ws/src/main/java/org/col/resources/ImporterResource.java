@@ -12,6 +12,7 @@ import io.dropwizard.auth.Auth;
 import org.col.api.model.ColUser;
 import org.col.api.model.DatasetImport;
 import org.col.api.model.Page;
+import org.col.api.model.ResultPage;
 import org.col.api.vocab.ImportState;
 import org.col.dao.DatasetImportDao;
 import org.col.dw.auth.Roles;
@@ -36,7 +37,7 @@ public class ImporterResource {
   }
   
   @GET
-  public List<DatasetImport> list(@QueryParam("datasetKey") Integer datasetKey,
+  public ResultPage<DatasetImport> list(@QueryParam("datasetKey") Integer datasetKey,
                                         @QueryParam("state") List<ImportState> states,
                                         @QueryParam("running") Boolean running,
                                         @Valid @BeanParam Page page) {

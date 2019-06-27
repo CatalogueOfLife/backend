@@ -38,8 +38,7 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
       Page p = page == null ? new Page() : page;
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
       List<Taxon> result = tm.listRoot(datasetKey, p);
-      int total = result.size() == p.getLimit() ? tm.countRoot(datasetKey) : result.size();
-      return new ResultPage<>(p, total, result);
+      return new ResultPage<>(p, result, () -> tm.countRoot(datasetKey));
     }
   }
   
