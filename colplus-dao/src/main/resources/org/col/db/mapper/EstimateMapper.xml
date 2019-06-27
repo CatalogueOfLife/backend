@@ -131,7 +131,7 @@
     <include refid="org.col.db.mapper.Common.limit" />
   </select>
 
-  <select id="searchCount" resultMap="estimateResultMap">
+  <select id="searchCount" resultMap="integer">
     SELECT count(*)
     FROM <include refid="FROM" />
     <include refid="WHERE"/>
