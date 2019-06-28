@@ -26,6 +26,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.WsServerConfig;
 import org.col.api.exception.NotFoundException;
 import org.col.api.model.*;
+import org.col.api.util.ObjectUtils;
 import org.col.api.util.PagingUtil;
 import org.col.api.vocab.DatasetOrigin;
 import org.col.api.vocab.ImportState;
@@ -135,7 +136,7 @@ public class ImportManager implements Managed {
     if (di == null) {
       di = new DatasetImport();
       di.setDatasetKey(job.getDatasetKey());
-      di.setAttempt(job.getAttempt());
+      di.setAttempt(ObjectUtils.coalesce(job.getAttempt(), -1));
       di.setState(ImportState.WAITING);
     }
     return di;
