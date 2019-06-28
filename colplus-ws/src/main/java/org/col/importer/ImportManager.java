@@ -132,7 +132,7 @@ public class ImportManager implements Managed {
   private static DatasetImport fromFuture(PBQThreadPoolExecutor.ComparableFutureTask f) {
     ImportJob job = (ImportJob) f.getTask();
     DatasetImport di = job.getDatasetImport();
-    if (di != null) {
+    if (di == null) {
       di = new DatasetImport();
       di.setDatasetKey(job.getDatasetKey());
       di.setAttempt(job.getAttempt());
