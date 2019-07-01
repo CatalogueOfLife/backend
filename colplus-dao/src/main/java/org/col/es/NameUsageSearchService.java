@@ -13,7 +13,7 @@ import org.col.api.search.NameSearchResponse;
 import org.col.es.model.EsNameUsage;
 import org.col.es.query.EsSearchRequest;
 import org.col.es.response.EsNameSearchResponse;
-import org.col.es.translate.NameSearchRequestTranslator;
+import org.col.es.translate.search.NameSearchRequestTranslator;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;

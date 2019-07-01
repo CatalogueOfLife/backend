@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class BoolQuery extends AbstractQuery {
 
-  private static class Clause {
+  private static class Bool {
     List<Query> must;
     List<Query> filter;
     @JsonProperty("must_not")
@@ -14,10 +14,10 @@ public class BoolQuery extends AbstractQuery {
     List<Query> should;
   }
 
-  private final Clause bool;
+  private final Bool bool;
 
   public BoolQuery() {
-    this.bool = new Clause();
+    this.bool = new Bool();
   }
 
   public BoolQuery must(Query query) {

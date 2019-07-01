@@ -1,4 +1,4 @@
-package org.col.es.translate;
+package org.col.es.translate.search;
 
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.Page;

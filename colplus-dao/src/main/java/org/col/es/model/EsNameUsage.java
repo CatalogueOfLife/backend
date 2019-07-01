@@ -11,6 +11,7 @@ import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.es.annotations.Analyzers;
 import org.col.es.annotations.MapToType;
+import org.col.es.annotations.NotIndexed;
 import org.col.es.mapping.ESDataType;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -29,18 +30,10 @@ public class EsNameUsage {
   private String usageId;
   private Integer datasetKey;
   private Integer sectorKey;
-  /*
-   * A Weakly normalized version of the original scientific name, used for auto-completion purposes. What weak and strong normalization
-   * exactly is, is left intentionally vague, so we have room to experiment and fine-tune. The only requirement is that the same
-   * normalization method be used at index and query time, and that two different weakly normalized names may have the same strongly
-   * normalized name, but two different strongly normalized names must also have two weakly normalized names. See NameUsageTransfer for the
-   * actual implementations of weak and strong normalization.
-   */
-  private String scientificNameWN;
-  /*
-   * A Strongly normalized version of the original scientific name.
-   */
-  private String scientificNameSN;
+
+  private String scientificName;
+  private SearchableNameStrings nameStrings;
+
   private String authorship;
   private String nameId;
   private String nameIndexId;
@@ -92,22 +85,25 @@ public class EsNameUsage {
     this.sectorKey = sectorKey;
   }
 
-  @Analyzers({AUTO_COMPLETE, IGNORE_CASE})
-  public String getScientificNameWN() {
-    return scientificNameWN;
+  /*
+   * We don't actually search on the scientific name itself, only on the strings in the SearchableNameStrings. We place it outside the
+   * payload though so we don't even need to unpack the payload for the auto-completion service.
+   */
+  @NotIndexed
+  public String getScientificName() {
+    return scientificName;
   }
 
-  public void setScientificNameWN(String scientificNameWN) {
-    this.scientificNameWN = scientificNameWN;
+  public void setScientificName(String scientificName) {
+    this.scientificName = scientificName;
   }
 
-  @Analyzers({AUTO_COMPLETE, IGNORE_CASE})
-  public String getScientificNameSN() {
-    return scientificNameSN;
+  public SearchableNameStrings getNameStrings() {
+    return nameStrings;
   }
 
-  public void setScientificNameSN(String scientificNameSN) {
-    this.scientificNameSN = scientificNameSN;
+  public void setNameStrings(SearchableNameStrings nameStrings) {
+    this.nameStrings = nameStrings;
   }
 
   @Analyzers({AUTO_COMPLETE, IGNORE_CASE})
@@ -266,8 +262,7 @@ public class EsNameUsage {
         && Objects.equals(publishedInId, that.publishedInId)
         && Objects.equals(publisherKey, that.publisherKey)
         && rank == that.rank
-        && Objects.equals(scientificNameWN, that.scientificNameWN)
-        && Objects.equals(scientificNameSN, that.scientificNameSN)
+        && Objects.equals(nameStrings, that.nameStrings)
         && status == that.status
         && type == that.type
         && Objects.equals(usageId, that.usageId)
@@ -292,8 +287,7 @@ public class EsNameUsage {
         publishedInId,
         publisherKey,
         rank,
-        scientificNameWN,
-        scientificNameSN,
+        nameStrings,
         status,
         type,
         usageId,

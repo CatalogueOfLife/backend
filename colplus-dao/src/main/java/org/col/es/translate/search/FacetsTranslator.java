@@ -1,4 +1,4 @@
-package org.col.es.translate;
+package org.col.es.translate.search;
 
 import java.util.Map;
 
@@ -15,7 +15,7 @@ import static java.util.Collections.singletonMap;
 import static org.col.es.response.AggregationLabelProvider.getContextFilterLabel;
 import static org.col.es.response.AggregationLabelProvider.getContextLabel;
 import static org.col.es.response.AggregationLabelProvider.getFacetLabel;
-import static org.col.es.translate.NameSearchRequestTranslator.generateQuery;
+import static org.col.es.translate.search.NameSearchRequestTranslator.generateQuery;
 
 /**
  * Translates the facets in the NameSearchRequest object into a set of suitable aggregations. There is one edge case here, namely if there

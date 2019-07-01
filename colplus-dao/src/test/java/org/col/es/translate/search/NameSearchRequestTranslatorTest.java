@@ -1,4 +1,4 @@
-package org.col.es.translate;
+package org.col.es.translate.search;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -6,6 +6,7 @@ import org.col.api.model.Page;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.es.EsModule;
+import org.col.es.translate.search.NameSearchRequestTranslator;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 

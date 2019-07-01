@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.DeflaterOutputStream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.Name;
 import org.col.api.model.SimpleName;
 import org.col.api.model.Synonym;
@@ -21,6 +22,7 @@ import org.col.api.vocab.NameField;
 import org.col.common.tax.SciNameNormalizer;
 import org.col.es.model.EsNameUsage;
 import org.col.es.model.Monomial;
+import org.col.es.model.SearchableNameStrings;
 
 import static org.col.api.vocab.NameField.BASIONYM_AUTHORS;
 import static org.col.api.vocab.NameField.BASIONYM_EX_AUTHORS;
@@ -61,14 +63,20 @@ public class NameUsageTransfer {
    * used both at index time (here) and at query time (QTranslator). Hence this public static method.
    */
   public static String normalizeWeakly(String sn) {
-    return SciNameNormalizer.normalize(sn);
+    if (sn == null) {
+      return null;
+    }
+    return StringUtils.lowerCase(SciNameNormalizer.normalize(sn));
   }
 
   /**
    * Provides a strongly normalized version of the original scientific name.
    */
   public static String normalizeStrongly(String sn) {
-    return SciNameNormalizer.normalizeAll(sn);
+    if (sn == null) {
+      return null;
+    }
+    return StringUtils.lowerCase(SciNameNormalizer.normalizeAll(sn));
   }
 
   /**
@@ -181,7 +189,7 @@ public class NameUsageTransfer {
       enu.setPayload(NAME_USAGE_WRITER.writeValueAsString(nuw));
     }
     return enu;
-  } 
+  }
 
   static void saveClassification(NameUsageWrapper from, EsNameUsage to) {
     if (notEmpty(from.getClassification())) {
@@ -198,18 +206,9 @@ public class NameUsageTransfer {
     }
   }
 
-
   private static void saveScientificName(NameUsageWrapper from, EsNameUsage to) {
-    String w = normalizeWeakly(from.getUsage().getName().getScientificName());
-    String s = normalizeStrongly(from.getUsage().getName().getScientificName());
-    to.setScientificNameWN(w);
-    /*
-     * Don't waste time indexing the same ngram tokens twice. Only index the strongly normalized variant if it differs from the weakly
-     * normalized variant. This if-logic is replicated at query time (see QTranslator).
-     */
-    if (!w.equals(s)) {
-      to.setScientificNameSN(s);
-    }
+    to.setScientificName(from.getUsage().getName().getScientificName());
+    to.setNameStrings(new SearchableNameStrings(from.getUsage().getName()));
   }
 
   private static void saveVernacularNames(NameUsageWrapper from, EsNameUsage to) {

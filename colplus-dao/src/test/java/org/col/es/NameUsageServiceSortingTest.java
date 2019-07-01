@@ -75,56 +75,56 @@ public class NameUsageServiceSortingTest extends EsReadTestBase {
     assertEquals(BareName.class, result.getResult().get(2).getUsage().getClass());
   }
 
-  @Test
-  public void testSort2() throws IOException {
-    NameUsageTransfer transfer = new NameUsageTransfer();
-    EsNameUsage enu = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
-    // Overwrite to test ordering by scientific name
-    enu.setScientificNameWN("B");
-    insert(client, indexName, enu);
-    enu = transfer.toDocument(TestEntityGenerator.newNameUsageSynonymWrapper());
-    enu.setScientificNameWN("C");
-    insert(client, indexName, enu);
-    enu = transfer.toDocument(TestEntityGenerator.newNameUsageBareNameWrapper());
-    enu.setScientificNameWN("A");
-    insert(client, indexName, enu);
-    refreshIndex(client, indexName);
-    assertEquals(3, EsUtil.count(client, indexName));
-    NameSearchRequest nsr = new NameSearchRequest();
-    nsr.setHighlight(false);
-    nsr.setSortBy(SortBy.NAME);
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
-    assertEquals(3, result.getResult().size());
-    assertEquals(BareName.class, result.getResult().get(0).getUsage().getClass());
-    assertEquals(Taxon.class, result.getResult().get(1).getUsage().getClass());
-    assertEquals(Synonym.class, result.getResult().get(2).getUsage().getClass());
-  }
-
-  @Test
-  public void testSortReverse1() throws IOException {
-    NameUsageTransfer transfer = new NameUsageTransfer();
-    EsNameUsage enu = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
-    // Overwrite to test ordering by scientific name
-    enu.setScientificNameWN("B");
-    insert(client, indexName, enu);
-    enu = transfer.toDocument(TestEntityGenerator.newNameUsageSynonymWrapper());
-    enu.setScientificNameWN("C");
-    insert(client, indexName, enu);
-    enu = transfer.toDocument(TestEntityGenerator.newNameUsageBareNameWrapper());
-    enu.setScientificNameWN("A");
-    insert(client, indexName, enu);
-    refreshIndex(client, indexName);
-    assertEquals(3, EsUtil.count(client, indexName));
-    NameSearchRequest nsr = new NameSearchRequest();
-    nsr.setHighlight(false);
-    nsr.setSortBy(SortBy.NAME);
-    nsr.setReverse(true);
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
-    assertEquals(3, result.getResult().size());
-    assertEquals(Synonym.class, result.getResult().get(0).getUsage().getClass());
-    assertEquals(Taxon.class, result.getResult().get(1).getUsage().getClass());
-    assertEquals(BareName.class, result.getResult().get(2).getUsage().getClass());
-  }
+//  @Test
+//  public void testSort2() throws IOException {
+//    NameUsageTransfer transfer = new NameUsageTransfer();
+//    EsNameUsage enu = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
+//    // Overwrite to test ordering by scientific name
+//    enu.setScientificNameWN("B");
+//    insert(client, indexName, enu);
+//    enu = transfer.toDocument(TestEntityGenerator.newNameUsageSynonymWrapper());
+//    enu.setScientificNameWN("C");
+//    insert(client, indexName, enu);
+//    enu = transfer.toDocument(TestEntityGenerator.newNameUsageBareNameWrapper());
+//    enu.setScientificNameWN("A");
+//    insert(client, indexName, enu);
+//    refreshIndex(client, indexName);
+//    assertEquals(3, EsUtil.count(client, indexName));
+//    NameSearchRequest nsr = new NameSearchRequest();
+//    nsr.setHighlight(false);
+//    nsr.setSortBy(SortBy.NAME);
+//    ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
+//    assertEquals(3, result.getResult().size());
+//    assertEquals(BareName.class, result.getResult().get(0).getUsage().getClass());
+//    assertEquals(Taxon.class, result.getResult().get(1).getUsage().getClass());
+//    assertEquals(Synonym.class, result.getResult().get(2).getUsage().getClass());
+//  }
+//
+//  @Test
+//  public void testSortReverse1() throws IOException {
+//    NameUsageTransfer transfer = new NameUsageTransfer();
+//    EsNameUsage enu = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
+//    // Overwrite to test ordering by scientific name
+//    enu.setScientificNameWN("B");
+//    insert(client, indexName, enu);
+//    enu = transfer.toDocument(TestEntityGenerator.newNameUsageSynonymWrapper());
+//    enu.setScientificNameWN("C");
+//    insert(client, indexName, enu);
+//    enu = transfer.toDocument(TestEntityGenerator.newNameUsageBareNameWrapper());
+//    enu.setScientificNameWN("A");
+//    insert(client, indexName, enu);
+//    refreshIndex(client, indexName);
+//    assertEquals(3, EsUtil.count(client, indexName));
+//    NameSearchRequest nsr = new NameSearchRequest();
+//    nsr.setHighlight(false);
+//    nsr.setSortBy(SortBy.NAME);
+//    nsr.setReverse(true);
+//    ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
+//    assertEquals(3, result.getResult().size());
+//    assertEquals(Synonym.class, result.getResult().get(0).getUsage().getClass());
+//    assertEquals(Taxon.class, result.getResult().get(1).getUsage().getClass());
+//    assertEquals(BareName.class, result.getResult().get(2).getUsage().getClass());
+//  }
 
   @Test
   public void testSortDescending() throws IOException {

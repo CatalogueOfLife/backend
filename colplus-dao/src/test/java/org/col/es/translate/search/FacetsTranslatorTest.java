@@ -1,4 +1,4 @@
-package org.col.es.translate;
+package org.col.es.translate.search;
 
 import java.util.EnumSet;
 
@@ -8,6 +8,7 @@ import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchRequest.SearchContent;
 import org.col.api.vocab.Issue;
 import org.col.es.EsModule;
+import org.col.es.translate.search.FacetsTranslator;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 

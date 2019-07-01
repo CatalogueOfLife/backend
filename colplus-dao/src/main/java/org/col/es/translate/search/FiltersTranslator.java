@@ -1,4 +1,4 @@
-package org.col.es.translate;
+package org.col.es.translate.search;
 
 import java.util.Set;
 
