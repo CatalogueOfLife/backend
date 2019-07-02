@@ -49,6 +49,11 @@ public class EsSearchRequest {
     this.query = query;
   }
 
+  public EsSearchRequest where(Query query) {
+    this.query = query;
+    return this;
+  }
+
   public EsSearchRequest whereEquals(String field, Object value) {
     this.query = new TermQuery(field, value);
     return this;
@@ -77,7 +82,7 @@ public class EsSearchRequest {
   public void setSort(List<SortField> sort) {
     this.sort = sort;
   }
-  
+
   public Integer getSize() {
     return size;
   }

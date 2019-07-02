@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.Sector;
@@ -34,6 +36,14 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   public NameUsageIndexServiceEs(RestClient client, EsConfig esConfig, SqlSessionFactory factory) {
     this.client = client;
     this.index = esConfig.indexName(ES_INDEX_NAME_USAGE);
+    this.esConfig = esConfig;
+    this.factory = factory;
+  }
+
+  @VisibleForTesting
+  NameUsageIndexServiceEs(RestClient client, EsConfig esConfig, SqlSessionFactory factory, String index) {
+    this.client = client;
+    this.index = index;
     this.esConfig = esConfig;
     this.factory = factory;
   }
@@ -110,10 +120,10 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
           .collect(Collectors.toList());
       if (usages.isEmpty()) {
         LOG.warn("All given usage ids from dataset {} are not existing and won't be indexed: {}", datasetKey, taxonIds);
-        
+
       } else {
         if (usages.size() != taxonIds.size()) {
-          LOG.warn("{} usage ids from dataset {} are not existing", (taxonIds.size()-usages.size()), datasetKey);
+          LOG.warn("{} usage ids from dataset {} are not existing", (taxonIds.size() - usages.size()), datasetKey);
         }
         LOG.info("Indexing {} taxa from dataset {}", usages.size(), datasetKey);
         indexer.accept(usages);
