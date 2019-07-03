@@ -2,8 +2,10 @@ package org.col.es;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -12,9 +14,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.col.es.mapping.Mapping;
 import org.col.es.mapping.MappingFactory;
 import org.col.es.mapping.SerializationUtil;
+import org.col.es.query.BoolQuery;
 import org.col.es.query.EsSearchRequest;
 import org.col.es.query.Query;
 import org.col.es.query.TermQuery;
+import org.col.es.query.TermsQuery;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
@@ -29,6 +33,14 @@ public class EsUtil {
 
   private static final Logger LOG = LoggerFactory.getLogger(EsUtil.class);
 
+  /**
+   * Whether or not the index with the provided name exists.
+   * 
+   * @param client
+   * @param index
+   * @return
+   * @throws IOException
+   */
   public static boolean indexExists(RestClient client, String index) throws IOException {
     Request request = new Request("HEAD", index);
     Response response = client.performRequest(request);
@@ -86,15 +98,43 @@ public class EsUtil {
   }
 
   public static int deleteDataset(RestClient client, String index, int datasetKey) throws IOException {
-    LOG.info("Deleting all documents from dataset {}", datasetKey);
     return deleteByQuery(client, index, new TermQuery("datasetKey", datasetKey));
   }
-  
+
   public static int deleteSector(RestClient client, String index, int sectorKey) throws IOException {
-    LOG.info("Deleting all documents from dataset {}", sectorKey);
     return deleteByQuery(client, index, new TermQuery("sectorKey", sectorKey));
   }
-  
+
+  /**
+   * Delete the documents corresponding to the provided dataset key and usage IDs. Returns the number of documents actually deleted.
+   */
+  public static int deleteNameUsages(RestClient client, String index, int datasetKey, Collection<String> usageIds) throws IOException {
+    if (usageIds.isEmpty()) {
+      return 0;
+    }
+    List<String> ids = (usageIds instanceof List) ? (List<String>) usageIds : new ArrayList<>(usageIds);
+    int from = 0;
+    int deleted = 0;
+    while (from < ids.size()) {
+      int to = Math.min(ids.size(), from + 1024); // 1024 is max num terms in terms query
+      BoolQuery query = new BoolQuery()
+          .filter(new TermQuery("datasetKey", datasetKey))
+          .filter(new TermsQuery("usageId", ids.subList(from, to)));
+      deleted += deleteByQuery(client, index, query);
+      from = to;
+    }
+    return deleted;
+  }
+
+  /**
+   * Deletes all documents satisfying the provided query constraints.
+   * 
+   * @param client
+   * @param index
+   * @param query
+   * @return
+   * @throws IOException
+   */
   public static int deleteByQuery(RestClient client, String index, Query query) throws IOException {
     String url = String.format("%s/%s/_delete_by_query", index, EsConfig.DEFAULT_TYPE_NAME);
     Request request = new Request("POST", url);
@@ -108,12 +148,10 @@ public class EsUtil {
     Map<String, Object> feedback =
         EsModule.MAPPER.readValue(response.getEntity().getContent(), new TypeReference<Map<String, Object>>() {});
     Integer total = (Integer) feedback.get("total");
-    LOG.info("Deleted {} documents from index {}", total, index);
-    return total.intValue();   
+    return total.intValue();
   }
 
   public static void refreshIndex(RestClient client, String name) throws IOException {
-    LOG.info("Refreshing index {}", name);
     Request request = new Request("POST", name + "/_refresh");
     executeRequest(client, request);
   }
@@ -127,7 +165,6 @@ public class EsUtil {
    * @throws IOException
    */
   public static int count(RestClient client, String indexName) throws IOException {
-    LOG.info("Counting index {}", indexName);
     Request request = new Request("GET", indexName + "/" + EsConfig.DEFAULT_TYPE_NAME + "/_count");
     Response response = executeRequest(client, request);
     try {
@@ -144,7 +181,6 @@ public class EsUtil {
   }
 
   public static <T> void insert(RestClient client, String index, T obj) throws IOException {
-    LOG.info("Inserting {} into index {}", obj.getClass().getSimpleName(), index);
     String url = index + "/" + EsConfig.DEFAULT_TYPE_NAME;
     Request request = new Request("POST", url);
     request.setJsonEntity(serialize(obj));

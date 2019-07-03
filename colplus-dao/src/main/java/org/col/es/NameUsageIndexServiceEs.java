@@ -1,6 +1,7 @@
 package org.col.es;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -21,6 +22,9 @@ import org.col.es.query.EsSearchRequest;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 
 import static org.col.es.EsConfig.ES_INDEX_NAME_USAGE;
 
@@ -56,14 +60,14 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       createOrEmptyIndex(datasetKey);
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
-        LOG.debug("Indexing usages for dataset {}", datasetKey);
+        LOG.debug("Indexing usages from dataset {}", datasetKey);
         mapper.processDatasetUsages(datasetKey, null, handler);
       }
       EsUtil.refreshIndex(client, index);
       tCount = indexer.documentsIndexed();
       indexer.reset();
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
-        LOG.debug("Indexing bare names for dataset {}", datasetKey);
+        LOG.debug("Indexing bare names from dataset {}", datasetKey);
         mapper.processDatasetBareNames(datasetKey, null, handler);
       }
       EsUtil.refreshIndex(client, index);
@@ -82,14 +86,14 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       Integer datasetKey = clearSector(session, sectorKey);
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
-        LOG.debug("Indexing usages for sector {}", sectorKey);
+        LOG.debug("Indexing usages from sector {}", sectorKey);
         mapper.processDatasetUsages(datasetKey, sectorKey, handler);
       }
       EsUtil.refreshIndex(client, index);
       tCount = indexer.documentsIndexed();
       indexer.reset();
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
-        LOG.debug("Indexing bare names for sector {}", sectorKey);
+        LOG.debug("Indexing bare names from sector {}", sectorKey);
         mapper.processDatasetBareNames(datasetKey, sectorKey, handler);
       }
       EsUtil.refreshIndex(client, index);
@@ -111,24 +115,18 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
   @Override
   public void indexTaxa(int datasetKey, Collection<String> taxonIds) {
-    NameUsageIndexer indexer = new NameUsageIndexer(client, index);
-    try (SqlSession session = factory.openSession()) {
-      NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
-      List<NameUsageWrapper> usages = taxonIds.stream()
-          .map(id -> mapper.get(datasetKey, id))
-          .filter(Objects::nonNull)
-          .collect(Collectors.toList());
-      if (usages.isEmpty()) {
-        LOG.warn("All given usage ids from dataset {} are not existing and won't be indexed: {}", datasetKey, taxonIds);
+    int inserted = indexNameUsages(datasetKey, taxonIds);
+    LOG.info("Finished indexing taxa. Taxon IDs provided: {}. Name usages indexed: {}", taxonIds.size(), inserted);
+  }
 
-      } else {
-        if (usages.size() != taxonIds.size()) {
-          LOG.warn("{} usage ids from dataset {} are not existing", (taxonIds.size() - usages.size()), datasetKey);
-        }
-        LOG.info("Indexing {} taxa from dataset {}", usages.size(), datasetKey);
-        indexer.accept(usages);
-        EsUtil.refreshIndex(client, index);
-      }
+  @Override
+  public void sync(int datasetKey, Collection<String> taxonIds) {
+    try {
+      int deleted = EsUtil.deleteNameUsages(client, index, datasetKey, taxonIds);
+      int inserted = indexNameUsages(datasetKey, taxonIds);
+      LOG.info("Finished indexing taxa. Taxon IDs provided: {}. Name usages indexed: {}. Name usages deleted: {}", taxonIds.size(),
+          inserted, deleted);
+      EsUtil.refreshIndex(client, index);
     } catch (IOException e) {
       throw new EsException(e);
     }
@@ -178,10 +176,10 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
         bCount += bc;
         logDatasetTotals(datasetKey, tc, bc);
       }
+      logTotals(keys.size(), tCount, bCount);
     } catch (IOException e) {
       throw new EsException(e);
     }
-    logTotals(tCount, bCount);
   }
 
   private void createOrEmptyIndex(int datasetKey) throws IOException {
@@ -190,6 +188,34 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       EsUtil.refreshIndex(client, index);
     } else {
       EsUtil.createIndex(client, index, esConfig.nameUsage);
+    }
+  }
+
+  /*
+   * Indexes documents but does not refresh the index! Must be done by caller.
+   */
+  private int indexNameUsages(int datasetKey, Collection<String> usageIds) {
+    NameUsageIndexer indexer = new NameUsageIndexer(client, index);
+    try (SqlSession session = factory.openSession()) {
+      NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
+      List<NameUsageWrapper> usages = usageIds.stream()
+          .map(id -> mapper.get(datasetKey, id))
+          .filter(Objects::nonNull)
+          .collect(Collectors.toList());
+      if (usages.isEmpty()) {
+        LOG.warn("None of the provided name usage IDs belong to dataset {}: {}.", datasetKey,
+            usageIds.stream().collect(joining(", ")));
+        return 0;
+      }
+      if (usages.size() != usageIds.size()) {
+        List<String> ids = new ArrayList<>(usageIds);
+        ids.removeAll(usages.stream().map(nuw -> nuw.getUsage().getId()).collect(toList()));
+        LOG.warn("Some usage IDs not found in dataset {}: {}", datasetKey,
+            ids.stream().collect(joining(", ")));
+      }
+      LOG.info("(Re-)indexing name usages from dataset {}", datasetKey);
+      indexer.accept(usages);
+      return indexer.documentsIndexed();
     }
   }
 
@@ -224,8 +250,8 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     LOG.info(fmt, sectorKey, index, tCount, bCount, (tCount + bCount));
   }
 
-  private void logTotals(int tCount, int bCount) {
-    String fmt = "Finished indexing datasets. Index: {}. Usages: {}. Bare names: {}. Total: {}.";
-    LOG.info(fmt, index, tCount, bCount, (tCount + bCount));
+  private void logTotals(int numDatasets, int tCount, int bCount) {
+    String fmt = "Successfully indexed {} datasets. Index: {}. Usages: {}. Bare names: {}. Total: {}.";
+    LOG.info(fmt, index, numDatasets, tCount, bCount, (tCount + bCount));
   }
 }

@@ -28,7 +28,7 @@ public class DecisionDao extends GlobalEntityDao<EditorialDecision, DecisionMapp
   protected void createAfter(EditorialDecision obj, int user, DecisionMapper mapper, SqlSession session) {
     if (obj.getSubject().getId() != null) {
       session.commit();
-      indexService.indexTaxa(obj.getDatasetKey(), Lists.newArrayList(obj.getSubject().getId()));
+      indexService.sync(obj.getDatasetKey(), Lists.newArrayList(obj.getSubject().getId()));
     }
   }
   
@@ -45,13 +45,13 @@ public class DecisionDao extends GlobalEntityDao<EditorialDecision, DecisionMapp
     if (obj.getSubject().getId() != null) {
       ids.add(obj.getSubject().getId());
     }
-    indexService.indexTaxa(obj.getDatasetKey(), ids);
+    indexService.sync(obj.getDatasetKey(), ids);
   }
   
   @Override
   protected void deleteAfter(Integer key, EditorialDecision old, int user, DecisionMapper mapper, SqlSession session) {
     if (old != null && old.getSubject().getId() != null) {
-      indexService.indexTaxa(old.getDatasetKey(), Lists.newArrayList(old.getSubject().getId()));
+      indexService.sync(old.getDatasetKey(), Lists.newArrayList(old.getSubject().getId()));
     }
   }
   

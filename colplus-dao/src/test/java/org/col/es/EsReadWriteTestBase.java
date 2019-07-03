@@ -52,7 +52,8 @@ public class EsReadWriteTestBase extends ExternalResource {
   }
 
   /**
-   * Creates the specified amount of taxa and insert them into Postgres
+   * Creates the specified amount of taxa and insert them into Postgres.
+   * 
    * @param howmany
    * @return
    */
@@ -70,9 +71,13 @@ public class EsReadWriteTestBase extends ExternalResource {
     }
   }
 
+  /**
+   * Executes the provided query against the text index. The number of returned documents is capped on {Page#MAX_LIMIT Page.MAX_LIMIT}, so
+   * make sure the provided query will yield less documents.
+   */
   protected NameSearchResponse query(Query query) throws IOException {
-    EsSearchRequest req = EsSearchRequest.emptyRequest().where(query).size(999);
-    return createSearchService().search(EsSetupRule.TEST_INDEX, req, new Page(999));
+    EsSearchRequest req = EsSearchRequest.emptyRequest().where(query).size(Page.MAX_LIMIT);
+    return createSearchService().search(EsSetupRule.TEST_INDEX, req, new Page(Page.MAX_LIMIT));
   }
 
   /**

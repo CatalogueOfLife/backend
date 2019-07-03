@@ -3,15 +3,41 @@ package org.col.api;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
-import org.col.api.model.*;
+import org.col.api.model.BareName;
+import org.col.api.model.ColUser;
+import org.col.api.model.CslData;
+import org.col.api.model.CslDate;
+import org.col.api.model.CslName;
+import org.col.api.model.Dataset;
+import org.col.api.model.Name;
+import org.col.api.model.Reference;
+import org.col.api.model.SimpleName;
+import org.col.api.model.Synonym;
+import org.col.api.model.Synonymy;
+import org.col.api.model.Taxon;
+import org.col.api.model.UserManaged;
+import org.col.api.model.VerbatimRecord;
+import org.col.api.model.VernacularName;
 import org.col.api.search.NameUsageWrapper;
-import org.col.api.vocab.*;
+import org.col.api.vocab.CSLRefType;
+import org.col.api.vocab.Country;
+import org.col.api.vocab.Issue;
+import org.col.api.vocab.Lifezone;
+import org.col.api.vocab.NomStatus;
+import org.col.api.vocab.Origin;
+import org.col.api.vocab.TaxonomicStatus;
+import org.col.api.vocab.Users;
 import org.col.common.csl.CslUtil;
 import org.col.common.tax.AuthorshipNormalizer;
 import org.gbif.dwc.terms.DcTerm;
@@ -19,7 +45,11 @@ import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.UnknownTerm;
-import org.gbif.nameparser.api.*;
+import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NamePart;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 
 /**
  * utility class to metrics new test instances to be used in tests.
@@ -295,7 +325,7 @@ public class TestEntityGenerator {
     t.setFossil(true);
     t.setId(id);
     t.setLifezones(EnumSet.of(Lifezone.BRACKISH, Lifezone.FRESHWATER, Lifezone.TERRESTRIAL));
-    t.setName(newName(datasetKey, id + "_name_id", scientificName));
+    t.setName(setUserDate(newName(datasetKey, id + "_name_id", scientificName)));
     t.setOrigin(Origin.SOURCE);
     t.setParentId(TAXON1.getId());
     t.setRecent(true);
