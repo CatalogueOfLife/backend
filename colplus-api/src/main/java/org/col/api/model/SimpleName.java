@@ -18,15 +18,21 @@ public class SimpleName implements Comparable<SimpleName> {
       .nullsLast(String::compareTo);
   private static Comparator<Enum> nullSafeEnumComparator = Comparator
       .nullsLast(Enum::compareTo);
-  
+
   static final Comparator<SimpleName> NATURAL_ORDER =
       Comparator.comparing(SimpleName::getRank, nullSafeEnumComparator)
           .thenComparing(Comparator.comparing(SimpleName::getName, nullSafeStringComparator))
           .thenComparing(Comparator.comparing(SimpleName::getAuthorship, nullSafeStringComparator))
           .thenComparing(Comparator.comparing(SimpleName::getStatus, nullSafeEnumComparator));
-  
+
+  public static SimpleName of(Taxon t) {
+    Name n = t.getName();
+    SimpleName sn = new SimpleName(t.getId(), n.getScientificName(), n.getAuthorship(), n.getRank());
+    return sn;
+  }
+
   private String id;
-  
+
   @NotNull
   private String name;
   private String authorship;
@@ -82,31 +88,31 @@ public class SimpleName implements Comparable<SimpleName> {
   public void setRank(Rank rank) {
     this.rank = rank;
   }
-  
+
   public TaxonomicStatus getStatus() {
     return status;
   }
-  
+
   public void setStatus(TaxonomicStatus status) {
     this.status = status;
   }
-  
+
   public String getParent() {
     return parent;
   }
-  
+
   public void setParent(String parent) {
     this.parent = parent;
   }
-  
+
   public NomCode getCode() {
     return code;
   }
-  
+
   public void setCode(NomCode code) {
     this.code = code;
   }
-  
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
@@ -136,11 +142,13 @@ public class SimpleName implements Comparable<SimpleName> {
     }
     return sb.toString();
   }
-  
+
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
     SimpleName that = (SimpleName) o;
     return Objects.equals(id, that.id) &&
         Objects.equals(name, that.name) &&
@@ -150,13 +158,13 @@ public class SimpleName implements Comparable<SimpleName> {
         status == that.status &&
         Objects.equals(parent, that.parent);
   }
-  
+
   @Override
   public int hashCode() {
     return Objects.hash(id, name, authorship, rank, code, status, parent);
   }
-  
-  public int compareTo(SimpleName other){
+
+  public int compareTo(SimpleName other) {
     return NATURAL_ORDER.compare(this, other);
   }
 }

@@ -3,11 +3,16 @@ package org.col.importer.coldp;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Snapshot;
+import com.codahale.metrics.Timer;
+import org.col.api.TestEntityGenerator;
 import org.col.api.model.Dataset;
 import org.col.api.model.Reference;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.DatasetType;
 import org.col.api.vocab.License;
+import org.col.common.csl.CslUtil;
 import org.col.img.ImageService;
 import org.col.importer.InserterBaseTest;
 import org.col.importer.NeoInserter;
@@ -49,6 +54,12 @@ public class ColdpInserterTest extends InserterBaseTest {
   
   @Test
   public void bibtex() throws Exception {
+    // warm up Nashorn
+    CslUtil.buildCitation(TestEntityGenerator.newReference("My Sharona"));
+    CslUtil.buildCitation(TestEntityGenerator.newReference("Telecon in Death Valley"));
+    // use timer to trace csl citation builder
+    MetricRegistry registry = new MetricRegistry();
+    CslUtil.register(registry);
     NeoInserter inserter = setup("/coldp/bibtex");
     inserter.insertAll();
   
@@ -80,6 +91,18 @@ public class ColdpInserterTest extends InserterBaseTest {
     assertEquals(14, r.getCsl().getIssued().getDateParts()[0][2]);
     assertEquals((Integer) 1970, r.getYear());
   
+    // log timer
+    for (Timer t : registry.getTimers().values()) {
+      System.out.println("Count: " + t.getCount());
+      System.out.println("MeanRate: " + t.getMeanRate());
+      System.out.println("OneMinuteRate: " + t.getOneMinuteRate());
+      Snapshot snap = t.getSnapshot();
+      System.out.println("max: " + snap.getMax());
+      System.out.println("min: " + snap.getMin());
+      System.out.println("mean: " + snap.getMean());
+      System.out.println("median: " + snap.getMedian());
+      System.out.println("95th: " + snap.get95thPercentile());
+    }
   }
   
   @Override

@@ -12,6 +12,11 @@
             WHEN (NEW.homotypic_name_id IS NULL)
             EXECUTE PROCEDURE homotypic_name_id_default();
         </if>
+        <if test="table == 'reference'">
+            CREATE TRIGGER reference_trigger_${key} BEFORE INSERT OR UPDATE
+            ON reference_${key} FOR EACH ROW
+            EXECUTE PROCEDURE reference_doc_update();
+        </if>
     </update>
 
     <update id="attachTable" parameterType="map" >
@@ -28,8 +33,6 @@
         CREATE index ON reference_${key} (verbatim_key);
         CREATE index ON reference_${key} (sector_key);
         CREATE index ON reference_${key} USING gin(doc);
-        CREATE TRIGGER reference_trigger_${key} BEFORE INSERT OR UPDATE
-        ON reference_${key} FOR EACH ROW EXECUTE PROCEDURE reference_doc_update();
 
         ALTER TABLE name_${key} ADD PRIMARY KEY (id);
         CREATE index ON name_${key} (verbatim_key);

@@ -54,8 +54,8 @@ final class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
   }
 
   /**
-   * Indexes the provided "raw" documents. The documents are presumed to have their document ID nullified. Elasticsearch will fail otherwise
-   * since we use strict typing.
+   * Indexes the provided "raw" documents. The documents are presumed to have their document ID nullified. Otherwise Elasticsearch will
+   * reject them because the document ID isn't part of the document itself (and we use strict typing so no undeclared fields allowed).
    * 
    * @param documents
    */
@@ -74,7 +74,9 @@ final class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
   }
 
   /**
-   * Updates the provided documents. The documents are presumed to have their document ID set.
+   * Updates the provided documents. The documents are presumed to have their document ID set. These will be used to tell Elasticsearch
+   * which documents we want to update. As a side effect, document IDs will be nullified, so make sure you cache them before calling this
+   * method if you need them later on.
    * 
    * @param documents
    */
@@ -123,13 +125,11 @@ final class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
         buf.append("\n");
       }
       sendBatch(batch.size());
-      double reqSize = ((double) buf.toString().getBytes(Charsets.UTF_8).length / (double) (1024 * 1024));
       double totSize = ((double) docSize / (double) (1024 * 1024));
       double avgSize = ((double) docSize / (double) (batch.size() * 1024));
-      String req = df.format(reqSize);
       String tot = df.format(totSize);
       String avg = df.format(avgSize);
-      LOG.debug("Average document size: {} KB. Total document size: {} MB. Request body size: {} MB.", avg, tot, req);
+      LOG.info("Average document size: {} KB. Total document size: {} MB.", avg, tot);
     } catch (IOException e) {
       throw new EsException(e);
     }

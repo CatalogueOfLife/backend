@@ -108,4 +108,33 @@
     ORDER BY est.key
   </select>
 
+
+  <sql id="WHERE">
+    <where>
+      <if test="rank != null">
+        est.subject_rank = #{rank}::rank
+      </if>
+      <if test="min != null">
+        AND est.estimate &gt;= #{min}
+      </if>
+      <if test="max != null">
+        AND est.estimate &lt;= #{max}
+      </if>
+    </where>
+  </sql>
+
+  <select id="search" resultMap="estimateResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    <include refid="WHERE"/>
+    ORDER BY est.subject_rank, est.subject_name
+    <include refid="org.col.db.mapper.Common.limit" />
+  </select>
+
+  <select id="searchCount" resultType="int">
+    SELECT count(*)
+    FROM <include refid="FROM" />
+    <include refid="WHERE"/>
+  </select>
+
 </mapper>

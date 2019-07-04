@@ -2,10 +2,11 @@ package org.col.common.csl;
 
 import java.io.IOException;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import de.undercouch.citeproc.CSL;
 import de.undercouch.citeproc.ItemDataProvider;
 import de.undercouch.citeproc.csl.CSLItemData;
-import de.undercouch.citeproc.output.Bibliography;
 import org.col.api.model.CslData;
 import org.col.api.model.Reference;
 
@@ -13,6 +14,7 @@ public class CslUtil {
   private static final String CITATION_STYLE = "apa";
   private final static ReferenceProvider provider = new ReferenceProvider();
   private final static CSL csl;
+  private static Timer timer;
   
   static {
     try {
@@ -21,6 +23,10 @@ public class CslUtil {
     } catch (IOException e) {
       throw new IllegalStateException("APA CSL processor could not be created", e);
     }
+  }
+  
+  public static void register(MetricRegistry registry) {
+    timer = registry.timer("org.col.csl.citation-builder");
   }
   
   static class ReferenceProvider implements ItemDataProvider {
@@ -64,15 +70,27 @@ public class CslUtil {
    * This is a very slow method that takes a second or more to build the citation string !!!
    * It uses the JavaScript citeproc library internally.
    */
-  public static synchronized String buildCitation(CslData data) {
+  public static String buildCitation(CslData data) {
     if (data == null)
       return null;
-    
+  
+    Timer.Context ctx = timer == null ? null : timer.time();
+    try {
+      return buildCitationInternal(data);
+    } finally {
+      if (ctx != null) {
+        ctx.stop();
+      }
+    }
+  }
+  
+  private static synchronized String buildCitationInternal(CslData data) {
     provider.setData(data);
     csl.registerCitationItems(ReferenceProvider.ID);
-    Bibliography bib = csl.makeBibliography();
-    
-    return bib.getEntries()[0].trim();
+    return csl.makeBibliography().getEntries()[0].trim();
   }
+  
+  
+  
   
 }

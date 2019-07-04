@@ -25,6 +25,7 @@ import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
+import org.col.common.csl.CslUtil;
 import org.col.common.io.Utf8IOUtils;
 import org.col.common.kryo.map.MapDbObjectSerializer;
 import org.col.common.text.StringUtils;
@@ -517,7 +518,10 @@ public class NeoDb implements ReferenceStore {
       addIssues(r, Issue.ID_NOT_UNIQUE);
       return false;
     }
-    
+    // build default citation from csl
+    if (r.getCitation() == null && r.getCsl() != null) {
+      r.setCitation(CslUtil.buildCitation(r.getCsl()));
+    }
     references.put(r.getId(), r);
     // update lookup index for title
     String normedCit = StringUtils.digitOrAsciiLetters(r.getCitation());

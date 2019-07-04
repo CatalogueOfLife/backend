@@ -35,8 +35,8 @@ public class ReferenceDao extends DatasetEntityDao<Reference, ReferenceMapper> {
   
   @Override
   public String create(Reference r, int user) {
+    // build default citation from csl
     if (r.getCitation() == null && r.getCsl() != null) {
-      // build citation from csl
       r.setCitation(CslUtil.buildCitation(r.getCsl()));
     }
     return super.create(r, user);
@@ -65,9 +65,9 @@ public class ReferenceDao extends DatasetEntityDao<Reference, ReferenceMapper> {
     return orig;
   }
   
-  public ResultPage<Reference> search(int datasetKey, ReferenceSearchRequest req, Page page) {
+  public ResultPage<Reference> search(int datasetKey, ReferenceSearchRequest nullableReq, Page page) {
     page = page == null ? new Page() : page;
-    req = req == null || req.isEmpty() ? new ReferenceSearchRequest() : req;
+    final ReferenceSearchRequest req = nullableReq == null || nullableReq.isEmpty() ? new ReferenceSearchRequest() : nullableReq;
     if (req.getSortBy() == null) {
       if (!StringUtils.isBlank(req.getQ())) {
         req.setSortBy(ReferenceSearchRequest.SortBy.RELEVANCE);
@@ -82,8 +82,7 @@ public class ReferenceDao extends DatasetEntityDao<Reference, ReferenceMapper> {
     try (SqlSession session = factory.openSession()) {
       ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
       List<Reference> result = mapper.search(datasetKey, req, page);
-      int total = result.size() == page.getLimit() ? mapper.searchCount(datasetKey, req) : result.size();
-      return new ResultPage<>(page, total, result);
+      return new ResultPage<>(page, result, () -> mapper.searchCount(datasetKey, req));
     }
   }
 }

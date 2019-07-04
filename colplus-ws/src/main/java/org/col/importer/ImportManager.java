@@ -26,6 +26,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.WsServerConfig;
 import org.col.api.exception.NotFoundException;
 import org.col.api.model.*;
+import org.col.api.util.ObjectUtils;
 import org.col.api.util.PagingUtil;
 import org.col.api.vocab.DatasetOrigin;
 import org.col.api.vocab.ImportState;
@@ -102,22 +103,24 @@ public class ImportManager implements Managed {
    * Pages through all queued, running and historical imports.
    * See https://github.com/Sp2000/colplus-backend/issues/404
    */
-  public List<DatasetImport> listImports(Integer datasetKey, List<ImportState> states, Page page) {
+  public ResultPage<DatasetImport> listImports(Integer datasetKey, List<ImportState> states, Page page) {
     List<DatasetImport> running  = running(datasetKey, states);
+    ResultPage<DatasetImport> historical;
+
     if (running.size() >= page.getLimitWithOffest()) {
-      // we can answer the request from the queue alone!
-      removeOffset(running, page.getOffset());
+      // we can answer the request from the queue alone, so limit=0!
+      historical = dao.list(datasetKey, states, new Page(0,0));
     
     } else {
       int offset = Math.max(0, page.getOffset() - running.size());
       int limit  = Math.min(page.getLimit(), page.getLimitWithOffest() - running.size());
-      Page histPage = new Page(offset, limit);
-      ResultPage<DatasetImport> historical = dao.list(datasetKey, states, histPage);
-      // merge both lists
-      removeOffset(running, page.getOffset());
-      running.addAll(historical.getResult());
+      historical = dao.list(datasetKey, states, new Page(offset, limit));
     }
-    return running;
+    // merge both lists
+    int runCount = running.size();
+    removeOffset(running, page.getOffset());
+    running.addAll(historical.getResult());
+    return new ResultPage<DatasetImport>(page, historical.getTotal()+runCount, running);
   }
   
   private void removeOffset(List<DatasetImport> list, int offset) {
@@ -130,10 +133,10 @@ public class ImportManager implements Managed {
   private static DatasetImport fromFuture(PBQThreadPoolExecutor.ComparableFutureTask f) {
     ImportJob job = (ImportJob) f.getTask();
     DatasetImport di = job.getDatasetImport();
-    if (di != null) {
+    if (di == null) {
       di = new DatasetImport();
       di.setDatasetKey(job.getDatasetKey());
-      di.setAttempt(job.getAttempt());
+      di.setAttempt(ObjectUtils.coalesce(job.getAttempt(), -1));
       di.setState(ImportState.WAITING);
     }
     return di;

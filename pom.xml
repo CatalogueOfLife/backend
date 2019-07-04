@@ -46,6 +46,7 @@
         <assertj.version>3.11.1</assertj.version>
         <!-- 1.1.0-SNAPSHOT released on commit 1d5bf0e hosted at GBIF -->
         <citeproc.version>1.1.0-1d5bf0e</citeproc.version>
+        <citeproc-styles.version>1.0</citeproc-styles.version>
         <commons-collections4.version>4.3</commons-collections4.version>
         <commons-compress.version>1.18</commons-compress.version>
         <commons-io.version>2.6</commons-io.version>
@@ -498,6 +499,16 @@
                 <groupId>de.undercouch</groupId>
                 <artifactId>citeproc-java</artifactId>
                 <version>${citeproc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.citationstyles</groupId>
+                <artifactId>styles</artifactId>
+                <version>${citeproc-styles.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.citationstyles</groupId>
+                <artifactId>locales</artifactId>
+                <version>${citeproc-styles.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.woodstox</groupId>
