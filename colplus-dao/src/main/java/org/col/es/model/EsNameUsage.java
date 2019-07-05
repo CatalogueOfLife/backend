@@ -32,7 +32,7 @@ public class EsNameUsage {
   private Integer sectorKey;
 
   private String scientificName;
-  private SearchableNameStrings nameStrings;
+  private NameStrings nameStrings;
 
   private String authorship;
   private String nameId;
@@ -98,11 +98,11 @@ public class EsNameUsage {
     this.scientificName = scientificName;
   }
 
-  public SearchableNameStrings getNameStrings() {
+  public NameStrings getNameStrings() {
     return nameStrings;
   }
 
-  public void setNameStrings(SearchableNameStrings nameStrings) {
+  public void setNameStrings(NameStrings nameStrings) {
     this.nameStrings = nameStrings;
   }
 

@@ -10,11 +10,11 @@ import static org.col.es.NameUsageTransfer.normalizeWeakly;
 import static org.col.es.annotations.Analyzer.AUTO_COMPLETE;
 
 /**
- * An object embedded within the main name usage document ({@link EsNameUsage}) solely aimed at optimizing searchability. The name strings
- * within this class are often derived (i.e. not fed directly from the database) and they don't contribute to the search response object.
- * They are only meant to match query constraints as straightforwardly as possible (e.g. using simple term queries).
+ * An object embedded within the main name usage document ({@link EsNameUsage}) aimed at optimizing searchability. The name strings within
+ * this class don't contribute to the search response object. They are only meant to match search phrase as best and as cheaply as possible.
+ * This class also exists to ensure that search phrases are "analyzed" (i.e. preprocessed) just like the names coming in from postgres.
  */
-public class SearchableNameStrings {
+public class NameStrings {
 
   private String genus;
   private String genusWN;
@@ -24,10 +24,15 @@ public class SearchableNameStrings {
   private String infraspecificEpithet;
   private String infraspecificEpithetSN;
 
-  public SearchableNameStrings(Name name) {
+  /**
+   * Creates a {@code NameStrings} object from the provided {@link Name}, presumably coming in from postgres.
+   * 
+   * @param name
+   */
+  public NameStrings(Name name) {
     String s;
     if (name.getGenus() != null) {
-      genus = name.getGenus();
+      genus = name.getGenus().toLowerCase();
       s = normalizeWeakly(genus);
       if (!(s = normalizeWeakly(genus)).equals(genus)) {
         genusWN = s;
@@ -35,20 +40,20 @@ public class SearchableNameStrings {
       genusLetter = genus.substring(0, 1).toLowerCase();
     } ;
     if (name.getSpecificEpithet() != null) {
-      specificEpithet = name.getSpecificEpithet();
+      specificEpithet = name.getSpecificEpithet().toLowerCase();
       if (!(s = normalizeStrongly(specificEpithet)).equals(specificEpithet)) {
         specificEpithetSN = s;
       }
     }
     if (name.getInfraspecificEpithet() != null) {
-      infraspecificEpithet = name.getInfraspecificEpithet();
+      infraspecificEpithet = name.getInfraspecificEpithet().toLowerCase();
       if (!(s = normalizeStrongly(infraspecificEpithet)).equals(infraspecificEpithet)) {
         infraspecificEpithetSN = s;
       }
     }
   }
 
-  public SearchableNameStrings() {}
+  public NameStrings() {}
 
   @Analyzers({AUTO_COMPLETE})
   public String getGenus() {
@@ -119,7 +124,7 @@ public class SearchableNameStrings {
     if (obj == null || getClass() != obj.getClass()) {
       return false;
     }
-    SearchableNameStrings other = (SearchableNameStrings) obj;
+    NameStrings other = (NameStrings) obj;
     return Objects.equals(genus, other.genus)
         && Objects.equals(specificEpithet, other.specificEpithet)
         && Objects.equals(infraspecificEpithet, other.infraspecificEpithet);

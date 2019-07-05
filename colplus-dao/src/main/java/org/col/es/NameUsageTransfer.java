@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.DeflaterOutputStream;
 
-import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.Name;
 import org.col.api.model.SimpleName;
 import org.col.api.model.Synonym;
@@ -22,7 +21,7 @@ import org.col.api.vocab.NameField;
 import org.col.common.tax.SciNameNormalizer;
 import org.col.es.model.EsNameUsage;
 import org.col.es.model.Monomial;
-import org.col.es.model.SearchableNameStrings;
+import org.col.es.model.NameStrings;
 
 import static org.col.api.vocab.NameField.BASIONYM_AUTHORS;
 import static org.col.api.vocab.NameField.BASIONYM_EX_AUTHORS;
@@ -66,7 +65,7 @@ public class NameUsageTransfer {
     if (sn == null) {
       return null;
     }
-    return StringUtils.lowerCase(SciNameNormalizer.normalize(sn));
+    return SciNameNormalizer.normalize(sn).toLowerCase();
   }
 
   /**
@@ -76,7 +75,7 @@ public class NameUsageTransfer {
     if (sn == null) {
       return null;
     }
-    return StringUtils.lowerCase(SciNameNormalizer.normalizeAll(sn));
+    return SciNameNormalizer.normalizeAll(sn).toLowerCase();
   }
 
   /**
@@ -208,7 +207,7 @@ public class NameUsageTransfer {
 
   private static void saveScientificName(NameUsageWrapper from, EsNameUsage to) {
     to.setScientificName(from.getUsage().getName().getScientificName());
-    to.setNameStrings(new SearchableNameStrings(from.getUsage().getName()));
+    to.setNameStrings(new NameStrings(from.getUsage().getName()));
   }
 
   private static void saveVernacularNames(NameUsageWrapper from, EsNameUsage to) {
