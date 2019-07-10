@@ -108,6 +108,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   public void deleteSector(int sectorKey) {
     try (SqlSession session = factory.openSession()) {
       clearSector(session, sectorKey);
+      EsUtil.refreshIndex(client, index);
     } catch (IOException e) {
       throw new EsException(e);
     }
@@ -115,18 +116,28 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
   @Override
   public void indexTaxa(int datasetKey, Collection<String> taxonIds) {
-    int inserted = indexNameUsages(datasetKey, taxonIds);
-    LOG.info("Finished indexing taxa. Taxon IDs provided: {}. Name usages indexed: {}", taxonIds.size(), inserted);
+    try {
+      LOG.info("Indexing taxa from dataset {}", datasetKey);
+      int inserted = indexNameUsages(datasetKey, taxonIds);
+      EsUtil.refreshIndex(client, index);
+      LOG.info("Finished indexing taxa. Taxon IDs provided: {}. Name usages indexed: {}", taxonIds.size(), inserted);
+    } catch (IOException e) {
+      throw new EsException(e);
+    }
   }
 
   @Override
   public void sync(int datasetKey, Collection<String> taxonIds) {
     try {
+      LOG.info("Syncing taxa from dataset {}", datasetKey);
+      LOG.info("Deleting documents with usage ids: {}", taxonIds.stream().collect(joining(", ")));
       int deleted = EsUtil.deleteNameUsages(client, index, datasetKey, taxonIds);
-      int inserted = indexNameUsages(datasetKey, taxonIds);
-      LOG.info("Finished indexing taxa. Taxon IDs provided: {}. Name usages indexed: {}. Name usages deleted: {}", taxonIds.size(),
-          inserted, deleted);
       EsUtil.refreshIndex(client, index);
+      LOG.info("Re-indexing taxa", datasetKey);
+      int inserted = indexNameUsages(datasetKey, taxonIds);
+      EsUtil.refreshIndex(client, index);
+      LOG.info("Finished syncing taxa. Taxon IDs provided: {}. Name usages deleted: {}. Name usages re-indexed: {}.", taxonIds.size(),
+          deleted, inserted);
     } catch (IOException e) {
       throw new EsException(e);
     }
@@ -203,17 +214,14 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
           .filter(Objects::nonNull)
           .collect(Collectors.toList());
       if (usages.isEmpty()) {
-        LOG.warn("None of the provided name usage IDs belong to dataset {}: {}.", datasetKey,
-            usageIds.stream().collect(joining(", ")));
+        LOG.warn("None of the provided name usage IDs found in dataset {}: {}.", datasetKey, usageIds.stream().collect(joining(", ")));
         return 0;
       }
       if (usages.size() != usageIds.size()) {
         List<String> ids = new ArrayList<>(usageIds);
         ids.removeAll(usages.stream().map(nuw -> nuw.getUsage().getId()).collect(toList()));
-        LOG.warn("Some usage IDs not found in dataset {}: {}", datasetKey,
-            ids.stream().collect(joining(", ")));
+        LOG.warn("Some usage IDs not found in dataset {}: {}", datasetKey, ids.stream().collect(joining(", ")));
       }
-      LOG.info("(Re-)indexing name usages from dataset {}", datasetKey);
       indexer.accept(usages);
       return indexer.documentsIndexed();
     }

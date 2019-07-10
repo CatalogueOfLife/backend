@@ -81,14 +81,12 @@ public class EsUtil {
   }
 
   public static void deleteIndex(RestClient client, String index) throws IOException {
-    LOG.info("Deleting index {}", index);
     Request request = new Request("DELETE", index);
     Response response = null;
     try {
       response = client.performRequest(request);
     } catch (ResponseException e) {
       if (e.getResponse().getStatusLine().getStatusCode() == 404) { // That's OK
-        LOG.info("No such index: {} (nothing deleted)", index);
         return;
       }
     }
@@ -97,16 +95,35 @@ public class EsUtil {
     }
   }
 
+  /**
+   * Removes the dataset corresponding to the provided key. You must still refresh the index for the changes to become visible.
+   * 
+   * @param client
+   * @param index
+   * @param datasetKey
+   * @return
+   * @throws IOException
+   */
   public static int deleteDataset(RestClient client, String index, int datasetKey) throws IOException {
     return deleteByQuery(client, index, new TermQuery("datasetKey", datasetKey));
   }
 
+  /**
+   * Removes the sector corresponding to the provided key. You must still refresh the index for the changes to become visible.
+   * 
+   * @param client
+   * @param index
+   * @param sectorKey
+   * @return
+   * @throws IOException
+   */
   public static int deleteSector(RestClient client, String index, int sectorKey) throws IOException {
     return deleteByQuery(client, index, new TermQuery("sectorKey", sectorKey));
   }
 
   /**
-   * Delete the documents corresponding to the provided dataset key and usage IDs. Returns the number of documents actually deleted.
+   * Delete the documents corresponding to the provided dataset key and usage IDs. Returns the number of documents actually deleted. You
+   * must still refresh the index for the changes to become visible.
    */
   public static int deleteNameUsages(RestClient client, String index, int datasetKey, Collection<String> usageIds) throws IOException {
     if (usageIds.isEmpty()) {
@@ -127,7 +144,7 @@ public class EsUtil {
   }
 
   /**
-   * Deletes all documents satisfying the provided query constraints.
+   * Deletes all documents satisfying the provided query constraints. You must still refresh the index for the changes to become visible.
    * 
    * @param client
    * @param index
