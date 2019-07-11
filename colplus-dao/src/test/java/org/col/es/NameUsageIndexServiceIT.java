@@ -21,7 +21,7 @@ import org.junit.Test;
 import static java.util.stream.Collectors.toList;
 
 import static org.col.db.PgSetupRule.getSqlSessionFactory;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /*
  * Full round-trips into Postgres via DAOs, out of Postgres via the NameUsageWrapperMapper, into Elasticsearch via the NameUsageIndexService
@@ -95,7 +95,31 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     assertEquals(1, res.getResult().size()); // Still only 1 document with this decision key
     assertEquals(pgTaxa.get(1).getId(), res.getResult().get(0).getUsage().getId()); // But it's another document now
   }
-  
+
+  @Test
+  public void deleteEditorialDecision() throws IOException {
+    NameUsageIndexService svc = createIndexService();
+    List<Taxon> pgTaxa = createPgTaxa(4);
+    // Pump them over to Elasticsearch
+    svc.indexDataset(EsSetupRule.DATASET_KEY);
+    // Make 1st taxon the "subject" of an editorial decision
+    Taxon edited = pgTaxa.get(2);
+    EditorialDecision decision = new EditorialDecision();
+    decision.setSubject(SimpleName.of(edited));
+    decision.setMode(Mode.UPDATE);
+    decision.setDatasetKey(edited.getDatasetKey());
+    decision.setCreatedBy(edited.getCreatedBy());
+    decision.setModifiedBy(edited.getCreatedBy());
+    // Save the decision to postgres: triggers sync() on the index service
+    DecisionDao dao = new DecisionDao(getSqlSessionFactory(), svc);
+    int key = dao.create(decision, edited.getCreatedBy());
+    NameSearchResponse res = query(new TermQuery("decisionKey", key));
+    assertEquals(pgTaxa.get(2).getId(), res.getResult().get(0).getUsage().getId());
+    dao.delete(key, 0);
+    res = query(new TermQuery("usageId", pgTaxa.get(2).getId()));
+    assertNull(res.getResult().get(0).getDecisionKey()); 
+  }
+
   @Test
   @Ignore // Just some JSON to send using the REST API
   public void printDecision() throws JsonProcessingException {
