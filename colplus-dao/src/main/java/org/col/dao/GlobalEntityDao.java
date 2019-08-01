@@ -53,8 +53,8 @@ public class GlobalEntityDao<T extends GlobalEntity, M extends GlobalCRUDMapper<
     try (SqlSession session = factory.openSession(false)) {
       M mapper = session.getMapper(mapperClass);
       mapper.create(obj);
-      createAfter(obj, user, mapper, session);
       session.commit();
+      createAfter(obj, user, mapper, session);
       return obj.getKey();
     }
   }
@@ -69,8 +69,8 @@ public class GlobalEntityDao<T extends GlobalEntity, M extends GlobalCRUDMapper<
       T old = offerChangedHook ? mapper.get(obj.getKey()) : null;
       updateBefore(obj, old, user, mapper, session);
       int changed = mapper.update(obj);
-      updateAfter(obj, old, user, mapper, session);
       session.commit();
+      updateAfter(obj, old, user, mapper, session);
       return changed;
     }
   }
@@ -89,8 +89,8 @@ public class GlobalEntityDao<T extends GlobalEntity, M extends GlobalCRUDMapper<
       T old = offerChangedHook ? mapper.get(key) : null;
       deleteBefore(key, old, user, mapper, session);
       int changed = mapper.delete(key);
-      deleteAfter(key, old, user, mapper, session);
       session.commit();
+      deleteAfter(key, old, user, mapper, session);
       return changed;
     }
   }

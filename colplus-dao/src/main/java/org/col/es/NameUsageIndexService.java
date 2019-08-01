@@ -13,7 +13,7 @@ public interface NameUsageIndexService {
    * Indexes all CoL usages from an entire sector from postgres into ElasticSearch using the bulk API.
    */
   void indexSector(int sectorKey);
-  
+
   /**
    * Removed all CoL usage docs of the given sector from ElasticSearch, i.e. taxa and synonyms.
    */
@@ -30,13 +30,23 @@ public interface NameUsageIndexService {
   void indexAll();
 
   /**
-   * Indexes given taxa from the same dataset from postgres into ElasticSearch.
+   * Indexes given taxa from the same dataset from postgres into ElasticSearch. Only use this method if you are <i>sure</i> the provided ids
+   * don't exist yet in the index, otherwise you will create functionally duplicate documents. Use {@link #sync(int, Collection) sync} to
+   * sync Elasticsearch to Postgres for the provided taxon ids.
    */
   void indexTaxa(int datasetKey, Collection<String> taxonIds);
-  
+
   /**
-   * Updates the classification for all descendants in the subtree identified by the rootTaxonId.
-   * All other information is left as is and no new docs are generated, i.e. all taxa must have been indexed before.
+   * Performs a sync between Postgres and Elasticsearch for the provided taxon ids.
+   * 
+   * @param datasetKey
+   * @param taxonIds
+   */
+  void sync(int datasetKey, Collection<String> taxonIds);
+
+  /**
+   * Updates the classification for all descendants in the subtree identified by the rootTaxonId. All other information is left as is and no
+   * new docs are generated, i.e. all taxa must have been indexed before.
    */
   void updateClassification(int datasetKey, String rootTaxonId);
 
@@ -50,7 +60,7 @@ public interface NameUsageIndexService {
       public void indexSector(int sectorKey) {
         LOG.info("No Elastic Search configured, pass through sector {}", sectorKey);
       }
-  
+
       @Override
       public void deleteSector(int sectorKey) {
         LOG.info("No Elastic Search configured, pass through deletion of sector {}", sectorKey);
@@ -70,14 +80,21 @@ public interface NameUsageIndexService {
       }
 
       @Override
+      public void sync(int datasetKey, Collection<String> taxonIds) {
+        // TODO Auto-generated method stub
+
+      }
+
+      @Override
       public void indexAll() {
         LOG.info("No Elastic Search configured. Passing through");
       }
-  
+
       @Override
       public void updateClassification(int datasetKey, String rootTaxonId) {
         LOG.info("No Elastic Search configured. Passing through");
       }
+
     };
   }
 }
