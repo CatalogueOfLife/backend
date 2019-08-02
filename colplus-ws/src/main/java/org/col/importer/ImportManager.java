@@ -8,10 +8,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
@@ -106,15 +103,19 @@ public class ImportManager implements Managed {
   public ResultPage<DatasetImport> listImports(Integer datasetKey, List<ImportState> states, Page page) {
     List<DatasetImport> running  = running(datasetKey, states);
     ResultPage<DatasetImport> historical;
-
+  
+    // ignore running states in imports stored in the db - otherwise we get duplicates
+    List<ImportState> historicalStates = states == null ? Collections.EMPTY_LIST : states.stream()
+        .filter(ImportState::isFinished)
+        .collect(Collectors.toList());
     if (running.size() >= page.getLimitWithOffest()) {
-      // we can answer the request from the queue alone, so limit=0!
-      historical = dao.list(datasetKey, states, new Page(0,0));
+      // we can answer the request from the queue alone, so limit=0 to get the total count!
+      historical = dao.list(datasetKey, historicalStates, new Page(0,0));
     
     } else {
       int offset = Math.max(0, page.getOffset() - running.size());
       int limit  = Math.min(page.getLimit(), page.getLimitWithOffest() - running.size());
-      historical = dao.list(datasetKey, states, new Page(offset, limit));
+      historical = dao.list(datasetKey, historicalStates, new Page(offset, limit));
     }
     // merge both lists
     int runCount = running.size();
@@ -227,6 +228,7 @@ public class ImportManager implements Managed {
     if (exec.queueSize() >= cfg.importer.maxQueue) {
       LOG.info("Import queued at max {} already. Skip dataset {}", exec.queueSize(), req.datasetKey);
       throw new IllegalArgumentException("Import queue full, skip dataset " + req.datasetKey);
+    
     } else if (futures.containsKey(req.datasetKey)) {
       // this dataset is already scheduled. Force a prio import?
       LOG.info("Dataset {} already queued for import", req.datasetKey);
