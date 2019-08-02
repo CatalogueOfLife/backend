@@ -22,8 +22,7 @@ import org.slf4j.LoggerFactory;
 public class CatCopy {
   private static final Logger LOG = LoggerFactory.getLogger(CatCopy.class);
   
-  private static final Transliterator transLatin = Transliterator.getInstance("Any-Latin");
-  private static final Transliterator transAscii = Transliterator.getInstance("Latin-ASCII");
+  private static final Transliterator transLatin = Transliterator.getInstance("Any-Latin; de-ascii; Latin-ASCII");
   
   private static final Map<EntityType, Class<? extends TaxonExtensionMapper<? extends GlobalEntity>>> extMapper = new HashMap<>();
   static {
@@ -149,10 +148,6 @@ public class CatCopy {
   
   static String latinName(String name) {
     return transLatin.transform(name);
-  }
-  
-  static String asciiName(String name) {
-    return transAscii.transform(latinName(name));
   }
   
 }
