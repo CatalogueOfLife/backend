@@ -76,6 +76,9 @@ public class MetadataParser {
       try {
         Dataset d = DATASET_READER.readValue(stream);
         d.setDataFormat(DataFormat.COLDP);
+        if (d.getDescription() != null) {
+          d.setDescription(d.getDescription().trim());
+        }
         // TODO: transform contact ORCIDSs
         return Optional.of(d);
         
