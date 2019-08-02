@@ -108,20 +108,28 @@ public class ImportManager implements Managed {
     List<ImportState> historicalStates = states == null ? Collections.EMPTY_LIST : states.stream()
         .filter(ImportState::isFinished)
         .collect(Collectors.toList());
-    if (running.size() >= page.getLimitWithOffest()) {
-      // we can answer the request from the queue alone, so limit=0 to get the total count!
-      historical = dao.list(datasetKey, historicalStates, new Page(0,0));
     
+    if (states != null && !states.isEmpty() && historicalStates.isEmpty()) {
+      // we originally had a request for only running states. We dont get any of these from the db
+      historical = new ResultPage<>(new Page(0,0), 0, Collections.EMPTY_LIST);
+  
     } else {
-      int offset = Math.max(0, page.getOffset() - running.size());
-      int limit  = Math.min(page.getLimit(), page.getLimitWithOffest() - running.size());
-      historical = dao.list(datasetKey, historicalStates, new Page(offset, limit));
+      // query historical ones at least to get the total
+      if (running.size() >= page.getLimitWithOffest()) {
+        // we can answer the request from the queue alone, so limit=0 to get the total count!
+        historical = dao.list(datasetKey, historicalStates, new Page(0,0));
+    
+      } else {
+        int offset = Math.max(0, page.getOffset() - running.size());
+        int limit  = Math.min(page.getLimit(), page.getLimitWithOffest() - running.size());
+        historical = dao.list(datasetKey, historicalStates, new Page(offset, limit));
+      }
     }
     // merge both lists
     int runCount = running.size();
     removeOffset(running, page.getOffset());
     running.addAll(historical.getResult());
-    return new ResultPage<DatasetImport>(page, historical.getTotal()+runCount, running);
+    return new ResultPage<>(page, historical.getTotal()+runCount, running);
   }
   
   private void removeOffset(List<DatasetImport> list, int offset) {
