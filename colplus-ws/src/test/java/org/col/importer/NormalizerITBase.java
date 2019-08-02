@@ -21,6 +21,7 @@ import org.col.importer.neo.NotUniqueRuntimeException;
 import org.col.importer.neo.model.NeoName;
 import org.col.importer.neo.model.NeoUsage;
 import org.col.importer.neo.model.RankedUsage;
+import org.col.importer.neo.model.RelType;
 import org.col.importer.neo.traverse.Traversals;
 import org.col.matching.NameIndex;
 import org.col.matching.NameIndexFactory;
@@ -33,8 +34,10 @@ import org.col.api.vocab.Issue;
 import org.gbif.dwc.terms.Term;
 import org.junit.After;
 import org.junit.Before;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
+import org.neo4j.graphdb.Relationship;
 
 import static org.junit.Assert.*;
 
@@ -182,6 +185,20 @@ abstract class NormalizerITBase {
       }
     }
     return synonyms;
+  }
+  
+  public NeoName assertBasionym(NeoUsage usage, @Nullable String basionymNameId) {
+    NeoName nn = null;
+    Relationship rel = usage.nameNode.getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING);
+    if (basionymNameId == null) {
+      assertNull(rel);
+    } else {
+      Node bn = rel.getOtherNode(usage.nameNode);
+      nn = store.names().objByNode(bn);
+      assertNotNull(nn);
+      assertEquals(basionymNameId, nn.name.getId());
+    }
+    return nn;
   }
 
   public boolean hasIssues(VerbatimEntity ent, Issue... issues) {
