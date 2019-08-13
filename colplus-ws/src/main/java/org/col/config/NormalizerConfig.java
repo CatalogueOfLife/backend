@@ -10,7 +10,6 @@ import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 import org.neo4j.logging.slf4j.Slf4jLogProvider;
-import org.neo4j.shell.ShellSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,15 +94,8 @@ public class NormalizerConfig {
         .setUserLogProvider(new Slf4jLogProvider())
         .newEmbeddedDatabaseBuilder(storeDir)
         .setConfig(GraphDatabaseSettings.keep_logical_logs, "false")
-        .setConfig(GraphDatabaseSettings.allow_store_upgrade, "true")
+        .setConfig(GraphDatabaseSettings.allow_upgrade, "true")
         .setConfig(GraphDatabaseSettings.pagecache_memory, mappedMemory + "M");
-    if (shellPort != null) {
-      LOG.info("Enable neo4j shell on port " + shellPort);
-      builder.setConfig(ShellSettings.remote_shell_enabled, "true")
-          .setConfig(ShellSettings.remote_shell_port, shellPort.toString())
-          // listen to all IPs, not localhost only
-          .setConfig(ShellSettings.remote_shell_host, "0.0.0.0");
-    }
     return builder;
   }
   

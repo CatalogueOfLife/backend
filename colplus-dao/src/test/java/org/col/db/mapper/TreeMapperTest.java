@@ -19,7 +19,6 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     super(TreeMapper.class);
   }
   
-  
   @Test
   public void get() {
     TreeNode tn = mapper().get(dataset11, "root-1");
