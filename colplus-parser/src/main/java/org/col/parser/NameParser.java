@@ -14,11 +14,7 @@ import org.col.api.model.NameAccordingTo;
 import org.col.api.util.ObjectUtils;
 import org.col.api.vocab.Issue;
 import org.gbif.nameparser.NameParserGBIF;
-import org.gbif.nameparser.Warnings;
-import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.ParsedName;
-import org.gbif.nameparser.api.Rank;
-import org.gbif.nameparser.api.UnparsableNameException;
+import org.gbif.nameparser.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +37,8 @@ public class NameParser implements Parser<NameAccordingTo> {
       .put(Warnings.MISSING_GENUS, Issue.MISSING_GENUS)
       .put(Warnings.HTML_ENTITIES, Issue.ESCAPED_CHARACTERS)
       .put(Warnings.XML_TAGS, Issue.ESCAPED_CHARACTERS)
+      .put(Warnings.BLACKLISTED_EPITHET, Issue.BLACKLISTED_EPITHET)
+      .put(Warnings.NOMENCLATURAL_REFERENCE, Issue.CONTAINS_REFERENCE)
       .build();
   
   private Timer timer;

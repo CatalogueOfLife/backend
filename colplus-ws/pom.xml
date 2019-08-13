@@ -126,10 +126,6 @@
         </dependency>
         <dependency>
             <groupId>org.neo4j</groupId>
-            <artifactId>neo4j-shell</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.neo4j</groupId>
             <artifactId>neo4j-slf4j</artifactId>
         </dependency>
         <dependency>
@@ -158,7 +154,6 @@
             <artifactId>elasticsearch-rest-client</artifactId>
             <version>${elasticsearch.version}</version>
         </dependency>
-
 
         <!-- collections & CSV -->
         <dependency>

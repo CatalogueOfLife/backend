@@ -46,7 +46,7 @@ public class AcefInserterTest extends InserterBaseTest {
     assertEquals("YR Roskov & JL", d.getContact());
 
     assertNull(d.getLicense());
-    assertNull(d.getLogo());
+    assertEquals("http://ILDIS.gif", d.getLogo().toString());
     assertNull(d.getCitation());
     assertNull(d.getCode());
   }

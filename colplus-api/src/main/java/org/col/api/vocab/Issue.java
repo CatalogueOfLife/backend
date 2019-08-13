@@ -73,8 +73,14 @@ public enum Issue {
   UPPERCASE_EPITHET(NAME, Level.WARNING,
       "At least one epithet contains upper case letters."),
   
+  CONTAINS_REFERENCE(NAME, Level.WARNING,
+      "The name contains a bibliographic reference"),
+  
   NULL_EPITHET(NAME, Level.ERROR,
       "At least one epithet equals literal value \"null\" or \"none\"."),
+  
+  BLACKLISTED_EPITHET(NAME, Level.ERROR,
+      "At least one epithet is blacklisted by the name parser"),
   
   SUBSPECIES_ASSIGNED(NAME, Level.ERROR,
       "Name was declared a species but contains infraspecific epithet"),

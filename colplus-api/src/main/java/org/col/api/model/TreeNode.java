@@ -24,7 +24,7 @@ public class TreeNode implements DatasetEntity {
   private int childCount;
   private List<SpeciesEstimate> estimates;
   private Integer sectorKey;
-  private Decision decision;
+  private EditorialDecision decision;
   private Int2IntOpenHashMap datasetSectors;
   
   /**
@@ -131,11 +131,11 @@ public class TreeNode implements DatasetEntity {
     this.sectorKey = sectorKey;
   }
   
-  public Decision getDecision() {
+  public EditorialDecision getDecision() {
     return decision;
   }
   
-  public void setDecision(Decision decision) {
+  public void setDecision(EditorialDecision decision) {
     this.decision = decision;
   }
   

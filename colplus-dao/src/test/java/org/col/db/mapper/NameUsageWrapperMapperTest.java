@@ -34,7 +34,7 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
         if (obj.getUsage().getId().equals("root-1")) {
           assertEquals(4, obj.getIssues().size());
         } else {
-          assertNull(obj.getIssues());
+          assertTrue(obj.getIssues().isEmpty());
         }
 
         Name n = obj.getUsage().getName();

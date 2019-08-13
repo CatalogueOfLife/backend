@@ -22,7 +22,6 @@ import org.col.command.es.IndexAllCmd;
 import org.col.command.export.AcExporter;
 import org.col.command.export.ExportCmd;
 import org.col.command.initdb.InitDbCmd;
-import org.col.command.neoshell.ShellCmd;
 import org.col.common.csl.CslUtil;
 import org.col.common.io.DownloadUtil;
 import org.col.common.tax.AuthorshipNormalizer;
@@ -95,7 +94,6 @@ public class WsServer extends Application<WsServerConfig> {
     
     // add some cli commands not accessible via the admin interface
     bootstrap.addCommand(new InitDbCmd());
-    bootstrap.addCommand(new ShellCmd());
     bootstrap.addCommand(new IndexAllCmd());
     bootstrap.addCommand(new ExportCmd());
   }
