@@ -67,7 +67,7 @@
         LEFT JOIN name_usage_${datasetKey} a ON u.parent_id=a.id AND u.is_synonym
         LEFT JOIN name_${datasetKey} an ON a.name_id=an.id
         LEFT JOIN reference_${datasetKey} r ON n.published_in_id=r.id
-        LEFT JOIN decision ed ON ed.subject_id=u.id
+        LEFT JOIN decision ed ON ed.subject_id=u.id AND ed.dataset_key=#{datasetKey}
         WHERE u.id IN (<foreach collection="ids" item="id" separator=",">#{id}</foreach>)
     </select>
 
@@ -136,7 +136,7 @@
         FROM name_usage_${datasetKey} u
             JOIN name_${datasetKey} n ON u.name_id=n.id
             <if test="withDecision != null">
-                LEFT JOIN decision ed ON ed.subject_id=u.id
+                LEFT JOIN decision ed ON ed.subject_id=u.id AND ed.dataset_key=#{datasetKey}
             </if>
         <where>
             <include refid="commonWhereClause"/>
@@ -155,7 +155,7 @@
             AND array_agg(u.sector_key) @> array[${sectorKey}]
         </if>
         <if test="withDecision != null">
-            AND count(distinct ed.key)
+            AND count(DISTINCT ed.key)
                 <if test="withDecision">&gt; 0</if>
                 <if test="!withDecision">= 0</if>
         </if>

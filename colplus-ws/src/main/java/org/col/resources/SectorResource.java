@@ -47,7 +47,7 @@ public class SectorResource extends GlobalEntityResource<Sector> {
   @Override
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void delete(Integer key, @Auth ColUser user) {
+  public void delete(@PathParam("key") Integer key, @Auth ColUser user) {
     // an asynchroneous sector deletion will be triggered which also removes catalogue data
     assembly.deleteSector(key, user);
   }

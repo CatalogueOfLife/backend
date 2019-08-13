@@ -79,10 +79,29 @@ public class NormalizerColdpIT extends NormalizerITBase {
       NeoUsage t = usageByID("10");
       assertFalse(t.isSynonym());
       assertTrue(synonyms(t.node).isEmpty());
-  
+      
       t = usageByID("11");
       assertFalse(t.isSynonym());
       synonyms(t.node, "12");
+    }
+  }
+  
+  /**
+   * https://github.com/Sp2000/colplus-backend/issues/433
+   */
+  @Test
+  public void testNullRel() throws Exception {
+    normalize(3);
+    store.dump();
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoUsage t = usageByID("13");
+      assertFalse(t.isSynonym());
+      assertTrue(synonyms(t.node).isEmpty());
+      assertBasionym(t, null);
+  
+      t = usageByID("11");
+      assertFalse(t.isSynonym());
+      assertBasionym(t, "12");
     }
   }
 }

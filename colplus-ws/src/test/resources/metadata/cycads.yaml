@@ -1,0 +1,43 @@
+title: The World List of Cycads, online edition
+alias: Cycad List
+description: | 
+        The World List of Cycads is a working list of known cycad species names with the primary goal of providing reliable information on the taxonomy of cycads for use by researchers, conservation planners, and others. It is developed in close collaboration with world's foremost cycad experts and published under the auspices of the IUCN's Cycad Specialist Group. The printed edition is published in the proceedings of the International Conference of Cycad Biology, which is held every three years.
+
+# list of publishing organisations
+organisations:         
+  - IUCN / SSC Cycad Specialist Group, Montgomery Botanical Center, Coral Gables, FL, USA
+  - New York Botanical Garden, Bronx NY, USA
+  - Royal Botanic Gardens, Sydney, New South Wales, Australia
+
+# point of contact for questions. Either just a plain email or a name given with email address in angel brackets
+contact: Michael Calonje <michaelc@montgomerybotanical.org>
+
+# list of authors and editors.
+# optionally an ORCID can be appended (orcid: prefix required!) to be included in DOI metadata
+authorsAndEditors:
+  - Michael Calonje orcid:0000-0001-9650-3136
+  - Leonie Stanberg
+  - Dennis Stevenson orcid:0000-0002-2986-7076
+
+# Any commons license, but preferrably CC0, CC-BY or CC-BY-NC
+license: unspecified
+
+# version name of this copy
+version: ver. (02/2019)
+
+# release date of this version in ISO YYYY-MM-DD
+released: 2019-02-15      
+
+# link to a website for the dataset if online
+website: http://cycadlist.org
+
+# URL to large logo image
+logo: http://www.catalogueoflife.org/col/images/databases/The_World_List_of_Cycads.png
+
+# how to cite the dataset
+citation: Calonje M., Stanberg L. & Stevenson, D. (eds) (2019). The World List of Cycads, online edition (version 02/2019).
+
+completeness: 100
+
+confidence: 5
+

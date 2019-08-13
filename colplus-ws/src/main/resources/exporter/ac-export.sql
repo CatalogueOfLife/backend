@@ -103,8 +103,10 @@ INSERT INTO __ref_keys (id) SELECT id FROM reference_{{datasetKey}};
 COPY (
   SELECT rk.key AS record_id, 
     coalesce(
-      csl-> 'author' ->0 ->> 'literal',
-      (SELECT string_agg((aJson->>'given') || ' ' || (aJson->>'family'), ', ') FROM jsonb_array_elements(csl->'author') AS aJson)
+      csl-> 'author' ->0 ->> 'literal', (
+       SELECT string_agg(coalesce(aJson->>'given', '') || CASE WHEN aJson ? 'given' AND aJson ? 'family' THEN ' ' ELSE '' END || coalesce(aJson->>'family', ''), ', ')
+       FROM jsonb_array_elements(csl->'author') AS aJson
+      )
     ) AS author,
     coalesce(
       csl#>>'{issued,literal}',

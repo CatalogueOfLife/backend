@@ -212,7 +212,7 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
     AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
     try (NameIndex ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, factory, aNormalizer)) {
       DatasetMatcher matcher = new DatasetMatcher(factory, ni, false);
-      matcher.match(Datasets.DRAFT_COL);
+      matcher.match(Datasets.DRAFT_COL, true);
     }
   }
   

@@ -26,12 +26,13 @@ public class DatasetMatcher {
   
   /**
    * Matches all names of an entire dataset and updates its name index id and issues in postgres
+   * @param allowInserts if true allows inserts into the names index
    * @return number of names which have a changed match to before
    */
-  public int match(int datasetKey) {
+  public int match(int datasetKey, boolean allowInserts) {
     try (SqlSession session = factory.openSession(false)){
       NameMapper nm = session.getMapper(NameMapper.class);
-      BulkMatchHandler h = new BulkMatchHandler(updateIssues, ni, factory, datasetKey);
+      BulkMatchHandler h = new BulkMatchHandler(updateIssues, ni, factory, datasetKey, allowInserts);
       nm.processDataset(datasetKey, h);
       LOG.info("Updated {} out of {} name matches for dataset {}", h.updates, h.counter, datasetKey);
       return h.updates;
@@ -44,14 +45,16 @@ public class DatasetMatcher {
     int updates = 0;
     private final boolean updateIssues;
     private final int datasetKey;
+    private final boolean allowInserts;
     private final SqlSession session;
     private final NameIndex ni;
     private final NameMapper nm;
     private final VerbatimRecordMapper vm;
   
-    BulkMatchHandler(boolean updateIssues, NameIndex ni, SqlSessionFactory factory, int datasetKey) {
+    BulkMatchHandler(boolean updateIssues, NameIndex ni, SqlSessionFactory factory, int datasetKey, boolean allowInserts) {
       this.updateIssues = updateIssues;
       this.datasetKey = datasetKey;
+      this.allowInserts = allowInserts;
       this.ni = ni;
       this.session = factory.openSession(ExecutorType.BATCH, false);
       this.nm = session.getMapper(NameMapper.class);
@@ -63,7 +66,7 @@ public class DatasetMatcher {
       counter++;
       Name n = ctx.getResultObject();
       String oldId = n.getNameIndexId();
-      NameMatch m = ni.match(n, true, false);
+      NameMatch m = ni.match(n, allowInserts, false);
       
       if (!Objects.equals(oldId, m.hasMatch() ? m.getName().getId() : null)) {
         nm.updateMatch(datasetKey, n.getId(), m.hasMatch() ? m.getName().getId() : null);

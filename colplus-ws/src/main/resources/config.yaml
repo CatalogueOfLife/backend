@@ -4,6 +4,7 @@ logging:
     "org.col": DEBUG
     "org.apache.http": WARN
     "org.eclipse.jetty.servlet": WARN
+    "org.col.db.mapper": DEBUG
   appenders:
     - type: console
 db:

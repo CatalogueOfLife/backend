@@ -16,9 +16,13 @@ import org.col.db.mapper.TaxonMapper;
 import org.col.db.mapper.TestDataRule;
 import org.col.es.query.EsSearchRequest;
 import org.col.es.query.Query;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.rules.ExternalResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.util.stream.Collectors.toList;
 
@@ -26,6 +30,9 @@ import static java.util.stream.Collectors.toList;
  * Base class for tests that want to read/write to both Postgres and Elasticsearch.
  */
 public class EsReadWriteTestBase extends ExternalResource {
+  
+  private static final Logger LOG = LoggerFactory.getLogger(EsReadWriteTestBase.class);
+
 
   @ClassRule
   public static final PgSetupRule pgSetupRule = new PgSetupRule();
@@ -35,10 +42,26 @@ public class EsReadWriteTestBase extends ExternalResource {
 
   @Rule
   public final TestDataRule testDataRule = TestDataRule.apple();
+  
+  @Before
+  public void before() throws Throwable {
+    super.before();
+    try {
+      LOG.debug("Dumping test index \"{}\"", EsSetupRule.TEST_INDEX);
+      EsUtil.deleteIndex(esSetupRule.getEsClient(), EsSetupRule.TEST_INDEX);
+      LOG.debug("Creating test index \"{}\"", EsSetupRule.TEST_INDEX);
+      EsUtil.createIndex(esSetupRule.getEsClient(), EsSetupRule.TEST_INDEX, esSetupRule.getEsConfig().nameUsage);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+  
+  @After
+  public void after() {
+    LOG.debug("Test index \"{}\" kept around for inspection", EsSetupRule.TEST_INDEX);
+  }
 
-  @Rule
-  public final CleanIndexRule cleanIndexRule = new CleanIndexRule(esSetupRule.getEsClient());
-
+  
   protected NameUsageIndexService createIndexService() {
     return new NameUsageIndexServiceEs(
         esSetupRule.getEsClient(),
@@ -52,7 +75,8 @@ public class EsReadWriteTestBase extends ExternalResource {
   }
 
   /**
-   * Creates the specified amount of taxa and insert them into Postgres.
+   * Creates the specified amount of taxa and insert them into Postgres. The taxa all belong to EsSetupRule.DATASET_KEY. Their ids are "t1",
+   * "t2" ... "t${howmany}". Their name ids are "t1_name_id", "t2_name_id" ... "t${howmany}_name_id".
    * 
    * @param howmany
    * @return

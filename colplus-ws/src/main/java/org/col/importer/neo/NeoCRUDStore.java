@@ -64,8 +64,13 @@ public class NeoCRUDStore<T extends DatasetEntity & VerbatimEntity & NeoNode> {
   }
 
   public Node nodeByID(String id) {
-    Long nodeId = ids.getOrDefault(id, null);
-    return nodeId == null ? null : neoDb.nodeById(nodeId);
+    if (id != null) {
+      Long nodeId = ids.getOrDefault(id, null);
+      if (nodeId != null) {
+        return neoDb.nodeById(nodeId);
+      }
+    }
+    return null;
   }
   
   /**
