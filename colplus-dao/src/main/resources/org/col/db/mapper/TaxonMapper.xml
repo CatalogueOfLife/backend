@@ -190,7 +190,7 @@
 
     <delete id="delete" parameterType="map">
         DELETE FROM name_usage_${datasetKey}
-        WHERE id = #{id} AND NOT is_synonym
+        WHERE id = #{id}
     </delete>
 
     <select id="foreignChildren" resultMap="taxonResultMap">

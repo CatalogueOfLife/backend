@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
  * Unless an explicit factory is given, this rule requires a connected postgres server with mybatis via the {@link PgSetupRule}.
  * Make sure its setup!
  */
-public class TestDataRule extends ExternalResource {
+public class TestDataRule extends ExternalResource implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(TestDataRule.class);
   public static final ColUser TEST_USER = new ColUser();
   
@@ -159,7 +159,7 @@ public class TestDataRule extends ExternalResource {
   protected void before() throws Throwable {
     LOG.info("Loading {} test data", testData);
     super.before();
-    session = sqlSessionFactorySupplier.get().openSession(false);
+    initSession();
     truncate();
     // create required partitions to load data
     partition();
@@ -175,7 +175,18 @@ public class TestDataRule extends ExternalResource {
     session.close();
   }
   
-  private void partition() {
+  @Override
+  public void close() {
+    after();
+  }
+  
+  public void initSession() {
+    if (session == null) {
+      session = sqlSessionFactorySupplier.get().openSession(false);
+    }
+  }
+  
+  public void partition() {
     for (Integer dk : testData.datasetKeys) {
       PgSetupRule.partition(dk);
     }

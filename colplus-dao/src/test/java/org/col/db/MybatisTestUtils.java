@@ -1,5 +1,8 @@
 package org.col.db;
 
+import java.io.IOException;
+import java.sql.SQLException;
+
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
@@ -62,6 +65,14 @@ public class MybatisTestUtils {
     tm.incDatasetSectorCount(DRAFT_COL, "t4", 11, 1);
     tm.incDatasetSectorCount(DRAFT_COL, "t5", 11, 1);
     session.commit();
+  }
+  
+  public static void populateTestData(TestDataRule.TestData data) throws IOException, SQLException {
+    try (TestDataRule rule = new TestDataRule(data)) {
+      rule.initSession();
+      rule.partition();
+      rule.loadData(true);
+    }
   }
   
   private static Name uninomial(NameMapper nm, int datasetKey, String id, String name, Rank rank) {

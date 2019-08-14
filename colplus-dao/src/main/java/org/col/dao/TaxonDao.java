@@ -294,8 +294,10 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
       LOG.debug("Delete taxon {} and its {} nested sectors from dataset {} by user {}", id, delta.size(), datasetKey, user);
       List<TaxonCountMap> parents = tm.classificationCounts(datasetKey, id);
 
-      // cascading delete
+      // cascading delete removes descendants and vernacular, distributions, descriptions, media
+      // but NOT names, name_rels or refs
       tm.delete(datasetKey, id);
+      // TODO: remove orphaned names and references
   
       // remove delta from parents
       for (TaxonCountMap tc : parents) {
@@ -309,6 +311,7 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
         sim.delete(key);
         sm.delete(key);
       }
+      session.commit();
     }
     
     //TODO: update ES
