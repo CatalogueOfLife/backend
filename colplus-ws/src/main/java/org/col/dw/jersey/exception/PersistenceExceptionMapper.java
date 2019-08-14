@@ -34,10 +34,12 @@ public class PersistenceExceptionMapper extends LoggingExceptionMapper<Persisten
       }
     }
     
-    Matcher m = RELATION.matcher(e.getCause().getMessage());
-    if (m.find()) {
-      return JsonExceptionMapperBase.jsonErrorResponse(Response.Status.NOT_FOUND,
-          "Dataset " + Integer.parseInt(m.group(1)) + " does not exist");
+    if (e.getCause() != null) {
+      Matcher m = RELATION.matcher(e.getCause().getMessage());
+      if (m.find()) {
+        return JsonExceptionMapperBase.jsonErrorResponse(Response.Status.NOT_FOUND,
+            "Dataset " + Integer.parseInt(m.group(1)) + " does not exist");
+      }
     }
     
     return super.toResponse(e);
