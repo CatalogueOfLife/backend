@@ -1,0 +1,2 @@
+ID	AcceptedTaxonID	Genus	SpeciesEpithet	AuthorString	InfraSpeciesEpithet	InfraSpeciesMarker	InfraSpeciesAuthorString	GSDNameStatus	Sp2000NameStatus
+s1	MD2	Aranea	mascha	Fabricius, 1775		species		basionym	ambigous synonym

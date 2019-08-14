@@ -107,6 +107,10 @@ public class SectorSync extends SectorRunnable {
   private void relinkForeignChildren() {
     final String newParentID = sector.getTarget().getId();
     processForeignChildren((tm, t) -> {
+        // remember original parent
+        Taxon parent = tm.get(catalogueKey, t.getParentId());
+        foreignChildrenParents.put(t.getId(), parent.getName());
+        // update to new parent
         t.setParentId(newParentID);
         tm.update(t);
     });
@@ -121,12 +125,13 @@ public class SectorSync extends SectorRunnable {
       final MatchingDao mdao = new MatchingDao(session);
       
       processForeignChildren((tm, t) -> {
-        List<Taxon> matches = mdao.matchSector(t.getName(), sector.getKey());
+        Name parent = foreignChildrenParents.get(t.getId());
+        List<Taxon> matches = mdao.matchSector(parent, sector.getKey());
         if (matches.isEmpty()) {
-          LOG.warn("{} with parent in sector {} cannot be rematched", t.getName(), sector.getKey());
+          LOG.warn("{} with parent {} in sector {} cannot be rematched", t.getName(), parent, sector.getKey());
         } else {
           if (matches.size() > 1) {
-            LOG.warn("{} with parent in sector {} matches {} times - pick first {}", t.getName(), sector.getKey(), matches.size(), matches.get(0));
+            LOG.warn("{} with parent {} in sector {} matches {} times - pick first {}", t.getName(), parent, sector.getKey(), matches.size(), matches.get(0));
           }
           t.setParentId(matches.get(0).getId());
           tm.update(t);

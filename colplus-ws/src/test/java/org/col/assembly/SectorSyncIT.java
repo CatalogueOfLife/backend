@@ -35,8 +35,7 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 public class SectorSyncIT {
   
@@ -47,7 +46,7 @@ public class SectorSyncIT {
         DataFormat.ACEF,  1,
         DataFormat.COLDP, 0,
       NomCode.ZOOLOGICAL,
-        DataFormat.ACEF,  5, 6,
+        DataFormat.ACEF,  5, 6, 11,
         DataFormat.COLDP, 2
   );
   public final static TreeRepoRule treeRepoRule = new TreeRepoRule();
@@ -90,13 +89,21 @@ public class SectorSyncIT {
     }
   }
   
+  private static SimpleName simple(NameUsageBase nu) {
+    return new SimpleName(nu.getId(), nu.getName().canonicalNameComplete(), nu.getName().getRank());
+  }
+  
   static int createSector(Sector.Mode mode, NameUsageBase src, NameUsageBase target) {
+    return createSector(mode, src.getDatasetKey(), simple(src), simple(target));
+  }
+  
+  static int createSector(Sector.Mode mode, int datasetKey, SimpleName src, SimpleName target) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       Sector sector = new Sector();
       sector.setMode(mode);
-      sector.setDatasetKey(src.getDatasetKey());
-      sector.setSubject(new SimpleName(src.getId(), src.getName().canonicalNameComplete(), src.getName().getRank()));
-      sector.setTarget(new SimpleName(target.getId(), target.getName().canonicalNameComplete(), target.getName().getRank()));
+      sector.setDatasetKey(datasetKey);
+      sector.setSubject(src);
+      sector.setTarget(target);
       sector.applyUser(TestDataRule.TEST_USER);
       session.getMapper(SectorMapper.class).create(sector);
       return sector.getKey();
@@ -153,6 +160,53 @@ public class SectorSyncIT {
   
     NameUsageBase sp   = getByID(vogelii.getParentId());
     assertEquals(Origin.SOURCE, vogelii.getOrigin());
+  }
+  
+  /**
+   * Nested sectors
+   * see https://github.com/Sp2000/colplus-backend/issues/438
+   * @throws Exception
+   */
+  @Test
+  public void test6_11() throws Exception {
+    print(Datasets.DRAFT_COL);
+    print(datasetKey(6, DataFormat.ACEF));
+    print(datasetKey(11, DataFormat.ACEF));
+    
+    NameUsageBase src = getByName(datasetKey(6, DataFormat.ACEF), Rank.FAMILY, "Theridiidae");
+    NameUsageBase trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
+    final int s1 = createSector(Sector.Mode.ATTACH, src, trg);
+    
+    src = getByName(datasetKey(11, DataFormat.ACEF), Rank.GENUS, "Dectus");
+    // target without id so far
+    final int s2 = createSector(Sector.Mode.ATTACH, src.getDatasetKey(), simple(src),
+        new SimpleName(null, "Theridiidae", Rank.FAMILY)
+    );
+  
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      SectorMapper sm = session.getMapper(SectorMapper.class);
+      Sector s = sm.get(s1);
+      sync(s);
+      
+      // update sector with now existing Theridiidae key
+      NameUsageBase ther = getByName(Datasets.DRAFT_COL, Rank.FAMILY, "Theridiidae");
+      s = sm.get(s2);
+      s.getTarget().setId(ther.getId());
+      sm.update(s);
+  
+      NameUsageBase u = getByName(Datasets.DRAFT_COL, Rank.FAMILY, "Theridiidae");
+      assertNotNull(u);
+      sync(s);
+  
+      u = getByName(Datasets.DRAFT_COL, Rank.SPECIES, "Dectus mascha");
+      assertNotNull(u);
+      assertTree("cat6_11.txt");
+      
+      // make sure that we can resync and still get the same results with the nested sector
+      s = sm.get(s1);
+      sync(s);
+      assertTree("cat6_11.txt");
+    }
   }
   
   @Test
