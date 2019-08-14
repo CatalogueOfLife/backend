@@ -23,6 +23,7 @@ import org.col.importer.reference.ReferenceFactory;
 import org.col.parser.*;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -253,9 +254,12 @@ public class InterpreterBase {
                                                   String nomCode, String nomStatus, String link, String remarks, VerbatimRecord v) {
     NameAccordingTo nat;
     
-    // parse rank
+    // parse rank & code as they improve name parsing
     Rank rank = SafeParser.parse(RankParser.PARSER, vrank).orElse(Rank.UNRANKED, Issue.RANK_INVALID, v);
     atom.setRank(rank);
+    final NomCode code = SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse(dataset.getCode(), Issue.NOMENCLATURAL_CODE_INVALID, v);
+    atom.setCode(code);
+  
     // populate uninomial?
     if (!atom.isBinomial() && rank.isSupraspecific() && atom.getGenus() != null) {
       atom.setUninomial(atom.getGenus());
@@ -265,7 +269,7 @@ public class InterpreterBase {
     // we parse all names from the scientificName + optional authorship
     // or use the atomized parts which we also use to validate the parsing result.
     if (sciname != null) {
-      nat = NameParser.PARSER.parse(sciname, rank, v).get();
+      nat = NameParser.PARSER.parse(sciname, rank, code, v).get();
       
     } else if (!isAtomized) {
       LOG.info("No name given for {}", id);
@@ -275,7 +279,7 @@ public class InterpreterBase {
       // parse the reconstructed name without authorship
       // cant use the atomized name just like that cause we would miss name type detection (virus,
       // hybrid, placeholder, garbage)
-      Optional<NameAccordingTo> natFromAtom = NameParser.PARSER.parse(atom.canonicalNameComplete(), rank, v);
+      Optional<NameAccordingTo> natFromAtom = NameParser.PARSER.parse(atom.canonicalNameComplete(), rank, code, v);
       if (!natFromAtom.isPresent()) {
         LOG.warn("Failed to parse {} {} ({}) from given atoms. Use name atoms directly: {}/{}/{}/{}", rank, atom.canonicalNameComplete(), id,
             atom.getGenus(), atom.getInfragenericEpithet(), atom.getSpecificEpithet(), atom.getInfraspecificEpithet()
@@ -336,7 +340,7 @@ public class InterpreterBase {
         , Issue.NOMENCLATURAL_STATUS_INVALID, v));
     // applies default dataset code if we cannot find or parse any
     // Always make sure this happens BEFORE we update the canonical scientific name
-    nat.getName().setCode(SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse(dataset.getCode(), Issue.NOMENCLATURAL_CODE_INVALID, v));
+    nat.getName().setCode(code);
     nat.getName().addRemark(remarks);
     nat.getName().addRemark(nomStatus);
     

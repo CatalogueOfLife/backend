@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
+import org.col.api.model.IssueContainer;
 import org.col.api.model.Name;
 import org.col.common.tax.AuthorshipNormalizer;
 import org.col.parser.NameParser;
@@ -24,11 +25,11 @@ public class BasionymSorterTest {
   private final BasionymSorter sorter = new BasionymSorter(new AuthorComparator(AuthorshipNormalizer.createWithAuthormap()));
 
   private static Name parse(String x) {
-    return NameParser.PARSER.parse(x).get().getName();
+    return NameParser.PARSER.parse(x, null, null, IssueContainer.VOID).get().getName();
   }
 
   private static Name parse(String x, Rank rank) {
-    return NameParser.PARSER.parse(x, rank, null).get().getName();
+    return NameParser.PARSER.parse(x, rank, null, IssueContainer.VOID).get().getName();
   }
 
   private List<Name> names(String... names) throws Exception {
