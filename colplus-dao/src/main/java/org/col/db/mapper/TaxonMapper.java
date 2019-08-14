@@ -48,11 +48,6 @@ public interface TaxonMapper extends DatasetCRUDMapper<Taxon> {
   List<Taxon> foreignChildren(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   
   /**
-   * @return set of sector keys that are targeting a descendant of the given root taxon id
-   */
-  List<Integer> listSectors(@Param("datasetKey") int datasetKey, @Param("id") String id);
-
-  /**
    * Recursively updates the sector count for a given taxon and all its parents.
    * @param datasetKey the datasetKey of the catalogue
    * @param id the taxon id
