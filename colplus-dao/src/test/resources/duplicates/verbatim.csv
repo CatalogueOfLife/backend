@@ -53,3 +53,6 @@ key,dataset_key,line,file,type,terms,issues
 52,1000,52,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""57"", ""dwc:taxonID"": ""57"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Botrypus virginianus (L.) Holub"", ""dwc:acceptedNameUsageID"": ""a1""}",{31}
 53,1000,39,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""44"", ""dwc:taxonID"": ""44"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Actiniopteris australis Ettingsh."", ""dwc:acceptedNameUsageID"": ""a1""}",{31}
 54,1000,18,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""17"", ""dwc:taxonID"": ""17"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Euops nigrum Kono, 1927""}",{31}
+55,1000,18,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""xxx"", ""dwc:taxonID"": ""17"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Xxx xxx Zz, 1973""}",{31}
+56,1000,18,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""xxx"", ""dwc:taxonID"": ""17"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Xxx xxx Zz, 1973""}",{31}
+57,1000,18,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""xxx"", ""dwc:taxonID"": ""17"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Xxx xxx Zz, 1973""}",{31}
