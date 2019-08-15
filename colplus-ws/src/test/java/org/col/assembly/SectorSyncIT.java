@@ -37,6 +37,9 @@ import org.junit.rules.TestRule;
 
 import static org.junit.Assert.*;
 
+/**
+ * Before we start any test we prepare the db with imports that can be reused across tests later on.
+ */
 public class SectorSyncIT {
   
   public final static PgSetupRule pg = new PgSetupRule();

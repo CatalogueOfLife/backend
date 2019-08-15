@@ -83,19 +83,22 @@ public class SectorSync extends SectorRunnable {
 
     state.setState( SectorImport.State.DELETING);
     relinkForeignChildren();
-    deleteOld();
-    checkIfCancelled();
-
-    state.setState( SectorImport.State.COPYING);
-    processTree();
-    checkIfCancelled();
+    try {
+      deleteOld();
+      checkIfCancelled();
   
-    state.setState( SectorImport.State.RELINKING);
-    rematchForeignChildren();
-    relinkAttachedSectors();
-  
-    state.setState( SectorImport.State.INDEXING);
-    indexService.indexSector(sector.getKey());
+      state.setState( SectorImport.State.COPYING);
+      processTree();
+      checkIfCancelled();
+      
+    } finally {
+      // run these even if we get errors in the main tree copying
+      state.setState( SectorImport.State.RELINKING);
+      rematchForeignChildren();
+      relinkAttachedSectors();
+      state.setState( SectorImport.State.INDEXING);
+      indexService.indexSector(sector.getKey());
+    }
   
     state.setState( SectorImport.State.FINISHED);
   }
