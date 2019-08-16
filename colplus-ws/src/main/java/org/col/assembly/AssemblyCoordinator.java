@@ -190,21 +190,21 @@ public class AssemblyCoordinator implements Managed {
    * We use old school callbacks here as you cannot easily cancel CompletableFutures.
    */
   private void successCallBack(SectorRunnable sync) {
+    syncs.remove(sync.getSectorKey());
     Duration durQueued = Duration.between(sync.getCreated(), sync.getStarted());
     Duration durRun = Duration.between(sync.getStarted(), LocalDateTime.now());
     LOG.info("Sector Sync {} finished. {} min queued, {} min to execute", sync.getSectorKey(), durQueued.toMinutes(), durRun.toMinutes());
     counter.inc();
     timer.update(durRun.getSeconds(), TimeUnit.SECONDS);
-    syncs.remove(sync.getSectorKey());
   }
   
   /**
    * We use old school callbacks here as you cannot easily cancel CompletableFutures.
    */
   private void errorCallBack(SectorRunnable sync, Exception err) {
+    syncs.remove(sync.getSectorKey());
     LOG.error("Sector Sync {} failed: {}", sync.getSectorKey(), err.getCause().getMessage(), err.getCause());
     failed.inc();
-    syncs.remove(sync.getSectorKey());
   }
   
   public synchronized void cancel(int sectorKey, ColUser user) {

@@ -44,6 +44,14 @@ public class SectorSync extends SectorRunnable {
     metrics();
   }
   
+  @Override
+  void finalWork() {
+    try (SqlSession session = factory.openSession(true)) {
+      SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
+      sim.create(state);
+    }
+  }
+
   private void metrics() {
     try (SqlSession session = factory.openSession(true)) {
       SectorImportMapper mapper = session.getMapper(SectorImportMapper.class);
