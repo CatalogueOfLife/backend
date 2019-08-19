@@ -141,7 +141,24 @@ public class SectorSyncIT {
     TextTreePrinter.dataset(datasetKey, PgSetupRule.getSqlSessionFactory(), writer).print();
     System.out.println(writer.toString());
   }
-
+  
+  void assertTree(String filename) throws IOException {
+    InputStream resIn = getClass().getResourceAsStream("/assembly-trees/" + filename);
+    String expected = IOUtils.toString(resIn, Charsets.UTF_8).trim();
+    
+    Writer writer = new StringWriter();
+    TextTreePrinter.dataset(Datasets.DRAFT_COL, PgSetupRule.getSqlSessionFactory(), writer).print();
+    String tree = writer.toString().trim();
+    assertFalse("Empty tree, probably no root node found", tree.isEmpty());
+    
+    // compare trees
+    System.out.println("\n*** DRAFT TREE ***");
+    System.out.println(tree);
+    assertEquals("Assembled tree not as expected", expected, tree);
+  }
+  
+  
+  
   @Test
   public void test1_5_6() throws Exception {
     print(Datasets.DRAFT_COL);
@@ -282,19 +299,26 @@ public class SectorSyncIT {
     syncAll();
     assertTree("cat0_2.txt");
   }
- 
-  void assertTree(String filename) throws IOException {
-    InputStream resIn = getClass().getResourceAsStream("/assembly-trees/" + filename);
-    String expected = IOUtils.toString(resIn, Charsets.UTF_8).trim();
-    
-    Writer writer = new StringWriter();
-    TextTreePrinter.dataset(Datasets.DRAFT_COL, PgSetupRule.getSqlSessionFactory(), writer).print();
-    String tree = writer.toString().trim();
-    assertFalse("Empty tree, probably no root node found", tree.isEmpty());
   
-    // compare trees
-    System.out.println("\n*** DRAFT TREE ***");
-    System.out.println(tree);
-    assertEquals("Assembled tree not as expected", expected, tree);
+  @Test
+  public void testKingdomSector() throws Exception {
+    print(Datasets.DRAFT_COL);
+    print(datasetKey(0, DataFormat.COLDP));
+    
+    NameUsageBase src = getByName(datasetKey(0, DataFormat.COLDP), Rank.KINGDOM, "Plantae");
+    NameUsageBase plant = getByName(Datasets.DRAFT_COL, Rank.KINGDOM, "Plantae");
+    createSector(Sector.Mode.MERGE, src, plant);
+  
+    final String plantID = plant.getId();
+    assertNull(plant.getSectorKey());
+    
+    syncAll();
+    
+    assertTree("cat0.txt");
+    plant = getByName(Datasets.DRAFT_COL, Rank.KINGDOM, "Plantae");
+    // make sure the kingdom is not part of the sector, we merged!
+    assertNull(plant.getSectorKey());
+    assertEquals(plantID, plant.getId());
   }
+  
 }
