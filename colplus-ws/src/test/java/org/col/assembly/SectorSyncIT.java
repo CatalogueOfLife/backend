@@ -182,7 +182,7 @@ public class SectorSyncIT {
     assertTree("cat1_5_6.txt");
   
     NameUsageBase vogelii   = getByName(Datasets.DRAFT_COL, Rank.SUBSPECIES, "Astragalus vogelii subsp. vogelii");
-    assertEquals(1, (int) vogelii.getSectorKey());
+    assertEquals(2, (int) vogelii.getSectorKey());
   
     NameUsageBase sp   = getByID(vogelii.getParentId());
     assertEquals(Origin.SOURCE, vogelii.getOrigin());
