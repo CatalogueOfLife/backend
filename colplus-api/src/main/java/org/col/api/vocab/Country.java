@@ -536,7 +536,7 @@ public enum Country {
   /**
    * HOLY SEE (Vatican City State).
    */
-  VATICAN("VA", "VAT", 336, "Holy See (Vatican City State)", Continent.EUROPE),
+  VATICAN("VA", "VAT", 336, "Holy See", Continent.EUROPE),
   
   /**
    * Honduras.
@@ -644,6 +644,13 @@ public enum Country {
   KOREA_SOUTH("KR", "KOR", 410, "Korea, Republic of", Continent.ASIA),
   
   /**
+   * Kosovo.
+   * User-assigned temporary code, XK and XKX are the same as used by several other international organizations.
+   * 902 is assigned by GBIF, but these codes aren't used anywhere.
+   */
+  KOSOVO("XK", "XKX", 902, "Kosovo", Continent.EUROPE),
+
+  /**
    * Kuwait.
    */
   KUWAIT("KW", "KWT", 414, "Kuwait", Continent.ASIA),
@@ -704,9 +711,10 @@ public enum Country {
   MACAO("MO", "MAC", 446, "Macao", Continent.ASIA),
   
   /**
-   * Macedonia, the former Yugoslav Republic of.
+   * North Macedonia.
+   * The former Yugoslav Republic of.
    */
-  MACEDONIA("MK", "MKD", 807, "Macedonia, the former Yugoslav Republic of", Continent.EUROPE),
+  MACEDONIA("MK", "MKD", 807, "North Macedonia", Continent.EUROPE),
   
   /**
    * Madagascar.
@@ -1116,7 +1124,7 @@ public enum Country {
   /**
    * Swaziland.
    */
-  SWAZILAND("SZ", "SWZ", 748, "Swaziland", Continent.AFRICA),
+  SWAZILAND("SZ", "SWZ", 748, "Eswatini", Continent.AFRICA),
   
   /**
    * Sweden.
@@ -1134,9 +1142,9 @@ public enum Country {
   SYRIA("SY", "SYR", 760, "Syrian Arab Republic", Continent.ASIA),
   
   /**
-   * Chinese Taipei.
+   * Taiwan.
    */
-  TAIWAN("TW", "TWN", 158, "Chinese Taipei", Continent.ASIA),
+  TAIWAN("TW", "TWN", 158, "Taiwan", Continent.ASIA),
   
   /**
    * Tajikistan.
@@ -1226,7 +1234,7 @@ public enum Country {
   /**
    * United States.
    */
-  UNITED_STATES("US", "USA", 840, "United States", Continent.NORTH_AMERICA),
+  UNITED_STATES("US", "USA", 840, "United States of America", Continent.NORTH_AMERICA),
   
   /**
    * United States Minor Outlying Islands.
