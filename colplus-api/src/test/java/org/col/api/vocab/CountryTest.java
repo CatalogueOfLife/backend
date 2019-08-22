@@ -74,7 +74,8 @@ public class CountryTest {
   @Test
   public void testIsCustomCode() throws Exception {
     for (Country l : Country.values()) {
-      if (l.isOfficial()) {
+      // Kosovo is an exception
+      if (l.isOfficial() && Country.KOSOVO != l) {
         assertFalse(Country.isCustomCode(l.getIso2LetterCode()));
         assertFalse(Country.isCustomCode(l.getIso3LetterCode()));
       } else {
@@ -92,7 +93,7 @@ public class CountryTest {
     int officialCountries = Country.OFFICIAL_COUNTRIES.size();
     int allCountries = Country.values().length;
     assertTrue(allCountries > officialCountries);
-    assertEquals(249, officialCountries);
+    assertEquals(250, officialCountries);
   }
   
   @Test
