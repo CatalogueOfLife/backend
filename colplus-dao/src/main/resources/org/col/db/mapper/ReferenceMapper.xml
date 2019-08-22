@@ -44,6 +44,9 @@
 
     <sql id="FROM">
         reference_${datasetKey} r
+        <if test="_parameter.containsKey('req') and req.issues != null and !req.issues.isEmpty()">
+            JOIN verbatim_${datasetKey} v ON v.key=r.verbatim_key
+        </if>
     </sql>
 
     <sql id="SEARCH_WHERE">
@@ -62,6 +65,10 @@
                         <when test="req.getSectorKeyIsNull()">r.sector_key IS NULL</when>
                         <otherwise>r.sector_key IS NOT NULL</otherwise>
                     </choose>
+                </if>
+                <if test="req.issues != null and !req.issues.isEmpty()">
+                    AND v.issues @>
+                    <foreach item="issue" index="index" collection="req.issues" open="array[" separator="," close="]">${issue.ordinal()}</foreach>
                 </if>
             </where>
         </if>
