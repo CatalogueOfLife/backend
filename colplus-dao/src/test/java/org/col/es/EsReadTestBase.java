@@ -10,7 +10,11 @@ import org.col.api.model.Page;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchResponse;
 import org.col.api.search.NameUsageWrapper;
-import org.col.es.model.EsNameUsage;
+import org.col.es.name.NameUsageDocument;
+import org.col.es.name.NameUsageTransfer;
+import org.col.es.name.search.NameUsageSearchService;
+import org.col.es.query.EsSearchRequest;
+import org.col.es.query.Query;
 import org.elasticsearch.client.RestClient;
 import org.junit.ClassRule;
 
@@ -32,7 +36,17 @@ public class EsReadTestBase {
     return esSetupRule.getEsClient();
   }
 
-  protected void indexRaw(Collection<EsNameUsage> raw) {
+  // useful for @Before methods
+  protected void destroyAndCreateIndex() {
+    try {
+      EsUtil.deleteIndex(getEsClient(), indexName);
+      EsUtil.createIndex(getEsClient(), indexName, getEsConfig().nameUsage);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  protected void indexRaw(Collection<NameUsageDocument> raw) {
     try {
       EsUtil.insert(getEsClient(), indexName, raw);
       EsUtil.refreshIndex(getEsClient(), indexName);
@@ -41,11 +55,16 @@ public class EsReadTestBase {
     }
   }
 
-  protected void indexRaw(EsNameUsage raw) {
+  protected void indexRaw(NameUsageDocument... raw) {
     indexRaw(Arrays.asList(raw));
   }
 
-  protected EsNameUsage toDocument(NameUsageWrapper nameUsage) {
+  protected List<NameUsageDocument> queryRaw(Query query) {
+    EsSearchRequest esr = EsSearchRequest.emptyRequest().where(query);
+    return new NameUsageSearchService(indexName, getEsClient()).getDocuments(esr);
+  }
+
+  protected NameUsageDocument toDocument(NameUsageWrapper nameUsage) {
     try {
       return new NameUsageTransfer().toDocument(nameUsage);
     } catch (IOException e) {
@@ -53,7 +72,7 @@ public class EsReadTestBase {
     }
   }
 
-  protected List<EsNameUsage> toDocuments(Collection<NameUsageWrapper> nameUsages) {
+  protected List<NameUsageDocument> toDocuments(Collection<NameUsageWrapper> nameUsages) {
     return nameUsages.stream().map(this::toDocument).collect(Collectors.toList());
   }
 

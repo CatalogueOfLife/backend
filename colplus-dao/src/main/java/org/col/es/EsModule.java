@@ -21,20 +21,23 @@ import org.col.api.search.NameUsageWrapper;
 import org.col.es.query.EsSearchRequest;
 
 /**
- * Jackson module to configure an object mapper to (de)serialize data stored in Elastic Search.
- * <p>
- * It uses MixIns to modify API model classes to behave differently for ES.
+ * Jackson module to configure an object mapper to (de)serialize data stored in Elasticsearch. It uses MixIns to modify API model classes to
+ * behave differently for ES.
  */
 public class EsModule extends SimpleModule {
 
-  public static final ObjectMapper MAPPER = configureMapper(new ObjectMapper());
+  public static final ObjectMapper MAPPER = configureMapper(new ObjectMapper(), true);
 
   /*
-   * Define frequently used readers and writer
+   * Define frequently used readers and writers
    */
   public static final ObjectWriter QUERY_WRITER = writerFor(EsSearchRequest.class);
   public static final ObjectWriter NAME_USAGE_WRITER = writerFor(NameUsageWrapper.class);
   public static final ObjectReader NAME_USAGE_READER = readerFor(NameUsageWrapper.class);
+  // Generic writer displaying enums as strings
+  public static final ObjectWriter DEBUG_WRITER = configureMapper(new ObjectMapper(), false)
+      .writer()
+      .withDefaultPrettyPrinter();
 
   public static ObjectReader readerFor(Class<?> c) {
     return MAPPER.readerFor(c);
@@ -44,10 +47,14 @@ public class EsModule extends SimpleModule {
     return MAPPER.writerFor(c);
   }
 
-  public static ObjectMapper configureMapper(ObjectMapper mapper) {
+  public static ObjectMapper configureMapper(ObjectMapper mapper, boolean enumToInt) {
     mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
     mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-    mapper.enable(SerializationFeature.WRITE_ENUMS_USING_INDEX);
+    if (enumToInt) {
+      mapper.enable(SerializationFeature.WRITE_ENUMS_USING_INDEX);
+    } else {
+      mapper.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
+    }
     mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
     mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
     mapper.registerModule(new JavaTimeModule());
@@ -56,7 +63,7 @@ public class EsModule extends SimpleModule {
   }
 
   public EsModule() {
-    super("ElasticSearch");
+    super("Elasticsearch");
   }
 
   @Override

@@ -1,0 +1,15 @@
+package org.col.es.ddl;
+
+/**
+ * Enumerates the three possible values for the &#34;index&#34; field in a type mapping.
+ * 
+ */
+public enum Index {
+
+  ANALYZED, NOT_ANALYZED, NO;
+
+  @Override
+  public String toString() {
+    return name().toLowerCase();
+  }
+}

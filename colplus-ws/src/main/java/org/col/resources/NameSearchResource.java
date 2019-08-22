@@ -16,7 +16,7 @@ import org.col.api.model.ResultPage;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameUsageWrapper;
 import org.col.es.InvalidQueryException;
-import org.col.es.NameUsageSearchService;
+import org.col.es.name.search.NameUsageSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

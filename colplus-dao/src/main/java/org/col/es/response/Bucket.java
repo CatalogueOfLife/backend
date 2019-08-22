@@ -2,8 +2,10 @@ package org.col.es.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.col.api.search.FacetValue;
+
 /**
- * The ES counter part to the FacetValue API class.
+ * The Elasticsearch response object corresponding to the {@link FacetValue} class.
  */
 public class Bucket {
 

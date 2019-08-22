@@ -10,6 +10,9 @@ import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+
+import static org.col.es.EsConfig.ES_INDEX_NAME_USAGE;
+
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -38,9 +41,9 @@ import org.col.dw.health.NameParserHealthCheck;
 import org.col.dw.health.NamesIndexHealthCheck;
 import org.col.dw.jersey.ColJerseyBundle;
 import org.col.es.EsClientFactory;
-import org.col.es.NameUsageIndexService;
-import org.col.es.NameUsageIndexServiceEs;
-import org.col.es.NameUsageSearchService;
+import org.col.es.name.index.NameUsageIndexService;
+import org.col.es.name.index.NameUsageIndexServiceEs;
+import org.col.es.name.search.NameUsageSearchService;
 import org.col.gbifsync.GbifSync;
 import org.col.img.ImageService;
 import org.col.img.ImageServiceFS;
@@ -58,8 +61,6 @@ import org.glassfish.jersey.client.spi.ConnectorProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
-
-import static org.col.es.EsConfig.ES_INDEX_NAME_USAGE;
 
 public class WsServer extends Application<WsServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(WsServer.class);

@@ -16,7 +16,7 @@ import org.col.dao.DatasetImportDao;
 import org.col.dao.MatchingDao;
 import org.col.dao.NamesTreeDao;
 import org.col.db.mapper.*;
-import org.col.es.NameUsageIndexService;
+import org.col.es.name.index.NameUsageIndexService;
 import org.gbif.nameparser.api.NameType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

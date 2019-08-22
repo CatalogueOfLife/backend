@@ -36,7 +36,7 @@ import org.col.common.tax.AuthorshipNormalizer;
 import org.col.dao.DatasetImportDao;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.DatasetPartitionMapper;
-import org.col.es.NameUsageIndexService;
+import org.col.es.name.index.NameUsageIndexService;
 import org.col.img.ImageService;
 import org.col.matching.NameIndex;
 import org.gbif.nameparser.utils.NamedThreadFactory;

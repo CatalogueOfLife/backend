@@ -25,7 +25,7 @@ import org.col.db.mapper.SectorMapper;
 import org.col.db.mapper.TaxonMapper;
 import org.col.db.mapper.TestDataRule;
 import org.col.db.tree.TextTreePrinter;
-import org.col.es.NameUsageIndexService;
+import org.col.es.name.index.NameUsageIndexService;
 import org.col.importer.PgImportRule;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;

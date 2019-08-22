@@ -21,7 +21,7 @@ import org.col.dao.DatasetImportDao;
 import org.col.db.mapper.CollectResultHandler;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.SectorMapper;
-import org.col.es.NameUsageIndexService;
+import org.col.es.name.index.NameUsageIndexService;
 import org.col.importer.ImportManager;
 import org.gbif.nameparser.utils.NamedThreadFactory;
 import org.slf4j.Logger;

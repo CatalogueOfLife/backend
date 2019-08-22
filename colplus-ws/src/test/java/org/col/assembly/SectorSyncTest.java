@@ -13,7 +13,7 @@ import org.col.dao.TreeRepoRule;
 import org.col.db.PgSetupRule;
 import org.col.dao.DatasetImportDao;
 import org.col.db.mapper.*;
-import org.col.es.NameUsageIndexService;
+import org.col.es.name.index.NameUsageIndexService;
 import org.gbif.common.shaded.com.google.common.collect.Lists;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;

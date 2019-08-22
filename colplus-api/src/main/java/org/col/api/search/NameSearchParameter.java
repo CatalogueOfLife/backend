@@ -7,6 +7,7 @@ import org.col.api.vocab.NameField;
 import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 public enum NameSearchParameter {
@@ -25,6 +26,11 @@ public enum NameSearchParameter {
    * Searches on the name index id property of the Name which allows to share for same names across and within datasets.
    */
   NAME_INDEX_ID(String.class),
+
+  /**
+   * Nomenclatural code.
+   */
+  NOM_CODE(NomCode.class),
 
   /**
    * Nomenclatural status of the name alone
@@ -66,7 +72,11 @@ public enum NameSearchParameter {
   /**
    * Name.type
    */
-  TYPE(NameType.class);
+  TYPE(NameType.class),
+
+  FOSSIL(Boolean.class),
+
+  RECENT(Boolean.class);
 
   private final Class<?> type;
 

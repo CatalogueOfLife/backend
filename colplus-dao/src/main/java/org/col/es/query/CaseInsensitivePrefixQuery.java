@@ -3,7 +3,7 @@ package org.col.es.query;
 import java.util.Collections;
 import java.util.Map;
 
-import org.col.es.mapping.MultiField;
+import org.col.es.ddl.MultiField;
 
 public class CaseInsensitivePrefixQuery extends AbstractQuery {
 

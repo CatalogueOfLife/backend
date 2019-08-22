@@ -1,6 +1,6 @@
 package org.col.es.query;
 
-import org.col.es.mapping.MultiField;
+import org.col.es.ddl.MultiField;
 
 public class CaseInsensitiveQuery extends TermQuery {
   

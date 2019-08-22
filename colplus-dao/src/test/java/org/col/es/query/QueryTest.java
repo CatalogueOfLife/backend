@@ -3,8 +3,17 @@ package org.col.es.query;
 import java.time.LocalDate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
 import org.col.es.EsModule;
 import org.col.es.IndexConfig;
+import org.col.es.query.AutoCompleteQuery;
+import org.col.es.query.BoolQuery;
+import org.col.es.query.ConstantScoreQuery;
+import org.col.es.query.IsNotNullQuery;
+import org.col.es.query.IsNullQuery;
+import org.col.es.query.PrefixQuery;
+import org.col.es.query.TermQuery;
+import org.col.es.query.TermsQuery;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;

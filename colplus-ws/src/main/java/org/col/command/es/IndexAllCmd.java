@@ -8,8 +8,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.WsServerConfig;
 import org.col.db.MybatisFactory;
 import org.col.es.EsClientFactory;
-import org.col.es.NameUsageIndexService;
-import org.col.es.NameUsageIndexServiceEs;
+import org.col.es.name.index.NameUsageIndexService;
+import org.col.es.name.index.NameUsageIndexServiceEs;
 import org.elasticsearch.client.RestClient;
 
 public class IndexAllCmd extends ConfiguredCommand<WsServerConfig> {

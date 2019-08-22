@@ -20,7 +20,7 @@ import org.col.dao.NameDao;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.NameRelationMapper;
 import org.col.es.InvalidQueryException;
-import org.col.es.NameUsageSearchService;
+import org.col.es.name.search.NameUsageSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

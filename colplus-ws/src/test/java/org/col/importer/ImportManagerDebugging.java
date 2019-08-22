@@ -11,7 +11,7 @@ import org.col.common.tax.AuthorshipNormalizer;
 import org.col.dao.TreeRepoRule;
 import org.col.db.PgSetupRule;
 import org.col.es.IndexConfig;
-import org.col.es.NameUsageIndexService;
+import org.col.es.name.index.NameUsageIndexService;
 import org.col.img.ImageServiceFS;
 import org.col.matching.NameIndexFactory;
 import org.elasticsearch.client.RestClient;

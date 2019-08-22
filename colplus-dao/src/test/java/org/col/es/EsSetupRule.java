@@ -9,6 +9,8 @@ import com.google.common.base.Strings;
 import org.col.api.TestEntityGenerator;
 import org.col.common.io.PortUtil;
 import org.col.common.util.YamlUtils;
+import org.col.es.EsClientFactory;
+import org.col.es.EsConfig;
 import org.elasticsearch.client.RestClient;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;

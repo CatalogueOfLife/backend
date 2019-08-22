@@ -10,11 +10,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * This class serializes to a valid "highlight" block within an Elasticsearch search request. Note though that we currently don't use this
- * class (nor set the "highlight" field within the EsSearchRequest class). The reason is that the things we want to highlight are tucked
- * away within the payload field of the EsNameUsage class, and Elasticsearch basically knows nothing about this field (it might even be
- * zipped). Instead we currently use a DIY highlighting solution (see NameSearchHighlighter class). Nevertheless it's probably a good idea
- * to keep the classes that just delegate everything to ES (e.g. this one).
+ * This class serializes to a syntactically valid "highlight" block within an Elasticsearch search request. Note though that we currently
+ * don't use this class. The reason is that what we want to highlight is tucked away within the payload field, which Elasticsearch knows
+ * nothing about (it might even be zipped). Instead we currently use a DIY highlighting solution (see NameSearchHighlighter class).
  */
 public class Highlight {
 

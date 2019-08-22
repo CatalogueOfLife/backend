@@ -11,9 +11,9 @@ import java.util.Map;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 
-import org.col.es.mapping.Mapping;
-import org.col.es.mapping.MappingFactory;
-import org.col.es.mapping.SerializationUtil;
+import org.col.es.ddl.DocumentTypeMapping;
+import org.col.es.ddl.MappingFactory;
+import org.col.es.ddl.SerializationUtil;
 import org.col.es.query.BoolQuery;
 import org.col.es.query.EsSearchRequest;
 import org.col.es.query.Query;
@@ -26,8 +26,8 @@ import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.col.es.mapping.SerializationUtil.pretty;
-import static org.col.es.mapping.SerializationUtil.readIntoMap;
+import static org.col.es.ddl.SerializationUtil.pretty;
+import static org.col.es.ddl.SerializationUtil.readIntoMap;
 
 public class EsUtil {
 
@@ -50,11 +50,9 @@ public class EsUtil {
   @SuppressWarnings("unchecked")
   public static <T> void createIndex(RestClient client, String index, IndexConfig cfg) throws IOException {
 
-    LOG.info("Creating index {}", index);
-
-    // Load global / static config (analyzers, tokenizers, etc.)
+    // Load static config (analyzers, tokenizers, etc.) from es-settings.json
     Map<String, Object> settings = readIntoMap(loadSettings());
-    // Insert configurable / index-specific settings
+    // Insert configurable settings from config.yaml
     Map<String, Object> indexSettings = (Map<String, Object>) settings.get("index");
     indexSettings.put("number_of_shards", cfg.numShards);
     indexSettings.put("number_of_replicas", cfg.numReplicas);
@@ -63,7 +61,7 @@ public class EsUtil {
     Map<String, Object> mappings = new HashMap<>();
     MappingFactory<T> factory = new MappingFactory<>();
     factory.setMapEnumToInt(true);
-    Mapping<T> mapping = factory.getMapping(cfg.modelClass);
+    DocumentTypeMapping mapping = factory.getMapping(cfg.modelClass);
     mappings.put(EsConfig.DEFAULT_TYPE_NAME, mapping);
 
     // Combine into full request
@@ -72,7 +70,7 @@ public class EsUtil {
     indexSpec.put("mappings", mappings);
 
     if (LOG.isTraceEnabled()) {
-      LOG.trace(pretty(indexSpec));
+      LOG.trace("Creating index {}: {}", index, pretty(indexSpec));
     }
 
     Request request = new Request("PUT", index);

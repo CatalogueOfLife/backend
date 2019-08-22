@@ -18,7 +18,7 @@ import org.col.config.NormalizerConfig;
 import org.col.dao.SubjectRematcher;
 import org.col.dao.TaxonDao;
 import org.col.dw.auth.Roles;
-import org.col.es.NameUsageIndexService;
+import org.col.es.name.index.NameUsageIndexService;
 import org.col.img.ImageService;
 import org.col.img.LogoUpdateJob;
 import org.slf4j.Logger;
