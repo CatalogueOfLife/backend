@@ -46,7 +46,7 @@ public class CountryParser extends GbifParserBased<Country, org.gbif.api.vocabul
 
   @Override
   @VisibleForTesting
-  protected Country convertFromGbif(org.gbif.api.vocabulary.Country value) {
+  protected Country convertFromGbif(org.gbif.api.vocabulary.Country value) throws UnparsableException {
     switch (value) {
       case UNKNOWN:
       case USER_DEFINED:
@@ -55,7 +55,12 @@ public class CountryParser extends GbifParserBased<Country, org.gbif.api.vocabul
         if (value.getIso2LetterCode() == null) {
           return null;
         }
-        return VocabularyUtils.convertEnum(Country.class, value);
+        try {
+          return VocabularyUtils.convertEnum(Country.class, value);
+        } catch (IllegalArgumentException e) {
+          // unknown enum value
+          throw new UnparsableException("Failed to convert GBIF Country " + value + " into a CoL+ country enumeration", e);
+        }
     }
   }
 }
