@@ -12,9 +12,10 @@ import static org.col.es.name.NameUsageTransfer.normalizeStrongly;
 import static org.col.es.name.NameUsageTransfer.normalizeWeakly;
 
 /**
- * An object embedded within the main name usage document ({@link NameUsageDocument}) solely aimed at optimizing searchability. The name
- * strings within this class do not contribute to the search response object. They are meant to match search phrases as best and as cheaply
- * as possible. This class also exists to ensure that search phrases are analyzed just like the names coming in from postgres.
+ * An object embedded within the main name usage document ({@link NameUsageDocument}) solely aimed at optimizing
+ * searchability. The name strings within this class do not contribute to the search response object. They are meant to
+ * match search phrases as best and as cheaply as possible. This class also exists to ensure that search phrases are
+ * analyzed just like the names coming in from postgres.
  */
 public class NameStrings {
 
@@ -24,6 +25,7 @@ public class NameStrings {
 
   private String genus;
   private String genusWN;
+  private char genusLetter;
   private String specificEpithet;
   private String specificEpithetSN;
   private String infraspecificEpithet;
@@ -49,6 +51,7 @@ public class NameStrings {
     String s;
     if (name.getGenus() != null) {
       genus = name.getGenus().toLowerCase();
+      genusLetter = genus.charAt(0);
       s = normalizeWeakly(genus);
       if (!s.equals(genus)) {
         genusWN = s;
@@ -79,6 +82,14 @@ public class NameStrings {
 
   public void setGenus(String genus) {
     this.genus = genus;
+  }
+
+  public char getGenusLetter() {
+    return genusLetter;
+  }
+
+  public void setGenusLetter(char genusLetter) {
+    this.genusLetter = genusLetter;
   }
 
   @Analyzers({AUTO_COMPLETE})
@@ -135,50 +146,20 @@ public class NameStrings {
     this.scientificNameWN = scientificNameWN;
   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(
-        genus,
-        genusWN,
-        infraspecificEpithet,
-        infraspecificEpithetSN,
-        scientificNameWN,
-        specificEpithet,
-        specificEpithetSN);
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
-    NameStrings other = (NameStrings) obj;
-    return Objects.equals(genus, other.genus)
-        && Objects.equals(genusWN, other.genusWN)
-        && Objects.equals(infraspecificEpithet, other.infraspecificEpithet)
-        && Objects.equals(infraspecificEpithetSN, other.infraspecificEpithetSN)
-        && Objects.equals(scientificNameWN, other.scientificNameWN)
-        && Objects.equals(specificEpithet, other.specificEpithet)
-        && Objects.equals(specificEpithetSN, other.specificEpithetSN);
-  }
-
   /*
-   * Artificially constructs a name from a search phrase, just so we can be sure that names and search phrases will be preprocessed in
-   * exactly the same way before being matched against each other.
+   * Artificially constructs a name from a search phrase, just so we can be sure that names and search phrases will be
+   * preprocessed in exactly the same way before being matched against each other.
    */
   private static Name createNameFromSearchPhrase(String searchPhrase) {
     Name name = new Name();
-    // Looks odd, but it just means that, if nothing else works, we'll let Elasticsearch match the entire search phrase against the entire
-    // scientific name
+    // Looks odd, but it just means that, if nothing else works, we'll let Elasticsearch match the entire search phrase
+    // against the entire scientific name
     name.setScientificName(searchPhrase);
     String[] terms = tokenize(searchPhrase);
     switch (terms.length) {
       case 1:
-        // Looks odd, but it just means that we are going to match the one and only term in the search phrase against genus, specific
-        // epithet and infraspecific epithet
+        // Looks odd, but it just means that we are going to match the one and only term in the search phrase against genus,
+        // specific epithet and infraspecific epithet
         setGenus(name, terms[0]);
         name.setSpecificEpithet(terms[0]);
         name.setInfraspecificEpithet(terms[0]);
@@ -204,6 +185,37 @@ public class NameStrings {
     } else {
       name.setGenus(term);
     }
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(genus,
+        genusLetter,
+        genusWN,
+        infraspecificEpithet,
+        infraspecificEpithetSN,
+        scientificNameWN,
+        specificEpithet,
+        specificEpithetSN);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    NameStrings other = (NameStrings) obj;
+    return Objects.equals(genus, other.genus)
+        && genusLetter == other.genusLetter
+        && Objects.equals(genusWN, other.genusWN)
+        && Objects.equals(infraspecificEpithet, other.infraspecificEpithet)
+        && Objects.equals(infraspecificEpithetSN, other.infraspecificEpithetSN)
+        && Objects.equals(scientificNameWN, other.scientificNameWN)
+        && Objects.equals(specificEpithet, other.specificEpithet)
+        && Objects.equals(specificEpithetSN, other.specificEpithetSN);
   }
 
 }

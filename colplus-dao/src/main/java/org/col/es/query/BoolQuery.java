@@ -16,6 +16,9 @@ public class BoolQuery extends AbstractQuery {
 
   private final Bool bool;
 
+  @SuppressWarnings("unused")
+  private Float boost;
+
   public BoolQuery() {
     this.bool = new Bool();
   }
@@ -51,5 +54,11 @@ public class BoolQuery extends AbstractQuery {
     bool.should.add(query);
     return this;
   }
+
+  public BoolQuery boost(float f) {
+    this.boost = Float.valueOf(f);
+    return this;
+  }
+
 
 }
