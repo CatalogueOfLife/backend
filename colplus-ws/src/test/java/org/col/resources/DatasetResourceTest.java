@@ -74,10 +74,10 @@ public class DatasetResourceTest extends ResourceTestBase {
   
   @Test
   public void get() {
-    Dataset d = base.path("1203").request().get(Dataset.class);
+    Dataset d = base.path("1008").request().get(Dataset.class);
     assertNotNull(d);
     assertNull(d.getDeleted());
-    assertEquals("ThripsWiki", d.getTitle());
+    assertEquals("The Reptile Database", d.getTitle());
   }
   
   @Test

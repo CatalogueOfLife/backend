@@ -167,7 +167,7 @@ public class NameIndexMapDBTest {
   
   
   static Name name(Integer key, String name, Rank rank, NomCode code) {
-    Name n = NameParser.PARSER.parse(name, rank, IssueContainer.VOID).get().getName();
+    Name n = NameParser.PARSER.parse(name, rank, code, IssueContainer.VOID).get().getName();
     n.setRank(rank);
     n.setCode(code);
     n.setAuthorshipNormalized(Lists.newArrayList("serialisation", "test", "only"));

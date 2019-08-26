@@ -44,6 +44,14 @@ public class SectorSync extends SectorRunnable {
     metrics();
   }
   
+  @Override
+  void finalWork() {
+    try (SqlSession session = factory.openSession(true)) {
+      SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
+      sim.create(state);
+    }
+  }
+
   private void metrics() {
     try (SqlSession session = factory.openSession(true)) {
       SectorImportMapper mapper = session.getMapper(SectorImportMapper.class);
@@ -83,19 +91,22 @@ public class SectorSync extends SectorRunnable {
 
     state.setState( SectorImport.State.DELETING);
     relinkForeignChildren();
-    deleteOld();
-    checkIfCancelled();
-
-    state.setState( SectorImport.State.COPYING);
-    processTree();
-    checkIfCancelled();
+    try {
+      deleteOld();
+      checkIfCancelled();
   
-    state.setState( SectorImport.State.RELINKING);
-    rematchForeignChildren();
-    relinkAttachedSectors();
-  
-    state.setState( SectorImport.State.INDEXING);
-    indexService.indexSector(sector.getKey());
+      state.setState( SectorImport.State.COPYING);
+      processTree();
+      checkIfCancelled();
+      
+    } finally {
+      // run these even if we get errors in the main tree copying
+      state.setState( SectorImport.State.RELINKING);
+      rematchForeignChildren();
+      relinkAttachedSectors();
+      state.setState( SectorImport.State.INDEXING);
+      indexService.indexSector(sector.getKey());
+    }
   
     state.setState( SectorImport.State.FINISHED);
   }
@@ -107,6 +118,10 @@ public class SectorSync extends SectorRunnable {
   private void relinkForeignChildren() {
     final String newParentID = sector.getTarget().getId();
     processForeignChildren((tm, t) -> {
+        // remember original parent
+        Taxon parent = tm.get(catalogueKey, t.getParentId());
+        foreignChildrenParents.put(t.getId(), parent.getName());
+        // update to new parent
         t.setParentId(newParentID);
         tm.update(t);
     });
@@ -121,12 +136,13 @@ public class SectorSync extends SectorRunnable {
       final MatchingDao mdao = new MatchingDao(session);
       
       processForeignChildren((tm, t) -> {
-        List<Taxon> matches = mdao.matchSector(t.getName(), sector.getKey());
+        Name parent = foreignChildrenParents.get(t.getId());
+        List<Taxon> matches = mdao.matchSector(parent, sector.getKey());
         if (matches.isEmpty()) {
-          LOG.warn("{} with parent in sector {} cannot be rematched", t.getName(), sector.getKey());
+          LOG.warn("{} with parent {} in sector {} cannot be rematched", t.getName(), parent, sector.getKey());
         } else {
           if (matches.size() > 1) {
-            LOG.warn("{} with parent in sector {} matches {} times - pick first {}", t.getName(), sector.getKey(), matches.size(), matches.get(0));
+            LOG.warn("{} with parent {} in sector {} matches {} times - pick first {}", t.getName(), parent, sector.getKey(), matches.size(), matches.get(0));
           }
           t.setParentId(matches.get(0).getId());
           tm.update(t);

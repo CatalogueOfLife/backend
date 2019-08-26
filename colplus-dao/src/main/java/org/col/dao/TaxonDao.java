@@ -289,15 +289,15 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
       SectorMapper sm = session.getMapper(SectorMapper.class);
       SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
   
-      // remember sectors and count delte so we can delete them at the end
-      List<Integer> sectorKeys = tm.listSectors(datasetKey, id);
-      LOG.debug("Delete taxon {} and its {} nested sectors from dataset {} by user {}", id, sectorKeys.size(), datasetKey, user);
-
+      // remember sectors and counts so we can delete them at the end
       Int2IntOpenHashMap delta = tm.getCounts(datasetKey, id).getCount();
+      LOG.debug("Delete taxon {} and its {} nested sectors from dataset {} by user {}", id, delta.size(), datasetKey, user);
       List<TaxonCountMap> parents = tm.classificationCounts(datasetKey, id);
 
-      // cascading delete
+      // cascading delete removes descendants and vernacular, distributions, descriptions, media
+      // but NOT names, name_rels or refs
       tm.delete(datasetKey, id);
+      // TODO: remove orphaned names and references
   
       // remove delta from parents
       for (TaxonCountMap tc : parents) {
@@ -306,11 +306,12 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
         }
       }
       
-      for (Integer key : sectorKeys) {
+      for (int key : delta.keySet()) {
         LOG.debug("Delete sector {} and its imports by user {}", key, user);
         sim.delete(key);
         sm.delete(key);
       }
+      session.commit();
     }
     
     //TODO: update ES

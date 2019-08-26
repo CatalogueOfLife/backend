@@ -35,7 +35,7 @@ import static org.col.es.EsConfig.ES_INDEX_NAME_USAGE;
 public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageIndexServiceEs.class);
-
+  private static final int BATCH_SIZE = 4096;
   private final RestClient client;
   private final EsConfig esConfig;
   private final String index;
@@ -63,14 +63,14 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     try (SqlSession session = factory.openSession()) {
       createOrEmptyIndex(datasetKey);
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
-      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
+      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)) {
         LOG.debug("Indexing usages from dataset {}", datasetKey);
         mapper.processDatasetUsages(datasetKey, null, handler);
       }
       EsUtil.refreshIndex(client, index);
       tCount = indexer.documentsIndexed();
       indexer.reset();
-      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
+      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)) {
         LOG.debug("Indexing bare names from dataset {}", datasetKey);
         mapper.processDatasetBareNames(datasetKey, null, handler);
       }
@@ -89,14 +89,14 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     try (SqlSession session = factory.openSession()) {
       Integer datasetKey = clearSector(session, sectorKey);
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
-      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
+      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)) {
         LOG.debug("Indexing usages from sector {}", sectorKey);
         mapper.processDatasetUsages(datasetKey, sectorKey, handler);
       }
       EsUtil.refreshIndex(client, index);
       tCount = indexer.documentsIndexed();
       indexer.reset();
-      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
+      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)) {
         LOG.debug("Indexing bare names from sector {}", sectorKey);
         mapper.processDatasetBareNames(datasetKey, sectorKey, handler);
       }
@@ -173,14 +173,14 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
       for (Integer datasetKey : keys) {
         int tc, bc;
-        try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
+        try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)) {
           LOG.debug("Indexing taxa for dataset {}", datasetKey);
           mapper.processDatasetUsages(datasetKey, null, handler);
         }
         EsUtil.refreshIndex(client, index);
         tc = indexer.documentsIndexed();
         indexer.reset();
-        try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, 4096)) {
+        try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)) {
           LOG.debug("Indexing bare names for dataset {}", datasetKey);
           mapper.processDatasetBareNames(datasetKey, null, handler);
         }

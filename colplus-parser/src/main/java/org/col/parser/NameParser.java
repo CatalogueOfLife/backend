@@ -52,8 +52,12 @@ public class NameParser implements Parser<NameAccordingTo> {
     timer = registry.timer("org.col.parser.name");
   }
   
+  /**
+   * @deprecated use parse(name, rank, code, issues) instead!
+   */
+  @Deprecated
   public Optional<NameAccordingTo> parse(String name) {
-    return parse(name, Rank.UNRANKED, IssueContainer.VOID);
+    return parse(name, Rank.UNRANKED, null, IssueContainer.VOID);
   }
   
   /**
@@ -62,7 +66,7 @@ public class NameParser implements Parser<NameAccordingTo> {
   public Optional<ParsedName> parseAuthorship(String authorship) {
     if (Strings.isNullOrEmpty(authorship)) return Optional.of(new ParsedName());
     try {
-      ParsedName pn = PARSER_INTERNAL.parse("Abies alba " + authorship, Rank.SPECIES);
+      ParsedName pn = PARSER_INTERNAL.parse("Abies alba " + authorship, Rank.SPECIES, null);
       if (pn.getState() == ParsedName.State.COMPLETE) {
         return Optional.of(pn);
       }
@@ -108,10 +112,11 @@ public class NameParser implements Parser<NameAccordingTo> {
    * Fully parses a name using #parse(String, Rank) but converts names that throw a UnparsableException
    * into ParsedName objects with the scientific name, rank and name type given.
    */
-  public Optional<NameAccordingTo> parse(String name, Rank rank, IssueContainer issues) {
+  public Optional<NameAccordingTo> parse(String name, Rank rank, NomCode code, IssueContainer issues) {
     Name n = new Name();
     n.setScientificName(name);
     n.setRank(rank);
+    n.setCode(code);
     return parse(n, issues);
   }
 
@@ -129,7 +134,7 @@ public class NameParser implements Parser<NameAccordingTo> {
     NameAccordingTo nat;
     Timer.Context ctx = timer == null ? null : timer.time();
     try {
-      nat = fromParsedName(n, PARSER_INTERNAL.parse(n.getScientificName(), n.getRank()), issues);
+      nat = fromParsedName(n, PARSER_INTERNAL.parse(n.getScientificName(), n.getRank(), n.getCode()), issues);
       nat.getName().updateNameCache();
       
     } catch (UnparsableNameException e) {
@@ -156,7 +161,7 @@ public class NameParser implements Parser<NameAccordingTo> {
       return Optional.of(NameType.NO_NAME);
     }
     try {
-      ParsedName pn = PARSER_INTERNAL.parse(sciname, name.getRank());
+      ParsedName pn = PARSER_INTERNAL.parse(sciname, name.getRank(), name.getCode());
       return Optional.of(ObjectUtils.coalesce(pn.getType(), NameType.SCIENTIFIC));
     
     } catch (UnparsableNameException e) {

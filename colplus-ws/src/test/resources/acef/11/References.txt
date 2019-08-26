@@ -1,0 +1,3 @@
+ReferenceID;Authors;Year;Title;Source;Details
+Fabricius1775;Fabricius, J. C.;1775;Systema entomologiae, sistens insectorum classes, ordines, genera, species, adiectis, synonymis, locis descriptionibus observationibus. Flensburg and Lipsiae, 832 pp.;;(Araneae, pp. 431-441)
+Walckenaer1805;Walckenaer, CA;1805;Table of the aranid or essential characters of the tribes, genera, families and races contained in the genus Aranea of ​​Linnaeus, with the designation of the species included in each of these divisions . Paris, 88 pp;;

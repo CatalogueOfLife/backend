@@ -3,6 +3,7 @@ package org.col.db.mapper;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
@@ -11,6 +12,7 @@ import org.col.api.model.Page;
 import org.col.api.model.Reference;
 import org.col.api.search.ReferenceSearchRequest;
 import org.col.api.vocab.Datasets;
+import org.col.api.vocab.Issue;
 import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.*;
@@ -116,7 +118,10 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
     out = mapper().search(Datasets.DRAFT_COL, req, new Page());
     assertEquals(1, out.size());
     assertEquals(r2, out.get(0).getId());
-
+    
+    req.setIssues(Lists.newArrayList(Issue.REFTYPE_INVALID, Issue.UNMATCHED_REFERENCE_BRACKETS));
+    out = mapper().search(Datasets.DRAFT_COL, req, new Page());
+    assertEquals(0, out.size());
   }
 
   @Test

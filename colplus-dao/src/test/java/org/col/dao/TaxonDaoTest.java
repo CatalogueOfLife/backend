@@ -17,6 +17,7 @@ import org.col.common.tax.AuthorshipNormalizer;
 import org.col.db.MybatisTestUtils;
 import org.col.db.PgSetupRule;
 import org.col.db.mapper.SynonymMapper;
+import org.col.db.mapper.TestDataRule;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
@@ -264,5 +265,17 @@ public class TaxonDaoTest extends DaoTestBase {
     assertEquals("t3", t5.getParentId());
     t5.setParentId("t4");
     tDao.update(t5, USER_EDITOR.getKey());
+  }
+  
+  @Test
+  public void deleteRecursively() throws Exception {
+    final int dkey = TestDataRule.TestData.TREE.key;
+    MybatisTestUtils.populateTestData(TestDataRule.TestData.TREE);
+
+    assertNotNull(tDao.get(dkey, "t10"));
+    tDao.deleteRecursively(dkey, "t4", USER_EDITOR);
+  
+    assertNull(tDao.get(dkey, "t4"));
+    assertNull(tDao.get(dkey, "t10"));
   }
 }

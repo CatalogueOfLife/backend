@@ -22,6 +22,9 @@ public class LanguageParserTest extends ParserTestBase<String> {
     assertParse("deu", "deutsch");
     assertParse("deu", "GER");
     assertParse("eng", "en");
+    assertParse("ceb", "visayan");
+    assertParse("ceb", "Ormocanon");
+    assertParse("ceb", "Cebuano");
   
     for (String x : new String[]{"Limburgan", "Limburger", "Limburgish", "Lim", "li"}) {
       assertParse("lim", x);

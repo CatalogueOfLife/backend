@@ -21,6 +21,7 @@ public class CountryParserTest extends ParserTestBase<Country> {
     assertParse(Country.GERMANY, "deutschland");
     assertParse(Country.GERMANY, "GER");
     assertParse(Country.GERMANY, "276");
+    assertParse(Country.KOSOVO, "Kosovo");
 
     // user defined codes
     assertParse(Country.INTERNATIONAL_WATERS, "xz");
@@ -31,6 +32,13 @@ public class CountryParserTest extends ParserTestBase<Country> {
     assertUnparsable("AA");
     assertUnparsable("XAZ");
     assertUnparsable("unknown");
+  }
+  
+  @Test
+  public void testGbifEnumCoverage() throws Exception {
+    for (org.gbif.api.vocabulary.Country c : org.gbif.api.vocabulary.Country.values()) {
+      Country c2 = ((CountryParser) parser).convertFromGbif(c);
+    }
   }
 
   @Override

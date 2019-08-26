@@ -34,8 +34,10 @@ abstract class SectorRunnable implements Runnable {
   final NameUsageIndexService indexService;
   // maps keyed on taxon ids from this sector
   final Map<String, EditorialDecision> decisions = new HashMap<>();
-  List<Taxon> foreignChildren;
   List<Sector> childSectors;
+  List<Taxon> foreignChildren;
+  // map with foreign child id to original parent name
+  Map<String, Name> foreignChildrenParents = new HashMap<>();
   final Consumer<SectorRunnable> successCallback;
   final BiConsumer<SectorRunnable, Exception> errorCallback;
   final LocalDateTime created = LocalDateTime.now();
@@ -98,26 +100,24 @@ abstract class SectorRunnable implements Runnable {
       
     } catch (InterruptedException e) {
       LOG.warn("Interrupted {}", this, e);
-      state.setState(SectorImport.State.CANCELED);
       errorCallback.accept(this, e);
+      state.setState(SectorImport.State.CANCELED);
       
     } catch (Exception e) {
       LOG.error("Error running {}", this, e);
-      state.setState(SectorImport.State.FAILED);
       state.setError(ExceptionUtils.getRootCauseMessage(e));
       errorCallback.accept(this, e);
+      state.setState(SectorImport.State.FAILED);
       
     } finally {
       LOG.info("Completed {}", this);
       state.setFinished(LocalDateTime.now());
-      try (SqlSession session = factory.openSession(true)) {
-        SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
-        sim.create(state);
-      }
+      finalWork();
       LoggingUtils.removeSectorMDC();
     }
   }
   
+  abstract void finalWork();
   
   void init() throws Exception {
     state.setState( SectorImport.State.PREPARING);

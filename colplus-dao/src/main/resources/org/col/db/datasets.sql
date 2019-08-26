@@ -44,8 +44,8 @@ FROM (SELECT unnest(array[
 138,
 139,
 14,
---140,
---141,
+140,
+141,
 142,
 143,
 144,
@@ -61,7 +61,7 @@ FROM (SELECT unnest(array[
 158,
 161,
 162,
---163,
+163,
 164,
 166,
 167,
@@ -101,16 +101,16 @@ FROM (SELECT unnest(array[
 20,
 200,
 201,
---202,
---203,
---204,
+202,
+203,
+204,
 21,
 22,
 23,
 24,
 25,
 26,
---27,
+27,
 28,
 29,
 30,
@@ -137,7 +137,7 @@ FROM (SELECT unnest(array[
 52,
 53,
 54,
---55,
+55,
 57,
 58,
 59,
@@ -152,7 +152,7 @@ FROM (SELECT unnest(array[
 69,
 70,
 73,
---74,
+74,
 76,
 78,
 79,
@@ -178,18 +178,20 @@ FROM (SELECT unnest(array[
 99
 ]) AS id) AS x;
 
+-- code:  http://api.col.plus/vocab/nomCode
+--          0=bacterial, 1=botanical, 2=cultivars, 3=virus, 4=zoological
 
 UPDATE dataset SET code=1 WHERE key IN (
-	1015,1025,1036,1038,1040,1045,1048,1066,1097,1098
+	1015,1025,1036,1038,1040,1041,1045,1048,1066,1074,1097,1098,1163
 );
 UPDATE dataset SET code=3 WHERE key IN (
 	1014
 );
 UPDATE dataset SET code=4 WHERE key IN (
-	1005,1006,1008,1009,1010,1011,1018,1020,1021,1022,1023,1026,1029,1030,1031,1032,1034,1037,1039,1042,1044,
-	1046,1047,1049,1050,1051,1052,1054,1057,1058,1059,1061,1062,1063,1065,1067,1068,1069,1070,1076,1078,
+	1005,1006,1008,1009,1010,1011,1018,1020,1021,1022,1023,1026,1027,1029,1030,1031,1032,1034,1037,1039,1042,1044,
+	1046,1047,1049,1050,1051,1052,1054,1055,1057,1058,1059,1061,1062,1063,1065,1067,1068,1069,1070,1076,1078,
 	1080,1081,1082,1085,1086,1087,1088,1089,1090,1091,1092,1093,1094,1095,1096,1099,1100,1103,1104,1105,1106,
-	1107,1108,1109,1110,1112,1118,1119,1120,1122,1130,1133,1134
+	1107,1108,1109,1110,1112,1118,1119,1120,1122,1130,1133,1134,1202,1203,1204
 );
 
 -- removed, old sources which we mark as deleted
@@ -226,6 +228,7 @@ UPDATE dataset SET alias='Phyllachorales', title='Phyllachorales' WHERE key=1023
 UPDATE dataset SET alias='WCSP', title='World Checklist of Selected Plant Families' WHERE key=1024;
 UPDATE dataset SET alias='Rhytismatales', title='Rhytismatales' WHERE key=1025;
 UPDATE dataset SET alias='ScaleNet', title='Systematic Database of the Scale Insects of the World' WHERE key=1026;
+UPDATE dataset SET alias='Scarabs', title='World Scarabaeidae Database' WHERE key=1027;
 UPDATE dataset SET alias='Species Fungorum', title='Species Fungorum' WHERE key=1028;
 UPDATE dataset SET alias='WSC', title='World Spider Catalog' WHERE key=1029;
 UPDATE dataset SET alias='TicksBase', title='TicksBase' WHERE key=1030;
@@ -250,6 +253,7 @@ UPDATE dataset SET alias='SF Cockroach', title='Cockroach Species File' WHERE ke
 UPDATE dataset SET alias='COOL', title='Cercopoidea Organised On Line' WHERE key=1052;
 UPDATE dataset SET alias='Nomen.eumycetozoa.com', title='An online nomenclatural information system of Eumycetozoa' WHERE key=1053;
 UPDATE dataset SET alias='Psyllist', title='Psylloidea database' WHERE key=1054;
+UPDATE dataset SET alias='LDL Neuropterida', title='LDL Neuropterida Species of the World' WHERE key=1055;
 UPDATE dataset SET alias='Brachiopoda Database', title='Brachiopoda Database' WHERE key=1057;
 UPDATE dataset SET alias='WoRMS Cumacea', title='World Cumacea Database' WHERE key=1058;
 UPDATE dataset SET alias='WoRMS Ophiuroidea', title='World Ophiuroidea database' WHERE key=1059;
@@ -263,6 +267,7 @@ UPDATE dataset SET alias='Taxapad Ichneumonoidea', title='Taxapad Ichneumonoidea
 UPDATE dataset SET alias='RhodacaridBase', title='Mites GSDs: RhodacaridBase' WHERE key=1069;
 UPDATE dataset SET alias='PhytoseiidBase', title='Mites GSDs: PhytoseiidBase' WHERE key=1070;
 UPDATE dataset SET alias='Brassicaceae', title='Brassicaceae species checklist and database' WHERE key=1073;
+UPDATE dataset SET alias='ELPT', title='Early Land Plants Today ' WHERE key=1074;
 UPDATE dataset SET alias='NZIB', title='New Zealand Inventory of Biodiversity' WHERE key=1075;
 UPDATE dataset SET alias='MBB', title='Moss Bug Base' WHERE key=1076;
 UPDATE dataset SET alias='TenuipalpidBase', title='Mites GSDs: TenuipalpidBase' WHERE key=1078;
@@ -317,7 +322,9 @@ UPDATE dataset SET alias='SF Psocodea', title='Psocodea Species File' WHERE key=
 UPDATE dataset SET alias='SF Coreoidea', title='Coreoidea Species File' WHERE key=1134;
 UPDATE dataset SET alias='FADA Cladocera', title='World checklist of freshwater Cladocera species' WHERE key=1138;
 UPDATE dataset SET alias='FADA Halacaridae', title='World checklist of freshwater Halacaridae species' WHERE key=1139;
-UPDATE dataset SET alias='The White-Files', title='Taxonomic checklist of the world‚Äôs whiteflies (Insecta: Hemiptera: Aleyrodidae)' WHERE key=1142;
+UPDATE dataset SET alias='World Ferns', title='Checklist of Ferns and Lycophytes of the World' WHERE key=1140;
+UPDATE dataset SET alias='World Plants', title='Synonymic Checklists of the Vascular Plants of the World' WHERE key=1141;
+UPDATE dataset SET alias='The White-Files', title='Taxonomic checklist of the world''s whiteflies (Insecta: Hemiptera: Aleyrodidae)' WHERE key=1142;
 UPDATE dataset SET alias='Tessaratomidae Database', title=' Illustrated catalog of Tessaratomidae' WHERE key=1143;
 UPDATE dataset SET alias='Lace Bugs Database', title='Lace Bugs Database (Hemiptera: Tingidae)' WHERE key=1144;
 UPDATE dataset SET alias='CarabCat', title='Global database of ground beetles' WHERE key=1146;
@@ -331,7 +338,7 @@ UPDATE dataset SET alias='WoRMS Foraminifera', title='World Foraminifera Databas
 UPDATE dataset SET alias='SF Dermaptera', title='Dermaptera Species File' WHERE key=1158;
 UPDATE dataset SET alias='Brentids', title='Brentidae of the World' WHERE key=1161;
 UPDATE dataset SET alias='WWW', title='World WideW attle' WHERE key=1162;
-UPDATE dataset SET alias='The World List of Cycads', title='The World List of Cycads, online edition' WHERE key=1163;
+UPDATE dataset SET alias='The World List of Cycads', title='The World List of Cycads' WHERE key=1163;
 UPDATE dataset SET alias='The Scorpion Files', title='The Scorpion Files' WHERE key=1164;
 UPDATE dataset SET alias='3i Curculio', title='3i taxonomic databases, Curculionidae, subfamily Entiminae' WHERE key=1166;
 UPDATE dataset SET alias='SF Zoraptera', title='Zoraptera Species File' WHERE key=1167;
@@ -368,6 +375,9 @@ UPDATE dataset SET alias='SF Isoptera', title='Isoptera Species File' WHERE key=
 UPDATE dataset SET alias='Pterophoroidea', title='Catalogue of the Pterophoroidea of the World' WHERE key=1199;
 UPDATE dataset SET alias='WoRMS MilliBase', title='MilliBase' WHERE key=1200;
 UPDATE dataset SET alias='Ginkgoales', title='Fossil Ginkgoales' WHERE key=1201;
+UPDATE dataset SET alias='WoRMS Amphipoda', title='World Amphipoda Database' WHERE key=1202;
+UPDATE dataset SET alias='ThripsWiki', title='ThripsWiki - providing information on the World''s thrips' WHERE key=1203;
+UPDATE dataset SET alias='StaphBase', title='Staphyliniformia world catalog database' WHERE key=1204;
 UPDATE dataset SET alias='CoL Management Classification', title='A Higher Level Classification of All Living Organisms. In: PLoS ONE 10(4): e0119248. doi:10.1371/jou' WHERE key=1500;
 UPDATE dataset SET alias='IRMNG', title='Interim Register of Marine and Nonmarine Genera' WHERE key=1501;
 UPDATE dataset SET alias='Animal biodiversity', title='An Outline of Higher-level Classification and Survey of Taxonomic Richness (Addenda 2013)1' WHERE key=1502;
@@ -390,19 +400,19 @@ UPDATE dataset SET alias='Animal biodiversity', title='An Outline of Higher-leve
 
 -- use keys from range 1000-1500 for CoL GSD IDs+1000
 INSERT INTO dataset (key, origin, type, code, title, import_frequency, created_by, modified_by, data_format, data_access) VALUES
-('1027', 0, 1, 4, 'Scarabs',           1, 0, 0, 1, 'https://github.com/Sp2000/data-scarabs/archive/master.zip'),
-('1055', 0, 1, 4, 'LDL Neuropterida',  1, 0, 0, 1, 'https://github.com/Sp2000/data-neuropterida/archive/master.zip'),
-('1074', 0, 1, 1, 'ELPT',              1, 0, 0, 1, 'https://github.com/Sp2000/data-elpt/archive/master.zip'),
-('1140', 0, 0, 1, 'World Ferns',       1, 0, 0, 1, 'https://github.com/Sp2000/data-world-ferns/archive/master.zip'),
-('1141', 0, 0, 1, 'World Plants',      1, 0, 0, 1, 'https://github.com/Sp2000/data-world-plants/archive/master.zip'),
-('1163', 0, 1, 1, 'Cycads',            1, 0, 0, 3, 'https://github.com/gdower/data-cycads/archive/master.zip'),
-
-('1202', 0, 1, 4, 'WoRMS Amphipoda',   1, 0, 0, 1, 'https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/202.tar.gz'),
-('1203', 0, 1, 4, 'ThripsWiki',        1, 0, 0, 1, 'https://github.com/Sp2000/data-thrips/archive/master.zip'),
-('1204', 0, 1, 4, 'StaphBase',         1, 0, 0, 3, 'https://github.com/Sp2000/data-staphbase/archive/master.zip'),
+--('1027', 0, 1, 4, 'Scarabs',           1, 0, 0, 1, 'https://github.com/Sp2000/data-scarabs/archive/master.zip'),
+--('1055', 0, 1, 4, 'LDL Neuropterida',  1, 0, 0, 1, 'https://github.com/Sp2000/data-neuropterida/archive/master.zip'),
+--('1074', 0, 1, 1, 'ELPT',              1, 0, 0, 1, 'https://github.com/Sp2000/data-elpt/archive/master.zip'),
+--('1140', 0, 0, 1, 'World Ferns',       1, 0, 0, 1, 'https://github.com/Sp2000/data-world-ferns/archive/master.zip'),
+--('1141', 0, 0, 1, 'World Plants',      1, 0, 0, 1, 'https://github.com/Sp2000/data-world-plants/archive/master.zip'),
+--('1163', 0, 1, 1, 'Cycads',            1, 0, 0, 3, 'https://github.com/gdower/data-cycads/archive/master.zip'),
+--
+--('1202', 0, 1, 4, 'WoRMS Amphipoda',   1, 0, 0, 1, 'https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/202.tar.gz'),
+--('1203', 0, 1, 4, 'ThripsWiki',        1, 0, 0, 1, 'https://github.com/Sp2000/data-thrips/archive/master.zip'),
+--('1204', 0, 1, 4, 'StaphBase',         1, 0, 0, 3, 'https://github.com/Sp2000/data-staphbase/archive/master.zip'),
 ('1206', 0, 1, 4, 'Sepidiini',         1, 0, 0, 1, 'https://github.com/gdower/data-sepidiini/archive/master.zip');
 
-UPDATE dataset set alias=title WHERE key IN (1027,1055,1074,1140,1141,1163,1202,1203,1204,1206,1600,1601,1602,1700);
+UPDATE dataset set alias=title WHERE key < 2000 and alias IS NULL;
 
 INSERT INTO dataset (key, origin, type, code, title, alias, import_frequency, created_by, modified_by, data_format, data_access)
 VALUES ('1000', 0, 1, null, 'Col Hierarchy', 'ColH', 1, 0, 0, 3, 'https://github.com/Sp2000/col-hierarchy/archive/master.zip');

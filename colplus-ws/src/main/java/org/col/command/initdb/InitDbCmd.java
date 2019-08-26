@@ -19,6 +19,7 @@ import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.WsServerConfig;
+import org.col.api.model.Sector;
 import org.col.api.vocab.*;
 import org.col.common.io.PathUtils;
 import org.col.common.tax.AuthorshipNormalizer;
@@ -170,6 +171,7 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
     // Use sector exports from Global Assembly:
     // https://github.com/Sp2000/colplus-repo#sector-exports
     PgCopyUtils.copy(pgc, "sector", "/org/col/db/draft/sector.csv", ImmutableMap.<String, Object>builder()
+        .put("mode", Sector.Mode.ATTACH)
         .put("created_by", Users.DB_INIT)
         .put("modified_by", Users.DB_INIT)
         .build());

@@ -48,7 +48,7 @@ public class MatchingResource {
   }
   
   static Name name(String name, Rank rank, NomCode code) {
-    Optional<NameAccordingTo> opt = NameParser.PARSER.parse(name, rank, IssueContainer.VOID);
+    Optional<NameAccordingTo> opt = NameParser.PARSER.parse(name, rank, code, IssueContainer.VOID);
     if (opt.isPresent()) {
       Name n = opt.get().getName();
       // use parser determined code and rank in case nothing was given explicitly

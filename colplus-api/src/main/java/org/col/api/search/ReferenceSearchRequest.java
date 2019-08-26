@@ -1,11 +1,13 @@
 package org.col.api.search;
 
+import java.util.List;
 import java.util.Objects;
 import javax.ws.rs.QueryParam;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.StringUtils;
+import org.col.api.vocab.Issue;
 
 public class ReferenceSearchRequest {
   
@@ -23,6 +25,9 @@ public class ReferenceSearchRequest {
   
   @QueryParam("sectorKey")
   private String sectorKey ;
+  
+  @QueryParam("issue")
+  private List<Issue> issues;
   
   @QueryParam("sortBy")
   private SortBy sortBy;
@@ -64,6 +69,14 @@ public class ReferenceSearchRequest {
     this.sectorKey = sectorKey;
   }
   
+  public List<Issue> getIssues() {
+    return issues;
+  }
+  
+  public void setIssues(List<Issue> issues) {
+    this.issues = issues;
+  }
+  
   @JsonIgnore
   public Integer getSectorKeyInt() {
     try {
@@ -94,11 +107,12 @@ public class ReferenceSearchRequest {
     return Objects.equals(q, that.q) &&
         Objects.equals(year, that.year) &&
         Objects.equals(sectorKey, that.sectorKey) &&
+        Objects.equals(issues, that.issues) &&
         sortBy == that.sortBy;
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(q, year, sectorKey, sortBy);
+    return Objects.hash(q, year, sectorKey, issues, sortBy);
   }
 }
