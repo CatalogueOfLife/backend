@@ -1,7 +1,5 @@
 package org.col.es.name.suggest.translate;
 
-import org.apache.commons.lang3.StringUtils;
-import org.col.api.model.Name;
 import org.col.api.search.NameSuggestRequest;
 import org.col.es.name.NameStrings;
 import org.col.es.query.AutoCompleteQuery;
@@ -9,11 +7,15 @@ import org.col.es.query.BoolQuery;
 import org.col.es.query.DisMaxQuery;
 import org.col.es.query.PrefixQuery;
 import org.col.es.query.Query;
-import static org.col.es.name.NameStrings.*;
+
+import static org.col.es.name.NameStrings.tokenize;
 
 class QTranslator {
 
   private static int MAX_NGRAM_SIZE = 10; // see es-settings.json
+
+  private static final int BASE_BOOST = 50;
+  private static final int STRONG_BOOST = 100;
 
   private final NameSuggestRequest request;
   private final NameStrings strings;
@@ -24,18 +26,16 @@ class QTranslator {
   }
 
   Query translate() {
-    // if(request.isSimple()) {
-    // if(request.isVernaculars()) {
-    // return new BoolQuery()
-    // .should(getScientificNameQuery())
-    // .should(createQuery("vernacularNames",))
-    // }
-    // }
-    return null;
+    if (request.isVernaculars()) {
+      return new BoolQuery()
+          .should(getScientificNameQuery())
+          .should(compare("vernacularNames", request.getQ().trim(), BASE_BOOST));
+    }
+    return getScientificNameQuery();
   }
 
   private Query getScientificNameQuery() {
-    Query simpleQuery = compare("nameStrings.scientificNameWN", strings.getScientificNameWN(), 1);
+    Query simpleQuery = compare("nameStrings.scientificNameWN", strings.getScientificNameWN(), BASE_BOOST);
     if (request.isSimple()) {
       return simpleQuery;
     }
@@ -43,9 +43,9 @@ class QTranslator {
     if (advancedQuery == null) {
       return simpleQuery;
     }
-    // Even when using the "advanced" query mechanism, we still combine it with the simple query mechanism. The simple query is likely to
-    // yield more results, and also more false positives, so we give the advanced query mechanism a significant boost compare to the simple
-    // query mechanism.
+    // Even when using the "advanced" query mechanism, we still combine it with the simple query mechanism. The simple query
+    // is likely to yield more results, but also more false positives, so we give the advanced query mechanism a strong
+    // boost compared to the simple query mechanism.
     return new DisMaxQuery().subquery(advancedQuery).subquery(simpleQuery);
   }
 
@@ -73,30 +73,24 @@ class QTranslator {
   }
 
   private Query getGenusQuery() {
-    if (strings.getGenusWN() == null) {
-      return compare("nameStrings.genus", strings.getGenus(), 50);
+    if (strings.getGenusWN() == null) { // normalized version does not differ from the original string
+      return compare("nameStrings.genus", strings.getGenus(), STRONG_BOOST);
     }
-    return new DisMaxQuery()
-        .subquery(compare("nameStrings.genus", strings.getGenus(), 50))
-        .subquery(compare("nameStrings.genusWN", strings.getGenusWN(), 40));
+    return compare("nameStrings.genusWN", strings.getGenusWN(), STRONG_BOOST);
   }
 
   private Query getSpecificEpithetQuery() {
     if (strings.getSpecificEpithetSN() == null) {
-      return compare("nameStrings.specificEpithet", strings.getSpecificEpithet(), 50);
+      return compare("nameStrings.specificEpithet", strings.getSpecificEpithet(), STRONG_BOOST);
     }
-    return new DisMaxQuery()
-        .subquery(compare("nameStrings.specificEpithet", strings.getSpecificEpithet(), 50))
-        .subquery(compare("nameStrings.specificEpithetSN", strings.getSpecificEpithetSN(), 40));
+    return compare("nameStrings.specificEpithetSN", strings.getSpecificEpithetSN(), STRONG_BOOST);
   }
 
   private Query getInfraspecificEpithetQuery() {
     if (strings.getInfraspecificEpithetSN() == null) {
       return compare("nameStrings.infraspecificEpithet", strings.getInfraspecificEpithet(), 50);
     }
-    return new DisMaxQuery()
-        .subquery(compare("nameStrings.infraspecificEpithet", strings.getInfraspecificEpithet(), 50))
-        .subquery(compare("nameStrings.infraspecificEpithetSN", strings.getInfraspecificEpithetSN(), 40));
+    return compare("nameStrings.infraspecificEpithetSN", strings.getInfraspecificEpithetSN(), 40);
   }
 
   private static Query compare(String field, String value, float boost) {
