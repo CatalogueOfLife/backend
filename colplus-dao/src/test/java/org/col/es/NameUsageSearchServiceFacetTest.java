@@ -28,12 +28,14 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.col.es.EsUtil.insert;
 import static org.col.es.EsUtil.refreshIndex;
 import static org.junit.Assert.assertEquals;
 
+@Ignore
 public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
   private static final String indexName = "name_usage_test";

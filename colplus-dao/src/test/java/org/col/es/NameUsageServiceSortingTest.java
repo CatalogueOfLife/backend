@@ -24,12 +24,14 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.col.es.EsUtil.insert;
 import static org.col.es.EsUtil.refreshIndex;
 import static org.junit.Assert.assertEquals;
 
+@Ignore
 public class NameUsageServiceSortingTest extends EsReadTestBase {
 
   private static RestClient client;

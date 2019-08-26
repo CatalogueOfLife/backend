@@ -14,6 +14,7 @@ import org.col.api.search.NameSearchRequest.SortBy;
 import org.col.api.search.NameSearchResponse;
 import org.col.api.search.NameUsageWrapper;
 import org.elasticsearch.client.RestClient;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.gbif.nameparser.api.Rank.FAMILY;
@@ -22,6 +23,7 @@ import static org.gbif.nameparser.api.Rank.ORDER;
 import static org.gbif.nameparser.api.Rank.SPECIES;
 import static org.junit.Assert.assertEquals;
 
+@Ignore
 public class ClassificationUpdaterTest extends EsReadTestBase {
 
   private static final String INDEX_NAME = "name_usage_test";
