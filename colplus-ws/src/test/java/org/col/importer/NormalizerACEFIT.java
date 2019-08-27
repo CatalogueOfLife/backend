@@ -1,6 +1,7 @@
 package org.col.importer;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
@@ -355,20 +356,34 @@ public class NormalizerACEFIT extends NormalizerITBase {
   @Test
   public void ambiguous() throws Exception {
     normalize(19);
+    debug();
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t = usageByID("S-1025");
-      assertEquals("Cassia laevigata", t.usage.getName().getScientificName());
-      assertEquals("Willd.", t.usage.getName().getAuthorship());
-      assertEquals(Rank.SPECIES, t.usage.getName().getRank());
-      assertEquals(TaxonomicStatus.AMBIGUOUS_SYNONYM, t.usage.getStatus());
-  
-      t = usageByID("S-55211");
-      assertEquals("Hedysarum microphyllum", t.usage.getName().getScientificName());
-      assertNull(t.usage.getName().getAuthorship());
-      assertEquals("sensu Turcz., p.p.", t.usage.getAccordingTo());
-      assertEquals(Rank.SPECIES, t.usage.getName().getRank());
-      assertEquals(TaxonomicStatus.MISAPPLIED, t.usage.getStatus());
+      NeoUsage syn = usageByID("S-1025");
+      assertEquals("Cassia laevigata", syn.usage.getName().getScientificName());
+      assertEquals("Willd.", syn.usage.getName().getAuthorship());
+      assertEquals(Rank.SPECIES, syn.usage.getName().getRank());
+      assertEquals(TaxonomicStatus.AMBIGUOUS_SYNONYM, syn.usage.getStatus());
+      assertProParte(syn, "Senna floribunda", "Senna septemtrionalis");
+      
+      syn = usageByID("S-55211");
+      assertEquals("Hedysarum microphyllum", syn.usage.getName().getScientificName());
+      assertNull(syn.usage.getName().getAuthorship());
+      assertEquals("sensu Turcz., p.p.", syn.usage.getAccordingTo());
+      assertEquals(Rank.SPECIES, syn.usage.getName().getRank());
+      assertEquals(TaxonomicStatus.MISAPPLIED, syn.usage.getStatus());
+      assertProParte(syn, "Hedysarum truncatum", "Hedysarum turczaninovii");
     }
+  }
+  
+  private void assertProParte(NeoUsage syn, String... acceptedNames) {
+    Set<String> expected = Sets.newHashSet(acceptedNames);
+    List<RankedUsage> accepted = store.accepted(syn.node);
+    assertEquals(acceptedNames.length, accepted.size());
+    for (RankedUsage a : accepted) {
+      assertFalse(a.isSynonym());
+      expected.remove(a.name);
+    }
+    assertTrue(expected.isEmpty());
   }
   
   void assertPlaceholderInParents(String id) {

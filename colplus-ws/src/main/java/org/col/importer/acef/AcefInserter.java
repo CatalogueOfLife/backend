@@ -116,7 +116,7 @@ public class AcefInserter extends NeoInserter {
         // never been here before, so we need to also load the first, previous acceptedID from verbatim
         v = store.getVerbatim(pre.usage.getVerbatimKey());
         accIds.add(v.getRaw(AcefTerm.AcceptedTaxonID));
-        proParteAccIds.put(aID, accIds);
+        proParteAccIds.put(u.getId(), accIds);
       }
       if (accIds.contains(aID)) {
         LOG.debug("Duplicate synonym with the same acceptedID found. Ignore");
