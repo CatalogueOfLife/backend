@@ -609,10 +609,12 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
   
   @JsonIgnore
   public boolean isIndetermined() {
-    return rank.isInfragenericStrictly() && infragenericEpithet == null && specificEpithet == null
+    return isParsed() && (
+        rank.isInfragenericStrictly() && infragenericEpithet == null && specificEpithet == null
         || rank.isSpeciesOrBelow() && specificEpithet == null
         || rank.isCultivarRank() && cultivarEpithet == null
-        || rank.isInfraspecific() && !rank.isCultivarRank() && infraspecificEpithet == null;
+        || rank.isInfraspecific() && !rank.isCultivarRank() && infraspecificEpithet == null
+    );
   }
   
   /**

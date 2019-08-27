@@ -251,7 +251,7 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
     if (n.getCultivarEpithet() != null || n.getCode() == NomCode.CULTIVARS || n.getRank().isCultivarRank()) {
       return true;
     }
-    if (n.isIndetermined()) {
+    if (n.getType().isParsable() && n.isIndetermined()) {
       return true;
     }
     return false;

@@ -50,7 +50,9 @@ public class SectorSyncIT {
         DataFormat.COLDP, 0,
       NomCode.ZOOLOGICAL,
         DataFormat.ACEF,  5, 6, 11,
-        DataFormat.COLDP, 2
+        DataFormat.COLDP, 2,
+      NomCode.VIRUS,
+        DataFormat.ACEF,  14
   );
   public final static TreeRepoRule treeRepoRule = new TreeRepoRule();
   
@@ -319,6 +321,22 @@ public class SectorSyncIT {
     // make sure the kingdom is not part of the sector, we merged!
     assertNull(plant.getSectorKey());
     assertEquals(plantID, plant.getId());
+  }
+  
+  /**
+   * https://github.com/Sp2000/colplus-backend/issues/452
+   */
+  @Test
+  public void testVirus() throws Exception {
+    print(datasetKey(14, DataFormat.ACEF));
+    
+    NameUsageBase src = getByName(datasetKey(14, DataFormat.ACEF), Rank.KINGDOM, "Viruses");
+    NameUsageBase trg = getByName(Datasets.DRAFT_COL, Rank.KINGDOM, "Viruses");
+    createSector(Sector.Mode.MERGE, src, trg);
+    
+    syncAll();
+    
+    assertTree("cat14.txt");
   }
   
 }
