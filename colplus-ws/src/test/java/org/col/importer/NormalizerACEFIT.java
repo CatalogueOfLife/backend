@@ -349,6 +349,28 @@ public class NormalizerACEFIT extends NormalizerITBase {
     normalize(16);
   }
   
+  /**
+   * https://github.com/Sp2000/colplus-backend/issues/449
+   */
+  @Test
+  public void ambiguous() throws Exception {
+    normalize(19);
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoUsage t = usageByID("S-1025");
+      assertEquals("Cassia laevigata", t.usage.getName().getScientificName());
+      assertEquals("Willd.", t.usage.getName().getAuthorship());
+      assertEquals(Rank.SPECIES, t.usage.getName().getRank());
+      assertEquals(TaxonomicStatus.AMBIGUOUS_SYNONYM, t.usage.getStatus());
+  
+      t = usageByID("S-55211");
+      assertEquals("Hedysarum microphyllum", t.usage.getName().getScientificName());
+      assertNull(t.usage.getName().getAuthorship());
+      assertEquals("sensu Turcz., p.p.", t.usage.getAccordingTo());
+      assertEquals(Rank.SPECIES, t.usage.getName().getRank());
+      assertEquals(TaxonomicStatus.MISAPPLIED, t.usage.getStatus());
+    }
+  }
+  
   void assertPlaceholderInParents(String id) {
     NeoUsage t = usageByID(id);
     for (RankedUsage u : store.parents(t.node)) {

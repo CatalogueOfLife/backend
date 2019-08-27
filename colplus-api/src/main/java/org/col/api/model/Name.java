@@ -749,6 +749,32 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
         Objects.equals(remarks, name.remarks);
   }
   
+  public boolean equalSciName(Name o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    return candidatus == o.candidatus &&
+        Objects.equals(scientificName, o.scientificName) &&
+        Objects.equals(authorship, o.authorship) &&
+        rank == o.rank &&
+        Objects.equals(uninomial, o.uninomial) &&
+        Objects.equals(genus, o.genus) &&
+        Objects.equals(infragenericEpithet, o.infragenericEpithet) &&
+        Objects.equals(specificEpithet, o.specificEpithet) &&
+        Objects.equals(infraspecificEpithet, o.infraspecificEpithet) &&
+        Objects.equals(cultivarEpithet, o.cultivarEpithet) &&
+        Objects.equals(appendedPhrase, o.appendedPhrase) &&
+        notho == o.notho &&
+        Objects.equals(combinationAuthorship, o.combinationAuthorship) &&
+        Objects.equals(basionymAuthorship, o.basionymAuthorship) &&
+        Objects.equals(sanctioningAuthor, o.sanctioningAuthor) &&
+        code == o.code &&
+        nomStatus == o.nomStatus &&
+        Objects.equals(publishedInId, o.publishedInId) &&
+        Objects.equals(publishedInPage, o.publishedInPage) &&
+        Objects.equals(publishedInYear, o.publishedInYear) &&
+        type == o.type;
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(id, datasetKey, sectorKey, homotypicNameId, nameIndexId, scientificName, authorship, rank,
