@@ -31,7 +31,7 @@ abstract class SectorRunnable implements Runnable {
   protected final int datasetKey;
   protected final int sectorKey;
   protected Sector sector;
-  final boolean validateSubject;
+  final boolean validateSector;
   final SqlSessionFactory factory;
   final NameUsageIndexService indexService;
   // maps keyed on taxon ids from this sector
@@ -46,14 +46,14 @@ abstract class SectorRunnable implements Runnable {
   final ColUser user;
   final SectorImport state = new SectorImport();
   
-  SectorRunnable(int sectorKey, boolean validateSubject, SqlSessionFactory factory, NameUsageIndexService indexService,
+  SectorRunnable(int sectorKey, boolean validateSector, SqlSessionFactory factory, NameUsageIndexService indexService,
                       Consumer<SectorRunnable> successCallback,
                       BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) throws IllegalArgumentException {
     this.user = Preconditions.checkNotNull(user);
-    this.validateSubject = validateSubject;
+    this.validateSector = validateSector;
     this.factory = factory;
+    this.sectorKey = sectorKey;
     try (SqlSession session = factory.openSession(true)) {
-      this.sectorKey = sectorKey;
       // check for existance and datasetKey - we will load the real thing for processing only when we get executed!
       sector = loadSector(false);
       this.datasetKey = sector.getDatasetKey();
@@ -103,7 +103,7 @@ abstract class SectorRunnable implements Runnable {
   void init() throws Exception {
     state.setState( SectorImport.State.PREPARING);
     // load latest version of the sector again to get the latest target ids
-    sector = loadSector(true);
+    sector = loadSector(validateSector);
     loadDecisions();
     loadForeignChildren();
     loadAttachedSectors();
@@ -117,28 +117,33 @@ abstract class SectorRunnable implements Runnable {
       if (s == null) {
         throw new IllegalArgumentException("Sector "+sectorKey+" does not exist");
       }
+      
       if (validate) {
         // assert that target actually exists. Subject might be bad - not needed for deletes!
         TaxonMapper tm = session.getMapper(TaxonMapper.class);
-        ObjectUtils.checkNotNull(s.getTarget(), s + " does not have any target");
-        // check if target actually exists
-        ObjectUtils.checkNotNull(tm.get(catalogueKey, s.getTarget().getId()), "Sector " + s.getKey() + " does have a non existing target id");
         
-        // we only validate the subject for syncs, not deletes
-        if (validateSubject) {
+        // check if target actually exists
+        String msg = "Sector " + s.getKey() + " does have a non existing target " + s.getTarget() + " for dataset " + datasetKey;
+        try {
+          ObjectUtils.checkNotNull(s.getTarget(), s + " does not have any target");
+          ObjectUtils.checkNotNull(tm.get(catalogueKey, s.getTarget().getId()), "Sector " + s.getKey() + " does have a non existing target id");
+        } catch (PersistenceException e) {
+          throw new IllegalArgumentException(msg, e);
+        }
+  
+        // also validate the subject for syncs
+        msg = "Sector " + s.getKey() + " does have a non existing subject " + s.getSubject() + " for dataset " + datasetKey;
+        try {
           ObjectUtils.checkNotNull(s.getSubject(), s + " does not have any subject");
-          String msg = "Sector " + s.getKey() + " does have a non existing subject " + s.getSubject() + " for dataset " + datasetKey;
-          try {
-            ObjectUtils.checkNotNull(tm.get(datasetKey, s.getSubject().getId()), msg);
-          } catch (PersistenceException e) {
-            throw new IllegalArgumentException(msg, e);
-          }
+          ObjectUtils.checkNotNull(tm.get(datasetKey, s.getSubject().getId()), msg);
+        } catch (PersistenceException e) {
+          throw new IllegalArgumentException(msg, e);
         }
       }
       return s;
     }
   }
-
+  
   private void loadDecisions() {
     try (SqlSession session = factory.openSession(true)) {
       DecisionMapper dm = session.getMapper(DecisionMapper.class);
