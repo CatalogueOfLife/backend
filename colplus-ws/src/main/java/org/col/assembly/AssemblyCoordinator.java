@@ -51,7 +51,7 @@ public class AssemblyCoordinator implements Managed {
     public final boolean delete;
     
     private SectorFuture(SectorRunnable job, Future future) {
-      this.sectorKey = job.sector.getKey();
+      this.sectorKey = job.sectorKey;
       this.datasetKey = job.sector.getDatasetKey();
       this.state = job.getState();
       this.future = future;
@@ -164,13 +164,13 @@ public class AssemblyCoordinator implements Managed {
   
   private synchronized void queueJob(SectorRunnable job) throws IllegalArgumentException {
     // is this sector already syncing?
-    if (syncs.containsKey(job.sector.getKey())) {
+    if (syncs.containsKey(job.sectorKey)) {
       LOG.info("{} already busy", job.sector);
       // ignore
     
     } else {
       assertStableData(job.sector);
-      syncs.put(job.sector.getKey(), new SectorFuture(job, exec.submit(job)));
+      syncs.put(job.sectorKey, new SectorFuture(job, exec.submit(job)));
       LOG.info("Queued {} for {} targeting {}", job.getClass().getSimpleName(), job.sector, job.sector.getTarget());
     }
   }

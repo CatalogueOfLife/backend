@@ -28,9 +28,9 @@ abstract class SectorRunnable implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorRunnable.class);
 
   final int catalogueKey = Datasets.DRAFT_COL;
-  final int datasetKey;
-  final int sectorKey;
-  Sector sector;
+  protected final int datasetKey;
+  protected final int sectorKey;
+  protected Sector sector;
   final boolean validateSubject;
   final SqlSessionFactory factory;
   final NameUsageIndexService indexService;
@@ -55,8 +55,8 @@ abstract class SectorRunnable implements Runnable {
     try (SqlSession session = factory.openSession(true)) {
       this.sectorKey = sectorKey;
       // check for existance and datasetKey - we will load the real thing for processing only when we get executed!
-      Sector s = loadSector(false);
-      this.datasetKey = s.getDatasetKey();
+      sector = loadSector(false);
+      this.datasetKey = sector.getDatasetKey();
       // lookup next attempt
       List<SectorImport> imports = session.getMapper(SectorImportMapper.class).list(sectorKey, null,null, new Page(0,1));
       state.setAttempt(imports == null || imports.isEmpty() ? 1 : imports.get(0).getAttempt() + 1);
@@ -102,7 +102,7 @@ abstract class SectorRunnable implements Runnable {
   
   void init() throws Exception {
     state.setState( SectorImport.State.PREPARING);
-    // only now load the sector to get the latest target ids
+    // load latest version of the sector again to get the latest target ids
     sector = loadSector(true);
     loadDecisions();
     loadForeignChildren();
