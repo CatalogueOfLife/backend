@@ -29,7 +29,9 @@ abstract class SectorRunnable implements Runnable {
 
   final int catalogueKey = Datasets.DRAFT_COL;
   final int datasetKey;
-  final Sector sector;
+  final int sectorKey;
+  Sector sector;
+  final boolean validateSubject;
   final SqlSessionFactory factory;
   final NameUsageIndexService indexService;
   // maps keyed on taxon ids from this sector
@@ -44,54 +46,33 @@ abstract class SectorRunnable implements Runnable {
   final ColUser user;
   final SectorImport state = new SectorImport();
   
-  SectorRunnable(Sector s, SqlSessionFactory factory, NameUsageIndexService indexService,
+  SectorRunnable(int sectorKey, boolean validateSubject, SqlSessionFactory factory, NameUsageIndexService indexService,
                       Consumer<SectorRunnable> successCallback,
                       BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) throws IllegalArgumentException {
     this.user = Preconditions.checkNotNull(user);
+    this.validateSubject = validateSubject;
+    this.factory = factory;
     try (SqlSession session = factory.openSession(true)) {
-      TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      // check if sector actually exists
-      this.sector = ObjectUtils.checkNotNull(s, "Sector required");
-      this.datasetKey = sector.getDatasetKey();
-      // #ssert that target actually exists. Subject might be bad - not needed for deletes!
-      assertTargetID(tm);
+      this.sectorKey = sectorKey;
+      // check for existance and datasetKey - we will load the real thing for processing only when we get executed!
+      Sector s = loadSector(false);
+      this.datasetKey = s.getDatasetKey();
       // lookup next attempt
-      List<SectorImport> imports = session.getMapper(SectorImportMapper.class).list(s.getKey(), null,null, new Page(0,1));
+      List<SectorImport> imports = session.getMapper(SectorImportMapper.class).list(sectorKey, null,null, new Page(0,1));
       state.setAttempt(imports == null || imports.isEmpty() ? 1 : imports.get(0).getAttempt() + 1);
-      state.setSectorKey(s.getKey());
+      state.setSectorKey(sectorKey);
       state.setDatasetKey(datasetKey);
       state.setType(getClass().getSimpleName());
       state.setState(SectorImport.State.WAITING);
     }
-    this.factory = factory;
     this.indexService = indexService;
     this.successCallback = successCallback;
     this.errorCallback = errorCallback;
   }
   
-  private Taxon assertTargetID(TaxonMapper tm) throws IllegalArgumentException {
-    ObjectUtils.checkNotNull(sector.getTarget(), sector + " does not have any target");
-    // check if target actually exists
-    return ObjectUtils.checkNotNull(tm.get(catalogueKey, sector.getTarget().getId()), "Sector " + sector.getKey() + " does have a non existing target id");
-  }
-  
-  void assertSubjectID() throws IllegalArgumentException {
-    try (SqlSession session = factory.openSession(true)) {
-      TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      // check if subject actually exists
-      ObjectUtils.checkNotNull(sector.getSubject(), sector + " does not have any subject");
-      String msg = "Sector " + sector.getKey() + " does have a non existing subject " + sector.getSubject() + " for dataset " + sector.getDatasetKey();
-      try {
-        ObjectUtils.checkNotNull(tm.get(sector.getDatasetKey(), sector.getSubject().getId()), msg);
-      } catch (PersistenceException e) {
-        throw new IllegalArgumentException(msg, e);
-      }
-    }
-  }
-  
   @Override
   public void run() {
-    LoggingUtils.setSectorMDC(sector.getKey(), state.getAttempt(), getClass());
+    LoggingUtils.setSectorMDC(sectorKey, state.getAttempt(), getClass());
     try {
       state.setStarted(LocalDateTime.now());
       init();
@@ -121,12 +102,43 @@ abstract class SectorRunnable implements Runnable {
   
   void init() throws Exception {
     state.setState( SectorImport.State.PREPARING);
+    // only now load the sector to get the latest target ids
+    sector = loadSector(true);
     loadDecisions();
     loadForeignChildren();
     loadAttachedSectors();
     checkIfCancelled();
   }
   
+  private Sector loadSector(boolean validate) {
+    try (SqlSession session = factory.openSession(true)) {
+      SectorMapper sm = session.getMapper(SectorMapper.class);
+      Sector s = sm.get(sectorKey);
+      if (s == null) {
+        throw new IllegalArgumentException("Sector "+sectorKey+" does not exist");
+      }
+      if (validate) {
+        // assert that target actually exists. Subject might be bad - not needed for deletes!
+        TaxonMapper tm = session.getMapper(TaxonMapper.class);
+        ObjectUtils.checkNotNull(s.getTarget(), s + " does not have any target");
+        // check if target actually exists
+        ObjectUtils.checkNotNull(tm.get(catalogueKey, s.getTarget().getId()), "Sector " + s.getKey() + " does have a non existing target id");
+        
+        // we only validate the subject for syncs, not deletes
+        if (validateSubject) {
+          ObjectUtils.checkNotNull(s.getSubject(), s + " does not have any subject");
+          String msg = "Sector " + s.getKey() + " does have a non existing subject " + s.getSubject() + " for dataset " + datasetKey;
+          try {
+            ObjectUtils.checkNotNull(tm.get(datasetKey, s.getSubject().getId()), msg);
+          } catch (PersistenceException e) {
+            throw new IllegalArgumentException(msg, e);
+          }
+        }
+      }
+      return s;
+    }
+  }
+
   private void loadDecisions() {
     try (SqlSession session = factory.openSession(true)) {
       DecisionMapper dm = session.getMapper(DecisionMapper.class);
@@ -134,23 +146,23 @@ abstract class SectorRunnable implements Runnable {
         decisions.put(ed.getSubject().getId(), ed);
       }
     }
-    LOG.info("Loaded {} editorial decisions for sector {}", decisions.size(), sector.getKey());
+    LOG.info("Loaded {} editorial decisions for sector {}", decisions.size(), sectorKey);
   }
   
   private void loadForeignChildren() {
     try (SqlSession session = factory.openSession(true)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      foreignChildren = tm.foreignChildren(catalogueKey, sector.getKey());
+      foreignChildren = tm.foreignChildren(catalogueKey, sectorKey);
     }
-    LOG.info("Loaded {} children from other sectors with a parent from sector {}", foreignChildren.size(), sector.getKey());
+    LOG.info("Loaded {} children from other sectors with a parent from sector {}", foreignChildren.size(), sectorKey);
   }
   
   private void loadAttachedSectors() {
     try (SqlSession session = factory.openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
-      childSectors=sm.listChildSectors(sector.getKey());
+      childSectors=sm.listChildSectors(sectorKey);
     }
-    LOG.info("Loaded {} sectors targeting taxa from sector {}", childSectors.size(), sector.getKey());
+    LOG.info("Loaded {} sectors targeting taxa from sector {}", childSectors.size(), sectorKey);
   }
   
   abstract void doWork() throws Exception;
@@ -160,7 +172,7 @@ abstract class SectorRunnable implements Runnable {
   }
   
   public Integer getSectorKey() {
-    return sector.getKey();
+    return sectorKey;
   }
   
   public LocalDateTime getCreated() {
@@ -173,13 +185,14 @@ abstract class SectorRunnable implements Runnable {
   
   void checkIfCancelled() throws InterruptedException {
     if (Thread.currentThread().isInterrupted()) {
-      throw new InterruptedException("Sync of sector " + sector.getKey() + " was cancelled");
+      throw new InterruptedException("Sync of sector " + sectorKey + " was cancelled");
     }
   }
   
   @Override
   public String toString() {
     return this.getClass().getSimpleName() + "{" +
+        "sectorKey=" + sectorKey +
         "datasetKey=" + datasetKey +
         ", sector=" + sector +
         ", created=" + created +

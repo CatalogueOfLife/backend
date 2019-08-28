@@ -124,14 +124,14 @@ public class SectorSyncIT {
   }
   
   void sync(Sector s) {
-    SectorSync ss = new SectorSync(s, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao,
+    SectorSync ss = new SectorSync(s.getKey(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     System.out.println("\n*** SECTOR SYNC " + s.getKey() + " ***");
     ss.run();
   }
   
   private void delete(Sector s) {
-    SectorDelete sd = new SectorDelete(s, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(),
+    SectorDelete sd = new SectorDelete(s.getKey(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(),
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     System.out.println("\n*** SECTOR DELETION " + s.getKey() + " ***");
     sd.run();
