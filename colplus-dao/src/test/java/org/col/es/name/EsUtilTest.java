@@ -5,7 +5,8 @@ import java.io.IOException;
 import org.col.api.TestEntityGenerator;
 import org.col.es.EsReadTestBase;
 import org.col.es.EsUtil;
-import org.col.es.name.NameUsageTransfer;
+import org.col.es.model.NameUsageDocument;
+import org.col.es.name.index.NameUsageWrapperConverter;
 import org.elasticsearch.client.RestClient;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -46,7 +47,7 @@ public class EsUtilTest extends EsReadTestBase {
     EsUtil.deleteIndex(client, indexName);
     EsUtil.createIndex(client, indexName, getEsConfig().nameUsage);
     // Insert 3 documents (overwriting dataset key to known values)
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
     NameUsageDocument enu = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
     enu.setDatasetKey(1);
     insert(client, indexName, enu);
@@ -78,7 +79,7 @@ public class EsUtilTest extends EsReadTestBase {
     EsUtil.deleteIndex(client, indexName);
     EsUtil.createIndex(client, indexName, getEsConfig().nameUsage);
     // Insert 3 documents (overwriting sector key to known values)
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
     NameUsageDocument enu = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
     enu.setSectorKey(1);
     insert(client, indexName, enu);

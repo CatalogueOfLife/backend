@@ -3,8 +3,10 @@ package org.col.es.query;
 import java.util.List;
 
 import org.col.es.EsReadTestBase;
-import org.col.es.name.NameStrings;
-import org.col.es.name.NameUsageDocument;
+import org.col.es.dsl.PrefixQuery;
+import org.col.es.dsl.Query;
+import org.col.es.model.NameStrings;
+import org.col.es.model.NameUsageDocument;
 import org.junit.Before;
 import org.junit.Test;
 

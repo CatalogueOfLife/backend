@@ -17,8 +17,8 @@ import static org.col.api.search.NameSearchRequest.SearchContent.AUTHORSHIP;
 import static org.col.api.search.NameSearchRequest.SearchContent.SCIENTIFIC_NAME;
 import static org.col.api.search.NameSearchRequest.SearchContent.VERNACULAR_NAME;
 import static org.col.common.collection.CollectionUtils.isEmpty;
-import static org.col.es.name.NameUsageTransfer.normalizeStrongly;
-import static org.col.es.name.NameUsageTransfer.normalizeWeakly;
+import static org.col.es.name.index.NameUsageWrapperConverter.normalizeStrongly;
+import static org.col.es.name.index.NameUsageWrapperConverter.normalizeWeakly;
 
 /*
  * A DIY highlighter we use in stead of Elasticsearch's highlight capabilities. The org.col.es.query package contains the classes to specify

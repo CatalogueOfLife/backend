@@ -18,7 +18,7 @@ import org.col.api.model.NameUsage;
 import org.col.api.model.Synonym;
 import org.col.api.model.Taxon;
 import org.col.api.search.NameUsageWrapper;
-import org.col.es.query.EsSearchRequest;
+import org.col.es.dsl.EsSearchRequest;
 
 /**
  * Jackson module to configure an object mapper to (de)serialize data stored in Elasticsearch. It uses MixIns to modify API model classes to

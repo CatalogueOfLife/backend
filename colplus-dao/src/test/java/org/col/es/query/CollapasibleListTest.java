@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.col.es.EsModule;
-import org.col.es.query.CollapsibleList;
+import org.col.es.dsl.CollapsibleList;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

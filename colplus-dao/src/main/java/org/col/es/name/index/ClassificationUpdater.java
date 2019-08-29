@@ -14,14 +14,13 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.col.api.search.NameUsageWrapper;
-import org.col.es.name.NameUsageDocument;
-import org.col.es.name.NameUsageTransfer;
-import org.col.es.name.search.NameUsageSearchService;
-import org.col.es.query.BoolQuery;
-import org.col.es.query.EsSearchRequest;
-import org.col.es.query.SortField;
-import org.col.es.query.TermQuery;
-import org.col.es.query.TermsQuery;
+import org.col.es.dsl.BoolQuery;
+import org.col.es.dsl.EsSearchRequest;
+import org.col.es.dsl.SortField;
+import org.col.es.dsl.TermQuery;
+import org.col.es.dsl.TermsQuery;
+import org.col.es.model.NameUsageDocument;
+import org.col.es.name.NameUsageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +68,7 @@ public class ClassificationUpdater implements Closeable, ResultHandler<NameUsage
     documents.forEach(enu -> {
       NameUsageWrapper nuw = lookups.get(enu.getUsageId());
       enu.setUsageId(null); // Won't need to update that one
-      NameUsageTransfer.saveClassification(nuw, enu);
+      NameUsageWrapperConverter.saveClassification(nuw, enu);
     });
     indexer.update(documents);
     LOG.debug("Updated {} documents", documents.size());
@@ -93,8 +92,8 @@ public class ClassificationUpdater implements Closeable, ResultHandler<NameUsage
   }
 
   /*
-   * Returns bare bones name usage documents containing only the internal document ID (needed for the update later on) and the usage ID (so
-   * they can be matched to the Postgres records).
+   * Returns bare bones name usage documents containing only the internal document ID (needed for the update later on) and
+   * the usage ID (so they can be matched to the Postgres records).
    */
   private List<NameUsageDocument> loadChunk(List<String> terms) {
     EsSearchRequest query = EsSearchRequest.emptyRequest();
@@ -105,7 +104,7 @@ public class ClassificationUpdater implements Closeable, ResultHandler<NameUsage
     query.setQuery(constraints);
     query.setSort(Arrays.asList(SortField.DOC));
     query.setSize(terms.size());
-    NameUsageSearchService svc = new NameUsageSearchService(indexer.getIndexName(), indexer.getEsClient());
+    NameUsageService svc = new NameUsageService(indexer.getIndexName(), indexer.getEsClient());
     return svc.getDocumentsWithDocId(query);
   }
 

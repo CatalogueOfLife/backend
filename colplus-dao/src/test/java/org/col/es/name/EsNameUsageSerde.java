@@ -13,6 +13,7 @@ import org.col.api.vocab.NameField;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.es.EsModule;
 import org.col.es.EsReadTestBase;
+import org.col.es.model.NameUsageDocument;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;

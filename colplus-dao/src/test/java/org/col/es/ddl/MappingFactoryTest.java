@@ -1,6 +1,9 @@
 package org.col.es.ddl;
 
-import org.col.es.name.NameUsageDocument;
+import org.col.es.ddl.DocumentTypeMapping;
+import org.col.es.ddl.MappingFactory;
+import org.col.es.ddl.SerializationUtil;
+import org.col.es.model.NameUsageDocument;
 import org.junit.Test;
 
 public class MappingFactoryTest {

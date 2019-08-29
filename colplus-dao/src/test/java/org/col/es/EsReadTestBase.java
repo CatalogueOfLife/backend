@@ -10,11 +10,11 @@ import org.col.api.model.Page;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchResponse;
 import org.col.api.search.NameUsageWrapper;
-import org.col.es.name.NameUsageDocument;
-import org.col.es.name.NameUsageTransfer;
+import org.col.es.dsl.EsSearchRequest;
+import org.col.es.dsl.Query;
+import org.col.es.model.NameUsageDocument;
+import org.col.es.name.index.NameUsageWrapperConverter;
 import org.col.es.name.search.NameUsageSearchService;
-import org.col.es.query.EsSearchRequest;
-import org.col.es.query.Query;
 import org.elasticsearch.client.RestClient;
 import org.junit.ClassRule;
 
@@ -66,7 +66,7 @@ public class EsReadTestBase {
 
   protected NameUsageDocument toDocument(NameUsageWrapper nameUsage) {
     try {
-      return new NameUsageTransfer().toDocument(nameUsage);
+      return new NameUsageWrapperConverter().toDocument(nameUsage);
     } catch (IOException e) {
       throw new EsException(e);
     }

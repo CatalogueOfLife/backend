@@ -1,6 +1,10 @@
 package org.col.api.search;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 
 import org.col.api.model.NameUsage;
 import org.col.api.model.SimpleName;
@@ -16,11 +20,11 @@ public class NameUsageWrapper {
   private Set<Issue> issues;
   private Integer decisionKey;
   private UUID publisherKey;
-  
+
   public Set<Issue> getIssues() {
     return issues;
   }
-  
+
   public void setIssues(Set<Issue> issues) {
     this.issues = issues;
   }
@@ -38,7 +42,7 @@ public class NameUsageWrapper {
   public void setUsage(NameUsage usage) {
     this.usage = usage;
   }
-  
+
   public List<VernacularName> getVernacularNames() {
     return vernacularNames;
   }
@@ -46,10 +50,10 @@ public class NameUsageWrapper {
   public void setVernacularNames(List<VernacularName> vernacularNames) {
     this.vernacularNames = vernacularNames;
   }
-  
+
   /**
-   * The entire classification for the usage starting with the highest root and
-   * including the taxon or synonym itself as the last entry in the list
+   * The entire classification for the usage starting with the highest root and including the taxon or synonym itself as
+   * the last entry in the list
    */
   public List<SimpleName> getClassification() {
     return classification;
@@ -105,27 +109,29 @@ public class NameUsageWrapper {
       }
     }
   }
-  
+
   public Integer getDecisionKey() {
     return decisionKey;
   }
-  
+
   public void setDecisionKey(Integer decisionKey) {
     this.decisionKey = decisionKey;
   }
-  
+
   public UUID getPublisherKey() {
     return publisherKey;
   }
-  
+
   public void setPublisherKey(UUID publisherKey) {
     this.publisherKey = publisherKey;
   }
-  
+
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;   
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
     NameUsageWrapper that = (NameUsageWrapper) o;
     return Objects.equals(usage, that.usage) &&
         Objects.equals(vernacularNames, that.vernacularNames) &&
@@ -134,7 +140,7 @@ public class NameUsageWrapper {
         Objects.equals(decisionKey, that.decisionKey) &&
         Objects.equals(publisherKey, that.publisherKey);
   }
-  
+
   @Override
   public int hashCode() {
     return Objects.hash(usage, vernacularNames, classification, issues, decisionKey, publisherKey);

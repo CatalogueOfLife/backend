@@ -12,8 +12,7 @@ import org.col.api.search.NameUsageWrapper;
 import org.col.es.EsException;
 import org.col.es.EsModule;
 import org.col.es.EsUtil;
-import org.col.es.name.NameUsageDocument;
-import org.col.es.name.NameUsageTransfer;
+import org.col.es.model.NameUsageDocument;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
@@ -102,7 +101,7 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
 
   private void index(List<NameUsageWrapper> batch) {
     buf.setLength(0);
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
     try {
       for (NameUsageWrapper nuw : batch) {
         buf.append(header);
@@ -118,7 +117,7 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
   private void indexWithExtraStats(List<NameUsageWrapper> batch) {
     buf.setLength(0);
     int docSize = 0;
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
     DecimalFormat df = new DecimalFormat("0.0");
     try {
       String json;

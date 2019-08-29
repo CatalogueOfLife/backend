@@ -21,8 +21,8 @@ import org.col.api.vocab.Issue;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.es.EsReadTestBase;
 import org.col.es.EsUtil;
-import org.col.es.name.NameUsageDocument;
-import org.col.es.name.NameUsageTransfer;
+import org.col.es.model.NameUsageDocument;
+import org.col.es.name.index.NameUsageWrapperConverter;
 import org.elasticsearch.client.RestClient;
 import org.gbif.nameparser.api.Rank;
 import org.junit.AfterClass;
@@ -59,7 +59,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
   @Test
   public void testQuery1() throws IOException {
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     // Define search
     NameSearchRequest nsr = new NameSearchRequest();
@@ -110,7 +110,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
   @Test
   public void testQuery2() throws IOException {
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     // Find all documents with an issue of either ACCEPTED_NAME_MISSING or ACCORDING_TO_DATE_INVALID
     NameSearchRequest nsr = new NameSearchRequest();
@@ -165,7 +165,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
   @Test
   public void testQuery3() throws IOException {
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     // Find all documents with an issue of any of ACCEPTED_NAME_MISSING, ACCORDING_TO_DATE_INVALID, BASIONYM_ID_INVALID
     NameSearchRequest nsr = new NameSearchRequest();
@@ -217,7 +217,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
   @Test
   public void autocomplete1() throws IOException {
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     // Define search
     NameSearchRequest nsr = new NameSearchRequest();
@@ -263,7 +263,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
   @Test
   public void autocomplete2() throws IOException {
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     // Define search
     NameSearchRequest nsr = new NameSearchRequest();
@@ -311,7 +311,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
   @Test
   public void testIsNull() throws IOException {
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     // Define search condition
     NameSearchRequest nsr = new NameSearchRequest();
@@ -344,7 +344,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
   @Test
   public void testIsNotNull() throws IOException {
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     // Define search condition
     NameSearchRequest nsr = new NameSearchRequest();
@@ -376,7 +376,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
   @Test
   public void testNameFieldsQuery1() throws IOException {
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     // Find all documents where the uninomial field is not empty
     NameSearchRequest nsr = new NameSearchRequest();
@@ -426,7 +426,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
   @Test
   public void testNameFieldsQuery2() throws IOException {
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     // Find all documents where the uninomial field is not empty
     NameSearchRequest nsr = new NameSearchRequest();
@@ -476,7 +476,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
   @Test
   public void testNameFieldsQuery3() throws IOException {
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     // Find all documents where the uninomial field is not empty
     NameSearchRequest nsr = new NameSearchRequest();
@@ -537,7 +537,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
   @Test
   public void testMultipleFiltersAndQ() throws IOException {
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
     /*
      * Find all name usages whose uninomial field is not empty, have rank ORDER or FAMILY, have status ACCEPTED, and contain "larid" in
      * their scientific name or authorship.
@@ -656,7 +656,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
   @Test
   public void testWithBigQString() throws IOException {
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     // Find all documents where the uninomial field is not empty
     NameSearchRequest nsr = new NameSearchRequest();
@@ -717,7 +717,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   // Issue #207
   @Test
   public void testWithSmthii__1() throws IOException {
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     NameSearchRequest nsr = new NameSearchRequest();
     nsr.setHighlight(false);
@@ -741,7 +741,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
   @Test
   public void testWithSmthii__2() throws IOException {
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     NameSearchRequest nsr = new NameSearchRequest();
     nsr.setHighlight(false);

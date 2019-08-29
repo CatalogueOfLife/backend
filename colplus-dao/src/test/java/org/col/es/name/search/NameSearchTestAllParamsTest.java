@@ -21,7 +21,7 @@ import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.NomStatus;
 import org.col.es.EsReadTestBase;
 import org.col.es.EsUtil;
-import org.col.es.name.NameUsageTransfer;
+import org.col.es.name.index.NameUsageWrapperConverter;
 import org.col.es.name.search.NameUsageSearchService;
 import org.elasticsearch.client.RestClient;
 import org.junit.AfterClass;
@@ -100,7 +100,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     nuw3.setClassification(Arrays.asList(t3, t4, t5));
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.setClassification(Arrays.asList(t4, t5, t6));
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     insert(client, indexName, transfer.toDocument(nuw1));
     insert(client, indexName, transfer.toDocument(nuw2));
@@ -151,7 +151,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw6 = minimalNameUsage();
     nuw6.setClassification(Arrays.asList(t6, t7, t8));
 
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     insert(client, indexName, transfer.toDocument(nuw1));
     insert(client, indexName, transfer.toDocument(nuw2));
@@ -195,7 +195,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.setPublisherKey(null);
 
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     insert(client, indexName, transfer.toDocument(nuw1));
     insert(client, indexName, transfer.toDocument(nuw2));
@@ -236,7 +236,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.setPublisherKey(null);
 
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     insert(client, indexName, transfer.toDocument(nuw1));
     insert(client, indexName, transfer.toDocument(nuw2));
@@ -274,7 +274,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.setPublisherKey(null);
 
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     insert(client, indexName, transfer.toDocument(nuw1));
     insert(client, indexName, transfer.toDocument(nuw2));
@@ -312,7 +312,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.setPublisherKey(null);
 
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     insert(client, indexName, transfer.toDocument(nuw1));
     insert(client, indexName, transfer.toDocument(nuw2));
@@ -350,7 +350,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.setDecisionKey(null);
 
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     insert(client, indexName, transfer.toDocument(nuw1));
     insert(client, indexName, transfer.toDocument(nuw2));
@@ -387,7 +387,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.setDecisionKey(null);
 
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     insert(client, indexName, transfer.toDocument(nuw1));
     insert(client, indexName, transfer.toDocument(nuw2));
@@ -424,7 +424,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.setDecisionKey(null);
 
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     insert(client, indexName, transfer.toDocument(nuw1));
     insert(client, indexName, transfer.toDocument(nuw2));
@@ -461,7 +461,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setNameIndexId(null);
 
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     insert(client, indexName, transfer.toDocument(nuw1));
     insert(client, indexName, transfer.toDocument(nuw2));
@@ -500,7 +500,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setNameIndexId(null);
 
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     insert(client, indexName, transfer.toDocument(nuw1));
     insert(client, indexName, transfer.toDocument(nuw2));
@@ -537,7 +537,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setNameIndexId(null);
 
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     insert(client, indexName, transfer.toDocument(nuw1));
     insert(client, indexName, transfer.toDocument(nuw2));
@@ -574,7 +574,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setPublishedInId(null);
 
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     insert(client, indexName, transfer.toDocument(nuw1));
     insert(client, indexName, transfer.toDocument(nuw2));
@@ -610,7 +610,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setPublishedInId(null);
 
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     insert(client, indexName, transfer.toDocument(nuw1));
     insert(client, indexName, transfer.toDocument(nuw2));
@@ -647,7 +647,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setPublishedInId(null);
 
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     insert(client, indexName, transfer.toDocument(nuw1));
     insert(client, indexName, transfer.toDocument(nuw2));
@@ -683,7 +683,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setId(null);
 
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     insert(client, indexName, transfer.toDocument(nuw1));
     insert(client, indexName, transfer.toDocument(nuw2));
@@ -719,7 +719,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setDatasetKey(null);
 
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     insert(client, indexName, transfer.toDocument(nuw1));
     insert(client, indexName, transfer.toDocument(nuw2));
@@ -755,7 +755,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setDatasetKey(null);
 
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     insert(client, indexName, transfer.toDocument(nuw1));
     insert(client, indexName, transfer.toDocument(nuw2));
@@ -789,7 +789,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setNomStatus(null);
 
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     insert(client, indexName, transfer.toDocument(nuw1));
     insert(client, indexName, transfer.toDocument(nuw2));
@@ -823,7 +823,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setNomStatus(null);
 
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     insert(client, indexName, transfer.toDocument(nuw1));
     insert(client, indexName, transfer.toDocument(nuw2));
@@ -861,7 +861,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     ((Taxon) nuw4.getUsage()).setSectorKey(null);
 
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     insert(client, indexName, transfer.toDocument(nuw1));
     insert(client, indexName, transfer.toDocument(nuw2));

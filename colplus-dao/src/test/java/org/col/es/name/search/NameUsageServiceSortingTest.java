@@ -18,11 +18,11 @@ import org.col.api.search.NameSearchRequest.SortBy;
 import org.col.es.EsException;
 import org.col.es.EsReadTestBase;
 import org.col.es.EsUtil;
-import org.col.es.name.NameUsageDocument;
-import org.col.es.name.NameUsageTransfer;
+import org.col.es.dsl.EsSearchRequest;
+import org.col.es.dsl.SortField;
+import org.col.es.model.NameUsageDocument;
+import org.col.es.name.index.NameUsageWrapperConverter;
 import org.col.es.name.search.NameUsageSearchService;
-import org.col.es.query.EsSearchRequest;
-import org.col.es.query.SortField;
 import org.col.api.search.NameUsageWrapper;
 import org.elasticsearch.client.RestClient;
 import org.gbif.nameparser.api.Rank;
@@ -60,7 +60,7 @@ public class NameUsageServiceSortingTest extends EsReadTestBase {
 
   @Test
   public void testSort1() throws IOException {
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
     NameUsageDocument enu = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
     insert(client, indexName, enu);
     enu = transfer.toDocument(TestEntityGenerator.newNameUsageSynonymWrapper());
@@ -133,7 +133,7 @@ public class NameUsageServiceSortingTest extends EsReadTestBase {
 
   @Test
   public void testSortDescending() throws IOException {
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     EsSearchRequest esr = EsSearchRequest.emptyRequest();
     esr.setSort(Arrays.asList(new SortField("scientificNameWN", false), new SortField("rank", false)));
@@ -193,7 +193,7 @@ public class NameUsageServiceSortingTest extends EsReadTestBase {
 
   @Test
   public void testSortTaxonomic() throws IOException {
-    NameUsageTransfer transfer = new NameUsageTransfer();
+    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
     // Define search
     NameSearchRequest nsr = new NameSearchRequest();
