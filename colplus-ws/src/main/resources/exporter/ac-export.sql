@@ -32,7 +32,7 @@ COPY (
 (
 SELECT DISTINCT ON (d.key)
  d.key - 1000 AS record_id,
- coalesce(d.alias || ': ' || d.title, d.title) AS database_name_displayed,
+ CASE WHEN d.alias IS NOT NULL AND d.alias != d.title THEN d.alias || ': ' || d.title ELSE d.title END AS database_name_displayed,
  coalesce(d.alias, d.title) AS database_name,
  d.title AS database_full_name,
  d.website AS web_site,
