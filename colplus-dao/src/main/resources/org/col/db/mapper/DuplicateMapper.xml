@@ -97,7 +97,9 @@
         <if test="authorshipDifferent != null">
             AND count(
             <!-- count null as being different,see https://github.com/Sp2000/colplus-backend/issues/457 -->
-            DISTINCT COALESCE(<choose><when test="mode.name() == 'FUZZY'">n.authorship_normalized</when><otherwise>n.authorship</otherwise></choose>, 'qyzx6432')
+            DISTINCT <choose><when test="mode.name() == 'FUZZY'">COALESCE(n.authorship_normalized, '{}')</when>
+                             <otherwise>COALESCE(n.authorship, '')</otherwise>
+                     </choose>
             )
             <!-- make sure at least 2 authorships are different -->
             <if test="authorshipDifferent">&gt; 1</if>
