@@ -93,6 +93,13 @@ public class DuplicateMapperTest {
       assertFalse(d.getUsages().isEmpty());
       assertNotNull(d.getKey());
     }
+    
+    // https://github.com/Sp2000/colplus-backend/issues/457
+    // Aspidoscelis deppii subsp. schizophorus
+    dups = mapper.duplicates(MatchingMode.STRICT, 3, datasetKey, null, NameCategory.TRINOMIAL,
+        Sets.newHashSet(Rank.SUBSPECIES), null, true, null, null, null, null,
+        new Page(0, 5));
+    assertEquals(1, dups.size());
   }
   
   @Test
@@ -108,6 +115,13 @@ public class DuplicateMapperTest {
     dups = mapper.duplicateNames(MatchingMode.STRICT, 2, datasetKey,  NameCategory.BINOMIAL,
         Sets.newHashSet(Rank.SPECIES), false, true, true, new Page(0, 2));
     assertEquals(0, dups.size());
+  
+    // https://github.com/Sp2000/colplus-backend/issues/457
+    // Achillea asplenifolia
+    dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, NameCategory.BINOMIAL,
+        Sets.newHashSet(Rank.SPECIES_AGGREGATE), null, true, null, null, null, null,
+        new Page(0, 5));
+    assertEquals(1, dups.size());
   }
   
 }
