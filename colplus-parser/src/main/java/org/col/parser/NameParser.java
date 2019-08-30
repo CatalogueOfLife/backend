@@ -13,6 +13,7 @@ import org.col.api.model.Name;
 import org.col.api.model.NameAccordingTo;
 import org.col.api.util.ObjectUtils;
 import org.col.api.vocab.Issue;
+import org.col.api.vocab.NomStatus;
 import org.gbif.nameparser.NameParserGBIF;
 import org.gbif.nameparser.api.*;
 import org.slf4j.Logger;
@@ -102,7 +103,6 @@ public class NameParser implements Parser<NameAccordingTo> {
       nat.getName().setSanctioningAuthor(pnAuthorship.getSanctioningAuthor());
       nat.getName().setBasionymAuthorship(pnAuthorship.getBasionymAuthorship());
       // propagate notes found in authorship
-      nat.getName().addRemark(pnAuthorship.getRemarks());
       nat.getName().addRemark(pnAuthorship.getNomenclaturalNotes());
       nat.addAccordingTo(pnAuthorship.getTaxonomicNote());
     }
@@ -187,7 +187,6 @@ public class NameParser implements Parser<NameAccordingTo> {
     n.setCode(pn.getCode());
     n.setCandidatus(pn.isCandidatus());
     n.setNotho(pn.getNotho());
-    n.setRemarks(pn.getRemarks());
     n.setType(pn.getType());
     // issues
     switch (pn.getState()) {
@@ -214,8 +213,12 @@ public class NameParser implements Parser<NameAccordingTo> {
         LOG.debug("Unknown parser warning: {}", warn);
       }
     }
-    //TODO: try to convert nom notes to enumeration. Add to remarks for now
-    n.addRemark(pn.getNomenclaturalNotes());
+    if (pn.isManuscript()) {
+      n.setNomStatus(NomStatus.MANUSCRIPT);
+    }
+    //TODO: try to convert nom notes to enumeration. Only add to remarks for now
+    // can be sth like: nom.illeg., in Döring et all  reference
+    n.setRemarks(pn.getNomenclaturalNotes());
     
     NameAccordingTo nat = new NameAccordingTo();
     nat.setName(n);
