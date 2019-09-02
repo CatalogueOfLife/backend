@@ -34,7 +34,7 @@ public interface DuplicateMapper {
                              @Param("ranks") Set<Rank> ranks,
                              @Param("status") Set<TaxonomicStatus> status,
                              @Param("authorshipDifferent") Boolean authorshipDifferent,
-                             @Param("parentDifferent") Boolean parentDifferent,
+                             @Param("acceptedDifferent") Boolean acceptedDifferent,
                              @Param("rankDifferent") Boolean rankDifferent,
                              @Param("codeDifferent") Boolean codeDifferent,
                              @Param("withDecision") Boolean withDecision,

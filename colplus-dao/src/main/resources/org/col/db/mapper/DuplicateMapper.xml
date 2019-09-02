@@ -162,12 +162,12 @@
                 <if test="withDecision">&gt; 0</if>
                 <if test="!withDecision">= 0</if>
         </if>
-        <if test="parentDifferent != null">
-            AND count(DISTINCT u.parent_id)
+        <if test="acceptedDifferent != null">
+            AND count(DISTINCT CASE u.is_synonym WHEN true THEN u.parent_id ELSE u.id END)
             <!-- make sure at least 2 parents are different -->
-            <if test="parentDifferent">&gt; 1</if>
+            <if test="acceptedDifferent">&gt; 1</if>
             <!-- make sure all parent ids are the same -->
-            <if test="!parentDifferent">&lt;= 1</if>
+            <if test="!acceptedDifferent">&lt;= 1</if>
         </if>
         ORDER BY <include refid="keyCol" />
         <include refid="org.col.db.mapper.Common.limit" />

@@ -36,13 +36,13 @@ public class DuplicateDao {
   }
   
   public List<Duplicate> findUsages(MatchingMode mode, Integer minSize, int datasetKey, Integer sectorKey, NameCategory category, Set<Rank> ranks,
-                              Set<TaxonomicStatus> status, Boolean authorshipDifferent, Boolean parentDifferent, Boolean rankDifferent,
+                              Set<TaxonomicStatus> status, Boolean authorshipDifferent, Boolean acceptedDifferent, Boolean rankDifferent,
                                     Boolean codeDifferent, Boolean withDecision, Page page) {
-    return find(false, mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, parentDifferent, rankDifferent, codeDifferent, withDecision, page);
+    return find(false, mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, page);
   }
   
   private List<Duplicate> find(boolean compareNames, MatchingMode mode, Integer minSize, int datasetKey, Integer sectorKey, NameCategory category, Set<Rank> ranks,
-                              Set<TaxonomicStatus> status, Boolean authorshipDifferent, Boolean parentDifferent,
+                              Set<TaxonomicStatus> status, Boolean authorshipDifferent, Boolean acceptedDifferent,
                                Boolean rankDifferent, Boolean codeDifferent, Boolean withDecision, Page page) {
     mode = ObjectUtils.defaultIfNull(mode, MatchingMode.STRICT);
     minSize = ObjectUtils.defaultIfNull(minSize, 2);
@@ -53,7 +53,7 @@ public class DuplicateDao {
     if (compareNames) {
       dupsTmp = mapper.duplicateNames(mode, minSize, datasetKey, category, ranks, authorshipDifferent, rankDifferent, codeDifferent, page);
     } else {
-      dupsTmp = mapper.duplicates(mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, parentDifferent, rankDifferent, codeDifferent, withDecision, page);
+      dupsTmp = mapper.duplicates(mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, page);
     }
     if (dupsTmp.isEmpty()) {
       return Collections.EMPTY_LIST;
