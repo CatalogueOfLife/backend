@@ -35,13 +35,15 @@ public class UserResource {
   public ColUser get(@PathParam("key") Integer key, @Context SqlSession session) {
     ColUser u = session.getMapper(UserMapper.class).get(key);
     // obfuscate email and personal things
-    u.setEmail(null);
-    u.setSettings(null);
-    u.setOrcid(null);
-    u.setLastLogin(null);
-    u.setCreated(null);
-    u.setDeleted(null);
-    u.setRoles(null);
+    if (u != null) {
+      u.setEmail(null);
+      u.setSettings(null);
+      u.setOrcid(null);
+      u.setLastLogin(null);
+      u.setCreated(null);
+      u.setDeleted(null);
+      u.setRoles(null);
+    }
     return u;
   }
 

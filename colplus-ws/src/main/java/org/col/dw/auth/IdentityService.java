@@ -9,12 +9,13 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.ColUser;
 import org.col.db.mapper.UserMapper;
+import org.col.dw.auth.gbif.GBIFAuthentication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Identity service that delegates authentication to a pluggable provider
- * It keeps a local copyTaxon of users and therefore needs access to Postgres.
+ * It keeps a local copy of users and therefore needs access to Postgres.
  * <p>
  * A SqlSessionFactory and an HttpClient MUST be set before the service is used.
  */
@@ -39,6 +40,10 @@ public class IdentityService {
   
   public void setClient(CloseableHttpClient http) {
     authProvider.setClient(http);
+    // finally we can test the GBIF Auth settings with a well known user
+    if (authProvider instanceof GBIFAuthentication) {
+      ((GBIFAuthentication)authProvider).verifyGbifAuth();
+    }
   }
   
   public ColUser get(String username) {

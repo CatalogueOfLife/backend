@@ -40,6 +40,7 @@ public class GBIFAuthentication implements AuthenticationProvider {
   private CloseableHttpClient http;
   private final GbifTrustedAuth gbifAuth;
   private final static ObjectMapper OM = configure(new ObjectMapper());
+  private final String verificationUser;
   
   private static ObjectMapper configure(ObjectMapper mapper) {
     mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
@@ -54,6 +55,7 @@ public class GBIFAuthentication implements AuthenticationProvider {
     } catch (URISyntaxException e) {
       throw new RuntimeException(e);
     }
+    verificationUser = cfg.verificationUser;
     LOG.info("Accessing GBIF user accounts at {}", cfg.api);
   }
   
@@ -63,19 +65,20 @@ public class GBIFAuthentication implements AuthenticationProvider {
   }
   
 
+  public void verifyGbifAuth() {
+    // test gbif auth configs
+    if (verificationUser != null && getFullGbifUser(verificationUser) == null) {
+      LOG.error("Failed to retrieve user {} to verify GBIF authentication", verificationUser);
+      throw new IllegalStateException("Failed to verify GBIF authentication");
+    }
+  }
   
   @Override
   public Optional<ColUser> authenticate(String username, String password) {
     if (authenticateGBIF(username, password)) {
       // GBIF authentication does not provide us with the full user, we need to look it up again
       ColUser user = getFullGbifUser(username);
-      if (user == null) {
-        user = new ColUser();
-        user.setUsername(username);
-        user.setFirstname("?");
-        user.setLastname("?");
-      }
-      return Optional.of(user);
+      return Optional.ofNullable(user);
     } else {
       LOG.debug("GBIF authentication failed for user {}", username);
     }

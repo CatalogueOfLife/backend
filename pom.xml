@@ -64,7 +64,7 @@
         <java-diff-utils.version>4.0</java-diff-utils.version>
         <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
         <javers.version>5.6.3</javers.version>
-        <jjwt.version>0.9.1</jjwt.version>
+        <jjwt.version>0.10.7</jjwt.version>
         <junit.version>4.12</junit.version>
         <kryo-serializers.version>0.42</kryo-serializers.version>
         <kryo.version>4.0.1</kryo.version>
@@ -334,8 +334,20 @@
             <!-- JWT -->
             <dependency>
                 <groupId>io.jsonwebtoken</groupId>
-                <artifactId>jjwt</artifactId>
+                <artifactId>jjwt-api</artifactId>
                 <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>${jjwt.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>${jjwt.version}</version>
+                <scope>runtime</scope>
             </dependency>
 
             <!-- GBIF -->

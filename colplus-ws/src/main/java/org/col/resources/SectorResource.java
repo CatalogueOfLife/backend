@@ -5,6 +5,7 @@ import java.io.Reader;
 import java.util.List;
 import java.util.stream.Stream;
 import javax.annotation.security.RolesAllowed;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -13,11 +14,11 @@ import javax.ws.rs.core.MediaType;
 import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.api.model.ColUser;
-import org.col.api.model.Sector;
+import org.col.api.model.*;
 import org.col.assembly.AssemblyCoordinator;
 import org.col.dao.DatasetImportDao;
 import org.col.dao.SectorDao;
+import org.col.db.mapper.SectorImportMapper;
 import org.col.db.mapper.SectorMapper;
 import org.col.db.tree.DiffService;
 import org.col.db.tree.NamesDiff;
@@ -68,6 +69,21 @@ public class SectorResource extends GlobalEntityResource<Sector> {
     } else {
       return mapper.subjectBroken(datasetKey);
     }
+  }
+  
+  @GET
+  @Path("{key}/sync")
+  public ResultPage<SectorImport> list(@PathParam("key") int key,
+                                       @QueryParam("state") List<SectorImport.State> states,
+                                       @QueryParam("running") Boolean running,
+                                       @Valid @BeanParam Page page,
+                                       @Context SqlSession session) {
+    if (running != null) {
+      states = running ? SectorImport.runningStates() : SectorImport.finishedStates();
+    }
+    SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
+    return new ResultPage<>(page, sim.count(key, null, states),
+        sim.list(key, null, states, page));
   }
   
   @GET
