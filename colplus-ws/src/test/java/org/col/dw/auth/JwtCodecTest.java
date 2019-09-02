@@ -12,11 +12,11 @@ public class JwtCodecTest {
   
   @Test
   public void generate() throws Exception {
-    JwtCodec jwt = new JwtCodec("vchjbds65–HJ#2esy2434d");
+    JwtCodec jwt = new JwtCodec("vchjbds65–HJ#2esy2434d3456tzfghvcft");
     Set<String> codes = new HashSet<>();
     for (int x = 0; x<100; x++) {
       String code = jwt.generate(TestEntityGenerator.USER_EDITOR);
-      System.out.println(code);
+      //System.out.println(code);
       codes.add(code);
     }
     assertEquals(100, codes.size());
