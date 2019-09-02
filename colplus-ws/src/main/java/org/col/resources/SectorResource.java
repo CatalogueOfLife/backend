@@ -11,6 +11,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import com.google.common.collect.ImmutableList;
 import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -81,9 +82,11 @@ public class SectorResource extends GlobalEntityResource<Sector> {
     if (running != null) {
       states = running ? SectorImport.runningStates() : SectorImport.finishedStates();
     }
+    final List<SectorImport.State> immutableStates = ImmutableList.copyOf(states);
     SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
-    return new ResultPage<>(page, sim.count(key, null, states),
-        sim.list(key, null, states, page));
+    List<SectorImport> imports = sim.list(key, null, states, page);
+    return new ResultPage<>(page, imports, () -> sim.count(key, null, immutableStates));
+  
   }
   
   @GET

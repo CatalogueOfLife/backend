@@ -35,8 +35,12 @@
         </choose>
     </sql>
 
-    <sql id="FROM">
+    <sql id="FROM_USAGE">
         name_usage_${datasetKey} t JOIN name_${datasetKey} n ON t.name_id=n.id
+    </sql>
+
+    <sql id="FROM">
+        <include refid="FROM_USAGE"/>
         <choose>
             <when test="datasetKey != @org.col.api.vocab.Datasets@DRAFT_COL">
                 LEFT JOIN sector    s ON  s.subject_id=t.id AND  s.dataset_key=#{datasetKey}
@@ -71,9 +75,23 @@
     </select>
 
     <select id="children" resultMap="treeResultMap">
+        <if test="insertPlaceholder">
+            WITH first AS (
+                SELECT t.id, n.rank
+                FROM <include refid="FROM_USAGE" />
+                WHERE t.parent_id = #{id} AND NOT is_synonym
+                <if test="rank!=null">
+                    AND n.rank > #{rank}::rank
+                </if>
+                ORDER BY n.rank, n.scientific_name
+                LIMIT 1
+            )
+        </if>
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE t.parent_id = #{id} AND NOT is_synonym
+            <if test="insertPlaceholder">, first</if>
+        WHERE t.parent_id = #{id} AND NOT t.is_synonym
+            <if test="insertPlaceholder">AND first.rank=n.rank</if>
         ORDER BY n.rank, n.scientific_name
         <include refid="org.col.db.mapper.Common.limit" />
     </select>

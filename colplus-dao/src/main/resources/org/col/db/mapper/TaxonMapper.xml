@@ -87,6 +87,11 @@
         WHERE parent_id=#{id} AND NOT is_synonym
     </select>
 
+    <select id="countChildrenWithRank" resultType="integer">
+        SELECT count(*) FROM name_usage_${datasetKey} u JOIN name_${datasetKey} n ON n.id=u.name_id
+        WHERE u.parent_id=#{id} AND NOT u.is_synonym and n.rank=#{rank}::rank
+    </select>
+
     <select id="countRoot" resultType="integer">
         SELECT count(*)
         FROM name_usage_${datasetKey}
