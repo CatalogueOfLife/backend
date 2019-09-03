@@ -110,4 +110,12 @@
         FROM x
      </select>
 
+    <select id="childrenRanks" resultType="Rank">
+        SELECT DISTINCT n.rank
+        FROM <include refid="FROM_USAGE"/>
+        WHERE t.parent_id = #{id}
+        <if test="rank != null"> AND n.rank &lt; #{rank}::rank</if>
+        ORDER BY n.rank
+    </select>
+
 </mapper>

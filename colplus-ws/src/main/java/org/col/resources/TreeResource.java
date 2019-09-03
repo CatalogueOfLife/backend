@@ -1,5 +1,6 @@
 package org.col.resources;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -49,7 +50,19 @@ public class TreeResource {
   @GET
   @Path("{id}")
   public List<TreeNode> parents(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
-    return session.getMapper(TreeMapper.class).parents(datasetKey, id);
+    RankID parent = parseID(id);
+    TreeMapper trm = session.getMapper(TreeMapper.class);
+    LinkedList<TreeNode> parents = new LinkedList<>(trm.parents(datasetKey, parent.id));
+    if (parent.rank != null) {
+      // this was a placeholder, check how many intermediates we need
+      List<Rank> sedisRanks = trm.childrenRanks(datasetKey, parent.id, parent.rank);
+      sedisRanks.add(parent.rank);
+      TreeNode parentNode = parents.getLast();
+      for (Rank r : sedisRanks) {
+        parents.add(placeholder(parentNode, r, 1));
+      }
+    }
+    return parents;
   }
   
   @DELETE
@@ -90,15 +103,23 @@ public class TreeResource {
     return new ResultPage<>(p, result, countSupplier);
   }
   
+  private static TreeNode placeholder(TreeNode parent, Rank rank, int childCount){
+    return placeholder(parent, parent.getId(), rank, childCount);
+  }
+  
   private static TreeNode placeholder(TreeNode sibling, int childCount){
+    return placeholder(sibling, sibling.getParentId(), sibling.getRank(), childCount);
+  }
+  
+  private static TreeNode placeholder(TreeNode template, String parentID, Rank rank, int childCount){
     TreeNode tn = new TreeNode();
-    tn.setDatasetKey(sibling.getDatasetKey());
-    tn.setSectorKey(sibling.getSectorKey());
-    tn.setId(sibling.getParentId() + INC_SEDIS + sibling.getRank().name());
-    tn.setRank(sibling.getRank());
+    tn.setDatasetKey(template.getDatasetKey());
+    tn.setSectorKey(template.getSectorKey());
+    tn.setId(parentID + INC_SEDIS + rank.name());
+    tn.setRank(rank);
     tn.setName("Not assigned");
     tn.setChildCount(childCount);
-    tn.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
+    tn.setStatus(TaxonomicStatus.ACCEPTED);
     return tn;
   }
   

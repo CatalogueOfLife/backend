@@ -9,19 +9,11 @@ The CoL backend consists of 2 [Dropwizard](https://www.dropwizard.io/) applicati
 1. Maven 3
 1. Postgres 11
 
-## Run the CoL applications locally
-### colplus-admin
-1. cd into `colplus-admin`
-1. Run `mvn clean install` to build your application
-1. create a local [config.yml](colplus-admin/src/main/resources/config.yaml) file
-1. On the first run init a new, empty database with `java -jar target/colplus-admin-1.0-SNAPSHOT.jar initdb config.yml`
-1. Start application with `java -jar target/colplus-admin-1.0-SNAPSHOT.jar server config.yml`
-1. To check that your application is running enter url `http://localhost:8080`
-
-### colplus-ws
+## Run the CoL WS application locally
 1. cd into `colplus-ws`
 1. Run `mvn clean install` to build your application
 1. create a local [config.yml](colplus-ws/src/main/resources/config.yaml) file
+1. On the first run init a new, empty database with `java -jar target/colplus-admin-1.0-SNAPSHOT.jar initdb config.yml`
 1. Start application with `java -jar target/colplus-ws-1.0-SNAPSHOT.jar server config.yml`
 1. To check that your application is running enter url `http://localhost:8080`
 
