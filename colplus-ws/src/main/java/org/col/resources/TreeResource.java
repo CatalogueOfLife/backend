@@ -59,7 +59,7 @@ public class TreeResource {
       sedisRanks.add(parent.rank);
       TreeNode parentNode = parents.getLast();
       for (Rank r : sedisRanks) {
-        parents.add(placeholder(parentNode, r, 1));
+        parents.addFirst(placeholder(parentNode, r, 1));
       }
     }
     return parents;
@@ -92,7 +92,7 @@ public class TreeResource {
       countSupplier =  () -> tm.countChildren(datasetKey, parent.id);
     }
 
-    if (insertPlaceholder && result.size() < p.getLimit()) {
+    if (insertPlaceholder && !result.isEmpty() && result.size() < p.getLimit()) {
       // we *might* need a placeholder, check if there are more children of other ranks
       int allChildren = tm.countChildren(datasetKey, parent.id);
       if (allChildren > result.size()) {
