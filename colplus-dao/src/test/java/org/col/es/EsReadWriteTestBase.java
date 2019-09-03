@@ -39,7 +39,7 @@ public class EsReadWriteTestBase extends ExternalResource {
 
 
   @ClassRule
-  public static final PgSetupRule pgSetupRule = new PgSetupRule();
+  public static final PgSetupRule pgSetupRule = new PgSetupRule(false);
 
   @ClassRule
   public static final EsSetupRule esSetupRule = new EsSetupRule();

@@ -71,27 +71,44 @@ public class NameUsageService {
 
   @VisibleForTesting
   List<NameUsageDocument> getDocuments(String index, EsSearchRequest esSearchRequest) throws IOException {
-    EsNameUsageResponse esResponse = executeSearchRequest(index, esSearchRequest);
+    NameUsageResponse esResponse = executeSearchRequest(index, esSearchRequest);
     NameUsageDocumentConverter transfer = new NameSearchResponseConverter(esResponse);
     return transfer.getDocuments();
   }
 
   @VisibleForTesting
   List<NameUsageDocument> getDocumentsWithDocId(String index, EsSearchRequest esSearchRequest) throws IOException {
-    EsNameUsageResponse esResponse = executeSearchRequest(index, esSearchRequest);
+    NameUsageResponse esResponse = executeSearchRequest(index, esSearchRequest);
     NameUsageDocumentConverter transfer = new NameSearchResponseConverter(esResponse);
     return transfer.getDocumentsWithDocId();
   }
 
-  protected EsNameUsageResponse executeSearchRequest(String index, EsSearchRequest esSearchRequest) throws IOException {
+  protected NameUsageResponse executeSearchRequest(String index, EsSearchRequest esSearchRequest) throws IOException {
     if (LOG.isTraceEnabled()) {
       LOG.trace("Executing query: {}", writeQuery(esSearchRequest, true));
     }
-    Request httpRequest = new Request("GET", endpoint(index));
+    String endpoint = String.format("/%s/%s/_search", index, DEFAULT_TYPE_NAME);
+    Request httpRequest = new Request("GET", endpoint);
     httpRequest.setJsonEntity(writeQuery(esSearchRequest, false));
     Response httpResponse = EsUtil.executeRequest(client, httpRequest);
-    EsNameSearchResponseReader reader = new EsNameSearchResponseReader(httpResponse);
-    return reader.readHttpResponse();
+    NameUsageResponseReader reader = new NameUsageResponseReader(httpResponse);
+    return reader.readResponse();
+  }
+
+  protected NameUsageMultiResponse executeMultiSearchRequest(String index, EsSearchRequest... esSearchRequests) throws IOException {
+    StringBuilder sb = new StringBuilder(128);
+    for (int i = 0; i < esSearchRequests.length; ++i) {
+      if (LOG.isTraceEnabled()) {
+        LOG.trace("Multi search query - part {}: {}", i + 1, writeQuery(esSearchRequests[i], true));
+      }
+      sb.append(writeQuery(esSearchRequests[i], false));
+    }
+    String endpoint = String.format("/%s/%s/_msearch", index, DEFAULT_TYPE_NAME);
+    Request httpRequest = new Request("GET", endpoint);
+    httpRequest.setJsonEntity(sb.toString());
+    Response httpResponse = EsUtil.executeRequest(client, httpRequest);
+    NameUsageResponseReader reader = new NameUsageResponseReader(httpResponse);
+    return reader.readMultiResponse();
   }
 
   private static String writeQuery(EsSearchRequest esSearchRequest, boolean pretty) throws JsonProcessingException {
@@ -100,10 +117,6 @@ public class NameUsageService {
       ow = ow.withDefaultPrettyPrinter();
     }
     return ow.writeValueAsString(esSearchRequest);
-  }
-
-  private static String endpoint(String indexName) {
-    return String.format("/%s/%s/_search", indexName, DEFAULT_TYPE_NAME);
   }
 
 }

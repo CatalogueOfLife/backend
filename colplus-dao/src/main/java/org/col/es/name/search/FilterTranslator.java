@@ -13,7 +13,7 @@ import org.col.es.dsl.IsNullQuery;
 import org.col.es.dsl.Query;
 import org.col.es.dsl.TermQuery;
 import org.col.es.dsl.TermsQuery;
-import org.col.es.name.EsFieldLookup;
+import org.col.es.name.NameUsageFieldLookup;
 
 import static org.col.api.search.NameSearchRequest.IS_NOT_NULL;
 import static org.col.api.search.NameSearchRequest.IS_NULL;
@@ -32,7 +32,7 @@ class FilterTranslator {
 
   Query translate(NameSearchParameter param) throws InvalidQueryException {
     List<Query> queries = new ArrayList<>();
-    String field = EsFieldLookup.INSTANCE.lookup(param);
+    String field = NameUsageFieldLookup.INSTANCE.lookup(param);
     if (containsNullValue(param)) {
       queries.add(new IsNullQuery(field));
     }

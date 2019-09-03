@@ -27,11 +27,11 @@ import static org.col.api.search.NameSearchParameter.TYPE;
  * Elasticsearch fields, in which case the parameter's value is searched in all of these fields. In practice, though, we currently don't
  * have multiply-mapped name search parameters.
  */
-public class EsFieldLookup extends EnumMap<NameSearchParameter, String[]> {
+public class NameUsageFieldLookup extends EnumMap<NameSearchParameter, String[]> {
 
-  public static final EsFieldLookup INSTANCE = new EsFieldLookup();
+  public static final NameUsageFieldLookup INSTANCE = new NameUsageFieldLookup();
 
-  private EsFieldLookup() {
+  private NameUsageFieldLookup() {
     super(NameSearchParameter.class);
     putSingle(DATASET_KEY, "datasetKey");
     putSingle(DECISION_KEY, "decisionKey");

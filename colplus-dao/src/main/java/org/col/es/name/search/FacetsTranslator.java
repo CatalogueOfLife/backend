@@ -9,13 +9,13 @@ import org.col.es.dsl.FacetAggregation;
 import org.col.es.dsl.FilterAggregation;
 import org.col.es.dsl.GlobalAggregation;
 import org.col.es.dsl.Query;
-import org.col.es.name.EsFieldLookup;
+import org.col.es.name.NameUsageFieldLookup;
 
 import static java.util.Collections.singletonMap;
 
-import static org.col.es.name.NameFacetLabels.getContextFilterLabel;
-import static org.col.es.name.NameFacetLabels.getContextLabel;
-import static org.col.es.name.NameFacetLabels.getFacetLabel;
+import static org.col.es.name.NameUsageFacetLabels.getContextFilterLabel;
+import static org.col.es.name.NameUsageFacetLabels.getContextLabel;
+import static org.col.es.name.NameUsageFacetLabels.getFacetLabel;
 import static org.col.es.name.search.NameSearchRequestTranslator.generateQuery;
 
 /**
@@ -43,7 +43,7 @@ class FacetsTranslator {
     FilterAggregation ctxFilterAgg = new FilterAggregation(getContextFilter());
     context.setNestedAggregations(singletonMap(getContextFilterLabel(), ctxFilterAgg));
     for (NameSearchParameter facet : copy.getFacets()) {
-      String field = EsFieldLookup.INSTANCE.lookup(facet);
+      String field = NameUsageFieldLookup.INSTANCE.lookup(facet);
       // Temporarily remove the filter corresponding to the facet (if any), otherwise the values retrieved for the facet would collapse to
       // those specified by the filter.
       NameSearchRequest temp = copy.copy();

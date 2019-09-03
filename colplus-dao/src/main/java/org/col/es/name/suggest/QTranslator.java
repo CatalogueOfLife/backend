@@ -17,31 +17,17 @@ class QTranslator {
   private static final float BASE_BOOST = 1.0F;
 
   private final NameSuggestRequest request;
+
+  private final String q;
   private final NameStrings strings;
 
   QTranslator(NameSuggestRequest request) {
     this.request = request;
-    this.strings = new NameStrings(request.getQ().trim());
+    this.q = request.getQ().trim().toLowerCase();
+    this.strings = new NameStrings(q);
   }
 
-  Query translate() {
-    if (request.isVernaculars()) {
-      if (request.isSimple()) {
-        return new BoolQuery()
-            .should(getSimpleQuery())
-            .should(getVernacularNameQuery());
-      }
-      Query advancedQuery = getAdvancedQuery();
-      if (advancedQuery == null) {
-        return new BoolQuery()
-            .should(getSimpleQuery())
-            .should(getVernacularNameQuery());
-
-      }
-      return new BoolQuery()
-          .should(advancedQuery)
-          .should(getVernacularNameQuery());
-    }
+  Query getScientificNameQuery() {
     if (request.isSimple()) {
       return getSimpleQuery();
     }
@@ -61,12 +47,12 @@ class QTranslator {
         .subquery(getSimpleQuery());
   }
 
-  private Query getSimpleQuery() {
-    return new AutoCompleteQuery("nameStrings.scientificNameWN", strings.getScientificNameWN(), BASE_BOOST);
+  Query getVernacularNameQuery() {
+    return new AutoCompleteQuery("vernacularNames", this.q, BASE_BOOST);
   }
 
-  private Query getVernacularNameQuery() {
-    return new AutoCompleteQuery("vernacularNames", request.getQ().trim(), BASE_BOOST);
+  Query getSimpleQuery() {
+    return new AutoCompleteQuery("nameStrings.scientificNameWN", strings.getScientificNameWN(), BASE_BOOST);
   }
 
   private Query getAdvancedQuery() {

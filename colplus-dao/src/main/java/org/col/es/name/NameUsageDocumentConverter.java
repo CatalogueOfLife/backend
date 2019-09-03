@@ -7,11 +7,14 @@ import org.col.es.response.SearchHit;
 
 import static java.util.stream.Collectors.toList;
 
+/**
+ * Class responsible for extracting {@link NameUsageDocument} instances from an {@link NameUsageResponse} object.
+ */
 public class NameUsageDocumentConverter {
 
-  protected final EsNameUsageResponse esResponse;
+  protected final NameUsageResponse esResponse;
 
-  public NameUsageDocumentConverter(EsNameUsageResponse response) {
+  public NameUsageDocumentConverter(NameUsageResponse response) {
     this.esResponse = response;
   }
 
@@ -26,7 +29,7 @@ public class NameUsageDocumentConverter {
   }
 
   /**
-   * Returns the raw Elasticsearch document with their internal document IDs set on the NameUsageDocument instances.
+   * Returns the raw Elasticsearch documents with their internal document IDs set on the NameUsageDocument instances.
    * 
    * @return
    */

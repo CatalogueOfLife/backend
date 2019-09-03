@@ -3,9 +3,10 @@ package org.col.es.response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * The "aggregations" object within the Elasticsearch response.
+ * The "aggregations" object within the Elasticsearch response. Note that there are several layers between this object
+ * and the actual aggregations (a.k.a. facets).
  */
-public class AggregationResult<T extends EsFacetsContainer> {
+public class Aggregations<T extends Aggregation> {
 
   /**
    * The name that we will use to identify this object within the Elasticsearch response object.

@@ -93,9 +93,12 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     NameUsageWrapper nuw3 = new NameUsageWrapper();
     nuw3.setClassificationIds(Arrays.asList("17", "18", "19", "20", "777"));
     nuw3.setClassificationRanks(Arrays.asList(ORDER, FAMILY, GENUS, SPECIES, SPECIES));
-    nuw3.setClassificationNames(Arrays.asList("order_2", "family_2", "genus_2", "species_2", "synonym_2"));   
+    nuw3.setClassificationNames(Arrays.asList("order_2", "family_2", "genus_2", "species_2", "synonym_2"));
     nu = new Synonym();
-    ((Synonym)nu).setAccepted(new Taxon());
+    // Create the most minimalistic taxon that will still make it through the indexing process without NPEs etc.
+    Taxon accepted = new Taxon();
+    accepted.setName(new Name());
+    ((Synonym) nu).setAccepted(accepted);
     nu.setId("777");
     name = new Name();
     name.setDatasetKey(DATASET_KEY);
@@ -103,7 +106,7 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     nu.setName(name);
     nuw3.setUsage(nu);
 
-    return Arrays.asList(nuw1, nuw2,nuw3);
+    return Arrays.asList(nuw1, nuw2, nuw3);
   }
 
 }

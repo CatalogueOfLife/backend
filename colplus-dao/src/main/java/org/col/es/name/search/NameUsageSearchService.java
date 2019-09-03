@@ -9,7 +9,7 @@ import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchResponse;
 import org.col.es.EsException;
 import org.col.es.dsl.EsSearchRequest;
-import org.col.es.name.EsNameUsageResponse;
+import org.col.es.name.NameUsageResponse;
 import org.col.es.name.NameUsageService;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
@@ -43,7 +43,7 @@ public class NameUsageSearchService extends NameUsageService {
   public NameSearchResponse search(String index, NameSearchRequest request, Page page) throws IOException {
     NameSearchRequestTranslator translator = new NameSearchRequestTranslator(request, page);
     EsSearchRequest esSearchRequest = translator.translate();
-    EsNameUsageResponse esResponse = executeSearchRequest(index, esSearchRequest);
+    NameUsageResponse esResponse = executeSearchRequest(index, esSearchRequest);
     NameSearchResponseConverter transfer = new NameSearchResponseConverter(esResponse);
     NameSearchResponse response = transfer.transferResponse(page);
     if (mustHighlight(request, response)) {
@@ -55,7 +55,7 @@ public class NameUsageSearchService extends NameUsageService {
 
   @VisibleForTesting
   public NameSearchResponse search(String index, EsSearchRequest esSearchRequest, Page page) throws IOException {
-    EsNameUsageResponse esResponse = executeSearchRequest(index, esSearchRequest);
+    NameUsageResponse esResponse = executeSearchRequest(index, esSearchRequest);
     NameSearchResponseConverter transfer = new NameSearchResponseConverter(esResponse);
     return transfer.transferResponse(page);
   }

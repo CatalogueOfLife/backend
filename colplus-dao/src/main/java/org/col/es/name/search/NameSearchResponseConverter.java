@@ -23,8 +23,8 @@ import org.col.api.search.NameSearchResponse;
 import org.col.api.search.NameUsageWrapper;
 import org.col.es.EsModule;
 import org.col.es.model.NameUsageDocument;
-import org.col.es.name.EsNameFacetsContainer;
-import org.col.es.name.EsNameUsageResponse;
+import org.col.es.name.NameUsageAggregation;
+import org.col.es.name.NameUsageResponse;
 import org.col.es.name.NameUsageDocumentConverter;
 import org.col.es.name.index.NameUsageWrapperConverter;
 import org.col.es.response.Bucket;
@@ -51,7 +51,7 @@ import static org.col.api.search.NameSearchParameter.TYPE;
  */
 public class NameSearchResponseConverter extends NameUsageDocumentConverter {
 
-  public NameSearchResponseConverter(EsNameUsageResponse response) {
+  public NameSearchResponseConverter(NameUsageResponse response) {
     super(response);
   }
 
@@ -91,7 +91,7 @@ public class NameSearchResponseConverter extends NameUsageDocumentConverter {
     if (esResponse.getAggregations() == null) {
       return Collections.emptyMap();
     }
-    EsNameFacetsContainer esFacets = esResponse.getAggregations().getContextFilter().getFacetsContainer();
+    NameUsageAggregation esFacets = esResponse.getAggregations().getContextFilter().getFacetsContainer();
     Map<NameSearchParameter, Set<FacetValue<?>>> facets = new EnumMap<>(NameSearchParameter.class);
     addIfPresent(facets, DATASET_KEY, esFacets.getDatasetKey());
     addIfPresent(facets, DECISION_KEY, esFacets.getDecisionKey());

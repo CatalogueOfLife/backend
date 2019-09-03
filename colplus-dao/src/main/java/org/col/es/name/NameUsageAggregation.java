@@ -3,24 +3,24 @@ package org.col.es.name;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.col.es.response.EsFacet;
-import org.col.es.response.EsFacetsContainer;
+import org.col.es.response.Aggregation;
 
-import static org.col.es.name.NameFacetLabels.DATASET_KEY_FACET;
-import static org.col.es.name.NameFacetLabels.DECISION_KEY_FACET;
-import static org.col.es.name.NameFacetLabels.FIELD_FACET;
-import static org.col.es.name.NameFacetLabels.ISSUE_FACET;
-import static org.col.es.name.NameFacetLabels.NAME_ID_FACET;
-import static org.col.es.name.NameFacetLabels.NAME_INDEX_ID_FACET;
-import static org.col.es.name.NameFacetLabels.NOM_STATUS_FACET;
-import static org.col.es.name.NameFacetLabels.PUBLISHED_IN_ID_FACET;
-import static org.col.es.name.NameFacetLabels.PUBLISHER_KEY_FACET;
-import static org.col.es.name.NameFacetLabels.RANK_FACET;
-import static org.col.es.name.NameFacetLabels.SECTOR_KEY_FACET;
-import static org.col.es.name.NameFacetLabels.STATUS_FACET;
-import static org.col.es.name.NameFacetLabels.TAXON_ID_FACET;
-import static org.col.es.name.NameFacetLabels.TYPE_FACET;
+import static org.col.es.name.NameUsageFacetLabels.DATASET_KEY_FACET;
+import static org.col.es.name.NameUsageFacetLabels.DECISION_KEY_FACET;
+import static org.col.es.name.NameUsageFacetLabels.FIELD_FACET;
+import static org.col.es.name.NameUsageFacetLabels.ISSUE_FACET;
+import static org.col.es.name.NameUsageFacetLabels.NAME_ID_FACET;
+import static org.col.es.name.NameUsageFacetLabels.NAME_INDEX_ID_FACET;
+import static org.col.es.name.NameUsageFacetLabels.NOM_STATUS_FACET;
+import static org.col.es.name.NameUsageFacetLabels.PUBLISHED_IN_ID_FACET;
+import static org.col.es.name.NameUsageFacetLabels.PUBLISHER_KEY_FACET;
+import static org.col.es.name.NameUsageFacetLabels.RANK_FACET;
+import static org.col.es.name.NameUsageFacetLabels.SECTOR_KEY_FACET;
+import static org.col.es.name.NameUsageFacetLabels.STATUS_FACET;
+import static org.col.es.name.NameUsageFacetLabels.TAXON_ID_FACET;
+import static org.col.es.name.NameUsageFacetLabels.TYPE_FACET;
 
-public class EsNameFacetsContainer extends EsFacetsContainer {
+public class NameUsageAggregation extends Aggregation {
 
   @JsonProperty(DATASET_KEY_FACET)
   private EsFacet datasetKey;

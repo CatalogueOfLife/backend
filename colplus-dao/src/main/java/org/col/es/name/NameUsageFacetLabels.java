@@ -3,7 +3,7 @@ package org.col.es.name;
 import java.util.EnumMap;
 
 import org.col.api.search.NameSearchParameter;
-import org.col.es.response.AggregationResult;
+import org.col.es.response.Aggregations;
 import org.col.es.response.ContextFilterWrapper;
 import org.col.es.response.EsFacet;
 
@@ -23,10 +23,10 @@ import static org.col.api.search.NameSearchParameter.TAXON_ID;
 import static org.col.api.search.NameSearchParameter.TYPE;
 
 /**
- * Determines and provides the labels to use at various levels of the aggregation queries and the result objects coming back from them. We
- * need to centralize this so that the query generators use the same labels as the result parsers.
+ * Determines and provides the labels to use for the various facets. We need to centralize this so that the query
+ * generators use the same labels as the result parsers.
  */
-public class NameFacetLabels {
+public class NameUsageFacetLabels {
 
   static final String DATASET_KEY_FACET = "DATASET_KEY_FACET";
   static final String DECISION_KEY_FACET = "DECISION_KEY_FACET";
@@ -74,7 +74,7 @@ public class NameFacetLabels {
   }
 
   public static String getContextLabel() {
-    return AggregationResult.LABEL;
+    return Aggregations.LABEL;
   }
 
   public static String getContextFilterLabel() {

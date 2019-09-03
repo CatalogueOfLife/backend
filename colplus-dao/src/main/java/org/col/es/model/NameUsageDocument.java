@@ -60,7 +60,7 @@ public class NameUsageDocument {
   private Boolean recent;
 
   // If this name usage document represents a synonym this field contains the accepted name, otherwise it is null. Not
-  // indexed (searchable), but still placed it outside the payload, so we can quickly access it in the name suggestion
+  // indexed (searchable), but still placed outside the payload, so we can quickly access it in the name suggestion
   // service.
   private String acceptedName;
 

@@ -13,11 +13,13 @@ import org.gbif.nameparser.api.Rank;
  */
 public class NameSuggestion {
 
-  static enum Type {
+  public static enum Type {
     SCIENTIFIC, VERNACULAR
   }
 
-  // The name matching the search phrase: an accepted name, a synonym, a bare name or possibly a vernacular name.
+  // Whether this suggestion contains a scientific name or a vernacular name
+  private Type type;
+  // The name matching the search phrase: an accepted name/synonym/bare name/vernacular name
   private String match;
   // The accepted name if the suggestion is anything but an accepted name, null otherwise
   private String acceptedName;
@@ -27,16 +29,33 @@ public class NameSuggestion {
   private NomCode nomCode;
 
   private float score;
-  private Type type;
 
+  /**
+   * A simple construction of an actual suggestion (one that you could include in a drop-down widget) from the data in
+   * this {@code NameSuggestion} instance. English language oriented,
+   * 
+   * @return
+   */
   public String getSuggestion() {
+    if (type == Type.VERNACULAR) {
+      return String.format("%s (vernacular name for %s)", match, acceptedName);
+    }
     if (status == null) {
       return match + " (nomen nudum)";
     }
     if (status.isSynonym()) {
       return String.format("%s (synonym of %s)", match, acceptedName);
     }
-    return String.format("%s (accepted name)", match);
+    return match;
+  }
+
+  @JsonIgnore
+  public Type getType() {
+    return type;
+  }
+
+  public void setType(Type type) {
+    this.type = type;
   }
 
   public String getMatch() {
@@ -94,15 +113,6 @@ public class NameSuggestion {
 
   public void setScore(float score) {
     this.score = score;
-  }
-
-  @JsonIgnore
-  public Type getType() {
-    return type;
-  }
-
-  public void setType(Type type) {
-    this.type = type;
   }
 
   @Override

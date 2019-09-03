@@ -4,7 +4,13 @@ import java.util.List;
 
 public class NameSuggestResponse {
 
-  List<NameSuggestion> suggestions;
+  private List<NameSuggestion> suggestions;
+
+  public NameSuggestResponse() {}
+
+  public NameSuggestResponse(List<NameSuggestion> suggestions) {
+    this.suggestions = suggestions;
+  }
 
   public List<NameSuggestion> getSuggestions() {
     return suggestions;
