@@ -2,7 +2,6 @@ package org.col.es;
 
 import org.col.es.ddl.MappingFactoryTest;
 import org.col.es.name.EsNameUsageSerde;
-import org.col.es.name.EsUtilTest;
 import org.col.es.name.Issue333;
 import org.col.es.name.MultiValuedMapTest;
 import org.col.es.name.NameSearchResponseTransferTest;

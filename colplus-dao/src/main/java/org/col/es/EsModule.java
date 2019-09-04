@@ -34,7 +34,7 @@ public class EsModule extends SimpleModule {
   public static final ObjectWriter QUERY_WRITER = writerFor(EsSearchRequest.class);
   public static final ObjectWriter NAME_USAGE_WRITER = writerFor(NameUsageWrapper.class);
   public static final ObjectReader NAME_USAGE_READER = readerFor(NameUsageWrapper.class);
-  // Generic writer displaying enums as strings
+  // Generic writer used for debugging; writes enums using toString()
   public static final ObjectWriter DEBUG_WRITER = configureMapper(new ObjectMapper(), false)
       .writer()
       .withDefaultPrettyPrinter();

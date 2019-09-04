@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.Name;
+import org.col.api.search.NameSearchResponse;
 import org.col.es.ddl.Analyzers;
 import org.col.es.name.index.NameUsageWrapperConverter;
 
@@ -13,8 +14,8 @@ import static org.col.es.name.index.NameUsageWrapperConverter.normalizeStrongly;
 import static org.col.es.name.index.NameUsageWrapperConverter.normalizeWeakly;
 
 /**
- * An object embedded within the main name usage document ({@link NameUsageDocument}) solely aimed at optimizing
- * searchability. The name strings within this class do not contribute to the search response object. They are meant to
+ * An object embedded within the name usage document solely aimed at optimizing searchability. The name strings within
+ * this class do not contribute to the response returned to the client ({@link NameSearchResponse}). They are meant to
  * match search phrases as best and as cheaply as possible. This class also exists to ensure that search phrases are
  * analyzed just like the names coming in from postgres.
  */
@@ -166,6 +167,8 @@ public class NameStrings {
         name.setInfraspecificEpithet(terms[0]);
         break;
       case 2:
+        // We are going to match the 1st term in the search phrase against the genus and the 2nd against either the specific
+        // epithet or the infraspecific epithet
         setGenus(name, terms[0]);
         name.setSpecificEpithet(terms[1]);
         name.setInfraspecificEpithet(terms[1]);

@@ -13,11 +13,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 /**
- * Serialization utils for Elasticsearch document type mappings. Not meant of real domain model objects.
+ * Serialization utils for DDL-type requests ({@link IndexDefinition} objects and {@link DocumentTypeMapping document
+ * type mappings}. Most important difference with serializing API model classes is that fields rather than
+ * getters/setters are serialized.
  */
 public class SerializationUtil {
 
-  // Mapper for (de)serializing document type mappings
+  // Mapper for (de)serializing DDL (IndexDefinition instances and document type mappings)
   public static final ObjectMapper MAPPER = configureMapper();
 
   private static final TypeReference<Map<String, Object>> MAP_TYPE_REF = new TypeReference<Map<String, Object>>() {};

@@ -8,7 +8,7 @@ import org.junit.Test;
 
 public class MappingFactoryTest {
 
-  @Test
+  @Test // Just testing we don't get exceptions
   public void getMapping1() {
     MappingFactory<NameUsageDocument> mf = new MappingFactory<>();
     mf.setMapEnumToInt(true);

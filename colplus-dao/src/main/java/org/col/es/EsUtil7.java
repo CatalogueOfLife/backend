@@ -10,7 +10,6 @@ import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import org.col.es.ddl.DocumentTypeMapping;
 import org.col.es.ddl.MappingFactory;
 import org.col.es.ddl.SerializationUtil;
 import org.col.es.dsl.BoolQuery;
@@ -28,37 +27,12 @@ import org.slf4j.LoggerFactory;
 import static org.col.es.ddl.SerializationUtil.pretty;
 import static org.col.es.ddl.SerializationUtil.readIntoMap;
 
-public class EsUtil {
+public class EsUtil7 {
 
-  private static final Logger LOG = LoggerFactory.getLogger(EsUtil.class);
-
-  private static int majorVersion;
-  private static String versionString;
-
-  public static int getMajorVersion(RestClient client) throws IOException {
-    if (majorVersion == 0) {
-      Request request = new Request("GET", "/");
-      Response response = client.performRequest(request);
-      HashMap<String, String> data = readFromResponse(response, "version");
-      versionString = data.get("number");
-      majorVersion = Integer.parseInt(versionString.substring(0, versionString.indexOf(".")));
-    }
-    return majorVersion;
-  }
-
-  public static String getVersionString(RestClient client) throws IOException {
-    if (versionString == null) {
-      Request request = new Request("GET", "/");
-      Response response = client.performRequest(request);
-      HashMap<String, String> data = readFromResponse(response, "version");
-      versionString = data.get("number");
-      majorVersion = Integer.parseInt(versionString.substring(0, versionString.indexOf(".")));
-    }
-    return versionString;
-  }
+  private static final Logger LOG = LoggerFactory.getLogger(EsUtil7.class);
 
   /**
-   * Whether or not an index with the provided name exists.
+   * Whether or not the index with the provided name exists.
    * 
    * @param client
    * @param index
@@ -70,48 +44,9 @@ public class EsUtil {
     Response response = client.performRequest(request);
     return response.getStatusLine().getStatusCode() == 200;
   }
-  
-  @SuppressWarnings("unchecked")
-  public static void createIdx(RestClient client, String index, IndexConfig cfg) throws IOException {
-    
-  }
-
-    
 
   @SuppressWarnings("unchecked")
   public static <T> void createIndex(RestClient client, String index, IndexConfig cfg) throws IOException {
-
-    // Load static config (analyzers, tokenizers, etc.) from es-settings.json
-    Map<String, Object> settings = readIntoMap(loadSettings());
-    // Insert configurable settings from config.yaml
-    Map<String, Object> indexSettings = (Map<String, Object>) settings.get("index");
-    indexSettings.put("number_of_shards", cfg.numShards);
-    indexSettings.put("number_of_replicas", cfg.numReplicas);
-
-    // Create document type mapping
-    Map<String, Object> mappings = new HashMap<>();
-    MappingFactory<T> factory = new MappingFactory<>();
-    factory.setMapEnumToInt(true);
-    DocumentTypeMapping mapping = factory.getMapping(cfg.modelClass);
-    mappings.put(EsConfig.DEFAULT_TYPE_NAME, mapping);
-
-    // Combine into full request
-    Map<String, Object> indexSpec = new HashMap<>();
-    indexSpec.put("settings", settings);
-    indexSpec.put("mappings", mappings);
-
-    if (LOG.isTraceEnabled()) {
-      LOG.trace("Creating index {}: {}", index, pretty(indexSpec));
-    }
-
-    Request request = new Request("PUT", index);
-    request.setJsonEntity(SerializationUtil.serialize(indexSpec));
-    executeRequest(client, request);
-  }
-  
-
-  @SuppressWarnings("unchecked")
-  public static <T> void createIndex7(RestClient client, String index, IndexConfig cfg) throws IOException {
 
     // Load static config (analyzers, tokenizers, etc.) from es-settings.json
     Map<String, Object> settings = readIntoMap(loadSettings());
@@ -138,14 +73,6 @@ public class EsUtil {
     executeRequest(client, request);
   }
 
-
-  /**
-   * Deletes the provided index. Will silently do nothing if the index did not exist.
-   * 
-   * @param client
-   * @param index
-   * @throws IOException
-   */
   public static void deleteIndex(RestClient client, String index) throws IOException {
     Request request = new Request("DELETE", index);
     Response response = null;
@@ -230,15 +157,8 @@ public class EsUtil {
     return readFromResponse(response, "total");
   }
 
-  /**
-   * Makes all index documents become visible to clients.
-   * 
-   * @param client
-   * @param name
-   * @throws IOException
-   */
-  public static void refreshIndex(RestClient client, String name) throws IOException {
-    Request request = new Request("POST", name + "/_refresh");
+  public static void refreshIndex(RestClient client, String index) throws IOException {
+    Request request = new Request("POST", index + "/_refresh");
     executeRequest(client, request);
   }
 
@@ -246,17 +166,19 @@ public class EsUtil {
    * Simple document count.
    * 
    * @param client
-   * @param indexName
+   * @param index
    * @return
    * @throws IOException
    */
-  public static int count(RestClient client, String indexName) throws IOException {
-    Request request = new Request("GET", indexName + "/" + EsConfig.DEFAULT_TYPE_NAME + "/_count");
+  public static int count(RestClient client, String index) throws IOException {
+    Request request = new Request("GET", index + "/_count");
     Response response = executeRequest(client, request);
-    try {
-      return (Integer) readIntoMap(response.getEntity().getContent()).get("count");
-    } catch (UnsupportedOperationException | IOException e) {
-      throw new EsException(e);
+    return readFromResponse(response, "count");
+  }
+
+  public static <T> void insert(RestClient client, String index, Collection<T> objs) throws IOException {
+    for (T obj : objs) {
+      insert(client, index, obj);
     }
   }
 
@@ -278,7 +200,7 @@ public class EsUtil {
   }
 
   /**
-   * Executes the provided HTTP request and returns the HTTP response
+   * Execute the provided HTTP request and return the HTTP response
    * 
    * @param client
    * @param request

@@ -25,7 +25,6 @@ import org.col.es.EsModule;
 import org.col.es.model.NameUsageDocument;
 import org.col.es.name.NameUsageAggregation;
 import org.col.es.name.NameUsageResponse;
-import org.col.es.name.NameUsageDocumentConverter;
 import org.col.es.name.index.NameUsageWrapperConverter;
 import org.col.es.response.Bucket;
 import org.col.es.response.EsFacet;
@@ -47,12 +46,14 @@ import static org.col.api.search.NameSearchParameter.TAXON_ID;
 import static org.col.api.search.NameSearchParameter.TYPE;
 
 /**
- * Converts the Elasticsearch response object to a NameSearchResponse instance.
+ * Converts the Elasticsearch response to a NameSearchResponse instance.
  */
-public class NameSearchResponseConverter extends NameUsageDocumentConverter {
+class NameSearchResultConverter {
 
-  public NameSearchResponseConverter(NameUsageResponse response) {
-    super(response);
+  private final NameUsageResponse esResponse;
+
+  NameSearchResultConverter(NameUsageResponse esResponse) {
+    this.esResponse = esResponse;
   }
 
   /**
@@ -62,7 +63,7 @@ public class NameSearchResponseConverter extends NameUsageDocumentConverter {
    * @return
    * @throws IOException
    */
-  public NameSearchResponse transferResponse(Page page) throws IOException {
+  NameSearchResponse transferResponse(Page page) throws IOException {
     int total = esResponse.getHits().getTotal();
     List<NameUsageWrapper> nameUsages = transferNameUsages();
     Map<NameSearchParameter, Set<FacetValue<?>>> facets = transferFacets();

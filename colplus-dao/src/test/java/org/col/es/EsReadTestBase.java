@@ -36,13 +36,13 @@ public class EsReadTestBase {
     return esSetupRule.getEsClient();
   }
 
-  // useful for @Before methods
+  // Useful for @Before methods
   protected void destroyAndCreateIndex() {
     try {
       EsUtil.deleteIndex(getEsClient(), indexName);
       EsUtil.createIndex(getEsClient(), indexName, getEsConfig().nameUsage);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new EsException(e);
     }
   }
 

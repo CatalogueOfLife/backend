@@ -25,16 +25,20 @@ import static org.col.es.ddl.MultiField.IGNORE_CASE;
 public class MappingFactory<T> {
 
   /*
-   * Cache of document type mappings. Since we currently have just one document type (EsNameUsage), it will contain just one entry.
+   * Cache of document type mappings. Since we currently have just one document type (EsNameUsage), it will contain just
+   * one entry.
    */
   private static final HashMap<Class<?>, DocumentTypeMapping> cache = new HashMap<>();
 
   /*
-   * Whether to map enums to the integer or to the keyword datatype. This is more or less separate from how you serialize enums. Obviously
-   * when serializing enums to strings, you have no choice but to use the keyword datatype. But when serializing enums to integers, you have
-   * the choice of storing them as strings or as integers, and there can be good reasons to store them as strings (as explained in the
-   * Elasticsearch performance tuning guide). Specifying the datatype mapping here saves you from having to decorate each and every enum in
-   * the data model with the @MapToType annotation. You can still use the @MapToType to override the global behaviour.
+   * Whether to map enums to Elasticsearch's integer datatype or to the keyword datatype. This is more or less separate
+   * from how you __serialize__ enums. Obviously when serializing enums to strings, you have no choice but to use the
+   * keyword datatype. But when serializing enums to integers, you still have the choice of storing them as strings or as
+   * integers, and there can be good reasons to store them as strings (as explained in the Elasticsearch performance
+   * tuning guide). Specifying the datatype mapping here saves you from having to decorate each and every enum in the data
+   * model with the @MapToType annotation. You can still use the @MapToType to override the global behaviour. Note that in
+   * EsModule we specify that we want enums to be serialized using their ordinal value, so we are indeed free to choose
+   * between the keyword and integer datatype.
    */
   private boolean mapEnumToInt = true;
 
@@ -168,9 +172,9 @@ public class MappingFactory<T> {
   }
 
   /*
-   * Maps a Java class to another Java class that must be used in its place. The latter class is then mapped to an Elasticsearch data type.
-   * When mapping arrays, it's not the array that is mapped but the class of its elements. No array type exists or is required in
-   * Elasticsearch. Fields are intrinsically multi-valued.
+   * Maps a Java class to another Java class that must be used in its place. The latter class is then mapped to an
+   * Elasticsearch data type. When mapping arrays, it's not the array that is mapped but the class of its elements. No
+   * array type exists or is required in Elasticsearch. Fields are intrinsically multi-valued.
    */
   private Class<?> mapType(Class<?> type, Type typeArg) {
     if (type.isArray()) {

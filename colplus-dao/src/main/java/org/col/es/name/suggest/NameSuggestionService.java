@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.col.api.model.Synonym;
 import org.col.api.search.NameSuggestRequest;
 import org.col.api.search.NameSuggestResponse;
 import org.col.api.search.NameSuggestion;
@@ -34,7 +33,7 @@ public class NameSuggestionService extends NameUsageService {
     RequestTranslator translator = new RequestTranslator(request);
     EsSearchRequest snQuery = translator.getScientificNameQuery();
     List<NameSuggestion> suggestions = new ArrayList<>();
-    if (request.isVernaculars()) {
+    if (request.isSuggestVernaculars()) {
       EsSearchRequest vnQuery = translator.getVernacularNameQuery();
       NameUsageMultiResponse multiResponse = executeMultiSearchRequest(index, snQuery, vnQuery);
       NameUsageResponse snResponse = multiResponse.getResponses().get(0);

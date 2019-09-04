@@ -8,13 +8,13 @@ import org.col.es.response.SearchHit;
 import static java.util.stream.Collectors.toList;
 
 /**
- * Class responsible for extracting {@link NameUsageDocument} instances from an {@link NameUsageResponse} object.
+ * Converts
  */
-public class NameUsageDocumentConverter {
+public class NameUsageResponseConverter {
 
   protected final NameUsageResponse esResponse;
 
-  public NameUsageDocumentConverter(NameUsageResponse response) {
+  public NameUsageResponseConverter(NameUsageResponse response) {
     this.esResponse = response;
   }
 

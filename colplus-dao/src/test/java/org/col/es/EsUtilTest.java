@@ -1,14 +1,12 @@
-package org.col.es.name;
+package org.col.es;
 
 import java.io.IOException;
 
 import org.col.api.TestEntityGenerator;
-import org.col.es.EsReadTestBase;
-import org.col.es.EsUtil;
 import org.col.es.model.NameUsageDocument;
 import org.col.es.name.index.NameUsageWrapperConverter;
 import org.elasticsearch.client.RestClient;
-import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -16,11 +14,10 @@ import static org.col.es.EsUtil.insert;
 import static org.col.es.EsUtil.refreshIndex;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class EsUtilTest extends EsReadTestBase {
-
-  private static final String indexName = "name_usage_test";
 
   private static RestClient client;
 
@@ -29,23 +26,40 @@ public class EsUtilTest extends EsReadTestBase {
     client = esSetupRule.getEsClient();
   }
 
-  @AfterClass
-  public static void shutdown() throws IOException {
-    EsUtil.deleteIndex(client, indexName);
-    client.close();
+  @Before
+  public void before() {
+    destroyAndCreateIndex();
+  }
+
+  @Test // Just make sure we don't get an exception
+  public void testGetMajorVersion() throws IOException {
+    System.out.println("Major version: " + EsUtil.getMajorVersion(client));
+  }
+
+  @Test // Just make sure we don't get an exception
+  public void testGetVersionString() throws IOException {
+    System.out.println("Version string: " + EsUtil.getVersionString(client));
   }
 
   @Test
-  public void createAndDeleteIndices() throws IOException {
-    EsUtil.deleteIndex(client, indexName); // OK if index does not exist
-    EsUtil.createIndex(client, indexName, getEsConfig().nameUsage);
-    EsUtil.deleteIndex(client, indexName);
+  public void testInsert() throws IOException {
+    String id = insert(client, indexName, new NameUsageDocument());
+    System.out.println("Generated id: " + id);
+    assertNotNull(id);
+  }
+
+  @Test
+  public void testCount() throws IOException {
+    insert(client, indexName, new NameUsageDocument());
+    insert(client, indexName, new NameUsageDocument());
+    insert(client, indexName, new NameUsageDocument());
+    insert(client, indexName, new NameUsageDocument());
+    refreshIndex(client, indexName);
+    assertEquals(4, EsUtil.count(client, indexName));
   }
 
   @Test
   public void deleteDataset() throws IOException {
-    EsUtil.deleteIndex(client, indexName);
-    EsUtil.createIndex(client, indexName, getEsConfig().nameUsage);
     // Insert 3 documents (overwriting dataset key to known values)
     NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
     NameUsageDocument enu = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
@@ -76,8 +90,6 @@ public class EsUtilTest extends EsReadTestBase {
 
   @Test
   public void testDeleteSector() throws IOException {
-    EsUtil.deleteIndex(client, indexName);
-    EsUtil.createIndex(client, indexName, getEsConfig().nameUsage);
     // Insert 3 documents (overwriting sector key to known values)
     NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
     NameUsageDocument enu = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
@@ -108,9 +120,7 @@ public class EsUtilTest extends EsReadTestBase {
 
   @Test
   public void indexExists() throws IOException {
-    EsUtil.deleteIndex(client, indexName);
-    EsUtil.createIndex(client, indexName, getEsConfig().nameUsage);
-    assertTrue(EsUtil.indexExists(client, indexName));
+    assertTrue(EsUtil.indexExists(client, indexName)); // we just created it in @Before
     EsUtil.deleteIndex(client, indexName);
     assertFalse(EsUtil.indexExists(client, indexName));
   }

@@ -12,7 +12,6 @@ import org.col.es.EsModule;
 import org.col.es.EsUtil;
 import org.col.es.dsl.EsSearchRequest;
 import org.col.es.model.NameUsageDocument;
-import org.col.es.name.search.NameSearchResponseConverter;
 import org.col.es.name.search.NameUsageSearchService;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
@@ -72,14 +71,14 @@ public class NameUsageService {
   @VisibleForTesting
   List<NameUsageDocument> getDocuments(String index, EsSearchRequest esSearchRequest) throws IOException {
     NameUsageResponse esResponse = executeSearchRequest(index, esSearchRequest);
-    NameUsageDocumentConverter transfer = new NameSearchResponseConverter(esResponse);
+    NameUsageResponseConverter transfer = new NameUsageResponseConverter(esResponse);
     return transfer.getDocuments();
   }
 
   @VisibleForTesting
   List<NameUsageDocument> getDocumentsWithDocId(String index, EsSearchRequest esSearchRequest) throws IOException {
     NameUsageResponse esResponse = executeSearchRequest(index, esSearchRequest);
-    NameUsageDocumentConverter transfer = new NameSearchResponseConverter(esResponse);
+    NameUsageResponseConverter transfer = new NameUsageResponseConverter(esResponse);
     return transfer.getDocumentsWithDocId();
   }
 

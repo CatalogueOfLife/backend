@@ -2,20 +2,27 @@ package org.col.api.search;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class NameSuggestRequest {
 
   private String q;
   private Integer datasetKey;
-  private Integer limit; // desired number of suggested names
-  private Boolean vernaculars; // include vernacular names among the suggestions?
-  private Boolean simple; // only match search phrase against lowercased scientific name?
+  // Desired number of suggestions
+  private Integer limit;
+  private Boolean suggestVernaculars;
+  // If true, makes the search extra sensitive to the user typing uninomials, binomials and trinomials (at the expense of
+  // making it less sensitive to the user typing things like infraspecific markers)
+  private Boolean epithetSensitive;
 
-  public boolean isSimple() {
-    return simple != null && simple.equals(Boolean.TRUE);
+  @JsonIgnore
+  public boolean isEpithetSensitive() {
+    return epithetSensitive == null || epithetSensitive.equals(Boolean.TRUE);
   }
 
-  public boolean isVernaculars() {
-    return vernaculars != null && vernaculars.equals(Boolean.TRUE);
+  @JsonIgnore
+  public boolean isSuggestVernaculars() {
+    return suggestVernaculars != null && suggestVernaculars.equals(Boolean.TRUE);
   }
 
   public String getQ() {
@@ -42,17 +49,17 @@ public class NameSuggestRequest {
     this.limit = limit;
   }
 
-  public Boolean getSimple() {
-    return simple;
+  public Boolean getEpithetSenitive() {
+    return epithetSensitive;
   }
 
-  public void setSimple(Boolean simple) {
-    this.simple = simple;
+  public void setEpithetSensitive(Boolean simple) {
+    this.epithetSensitive = simple;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, limit, q, simple, vernaculars);
+    return Objects.hash(datasetKey, limit, q, epithetSensitive, suggestVernaculars);
   }
 
   @Override
@@ -65,7 +72,7 @@ public class NameSuggestRequest {
       return false;
     NameSuggestRequest other = (NameSuggestRequest) obj;
     return Objects.equals(datasetKey, other.datasetKey) && Objects.equals(limit, other.limit) && Objects.equals(q, other.q)
-        && Objects.equals(simple, other.simple) && Objects.equals(vernaculars, other.vernaculars);
+        && Objects.equals(epithetSensitive, other.epithetSensitive) && Objects.equals(suggestVernaculars, other.suggestVernaculars);
   }
 
 }

@@ -28,7 +28,7 @@ class QTranslator {
   }
 
   Query getScientificNameQuery() {
-    if (request.isSimple()) {
+    if (request.isEpithetSensitive()) {
       return getSimpleQuery();
     }
     Query advancedQuery = getAdvancedQuery();
@@ -56,7 +56,7 @@ class QTranslator {
   }
 
   private Query getAdvancedQuery() {
-    switch (tokenize(request.getQ()).length) {
+    switch (tokenize(q).length) {
       case 1: // Compare the search phrase with genus, specific and infraspecific epithet
         return new BoolQuery()
             .should(getGenusQuery())

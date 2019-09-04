@@ -44,7 +44,7 @@ public class NameUsageSearchService extends NameUsageService {
     NameSearchRequestTranslator translator = new NameSearchRequestTranslator(request, page);
     EsSearchRequest esSearchRequest = translator.translate();
     NameUsageResponse esResponse = executeSearchRequest(index, esSearchRequest);
-    NameSearchResponseConverter transfer = new NameSearchResponseConverter(esResponse);
+    NameSearchResultConverter transfer = new NameSearchResultConverter(esResponse);
     NameSearchResponse response = transfer.transferResponse(page);
     if (mustHighlight(request, response)) {
       NameSearchHighlighter highlighter = new NameSearchHighlighter(request, response);
@@ -56,7 +56,7 @@ public class NameUsageSearchService extends NameUsageService {
   @VisibleForTesting
   public NameSearchResponse search(String index, EsSearchRequest esSearchRequest, Page page) throws IOException {
     NameUsageResponse esResponse = executeSearchRequest(index, esSearchRequest);
-    NameSearchResponseConverter transfer = new NameSearchResponseConverter(esResponse);
+    NameSearchResultConverter transfer = new NameSearchResultConverter(esResponse);
     return transfer.transferResponse(page);
   }
 
