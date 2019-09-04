@@ -11,6 +11,7 @@ import java.util.Map;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.col.es.ddl.DocumentTypeMapping;
+import org.col.es.ddl.IndexDefinition;
 import org.col.es.ddl.MappingFactory;
 import org.col.es.ddl.SerializationUtil;
 import org.col.es.dsl.BoolQuery;
@@ -70,13 +71,13 @@ public class EsUtil {
     Response response = client.performRequest(request);
     return response.getStatusLine().getStatusCode() == 200;
   }
-  
+
   @SuppressWarnings("unchecked")
   public static void createIdx(RestClient client, String index, IndexConfig cfg) throws IOException {
-    
-  }
+    if (getMajorVersion(client) == 7) {
 
-    
+    }
+  }
 
   @SuppressWarnings("unchecked")
   public static <T> void createIndex(RestClient client, String index, IndexConfig cfg) throws IOException {
@@ -108,7 +109,6 @@ public class EsUtil {
     request.setJsonEntity(SerializationUtil.serialize(indexSpec));
     executeRequest(client, request);
   }
-  
 
   @SuppressWarnings("unchecked")
   public static <T> void createIndex7(RestClient client, String index, IndexConfig cfg) throws IOException {
@@ -137,7 +137,6 @@ public class EsUtil {
     request.setJsonEntity(SerializationUtil.serialize(indexSpec));
     executeRequest(client, request);
   }
-
 
   /**
    * Deletes the provided index. Will silently do nothing if the index did not exist.
