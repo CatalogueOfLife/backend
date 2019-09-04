@@ -8,6 +8,7 @@ import java.util.*;
 import javax.annotation.Nullable;
 
 import com.google.common.base.Splitter;
+import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.Dataset;
 import org.col.api.model.Reference;
 import org.col.api.model.VerbatimRecord;
@@ -110,31 +111,34 @@ public class AcefInserter extends NeoInserter {
 
       VerbatimRecord v = store.getVerbatim(u.usage.getVerbatimKey());
       final String aID = v.getRaw(AcefTerm.AcceptedTaxonID);
-      
-      List<String> accIds = proParteAccIds.getOrDefault(u.getId(), new ArrayList<>());
-      if (accIds.isEmpty()) {
-        // never been here before, so we need to also load the first, previous acceptedID from verbatim
-        v = store.getVerbatim(pre.usage.getVerbatimKey());
-        accIds.add(v.getRaw(AcefTerm.AcceptedTaxonID));
-        proParteAccIds.put(u.getId(), accIds);
-      }
-      if (accIds.contains(aID)) {
-        LOG.debug("Duplicate synonym with the same acceptedID found. Ignore");
-        v.addIssue(Issue.DUPLICATE_NAME);
-        v.addIssue(Issue.TAXON_ID_INVALID);
-        
-      } else {
-        NeoUsage acc = store.usages().objByID(aID);
-        if (acc == null) {
-          v.addIssue(Issue.ACCEPTED_ID_INVALID);
+      if (StringUtils.isNotEmpty(aID)) {
+        List<String> accIds = proParteAccIds.computeIfAbsent(u.getId(), k -> new ArrayList<>());
+        if (accIds.isEmpty()) {
+          // never been here before, so we need to also load the first, previous acceptedID from verbatim
+          v = store.getVerbatim(pre.usage.getVerbatimKey());
+          String acceptedTaxonID = v.getRaw(AcefTerm.AcceptedTaxonID);
+          if (StringUtils.isNotEmpty(acceptedTaxonID)) {
+            accIds.add(acceptedTaxonID);
+          }
+        }
+        if (accIds.contains(aID)) {
+          LOG.debug("Duplicate synonym with the same acceptedID found. Ignore");
+          v.addIssue(Issue.DUPLICATE_NAME);
+          v.addIssue(Issue.TAXON_ID_INVALID);
           
         } else {
-          // create synonym relations in post process
-          accIds.add(aID);
-          return true;
+          NeoUsage acc = store.usages().objByID(aID);
+          if (acc == null) {
+            v.addIssue(Issue.ACCEPTED_ID_INVALID);
+            
+          } else {
+            // create synonym relations in post process
+            accIds.add(aID);
+            return true;
+          }
         }
+        return false;
       }
-      return false;
       
     }
     return store.createNameAndUsage(u) != null;
@@ -153,15 +157,17 @@ public class AcefInserter extends NeoInserter {
     LOG.info("Create additional pro parte synonyms for {} usages", proParteAccIds.size());
     try (Transaction tx = store.getNeo().beginTx()){
       for (Map.Entry<String, List<String>> syn : proParteAccIds.entrySet()) {
-        NeoUsage synU = store.usages().objByID(syn.getKey());
-        // remove the first which we generate normally
-        syn.getValue().remove(0);
-        // now create additional pro parte synonym relations for the rest
-        for (String accID : syn.getValue()) {
-          NeoUsage accU = store.usages().objByID(accID);
-          if (accU == null) {
-          } else {
-            synU.node.createRelationshipTo(accU.node, RelType.SYNONYM_OF);
+        if (!syn.getValue().isEmpty()) {
+          NeoUsage synU = store.usages().objByID(syn.getKey());
+          // remove the first which we generate normally
+          syn.getValue().remove(0);
+          // now create additional pro parte synonym relations for the rest
+          for (String accID : syn.getValue()) {
+            NeoUsage accU = store.usages().objByID(accID);
+            if (accU == null) {
+            } else {
+              synU.node.createRelationshipTo(accU.node, RelType.SYNONYM_OF);
+            }
           }
         }
       }
