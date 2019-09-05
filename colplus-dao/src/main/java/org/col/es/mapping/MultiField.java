@@ -1,4 +1,4 @@
-package org.col.es.ddl;
+package org.col.es.mapping;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

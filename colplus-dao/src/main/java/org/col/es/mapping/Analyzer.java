@@ -1,4 +1,4 @@
-package org.col.es.ddl;
+package org.col.es.mapping;
 
 /**
  * Symbolic constants for the Elasticsearch analyzers defined within the CoL document store (see es-settings.json in src/main/resources).

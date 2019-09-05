@@ -9,17 +9,17 @@ import org.col.api.vocab.Issue;
 import org.col.api.vocab.NameField;
 import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.TaxonomicStatus;
-import org.col.es.ddl.Analyzers;
-import org.col.es.ddl.ESDataType;
-import org.col.es.ddl.MapToType;
-import org.col.es.ddl.NotIndexed;
-import org.col.es.ddl.NotMapped;
+import org.col.es.mapping.Analyzers;
+import org.col.es.mapping.ESDataType;
+import org.col.es.mapping.MapToType;
+import org.col.es.mapping.NotIndexed;
+import org.col.es.mapping.NotMapped;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
-import static org.col.es.ddl.Analyzer.AUTO_COMPLETE;
-import static org.col.es.ddl.Analyzer.IGNORE_CASE;
+import static org.col.es.mapping.Analyzer.AUTO_COMPLETE;
+import static org.col.es.mapping.Analyzer.IGNORE_CASE;
 
 /**
  * Class modeling the Elasticsearch document type used to store NameUsageWrapper instances.

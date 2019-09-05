@@ -11,7 +11,7 @@ import org.col.es.dsl.Query;
 /**
  * Translates a NameSearchRequest into an Elasticsearch search request. Main class of this package.
  */
-class NameSearchRequestTranslator {
+class RequestTranslator {
 
   static Query generateQuery(NameSearchRequest request) {
     if (request.getFilters().isEmpty()) {
@@ -30,7 +30,7 @@ class NameSearchRequestTranslator {
   private final NameSearchRequest request;
   private final Page page;
 
-  NameSearchRequestTranslator(NameSearchRequest request, Page page) {
+  RequestTranslator(NameSearchRequest request, Page page) {
     this.request = request;
     this.page = page;
   }

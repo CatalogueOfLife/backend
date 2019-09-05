@@ -1,4 +1,4 @@
-package org.col.es.ddl;
+package org.col.es.mapping;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

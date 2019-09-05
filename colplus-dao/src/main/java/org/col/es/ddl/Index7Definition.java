@@ -1,10 +1,16 @@
 package org.col.es.ddl;
 
-public class Index7Definition extends IndexDefinition<DocumentTypeMapping> {
+import org.col.es.mapping.Mappings;
+
+public class Index7Definition extends IndexDefinition<Mappings> {
+
+  public Index7Definition(Settings settings, Mappings mappings) {
+    super(settings, mappings);
+  }
 
   @Override
-  public DocumentTypeMapping createMappings(DocumentTypeMapping typeMapping) {
-    return typeMapping;
+  public Mappings createMappings(Mappings mappings) {
+    return mappings;
   }
 
 }

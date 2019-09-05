@@ -1,4 +1,4 @@
-package org.col.es.ddl;
+package org.col.es.mapping;
 
 import java.net.URI;
 import java.net.URL;
@@ -10,15 +10,15 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.col.es.ddl.ESDataType.BOOLEAN;
-import static org.col.es.ddl.ESDataType.BYTE;
-import static org.col.es.ddl.ESDataType.DATE;
-import static org.col.es.ddl.ESDataType.DOUBLE;
-import static org.col.es.ddl.ESDataType.FLOAT;
-import static org.col.es.ddl.ESDataType.INTEGER;
-import static org.col.es.ddl.ESDataType.KEYWORD;
-import static org.col.es.ddl.ESDataType.LONG;
-import static org.col.es.ddl.ESDataType.SHORT;
+import static org.col.es.mapping.ESDataType.BOOLEAN;
+import static org.col.es.mapping.ESDataType.BYTE;
+import static org.col.es.mapping.ESDataType.DATE;
+import static org.col.es.mapping.ESDataType.DOUBLE;
+import static org.col.es.mapping.ESDataType.FLOAT;
+import static org.col.es.mapping.ESDataType.INTEGER;
+import static org.col.es.mapping.ESDataType.KEYWORD;
+import static org.col.es.mapping.ESDataType.LONG;
+import static org.col.es.mapping.ESDataType.SHORT;
 
 /**
  * Maps Java types to Elasticsearch types and vice versa.

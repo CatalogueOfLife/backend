@@ -5,11 +5,11 @@ import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.Name;
 import org.col.api.search.NameSearchResponse;
-import org.col.es.ddl.Analyzers;
+import org.col.es.mapping.Analyzers;
 import org.col.es.name.index.NameUsageWrapperConverter;
 
-import static org.col.es.ddl.Analyzer.AUTO_COMPLETE;
-import static org.col.es.ddl.Analyzer.KEYWORD;
+import static org.col.es.mapping.Analyzer.AUTO_COMPLETE;
+import static org.col.es.mapping.Analyzer.KEYWORD;
 import static org.col.es.name.index.NameUsageWrapperConverter.normalizeStrongly;
 import static org.col.es.name.index.NameUsageWrapperConverter.normalizeWeakly;
 

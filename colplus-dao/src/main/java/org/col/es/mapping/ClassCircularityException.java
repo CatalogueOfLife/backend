@@ -1,10 +1,10 @@
-package org.col.es.ddl;
+package org.col.es.mapping;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 /**
- * Thrown by {@link MappingFactory#getMapping(Class)} for Java classes that cannot be mapped because of circularity in the object graph.
+ * Thrown by {@link MappingsFactory#getMapping(Class)} for Java classes that cannot be mapped because of circularity in the object graph.
  */
 public class ClassCircularityException extends MappingException {
 

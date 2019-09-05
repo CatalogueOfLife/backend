@@ -16,7 +16,7 @@ import static java.util.Collections.singletonMap;
 import static org.col.es.name.NameUsageFacetLabels.getContextFilterLabel;
 import static org.col.es.name.NameUsageFacetLabels.getContextLabel;
 import static org.col.es.name.NameUsageFacetLabels.getFacetLabel;
-import static org.col.es.name.search.NameSearchRequestTranslator.generateQuery;
+import static org.col.es.name.search.RequestTranslator.generateQuery;
 
 /**
  * Translates the facets in the NameSearchRequest object into a set of suitable aggregations. There is one edge case here, namely if there

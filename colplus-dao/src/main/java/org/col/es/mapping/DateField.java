@@ -1,4 +1,4 @@
-package org.col.es.ddl;
+package org.col.es.mapping;
 
 /**
  * A {@code DateField} is a {@link SimpleField} with Elasticsearch data type {@link ESDataType#DATE date}.

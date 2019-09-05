@@ -12,12 +12,14 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import org.col.es.EsException;
+import org.col.es.mapping.MappingException;
+
 /**
- * Serialization utils for DDL-type requests ({@link IndexDefinition} objects and {@link DocumentTypeMapping document
- * type mappings}. Most important difference with serializing API model classes is that fields rather than
- * getters/setters are serialized.
+ * JSON utils for the Create Index API (see {@link IndexDefinition}). Most important difference with serializing API
+ * model classes is that fields rather than getters/setters are serialized and enums are serialized using toString().
  */
-public class SerializationUtil {
+public class JsonUtil {
 
   // Mapper for (de)serializing DDL (IndexDefinition instances and document type mappings)
   public static final ObjectMapper MAPPER = configureMapper();
@@ -36,7 +38,15 @@ public class SerializationUtil {
     try {
       return MAPPER.writeValueAsString(obj);
     } catch (JsonProcessingException e) {
-      throw new MappingException(e);
+      throw new EsException(e);
+    }
+  }
+
+  public static <T> T deserialize(InputStream is, Class<T> cls) {
+    try {
+      return MAPPER.readValue(is, cls);
+    } catch (IOException e) {
+      throw new EsException(e);
     }
   }
 

@@ -3,7 +3,7 @@ package org.col.es.dsl;
 import java.util.Collections;
 import java.util.Map;
 
-import org.col.es.ddl.MultiField;
+import org.col.es.mapping.MultiField;
 
 /**
  * A query against the "ac" sub-field, which is indexed using the edge ngram analyzer.

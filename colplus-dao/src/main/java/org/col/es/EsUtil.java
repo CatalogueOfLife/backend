@@ -1,24 +1,24 @@
 package org.col.es;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import org.col.es.ddl.DocumentTypeMapping;
+import org.col.es.ddl.Index6Definition;
+import org.col.es.ddl.Index7Definition;
 import org.col.es.ddl.IndexDefinition;
-import org.col.es.ddl.MappingFactory;
-import org.col.es.ddl.SerializationUtil;
+import org.col.es.ddl.JsonUtil;
+import org.col.es.ddl.Settings;
 import org.col.es.dsl.BoolQuery;
 import org.col.es.dsl.EsSearchRequest;
 import org.col.es.dsl.Query;
 import org.col.es.dsl.TermQuery;
 import org.col.es.dsl.TermsQuery;
+import org.col.es.mapping.Mappings;
+import org.col.es.mapping.MappingsFactory;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
@@ -26,36 +26,61 @@ import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.col.es.ddl.SerializationUtil.pretty;
-import static org.col.es.ddl.SerializationUtil.readIntoMap;
+import static org.col.es.ddl.JsonUtil.pretty;
+import static org.col.es.ddl.JsonUtil.readIntoMap;
 
 public class EsUtil {
 
   private static final Logger LOG = LoggerFactory.getLogger(EsUtil.class);
 
-  private static int majorVersion;
-  private static String versionString;
-
-  public static int getMajorVersion(RestClient client) throws IOException {
-    if (majorVersion == 0) {
-      Request request = new Request("GET", "/");
-      Response response = client.performRequest(request);
-      HashMap<String, String> data = readFromResponse(response, "version");
-      versionString = data.get("number");
-      majorVersion = Integer.parseInt(versionString.substring(0, versionString.indexOf(".")));
+  /**
+   * Creates an index with the provided name and configuration.
+   * 
+   * @param <T>
+   * @param client
+   * @param name
+   * @param config
+   * @throws IOException
+   */
+  public static <T> void createIndex(RestClient client, String name, IndexConfig config) throws IOException {
+    Mappings mappings = new MappingsFactory().getMapping(config.modelClass);
+    Settings settings = Settings.getDefaultSettings();
+    settings.getIndex().setNumberOfShards(config.numShards);
+    settings.getIndex().setNumberOfReplicas(config.numReplicas);
+    IndexDefinition<?> indexDef;
+    if (EsServerVersion.getInstance(client).is(7)) {
+      indexDef = new Index7Definition(settings, mappings);
+    } else {
+      indexDef = new Index6Definition(settings, mappings);
     }
-    return majorVersion;
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("Creating index {}: {}", name, pretty(indexDef));
+    }
+    Request request = new Request("PUT", name);
+    request.setJsonEntity(JsonUtil.serialize(indexDef));
+    executeRequest(client, request);
   }
 
-  public static String getVersionString(RestClient client) throws IOException {
-    if (versionString == null) {
-      Request request = new Request("GET", "/");
-      Response response = client.performRequest(request);
-      HashMap<String, String> data = readFromResponse(response, "version");
-      versionString = data.get("number");
-      majorVersion = Integer.parseInt(versionString.substring(0, versionString.indexOf(".")));
+  /**
+   * Deletes the index with the provided name. Will silently do nothing if the index did not exist.
+   * 
+   * @param client
+   * @param name
+   * @throws IOException
+   */
+  public static void deleteIndex(RestClient client, String name) throws IOException {
+    Request request = new Request("DELETE", name);
+    Response response = null;
+    try {
+      response = client.performRequest(request);
+    } catch (ResponseException e) {
+      if (e.getResponse().getStatusLine().getStatusCode() == 404) { // That's OK
+        return;
+      }
     }
-    return versionString;
+    if (response.getStatusLine().getStatusCode() >= 400) {
+      throw new EsException(response.getStatusLine().getReasonPhrase());
+    }
   }
 
   /**
@@ -70,94 +95,6 @@ public class EsUtil {
     Request request = new Request("HEAD", index);
     Response response = client.performRequest(request);
     return response.getStatusLine().getStatusCode() == 200;
-  }
-
-  @SuppressWarnings("unchecked")
-  public static void createIdx(RestClient client, String index, IndexConfig cfg) throws IOException {
-    if (getMajorVersion(client) == 7) {
-
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  public static <T> void createIndex(RestClient client, String index, IndexConfig cfg) throws IOException {
-
-    // Load static config (analyzers, tokenizers, etc.) from es-settings.json
-    Map<String, Object> settings = readIntoMap(loadSettings());
-    // Insert configurable settings from config.yaml
-    Map<String, Object> indexSettings = (Map<String, Object>) settings.get("index");
-    indexSettings.put("number_of_shards", cfg.numShards);
-    indexSettings.put("number_of_replicas", cfg.numReplicas);
-
-    // Create document type mapping
-    Map<String, Object> mappings = new HashMap<>();
-    MappingFactory<T> factory = new MappingFactory<>();
-    factory.setMapEnumToInt(true);
-    DocumentTypeMapping mapping = factory.getMapping(cfg.modelClass);
-    mappings.put(EsConfig.DEFAULT_TYPE_NAME, mapping);
-
-    // Combine into full request
-    Map<String, Object> indexSpec = new HashMap<>();
-    indexSpec.put("settings", settings);
-    indexSpec.put("mappings", mappings);
-
-    if (LOG.isTraceEnabled()) {
-      LOG.trace("Creating index {}: {}", index, pretty(indexSpec));
-    }
-
-    Request request = new Request("PUT", index);
-    request.setJsonEntity(SerializationUtil.serialize(indexSpec));
-    executeRequest(client, request);
-  }
-
-  @SuppressWarnings("unchecked")
-  public static <T> void createIndex7(RestClient client, String index, IndexConfig cfg) throws IOException {
-
-    // Load static config (analyzers, tokenizers, etc.) from es-settings.json
-    Map<String, Object> settings = readIntoMap(loadSettings());
-    // Insert configurable settings from config.yaml
-    Map<String, Object> indexSettings = (Map<String, Object>) settings.get("index");
-    indexSettings.put("number_of_shards", cfg.numShards);
-    indexSettings.put("number_of_replicas", cfg.numReplicas);
-
-    // Create document type mapping
-    MappingFactory<T> factory = new MappingFactory<>();
-    factory.setMapEnumToInt(true);
-
-    // Combine into full request
-    Map<String, Object> indexSpec = new HashMap<>();
-    indexSpec.put("settings", settings);
-    indexSpec.put("mappings", factory.getMapping(cfg.modelClass));
-
-    if (LOG.isTraceEnabled()) {
-      LOG.trace("Creating index {}: {}", index, pretty(indexSpec));
-    }
-
-    Request request = new Request("PUT", index);
-    request.setJsonEntity(SerializationUtil.serialize(indexSpec));
-    executeRequest(client, request);
-  }
-
-  /**
-   * Deletes the provided index. Will silently do nothing if the index did not exist.
-   * 
-   * @param client
-   * @param index
-   * @throws IOException
-   */
-  public static void deleteIndex(RestClient client, String index) throws IOException {
-    Request request = new Request("DELETE", index);
-    Response response = null;
-    try {
-      response = client.performRequest(request);
-    } catch (ResponseException e) {
-      if (e.getResponse().getStatusLine().getStatusCode() == 404) { // That's OK
-        return;
-      }
-    }
-    if (response.getStatusLine().getStatusCode() >= 400) {
-      throw new EsException(response.getStatusLine().getReasonPhrase());
-    }
   }
 
   /**
@@ -250,7 +187,7 @@ public class EsUtil {
    * @throws IOException
    */
   public static int count(RestClient client, String indexName) throws IOException {
-    Request request = new Request("GET", indexName + "/" + EsConfig.DEFAULT_TYPE_NAME + "/_count");
+    Request request = new Request("GET", indexName + "/_count");
     Response response = executeRequest(client, request);
     try {
       return (Integer) readIntoMap(response.getEntity().getContent()).get("count");
@@ -292,12 +229,8 @@ public class EsUtil {
     return response;
   }
 
-  private static InputStream loadSettings() {
-    return EsUtil7.class.getResourceAsStream("es-settings.json");
-  }
-
   @SuppressWarnings("unchecked")
-  private static <T> T readFromResponse(Response response, String property) {
+  public static <T> T readFromResponse(Response response, String property) {
     try {
       return (T) readIntoMap(response.getEntity().getContent()).get(property);
     } catch (UnsupportedOperationException | IOException e) {
@@ -305,7 +238,7 @@ public class EsUtil {
     }
   }
 
-  // Used for indexing documents. Use SerializationUtil for creating indexes and type mappings.
+  // Used for indexing/retrieving **documents**. Use JsonUtil when creating the indexes themselves!
   private static String serialize(Object obj) {
     try {
       return EsModule.MAPPER.writeValueAsString(obj);

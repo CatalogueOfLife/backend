@@ -1,9 +1,9 @@
-package org.col.es.ddl;
+package org.col.es.mapping;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
- * Abstract base class for all nodes within a mapping. The {@link DocumentTypeMapping} object itself, any nested {@link ComplexField documents} within
+ * Abstract base class for all nodes within a mapping. The {@link Mappings} object itself, any nested {@link ComplexField documents} within
  * it, all {@link SimpleField fields} and all {@link MultiField multi-fields} underneath a field are instances of an {@link ESField}.
  */
 public abstract class ESField {

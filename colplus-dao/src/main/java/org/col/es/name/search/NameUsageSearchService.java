@@ -41,7 +41,7 @@ public class NameUsageSearchService extends NameUsageService {
 
   @VisibleForTesting
   public NameSearchResponse search(String index, NameSearchRequest request, Page page) throws IOException {
-    NameSearchRequestTranslator translator = new NameSearchRequestTranslator(request, page);
+    RequestTranslator translator = new RequestTranslator(request, page);
     EsSearchRequest esSearchRequest = translator.translate();
     NameUsageResponse esResponse = executeSearchRequest(index, esSearchRequest);
     NameSearchResultConverter transfer = new NameSearchResultConverter(esResponse);

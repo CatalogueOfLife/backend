@@ -1,6 +1,6 @@
 package org.col.es.dsl;
 
-import org.col.es.ddl.MultiField;
+import org.col.es.mapping.MultiField;
 
 public class FullTextQuery extends TermQuery {
   

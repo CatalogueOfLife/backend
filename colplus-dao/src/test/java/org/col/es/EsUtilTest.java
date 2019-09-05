@@ -31,16 +31,6 @@ public class EsUtilTest extends EsReadTestBase {
     destroyAndCreateIndex();
   }
 
-  @Test // Just make sure we don't get an exception
-  public void testGetMajorVersion() throws IOException {
-    System.out.println("Major version: " + EsUtil.getMajorVersion(client));
-  }
-
-  @Test // Just make sure we don't get an exception
-  public void testGetVersionString() throws IOException {
-    System.out.println("Version string: " + EsUtil.getVersionString(client));
-  }
-
   @Test
   public void testInsert() throws IOException {
     String id = insert(client, indexName, new NameUsageDocument());

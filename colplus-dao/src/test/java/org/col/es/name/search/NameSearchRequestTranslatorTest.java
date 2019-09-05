@@ -6,7 +6,7 @@ import org.col.api.model.Page;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.es.EsModule;
-import org.col.es.name.search.NameSearchRequestTranslator;
+import org.col.es.name.search.RequestTranslator;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
@@ -34,7 +34,7 @@ public class NameSearchRequestTranslatorTest {
     nsr.addFilter(DATASET_KEY, 1000);
     nsr.addFilter(RANK, Rank.GENUS);
 
-    NameSearchRequestTranslator t = new NameSearchRequestTranslator(nsr, new Page());
+    RequestTranslator t = new RequestTranslator(nsr, new Page());
 
     System.out.println(serialize(t.translate()));
 
@@ -57,7 +57,7 @@ public class NameSearchRequestTranslatorTest {
 //    nsr.addFilter(PUBLISHED_IN_ID, "ABCD");
     nsr.setQ("Car");
 
-    NameSearchRequestTranslator t = new NameSearchRequestTranslator(nsr, new Page());
+    RequestTranslator t = new RequestTranslator(nsr, new Page());
 
     System.out.println(serialize(t.translate()));
 
@@ -78,7 +78,7 @@ public class NameSearchRequestTranslatorTest {
     nsr.addFilter(STATUS, TaxonomicStatus.ACCEPTED);
     nsr.setQ("c");
 
-    NameSearchRequestTranslator t = new NameSearchRequestTranslator(nsr, new Page());
+    RequestTranslator t = new RequestTranslator(nsr, new Page());
 
     System.out.println(serialize(t.translate()));
 
@@ -97,7 +97,7 @@ public class NameSearchRequestTranslatorTest {
     nsr.addFacet(RANK);
     nsr.addFacet(STATUS);
 
-    NameSearchRequestTranslator t = new NameSearchRequestTranslator(nsr, new Page());
+    RequestTranslator t = new RequestTranslator(nsr, new Page());
 
     System.out.println(serialize(t.translate()));
 
@@ -116,7 +116,7 @@ public class NameSearchRequestTranslatorTest {
     nsr.addFilter(DATASET_KEY, 1000);
     nsr.setQ("Car");
     
-    NameSearchRequestTranslator t = new NameSearchRequestTranslator(nsr, new Page());
+    RequestTranslator t = new RequestTranslator(nsr, new Page());
 
     System.out.println(serialize(t.translate()));
 

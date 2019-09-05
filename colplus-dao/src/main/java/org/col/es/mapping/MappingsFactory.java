@@ -1,45 +1,28 @@
-package org.col.es.ddl;
+package org.col.es.mapping;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.col.es.ddl.ESDataType.KEYWORD;
-import static org.col.es.ddl.ESDataType.NESTED;
-import static org.col.es.ddl.MappingUtil.getClassForTypeArgument;
-import static org.col.es.ddl.MappingUtil.getFieldName;
-import static org.col.es.ddl.MappingUtil.getMappedProperties;
-import static org.col.es.ddl.MultiField.AUTO_COMPLETE;
-import static org.col.es.ddl.MultiField.DEFAULT;
-import static org.col.es.ddl.MultiField.IGNORE_CASE;
+import static org.col.es.mapping.ESDataType.KEYWORD;
+import static org.col.es.mapping.ESDataType.NESTED;
+import static org.col.es.mapping.MappingUtil.getClassForTypeArgument;
+import static org.col.es.mapping.MappingUtil.getFieldName;
+import static org.col.es.mapping.MappingUtil.getMappedProperties;
+import static org.col.es.mapping.MultiField.AUTO_COMPLETE;
+import static org.col.es.mapping.MultiField.DEFAULT;
+import static org.col.es.mapping.MultiField.IGNORE_CASE;
 
 /**
  * Generates an Elasticsearch document type mapping from a {@link Class} object.
  */
-public class MappingFactory<T> {
+public class MappingsFactory {
 
-  /*
-   * Cache of document type mappings. Since we currently have just one document type (EsNameUsage), it will contain just
-   * one entry.
-   */
-  private static final HashMap<Class<?>, DocumentTypeMapping> cache = new HashMap<>();
-
-  /*
-   * Whether to map enums to Elasticsearch's integer datatype or to the keyword datatype. This is more or less separate
-   * from how you __serialize__ enums. Obviously when serializing enums to strings, you have no choice but to use the
-   * keyword datatype. But when serializing enums to integers, you still have the choice of storing them as strings or as
-   * integers, and there can be good reasons to store them as strings (as explained in the Elasticsearch performance
-   * tuning guide). Specifying the datatype mapping here saves you from having to decorate each and every enum in the data
-   * model with the @MapToType annotation. You can still use the @MapToType to override the global behaviour. Note that in
-   * EsModule we specify that we want enums to be serialized using their ordinal value, so we are indeed free to choose
-   * between the keyword and integer datatype.
-   */
   private boolean mapEnumToInt = true;
 
   /**
@@ -48,10 +31,9 @@ public class MappingFactory<T> {
    * @param className
    * @return
    */
-  @SuppressWarnings("unchecked")
-  public DocumentTypeMapping getMapping(String className) {
+  public Mappings getMapping(String className) {
     try {
-      return getMapping((Class<T>) Class.forName(className));
+      return getMapping(Class.forName(className));
     } catch (ClassNotFoundException e) {
       throw new MappingException("No such class: " + className);
     }
@@ -63,16 +45,22 @@ public class MappingFactory<T> {
    * @param type
    * @return
    */
-  public DocumentTypeMapping getMapping(Class<T> type) {
-    DocumentTypeMapping mapping = cache.get(type);
-    if (mapping == null) {
-      mapping = new DocumentTypeMapping();
-      addFieldsToDocument(mapping, type, newTree(new HashSet<>(0), type));
-      cache.put(type, mapping);
-    }
-    return mapping;
+  public Mappings getMapping(Class<?> type) {
+    Mappings mappings = new Mappings();
+    addFieldsToDocument(mappings, type, newTree(new HashSet<>(0), type));
+    return mappings;
   }
 
+  /**
+   * Whether to map enums to Elasticsearch's integer datatype or to the keyword datatype. Default true. This is more or
+   * less separate from how you **serialize** enums. Obviously when serializing enums to strings, you have no choice but
+   * to use the keyword datatype. But when serializing enums to integers, you still have the choice of storing them as
+   * strings or as integers. There can be good reasons to store them as strings (see Elasticsearch performance tuning
+   * guide). Specifying the datatype mapping here saves you from having to decorate each and every enum in the data model
+   * with the @MapToType annotation. You can still use the @MapToType to override the global behaviour. Note that in
+   * EsModule we specify that we want enums to be serialized using their ordinal value, so we are indeed free to choose
+   * between the keyword and integer datatype.
+   */
   public boolean isMapEnumToInt() {
     return mapEnumToInt;
   }

@@ -2,7 +2,7 @@ package org.col.es.ddl;
 
 import java.util.Map;
 
-public class IndexAnalysis {
+public class Analysis {
 
   private Map<String, Object> tokenizer;
   private Map<String, Object> analyzer;
