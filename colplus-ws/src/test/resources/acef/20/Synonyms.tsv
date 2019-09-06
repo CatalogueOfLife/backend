@@ -1,0 +1,4 @@
+"ID"	"AcceptedTaxonID"	"Genus"	"SubGenusName"	"SpeciesEpithet"	"AuthorString"	"InfraSpeciesEpithet"	"InfraSpeciesMarker"	"InfraSpeciesAuthorString"	"GSDNameStatus"	"Sp2000NameStatus"	"GSDNameGUID"
+"Tachinus_piceus"	"Tachinus_Tachinus_piceus"	"Tachinus"	""	"piceus"	"Cameron, 1932"	""	""	""	""	"ambiguous synonym"	""
+"Tachinus_piceus"	"Coproporus_ebonus"	"Tachinus"	""	"piceus"	"Erichson, 1839"	""	""	""	""	"ambiguous synonym"	""
+"Tachinus_piceus"	"Bryoporus_cernuus"	"Tachinus"	""	"piceus"	"Stephens, 1829"	""	""	""	""	"ambiguous synonym"	""

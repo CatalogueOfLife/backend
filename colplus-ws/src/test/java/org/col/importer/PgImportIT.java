@@ -630,6 +630,15 @@ public class PgImportIT {
     }
   }
   
+  /**
+   * Test with 3 synonyms having the same accepted
+   * https://github.com/Sp2000/colplus-backend/issues/461
+   */
+  @Test
+  public void acefAmbiguousSyns() throws Exception {
+    normalizeAndImport(ACEF, 20);
+  }
+  
   @Test
   @Ignore("manual test for debugging entire imports")
   public void testExternalManually() throws Exception {
