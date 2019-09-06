@@ -216,6 +216,10 @@ public class InterpreterBase {
     return parse(BooleanParser.PARSER, v.getFirst(terms)).orNull(invalidIssue, v);
   }
   
+  protected Boolean bool(VerbatimRecord v, Term... terms) {
+    return parse(BooleanParser.PARSER, v.getFirst(terms)).orNull();
+  }
+
   private static boolean hasNoSpace(String x) {
     return x == null || !x.contains(" ");
   }

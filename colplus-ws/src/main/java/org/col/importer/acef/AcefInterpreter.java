@@ -112,8 +112,12 @@ public class AcefInterpreter extends InterpreterBase {
       t.setAccordingTo(v.get(AcefTerm.LTSSpecialist));
       t.setAccordingToDate(date(v, Issue.ACCORDING_TO_DATE_INVALID, AcefTerm.LTSDate));
       t.setWebpage(uri(v, Issue.URL_INVALID, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));
-      t.setFossil(bool(v, Issue.IS_FOSSIL_INVALID, AcefTerm.HasPreHolocene, AcefTerm.IsFossil, AcefTerm.IsExtinct));
+      t.setFossil(bool(v, Issue.IS_FOSSIL_INVALID, AcefTerm.HasPreHolocene, AcefTerm.IsFossil));
       t.setRecent(bool(v, Issue.IS_RECENT_INVALID, AcefTerm.HasModern, AcefTerm.IsRecent));
+      Boolean extinct = bool(v, AcefTerm.IsExtinct);
+      if (Boolean.FALSE.equals(extinct)) {
+        t.setRecent(false);
+      }
       t.setRemarks(v.get(AcefTerm.AdditionalData));
   
       // lifezones
