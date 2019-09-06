@@ -296,7 +296,7 @@ SELECT
   CASE WHEN t.is_synonym THEN 0 ELSE 1 END AS is_accepted_name,
   NULL AS GSDTaxonGUID,
   NULL AS GSDNameGUID,
-  (NOT t.recent)::int AS is_extinct,
+  t.fossil::int AS is_extinct,
   t.fossil::int AS has_preholocene,
   t.recent::int AS has_modern
 FROM name_{{datasetKey}} n
