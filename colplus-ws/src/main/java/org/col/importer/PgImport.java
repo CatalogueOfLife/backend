@@ -1,8 +1,6 @@
 package org.col.importer;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -46,7 +44,7 @@ public class PgImport implements Callable<Boolean> {
   private final AuthorshipNormalizer aNormalizer;
   private final Dataset dataset;
   private final BiMap<Integer, Integer> verbatimKeys = HashBiMap.create();
-  private final Map<String, Integer> proParteIds = new HashMap();
+  private final Set<String> proParteIds = new HashSet<>();
   private final AtomicInteger nCounter = new AtomicInteger(0);
   private final AtomicInteger tCounter = new AtomicInteger(0);
   private final AtomicInteger sCounter = new AtomicInteger(0);
@@ -305,7 +303,6 @@ public class PgImport implements Callable<Boolean> {
       DescriptionMapper descriptionMapper = session.getMapper(DescriptionMapper.class);
       DistributionMapper distributionMapper = session.getMapper(DistributionMapper.class);
       MediaMapper mediaMapper = session.getMapper(MediaMapper.class);
-      ReferenceMapper refMapper = session.getMapper(ReferenceMapper.class);
       TaxonMapper taxonMapper = session.getMapper(TaxonMapper.class);
       SynonymMapper synMapper = session.getMapper(SynonymMapper.class);
       VernacularNameMapper vernacularMapper = session.getMapper(VernacularNameMapper.class);
@@ -338,55 +335,52 @@ public class PgImport implements Callable<Boolean> {
           }
   
           // insert taxon or synonym
-          NameUsageBase usage;
           if (u.isSynonym()) {
             if (NeoDbUtils.isProParteSynonym(n)) {
-              if (proParteIds.containsKey(u.getId())){
-                // we had that id before, append a suffix
-                int cnt = proParteIds.get(u.getId());
-                u.setId(u.getId() + "-pp" + cnt++);
-                proParteIds.put(u.getId(), cnt);
+              if (proParteIds.contains(u.getId())){
+                // we had that id before, append a random suffix for further pro parte usage
+                UUID ppID = UUID.randomUUID();
+                u.setId(u.getId() + "-" + ppID);
               } else {
-                proParteIds.put(u.getId(), 2);
+                proParteIds.add(u.getId());
               }
             }
             synMapper.create(u.getSynonym());
             sCounter.incrementAndGet();
-            usage = u.getSynonym();
 
           } else {
             taxonMapper.create(updateUser(u.getTaxon()));
             tCounter.incrementAndGet();
-            usage = u.getTaxon();
+            Taxon acc = u.getTaxon();
 
             // push new postgres key onto stack for this taxon as we traverse in depth first
-            parentIds.push(usage.getId());
+            parentIds.push(acc.getId());
             
             // insert vernacular
             for (VernacularName vn : u.vernacularNames) {
               updateVerbatimUserEntity(vn);
-              vernacularMapper.create(vn, usage.getId(), dataset.getKey());
+              vernacularMapper.create(vn, acc.getId(), dataset.getKey());
               vCounter.incrementAndGet();
             }
             
             // insert distributions
             for (Distribution d : u.distributions) {
               updateVerbatimUserEntity(d);
-              distributionMapper.create(d, usage.getId(), dataset.getKey());
+              distributionMapper.create(d, acc.getId(), dataset.getKey());
               diCounter.incrementAndGet();
             }
   
             // insert descriptions
             for (Description d : u.descriptions) {
               updateVerbatimUserEntity(d);
-              descriptionMapper.create(d, usage.getId(), dataset.getKey());
+              descriptionMapper.create(d, acc.getId(), dataset.getKey());
               deCounter.incrementAndGet();
             }
   
             // insert media
             for (Media m : u.media) {
               updateVerbatimUserEntity(m);
-              mediaMapper.create(m, usage.getId(), dataset.getKey());
+              mediaMapper.create(m, acc.getId(), dataset.getKey());
               mCounter.incrementAndGet();
             }
             
