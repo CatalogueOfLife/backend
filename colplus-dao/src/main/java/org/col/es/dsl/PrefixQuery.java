@@ -1,18 +1,30 @@
 package org.col.es.dsl;
 
-import java.util.Collections;
 import java.util.Map;
+
+import static java.util.Collections.singletonMap;
 
 public class PrefixQuery extends AbstractQuery {
 
-  final Map<String, TermValue> prefix;
+  private final Map<String, TermValue> prefix;
 
   public PrefixQuery(String field, Object value) {
-    this(field, value, null);
+    prefix = singletonMap(getField(field), new TermValue(value));
   }
 
-  public PrefixQuery(String field, Object value, Float boost) {
-    prefix = Collections.singletonMap(field, new TermValue(value, boost));
+  public PrefixQuery withName(String name) {
+    prefix.values().forEach(t -> t.name(name));
+    return this;
+  }
+
+  public PrefixQuery withBoost(Float boost) {
+    prefix.values().forEach(t -> t.boost(boost));
+    return this;
+  }
+
+
+  protected String getField(String field) {
+    return field;
   }
 
 }

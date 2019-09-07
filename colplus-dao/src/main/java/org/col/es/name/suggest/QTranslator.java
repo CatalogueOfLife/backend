@@ -48,11 +48,13 @@ class QTranslator {
   }
 
   Query getVernacularNameQuery() {
-    return new AutoCompleteQuery("vernacularNames", this.q, BASE_BOOST);
+    return new AutoCompleteQuery("vernacularNames", this.q)
+        .withBoost(BASE_BOOST);
   }
 
   Query getSimpleQuery() {
-    return new AutoCompleteQuery("nameStrings.scientificNameWN", strings.getScientificNameWN(), BASE_BOOST);
+    return new AutoCompleteQuery("nameStrings.scientificNameWN", strings.getScientificNameWN())
+        .withBoost(BASE_BOOST);
   }
 
   private Query getAdvancedQuery() {
@@ -62,20 +64,20 @@ class QTranslator {
             .should(getGenusQuery())
             .should(getSpecificEpithetQuery())
             .should(getInfraspecificEpithetQuery())
-            .boost(BASE_BOOST * 1.1F);
+            .withBoost(BASE_BOOST * 1.1F);
       case 2: // match 1st term against genus and 2nd against either specific or infraspecific epithet
         return new BoolQuery()
             .must(getGenusQuery())
             .must(new BoolQuery()
                 .should(getSpecificEpithetQuery())
                 .should(getInfraspecificEpithetQuery()))
-            .boost(BASE_BOOST * 1.5F);
+            .withBoost(BASE_BOOST * 1.5F);
       case 3:
         return new BoolQuery()
             .must(getGenusQuery())
             .must(getSpecificEpithetQuery())
             .must(getInfraspecificEpithetQuery())
-            .boost(BASE_BOOST * 2); // that's super duper almost guaranteed to be bingo
+            .withBoost(BASE_BOOST * 2); // that's super duper almost guaranteed to be bingo
       default:
         return null;
     }

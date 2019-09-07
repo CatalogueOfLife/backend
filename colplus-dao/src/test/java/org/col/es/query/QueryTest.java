@@ -40,7 +40,7 @@ public class QueryTest {
   @Test
   public void testConstantScore() {
     EsSearchRequest esr = new EsSearchRequest();
-    ConstantScoreQuery csq = new ConstantScoreQuery(new TermQuery("genus", "Parus", 8.1f));
+    ConstantScoreQuery csq = new ConstantScoreQuery(new TermQuery("genus", "Parus").withBoost(8.1F));
     esr.setQuery(csq);
     System.out.println(serialize(esr));
   }

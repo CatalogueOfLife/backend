@@ -11,14 +11,13 @@ import com.google.common.base.Charsets;
 import org.col.api.search.NameUsageWrapper;
 import org.col.es.EsException;
 import org.col.es.EsModule;
+import org.col.es.EsServerVersion;
 import org.col.es.EsUtil;
 import org.col.es.model.NameUsageDocument;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.col.es.EsConfig.DEFAULT_TYPE_NAME;
 
 class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
 
@@ -29,22 +28,22 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
   private static final boolean EXTRA_STATS = false;
 
   /*
-   * The request body. With a batch size of 4096 the request body can grow to about 11 MB for synonyms with zipped payloads, and 20 MB with
-   * unzipped payloads. A batch size of 4096 seems about optimal. A batch size of 2048 also performs well, a batch size of 8192 appears to
-   * perform slightly worse.
+   * The request body. With a batch size of 4096 the request body can grow to about 11 MB for synonyms with zipped
+   * payloads, and 20 MB with unzipped payloads. A batch size of 4096 seems about optimal. A batch size of 2048 also
+   * performs well, a batch size of 8192 appears to perform slightly worse.
    */
   private final StringBuilder buf = new StringBuilder(1024 * 1024 * 4);
 
   private final RestClient client;
   private final String index;
-  private final String header;
+  private final String indexHeader;
 
   private int indexed = 0;
 
   NameUsageIndexer(RestClient client, String index) {
     this.client = client;
     this.index = index;
-    this.header = getHeader();
+    this.indexHeader = getIndexHeader();
   }
 
   @Override
@@ -57,8 +56,9 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
   }
 
   /**
-   * Indexes the provided raw documents. The documents are presumed to have their document ID nullified. Otherwise Elasticsearch will reject
-   * them because the document ID isn't part of the document itself (and we use strict typing, so no undeclared fields are allowed).
+   * Indexes the provided raw documents. The documents are presumed to have their document ID nullified. Otherwise
+   * Elasticsearch will reject them because the document ID isn't part of the document itself (and we use strict typing,
+   * so no undeclared fields are allowed).
    * 
    * @param documents
    */
@@ -66,7 +66,7 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
     buf.setLength(0);
     try {
       for (NameUsageDocument doc : documents) {
-        buf.append(header);
+        buf.append(indexHeader);
         buf.append(WRITER.writeValueAsString(doc));
         buf.append("\n");
       }
@@ -77,9 +77,9 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
   }
 
   /**
-   * Updates the provided documents. The documents are presumed to have their document ID set. These will be used to tell Elasticsearch
-   * which documents we want to update. As a side effect, document IDs will be nullified, so make sure you cache them before calling this
-   * method if you need them later on.
+   * Updates the provided documents. The documents are presumed to have their document ID set. These will be used to tell
+   * Elasticsearch which documents we want to update. As a side effect, document IDs will be nullified, so make sure you
+   * cache them before calling this method if you need them later on.
    * 
    * @param documents
    */
@@ -104,7 +104,7 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
     NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
     try {
       for (NameUsageWrapper nuw : batch) {
-        buf.append(header);
+        buf.append(indexHeader);
         buf.append(WRITER.writeValueAsString(transfer.toDocument(nuw)));
         buf.append("\n");
       }
@@ -122,7 +122,7 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
     try {
       String json;
       for (NameUsageWrapper nuw : batch) {
-        buf.append(header);
+        buf.append(indexHeader);
         buf.append(json = WRITER.writeValueAsString(transfer.toDocument(nuw)));
         docSize += json.getBytes(Charsets.UTF_8).length;
         buf.append("\n");
@@ -179,13 +179,23 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
     return indexed;
   }
 
-  private String getUpdateHeader(String id) {
-    String fmt = "{\"update\":{\"_id\":\"%s\",\"_index\":\"%s\",\"_type\":\"%s\"}}%n";
-    return String.format(fmt, id, index, DEFAULT_TYPE_NAME);
+  private String getIndexHeader() {
+    String fmt;
+    if (EsServerVersion.getInstance(client).is(7)) {
+      fmt = "{\"index\":{\"_index\":\"%s\"}}%n";
+    } else {
+      fmt = "{\"index\":{\"_index\":\"%s\",\"_type\":\"_doc\"}}%n";
+    }
+    return String.format(fmt, index);
   }
 
-  private String getHeader() {
-    String fmt = "{\"index\":{\"_index\":\"%s\",\"_type\":\"%s\"}}%n";
-    return String.format(fmt, index, DEFAULT_TYPE_NAME);
+  private String getUpdateHeader(String id) {
+    String fmt;
+    if (EsServerVersion.getInstance(client).is(7)) {
+      fmt = "{\"update\":{\"_id\":\"%s\",\"_index\":\"%s\"}}%n";
+    } else {
+      fmt = "{\"update\":{\"_id\":\"%s\",\"_index\":\"%s\",\"_type\":\"_doc\"}}%n";
+    }
+    return String.format(fmt, id, index);
   }
 }

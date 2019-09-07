@@ -14,9 +14,13 @@ public class EsServerVersion {
 
   private static EsServerVersion instance;
 
-  public static EsServerVersion getInstance(RestClient client) throws IOException {
+  public static EsServerVersion getInstance(RestClient client) {
     if (instance == null) {
-      instance = new EsServerVersion(client);
+      try {
+        instance = new EsServerVersion(client);
+      } catch (IOException e) {
+        throw new EsException(e);
+      }
     }
     return instance;
   }

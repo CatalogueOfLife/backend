@@ -8,34 +8,37 @@ public class DisMaxQuery extends AbstractQuery {
 
   @SuppressWarnings("unused")
   private static class DisMax {
-    final List<Query> queries = new CollapsibleList<>(8);
-    final Float boost; // over-all boost
+    private final List<Query> queries = new CollapsibleList<>(8);
+    private String _name;
+    private Float boost;
     @JsonProperty("tie_breaker")
-    final Float tieBreaker;
-
-    DisMax(Float boost, Float tieBreaker) {
-      this.boost = boost;
-      this.tieBreaker = tieBreaker;
-    }
+    private Float tieBreaker;
   }
 
   @JsonProperty("dis_max")
   private final DisMax disMax;
 
   public DisMaxQuery() {
-    disMax = new DisMax(null, null);
-  }
-
-  public DisMaxQuery(Float boost) {
-    disMax = new DisMax(boost, null);
-  }
-
-  public DisMaxQuery(Float boost, Float tiebreaker) {
-    disMax = new DisMax(boost, tiebreaker);
+    disMax = new DisMax();
   }
 
   public DisMaxQuery subquery(Query query) {
     disMax.queries.add(query);
+    return this;
+  }
+
+  public DisMaxQuery withName(String name) {
+    disMax._name = name;
+    return this;
+  }
+
+  public DisMaxQuery withBoost(Float boost) {
+    disMax.boost = boost;
+    return this;
+  }
+
+  public DisMaxQuery withTieBreaker(Float tieBreaker) {
+    disMax.tieBreaker = tieBreaker;
     return this;
   }
 

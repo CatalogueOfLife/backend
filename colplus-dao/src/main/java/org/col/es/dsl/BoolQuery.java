@@ -6,18 +6,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class BoolQuery extends AbstractQuery {
 
+  @SuppressWarnings("unused")
   private static class Bool {
-    List<Query> must;
-    List<Query> filter;
+    private List<Query> must;
+    private List<Query> filter;
     @JsonProperty("must_not")
-    List<Query> mustNot;
-    List<Query> should;
+    private List<Query> mustNot;
+    private List<Query> should;
+    private String _name;
+    private Float boost;
   }
 
   private final Bool bool;
-
-  @SuppressWarnings("unused")
-  private Float boost;
 
   public BoolQuery() {
     this.bool = new Bool();
@@ -55,10 +55,14 @@ public class BoolQuery extends AbstractQuery {
     return this;
   }
 
-  public BoolQuery boost(float f) {
-    this.boost = Float.valueOf(f);
+  public BoolQuery withName(String name) {
+    bool._name = name;
     return this;
   }
 
+  public BoolQuery withBoost(Float boost) {
+    bool.boost = boost;
+    return this;
+  }
 
 }
