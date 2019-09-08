@@ -2,33 +2,28 @@ package org.col.es.dsl;
 
 import java.util.Map;
 
-import org.col.es.dsl.MatchValue.Operator;
+import org.col.es.dsl.MatchConstraint.Operator;
 
 import static java.util.Collections.singletonMap;
 
-public abstract class AbstractMatchQuery extends AbstractQuery {
+public abstract class AbstractMatchQuery extends AbstractQuery<MatchConstraint> {
 
-  private final Map<String, MatchValue> match;
+  private final Map<String, MatchConstraint> match;
 
   public AbstractMatchQuery(String field, String value) {
-    match = singletonMap(getField(field), new MatchValue(value));
-  }
-
-  public AbstractMatchQuery withName(String name) {
-    match.values().forEach(t -> t.name(name));
-    return this;
-  }
-
-  public AbstractMatchQuery withBoost(Float boost) {
-    match.values().forEach(t -> t.boost(boost));
-    return this;
+    match = singletonMap(getField(field), new MatchConstraint(value));
   }
 
   public AbstractMatchQuery withOperator(Operator operator) {
-    match.values().forEach(t -> t.operator(operator));
+    getConstraint().operator(operator);
     return this;
   }
 
-  protected abstract String getField(String field);
+  @Override
+  MatchConstraint getConstraint() {
+    return match.values().iterator().next();
+  }
+
+  abstract String getField(String field);
 
 }

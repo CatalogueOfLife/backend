@@ -1,16 +1,17 @@
 package org.col.es.dsl;
 
+@SuppressWarnings("unused")
 public class IsNotNullQuery extends AbstractQuery {
 
-  static class Field {
-    final String field;
+  private static class Field {
+    private final String field;
 
     Field(String field) {
       this.field = field;
     }
   }
 
-  final Field exists;
+  private final Field exists;
 
   public IsNotNullQuery(String field) {
     this.exists = new Field(field);
