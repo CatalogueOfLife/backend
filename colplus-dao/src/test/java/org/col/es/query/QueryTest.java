@@ -12,6 +12,7 @@ import org.col.es.dsl.ConstantScoreQuery;
 import org.col.es.dsl.EsSearchRequest;
 import org.col.es.dsl.IsNotNullQuery;
 import org.col.es.dsl.IsNullQuery;
+import org.col.es.dsl.MatchAllQuery;
 import org.col.es.dsl.PrefixQuery;
 import org.col.es.dsl.TermQuery;
 import org.col.es.dsl.TermsQuery;
@@ -19,6 +20,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+// Not really tests here; only to get direct feedback on whether or not the various types of queries are serialized
+// properly.
 public class QueryTest {
 
   // private static final Logger LOG = LoggerFactory.getLogger(QueryTest.class);
@@ -29,7 +32,7 @@ public class QueryTest {
   public static void init() {
     cfg.modelClass = "org.col.es.model.EsNameUsage";
   }
-  
+
   @Before
   public void before() {
     System.out.println();
@@ -84,7 +87,14 @@ public class QueryTest {
     esr.setQuery(new PrefixQuery("genus", "Parus"));
     System.out.println(serialize(esr));
   }
-  
+
+  @Test
+  public void testMatchAll() {
+    EsSearchRequest esr = new EsSearchRequest();
+    esr.setQuery(new MatchAllQuery());
+    System.out.println(serialize(esr));
+  }
+
   private static String serialize(Object obj) {
     try {
       return EsModule.QUERY_WRITER.withDefaultPrettyPrinter().writeValueAsString(obj);

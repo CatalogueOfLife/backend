@@ -7,8 +7,8 @@ import java.util.Collection;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * An extension of ArrayList solely aimed at reflecting a peculiarity of the Elasticsearch Query DSL. The Query DSL allows you to write
- * single-element arrays without using array notation (square brackets), improving readability. Really just syntactic sugar. Array notation
+ * An extension of ArrayList solely aimed at reflecting a peculiarity of the Elasticsearch Query DSL, which allows you to write
+ * single-element arrays without using array notation (square brackets. Really just syntactic sugar. Array notation
  * is still also allowed.
  */
 public class CollapsibleList<E> extends ArrayList<E> {
