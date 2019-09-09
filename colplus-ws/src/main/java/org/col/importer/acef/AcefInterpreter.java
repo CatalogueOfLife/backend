@@ -115,8 +115,8 @@ public class AcefInterpreter extends InterpreterBase {
       t.setFossil(bool(v, Issue.IS_FOSSIL_INVALID, AcefTerm.HasPreHolocene, AcefTerm.IsFossil));
       t.setRecent(bool(v, Issue.IS_RECENT_INVALID, AcefTerm.HasModern, AcefTerm.IsRecent));
       Boolean extinct = bool(v, AcefTerm.IsExtinct);
-      if (t.isRecent() == null && extinct != null) {
-        t.setRecent(!extinct);
+      if (t.isRecent() == null && Boolean.FALSE.equals(extinct)) {
+        t.setRecent(true);
       }
       t.setRemarks(v.get(AcefTerm.AdditionalData));
   
