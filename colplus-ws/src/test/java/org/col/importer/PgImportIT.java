@@ -16,6 +16,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
 import org.col.api.search.ReferenceSearchRequest;
 import org.col.api.vocab.*;
+import org.col.command.initdb.InitDbCmd;
 import org.col.common.tax.AuthorshipNormalizer;
 import org.col.config.ImporterConfig;
 import org.col.config.NormalizerConfig;
@@ -56,8 +57,8 @@ public class PgImportIT {
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
   
-  //@Rule
-  //public TestDataRule testDataRule = TestDataRule.empty();
+  @Rule
+  public TestDataRule testDataRule = TestDataRule.empty();
   
   @Rule
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
@@ -71,10 +72,10 @@ public class PgImportIT {
     dataset.setCreatedBy(TestDataRule.TEST_USER.getKey());
     dataset.setModifiedBy(TestDataRule.TEST_USER.getKey());
 
-    //if (fullInit) {
-    //  InitDbCmd.setupStandardPartitions(testDataRule.getSqlSession());
-    //  testDataRule.commit();
-    //}
+    if (fullInit) {
+      InitDbCmd.setupStandardPartitions(testDataRule.getSqlSession());
+      testDataRule.commit();
+    }
   
     sdao = new SynonymDao(PgSetupRule.getSqlSessionFactory());
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory());
