@@ -345,6 +345,7 @@ public class InterpreterBase {
     // applies default dataset code if we cannot find or parse any
     // Always make sure this happens BEFORE we update the canonical scientific name
     nat.getName().setCode(code);
+    // we add only to already parsed remarks
     nat.getName().addRemark(remarks);
     nat.getName().addRemark(nomStatus);
     

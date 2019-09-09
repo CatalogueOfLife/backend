@@ -187,6 +187,7 @@ WITH RECURSIVE tree AS(
         CASE WHEN n.rank='order' THEN n.scientific_name ELSE NULL END AS "order",
         CASE WHEN n.rank='superfamily' THEN n.scientific_name ELSE NULL END AS superfamily,
         CASE WHEN n.rank='family' THEN n.scientific_name ELSE NULL END AS family,
+        CASE WHEN n.rank='genus' THEN n.scientific_name ELSE NULL END AS genus,
         CASE WHEN n.rank='family' THEN t.id ELSE NULL END AS family_id,
         CASE WHEN n.rank='species' THEN t.id ELSE NULL END AS species_id
     FROM name_usage_{{datasetKey}} t
@@ -206,6 +207,7 @@ WITH RECURSIVE tree AS(
         CASE WHEN n.rank='order' THEN n.scientific_name ELSE tree."order" END,
         CASE WHEN n.rank='superfamily' THEN n.scientific_name ELSE tree.superfamily END,
         CASE WHEN n.rank='family' THEN n.scientific_name ELSE tree.family END,
+        CASE WHEN n.rank='genus' THEN n.scientific_name ELSE tree.genus END,
         CASE WHEN n.rank='family' THEN t.id ELSE tree.family_id END,
         CASE WHEN n.rank='species' THEN t.id ELSE tree.species_id END AS species_id
     FROM name_usage_{{datasetKey}} t
@@ -266,18 +268,22 @@ SELECT key AS record_id,
 ) TO 'families.csv';
 
 
+-- scientific_names
+-- TODO: unparsed non virus names, e.g hybrids: https://github.com/Sp2000/colplus-backend/issues/466
 COPY (
 SELECT
   tk.key AS record_id,
   t.id AS name_code,
   t.webpage AS web_site,
-  n.genus AS genus,
+  -- use the genus classification for virus type names
+  -- notho types: 0=GENERIC, 1=INFRAGENERIC, 2=SPECIFIC, 3=INFRASPECIFIC;
+  CASE WHEN n.type=1 THEN c.genus ELSE (CASE WHEN n.notho=0 THEN '×' ELSE '' END) ||  n.genus END AS genus,
   n.infrageneric_epithet AS subgenus,
-  n.specific_epithet AS species,
+  CASE WHEN n.notho=2 THEN '×' ELSE '' END || n.specific_epithet AS species,
   CASE WHEN n.rank > 'species'::rank THEN c.species_id ELSE NULL END AS infraspecies_parent_name_code,
-  n.infraspecific_epithet AS infraspecies,
+  CASE WHEN n.notho=3 THEN '×' ELSE '' END || n.infraspecific_epithet AS infraspecies,
   CASE WHEN n.rank > 'species'::rank THEN r.marker ELSE NULL END AS infraspecies_marker,  -- uses __ranks table created in AcExporter java code!
-  n.authorship AS author,
+  concat_ws(', ', n.authorship, n.remarks, n.appended_phrase) AS author,
   CASE WHEN t.is_synonym THEN t.parent_id ELSE t.id END AS accepted_name_code,
   t.remarks AS comment,
   t.according_to_date AS scrutiny_date,

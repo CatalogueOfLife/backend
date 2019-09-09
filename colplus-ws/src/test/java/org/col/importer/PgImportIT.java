@@ -16,7 +16,6 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
 import org.col.api.search.ReferenceSearchRequest;
 import org.col.api.vocab.*;
-import org.col.command.initdb.InitDbCmd;
 import org.col.common.tax.AuthorshipNormalizer;
 import org.col.config.ImporterConfig;
 import org.col.config.NormalizerConfig;
@@ -36,7 +35,6 @@ import org.junit.*;
 import static org.col.api.TestEntityGenerator.setUserDate;
 import static org.col.api.vocab.DataFormat.*;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -58,8 +56,8 @@ public class PgImportIT {
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
   
-  @Rule
-  public TestDataRule testDataRule = TestDataRule.empty();
+  //@Rule
+  //public TestDataRule testDataRule = TestDataRule.empty();
   
   @Rule
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
@@ -73,10 +71,10 @@ public class PgImportIT {
     dataset.setCreatedBy(TestDataRule.TEST_USER.getKey());
     dataset.setModifiedBy(TestDataRule.TEST_USER.getKey());
 
-    if (fullInit) {
-      InitDbCmd.setupStandardPartitions(testDataRule.getSqlSession());
-      testDataRule.commit();
-    }
+    //if (fullInit) {
+    //  InitDbCmd.setupStandardPartitions(testDataRule.getSqlSession());
+    //  testDataRule.commit();
+    //}
   
     sdao = new SynonymDao(PgSetupRule.getSqlSessionFactory());
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory());
@@ -647,7 +645,7 @@ public class PgImportIT {
     
     //normalizeAndImport(URI.create("https://github.com/mdoering/data-ina/archive/master.zip"), COLDP);
     //normalizeAndImport(URI.create("http://data.canadensys.net/ipt/archive.do?r=vascan"), DataFormat.DWCA);
-    normalizeAndImportArchive(new File("/Users/markus/Downloads/10.tar.gz"), ACEF);
+    normalizeAndImportArchive(new File("/Users/markus/code/col+/colplus-repo/ACEF/14.tar.gz"), ACEF);
   
     //normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/higher-classification.dwca.zip"), DWCA);
     //normalizeAndImportFolder(new File("/Users/markus/code/col+/data-staphbase/coldp"), COLDP);

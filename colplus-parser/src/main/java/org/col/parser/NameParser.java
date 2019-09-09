@@ -102,8 +102,11 @@ public class NameParser implements Parser<NameAccordingTo> {
       nat.getName().setCombinationAuthorship(pnAuthorship.getCombinationAuthorship());
       nat.getName().setSanctioningAuthor(pnAuthorship.getSanctioningAuthor());
       nat.getName().setBasionymAuthorship(pnAuthorship.getBasionymAuthorship());
-      // propagate notes found in authorship
+      // propagate notes and unparsed bits found in authorship
       nat.getName().addRemark(pnAuthorship.getNomenclaturalNotes());
+      if (pnAuthorship.getUnparsed() != null) {
+        nat.getName().setAppendedPhrase(pnAuthorship.getUnparsed());
+      }
       nat.addAccordingTo(pnAuthorship.getTaxonomicNote());
     }
   }
