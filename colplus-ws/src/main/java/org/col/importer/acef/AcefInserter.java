@@ -4,13 +4,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.LocalDate;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import javax.annotation.Nullable;
 
 import com.google.common.base.Splitter;
+import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.Dataset;
 import org.col.api.model.Reference;
 import org.col.api.model.VerbatimRecord;
@@ -24,6 +22,7 @@ import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NodeBatchProcessor;
 import org.col.importer.neo.model.NeoName;
 import org.col.importer.neo.model.NeoUsage;
+import org.col.importer.neo.model.RelType;
 import org.col.importer.reference.ReferenceFactory;
 import org.col.parser.*;
 import org.gbif.dwc.terms.AcefTerm;
@@ -38,7 +37,7 @@ import static com.google.common.base.Strings.emptyToNull;
  *
  */
 public class AcefInserter extends NeoInserter {
-  
+  private static final Map<String, List<String>> proParteAccIds = new HashMap<>();
   private static final Logger LOG = LoggerFactory.getLogger(AcefInserter.class);
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').trimResults().omitEmptyStrings();
   
@@ -82,7 +81,7 @@ public class AcefInserter extends NeoInserter {
       // synonyms
       insertEntities(reader, AcefTerm.Synonyms,
           inter::interpretSynonym,
-          u -> store.createNameAndUsage(u) != null
+          this::createSynonymNameUsage
       );
   
       insertTaxonEntities(reader, AcefTerm.Distribution,
@@ -102,12 +101,78 @@ public class AcefInserter extends NeoInserter {
     }
   }
   
+  public boolean createSynonymNameUsage(NeoUsage u) {
+    // check if we have seen the usage id before - this is legitimate for ambiguous and misapplied names
+    // https://github.com/Sp2000/colplus-backend/issues/449
+    NeoUsage pre = store.usages().objByID(u.getId());
+    if (pre != null && pre.usage.getStatus().isSynonym()) {
+      //TODO: create second relation or fail if accepted is the same!
+      // we have not yet established neo relations so we need to check the verbatim data here
+
+      VerbatimRecord v = store.getVerbatim(u.usage.getVerbatimKey());
+      final String aID = v.getRaw(AcefTerm.AcceptedTaxonID);
+      if (StringUtils.isNotEmpty(aID)) {
+        List<String> accIds = proParteAccIds.computeIfAbsent(u.getId(), k -> new ArrayList<>());
+        if (accIds.isEmpty()) {
+          // never been here before, so we need to also load the first, previous acceptedID from verbatim
+          v = store.getVerbatim(pre.usage.getVerbatimKey());
+          String acceptedTaxonID = v.getRaw(AcefTerm.AcceptedTaxonID);
+          if (StringUtils.isNotEmpty(acceptedTaxonID)) {
+            accIds.add(acceptedTaxonID);
+          }
+        }
+        if (accIds.contains(aID)) {
+          LOG.debug("Duplicate synonym with the same acceptedID found. Ignore");
+          v.addIssue(Issue.DUPLICATE_NAME);
+          v.addIssue(Issue.TAXON_ID_INVALID);
+          
+        } else {
+          NeoUsage acc = store.usages().objByID(aID);
+          if (acc == null) {
+            v.addIssue(Issue.ACCEPTED_ID_INVALID);
+            
+          } else {
+            // create synonym relations in post process
+            accIds.add(aID);
+            return true;
+          }
+        }
+        return false;
+      }
+      
+    }
+    return store.createNameAndUsage(u) != null;
+  }
+  
   @Override
   protected void postBatchInsert() throws NormalizationFailedException {
     try (Transaction tx = store.getNeo().beginTx()){
       reader.stream(AcefTerm.NameReferencesLinks).forEach(this::addReferenceLink);
       tx.success();
       
+    } catch (RuntimeException e) {
+      throw new NormalizationFailedException("Failed to read ACEF files", e);
+    }
+  
+    LOG.info("Create additional pro parte synonyms for {} usages", proParteAccIds.size());
+    try (Transaction tx = store.getNeo().beginTx()){
+      for (Map.Entry<String, List<String>> syn : proParteAccIds.entrySet()) {
+        if (!syn.getValue().isEmpty()) {
+          NeoUsage synU = store.usages().objByID(syn.getKey());
+          // remove the first which we generate normally
+          syn.getValue().remove(0);
+          // now create additional pro parte synonym relations for the rest
+          for (String accID : syn.getValue()) {
+            NeoUsage accU = store.usages().objByID(accID);
+            if (accU == null) {
+            } else {
+              synU.node.createRelationshipTo(accU.node, RelType.SYNONYM_OF);
+            }
+          }
+        }
+      }
+      tx.success();
+    
     } catch (RuntimeException e) {
       throw new NormalizationFailedException("Failed to read ACEF files", e);
     }

@@ -8,6 +8,7 @@ import org.col.api.model.Page;
 import org.col.api.model.SimpleName;
 import org.col.api.model.Taxon;
 import org.col.api.model.TaxonCountMap;
+import org.gbif.nameparser.api.Rank;
 
 /**
  * Mapper dealing only with accepted name usages, i.e. Taxon instances.
@@ -37,6 +38,8 @@ public interface TaxonMapper extends DatasetCRUDMapper<Taxon> {
   TaxonCountMap getCounts(@Param("datasetKey") int datasetKey, @Param("id") String id);
   
   int countChildren(@Param("datasetKey") int datasetKey, @Param("id") String id);
+  
+  int countChildrenWithRank(@Param("datasetKey") int datasetKey, @Param("id") String id, @Param("rank") Rank rank);
   
   List<Taxon> children(@Param("datasetKey") int datasetKey, @Param("id") String id, @Param("page") Page page);
   

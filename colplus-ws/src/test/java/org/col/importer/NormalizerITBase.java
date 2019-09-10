@@ -32,6 +32,7 @@ import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Issue;
 import org.gbif.dwc.terms.Term;
+import org.gbif.nameparser.api.NomCode;
 import org.junit.After;
 import org.junit.Before;
 import org.neo4j.graphdb.Direction;
@@ -75,28 +76,41 @@ abstract class NormalizerITBase {
     FileUtils.deleteQuietly(cfg.archiveDir);
     FileUtils.deleteQuietly(cfg.scratchDir);
   }
-
+  
+  public void normalize(int datasetKey) throws Exception {
+    normalize(datasetKey, null);
+  }
+  
   /**
    * Normalizes an archive from the test resources
    * and checks its printed txt tree against the expected tree
    *
    */
-  public void normalize(int datasetKey) throws Exception {
+  public void normalize(int datasetKey, @Nullable NomCode code) throws Exception {
     URL url = getClass().getResource("/" + format.name().toLowerCase() + "/" + datasetKey);
-    normalize(Paths.get(url.toURI()));
+    normalize(Paths.get(url.toURI()), code);
   }
   
   public void normalize(URI url) throws Exception {
+    normalize(url, null);
+  }
+
+  public void normalize(URI url, @Nullable NomCode code) throws Exception {
     // download an decompress
-    ExternalSourceUtil.consumeSource(url, this::normalize);
+    ExternalSourceUtil.consumeSource(url, p -> normalize(p, code));
   }
   
   protected void normalize(Path arch) {
+    normalize(arch, null);
+  }
+  
+  protected void normalize(Path arch, @Nullable NomCode code) {
     try {
       store = NeoDbFactory.create(1, attempt, cfg);
       Dataset d = new Dataset();
       d.setKey(1);
       d.setDataFormat(format);
+      d.setCode(code);
       store.put(d);
       Normalizer norm = new Normalizer(store, arch, nameIndexSupplier.get(), ImageService.passThru());
       norm.call();

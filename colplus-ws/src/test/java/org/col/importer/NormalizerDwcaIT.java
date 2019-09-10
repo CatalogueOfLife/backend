@@ -320,7 +320,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       }
       
       u = usageByID("8");
-      assertEquals("Anthurium lanceum Engl. [nom.illeg.]", u.usage.getName().canonicalNameComplete());
+      assertEquals("Anthurium lanceum Engl., nom.illeg.", u.usage.getName().canonicalNameComplete());
       assertEquals("nom.illeg.", u.usage.getName().getRemarks());
       assertEquals("Markus non. A.lancea.", u.usage.getAccordingTo());
       assertEquals(NomStatus.UNACCEPTABLE, u.usage.getName().getNomStatus());

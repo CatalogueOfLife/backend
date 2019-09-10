@@ -25,10 +25,10 @@ public class SectorDelete extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorDelete.class);
   private Set<Integer> visitedSectors = new HashSet<>();
   
-  public SectorDelete(Sector s, SqlSessionFactory factory, NameUsageIndexService indexService,
+  public SectorDelete(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService,
                       Consumer<SectorRunnable> successCallback,
                       BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) throws IllegalArgumentException {
-    super(s, factory, indexService, successCallback, errorCallback, user);
+    super(sectorKey, false, factory, indexService, successCallback, errorCallback, user);
   }
   
   @Override
@@ -38,7 +38,7 @@ public class SectorDelete extends SectorRunnable {
     for (Sector cs : childSectors) {
       deleteSectorRecursively(cs.getKey());
     }
-    deleteSector(sector.getKey());
+    deleteSector(sectorKey);
     LOG.info("Deleted {} sectors in total", visitedSectors.size());
     
     state.setState( SectorImport.State.INDEXING);
@@ -77,7 +77,7 @@ public class SectorDelete extends SectorRunnable {
       try (SqlSession session = factory.openSession(true)) {
         NameUsageMapper um = session.getMapper(NameUsageMapper.class);
         int count = um.deleteBySector(catalogueKey, sectorKey);
-        String sectorType = sectorKey == ((int) sector.getKey()) ? "sector" : "subsector";
+        String sectorType = sectorKey == this.sectorKey ? "sector" : "subsector";
         LOG.info("Deleted {} existing taxa with their synonyms and related information from {} {}", count, sectorType, sectorKey);
       
         session.getMapper(SectorImportMapper.class).delete(sectorKey);
@@ -89,7 +89,7 @@ public class SectorDelete extends SectorRunnable {
 
   private void updateSearchIndex() {
     for (int sKey : visitedSectors) {
-      indexService.deleteSector(sector.getKey());
+      indexService.deleteSector(sectorKey);
       LOG.info("Removed sector {} from search index", sKey);
     }
     LOG.info("Removed {} sectors from the search index", visitedSectors.size());

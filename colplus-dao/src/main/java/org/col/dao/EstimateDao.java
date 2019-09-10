@@ -27,8 +27,7 @@ public class EstimateDao extends GlobalEntityDao<SpeciesEstimate, EstimateMapper
     try (SqlSession session = factory.openSession()) {
       EstimateMapper mapper = session.getMapper(mapperClass);
       List<SpeciesEstimate> result = mapper.search(rank, min, max, p);
-      int total = result.size() == p.getLimit() ? mapper.searchCount(rank, min, max) : page.getOffset() + result.size();
-      return new ResultPage<>(p, total, result);
+      return new ResultPage<>(p, result, () -> mapper.searchCount(rank, min, max));
     }
   }
 }

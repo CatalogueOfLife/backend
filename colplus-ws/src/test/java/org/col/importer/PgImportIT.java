@@ -36,7 +36,6 @@ import org.junit.*;
 import static org.col.api.TestEntityGenerator.setUserDate;
 import static org.col.api.vocab.DataFormat.*;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -630,6 +629,15 @@ public class PgImportIT {
     }
   }
   
+  /**
+   * Test with 3 synonyms having the same accepted
+   * https://github.com/Sp2000/colplus-backend/issues/461
+   */
+  @Test
+  public void acefAmbiguousSyns() throws Exception {
+    normalizeAndImport(ACEF, 20);
+  }
+  
   @Test
   @Ignore("manual test for debugging entire imports")
   public void testExternalManually() throws Exception {
@@ -638,7 +646,7 @@ public class PgImportIT {
     
     //normalizeAndImport(URI.create("https://github.com/mdoering/data-ina/archive/master.zip"), COLDP);
     //normalizeAndImport(URI.create("http://data.canadensys.net/ipt/archive.do?r=vascan"), DataFormat.DWCA);
-    normalizeAndImportArchive(new File("/Users/markus/Downloads/10.tar.gz"), ACEF);
+    normalizeAndImportArchive(new File("/Users/markus/code/col+/colplus-repo/ACEF/14.tar.gz"), ACEF);
   
     //normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/higher-classification.dwca.zip"), DWCA);
     //normalizeAndImportFolder(new File("/Users/markus/code/col+/data-staphbase/coldp"), COLDP);

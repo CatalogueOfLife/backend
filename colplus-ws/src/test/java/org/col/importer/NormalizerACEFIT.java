@@ -1,6 +1,7 @@
 package org.col.importer;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
@@ -13,6 +14,7 @@ import org.col.importer.neo.model.RankedUsage;
 import org.col.importer.neo.traverse.Traversals;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -289,13 +291,21 @@ public class NormalizerACEFIT extends NormalizerITBase {
   
   /**
    * ICTV GSD with "parsed" virus names https://github.com/Sp2000/colplus-backend/issues/65
+   * and https://github.com/Sp2000/colplus-backend/issues/466
    */
   @Test
   public void acef14virus() throws Exception {
-    normalize(14);
+    normalize(14, NomCode.VIRUS);
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage t = usageByID("Vir-96");
-      assertEquals("Phikmvlikevirus: Pseudomonas phage LKA1 ICTV", t.usage.getName().getScientificName());
+      assertEquals(NameType.VIRUS, t.usage.getName().getType());
+      assertEquals("Pseudomonas phage LKA1 ICTV", t.usage.getName().getScientificName());
+  
+      RankedUsage rg = store.parents(t.node).get(0);
+      NeoUsage gen = store.usageWithName(rg.usageNode);
+      assertEquals(Rank.GENUS, gen.usage.getName().getRank());
+      assertEquals(NameType.VIRUS, gen.usage.getName().getType());
+      assertEquals("Phikmvlikevirus", gen.usage.getName().getScientificName());
     }
   }
   
@@ -347,6 +357,42 @@ public class NormalizerACEFIT extends NormalizerITBase {
       }
     }
     normalize(16);
+  }
+  
+  /**
+   * https://github.com/Sp2000/colplus-backend/issues/449
+   */
+  @Test
+  public void ambiguous() throws Exception {
+    normalize(19);
+    debug();
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoUsage syn = usageByID("S-1025");
+      assertEquals("Cassia laevigata", syn.usage.getName().getScientificName());
+      assertEquals("Willd.", syn.usage.getName().getAuthorship());
+      assertEquals(Rank.SPECIES, syn.usage.getName().getRank());
+      assertEquals(TaxonomicStatus.AMBIGUOUS_SYNONYM, syn.usage.getStatus());
+      assertProParte(syn, "Senna floribunda", "Senna septemtrionalis");
+      
+      syn = usageByID("S-55211");
+      assertEquals("Hedysarum microphyllum", syn.usage.getName().getScientificName());
+      assertNull(syn.usage.getName().getAuthorship());
+      assertEquals("sensu Turcz., p.p.", syn.usage.getAccordingTo());
+      assertEquals(Rank.SPECIES, syn.usage.getName().getRank());
+      assertEquals(TaxonomicStatus.MISAPPLIED, syn.usage.getStatus());
+      assertProParte(syn, "Hedysarum truncatum", "Hedysarum turczaninovii");
+    }
+  }
+  
+  private void assertProParte(NeoUsage syn, String... acceptedNames) {
+    Set<String> expected = Sets.newHashSet(acceptedNames);
+    List<RankedUsage> accepted = store.accepted(syn.node);
+    assertEquals(acceptedNames.length, accepted.size());
+    for (RankedUsage a : accepted) {
+      assertFalse(a.isSynonym());
+      expected.remove(a.name);
+    }
+    assertTrue(expected.isEmpty());
   }
   
   void assertPlaceholderInParents(String id) {

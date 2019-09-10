@@ -30,12 +30,11 @@ public class SectorSync extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorSync.class);
   private NamesTreeDao treeDao;
   
-  public SectorSync(Sector s, SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao,
+  public SectorSync(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao,
                     Consumer<SectorRunnable> successCallback,
                     BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) throws IllegalArgumentException {
-    super(s, factory, indexService, successCallback, errorCallback, user);
+    super(sectorKey, true, factory, indexService, successCallback, errorCallback, user);
     treeDao = diDao.getTreeDao();
-    assertSubjectID();
   }
   
   @Override

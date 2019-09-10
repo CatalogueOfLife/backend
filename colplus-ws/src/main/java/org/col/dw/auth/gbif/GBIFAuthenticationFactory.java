@@ -34,7 +34,12 @@ public class GBIFAuthenticationFactory implements AuthenticationProviderFactory 
   @NotNull
   public String secret;
   
-  
+  /**
+   * Test username to use to verify the GBIF authentication is working fine
+   */
+  @NotNull
+  public String verificationUser = "markus";
+
   @Override
   public AuthenticationProvider createAuthenticationProvider() {
     return new GBIFAuthentication(this);

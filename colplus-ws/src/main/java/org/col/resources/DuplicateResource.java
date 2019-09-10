@@ -39,7 +39,7 @@ public class DuplicateResource {
                               @QueryParam("category") NameCategory category,
                               @QueryParam("rank") Set<Rank> ranks,
                               @QueryParam("status") Set<TaxonomicStatus> status,
-                              @QueryParam("parentDifferent") Boolean parentDifferent,
+                              @QueryParam("acceptedDifferent") Boolean acceptedDifferent,
                               @QueryParam("authorshipDifferent") Boolean authorshipDifferent,
                               @QueryParam("rankDifferent") Boolean rankDifferent,
                               @QueryParam("codeDifferent") Boolean codeDifferent,
@@ -47,7 +47,7 @@ public class DuplicateResource {
                               @Valid @BeanParam Page page, @Context SqlSession session) {
     DuplicateDao dao = new DuplicateDao(session);
     if (entity == null || entity == EntityType.NAME_USAGE) {
-        return dao.findUsages(mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, parentDifferent, rankDifferent, codeDifferent, withDecision, page);
+        return dao.findUsages(mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, page);
       
     } else if (entity == EntityType.NAME) {
         return dao.findNames(mode, minSize, datasetKey, category, ranks, authorshipDifferent, rankDifferent, codeDifferent, page);

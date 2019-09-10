@@ -32,7 +32,7 @@ COPY (
 (
 SELECT DISTINCT ON (d.key)
  d.key - 1000 AS record_id,
- coalesce(d.alias || ': ' || d.title, d.title) AS database_name_displayed,
+ CASE WHEN d.alias IS NOT NULL AND d.alias != d.title THEN d.alias || ': ' || d.title ELSE d.title END AS database_name_displayed,
  coalesce(d.alias, d.title) AS database_name,
  d.title AS database_full_name,
  d.website AS web_site,
@@ -187,6 +187,7 @@ WITH RECURSIVE tree AS(
         CASE WHEN n.rank='order' THEN n.scientific_name ELSE NULL END AS "order",
         CASE WHEN n.rank='superfamily' THEN n.scientific_name ELSE NULL END AS superfamily,
         CASE WHEN n.rank='family' THEN n.scientific_name ELSE NULL END AS family,
+        CASE WHEN n.rank='genus' THEN n.scientific_name ELSE NULL END AS genus,
         CASE WHEN n.rank='family' THEN t.id ELSE NULL END AS family_id,
         CASE WHEN n.rank='species' THEN t.id ELSE NULL END AS species_id
     FROM name_usage_{{datasetKey}} t
@@ -206,6 +207,7 @@ WITH RECURSIVE tree AS(
         CASE WHEN n.rank='order' THEN n.scientific_name ELSE tree."order" END,
         CASE WHEN n.rank='superfamily' THEN n.scientific_name ELSE tree.superfamily END,
         CASE WHEN n.rank='family' THEN n.scientific_name ELSE tree.family END,
+        CASE WHEN n.rank='genus' THEN n.scientific_name ELSE tree.genus END,
         CASE WHEN n.rank='family' THEN t.id ELSE tree.family_id END,
         CASE WHEN n.rank='species' THEN t.id ELSE tree.species_id END AS species_id
     FROM name_usage_{{datasetKey}} t
@@ -266,18 +268,30 @@ SELECT key AS record_id,
 ) TO 'families.csv';
 
 
+-- scientific_names
+-- TODO: unparsed non virus names, e.g hybrids: https://github.com/Sp2000/colplus-backend/issues/466
 COPY (
 SELECT
   tk.key AS record_id,
   t.id AS name_code,
   t.webpage AS web_site,
-  n.genus AS genus,
+  -- use the genus classification for virus type (1) names
+  CASE
+    WHEN n.type=1 THEN c.genus
+    ELSE (CASE WHEN n.notho=0 THEN '×' ELSE '' END) ||  n.genus
+  END AS genus,
   n.infrageneric_epithet AS subgenus,
-  n.specific_epithet AS species,
+  -- notho types: 0=GENERIC, 1=INFRAGENERIC, 2=SPECIFIC, 3=INFRASPECIFIC
+  CASE
+    -- parsable names: 0=SCIENTIFIC, 1=VIRUS, 2=HYBRID_FORMULA, 3=INFORMAL, 4=OTU, 5=PLACEHOLDER, 6=NO_NAME
+    WHEN n.type IN (0,3) THEN (CASE WHEN n.notho=2 THEN '×' ELSE '' END) || n.specific_epithet
+    -- unparsable ones
+    ELSE n.scientific_name
+  END AS species,
   CASE WHEN n.rank > 'species'::rank THEN c.species_id ELSE NULL END AS infraspecies_parent_name_code,
-  n.infraspecific_epithet AS infraspecies,
+  CASE WHEN n.notho=3 THEN '×' ELSE '' END || n.infraspecific_epithet AS infraspecies,
   CASE WHEN n.rank > 'species'::rank THEN r.marker ELSE NULL END AS infraspecies_marker,  -- uses __ranks table created in AcExporter java code!
-  n.authorship AS author,
+  concat_ws(', ', n.authorship, n.remarks, n.appended_phrase) AS author,
   CASE WHEN t.is_synonym THEN t.parent_id ELSE t.id END AS accepted_name_code,
   t.remarks AS comment,
   t.according_to_date AS scrutiny_date,
@@ -296,7 +310,7 @@ SELECT
   CASE WHEN t.is_synonym THEN 0 ELSE 1 END AS is_accepted_name,
   NULL AS GSDTaxonGUID,
   NULL AS GSDNameGUID,
-  (NOT t.recent)::int AS is_extinct,
+  NULL AS is_extinct,
   t.fossil::int AS has_preholocene,
   t.recent::int AS has_modern
 FROM name_{{datasetKey}} n

@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.jackson.IsEmptyFilter;
+import org.col.api.util.ObjectUtils;
 import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.Origin;
 import org.col.common.tax.SciNameNormalizer;
@@ -92,7 +93,11 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
   
   private String specificEpithet;
   
+  private String specificEpithetQualifier;
+  
   private String infraspecificEpithet;
+
+  private String infraspecificEpithetQualifier;
   
   private String cultivarEpithet;
   
@@ -239,7 +244,7 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
     pn.setCode(n.getCode());
     pn.setCandidatus(pn.isCandidatus());
     pn.setNotho(n.getNotho());
-    pn.setRemarks(n.getRemarks());
+    pn.setNomenclaturalNotes(n.getRemarks());
     pn.setType(n.getType());
     return pn;
   }
@@ -576,6 +581,20 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
     return infraspecificEpithet == null ? specificEpithet : infraspecificEpithet;
   }
   
+  public String getEpithet(NamePart part) {
+    switch (part) {
+      case GENERIC:
+        return ObjectUtils.coalesce(getGenus(), getUninomial());
+      case INFRAGENERIC:
+        return getInfragenericEpithet();
+      case SPECIFIC:
+        return getSpecificEpithet();
+      case INFRASPECIFIC:
+        return getInfraspecificEpithet();
+    }
+    return null;
+  }
+  
   /**
    * @return true if any kind of authorship exists
    */
@@ -609,10 +628,12 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
   
   @JsonIgnore
   public boolean isIndetermined() {
-    return rank.isInfragenericStrictly() && infragenericEpithet == null && specificEpithet == null
+    return isParsed() && (
+        rank.isInfragenericStrictly() && infragenericEpithet == null && specificEpithet == null
         || rank.isSpeciesOrBelow() && specificEpithet == null
         || rank.isCultivarRank() && cultivarEpithet == null
-        || rank.isInfraspecific() && !rank.isCultivarRank() && infraspecificEpithet == null;
+        || rank.isInfraspecific() && !rank.isCultivarRank() && infraspecificEpithet == null
+    );
   }
   
   /**
@@ -702,7 +723,7 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
    */
   @JsonProperty(value = "formattedName", access = JsonProperty.Access.READ_ONLY)
   public String canonicalNameCompleteHtml() {
-    return isParsed() ? NameFormatter.canonicalCompleteHtml(toParsedName(this)) : getScientificName();
+    return isParsed() ? NameFormatter.canonicalCompleteHtml(toParsedName(this)) : scientificNameAuthorship();
   }
   
   /**
@@ -749,6 +770,32 @@ public class Name extends DataEntity implements DatasetEntity, VerbatimEntity {
         Objects.equals(remarks, name.remarks);
   }
   
+  public boolean equalSciName(Name o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    return candidatus == o.candidatus &&
+        Objects.equals(scientificName, o.scientificName) &&
+        Objects.equals(authorship, o.authorship) &&
+        rank == o.rank &&
+        Objects.equals(uninomial, o.uninomial) &&
+        Objects.equals(genus, o.genus) &&
+        Objects.equals(infragenericEpithet, o.infragenericEpithet) &&
+        Objects.equals(specificEpithet, o.specificEpithet) &&
+        Objects.equals(infraspecificEpithet, o.infraspecificEpithet) &&
+        Objects.equals(cultivarEpithet, o.cultivarEpithet) &&
+        Objects.equals(appendedPhrase, o.appendedPhrase) &&
+        notho == o.notho &&
+        Objects.equals(combinationAuthorship, o.combinationAuthorship) &&
+        Objects.equals(basionymAuthorship, o.basionymAuthorship) &&
+        Objects.equals(sanctioningAuthor, o.sanctioningAuthor) &&
+        code == o.code &&
+        nomStatus == o.nomStatus &&
+        Objects.equals(publishedInId, o.publishedInId) &&
+        Objects.equals(publishedInPage, o.publishedInPage) &&
+        Objects.equals(publishedInYear, o.publishedInYear) &&
+        type == o.type;
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(id, datasetKey, sectorKey, homotypicNameId, nameIndexId, scientificName, authorship, rank,

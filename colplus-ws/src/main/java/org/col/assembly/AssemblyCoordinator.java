@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
@@ -50,7 +51,7 @@ public class AssemblyCoordinator implements Managed {
     public final boolean delete;
     
     private SectorFuture(SectorRunnable job, Future future) {
-      this.sectorKey = job.sector.getKey();
+      this.sectorKey = job.sectorKey;
       this.datasetKey = job.sector.getDatasetKey();
       this.state = job.getState();
       this.future = future;
@@ -133,56 +134,44 @@ public class AssemblyCoordinator implements Managed {
       syncAll(user);
     } else {
       if (request.getSectorKey() != null) {
-        syncSector(readSector(request.getSectorKey()), user);
+        syncSector(request.getSectorKey(), user);
       }
       if (request.getDatasetKey() != null) {
         LOG.info("Sync all sectors in dataset {}", request.getDatasetKey());
-        // collect all sectors first to see if they can be synced before actually submitting a single sync
-        List<Sector> sectors = new ArrayList<>();
+        final AtomicInteger cnt = new AtomicInteger();
         try (SqlSession session = factory.openSession(true)) {
           SectorMapper sm = session.getMapper(SectorMapper.class);
-          sm.processSectors(request.getDatasetKey(), (ctx) -> sectors.add(ctx.getResultObject()));
+          sm.processSectors(request.getDatasetKey(), (ctx) -> {
+            syncSector(ctx.getResultObject().getKey(), user);
+            cnt.getAndIncrement();
+          });
         }
         // now that we have them schedule syncs
-        LOG.info("Queue {} sectors from dataset {} to sync", sectors.size(), request.getDatasetKey());
-        for (Sector s : sectors) {
-          syncSector(s, user);
-        }
+        LOG.info("Queued {} sectors from dataset {} for sync", cnt.get(), request.getDatasetKey());
       }
     }
   }
   
-  private synchronized void syncSector(Sector s, ColUser user) throws IllegalArgumentException {
-    SectorSync ss = new SectorSync(s, factory, indexService, diDao, this::successCallBack, this::errorCallBack, user);
+  private synchronized void syncSector(int sectorKey, ColUser user) throws IllegalArgumentException {
+    SectorSync ss = new SectorSync(sectorKey, factory, indexService, diDao, this::successCallBack, this::errorCallBack, user);
     queueJob(ss);
   }
 
   public void deleteSector(int sectorKey, ColUser user) throws IllegalArgumentException {
-    SectorDelete sd = new SectorDelete(readSector(sectorKey), factory, indexService, this::successCallBack, this::errorCallBack, user);
+    SectorDelete sd = new SectorDelete(sectorKey, factory, indexService, this::successCallBack, this::errorCallBack, user);
     queueJob(sd);
   }
   
   private synchronized void queueJob(SectorRunnable job) throws IllegalArgumentException {
     // is this sector already syncing?
-    if (syncs.containsKey(job.sector.getKey())) {
+    if (syncs.containsKey(job.sectorKey)) {
       LOG.info("{} already busy", job.sector);
       // ignore
     
     } else {
       assertStableData(job.sector);
-      syncs.put(job.sector.getKey(), new SectorFuture(job, exec.submit(job)));
+      syncs.put(job.sectorKey, new SectorFuture(job, exec.submit(job)));
       LOG.info("Queued {} for {} targeting {}", job.getClass().getSimpleName(), job.sector, job.sector.getTarget());
-    }
-  }
-  
-  private Sector readSector(int sectorKey) throws IllegalArgumentException {
-    try (SqlSession session = factory.openSession(true)) {
-      SectorMapper sm = session.getMapper(SectorMapper.class);
-      Sector s = sm.get(sectorKey);
-      if (s == null) {
-        throw new IllegalArgumentException("Sector "+sectorKey+" does not exist");
-      }
-      return s;
     }
   }
   
@@ -225,9 +214,9 @@ public class AssemblyCoordinator implements Managed {
     int failed = 0;
     for (Sector s : collector.getResults()) {
       try {
-        syncSector(s, user);
+        syncSector(s.getKey(), user);
       } catch (RuntimeException e) {
-        LOG.warn("Fail to sync {}: {}", s, e.getMessage());
+        LOG.error("Fail to sync {}: {}", s, e.getMessage());
         failed++;
       }
     }

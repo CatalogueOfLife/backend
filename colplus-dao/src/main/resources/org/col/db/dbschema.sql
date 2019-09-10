@@ -16,9 +16,10 @@ $func$
 SELECT public.unaccent('public.unaccent', $1)  -- schema-qualify function and dictionary
 $func$  LANGUAGE sql IMMUTABLE;
 
-
 CREATE TYPE rank AS ENUM (
   'domain',
+  'realm',
+  'subrealm',
   'superkingdom',
   'kingdom',
   'subkingdom',
@@ -98,7 +99,6 @@ CREATE TYPE rank AS ENUM (
   'other',
   'unranked'
 );
-
 
 CREATE TABLE coluser (
   key serial PRIMARY KEY,
