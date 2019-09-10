@@ -2,7 +2,7 @@ package org.col.es.dsl;
 
 /**
  * Represents the "query" part of an Elasticsearch search quest. Since queries can take very different forms, the only
- * aspects of a query this interface defines is its name and its boost value.
+ * aspects of a query this interface defines are its name and its boost value.
  */
 public interface Query {
 

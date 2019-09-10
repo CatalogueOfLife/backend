@@ -77,7 +77,7 @@ public class NameStrings {
 
   public NameStrings() {}
 
-  @Analyzers({AUTO_COMPLETE})
+  @Analyzers({KEYWORD, AUTO_COMPLETE})
   public String getGenus() {
     return genus;
   }
@@ -94,7 +94,7 @@ public class NameStrings {
     this.genusLetter = genusLetter;
   }
 
-  @Analyzers({AUTO_COMPLETE})
+  @Analyzers({KEYWORD, AUTO_COMPLETE})
   public String getGenusWN() {
     return genusWN;
   }
@@ -103,7 +103,7 @@ public class NameStrings {
     this.genusWN = genusWN;
   }
 
-  @Analyzers({AUTO_COMPLETE})
+  @Analyzers({KEYWORD, AUTO_COMPLETE})
   public String getSpecificEpithet() {
     return specificEpithet;
   }
@@ -112,7 +112,7 @@ public class NameStrings {
     this.specificEpithet = specificEpithet;
   }
 
-  @Analyzers({AUTO_COMPLETE})
+  @Analyzers({KEYWORD, AUTO_COMPLETE})
   public String getSpecificEpithetSN() {
     return specificEpithetSN;
   }
@@ -121,7 +121,7 @@ public class NameStrings {
     this.specificEpithetSN = specificEpithetSN;
   }
 
-  @Analyzers({AUTO_COMPLETE})
+  @Analyzers({KEYWORD, AUTO_COMPLETE})
   public String getInfraspecificEpithet() {
     return infraspecificEpithet;
   }
@@ -130,7 +130,7 @@ public class NameStrings {
     this.infraspecificEpithet = infraspecificEpithet;
   }
 
-  @Analyzers({AUTO_COMPLETE})
+  @Analyzers({KEYWORD, AUTO_COMPLETE})
   public String getInfraspecificEpithetSN() {
     return infraspecificEpithetSN;
   }
