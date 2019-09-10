@@ -11,8 +11,8 @@ public class NameSuggestRequest {
   // Desired number of suggestions
   private Integer limit;
   private Boolean suggestVernaculars;
-  // If true, makes the search extra sensitive to the user typing uninomials, binomials and trinomials (at the expense of
-  // making it less sensitive to the user typing things like infraspecific markers)
+  // If true (default), makes the search extra sensitive to the user typing straight uninomials, binomials and trinomials, at the
+  // expense of making it less sensitive to the user typing things like infraspecific markers.
   private Boolean epithetSensitive;
 
   @JsonIgnore

@@ -1,37 +1,29 @@
 package org.col.es.name.suggest;
 
 import org.col.api.search.NameSuggestRequest;
+import org.col.es.dsl.BoolQuery;
 import org.col.es.dsl.EsSearchRequest;
+import org.col.es.dsl.TermQuery;
 
 /**
  * Translates the {@code NameSuggestRequest} into a real Elasticsearch search request.
  */
 class RequestTranslator {
 
-  private static final String[] fields = {"usageId", "scientificName", "acceptedName", "rank", "nomCode"};
-
   private final NameSuggestRequest request;
-  private final QTranslator qTranslator;
 
   RequestTranslator(NameSuggestRequest request) {
     this.request = request;
-    this.qTranslator = new QTranslator(request);
   }
 
-  EsSearchRequest getScientificNameQuery() {
-    EsSearchRequest searchRequest = EsSearchRequest.emptyRequest()
-        .select(fields)
-        .where(qTranslator.getScientificNameQuery())
+  EsSearchRequest translate() {
+    BoolQuery query = new BoolQuery()
+        .filter(new TermQuery("datasetKey", request.getDatasetKey()))
+        .must(new QTranslator(request).translate());
+    return new EsSearchRequest()
+        .select("usageId", "scientificName", "acceptedName", "rank", "nomCode")
+        .where(query)
         .size(request.getLimit());
-    return searchRequest;
-  }
-
-  EsSearchRequest getVernacularNameQuery() {
-    EsSearchRequest searchRequest = EsSearchRequest.emptyRequest()
-        .select(fields)
-        .where(qTranslator.getVernacularNameQuery())
-        .size(request.getLimit());
-    return searchRequest;
   }
 
 }

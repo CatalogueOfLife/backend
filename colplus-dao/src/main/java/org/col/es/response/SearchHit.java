@@ -15,6 +15,10 @@ public class SearchHit<T> {
   @JsonProperty("_source")
   private T source;
 
+  public boolean matchedQuery(String name) {
+    return matchedQueries != null && matchedQueries.contains(name);
+  }
+
   public String getId() {
     return id;
   }

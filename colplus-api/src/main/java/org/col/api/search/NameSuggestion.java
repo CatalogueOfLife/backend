@@ -13,12 +13,8 @@ import org.gbif.nameparser.api.Rank;
  */
 public class NameSuggestion {
 
-  public static enum Type {
-    SCIENTIFIC, VERNACULAR
-  }
-
   // Whether this suggestion contains a scientific name or a vernacular name
-  private Type type;
+  private boolean vernacularName;
   // The name matching the search phrase: an accepted name/synonym/bare name/vernacular name
   private String match;
   // The accepted name if the suggestion is anything but an accepted name, null otherwise
@@ -27,18 +23,19 @@ public class NameSuggestion {
   private Rank rank;
   private TaxonomicStatus status;
   private NomCode nomCode;
-
+  /*
+   * Temporarily include the Elasticsearch score as well to see if it can help us fine-tune the auto-complete routines
+   * (e.g. boost values).
+   */
   private float score;
 
-  /**
-   * A simple construction of an actual suggestion (one that you could include in a drop-down widget) from the data in
-   * this {@code NameSuggestion} instance. English language oriented,
-   * 
-   * @return
+  /*
+   * A simple construction of an actual suggestion created from the data in this {@code NameSuggestion} instance. Just an
+   * example of how the drop-down list could be pupulated. Probably not actually useful because it's not multi-lingual.
    */
   public String getSuggestion() {
-    if (type == Type.VERNACULAR) {
-      return String.format("%s (vernacular name for %s)", match, acceptedName);
+    if (vernacularName) {
+      return String.format("%s (vernacular name of %s)", match, acceptedName);
     }
     if (status == null) {
       return match + " (nomen nudum)";
@@ -50,12 +47,12 @@ public class NameSuggestion {
   }
 
   @JsonIgnore
-  public Type getType() {
-    return type;
+  public boolean isVernacularName() {
+    return vernacularName;
   }
 
-  public void setType(Type type) {
-    this.type = type;
+  public void setVernacularName(boolean vernacularName) {
+    this.vernacularName = vernacularName;
   }
 
   public String getMatch() {
@@ -106,7 +103,6 @@ public class NameSuggestion {
     this.nomCode = nomCode;
   }
 
-  @JsonIgnore
   public float getScore() {
     return score;
   }
@@ -117,7 +113,7 @@ public class NameSuggestion {
 
   @Override
   public int hashCode() {
-    return Objects.hash(acceptedName, match, nomCode, rank, score, status, type, usageId);
+    return Objects.hash(acceptedName, match, nomCode, rank, score, status, usageId, vernacularName);
   }
 
   @Override
@@ -131,7 +127,7 @@ public class NameSuggestion {
     NameSuggestion other = (NameSuggestion) obj;
     return Objects.equals(acceptedName, other.acceptedName) && Objects.equals(match, other.match) && nomCode == other.nomCode
         && rank == other.rank && Float.floatToIntBits(score) == Float.floatToIntBits(other.score) && status == other.status
-        && type == other.type && Objects.equals(usageId, other.usageId);
+        && Objects.equals(usageId, other.usageId) && vernacularName == other.vernacularName;
   }
 
 }

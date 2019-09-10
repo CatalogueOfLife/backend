@@ -19,14 +19,16 @@ public abstract class AbstractQuery<T extends Constraint> implements Query {
    * @param name
    * @return
    */
-  public AbstractQuery<T> withName(String name) {
+  @SuppressWarnings("unchecked")
+  public <U extends AbstractQuery<T>> U withName(String name) {
     getConstraint().name(name);
-    return this;
+    return (U) this;
   }
 
-  public AbstractQuery<T> withBoost(Float boost) {
+  @SuppressWarnings("unchecked")
+  public <U extends AbstractQuery<T>> U withBoost(Float boost) {
     getConstraint().boost(boost);
-    return this;
+    return (U) this;
   }
 
   // Usually the Constraint instance is a top-level field within the subclasses, but not always, so we can't include

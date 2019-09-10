@@ -16,7 +16,7 @@ class RequestTranslator {
   static Query generateQuery(NameSearchRequest request) {
     if (request.getFilters().isEmpty()) {
       if (StringUtils.isEmpty(request.getQ())) {
-        return MatchAllQuery.INSTANCE;
+        return new MatchAllQuery();
       }
       return new QTranslator(request).translate();
     } else if (StringUtils.isEmpty(request.getQ())) {
