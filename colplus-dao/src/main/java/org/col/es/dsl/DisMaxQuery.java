@@ -2,7 +2,7 @@ package org.col.es.dsl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class DisMaxQuery extends AbstractQuery<DisMaxConstraint> {
+public class DisMaxQuery extends ConstraintQuery<DisMaxConstraint> {
 
   @JsonProperty("dis_max")
   private final DisMaxConstraint constraint;

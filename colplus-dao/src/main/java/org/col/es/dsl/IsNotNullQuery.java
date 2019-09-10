@@ -2,7 +2,7 @@ package org.col.es.dsl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class IsNotNullQuery extends AbstractQuery<IsNotNullConstraint> {
+public class IsNotNullQuery extends ConstraintQuery<IsNotNullConstraint> {
 
   @JsonProperty("exists")
   private final IsNotNullConstraint constraint;

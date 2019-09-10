@@ -6,7 +6,7 @@ import org.col.es.dsl.MatchConstraint.Operator;
 
 import static java.util.Collections.singletonMap;
 
-public abstract class AbstractMatchQuery extends AbstractQuery<MatchConstraint> {
+public abstract class AbstractMatchQuery extends ConstraintQuery<MatchConstraint> {
 
   private final Map<String, MatchConstraint> match;
 

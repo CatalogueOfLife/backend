@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.Map;
 
 @SuppressWarnings("unused")
-public class TermsQuery implements Query {
+public class TermsQuery extends AbstractQuery {
 
   private final Map<String, Collection<?>> terms;
 

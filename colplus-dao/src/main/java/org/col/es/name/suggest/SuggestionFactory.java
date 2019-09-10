@@ -29,6 +29,7 @@ class SuggestionFactory {
     if (doc.getStatus().isSynonym()) {
       suggestion.setAcceptedName(doc.getAcceptedName());
     }
+    suggestion.setUsageId(doc.getUsageId());
     suggestion.setNomCode(doc.getNomCode());
     suggestion.setRank(doc.getRank());
     suggestion.setStatus(doc.getStatus());

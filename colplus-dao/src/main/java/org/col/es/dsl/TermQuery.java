@@ -4,7 +4,7 @@ import java.util.Map;
 
 import static java.util.Collections.singletonMap;
 
-public class TermQuery extends AbstractQuery<TermConstraint> {
+public class TermQuery extends ConstraintQuery<TermConstraint> {
 
   private final Map<String, TermConstraint> term;
 

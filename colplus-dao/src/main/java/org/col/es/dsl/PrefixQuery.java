@@ -4,7 +4,7 @@ import java.util.Map;
 
 import static java.util.Collections.singletonMap;
 
-public class PrefixQuery extends AbstractQuery<TermConstraint> {
+public class PrefixQuery extends ConstraintQuery<TermConstraint> {
 
   private final Map<String, TermConstraint> prefix;
 

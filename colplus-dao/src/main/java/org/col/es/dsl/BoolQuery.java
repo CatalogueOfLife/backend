@@ -2,7 +2,7 @@ package org.col.es.dsl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class BoolQuery extends AbstractQuery<BoolConstraint> {
+public class BoolQuery extends ConstraintQuery<BoolConstraint> {
 
   @JsonProperty("bool")
   private final BoolConstraint constraint;

@@ -2,7 +2,7 @@ package org.col.es.dsl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class NestedQuery extends AbstractQuery<NestedConstraint> {
+public class NestedQuery extends ConstraintQuery<NestedConstraint> {
 
   public static enum ScoreMode {
     AVG, SUM, MAX, MIN;

@@ -2,7 +2,7 @@ package org.col.es.dsl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ConstantScoreQuery implements Query {
+public class ConstantScoreQuery extends AbstractQuery {
 
   private static class Filter {
     @JsonProperty("filter")

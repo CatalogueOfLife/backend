@@ -11,14 +11,6 @@ public class NameSuggestRequest {
   // Desired number of suggestions
   private Integer limit;
   private Boolean suggestVernaculars;
-  // If true (default), makes the search extra sensitive to the user typing straight uninomials, binomials and trinomials, at the
-  // expense of making it less sensitive to the user typing things like infraspecific markers.
-  private Boolean epithetSensitive;
-
-  @JsonIgnore
-  public boolean isEpithetSensitive() {
-    return epithetSensitive == null || epithetSensitive.equals(Boolean.TRUE);
-  }
 
   @JsonIgnore
   public boolean isSuggestVernaculars() {
@@ -49,17 +41,9 @@ public class NameSuggestRequest {
     this.limit = limit;
   }
 
-  public Boolean getEpithetSenitive() {
-    return epithetSensitive;
-  }
-
-  public void setEpithetSensitive(Boolean simple) {
-    this.epithetSensitive = simple;
-  }
-
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, limit, q, epithetSensitive, suggestVernaculars);
+    return Objects.hash(datasetKey, limit, q, suggestVernaculars);
   }
 
   @Override
@@ -72,7 +56,7 @@ public class NameSuggestRequest {
       return false;
     NameSuggestRequest other = (NameSuggestRequest) obj;
     return Objects.equals(datasetKey, other.datasetKey) && Objects.equals(limit, other.limit) && Objects.equals(q, other.q)
-        && Objects.equals(epithetSensitive, other.epithetSensitive) && Objects.equals(suggestVernaculars, other.suggestVernaculars);
+        && Objects.equals(suggestVernaculars, other.suggestVernaculars);
   }
 
 }
