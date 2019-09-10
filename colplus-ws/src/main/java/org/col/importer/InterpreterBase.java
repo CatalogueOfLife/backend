@@ -243,7 +243,6 @@ public class InterpreterBase {
                                                  String nomCode, String nomStatus, String link, String remarks, VerbatimRecord v) {
     final boolean isAtomized = ObjectUtils.anyNotNull(genus, infraGenus, species, infraspecies);
     Name atom = new Name();
-    atom.setType(NameType.SCIENTIFIC);
     atom.setGenus(genus);
     atom.setInfragenericEpithet(infraGenus);
     atom.setSpecificEpithet(lowercaseEpithet(species, v));
@@ -251,6 +250,14 @@ public class InterpreterBase {
     atom.setCultivarEpithet(cultivar);
     atom.setAppendedPhrase(phrase);
     return interpretName(id, vrank, sciname, authorship, isAtomized, atom, nomCode, nomStatus, link, remarks, v);
+  }
+  
+  private static void setDefaultNameType(Name n) {
+    if (n.getCode() == NomCode.VIRUS) {
+      n.setType(NameType.VIRUS);
+    } else {
+      n.setType(NameType.SCIENTIFIC);
+    }
   }
   
   Optional<NameAccordingTo> interpretName(final String id, final String vrank, final String sciname, final String authorship,
@@ -263,6 +270,7 @@ public class InterpreterBase {
     atom.setRank(rank);
     final NomCode code = SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse(dataset.getCode(), Issue.NOMENCLATURAL_CODE_INVALID, v);
     atom.setCode(code);
+    setDefaultNameType(atom);
   
     // populate uninomial?
     if (!atom.isBinomial() && rank.isSupraspecific() && atom.getGenus() != null) {

@@ -20,6 +20,8 @@ import org.col.parser.SafeParser;
 import org.col.parser.TaxonomicStatusParser;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -201,6 +203,21 @@ public class AcefInterpreter extends InterpreterBase {
           SafeParser.parse(RankParser.PARSER, rank).orElse(Rank.INFRASPECIFIC_NAME)
       );
       opt = Optional.of(nat);
+
+    } else if (dataset.getCode() == NomCode.VIRUS) {
+      // we shortcut building the ACEF virus name here as we don't want the genus classification to end up in the full name
+      NameAccordingTo nat = new NameAccordingTo();
+      nat.setName(new Name());
+      nat.getName().setId(v.get(idTerm));
+      nat.getName().setType(NameType.VIRUS);
+      nat.getName().setCode(NomCode.VIRUS);
+      String fullname = v.get(AcefTerm.SpeciesEpithet).trim() + " " + authorship.trim();
+      nat.getName().setScientificName(fullname.trim());
+      nat.getName().setRank(
+          SafeParser.parse(RankParser.PARSER, rank).orElse(Rank.SPECIES)
+      );
+      opt = Optional.of(nat);
+      
     } else {
       opt = interpretName(v.get(idTerm), rank, null, authorship,
           v.get(AcefTerm.Genus), v.get(AcefTerm.SubGenusName), v.get(AcefTerm.SpeciesEpithet), v.get(AcefTerm.InfraSpeciesEpithet),
