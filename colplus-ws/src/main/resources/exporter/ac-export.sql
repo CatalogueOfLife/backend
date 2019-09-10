@@ -275,11 +275,19 @@ SELECT
   tk.key AS record_id,
   t.id AS name_code,
   t.webpage AS web_site,
-  -- use the genus classification for virus type names
-  -- notho types: 0=GENERIC, 1=INFRAGENERIC, 2=SPECIFIC, 3=INFRASPECIFIC;
-  CASE WHEN n.type=1 THEN c.genus ELSE (CASE WHEN n.notho=0 THEN '×' ELSE '' END) ||  n.genus END AS genus,
+  -- use the genus classification for virus type (1) names
+  CASE
+    WHEN n.type=1 THEN c.genus
+    ELSE (CASE WHEN n.notho=0 THEN '×' ELSE '' END) ||  n.genus
+  END AS genus,
   n.infrageneric_epithet AS subgenus,
-  CASE WHEN n.notho=2 THEN '×' ELSE '' END || n.specific_epithet AS species,
+  -- notho types: 0=GENERIC, 1=INFRAGENERIC, 2=SPECIFIC, 3=INFRASPECIFIC
+  CASE
+    -- parsable names: 0=SCIENTIFIC, 1=VIRUS, 2=HYBRID_FORMULA, 3=INFORMAL, 4=OTU, 5=PLACEHOLDER, 6=NO_NAME
+    WHEN n.type IN (0,3) THEN (CASE WHEN n.notho=2 THEN '×' ELSE '' END) || n.specific_epithet
+    -- unparsable ones
+    ELSE n.scientific_name
+  END AS species,
   CASE WHEN n.rank > 'species'::rank THEN c.species_id ELSE NULL END AS infraspecies_parent_name_code,
   CASE WHEN n.notho=3 THEN '×' ELSE '' END || n.infraspecific_epithet AS infraspecies,
   CASE WHEN n.rank > 'species'::rank THEN r.marker ELSE NULL END AS infraspecies_marker,  -- uses __ranks table created in AcExporter java code!
