@@ -27,32 +27,22 @@ import org.col.es.EsReadTestBase;
 import org.col.es.InvalidQueryException;
 import org.col.es.model.NameUsageDocument;
 import org.col.es.name.search.NameUsageSearchService;
-import org.elasticsearch.client.RestClient;
 import org.gbif.nameparser.api.Rank;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.col.es.EsUtil.refreshIndex;
 import static org.junit.Assert.assertEquals;
 
 public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
   private static final String dummyPayload = getDummyPayload();
 
-  private static RestClient client;
   private static NameUsageSearchService svc;
 
   @BeforeClass
   public static void init() {
-    client = esSetupRule.getEsClient();
     svc = new NameUsageSearchService(indexName, esSetupRule.getEsClient());
-  }
-
-  @AfterClass
-  public static void shutdown() throws IOException {
-    client.close();
   }
 
   @Before
@@ -73,7 +63,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
   @Test
   public void testSingleFacetWithoutFilters() throws IOException {
-    
+
     // ==> Define search
     NameSearchRequest request = new NameSearchRequest();
     request.addFacet(NameSearchParameter.RANK);
@@ -143,8 +133,6 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     doc.setRank(Rank.SPECIES);
     indexRaw(doc);
 
-    refreshIndex(client, indexName);
-
     NameSearchResponse result = svc.search(indexName, request, page);
 
     Map<NameSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
@@ -162,7 +150,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
   @Test
   public void testTwoFacetsWithoutFilters() throws IOException {
-    
+
     // ==> Define search
     NameSearchRequest request = new NameSearchRequest();
     request.addFacet(NameSearchParameter.RANK);
@@ -240,8 +228,6 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     // CITATION_UNPARSED: 2 docs
     // CLASSIFICATION_NOT_APPLIED: 1 doc
 
-    refreshIndex(client, indexName);
-
     NameSearchResponse result = svc.search(indexName, request, page);
 
     Map<NameSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
@@ -268,7 +254,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
   @Test
   public void testThreeFacetsWithoutFilters() throws IOException {
-    
+
     // ==> Define search
     NameSearchRequest request = new NameSearchRequest();
     request.addFacet(NameSearchParameter.RANK);
@@ -368,8 +354,6 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
     // PUB_ID1: 6 docs
     // PUB_ID2: 4 docs
-
-    refreshIndex(client, indexName);
 
     NameSearchResponse result = svc.search(indexName, request, page);
 
@@ -637,8 +621,6 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
     // PUB_ID1: 6 docs (SHOULD NOT BE AFFECTED BY FILTER !)
     // PUB_ID2: 4 docs
-
-    refreshIndex(client, indexName);
 
     NameSearchResponse result = svc.search(indexName, request, page);
 
