@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import io.dropwizard.lifecycle.Managed;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -49,6 +50,7 @@ import org.slf4j.LoggerFactory;
 public class ImportManager implements Managed {
   private static final Logger LOG = LoggerFactory.getLogger(ImportManager.class);
   public static final String THREAD_NAME = "dataset-importer";
+  static final Comparator<DatasetImport> DI_STARTED_COMPARATOR = Comparator.comparing(DatasetImport::getStarted);
   
   private PBQThreadPoolExecutor<ImportJob> exec;
   private AssemblyCoordinator assemblyCoordinator;
@@ -129,18 +131,30 @@ public class ImportManager implements Managed {
     int runCount = running.size();
     removeOffset(running, page.getOffset());
     running.addAll(historical.getResult());
+    limit(running, page.getLimit());
     return new ResultPage<>(page, historical.getTotal()+runCount, running);
   }
   
-  private void removeOffset(List<DatasetImport> list, int offset) {
+  @VisibleForTesting
+  protected static void removeOffset(List<?> list, int offset) {
     while (offset > 0 && !list.isEmpty()) {
       list.remove(0);
       offset--;
     }
   }
   
+  @VisibleForTesting
+  protected static void limit(List<?> list, int limit) {
+    if (list.size() > limit) {
+      list.subList(limit, list.size()).clear();
+    }
+  }
+  
   private static DatasetImport fromFuture(PBQThreadPoolExecutor.ComparableFutureTask f) {
-    ImportJob job = (ImportJob) f.getTask();
+    return fromImportJob((ImportJob) f.getTask());
+  }
+  
+  private static DatasetImport fromImportJob(ImportJob job) {
     DatasetImport di = job.getDatasetImport();
     if (di == null) {
       di = new DatasetImport();
@@ -152,9 +166,24 @@ public class ImportManager implements Managed {
   }
   
   private List<DatasetImport> running(final Integer datasetKey, final List<ImportState> states) {
-    return futures.values().stream()
+    // make sure we have all running ones in and on top!
+    List<DatasetImport> running = futures.values().stream()
         .map(ImportManager::fromFuture)
-        .filter( di -> {
+        .filter(di -> di.getState().isRunning())
+        .sorted(DI_STARTED_COMPARATOR)
+        .collect(Collectors.toList());
+    
+    // then add the priority queue from the executor, filtered for queued imports only keeping the queues priority order
+    running.addAll(
+        exec.getQueue().stream()
+        .map(ImportManager::fromImportJob)
+        .filter(di -> di.getState().isQueued())
+        .collect(Collectors.toList())
+    );
+    
+    // finally filter by dataset & state
+    return running.stream()
+        .filter(di -> {
           if (datasetKey != null && !Objects.equals(datasetKey, di.getDatasetKey())) {
             return false;
           }
@@ -162,8 +191,7 @@ public class ImportManager implements Managed {
             return false;
           }
           return true;
-        })
-        .collect(Collectors.toList());
+        }).collect(Collectors.toList());
   }
 
   /**
@@ -397,4 +425,5 @@ public class ImportManager implements Managed {
     // fully shutdown threadpool within given time
     exec.stop();
   }
+  
 }

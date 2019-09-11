@@ -130,7 +130,7 @@
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         <include refid="WHERE" />
-        ORDER BY started DESC, attempt DESC
+        ORDER BY started DESC, attempt DESC, dataset_key
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
 
