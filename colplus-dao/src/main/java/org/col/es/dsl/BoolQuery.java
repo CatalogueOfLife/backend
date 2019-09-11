@@ -31,6 +31,11 @@ public class BoolQuery extends ConstraintQuery<BoolConstraint> {
     return this;
   }
 
+  public BoolQuery minimumShouldMatch(Integer i) {
+    constraint.minimumShouldMatch(i);
+    return this;
+  }
+
   @Override
   BoolConstraint getConstraint() {
     return constraint;

@@ -10,6 +10,8 @@ class BoolConstraint extends Constraint {
   @JsonProperty("must_not")
   private List<Query> mustNot;
   private List<Query> should;
+  @JsonProperty("minimum_should_match")
+  private Integer minimumShouldMatch;
 
   void must(Query query) {
     if (must == null) {
@@ -37,5 +39,9 @@ class BoolConstraint extends Constraint {
       should = new CollapsibleList<>(5);
     }
     should.add(query);
+  }
+
+  void minimumShouldMatch(Integer i) {
+    minimumShouldMatch = i;
   }
 }

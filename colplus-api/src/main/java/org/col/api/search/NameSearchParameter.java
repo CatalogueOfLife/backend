@@ -12,6 +12,8 @@ import org.gbif.nameparser.api.Rank;
 
 public enum NameSearchParameter {
 
+  USAGE_ID(String.class),
+
   DATASET_KEY(Integer.class),
 
   DECISION_KEY(Integer.class),
@@ -53,8 +55,8 @@ public enum NameSearchParameter {
   PUBLISHED_IN_ID(String.class),
 
   /**
-   * The sector key attached to a taxon. Synonyms inherit the key by their accepted taxon, but do not expose the key on the Synonym instance
-   * itself.
+   * The sector key attached to a taxon. Synonyms inherit the key by their accepted taxon, but do not expose the key on
+   * the Synonym instance itself.
    */
   SECTOR_KEY(Integer.class),
 
@@ -64,8 +66,8 @@ public enum NameSearchParameter {
   STATUS(TaxonomicStatus.class),
 
   /**
-   * A taxonID that searches on the entire classification of a Taxon or its Synonyms. E.g. searching by the taxonID for Coleoptera should
-   * return all name usages within that beetle order, including synonyms.
+   * A taxonID that searches on the entire classification of a Taxon or its Synonyms. E.g. searching by the taxonID for
+   * Coleoptera should return all name usages within that beetle order, including synonyms.
    */
   TAXON_ID(String.class),
 
