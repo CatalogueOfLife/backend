@@ -277,7 +277,7 @@ SELECT
   t.webpage AS web_site,
   -- use the genus classification for virus type (1) names
   CASE
-    WHEN n.type=1 THEN c.genus
+    WHEN n.type=1 THEN coalesce(c.genus, 'Not assigned')
     ELSE (CASE WHEN n.notho=0 THEN '×' ELSE '' END) ||  n.genus
   END AS genus,
   n.infrageneric_epithet AS subgenus,
