@@ -39,7 +39,6 @@ public class GbifSync implements Managed {
   private final RxClient<RxCompletionStageInvoker> rxClient;
   
   public GbifSync(GbifConfig gbif, SqlSessionFactory sessionFactory, RxClient<RxCompletionStageInvoker> rxClient) {
-    this.job = new GbifSyncJob(gbif, rxClient, sessionFactory);
     this.cfg = gbif;
     this.sessionFactory = sessionFactory;
     this.rxClient = rxClient;
