@@ -6,12 +6,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.Name;
 import org.col.api.search.NameSearchResponse;
 import org.col.es.mapping.Analyzers;
-import org.col.es.name.index.NameUsageWrapperConverter;
+import org.col.es.name.NameUsageWrapperConverter;
 
 import static org.col.es.mapping.Analyzer.AUTO_COMPLETE;
 import static org.col.es.mapping.Analyzer.KEYWORD;
-import static org.col.es.name.index.NameUsageWrapperConverter.normalizeStrongly;
-import static org.col.es.name.index.NameUsageWrapperConverter.normalizeWeakly;
+import static org.col.es.name.NameUsageWrapperConverter.normalizeStrongly;
+import static org.col.es.name.NameUsageWrapperConverter.normalizeWeakly;
 
 /**
  * An object embedded within the name usage document solely aimed at optimizing searchability. The name strings within

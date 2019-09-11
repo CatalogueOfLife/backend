@@ -14,6 +14,7 @@ import org.col.es.EsModule;
 import org.col.es.EsServerVersion;
 import org.col.es.EsUtil;
 import org.col.es.model.NameUsageDocument;
+import org.col.es.name.NameUsageWrapperConverter;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;

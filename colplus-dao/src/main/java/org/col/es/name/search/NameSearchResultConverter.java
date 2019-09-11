@@ -25,7 +25,7 @@ import org.col.es.EsModule;
 import org.col.es.model.NameUsageDocument;
 import org.col.es.name.NameUsageAggregation;
 import org.col.es.name.NameUsageResponse;
-import org.col.es.name.index.NameUsageWrapperConverter;
+import org.col.es.name.NameUsageWrapperConverter;
 import org.col.es.response.Bucket;
 import org.col.es.response.EsFacet;
 import org.col.es.response.SearchHit;

@@ -13,13 +13,14 @@ import org.col.api.search.NameUsageWrapper;
 import org.col.es.dsl.EsSearchRequest;
 import org.col.es.dsl.Query;
 import org.col.es.model.NameUsageDocument;
-import org.col.es.name.index.NameUsageWrapperConverter;
+import org.col.es.name.NameUsageWrapperConverter;
 import org.col.es.name.search.NameUsageSearchService;
 import org.elasticsearch.client.RestClient;
 import org.junit.ClassRule;
 
 /**
- * Base class for tests that only read from ES. Does not provide postgres functionality and saves setup/initialization time accordingly.
+ * Base class for tests that only read from ES. Does not provide postgres functionality and saves setup/initialization
+ * time accordingly.
  */
 public class EsReadTestBase {
 
@@ -46,17 +47,19 @@ public class EsReadTestBase {
     }
   }
 
-  protected void indexRaw(Collection<NameUsageDocument> raw) {
+  protected void indexRaw(Collection<NameUsageDocument> documents) {
     try {
-      EsUtil.insert(getEsClient(), indexName, raw);
+      for (NameUsageDocument doc : documents) {
+        EsUtil.insert(getEsClient(), indexName, doc);
+      }
       EsUtil.refreshIndex(getEsClient(), indexName);
     } catch (IOException e) {
       throw new EsException(e);
     }
   }
 
-  protected void indexRaw(NameUsageDocument... raw) {
-    indexRaw(Arrays.asList(raw));
+  protected void indexRaw(NameUsageDocument... documents) {
+    indexRaw(Arrays.asList(documents));
   }
 
   protected List<NameUsageDocument> queryRaw(Query query) {

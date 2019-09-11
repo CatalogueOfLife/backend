@@ -22,7 +22,7 @@ import org.col.api.vocab.TaxonomicStatus;
 import org.col.es.EsReadTestBase;
 import org.col.es.EsUtil;
 import org.col.es.model.NameUsageDocument;
-import org.col.es.name.index.NameUsageWrapperConverter;
+import org.col.es.name.NameUsageWrapperConverter;
 import org.elasticsearch.client.RestClient;
 import org.gbif.nameparser.api.Rank;
 import org.junit.AfterClass;

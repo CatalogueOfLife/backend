@@ -21,7 +21,7 @@ import org.col.es.EsUtil;
 import org.col.es.dsl.EsSearchRequest;
 import org.col.es.dsl.SortField;
 import org.col.es.model.NameUsageDocument;
-import org.col.es.name.index.NameUsageWrapperConverter;
+import org.col.es.name.NameUsageWrapperConverter;
 import org.col.es.name.search.NameUsageSearchService;
 import org.col.api.search.NameUsageWrapper;
 import org.elasticsearch.client.RestClient;

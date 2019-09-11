@@ -21,11 +21,12 @@ import static org.col.api.search.NameSearchParameter.SECTOR_KEY;
 import static org.col.api.search.NameSearchParameter.STATUS;
 import static org.col.api.search.NameSearchParameter.TAXON_ID;
 import static org.col.api.search.NameSearchParameter.TYPE;
+import static org.col.api.search.NameSearchParameter.USAGE_ID;
 
 /**
- * Maps a name search parameter the corresponding Elasticsearch field(s). In principle a name search parameter may be mapped to multiple
- * Elasticsearch fields, in which case the parameter's value is searched in all of these fields. In practice, though, we currently don't
- * have multiply-mapped name search parameters.
+ * Maps a name search parameter the corresponding Elasticsearch field(s). In principle a name search parameter may be
+ * mapped to multiple Elasticsearch fields, in which case the parameter's value is searched in all of these fields. In
+ * practice, though, we currently don't have multiply-mapped name search parameters.
  */
 public class NameUsageFieldLookup extends EnumMap<NameSearchParameter, String[]> {
 
@@ -33,6 +34,7 @@ public class NameUsageFieldLookup extends EnumMap<NameSearchParameter, String[]>
 
   private NameUsageFieldLookup() {
     super(NameSearchParameter.class);
+    putSingle(USAGE_ID, "usageId");
     putSingle(DATASET_KEY, "datasetKey");
     putSingle(DECISION_KEY, "decisionKey");
     putSingle(FIELD, "nameFields");

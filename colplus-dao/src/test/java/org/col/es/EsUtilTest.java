@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import org.col.api.TestEntityGenerator;
 import org.col.es.model.NameUsageDocument;
-import org.col.es.name.index.NameUsageWrapperConverter;
+import org.col.es.name.NameUsageWrapperConverter;
 import org.elasticsearch.client.RestClient;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -52,15 +52,15 @@ public class EsUtilTest extends EsReadTestBase {
   public void deleteDataset() throws IOException {
     // Insert 3 documents (overwriting dataset key to known values)
     NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
-    NameUsageDocument enu = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
-    enu.setDatasetKey(1);
-    insert(client, indexName, enu);
-    enu = transfer.toDocument(TestEntityGenerator.newNameUsageSynonymWrapper());
-    enu.setDatasetKey(1);
-    insert(client, indexName, enu);
-    enu = transfer.toDocument(TestEntityGenerator.newNameUsageBareNameWrapper());
-    enu.setDatasetKey(2);
-    insert(client, indexName, enu);
+    NameUsageDocument doc = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
+    doc.setDatasetKey(1);
+    insert(client, indexName, doc);
+    doc = transfer.toDocument(TestEntityGenerator.newNameUsageSynonymWrapper());
+    doc.setDatasetKey(1);
+    insert(client, indexName, doc);
+    doc = transfer.toDocument(TestEntityGenerator.newNameUsageBareNameWrapper());
+    doc.setDatasetKey(2);
+    insert(client, indexName, doc);
     refreshIndex(client, indexName);
     assertEquals(3, EsUtil.count(client, indexName));
 
@@ -82,15 +82,15 @@ public class EsUtilTest extends EsReadTestBase {
   public void testDeleteSector() throws IOException {
     // Insert 3 documents (overwriting sector key to known values)
     NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
-    NameUsageDocument enu = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
-    enu.setSectorKey(1);
-    insert(client, indexName, enu);
-    enu = transfer.toDocument(TestEntityGenerator.newNameUsageSynonymWrapper());
-    enu.setSectorKey(1);
-    insert(client, indexName, enu);
-    enu = transfer.toDocument(TestEntityGenerator.newNameUsageBareNameWrapper());
-    enu.setSectorKey(2);
-    insert(client, indexName, enu);
+    NameUsageDocument doc = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
+    doc.setSectorKey(1);
+    insert(client, indexName, doc);
+    doc = transfer.toDocument(TestEntityGenerator.newNameUsageSynonymWrapper());
+    doc.setSectorKey(1);
+    insert(client, indexName, doc);
+    doc = transfer.toDocument(TestEntityGenerator.newNameUsageBareNameWrapper());
+    doc.setSectorKey(2);
+    insert(client, indexName, doc);
     refreshIndex(client, indexName);
     assertEquals(3, EsUtil.count(client, indexName));
 

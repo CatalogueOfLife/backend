@@ -1,4 +1,4 @@
-package org.col.es.name.index;
+package org.col.es.name;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -48,7 +48,7 @@ import static org.col.es.EsModule.NAME_USAGE_WRITER;
 
 /**
  * Converts a NameUsageWrapper instance into a NameUsage document. Note that the <i>entire</i> NameUsageWrapper instance
- * is serialized (and possibly zipped) and placed into the payload field of the Elasticsearch document.
+ * is serialized (and possibly zipped) and placed into the payload field of the NameUsage document.
  */
 public class NameUsageWrapperConverter {
 
@@ -179,7 +179,7 @@ public class NameUsageWrapperConverter {
       s.getAccepted().setSectorKey(doc.getSectorKey());
       s.getAccepted().getName().setScientificName(doc.getAcceptedName());
     }
-    if (notEmpty(nuw.getVernacularNames())) {
+    if (notEmpty(doc.getVernacularNames())) {
       for (int i = 0; i < doc.getVernacularNames().size(); ++i) {
         nuw.getVernacularNames().get(i).setName(doc.getVernacularNames().get(i));
       }

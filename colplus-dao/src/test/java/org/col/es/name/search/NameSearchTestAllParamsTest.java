@@ -21,7 +21,7 @@ import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.NomStatus;
 import org.col.es.EsReadTestBase;
 import org.col.es.EsUtil;
-import org.col.es.name.index.NameUsageWrapperConverter;
+import org.col.es.name.NameUsageWrapperConverter;
 import org.col.es.name.search.NameUsageSearchService;
 import org.elasticsearch.client.RestClient;
 import org.junit.AfterClass;

@@ -1,6 +1,5 @@
 package org.col.es.name;
 
-import org.col.es.name.index.NameUsageWrapperConverter;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

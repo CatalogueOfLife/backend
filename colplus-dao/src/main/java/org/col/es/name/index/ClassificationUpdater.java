@@ -21,6 +21,7 @@ import org.col.es.dsl.TermQuery;
 import org.col.es.dsl.TermsQuery;
 import org.col.es.model.NameUsageDocument;
 import org.col.es.name.NameUsageService;
+import org.col.es.name.NameUsageWrapperConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

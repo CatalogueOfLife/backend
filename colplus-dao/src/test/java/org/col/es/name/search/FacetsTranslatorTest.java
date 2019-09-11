@@ -18,142 +18,148 @@ import static org.col.api.search.NameSearchParameter.NAME_ID;
 import static org.col.api.search.NameSearchParameter.RANK;
 import static org.col.api.search.NameSearchParameter.STATUS;
 
+/*
+ * No real tests here. Just to make sure we don't get exceptions & to peek at the results of specifying an aggregation
+ * via the object model.
+ */
 public class FacetsTranslatorTest {
 
   @Test
   public void test1() {
 
-    NameSearchRequest nsr = new NameSearchRequest();
+    NameSearchRequest request = new NameSearchRequest();
 
     // Add facets + corresponding filters
 
-    nsr.addFacet(ISSUE);
-    nsr.addFacet(DATASET_KEY);
-    nsr.addFacet(RANK);
-    nsr.addFacet(STATUS);
+    request.addFacet(ISSUE);
+    request.addFacet(DATASET_KEY);
+    request.addFacet(RANK);
+    request.addFacet(STATUS);
 
-    nsr.addFilter(ISSUE, Issue.ACCEPTED_ID_INVALID);
-    nsr.addFilter(ISSUE, Issue.BASIONYM_ID_INVALID);
-    nsr.addFilter(ISSUE, Issue.CHAINED_SYNONYM);
+    request.addFilter(ISSUE, Issue.ACCEPTED_ID_INVALID);
+    request.addFilter(ISSUE, Issue.BASIONYM_ID_INVALID);
+    request.addFilter(ISSUE, Issue.CHAINED_SYNONYM);
 
-    nsr.addFilter(DATASET_KEY, 10);
-    nsr.addFilter(DATASET_KEY, 12);
+    request.addFilter(DATASET_KEY, 10);
+    request.addFilter(DATASET_KEY, 12);
 
-    nsr.addFilter(RANK, Rank.KINGDOM);
+    request.addFilter(RANK, Rank.KINGDOM);
 
     // No filter for taxonomic status
 
     // Add non-facet filters
-    nsr.addFilter(NAME_ID, "ABCDEFG");
-    nsr.setQ("anim");
-    nsr.setContent(EnumSet.of(SearchContent.AUTHORSHIP, SearchContent.VERNACULAR_NAME));
+    request.addFilter(NAME_ID, "ABCDEFG");
+    request.setQ("anim");
+    request.setContent(EnumSet.of(SearchContent.AUTHORSHIP, SearchContent.VERNACULAR_NAME));
 
-    FacetsTranslator ft = new FacetsTranslator(nsr);
+    FacetsTranslator translator = new FacetsTranslator(request);
 
-    System.out.println(serialize(ft.translate()));
+    System.out.println(serialize(translator.translate()));
 
   }
 
   @Test
   public void test2() {
 
-    NameSearchRequest nsr = new NameSearchRequest();
+    NameSearchRequest request = new NameSearchRequest();
 
     // Add facets + corresponding filters
 
-    nsr.addFacet(ISSUE);
-    nsr.addFacet(DATASET_KEY);
-    nsr.addFacet(RANK);
-    nsr.addFacet(STATUS);
+    request.addFacet(ISSUE);
+    request.addFacet(DATASET_KEY);
+    request.addFacet(RANK);
+    request.addFacet(STATUS);
 
-    nsr.addFilter(ISSUE, Issue.ACCEPTED_ID_INVALID);
-    nsr.addFilter(ISSUE, Issue.BASIONYM_ID_INVALID);
-    nsr.addFilter(ISSUE, Issue.CHAINED_SYNONYM);
+    request.addFilter(ISSUE, Issue.ACCEPTED_ID_INVALID);
+    request.addFilter(ISSUE, Issue.BASIONYM_ID_INVALID);
+    request.addFilter(ISSUE, Issue.CHAINED_SYNONYM);
 
-    // Just one filter corresponding to a facet. For that facet, the aggregation should collapse into a simple terms aggregation, while for
+    // Just one filter corresponding to a facet. For that facet, the aggregation should collapse into a simple terms
+    // aggregation, while for
     // the others a filter aggregation should be generated.
 
     // Add non-facet filters
-    nsr.addFilter(NAME_ID, "ABCDEFG");
-    nsr.setQ("anim");
-    nsr.setContent(EnumSet.of(SearchContent.AUTHORSHIP, SearchContent.VERNACULAR_NAME));
+    request.addFilter(NAME_ID, "ABCDEFG");
+    request.setQ("anim");
+    request.setContent(EnumSet.of(SearchContent.AUTHORSHIP, SearchContent.VERNACULAR_NAME));
 
-    FacetsTranslator ft = new FacetsTranslator(nsr);
+    FacetsTranslator translator = new FacetsTranslator(request);
 
-    System.out.println(serialize(ft.translate()));
+    System.out.println(serialize(translator.translate()));
 
   }
 
   @Test
   public void test3() {
 
-    NameSearchRequest nsr = new NameSearchRequest();
+    NameSearchRequest request = new NameSearchRequest();
 
     // Add facets + corresponding filters
 
-    nsr.addFacet(ISSUE);
-    nsr.addFacet(DATASET_KEY);
-    nsr.addFacet(RANK);
-    nsr.addFacet(STATUS);
+    request.addFacet(ISSUE);
+    request.addFacet(DATASET_KEY);
+    request.addFacet(RANK);
+    request.addFacet(STATUS);
 
-    nsr.addFilter(ISSUE, Issue.ACCEPTED_ID_INVALID);
-    nsr.addFilter(ISSUE, Issue.BASIONYM_ID_INVALID);
-    nsr.addFilter(ISSUE, Issue.CHAINED_SYNONYM);
+    request.addFilter(ISSUE, Issue.ACCEPTED_ID_INVALID);
+    request.addFilter(ISSUE, Issue.BASIONYM_ID_INVALID);
+    request.addFilter(ISSUE, Issue.CHAINED_SYNONYM);
 
-    nsr.addFilter(DATASET_KEY, 10);
-    nsr.addFilter(DATASET_KEY, 12);
+    request.addFilter(DATASET_KEY, 10);
+    request.addFilter(DATASET_KEY, 12);
 
     // No non-facet filters!
 
-    FacetsTranslator ft = new FacetsTranslator(nsr);
+    FacetsTranslator translator = new FacetsTranslator(request);
 
-    System.out.println(serialize(ft.translate()));
+    System.out.println(serialize(translator.translate()));
 
   }
 
   @Test
   public void test4() {
 
-    NameSearchRequest nsr = new NameSearchRequest();
+    NameSearchRequest request = new NameSearchRequest();
 
     // Add facets + corresponding filters
 
-    nsr.addFacet(ISSUE);
-    nsr.addFacet(DATASET_KEY);
-    nsr.addFacet(RANK);
-    nsr.addFacet(STATUS);
+    request.addFacet(ISSUE);
+    request.addFacet(DATASET_KEY);
+    request.addFacet(RANK);
+    request.addFacet(STATUS);
 
-    nsr.addFilter(ISSUE, Issue.ACCEPTED_ID_INVALID);
-    nsr.addFilter(ISSUE, Issue.BASIONYM_ID_INVALID);
-    nsr.addFilter(ISSUE, Issue.CHAINED_SYNONYM);
+    request.addFilter(ISSUE, Issue.ACCEPTED_ID_INVALID);
+    request.addFilter(ISSUE, Issue.BASIONYM_ID_INVALID);
+    request.addFilter(ISSUE, Issue.CHAINED_SYNONYM);
 
-    // Just one filter corresponding to a facet. For that facet, the aggregation should collapse into a simple terms aggregation, while for
+    // Just one filter corresponding to a facet. For that facet, the aggregation should collapse into a simple terms
+    // aggregation, while for
     // the others a filter aggregation should be generated.
 
     // Add non-facet filters
-    nsr.addFilter(NAME_ID, "ABCDEFG");
-    nsr.setQ("anim");
-    nsr.setContent(EnumSet.of(SearchContent.AUTHORSHIP, SearchContent.VERNACULAR_NAME));
+    request.addFilter(NAME_ID, "ABCDEFG");
+    request.setQ("anim");
+    request.setContent(EnumSet.of(SearchContent.AUTHORSHIP, SearchContent.VERNACULAR_NAME));
 
-    FacetsTranslator ft = new FacetsTranslator(nsr);
+    FacetsTranslator translator = new FacetsTranslator(request);
 
-    System.out.println(serialize(ft.translate()));
+    System.out.println(serialize(translator.translate()));
 
   }
 
   @Test
   public void test5() {
 
-    NameSearchRequest nsr = new NameSearchRequest();
+    NameSearchRequest request = new NameSearchRequest();
 
-    nsr.addFacet(ISSUE);
-    nsr.addFacet(DATASET_KEY);
-    nsr.addFacet(RANK);
-    nsr.addFacet(STATUS);
+    request.addFacet(ISSUE);
+    request.addFacet(DATASET_KEY);
+    request.addFacet(RANK);
+    request.addFacet(STATUS);
 
-    FacetsTranslator ft = new FacetsTranslator(nsr);
+    FacetsTranslator translator = new FacetsTranslator(request);
 
-    System.out.println(serialize(ft.translate()));
+    System.out.println(serialize(translator.translate()));
 
   }
 
