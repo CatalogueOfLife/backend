@@ -73,9 +73,10 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
   @Test
   public void testSingleFacetWithoutFilters() throws IOException {
-    // Define search
-    NameSearchRequest nsr = new NameSearchRequest();
-    nsr.addFacet(NameSearchParameter.RANK);
+    
+    // ==> Define search
+    NameSearchRequest request = new NameSearchRequest();
+    request.addFacet(NameSearchParameter.RANK);
     // Don't forget this one; we're going to indexRaw more than 10 docs
     Page page = new Page(100);
 
@@ -144,7 +145,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
     refreshIndex(client, indexName);
 
-    NameSearchResponse result = svc.search(indexName, nsr, page);
+    NameSearchResponse result = svc.search(indexName, request, page);
 
     Map<NameSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
     Set<FacetValue<?>> rankFacet = new TreeSet<>();
@@ -161,10 +162,11 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
   @Test
   public void testTwoFacetsWithoutFilters() throws IOException {
-    // Define search
-    NameSearchRequest nsr = new NameSearchRequest();
-    nsr.addFacet(NameSearchParameter.RANK);
-    nsr.addFacet(NameSearchParameter.ISSUE);
+    
+    // ==> Define search
+    NameSearchRequest request = new NameSearchRequest();
+    request.addFacet(NameSearchParameter.RANK);
+    request.addFacet(NameSearchParameter.ISSUE);
     Page page = new Page(100);
 
     NameUsageDocument doc = newDocument();
@@ -240,7 +242,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
     refreshIndex(client, indexName);
 
-    NameSearchResponse result = svc.search(indexName, nsr, page);
+    NameSearchResponse result = svc.search(indexName, request, page);
 
     Map<NameSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
 
@@ -266,11 +268,12 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
   @Test
   public void testThreeFacetsWithoutFilters() throws IOException {
-    // Define search
-    NameSearchRequest nsr = new NameSearchRequest();
-    nsr.addFacet(NameSearchParameter.RANK);
-    nsr.addFacet(NameSearchParameter.ISSUE);
-    nsr.addFacet(NameSearchParameter.PUBLISHED_IN_ID);
+    
+    // ==> Define search
+    NameSearchRequest request = new NameSearchRequest();
+    request.addFacet(NameSearchParameter.RANK);
+    request.addFacet(NameSearchParameter.ISSUE);
+    request.addFacet(NameSearchParameter.PUBLISHED_IN_ID);
     Page page = new Page(100);
 
     String PUB_ID1 = "PUB_0001";
@@ -368,7 +371,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
     refreshIndex(client, indexName);
 
-    NameSearchResponse result = svc.search(indexName, nsr, page);
+    NameSearchResponse result = svc.search(indexName, request, page);
 
     Map<NameSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
 
@@ -400,11 +403,11 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
   @Test
   public void testThreeFacetsWithQ() throws InvalidQueryException, IOException {
     // Define search
-    NameSearchRequest nsr = new NameSearchRequest();
-    nsr.addFacet(NameSearchParameter.RANK);
-    nsr.addFacet(NameSearchParameter.ISSUE);
-    nsr.addFacet(NameSearchParameter.PUBLISHED_IN_ID);
-    nsr.setQ("BBBB");
+    NameSearchRequest request = new NameSearchRequest();
+    request.addFacet(NameSearchParameter.RANK);
+    request.addFacet(NameSearchParameter.ISSUE);
+    request.addFacet(NameSearchParameter.PUBLISHED_IN_ID);
+    request.setQ("BBBB");
     Page page = new Page(100);
 
     String PUB_ID1 = "PUB_0001";
@@ -502,7 +505,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     // PUB_ID1: 3 docs
     // PUB_ID2: 2 docs
 
-    NameSearchResponse result = svc.search(indexName, nsr, page);
+    NameSearchResponse result = svc.search(indexName, request, page);
 
     Map<NameSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
 
@@ -536,11 +539,11 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     String PUB_ID2 = "PUB_0002";
 
     // Define search
-    NameSearchRequest nsr = new NameSearchRequest();
-    nsr.addFacet(NameSearchParameter.RANK);
-    nsr.addFacet(NameSearchParameter.ISSUE);
-    nsr.addFacet(NameSearchParameter.PUBLISHED_IN_ID);
-    nsr.addFilter(NameSearchParameter.PUBLISHED_IN_ID, PUB_ID1);
+    NameSearchRequest request = new NameSearchRequest();
+    request.addFacet(NameSearchParameter.RANK);
+    request.addFacet(NameSearchParameter.ISSUE);
+    request.addFacet(NameSearchParameter.PUBLISHED_IN_ID);
+    request.addFilter(NameSearchParameter.PUBLISHED_IN_ID, PUB_ID1);
     Page page = new Page(100);
 
     NameUsageDocument doc = newDocument();
@@ -637,7 +640,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
     refreshIndex(client, indexName);
 
-    NameSearchResponse result = svc.search(indexName, nsr, page);
+    NameSearchResponse result = svc.search(indexName, request, page);
 
     Map<NameSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
 
@@ -691,16 +694,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     NameUsageWrapper nuw7 = minimalNameUsage();
     nuw7.setPublisherKey(null);
 
-    NameUsageWrapperConverter converter = new NameUsageWrapperConverter();
-
-    indexRaw(converter.toDocument(nuw1));
-    indexRaw(converter.toDocument(nuw2));
-    indexRaw(converter.toDocument(nuw3));
-    indexRaw(converter.toDocument(nuw4));
-    indexRaw(converter.toDocument(nuw5));
-    indexRaw(converter.toDocument(nuw6));
-    indexRaw(converter.toDocument(nuw7));
-    refreshIndex(client, indexName);
+    index(nuw1, nuw2, nuw3, nuw4, nuw5, nuw6, nuw7);
 
     // Resurrect NameUsageWrapper instances b/c they got pruned upon indexRaw.
     nuw1.setPublisherKey(uuid1);
@@ -753,16 +747,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     NameUsageWrapper nuw7 = minimalNameUsage();
     ((Taxon) nuw7.getUsage()).setSectorKey(null);
 
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
-
-    indexRaw(transfer.toDocument(nuw1));
-    indexRaw(transfer.toDocument(nuw2));
-    indexRaw(transfer.toDocument(nuw3));
-    indexRaw(transfer.toDocument(nuw4));
-    indexRaw(transfer.toDocument(nuw5));
-    indexRaw(transfer.toDocument(nuw6));
-    indexRaw(transfer.toDocument(nuw7));
-    refreshIndex(client, indexName);
+    index(nuw1, nuw2, nuw3, nuw4, nuw5, nuw6, nuw7);
 
     // Resurrect NameUsageWrapper instances b/c they got pruned upon indexRaw.
     ((Taxon) nuw1.getUsage()).setSectorKey(key1);
@@ -813,7 +798,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
     nuw7.getUsage().getName().setDatasetKey(null);
 
     index(nuw1, nuw2, nuw3, nuw4, nuw5, nuw6, nuw7);
-    
+
     // Resurrect NameUsageWrapper instances b/c they got pruned upon indexRaw.
     nuw1.getUsage().getName().setDatasetKey(key1);
     nuw2.getUsage().getName().setDatasetKey(key1);
