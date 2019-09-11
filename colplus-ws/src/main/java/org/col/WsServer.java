@@ -197,7 +197,7 @@ public class WsServer extends Application<WsServerConfig> {
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory());
     
     // resources
-    env.jersey().register(new AdminResource(getSqlSessionFactory(), new DownloadUtil(httpClient), cfg.normalizer, imgService, indexService,
+    env.jersey().register(new AdminResource(getSqlSessionFactory(), new DownloadUtil(httpClient), cfg, imgService, indexService,
         tdao, cImporter, gbifSync));
     env.jersey().register(new AssemblyResource(assembly, exporter));
     env.jersey().register(new DataPackageResource());
