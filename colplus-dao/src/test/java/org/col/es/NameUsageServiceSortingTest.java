@@ -35,12 +35,12 @@ import static org.junit.Assert.assertEquals;
 public class NameUsageServiceSortingTest extends EsReadTestBase {
 
   private static RestClient client;
-  private static NameUsageSearchService svc;
+  private static NameUsageSearchServiceEs svc;
 
   @BeforeClass
   public static void init() {
     client = esSetupRule.getEsClient();
-    svc = new NameUsageSearchService(indexName, esSetupRule.getEsClient());
+    svc = new NameUsageSearchServiceEs(indexName, esSetupRule.getEsClient());
   }
 
   @AfterClass

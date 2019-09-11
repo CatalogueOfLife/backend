@@ -70,7 +70,7 @@ public class EsReadTestBase {
   }
 
   protected NameSearchResponse search(NameSearchRequest query) {
-    return new NameUsageSearchService(indexName, getEsClient()).search(query, new Page(0, 1000));
+    return new NameUsageSearchServiceEs(indexName, getEsClient()).search(query, new Page(0, 1000));
   }
 
 }

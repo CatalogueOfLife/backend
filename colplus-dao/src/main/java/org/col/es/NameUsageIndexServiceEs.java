@@ -233,7 +233,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   private Integer clearSector(SqlSession session, Integer sectorKey) throws IOException {
     EsSearchRequest query = EsSearchRequest.emptyRequest();
     query.select("datasetKey").whereEquals("sectorKey", sectorKey).size(1);
-    NameUsageSearchService svc = new NameUsageSearchService(index, client);
+    NameUsageSearchServiceEs svc = new NameUsageSearchServiceEs(index, client);
     List<EsNameUsage> result = svc.getDocuments(query);
     if (result.size() != 0) {
       int cnt = EsUtil.deleteSector(client, index, sectorKey);

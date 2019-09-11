@@ -103,7 +103,7 @@ public class ClassificationUpdater implements Closeable, ResultHandler<NameUsage
     query.setQuery(constraints);
     query.setSort(Arrays.asList(SortField.DOC));
     query.setSize(terms.size());
-    NameUsageSearchService svc = new NameUsageSearchService(indexer.getIndexName(), indexer.getEsClient());
+    NameUsageSearchServiceEs svc = new NameUsageSearchServiceEs(indexer.getIndexName(), indexer.getEsClient());
     return svc.getDocumentsWithDocId(query);
   }
 

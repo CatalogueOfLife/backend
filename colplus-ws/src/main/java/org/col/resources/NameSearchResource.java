@@ -10,7 +10,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
 import com.codahale.metrics.annotation.Timed;
-
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.api.search.NameSearchRequest;

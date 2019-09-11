@@ -33,15 +33,15 @@ import static org.col.es.EsUtil.refreshIndex;
 import static org.junit.Assert.assertEquals;
 
 @Ignore
-public class NameUsageSearchServiceTest extends EsReadTestBase {
+public class NameUsageSearchServiceEsTest extends EsReadTestBase {
 
   private static RestClient client;
-  private static NameUsageSearchService svc;
+  private static NameUsageSearchServiceEs svc;
 
   @BeforeClass
   public static void init() {
     client = esSetupRule.getEsClient();
-    svc = new NameUsageSearchService(indexName, esSetupRule.getEsClient());
+    svc = new NameUsageSearchServiceEs(indexName, esSetupRule.getEsClient());
   }
 
   @AfterClass

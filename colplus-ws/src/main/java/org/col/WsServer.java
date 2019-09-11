@@ -32,15 +32,9 @@ import org.col.dw.auth.AuthBundle;
 import org.col.dw.cors.CorsBundle;
 import org.col.dw.db.MybatisBundle;
 import org.col.dw.es.ManagedEsClient;
-import org.col.dw.health.CslUtilsHealthCheck;
-import org.col.dw.health.DiffHealthCheck;
-import org.col.dw.health.NameParserHealthCheck;
-import org.col.dw.health.NamesIndexHealthCheck;
+import org.col.dw.health.*;
 import org.col.dw.jersey.ColJerseyBundle;
-import org.col.es.EsClientFactory;
-import org.col.es.NameUsageIndexService;
-import org.col.es.NameUsageIndexServiceEs;
-import org.col.es.NameUsageSearchService;
+import org.col.es.*;
 import org.col.gbifsync.GbifSync;
 import org.col.img.ImageService;
 import org.col.img.ImageServiceFS;
@@ -145,17 +139,19 @@ public class WsServer extends Application<WsServerConfig> {
     AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
   
     // ES
-    final RestClient esClient = new EsClientFactory(cfg.es).createClient();
-
     NameUsageIndexService indexService;
-    if (esClient == null) {
-      LOG.warn("No Elastic Search configured, use pass through indexing");
+    NameUsageSearchService nuss;
+    if (cfg.es.hosts == null) {
+      LOG.warn("No Elastic Search configured, use pass through indexing & searching");
       indexService = NameUsageIndexService.passThru();
+      nuss = NameUsageSearchService.passThru();
     } else {
+      final RestClient esClient = new EsClientFactory(cfg.es).createClient();
       env.lifecycle().manage(new ManagedEsClient(esClient));
+      env.healthChecks().register("elastic", new EsHealthCheck(esClient, cfg.es));
       indexService = new NameUsageIndexServiceEs(esClient, cfg.es, getSqlSessionFactory());
+      nuss = new NameUsageSearchServiceEs(cfg.es.indexName(ES_INDEX_NAME_USAGE), esClient);
     }
-    NameUsageSearchService nuss = new NameUsageSearchService(cfg.es.indexName(ES_INDEX_NAME_USAGE), esClient);
     
     // images
     final ImageService imgService = new ImageServiceFS(cfg.img);
@@ -172,22 +168,13 @@ public class WsServer extends Application<WsServerConfig> {
         aNormalizer, ni, indexService, imgService);
     env.lifecycle().manage(importManager);
     env.jersey().register(new ImporterResource(importManager, diDao));
+    ContinuousImporter cImporter = new ContinuousImporter(cfg.importer, importManager, getSqlSessionFactory());
+    env.lifecycle().manage(cImporter);
   
-    if (cfg.importer.continousImportPolling > 0) {
-      LOG.info("Enable continuous importing");
-      env.lifecycle().manage(new ContinuousImporter(cfg.importer, importManager, getSqlSessionFactory()));
-    } else {
-      LOG.warn("Disable continuous importing");
-    }
-  
-    // activate gbif sync?
-    if (cfg.gbif.syncFrequency > 0) {
-      LOG.info("Enable GBIF dataset sync");
-      env.lifecycle().manage(new GbifSync(cfg.gbif, getSqlSessionFactory(), jerseyRxClient));
-    } else {
-      LOG.warn("Disable GBIF dataset sync");
-    }
-  
+    // gbif sync
+    GbifSync gbifSync = new GbifSync(cfg.gbif, getSqlSessionFactory(), jerseyRxClient);
+    env.lifecycle().manage(gbifSync);
+
     // exporter
     AcExporter exporter = new AcExporter(cfg);
     
@@ -210,7 +197,8 @@ public class WsServer extends Application<WsServerConfig> {
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory());
     
     // resources
-    env.jersey().register(new AdminResource(getSqlSessionFactory(), new DownloadUtil(httpClient), cfg.normalizer, imgService, indexService, tdao));
+    env.jersey().register(new AdminResource(getSqlSessionFactory(), new DownloadUtil(httpClient), cfg.normalizer, imgService, indexService,
+        tdao, cImporter, gbifSync));
     env.jersey().register(new AssemblyResource(assembly, exporter));
     env.jersey().register(new DataPackageResource());
     env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService, cfg, new DownloadUtil(httpClient), diff));

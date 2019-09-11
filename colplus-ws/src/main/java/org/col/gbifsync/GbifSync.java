@@ -33,10 +33,16 @@ public class GbifSync implements Managed {
   public static final UUID PLAZI_KEY = UUID.fromString("7ce8aef0-9e92-11dc-8738-b8a03c50a862");
   
   private ScheduledExecutorService scheduler;
-  private final GbifSyncJob job;
+  private GbifSyncJob job;
+  private final GbifConfig cfg;
+  private final SqlSessionFactory sessionFactory;
+  private final RxClient<RxCompletionStageInvoker> rxClient;
   
   public GbifSync(GbifConfig gbif, SqlSessionFactory sessionFactory, RxClient<RxCompletionStageInvoker> rxClient) {
     this.job = new GbifSyncJob(gbif, rxClient, sessionFactory);
+    this.cfg = gbif;
+    this.sessionFactory = sessionFactory;
+    this.rxClient = rxClient;
   }
   
   static class GbifSyncJob implements Runnable {
@@ -132,17 +138,28 @@ public class GbifSync implements Managed {
     }
   }
   
+  public boolean isActive() {
+    return job != null;
+  }
+  
   @Override
   public void start() throws Exception {
     scheduler = Executors.newScheduledThreadPool(1,
         new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true)
     );
-    LOG.info("Scheduling GBIF registry sync job every {} hours", job.gbif.syncFrequency);
-    scheduler.scheduleAtFixedRate(job, 0, job.gbif.syncFrequency, TimeUnit.HOURS);
+  
+    if (cfg.syncFrequency > 0) {
+      LOG.info("Enable GBIF registry sync job every {} hours", job.gbif.syncFrequency);
+      job = new GbifSyncJob(cfg, rxClient, sessionFactory);
+      scheduler.scheduleAtFixedRate(job, 0, job.gbif.syncFrequency, TimeUnit.HOURS);
+    } else {
+      LOG.warn("Disable GBIF dataset sync");
+    }
   }
   
   @Override
   public void stop() throws Exception {
     ExecutorUtils.shutdown(scheduler, ExecutorUtils.MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
+    job = null;
   }
 }

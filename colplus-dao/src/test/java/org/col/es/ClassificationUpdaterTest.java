@@ -51,7 +51,7 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
       EsUtil.refreshIndex(client, INDEX_NAME);
 
       // Make sure that what ends up in ES equals the modified nam usages
-      NameUsageSearchService svc = new NameUsageSearchService(INDEX_NAME, client);
+      NameUsageSearchServiceEs svc = new NameUsageSearchServiceEs(INDEX_NAME, client);
       NameSearchRequest query = new NameSearchRequest();
       query.setSortBy(SortBy.NATIVE);
       NameSearchResponse nsr = svc.search(query, new Page());

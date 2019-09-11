@@ -32,14 +32,15 @@ public class ContinuousImporter implements Managed {
   private static final int WAIT_TIME_IN_HOURS = 1;
   
   private Thread thread;
-  private final ContinousImporterJob job;
+  private ImportManager manager;
+  private ImporterConfig cfg;
+  private SqlSessionFactory factory;
+  private ContinousImporterJob job;
   
   public ContinuousImporter(ImporterConfig cfg, ImportManager manager, SqlSessionFactory factory) {
-    this.job = new ContinousImporterJob(cfg, manager, factory);
-    if (cfg.maxQueue < cfg.continousImportBatchSize) {
-      job.running = false;
-      LOG.warn("Importer queue is shorter ({}) than the amount of batches ({}) to submit. Shutdown continuous importer!", cfg.maxQueue, cfg.continousImportBatchSize);
-    }
+    this.cfg = cfg;
+    this.manager = manager;
+    this.factory = factory;
   }
   
   static class ContinousImporterJob implements Runnable {
@@ -52,6 +53,10 @@ public class ContinuousImporter implements Managed {
       this.manager = manager;
       this.factory = factory;
       this.cfg = cfg;
+      if (cfg.maxQueue < cfg.continousImportBatchSize) {
+        LOG.warn("Importer queue is shorter ({}) than the batch size ({}) to submit. Reduce batches to half the queue size!", cfg.maxQueue, cfg.continousImportBatchSize);
+        cfg.continousImportBatchSize = (cfg.maxQueue / 2);
+      }
     }
     
     public void terminate() {
@@ -113,13 +118,24 @@ public class ContinuousImporter implements Managed {
     }
   }
   
+  public boolean isActive() {
+    return job != null && job.running;
+  }
+  
   @Override
   public void start() throws Exception {
-    thread = new Thread(job, THREAD_NAME);
-    LOG.info("Start continuous importing with maxQueue={}, polling every {} minutes",
-        job.cfg.maxQueue, job.cfg.continousImportPolling
-    );
-    thread.start();
+    if (cfg.continousImportPolling > 0) {
+      LOG.info("Enable continuous importing");
+      job = new ContinousImporterJob(cfg, manager, factory);
+      thread = new Thread(job, THREAD_NAME);
+      LOG.info("Start continuous importing with maxQueue={}, polling every {} minutes",
+          job.cfg.maxQueue, job.cfg.continousImportPolling
+      );
+      thread.start();
+    
+    } else {
+      LOG.warn("Continuous importing disabled");
+    }
   }
   
   @Override

@@ -47,12 +47,12 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
   private static EnumSet<NameSearchParameter> tested = EnumSet.noneOf(NameSearchParameter.class);
 
   private static RestClient client;
-  private static NameUsageSearchService svc;
+  private static NameUsageSearchServiceEs svc;
 
   @BeforeClass
   public static void init() {
     client = esSetupRule.getEsClient();
-    svc = new NameUsageSearchService(indexName, esSetupRule.getEsClient());
+    svc = new NameUsageSearchServiceEs(indexName, esSetupRule.getEsClient());
   }
 
   @AfterClass

@@ -70,8 +70,8 @@ public class EsReadWriteTestBase extends ExternalResource {
         EsSetupRule.TEST_INDEX);
   }
 
-  protected NameUsageSearchService createSearchService() {
-    return new NameUsageSearchService(EsSetupRule.TEST_INDEX, esSetupRule.getEsClient());
+  protected NameUsageSearchServiceEs createSearchService() {
+    return new NameUsageSearchServiceEs(EsSetupRule.TEST_INDEX, esSetupRule.getEsClient());
   }
 
   /**

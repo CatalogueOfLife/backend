@@ -36,18 +36,18 @@ import static org.col.es.EsUtil.refreshIndex;
 import static org.junit.Assert.assertEquals;
 
 @Ignore
-public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
+public class NameUsageSearchServiceEsFacetTest extends EsReadTestBase {
 
   private static final String indexName = "name_usage_test";
   private static final String dummyPayload = getDummyPayload();
 
   private static RestClient client;
-  private static NameUsageSearchService svc;
+  private static NameUsageSearchServiceEs svc;
 
   @BeforeClass
   public static void init() {
     client = esSetupRule.getEsClient();
-    svc = new NameUsageSearchService(indexName, esSetupRule.getEsClient());
+    svc = new NameUsageSearchServiceEs(indexName, esSetupRule.getEsClient());
   }
 
   @AfterClass
