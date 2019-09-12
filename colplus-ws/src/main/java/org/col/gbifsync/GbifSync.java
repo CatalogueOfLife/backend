@@ -150,6 +150,7 @@ public class GbifSync implements Managed {
       LOG.info("Enable GBIF registry sync job every {} hours", cfg.syncFrequency);
       job = new GbifSyncJob(cfg, rxClient, sessionFactory);
       scheduler.scheduleAtFixedRate(job, 0, cfg.syncFrequency, TimeUnit.HOURS);
+   
     } else {
       LOG.warn("Disable GBIF dataset sync");
     }

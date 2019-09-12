@@ -56,7 +56,7 @@ public class AdminResource {
     this.continuousImporter = continuousImporter;
   }
   
-  public class BackgroundProcesses {
+  public static class BackgroundProcesses {
     public boolean gbifSync;
     public boolean importer;
   }
