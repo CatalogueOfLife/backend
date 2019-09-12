@@ -26,7 +26,7 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
   
   @Test
   public void processDatasetTaxa() throws Exception {
-    mapper().processDatasetUsages(NAME4.getDatasetKey(), null,new ResultHandler<NameUsageWrapper>() {
+    mapper().processDatasetUsages(NAME4.getDatasetKey(), new ResultHandler<NameUsageWrapper>() {
       public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
         counter.incrementAndGet();
         NameUsageWrapper obj = ctx.getResultObject();

@@ -5,11 +5,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
-import org.col.api.model.Name;
-import org.col.api.model.SimpleName;
-import org.col.api.model.Taxon;
-import org.col.api.model.VernacularName;
+import org.col.api.model.*;
 import org.col.api.search.NameUsageWrapper;
+import org.col.api.vocab.Datasets;
+import org.col.db.MybatisTestUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -39,7 +38,7 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
   @Test
   public void processDatasetTaxa() throws Exception {
     AtomicInteger synCounter = new AtomicInteger(0);
-    mapper().processDatasetUsages(NAME4.getDatasetKey(), null,new ResultHandler<NameUsageWrapper>() {
+    mapper().processDatasetUsages(NAME4.getDatasetKey(), new ResultHandler<NameUsageWrapper>() {
       public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
         counter.incrementAndGet();
         NameUsageWrapper obj = ctx.getResultObject();
@@ -80,6 +79,33 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
   }
   
   @Test
+  public void processSector() throws Exception {
+    MybatisTestUtils.populateDraftTree(session());
+
+    mapper().processSectorUsages(1, "t2", new ResultHandler<NameUsageWrapper>() {
+      public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
+        counter.incrementAndGet();
+        NameUsageWrapper obj = ctx.getResultObject();
+        Name n = obj.getUsage().getName();
+        assertNotNull(n);
+        assertNotNull(n.getId());
+        assertEquals(Datasets.DRAFT_COL, (int) obj.getUsage().getDatasetKey());
+        assertEquals(Datasets.DRAFT_COL, (int) n.getDatasetKey());
+        
+        // classification should always include the taxon itself
+        // https://github.com/Sp2000/colplus-backend/issues/326
+        assertFalse(obj.getClassification().isEmpty());
+        SimpleName last = obj.getClassification().get(obj.getClassification().size()-1);
+        assertEquals(obj.getUsage().getId(), last.getId());
+        
+        // we have no sector, so we just get the root usage back
+        assertEquals(obj.getUsage().getId(), last.getId());
+      }
+    });
+    Assert.assertEquals(1, counter.get());
+  }
+
+  @Test
   public void processDatasetBareNames() throws Exception {
     mapper().processDatasetBareNames(NAME4.getDatasetKey(), null,new ResultHandler<NameUsageWrapper>() {
       public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
@@ -90,5 +116,28 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
       }
     });
     Assert.assertEquals(0, counter.get());
+  }
+  
+  @Test
+  public void processSubtree() throws Exception {
+    mapper().processTree(NAME4.getDatasetKey(), "t4",new ResultHandler<SimpleNameClassification>() {
+      public void handleResult(ResultContext<? extends SimpleNameClassification> ctx) {
+        counter.incrementAndGet();
+        SimpleNameClassification obj = ctx.getResultObject();
+        assertNotNull(obj.getClassification());
+        
+        // classification should always include the taxon itself
+        // https://github.com/Sp2000/colplus-backend/issues/326
+        assertFalse(obj.getClassification().isEmpty());
+        SimpleName last = obj.getClassification().get(obj.getClassification().size()-1);
+        assertEquals(obj.getId(), last.getId());
+        
+        // classification should always start with the root of the dataset, not the root of the traversal!
+        assertEquals("t1", obj.getClassification().get(0).getId());
+        assertEquals("t2", obj.getClassification().get(1).getId());
+        assertEquals("t3", obj.getClassification().get(2).getId());
+      }
+    });
+    Assert.assertEquals(21, counter.get());
   }
 }

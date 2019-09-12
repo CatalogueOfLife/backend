@@ -108,12 +108,11 @@ public class NamesTreeDao {
   
   public int updateSectorTree(int sectorKey, int attempt) throws IOException {
     Writer writer = Utf8IOUtils.writerFromFile(sectorTreeFile(sectorKey, attempt));
-    Sector s;
+    int count = 0;
     try (SqlSession session = factory.openSession(true)) {
-      s = session.getMapper(SectorMapper.class).get(sectorKey);
-  
+      Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
+      count = TextTreePrinter.sector(s.getDatasetKey(), sectorKey, factory, writer).print();
     }
-    int count = TextTreePrinter.sector(s.getDatasetKey(), sectorKey, factory, writer).print();
     LOG.info("Written text tree with {} lines for sector {}-{}", count, sectorKey, attempt);
     return count;
   }

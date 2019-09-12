@@ -1,19 +1,17 @@
 package org.col.es;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.col.api.model.Name;
-import org.col.api.model.NameUsage;
-import org.col.api.model.Page;
-import org.col.api.model.Synonym;
-import org.col.api.model.Taxon;
+import org.col.api.model.*;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchRequest.SortBy;
 import org.col.api.search.NameSearchResponse;
 import org.col.api.search.NameUsageWrapper;
 import org.elasticsearch.client.RestClient;
+import org.gbif.nameparser.api.Rank;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -60,13 +58,27 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
 
     }
   }
-
+  
+  private static List<SimpleName> createClassification(Object... data) {
+    List<SimpleName> cl = new ArrayList<>();
+    for (int i=0; i<data.length; i=i+3) {
+      SimpleName sn = new SimpleName();
+      sn.setId((String)data[i]);
+      sn.setRank((Rank) data[i+1]);
+      sn.setName((String)data[i+2]);
+    }
+    return cl;
+  }
+  
   private static List<NameUsageWrapper> createTestObjects() {
 
     NameUsageWrapper nuw1 = new NameUsageWrapper();
-    nuw1.setClassificationIds(Arrays.asList("7", "8", "9", "10"));
-    nuw1.setClassificationRanks(Arrays.asList(ORDER, FAMILY, GENUS, SPECIES));
-    nuw1.setClassificationNames(Arrays.asList("order_1", "family_1", "genus_1", "order_1"));
+    nuw1.setClassification(createClassification(
+        "7",ORDER, "order_1",
+        "8",  FAMILY,  "family_1",
+        "9",  GENUS,   "genus_1",
+        "10", SPECIES, "order_1"
+    ));
     NameUsage nu = new Taxon();
     nu.setId("10");
     Name name = new Name();
@@ -76,9 +88,12 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     nuw1.setUsage(nu);
 
     NameUsageWrapper nuw2 = new NameUsageWrapper();
-    nuw2.setClassificationIds(Arrays.asList("17", "18", "19", "20"));
-    nuw2.setClassificationRanks(Arrays.asList(ORDER, FAMILY, GENUS, SPECIES));
-    nuw2.setClassificationNames(Arrays.asList("order_2", "family_2", "genus_2", "species_2"));
+    nuw2.setClassification(createClassification(
+        "17",  ORDER, "order_2",
+        "18",  FAMILY, "family_2",
+        "19", GENUS, "genus_2",
+        "20", SPECIES, "species_2"
+    ));
     nu = new Taxon();
     nu.setId("20");
     name = new Name();
@@ -88,9 +103,13 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     nuw2.setUsage(nu);
 
     NameUsageWrapper nuw3 = new NameUsageWrapper();
-    nuw3.setClassificationIds(Arrays.asList("17", "18", "19", "20", "777"));
-    nuw3.setClassificationRanks(Arrays.asList(ORDER, FAMILY, GENUS, SPECIES, SPECIES));
-    nuw3.setClassificationNames(Arrays.asList("order_2", "family_2", "genus_2", "species_2", "synonym_2"));   
+    nuw3.setClassification(createClassification(
+        "17",  ORDER, "order_2",
+        "18",  FAMILY, "family_2",
+        "19", GENUS, "genus_2",
+        "20", SPECIES, "species_2",
+        "777", SPECIES, "synonym_2"
+    ));
     nu = new Synonym();
     ((Synonym)nu).setAccepted(new Taxon());
     nu.setId("777");

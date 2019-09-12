@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * emulated with Elasticsearch.)
  */
 @Ignore
-public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
+public class NameUsageIndexServiceEsIT extends EsReadWriteTestBase {
 
   @Test
   public void indexDatasetTaxaOnly() throws IOException {

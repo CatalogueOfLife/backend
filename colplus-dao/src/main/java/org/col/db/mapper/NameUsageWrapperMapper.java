@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.ResultHandler;
+import org.col.api.model.SimpleNameClassification;
 import org.col.api.search.NameUsageWrapper;
 
 /**
@@ -20,8 +21,16 @@ public interface NameUsageWrapperMapper {
    * itself!
    */
   void processDatasetUsages(@Param("datasetKey") Integer datasetKey,
-                            @Nullable @Param("sectorKey") Integer sectorKey,
                             ResultHandler<NameUsageWrapper> handler);
+  
+  /**
+   * Process all draft catalogue usages from a given sector
+   * @param sectorKey the sectors key
+   * @param usageId the sectors target usage id matching the sectorKey
+   */
+  void processSectorUsages(@Param("sectorKey") Integer sectorKey,
+                           @Param("usageId") String usageId,
+                           ResultHandler<NameUsageWrapper> handler);
 
   /**
    * Iterates over all bare names not linked to a synonym or taxon for a given dataset and processes them with the supplied handler. This
@@ -30,10 +39,14 @@ public interface NameUsageWrapperMapper {
   void processDatasetBareNames(@Param("datasetKey") Integer datasetKey,
                                @Nullable @Param("sectorKey") Integer sectorKey,
                                ResultHandler<NameUsageWrapper> handler);
-
+  
+  /**
+   * Traverses a subtree returning classifications as list of simple names objects only.
+   * The first SimpleName in each classification list represents the usage being processed.
+   */
   void processTree(@Param("datasetKey") Integer datasetKey,
                    @Param("usageId") String usageId,
-                   ResultHandler<NameUsageWrapper> handler);
+                   ResultHandler<SimpleNameClassification> handler);
 
   NameUsageWrapper get(@Param("datasetKey") int datasetKey,
                        @Param("id") String taxonId);

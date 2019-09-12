@@ -100,6 +100,10 @@ CREATE TYPE rank AS ENUM (
   'unranked'
 );
 
+-- a simple compound type corresponding to the basics of SimpleName. Often used for building classifications as arrays
+CREATE TYPE simple_name AS (id text, rank rank, name text);
+
+
 CREATE TABLE coluser (
   key serial PRIMARY KEY,
   username TEXT UNIQUE,
@@ -579,6 +583,31 @@ BEGIN
         || 'SELECT t.id, n.scientific_name, t.parent_id FROM x, name_usage_' || v_dataset_key || ' t '
         || '  JOIN name_' || v_dataset_key || ' n ON n.id=t.name_id WHERE t.id = x.parent_id'
         || ') SELECT array_agg(scientific_name) FROM x';
+
+    IF NOT v_inc_self THEN
+        seql := seql || ' WHERE id != $1';
+    END IF;
+
+    EXECUTE seql
+    INTO parents
+    USING v_id;
+    RETURN (array_reverse(parents));
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- return all parent name usages as a simple_name array
+CREATE OR REPLACE FUNCTION classification_sn(v_dataset_key INTEGER, v_id TEXT, v_inc_self BOOLEAN) RETURNS simple_name[] AS $$
+	declare seql TEXT;
+	declare parents simple_name[];
+BEGIN
+    seql := 'WITH RECURSIVE x AS ('
+        || 'SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name)::simple_name AS sn FROM name_usage_' || v_dataset_key || ' t '
+        || '  JOIN name_' || v_dataset_key || ' n ON n.id=t.name_id WHERE t.id = $1'
+        || ' UNION ALL '
+        || 'SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name)::simple_name FROM x, name_usage_' || v_dataset_key || ' t '
+        || '  JOIN name_' || v_dataset_key || ' n ON n.id=t.name_id WHERE t.id = x.parent_id'
+        || ') SELECT array_agg(sn) FROM x';
 
     IF NOT v_inc_self THEN
         seql := seql || ' WHERE id != $1';

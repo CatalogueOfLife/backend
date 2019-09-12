@@ -1,35 +1,26 @@
 package org.col.es;
 
 import java.io.Closeable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.google.common.annotations.VisibleForTesting;
-
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
-import org.col.api.search.NameUsageWrapper;
+import org.col.api.model.SimpleNameClassification;
 import org.col.es.model.EsNameUsage;
-import org.col.es.query.BoolQuery;
-import org.col.es.query.EsSearchRequest;
-import org.col.es.query.SortField;
-import org.col.es.query.TermQuery;
-import org.col.es.query.TermsQuery;
+import org.col.es.query.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ClassificationUpdater implements Closeable, ResultHandler<NameUsageWrapper> {
+public class ClassificationUpdater implements Closeable, ResultHandler<SimpleNameClassification> {
 
   private static final Logger LOG = LoggerFactory.getLogger(ClassificationUpdater.class);
 
   private static final int BATCH_SIZE = 4096;
 
-  private final List<NameUsageWrapper> collected;
+  private final List<SimpleNameClassification> collected;
   private final NameUsageIndexer indexer;
   private final int datasetKey;
 
@@ -40,7 +31,7 @@ public class ClassificationUpdater implements Closeable, ResultHandler<NameUsage
   }
 
   @Override
-  public void handleResult(ResultContext<? extends NameUsageWrapper> resultContext) {
+  public void handleResult(ResultContext<? extends SimpleNameClassification> resultContext) {
     handle(resultContext.getResultObject());
   }
 
@@ -52,7 +43,7 @@ public class ClassificationUpdater implements Closeable, ResultHandler<NameUsage
   }
 
   @VisibleForTesting
-  void handle(NameUsageWrapper nuw) {
+  void handle(SimpleNameClassification nuw) {
     collected.add(nuw);
     if (collected.size() == BATCH_SIZE) {
       flush();
@@ -61,11 +52,11 @@ public class ClassificationUpdater implements Closeable, ResultHandler<NameUsage
 
   private void flush() {
     LOG.debug("Received {} records from Postgres", collected.size());
-    Map<String, NameUsageWrapper> lookups = collected.stream().collect(Collectors.toMap(this::getKey, Function.identity()));
+    Map<String, SimpleNameClassification> lookups = collected.stream().collect(Collectors.toMap(SimpleNameClassification::getId, Function.identity()));
     List<EsNameUsage> documents = loadNameUsages(lookups.keySet());
     LOG.debug("Found {} matching documents", documents.size());
     documents.forEach(enu -> {
-      NameUsageWrapper nuw = lookups.get(enu.getUsageId());
+      SimpleNameClassification nuw = lookups.get(enu.getUsageId());
       enu.setUsageId(null); // Won't need to update that one
       NameUsageTransfer.saveClassification(nuw, enu);
     });
@@ -105,10 +96,6 @@ public class ClassificationUpdater implements Closeable, ResultHandler<NameUsage
     query.setSize(terms.size());
     NameUsageSearchServiceEs svc = new NameUsageSearchServiceEs(indexer.getIndexName(), indexer.getEsClient());
     return svc.getDocumentsWithDocId(query);
-  }
-
-  private String getKey(NameUsageWrapper nuw) {
-    return nuw.getClassification().get(nuw.getClassification().size() - 1).getId();
   }
 
 }

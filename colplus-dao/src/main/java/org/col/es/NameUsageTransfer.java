@@ -11,11 +11,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.DeflaterOutputStream;
 
-import org.col.api.model.Name;
-import org.col.api.model.SimpleName;
-import org.col.api.model.Synonym;
-import org.col.api.model.Taxon;
-import org.col.api.model.VernacularName;
+import org.col.api.model.*;
 import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.NameField;
 import org.col.common.tax.SciNameNormalizer;
@@ -183,14 +179,13 @@ public class NameUsageTransfer {
     return enu;
   } 
 
-  static void saveClassification(NameUsageWrapper from, EsNameUsage to) {
+  static void saveClassification(SimpleNameClassification from, EsNameUsage to) {
     if (notEmpty(from.getClassification())) {
       int sz = from.getClassification().size();
       List<String> ids = new ArrayList<>(sz);
       List<Monomial> monomials = new ArrayList<>(sz);
-      SimpleName sn;
-      for (int i = 0; i < sz; i++) {
-        ids.add((sn = from.getClassification().get(i)).getId());
+      for (SimpleName sn : from.getClassification()) {
+        ids.add(sn.getId());
         monomials.add(new Monomial(sn.getRank(), sn.getName()));
       }
       to.setClassification(monomials);
