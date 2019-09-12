@@ -8,8 +8,7 @@
     <sql id="taxonCols">
         <include refid="org.col.db.mapper.NameUsageMapper.usageCols"/>,
         ${alias}.according_to_date AS ${prefix}according_to_date,
-        ${alias}.fossil AS ${prefix}fossil,
-        ${alias}.recent AS ${prefix}recent,
+        ${alias}.extinct AS ${prefix}extinct,
         ${alias}.lifezones AS ${prefix}lifezones,
         ${alias}.webpage AS ${prefix}webpage
     </sql>
@@ -29,8 +28,7 @@
     <sql id="COLS">
         <include refid="org.col.db.mapper.NameUsageMapper.COLS"/>,
         according_to_date,
-        fossil,
-        recent,
+        extinct,
         lifezones,
         webpage
     </sql>
@@ -38,8 +36,7 @@
     <sql id="PROPS">
         <include refid="org.col.db.mapper.NameUsageMapper.PROPS"/>,
         #{accordingToDate},
-        #{fossil},
-        #{recent},
+        #{extinct},
         #{lifezones, typeHandler=org.col.db.type.LifezoneSetTypeHandler},
         #{webpage, typeHandler=org.col.db.type.UriTypeHandler}
     </sql>

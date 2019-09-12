@@ -22,8 +22,7 @@
     ${alias}mode AS ${prefix}mode,
     ${alias}name AS ${prefix}name,
     ${alias}status AS ${prefix}status,
-    ${alias}fossil AS ${prefix}fossil,
-    ${alias}recent AS ${prefix}recent,
+    ${alias}extinct AS ${prefix}extinct,
     ${alias}lifezones AS ${prefix}lifezones
   </sql>
 
@@ -49,8 +48,7 @@
     mode,
     name,
     status,
-    fossil,
-    recent,
+    extinct,
     lifezones
   </sql>
 
@@ -69,8 +67,7 @@
     #{mode},
     #{name, typeHandler=org.col.db.type2.JsonNameHandler}::jsonb,
     #{status},
-    #{fossil},
-    #{recent},
+    #{extinct},
     #{lifezones, typeHandler=org.col.db.type.LifezoneSetTypeHandler}
   </sql>
 

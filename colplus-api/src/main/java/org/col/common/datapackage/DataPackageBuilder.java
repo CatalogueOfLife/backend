@@ -24,8 +24,7 @@ public class DataPackageBuilder {
       .put(ColdpTerm.year, Field.TYPE_YEAR)
       .put(ColdpTerm.accordingToDate, Field.TYPE_DATE)
       .put(ColdpTerm.created, Field.TYPE_DATETIME)
-      .put(ColdpTerm.fossil, Field.TYPE_BOOLEAN)
-      .put(ColdpTerm.recent, Field.TYPE_BOOLEAN)
+      .put(ColdpTerm.extinct, Field.TYPE_BOOLEAN)
       .build();
   
   private static final Map<ColdpTerm, String> dataFormats = ImmutableMap.<ColdpTerm, String>builder()

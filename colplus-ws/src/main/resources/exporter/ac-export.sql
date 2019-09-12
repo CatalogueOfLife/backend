@@ -310,9 +310,9 @@ SELECT
   CASE WHEN t.is_synonym THEN 0 ELSE 1 END AS is_accepted_name,
   NULL AS GSDTaxonGUID,
   NULL AS GSDNameGUID,
-  NULL AS is_extinct,
-  t.fossil::int AS has_preholocene,
-  t.recent::int AS has_modern
+  coalesce(t.extinct, 0) AS is_extinct,
+  0 AS has_preholocene,
+  0 AS has_modern
 FROM name_{{datasetKey}} n
     JOIN name_usage_{{datasetKey}} t ON n.id=t.name_id
     LEFT JOIN __classification c  ON t.id=c.id

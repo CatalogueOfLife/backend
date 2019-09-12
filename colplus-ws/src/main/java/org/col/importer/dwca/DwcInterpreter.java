@@ -180,8 +180,7 @@ public class DwcInterpreter extends InterpreterBase {
     // this can be a synonym at this stage which the class does not accept
     tax.setStatus(status.val.isSynonym() ? TaxonomicStatus.PROVISIONALLY_ACCEPTED : status.val);
     tax.setWebpage(uri(v, Issue.URL_INVALID, DcTerm.references));
-    tax.setFossil(null);
-    tax.setRecent(null);
+    tax.setExtinct(null);
     // t.setLifezones();
     tax.setRemarks(v.get(DwcTerm.taxonRemarks));
   }

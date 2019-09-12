@@ -303,11 +303,8 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
           if (ed.getLifezones() != null) {
             t.setLifezones(ed.getLifezones());
           }
-          if (ed.getFossil() != null) {
-            t.setFossil(ed.getFossil());
-          }
-          if (ed.getRecent() != null) {
-            t.setRecent(ed.getRecent());
+          if (ed.isExtinct() != null) {
+            t.setExtinct(ed.isExtinct());
           }
         }
       case REVIEWED:

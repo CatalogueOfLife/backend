@@ -17,8 +17,7 @@ import org.col.api.vocab.TaxonomicStatus;
 public class Taxon extends NameUsageBase {
   
   private LocalDate accordingToDate;
-  private Boolean fossil;
-  private Boolean recent;
+  private Boolean extinct;
   private Set<Lifezone> lifezones = EnumSet.noneOf(Lifezone.class);
   private URI webpage;
 
@@ -43,20 +42,12 @@ public class Taxon extends NameUsageBase {
     this.accordingToDate = accordingToDate;
   }
   
-  public Boolean isFossil() {
-    return fossil;
+  public Boolean isExtinct() {
+    return extinct;
   }
   
-  public void setFossil(Boolean fossil) {
-    this.fossil = fossil;
-  }
-  
-  public Boolean isRecent() {
-    return recent;
-  }
-  
-  public void setRecent(Boolean recent) {
-    this.recent = recent;
+  public void setExtinct(Boolean extinct) {
+    this.extinct = extinct;
   }
   
   public Set<Lifezone> getLifezones() {
@@ -82,14 +73,13 @@ public class Taxon extends NameUsageBase {
     if (!super.equals(o)) return false;
     Taxon taxon = (Taxon) o;
     return Objects.equals(accordingToDate, taxon.accordingToDate) &&
-        Objects.equals(fossil, taxon.fossil) &&
-        Objects.equals(recent, taxon.recent) &&
+        Objects.equals(extinct, taxon.extinct) &&
         Objects.equals(lifezones, taxon.lifezones) &&
         Objects.equals(webpage, taxon.webpage);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), accordingToDate, fossil, recent, lifezones, webpage);
+    return Objects.hash(super.hashCode(), accordingToDate, extinct, lifezones, webpage);
   }
 }

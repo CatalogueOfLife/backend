@@ -77,8 +77,7 @@ public class ColdpInterpreter extends InterpreterBase {
       t.setAccordingToDate(date(v, Issue.ACCORDING_TO_DATE_INVALID, ColdpTerm.accordingToDate));
       //TODO: ColTerm.accordingToDateID for ORCIDS
       t.setWebpage(uri(v, Issue.URL_INVALID, ColdpTerm.link));
-      t.setFossil(bool(v, Issue.IS_FOSSIL_INVALID, ColdpTerm.fossil));
-      t.setRecent(bool(v, Issue.IS_RECENT_INVALID, ColdpTerm.recent));
+      t.setExtinct(bool(v, Issue.IS_EXTINCT_INVALID, ColdpTerm.extinct));
       t.setRemarks(v.get(ColdpTerm.remarks));
       // status
       if (Objects.equals(Boolean.TRUE, bool(v, Issue.PROVISIONAL_STATUS_INVALID, ColdpTerm.provisional))) {

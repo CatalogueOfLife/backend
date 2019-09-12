@@ -19,8 +19,7 @@ public class EditorialDecision extends Decision {
   private Mode mode;
   private Name name;
   private TaxonomicStatus status;
-  private Boolean fossil;
-  private Boolean recent;
+  private Boolean extinct;
   private Set<Lifezone> lifezones = EnumSet.noneOf(Lifezone.class);
   
   public static enum Mode {
@@ -35,13 +34,13 @@ public class EditorialDecision extends Decision {
     REVIEWED,
 
     /**
-     * Updates the subject using the configured name, status, lifezone and fossil flags
+     * Updates the subject using the configured name, status, lifezone and extinct flag
      * leaving NULL values unchanged.
      */
     UPDATE,
   
     /**
-     * Updates the subject and all its descendants using the configured status, lifezone and fossil flags
+     * Updates the subject and all its descendants using the configured status, lifezone and extinct flag
      * leaving NULL values unchanged.
      *
      * If configured, Name updates will be ignored!!!
@@ -73,20 +72,12 @@ public class EditorialDecision extends Decision {
     this.name = name;
   }
   
-  public Boolean getFossil() {
-    return fossil;
+  public Boolean isExtinct() {
+    return extinct;
   }
   
-  public void setFossil(Boolean fossil) {
-    this.fossil = fossil;
-  }
-  
-  public Boolean getRecent() {
-    return recent;
-  }
-  
-  public void setRecent(Boolean recent) {
-    this.recent = recent;
+  public void setExtinct(Boolean extinct) {
+    this.extinct = extinct;
   }
   
   public Set<Lifezone> getLifezones() {
@@ -106,14 +97,13 @@ public class EditorialDecision extends Decision {
     return mode == that.mode &&
         Objects.equals(name, that.name) &&
         status == that.status &&
-        Objects.equals(fossil, that.fossil) &&
-        Objects.equals(recent, that.recent) &&
+        Objects.equals(extinct, that.extinct) &&
         Objects.equals(lifezones, that.lifezones);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), mode, name, status, fossil, recent, lifezones);
+    return Objects.hash(super.hashCode(), mode, name, status, extinct, lifezones);
   }
   
   @Override
