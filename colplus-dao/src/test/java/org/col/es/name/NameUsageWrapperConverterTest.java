@@ -3,7 +3,11 @@ package org.col.es.name;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-public class NameUsageTransferTest {
+/**
+ * Focuses on the normalization methods within NameUsageWrapperConverter
+ *
+ */
+public class NameUsageWrapperConverterTest {
 
   @Test
   public void testNormalizeWeakly1() {

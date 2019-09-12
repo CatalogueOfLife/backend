@@ -16,7 +16,7 @@ import static org.col.api.search.NameSearchParameter.RANK;
 import static org.col.api.search.NameSearchParameter.*;
 
 // No real tests here, but generates queries that can be tried out in Kibana.
-public class NameSearchRequestTranslatorTest {
+public class RequestTranslatorTest {
 
   /*
    * Case: 4 facets, two filters, both corresponding to a facet.

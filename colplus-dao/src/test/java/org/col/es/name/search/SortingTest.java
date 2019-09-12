@@ -37,7 +37,7 @@ import static org.col.es.EsUtil.refreshIndex;
 import static org.junit.Assert.assertEquals;
 
 @Ignore
-public class NameUsageServiceSortingTest extends EsReadTestBase {
+public class SortingTest extends EsReadTestBase {
 
   private static RestClient client;
   private static NameUsageSearchService svc;

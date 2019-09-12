@@ -28,17 +28,16 @@ import static org.col.db.PgSetupRule.getSqlSessionFactory;
 import static org.junit.Assert.*;
 
 /*
- * Full round-trips into Postgres via DAOs, out of Postgres via the NameUsageWrapperMapper, into Elasticsearch via the NameUsageIndexService
- * and finally out of Elasticsearch via the NameUsageSearchService. We have to massage the in-going out-going name usages slightly to allow
- * them to be compared, but not much. (For example the recursive query we execute in Postgres, and the resulting sort order, cannot be
- * emulated with Elasticsearch.)
+ * Full round-trips into Postgres via DAOs, out of Postgres via the NameUsageWrapperMapper, into Elasticsearch via the
+ * NameUsageIndexService and finally out of Elasticsearch via the NameUsageSearchService. We have to massage the
+ * in-going out-going name usages slightly to allow them to be compared, but not much. (For example the recursive query
+ * we execute in Postgres, and the resulting sort order, cannot be emulated with Elasticsearch.)
  */
-@Ignore
 public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
 
   @Test
   public void indexDatasetTaxaOnly() throws IOException {
-    // Create (within postgres) & return 7 taxa belonging to EsSetupRule.DATASET_KEY
+    // Create, insert (into postgres) and return 7 taxa belonging to EsSetupRule.DATASET_KEY
     List<Taxon> pgTaxa = createPgTaxa(7);
     createIndexService().indexDataset(EsSetupRule.DATASET_KEY);
     List<String> ids = pgTaxa.stream().map(Taxon::getId).collect(toList());
@@ -122,7 +121,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     assertEquals(pgTaxa.get(2).getId(), res.getResult().get(0).getUsage().getId());
     dao.delete(key, 0);
     res = query(new TermQuery("usageId", pgTaxa.get(2).getId()));
-    assertNull(res.getResult().get(0).getDecisionKey()); 
+    assertNull(res.getResult().get(0).getDecisionKey());
   }
 
   @Test
@@ -146,7 +145,8 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
       t.getName().setCreated(null);
       t.getName().setModified(null);
     });
-    // The order in which taxa flow from pg to es is impossible to reproduce with an es query, so just re-order by id
+    // The order in which taxa flow from Postgres to Elasticsearch is impossible to reproduce with an es query, so just
+    // re-order by id
     taxa.sort(Comparator.comparing(Taxon::getId));
   }
 

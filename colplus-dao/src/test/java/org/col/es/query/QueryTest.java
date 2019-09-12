@@ -20,8 +20,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-// Not really tests here; only to get direct feedback on whether or not the various types of queries are serialized
-// properly.
+/*
+ * Not really tests here; only to get direct feedback on whether or not the various types of queries are serialized
+ * properly.
+ */
 public class QueryTest {
 
   // private static final Logger LOG = LoggerFactory.getLogger(QueryTest.class);

@@ -4,6 +4,10 @@ import java.util.Map;
 
 import static java.util.Collections.singletonMap;
 
+/**
+ * The startsWith or LIKE "something%" query.
+ *
+ */
 public class PrefixQuery extends ConstraintQuery<TermConstraint> {
 
   private final Map<String, TermConstraint> prefix;

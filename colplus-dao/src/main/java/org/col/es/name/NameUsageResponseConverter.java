@@ -2,13 +2,15 @@ package org.col.es.name;
 
 import java.util.List;
 
+import org.col.api.search.NameUsageWrapper;
 import org.col.es.model.NameUsageDocument;
 import org.col.es.response.SearchHit;
 
 import static java.util.stream.Collectors.toList;
 
 /**
- * Converts
+ * Converts the raw Elasticsearch response into a list of {@link NameUsageDocument} instances, which typically will
+ * converted again into API-level {@link NameUsageWrapper} instances.
  */
 public class NameUsageResponseConverter {
 

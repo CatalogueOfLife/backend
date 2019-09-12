@@ -65,7 +65,7 @@ public class NameUsageWrapperConverter {
     if (sn == null) {
       return null;
     }
-    return SciNameNormalizer.normalize(sn).toLowerCase();
+    return SciNameNormalizer.normalize(sn);
   }
 
   /**
@@ -75,7 +75,7 @@ public class NameUsageWrapperConverter {
     if (sn == null) {
       return null;
     }
-    return SciNameNormalizer.normalizeAll(sn).toLowerCase();
+    return SciNameNormalizer.normalizeAll(sn);
   }
 
   /**

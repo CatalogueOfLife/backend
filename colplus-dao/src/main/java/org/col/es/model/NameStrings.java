@@ -9,7 +9,7 @@ import org.col.es.mapping.Analyzers;
 import org.col.es.name.NameUsageWrapperConverter;
 
 import static org.col.es.mapping.Analyzer.AUTO_COMPLETE;
-import static org.col.es.mapping.Analyzer.KEYWORD;
+import static org.col.es.mapping.Analyzer.IGNORE_CASE;
 import static org.col.es.name.NameUsageWrapperConverter.normalizeStrongly;
 import static org.col.es.name.NameUsageWrapperConverter.normalizeWeakly;
 
@@ -27,7 +27,7 @@ public class NameStrings {
 
   private String genus;
   private String genusWN;
-  private char genusLetter;
+  private String genusLetter;
   private String specificEpithet;
   private String specificEpithetSN;
   private String infraspecificEpithet;
@@ -52,22 +52,22 @@ public class NameStrings {
     scientificNameWN = NameUsageWrapperConverter.normalizeWeakly(name.getScientificName());
     String s;
     if (name.getGenus() != null) {
-      genus = name.getGenus().toLowerCase();
-      genusLetter = genus.charAt(0);
+      genus = name.getGenus();
+      genusLetter = genus.substring(0, 1);
       s = normalizeWeakly(genus);
       if (!s.equals(genus)) {
         genusWN = s;
       }
     }
     if (name.getSpecificEpithet() != null) {
-      specificEpithet = name.getSpecificEpithet().toLowerCase();
+      specificEpithet = name.getSpecificEpithet();
       s = normalizeStrongly(specificEpithet);
       if (!s.equals(specificEpithet)) {
         specificEpithetSN = s;
       }
     }
     if (name.getInfraspecificEpithet() != null) {
-      infraspecificEpithet = name.getInfraspecificEpithet().toLowerCase();
+      infraspecificEpithet = name.getInfraspecificEpithet();
       s = normalizeStrongly(infraspecificEpithet);
       if (!s.equals(infraspecificEpithet)) {
         infraspecificEpithetSN = s;
@@ -77,7 +77,7 @@ public class NameStrings {
 
   public NameStrings() {}
 
-  @Analyzers({KEYWORD, AUTO_COMPLETE})
+  @Analyzers({IGNORE_CASE, AUTO_COMPLETE})
   public String getGenus() {
     return genus;
   }
@@ -86,15 +86,15 @@ public class NameStrings {
     this.genus = genus;
   }
 
-  public char getGenusLetter() {
+  public String getGenusLetter() {
     return genusLetter;
   }
 
-  public void setGenusLetter(char genusLetter) {
+  public void setGenusLetter(String genusLetter) {
     this.genusLetter = genusLetter;
   }
 
-  @Analyzers({KEYWORD, AUTO_COMPLETE})
+  @Analyzers({IGNORE_CASE, AUTO_COMPLETE})
   public String getGenusWN() {
     return genusWN;
   }
@@ -103,7 +103,7 @@ public class NameStrings {
     this.genusWN = genusWN;
   }
 
-  @Analyzers({KEYWORD, AUTO_COMPLETE})
+  @Analyzers({IGNORE_CASE, AUTO_COMPLETE})
   public String getSpecificEpithet() {
     return specificEpithet;
   }
@@ -112,7 +112,7 @@ public class NameStrings {
     this.specificEpithet = specificEpithet;
   }
 
-  @Analyzers({KEYWORD, AUTO_COMPLETE})
+  @Analyzers({IGNORE_CASE, AUTO_COMPLETE})
   public String getSpecificEpithetSN() {
     return specificEpithetSN;
   }
@@ -121,7 +121,7 @@ public class NameStrings {
     this.specificEpithetSN = specificEpithetSN;
   }
 
-  @Analyzers({KEYWORD, AUTO_COMPLETE})
+  @Analyzers({IGNORE_CASE, AUTO_COMPLETE})
   public String getInfraspecificEpithet() {
     return infraspecificEpithet;
   }
@@ -130,7 +130,7 @@ public class NameStrings {
     this.infraspecificEpithet = infraspecificEpithet;
   }
 
-  @Analyzers({KEYWORD, AUTO_COMPLETE})
+  @Analyzers({IGNORE_CASE, AUTO_COMPLETE})
   public String getInfraspecificEpithetSN() {
     return infraspecificEpithetSN;
   }
@@ -139,48 +139,13 @@ public class NameStrings {
     this.infraspecificEpithetSN = infraspecificEpithetSN;
   }
 
-  @Analyzers({KEYWORD, AUTO_COMPLETE})
+  @Analyzers({IGNORE_CASE, AUTO_COMPLETE})
   public String getScientificNameWN() {
     return scientificNameWN;
   }
 
   public void setScientificNameWN(String scientificNameWN) {
     this.scientificNameWN = scientificNameWN;
-  }
-
-  /*
-   * Artificially constructs a name from a search phrase, just so we can be sure that names and search phrases will be
-   * preprocessed in exactly the same way before being matched against each other.
-   */
-  private static Name createNameFromSearchPhrase(String searchPhrase) {
-    Name name = new Name();
-    // Looks odd, but it just means that, if nothing else works, we'll let Elasticsearch match the entire search phrase
-    // against the entire scientific name
-    name.setScientificName(searchPhrase);
-    String[] terms = tokenize(searchPhrase);
-    switch (terms.length) {
-      case 1:
-        // Looks odd, but it just means that we are going to match the one and only term in the search phrase against genus,
-        // specific epithet and infraspecific epithet
-        setGenus(name, terms[0]);
-        name.setSpecificEpithet(terms[0]);
-        name.setInfraspecificEpithet(terms[0]);
-        break;
-      case 2:
-        // We are going to match the 1st term in the search phrase against the genus and the 2nd against either the specific
-        // epithet or the infraspecific epithet
-        setGenus(name, terms[0]);
-        name.setSpecificEpithet(terms[1]);
-        name.setInfraspecificEpithet(terms[1]);
-        break;
-      case 3:
-        setGenus(name, terms[0]);
-        name.setSpecificEpithet(terms[1]);
-        name.setInfraspecificEpithet(terms[2]);
-      default:
-        // Do nothing; we'll fall back on matching against entire scientific name
-    }
-    return name;
   }
 
   private static void setGenus(Name name, String term) {
@@ -220,6 +185,41 @@ public class NameStrings {
         && Objects.equals(scientificNameWN, other.scientificNameWN)
         && Objects.equals(specificEpithet, other.specificEpithet)
         && Objects.equals(specificEpithetSN, other.specificEpithetSN);
+  }
+
+  /*
+   * Constructs an artificial name from a search phrase, just so we can be sure that names and search phrases will be
+   * preprocessed in the same way before being matched against each other.
+   */
+  private static Name createNameFromSearchPhrase(String searchPhrase) {
+    Name name = new Name();
+    // Looks odd, but it just means that, if nothing else works, we'll let Elasticsearch match the entire search phrase
+    // against the entire scientific name:
+    name.setScientificName(searchPhrase);
+    String[] terms = tokenize(searchPhrase);
+    switch (terms.length) {
+      case 1:
+        // Looks odd, but it just means that we are going to match the one and only term in the search phrase against genus,
+        // specific epithet and infraspecific epithet:
+        setGenus(name, terms[0]);
+        name.setSpecificEpithet(terms[0]);
+        name.setInfraspecificEpithet(terms[0]);
+        break;
+      case 2:
+        // We are going to match the 1st term in the search phrase against the genus and the 2nd against either the specific
+        // epithet or the infraspecific epithet
+        setGenus(name, terms[0]);
+        name.setSpecificEpithet(terms[1]);
+        name.setInfraspecificEpithet(terms[1]);
+        break;
+      case 3:
+        setGenus(name, terms[0]);
+        name.setSpecificEpithet(terms[1]);
+        name.setInfraspecificEpithet(terms[2]);
+      default:
+        // Do nothing; we'll fall back on matching against entire scientific name
+    }
+    return name;
   }
 
 }

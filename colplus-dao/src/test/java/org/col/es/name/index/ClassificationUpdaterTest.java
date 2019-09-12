@@ -11,15 +11,12 @@ import org.col.api.model.Synonym;
 import org.col.api.model.Taxon;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchRequest.SortBy;
-import org.col.es.EsReadTestBase;
-import org.col.es.EsUtil;
-import org.col.es.name.index.ClassificationUpdater;
-import org.col.es.name.index.NameUsageIndexer;
-import org.col.es.name.search.NameUsageSearchService;
 import org.col.api.search.NameSearchResponse;
 import org.col.api.search.NameUsageWrapper;
+import org.col.es.EsReadTestBase;
+import org.col.es.EsUtil;
+import org.col.es.name.search.NameUsageSearchService;
 import org.elasticsearch.client.RestClient;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.gbif.nameparser.api.Rank.FAMILY;
@@ -28,42 +25,38 @@ import static org.gbif.nameparser.api.Rank.ORDER;
 import static org.gbif.nameparser.api.Rank.SPECIES;
 import static org.junit.Assert.assertEquals;
 
-@Ignore
 public class ClassificationUpdaterTest extends EsReadTestBase {
 
-  private static final String INDEX_NAME = "name_usage_test";
   private static final int DATASET_KEY = 1000;
 
   @Test
   public void test1() throws IOException {
+    
+    destroyAndCreateIndex();
 
-    try (RestClient client = getEsClient()) {
+    RestClient client = getEsClient();
 
-      EsUtil.deleteIndex(client, INDEX_NAME);
-      EsUtil.createIndex(client, INDEX_NAME, getEsConfig().nameUsage);
+    // Index some test objects
+    NameUsageIndexer indexer = new NameUsageIndexer(client, indexName);
+    indexer.accept(createTestObjects());
+    EsUtil.refreshIndex(client, indexName);
 
-      // Index some test objects
-      NameUsageIndexer indexer = new NameUsageIndexer(client, INDEX_NAME);
-      indexer.accept(createTestObjects());
-      EsUtil.refreshIndex(client, INDEX_NAME);
-
-      // Modify the classification of the test objects and run the updater
-      List<NameUsageWrapper> nameUsages = createTestObjects();
-      nameUsages.forEach(nu -> nu.getClassification().forEach(sn -> sn.setName(sn.getName() + " UPDATED")));
-      try (ClassificationUpdater updater = new ClassificationUpdater(indexer, DATASET_KEY)) {
-        nameUsages.forEach(updater::handle);
-      }
-      EsUtil.refreshIndex(client, INDEX_NAME);
-
-      // Make sure that what ends up in ES equals the modified nam usages
-      NameUsageSearchService svc = new NameUsageSearchService(INDEX_NAME, client);
-      NameSearchRequest query = new NameSearchRequest();
-      query.setSortBy(SortBy.NATIVE);
-      NameSearchResponse nsr = svc.search(query, new Page());
-
-      assertEquals(nameUsages, nsr.getResult());
-
+    // Modify the classification of the test objects and run the updater
+    List<NameUsageWrapper> nameUsages = createTestObjects();
+    nameUsages.forEach(nu -> nu.getClassification().forEach(sn -> sn.setName(sn.getName() + " UPDATED")));
+    try (ClassificationUpdater updater = new ClassificationUpdater(indexer, DATASET_KEY)) {
+      nameUsages.forEach(updater::handle);
     }
+    EsUtil.refreshIndex(client, indexName);
+
+    // Make sure that what ends up in ES equals the modified name usages
+    NameUsageSearchService svc = new NameUsageSearchService(indexName, client);
+    NameSearchRequest query = new NameSearchRequest();
+    query.setSortBy(SortBy.NATIVE);
+    NameSearchResponse nsr = svc.search(query, new Page());
+
+    assertEquals(nameUsages, nsr.getResult());
+
   }
 
   private static List<NameUsageWrapper> createTestObjects() {

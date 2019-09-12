@@ -20,7 +20,6 @@ import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.es.EsReadTestBase;
-import org.col.es.EsUtil;
 import org.col.es.model.NameUsageDocument;
 import org.col.es.name.NameUsageWrapperConverter;
 import org.elasticsearch.client.RestClient;
@@ -28,14 +27,12 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.col.es.EsUtil.insert;
 import static org.col.es.EsUtil.refreshIndex;
 import static org.junit.Assert.assertEquals;
 
-@Ignore
 public class NameUsageSearchServiceTest extends EsReadTestBase {
 
   private static RestClient client;
@@ -47,16 +44,9 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     svc = new NameUsageSearchService(indexName, esSetupRule.getEsClient());
   }
 
-  @AfterClass
-  public static void shutdown() throws IOException {
-    // EsUtil.deleteIndex(client, indexName);
-    client.close();
-  }
-
   @Before
-  public void before() throws IOException {
-    EsUtil.deleteIndex(client, indexName);
-    EsUtil.createIndex(client, indexName, getEsConfig().nameUsage);
+  public void before() {
+    destroyAndCreateIndex();
   }
 
   @Test
@@ -173,7 +163,9 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     NameSearchRequest nsr = new NameSearchRequest();
     nsr.setHighlight(false);
     nsr.addFilter(NameSearchParameter.ISSUE,
-        Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID, Issue.BASIONYM_ID_INVALID);
+        Issue.ACCEPTED_NAME_MISSING,
+        Issue.ACCORDING_TO_DATE_INVALID,
+        Issue.BASIONYM_ID_INVALID);
 
     // Match
     NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
@@ -541,17 +533,17 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   public void testMultipleFiltersAndQ() throws IOException {
     NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
     /*
-     * Find all name usages whose uninomial field is not empty, have rank ORDER or FAMILY, have status ACCEPTED, and contain "larid" in
-     * their scientific name or authorship.
+     * Find all name usages whose uninomial field is not empty, have rank ORDER or FAMILY, have status ACCEPTED, and contain
+     * "larid" in their scientific name or authorship.
      */
     NameSearchRequest nsr = new NameSearchRequest();
     nsr.setHighlight(false);
     nsr.setQ("larid");
     nsr.setContent(EnumSet.of(SearchContent.VERNACULAR_NAME));
-    // nsr.setContent(EnumSet.of(SearchContent.SCIENTIFIC_NAME, SearchContent.AUTHORSHIP));
-    // nsr.addFilter(NameSearchParameter.FIELD, "uninomial");
-    // nsr.addFilter(NameSearchParameter.RANK, Rank.ORDER, Rank.FAMILY);
-    // nsr.addFilter(NameSearchParameter.STATUS, TaxonomicStatus.ACCEPTED);
+    nsr.setContent(EnumSet.of(SearchContent.SCIENTIFIC_NAME, SearchContent.AUTHORSHIP));
+    nsr.addFilter(NameSearchParameter.FIELD, "uninomial");
+    nsr.addFilter(NameSearchParameter.RANK, Rank.ORDER, Rank.FAMILY);
+    nsr.addFilter(NameSearchParameter.STATUS, TaxonomicStatus.ACCEPTED);
     List<NameUsageWrapper> usages = testMultipleFiltersAndQ__createTestData();
     // System.out.println(EsModule.DEBUG_WRITER.writeValueAsString(usages));
     for (NameUsageWrapper nuw : usages) {
@@ -719,18 +711,12 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   // Issue #207
   @Test
   public void testWithSmthii__1() throws IOException {
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
-
     NameSearchRequest nsr = new NameSearchRequest();
     nsr.setHighlight(false);
     nsr.setQ("Smithi");
 
     List<NameUsageWrapper> usages = testWithSmthii__createTestData();
-    for (NameUsageWrapper nuw : usages) {
-      insert(client, indexName, transfer.toDocument(nuw));
-    }
-
-    refreshIndex(client, indexName);
+    index(usages);
 
     // Expect all to come back
     List<NameUsageWrapper> expected = testWithSmthii__createTestData();
@@ -738,7 +724,6 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
 
     assertEquals(expected, result.getResult());
-
   }
 
   @Test

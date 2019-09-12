@@ -3,9 +3,9 @@ package org.col.es.query;
 import java.util.List;
 
 import org.col.es.EsReadTestBase;
+import org.col.es.dsl.CaseInsensitivePrefixQuery;
 import org.col.es.dsl.PrefixQuery;
 import org.col.es.dsl.Query;
-import org.col.es.model.NameStrings;
 import org.col.es.model.NameUsageDocument;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,12 +22,11 @@ public class PrefixQueryTest extends EsReadTestBase {
   @Test
   public void test1() {
     NameUsageDocument doc = new NameUsageDocument();
-    NameStrings strings = new NameStrings();
-    String s = "  this  is  a  long  string  with  spaces";
-    strings.setScientificNameWN(s);
-    doc.setNameStrings(strings);
+    String s = "  tHiS  iS  a  LoNg  string  with  spaces";
+    // This field is indexed using the IGNORE_CASE analyzer.
+    doc.setAuthorship(s);
     indexRaw(doc);
-    Query query = new PrefixQuery("nameStrings.scientificNameLC", s.substring(0, 5));
+    Query query = new CaseInsensitivePrefixQuery("authorship", s.substring(0, 8));
     List<NameUsageDocument> result = queryRaw(query);
     assertEquals(1, result.size());
   }
@@ -35,27 +34,26 @@ public class PrefixQueryTest extends EsReadTestBase {
   @Test
   public void test2() {
     NameUsageDocument doc = new NameUsageDocument();
-    NameStrings strings = new NameStrings();
-    String s = "  this  is  a  long  string  with  spaces";
-    strings.setScientificNameWN(s);
-    doc.setNameStrings(strings);
+    String s = "  tHiS  iS  a  LoNg  string  with  spaces";
+    // This field is indexed as-is.
+    doc.setUsageId(s);
     indexRaw(doc);
-    Query query = new PrefixQuery("nameStrings.scientificNameLC", s);
+    Query query = new PrefixQuery("usageId", s);
     List<NameUsageDocument> result = queryRaw(query);
     assertEquals(1, result.size());
   }
 
+
   @Test
   public void test3() {
     NameUsageDocument doc = new NameUsageDocument();
-    NameStrings strings = new NameStrings();
-    String s = "  this  is  a  long  string  with  spaces";
-    strings.setScientificNameWN(s);
-    doc.setNameStrings(strings);
+    String s = "  tHiS  iS  a  LoNg  string  with  spaces";
+    // This field is indexed as-is.
+    doc.setUsageId(s);
     indexRaw(doc);
-    Query query = new PrefixQuery("nameStrings.scientificNameLC", s.substring(1, 5));
+    Query query = new PrefixQuery("usageId", s.substring(0, 10));
     List<NameUsageDocument> result = queryRaw(query);
-    assertEquals(0, result.size());
+    assertEquals(1, result.size());
   }
 
 }

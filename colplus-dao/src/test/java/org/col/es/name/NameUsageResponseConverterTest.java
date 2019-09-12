@@ -8,10 +8,10 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class NameSearchResponseTransferTest {
+public class NameUsageResponseConverterTest {
 
   @Test
-  // Eh ... how do number strings get deserialized using EsModule? Integer or Long?
+  // Mainly just tests how number strings get deserialized using Jackson/EsModule. Integer, Long ...
   public void testIntString() throws IOException {
     String s = "42";
     Object obj = EsModule.MAPPER.readValue(s, Object.class);
