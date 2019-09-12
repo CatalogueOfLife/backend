@@ -140,7 +140,11 @@ public class ContinuousImporter implements Managed {
   
   @Override
   public void stop() throws Exception {
-    job.terminate();
-    thread.join(ExecutorUtils.MILLIS_TO_DIE);
+    if (job != null) {
+      job.terminate();
+    }
+    if (thread != null) {
+      thread.join(ExecutorUtils.MILLIS_TO_DIE);
+    }
   }
 }
