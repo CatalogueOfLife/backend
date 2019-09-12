@@ -143,14 +143,13 @@ public class GbifSync implements Managed {
   
   @Override
   public void start() throws Exception {
-    scheduler = Executors.newScheduledThreadPool(1,
-        new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true)
-    );
-  
     if (cfg.syncFrequency > 0) {
-      LOG.info("Enable GBIF registry sync job every {} hours", job.gbif.syncFrequency);
+      scheduler = Executors.newScheduledThreadPool(1,
+          new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true)
+      );
+      LOG.info("Enable GBIF registry sync job every {} hours", cfg.syncFrequency);
       job = new GbifSyncJob(cfg, rxClient, sessionFactory);
-      scheduler.scheduleAtFixedRate(job, 0, job.gbif.syncFrequency, TimeUnit.HOURS);
+      scheduler.scheduleAtFixedRate(job, 0, cfg.syncFrequency, TimeUnit.HOURS);
     } else {
       LOG.warn("Disable GBIF dataset sync");
     }
@@ -158,7 +157,9 @@ public class GbifSync implements Managed {
   
   @Override
   public void stop() throws Exception {
-    ExecutorUtils.shutdown(scheduler, ExecutorUtils.MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
+    if (scheduler != null) {
+      ExecutorUtils.shutdown(scheduler, ExecutorUtils.MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
+    }
     job = null;
   }
 }
