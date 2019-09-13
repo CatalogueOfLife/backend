@@ -18,6 +18,8 @@ public class Taxon extends NameUsageBase {
   
   private LocalDate accordingToDate;
   private Boolean extinct;
+  private String temporalRangeStart;
+  private String temporalRangeEnd;
   private Set<Lifezone> lifezones = EnumSet.noneOf(Lifezone.class);
   private URI webpage;
 
@@ -50,6 +52,22 @@ public class Taxon extends NameUsageBase {
     this.extinct = extinct;
   }
   
+  public String getTemporalRangeStart() {
+    return temporalRangeStart;
+  }
+  
+  public void setTemporalRangeStart(String temporalRangeStart) {
+    this.temporalRangeStart = temporalRangeStart;
+  }
+  
+  public String getTemporalRangeEnd() {
+    return temporalRangeEnd;
+  }
+  
+  public void setTemporalRangeEnd(String temporalRangeEnd) {
+    this.temporalRangeEnd = temporalRangeEnd;
+  }
+  
   public Set<Lifezone> getLifezones() {
     return lifezones;
   }
@@ -74,12 +92,14 @@ public class Taxon extends NameUsageBase {
     Taxon taxon = (Taxon) o;
     return Objects.equals(accordingToDate, taxon.accordingToDate) &&
         Objects.equals(extinct, taxon.extinct) &&
+        Objects.equals(temporalRangeStart, taxon.temporalRangeStart) &&
+        Objects.equals(temporalRangeEnd, taxon.temporalRangeEnd) &&
         Objects.equals(lifezones, taxon.lifezones) &&
         Objects.equals(webpage, taxon.webpage);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), accordingToDate, extinct, lifezones, webpage);
+    return Objects.hash(super.hashCode(), accordingToDate, extinct, temporalRangeStart, temporalRangeEnd, lifezones, webpage);
   }
 }

@@ -310,7 +310,7 @@ SELECT
   CASE WHEN t.is_synonym THEN 0 ELSE 1 END AS is_accepted_name,
   NULL AS GSDTaxonGUID,
   NULL AS GSDNameGUID,
-  coalesce(t.extinct, 0) AS is_extinct,
+  CASE WHEN t.extinct THEN 1 ELSE 0 END AS is_extinct,
   0 AS has_preholocene,
   0 AS has_modern
 FROM name_{{datasetKey}} n

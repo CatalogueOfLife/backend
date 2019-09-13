@@ -18,7 +18,10 @@ import org.col.api.jackson.PermissiveEnumSerde;
 import org.col.api.model.*;
 import org.col.api.search.NameSearchParameter;
 import org.col.api.vocab.AreaStandard;
+import org.col.api.vocab.ColDwcTerm;
+import org.col.api.vocab.GeoTime;
 import org.col.img.ImgConfig;
+import org.col.parser.GeoTimeParser;
 import org.col.parser.LanguageParser;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
@@ -32,6 +35,7 @@ public class VocabResource {
   
   private static final Logger LOG = LoggerFactory.getLogger(VocabResource.class);
   private final Map<String, Class<Enum>> vocabs;
+  private final List<String> vocabNames;
   
   public VocabResource() {
     Map<String, Class<Enum>> enums = Maps.newHashMap();
@@ -57,6 +61,13 @@ public class VocabResource {
       LOG.error("Failed to init enum class map", e);
     }
     vocabs = ImmutableMap.copyOf(enums);
+    List<String> names = new ArrayList<>(enums.keySet());
+    names.add("language");
+    names.add("geotime");
+    names.add("terms");
+    names.remove(binaryName(ColDwcTerm.class));
+    Collections.sort(names);
+    vocabNames = ImmutableList.copyOf(names);
   }
   
   private static void add(Map<String, Class<Enum>> enums, Class<?> clazz) {
@@ -69,8 +80,8 @@ public class VocabResource {
   }
   
   @GET
-  public Set<String> list() {
-    return vocabs.keySet();
+  public List<String> list() {
+    return vocabNames;
   }
   
   @GET
@@ -111,6 +122,18 @@ public class VocabResource {
     return LanguageParser.PARSER.getTitles().get(code.trim().toLowerCase());
   }
   
+  @GET
+  @Path("geotime")
+  public List<GeoTime> geotimes() {
+    return GeoTimeParser.PARSER.times();
+  }
+  
+  @GET
+  @Path("geotime/{name}")
+  public GeoTime geotime(@PathParam("name") String name) {
+    return GeoTimeParser.PARSER.time(name);
+  }
+
   @GET
   @Path("{name}")
   public List<Map<String, String>> values(@PathParam("name") String name) throws IllegalAccessException {
