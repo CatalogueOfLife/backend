@@ -1,10 +1,13 @@
 package org.col.importer;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import com.google.common.base.Splitter;
-import com.google.common.collect.Maps;
 import org.gbif.dwc.terms.Term;
+import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,10 +21,11 @@ public class MappingFlags {
   private boolean taxonId;
   private boolean parsedNameMapped;
   private boolean denormedClassificationMapped;
+  private Set<Rank> denormedRanksMapped = new HashSet<>();
   private boolean originalNameMapped;
   private boolean acceptedNameMapped;
   private boolean parentNameMapped;
-  private Map<Term, Splitter> multiValueDelimiters = Maps.newHashMap();
+  private Map<Term, Splitter> multiValueDelimiters = new HashMap<>();
   
   /**
    * @return true if taxonID exists as a distinct property from the ID property
@@ -52,6 +56,14 @@ public class MappingFlags {
   
   public void setDenormedClassificationMapped(boolean denormedClassificationMapped) {
     this.denormedClassificationMapped = denormedClassificationMapped;
+  }
+  
+  public Set<Rank> getDenormedRanksMapped() {
+    return denormedRanksMapped;
+  }
+  
+  public void setDenormedRanksMapped(Set<Rank> denormedRanksMapped) {
+    this.denormedRanksMapped = denormedRanksMapped;
   }
   
   public boolean isOriginalNameMapped() {

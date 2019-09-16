@@ -7,12 +7,15 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
+import jersey.repackaged.com.google.common.collect.ImmutableMap;
 import org.col.api.datapackage.ColdpTerm;
 import org.col.common.io.PathUtils;
 import org.col.csv.CsvReader;
 import org.col.csv.Schema;
 import org.col.importer.NormalizationFailedException;
+import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
+import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +42,24 @@ public class ColdpReader extends CsvReader {
 
   private ColdpReader(Path folder) throws IOException {
     super(folder, "col", "coldp");
+    detectMappedClassification(ColdpTerm.Taxon, ImmutableMap.<Term, Rank>builder()
+        .put(ColdpTerm.kingdom, Rank.KINGDOM)
+        .put(ColdpTerm.phylum, Rank.PHYLUM)
+        .put(ColdpTerm.subphylum, Rank.SUBPHYLUM)
+        .put(ColdpTerm.class_, Rank.CLASS)
+        .put(ColdpTerm.subclass, Rank.SUBCLASS)
+        .put(ColdpTerm.order, Rank.ORDER)
+        .put(ColdpTerm.suborder, Rank.SUBORDER)
+        .put(ColdpTerm.superfamily, Rank.SUPERFAMILY)
+        .put(ColdpTerm.family, Rank.FAMILY)
+        .put(ColdpTerm.subfamily, Rank.SUBFAMILY)
+        .put(ColdpTerm.tribe, Rank.TRIBE)
+        .put(ColdpTerm.subtribe, Rank.SUBTRIBE)
+        .put(ColdpTerm.genus, Rank.GENUS)
+        .put(ColdpTerm.subgenus, Rank.SUBGENUS)
+        .build()
+    );
+  
   }
 
   public static ColdpReader from(Path folder) throws IOException {

@@ -34,6 +34,7 @@ import org.col.api.util.VocabularyUtils;
 import org.col.common.io.CharsetDetectingStream;
 import org.col.common.io.PathUtils;
 import org.gbif.dwc.terms.*;
+import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -393,6 +394,16 @@ public class CsvReader {
       @Override
       public boolean accept(Path p) throws IOException {
         return Files.isRegularFile(p) && (allowedSuffices == null || allowedSuffices.contains(PathUtils.getFileExtension(p)));
+      }
+    });
+  }
+  
+  protected void detectMappedClassification(Term rowType, Map<Term, Rank> terms) {
+    schema(rowType).ifPresent(s -> {
+      for (Map.Entry<Term, Rank> ent : terms.entrySet()) {
+        if (s.hasTerm(ent.getKey())) {
+          mappingFlags.getDenormedRanksMapped().add(ent.getValue());
+        }
       }
     });
   }

@@ -637,6 +637,14 @@ public class PgImportIT {
     normalizeAndImport(ACEF, 20);
   }
   
+  /**
+   * https://github.com/Sp2000/colplus-backend/issues/477
+   */
+  @Test
+  public void acefSuperfam() throws Exception {
+    normalizeAndImport(ACEF, 21);
+  }
+  
   @Test
   @Ignore("manual test for debugging entire imports")
   public void testExternalManually() throws Exception {
@@ -645,7 +653,7 @@ public class PgImportIT {
     
     //normalizeAndImport(URI.create("https://github.com/mdoering/data-ina/archive/master.zip"), COLDP);
     //normalizeAndImport(URI.create("http://data.canadensys.net/ipt/archive.do?r=vascan"), DataFormat.DWCA);
-    normalizeAndImportArchive(new File("/Users/markus/code/col+/colplus-repo/ACEF/14.tar.gz"), ACEF);
+    normalizeAndImportArchive(new File("/Users/markus/Downloads/200.tar.gz"), ACEF);
   
     //normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/higher-classification.dwca.zip"), DWCA);
     //normalizeAndImportFolder(new File("/Users/markus/code/col+/data-staphbase/coldp"), COLDP);

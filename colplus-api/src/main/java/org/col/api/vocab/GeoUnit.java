@@ -13,6 +13,8 @@ public enum GeoUnit {
   
   PERIOD,
   
+  SUBPERIOD,
+
   EPOCH,
   
   AGE,

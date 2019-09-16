@@ -5,6 +5,7 @@ import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.col.api.vocab.Country;
+import org.col.api.vocab.Language;
 
 public class VernacularName extends DataEntity implements Referenced, VerbatimEntity, GlobalEntity {
   
@@ -64,6 +65,10 @@ public class VernacularName extends DataEntity implements Referenced, VerbatimEn
     this.language = language;
   }
   
+  public void setLanguage(Language language) {
+    this.language = language == null ? null : language.getCode();
+  }
+
   public Country getCountry() {
     return country;
   }

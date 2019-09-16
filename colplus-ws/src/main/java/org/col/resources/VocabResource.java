@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.stream.Collectors;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
@@ -15,14 +16,16 @@ import com.google.common.reflect.ClassPath;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.col.api.jackson.PermissiveEnumSerde;
-import org.col.api.model.*;
+import org.col.api.model.ColUser;
+import org.col.api.model.EditorialDecision;
+import org.col.api.model.Sector;
+import org.col.api.model.SectorImport;
 import org.col.api.search.NameSearchParameter;
 import org.col.api.vocab.AreaStandard;
 import org.col.api.vocab.ColDwcTerm;
 import org.col.api.vocab.GeoTime;
+import org.col.api.vocab.Language;
 import org.col.img.ImgConfig;
-import org.col.parser.GeoTimeParser;
-import org.col.parser.LanguageParser;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.nameparser.api.Rank;
@@ -113,25 +116,25 @@ public class VocabResource {
   @GET
   @Path("language")
   public Map<String, String> languageTitles() {
-    return LanguageParser.PARSER.getTitles();
+    return Language.LANGUAGES.values().stream().collect(Collectors.toMap(Language::getCode, Language::getTitle));
   }
   
   @GET
   @Path("language/{code}")
   public String languageTitle(@PathParam("code") String code) {
-    return LanguageParser.PARSER.getTitles().get(code.trim().toLowerCase());
+    return Language.byCode(code).getTitle();
   }
   
   @GET
   @Path("geotime")
-  public List<GeoTime> geotimes() {
-    return GeoTimeParser.PARSER.times();
+  public Collection<GeoTime> geotimes() {
+    return GeoTime.TIMES.values();
   }
   
   @GET
   @Path("geotime/{name}")
   public GeoTime geotime(@PathParam("name") String name) {
-    return GeoTimeParser.PARSER.time(name);
+    return GeoTime.byName(name);
   }
 
   @GET

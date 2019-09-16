@@ -6,6 +6,7 @@ import org.col.api.jackson.ApiModule;
 import org.col.api.jackson.SerdeTestBase;
 import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
@@ -63,5 +64,20 @@ public class NameTest extends SerdeTestBase<Name> {
     n.getBasionymAuthorship().getAuthors().add("Lin.");
     n.getBasionymAuthorship().getAuthors().add("Deca.");
     assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999", n.canonicalNameComplete());
+  }
+  
+  /**
+   * https://github.com/Sp2000/colplus-backend/issues/478
+   */
+  @Test
+  public void bacterialInfraspec() throws Exception {
+    Name n = new Name();
+    n.setGenus("Spirulina");
+    n.setSpecificEpithet("subsalsa");
+    n.setInfraspecificEpithet("subsalsa");
+    n.setRank(Rank.INFRASPECIFIC_NAME);
+    assertEquals("Spirulina subsalsa subsalsa", n.canonicalNameComplete());
+    n.setCode(NomCode.BACTERIAL);
+    assertEquals("Spirulina subsalsa subsalsa", n.canonicalNameComplete());
   }
 }
