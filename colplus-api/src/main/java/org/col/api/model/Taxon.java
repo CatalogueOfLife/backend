@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
+import org.col.api.vocab.GeoTime;
 import org.col.api.vocab.Lifezone;
 import org.col.api.vocab.TaxonomicStatus;
 
@@ -60,6 +61,10 @@ public class Taxon extends NameUsageBase {
     this.temporalRangeStart = temporalRangeStart;
   }
   
+  public void setTemporalRangeStart(GeoTime start) {
+    this.temporalRangeStart = start == null ? null : start.getName();
+  }
+
   public String getTemporalRangeEnd() {
     return temporalRangeEnd;
   }
@@ -68,6 +73,10 @@ public class Taxon extends NameUsageBase {
     this.temporalRangeEnd = temporalRangeEnd;
   }
   
+  public void setTemporalRangeEnd(GeoTime end) {
+    this.temporalRangeEnd = end == null ? null : end.getName();
+  }
+
   public Set<Lifezone> getLifezones() {
     return lifezones;
   }

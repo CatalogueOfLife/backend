@@ -9,6 +9,8 @@
         <include refid="org.col.db.mapper.NameUsageMapper.usageCols"/>,
         ${alias}.according_to_date AS ${prefix}according_to_date,
         ${alias}.extinct AS ${prefix}extinct,
+        ${alias}.temporal_range_start AS ${prefix}temporal_range_start,
+        ${alias}.temporal_range_end AS ${prefix}temporal_range_end,
         ${alias}.lifezones AS ${prefix}lifezones,
         ${alias}.webpage AS ${prefix}webpage
     </sql>
@@ -29,6 +31,8 @@
         <include refid="org.col.db.mapper.NameUsageMapper.COLS"/>,
         according_to_date,
         extinct,
+        temporal_range_start,
+        temporal_range_end,
         lifezones,
         webpage
     </sql>
@@ -37,6 +41,8 @@
         <include refid="org.col.db.mapper.NameUsageMapper.PROPS"/>,
         #{accordingToDate},
         #{extinct},
+        #{temporalRangeStart},
+        #{temporalRangeEnd},
         #{lifezones, typeHandler=org.col.db.type.LifezoneSetTypeHandler},
         #{webpage, typeHandler=org.col.db.type.UriTypeHandler}
     </sql>

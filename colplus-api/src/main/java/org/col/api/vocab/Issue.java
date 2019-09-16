@@ -192,6 +192,9 @@ public enum Issue {
   IS_EXTINCT_INVALID(NAME_USAGE, Level.WARNING,
       "acef:IsExtinct contains values that cannot be interpreted"),
   
+  GEOTIME_INVALID(NAME_USAGE, Level.WARNING,
+      "The geochronological time given cannot be interpreted"),
+
   ACCORDING_TO_DATE_INVALID(NAME_USAGE, Level.ERROR,
       "acef:LTSDate cannot be interpreted into a date"),
   

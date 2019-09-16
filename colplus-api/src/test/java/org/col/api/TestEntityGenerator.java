@@ -237,6 +237,9 @@ public class TestEntityGenerator {
     TAXON2.setName(NAME2);
     TAXON2.setStatus(TaxonomicStatus.ACCEPTED);
     TAXON2.setOrigin(Origin.SOURCE);
+    TAXON2.setExtinct(true);
+    TAXON2.setTemporalRangeStart("Aalenian");
+    TAXON2.setTemporalRangeEnd("Sinemurian");
     TAXON2.setCreatedBy(Users.DB_INIT);
     TAXON2.setModifiedBy(Users.DB_INIT);
 

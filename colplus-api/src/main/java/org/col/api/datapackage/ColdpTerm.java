@@ -67,6 +67,8 @@ public enum ColdpTerm implements Term, AlternativeNames {
   accordingToID,
   accordingToDate,
   extinct,
+  temporalRangeStart,
+  temporalRangeEnd,
   lifezone,
   //link,
   subgenus,

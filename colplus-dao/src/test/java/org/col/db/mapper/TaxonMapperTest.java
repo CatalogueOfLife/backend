@@ -25,7 +25,6 @@ import static org.junit.Assert.assertEquals;
 public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
   
   private static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
-  private static final int datasetKey = TestEntityGenerator.TAXON1.getDatasetKey();
   private static int userKey = TestEntityGenerator.USER_EDITOR.getKey();
   private Sector sector;
   

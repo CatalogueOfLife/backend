@@ -20,6 +20,8 @@ public class EditorialDecision extends Decision {
   private Name name;
   private TaxonomicStatus status;
   private Boolean extinct;
+  private String temporalRangeStart;
+  private String temporalRangeEnd;
   private Set<Lifezone> lifezones = EnumSet.noneOf(Lifezone.class);
   
   public static enum Mode {
@@ -80,6 +82,22 @@ public class EditorialDecision extends Decision {
     this.extinct = extinct;
   }
   
+  public String getTemporalRangeStart() {
+    return temporalRangeStart;
+  }
+  
+  public void setTemporalRangeStart(String temporalRangeStart) {
+    this.temporalRangeStart = temporalRangeStart;
+  }
+  
+  public String getTemporalRangeEnd() {
+    return temporalRangeEnd;
+  }
+  
+  public void setTemporalRangeEnd(String temporalRangeEnd) {
+    this.temporalRangeEnd = temporalRangeEnd;
+  }
+  
   public Set<Lifezone> getLifezones() {
     return lifezones;
   }
@@ -98,12 +116,14 @@ public class EditorialDecision extends Decision {
         Objects.equals(name, that.name) &&
         status == that.status &&
         Objects.equals(extinct, that.extinct) &&
+        Objects.equals(temporalRangeStart, that.temporalRangeStart) &&
+        Objects.equals(temporalRangeEnd, that.temporalRangeEnd) &&
         Objects.equals(lifezones, that.lifezones);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), mode, name, status, extinct, lifezones);
+    return Objects.hash(super.hashCode(), mode, name, status, extinct, temporalRangeStart, temporalRangeEnd, lifezones);
   }
   
   @Override
