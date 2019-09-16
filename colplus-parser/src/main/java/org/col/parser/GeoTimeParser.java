@@ -106,11 +106,13 @@ public class GeoTimeParser extends ParserBase<GeoTime> {
   @Override
   String normalize(String x) {
     x = super.normalize(x);
-    // stem locale specific suffix
-    // https://en.wikipedia.org/wiki/List_of_geochronologic_names#cite_note-1
-    Matcher m = STEMMING.matcher(x);
-    if (m.find()) {
-      return m.replaceFirst("");
+    if (x != null) {
+      // stem locale specific suffix
+      // https://en.wikipedia.org/wiki/List_of_geochronologic_names#cite_note-1
+      Matcher m = STEMMING.matcher(x);
+      if (m.find()) {
+        return m.replaceFirst("");
+      }
     }
     return x;
   }
