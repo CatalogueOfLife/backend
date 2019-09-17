@@ -17,7 +17,8 @@ import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.col.api.search.NameSearchParameter.*;
+import static org.col.api.search.NameSearchParameter.DATASET_KEY;
+import static org.col.api.search.NameSearchParameter.USAGE_ID;
 
 public class NameUsageSearchService extends NameUsageService {
 
@@ -66,7 +67,7 @@ public class NameUsageSearchService extends NameUsageService {
         .where(new BoolQuery()
             .filter(new TermQuery("usageId", request.getFilterValue(USAGE_ID)))
             .filter(new TermQuery("datasetKey", request.getFilterValue(DATASET_KEY))));
-    return search(index,esRequest,new Page());
+    return search(index, esRequest, new Page());
   }
 
   @VisibleForTesting

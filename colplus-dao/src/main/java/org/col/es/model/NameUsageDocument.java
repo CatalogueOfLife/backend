@@ -337,4 +337,5 @@ public class NameUsageDocument {
         && type == other.type && Objects.equals(usageId, other.usageId) && Objects.equals(vernacularNames, other.vernacularNames);
   }
 
+
 }
