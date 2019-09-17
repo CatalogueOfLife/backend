@@ -6,7 +6,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.collect.Maps;
+import org.col.api.util.JsonLdReader;
 import org.col.api.vocab.GeoTime;
+import org.col.api.vocab.GeoTimeFactory;
 import org.gbif.utils.file.csv.CSVReader;
 import org.gbif.utils.file.csv.CSVReaderFactory;
 import org.slf4j.Logger;
@@ -80,8 +82,30 @@ public class GeoTimeParser extends ParserBase<GeoTime> {
       // TODO: translate lower/early upper/late
     });
 
-    // Id	Part2B	Part2T	Part1	Scope	Language_Type	Ref_Name	Comment
-    //addMapping("iso-639-3_20190408.tab", 0,  3,6);
+    // add alternatives from main file
+    GeoTimeFactory.readJsonLD().forEach(item -> {
+      final String acceptedName;
+      if (item.isReplacedBy == null) {
+        acceptedName = GeoTimeFactory.removePrefix(item.id);
+      } else {
+        acceptedName = GeoTimeFactory.removePrefix(item.isReplacedBy);
+      }
+      final GeoTime accepted = GeoTime.byName(acceptedName);
+      if (accepted == null) {
+        LOG.warn("Unknown accepted geotime {}", acceptedName);
+      }
+  
+      if (item.prefLabel != null) {
+        for (JsonLdReader.Label label : item.prefLabel) {
+          add(label.value, accepted, false);
+        }
+      }
+      if (item.altLabel != null) {
+        for (JsonLdReader.Label label : item.altLabel) {
+          add(label.value, accepted, false);
+        }
+      }
+    });
   }
   
   /**

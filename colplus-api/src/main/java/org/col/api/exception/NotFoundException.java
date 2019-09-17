@@ -1,9 +1,9 @@
 package org.col.api.exception;
 
+import java.util.Map;
+
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
-
-import java.util.Map;
 
 public class NotFoundException extends RuntimeException {
   
@@ -12,9 +12,13 @@ public class NotFoundException extends RuntimeException {
       .useForNull("null");
   
   private static String createMessage(Class<?> entity, Map<String, Object> params) {
-    return "No such " + entity.getSimpleName() + ": " + PARAM_JOINER.join(params);
+    return createMessage(entity, PARAM_JOINER.join(params));
   }
   
+  private static String createMessage(Class<?> entity, String param) {
+    return "No such " + entity.getSimpleName() + ": " + param;
+  }
+
   public NotFoundException(String message) {
     super(message);
   }
@@ -31,4 +35,7 @@ public class NotFoundException extends RuntimeException {
     super(createMessage(entity, params));
   }
   
+  public NotFoundException(Class<?> entity, String name) {
+    super(createMessage(entity, name));
+  }
 }

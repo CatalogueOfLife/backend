@@ -28,6 +28,7 @@ public class JsonLdReader {
     public Label description;
     public Label definition;
     public List<Label> prefLabel;
+    public List<Label> altLabel;
     public String inScheme;
     public String broader;
     public String isReplacedBy;

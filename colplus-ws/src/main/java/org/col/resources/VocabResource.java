@@ -136,6 +136,23 @@ public class VocabResource {
   public GeoTime geotime(@PathParam("name") String name) {
     return GeoTime.byName(name);
   }
+  
+  @GET
+  @Path("geotime/{name}/children")
+  public List<GeoTime> geotimeChildren(@PathParam("name") String name) {
+    GeoTime time = GeoTime.byName(name);
+    if (time == null) {
+      throw new org.col.api.exception.NotFoundException(GeoTime.class, name);
+    }
+    List<GeoTime> children = new ArrayList<>();
+    for (GeoTime gt : GeoTime.TIMES.values()) {
+      if (gt.getParent().equals(time)) {
+        children.add(gt);
+      }
+    }
+    Collections.sort(children);
+    return children;
+  }
 
   @GET
   @Path("{name}")

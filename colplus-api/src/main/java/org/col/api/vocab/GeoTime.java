@@ -1,19 +1,16 @@
 package org.col.api.vocab;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-import java.util.regex.Pattern;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import org.col.api.util.JsonLdReader;
-import org.col.common.io.Resources;
+import org.col.api.jackson.GeoTimeSerde;
 import org.col.common.text.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A geochronological time span.
@@ -31,98 +28,14 @@ import org.slf4j.LoggerFactory;
  */
 public class GeoTime implements Comparable<GeoTime> {
   
-  private static final Logger LOG = LoggerFactory.getLogger(GeoTime.class);
   private static final Comparator<GeoTime> DATE_ORDER = Comparator.comparing(GeoTime::getStart, Comparator.nullsLast(Comparator.naturalOrder()));
   private static final Comparator<GeoTime> NATURAL_ORDER = Comparator.comparing(GeoTime::getUnit).thenComparing(DATE_ORDER);
-  public static String ISC_FILE = "vocab/geotime/GeoSciML-isc2017.json";
-  private static Pattern BOUNDS = Pattern.compile("(younger|older) bound -[\\d.]+ Ma");
-  private static Pattern PREFIX = Pattern.compile("^[a-z]{1,4}:");
   
-  public static final Map<String, GeoTime> TIMES = ImmutableMap.copyOf(load());
+  public static final Map<String, GeoTime> TIMES = ImmutableMap.copyOf(GeoTimeFactory.readFile());
   
-  private static Map<String, GeoTime> load() {
-    try {
-      InputStream stream = Resources.stream(ISC_FILE);
-      JsonLdReader.JsonLD json = JsonLdReader.read(stream);
-      Map<String, String> hasParent = new HashMap<>();
-      List<GeoTime> times = new ArrayList<>();
-      for (JsonLdReader.LDItem item : json.graph) {
-        if (!item.type.contains("gts:GeochronologicEra")
-            || item.isReplacedBy != null
-        ) {
-          //System.out.println(item.type);
-          //if (item.type.contains("time:Duration") || item.type.contains("time:TimePosition")) {
-          //  System.out.println(item);
-          //}
-          //if (item.type.contains("gts:GeochronologicBoundary")) {
-          //  System.out.println(item);
-          //}
-
-          // skip all other entry type
-          continue;
-        }
-        final String name = findEnLabel(item.prefLabel);
-        if (item.broader != null) {
-          hasParent.put(name, removePrefix(item.broader));
-        }
-        GeoTime gt = new GeoTime(
-            name,
-            findUnit(item.type),
-            removePrefix(item.inScheme),
-            null,
-            null,
-            null
-        );
-        times.add(gt);
-      }
-  
-      Map<String, GeoTime> map = new HashMap<>();
-      // sorts by unit, then time
-      Collections.sort(times);
-      for (GeoTime src : times) {
-        GeoTime parent = null;
-        if (hasParent.containsKey(src.getName())) {
-          parent = map.get(norm(hasParent.get(src.getName())));
-        }
-        map.put(norm(src.getName()), new GeoTime(src, parent));
-      }
-      return map;
-      
-    } catch (IOException e) {
-      LOG.error("Failed to read geotime JsonLD", e);
-      throw new RuntimeException(e);
-    }
-  }
-  
-  private static String removePrefix(String value) {
-    return PREFIX.matcher(value).replaceFirst("");
-  }
-  
-  private static GeoUnit findUnit(List<String> types) {
-    for (String t : types) {
-      t = removePrefix(t).toUpperCase().replaceAll("-", "");
-      try {
-        return GeoUnit.valueOf(t);
-      } catch (IllegalArgumentException e) {
-        // ignore, many other types included in this list
-      }
-    }
-    LOG.debug("No geotime unit found in types {}", types);
-    return null;
-  }
-  
-  private static String findEnLabel(List<JsonLdReader.Label> labels) {
-    if (labels != null) {
-      for (JsonLdReader.Label l : labels) {
-        if (l.language.equalsIgnoreCase("en")) {
-          return l.value;
-        }
-      }
-    }
-    LOG.debug("No english label found for labels {}", labels);
-    return null;
-  }
-
+  /**
+   * @return the matching geotime or null
+   */
   public static GeoTime byName(String name) {
     if (name == null) return null;
     return TIMES.getOrDefault(norm(name), null);
@@ -168,7 +81,7 @@ public class GeoTime implements Comparable<GeoTime> {
   @JsonIgnore
   private final GeoTime parent;
   
-  private GeoTime(GeoTime time, GeoTime parent) {
+  GeoTime(GeoTime time, GeoTime parent) {
     this.name = time.name;
     this.unit = time.unit;
     this.source = time.source;
@@ -178,7 +91,7 @@ public class GeoTime implements Comparable<GeoTime> {
     this.parent = parent;
   }
   
-  private GeoTime(String name, GeoUnit unit, String source, Double start, Double end, String colour) {
+  GeoTime(String name, GeoUnit unit, String source, Double start, Double end, String colour) {
     this.name = Preconditions.checkNotNull(name, "missing name for geotime");
     this.unit = Preconditions.checkNotNull(unit, "missing unit for "+name);
     this.source = source;
@@ -212,6 +125,7 @@ public class GeoTime implements Comparable<GeoTime> {
     return colour;
   }
   
+  @JsonSerialize(using = GeoTimeSerde.Serializer.class)
   public GeoTime getParent() {
     return parent;
   }
@@ -244,4 +158,5 @@ public class GeoTime implements Comparable<GeoTime> {
   public String toString() {
     return name + " " + unit;
   }
+
 }
