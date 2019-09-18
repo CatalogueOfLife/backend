@@ -41,7 +41,7 @@ public class GeoTimeFactory {
     List<GeoTime> times = new ArrayList<>();
 
     readJsonLD().forEach(item -> {
-        final String name = removePrefix(item.id);
+        final String name = normName(item.id);
         //final String name = findEnLabel(item.prefLabel);
         if (item.broader != null) {
           hasParent.put(name, removePrefix(item.broader));
@@ -91,6 +91,10 @@ public class GeoTimeFactory {
   
   public static String removePrefix(String value) {
     return value == null ? null : PREFIX.matcher(value).replaceFirst("");
+  }
+  
+  private static String normName(String name) {
+    return removePrefix(name);
   }
   
   private static GeoUnit findUnit(List<String> types) {

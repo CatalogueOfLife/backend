@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
  */
 public class GeoTimeParser extends ParserBase<GeoTime> {
   private static final Logger LOG = LoggerFactory.getLogger(GeoTimeParser.class);
+  private static final Pattern SLASH = Pattern.compile("^(.+)/(.+)$");
   public static String INSPIRE_FILE = "INSPIRE-GeochronologicEraValue.en.csv";
   public static String GERMAN_FILE = "GERMAN-export_20190913_120040.csv";
   public static String PBDB_FILE = "pbdb_data.csv";
@@ -114,6 +115,19 @@ public class GeoTimeParser extends ParserBase<GeoTime> {
    * Blank strings and null values will be ignored!
    */
   public void add(String key, GeoTime time, boolean reportDuplicate) {
+    // if we have a slash we actually have further alternatives to add
+    Matcher m = SLASH.matcher(key);
+    if (m.find()) {
+      // if second part contains no space take it as it is. Otherwise prepend the first bits
+      if (m.group(2).contains(" ")) {
+        String[] parts = m.group(2).split(" ", 2);
+        add(m.group(1)+" "+parts[1], time, reportDuplicate);
+        add(m.group(2), time, reportDuplicate);
+      } else {
+        add(m.group(1), time, reportDuplicate);
+        add(m.group(2), time, reportDuplicate);
+      }
+    }
     key = normalize(key);
     // keep the first mapping in case of clashes
     if (key != null){
@@ -131,6 +145,7 @@ public class GeoTimeParser extends ParserBase<GeoTime> {
   String normalize(String x) {
     x = super.normalize(x);
     if (x != null) {
+      x = x.replaceAll(" ", "");
       // stem locale specific suffix
       // https://en.wikipedia.org/wiki/List_of_geochronologic_names#cite_note-1
       Matcher m = STEMMING.matcher(x);
