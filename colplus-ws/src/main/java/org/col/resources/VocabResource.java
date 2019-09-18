@@ -146,7 +146,7 @@ public class VocabResource {
     }
     List<GeoTime> children = new ArrayList<>();
     for (GeoTime gt : GeoTime.TIMES.values()) {
-      if (gt.getParent().equals(time)) {
+      if (gt.getParent() != null && gt.getParent().equals(time)) {
         children.add(gt);
       }
     }
