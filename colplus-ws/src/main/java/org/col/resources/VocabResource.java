@@ -124,14 +124,14 @@ public class VocabResource {
   
   @GET
   @Path("geotime")
-  public Collection<GeoTime> geotimes(@QueryParam("scale") GeoTimeType scale) {
-    if (scale == null) {
+  public Collection<GeoTime> geotimes(@QueryParam("type") GeoTimeType type) {
+    if (type == null) {
       return GeoTime.TIMES.values();
     }
     // filter by scale
     List<GeoTime> times = new ArrayList<>();
     for (GeoTime gt : GeoTime.TIMES.values()) {
-      if (scale.equals(gt.getType())) {
+      if (type.equals(gt.getType())) {
         times.add(gt);
       }
     }
