@@ -113,7 +113,6 @@ public class AcefInterpreter extends InterpreterBase {
       t.setOrigin(Origin.SOURCE);
       t.setAccordingTo(v.get(AcefTerm.LTSSpecialist));
       t.setAccordingToDate(date(v, Issue.ACCORDING_TO_DATE_INVALID, AcefTerm.LTSDate));
-      t.setWebpage(uri(v, Issue.URL_INVALID, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));
       t.setExtinct(bool(v, Issue.IS_EXTINCT_INVALID, AcefTerm.IsExtinct));
       t.setRemarks(v.get(AcefTerm.AdditionalData));
   
@@ -121,6 +120,7 @@ public class AcefInterpreter extends InterpreterBase {
       setLifezones(t, v, AcefTerm.LifeZone);
     }
     // for both synonyms and taxa
+    u.usage.setWebpage(uri(v, Issue.URL_INVALID, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));
     u.usage.addAccordingTo(nat.get().getAccordingTo());
   
     u.setId(v.get(idTerm));

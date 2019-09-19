@@ -1,6 +1,5 @@
 package org.col.api.model;
 
-import java.net.URI;
 import java.time.LocalDate;
 import java.util.EnumSet;
 import java.util.Objects;
@@ -22,8 +21,7 @@ public class Taxon extends NameUsageBase {
   private String temporalRangeStart;
   private String temporalRangeEnd;
   private Set<Lifezone> lifezones = EnumSet.noneOf(Lifezone.class);
-  private URI webpage;
-
+  
   @Override
   public void setStatus(TaxonomicStatus status) {
     if (Preconditions.checkNotNull(status).isSynonym()) {
@@ -85,14 +83,6 @@ public class Taxon extends NameUsageBase {
     this.lifezones = lifezones;
   }
   
-  public URI getWebpage() {
-    return webpage;
-  }
-  
-  public void setWebpage(URI webpage) {
-    this.webpage = webpage;
-  }
-  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -103,12 +93,11 @@ public class Taxon extends NameUsageBase {
         Objects.equals(extinct, taxon.extinct) &&
         Objects.equals(temporalRangeStart, taxon.temporalRangeStart) &&
         Objects.equals(temporalRangeEnd, taxon.temporalRangeEnd) &&
-        Objects.equals(lifezones, taxon.lifezones) &&
-        Objects.equals(webpage, taxon.webpage);
+        Objects.equals(lifezones, taxon.lifezones);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), accordingToDate, extinct, temporalRangeStart, temporalRangeEnd, lifezones, webpage);
+    return Objects.hash(super.hashCode(), accordingToDate, extinct, temporalRangeStart, temporalRangeEnd, lifezones);
   }
 }
