@@ -3,7 +3,7 @@ package org.col.api.vocab;
 /**
  * The rank of a geochronological time span
  */
-public enum GeoUnit {
+public enum GeoTimeScale {
   
   SUPEREON,
   

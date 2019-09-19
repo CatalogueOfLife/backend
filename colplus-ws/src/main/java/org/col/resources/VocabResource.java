@@ -21,10 +21,7 @@ import org.col.api.model.EditorialDecision;
 import org.col.api.model.Sector;
 import org.col.api.model.SectorImport;
 import org.col.api.search.NameSearchParameter;
-import org.col.api.vocab.AreaStandard;
-import org.col.api.vocab.ColDwcTerm;
-import org.col.api.vocab.GeoTime;
-import org.col.api.vocab.Language;
+import org.col.api.vocab.*;
 import org.col.img.ImgConfig;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
@@ -127,8 +124,19 @@ public class VocabResource {
   
   @GET
   @Path("geotime")
-  public Collection<GeoTime> geotimes() {
-    return GeoTime.TIMES.values();
+  public Collection<GeoTime> geotimes(@QueryParam("scale") GeoTimeScale scale) {
+    if (scale == null) {
+      return GeoTime.TIMES.values();
+    }
+    // filter by scale
+    List<GeoTime> times = new ArrayList<>();
+    for (GeoTime gt : GeoTime.TIMES.values()) {
+      if (scale.equals(gt.getScale())) {
+        times.add(gt);
+      }
+    }
+    Collections.sort(times);
+    return times;
   }
   
   @GET

@@ -13,7 +13,7 @@ import org.col.common.text.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * A geochronological time span.
+ * A geochronological time span with a given scale.
  * Temporal position expressed numerically scaled in millions of years increasing backwards relative to 1950.
  * Positions in geologic time are conventionally denoted in millions of years, measured backwards from the present,
  * which is fixed to 1950 when the precision requires it.
@@ -24,12 +24,12 @@ import org.jetbrains.annotations.NotNull;
  * http://www.stratigraphy.org/index.php/ics-chart-timescale
  * https://en.wikipedia.org/wiki/List_of_geochronologic_names
  *
- * Natural order of GeoTime is by its unit with (super) eons first, then chronologically by the starting time.
+ * Natural order of GeoTime is by its scale with (super) eons first, then chronologically by the starting time.
  */
 public class GeoTime implements Comparable<GeoTime> {
   
   private static final Comparator<GeoTime> DATE_ORDER = Comparator.comparing(GeoTime::getStart, Comparator.nullsLast(Comparator.naturalOrder()));
-  private static final Comparator<GeoTime> NATURAL_ORDER = Comparator.comparing(GeoTime::getUnit).thenComparing(DATE_ORDER);
+  private static final Comparator<GeoTime> NATURAL_ORDER = Comparator.comparing(GeoTime::getScale).thenComparing(DATE_ORDER);
   
   public static final Map<String, GeoTime> TIMES = ImmutableMap.copyOf(GeoTimeFactory.readFile());
   
@@ -51,9 +51,9 @@ public class GeoTime implements Comparable<GeoTime> {
   private final String name;
   
   /**
-   * Rank/unit of the timespan
+   * Rank/scale of the timespan
    */
-  private final GeoUnit unit;
+  private final GeoTimeScale scale;
   
   /**
    * The source the definition is coming from
@@ -83,7 +83,7 @@ public class GeoTime implements Comparable<GeoTime> {
   
   GeoTime(GeoTime time, GeoTime parent) {
     this.name = time.name;
-    this.unit = time.unit;
+    this.scale = time.scale;
     this.source = time.source;
     this.colour = time.colour;
     this.start = time.start;
@@ -91,9 +91,9 @@ public class GeoTime implements Comparable<GeoTime> {
     this.parent = parent;
   }
   
-  GeoTime(String name, GeoUnit unit, String source, Double start, Double end, String colour) {
+  GeoTime(String name, GeoTimeScale scale, String source, Double start, Double end, String colour) {
     this.name = Preconditions.checkNotNull(name, "missing name for geotime");
-    this.unit = Preconditions.checkNotNull(unit, "missing unit for "+name);
+    this.scale = Preconditions.checkNotNull(scale, "missing scale for "+name);
     this.source = source;
     this.colour = colour;
     this.start = start;
@@ -105,8 +105,8 @@ public class GeoTime implements Comparable<GeoTime> {
     return name;
   }
   
-  public GeoUnit getUnit() {
-    return unit;
+  public GeoTimeScale getScale() {
+    return scale;
   }
   
   public String getSource() {
@@ -136,7 +136,7 @@ public class GeoTime implements Comparable<GeoTime> {
     if (o == null || getClass() != o.getClass()) return false;
     GeoTime geoTime = (GeoTime) o;
     return Objects.equals(name, geoTime.name) &&
-        unit == geoTime.unit &&
+        scale == geoTime.scale &&
         Objects.equals(source, geoTime.source) &&
         Objects.equals(start, geoTime.start) &&
         Objects.equals(end, geoTime.end) &&
@@ -146,7 +146,7 @@ public class GeoTime implements Comparable<GeoTime> {
   
   @Override
   public int hashCode() {
-    return Objects.hash(name, unit, source, start, end, colour, parent);
+    return Objects.hash(name, scale, source, start, end, colour, parent);
   }
   
   @Override
@@ -156,7 +156,7 @@ public class GeoTime implements Comparable<GeoTime> {
   
   @Override
   public String toString() {
-    return name + " " + unit;
+    return name + " " + scale;
   }
 
 }

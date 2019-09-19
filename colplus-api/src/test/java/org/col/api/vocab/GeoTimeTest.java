@@ -11,7 +11,7 @@ public class GeoTimeTest {
     assertTrue(GeoTime.TIMES.size() > 170);
     for (GeoTime t : GeoTime.TIMES.values()) {
       assertNotNull(t.getName());
-      assertNotNull(t.getUnit());
+      assertNotNull(t.getScale());
     }
     // check first and last code exists
     assertNotNull(GeoTime.byName("Aalenian"));
