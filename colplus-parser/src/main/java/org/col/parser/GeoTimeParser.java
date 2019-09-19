@@ -79,7 +79,7 @@ public class GeoTimeParser extends ParserBase<GeoTime> {
       // map official names
       add(t.getName(), t, false);
       // map official name incl unit
-      add(t.getName() + " " + t.getScale(), t, false);
+      add(t.getName() + " " + t.getType(), t, false);
       // TODO: translate lower/early upper/late
     });
 

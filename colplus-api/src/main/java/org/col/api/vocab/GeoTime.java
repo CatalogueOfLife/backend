@@ -29,7 +29,7 @@ import org.jetbrains.annotations.NotNull;
 public class GeoTime implements Comparable<GeoTime> {
   
   private static final Comparator<GeoTime> DATE_ORDER = Comparator.comparing(GeoTime::getStart, Comparator.nullsLast(Comparator.naturalOrder()));
-  private static final Comparator<GeoTime> NATURAL_ORDER = Comparator.comparing(GeoTime::getScale).thenComparing(DATE_ORDER);
+  private static final Comparator<GeoTime> NATURAL_ORDER = Comparator.comparing(GeoTime::getType).thenComparing(DATE_ORDER);
   
   public static final Map<String, GeoTime> TIMES = ImmutableMap.copyOf(GeoTimeFactory.readFile());
   
@@ -51,9 +51,9 @@ public class GeoTime implements Comparable<GeoTime> {
   private final String name;
   
   /**
-   * Rank/scale of the timespan
+   * Rank/scale/unit of the timespan
    */
-  private final GeoTimeScale scale;
+  private final GeoTimeType type;
   
   /**
    * The source the definition is coming from
@@ -83,7 +83,7 @@ public class GeoTime implements Comparable<GeoTime> {
   
   GeoTime(GeoTime time, GeoTime parent) {
     this.name = time.name;
-    this.scale = time.scale;
+    this.type = time.type;
     this.source = time.source;
     this.colour = time.colour;
     this.start = time.start;
@@ -91,9 +91,9 @@ public class GeoTime implements Comparable<GeoTime> {
     this.parent = parent;
   }
   
-  GeoTime(String name, GeoTimeScale scale, String source, Double start, Double end, String colour) {
+  GeoTime(String name, GeoTimeType type, String source, Double start, Double end, String colour) {
     this.name = Preconditions.checkNotNull(name, "missing name for geotime");
-    this.scale = Preconditions.checkNotNull(scale, "missing scale for "+name);
+    this.type = Preconditions.checkNotNull(type, "missing type for " + name);
     this.source = source;
     this.colour = colour;
     this.start = start;
@@ -105,8 +105,8 @@ public class GeoTime implements Comparable<GeoTime> {
     return name;
   }
   
-  public GeoTimeScale getScale() {
-    return scale;
+  public GeoTimeType getType() {
+    return type;
   }
   
   public String getSource() {
@@ -136,7 +136,7 @@ public class GeoTime implements Comparable<GeoTime> {
     if (o == null || getClass() != o.getClass()) return false;
     GeoTime geoTime = (GeoTime) o;
     return Objects.equals(name, geoTime.name) &&
-        scale == geoTime.scale &&
+        type == geoTime.type &&
         Objects.equals(source, geoTime.source) &&
         Objects.equals(start, geoTime.start) &&
         Objects.equals(end, geoTime.end) &&
@@ -146,7 +146,7 @@ public class GeoTime implements Comparable<GeoTime> {
   
   @Override
   public int hashCode() {
-    return Objects.hash(name, scale, source, start, end, colour, parent);
+    return Objects.hash(name, type, source, start, end, colour, parent);
   }
   
   @Override
@@ -156,7 +156,7 @@ public class GeoTime implements Comparable<GeoTime> {
   
   @Override
   public String toString() {
-    return name + " " + scale;
+    return name + " " + type;
   }
 
 }

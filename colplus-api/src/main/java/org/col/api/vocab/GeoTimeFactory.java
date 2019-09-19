@@ -97,11 +97,11 @@ public class GeoTimeFactory {
     return removePrefix(name);
   }
   
-  private static GeoTimeScale findUnit(List<String> types) {
+  private static GeoTimeType findUnit(List<String> types) {
     for (String t : types) {
       t = removePrefix(t).toUpperCase().replaceAll("-", "");
       try {
-        return GeoTimeScale.valueOf(t);
+        return GeoTimeType.valueOf(t);
       } catch (IllegalArgumentException e) {
         // ignore, many other types included in this list
       }
