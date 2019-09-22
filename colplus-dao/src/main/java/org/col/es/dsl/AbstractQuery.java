@@ -8,7 +8,7 @@ package org.col.es.dsl;
 public class AbstractQuery implements Query {
 
   private String name;
-  private Float boost;
+  private Double boost;
 
   @Override
   @SuppressWarnings("unchecked")
@@ -19,7 +19,7 @@ public class AbstractQuery implements Query {
 
   @Override
   @SuppressWarnings("unchecked")
-  public <Q extends Query> Q withBoost(Float boost) {
+  public <Q extends Query> Q withBoost(Double boost) {
     this.boost = boost;
     return (Q) this;
   }

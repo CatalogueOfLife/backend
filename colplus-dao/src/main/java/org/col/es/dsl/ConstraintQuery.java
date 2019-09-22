@@ -20,7 +20,7 @@ public abstract class ConstraintQuery<T extends Constraint> implements Query {
 
   @Override
   @SuppressWarnings("unchecked")
-  public <Q extends Query> Q withBoost(Float boost) {
+  public <Q extends Query> Q withBoost(Double boost) {
     getConstraint().boost(boost);
     return (Q) this;
   }

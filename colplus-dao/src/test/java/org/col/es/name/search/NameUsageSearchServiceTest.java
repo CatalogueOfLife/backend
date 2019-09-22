@@ -21,13 +21,11 @@ import org.col.api.search.NameSearchResponse;
 import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.TaxonomicStatus;
-import org.col.es.EsModule;
 import org.col.es.EsReadTestBase;
 import org.col.es.model.NameUsageDocument;
 import org.col.es.name.NameUsageWrapperConverter;
 import org.elasticsearch.client.RestClient;
 import org.gbif.nameparser.api.Rank;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -40,6 +38,7 @@ import static org.junit.Assert.assertEquals;
 
 public class NameUsageSearchServiceTest extends EsReadTestBase {
 
+  @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchServiceTest.class);
 
   private static RestClient client;
@@ -551,7 +550,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     nsr.addFilter(NameSearchParameter.FIELD, "uninomial");
     nsr.addFilter(NameSearchParameter.RANK, Rank.ORDER, Rank.FAMILY);
     nsr.addFilter(NameSearchParameter.STATUS, TaxonomicStatus.ACCEPTED);
-    List<NameUsageWrapper> usages = testMultipleFiltersAndQ__createTestData();
+    List<NameUsageWrapper> usages = testMultipleFiltersAndQ__data();
     // System.out.println(EsModule.DEBUG_WRITER.writeValueAsString(usages));
     for (NameUsageWrapper nuw : usages) {
       insert(client, indexName, converter.toDocument(nuw));
@@ -559,13 +558,13 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     // Watch out: after this, the name usages are changed
     refreshIndex(client, indexName);
     // So create again:
-    usages = testMultipleFiltersAndQ__createTestData();
+    usages = testMultipleFiltersAndQ__data();
     List<NameUsageWrapper> expected = usages.subList(0, 2);
     ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
     assertEquals(expected, result.getResult());
   }
 
-  private static List<NameUsageWrapper> testMultipleFiltersAndQ__createTestData() {
+  private static List<NameUsageWrapper> testMultipleFiltersAndQ__data() {
     // Match
     Name n = new Name();
     n.setScientificName("laridae");
@@ -735,6 +734,17 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     assertEquals(testWithSmthii_data(), result.getResult());
   }
 
+  @Test
+  public void testWithSmthii__2() {
+    NameSearchRequest nsr = new NameSearchRequest();
+    nsr.setHighlight(false);
+    nsr.setQ("Smithii");
+    index(testWithSmthii_data());
+    // Expect all to come back
+    NameSearchResponse result = search(nsr);
+    assertEquals(testWithSmthii_data(), result.getResult());
+  }
+  
   private static List<NameUsageWrapper> testWithSmthii_data() {
     Name n = new Name();
     n.setScientificName("Smithii");
@@ -759,47 +769,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     return Arrays.asList(nuw1, nuw2, nuw3, nuw4);
   }
 
-  @Test
-  public void testWithSmthii__2() throws IOException {
-    NameUsageWrapperConverter converter = new NameUsageWrapperConverter();
 
-    NameSearchRequest nsr = new NameSearchRequest();
-    nsr.setHighlight(false);
-    nsr.setQ("Smithii");
-
-    Name n = new Name();
-    n.setScientificName("Smithii");
-    BareName bn = new BareName(n);
-    NameUsageWrapper nuw1 = new NameUsageWrapper(bn);
-    insert(client, indexName, converter.toDocument(nuw1));
-
-    n = new Name();
-    n.setScientificName("Smithi");
-    bn = new BareName(n);
-    NameUsageWrapper nuw2 = new NameUsageWrapper(bn);
-    insert(client, indexName, converter.toDocument(nuw2));
-
-    n = new Name();
-    n.setScientificName("SmithiiFooBar");
-    bn = new BareName(n);
-    NameUsageWrapper nuw3 = new NameUsageWrapper(bn);
-    insert(client, indexName, converter.toDocument(nuw3));
-
-    n = new Name();
-    n.setScientificName("SmithiFooBar");
-    bn = new BareName(n);
-    NameUsageWrapper nuw4 = new NameUsageWrapper(bn);
-    insert(client, indexName, converter.toDocument(nuw4));
-
-    refreshIndex(client, indexName);
-
-    List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw3, nuw4);
-
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
-
-    assertEquals(expected, result.getResult());
-
-  }
 
   private static List<VernacularName> create(List<String> names) {
     return names.stream().map(n -> {

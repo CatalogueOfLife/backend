@@ -22,6 +22,6 @@ public interface Query {
    * @param boost
    * @return
    */
-  public <Q extends Query> Q withBoost(Float boost);
+  public <Q extends Query> Q withBoost(Double boost);
 
 }

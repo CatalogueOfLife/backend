@@ -16,13 +16,13 @@ class Constraint {
 
   @JsonProperty("_name")
   private String name;
-  private Float boost;
+  private Double boost;
 
   void name(String name) {
     this.name = name;
   }
 
-  void boost(Float boost) {
+  void boost(Double boost) {
     this.boost = boost;
   }
 
