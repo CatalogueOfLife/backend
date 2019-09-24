@@ -123,8 +123,9 @@ public class QSearchTests extends EsReadTestBase {
     request.setQ("rosy");
     request.setContent(EnumSet.of(SearchContent.VERNACULAR_NAME));
 
-    // Name and Usage required or we'll get NPEs while indexing, but can be bare-bones
+    // Name, Usage & scientific name to prevent NPEs while indexing
     Name name = new Name();
+    name.setScientificName("Foo");
     Taxon t = new Taxon();
     t.setName(name);
     NameUsageWrapper w0 = new NameUsageWrapper(t);
@@ -147,8 +148,9 @@ public class QSearchTests extends EsReadTestBase {
     request.setQ("EAT");
     request.setContent(EnumSet.of(SearchContent.VERNACULAR_NAME));
 
-    // Name and Usage required or we'll get NPEs while indexing, but can be bare-bones
+    // Name, Usage & scientific name to prevent NPEs while indexing
     Name name = new Name();
+    name.setScientificName("Foo");
     Taxon t = new Taxon();
     t.setName(name);
     NameUsageWrapper w0 = new NameUsageWrapper(t);
@@ -171,8 +173,9 @@ public class QSearchTests extends EsReadTestBase {
     request.setQ("Rosy Bee Eat");
     request.setContent(EnumSet.of(SearchContent.VERNACULAR_NAME));
 
-    // Name and Usage required or we'll get NPEs while indexing, but can be bare-bones
+    // Name, Usage & scientific name to prevent NPEs while indexing
     Name name = new Name();
+    name.setScientificName("Foo");
     Taxon t = new Taxon();
     t.setName(name);
     NameUsageWrapper w0 = new NameUsageWrapper(t);
@@ -195,8 +198,9 @@ public class QSearchTests extends EsReadTestBase {
     request.setQ("Eat Rosy Bee");
     request.setContent(EnumSet.of(SearchContent.VERNACULAR_NAME));
 
-    // Name and Usage required or we'll get NPEs while indexing, but can be bare-bones
+    // Name, Usage & scientific name to prevent NPEs while indexing
     Name name = new Name();
+    name.setScientificName("Foo");
     Taxon t = new Taxon();
     t.setName(name);
     NameUsageWrapper w0 = new NameUsageWrapper(t);
@@ -219,8 +223,9 @@ public class QSearchTests extends EsReadTestBase {
     request.setQ("Eat Rosy Bee");
     request.setContent(EnumSet.of(SearchContent.VERNACULAR_NAME));
 
-    // Name and Usage required or we'll get NPEs while indexing, but can be bare-bones
+    // Name, Usage & scientific name to prevent NPEs while indexing
     Name name = new Name();
+    name.setScientificName("Foo");
     Taxon t = new Taxon();
     t.setName(name);
     NameUsageWrapper w0 = new NameUsageWrapper(t);

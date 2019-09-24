@@ -1,12 +1,13 @@
 package org.col.es.model;
 
+import java.util.Objects;
+
 import org.col.api.model.Name;
 import org.col.api.search.NameSearchResponse;
 import org.col.es.mapping.Analyzers;
 import org.gbif.nameparser.api.Rank;
 
 import static org.col.es.mapping.Analyzer.AUTO_COMPLETE;
-import static org.col.es.mapping.Analyzer.KEYWORD;
 import static org.col.es.name.NameUsageWrapperConverter.normalizeStrongly;
 import static org.col.es.name.NameUsageWrapperConverter.normalizeWeakly;
 
@@ -37,7 +38,6 @@ public class NameStrings {
   private String genusLetter;
   private String specificEpithetSN;
   private String infraspecificEpithetSN;
-  private String scientificNameWN;
 
   /**
    * Creates a {@code NameStrings} object from the provided {@link Name}, presumably coming in from postgres.
@@ -45,7 +45,6 @@ public class NameStrings {
    * @param name
    */
   public NameStrings(Name name) {
-    scientificNameWN = normalizeWeakly(name.getScientificName()).toLowerCase();
     // Null-checks may be overly defensive
     if (name.getRank().higherThan(Rank.GENUS) && name.getUninomial() != null) {
       genusOrMonomialWN = normalizeWeakly(name.getUninomial()).toLowerCase();
@@ -71,7 +70,7 @@ public class NameStrings {
     this.genusLetter = genusLetter;
   }
 
-  @Analyzers({KEYWORD, AUTO_COMPLETE})
+  @Analyzers({AUTO_COMPLETE})
   public String getGenusOrMonomialWN() {
     return genusOrMonomialWN;
   }
@@ -80,7 +79,7 @@ public class NameStrings {
     this.genusOrMonomialWN = genusWN;
   }
 
-  @Analyzers({KEYWORD, AUTO_COMPLETE})
+  @Analyzers({AUTO_COMPLETE})
   public String getSpecificEpithetSN() {
     return specificEpithetSN;
   }
@@ -89,7 +88,7 @@ public class NameStrings {
     this.specificEpithetSN = specificEpithetSN;
   }
 
-  @Analyzers({KEYWORD, AUTO_COMPLETE})
+  @Analyzers({AUTO_COMPLETE})
   public String getInfraspecificEpithetSN() {
     return infraspecificEpithetSN;
   }
@@ -98,13 +97,23 @@ public class NameStrings {
     this.infraspecificEpithetSN = infraspecificEpithetSN;
   }
 
-  @Analyzers({KEYWORD, AUTO_COMPLETE})
-  public String getScientificNameWN() {
-    return scientificNameWN;
+  @Override
+  public int hashCode() {
+    return Objects.hash(genusLetter, genusOrMonomialWN, infraspecificEpithetSN, specificEpithetSN);
   }
 
-  public void setScientificNameWN(String scientificNameWN) {
-    this.scientificNameWN = scientificNameWN;
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    NameStrings other = (NameStrings) obj;
+    return Objects.equals(genusLetter, other.genusLetter) && Objects.equals(genusOrMonomialWN, other.genusOrMonomialWN)
+        && Objects.equals(infraspecificEpithetSN, other.infraspecificEpithetSN)
+        && Objects.equals(specificEpithetSN, other.specificEpithetSN);
   }
 
 }

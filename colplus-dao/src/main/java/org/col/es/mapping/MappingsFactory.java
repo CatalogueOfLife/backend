@@ -149,6 +149,12 @@ public class MappingsFactory {
 
   private static Boolean isIndexedField(AnnotatedElement fm, ESDataType esType) {
     if (esType == KEYWORD) {
+      /*
+       * String fields always have datatype KEYWORD. However, if they are not analyzed by the (no-op) KEYWORD analyzer, but
+       * they __are__ analyzed using one or more other analyzers, the field will not be indexed as-is. It will only be indexed
+       * using the other analyzers, and queries must target the "multi fields" underneath the main
+       * field to access the indexed values. 
+       */
       Analyzers annotation = fm.getAnnotation(Analyzers.class);
       if (annotation != null) {
         if (!Arrays.asList(annotation.value()).contains(Analyzer.KEYWORD)) {

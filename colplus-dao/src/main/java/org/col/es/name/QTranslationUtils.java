@@ -3,9 +3,7 @@ package org.col.es.name;
 import org.apache.commons.lang3.StringUtils;
 import org.col.es.dsl.AutoCompleteQuery;
 import org.col.es.dsl.BoolQuery;
-import org.col.es.dsl.CaseInsensitivePrefixQuery;
 import org.col.es.dsl.DisMaxQuery;
-import org.col.es.dsl.PrefixQuery;
 import org.col.es.dsl.Query;
 import org.col.es.dsl.TermQuery;
 import org.slf4j.Logger;
@@ -19,8 +17,6 @@ public class QTranslationUtils {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(QTranslationUtils.class);
 
-  private static final int MAX_NGRAM_SIZE = 10; // see es-settings.json
-
   private static final String GENUS_FIELD = "nameStrings.genusOrMonomialWN";
   private static final String SPECIES_FIELD = "nameStrings.specificEpithetSN";
   private static final String SUBSPECIES_FIELD = "nameStrings.infraspecificEpithetSN";
@@ -28,11 +24,11 @@ public class QTranslationUtils {
   private QTranslationUtils() {}
 
   public static Query getVernacularNameQuery(String q) {
-    return compareIC("vernacularNames", q);
+    return compare("vernacularNames", q);
   }
 
   public static Query getAuthorshipQuery(String q) {
-    return compareIC("authorship", q);
+    return compare("authorship", q);
   }
 
   /**
@@ -107,10 +103,6 @@ public class QTranslationUtils {
             .withBoost(1.8));
   }
 
-  private static Query getBasicSciNameQuery(String q) {
-    return compareIC("nameStrings.scientificNameWN", q.trim());
-  }
-
   private static Query getGenusOrMonomialQuery(String term) {
     if (term.length() == 1 || (term.length() == 2 && term.charAt(1) == '.')) {
       return new TermQuery("nameStrings.genusLetter", term.charAt(0));
@@ -118,24 +110,11 @@ public class QTranslationUtils {
     return compare(GENUS_FIELD, term);
   }
 
-  // Use if the field is indexed using the KEYWORD and the AUTOCOMLETE analyzers.
-  private static Query compare(String field, String value) {
-    if (value.length() > MAX_NGRAM_SIZE) {
-      /*
-       * Boost heavily because we should certainly exceed the boost gained from terms matching on the maximum ngram length.
-       * How exactly Elasticsearch calculates those scores is not clear, but the boost calculated here seems to be neither too
-       * timid nor to excessive. Not sure if we even need prefix queries, but for now we keep them.
-       */
-      return new PrefixQuery(field, value).withBoost(value.length() * 2.0);
-    }
-    return new AutoCompleteQuery(field, value);
+  private static Query getBasicSciNameQuery(String q) {
+    return compare("scientificName", q);
   }
 
-  // Use if the field is indexed using the IGNORE_CASE and the AUTOCOMLETE analyzers.
-  private static Query compareIC(String field, String value) {
-    if (value.length() > MAX_NGRAM_SIZE) {
-      return new CaseInsensitivePrefixQuery(field, value).withBoost(value.length() * 2.0);
-    }
+  private static Query compare(String field, String value) {
     return new AutoCompleteQuery(field, value);
   }
 
