@@ -5,7 +5,8 @@ import java.util.Objects;
 
 public abstract class Decision implements GlobalEntity, UserManaged {
   protected Integer key;
-  protected Integer datasetKey;
+  protected Integer datasetKey; // the catalogues datasetKey
+  protected Integer subjectDatasetKey; // the datasetKey the subject belongs to
   protected SimpleName subject;
   protected String note;
   

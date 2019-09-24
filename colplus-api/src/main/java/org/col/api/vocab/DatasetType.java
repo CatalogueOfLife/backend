@@ -4,6 +4,7 @@ package org.col.api.vocab;
  *
  */
 public enum DatasetType {
+  
   /**
    * A list of names focussing on nomenclature and not dealing with taxonomy.
    */
@@ -35,6 +36,11 @@ public enum DatasetType {
    * usually mixed with classic Linnean classifications.
    */
   OTU,
-
+  
+  /**
+   * An assembled catalogue build on sectors & decisions.
+   */
+  CATALOGUE,
+  
   OTHER;
 }

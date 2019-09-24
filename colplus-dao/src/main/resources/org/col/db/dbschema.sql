@@ -155,6 +155,9 @@ CREATE TABLE dataset (
   modified_by INTEGER NOT NULL
 );
 
+CREATE TABLE dataset_archive (LIKE dataset);
+ALTER TABLE dataset_archive DROP COLUMN doc;
+ALTER TABLE dataset_archive ADD COLUMN catalogue_key INTEGER NOT NULL REFERENCES dataset;
 
 CREATE INDEX ON dataset USING gin (f_unaccent(title) gin_trgm_ops);
 CREATE INDEX ON dataset USING gin (f_unaccent(alias) gin_trgm_ops);
@@ -214,6 +217,7 @@ CREATE TABLE dataset_import (
 CREATE TABLE sector (
   key serial PRIMARY KEY,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
+  subject_dataset_key INTEGER NOT NULL REFERENCES dataset,
   subject_id TEXT,
   subject_name TEXT,
   subject_authorship TEXT,
@@ -229,11 +233,12 @@ CREATE TABLE sector (
   mode INTEGER NOT NULL,
   code INTEGER,
   note TEXT,
+  last_data_import_attempt INTEGER,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   created_by INTEGER NOT NULL,
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified_by INTEGER NOT NULL,
-  UNIQUE (dataset_key, subject_id)
+  UNIQUE (dataset_key, subject_dataset_key, subject_id)
 );
 
 CREATE TABLE sector_import (
@@ -270,6 +275,7 @@ CREATE TABLE sector_import (
 CREATE TABLE decision (
   key serial PRIMARY KEY,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
+  subject_dataset_key INTEGER NOT NULL REFERENCES dataset,
   subject_id TEXT,
   subject_name TEXT,
   subject_authorship TEXT,
@@ -289,11 +295,12 @@ CREATE TABLE decision (
   created_by INTEGER NOT NULL,
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified_by INTEGER NOT NULL,
-  UNIQUE (dataset_key, subject_id)
+  UNIQUE (dataset_key, subject_dataset_key, subject_id)
 );
 
 CREATE TABLE estimate (
   key serial PRIMARY KEY,
+  dataset_key INTEGER NOT NULL REFERENCES dataset,
   subject_id TEXT,
   subject_name TEXT,
   subject_authorship TEXT,

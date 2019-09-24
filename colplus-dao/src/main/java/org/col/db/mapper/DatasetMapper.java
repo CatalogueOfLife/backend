@@ -9,11 +9,14 @@ import org.col.api.model.Page;
 import org.col.api.search.DatasetSearchRequest;
 
 public interface DatasetMapper extends GlobalCRUDMapper<Dataset> {
-
+  
   int count(@Param("req") DatasetSearchRequest request);
 
   List<Dataset> search(@Param("req") DatasetSearchRequest request, @Param("page") Page page);
   
+  /**
+   * @return list of all dataset keys which have not been deleted
+   */
   List<Integer> keys();
 
   /**
@@ -38,6 +41,8 @@ public interface DatasetMapper extends GlobalCRUDMapper<Dataset> {
 
   Dataset getByGBIF(@Param("key") UUID key);
   
+  Dataset getByCatalogue(@Param("key") int key, @Param("catalogueKey") int catalogueKey);
+
   /**
    * @return the last import attempt or null if never attempted
    */

@@ -72,7 +72,7 @@
         <mapdb.version>3.0.5</mapdb.version>
         <mockito.version>2.12.0</mockito.version>
         <mybatis.version>3.5.2</mybatis.version>
-        <name-parser.version>3.4.0-SNAPSHOT</name-parser.version>
+        <name-parser.version>3.4.2-SNAPSHOT</name-parser.version>
         <neo4j-algorithms.version>3.4.0.0</neo4j-algorithms.version>
         <neo4j.version>3.4.14</neo4j.version>
         <postgresql.version>42.2.5</postgresql.version>
