@@ -32,6 +32,7 @@ import org.junit.runners.Suite.SuiteClasses;
     FacetsTranslatorTest.class,
     Issue333.class,
     MappingFactoryTest.class,
+    Misc.class,
     MultiValuedMapTest.class,
     NameSearchHighlighterTest.class,
     NameUsageResponseConverterTest.class,
