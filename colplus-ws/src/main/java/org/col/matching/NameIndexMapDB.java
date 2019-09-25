@@ -48,7 +48,7 @@ public class NameIndexMapDB implements NameIndex {
   private final DB db;
   private final KryoPool pool;
   private final IdGenerator idGen;
-  private final Atomic.Long counter;
+  private final Atomic.Integer counter;
   private final Map<String, NameList> names;
   private final AuthorComparator authComp;
   private final int datasetKey;
@@ -90,7 +90,7 @@ public class NameIndexMapDB implements NameIndex {
       pool = new KryoPool.Builder(new NameIndexKryoFactory())
           .softReferences()
           .build();
-      counter = db.atomicLong("counter", 0)
+      counter = db.atomicInteger("counter", 0)
           .createOrOpen();
       names = db.hashMap("names")
           .keySerializer(Serializer.STRING_ASCII)

@@ -1,20 +1,20 @@
 package org.col.importer;
 
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.col.common.id.IdConverter;
 import org.col.common.text.StringUtils;
-import org.hashids.Hashids;
 
 public class IdGenerator {
   private static final String availChars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
   private static final char PREFERRED_PREFIX = 'x';
   
-  private final Supplier<Long> counter;
-  private final Hashids hashids = new Hashids("dvr4GgTx", 4, availChars);
+  private final Supplier<Integer> counter;
+  private final IdConverter idConverter = IdConverter.LATIN32;
   private String prefix;
   
   public IdGenerator() {
@@ -25,15 +25,15 @@ public class IdGenerator {
     this(prefix, 0);
   }
   
-  public IdGenerator(String prefix, long start) {
+  public IdGenerator(String prefix, int start) {
     this.prefix = prefix;
-    counter = new AtomicLong(start)::incrementAndGet;
+    counter = new AtomicInteger(start)::incrementAndGet;
   }
   
   /**
    * Uses a shared counter
    */
-  public IdGenerator(String prefix, Supplier<Long> start) {
+  public IdGenerator(String prefix, Supplier<Integer> start) {
     this.prefix = prefix;
     counter = start;
   }
@@ -71,9 +71,10 @@ public class IdGenerator {
     return this;
   }
   
-  public String id(long key) {
-    return prefix + hashids.encode(key);
+  public String id(int key) {
+    return prefix + idConverter.encode(key);
   }
+  
   public String next() {
     return id(counter.get());
   }

@@ -20,15 +20,23 @@ public class IdConverter {
     LOG.debug("Created new IdConverter with base {} and chars {}", radix, chars);
   }
   
+  /**
+   * @param id unsigned integer, zero to Integer.MAX_VALUE
+   */
   public String encode(int id) {
-    int strLen = (int) Math.ceil(logb(id, radix));
-    byte[] bytes = new byte[strLen];
-  
-    int idx = strLen;
-    while (id > 0) {
-      int quot = id % radix;
-      bytes[--idx] = (byte) quot;
-      id = id / radix;
+    byte[] bytes;
+    if (id==0) {
+      bytes = new byte[1];
+      bytes[0] = 0;
+    } else {
+      int strLen = (int) Math.ceil(logb(id==Integer.MAX_VALUE ? Integer.MAX_VALUE : id+1, radix));
+      bytes = new byte[strLen];
+      int idx = strLen;
+      while (id > 0) {
+        int quot = id % radix;
+        bytes[--idx] = (byte) quot;
+        id = id / radix;
+      }
     }
     return encode(bytes);
   }
