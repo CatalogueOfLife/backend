@@ -5,8 +5,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import org.col.api.RandomUtils;
+import org.col.api.TestEntityGenerator;
 import org.col.api.model.Page;
+import org.col.api.model.Taxon;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchResponse;
 import org.col.api.search.NameUsageWrapper;
@@ -17,6 +21,10 @@ import org.col.es.name.NameUsageWrapperConverter;
 import org.col.es.name.search.NameUsageSearchService;
 import org.elasticsearch.client.RestClient;
 import org.junit.ClassRule;
+
+import static java.util.stream.Collectors.toList;
+
+
 
 /**
  * Base class for tests that only read from ES. Does not provide postgres functionality and saves setup/initialization
@@ -93,6 +101,26 @@ public class EsReadTestBase {
 
   protected NameSearchResponse search(NameSearchRequest query) {
     return new NameUsageSearchService(indexName, getEsClient()).search(query, new Page(0, 1000));
+  }
+
+  /**
+   * Creates the requested number of name usages with all fields required to allow them to be indexed without NPEs and
+   * other errors. 
+   * 
+   * @param howmany
+   * @return
+   */
+  protected List<NameUsageWrapper> createNameUsages(int howmany) {
+    return IntStream.rangeClosed(1, howmany).mapToObj(this::createNameUsage).collect(toList());
+  }
+
+  protected List<NameUsageWrapper> createNameUsages(int first, int last) {
+    return IntStream.rangeClosed(first, last).mapToObj(this::createNameUsage).collect(toList());
+  }
+
+  protected NameUsageWrapper createNameUsage(int seqno) {
+    Taxon t = TestEntityGenerator.newTaxon(EsSetupRule.DATASET_KEY, "t" + seqno, RandomUtils.randomSpecies());
+    return new NameUsageWrapper(t);
   }
 
 }

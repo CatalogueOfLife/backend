@@ -58,24 +58,28 @@ public class NameUsageWrapperConverter {
   public static final boolean ZIP_PAYLOAD = true;
 
   /**
-   * Provides a weakly normalized version of the original scientific name. Whatever normalization method we choose, we
-   * must make sure it is used both at index time (here) and at query time (QTranslator). Hence this public static method.
+   * Provides a weakly normalized version of the provided string (typically a scientific name). Whatever normalization
+   * method we choose, we must make sure it is used both at index time (here) and at query time (QTranslator). Hence this
+   * public static method.
    */
-  public static String normalizeWeakly(String sn) {
-    if (sn == null) {
+  public static String normalizeWeakly(String s) {
+    if (s == null) {
       return null;
     }
-    return SciNameNormalizer.normalize(sn);
+    return SciNameNormalizer.normalize(s.toLowerCase());
   }
 
   /**
-   * Provides a strongly normalized version of the original scientific name.
+   * Provides a strongly normalized version of the provided string (typically a scientific name). For strong normalization
+   * it is even more important that this method is used both at index time and at query time, because the order in which
+   * the string is lowercased and normalized matters! Subtle bugs will arise if the order is different at index time and
+   * at query time.
    */
-  public static String normalizeStrongly(String sn) {
-    if (sn == null) {
+  public static String normalizeStrongly(String s) {
+    if (s == null) {
       return null;
     }
-    return SciNameNormalizer.normalizeAll(sn);
+    return SciNameNormalizer.normalizeAll(s.toLowerCase());
   }
 
   /**

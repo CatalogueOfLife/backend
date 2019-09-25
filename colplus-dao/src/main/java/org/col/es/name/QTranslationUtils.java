@@ -1,9 +1,12 @@
 package org.col.es.name;
 
-import org.apache.commons.lang3.StringUtils;
+import java.util.Arrays;
+
 import org.col.es.dsl.AutoCompleteQuery;
 import org.col.es.dsl.BoolQuery;
+import org.col.es.dsl.CaseInsensitivePrefixQuery;
 import org.col.es.dsl.DisMaxQuery;
+import org.col.es.dsl.PrefixQuery;
 import org.col.es.dsl.Query;
 import org.col.es.dsl.TermQuery;
 import org.slf4j.Logger;
@@ -17,6 +20,8 @@ public class QTranslationUtils {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(QTranslationUtils.class);
 
+  private static int MAX_NGRAM_SIZE = 10; // see es-settings.json
+
   private static final String GENUS_FIELD = "nameStrings.genusOrMonomialWN";
   private static final String SPECIES_FIELD = "nameStrings.specificEpithetSN";
   private static final String SUBSPECIES_FIELD = "nameStrings.infraspecificEpithetSN";
@@ -24,20 +29,20 @@ public class QTranslationUtils {
   private QTranslationUtils() {}
 
   public static Query getVernacularNameQuery(String q) {
-    return compare("vernacularNames", q);
+    return matchSearchPhrase("vernacularNames", q);
   }
 
   public static Query getAuthorshipQuery(String q) {
-    return compare("authorship", q);
+    return matchSearchPhrase("authorship", q);
   }
 
   /**
    * Returns a scientific name query appropriate for the search phrase. The more unlikely the search phrase (e.g. specific
    * epithet followed by generic epithet), the lower the boost. We don't cater for really awkward search phrases (e.g.
-   * infraspecific epithet followed by generic epithet followed by specific epithet).
+   * genus in the middle, infraspecdific epithet to the left, specific epithet to the right).
    */
   public static Query getScientificNameQuery(String q) {
-    String[] terms = StringUtils.split(q);
+    String[] terms = tokenize(q);
     if (terms.length == 1) {
       return checkAllEpithets(terms);
     } else if (terms.length == 2) {
@@ -53,9 +58,9 @@ public class QTranslationUtils {
     String termSN = normalizeStrongly(terms[0]);
     // Slightly bump lower ranks up the list
     return new BoolQuery()
-        .should(compare(GENUS_FIELD, termWN))
-        .should(compare(SPECIES_FIELD, termSN).withBoost(1.05))
-        .should(compare(SUBSPECIES_FIELD, termSN).withBoost(1.08));
+        .should(matchSearchTerm(GENUS_FIELD, termWN))
+        .should(matchSearchTerm(SPECIES_FIELD, termSN).withBoost(1.05))
+        .should(matchSearchTerm(SUBSPECIES_FIELD, termSN).withBoost(1.08));
   }
 
   private static Query checkEpithetPairs(String[] terms) {
@@ -66,22 +71,22 @@ public class QTranslationUtils {
     return new DisMaxQuery()
         .subquery(new BoolQuery()
             .must(getGenusOrMonomialQuery(term0WN))
-            .must(compare(SPECIES_FIELD, term1SN))
+            .must(matchSearchTerm(SPECIES_FIELD, term1SN))
             .withBoost(1.5))
         .subquery(new BoolQuery()
             .must(getGenusOrMonomialQuery(term0WN))
-            .must(compare(SUBSPECIES_FIELD, term1SN))
+            .must(matchSearchTerm(SUBSPECIES_FIELD, term1SN))
             .withBoost(1.5))
         .subquery(new BoolQuery()
-            .must(compare(SPECIES_FIELD, term0SN))
-            .must(compare(SUBSPECIES_FIELD, term1SN))
+            .must(matchSearchTerm(SPECIES_FIELD, term0SN))
+            .must(matchSearchTerm(SUBSPECIES_FIELD, term1SN))
             .withBoost(1.2))
         .subquery(new BoolQuery()
-            .must(compare(SUBSPECIES_FIELD, term0SN))
-            .must(compare(SPECIES_FIELD, term1SN))
+            .must(matchSearchTerm(SUBSPECIES_FIELD, term0SN))
+            .must(matchSearchTerm(SPECIES_FIELD, term1SN))
             .withBoost(1.15))
-        .subquery(new BoolQuery() // "Sapiens H." if you must
-            .must(compare(SPECIES_FIELD, term0SN))
+        .subquery(new BoolQuery() // "Sapiens H"
+            .must(matchSearchTerm(SPECIES_FIELD, term0SN))
             .must(getGenusOrMonomialQuery(term1WN))
             .withBoost(1.1));
   }
@@ -93,13 +98,13 @@ public class QTranslationUtils {
     return new DisMaxQuery()
         .subquery(new BoolQuery()
             .must(getGenusOrMonomialQuery(term0WN))
-            .must(compare(SPECIES_FIELD, term1SN))
-            .must(compare(SUBSPECIES_FIELD, term2SN))
+            .must(matchSearchTerm(SPECIES_FIELD, term1SN))
+            .must(matchSearchTerm(SUBSPECIES_FIELD, term2SN))
             .withBoost(2.0))
         .subquery(new BoolQuery() // User forgot which was which
             .must(getGenusOrMonomialQuery(term0WN))
-            .must(compare(SUBSPECIES_FIELD, term1SN))
-            .must(compare(SPECIES_FIELD, term2SN))
+            .must(matchSearchTerm(SUBSPECIES_FIELD, term1SN))
+            .must(matchSearchTerm(SPECIES_FIELD, term2SN))
             .withBoost(1.8));
   }
 
@@ -107,15 +112,38 @@ public class QTranslationUtils {
     if (term.length() == 1 || (term.length() == 2 && term.charAt(1) == '.')) {
       return new TermQuery("nameStrings.genusLetter", term.charAt(0));
     }
-    return compare(GENUS_FIELD, term);
+    return matchSearchTerm(GENUS_FIELD, term);
   }
 
   private static Query getBasicSciNameQuery(String q) {
-    return compare("scientificName", q);
+    return matchSearchPhrase("scientificName", q);
   }
 
-  private static Query compare(String field, String value) {
-    return new AutoCompleteQuery(field, value);
+  private static Query matchSearchPhrase(String field, String q) {
+    /*
+     * If we the user has typed one big word we still try to help him/her. If he/she typed several big words then the
+     * search/suggest service blanks out.
+     */
+    if (q.length() > MAX_NGRAM_SIZE && countTokens(q) == 1) {
+      return new CaseInsensitivePrefixQuery(field, q);
+    }
+    return new AutoCompleteQuery(field, q);
+  }
+
+  private static Query matchSearchTerm(String field, String term) {
+    if (term.length() > MAX_NGRAM_SIZE) {
+      // Both the term and the fields against which it is matched are already in lower case, so a prefix query suffices.
+      return new PrefixQuery(field, term);
+    }
+    return new AutoCompleteQuery(field, term);
+  }
+
+  private static String[] tokenize(String q) {
+    return Arrays.stream(q.split("\\W")).filter(s -> !s.isEmpty()).toArray(String[]::new);
+  }
+
+  private static long countTokens(String q) {
+    return Arrays.stream(q.split("\\W")).filter(s -> !s.isEmpty()).count();
   }
 
 }

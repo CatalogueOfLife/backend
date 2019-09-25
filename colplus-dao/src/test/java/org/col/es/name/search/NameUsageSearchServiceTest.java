@@ -1,7 +1,6 @@
 package org.col.es.name.search;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -12,20 +11,15 @@ import org.col.api.model.BareName;
 import org.col.api.model.Name;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
-import org.col.api.model.Taxon;
 import org.col.api.model.VernacularName;
 import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
-import org.col.api.search.NameSearchRequest.SearchContent;
 import org.col.api.search.NameSearchResponse;
 import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.Issue;
-import org.col.api.vocab.TaxonomicStatus;
 import org.col.es.EsReadTestBase;
-import org.col.es.model.NameUsageDocument;
 import org.col.es.name.NameUsageWrapperConverter;
 import org.elasticsearch.client.RestClient;
-import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -220,9 +214,9 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     NameUsageWrapperConverter converter = new NameUsageWrapperConverter();
 
     // Define search
-    NameSearchRequest nsr = new NameSearchRequest();
-    nsr.setHighlight(false);
-    nsr.setQ("UNLIKE");
+    NameSearchRequest query = new NameSearchRequest();
+    query.setHighlight(false);
+    query.setQ("UNLIKE");
 
     // Match
     NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
@@ -256,7 +250,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     refreshIndex(client, indexName);
 
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
+    ResultPage<NameUsageWrapper> result = svc.search(indexName, query, new Page());
 
     assertEquals(4, result.getResult().size());
   }
@@ -536,201 +530,47 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testMultipleFiltersAndQ() throws IOException {
-    NameUsageWrapperConverter converter = new NameUsageWrapperConverter();
-    /*
-     * Find all name usages whose uninomial field is not empty, have rank ORDER or FAMILY, have status ACCEPTED, and contain
-     * "larid" in their scientific name or authorship.
-     */
-    NameSearchRequest nsr = new NameSearchRequest();
-    nsr.setHighlight(false);
-    nsr.setQ("larid");
-    nsr.setContent(EnumSet.of(SearchContent.VERNACULAR_NAME));
-    nsr.setContent(EnumSet.of(SearchContent.SCIENTIFIC_NAME, SearchContent.AUTHORSHIP));
-    nsr.addFilter(NameSearchParameter.FIELD, "uninomial");
-    nsr.addFilter(NameSearchParameter.RANK, Rank.ORDER, Rank.FAMILY);
-    nsr.addFilter(NameSearchParameter.STATUS, TaxonomicStatus.ACCEPTED);
-    List<NameUsageWrapper> usages = testMultipleFiltersAndQ__data();
-    // System.out.println(EsModule.DEBUG_WRITER.writeValueAsString(usages));
-    for (NameUsageWrapper nuw : usages) {
-      insert(client, indexName, converter.toDocument(nuw));
-    }
-    // Watch out: after this, the name usages are changed
-    refreshIndex(client, indexName);
-    // So create again:
-    usages = testMultipleFiltersAndQ__data();
-    List<NameUsageWrapper> expected = usages.subList(0, 2);
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, nsr, new Page());
-    assertEquals(expected, result.getResult());
+  public void testWithBigQ() {
+    NameSearchRequest query = new NameSearchRequest();
+    query.setHighlight(false);
+    query.setQ("ABCDEFGHIJKLMNOPQRSTUVW");
+    List<NameUsageWrapper> documents = testWithBigQ_data();
+    index(documents);
+    NameSearchResponse response = search(query);
+    assertEquals(2, response.getResult().size());
   }
 
-  private static List<NameUsageWrapper> testMultipleFiltersAndQ__data() {
-    // Match
-    Name n = new Name();
-    n.setScientificName("laridae");
-    n.setUninomial("laridae");
-    n.setRank(Rank.FAMILY);
-    Taxon t = new Taxon();
-    t.setId("AAA");
-    t.setName(n);
-    t.setStatus(TaxonomicStatus.ACCEPTED);
-    VernacularName vn = new VernacularName();
-    vn.setName("laridae");
-    NameUsageWrapper nuw1 = new NameUsageWrapper(t);
-    // Present or not shouldn't make a difference because of SearchContent
-    nuw1.setVernacularNames(Arrays.asList(vn));
+  private List<NameUsageWrapper> testWithBigQ_data() {
 
-    // Match
-    n = new Name();
-    n.setScientificName("laridae");
-    n.setUninomial("laridae");
-    n.setRank(Rank.ORDER);
-    t = new Taxon();
-    t.setId("BBB");
-    t.setName(n);
-    t.setStatus(TaxonomicStatus.ACCEPTED);
-    vn = new VernacularName();
-    vn.setName("laridae");
-    NameUsageWrapper nuw2 = new NameUsageWrapper(t);
-    nuw2.setVernacularNames(Arrays.asList(vn));
-
-    // No match
-    n = new Name();
-    n.setScientificName("xxx"); // <---
-    n.setUninomial("laridae");
-    n.setRank(Rank.FAMILY);
-    t = new Taxon();
-    t.setId("CCC");
-    t.setName(n);
-    t.setStatus(TaxonomicStatus.ACCEPTED);
-    vn = new VernacularName();
-    vn.setName("laridae");
-    NameUsageWrapper nuw3 = new NameUsageWrapper(t);
-    nuw3.setVernacularNames(Arrays.asList(vn));
-
-    // No match
-    n = new Name();
-    n.setScientificName("laridae");
-    n.setUninomial(null); // <---
-    n.setRank(Rank.FAMILY);
-    t = new Taxon();
-    t.setId("DDD");
-    t.setName(n);
-    t.setStatus(TaxonomicStatus.ACCEPTED);
-    vn = new VernacularName();
-    vn.setName("laridae");
-    NameUsageWrapper nuw4 = new NameUsageWrapper(t);
-    nuw4.setVernacularNames(Arrays.asList(vn));
-
-    // No match
-    n = new Name();
-    n.setScientificName("laridae");
-    n.setUninomial(null);
-    n.setRank(Rank.GENUS); // <---
-    t = new Taxon();
-    t.setId("EEE");
-    t.setName(n);
-    t.setStatus(TaxonomicStatus.ACCEPTED);
-    vn = new VernacularName();
-    vn.setName("laridae");
-    NameUsageWrapper nuw5 = new NameUsageWrapper(t);
-    nuw5.setVernacularNames(Arrays.asList(vn));
-
-    // No match
-    n = new Name();
-    n.setScientificName("laridae");
-    n.setUninomial("laridae");
-    n.setRank(Rank.FAMILY);
-    t = new Taxon();
-    t.setId("FFF");
-    t.setName(n);
-    t.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
-    vn = new VernacularName();
-    vn.setName("laridae");
-    NameUsageWrapper nuw6 = new NameUsageWrapper(t);
-    nuw6.setVernacularNames(Arrays.asList(vn));
-
-    return Arrays.asList(nuw1, nuw2, nuw3, nuw4, nuw5, nuw6);
-
-  }
-
-  @Test
-  public void testWithBigQ() throws IOException {
-    NameSearchRequest nsr = new NameSearchRequest();
-    nsr.setHighlight(false);
-    nsr.setQ("ABCDEFGHIJKLMNOPQRSTUVW");
-    List<NameUsageDocument> documents = testWithBigQ_data();
-    indexRaw(documents);
-    NameSearchResponse response = search(nsr);
-    assertEquals(3, response.getResult().size());
-    assertEquals(documents.get(0).getNameId(), response.getResult().get(0).getUsage().getName().getId());
-    assertEquals(documents.get(1).getNameId(), response.getResult().get(1).getUsage().getName().getId());
-    assertEquals(documents.get(2).getNameId(), response.getResult().get(2).getUsage().getName().getId());
-  }
-
-  private static List<NameUsageDocument> testWithBigQ_data() throws IOException {
-
-    NameUsageWrapperConverter converter = new NameUsageWrapperConverter();
-    List<NameUsageDocument> data = new ArrayList<>();
-
+    List<NameUsageWrapper> usages = createNameUsages(4);
+    
     // Match on scientific name
-    Name n = new Name();
-    n.setScientificName("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-    BareName bn = new BareName(n);
-    NameUsageWrapper nuw = new NameUsageWrapper(bn);
-    data.add(converter.toDocument(nuw));
-
-    // Match on vernacular name (not really possible with bare names, but OK)
-    n = new Name();
-    n.setScientificName("FOO");
-    bn = new BareName(n);
-    nuw = new NameUsageWrapper(bn);
+    usages.get(0).getUsage().getName().setSpecificEpithet("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    
+    // Match on vernacular name
     VernacularName vn = new VernacularName();
     vn.setName("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-    nuw.setVernacularNames(Arrays.asList(vn));
-    data.add(converter.toDocument(nuw));
-
-    // Match on authorship
-    n = new Name();
-    n.setScientificName("BAR");
-    bn = new BareName(n);
-    nuw = new NameUsageWrapper(bn);
-    // Bypassing dark art of authorship generation here
-    NameUsageDocument doc = converter.toDocument(nuw);
-    doc.setAuthorship("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-    data.add(doc);
+    usages.get(1).setVernacularNames(Arrays.asList(vn));
 
     // No match (missing 'W')
-    n = new Name();
-    n.setScientificName("ABCDEFGHIJKLMNOPQRSTUV");
-    bn = new BareName(n);
-    nuw = new NameUsageWrapper(bn);
-    data.add(converter.toDocument(nuw));
+    usages.get(2).getUsage().getName().setSpecificEpithet("ABCDEFGHIJKLMNOPQRSTUV");
 
     // No match (missing 'A')
-    n = new Name();
-    n.setScientificName("BCDEFGHIJKLMNOPQRSTUVW");
-    bn = new BareName(n);
-    nuw = new NameUsageWrapper(bn);
-    data.add(converter.toDocument(nuw));
-
-    for (int i = 0; i < data.size(); i++) {
-      data.get(i).setNameId("###### " + i);
-    }
-
-    return data;
+    usages.get(3).getUsage().getName().setSpecificEpithet("BCDEFGHIJKLMNOPQRSTUVW");
+    
+    return usages;
 
   }
 
   // Issue #207
   @Test
   public void testWithSmthii__1() {
-    NameSearchRequest nsr = new NameSearchRequest();
-    nsr.setHighlight(false);
-    nsr.setQ("Smithi");
+    NameSearchRequest query = new NameSearchRequest();
+    query.setHighlight(false);
+    query.setQ("Smithi");
     index(testWithSmthii_data());
     // Expect all to come back
-    NameSearchResponse result = search(nsr);
+    NameSearchResponse result = search(query);
     assertEquals(testWithSmthii_data(), result.getResult());
   }
 
@@ -744,32 +584,30 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     NameSearchResponse result = search(nsr);
     assertEquals(testWithSmthii_data(), result.getResult());
   }
-  
+
   private static List<NameUsageWrapper> testWithSmthii_data() {
     Name n = new Name();
-    n.setScientificName("Smithii");
+    n.setSpecificEpithet("Smithii");
     BareName bn = new BareName(n);
     NameUsageWrapper nuw1 = new NameUsageWrapper(bn);
 
     n = new Name();
-    n.setScientificName("Smithi");
+    n.setSpecificEpithet("Smithi");
     bn = new BareName(n);
     NameUsageWrapper nuw2 = new NameUsageWrapper(bn);
 
     n = new Name();
-    n.setScientificName("SmithiiFooBar");
+    n.setSpecificEpithet("SmithiiFooBar");
     bn = new BareName(n);
     NameUsageWrapper nuw3 = new NameUsageWrapper(bn);
 
     n = new Name();
-    n.setScientificName("SmithiFooBar");
+    n.setSpecificEpithet("SmithiFooBar");
     bn = new BareName(n);
     NameUsageWrapper nuw4 = new NameUsageWrapper(bn);
 
     return Arrays.asList(nuw1, nuw2, nuw3, nuw4);
   }
-
-
 
   private static List<VernacularName> create(List<String> names) {
     return names.stream().map(n -> {

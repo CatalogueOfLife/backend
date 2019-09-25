@@ -19,6 +19,7 @@ import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import static org.col.es.mapping.Analyzer.AUTO_COMPLETE;
+import static org.col.es.mapping.Analyzer.IGNORE_CASE;
 
 /**
  * Class modeling the Elasticsearch document type used to store NameUsageWrapper instances.
@@ -102,7 +103,7 @@ public class NameUsageDocument {
     this.sectorKey = sectorKey;
   }
 
-  @Analyzers({AUTO_COMPLETE})
+  @Analyzers({IGNORE_CASE, AUTO_COMPLETE})
   public String getScientificName() {
     return scientificName;
   }
@@ -119,7 +120,7 @@ public class NameUsageDocument {
     this.nameStrings = nameStrings;
   }
 
-  @Analyzers({AUTO_COMPLETE})
+  @Analyzers({IGNORE_CASE, AUTO_COMPLETE})
   public String getAuthorship() {
     return authorship;
   }
@@ -218,7 +219,7 @@ public class NameUsageDocument {
     this.status = status;
   }
 
-  @Analyzers({AUTO_COMPLETE})
+  @Analyzers({IGNORE_CASE, AUTO_COMPLETE})
   public List<String> getVernacularNames() {
     return vernacularNames;
   }
@@ -335,6 +336,5 @@ public class NameUsageDocument {
         && Objects.equals(scientificName, other.scientificName) && Objects.equals(sectorKey, other.sectorKey) && status == other.status
         && type == other.type && Objects.equals(usageId, other.usageId) && Objects.equals(vernacularNames, other.vernacularNames);
   }
-
 
 }

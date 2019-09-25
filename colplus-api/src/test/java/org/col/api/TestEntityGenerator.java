@@ -318,18 +318,18 @@ public class TestEntityGenerator {
   public static Taxon newTaxon(int datasetKey, String id, String scientificName) {
     Taxon t = setUserDate(new Taxon());
     t.setStatus(TaxonomicStatus.ACCEPTED);
-    t.setAccordingTo("Foo");
+    t.setAccordingTo(RandomUtils.randomUnicodeString(8));
     t.setAccordingToDate(LocalDate.of(2010, 11, 24));
     t.setDatasetKey(datasetKey);
     t.setWebpage(URI.create("http://foo-bar.com"));
-    t.setFossil(true);
     t.setId(id);
     t.setLifezones(EnumSet.of(Lifezone.BRACKISH, Lifezone.FRESHWATER, Lifezone.TERRESTRIAL));
     t.setName(setUserDate(newName(datasetKey, id + "_name_id", scientificName)));
     t.setOrigin(Origin.SOURCE);
     t.setParentId(TAXON1.getId());
-    t.setRecent(true);
-    t.setRemarks("Foo != Bar");
+    t.setFossil(new Random().nextBoolean());
+    t.setRecent(new Random().nextBoolean());
+    t.setRemarks(RandomUtils.randomUnicodeString(8));
     return t;
   }
 

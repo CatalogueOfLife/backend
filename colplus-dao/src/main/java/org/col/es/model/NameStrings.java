@@ -8,6 +8,7 @@ import org.col.es.mapping.Analyzers;
 import org.gbif.nameparser.api.Rank;
 
 import static org.col.es.mapping.Analyzer.AUTO_COMPLETE;
+import static org.col.es.mapping.Analyzer.KEYWORD;
 import static org.col.es.name.NameUsageWrapperConverter.normalizeStrongly;
 import static org.col.es.name.NameUsageWrapperConverter.normalizeWeakly;
 
@@ -45,18 +46,17 @@ public class NameStrings {
    * @param name
    */
   public NameStrings(Name name) {
-    // Null-checks may be overly defensive
     if (name.getRank().higherThan(Rank.GENUS) && name.getUninomial() != null) {
-      genusOrMonomialWN = normalizeWeakly(name.getUninomial()).toLowerCase();
+      genusOrMonomialWN = normalizeWeakly(name.getUninomial());
     } else if (name.getGenus() != null) {
       genusLetter = String.valueOf(name.getGenus().charAt(0)).toLowerCase();
-      genusOrMonomialWN = normalizeWeakly(name.getGenus()).toLowerCase();
+      genusOrMonomialWN = normalizeWeakly(name.getGenus());
     }
     if (name.getSpecificEpithet() != null) {
-      specificEpithetSN = normalizeStrongly(name.getSpecificEpithet()).toLowerCase();
+      specificEpithetSN = normalizeStrongly(name.getSpecificEpithet());
     }
     if (name.getInfraspecificEpithet() != null) {
-      infraspecificEpithetSN = normalizeStrongly(name.getInfraspecificEpithet()).toLowerCase();
+      infraspecificEpithetSN = normalizeStrongly(name.getInfraspecificEpithet());
     }
   }
 
@@ -70,7 +70,7 @@ public class NameStrings {
     this.genusLetter = genusLetter;
   }
 
-  @Analyzers({AUTO_COMPLETE})
+  @Analyzers({KEYWORD, AUTO_COMPLETE})
   public String getGenusOrMonomialWN() {
     return genusOrMonomialWN;
   }
@@ -79,7 +79,7 @@ public class NameStrings {
     this.genusOrMonomialWN = genusWN;
   }
 
-  @Analyzers({AUTO_COMPLETE})
+  @Analyzers({KEYWORD, AUTO_COMPLETE})
   public String getSpecificEpithetSN() {
     return specificEpithetSN;
   }
@@ -88,7 +88,7 @@ public class NameStrings {
     this.specificEpithetSN = specificEpithetSN;
   }
 
-  @Analyzers({AUTO_COMPLETE})
+  @Analyzers({KEYWORD, AUTO_COMPLETE})
   public String getInfraspecificEpithetSN() {
     return infraspecificEpithetSN;
   }

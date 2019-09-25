@@ -24,15 +24,14 @@ class QTranslator {
 
   Query translate() {
     List<Query> queries = new ArrayList<Query>(request.getContent().size());
-    String q = request.getQ().trim().toLowerCase();
     if (request.getContent().contains(SCIENTIFIC_NAME)) {
-      queries.add(getScientificNameQuery(q));
+      queries.add(getScientificNameQuery(request.getQ()));
     }
     if (request.getContent().contains(VERNACULAR_NAME)) {
-      queries.add(getVernacularNameQuery(q));
+      queries.add(getVernacularNameQuery(request.getQ()));
     }
     if (request.getContent().contains(AUTHORSHIP)) {
-      queries.add(getAuthorshipQuery(q));
+      queries.add(getAuthorshipQuery(request.getQ()));
     }
     if (queries.size() == 1) {
       return queries.get(0);
@@ -40,7 +39,6 @@ class QTranslator {
     BoolQuery query = new BoolQuery();
     queries.forEach(query::should);
     return query;
-
   }
 
 }
