@@ -64,7 +64,7 @@ class NameSearchResultConverter {
    * @throws IOException
    */
   NameSearchResponse transferResponse(Page page) throws IOException {
-    int total = esResponse.getHits().getTotal();
+    int total = esResponse.getHits().getTotalNumHits();
     List<NameUsageWrapper> nameUsages = transferNameUsages();
     Map<NameSearchParameter, Set<FacetValue<?>>> facets = transferFacets();
     return new NameSearchResponse(page, total, nameUsages, facets);
