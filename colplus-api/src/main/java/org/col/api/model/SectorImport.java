@@ -18,6 +18,8 @@ public class SectorImport extends ImportMetrics<SectorImport.State> {
   
   private String type;
   private int sectorKey;
+  private Integer ignoredUsagesCount;
+  
   private final Queue<String> warnings = EvictingQueue.create(10);
   
   public Collection<String> getWarnings() {
@@ -49,21 +51,12 @@ public class SectorImport extends ImportMetrics<SectorImport.State> {
     this.sectorKey = sectorKey;
   }
   
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    if (!super.equals(o)) return false;
-    SectorImport that = (SectorImport) o;
-    // we dont include warnings as we dont persist them
-    return sectorKey == that.sectorKey &&
-        Objects.equals(type, that.type);
+  public Integer getIgnoredUsagesCount() {
+    return ignoredUsagesCount;
   }
   
-  @Override
-  public int hashCode() {
-    // we dont include warnings as we dont persist them
-    return Objects.hash(super.hashCode(), type, sectorKey);
+  public void setIgnoredUsagesCount(Integer ignoredUsagesCount) {
+    this.ignoredUsagesCount = ignoredUsagesCount;
   }
   
   public static List<State> runningStates() {
@@ -76,6 +69,23 @@ public class SectorImport extends ImportMetrics<SectorImport.State> {
     return Arrays.stream(State.values())
         .filter(Predicates.not(State::isRunning))
         .collect(Collectors.toList());
+  }
+  
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
+    SectorImport that = (SectorImport) o;
+    return sectorKey == that.sectorKey &&
+        Objects.equals(type, that.type) &&
+        Objects.equals(ignoredUsagesCount, that.ignoredUsagesCount) &&
+        Objects.equals(warnings, that.warnings);
+  }
+  
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), type, sectorKey, ignoredUsagesCount, warnings);
   }
   
   @Override

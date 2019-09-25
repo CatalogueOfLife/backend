@@ -1,11 +1,9 @@
-package org.col.common.text;
+package org.col.common.id;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 public class IdConverterTest {
   
@@ -14,6 +12,7 @@ public class IdConverterTest {
     int[] ids = new int[]{18, 1089, 1781089, 4781089, 12781089, Integer.MAX_VALUE};
     List<IdConverter> hashids = new ArrayList<>();
     hashids.add(IdConverter.HEX);
+    hashids.add(IdConverter.LATIN32);
     hashids.add(IdConverter.LATIN36);
     hashids.add(IdConverter.BASE64);
   
@@ -22,6 +21,7 @@ public class IdConverterTest {
       for (IdConverter hid : hashids) {
         System.out.println(hid.encode(id));
       }
+      System.out.println(Proquint.encode(id));
     }
   }
 }

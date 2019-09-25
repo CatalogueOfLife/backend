@@ -1,4 +1,4 @@
-package org.col.common.text;
+package org.col.common.id;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 public class IdConverter {
   private static final Logger LOG = LoggerFactory.getLogger(IdConverter.class);
   public static final IdConverter HEX = new IdConverter("0123456789ABCDEF");
+  // remove 0O and 1I as they can be ambiguous in some fonts
+  public static final IdConverter LATIN32 = new IdConverter("23456789ABCDEFGHJKLMNPQRSTUVWXYZ");
   public static final IdConverter LATIN36 = new IdConverter("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
   public static final IdConverter BASE64 = new IdConverter("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
   
