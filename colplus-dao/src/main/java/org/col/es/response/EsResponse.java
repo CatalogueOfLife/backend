@@ -9,13 +9,8 @@ package org.col.es.response;
  */
 public class EsResponse<T, U extends Aggregation> {
 
-  private int took;
   private SearchHits<T> hits;
   private Aggregations<U> aggregations;
-
-  public int getTook() {
-    return took;
-  }
 
   public SearchHits<T> getHits() {
     return hits;
