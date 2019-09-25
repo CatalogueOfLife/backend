@@ -6,12 +6,14 @@ import org.col.es.name.Issue333;
 import org.col.es.name.MultiValuedMapTest;
 import org.col.es.name.NameUsageIndexServiceIT;
 import org.col.es.name.NameUsageResponseConverterTest;
+import org.col.es.name.NameUsageSearchServiceFacetTest;
 import org.col.es.name.NameUsageWrapperConverterTest;
 import org.col.es.name.index.ClassificationUpdaterTest;
 import org.col.es.name.search.FacetsTranslatorTest;
 import org.col.es.name.search.NameSearchHighlighterTest;
 import org.col.es.name.search.NameSearchTestAllParamsTest;
 import org.col.es.name.search.NameUsageSearchServiceTest;
+import org.col.es.name.search.QSearchTests;
 import org.col.es.name.search.RequestTranslatorTest;
 import org.col.es.name.search.SortingTest;
 import org.col.es.query.CollapsibleListTest;
@@ -36,18 +38,20 @@ import org.junit.runners.Suite.SuiteClasses;
     MultiValuedMapTest.class,
     NameSearchHighlighterTest.class,
     NameUsageResponseConverterTest.class,
+    NameSearchHighlighterTest.class,
     NameSearchTestAllParamsTest.class,
     NameUsageIndexServiceIT.class,
     NameUsageSearchServiceTest.class,
-    // NameUsageSearchServiceFacetTest.class,
+    NameUsageSearchServiceFacetTest.class,
     NameUsageWrapperConverterTest.class,
     PrefixQueryTest.class,
+    QSearchTests.class,
     QueryTest.class,
     RequestTranslatorTest.class,
     SortingTest.class,
     TermQueryTest.class
 })
-@SuppressWarnings("unused") // Allow for manual exclusiongs without getting unused import warnings
+// @SuppressWarnings("unused")
 public class EsTestSuite {
 
 }
