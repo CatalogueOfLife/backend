@@ -31,6 +31,7 @@ import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
@@ -50,7 +51,7 @@ public class SectorSyncIT {
         DataFormat.COLDP, 0,
       NomCode.ZOOLOGICAL,
         DataFormat.ACEF,  5, 6, 11,
-        DataFormat.COLDP, 2,
+        DataFormat.COLDP, 2, 4,
       NomCode.VIRUS,
         DataFormat.ACEF,  14
   );
@@ -190,6 +191,26 @@ public class SectorSyncIT {
     assertEquals(Origin.SOURCE, vogelii.getOrigin());
   }
   
+  /**
+   * https://github.com/Sp2000/colplus-backend/issues/493
+   */
+  @Test
+  @Ignore
+  public void testDecisions() throws Exception {
+    print(Datasets.DRAFT_COL);
+    print(datasetKey(4, DataFormat.COLDP));
+  
+    NameUsageBase coleoptera = getByName(datasetKey(4, DataFormat.COLDP), Rank.ORDER, "Coleoptera");
+    NameUsageBase insecta = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
+    createSector(Sector.Mode.ATTACH, coleoptera, insecta);
+    
+    syncAll();
+    assertTree("cat4.txt");
+  
+    NameUsageBase eu13   = getByName(Datasets.DRAFT_COL, Rank.SPECIES, "Euplectus perarctis");
+    NameUsageBase eu11   = getByName(Datasets.DRAFT_COL, Rank.SPECIES, "Euplectus cavicollis");
+  }
+
   /**
    * Nested sectors
    * see https://github.com/Sp2000/colplus-backend/issues/438

@@ -58,7 +58,7 @@ abstract class SectorRunnable implements Runnable {
       sector = loadSector(false);
       this.datasetKey = sector.getSubjectDatasetKey();
       // lookup next attempt
-      List<SectorImport> imports = session.getMapper(SectorImportMapper.class).list(sectorKey, null,null, new Page(0,1));
+      List<SectorImport> imports = session.getMapper(SectorImportMapper.class).list(sectorKey, null, null,null, new Page(0,1));
       state.setAttempt(imports == null || imports.isEmpty() ? 1 : imports.get(0).getAttempt() + 1);
       state.setSectorKey(sectorKey);
       state.setDatasetKey(datasetKey);

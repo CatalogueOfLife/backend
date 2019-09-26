@@ -58,7 +58,10 @@ public class AssemblyResource {
       states = running ? SectorImport.runningStates() : SectorImport.finishedStates();
     }
     SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
-    return new ResultPage<>(page, sim.count(sectorKey, datasetKey, states), sim.list(sectorKey, datasetKey, states, page));
+    return new ResultPage<>(page,
+        sim.count(sectorKey, Datasets.DRAFT_COL, datasetKey, states),
+        sim.list(sectorKey, Datasets.DRAFT_COL, datasetKey, states, page)
+    );
   }
   
   @POST

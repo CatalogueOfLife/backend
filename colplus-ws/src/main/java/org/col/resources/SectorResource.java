@@ -85,8 +85,8 @@ public class SectorResource extends CatalogueEntityResource<Sector> {
     }
     final List<SectorImport.State> immutableStates = ImmutableList.copyOf(states);
     SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
-    List<SectorImport> imports = sim.list(key, null, states, page);
-    return new ResultPage<>(page, imports, () -> sim.count(key, null, immutableStates));
+    List<SectorImport> imports = sim.list(key, Datasets.DRAFT_COL, null, states, page);
+    return new ResultPage<>(page, imports, () -> sim.count(key, Datasets.DRAFT_COL, null, immutableStates));
   
   }
   
