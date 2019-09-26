@@ -17,6 +17,7 @@ import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
+import org.col.api.vocab.Datasets;
 import org.col.common.concurrent.ExecutorUtils;
 import org.col.dao.DatasetImportDao;
 import org.col.db.mapper.CollectResultHandler;
@@ -141,7 +142,7 @@ public class AssemblyCoordinator implements Managed {
         final AtomicInteger cnt = new AtomicInteger();
         try (SqlSession session = factory.openSession(true)) {
           SectorMapper sm = session.getMapper(SectorMapper.class);
-          sm.processSectors(request.getDatasetKey(), (ctx) -> {
+          sm.processSectors(Datasets.DRAFT_COL, request.getDatasetKey(), (ctx) -> {
             syncSector(ctx.getResultObject().getKey(), user);
             cnt.getAndIncrement();
           });
@@ -208,7 +209,7 @@ public class AssemblyCoordinator implements Managed {
     CollectResultHandler<Sector> collector = new CollectResultHandler<>();
     try (SqlSession session = factory.openSession(false)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
-      sm.processAll(collector);
+      sm.processCatalogue(Datasets.DRAFT_COL, collector);
     }
     collector.getResults().sort(SECTOR_ORDER);
     int failed = 0;

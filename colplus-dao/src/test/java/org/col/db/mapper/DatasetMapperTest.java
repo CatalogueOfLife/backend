@@ -22,7 +22,6 @@ import org.javers.core.diff.Diff;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.col.api.TestEntityGenerator.newSimpleName;
 import static org.junit.Assert.*;
 
 /**
@@ -208,7 +207,8 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
   
   private void createSector(int datasetKey) {
     Sector s = new Sector();
-    s.setDatasetKey(datasetKey);
+    s.setDatasetKey(Datasets.DRAFT_COL);
+    s.setSubjectDatasetKey(datasetKey);
     s.setMode(Sector.Mode.ATTACH);
     s.setSubject(TestEntityGenerator.newSimpleName());
     s.setTarget(TestEntityGenerator.newSimpleName());

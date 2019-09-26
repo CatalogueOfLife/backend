@@ -51,7 +51,7 @@ public class NamesTreeDao {
       SectorMapper sm = session.getMapper(SectorMapper.class);
       NameMapper nm = session.getMapper(NameMapper.class);
       Sector s = sm.get(sectorKey);
-      nm.processIndexIds(s.getDatasetKey(), sectorKey, handler);
+      nm.processIndexIds(s.getSubjectDatasetKey(), sectorKey, handler);
       count = handler.counter;
       LOG.info("Written {} index names for sector {}-{}", count, sectorKey, attempt);
     }
@@ -111,7 +111,7 @@ public class NamesTreeDao {
     int count = 0;
     try (SqlSession session = factory.openSession(true)) {
       Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
-      count = TextTreePrinter.sector(s.getDatasetKey(), sectorKey, factory, writer).print();
+      count = TextTreePrinter.sector(s.getSubjectDatasetKey(), sectorKey, factory, writer).print();
     }
     LOG.info("Written text tree with {} lines for sector {}-{}", count, sectorKey, attempt);
     return count;

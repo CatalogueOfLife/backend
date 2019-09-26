@@ -7,6 +7,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.exception.NotFoundException;
 import org.col.api.model.*;
 import org.col.api.vocab.Datasets;
+import org.col.db.GlobalCRUD;
 import org.col.db.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,18 +83,18 @@ public class SubjectRematcher {
   private void matchAll() {
     LOG.info("Rematch all sectors, decisions and estimates across all datasets");
     Set<Integer> datasetKeys = new HashSet<>();
-    Pager.sectors(factory).forEach(s -> {
-      datasetKeys.add(s.getDatasetKey());
+    Pager.sectors(Datasets.DRAFT_COL, factory).forEach(s -> {
+      datasetKeys.add(s.getSubjectDatasetKey());
       matchSector(s);
     });
   
-    Pager.decisions(factory).forEach(d -> {
-      datasetKeys.add(d.getDatasetKey());
+    Pager.decisions(Datasets.DRAFT_COL, factory).forEach(d -> {
+      datasetKeys.add(d.getSubjectDatasetKey());
       matchDecision(d);
     });
     
     LOG.info("Rematch all estimates for draft catalogue");
-    Pager.estimates(factory).forEach(this::matchEstimate);
+    Pager.estimates(Datasets.DRAFT_COL, factory).forEach(this::matchEstimate);
 
     datasets = datasetKeys.size();
   }
@@ -125,7 +126,7 @@ public class SubjectRematcher {
     LOG.info("Rematch all sector subjects in dataset {}", datasetKey);
     try(SqlSession session = factory.openSession(true)) {
       init(session);
-      for (Sector s : sm.listByDataset(datasetKey)) {
+      for (Sector s : sm.listByDataset(Datasets.DRAFT_COL, datasetKey)) {
         matchSectorSubjectOnly(s);
       }
       matchDatasetDecision(datasetKey);
@@ -134,7 +135,7 @@ public class SubjectRematcher {
     log();
   }
   
-  private static <T extends GlobalEntity> T getNotNull(GlobalCRUDMapper<T> mapper, int key) throws NotFoundException {
+  private static <T extends GlobalEntity> T getNotNull(GlobalCRUD<T> mapper, int key) throws NotFoundException {
     T obj = mapper.get(key);
     if (obj == null) {
       throw new NotFoundException("Key " + key + " does not exist");
@@ -144,10 +145,10 @@ public class SubjectRematcher {
 
   private void matchSectorSubject(Sector s) {
     s.getSubject().setId(null);
-    NameUsage t = matchUniquely(s, s.getDatasetKey(), s.getSubject());
+    NameUsage t = matchUniquely(s, s.getSubjectDatasetKey(), s.getSubject());
     if (t != null) {
       // see if we already have a sector attached
-      Sector s2 = sm.getBySubject(s.getDatasetKey(), t.getId());
+      Sector s2 = sm.getBySubject(s.getDatasetKey(), s.getSubjectDatasetKey(), t.getId());
       if (s2 != null) {
         LOG.warn("Sector {} seems to be a duplicate of {} for {} in dataset {}", s, s2, t.getName().getScientificName(), s.getDatasetKey());
       } else {
@@ -157,7 +158,7 @@ public class SubjectRematcher {
   }
   
   private void matchSectorTarget(Sector s) {
-    NameUsage u = matchUniquely(s, Datasets.DRAFT_COL, s.getTarget());
+    NameUsage u = matchUniquely(s, s.getDatasetKey(), s.getTarget());
     s.getTarget().setId(u == null ? null : u.getId());
   }
   
@@ -193,7 +194,7 @@ public class SubjectRematcher {
 
   private void matchDecision(EditorialDecision ed) {
     if (ed.getSubject() != null) {
-      NameUsage u = matchUniquely(ed, ed.getDatasetKey(), ed.getSubject());
+      NameUsage u = matchUniquely(ed, ed.getSubjectDatasetKey(), ed.getSubject());
       String idBefore = ed.getSubject().getId();
       ed.getSubject().setId(u == null ? null : u.getId());
       if (updateCounter(decisions, idBefore, ed.getSubject().getId())) {
@@ -239,7 +240,7 @@ public class SubjectRematcher {
   
   private void matchDataset(final int datasetKey) {
     LOG.info("Rematch all sector subjects in dataset {}", datasetKey);
-    for (Sector s : sm.listByDataset(datasetKey)) {
+    for (Sector s : sm.listByDataset(Datasets.DRAFT_COL, datasetKey)) {
       matchSector(s);
     }
     matchDatasetDecision(datasetKey);
@@ -248,7 +249,7 @@ public class SubjectRematcher {
   private void matchDatasetDecision(final int datasetKey) {
     LOG.info("Rematch all decision subjects in dataset {}", datasetKey);
     datasets++;
-    for (EditorialDecision d : dem.listByDataset(datasetKey, null)) {
+    for (EditorialDecision d : dem.listBySubjectDataset(Datasets.DRAFT_COL, datasetKey, null)) {
       matchDecision(d);
     }
   }

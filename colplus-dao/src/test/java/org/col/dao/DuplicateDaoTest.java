@@ -10,6 +10,7 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.*;
+import org.col.api.vocab.Datasets;
 import org.col.api.vocab.MatchingMode;
 import org.col.api.vocab.NameCategory;
 import org.col.api.vocab.TaxonomicStatus;
@@ -71,7 +72,8 @@ public class DuplicateDaoTest {
     
     private static void create(DecisionMapper dm, String id, Rank rank) {
       EditorialDecision d = new EditorialDecision();
-      d.setDatasetKey(datasetKey);
+      d.setDatasetKey(Datasets.DRAFT_COL);
+      d.setSubjectDatasetKey(datasetKey);
       d.setSubject(new SimpleName(id, "Nana", rank));
       d.setMode(EditorialDecision.Mode.BLOCK);
       d.applyUser(TestEntityGenerator.USER_EDITOR);

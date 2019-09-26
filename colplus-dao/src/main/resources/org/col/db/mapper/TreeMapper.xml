@@ -43,11 +43,11 @@
         <include refid="FROM_USAGE"/>
         <choose>
             <when test="datasetKey != @org.col.api.vocab.Datasets@DRAFT_COL">
-                LEFT JOIN sector    s ON  s.subject_id=t.id AND  s.dataset_key=#{datasetKey}
-                LEFT JOIN decision ed ON ed.subject_id=t.id AND ed.dataset_key=#{datasetKey}
+                LEFT JOIN sector    s ON  s.subject_id=t.id AND  s.subject_dataset_key=#{datasetKey}
+                LEFT JOIN decision ed ON ed.subject_id=t.id AND ed.subject_dataset_key=#{datasetKey}
             </when>
             <otherwise>
-                LEFT JOIN estimate est ON est.subject_id=t.id
+                LEFT JOIN estimate est ON est.subject_id=t.id AND est.dataset_key=#{datasetKey}
             </otherwise>
         </choose>
     </sql>

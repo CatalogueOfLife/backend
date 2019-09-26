@@ -139,7 +139,10 @@
         FROM name_usage_${datasetKey} u
             JOIN name_${datasetKey} n ON u.name_id=n.id
             <if test="withDecision != null">
-                LEFT JOIN decision ed ON ed.subject_id=u.id AND ed.dataset_key=#{datasetKey}
+                LEFT JOIN decision ed ON ed.subject_id=u.id
+                    AND ed.subject_dataset_key=#{datasetKey}
+                    <!-- magic draft col number for now! -->
+                    AND ed.dataset_key=3
             </if>
         <where>
             <include refid="commonWhereClause"/>

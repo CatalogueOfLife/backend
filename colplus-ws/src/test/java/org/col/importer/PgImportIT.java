@@ -150,7 +150,6 @@ public class PgImportIT {
   }
   
   
-  
   @Test
   public void testPublishedIn() throws Exception {
     normalizeAndImport(DWCA, 0);
@@ -159,7 +158,7 @@ public class PgImportIT {
     
     Reference pubIn = rdao.get(dataset.getKey(), trametes_modesta.getPublishedInId(), trametes_modesta.getPublishedInPage());
     assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCitation());
-    assertEquals(".neodb.aW6r", pubIn.getId());
+    assertEquals(".neodb.3", pubIn.getId());
   }
   
   @Test
@@ -580,7 +579,7 @@ public class PgImportIT {
       
       // https://github.com/Sp2000/colplus-backend/issues/237
       VerbatimRecordMapper vm = session.getMapper(VerbatimRecordMapper.class);
-      for (VerbatimRecord v : vm.list(dataset.getKey(), null, null, LogicalOperator.AND, null, new Page(0, 100))) {
+      for (VerbatimRecord v : vm.list(dataset.getKey(), null, null, LogicalOperator.AND, null, null, new Page(0, 100))) {
         for (Term t : v.terms()) {
           assertFalse(t instanceof UnknownTerm);
         }

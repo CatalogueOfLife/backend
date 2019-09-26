@@ -120,7 +120,7 @@ public class NameIndexMapDB implements NameIndex {
         loadFromPg();
       }
 
-      idGen = new IdGenerator("", counter::incrementAndGet);
+      idGen = new IdGenerator(counter::incrementAndGet);
       LOG.info("Started name index mapdb with {} names", counter);
     }
   

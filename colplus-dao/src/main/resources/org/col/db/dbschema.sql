@@ -257,6 +257,7 @@ CREATE TABLE sector_import (
   distribution_count INTEGER,
   description_count INTEGER,
   media_count INTEGER,
+  ignored_usage_count INTEGER,
   issues_count HSTORE,
   names_by_rank_count HSTORE,
   taxa_by_rank_count HSTORE,
@@ -269,6 +270,7 @@ CREATE TABLE sector_import (
   name_relations_by_type_count HSTORE,
   verbatim_by_type_count HSTORE,
   media_by_type_count HSTORE,
+  warnings TEXT[],
   PRIMARY KEY (sector_key, attempt)
 );
 
@@ -302,12 +304,12 @@ CREATE TABLE estimate (
   key serial PRIMARY KEY,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   subject_id TEXT,
-  subject_name TEXT,
+  subject_name TEXT NOT NULL,
   subject_authorship TEXT,
   subject_rank rank,
   subject_code INTEGER,
   estimate INTEGER,
-  type INTEGER,
+  type INTEGER NOT NULL,
   reference_id TEXT,
   note TEXT,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
@@ -326,8 +328,17 @@ CREATE TABLE verbatim (
   file TEXT,
   type TEXT,
   terms jsonb,
-  issues INT[] DEFAULT '{}'
+  issues INT[] DEFAULT '{}',
+  doc tsvector
 ) PARTITION BY LIST (dataset_key);
+
+CREATE OR REPLACE FUNCTION verbatim_doc_update() RETURNS trigger AS $$
+BEGIN
+    NEW.doc := jsonb_to_tsvector('simple2', coalesce(NEW.terms,'{}'::jsonb), '["string", "numeric"]');
+    RETURN NEW;
+END
+$$
+LANGUAGE plpgsql;
 
 CREATE TABLE reference (
   id TEXT NOT NULL,
@@ -344,7 +355,6 @@ CREATE TABLE reference (
   modified_by INTEGER NOT NULL
 ) PARTITION BY LIST (dataset_key);
 
-
 CREATE OR REPLACE FUNCTION reference_doc_update() RETURNS trigger AS $$
 BEGIN
     NEW.doc :=
@@ -355,7 +365,6 @@ BEGIN
 END
 $$
 LANGUAGE plpgsql;
-
 
 CREATE TABLE name (
   id TEXT NOT NULL,
@@ -636,3 +645,6 @@ CREATE index ON dataset_import (started);
 CREATE index ON dataset_import (dataset_key);
 CREATE index ON sector_import (sector_key);
 CREATE index ON sector (target_id);
+CREATE index ON sector (dataset_key);
+CREATE index ON estimate (dataset_key);
+CREATE index ON decision (dataset_key);

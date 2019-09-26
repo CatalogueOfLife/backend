@@ -46,7 +46,7 @@ public class SectorSyncTest {
   @Before
   public void init() {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      // draft & name index partition
+      // draft partition
       final DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
       for (int datasetKey : Lists.newArrayList(Datasets.DRAFT_COL)) {
         pm.delete(datasetKey);
@@ -76,7 +76,8 @@ public class SectorSyncTest {
       session.getMapper(TaxonMapper.class).create(colAttachment);
   
       sector = new Sector();
-      sector.setDatasetKey(datasetKey);
+      sector.setDatasetKey(Datasets.DRAFT_COL);
+      sector.setSubjectDatasetKey(datasetKey);
       sector.setSubject(new SimpleName("t2", "name", Rank.ORDER));
       sector.setTarget(new SimpleName("cole", "Coleoptera", Rank.ORDER));
       sector.applyUser(TestEntityGenerator.USER_EDITOR);

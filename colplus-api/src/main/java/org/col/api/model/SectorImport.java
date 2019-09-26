@@ -18,9 +18,9 @@ public class SectorImport extends ImportMetrics<SectorImport.State> {
   
   private String type;
   private int sectorKey;
-  private Integer ignoredUsagesCount;
+  private Integer ignoredUsageCount;
   
-  private final Queue<String> warnings = EvictingQueue.create(10);
+  private final Queue<String> warnings = EvictingQueue.create(25);
   
   public Collection<String> getWarnings() {
     return warnings;
@@ -51,12 +51,12 @@ public class SectorImport extends ImportMetrics<SectorImport.State> {
     this.sectorKey = sectorKey;
   }
   
-  public Integer getIgnoredUsagesCount() {
-    return ignoredUsagesCount;
+  public Integer getIgnoredUsageCount() {
+    return ignoredUsageCount;
   }
   
-  public void setIgnoredUsagesCount(Integer ignoredUsagesCount) {
-    this.ignoredUsagesCount = ignoredUsagesCount;
+  public void setIgnoredUsageCount(Integer ignoredUsageCount) {
+    this.ignoredUsageCount = ignoredUsageCount;
   }
   
   public static List<State> runningStates() {
@@ -79,13 +79,15 @@ public class SectorImport extends ImportMetrics<SectorImport.State> {
     SectorImport that = (SectorImport) o;
     return sectorKey == that.sectorKey &&
         Objects.equals(type, that.type) &&
-        Objects.equals(ignoredUsagesCount, that.ignoredUsagesCount) &&
-        Objects.equals(warnings, that.warnings);
+        Objects.equals(ignoredUsageCount, that.ignoredUsageCount) &&
+        // EvictingQueue has no equals method implemented
+        // for equality this hardly matters, so we just compare the sizes
+        warnings.size() == that.warnings.size();
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), type, sectorKey, ignoredUsagesCount, warnings);
+    return Objects.hash(super.hashCode(), type, sectorKey, ignoredUsageCount, warnings);
   }
   
   @Override

@@ -38,6 +38,15 @@ public class DatasetDao extends GlobalEntityDao<Dataset, DatasetMapper> {
     this.scratchFileFunc = scratchFileFunc;
   }
   
+  public ResultPage<Dataset> list(Page page) {
+    Page p = page == null ? new Page() : page;
+    try (SqlSession session = factory.openSession()) {
+      DatasetMapper mapper = session.getMapper(mapperClass);
+      List<Dataset> result = mapper.list(p);
+      return new ResultPage<>(p, result, mapper::count);
+    }
+  }
+  
   public ResultPage<Dataset> search(@Nullable DatasetSearchRequest nullableRequest, @Nullable Page page) {
     page = page == null ? new Page() : page;
     final DatasetSearchRequest req = nullableRequest == null || nullableRequest.isEmpty() ? new DatasetSearchRequest() : nullableRequest;

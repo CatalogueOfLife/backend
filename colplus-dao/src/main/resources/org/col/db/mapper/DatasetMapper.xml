@@ -115,15 +115,8 @@
             <if test="req.code != null">
                 AND code=#{req.code}
             </if>
-            <!-- for now this is rather hacky cause we sectors only apply to the draft CoL (key=3) -->
             <if test="req.contributesTo != null">
-                <if test="req.contributesTo == 3">
-                    AND exists(select 1 from sector s where s.dataset_key=d.key)
-                </if>
-                <!-- we only support catalogue 3 for now -->
-                <if test="req.contributesTo != 3">
-                    AND false
-                </if>
+                AND exists(select 1 from sector s WHERE dataset_key=#{req.contributesTo} AND s.subject_dataset_key=d.key)
             </if>
             <if test="req.format != null">
                 AND data_format=#{req.format}

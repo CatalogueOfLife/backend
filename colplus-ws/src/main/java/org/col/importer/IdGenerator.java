@@ -33,11 +33,18 @@ public class IdGenerator {
   /**
    * Uses a shared counter
    */
+  public IdGenerator(Supplier<Integer> start) {
+    this("", start);
+  }
+  
+  /**
+   * Uses a shared counter
+   */
   public IdGenerator(String prefix, Supplier<Integer> start) {
     this.prefix = prefix;
     counter = start;
   }
-
+  
   private static String smallestNonExistingPrefix(Stream<String> existingIds) {
     final char preferredPrefixChar = PREFERRED_PREFIX;
     final StringBuilder prefix = new StringBuilder(String.valueOf(preferredPrefixChar));

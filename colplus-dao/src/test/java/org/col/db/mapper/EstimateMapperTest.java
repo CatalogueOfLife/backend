@@ -28,6 +28,7 @@ public class EstimateMapperTest extends GlobalCRUDMapperTest<SpeciesEstimate, Es
   @Override
   SpeciesEstimate createTestEntity() {
     SpeciesEstimate d = new SpeciesEstimate();
+    d.setDatasetKey(Datasets.DRAFT_COL);
     d.setSubject(TestEntityGenerator.newSimpleNameWithoutStatusParent());
     d.setEstimate(34567);
     d.setType(EstimateType.DESCRIBED_SPECIES_EXTINCT);

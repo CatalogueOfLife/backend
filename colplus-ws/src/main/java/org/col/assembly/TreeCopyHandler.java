@@ -186,7 +186,7 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
       applyDecision(u, decisions.get(u.getId()));
     }
     if (skipUsage(u)) {
-      state.setTaxonCount(++ignoredCounter);
+      state.setIgnoredUsageCount(++ignoredCounter);
       // skip this taxon, but include children
       LOG.debug("Ignore {} [{}] type={}; status={}", u.getName().scientificNameAuthorship(), u.getId(), u.getName().getType(), u.getName().getNomStatus());
       // use taxons parent also as the parentID for this so children link one level up

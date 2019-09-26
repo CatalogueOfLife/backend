@@ -6,14 +6,23 @@ import javax.annotation.Nullable;
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.EditorialDecision;
 
-public interface DecisionMapper extends GlobalCRUDMapper<EditorialDecision> {
+public interface DecisionMapper extends CatalogueCRUDMapper<EditorialDecision> {
   
-  List<EditorialDecision> listByDataset(@Nullable @Param("datasetKey") Integer datasetKey, @Nullable @Param("id") String id);
+  /**
+   * List all decisions from a subject taxa in the source
+   * @param datasetKey catalogs dataset key
+   * @param subjectDatasetKey optional dataset filter
+   */
+  List<EditorialDecision> listBySubjectDataset(@Param("datasetKey") int datasetKey,
+                                               @Nullable @Param("subjectDatasetKey") Integer subjectDatasetKey,
+                                               @Nullable @Param("id") String id);
   
   /**
    * List all decisions that cannot anymore be linked to subject taxa in the source
-   * @param datasetKey optional dataset filter
+   * @param datasetKey catalogs dataset key
+   * @param subjectDatasetKey optional dataset filter
    */
-  List<EditorialDecision> subjectBroken(@Param("datasetKey") Integer datasetKey);
+  List<EditorialDecision> subjectBroken(@Param("datasetKey") int datasetKey,
+                                        @Nullable @Param("subjectDatasetKey") Integer subjectDatasetKey);
   
 }

@@ -2,6 +2,7 @@ package org.col.db.mapper;
 
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.EditorialDecision;
+import org.col.api.vocab.Datasets;
 import org.col.api.vocab.Lifezone;
 import org.col.api.vocab.TaxonomicStatus;
 import org.junit.Test;
@@ -15,7 +16,8 @@ public class DecisionMapperTest extends GlobalCRUDMapperTest<EditorialDecision, 
     super(DecisionMapper.class);
   }
   
-  final int datasetKey = DATASET11.getKey();
+  final int catalogeKey = Datasets.DRAFT_COL;
+  final int subjectDatasetKey = DATASET11.getKey();
   
   @Test
   public void brokenDecisions() {
@@ -27,10 +29,10 @@ public class DecisionMapperTest extends GlobalCRUDMapperTest<EditorialDecision, 
     mapper().create(d2);
     commit();
     
-    assertEquals(2, mapper().listByDataset(null, null).size());
-    assertEquals(2, mapper().listByDataset(datasetKey, null).size());
-    assertEquals(1, mapper().listByDataset(datasetKey, TestEntityGenerator.TAXON1.getId()).size());
-    assertEquals(1, mapper().subjectBroken(datasetKey).size());
+    assertEquals(2, mapper().listBySubjectDataset(catalogeKey,null, null).size());
+    assertEquals(2, mapper().listBySubjectDataset(catalogeKey, subjectDatasetKey, null).size());
+    assertEquals(1, mapper().listBySubjectDataset(catalogeKey, subjectDatasetKey, TestEntityGenerator.TAXON1.getId()).size());
+    assertEquals(1, mapper().subjectBroken(catalogeKey, subjectDatasetKey).size());
   }
   
   @Override
@@ -41,12 +43,13 @@ public class DecisionMapperTest extends GlobalCRUDMapperTest<EditorialDecision, 
   
   @Override
   EditorialDecision createTestEntity() {
-    return create(datasetKey);
+    return create(subjectDatasetKey);
   }
 
-  public static EditorialDecision create(int datasetKey) {
+  public static EditorialDecision create(int subjectDatasetKey) {
     EditorialDecision d = new EditorialDecision();
-    d.setDatasetKey(datasetKey);
+    d.setDatasetKey(Datasets.DRAFT_COL);
+    d.setSubjectDatasetKey(subjectDatasetKey);
     d.setSubject(TestEntityGenerator.newSimpleName());
     d.setMode(EditorialDecision.Mode.UPDATE);
     d.setName(TestEntityGenerator.newName());

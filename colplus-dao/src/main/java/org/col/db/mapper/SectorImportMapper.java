@@ -25,6 +25,7 @@ public interface SectorImportMapper {
    */
   int count(@Param("sectorKey") @Nullable Integer sectorKey,
             @Param("datasetKey") @Nullable Integer datasetKey,
+            @Param("subjectDatasetKey") @Nullable Integer subjectDatasetKey,
             @Param("states") Collection<SectorImport.State> states);
   
   /**
@@ -33,6 +34,7 @@ public interface SectorImportMapper {
    */
   List<SectorImport> list(@Param("sectorKey") @Nullable Integer sectorKey,
                           @Param("datasetKey") @Nullable Integer datasetKey,
+                          @Param("subjectDatasetKey") @Nullable Integer subjectDatasetKey,
                           @Param("states") @Nullable Collection<SectorImport.State> states,
                           @Param("page") Page page);
   

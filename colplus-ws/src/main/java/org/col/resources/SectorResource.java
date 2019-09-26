@@ -16,6 +16,7 @@ import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
+import org.col.api.vocab.Datasets;
 import org.col.assembly.AssemblyCoordinator;
 import org.col.dao.DatasetImportDao;
 import org.col.dao.SectorDao;
@@ -30,7 +31,7 @@ import org.slf4j.LoggerFactory;
 @Path("/sector")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class SectorResource extends GlobalEntityResource<Sector> {
+public class SectorResource extends CatalogueEntityResource<Sector> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorResource.class);
@@ -56,7 +57,7 @@ public class SectorResource extends GlobalEntityResource<Sector> {
   
   @GET
   public List<Sector> list(@Context SqlSession session, @QueryParam("datasetKey") Integer datasetKey) {
-    return session.getMapper(SectorMapper.class).listByDataset(datasetKey);
+    return session.getMapper(SectorMapper.class).listByDataset(Datasets.DRAFT_COL, datasetKey);
   }
   
   @GET
@@ -66,9 +67,9 @@ public class SectorResource extends GlobalEntityResource<Sector> {
                              @NotNull @QueryParam("datasetKey") Integer datasetKey) {
     SectorMapper mapper = session.getMapper(SectorMapper.class);
     if (target) {
-      return mapper.targetBroken(datasetKey);
+      return mapper.targetBroken(Datasets.DRAFT_COL, datasetKey);
     } else {
-      return mapper.subjectBroken(datasetKey);
+      return mapper.subjectBroken(Datasets.DRAFT_COL, datasetKey);
     }
   }
   

@@ -47,46 +47,51 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
   @Test
   public void list() {
     assertEquals(0, mapper().list(TAXON1.getDatasetKey(), null, null, AND,
-        Lists.newArrayList(Issue.ACCEPTED_ID_INVALID),
+        Lists.newArrayList(Issue.ACCEPTED_ID_INVALID),null,
         new Page()).size());
-    assertEquals(1, mapper().list(TAXON1.getDatasetKey(), null, null,AND,
-        Lists.newArrayList(Issue.ID_NOT_UNIQUE),
+  
+    assertEquals(1, mapper().list(TAXON1.getDatasetKey(), null, null, AND,
+        Lists.newArrayList(Issue.ID_NOT_UNIQUE), null,
         new Page()).size());
   
     insertTestData();
-    
+  
+    assertEquals(8, mapper().list(TAXON1.getDatasetKey(), null, null, AND,null, null, new Page()).size());
+    assertEquals(2, mapper().list(TAXON1.getDatasetKey(), null, null, AND,null, "abies", new Page()).size());
+    assertEquals(2, mapper().list(TAXON1.getDatasetKey(), null, null, AND,null, "t1", new Page()).size());
+    assertEquals(1, mapper().list(TAXON1.getDatasetKey(), null, null, AND,null, "alpina", new Page()).size());
   }
   
   @Test
   public void count() {
     // count apples. rely on import metrics for quick counts so derive them first
     generateDatasetImport(DATASET11.getKey());
-    assertEquals(5, mapper().count(datasetKey, null, null, AND,null));
-    assertEquals(3, mapper().count(datasetKey, Lists.newArrayList(AcefTerm.AcceptedSpecies), null, AND,null));
-    assertEquals(0, mapper().count(datasetKey, Lists.newArrayList(AcefTerm.AcceptedInfraSpecificTaxa), null, AND,null));
+    assertEquals(5, mapper().count(datasetKey, null, null, AND,null, null));
+    assertEquals(3, mapper().count(datasetKey, Lists.newArrayList(AcefTerm.AcceptedSpecies), null, AND,null, null));
+    assertEquals(0, mapper().count(datasetKey, Lists.newArrayList(AcefTerm.AcceptedInfraSpecificTaxa), null, AND,null, null));
   
     insertTestData();
-    assertEquals(8, mapper().count(datasetKey, null, null, AND,null));
-    assertEquals(2, mapper().count(datasetKey, Lists.newArrayList(AcefTerm.AcceptedInfraSpecificTaxa), new HashMap<>(), AND, new ArrayList<>()));
-    assertEquals(1, mapper().count(datasetKey, Lists.newArrayList(AcefTerm.AcceptedInfraSpecificTaxa), ImmutableMap.of(DwcTerm.genus, "Abies"), AND, null));
-    assertEquals(2, mapper().count(datasetKey, null, ImmutableMap.of(DwcTerm.genus, "Abies"), AND, null));
-    assertEquals(1, mapper().count(datasetKey, null, ImmutableMap.of(DwcTerm.genus, "Abies"), AND, Lists.newArrayList(Issue.BASIONYM_ID_INVALID)));
+    assertEquals(8, mapper().count(datasetKey, null, null, AND,null, null));
+    assertEquals(2, mapper().count(datasetKey, Lists.newArrayList(AcefTerm.AcceptedInfraSpecificTaxa), new HashMap<>(), AND, new ArrayList<>(), null));
+    assertEquals(1, mapper().count(datasetKey, Lists.newArrayList(AcefTerm.AcceptedInfraSpecificTaxa), ImmutableMap.of(DwcTerm.genus, "Abies"), AND, null, null));
+    assertEquals(2, mapper().count(datasetKey, null, ImmutableMap.of(DwcTerm.genus, "Abies"), AND, null, null));
+    assertEquals(1, mapper().count(datasetKey, null, ImmutableMap.of(DwcTerm.genus, "Abies"), AND, Lists.newArrayList(Issue.BASIONYM_ID_INVALID), null));
     assertEquals(0, mapper().count(datasetKey, null, ImmutableMap.of(
         AcefTerm.InfraSpeciesEpithet, "alpina",
         AcefTerm.AcceptedTaxonID, "t1"
-    ), AND, null));
+    ), AND, null, null));
     assertEquals(2, mapper().count(datasetKey, null, ImmutableMap.of(
         AcefTerm.InfraSpeciesEpithet, "alpina",
         AcefTerm.AcceptedTaxonID, "t1"
-    ), OR, null));
+    ), OR, null, null));
     assertEquals(1, mapper().count(datasetKey, null, ImmutableMap.of(
         AcefTerm.InfraSpeciesEpithet, "alpina",
         AcefTerm.AcceptedTaxonID, "t2"
-    ), AND, null));
+    ), AND, null, null));
     assertEquals(1, mapper().count(datasetKey, null, ImmutableMap.of(
         AcefTerm.InfraSpeciesEpithet, "alpina",
         AcefTerm.AcceptedTaxonID, "t2"
-    ), OR, null));
+    ), OR, null, null));
   }
   
   private void insertTestData() {

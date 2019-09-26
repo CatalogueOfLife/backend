@@ -9,7 +9,8 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
 import org.col.api.search.DatasetSearchRequest;
-import org.col.db.Pageable;
+import org.col.db.DatasetPageable;
+import org.col.db.GlobalPageable;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.DecisionMapper;
 import org.col.db.mapper.EstimateMapper;
@@ -22,6 +23,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Pager<T> implements Iterable<T> {
   private static final Logger LOG = LoggerFactory.getLogger(Pager.class);
+  private static final int DEFAULT_PAGE_SIZE = 100;
   private final int pageSize;
   private final Function<Page, List<T>> nextPageFunc;
   
@@ -31,32 +33,37 @@ public class Pager<T> implements Iterable<T> {
     this.nextPageFunc = nextPageFunc;
   }
   
-  public static Iterable<EditorialDecision> decisions(final SqlSessionFactory factory) {
-    return pager(100, DecisionMapper.class, factory);
+  public static Iterable<EditorialDecision> decisions(final int catalogueKey, final SqlSessionFactory factory) {
+    return pager(DEFAULT_PAGE_SIZE, catalogueKey, DecisionMapper.class, factory);
   }
   
-  public static Iterable<SpeciesEstimate> estimates(final SqlSessionFactory factory) {
-    return pager(100, EstimateMapper.class, factory);
+  public static Iterable<SpeciesEstimate> estimates(final int catalogueKey, final SqlSessionFactory factory) {
+    return pager(DEFAULT_PAGE_SIZE, catalogueKey, EstimateMapper.class, factory);
   }
 
-  public static Iterable<Sector> sectors(final SqlSessionFactory factory) {
-    return pager(100, SectorMapper.class, factory);
+  public static Iterable<Sector> sectors(final int catalogueKey, final SqlSessionFactory factory) {
+    return pager(DEFAULT_PAGE_SIZE, catalogueKey, SectorMapper.class, factory);
   }
   
   public static Iterable<Dataset> datasets(final SqlSessionFactory factory) {
-    return pager(100, DatasetMapper.class, factory);
+    return pager(DEFAULT_PAGE_SIZE, DatasetMapper.class, factory);
   }
   
-  private static <M> Iterable<M> pager(int pageSize, Class<? extends Pageable<M>> mapperClass, final SqlSessionFactory factory) {
+  private static <M> Iterable<M> pager(int pageSize, Class<? extends GlobalPageable<M>> mapperClass, final SqlSessionFactory factory) {
     PageablePager<M> pp = new PageablePager(mapperClass, factory);
     return new Pager<M>(pageSize, pp::nextPage);
   }
-  
+
+  private static <M> Iterable<M> pager(int pageSize, int datasetKey, Class<? extends DatasetPageable<M>> mapperClass, final SqlSessionFactory factory) {
+    DatasetPageablePager<M> pp = new DatasetPageablePager(datasetKey, mapperClass, factory);
+    return new Pager<M>(pageSize, pp::nextPage);
+  }
+
   public static Iterable<Dataset> datasets(final SqlSessionFactory factory, int contributesTo) {
     final DatasetSearchRequest req;
     req = new DatasetSearchRequest();
     req.setContributesTo(contributesTo);
-    return new Pager<Dataset>(100, new Function<Page, List<Dataset>>() {
+    return new Pager<>(DEFAULT_PAGE_SIZE, new Function<Page, List<Dataset>>() {
       @Override
       public List<Dataset> apply(Page page) {
         try (SqlSession session = factory.openSession()) {
@@ -67,16 +74,33 @@ public class Pager<T> implements Iterable<T> {
   }
   
   static class PageablePager<T> {
-    private final Class<Pageable<T>> mapperClass;
+    private final Class<GlobalPageable<T>> mapperClass;
     private final SqlSessionFactory factory;
   
-    PageablePager(Class<Pageable<T>> mapperClass, SqlSessionFactory factory) {
+    PageablePager(Class<GlobalPageable<T>> mapperClass, SqlSessionFactory factory) {
       this.mapperClass = mapperClass;
       this.factory = factory;
     }
     private List<T> nextPage(Page page) {
       try (SqlSession session = factory.openSession()) {
         return session.getMapper(mapperClass).list(page);
+      }
+    }
+  }
+  
+  static class DatasetPageablePager<T> {
+    private final Class<DatasetPageable<T>> mapperClass;
+    private final SqlSessionFactory factory;
+    private final int datasetKey;
+  
+    DatasetPageablePager(int datasetKey, Class<DatasetPageable<T>> mapperClass, SqlSessionFactory factory) {
+      this.mapperClass = mapperClass;
+      this.factory = factory;
+      this.datasetKey = datasetKey;
+    }
+    private List<T> nextPage(Page page) {
+      try (SqlSession session = factory.openSession()) {
+        return session.getMapper(mapperClass).list(datasetKey, page);
       }
     }
   }

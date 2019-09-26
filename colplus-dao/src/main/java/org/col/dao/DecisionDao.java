@@ -12,7 +12,7 @@ import org.col.es.NameUsageIndexService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DecisionDao extends GlobalEntityDao<EditorialDecision, DecisionMapper> {
+public class DecisionDao extends CatalogueEntityDao<EditorialDecision, DecisionMapper> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DecisionDao.class);
@@ -27,7 +27,7 @@ public class DecisionDao extends GlobalEntityDao<EditorialDecision, DecisionMapp
   @Override
   protected void createAfter(EditorialDecision obj, int user, DecisionMapper mapper, SqlSession session) {
     if (obj.getSubject().getId() != null) {
-      indexService.sync(obj.getDatasetKey(), Lists.newArrayList(obj.getSubject().getId()));
+      indexService.sync(obj.getSubjectDatasetKey(), Lists.newArrayList(obj.getSubject().getId()));
     }
   }
   
@@ -44,13 +44,13 @@ public class DecisionDao extends GlobalEntityDao<EditorialDecision, DecisionMapp
     if (obj.getSubject().getId() != null) {
       ids.add(obj.getSubject().getId());
     }
-    indexService.sync(obj.getDatasetKey(), ids);
+    indexService.sync(obj.getSubjectDatasetKey(), ids);
   }
   
   @Override
   protected void deleteAfter(Integer key, EditorialDecision old, int user, DecisionMapper mapper, SqlSession session) {
     if (old != null && old.getSubject().getId() != null) {
-      indexService.sync(old.getDatasetKey(), Lists.newArrayList(old.getSubject().getId()));
+      indexService.sync(old.getSubjectDatasetKey(), Lists.newArrayList(old.getSubject().getId()));
     }
   }
   

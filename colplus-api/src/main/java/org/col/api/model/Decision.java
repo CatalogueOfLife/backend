@@ -3,7 +3,7 @@ package org.col.api.model;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-public abstract class Decision implements GlobalEntity, UserManaged {
+public abstract class Decision implements CatalogueEntity, UserManaged {
   protected Integer key;
   protected Integer datasetKey; // the catalogues datasetKey
   protected Integer subjectDatasetKey; // the datasetKey the subject belongs to
@@ -26,7 +26,7 @@ public abstract class Decision implements GlobalEntity, UserManaged {
   }
   
   /**
-   * @return the dataset key the subject belongs to
+   * @return the dataset key of the catalogue to be assembled
    */
   public Integer getDatasetKey() {
     return datasetKey;
@@ -34,6 +34,17 @@ public abstract class Decision implements GlobalEntity, UserManaged {
   
   public void setDatasetKey(Integer datasetKey) {
     this.datasetKey = datasetKey;
+  }
+  
+  /**
+   * @return the dataset key the subject belongs to
+   */
+  public Integer getSubjectDatasetKey() {
+    return subjectDatasetKey;
+  }
+  
+  public void setSubjectDatasetKey(Integer subjectDatasetKey) {
+    this.subjectDatasetKey = subjectDatasetKey;
   }
   
   public SimpleName getSubject() {

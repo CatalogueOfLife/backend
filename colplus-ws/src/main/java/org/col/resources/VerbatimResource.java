@@ -43,6 +43,7 @@ public class VerbatimResource {
                                          @QueryParam("type") List<Term> types,
                                          @QueryParam("termOp") @DefaultValue("AND") LogicalOperator termOp,
                                          @QueryParam("issue") List<Issue> issues,
+                                         @QueryParam("q") String q,
                                          @Valid @BeanParam Page page,
                                          @Context UriInfo uri,
                                          @Context SqlSession session) {
@@ -50,8 +51,8 @@ public class VerbatimResource {
     Map<Term, String> terms = termFilter(uri.getQueryParameters());
     
     return new ResultPage<VerbatimRecord>(page,
-        mapper.count(datasetKey, types, terms, termOp, issues),
-        mapper.list(datasetKey, types, terms, termOp, issues, page)
+        mapper.count(datasetKey, types, terms, termOp, issues, q),
+        mapper.list(datasetKey, types, terms, termOp, issues, q, page)
     );
   }
   
