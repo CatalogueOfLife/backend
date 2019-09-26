@@ -113,17 +113,17 @@ public class AssemblyCoordinator implements Managed {
     try (SqlSession session = factory.openSession(true)) {
       try {
         //make sure dataset is currently not imported
-        if (importManager != null && importManager.isRunning(s.getDatasetKey())) {
+        if (importManager != null && importManager.isRunning(s.getSubjectDatasetKey())) {
           LOG.warn("Concurrently running dataset import. Cannot sync {}", s);
-          throw new IllegalArgumentException("Dataset "+s.getDatasetKey()+" currently being imported. Cannot sync " + s);
+          throw new IllegalArgumentException("Dataset "+s.getSubjectDatasetKey()+" currently being imported. Cannot sync " + s);
         }
         NameMapper nm = session.getMapper(NameMapper.class);
-        if (nm.hasData(s.getDatasetKey())) {
+        if (nm.hasData(s.getSubjectDatasetKey())) {
           return;
         }
       } catch (PersistenceException e) {
         // missing partitions cause this
-        LOG.debug("No partition exists for dataset {}", s.getDatasetKey(), e);
+        LOG.debug("No partition exists for dataset {}", s.getSubjectDatasetKey(), e);
       }
     }
     LOG.warn("Cannot sync {} which has never been imported", s);

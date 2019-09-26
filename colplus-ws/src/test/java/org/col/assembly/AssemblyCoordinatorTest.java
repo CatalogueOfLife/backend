@@ -43,6 +43,7 @@ public class AssemblyCoordinatorTest {
   @Test(expected = IllegalArgumentException.class)
   public void scheduleEmptyDataset() throws Exception {
     Sector sector = new Sector();
+    sector.setDatasetKey(Datasets.DRAFT_COL);
     sector.setMode(Sector.Mode.ATTACH);
     sector.setSubject(new SimpleName("7", "Insecta", Rank.CLASS));
     sector.setTarget(new SimpleName("123", "Arthropoda", Rank.PHYLUM));
@@ -55,7 +56,7 @@ public class AssemblyCoordinatorTest {
       
       final SectorMapper sm = session.getMapper(SectorMapper.class);
       // point to bad dataset
-      sector.setDatasetKey(d.getKey());
+      sector.setSubjectDatasetKey(d.getKey());
       sm.create(sector);
     }
 
@@ -66,6 +67,7 @@ public class AssemblyCoordinatorTest {
   public void syncAll() throws Exception {
     Sector sector = new Sector();
     sector.setMode(Sector.Mode.ATTACH);
+    sector.setDatasetKey(Datasets.DRAFT_COL);
     sector.setSubject(new SimpleName("7", "Insecta", Rank.CLASS));
     sector.setTarget(new SimpleName("123", "Arthropoda", Rank.PHYLUM));
     sector.applyUser(TestEntityGenerator.USER_EDITOR);
@@ -77,7 +79,7 @@ public class AssemblyCoordinatorTest {
       
       final SectorMapper sm = session.getMapper(SectorMapper.class);
       // point to bad dataset
-      sector.setDatasetKey(d.getKey());
+      sector.setSubjectDatasetKey(d.getKey());
       sm.create(sector);
     }
     

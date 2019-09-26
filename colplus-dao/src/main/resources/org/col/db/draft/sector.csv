@@ -1,4 +1,4 @@
-key,dataset_key,subject_rank,subject_name,target_rank,target_name,target_id
+key,subject_dataset_key,subject_rank,subject_name,target_rank,target_name,target_id
 1,1053,phylum,Mycetozoa,kingdom,Protozoa,7b3a7eb4-e311-4521-813b-c288e408e005
 2,1028,phylum,Percolozoa,kingdom,Protozoa,7b3a7eb4-e311-4521-813b-c288e408e005
 3,1148,phylum,Microsporidia,kingdom,Protozoa,7b3a7eb4-e311-4521-813b-c288e408e005

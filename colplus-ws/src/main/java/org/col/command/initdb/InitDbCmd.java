@@ -172,6 +172,7 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
     // https://github.com/Sp2000/colplus-repo#sector-exports
     PgCopyUtils.copy(pgc, "sector", "/org/col/db/draft/sector.csv", ImmutableMap.<String, Object>builder()
         .put("mode", Sector.Mode.ATTACH)
+        .put("dataset_key", Datasets.DRAFT_COL)
         .put("created_by", Users.DB_INIT)
         .put("modified_by", Users.DB_INIT)
         .build());
@@ -181,6 +182,7 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
         .put("modified_by", Users.DB_INIT)
         .build());
     PgCopyUtils.copy(pgc, "estimate", "/org/col/db/draft/estimate.csv", ImmutableMap.<String, Object>builder()
+        .put("dataset_key", Datasets.DRAFT_COL)
         .put("created_by", Users.DB_INIT)
         .put("modified_by", Users.DB_INIT)
         .build());
@@ -210,7 +212,7 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
         .build());
   
     LOG.info("Match draft CoL to names index");
-    // we create a new names index denovo to write new hierarchy names into the names index dataset
+    // we create a new names index de novo to write new hierarchy names into the names index dataset
     AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
     try (NameIndex ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, factory, aNormalizer)) {
       DatasetMatcher matcher = new DatasetMatcher(factory, ni, false);
