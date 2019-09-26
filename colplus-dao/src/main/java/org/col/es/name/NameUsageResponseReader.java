@@ -5,7 +5,6 @@ import java.io.IOException;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
-import org.apache.commons.io.IOUtils;
 import org.col.es.EsModule;
 import org.elasticsearch.client.Response;
 import org.slf4j.Logger;
@@ -33,7 +32,6 @@ public class NameUsageResponseReader {
   }
 
   public NameUsageResponse readResponse() throws IOException {
-    //LOG.info("XXXXXXXXXXXXXXX: " + IOUtils.toString(httpResponse.getEntity().getContent(),"UTF-8"));
     NameUsageResponse response = RESPONSE_READER.readValue(httpResponse.getEntity().getContent());
     if (LOG.isTraceEnabled()) {
       ObjectWriter ow = EsModule.MAPPER.writerFor(NameUsageResponse.class).withDefaultPrettyPrinter();

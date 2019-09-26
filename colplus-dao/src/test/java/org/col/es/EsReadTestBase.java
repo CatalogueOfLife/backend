@@ -24,8 +24,6 @@ import org.junit.ClassRule;
 
 import static java.util.stream.Collectors.toList;
 
-
-
 /**
  * Base class for tests that only read from ES. Does not provide postgres functionality and saves setup/initialization
  * time accordingly.
@@ -75,6 +73,10 @@ public class EsReadTestBase {
     return new NameUsageSearchService(indexName, getEsClient()).getDocuments(esr);
   }
 
+  protected List<NameUsageDocument> queryRaw(EsSearchRequest rawRequest) {
+    return new NameUsageSearchService(indexName, getEsClient()).getDocuments(rawRequest);
+  }
+
   protected NameUsageDocument toDocument(NameUsageWrapper nameUsage) {
     try {
       return new NameUsageWrapperConverter().toDocument(nameUsage);
@@ -105,7 +107,7 @@ public class EsReadTestBase {
 
   /**
    * Creates the requested number of name usages with all fields required to allow them to be indexed without NPEs and
-   * other errors. 
+   * other errors.
    * 
    * @param howmany
    * @return

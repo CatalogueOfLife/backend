@@ -17,10 +17,10 @@ class SortByTranslator {
 
   List<SortField> translate() {
     if (request.getSortBy() == SortBy.NAME) {
-      return CollapsibleList.of(new SortField("scientificNameWN", !request.isReverse()));
+      return CollapsibleList.of(new SortField("scientificName", !request.isReverse()));
     }
     if (request.getSortBy() == SortBy.TAXONOMIC) {
-      return CollapsibleList.of(new SortField("rank", !request.isReverse()), new SortField("scientificNameWN"));
+      return CollapsibleList.of(new SortField("rank", !request.isReverse()), new SortField("scientificName"));
     }
     return CollapsibleList.of(SortField.DOC);
   }
