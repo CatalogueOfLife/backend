@@ -4,12 +4,13 @@ import org.col.api.search.NameSuggestRequest;
 import org.col.es.query.BoolQuery;
 import org.col.es.query.EsSearchRequest;
 import org.col.es.query.RangeQuery;
+import org.col.es.query.SortField;
 import org.col.es.query.TermQuery;
 
 import static org.gbif.api.vocabulary.Rank.SPECIES;
 
 /**
- * Translates the {@code NameSuggestRequest} into a real Elasticsearch search request.
+ * Translates the {@code NameSuggestRequest} into a native Elasticsearch search request.
  */
 class RequestTranslator {
 
@@ -27,6 +28,7 @@ class RequestTranslator {
     return new EsSearchRequest()
         .select("usageId", "scientificName", "acceptedName", "rank", "nomCode")
         .where(query)
+        .sortBy(SortField.SCORE) // required b/c default is _doc !
         .size(request.getLimit());
   }
 

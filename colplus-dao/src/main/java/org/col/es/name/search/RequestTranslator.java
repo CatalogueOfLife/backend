@@ -9,7 +9,7 @@ import org.col.es.query.MatchAllQuery;
 import org.col.es.query.Query;
 
 /**
- * Translates a NameSearchRequest into an Elasticsearch search request. Main class of this package.
+ * Translates a NameSearchRequest into a native Elasticsearch search request.
  */
 class RequestTranslator {
 
@@ -24,7 +24,7 @@ class RequestTranslator {
     }
     return new BoolQuery()
         .filter(new FiltersTranslator(request).translate())
-        .must(new QTranslator(request).translate());
+        .filter(new QTranslator(request).translate());
   }
 
   private final NameSearchRequest request;

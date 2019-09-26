@@ -1,5 +1,6 @@
 package org.col.es.query;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -10,9 +11,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.col.es.EsModule;
 
 /**
- * Class modeling a complete Elasticsearch search request. Serializing it to JSON produces a syntactically valid Elasticsearch query (e.g.
- * which you could execute in Kibana). Instances of this class are produced by a NameSearchRequestTranslator using a NameSearchRequest
- * object as input.
+ * Class modeling a complete Elasticsearch search request. Serializing it to JSON produces a syntactically valid
+ * Elasticsearch query (e.g. which you could execute in Kibana). Instances of this class are produced by a
+ * NameSearchRequestTranslator using a NameSearchRequest object as input.
  */
 public class EsSearchRequest {
 
@@ -46,6 +47,11 @@ public class EsSearchRequest {
 
   public EsSearchRequest whereEquals(String field, Object value) {
     this.query = new TermQuery(field, value);
+    return this;
+  }
+
+  public EsSearchRequest sortBy(SortField... sortBy) {
+    this.sort = Arrays.asList(sortBy);
     return this;
   }
 
