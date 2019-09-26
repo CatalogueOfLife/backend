@@ -1,5 +1,6 @@
-package org.col.es.ddl;
+package org.col.es.mapping;
 
+import org.col.es.ddl.JsonUtil;
 import org.col.es.mapping.Mappings;
 import org.col.es.mapping.MappingsFactory;
 import org.col.es.model.NameUsageDocument;

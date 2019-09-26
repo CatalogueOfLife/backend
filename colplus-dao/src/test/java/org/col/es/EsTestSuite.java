@@ -1,6 +1,6 @@
 package org.col.es;
 
-import org.col.es.ddl.MappingFactoryTest;
+import org.col.es.mapping.MappingFactoryTest;
 import org.col.es.name.EsNameUsageSerde;
 import org.col.es.name.Issue333;
 import org.col.es.name.MultiValuedMapTest;
@@ -19,6 +19,7 @@ import org.col.es.name.search.SortingTest;
 import org.col.es.query.CollapsibleListTest;
 import org.col.es.query.PrefixQueryTest;
 import org.col.es.query.QueryTest;
+import org.col.es.query.RangeQueryTest;
 import org.col.es.query.TermQueryTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -47,6 +48,7 @@ import org.junit.runners.Suite.SuiteClasses;
     PrefixQueryTest.class,
     QSearchTests.class,
     QueryTest.class,
+    RangeQueryTest.class,
     RequestTranslatorTest.class,
     SortingTest.class,
     TermQueryTest.class

@@ -25,8 +25,9 @@ public abstract class ConstraintQuery<T extends Constraint> implements Query {
     return (Q) this;
   }
 
-  // Usually the Constraint instance is a top-level field within the subclasses, but not always, so we can't include
-  // the Constraint instance here.
+  // Usually the Constraint instance either is a top-level field within the subclass or the value of a singleton map
+  // within the subclass. But this base class doesn't know which of the two, so it's up to the subclasses to return the
+  // Constraint instance.
   abstract T getConstraint();
 
 }
