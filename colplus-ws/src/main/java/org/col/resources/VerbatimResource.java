@@ -65,7 +65,7 @@ public class VerbatimResource {
         if (filter.getFirst(f) == null) continue;
         Term t = TermFactory.instance().findPropertyTerm(f);
         if (t instanceof UnknownTerm) {
-          throw new IllegalArgumentException("Unknown term parameter" + f);
+          throw new IllegalArgumentException("Unknown term parameter " + f);
         }
         terms.put(t, filter.getFirst(f));
       }
