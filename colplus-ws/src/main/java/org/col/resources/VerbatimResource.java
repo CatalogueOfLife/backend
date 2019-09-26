@@ -32,6 +32,7 @@ public class VerbatimResource {
     paras.add("type");
     paras.add("issue");
     paras.add("termOp");
+    paras.add("q");
     KNOWN_PARAMS = Collections.unmodifiableSet(paras);
   }
   
