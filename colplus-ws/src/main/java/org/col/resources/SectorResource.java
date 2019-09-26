@@ -55,6 +55,19 @@ public class SectorResource extends CatalogueEntityResource<Sector> {
     assembly.deleteSector(key, user);
   }
   
+  @DELETE
+  @Path("dataset/{key}")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void deleteDatasetSectors(@PathParam("datasetKey") int datasetKey, @Context SqlSession session, @Auth ColUser user) {
+    SectorMapper sm = session.getMapper(SectorMapper.class);
+    int counter = 0;
+    for (Sector s : sm.listByDataset(Datasets.DRAFT_COL, datasetKey)) {
+      assembly.deleteSector(s.getKey(), user);
+      counter++;
+    }
+    LOG.info("Scheduled deletion of all {} draft sectors for dataset {}", counter, datasetKey);
+  }
+  
   @GET
   public List<Sector> list(@Context SqlSession session, @QueryParam("datasetKey") Integer datasetKey) {
     return session.getMapper(SectorMapper.class).listByDataset(Datasets.DRAFT_COL, datasetKey);
