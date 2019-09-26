@@ -5,8 +5,8 @@ import java.util.Set;
 import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
 import org.col.es.InvalidQueryException;
-import org.col.es.dsl.BoolQuery;
-import org.col.es.dsl.Query;
+import org.col.es.query.BoolQuery;
+import org.col.es.query.Query;
 
 /**
  * Translates all query parameters except the "q" parameter into an Elasticsearch query. Unless there is just one query parameter, this will

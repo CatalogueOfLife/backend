@@ -3,10 +3,10 @@ package org.col.es.query;
 import java.util.List;
 
 import org.col.es.EsReadTestBase;
-import org.col.es.dsl.CaseInsensitivePrefixQuery;
-import org.col.es.dsl.PrefixQuery;
-import org.col.es.dsl.Query;
 import org.col.es.model.NameUsageDocument;
+import org.col.es.query.CaseInsensitivePrefixQuery;
+import org.col.es.query.PrefixQuery;
+import org.col.es.query.Query;
 import org.junit.Before;
 import org.junit.Test;
 

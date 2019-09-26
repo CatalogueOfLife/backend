@@ -3,8 +3,8 @@ package org.col.es.query;
 import java.util.List;
 
 import org.col.es.EsReadTestBase;
-import org.col.es.dsl.TermQuery;
 import org.col.es.model.NameUsageDocument;
+import org.col.es.query.TermQuery;
 import org.junit.Before;
 import org.junit.Test;
 

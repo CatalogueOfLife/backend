@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.col.api.search.NameSearchRequest;
-import org.col.es.dsl.BoolQuery;
-import org.col.es.dsl.Query;
+import org.col.es.query.BoolQuery;
+import org.col.es.query.Query;
 
 import static org.col.api.search.NameSearchRequest.SearchContent.AUTHORSHIP;
 import static org.col.api.search.NameSearchRequest.SearchContent.SCIENTIFIC_NAME;

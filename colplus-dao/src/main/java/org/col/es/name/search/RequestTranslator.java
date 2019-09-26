@@ -3,10 +3,10 @@ package org.col.es.name.search;
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.Page;
 import org.col.api.search.NameSearchRequest;
-import org.col.es.dsl.BoolQuery;
-import org.col.es.dsl.EsSearchRequest;
-import org.col.es.dsl.MatchAllQuery;
-import org.col.es.dsl.Query;
+import org.col.es.query.BoolQuery;
+import org.col.es.query.EsSearchRequest;
+import org.col.es.query.MatchAllQuery;
+import org.col.es.query.Query;
 
 /**
  * Translates a NameSearchRequest into an Elasticsearch search request. Main class of this package.

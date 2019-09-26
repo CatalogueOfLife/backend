@@ -7,7 +7,7 @@ import java.util.Set;
 
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchRequest.SearchContent;
-import org.col.es.dsl.Highlight;
+import org.col.es.query.Highlight;
 
 import static org.col.common.collection.CollectionUtils.isEmpty;
 

@@ -2,13 +2,13 @@ package org.col.es.name;
 
 import java.util.Arrays;
 
-import org.col.es.dsl.AutoCompleteQuery;
-import org.col.es.dsl.BoolQuery;
-import org.col.es.dsl.CaseInsensitivePrefixQuery;
-import org.col.es.dsl.DisMaxQuery;
-import org.col.es.dsl.PrefixQuery;
-import org.col.es.dsl.Query;
-import org.col.es.dsl.TermQuery;
+import org.col.es.query.AutoCompleteQuery;
+import org.col.es.query.BoolQuery;
+import org.col.es.query.CaseInsensitivePrefixQuery;
+import org.col.es.query.DisMaxQuery;
+import org.col.es.query.PrefixQuery;
+import org.col.es.query.Query;
+import org.col.es.query.TermQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

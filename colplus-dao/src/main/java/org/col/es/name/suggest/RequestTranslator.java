@@ -1,10 +1,10 @@
 package org.col.es.name.suggest;
 
 import org.col.api.search.NameSuggestRequest;
-import org.col.es.dsl.BoolQuery;
-import org.col.es.dsl.EsSearchRequest;
-import org.col.es.dsl.RangeQuery;
-import org.col.es.dsl.TermQuery;
+import org.col.es.query.BoolQuery;
+import org.col.es.query.EsSearchRequest;
+import org.col.es.query.RangeQuery;
+import org.col.es.query.TermQuery;
 
 import static org.gbif.api.vocabulary.Rank.SPECIES;
 

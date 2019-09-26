@@ -4,12 +4,12 @@ import java.util.Map;
 
 import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
-import org.col.es.dsl.Aggregation;
-import org.col.es.dsl.FacetAggregation;
-import org.col.es.dsl.FilterAggregation;
-import org.col.es.dsl.GlobalAggregation;
-import org.col.es.dsl.Query;
 import org.col.es.name.NameUsageFieldLookup;
+import org.col.es.query.Aggregation;
+import org.col.es.query.FacetAggregation;
+import org.col.es.query.FilterAggregation;
+import org.col.es.query.GlobalAggregation;
+import org.col.es.query.Query;
 
 import static java.util.Collections.singletonMap;
 

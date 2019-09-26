@@ -14,11 +14,11 @@ import org.col.api.model.Taxon;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchResponse;
 import org.col.api.search.NameUsageWrapper;
-import org.col.es.dsl.EsSearchRequest;
-import org.col.es.dsl.Query;
 import org.col.es.model.NameUsageDocument;
 import org.col.es.name.NameUsageWrapperConverter;
 import org.col.es.name.search.NameUsageSearchService;
+import org.col.es.query.EsSearchRequest;
+import org.col.es.query.Query;
 import org.elasticsearch.client.RestClient;
 import org.junit.ClassRule;
 

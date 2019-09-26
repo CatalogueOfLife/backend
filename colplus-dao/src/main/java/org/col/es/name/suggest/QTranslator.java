@@ -1,8 +1,8 @@
 package org.col.es.name.suggest;
 
 import org.col.api.search.NameSuggestRequest;
-import org.col.es.dsl.BoolQuery;
-import org.col.es.dsl.Query;
+import org.col.es.query.BoolQuery;
+import org.col.es.query.Query;
 
 import static org.col.es.name.QTranslationUtils.getScientificNameQuery;
 import static org.col.es.name.QTranslationUtils.getVernacularNameQuery;

@@ -5,8 +5,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.col.es.dsl.PrefixQuery;
-import org.col.es.dsl.TermQuery;
+import org.col.es.query.PrefixQuery;
+import org.col.es.query.TermQuery;
 
 /**
  * Indicates that the getter decorated with this annotation is not indexed (and hence not searchable). By default all
