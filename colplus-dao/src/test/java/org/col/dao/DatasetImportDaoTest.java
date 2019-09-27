@@ -4,6 +4,7 @@ import org.col.api.TestEntityGenerator;
 import org.col.api.model.DatasetImport;
 import org.col.api.vocab.*;
 import org.gbif.dwc.terms.AcefTerm;
+import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
@@ -76,6 +77,11 @@ public class DatasetImportDaoTest extends DaoTestBase {
     
     assertEquals(2, d.getVerbatimByTypeCount().size());
     assertEquals((Integer) 3, d.getVerbatimByTypeCount().get(AcefTerm.AcceptedSpecies));
+    assertEquals(2, d.getVerbatimByTermCount().size());
+    assertEquals(18, d.getVerbatimByTermCount().get(AcefTerm.AcceptedSpecies).size());
+    for (Term t : d.getVerbatimByTermCount().get(AcefTerm.AcceptedSpecies).keySet()) {
+      assertEquals(AcefTerm.class, t.getClass());
+    }
   }
 
 }

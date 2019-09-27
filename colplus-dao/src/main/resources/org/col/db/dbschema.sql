@@ -210,6 +210,7 @@ CREATE TABLE dataset_import (
   names_by_status_count HSTORE,
   name_relations_by_type_count HSTORE,
   verbatim_by_type_count HSTORE,
+  verbatim_by_term_count JSONB,
   media_by_type_count HSTORE,
   PRIMARY KEY (dataset_key, attempt)
 );

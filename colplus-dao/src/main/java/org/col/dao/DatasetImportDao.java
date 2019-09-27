@@ -176,8 +176,16 @@ public class DatasetImportDao {
     di.setNamesByTypeCount(DatasetImportDao.countMap(NameType.class, mapper.countNamesByType(key)));
     di.setTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(key)));
     di.setUsagesByStatusCount(DatasetImportDao.countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(key)));
-    di.setVerbatimByTypeCount(countMap(DatasetImportDao::parseTerm, mapper.countVerbatimByType(key)));
+    di.setVerbatimByTypeCount(countMap(DatasetImportDao::parseRowType, mapper.countVerbatimByType(key)));
     di.setVernacularsByLanguageCount(countMap(mapper.countVernacularsByLanguage(key)));
+    
+    // verbatim term metrics for each row type
+    for (Term rowType : di.getVerbatimByTypeCount().keySet()) {
+      Map<Term, Integer> terms = countMap(DatasetImportDao::parseTerm, mapper.countVerbatimTerms(key, rowType));
+      if (!terms.isEmpty()) {
+        di.getVerbatimByTermCount().put(rowType, terms);
+      }
+    }
   }
   
   public static Map<String, Integer> countMap(List<StringCount> counts) {
@@ -216,10 +224,14 @@ public class DatasetImportDao {
     return Optional.of(Rank.valueOf(rank.toUpperCase()));
   }
   
-  private static Optional<Term> parseTerm(String term) {
+  private static Optional<Term> parseRowType(String term) {
     return Optional.of(TermFactory.instance().findClassTerm(term));
   }
   
+  private static Optional<Term> parseTerm(String term) {
+    return Optional.of(TermFactory.instance().findPropertyTerm(term));
+  }
+
   /**
    * Creates a new dataset import instance without metrics for a failed import.
    */
