@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import io.dropwizard.lifecycle.Managed;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.api.vocab.Users;
 import org.col.config.GbifConfig;
 import org.col.api.model.Dataset;
 import org.col.api.model.Page;
@@ -112,6 +113,8 @@ public class GbifSync implements Managed {
     private void sync(Dataset gbif, Dataset curr) throws Exception {
       if (curr == null) {
         // create new dataset
+        gbif.setCreatedBy(Users.GBIF_SYNC);
+        gbif.setModifiedBy(Users.GBIF_SYNC);
         mapper.create(gbif);
         created++;
         LOG.info("New dataset {} added from GBIF: {}", gbif.getKey(), gbif.getTitle());
@@ -139,6 +142,11 @@ public class GbifSync implements Managed {
   
   public boolean isActive() {
     return job != null;
+  }
+  
+  public void syncNow() {
+    Runnable job = new GbifSyncJob(cfg, rxClient, sessionFactory);
+    job.run();
   }
   
   @Override

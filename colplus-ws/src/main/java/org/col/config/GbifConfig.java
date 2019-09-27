@@ -16,5 +16,5 @@ public class GbifConfig {
    * If false just updates existing datasets,
    * if true inserts missing checklists from GBIF
    */
-  public boolean insert = false;
+  public boolean insert = true;
 }
