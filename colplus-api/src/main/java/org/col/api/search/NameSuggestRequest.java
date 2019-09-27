@@ -2,14 +2,21 @@ package org.col.api.search;
 
 import java.util.Objects;
 
+import javax.ws.rs.QueryParam;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class NameSuggestRequest {
 
+  @QueryParam("q")
   private String q;
+  @QueryParam("datasetKey")
   private Integer datasetKey;
   // Desired number of suggestions
+  @QueryParam("limit")
   private Integer limit;
+  // Suggest vernacular names as well?
+  @QueryParam("vernaculars")
   private Boolean suggestVernaculars;
 
   @JsonIgnore

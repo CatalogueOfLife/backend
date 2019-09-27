@@ -121,8 +121,8 @@ public class QTranslationUtils {
 
   private static Query matchSearchPhrase(String field, String q) {
     /*
-     * If we the user has typed one big word we still try to help him/her. If he/she typed several big words then the
-     * search/suggest service blanks out.
+     * If we the user has typed one big search term we still try to helpful. With multiple big search terms the
+     * search/suggest service just blanks out.
      */
     if (q.length() > MAX_NGRAM_SIZE && countTokens(q) == 1) {
       return new CaseInsensitivePrefixQuery(field, q);

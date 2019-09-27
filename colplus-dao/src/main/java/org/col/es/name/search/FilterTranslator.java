@@ -55,7 +55,7 @@ class FilterTranslator {
   }
 
   private List<?> getLiteralValues(NameSearchParameter param) throws InvalidQueryException {
-    return request.getFilterValue(param)
+    return request.getFilterValues(param)
         .stream()
         .filter(this::isLiteral)
         .collect(Collectors.toList());
@@ -67,11 +67,11 @@ class FilterTranslator {
 
   // Is one of the values of the query parameter the symbol for IS NULL?
   private boolean containsNullValue(NameSearchParameter param) {
-    return request.getFilterValue(param).stream().anyMatch(s -> s.equals(IS_NULL));
+    return request.getFilterValues(param).stream().anyMatch(s -> s.equals(IS_NULL));
   }
 
   // Is one of the values of the query parameter the symbol for IS NOT NULL?
   private boolean containsNotNullValue(NameSearchParameter param) {
-    return request.getFilterValue(param).stream().anyMatch(s -> s.equals(IS_NOT_NULL));
+    return request.getFilterValues(param).stream().anyMatch(s -> s.equals(IS_NOT_NULL));
   }
 }

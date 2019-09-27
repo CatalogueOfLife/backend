@@ -19,13 +19,12 @@ class QTranslator {
   }
 
   Query translate() {
-    String q = request.getQ().trim().toLowerCase();
-    Query snQuery = getScientificNameQuery(q).withName(SN_QUERY_NAME);
     if (request.isSuggestVernaculars()) {
-      Query vnQuery = getVernacularNameQuery(q).withName(VN_QUERY_NAME);
-      return new BoolQuery().should(snQuery).should(vnQuery);
+      return new BoolQuery()
+          .should(getScientificNameQuery(request.getQ()).withName(SN_QUERY_NAME))
+          .should(getVernacularNameQuery(request.getQ()).withName(VN_QUERY_NAME));
     }
-    return snQuery;
+    return getScientificNameQuery(request.getQ()).withName(SN_QUERY_NAME);
   }
 
 }

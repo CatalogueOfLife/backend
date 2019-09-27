@@ -7,7 +7,7 @@ import org.col.es.query.RangeQuery;
 import org.col.es.query.SortField;
 import org.col.es.query.TermQuery;
 
-import static org.gbif.api.vocabulary.Rank.SPECIES;
+import static org.gbif.nameparser.api.Rank.SPECIES;
 
 /**
  * Translates the {@code NameSuggestRequest} into a native Elasticsearch search request.

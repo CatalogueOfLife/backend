@@ -7,6 +7,7 @@ import java.util.List;
 import org.col.api.search.NameSuggestRequest;
 import org.col.api.search.NameSuggestResponse;
 import org.col.api.search.NameSuggestion;
+import org.col.es.EsException;
 import org.col.es.name.NameUsageResponse;
 import org.col.es.name.NameUsageService;
 import org.col.es.name.search.NameUsageSearchService;
@@ -24,17 +25,18 @@ public class NameSuggestionService extends NameUsageService {
     super(indexName, client);
   }
 
-  public NameSuggestResponse suggestNames(NameSuggestRequest request) throws IOException {
+  public NameSuggestResponse suggestNames(NameSuggestRequest request) {
     RequestTranslator translator = new RequestTranslator(request);
     EsSearchRequest query = translator.translate();
-    NameUsageResponse esResponse = executeSearchRequest(index, query);
+    NameUsageResponse esResponse;
+    try {
+      esResponse = executeSearchRequest(index, query);
+    } catch (IOException e) {
+      throw new EsException(e);
+    }
     List<NameSuggestion> suggestions = new ArrayList<>(request.getLimit());
     SuggestionFactory factory = new SuggestionFactory(request);
     esResponse.getHits().getHits().forEach(hit -> {
-      /*
-       * Theoretically the user could have typed something that matched both a scientific name and a vernacular name in one
-       * and the same document:
-       */
       if (hit.matchedQuery(QTranslator.SN_QUERY_NAME)) {
         suggestions.add(factory.createSuggestion(hit, false));
       }
