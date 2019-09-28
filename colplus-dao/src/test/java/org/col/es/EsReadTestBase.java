@@ -13,10 +13,13 @@ import org.col.api.model.Page;
 import org.col.api.model.Taxon;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchResponse;
+import org.col.api.search.NameSuggestRequest;
+import org.col.api.search.NameSuggestResponse;
 import org.col.api.search.NameUsageWrapper;
 import org.col.es.model.NameUsageDocument;
 import org.col.es.name.NameUsageWrapperConverter;
 import org.col.es.name.search.NameUsageSearchService;
+import org.col.es.name.suggest.NameSuggestionService;
 import org.col.es.query.EsSearchRequest;
 import org.col.es.query.Query;
 import org.elasticsearch.client.RestClient;
@@ -103,6 +106,10 @@ public class EsReadTestBase {
 
   protected NameSearchResponse search(NameSearchRequest query) {
     return new NameUsageSearchService(indexName, getEsClient()).search(query, new Page(0, 1000));
+  }
+
+  protected NameSuggestResponse suggest(NameSuggestRequest query) {
+    return new NameSuggestionService(indexName, getEsClient()).suggest(query);
   }
 
   /**

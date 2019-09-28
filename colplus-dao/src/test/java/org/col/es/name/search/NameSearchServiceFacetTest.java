@@ -1,4 +1,4 @@
-package org.col.es.name;
+package org.col.es.name.search;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -25,6 +25,7 @@ import org.col.api.vocab.Issue;
 import org.col.es.EsModule;
 import org.col.es.EsReadTestBase;
 import org.col.es.model.NameUsageDocument;
+import org.col.es.name.NameUsageWrapperConverter;
 import org.col.es.name.search.NameUsageSearchService;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
@@ -33,7 +34,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
+public class NameSearchServiceFacetTest extends EsReadTestBase {
 
   private static final String dummyPayload = getDummyPayload();
 

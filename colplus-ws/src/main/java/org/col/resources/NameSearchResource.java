@@ -52,7 +52,7 @@ public class NameSearchResource {
   @Timed
   @Path("/suggest")
   public NameSuggestResponse suggest(@BeanParam NameSuggestRequest query) {
-    return svcSuggest.suggestNames(query);
+    return svcSuggest.suggest(query);
   }
 
 }

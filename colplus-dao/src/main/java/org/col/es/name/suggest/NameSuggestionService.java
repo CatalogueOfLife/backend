@@ -25,7 +25,7 @@ public class NameSuggestionService extends NameUsageService {
     super(indexName, client);
   }
 
-  public NameSuggestResponse suggestNames(NameSuggestRequest request) {
+  public NameSuggestResponse suggest(NameSuggestRequest request) {
     RequestTranslator translator = new RequestTranslator(request);
     EsSearchRequest query = translator.translate();
     NameUsageResponse esResponse;
@@ -34,7 +34,7 @@ public class NameSuggestionService extends NameUsageService {
     } catch (IOException e) {
       throw new EsException(e);
     }
-    List<NameSuggestion> suggestions = new ArrayList<>(request.getLimit());
+    List<NameSuggestion> suggestions = new ArrayList<>();
     SuggestionFactory factory = new SuggestionFactory(request);
     esResponse.getHits().getHits().forEach(hit -> {
       if (hit.matchedQuery(QTranslator.SN_QUERY_NAME)) {

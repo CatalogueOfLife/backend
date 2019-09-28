@@ -12,7 +12,12 @@ class SuggestionFactory {
   private final VernacularNameMatcher matcher;
 
   SuggestionFactory(NameSuggestRequest request) {
-    this.matcher = request.isSuggestVernaculars() ? new VernacularNameMatcher(request) : null;
+    if (request.isSuggestVernaculars()) {
+      this.matcher = new VernacularNameMatcher(request);
+    } else {
+      // matcher is not going to be used
+      this.matcher = null;
+    }
   }
 
   NameSuggestion createSuggestion(SearchHit<NameUsageDocument> hit, boolean isVernacularName) {
@@ -26,7 +31,7 @@ class SuggestionFactory {
     } else {
       suggestion.setMatch(doc.getScientificName());
     }
-    if (doc.getStatus().isSynonym()) {
+    if (doc.getStatus() != null && doc.getStatus().isSynonym()) {
       suggestion.setAcceptedName(doc.getAcceptedName());
     }
     suggestion.setUsageId(doc.getUsageId());

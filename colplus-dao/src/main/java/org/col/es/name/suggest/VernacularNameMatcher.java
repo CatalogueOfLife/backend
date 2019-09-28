@@ -7,9 +7,9 @@ import org.col.api.search.NameSuggestRequest;
 
 /**
  * Determines which of the vernacular names in a usage document actually matched the search phrase (q). Using named
- * queries we can identify the document was returned because the q could be matched against its scientific name or
- * against its vernacular names. Unfortunately if the document contains multiple vernacular names, we still don't which
- * one constituted the match.
+ * queries we can determine whether a document was returned because the q could be matched ascientific name or a
+ * vernacular name. Unfortunately if the document contains multiple vernacular names, we still don't know which one
+ * provided the match.
  *
  */
 class VernacularNameMatcher {

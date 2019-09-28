@@ -30,10 +30,10 @@ import static org.col.es.EsUtil.insert;
 import static org.col.es.EsUtil.refreshIndex;
 import static org.junit.Assert.assertEquals;
 
-public class NameUsageSearchServiceTest extends EsReadTestBase {
+public class NameSearchServiceTest extends EsReadTestBase {
 
   @SuppressWarnings("unused")
-  private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchServiceTest.class);
+  private static final Logger LOG = LoggerFactory.getLogger(NameSearchServiceTest.class);
 
   private static RestClient client;
   private static NameUsageSearchService svc;

@@ -6,13 +6,13 @@ import org.col.es.name.Issue333;
 import org.col.es.name.MultiValuedMapTest;
 import org.col.es.name.NameUsageIndexServiceIT;
 import org.col.es.name.NameUsageResponseConverterTest;
-import org.col.es.name.NameUsageSearchServiceFacetTest;
 import org.col.es.name.NameUsageWrapperConverterTest;
 import org.col.es.name.index.ClassificationUpdaterTest;
 import org.col.es.name.search.FacetsTranslatorTest;
 import org.col.es.name.search.NameSearchHighlighterTest;
+import org.col.es.name.search.NameSearchServiceFacetTest;
 import org.col.es.name.search.NameSearchTestAllParamsTest;
-import org.col.es.name.search.NameUsageSearchServiceTest;
+import org.col.es.name.search.NameSearchServiceTest;
 import org.col.es.name.search.QSearchTests;
 import org.col.es.name.search.RequestTranslatorTest;
 import org.col.es.name.search.SortingTest;
@@ -42,8 +42,8 @@ import org.junit.runners.Suite.SuiteClasses;
     NameSearchHighlighterTest.class,
     NameSearchTestAllParamsTest.class,
     NameUsageIndexServiceIT.class,
-    NameUsageSearchServiceTest.class,
-    NameUsageSearchServiceFacetTest.class,
+    NameSearchServiceTest.class,
+    NameSearchServiceFacetTest.class,
     NameUsageWrapperConverterTest.class,
     PrefixQueryTest.class,
     QSearchTests.class,
