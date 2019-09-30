@@ -10,7 +10,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
-import org.col.api.model.DatasetEntity;
+import org.col.api.model.DatasetIDEntity;
 import org.col.api.model.Name;
 import org.col.api.model.Reference;
 import org.col.api.model.UserManaged;
@@ -103,14 +103,14 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
     return n;
   }
   
-  private static <T extends DatasetEntity & UserManaged> T gen(T obj){
+  private static <T extends DatasetIDEntity & UserManaged> T gen(T obj){
     obj.setDatasetKey(Datasets.DRAFT_COL);
     obj.setId(UUID.randomUUID().toString());
     obj.applyUser(TestEntityGenerator.USER_USER);
     return obj;
   }
   
-  static class ContinuousInserter<T extends DatasetEntity & UserManaged> implements Runnable {
+  static class ContinuousInserter<T extends DatasetIDEntity & UserManaged> implements Runnable {
     private final SqlSessionFactory factory;
     private final Class<? extends DatasetCRUDMapper<T>> mapperClass;
     private final Supplier<T> generator;

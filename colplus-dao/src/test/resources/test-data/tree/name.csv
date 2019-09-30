@@ -10,8 +10,8 @@ n11,,Pardina,Pardina,,,,genus,r1,1
 n12,,Lynx lynx,,Lynx,lynx,,species,r1,1
 n13,,Lynx rufus,,Lynx,rufus,,species,r1,1
 n14,n13,Felis rufus,,Felis,rufus,,species,r1,2
-n15,,Lynx rufus subsp. baileyi,,Lynx,rufus,baileyi,subspecies,r1,1
-n16,,Lynx rufus subsp. gigas,,Lynx,rufus,gigas,subspecies,r1,1
+n15,,Lynx rufus baileyi,,Lynx,rufus,baileyi,subspecies,r1,1
+n16,,Lynx rufus gigas,,Lynx,rufus,gigas,subspecies,r1,1
 n20,,Canis,Canis,,,,genus,r1,1
 n21,,Alopsis,Alopsis,,,,genus,r1,1
 n22,,Lupulus,Lupulus,,,,genus,r1,1

@@ -9,10 +9,7 @@ import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.api.model.Name;
-import org.col.api.model.NameUsageBase;
-import org.col.api.model.Sector;
-import org.col.api.model.Taxon;
+import org.col.api.model.*;
 import org.col.api.util.ObjectUtils;
 import org.col.db.mapper.NameUsageMapper;
 import org.col.db.mapper.SectorMapper;
@@ -39,14 +36,13 @@ import org.gbif.nameparser.api.Rank;
  * Absinthium viridifolium var. rupestre (L.) Besser
  * </pre>
  */
-public class TextTreePrinter implements ResultHandler<NameUsageBase> {
+public class TextTreePrinter implements ResultHandler<SimpleName> {
   public static final String SYNONYM_SYMBOL = "*";
   public static final String BASIONYM_SYMBOL = "$";
   
   private static final int indentation = 2;
   private int level = 0;
   private int counter = 0;
-  private final boolean showSector = false;
   private final Writer writer;
   private final int datasetKey;
   private final Integer sectorKey;
@@ -55,7 +51,7 @@ public class TextTreePrinter implements ResultHandler<NameUsageBase> {
   private final Rank lowestRank;
   private final SqlSessionFactory factory;
   private SqlSession session;
-  private final LinkedList<NameUsageBase> parents = new LinkedList<>();
+  private final LinkedList<SimpleName> parents = new LinkedList<>();
   
   /**
    * @param sectorKey optional sectorKey to restrict printed tree to
@@ -104,7 +100,7 @@ public class TextTreePrinter implements ResultHandler<NameUsageBase> {
     try {
       session = factory.openSession(true);
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-      num.processTree(datasetKey, sectorKey, startID, null, lowestRank, true, true,this);
+      num.processTreeSimple(datasetKey, sectorKey, startID, null, lowestRank, true, this);
 
     } finally {
       writer.flush();
@@ -118,11 +114,11 @@ public class TextTreePrinter implements ResultHandler<NameUsageBase> {
   }
   
   @Override
-  public void handleResult(ResultContext<? extends NameUsageBase> resultContext) {
+  public void handleResult(ResultContext<? extends SimpleName> resultContext) {
     try {
-      NameUsageBase u = resultContext.getResultObject();
+      SimpleName u = resultContext.getResultObject();
       // send end signals
-      while (!parents.isEmpty() && !parents.peekLast().getId().equals(u.getParentId())) {
+      while (!parents.isEmpty() && !parents.peekLast().getId().equals(u.getParent())) {
         end(parents.removeLast());
       }
       start(u);
@@ -133,29 +129,19 @@ public class TextTreePrinter implements ResultHandler<NameUsageBase> {
     }
   }
 
-  private void start(NameUsageBase u) throws IOException {
-    if (ranks.isEmpty() || ranks.contains(u.getName().getRank())) {
+  private void start(SimpleName u) throws IOException {
+    if (ranks.isEmpty() || ranks.contains(u.getRank())) {
       counter++;
-      Name n = u.getName();
       writer.write(StringUtils.repeat(' ', level * indentation));
-      if (u.isSynonym()) {
+      if (u.getStatus() != null && u.getStatus().isSynonym()) {
         writer.write(SYNONYM_SYMBOL);
       }
       //TODO: flag basionyms
-      writer.write(n.canonicalName());
-      if (n.getRank() != null) {
+      writer.write(u.getName());
+      if (u.getRank() != null) {
         writer.write(" [");
-        writer.write(n.getRank().name().toLowerCase());
+        writer.write(u.getRank().name().toLowerCase());
         writer.write("]");
-      }
-      
-      if (u.isTaxon()) {
-        Taxon t = (Taxon) u;
-        if (showSector && t.getSectorKey() != null) {
-          writer.write(" (S");
-          writer.write(t.getSectorKey().toString());
-          writer.write(')');
-        }
       }
       
       writer.write('\n');
@@ -163,8 +149,8 @@ public class TextTreePrinter implements ResultHandler<NameUsageBase> {
     }
   }
   
-  private void end(NameUsageBase u) {
-    if (ranks.isEmpty() || ranks.contains(u.getName().getRank())) {
+  private void end(SimpleName u) {
+    if (ranks.isEmpty() || ranks.contains(u.getRank())) {
       level--;
     }
   }

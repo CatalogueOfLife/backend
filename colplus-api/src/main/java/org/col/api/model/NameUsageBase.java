@@ -15,7 +15,7 @@ import org.col.api.vocab.TaxonomicStatus;
 /**
  *
  */
-public abstract class NameUsageBase extends DataEntity implements NameUsage, DatasetEntity {
+public abstract class NameUsageBase extends DataEntity implements NameUsage, DatasetIDEntity {
   
   @Nonnull
   private String id;
