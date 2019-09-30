@@ -19,7 +19,7 @@ class QTranslator {
   }
 
   Query translate() {
-    if (request.isSuggestVernaculars()) {
+    if (request.suggestVernaculars()) {
       return new BoolQuery()
           .should(getScientificNameQuery(request.getQ()).withName(SN_QUERY_NAME))
           .should(getVernacularNameQuery(request.getQ()).withName(VN_QUERY_NAME));

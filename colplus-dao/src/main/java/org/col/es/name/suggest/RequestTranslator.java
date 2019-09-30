@@ -4,9 +4,9 @@ import org.col.api.search.NameSuggestRequest;
 import org.col.es.query.BoolQuery;
 import org.col.es.query.EsSearchRequest;
 import org.col.es.query.RangeQuery;
-import org.col.es.query.SortField;
 import org.col.es.query.TermQuery;
 
+import static org.col.es.query.SortField.SCORE;
 import static org.gbif.nameparser.api.Rank.SPECIES;
 
 /**
@@ -28,7 +28,7 @@ class RequestTranslator {
     return new EsSearchRequest()
         .select("usageId", "scientificName", "acceptedName", "vernacularNames", "rank", "nomCode")
         .where(query)
-        .sortBy(SortField.SCORE) // required b/c default is _doc !
+        .sortBy(SCORE) // required b/c default is _doc !
         .size(request.getLimit());
   }
 

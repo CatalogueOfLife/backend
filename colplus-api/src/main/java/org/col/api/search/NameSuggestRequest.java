@@ -12,16 +12,14 @@ public class NameSuggestRequest {
   private String q;
   @QueryParam("datasetKey")
   private Integer datasetKey;
-  // Desired number of suggestions
-  @QueryParam("limit")
-  private Integer limit;
-  // Suggest vernacular names as well?
   @QueryParam("vernaculars")
-  private Boolean suggestVernaculars;
+  private Boolean vernaculars;
+  @QueryParam("limit")
+  private Integer limit; // Desired number of suggestions
 
   @JsonIgnore
-  public boolean isSuggestVernaculars() {
-    return suggestVernaculars != null && suggestVernaculars.equals(Boolean.TRUE);
+  public boolean suggestVernaculars() {
+    return vernaculars != null && vernaculars.equals(Boolean.TRUE);
   }
 
   public String getQ() {
@@ -40,6 +38,14 @@ public class NameSuggestRequest {
     this.datasetKey = datasetKey;
   }
 
+  public Boolean getVernaculars() {
+    return vernaculars;
+  }
+
+  public void setVernaculars(Boolean vernaculars) {
+    this.vernaculars = vernaculars;
+  }
+
   public Integer getLimit() {
     return limit;
   }
@@ -50,7 +56,7 @@ public class NameSuggestRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, limit, q, suggestVernaculars);
+    return Objects.hash(datasetKey, limit, q, vernaculars);
   }
 
   @Override
@@ -63,7 +69,7 @@ public class NameSuggestRequest {
       return false;
     NameSuggestRequest other = (NameSuggestRequest) obj;
     return Objects.equals(datasetKey, other.datasetKey) && Objects.equals(limit, other.limit) && Objects.equals(q, other.q)
-        && Objects.equals(suggestVernaculars, other.suggestVernaculars);
+        && Objects.equals(vernaculars, other.vernaculars);
   }
 
 }

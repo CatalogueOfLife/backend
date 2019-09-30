@@ -12,7 +12,7 @@ class SuggestionFactory {
   private final VernacularNameMatcher matcher;
 
   SuggestionFactory(NameSuggestRequest request) {
-    if (request.isSuggestVernaculars()) {
+    if (request.suggestVernaculars()) {
       this.matcher = new VernacularNameMatcher(request);
     } else {
       // matcher is not going to be used

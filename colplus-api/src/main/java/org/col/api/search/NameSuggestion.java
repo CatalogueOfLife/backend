@@ -9,7 +9,7 @@ import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 /**
- * Represents a single suggestion comming back from the NameSuggestionService.
+ * Represents a single suggestion coming back from the NameSuggestionService.
  */
 public class NameSuggestion {
 

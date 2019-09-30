@@ -50,15 +50,15 @@ public class QTranslationUtils {
     } else if (terms.length == 3) {
       return checkEpithetTriplets(terms);
     }
-    return getBasicSciNameQuery(normalizeWeakly(q));
+    return matchSearchPhrase("scientificName", q);
   }
 
   private static Query checkAllEpithets(String[] terms) {
     String termWN = normalizeWeakly(terms[0]);
     String termSN = normalizeStrongly(terms[0]);
-    // Slightly bump lower ranks up the list
+    // Slightly bump lower ranks
     return new BoolQuery()
-        .should(matchSearchTerm(GENUS_FIELD, termWN))
+        .should(matchSearchTerm(GENUS_FIELD, termWN).withBoost(1.02)) // Prefer over vernacular name
         .should(matchSearchTerm(SPECIES_FIELD, termSN).withBoost(1.05))
         .should(matchSearchTerm(SUBSPECIES_FIELD, termSN).withBoost(1.08));
   }
@@ -70,11 +70,11 @@ public class QTranslationUtils {
     String term1SN = normalizeStrongly(terms[1]);
     return new DisMaxQuery()
         .subquery(new BoolQuery()
-            .must(getGenusOrMonomialQuery(term0WN))
+            .must(matchGenus(term0WN))
             .must(matchSearchTerm(SPECIES_FIELD, term1SN))
             .withBoost(1.5))
         .subquery(new BoolQuery()
-            .must(getGenusOrMonomialQuery(term0WN))
+            .must(matchGenus(term0WN))
             .must(matchSearchTerm(SUBSPECIES_FIELD, term1SN))
             .withBoost(1.5))
         .subquery(new BoolQuery()
@@ -85,9 +85,9 @@ public class QTranslationUtils {
             .must(matchSearchTerm(SUBSPECIES_FIELD, term0SN))
             .must(matchSearchTerm(SPECIES_FIELD, term1SN))
             .withBoost(1.15))
-        .subquery(new BoolQuery() // "Sapiens H"
+        .subquery(new BoolQuery() // The most out-there search phrase still supported: "sapiens H" or "sapiens Homo"
             .must(matchSearchTerm(SPECIES_FIELD, term0SN))
-            .must(getGenusOrMonomialQuery(term1WN))
+            .must(matchGenus(term1WN))
             .withBoost(1.1));
   }
 
@@ -97,32 +97,28 @@ public class QTranslationUtils {
     String term2SN = normalizeStrongly(terms[2]);
     return new DisMaxQuery()
         .subquery(new BoolQuery()
-            .must(getGenusOrMonomialQuery(term0WN))
+            .must(matchGenus(term0WN))
             .must(matchSearchTerm(SPECIES_FIELD, term1SN))
             .must(matchSearchTerm(SUBSPECIES_FIELD, term2SN))
             .withBoost(2.0))
         .subquery(new BoolQuery() // User forgot which was which
-            .must(getGenusOrMonomialQuery(term0WN))
+            .must(matchGenus(term0WN))
             .must(matchSearchTerm(SUBSPECIES_FIELD, term1SN))
             .must(matchSearchTerm(SPECIES_FIELD, term2SN))
             .withBoost(1.8));
   }
 
-  private static Query getGenusOrMonomialQuery(String term) {
+  private static Query matchGenus(String term) {
     if (term.length() == 1 || (term.length() == 2 && term.charAt(1) == '.')) {
       return new TermQuery("nameStrings.genusLetter", term.charAt(0));
     }
     return matchSearchTerm(GENUS_FIELD, term);
   }
 
-  private static Query getBasicSciNameQuery(String q) {
-    return matchSearchPhrase("scientificName", q);
-  }
-
   private static Query matchSearchPhrase(String field, String q) {
     /*
-     * If we the user has typed one big search term we still try to helpful. With multiple big search terms the
-     * search/suggest service just blanks out.
+     * If the user has typed one big search term we still try to helpful. With multiple big search terms the search/suggest
+     * service just blanks out.
      */
     if (q.length() > MAX_NGRAM_SIZE && countTokens(q) == 1) {
       return new CaseInsensitivePrefixQuery(field, q);

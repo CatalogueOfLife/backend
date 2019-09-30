@@ -51,7 +51,7 @@ public class EsSearchRequest {
   }
 
   public EsSearchRequest sortBy(SortField... sortBy) {
-    this.sort = Arrays.asList(sortBy);
+    this.sort = sortBy == null ? null : Arrays.asList(sortBy);
     return this;
   }
 

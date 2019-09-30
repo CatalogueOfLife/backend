@@ -27,7 +27,7 @@ public class NameSuggestionServiceTest extends EsReadTestBase {
     destroyAndCreateIndex();
   }
 
-  @Test
+  @Test // The basics
   public void test01() {
 
     NameSuggestRequest query = new NameSuggestRequest();
@@ -87,6 +87,66 @@ public class NameSuggestionServiceTest extends EsReadTestBase {
     NameSuggestResponse response = suggest(query);
 
     assertTrue(containsUsageIds(response, doc1, doc2, doc3));
+
+  }
+
+  @Test // Relevance goes from infraspecific epithet -> specific epithet -> genus -> vernacular name
+  public void test02() {
+
+    NameSuggestRequest query = new NameSuggestRequest();
+    query.setDatasetKey(1);
+    query.setQ("abcde");
+    query.setVernaculars(true);
+
+    NameUsageDocument doc1 = new NameUsageDocument();
+    doc1.setDatasetKey(1);
+    doc1.setUsageId("1");
+    doc1.setRank(Rank.SPECIES);
+    Name n = new Name();
+    n.setGenus("AbCdEfGhIjK");
+    doc1.setNameStrings(new NameStrings(n));
+
+    NameUsageDocument doc2 = new NameUsageDocument();
+    doc2.setDatasetKey(1);
+    doc2.setUsageId("2");
+    doc2.setRank(Rank.SPECIES);
+    n = new Name();
+    n.setSpecificEpithet("AbCdEfGhIjK");
+    doc2.setNameStrings(new NameStrings(n));
+
+    NameUsageDocument doc3 = new NameUsageDocument();
+    doc3.setDatasetKey(1);
+    doc3.setUsageId("3");
+    doc3.setRank(Rank.SPECIES);
+    n = new Name();
+    n.setInfraspecificEpithet("AbCdEfGhIjK");
+    doc3.setNameStrings(new NameStrings(n));
+
+    NameUsageDocument doc4 = new NameUsageDocument();
+    doc4.setDatasetKey(1);
+    doc4.setUsageId("4");
+    doc4.setRank(Rank.SPECIES);
+    doc4.setVernacularNames(Arrays.asList("AbCdEfGhIjK"));
+
+    indexRaw(doc1, doc2, doc3, doc4);
+
+    NameSuggestResponse response = suggest(query);
+
+    assertEquals(4, response.getSuggestions().size());
+    assertEquals("3", response.getSuggestions().get(0).getUsageId());
+    assertEquals("2", response.getSuggestions().get(1).getUsageId());
+    assertEquals("1", response.getSuggestions().get(2).getUsageId());
+    assertEquals("4", response.getSuggestions().get(3).getUsageId());
+
+    destroyAndCreateIndex();
+
+    indexRaw(doc4, doc1, doc3, doc2);
+
+    response = suggest(query);
+    assertEquals("3", response.getSuggestions().get(0).getUsageId());
+    assertEquals("2", response.getSuggestions().get(1).getUsageId());
+    assertEquals("1", response.getSuggestions().get(2).getUsageId());
+    assertEquals("4", response.getSuggestions().get(3).getUsageId());
 
   }
 
