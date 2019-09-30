@@ -9,7 +9,7 @@ import javax.security.auth.Subject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.col.api.vocab.Country;
 
-public class ColUser implements IntKey, Principal {
+public class ColUser implements GlobalEntity, Principal {
   public enum Role {
     USER,
     EDITOR,
@@ -179,5 +179,10 @@ public class ColUser implements IntKey, Principal {
   public int hashCode() {
     
     return Objects.hash(key, username, firstname, lastname, email, orcid, country, roles, settings, lastLogin, created, deleted);
+  }
+  
+  @Override
+  public String toString() {
+    return username + " {" + key + "}";
   }
 }

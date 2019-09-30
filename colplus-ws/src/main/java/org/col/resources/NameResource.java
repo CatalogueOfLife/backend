@@ -9,37 +9,35 @@ import javax.ws.rs.core.UriInfo;
 
 import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.exception.NotFoundException;
-import org.col.api.model.*;
+import org.col.api.model.Name;
+import org.col.api.model.NameRelation;
+import org.col.api.model.Page;
+import org.col.api.model.ResultPage;
 import org.col.api.search.NameSearchParameter;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameUsageWrapper;
-import org.col.db.dao.NameDao;
+import org.col.dao.NameDao;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.NameRelationMapper;
 import org.col.es.InvalidQueryException;
-import org.col.es.NameUsageSearchService;
+import org.col.es.name.search.NameUsageSearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Path("/dataset/{datasetKey}/name")
 @Produces(MediaType.APPLICATION_JSON)
-public class NameResource {
+public class NameResource extends DatasetEntityResource<Name> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameResource.class);
   
+  private final NameDao dao;
   private final NameUsageSearchService searchService;
   
-  public NameResource(NameUsageSearchService svc) {
+  public NameResource(NameUsageSearchService svc, NameDao dao) {
+    super(Name.class, dao);
     this.searchService = svc;
-  }
-  
-  @GET
-  public ResultPage<Name> list(@PathParam("datasetKey") Integer datasetKey,
-                               @Valid @BeanParam Page page, @Context SqlSession session) {
-    NameDao dao = new NameDao(session);
-    return dao.list(datasetKey, page);
+    this.dao = dao;
   }
   
   @GET
@@ -58,20 +56,8 @@ public class NameResource {
   }
   
   @GET
-  @Path("{id}")
-  public Name get(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
-    NameDao dao = new NameDao(session);
-    Name name = dao.get(datasetKey, id);
-    if (name == null) {
-      throw NotFoundException.idNotFound(Name.class, datasetKey, id);
-    }
-    return name;
-  }
-  
-  @GET
   @Path("{id}/synonyms")
   public List<Name> getSynonyms(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
-    NameDao dao = new NameDao(session);
     return dao.homotypicGroup(datasetKey, id);
   }
   

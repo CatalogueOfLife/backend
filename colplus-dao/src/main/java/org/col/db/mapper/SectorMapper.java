@@ -1,15 +1,19 @@
 package org.col.db.mapper;
 
 import java.util.List;
-
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.session.ResultHandler;
 import org.col.api.model.Sector;
 
-public interface SectorMapper extends CRUDIntMapper<Sector> {
+public interface SectorMapper extends GlobalCRUDMapper<Sector> {
   
-  List<Sector> list(@Nullable @Param("datasetKey") Integer datasetKey);
+  Sector getBySubject(@Param("datasetKey") int datasetKey, @Param("id") String id);
+  
+  List<Sector> listByTarget(@Param("id") String id);
+
+  List<Sector> listByDataset(@Nullable @Param("datasetKey") Integer datasetKey);
   
   /**
    * List all sectors which have a targetID within the given sector.
@@ -25,4 +29,7 @@ public interface SectorMapper extends CRUDIntMapper<Sector> {
    * List all sectors from a source dataset that cannot anymore be linked to attachment points in the draft CoL
    */
   List<Sector> targetBroken(@Param("datasetKey") int datasetKey);
+  
+  void processSectors(@Param("datasetKey") int datasetKey, ResultHandler<Sector> handler);
+  
 }

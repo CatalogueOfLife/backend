@@ -4,13 +4,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.google.common.base.Predicates;
-
 /**
  * Warning! If ordinals are changed please change also DatasetImportMapper.xml
  * which has a hardcoded number!
  */
 public enum ImportState {
+  
+  /**
+   * Queued.
+   */
+  WAITING(false),
   
   /**
    * Downloading the latest source data, the first step of a running import.
@@ -71,6 +74,14 @@ public enum ImportState {
     return running;
   }
   
+  public boolean isQueued() {
+    return this == WAITING;
+  }
+  
+  public boolean isFinished() {
+    return !isQueued() && !isRunning();
+  }
+
   public static List<ImportState> runningStates() {
     return Arrays.stream(values())
         .filter(ImportState::isRunning)
@@ -79,7 +90,7 @@ public enum ImportState {
   
   public static List<ImportState> finishedStates() {
     return Arrays.stream(values())
-        .filter(Predicates.not(ImportState::isRunning))
+        .filter(ImportState::isFinished)
         .collect(Collectors.toList());
   }
 }

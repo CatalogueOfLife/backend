@@ -1,7 +1,6 @@
 package org.col.db.mapper;
 
 import java.util.List;
-import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
@@ -14,21 +13,14 @@ import org.col.api.model.Name;
  */
 public interface NameMapper extends DatasetCRUDMapper<Name> {
   
-  /**
-   * Iterates over all names of a given dataset and processes them with the supplied handler.
-   * This allows a single query to efficiently stream all its values without keeping them in memory.
-   *
-   * @param handler to process each name with
-   */
-  void processDataset(@Param("datasetKey") int datasetKey, ResultHandler<Name> handler);
-  
-  
-  Name getByTaxon(@Param("datasetKey") int datasetKey, @Param("taxonId") String taxonId);
+  Name getByUsage(@Param("datasetKey") int datasetKey, @Param("usageId") String usageId);
   
   /**
    * Lists all distinct name index ids from the names table.
    */
-  Set<String> listNameIndexIds(@Param("datasetKey") int datasetKey, @Nullable @Param("sectorKey") Integer sectorKey);
+  void processIndexIds(@Param("datasetKey") int datasetKey,
+                       @Nullable @Param("sectorKey") Integer sectorKey,
+                       ResultHandler<String> handler);
 
   /**
    * Lists all homotypic names based on the same homotypic name key
@@ -50,6 +42,19 @@ public interface NameMapper extends DatasetCRUDMapper<Name> {
    */
   List<Name> indexGroup(@Param("id") String nameId);
   
+  /**
+   *
+   * @param datasetKey
+   * @param id
+   * @param nameIndexID
+   */
+  void updateMatch(@Param("datasetKey") int datasetKey, @Param("id") String id, @Param("nameIndexID") String nameIndexID);
+  
+  /**
+   * Delete all bare names of a dataset
+   */
   int deleteOrphans(@Param("datasetKey") int datasetKey);
+  
+  int deleteBySector(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   
 }

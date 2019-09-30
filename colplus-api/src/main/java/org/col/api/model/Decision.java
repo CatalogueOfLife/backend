@@ -3,7 +3,7 @@ package org.col.api.model;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-public abstract class Decision implements IntKey, UserManaged {
+public abstract class Decision implements GlobalEntity, UserManaged {
   protected Integer key;
   protected Integer datasetKey;
   protected SimpleName subject;

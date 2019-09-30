@@ -3,12 +3,27 @@ package org.col.es.query;
 import java.time.LocalDate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
 import org.col.es.EsModule;
 import org.col.es.IndexConfig;
+import org.col.es.query.AutoCompleteQuery;
+import org.col.es.query.BoolQuery;
+import org.col.es.query.ConstantScoreQuery;
+import org.col.es.query.EsSearchRequest;
+import org.col.es.query.IsNotNullQuery;
+import org.col.es.query.IsNullQuery;
+import org.col.es.query.MatchAllQuery;
+import org.col.es.query.PrefixQuery;
+import org.col.es.query.TermQuery;
+import org.col.es.query.TermsQuery;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+/*
+ * Not really tests here; only to get direct feedback on whether or not the various types of queries are serialized
+ * properly.
+ */
 public class QueryTest {
 
   // private static final Logger LOG = LoggerFactory.getLogger(QueryTest.class);
@@ -19,7 +34,7 @@ public class QueryTest {
   public static void init() {
     cfg.modelClass = "org.col.es.model.EsNameUsage";
   }
-  
+
   @Before
   public void before() {
     System.out.println();
@@ -30,7 +45,7 @@ public class QueryTest {
   @Test
   public void testConstantScore() {
     EsSearchRequest esr = new EsSearchRequest();
-    ConstantScoreQuery csq = new ConstantScoreQuery(new TermQuery("genus", "Parus", 8.1f));
+    ConstantScoreQuery csq = new ConstantScoreQuery(new TermQuery("genus", "Parus").withBoost(8.1));
     esr.setQuery(csq);
     System.out.println(serialize(esr));
   }
@@ -74,7 +89,14 @@ public class QueryTest {
     esr.setQuery(new PrefixQuery("genus", "Parus"));
     System.out.println(serialize(esr));
   }
-  
+
+  @Test
+  public void testMatchAll() {
+    EsSearchRequest esr = new EsSearchRequest();
+    esr.setQuery(new MatchAllQuery());
+    System.out.println(serialize(esr));
+  }
+
   private static String serialize(Object obj) {
     try {
       return EsModule.QUERY_WRITER.withDefaultPrettyPrinter().writeValueAsString(obj);

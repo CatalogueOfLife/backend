@@ -24,7 +24,7 @@ public class MultiField extends ESField {
   public static final MultiField AUTO_COMPLETE;
 
   static {
-    DEFAULT = new MultiField("ft", null);
+    DEFAULT = new MultiField("ft", null); // ft -> full-text
     IGNORE_CASE = new MultiField("ic", "ignore_case");
     AUTO_COMPLETE = new MultiField("ac", "autocomplete", "autocomplete_search");
   }

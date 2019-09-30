@@ -3,13 +3,12 @@ package org.col.parser;
 import java.util.List;
 
 import com.google.common.collect.Lists;
-import org.col.api.vocab.Language;
 import org.junit.Test;
 
 /**
  *
  */
-public class LanguageParserTest extends ParserTestBase<Language> {
+public class LanguageParserTest extends ParserTestBase<String> {
 
   public LanguageParserTest() {
     super(LanguageParser.PARSER);
@@ -17,14 +16,24 @@ public class LanguageParserTest extends ParserTestBase<Language> {
 
   @Test
   public void parse() throws Exception {
-    assertParse(Language.GERMAN, "de");
-    assertParse(Language.GERMAN, "deu");
-    assertParse(Language.GERMAN, "deutsch");
-    assertParse(Language.GERMAN, "GER");
-
+    assertParse("deu", "de");
+    assertParse("deu", "deu");
+    assertParse("deu", "german");
+    assertParse("deu", "deutsch");
+    assertParse("deu", "GER");
+    assertParse("eng", "en");
+    assertParse("ceb", "visayan");
+    assertParse("ceb", "Ormocanon");
+    assertParse("ceb", "Cebuano");
+  
+    for (String x : new String[]{"Limburgan", "Limburger", "Limburgish", "Lim", "li"}) {
+      assertParse("lim", x);
+    }
+    
     assertUnparsable("unknown");
     assertUnparsable("zz");
   }
+
 
   @Override
   List<String> additionalUnparsableValues() {

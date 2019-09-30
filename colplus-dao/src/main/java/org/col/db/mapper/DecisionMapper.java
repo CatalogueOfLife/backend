@@ -6,9 +6,9 @@ import javax.annotation.Nullable;
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.EditorialDecision;
 
-public interface DecisionMapper extends CRUDIntMapper<EditorialDecision> {
+public interface DecisionMapper extends GlobalCRUDMapper<EditorialDecision> {
   
-  List<EditorialDecision> list(@Nullable @Param("datasetKey") Integer datasetKey, @Nullable @Param("id") String id);
+  List<EditorialDecision> listByDataset(@Nullable @Param("datasetKey") Integer datasetKey, @Nullable @Param("id") String id);
   
   /**
    * List all decisions that cannot anymore be linked to subject taxa in the source

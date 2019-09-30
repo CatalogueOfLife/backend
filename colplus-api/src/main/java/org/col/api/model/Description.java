@@ -2,16 +2,18 @@ package org.col.api.model;
 
 import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.col.api.vocab.Language;
+import javax.validation.constraints.Size;
 
-public class Description extends DataEntity implements Referenced, VerbatimEntity, IntKey {
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+public class Description extends DataEntity implements Referenced, VerbatimEntity, GlobalEntity {
   @JsonIgnore
   private Integer key;
   private Integer verbatimKey;
   private String category;
   private String description;
-  private Language language;
+  @Size(min = 3, max = 3)
+  private String language;
   private String referenceId;
   
   @Override
@@ -50,11 +52,11 @@ public class Description extends DataEntity implements Referenced, VerbatimEntit
     this.description = description;
   }
   
-  public Language getLanguage() {
+  public String getLanguage() {
     return language;
   }
   
-  public void setLanguage(Language language) {
+  public void setLanguage(String language) {
     this.language = language;
   }
   
@@ -78,7 +80,7 @@ public class Description extends DataEntity implements Referenced, VerbatimEntit
             Objects.equals(verbatimKey, that.verbatimKey) &&
             Objects.equals(category, that.category) &&
             Objects.equals(description, that.description) &&
-            language == that.language &&
+            Objects.equals(language, that.language) &&
             Objects.equals(referenceId, that.referenceId);
   }
 

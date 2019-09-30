@@ -31,10 +31,10 @@ public interface DatasetImportMapper {
                            @Param("states") @Nullable Collection<ImportState> states,
                            @Param("page") Page page);
   
-  void create(@Param("di") DatasetImport datasetImport);
+  void create(@Param("imp") DatasetImport datasetImport);
   
-  void update(@Param("di") DatasetImport datasetImport);
-  
+  void update(@Param("imp") DatasetImport datasetImport);
+
   Integer countDescription(@Param("key") int datasetKey);
   Integer countDistribution(@Param("key") int datasetKey);
   Integer countMedia(@Param("key") int datasetKey);
@@ -43,6 +43,7 @@ public interface DatasetImportMapper {
   Integer countReference(@Param("key") int datasetKey);
   
   Integer countTaxon(@Param("key") int datasetKey);
+  Integer countSynonym(@Param("key") int datasetKey);
   
   Integer countVerbatim(@Param("key") int datasetKey);
   

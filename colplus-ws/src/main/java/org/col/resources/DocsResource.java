@@ -16,14 +16,23 @@ import org.col.WsServerConfig;
 @Produces(MediaType.TEXT_HTML)
 public class DocsResource {
   private final URI raml;
+  private final String version;
   
   public DocsResource(WsServerConfig cfg) {
     this.raml = URI.create(cfg.raml);
+    version = cfg.versionString();
   }
   
   @GET
   public Response docs() {
     return Response.status(Response.Status.MOVED_PERMANENTLY).location(raml).build();
+  }
+  
+  @GET
+  @Path("/version")
+  @Produces(MediaType.TEXT_PLAIN)
+  public String version() {
+    return version;
   }
   
 }

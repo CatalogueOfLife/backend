@@ -7,9 +7,12 @@ import org.col.api.vocab.NameField;
 import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 public enum NameSearchParameter {
+
+  USAGE_ID(String.class),
 
   DATASET_KEY(Integer.class),
 
@@ -25,6 +28,11 @@ public enum NameSearchParameter {
    * Searches on the name index id property of the Name which allows to share for same names across and within datasets.
    */
   NAME_INDEX_ID(String.class),
+
+  /**
+   * Nomenclatural code.
+   */
+  NOM_CODE(NomCode.class),
 
   /**
    * Nomenclatural status of the name alone
@@ -47,8 +55,8 @@ public enum NameSearchParameter {
   PUBLISHED_IN_ID(String.class),
 
   /**
-   * The sector key attached to a taxon. Synonyms inherit the key by their accepted taxon, but do not expose the key on the Synonym instance
-   * itself.
+   * The sector key attached to a taxon. Synonyms inherit the key by their accepted taxon, but do not expose the key on
+   * the Synonym instance itself.
    */
   SECTOR_KEY(Integer.class),
 
@@ -58,15 +66,19 @@ public enum NameSearchParameter {
   STATUS(TaxonomicStatus.class),
 
   /**
-   * A taxonID that searches on the entire classification of a Taxon or its Synonyms. E.g. searching by the taxonID for Coleoptera should
-   * return all name usages within that beetle order, including synonyms.
+   * A taxonID that searches on the entire classification of a Taxon or its Synonyms. E.g. searching by the taxonID for
+   * Coleoptera should return all name usages within that beetle order, including synonyms.
    */
   TAXON_ID(String.class),
 
   /**
    * Name.type
    */
-  TYPE(NameType.class);
+  TYPE(NameType.class),
+
+  FOSSIL(Boolean.class),
+
+  RECENT(Boolean.class);
 
   private final Class<?> type;
 

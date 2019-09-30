@@ -1,10 +1,12 @@
 **/*.iml
 **/target
 **/.idea
-colplus-admin/graphs/
+colplus-ws/graphs/
+colplus-ws/localhost/
 **/.DS_Store
 
 **/.project
 **/.classpath
 **/.settings/
 **/bin/
+test-data/

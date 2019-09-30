@@ -13,8 +13,11 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 import com.google.common.collect.Lists;
+import org.col.api.model.IssueContainer;
 import org.col.api.model.NameAccordingTo;
 import org.col.parser.NameParser;
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,12 +30,53 @@ public class ParserResource {
   private static final Logger LOG = LoggerFactory.getLogger(ParserResource.class);
   private static final NameParser parser = NameParser.PARSER;
   
+  public class CRName {
+    private NomCode code;
+    private Rank rank;
+    private String name;
+  
+    public CRName() {
+    }
+  
+    public CRName(NomCode code, Rank rank, String name) {
+      this.code = code;
+      this.rank = rank;
+      this.name = name;
+    }
+  
+    public Rank getRank() {
+      return rank;
+    }
+  
+    public void setRank(Rank rank) {
+      this.rank = rank;
+    }
+  
+    public NomCode getCode() {
+      return code;
+    }
+  
+    public void setCode(NomCode code) {
+      this.code = code;
+    }
+  
+    public String getName() {
+      return name;
+    }
+  
+    public void setName(String name) {
+      this.name = name;
+    }
+  }
+  
   /**
    * Parsing names as GET query parameters.
    */
   @GET
-  public List<NameAccordingTo> parseGet(@QueryParam("name") List<String> names) {
-    return parse(names.stream());
+  public List<NameAccordingTo> parseGet(@QueryParam("code") NomCode code,
+                                        @QueryParam("rank") Rank rank,
+                                        @QueryParam("name") List<String> names) {
+    return parse(code, rank, names.stream());
   }
   
   /**
@@ -40,7 +84,7 @@ public class ParserResource {
    */
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
-  public List<NameAccordingTo> parseJson(List<String> names) {
+  public List<NameAccordingTo> parseJson(List<CRName> names) {
     return parse(names.stream());
   }
   
@@ -52,13 +96,15 @@ public class ParserResource {
    */
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
-  public List<NameAccordingTo> parseFile(@FormDataParam("names") InputStream file) throws UnsupportedEncodingException {
+  public List<NameAccordingTo> parseFile(@FormDataParam("code") NomCode code,
+                                         @FormDataParam("rank") Rank rank,
+                                         @FormDataParam("names") InputStream file) throws UnsupportedEncodingException {
     if (file == null) {
       LOG.debug("No names file uploaded");
       return Lists.newArrayList();
     }
     BufferedReader reader = new BufferedReader(new InputStreamReader(file, Charset.forName("UTF8")));
-    return parse(reader.lines());
+    return parse(code, rank, reader.lines());
   }
   
   
@@ -72,13 +118,17 @@ public class ParserResource {
   @POST
   @Consumes(MediaType.TEXT_PLAIN)
   public List<NameAccordingTo> parsePlainText(InputStream names) throws UnsupportedEncodingException {
-    return parseFile(names);
+    return parseFile(null, Rank.UNRANKED, names);
   }
   
-  private List<NameAccordingTo> parse(Stream<String> names) {
+  private List<NameAccordingTo> parse(final NomCode code, final Rank rank, Stream<String> names) {
+    return parse(names.map(n -> new CRName(code, rank, n)));
+  }
+  
+  private List<NameAccordingTo> parse(Stream<CRName> names) {
     return names
         .peek(n -> LOG.info("Parse: {}", n))
-        .map(parser::parse)
+        .map(n -> parser.parse(n.name, n.rank, n.code, IssueContainer.VOID))
         .filter(Optional::isPresent)
         .map(Optional::get)
         .collect(Collectors.toList());

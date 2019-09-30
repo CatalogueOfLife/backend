@@ -3,10 +3,9 @@ package org.col.db.mapper;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
-import org.col.api.model.Distribution;
-import org.col.api.model.IntKey;
+import org.col.api.model.GlobalEntity;
 
-public interface TaxonExtensionMapper<T extends IntKey> {
+public interface TaxonExtensionMapper<T extends GlobalEntity> {
 
 	List<T> listByTaxon(@Param("datasetKey") int datasetKey, @Param("taxonId") String taxonId);
 

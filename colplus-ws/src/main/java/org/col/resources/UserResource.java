@@ -1,5 +1,13 @@
 package org.col.resources;
 
+import java.util.Map;
+import javax.annotation.security.PermitAll;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
+
 import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.ColUser;
@@ -7,13 +15,6 @@ import org.col.db.mapper.UserMapper;
 import org.col.dw.auth.JwtCodec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.security.PermitAll;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
 
 @Path("/user")
 @Produces(MediaType.APPLICATION_JSON)
@@ -34,13 +35,15 @@ public class UserResource {
   public ColUser get(@PathParam("key") Integer key, @Context SqlSession session) {
     ColUser u = session.getMapper(UserMapper.class).get(key);
     // obfuscate email and personal things
-    u.setEmail(null);
-    u.setSettings(null);
-    u.setOrcid(null);
-    u.setLastLogin(null);
-    u.setCreated(null);
-    u.setDeleted(null);
-    u.setRoles(null);
+    if (u != null) {
+      u.setEmail(null);
+      u.setSettings(null);
+      u.setOrcid(null);
+      u.setLastLogin(null);
+      u.setCreated(null);
+      u.setDeleted(null);
+      u.setRoles(null);
+    }
     return u;
   }
 
@@ -67,4 +70,14 @@ public class UserResource {
     return jwt.generate(user);
   }
   
+  @PUT
+  @Path("/settings")
+  @PermitAll
+  public void updateSettings(Map<String, String> settings, @Auth ColUser user, @Context SqlSession session) {
+    if (user != null && settings != null) {
+      user.setSettings(settings);
+      session.getMapper(UserMapper.class).update(user);
+      session.commit();
+    }
+  }
 }

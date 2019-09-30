@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import org.col.api.RandomUtils;
 import org.col.api.model.ColUser;
 
-public class UserMapperTest extends CRUDIntMapperTest<ColUser, UserMapper> {
+public class UserMapperTest extends GlobalCRUDMapperTest<ColUser, UserMapper> {
   
   public UserMapperTest() {
     super(UserMapper.class);

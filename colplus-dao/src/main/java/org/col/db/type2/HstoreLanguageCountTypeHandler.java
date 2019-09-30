@@ -1,10 +1,9 @@
 package org.col.db.type2;
 
-import org.col.api.vocab.Language;
-
-public class HstoreLanguageCountTypeHandler extends HstoreCountTypeHandlerBase<Language> {
+public class HstoreLanguageCountTypeHandler extends HstoreCountTypeHandlerBase<String> {
   
-  public HstoreLanguageCountTypeHandler() {
-    super(Language.class);
+  @Override
+  String toKey(String x) throws IllegalArgumentException {
+    return x;
   }
 }

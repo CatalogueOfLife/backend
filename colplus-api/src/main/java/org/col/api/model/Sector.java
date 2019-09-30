@@ -1,7 +1,10 @@
 package org.col.api.model;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.col.api.vocab.Datasets;
+import org.gbif.nameparser.api.NomCode;
 
 /**
  * A taxonomic sector definition within a dataset that is used to assemble the Catalogue of Life.
@@ -15,8 +18,10 @@ import org.col.api.vocab.Datasets;
  * A sector can be really small and the subject even be a species, but usually it is some higher taxon.
  */
 public class Sector extends Decision {
+  
   private SimpleName target;
   private Mode mode = Sector.Mode.ATTACH;
+  private NomCode code;
   
   public static enum Mode {
     /**
@@ -37,7 +42,15 @@ public class Sector extends Decision {
   public void setMode(Mode mode) {
     this.mode = mode;
   }
- 
+  
+  public NomCode getCode() {
+    return code;
+  }
+  
+  public void setCode(NomCode code) {
+    this.code = code;
+  }
+  
   /**
    * The attachment point in the CoL tree, i.e. the CoL parent taxon for the sector root
    */
@@ -58,12 +71,29 @@ public class Sector extends Decision {
   public DatasetID getTargetAsDatasetID() {
     return new DatasetID(Datasets.DRAFT_COL, target.getId());
   }
-
+  
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
+    Sector sector = (Sector) o;
+    return Objects.equals(target, sector.target) &&
+        mode == sector.mode &&
+        code == sector.code;
+  }
+  
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), target, mode, code);
+  }
+  
   @Override
   public String toString() {
     return "Sector{" + getKey() +
         ", datasetKey=" + datasetKey +
         ", mode=" + mode +
+        ", code=" + code +
         ", subject=" + getSubject() +
         '}';
   }

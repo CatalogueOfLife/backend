@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.col.api.TestEntityGenerator;
-import org.col.api.model.IntKey;
+import org.col.api.model.GlobalEntity;
 import org.col.api.model.Taxon;
 import org.col.api.model.UserManaged;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-abstract class TaxonExtensionMapperTest<T extends IntKey & UserManaged, M extends TaxonExtensionMapper<T>> extends MapperTestBase<M> {
+abstract class TaxonExtensionMapperTest<T extends GlobalEntity & UserManaged, M extends TaxonExtensionMapper<T>> extends MapperTestBase<M> {
   
   public TaxonExtensionMapperTest(Class<M> mapperClazz) {
     super(mapperClazz);

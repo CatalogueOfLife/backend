@@ -43,7 +43,35 @@
     </sql>
 
     <sql id="FROM">
-        reference r
+        reference_${datasetKey} r
+        <if test="_parameter.containsKey('req') and req.issues != null and !req.issues.isEmpty()">
+            JOIN verbatim_${datasetKey} v ON v.key=r.verbatim_key
+        </if>
+    </sql>
+
+    <sql id="SEARCH_WHERE">
+        <if test="req != null">
+            <where>
+                <if test="req.q != null">
+                    r.doc @@ plainto_tsquery('simple2', #{req.q})
+                </if>
+                <if test="req.year != null">
+                    AND r.year=#{req.year}
+                </if>
+                <if test="req.sectorKey != null">
+                    AND
+                    <choose>
+                        <when test="req.getSectorKeyInt() != null">r.sector_key = #{req.getSectorKeyInt()}</when>
+                        <when test="req.getSectorKeyIsNull()">r.sector_key IS NULL</when>
+                        <otherwise>r.sector_key IS NOT NULL</otherwise>
+                    </choose>
+                </if>
+                <if test="req.issues != null and !req.issues.isEmpty()">
+                    AND v.issues @>
+                    <foreach item="issue" index="index" collection="req.issues" open="array[" separator="," close="]">${issue.ordinal()}</foreach>
+                </if>
+            </where>
+        </if>
     </sql>
 
     <!-- A mapping to Reference, mostly auto mapped -->
@@ -54,15 +82,25 @@
     </resultMap>
 
     <select id="count" resultType="integer">
-        <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
-            <property name="column" value="reference_count"/>
-        </include>
+        <if test="datasetKey &lt; 10">
+            SELECT count(*) FROM reference_${datasetKey}
+        </if>
+        <if test="datasetKey &gt;= 10">
+            <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
+                <property name="column" value="reference_count"/>
+            </include>
+        </if>
+    </select>
+
+    <select id="hasData" resultType="boolean">
+        SELECT exists(
+        SELECT id FROM <include refid="FROM" /> LIMIT 1
+        )
     </select>
 
     <select id="list" resultMap="referenceResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE r.dataset_key = #{datasetKey}
         ORDER BY id
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
@@ -70,34 +108,69 @@
     <select id="listByIds" resultMap="referenceResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE r.dataset_key = #{datasetKey} AND id IN
+        WHERE id IN
         <foreach item="k" index="idx" collection="ids"
                  open="(" separator="," close=")">
             #{k}
         </foreach>
     </select>
 
+    <select id="find" resultMap="referenceResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE r.citation=#{citation}
+        <if test="sectorKey != null">
+            AND r.sector_key=#{sectorKey}
+        </if>
+    </select>
+
+    <select id="search" resultMap="referenceResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        <include refid="SEARCH_WHERE" />
+        ORDER BY
+        <choose>
+            <when test="req == null || req.sortBy == null">
+                r.id
+            </when>
+            <otherwise>
+                <bind name="sortBy" value="req.sortBy.name()" />
+                <choose>
+                    <when test="sortBy == 'RELEVANCE'">
+                        ts_rank_cd(doc, plainto_tsquery('simple2', #{req.q}))
+                    </when>
+                    <when test="sortBy == 'YEAR'">
+                        r.year DESC NULLs LAST, r.id
+                    </when>
+                    <otherwise>
+                        r.id
+                    </otherwise>
+                </choose>
+            </otherwise>
+        </choose>
+        <include refid="org.col.db.mapper.Common.limit"/>
+    </select>
+
+    <select id="searchCount" resultType="integer">
+        SELECT COUNT(*)
+        FROM <include refid="FROM" />
+        <include refid="SEARCH_WHERE" />
+    </select>
+
     <select id="get" resultMap="referenceResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE r.id = #{id} AND r.dataset_key = #{datasetKey}
+        WHERE r.id = #{id}
     </select>
 
-    <insert id="create" parameterType="Reference" useGeneratedKeys="true" keyProperty="key">
+    <insert id="create" parameterType="Reference">
         INSERT INTO reference_${datasetKey} ( <include refid="COLS" />, created, modified)
         VALUES ( <include refid="PROPS" />, now(), now())
     </insert>
 
-    <insert id="linkToTaxon">
-        INSERT INTO taxon_reference_${datasetKey} (dataset_key, taxon_id, reference_id)
-        VALUES ( #{datasetKey}, #{taxonId}, #{referenceId} )
-    </insert>
-
-    <select id="listByTaxon" resultType="string">
-        SELECT reference_id
-        FROM taxon_reference
-        WHERE dataset_key = #{datasetKey}
-            AND taxon_id = #{taxonId}
-    </select>
+    <delete id="deleteBySector" parameterType="map">
+        DELETE FROM reference_${datasetKey}
+        WHERE sector_key=#{sectorKey}
+    </delete>
 
 </mapper>

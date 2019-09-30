@@ -5,46 +5,20 @@
 <mapper namespace="org.col.db.mapper.SynonymMapper">
 
     <sql id="synCols">
-        ${alias}.id AS ${prefix}id,
-        ${alias}.verbatim_key AS ${prefix}verbatim_key,
-        ${alias}.status AS ${prefix}status,
-        ${alias}.according_to AS ${prefix}according_to,
-        ${alias}.origin AS ${prefix}origin,
-        ${alias}.created AS ${prefix}created,
-        ${alias}.created_by AS ${prefix}created_by,
-        ${alias}.modified AS ${prefix}modified,
-        ${alias}.modified_by AS ${prefix}modified_by
+        <include refid="org.col.db.mapper.NameUsageMapper.usageCols"/>
     </sql>
 
     <sql id="COLS">
-        dataset_key,
-        id,
-        name_id,
-        taxon_id,
-        verbatim_key,
-        status,
-        according_to,
-        origin,
-        created_by,
-        modified_by
+        <include refid="org.col.db.mapper.NameUsageMapper.COLS"/>
     </sql>
 
     <sql id="PROPS">
-        #{datasetKey},
-        #{syn.id},
-        #{nameId},
-        #{taxonId},
-        #{syn.verbatimKey},
-        #{syn.status},
-        #{syn.accordingTo},
-        #{syn.origin},
-        #{syn.createdBy},
-        #{syn.modifiedBy}
+        <include refid="org.col.db.mapper.NameUsageMapper.PROPS"/>
     </sql>
 
     <sql id="SELECT">
         <include refid="org.col.db.mapper.SynonymMapper.synCols">
-            <property name="alias" value="s"/>
+            <property name="alias" value="u"/>
             <property name="prefix" value=""/>
         </include>,
         <include refid="org.col.db.mapper.NameMapper.nameCols">
@@ -62,46 +36,80 @@
     </sql>
 
     <sql id="FROM">
-        synonym_${datasetKey} s
-        JOIN name_${datasetKey} n ON n.id=s.name_id
-        JOIN taxon_${datasetKey} a ON a.id=s.taxon_id
-        JOIN name_${datasetKey} an ON an.id=a.name_id
+        <include refid="org.col.db.mapper.NameUsageMapper.FROM"/>
     </sql>
 
 
     <resultMap id="synonymResultMap" type="Synonym" autoMapping="true">
+        <id property="id" column="id" />
         <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
         <association property="accepted" javaType="Taxon" resultMap="org.col.db.mapper.TaxonMapper.taxonResultMap" columnPrefix="a_" />
     </resultMap>
 
-    <select id="listByNameID" resultMap="synonymResultMap">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE n.id = #{nameId}
-            AND s.dataset_key = #{datasetKey}
-    </select>
-
-    <select id="listByName" resultMap="synonymResultMap">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE n.scientific_name=#{name}
-        <if test="rank != null">
-            AND n.rank=#{rank}::rank
-        </if>
-        ORDER BY id, n.id
-    </select>
 
     <select id="listByTaxon" resultMap="synonymResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE s.taxon_id = #{taxonId}
-            AND s.dataset_key = #{datasetKey}
-        ORDER BY s.status, n.homotypic_name_id, n.scientific_name
+        WHERE u.parent_id = #{taxonId} AND u.is_synonym
+        ORDER BY u.status, n.homotypic_name_id, n.scientific_name
     </select>
 
-    <insert id="create">
-        INSERT INTO synonym_${datasetKey} (<include refid="COLS" />, created, modified)
-        VALUES (<include refid="PROPS" />, now(), now())
+    <select id="listByNameID" resultMap="synonymResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE u.is_synonym AND u.name_id = #{nameId}
+    </select>
+
+    <select id="count" resultType="integer">
+        <if test="datasetKey &lt; 10">
+            SELECT count(*)
+            FROM name_usage_${datasetKey}
+            WHERE is_synonym
+        </if>
+        <if test="datasetKey &gt;= 10">
+            <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
+                <property name="column" value="synonym_count"/>
+            </include>
+        </if>
+    </select>
+
+    <select id="hasData" resultType="boolean">
+        SELECT exists(
+            SELECT id
+            FROM name_usage_${datasetKey}
+            WHERE is_synonym
+            LIMIT 1
+        )
+    </select>
+
+    <select id="list" resultMap="synonymResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE u.is_synonym
+        ORDER BY id
+        <include refid="org.col.db.mapper.Common.limit" />
+    </select>
+
+    <select id="get" resultMap="synonymResultMap" flushCache="true">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE u.id = #{id} AND u.is_synonym
+    </select>
+
+    <insert id="create" parameterType="Synonym" useGeneratedKeys="false" keyProperty="id">
+        INSERT INTO name_usage_${datasetKey}
+        (id, <include refid="COLS" />, created, modified)
+        VALUES (#{id}, <include refid="PROPS" />, now(), now())
     </insert>
 
+    <update id="update" parameterType="Synonym" keyProperty="id">
+        UPDATE name_usage_${datasetKey}
+        SET (<include refid="COLS" />, created, modified)
+        = (<include refid="PROPS" />, now(), now())
+        WHERE u.id = #{id} AND u.is_synonym
+    </update>
+
+    <delete id="delete" parameterType="map">
+        DELETE FROM name_usage_${datasetKey} WHERE id = #{id} AND is_synonym
+    </delete>
 </mapper>

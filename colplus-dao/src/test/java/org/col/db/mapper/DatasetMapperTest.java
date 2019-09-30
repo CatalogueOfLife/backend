@@ -22,7 +22,7 @@ import org.javers.core.diff.Diff;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.col.api.TestEntityGenerator.newNameRef;
+import static org.col.api.TestEntityGenerator.newSimpleName;
 import static org.junit.Assert.*;
 
 /**
@@ -33,12 +33,11 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
   public DatasetMapperTest() {
     super(DatasetMapper.class);
   }
-
-  private static Dataset create() {
+  
+  public static Dataset create() {
     Dataset d = new Dataset();
     d.applyUser(Users.DB_INIT);
     d.setType(DatasetType.GLOBAL);
-    d.setNamesIndexContributor(true);
     d.setGbifKey(UUID.randomUUID());
     d.setTitle(RandomUtils.randomLatinString(80));
     d.setDescription(RandomUtils.randomLatinString(500));
@@ -131,7 +130,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
   private List<Dataset> createExpected() throws Exception {
     List<Dataset> ds = Lists.newArrayList();
     ds.add(mapper().get(Datasets.COL));
-    ds.add(mapper().get(Datasets.PCAT));
+    ds.add(mapper().get(Datasets.NAME_INDEX));
     ds.add(mapper().get(Datasets.DRAFT_COL));
     ds.add(mapper().get(TestEntityGenerator.DATASET11.getKey()));
     ds.add(mapper().get(TestEntityGenerator.DATASET12.getKey()));
@@ -161,6 +160,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 
     List<Dataset> res = removeCreated(mapper().list(p));
     assertEquals(4, res.size());
+    
     Javers javers = JaversBuilder.javers().build();
     Diff diff = javers.compare(ds.get(0), res.get(0));
     assertEquals(0, diff.getChanges().size());
@@ -176,7 +176,6 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     p.next();
     res = removeCreated(mapper().list(p));
     assertEquals(2, res.size());
-    assertEquals(ds.subList(8, 10), res);
   }
 
   @Test
@@ -211,8 +210,8 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     Sector s = new Sector();
     s.setDatasetKey(datasetKey);
     s.setMode(Sector.Mode.ATTACH);
-    s.setSubject(newNameRef());
-    s.setTarget(newNameRef());
+    s.setSubject(TestEntityGenerator.newSimpleName());
+    s.setTarget(TestEntityGenerator.newSimpleName());
     s.setNote(RandomUtils.randomUnicodeString(128));
     s.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());
     s.setModifiedBy(TestEntityGenerator.USER_EDITOR.getKey());
@@ -334,9 +333,13 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
 
     query.setContributesTo(Datasets.DRAFT_COL);
     assertEquals(2, mapper().search(query, new Page()).size());
+    
+    // partial search
+    // https://github.com/Sp2000/colplus-backend/issues/353
+    query = DatasetSearchRequest.byQuery("wor");
+    List<Dataset> res = mapper().search(query, new Page());
+    assertEquals(1, res.size());
   
-    query.setContributesTo(Datasets.PCAT);
-    assertEquals(4, mapper().search(query, new Page()).size());
   }
 
   private static List<Dataset> removeCreated(List<Dataset> ds) {
@@ -359,7 +362,6 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     ds.getOrganisations().add(organisation);
     ds.setDescription(description);
     ds.setType(DatasetType.GLOBAL);
-    ds.setNamesIndexContributor(true);
     mapper().create(TestEntityGenerator.setUserDate(ds));
     return ds.getKey();
   }

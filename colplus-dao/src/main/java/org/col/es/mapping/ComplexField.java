@@ -4,7 +4,7 @@ import java.util.LinkedHashMap;
 
 /**
  * Class representing a complex structure within an Elasticsearch type mapping. This can be either the entire type mapping or a nested
- * document (objects with datatype "nested" or "object"). The {@link Mapping} subclass is used to represent the entire type mapping.
+ * document (objects with datatype "nested" or "object"). The {@link Mappings} subclass is used to represent the entire type mapping.
  */
 public class ComplexField extends ESField {
 

@@ -1,0 +1,7 @@
+AcceptedTaxonID,Kingdom,Phylum,Family,Genus,SubGenusName,SpeciesEpithet,AuthorString,GSDNameStatus,Sp2000NameStatus
+a,Animalia,Arthropoda,Scytodidae,Dictis,,,L.Koch 1872,,accepted
+b,Animalia,Arthropoda,Scytodidae,Scyloxes,,asiatica,"Dunin, 1992",,accepted
+c,Animalia,Arthropoda,Scytodidae,Stedocys,,leopoldi,"(Giltay, 1935)",,accepted
+d,Animalia,Arthropoda,Scytodidae,Stedocys,,pagodas,"Labarque, Grismado, Ramírez, Yan & Griswold, 2009",,accepted
+e,Animalia,Arthropoda,Scytodidae,Stedocys,,uenorum,"Ono, 1995",,accepted
+f,Animalia,Arthropoda,Scytodidae,Scytodes,,,"Latreille, 1804",,accepted

@@ -1,8 +1,9 @@
 package org.col.resources;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.List;
+import java.util.stream.Stream;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -10,14 +11,18 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import com.google.common.collect.ImmutableList;
 import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
-import org.col.db.dao.DecisionRematcher;
-import org.col.db.dao.TaxonDao;
+import org.col.assembly.AssemblyCoordinator;
+import org.col.dao.DatasetImportDao;
+import org.col.dao.SectorDao;
+import org.col.db.mapper.SectorImportMapper;
 import org.col.db.mapper.SectorMapper;
-import org.col.db.mapper.TaxonMapper;
+import org.col.db.tree.DiffService;
+import org.col.db.tree.NamesDiff;
 import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,61 +30,33 @@ import org.slf4j.LoggerFactory;
 @Path("/sector")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class SectorResource extends CRUDIntResource<Sector> {
+public class SectorResource extends GlobalEntityResource<Sector> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorResource.class);
-  private final SqlSessionFactory factory;
+  private final DatasetImportDao diDao;
+  private final DiffService diff;
+  private final AssemblyCoordinator assembly;
   
-  public SectorResource(SqlSessionFactory factory) {
-    super(Sector.class, SectorMapper.class);
-    this.factory = factory;
+  public SectorResource(SqlSessionFactory factory, DatasetImportDao diDao, DiffService diffService, AssemblyCoordinator assembly) {
+    super(Sector.class, new SectorDao(factory), factory);
+    this.diDao = diDao;
+    this.diff = diffService;
+    this.assembly = assembly;
   }
   
-  @POST
+  @DELETE
+  @Override
+  @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  @Override
-  public Integer create(@Valid Sector obj, @Auth ColUser user, @Context SqlSession session) {
-    Integer secKey = super.create(obj, user, session);
-    final DatasetID did = obj.getTargetAsDatasetID();
-    TaxonMapper tm = session.getMapper(TaxonMapper.class);
-    TaxonDao tdao = new TaxonDao(session);
-    List<Taxon> toCopy = new ArrayList<>();
-    // create direct children in catalogue
-    if (Sector.Mode.ATTACH == obj.getMode()) {
-      // one taxon in ATTACH mode
-      Taxon src = tm.get(obj.getDatasetKey(), obj.getSubject().getId());
-      if (src != null) {
-        toCopy.add(src);
-      }
-    } else {
-      // several taxa in MERGE mode
-      toCopy = tm.children(obj.getDatasetKey(), obj.getSubject().getId(), new Page());
-    }
-  
-    if (toCopy.isEmpty()) {
-      throw new IllegalArgumentException("TaxonID " + obj.getSubject().getId() + " not existing in dataset " + obj.getDatasetKey());
-    }
-    for (Taxon t : toCopy) {
-      t.setSectorKey(obj.getKey());
-      tdao.copyTaxon(t, did, user, Collections.emptySet());
-    }
-    session.commit();
-  
-    return secKey;
-  }
-  
-  @Override
-  public void delete(Integer key, @Auth ColUser user, @Context SqlSession session) {
-    // do not allow to delete a sector directly
-    // instead an asyncroneous sector deletion should be triggered in the admin-ws which also removes catalogue data
-    throw new NotAllowedException("Sectors cannot be deleted directly. Use the assembly service instead");
+  public void delete(@PathParam("key") Integer key, @Auth ColUser user) {
+    // an asynchroneous sector deletion will be triggered which also removes catalogue data
+    assembly.deleteSector(key, user);
   }
   
   @GET
-  public List<Sector> list(@Context SqlSession session,
-                           @QueryParam("datasetKey") Integer datasetKey) {
-    return session.getMapper(SectorMapper.class).list(datasetKey);
+  public List<Sector> list(@Context SqlSession session, @QueryParam("datasetKey") Integer datasetKey) {
+    return session.getMapper(SectorMapper.class).listByDataset(datasetKey);
   }
   
   @GET
@@ -95,14 +72,50 @@ public class SectorResource extends CRUDIntResource<Sector> {
     }
   }
   
-  @POST
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  @Path("/{key}/rematch")
-  public Sector rematch(@PathParam("key") Integer key, @Context SqlSession session, @Auth ColUser user) {
-    Sector s = getNonNull(key, session);
-    new DecisionRematcher(session).matchSector(s, true, true);
-    session.commit();
-    return s;
+  @GET
+  @Path("{key}/sync")
+  public ResultPage<SectorImport> list(@PathParam("key") int key,
+                                       @QueryParam("state") List<SectorImport.State> states,
+                                       @QueryParam("running") Boolean running,
+                                       @Valid @BeanParam Page page,
+                                       @Context SqlSession session) {
+    if (running != null) {
+      states = running ? SectorImport.runningStates() : SectorImport.finishedStates();
+    }
+    final List<SectorImport.State> immutableStates = ImmutableList.copyOf(states);
+    SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
+    List<SectorImport> imports = sim.list(key, null, states, page);
+    return new ResultPage<>(page, imports, () -> sim.count(key, null, immutableStates));
+  
   }
   
+  @GET
+  @Path("{key}/import/{attempt}/tree")
+  public Stream<String> getImportAttemptTree(@PathParam("key") int key,
+                                             @PathParam("attempt") int attempt) throws IOException {
+    return diDao.getTreeDao().getSectorTree(key, attempt);
+  }
+  
+  @GET
+  @Path("{key}/import/{attempt}/names")
+  public Stream<String> getImportAttemptNames(@PathParam("key") int key,
+                                              @PathParam("attempt") int attempt) {
+    return diDao.getTreeDao().getSectorNames(key, attempt);
+  }
+  
+  @GET
+  @Path("{key}/treediff")
+  public Reader diffTree(@PathParam("key") int sectorKey,
+                         @QueryParam("attempts") String attempts,
+                         @Context SqlSession session) throws IOException {
+    return diff.sectorTreeDiff(sectorKey, attempts);
+  }
+  
+  @GET
+  @Path("{key}/namesdiff")
+  public NamesDiff diffNames(@PathParam("key") int sectorKey,
+                             @QueryParam("attempts") String attempts,
+                             @Context SqlSession session) throws IOException {
+    return diff.sectorNamesDiff(sectorKey, attempts);
+  }
 }

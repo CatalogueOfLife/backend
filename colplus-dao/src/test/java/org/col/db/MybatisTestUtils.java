@@ -1,5 +1,8 @@
 package org.col.db;
 
+import java.io.IOException;
+import java.sql.SQLException;
+
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
@@ -7,9 +10,9 @@ import org.col.api.model.Name;
 import org.col.api.model.Taxon;
 import org.col.api.vocab.Origin;
 import org.col.db.mapper.DatasetPartitionMapper;
-import org.col.db.mapper.InitMybatisRule;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.TaxonMapper;
+import org.col.db.mapper.TestDataRule;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
@@ -36,7 +39,7 @@ public class MybatisTestUtils {
    */
   public static void populateTestTree(int datasetKey, SqlSession session) {
     partition(session, datasetKey);
-  
+    
     NameMapper nm = session.getMapper(NameMapper.class);
   
     Name n1 = uninomial(nm, datasetKey,"n1", "Animalia", Rank.KINGDOM);
@@ -51,17 +54,30 @@ public class MybatisTestUtils {
     Taxon t3 = draftTaxon(tm, datasetKey,"t3", n3, t2);
     Taxon t4 = draftTaxon(tm, datasetKey,"t4", n4, t3);
     Taxon t5 = draftTaxon(tm, datasetKey,"t5", n5, t3);
-  
+    
     session.commit();
   }
   
   public static void populateDraftTree(SqlSession session) {
     populateTestTree(DRAFT_COL, session);
+  
+    TaxonMapper tm = session.getMapper(TaxonMapper.class);
+    tm.incDatasetSectorCount(DRAFT_COL, "t4", 11, 1);
+    tm.incDatasetSectorCount(DRAFT_COL, "t5", 11, 1);
+    session.commit();
+  }
+  
+  public static void populateTestData(TestDataRule.TestData data) throws IOException, SQLException {
+    try (TestDataRule rule = new TestDataRule(data)) {
+      rule.initSession();
+      rule.partition();
+      rule.loadData(true);
+    }
   }
   
   private static Name uninomial(NameMapper nm, int datasetKey, String id, String name, Rank rank) {
     Name n = new Name();
-    n.applyUser(InitMybatisRule.TEST_USER);
+    n.applyUser(TestDataRule.TEST_USER);
     n.setId(id);
     n.setNameIndexId(RandomUtils.randomLatinString(10));
     n.setHomotypicNameId(id);

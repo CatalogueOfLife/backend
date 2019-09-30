@@ -7,7 +7,7 @@ import org.col.api.vocab.NomRelType;
 /**
  * A nomenclatural name relation between two names pointing back in time from the nameId to the relatedNameId.
  */
-public class NameRelation extends DataEntity implements VerbatimEntity, IntKey {
+public class NameRelation extends DataEntity implements VerbatimEntity, GlobalEntity {
   private Integer key;
   private Integer verbatimKey;
   private Integer datasetKey;

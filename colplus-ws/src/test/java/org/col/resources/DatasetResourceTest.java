@@ -10,9 +10,8 @@ import org.col.api.model.ResultPage;
 import org.col.api.search.DatasetSearchRequest;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.DatasetOrigin;
-import org.col.api.vocab.Datasets;
 import org.col.api.vocab.Frequency;
-import org.col.db.mapper.InitMybatisRule;
+import org.col.db.mapper.TestDataRule;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,7 +25,7 @@ public class DatasetResourceTest extends ResourceTestBase {
   static GenericType<ResultPage<Dataset>> RESULT_PAGE = new GenericType<ResultPage<Dataset>>() {};
   
   @Rule
-  public InitMybatisRule initMybatisRule = InitMybatisRule.datasets(RULE.getSqlSessionFactory());
+  public TestDataRule testDataRule = TestDataRule.datasets(RULE.getSqlSessionFactory());
 
   public DatasetResourceTest() {
     super("/dataset");
@@ -51,7 +50,6 @@ public class DatasetResourceTest extends ResourceTestBase {
     assertEquals("A World Catalogue of Centipedes (Chilopoda) for the Web", resp.getResult().get(0).getTitle());
   
     req.setFormat(DataFormat.DWCA);
-    req.setContributesTo(Datasets.PCAT);
     resp = applySearch(base, req, page).request().get(RESULT_PAGE);
   
     assertEquals(5, resp.size());
@@ -76,10 +74,10 @@ public class DatasetResourceTest extends ResourceTestBase {
   
   @Test
   public void get() {
-    Dataset d = base.path("2035").request().get(Dataset.class);
+    Dataset d = base.path("1008").request().get(Dataset.class);
     assertNotNull(d);
     assertNull(d.getDeleted());
-    assertEquals("The Plant List with literature", d.getTitle());
+    assertEquals("The Reptile Database", d.getTitle());
   }
   
   @Test

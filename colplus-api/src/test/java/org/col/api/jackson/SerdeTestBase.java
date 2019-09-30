@@ -4,7 +4,8 @@ import com.fasterxml.jackson.databind.JavaType;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  *
@@ -43,6 +44,10 @@ public abstract class SerdeTestBase<T> {
     assertFalse(StringUtils.isBlank(json));
   }
   
+  protected String serialize() throws Exception {
+    return ApiModule.MAPPER.writeValueAsString(new Wrapper<T>(genTestValue()));
+  }
+
   protected void testRoundtrip(T value) throws Exception {
     Wrapper<T> wrapper = new Wrapper<T>(value);
     String json = ApiModule.MAPPER.writeValueAsString(wrapper);
@@ -52,6 +57,6 @@ public abstract class SerdeTestBase<T> {
   }
   
   protected void debug(String json, Wrapper<T> wrapper, Wrapper<T> wrapper2) {
-    // nothing
+    System.out.println(json);
   }
 }

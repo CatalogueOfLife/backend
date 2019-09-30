@@ -5,6 +5,7 @@ import java.util.List;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.*;
 import org.col.db.MybatisTestUtils;
+import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
 import static org.col.api.vocab.Datasets.DRAFT_COL;
@@ -18,6 +19,31 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     super(TreeMapper.class);
   }
   
+  @Test
+  public void get() {
+    TreeNode tn = mapper().get(dataset11, "root-1");
+    assertEquals(dataset11, (int) tn.getDatasetKey());
+    assertNotNull(tn.getId());
+    assertNull(tn.getParentId());
+    // make sure we get the html markup
+    assertEquals("<i>Malus</i> <i>sylvestris</i>", tn.getName());
+    assertNull(tn.getDatasetSectors());
+  
+    MybatisTestUtils.populateDraftTree(session());
+
+    tn = mapper().get(DRAFT_COL, "t4");
+    assertNotNull(tn.getDatasetSectors());
+    assertEquals(1, (int) tn.getDatasetSectors().get(11));
+  
+    tn = mapper().get(DRAFT_COL, "t3");
+    assertEquals(2, (int) tn.getDatasetSectors().get(11));
+  
+    tn = mapper().get(DRAFT_COL, "t2");
+    assertEquals(2, (int) tn.getDatasetSectors().get(11));
+  
+    tn = mapper().get(DRAFT_COL, "t1");
+    assertEquals(2, (int) tn.getDatasetSectors().get(11));
+  }
   
   @Test
   public void root() {
@@ -26,6 +52,8 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     assertEquals(dataset11, (int) tn.getDatasetKey());
     assertNotNull(tn.getId());
     assertNull(tn.getParentId());
+    // make sure we get the html markup
+    assertEquals("<i>Larus</i> <i>fuscus</i>", tn.getName());
   }
   
   @Test
@@ -35,7 +63,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
   
   @Test
   public void children() {
-    assertEquals(0, valid(mapper().children(dataset11, "root-1", new Page())).size());
+    assertEquals(0, valid(mapper().children(dataset11, "root-1", null, false, new Page())).size());
   }
   
   @Test
@@ -57,15 +85,15 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     sm.create(s2);
     commit();
     
-    List<? extends TreeNode> nodes = mapper().children(DRAFT_COL, "t1", new Page());
+    List<TreeNode> nodes = mapper().children(DRAFT_COL, "t1", null,false, new Page());
     assertEquals(1, nodes.size());
     noSectorKeys(nodes);
   
-    nodes = mapper().children(DRAFT_COL, "t2", new Page());
+    nodes = mapper().children(DRAFT_COL, "t2", null,false, new Page());
     assertEquals(1, nodes.size());
     noSectorKeys(nodes);
     
-    nodes = mapper().children(DRAFT_COL, "t3", new Page());
+    nodes = mapper().children(DRAFT_COL, "t3", null,false, new Page());
     assertEquals(2, nodes.size());
     
     nodes = mapper().parents(DRAFT_COL, "t4");
@@ -101,29 +129,60 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     dm.create(d2);
 
     
-    List<? extends TreeNode> nodes = mapper().children(dataset11, "t1", new Page());
+    List<TreeNode> nodes = mapper().children(dataset11, "t1", null,false, new Page());
     assertEquals(1, nodes.size());
-    equals(s, nodes.get(0).getSector());
+    assertEquals(s.getKey(), nodes.get(0).getSectorKey());
     equals(d1, nodes.get(0).getDecision());
-    noSectorKeys(nodes);
     
     nodes = mapper().parents(dataset11, "t4");
-    noSectorKeys(nodes);
     assertEquals(4, nodes.size());
   
-    assertNull(nodes.get(0).getSector());
-    assertNull(nodes.get(1).getSector());
-    equals(s, nodes.get(2).getSector());
-    assertNull(nodes.get(3).getSector());
+    assertNull(nodes.get(0).getSectorKey());
+    assertNull(nodes.get(1).getSectorKey());
+    assertEquals(s.getKey(), nodes.get(2).getSectorKey());
+    assertNull(nodes.get(3).getSectorKey());
   
     assertNull(nodes.get(0).getDecision());
     equals(d2, nodes.get(1).getDecision());
     equals(d1, nodes.get(2).getDecision());
   
-    nodes = mapper().children(dataset11, "t2", new Page());
+    nodes = mapper().children(dataset11, "t2", null,false, new Page());
     noSectors(noSectorKeys(nodes));
   }
   
+  SpeciesEstimate newEstimate(String id){
+    SpeciesEstimate s = new SpeciesEstimate();
+    s.setEstimate(5678);
+    SimpleName sn = new SimpleName(id, "Abies alba", Rank.SPECIES);
+    s.setSubject(sn);
+    s.applyUser(TestEntityGenerator.USER_USER);
+    return s;
+  }
+  
+  @Test
+  public void withEstimates() {
+    
+    MybatisTestUtils.populateDraftTree(session());
+  
+    EstimateMapper em = mapper(EstimateMapper.class);
+    
+    SpeciesEstimate s1 = newEstimate("t1");
+    em.create(s1);
+  
+    SpeciesEstimate s2 = newEstimate("t1");
+    em.create(s2);
+  
+    SpeciesEstimate s3 = newEstimate("t2");
+    em.create(s3);
+
+    List<TreeNode> nodes = mapper().root(DRAFT_COL, new Page());
+    assertEquals(1, nodes.size());
+    assertEquals(2, nodes.get(0).getEstimates().size());
+    for (SpeciesEstimate s : nodes.get(0).getEstimates()) {
+      assertEquals(s1.getEstimate(), s.getEstimate());
+    }
+  }
+
   /**
    * Tests for equality but removes user dates which are usually set by the db
    */
@@ -131,7 +190,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     assertEquals(TestEntityGenerator.nullifyDate(o1), TestEntityGenerator.nullifyDate(o2));
   }
   
-  private static List<? extends TreeNode> noSectorKeys(List<? extends TreeNode> nodes) {
+  private static List<TreeNode> noSectorKeys(List<TreeNode> nodes) {
     valid(nodes);
     for (TreeNode n : nodes) {
       assertNull(n.getSectorKey());
@@ -139,23 +198,15 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     return nodes;
   }
   
-  private static List<? extends TreeNode> noSectors(List<? extends TreeNode> nodes) {
+  private static List<TreeNode> noSectors(List<TreeNode> nodes) {
     valid(nodes);
     for (TreeNode n : nodes) {
-      assertNull(n.getSector());
-    }
-    return nodes;
-  }
-  
-  private static List<? extends TreeNode> noDecisions(List<? extends TreeNode> nodes) {
-    valid(nodes);
-    for (TreeNode n : nodes) {
-      assertNull(n.getDecision());
+      assertNull(n.getSectorKey());
     }
     return nodes;
   }
 
-  private static List<? extends TreeNode> valid(List<? extends TreeNode> nodes) {
+  private static List<TreeNode> valid(List<TreeNode> nodes) {
     for (TreeNode n : nodes) {
       assertNotNull(n.getId());
       assertNotNull(n.getDatasetKey());

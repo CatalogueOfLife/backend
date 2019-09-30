@@ -7,6 +7,7 @@ import javax.validation.constraints.Min;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.QueryParam;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
@@ -72,6 +73,14 @@ public class Page {
    */
   public void next() {
     this.offset += limit;
+  }
+  
+  /**
+   * Shortcut returning the offset + limit
+   */
+  @JsonIgnore
+  public int getLimitWithOffest() {
+    return offset + limit;
   }
   
   @Override

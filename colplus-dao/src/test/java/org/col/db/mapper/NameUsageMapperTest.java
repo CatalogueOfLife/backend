@@ -1,85 +1,85 @@
 package org.col.db.mapper;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.ibatis.session.ResultContext;
-import org.apache.ibatis.session.ResultHandler;
-import org.col.api.model.Name;
-import org.col.api.model.Synonym;
-import org.col.api.model.Taxon;
-import org.col.api.model.VernacularName;
-import org.col.api.search.NameUsageWrapper;
-import org.junit.Assert;
+import org.col.api.TestEntityGenerator;
+import org.col.api.model.*;
+import org.junit.Before;
 import org.junit.Test;
 
-import static org.col.api.TestEntityGenerator.NAME4;
+import static org.col.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.*;
 
-
 public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
+  
+  TaxonMapper tm;
+  SynonymMapper sm;
   
   public NameUsageMapperTest() {
     super(NameUsageMapper.class);
   }
   
-  private AtomicInteger counter = new AtomicInteger(0);
-  
+  @Before
+  public void init() {
+    tm = mapper(TaxonMapper.class);
+    sm = mapper(SynonymMapper.class);
+  }
   @Test
-  public void processDatasetTaxa() throws Exception {
-    mapper().processDatasetTaxa(NAME4.getDatasetKey(), new ResultHandler<NameUsageWrapper>() {
-      public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
-        counter.incrementAndGet();
-        NameUsageWrapper obj = ctx.getResultObject();
-        if (obj.getUsage().getId().equals("root-1")) {
-          assertEquals(4, obj.getIssues().size());
-        } else {
-          assertNull(obj.getIssues());
-        }
+  public void list() throws Exception {
+    List<Taxon> taxa = new ArrayList<>();
+    taxa.add(TestEntityGenerator.newTaxon("t1"));
+    taxa.add(TestEntityGenerator.newTaxon("t2"));
+    taxa.add(TestEntityGenerator.newTaxon("t3"));
+    taxa.add(TestEntityGenerator.newTaxon("t4"));
+    taxa.add(TestEntityGenerator.newTaxon("t5"));
+    taxa.add(TestEntityGenerator.newTaxon("t6"));
+    taxa.add(TestEntityGenerator.newTaxon("t7"));
+    taxa.add(TestEntityGenerator.newTaxon("t8"));
+    taxa.add(TestEntityGenerator.newTaxon("t9"));
+    for (Taxon t : taxa) {
+      tm.create(t);
+    }
+  
+    List<Synonym> syns = new ArrayList<>();
+    syns.add(TestEntityGenerator.newSynonym(taxa.get(2)));
+    syns.add(TestEntityGenerator.newSynonym(taxa.get(2)));
+    syns.add(TestEntityGenerator.newSynonym(taxa.get(5)));
+    for (Synonym t : syns) {
+      sm.create(t);
+    }
+    commit();
+    
+    // get first page
+    Page p = new Page(0, 3);
+    
+    List<NameUsageBase> res = mapper().list(DATASET11.getKey(), p);
+    assertEquals(3, res.size());
+    // First 2 taxa in dataset 11 are pre-inserted taxa
+    // next 2 are preinserted synonyms
+    // then our 3 created syns
+    // finally 9 new taxa
+    assertIdClassEquals(TestEntityGenerator.TAXON1, res.get(0));
+    assertIdClassEquals(TestEntityGenerator.TAXON2, res.get(1));
+    assertIdClassEquals(TestEntityGenerator.SYN1, res.get(2));
 
-        Name n = obj.getUsage().getName();
-        assertNotNull(n);
-        assertNotNull(n.getId());
-        assertNotNull(n.getDatasetKey());
-
-        assertTrue(obj.getUsage().isTaxon());
-        Taxon t = (Taxon) obj.getUsage();
-        assertNotNull(t.getId());
-        System.out.println(t.getId());
-        System.out.println(t.getParentId());
-        System.out.println(ctx.getResultObject().getClassification());
-
-        for (VernacularName v : ctx.getResultObject().getVernacularNames()) {
-          assertNotNull(v.getName());
-        }
-      }
-    });
-    Assert.assertEquals(2, counter.get());
+    p.next();
+    res = mapper().list(DATASET11.getKey(), p);
+    assertEquals(3, res.size());
+    assertIdClassEquals(TestEntityGenerator.SYN2, res.get(0));
+    assertIdClassEquals(syns.get(0), res.get(1));
+    assertIdClassEquals(syns.get(1), res.get(2));
+  
+    p.next();
+    res = mapper().list(DATASET11.getKey(), p);
+    assertEquals(3, res.size());
+    assertIdClassEquals(syns.get(2), res.get(0));
+    assertIdClassEquals(taxa.get(0), res.get(1));
+    assertIdClassEquals(taxa.get(1), res.get(2));
   }
   
-  @Test
-  public void processDatasetSynonyms() throws Exception {
-    mapper().processDatasetSynonyms(NAME4.getDatasetKey(), new ResultHandler<NameUsageWrapper>() {
-      public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
-        counter.incrementAndGet();
-        assertTrue(ctx.getResultObject().getUsage().getStatus().isSynonym());
-        assertTrue(ctx.getResultObject().getUsage().isSynonym());
-        Synonym s = (Synonym) ctx.getResultObject().getUsage();
-        assertNotNull(s.getAccepted());
-      }
-    });
-    Assert.assertEquals(2, counter.get());
-  }
-  
-  @Test
-  public void processDatasetBareNames() throws Exception {
-    mapper().processDatasetBareNames(NAME4.getDatasetKey(), new ResultHandler<NameUsageWrapper>() {
-      public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
-        counter.incrementAndGet();
-        assertNotNull(ctx.getResultObject());
-        assertNotNull(ctx.getResultObject().getUsage());
-        assertNotNull(ctx.getResultObject().getUsage().getName());
-      }
-    });
-    Assert.assertEquals(1, counter.get());
+  void assertIdClassEquals(NameUsageBase o1, NameUsageBase o2) {
+    assertEquals(o1.getId(), o2.getId());
+    assertEquals(o1.getClass(), o2.getClass());
   }
 }

@@ -5,13 +5,13 @@ import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Sector;
 import org.col.db.MybatisTestUtils;
+import org.gbif.nameparser.api.NomCode;
 import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.DATASET11;
-import static org.col.api.TestEntityGenerator.newNameRef;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
-public class SectorMapperTest extends CRUDIntMapperTest<Sector, SectorMapper> {
+public class SectorMapperTest extends GlobalCRUDMapperTest<Sector, SectorMapper> {
   
   private static final int datasetKey = DATASET11.getKey();
   
@@ -34,11 +34,26 @@ public class SectorMapperTest extends CRUDIntMapperTest<Sector, SectorMapper> {
   }
   
   @Test
+  public void getBySubject() {
+    add2Sectors();
+    assertNotNull(mapper().getBySubject(datasetKey, TestEntityGenerator.TAXON1.getId()));
+    assertNull(mapper().getBySubject(datasetKey+1, TestEntityGenerator.TAXON1.getId()));
+    assertNull(mapper().getBySubject(datasetKey, TestEntityGenerator.TAXON1.getId()+"dfrtgzh"));
+  }
+  
+  @Test
+  public void listByTarget() {
+    add2Sectors();
+    assertEquals(1, mapper().listByTarget("t4").size());
+    assertEquals(0, mapper().listByTarget("t32134").size());
+  }
+
+  @Test
   public void list() {
     add2Sectors();
-    assertEquals(2, mapper().list(datasetKey).size());
-    assertEquals(2, mapper().list(null).size());
-    assertEquals(0, mapper().list(-432).size());
+    assertEquals(2, mapper().listByDataset(datasetKey).size());
+    assertEquals(2, mapper().listByDataset(null).size());
+    assertEquals(0, mapper().listByDataset(-432).size());
   }
   
   @Test
@@ -60,12 +75,13 @@ public class SectorMapperTest extends CRUDIntMapperTest<Sector, SectorMapper> {
     return create();
   }
   
-  static Sector create() {
+  public static Sector create() {
     Sector d = new Sector();
     d.setDatasetKey(datasetKey);
     d.setMode(Sector.Mode.ATTACH);
-    d.setSubject(newNameRef());
-    d.setTarget(newNameRef());
+    d.setCode(NomCode.ZOOLOGICAL);
+    d.setSubject(TestEntityGenerator.newSimpleName());
+    d.setTarget(TestEntityGenerator.newSimpleNameWithoutStatusParent());
     d.setNote(RandomUtils.randomUnicodeString(1024));
     d.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());
     d.setModifiedBy(TestEntityGenerator.USER_EDITOR.getKey());

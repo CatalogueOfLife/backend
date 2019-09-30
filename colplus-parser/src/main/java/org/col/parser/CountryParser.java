@@ -3,6 +3,7 @@ package org.col.parser;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.col.api.util.VocabularyUtils;
 import org.col.api.vocab.Country;
 
@@ -44,15 +45,22 @@ public class CountryParser extends GbifParserBased<Country, org.gbif.api.vocabul
   }
 
   @Override
-  Country convertFromGbif(org.gbif.api.vocabulary.Country value) {
+  @VisibleForTesting
+  protected Country convertFromGbif(org.gbif.api.vocabulary.Country value) throws UnparsableException {
     switch (value) {
       case UNKNOWN:
+      case USER_DEFINED:
         return null;
       default:
         if (value.getIso2LetterCode() == null) {
           return null;
         }
-        return VocabularyUtils.convertEnum(Country.class, value);
+        try {
+          return VocabularyUtils.convertEnum(Country.class, value);
+        } catch (IllegalArgumentException e) {
+          // unknown enum value
+          throw new UnparsableException("Failed to convert GBIF Country " + value + " into a CoL+ country enumeration", e);
+        }
     }
   }
 }

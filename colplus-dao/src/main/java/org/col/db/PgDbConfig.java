@@ -4,6 +4,7 @@ import java.util.Objects;
 import javax.validation.constraints.NotNull;
 
 public class PgDbConfig {
+  
   @NotNull
   public String database = "postgres";
   
@@ -11,16 +12,6 @@ public class PgDbConfig {
   public String user = "postgres";
   
   public String password;
-  
-  
-  public PgDbConfig() {
-  }
-  
-  public PgDbConfig(PgDbConfig cfg) {
-    this.database = cfg.database;
-    this.user = cfg.user;
-    this.password = cfg.password;
-  }
   
   @Override
   public boolean equals(Object o) {

@@ -7,7 +7,7 @@ import org.col.api.model.ResultPage;
 import org.col.api.model.Taxon;
 import org.col.api.model.TreeNode;
 import org.col.api.vocab.Origin;
-import org.col.db.mapper.InitMybatisRule;
+import org.col.db.mapper.TestDataRule;
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
@@ -24,10 +24,10 @@ import static org.junit.Assert.assertNotNull;
 public class TaxonResourceTest extends ResourceTestBase {
   private final int datasetKey = TestEntityGenerator.DATASET11.getKey();
   
-  static GenericType<ResultPage<? extends TreeNode>> RESP_TYPE = new GenericType<ResultPage<? extends TreeNode>>() {};
+  static GenericType<ResultPage<TreeNode>> RESP_TYPE = new GenericType<ResultPage<TreeNode>>() {};
   
   @Rule
-  public InitMybatisRule initMybatisRule = InitMybatisRule.apple(RULE.getSqlSessionFactory());
+  public TestDataRule testDataRule = TestDataRule.apple(RULE.getSqlSessionFactory());
   
   public TaxonResourceTest() {
     super("/dataset/11/taxon");

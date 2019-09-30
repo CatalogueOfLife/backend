@@ -1,16 +1,19 @@
 package org.col.es.mapping;
 
-import org.col.es.model.EsNameUsage;
+import org.col.es.ddl.JsonUtil;
+import org.col.es.mapping.Mappings;
+import org.col.es.mapping.MappingsFactory;
+import org.col.es.model.NameUsageDocument;
 import org.junit.Test;
 
 public class MappingFactoryTest {
 
-  @Test
+  @Test // Just testing we don't get exceptions
   public void getMapping1() {
-    MappingFactory<EsNameUsage> mf = new MappingFactory<>();
+    MappingsFactory mf = new MappingsFactory();
     mf.setMapEnumToInt(true);
-    Mapping<EsNameUsage> mapping = mf.getMapping(EsNameUsage.class);
-    System.out.println(SerializationUtil.pretty(mapping));
+    Mappings mapping = mf.getMapping(NameUsageDocument.class);
+    System.out.println(JsonUtil.pretty(mapping));
   }
 
 }

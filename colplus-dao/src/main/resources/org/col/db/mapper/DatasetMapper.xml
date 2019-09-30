@@ -30,7 +30,6 @@
       "group",
       confidence,
       completeness,
-      names_index_contributor,
       created,
       created_by,
       modified,
@@ -38,9 +37,7 @@
       deleted,
       di.finished AS imported,
       di.verbatim_count AS size,
-      case exists(select 1 from sector s where s.dataset_key=d.key) when true then array[3] end
-        || case names_index_contributor when true then array[2] end
-        AS contributes_to
+      case exists(select 1 from sector s where s.dataset_key=d.key) when true then array[3] end AS contributes_to
     </sql>
 
     <sql id="COLS">
@@ -68,7 +65,6 @@
       "group",
       confidence,
       completeness,
-      names_index_contributor,
       created_by,
       modified_by
     </sql>
@@ -98,7 +94,6 @@
       #{group},
       #{confidence},
       #{completeness},
-      #{namesIndexContributor},
       #{createdBy},
       #{modifiedBy}
     </sql>
@@ -111,23 +106,22 @@
         deleted IS NULL
         <if test="req != null">
             <if test="req.q != null">
-                AND doc @@ plainto_tsquery('simple2', #{req.q})
+                AND (
+                    f_unaccent(title) ILIKE f_unaccent('%${req.q}%')
+                    OR f_unaccent(alias) ILIKE f_unaccent('%${req.q}%')
+                    OR doc @@ plainto_tsquery('simple2', #{req.q})
+                )
             </if>
             <if test="req.code != null">
                 AND code=#{req.code}
             </if>
-            <!-- for now this is rather hacky cause we sectors only apply to the draft CoL (key=3)
-             and the pCat is dealt with via the names_index_contributor
-            -->
+            <!-- for now this is rather hacky cause we sectors only apply to the draft CoL (key=3) -->
             <if test="req.contributesTo != null">
-                <if test="req.contributesTo == 2">
-                    AND names_index_contributor=true
-                </if>
                 <if test="req.contributesTo == 3">
                     AND exists(select 1 from sector s where s.dataset_key=d.key)
                 </if>
-                <!-- we only support catalogue 2 & 3 for now -->
-                <if test="req.contributesTo &lt; 2 or req.contributesTo &gt; 3">
+                <!-- we only support catalogue 3 for now -->
+                <if test="req.contributesTo != 3">
                     AND false
                 </if>
             </if>
@@ -270,6 +264,12 @@
           = (<include refid="PROPS" />, now())
         WHERE key = #{key}
     </update>
+
+    <select id="lastImportAttempt" resultType="Integer">
+        SELECT last_data_import_attempt
+        FROM dataset
+        WHERE key=#{key}
+    </select>
 
     <update id="updateLastImport" parameterType="integer">
         UPDATE dataset

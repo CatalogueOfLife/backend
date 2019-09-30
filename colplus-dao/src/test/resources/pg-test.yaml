@@ -1,4 +1,3 @@
-# set host to null to use the embedded pg server
 host: ${db.host}
 port: 5432
 database: ${db.database}

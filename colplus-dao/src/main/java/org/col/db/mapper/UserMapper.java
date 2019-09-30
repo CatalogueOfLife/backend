@@ -6,7 +6,7 @@ import org.col.api.model.ColUser;
 /**
  *
  */
-public interface UserMapper extends CRUDIntMapper<ColUser> {
+public interface UserMapper extends GlobalCRUDMapper<ColUser> {
   
   ColUser getByUsername(@Param("username") String username);
   

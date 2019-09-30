@@ -7,10 +7,10 @@ import org.col.api.vocab.TaxonomicStatus;
 import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.DATASET11;
-import static org.col.api.TestEntityGenerator.newNameRef;
+import static org.col.api.TestEntityGenerator.newSimpleName;
 import static org.junit.Assert.assertEquals;
 
-public class DecisionMapperTest extends CRUDIntMapperTest<EditorialDecision, DecisionMapper> {
+public class DecisionMapperTest extends GlobalCRUDMapperTest<EditorialDecision, DecisionMapper> {
   
   public DecisionMapperTest() {
     super(DecisionMapper.class);
@@ -28,9 +28,9 @@ public class DecisionMapperTest extends CRUDIntMapperTest<EditorialDecision, Dec
     mapper().create(d2);
     commit();
     
-    assertEquals(2, mapper().list(null, null).size());
-    assertEquals(2, mapper().list(datasetKey, null).size());
-    assertEquals(1, mapper().list(datasetKey, TestEntityGenerator.TAXON1.getId()).size());
+    assertEquals(2, mapper().listByDataset(null, null).size());
+    assertEquals(2, mapper().listByDataset(datasetKey, null).size());
+    assertEquals(1, mapper().listByDataset(datasetKey, TestEntityGenerator.TAXON1.getId()).size());
     assertEquals(1, mapper().subjectBroken(datasetKey).size());
   }
   
@@ -48,7 +48,7 @@ public class DecisionMapperTest extends CRUDIntMapperTest<EditorialDecision, Dec
   public static EditorialDecision create(int datasetKey) {
     EditorialDecision d = new EditorialDecision();
     d.setDatasetKey(datasetKey);
-    d.setSubject(newNameRef());
+    d.setSubject(TestEntityGenerator.newSimpleName());
     d.setMode(EditorialDecision.Mode.UPDATE);
     d.setName(TestEntityGenerator.newName());
     d.setStatus(TaxonomicStatus.AMBIGUOUS_SYNONYM);

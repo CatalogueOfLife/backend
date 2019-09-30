@@ -43,7 +43,7 @@
   </sql>
 
   <sql id="FROM">
-    distribution d
+    distribution_${datasetKey} d
   </sql>
 
   <!-- A mapping to Distribution, mostly auto mapped -->
@@ -55,14 +55,14 @@
   <select id="listByTaxon" resultMap="distributionResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE d.taxon_id = #{taxonId} AND d.dataset_key = #{datasetKey}
+    WHERE d.taxon_id = #{taxonId}
     ORDER BY d.key
   </select>
 
   <select id="get" resultMap="distributionResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE d.key = #{key} AND d.dataset_key = #{datasetKey}
+    WHERE d.key = #{key}
   </select>
 
   <insert id="create" parameterType="Distribution" useGeneratedKeys="true" keyProperty="obj.key">

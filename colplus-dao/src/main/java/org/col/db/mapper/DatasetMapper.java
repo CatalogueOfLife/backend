@@ -8,14 +8,12 @@ import org.col.api.model.Dataset;
 import org.col.api.model.Page;
 import org.col.api.search.DatasetSearchRequest;
 
-public interface DatasetMapper extends CRUDIntMapper<Dataset> {
+public interface DatasetMapper extends GlobalCRUDMapper<Dataset> {
 
   int count(@Param("req") DatasetSearchRequest request);
 
   List<Dataset> search(@Param("req") DatasetSearchRequest request, @Param("page") Page page);
-
-  List<Dataset> list(@Param("page") Page page);
-
+  
   List<Integer> keys();
 
   /**
@@ -39,7 +37,12 @@ public interface DatasetMapper extends CRUDIntMapper<Dataset> {
   Integer exists(@Param("key") int key);
 
   Dataset getByGBIF(@Param("key") UUID key);
-
+  
+  /**
+   * @return the last import attempt or null if never attempted
+   */
+  Integer lastImportAttempt(@Param("key") int datasetKey);
+  
   int updateLastImport(@Param("key") int key, @Param("attempt") int attempt);
 
 }

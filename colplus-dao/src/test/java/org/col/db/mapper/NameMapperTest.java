@@ -2,12 +2,12 @@ package org.col.db.mapper;
 
 import java.util.List;
 
-import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Dataset;
 import org.col.api.model.Name;
 import org.col.api.model.Page;
+import org.col.api.vocab.Datasets;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,9 +17,8 @@ import static org.junit.Assert.*;
 /**
  *
  */
-public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper> {
+public class NameMapperTest extends MapperTestBase<NameMapper> {
   
-  private static final Splitter SPACE_SPLITTER = Splitter.on(" ").trimResults();
   private NameMapper nameMapper;
   
   public NameMapperTest() {
@@ -28,12 +27,13 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
   
   @Before
   public void initMappers() {
-    nameMapper = initMybatisRule.getMapper(NameMapper.class);
+    nameMapper = testDataRule.getMapper(NameMapper.class);
   }
   
-  private static Name create(final String id, final Name basionym) throws Exception {
+  static Name create(final String id, final Name basionym) throws Exception {
     Name n = TestEntityGenerator.newName(id);
     n.setHomotypicNameId(basionym.getId());
+    n.setAuthorshipNormalized(Lists.newArrayList("linne", "walther"));
     return n;
   }
   
@@ -43,6 +43,22 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
     n.setSectorKey(1); // not existing, but FK is not checked
     n.setHomotypicNameId(NAME1.getId());
     return n;
+  }
+  
+  @Test
+  public void update() throws Exception {
+    Name n = TestEntityGenerator.newName("sk1");
+    mapper().create(n);
+    commit();
+    
+    n.setAuthorship("Berta & Tomate");
+    mapper().update(n);
+    commit();
+    
+    Name n2 = mapper().get(n.getDatasetKey(), n.getId());
+    
+    printDiff(n, n2);
+    assertEquals(n, n2);
   }
   
   @Test
@@ -116,6 +132,12 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
   }
   
   @Test
+  public void hasData() throws Exception {
+    assertTrue(nameMapper.hasData(DATASET11.getKey()));
+    assertFalse(nameMapper.hasData(Datasets.NAME_INDEX));
+  }
+  
+  @Test
   public void basionymGroup() throws Exception {
     Name n2bas = TestEntityGenerator.newName("n2");
     nameMapper.create(n2bas);
@@ -167,18 +189,18 @@ public class NameMapperTest extends org.col.db.mapper.MapperTestBase<NameMapper>
   public void listByReference() throws Exception {
     Name acc1 = newAcceptedName("Nom uno");
     nameMapper.create(acc1);
-    assertTrue(nameMapper.listByReference(REF2.getDatasetKey(), REF2.getId()).isEmpty());
+    assertTrue(nameMapper.listByReference(REF1b.getDatasetKey(), REF1b.getId()).isEmpty());
     
     Name acc2 = newAcceptedName("Nom duo");
-    acc2.setPublishedInId(REF2.getId());
+    acc2.setPublishedInId(REF1b.getId());
     Name acc3 = newAcceptedName("Nom tres");
-    acc3.setPublishedInId(REF2.getId());
+    acc3.setPublishedInId(REF1b.getId());
     nameMapper.create(acc2);
     nameMapper.create(acc3);
     
     // we have one ref from the apple.sql
     assertEquals(1, nameMapper.listByReference(REF1.getDatasetKey(), REF1.getId()).size());
-    assertEquals(2, nameMapper.listByReference(REF2.getDatasetKey(), REF2.getId()).size());
+    assertEquals(2, nameMapper.listByReference(REF1b.getDatasetKey(), REF1b.getId()).size());
   }
   
   private static Name newAcceptedName(String scientificName) {

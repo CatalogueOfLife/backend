@@ -7,26 +7,21 @@ The CoL backend consists of 2 [Dropwizard](https://www.dropwizard.io/) applicati
 ## Prerequisites
 1. Java 8 JDK
 1. Maven 3
-1. Postgres 11.
+1. Postgres 11
 
-## Run the CoL applications locally
-### colplus-admin
-1. cd into `colplus-admin`
-1. Run `mvn clean install` to build your application
-1. create a local [config.yml](colplus-admin/src/main/resources/config.yaml) file
-1. On the first run init a new, empty database with `java -jar target/colplus-admin-1.0-SNAPSHOT.jar initdb config.yml`
-1. Start application with `java -jar target/colplus-admin-1.0-SNAPSHOT.jar server config.yml`
-1. To check that your application is running enter url `http://localhost:8080`
-
-### colplus-ws
+## Run the CoL WS application locally
 1. cd into `colplus-ws`
 1. Run `mvn clean install` to build your application
 1. create a local [config.yml](colplus-ws/src/main/resources/config.yaml) file
+1. On the first run init a new, empty database with `java -jar target/colplus-admin-1.0-SNAPSHOT.jar initdb config.yml`
 1. Start application with `java -jar target/colplus-ws-1.0-SNAPSHOT.jar server config.yml`
 1. To check that your application is running enter url `http://localhost:8080`
 
 For development tests you can also run the application straight from your IDE 
 by executing the main `WsServer.java` or `AdminServer.java` class and passing it the right arguments `server /path/to/config.yml`
+
+In order to avoid real authentication against the GBIF registry you can change the AuthBundle and use a LocalAuthFilter
+instead of the real AuthFilter. This authenticates every request with a test account with full admin privileges.
 
 
 ## Health Check
@@ -36,19 +31,17 @@ To see your applications health enter url `http://localhost:8081/healthcheck`
 ## Maven modules
 
 ### colplus-api
-The main API with model classes.
-
-### colplus-admin
-Admin server which allows to load ACEF and Darwin Core Archive datasets, sync with the GBIF registry and more.
-
-### colplus-common
-Shared common classes like utilities.
+The main API with model classes and shared common utilities classes.
 
 ### colplus-dao
 The postgres persistence layer.
 
+### colplus-parser
+Various parsers/interpreters used mostly for importing.
+Contains a GBIF name parser wrapper.
+
 ### colplus-ws
-The Dropwizard based JSON webservices.
+The Dropwizard based JSON webservices, importer and assembly code.
 
 
 

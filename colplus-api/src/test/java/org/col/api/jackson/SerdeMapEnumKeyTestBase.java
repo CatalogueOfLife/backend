@@ -12,7 +12,7 @@ import static org.junit.Assert.assertEquals;
 /**
  *
  */
-public class SerdeMapEnumKeyTestBase<T extends Enum> extends EnumSerdeTestBase<T> {
+public abstract class SerdeMapEnumKeyTestBase<T extends Enum> extends EnumSerdeTestBase<T> {
   
   public SerdeMapEnumKeyTestBase(Class<T> enumClass) {
     super(enumClass);

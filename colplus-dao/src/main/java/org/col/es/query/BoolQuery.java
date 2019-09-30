@@ -1,55 +1,44 @@
 package org.col.es.query;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class BoolQuery extends AbstractQuery {
+public class BoolQuery extends ConstraintQuery<BoolConstraint> {
 
-  private static class Clause {
-    List<Query> must;
-    List<Query> filter;
-    @JsonProperty("must_not")
-    List<Query> mustNot;
-    List<Query> should;
-  }
-
-  private final Clause bool;
+  @JsonProperty("bool")
+  private final BoolConstraint constraint;
 
   public BoolQuery() {
-    this.bool = new Clause();
+    this.constraint = new BoolConstraint();
   }
 
   public BoolQuery must(Query query) {
-    if (bool.must == null) {
-      bool.must = new CollapsibleList<>(5);
-    }
-    bool.must.add(query);
+    constraint.must(query);
     return this;
   }
 
   public BoolQuery filter(Query query) {
-    if (bool.filter == null) {
-      bool.filter = new CollapsibleList<>(5);
-    }
-    bool.filter.add(query);
+    constraint.filter(query);
     return this;
   }
 
   public BoolQuery mustNot(Query query) {
-    if (bool.mustNot == null) {
-      bool.mustNot = new CollapsibleList<>(5);
-    }
-    bool.mustNot.add(query);
+    constraint.mustNot(query);
     return this;
   }
 
   public BoolQuery should(Query query) {
-    if (bool.should == null) {
-      bool.should = new CollapsibleList<>(5);
-    }
-    bool.should.add(query);
+    constraint.should(query);
     return this;
+  }
+
+  public BoolQuery minimumShouldMatch(Integer i) {
+    constraint.minimumShouldMatch(i);
+    return this;
+  }
+
+  @Override
+  BoolConstraint getConstraint() {
+    return constraint;
   }
 
 }

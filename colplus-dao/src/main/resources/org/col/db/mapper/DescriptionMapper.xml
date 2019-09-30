@@ -43,7 +43,7 @@
   </sql>
 
   <sql id="FROM">
-    description d
+    description_${datasetKey} d
   </sql>
 
   <resultMap id="descriptionResultMap" type="Description" autoMapping="true">
@@ -54,14 +54,14 @@
   <select id="listByTaxon" resultMap="descriptionResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE d.taxon_id = #{taxonId} AND d.dataset_key = #{datasetKey}
+    WHERE d.taxon_id = #{taxonId}
     ORDER BY d.key
   </select>
 
   <select id="get" resultMap="descriptionResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE d.key = #{key} AND d.dataset_key = #{datasetKey}
+    WHERE d.key = #{key}
   </select>
 
   <insert id="create" parameterType="Distribution" useGeneratedKeys="true" keyProperty="obj.key">

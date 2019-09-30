@@ -15,6 +15,10 @@ public class KeywordField extends SimpleField {
     super(ESDataType.KEYWORD);
   }
 
+  public KeywordField(Boolean index) {
+    super(ESDataType.KEYWORD, index);
+  }
+
   public LinkedHashMap<String, MultiField> getMultiFields() {
     return fields;
   }

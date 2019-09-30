@@ -15,7 +15,7 @@
         ${alias}.specific_epithet AS ${prefix}specific_epithet,
         ${alias}.infraspecific_epithet AS ${prefix}infraspecific_epithet,
         ${alias}.cultivar_epithet AS ${prefix}cultivar_epithet,
-        ${alias}.strain AS ${prefix}strain,
+        ${alias}.appended_phrase AS ${prefix}appended_phrase,
         ${alias}.candidatus AS ${prefix}candidatus,
         ${alias}.notho AS ${prefix}notho,
         ${alias}.basionym_authors AS ${prefix}basionym_authors,
@@ -65,7 +65,9 @@
         name_index_id,
         homotypic_name_id,
         scientific_name,
+        scientific_name_normalized,
         authorship,
+        authorship_normalized,
         rank,
         uninomial,
         genus,
@@ -73,7 +75,7 @@
         specific_epithet,
         infraspecific_epithet,
         cultivar_epithet,
-        strain,
+        appended_phrase,
         candidatus,
         notho,
         basionym_authors,
@@ -104,7 +106,9 @@
         #{nameIndexId},
         #{homotypicNameId},
         #{scientificName},
+        #{scientificNameNormalized},
         #{authorship},
+        #{authorshipNormalized},
         #{rank}::rank,
         #{uninomial},
         #{genus},
@@ -112,7 +116,7 @@
         #{specificEpithet},
         #{infraspecificEpithet},
         #{cultivarEpithet},
-        #{strain},
+        #{appendedPhrase},
         #{candidatus},
         #{notho},
         #{basionymAuthorship.authors, typeHandler=org.col.db.type.StringArrayTypeHandler},
@@ -136,7 +140,7 @@
         #{modifiedBy}
     </sql>
 
-    <sql id="FROM">name n</sql>
+    <sql id="FROM">name_${datasetKey} n</sql>
 
      <!-- A mapping to Name, mostly auto mapped -->
     <resultMap id="nameResultMap" type="Name" autoMapping="true">
@@ -154,15 +158,25 @@
     </resultMap>
 
     <select id="count" resultType="integer">
-        <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
-            <property name="column" value="name_count"/>
-        </include>
+        <if test="datasetKey &lt; 10">
+            SELECT count(*) FROM name_${datasetKey}
+        </if>
+        <if test="datasetKey &gt;= 10">
+            <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
+                <property name="column" value="name_count"/>
+            </include>
+        </if>
+    </select>
+
+    <select id="hasData" resultType="boolean">
+        SELECT exists(
+            SELECT id FROM <include refid="FROM" /> LIMIT 1
+        )
     </select>
 
     <select id="list" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE n.dataset_key = #{datasetKey}
         ORDER BY id
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
@@ -170,37 +184,35 @@
     <select id="listByReference" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE n.dataset_key = #{datasetKey} AND n.published_in_id = #{refId}
+        WHERE n.published_in_id = #{refId}
         ORDER BY id
     </select>
 
     <!--  select all names of a dataset
      Using a optimal fetchsize to enable low memory footprint while keeping good performance using a resulthandler
     -->
-    <select id="processDataset" parameterType="map" resultMap="nameResultMap" resultOrdered="true"
-            fetchSize="10000" resultSetType="FORWARD_ONLY">
+    <select id="processDataset" parameterType="map" resultMap="nameResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE n.dataset_key = #{datasetKey}
         ORDER BY id
     </select>
 
     <select id="get" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE n.dataset_key = #{datasetKey} AND n.id = #{id}
+        WHERE n.id = #{id}
     </select>
 
-    <select id="getByTaxon" resultMap="nameResultMap">
+    <select id="getByUsage" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-            JOIN taxon t ON t.name_id=n.id AND t.dataset_key = n.dataset_key
-        WHERE n.dataset_key = #{datasetKey} AND t.id = #{taxonId}
+            JOIN name_usage_${datasetKey} u ON u.name_id=n.id
+        WHERE u.id = #{usageId}
     </select>
 
-    <select id="listNameIndexIds" resultType="String" >
+    <select id="processIndexIds" resultType="String" >
         SELECT DISTINCT name_index_id
-        FROM name_${datasetKey}
+        FROM <include refid="FROM" />
         <if test="sectorKey != null">
             WHERE sector_key = #{sectorKey}
         </if>
@@ -208,9 +220,9 @@
 
     <select id="homotypicGroup" resultMap="nameResultMap">
         SELECT <include refid="SELECT" />
-        FROM name ns
-          JOIN name n ON n.homotypic_name_id=ns.homotypic_name_id
-        WHERE ns.dataset_key = #{datasetKey} AND ns.id=#{id}
+        FROM <include refid="FROM" />
+          JOIN name_${datasetKey} ns ON n.homotypic_name_id=ns.homotypic_name_id
+        WHERE ns.id=#{id}
     </select>
 
     <select id="indexGroup" resultMap="nameResultMap">
@@ -225,18 +237,34 @@
     </insert>
 
     <update id="update" parameterType="Name" keyProperty="id">
-        UPDATE name_${datasetKey} (<include refid="COLS" />, created, modified)
-        VALUES (<include refid="PROPS" />, now(), now())
+        UPDATE name_${datasetKey}
+        SET (<include refid="COLS" />, created, modified) = (<include refid="PROPS" />, now(), now())
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateMatch" parameterType="map" keyProperty="id">
+        UPDATE name_${datasetKey}
+        SET (name_index_id, modified) = (#{nameIndexID}, now())
+        WHERE id = #{id}
     </update>
 
     <delete id="delete" parameterType="map">
-        DELETE name_${datasetKey} WHERE id = #{id}
+        DELETE name_${datasetKey}
+        WHERE id = #{id}
     </delete>
 
     <delete id="deleteOrphans" parameterType="map">
         DELETE FROM name_${datasetKey} n
-        USING taxon_${datasetKey} t, synonym__${datasetKey} s
-        WHERE id = #{datasetKey}
+        WHERE NOT EXISTS (
+            SELECT NULL
+            FROM name_usage_${datasetKey} u
+            WHERE n.id = i.name_id
+        )
+    </delete>
+
+    <delete id="deleteBySector" parameterType="map">
+        DELETE FROM name_${datasetKey}
+        WHERE sector_key=#{sectorKey}
     </delete>
 
 </mapper>

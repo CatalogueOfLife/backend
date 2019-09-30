@@ -1,71 +1,67 @@
 package org.col.resources;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
-import com.google.common.base.Function;
+import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.api.model.*;
+import org.col.WsServerConfig;
+import org.col.api.model.Dataset;
+import org.col.api.model.DatasetImport;
+import org.col.api.model.Page;
+import org.col.api.model.ResultPage;
 import org.col.api.search.DatasetSearchRequest;
 import org.col.api.vocab.ImportState;
 import org.col.common.io.DownloadUtil;
-import org.col.db.dao.DatasetDao;
-import org.col.db.dao.DatasetImportDao;
+import org.col.dao.DatasetDao;
+import org.col.dao.DatasetImportDao;
 import org.col.db.mapper.DatasetMapper;
+import org.col.db.tree.DiffService;
+import org.col.db.tree.NamesDiff;
+import org.col.db.tree.TextTreePrinter;
 import org.col.dw.auth.Roles;
 import org.col.dw.jersey.MoreMediaTypes;
 import org.col.img.ImageService;
+import org.col.img.ImageServiceFS;
 import org.col.img.ImgConfig;
-import org.col.img.LogoUpdateJob;
+import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Path("/dataset")
 @SuppressWarnings("static-method")
-public class DatasetResource extends CRUDIntResource<Dataset> {
+public class DatasetResource extends GlobalEntityResource<Dataset> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetResource.class);
-  private final SqlSessionFactory factory;
+  private final DatasetDao dao;
   private final ImageService imgService;
-  private final Function<Integer, File> scratchDirFunc;
-  private final DownloadUtil downloader;
+  private final DatasetImportDao diDao;
+  private final DiffService diff;
   
-  public DatasetResource(SqlSessionFactory factory, ImageService imgService, Function<Integer, File> scratchDirFunc, DownloadUtil downloader) {
-    super(Dataset.class, DatasetMapper.class);
-    this.factory = factory;
+  public DatasetResource(SqlSessionFactory factory, ImageService imgService, WsServerConfig cfg, DownloadUtil downloader, DiffService diff) {
+    super(Dataset.class, new DatasetDao(factory, downloader, imgService, cfg.normalizer::scratchFile), factory);
+    this.dao = (DatasetDao) super.dao;
     this.imgService = imgService;
-    this.scratchDirFunc = scratchDirFunc;
-    this.downloader = downloader;
+    this.diDao = new DatasetImportDao(factory, cfg.textTreeRepo);
+    this.diff = diff;
   }
   
   @GET
-  public ResultPage<Dataset> list(@Valid @BeanParam Page page, @BeanParam DatasetSearchRequest req,
+  public ResultPage<Dataset> search(@Valid @BeanParam Page page, @BeanParam DatasetSearchRequest req,
                                   @Context SqlSession session) {
-    return new DatasetDao(session).search(req, page);
-  }
-  
-  @Override
-  public Integer create(@Valid Dataset obj, ColUser user, SqlSession session) {
-    super.create(obj, user, session);
-    pullLogo(obj);
-    return obj.getKey();
-  }
-  
-  @Override
-  public void update(Integer key, Dataset obj, ColUser user, SqlSession session) {
-    super.update(key, obj, user, session);
-    pullLogo(obj);
+    return dao.search(req, page);
   }
   
   @GET
@@ -73,14 +69,80 @@ public class DatasetResource extends CRUDIntResource<Dataset> {
   public List<DatasetImport> getImports(@PathParam("key") int key,
                                         @QueryParam("state") List<ImportState> states,
                                         @QueryParam("limit") @DefaultValue("1") int limit) {
-    return new DatasetImportDao(factory).list(key, states, new Page(0, limit)).getResult();
+    return diDao.list(key, states, new Page(0, limit)).getResult();
   }
   
   @GET
   @Path("{key}/import/{attempt}")
   public DatasetImport getImportAttempt(@PathParam("key") int key,
                                         @PathParam("attempt") int attempt) {
-    return new DatasetImportDao(factory).getAttempt(key, attempt);
+    return diDao.getAttempt(key, attempt);
+  }
+  
+  @GET
+  @Path("{key}/import/{attempt}/tree")
+  public Stream<String> getImportAttemptTree(@PathParam("key") int key,
+                                     @PathParam("attempt") int attempt) throws IOException {
+    return diDao.getTreeDao().getDatasetTree(key, attempt);
+  }
+  
+  @GET
+  @Path("{key}/import/{attempt}/names")
+  public Stream<String> getImportAttemptNames(@PathParam("key") int key,
+                                              @PathParam("attempt") int attempt) {
+    return diDao.getTreeDao().getDatasetNames(key, attempt);
+  }
+  
+  @GET
+  @Path("{key}/texttree")
+  @Produces(MediaType.TEXT_PLAIN)
+  public Response textTree(@PathParam("key") int key,
+                         @QueryParam("root") String rootID,
+                         @QueryParam("rank") Set<Rank> ranks,
+                         @Context SqlSession session) {
+    Integer attempt = session.getMapper(DatasetMapper.class).lastImportAttempt(key);
+    if (attempt == null) {
+      throw new NotFoundException();
+    }
+    
+    StreamingOutput stream;
+    if (rootID == null && (ranks == null || ranks.isEmpty())) {
+      // stream from pregenerated file
+      stream = os -> {
+        InputStream in = new FileInputStream(diDao.getTreeDao().treeFile(key, attempt));
+        IOUtils.copy(in, os);
+        os.flush();
+      };
+  
+    } else {
+      stream = os -> {
+        Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+        TextTreePrinter printer = TextTreePrinter.dataset(key, rootID, ranks, factory, writer);
+        printer.print();
+        if (printer.getCounter() == 0) {
+          writer.write("--NONE--");
+        }
+        writer.flush();
+      };
+    }
+    return Response.ok(stream).build();
+  }
+
+  @GET
+  @Path("{key}/treediff")
+  @Produces(MediaType.TEXT_PLAIN)
+  public Reader diffTree(@PathParam("key") int key,
+                         @QueryParam("attempts") String attempts,
+                         @Context SqlSession session) throws IOException {
+    return diff.datasetTreeDiff(key, attempts);
+  }
+  
+  @GET
+  @Path("{key}/namesdiff")
+  public NamesDiff diffNames(@PathParam("key") int key,
+                             @QueryParam("attempts") String attempts,
+                             @Context SqlSession session) throws IOException {
+    return diff.datasetNamesDiff(key, attempts);
   }
   
   @GET
@@ -98,7 +160,7 @@ public class DatasetResource extends CRUDIntResource<Dataset> {
   })
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public Response uploadLogo(@PathParam("key") int key, InputStream img) throws IOException {
-    imgService.putDatasetLogo(get(key), ImageService.read(img));
+    imgService.putDatasetLogo(get(key), ImageServiceFS.read(img));
     return Response.ok().build();
   }
   
@@ -110,13 +172,4 @@ public class DatasetResource extends CRUDIntResource<Dataset> {
     return Response.ok().build();
   }
   
-  private Dataset get(int key) {
-    try (SqlSession sess = factory.openSession()) {
-      return sess.getMapper(DatasetMapper.class).get(key);
-    }
-  }
-  
-  private void pullLogo(Dataset d) {
-    LogoUpdateJob.updateDatasetAsync(d, factory, downloader, scratchDirFunc, imgService);
-  }
 }

@@ -1,14 +1,19 @@
 package org.col.api.model;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import org.col.api.vocab.EstimateType;
 import org.col.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.Rank;
 
 /**
  * A drastic simplification of a taxon with just the minimum information used to render in a tree.
+ * Adds various additional infos to support the assembly tree.
  */
-public class TreeNode implements ID {
+public class TreeNode implements DatasetEntity {
 
   private Integer datasetKey;
   private String id;
@@ -17,13 +22,14 @@ public class TreeNode implements ID {
   private Rank rank;
   private TaxonomicStatus status;
   private int childCount;
-  private Integer speciesEstimate;
-  private String speciesEstimateReferenceId;
+  private List<SpeciesEstimate> estimates;
   private Integer sectorKey;
-  private Sector sector;
-  private Decision decision;
+  private EditorialDecision decision;
+  private Int2IntOpenHashMap datasetSectors;
   
   /**
+   * Exposes a structured name instance as a full name with html markup
+   * instead of the regular name property.
    * Only to be used by mybatis mappers, nowhere else!!!
    */
   public static class TreeNodeMybatis extends TreeNode {
@@ -31,14 +37,16 @@ public class TreeNode implements ID {
   
     @Override
     public String getName() {
-      return _name == null ? null :_name.canonicalNameCompleteHtml();
+      return _name == null ? super.name :_name.canonicalNameCompleteHtml();
     }
   }
   
+  @Override
   public Integer getDatasetKey() {
     return datasetKey;
   }
-
+  
+  @Override
   public void setDatasetKey(Integer datasetKey) {
     this.datasetKey = datasetKey;
   }
@@ -93,22 +101,28 @@ public class TreeNode implements ID {
     this.childCount = childCount;
   }
   
-  public Integer getSpeciesEstimate() {
-    return speciesEstimate;
+  public List<SpeciesEstimate> getEstimates() {
+    return estimates;
   }
   
-  public void setSpeciesEstimate(Integer speciesEstimate) {
-    this.speciesEstimate = speciesEstimate;
+  public void setEstimates(List<SpeciesEstimate> estimates) {
+    this.estimates = estimates;
   }
   
-  public String getSpeciesEstimateReferenceId() {
-    return speciesEstimateReferenceId;
+  /**
+   * @return the average of the listed DESCRIBED_SPECIES_LIVING estimates
+   */
+  public Integer getEstimate() {
+    if (estimates == null || estimates.isEmpty()) {
+      return null;
+    }
+    double avg = estimates.stream()
+        .filter(e -> e.getEstimate() != null)
+        .filter(e -> e.getType() == EstimateType.DESCRIBED_SPECIES_LIVING)
+        .collect(Collectors.averagingInt(SpeciesEstimate::getEstimate));
+    return avg == 0 ? null : (int) avg;
   }
-  
-  public void setSpeciesEstimateReferenceId(String speciesEstimateReferenceId) {
-    this.speciesEstimateReferenceId = speciesEstimateReferenceId;
-  }
-  
+
   public Integer getSectorKey() {
     return sectorKey;
   }
@@ -117,20 +131,20 @@ public class TreeNode implements ID {
     this.sectorKey = sectorKey;
   }
   
-  public Sector getSector() {
-    return sector;
-  }
-  
-  public void setSector(Sector sector) {
-    this.sector = sector;
-  }
-  
-  public Decision getDecision() {
+  public EditorialDecision getDecision() {
     return decision;
   }
   
-  public void setDecision(Decision decision) {
+  public void setDecision(EditorialDecision decision) {
     this.decision = decision;
+  }
+  
+  public Int2IntOpenHashMap getDatasetSectors() {
+    return datasetSectors;
+  }
+  
+  public void setDatasetSectors(Int2IntOpenHashMap datasetSectors) {
+    this.datasetSectors = datasetSectors;
   }
   
   @Override
@@ -143,15 +157,16 @@ public class TreeNode implements ID {
         Objects.equals(id, treeNode.id) &&
         Objects.equals(parentId, treeNode.parentId) &&
         Objects.equals(name, treeNode.name) &&
-        Objects.equals(rank, treeNode.rank) &&
-        Objects.equals(status, treeNode.status) &&
-        Objects.equals(speciesEstimate, treeNode.speciesEstimate) &&
-        Objects.equals(speciesEstimateReferenceId, treeNode.speciesEstimateReferenceId) &&
-        Objects.equals(sectorKey, treeNode.sectorKey);
+        rank == treeNode.rank &&
+        status == treeNode.status &&
+        Objects.equals(estimates, treeNode.estimates) &&
+        Objects.equals(sectorKey, treeNode.sectorKey) &&
+        Objects.equals(decision, treeNode.decision) &&
+        Objects.equals(datasetSectors, treeNode.datasetSectors);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, id, parentId, name, rank, status, childCount, speciesEstimate, speciesEstimateReferenceId, sectorKey);
+    return Objects.hash(datasetKey, id, parentId, name, rank, status, childCount, estimates, sectorKey, decision, datasetSectors);
   }
 }

@@ -424,6 +424,13 @@ public class CslData {
     this.containerTitleShort = containerTitleShort;
   }
   
+  /**
+   * Alternative setter for short container title which is also in use by some sources
+   */
+  public void setShortContainerTitle(String containerTitleShort) {
+    this.containerTitleShort = containerTitleShort;
+  }
+  
   public String getDimensions() {
     return dimensions;
   }
@@ -704,6 +711,13 @@ public class CslData {
     this.titleShort = titleShort;
   }
   
+  /**
+   * Alternative setter for short title which is also in use by some sources
+   */
+  public void setShortTitle(String titleShort) {
+    this.titleShort = titleShort;
+  }
+
   public String getURL() {
     return URL;
   }

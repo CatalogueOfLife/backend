@@ -5,7 +5,7 @@ import org.junit.Test;
 /**
  *
  */
-public class EnumSerdeTestBase<T extends Enum> extends SerdeTestBase<T> {
+public abstract class EnumSerdeTestBase<T extends Enum> extends SerdeTestBase<T> {
   
   public EnumSerdeTestBase(Class<T> enumClass) {
     super(enumClass);

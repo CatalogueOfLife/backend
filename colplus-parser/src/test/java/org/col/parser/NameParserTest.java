@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.col.api.model.Name;
 import org.col.api.model.NameAccordingTo;
+import org.col.api.vocab.NomStatus;
 import org.gbif.nameparser.api.*;
 import org.junit.Test;
 
@@ -23,6 +24,17 @@ public class NameParserTest {
   public void parseAuthorship() throws Exception {
     assertAuthorship("L.f", null, "L.f");
     assertAuthorship("DC.", null, "DC.");
+  }
+  
+  @Test
+  public void parseManuscript() throws Exception {
+    assertName("Acranthera virescens (Ridl.) ined.", "Acranthera virescens")
+          .species("Acranthera", "virescens")
+          .basAuthors(null, "Ridl.")
+          .type(NameType.SCIENTIFIC)
+          .remarks("ined.")
+          .status(NomStatus.MANUSCRIPT)
+          .nothingElse();
   }
   
   @Test
@@ -44,7 +56,14 @@ public class NameParserTest {
         .species("Abies", "alba")
         .combAuthors(null, "Mill.")
         .nothingElse();
-    
+  
+    assertName("Acranthera virescens (Ridl.) ined.", "Acranthera virescens")
+        .species("Acranthera", "virescens")
+        .basAuthors(null, "Ridl.")
+        .status(NomStatus.MANUSCRIPT)
+        .remarks("ined.")
+        .nothingElse();
+
     assertName("Alstonia vieillardii Van Heurck & Müll.Arg.", "Alstonia vieillardii")
         .species("Alstonia", "vieillardii")
         .combAuthors(null, "Van Heurck", "Müll.Arg.")
@@ -59,7 +78,7 @@ public class NameParserTest {
   @Test
   public void parseInfraSpecies() throws Exception {
     
-    assertName("Abies alba ssp. alpina Mill.", "Abies alba subsp. alpina")
+    assertName("Abies alba ssp. alpina Mill.", "Abies alba alpina")
         .infraSpecies("Abies", "alba", Rank.SUBSPECIES, "alpina")
         .combAuthors(null, "Mill.")
         .nothingElse();
@@ -78,6 +97,7 @@ public class NameParserTest {
         .infraSpecies("Baccharis", "microphylla", Rank.VARIETY, "rhomboidea")
         .combAuthors(null, "Sch.Bip.")
         .combExAuthors("Wedd.")
+        .remarks("nom.nud.")
         .nothingElse();
     
     assertName("Achillea millefolium subsp. pallidotegula B. Boivin var. pallidotegula", "Achillea millefolium var. pallidotegula")
@@ -230,8 +250,7 @@ public class NameParserTest {
   static NameAssertion assertName(String rawName, String sciname, NameType type) throws UnparsableException {
     NameAccordingTo n = parser.parse(rawName).get();
     assertEquals(sciname, n.getName().getScientificName());
-    assertEquals(type, n.getName().getType());
-    return new NameAssertion(n.getName());
+    return new NameAssertion(n.getName()).type(type);
   }
   
   static class NameAssertion {
@@ -246,7 +265,10 @@ public class NameParserTest {
       BAS,
       EXBAS,
       SANCT,
-      RANK
+      RANK,
+      TYPE,
+      STATUS,
+      REMARKS
     }
     
     public NameAssertion(Name n) {
@@ -285,6 +307,15 @@ public class NameParserTest {
               break;
             case RANK:
               assertEquals(Rank.UNRANKED, n.getRank());
+              break;
+            case TYPE:
+              assertEquals(NameType.SCIENTIFIC, n.getType());
+              break;
+            case STATUS:
+              assertNull(n.getNomStatus());
+              break;
+            case REMARKS:
+              assertNull(n.getRemarks());
           }
         }
       }
@@ -365,6 +396,21 @@ public class NameParserTest {
       assertEquals(Lists.newArrayList(authors), n.getBasionymAuthorship().getExAuthors());
       return add(NP.EXBAS);
     }
-    
+  
+    NameAssertion type(NameType type) {
+      assertEquals(type, n.getType());
+      return add(NP.TYPE);
+    }
+  
+    NameAssertion status(NomStatus status) {
+      assertEquals(status, n.getNomStatus());
+      return add(NP.STATUS);
+    }
+
+    NameAssertion remarks(String remarks) {
+      assertEquals(remarks, n.getRemarks());
+      return add(NP.REMARKS);
+    }
+  
   }
 }

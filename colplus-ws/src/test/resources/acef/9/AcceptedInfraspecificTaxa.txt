@@ -1,0 +1,4 @@
+AcceptedTaxonID	ParentSpeciesID	InfraSpeciesEpithet	InfraSpeciesAuthorString	InfraSpeciesMarker
+Eusphalerum_caucasicum_feldmanni	Eusphalerum_caucasicum	feldmanni	Zanetti, 2012	
+1-1	1	lalepi	(Cheesm.i.l.)	
+ 

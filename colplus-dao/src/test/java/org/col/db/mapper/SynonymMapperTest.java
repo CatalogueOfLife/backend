@@ -1,15 +1,17 @@
 package org.col.db.mapper;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Name;
 import org.col.api.model.Synonym;
 import org.col.api.model.Taxon;
-import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
-import org.col.db.dao.NameDao;
+import org.col.common.tax.AuthorshipNormalizer;
+import org.col.dao.NameDao;
+import org.col.db.PgSetupRule;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -20,9 +22,11 @@ import static org.junit.Assert.*;
  */
 public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
   
+  private static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
   private NameDao nameDao;
   private SynonymMapper synonymMapper;
   private TaxonMapper taxonMapper;
+  private static int user = TestEntityGenerator.USER_EDITOR.getKey();
   
   public SynonymMapperTest() {
     super(SynonymMapper.class);
@@ -30,33 +34,32 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
   
   @Before
   public void initMappers() {
-    nameDao = new NameDao(initMybatisRule.getSqlSession());
-    synonymMapper = initMybatisRule.getMapper(SynonymMapper.class);
-    taxonMapper = initMybatisRule.getMapper(TaxonMapper.class);
+    nameDao = new NameDao(PgSetupRule.getSqlSessionFactory(), aNormalizer);
+    synonymMapper = testDataRule.getMapper(SynonymMapper.class);
+    taxonMapper = testDataRule.getMapper(TaxonMapper.class);
   }
 
   @Test
   public void roundtrip() {
     Name n = TestEntityGenerator.newName();
-    nameDao.create(n);
+    nameDao.create(n, user);
     
     Name an = TestEntityGenerator.newName();
-    nameDao.create(an);
+    nameDao.create(an, user);
     Taxon t = TestEntityGenerator.newTaxon(an.getDatasetKey(), RandomUtils.randomLatinString(25));
     t.setName(an);
     taxonMapper.create(t);
     
-    Synonym s1 = TestEntityGenerator.newSynonym(TaxonomicStatus.SYNONYM, n, t);
+    Synonym s1 = TestEntityGenerator.newSynonym(TaxonomicStatus.SYNONYM, n, t.getId());
     s1.setVerbatimKey(1);
-    synonymMapper.create(n.getDatasetKey(), s1.getName().getId(), s1.getAccepted().getId(), s1);
+    synonymMapper.create(s1);
     commit();
     
-    List<Synonym> syns = synonymMapper.listByNameID(s1.getName().getDatasetKey(), s1.getName().getId());
-    assertEquals(1, syns.size());
-    Synonym s2 = syns.get(0);
+    Synonym s2 = synonymMapper.get(s1.getDatasetKey(), s1.getId());
+    assertNotNull(s2);
     
     // remove child count for comparison
-    t.setChildCount(null);
+    s2.setAccepted(null);
     TestEntityGenerator.nullifyUserDate(s1);
     TestEntityGenerator.nullifyUserDate(s2);
     printDiff(s1, s2);
@@ -74,27 +77,27 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     
     // homotypic 1
     Name syn1 = TestEntityGenerator.newName("syn1");
-    nameDao.create(syn1);
+    nameDao.create(syn1, user);
     
     // homotypic 2
     Name syn2bas = TestEntityGenerator.newName("syn2bas");
-    nameDao.create(syn2bas);
+    nameDao.create(syn2bas, user);
     
     Name syn21 = TestEntityGenerator.newName("syn2.1");
     syn21.setHomotypicNameId(syn2bas.getId());
-    nameDao.create(syn21);
+    nameDao.create(syn21, user);
     
     Name syn22 = TestEntityGenerator.newName("syn2.2");
     syn22.setHomotypicNameId(syn2bas.getId());
-    nameDao.create(syn22);
+    nameDao.create(syn22, user);
     
     // homotypic 3
     Name syn3bas = TestEntityGenerator.newName("syn3bas");
-    nameDao.create(syn3bas);
+    nameDao.create(syn3bas, user);
     
     Name syn31 = TestEntityGenerator.newName("syn3.1");
     syn31.setHomotypicNameId(syn3bas.getId());
-    nameDao.create(syn31);
+    nameDao.create(syn31, user);
     
     commit();
     
@@ -105,20 +108,17 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     assertEquals(0, synonyms.size());
     
     // now add a few synonyms
-    Synonym syn = TestEntityGenerator.setUserDate(new Synonym());
-    syn.setOrigin(Origin.SOURCE);
-    syn.setStatus(TaxonomicStatus.SYNONYM);
-    synonymMapper.create(datasetKey, syn1.getId(), accKey, syn);
+    Synonym syn = TestEntityGenerator.newSynonym(syn1, accKey);
+    synonymMapper.create(syn);
     commit();
     synonyms = synonymMapper.listByTaxon(datasetKey, accKey);
-    assertFalse(synonyms.isEmpty());
     assertEquals(1, synonyms.size());
     
-    synonymMapper.create(datasetKey, syn2bas.getId(), accKey, syn);
-    synonymMapper.create(datasetKey, syn21.getId(), accKey, syn);
-    synonymMapper.create(datasetKey, syn22.getId(), accKey, syn);
-    synonymMapper.create(datasetKey, syn3bas.getId(), accKey, syn);
-    synonymMapper.create(datasetKey, syn31.getId(), accKey, syn);
+    synonymMapper.create(newSyn(syn, syn2bas, accKey));
+    synonymMapper.create(newSyn(syn, syn21, accKey));
+    synonymMapper.create(newSyn(syn, syn22, accKey));
+    synonymMapper.create(newSyn(syn, syn3bas, accKey));
+    synonymMapper.create(newSyn(syn, syn31, accKey));
     
     synonyms = synonymMapper.listByTaxon(datasetKey, accKey);
     assertEquals(6, synonyms.size());
@@ -126,13 +126,22 @@ public class SynonymMapperTest extends MapperTestBase<SynonymMapper> {
     
     
     // now also add a misapplied name with the same name
+    syn.setId(UUID.randomUUID().toString());
+    syn.setParentId(TestEntityGenerator.TAXON2.getId());
     syn.setStatus(TaxonomicStatus.MISAPPLIED);
     syn.setAccordingTo("auct. Döring");
-    synonymMapper.create(datasetKey, syn21.getId(), TestEntityGenerator.TAXON2.getId(), syn);
+    synonymMapper.create(syn);
     commit();
     
     assertEquals(6, synonymMapper.listByTaxon(datasetKey, accKey).size());
     assertEquals(3, synonymMapper.listByTaxon(datasetKey, TestEntityGenerator.TAXON2.getId()).size());
+  }
+  
+  static Synonym newSyn(Synonym syn, Name n, String accKey) {
+    syn.setId(n.getId());
+    syn.setParentId(accKey);
+    syn.setName(n);
+    return syn;
   }
   
 }

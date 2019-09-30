@@ -30,15 +30,23 @@ public class EditorialDecision extends Decision {
     BLOCK,
   
     /**
-     * Flags a name as a chresonym and blocks it from the assembly.
+     * Flags a name as reviewed and accepted as it is.
      */
-    CHRESONYM,
+    REVIEWED,
 
     /**
      * Updates the subject using the configured name, status, lifezone and fossil flags
      * leaving NULL values unchanged.
      */
-    UPDATE
+    UPDATE,
+  
+    /**
+     * Updates the subject and all its descendants using the configured status, lifezone and fossil flags
+     * leaving NULL values unchanged.
+     *
+     * If configured, Name updates will be ignored!!!
+     */
+    UPDATE_RECURSIVE
   }
   
   public Mode getMode() {

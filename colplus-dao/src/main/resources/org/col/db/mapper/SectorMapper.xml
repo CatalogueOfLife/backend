@@ -11,11 +11,16 @@
     ${alias}subject_name AS ${prefix}subject_name,
     ${alias}subject_authorship AS ${prefix}subject_authorship,
     ${alias}subject_rank AS ${prefix}subject_rank,
+    ${alias}subject_code AS ${prefix}subject_code,
+    ${alias}subject_status AS ${prefix}subject_status,
+    ${alias}subject_parent AS ${prefix}subject_parent,
     ${alias}target_id AS ${prefix}target_id,
     ${alias}target_name AS ${prefix}target_name,
     ${alias}target_authorship AS ${prefix}target_authorship,
     ${alias}target_rank AS ${prefix}target_rank,
+    ${alias}target_code AS ${prefix}target_code,
     ${alias}mode AS ${prefix}mode,
+    ${alias}code AS ${prefix}code,
     ${alias}note AS ${prefix}note,
     ${alias}modified AS ${prefix}modified,
     ${alias}modified_by AS ${prefix}modified_by,
@@ -36,11 +41,16 @@
     subject_name,
     subject_authorship,
     subject_rank,
+    subject_code,
+    subject_status,
+    subject_parent,
     target_id,
     target_name,
     target_authorship,
     target_rank,
+    target_code,
     mode,
+    code,
     note,
     modified,
     modified_by
@@ -52,11 +62,16 @@
     #{subject.name},
     #{subject.authorship},
     #{subject.rank}::rank,
+    #{subject.code},
+    #{subject.status},
+    #{subject.parent},
     #{target.id},
     #{target.name},
     #{target.authorship},
     #{target.rank}::rank,
+    #{target.code},
     #{mode},
+    #{code},
     #{note},
     now(),
     #{modifiedBy}
@@ -80,18 +95,40 @@
   <!-- A mapping to Distribution, mostly auto mapped -->
   <resultMap id="sectorResultMap" type="Sector" autoMapping="true">
     <id property="key" column="key" />
-    <association property="subject" javaType="SimpleName" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="subject_" />
-    <association property="target" javaType="SimpleName" resultMap="org.col.db.mapper.SectorMapper.refResultMap" columnPrefix="target_" />
+    <association property="subject" javaType="SimpleName" autoMapping="true" columnPrefix="subject_" />
+    <association property="target" javaType="SimpleName" autoMapping="true" columnPrefix="target_" />
   </resultMap>
-
-  <resultMap id="refResultMap" type="SimpleName" autoMapping="true">
-  </resultMap>
-
 
   <select id="get" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
     WHERE key = #{key}
+  </select>
+
+  <select id="getBySubject" resultMap="sectorResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    WHERE dataset_key = #{datasetKey} AND subject_id = #{id}
+  </select>
+
+  <select id="listByTarget" resultMap="sectorResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    WHERE target_id = #{id}
+  </select>
+
+  <select id="processAll" parameterType="map" resultMap="sectorResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    ORDER BY key
+  </select>
+
+
+  <select id="processSectors" parameterType="map" resultMap="sectorResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    WHERE dataset_key = #{datasetKey}
+    ORDER BY target_rank, key
   </select>
 
   <insert id="create" parameterType="Sector" useGeneratedKeys="true" keyProperty="key">
@@ -113,15 +150,22 @@
   <select id="list" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
+    ORDER BY target_rank, key
+    <include refid="org.col.db.mapper.Common.limit" />
+  </select>
+
+  <select id="listByDataset" resultMap="sectorResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
     <bind name="idIsNull" value="false" />
     <include refid="WHERE" />
-    ORDER BY key
+    ORDER BY target_rank, key
   </select>
 
   <select id="listChildSectors" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-      JOIN taxon_3 t ON t.id=s.target_id
+      JOIN name_usage_3 t ON t.id=s.target_id
     WHERE t.sector_key=#{key}
     ORDER BY key
   </select>
@@ -129,7 +173,7 @@
   <select id="subjectBroken" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-      LEFT JOIN taxon t ON t.id=s.subject_id AND t.dataset_key = #{datasetKey}
+      LEFT JOIN name_usage t ON t.id=s.subject_id AND t.dataset_key = #{datasetKey}
     <bind name="idIsNull" value="true" />
     <include refid="WHERE" />
     ORDER BY key
@@ -138,10 +182,11 @@
   <select id="targetBroken" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-      LEFT JOIN taxon_3 t ON t.id=s.target_id
+      LEFT JOIN name_usage_3 t ON t.id=s.target_id
     <bind name="idIsNull" value="true" />
     <include refid="WHERE" />
     ORDER BY key
   </select>
+
 
 </mapper>

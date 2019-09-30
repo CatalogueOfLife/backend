@@ -1,25 +1,17 @@
 package org.col.db.mapper;
 
 import java.util.List;
-import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.Synonym;
-import org.gbif.nameparser.api.Rank;
 
 /**
- *
+ * Mapper dealing with methods returning the NameUsage interface, i.e. a name in the context of either a Taxon, TaxonVernacularUsage,
+ * Synonym or BareName.
+ * <p>
+ * Mapper sql should be reusing sql fragments from the 3 concrete implementations as much as possible avoiding duplication.
  */
-public interface SynonymMapper {
-  
-  /**
-   * Creates a new synonym link for a given name to the accepted taxon.
-   */
-  void create(@Param("datasetKey") int datasetKey,
-              @Param("nameId") String nameId,
-              @Param("taxonId") String taxonId,
-              @Param("syn") Synonym syn
-  );
+public interface SynonymMapper extends DatasetCRUDMapper<Synonym> {
   
   /**
    * Return synonyms including misapplied names from the synonym relation table.
@@ -33,13 +25,7 @@ public interface SynonymMapper {
    */
   List<Synonym> listByTaxon(@Param("datasetKey") int datasetKey, @Param("taxonId") String taxonId);
   
-  List<Synonym> listByName(@Param("datasetKey") int datasetKey,
-                           @Param("name") String sciname,
-                           @Nullable @Param("rank") Rank rank);
-  
-  /**
-   * Reads all synonyms including misapplied names by the synonyms name.
-   */
   List<Synonym> listByNameID(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
+  
   
 }

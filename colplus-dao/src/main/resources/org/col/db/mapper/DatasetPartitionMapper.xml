@@ -4,32 +4,23 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.col.db.mapper.DatasetPartitionMapper">
 
-    <update id="create" parameterType="map">
-        CREATE TABLE verbatim_${key} (LIKE verbatim INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-        CREATE TABLE reference_${key} (LIKE reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-        CREATE TABLE name_${key} (LIKE name INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-        CREATE TABLE name_rel_${key} (LIKE name_rel INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-        CREATE TABLE taxon_${key} (LIKE taxon INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-        CREATE TABLE synonym_${key} (LIKE synonym INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-        CREATE TABLE taxon_reference_${key} (LIKE taxon_reference INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-        CREATE TABLE description_${key} (LIKE description INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-        CREATE TABLE distribution_${key} (LIKE distribution INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-        CREATE TABLE media_${key} (LIKE media INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-        CREATE TABLE vernacular_name_${key} (LIKE vernacular_name INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+    <update id="createTable" parameterType="map" >
+        CREATE TABLE ${table}_${key} (LIKE ${table} INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+        <if test="table == 'name'">
+            CREATE TRIGGER name_trigger_${key} BEFORE INSERT OR UPDATE
+            ON name_${key} FOR EACH ROW
+            WHEN (NEW.homotypic_name_id IS NULL)
+            EXECUTE PROCEDURE homotypic_name_id_default();
+        </if>
+        <if test="table == 'reference'">
+            CREATE TRIGGER reference_trigger_${key} BEFORE INSERT OR UPDATE
+            ON reference_${key} FOR EACH ROW
+            EXECUTE PROCEDURE reference_doc_update();
+        </if>
     </update>
 
-    <update id="attach" parameterType="map">
-        ALTER TABLE verbatim ATTACH PARTITION verbatim_${key} FOR VALUES IN ( ${key} );
-        ALTER TABLE reference ATTACH PARTITION reference_${key} FOR VALUES IN ( ${key} );
-        ALTER TABLE name ATTACH PARTITION name_${key} FOR VALUES IN ( ${key} );
-        ALTER TABLE name_rel ATTACH PARTITION name_rel_${key} FOR VALUES IN ( ${key} );
-        ALTER TABLE taxon ATTACH PARTITION taxon_${key} FOR VALUES IN ( ${key} );
-        ALTER TABLE synonym ATTACH PARTITION synonym_${key} FOR VALUES IN ( ${key} );
-        ALTER TABLE taxon_reference ATTACH PARTITION taxon_reference_${key} FOR VALUES IN ( ${key} );
-        ALTER TABLE distribution ATTACH PARTITION distribution_${key} FOR VALUES IN ( ${key} );
-        ALTER TABLE description ATTACH PARTITION description_${key} FOR VALUES IN ( ${key} );
-        ALTER TABLE vernacular_name ATTACH PARTITION vernacular_name_${key} FOR VALUES IN ( ${key} );
-        ALTER TABLE media ATTACH PARTITION media_${key} FOR VALUES IN ( ${key} );
+    <update id="attachTable" parameterType="map" >
+        ALTER TABLE ${table} ATTACH PARTITION ${table}_${key} FOR VALUES IN ( ${key} )
     </update>
 
     <update id="buildIndices" parameterType="map">
@@ -41,7 +32,7 @@
         ALTER TABLE reference_${key} ADD PRIMARY KEY (id);
         CREATE index ON reference_${key} (verbatim_key);
         CREATE index ON reference_${key} (sector_key);
-        ALTER TABLE reference_${key} ADD CONSTRAINT reference_${key}_sector_fk FOREIGN KEY (sector_key) REFERENCES sector (key);
+        CREATE index ON reference_${key} USING gin(doc);
 
         ALTER TABLE name_${key} ADD PRIMARY KEY (id);
         CREATE index ON name_${key} (verbatim_key);
@@ -49,62 +40,63 @@
         CREATE index ON name_${key} (name_index_id);
         CREATE index ON name_${key} (published_in_id);
         CREATE index ON name_${key} (sector_key);
+        CREATE index ON name_${key} (lower(scientific_name));
+        CREATE index ON name_${key} (scientific_name_normalized);
         ALTER TABLE name_${key} ADD CONSTRAINT name_${key}_publishedin_id_fk FOREIGN KEY (published_in_id) REFERENCES reference_${key} (id);
 
         ALTER TABLE name_rel_${key} ADD PRIMARY KEY (key);
         CREATE index ON name_rel_${key} (name_id, type);
         CREATE index ON name_rel_${key} (verbatim_key);
-        ALTER TABLE name_rel_${key} ADD CONSTRAINT name_rel_${key}_name_id_fk FOREIGN KEY (name_id) REFERENCES name_${key} (id);
-        ALTER TABLE name_rel_${key} ADD CONSTRAINT name_rel_${key}_related_name_id_fk FOREIGN KEY (related_name_id) REFERENCES name_${key} (id);
+        ALTER TABLE name_rel_${key} ADD CONSTRAINT name_rel_${key}_name_id_fk
+            FOREIGN KEY (name_id) REFERENCES name_${key} (id) ON DELETE CASCADE;
+        ALTER TABLE name_rel_${key} ADD CONSTRAINT name_rel_${key}_related_name_id_fk
+            FOREIGN KEY (related_name_id) REFERENCES name_${key} (id) ON DELETE CASCADE;
 
-        ALTER TABLE taxon_${key} ADD PRIMARY KEY (id);
-        CREATE index ON taxon_${key} (parent_id);
-        CREATE index ON taxon_${key} (name_id);
-        CREATE index ON taxon_${key} (verbatim_key);
-        CREATE index ON taxon_${key} (sector_key);
-        ALTER TABLE taxon_${key} ADD CONSTRAINT taxon_${key}_parent_id_fk FOREIGN KEY (parent_id) REFERENCES taxon_${key} (id);
-        ALTER TABLE taxon_${key} ADD CONSTRAINT taxon_${key}_name_id_fk FOREIGN KEY (name_id) REFERENCES name_${key} (id);
-        ALTER TABLE taxon_${key} ADD CONSTRAINT taxon_${key}_sector_fk FOREIGN KEY (sector_key) REFERENCES sector (key);
-
-        CREATE index ON synonym_${key} (taxon_id);
-        CREATE index ON synonym_${key} (name_id);
-        CREATE index ON synonym_${key} (verbatim_key);
-        ALTER TABLE synonym_${key} ADD CONSTRAINT synonym_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES taxon_${key} (id) ON DELETE CASCADE;
-        ALTER TABLE synonym_${key} ADD CONSTRAINT synonym_${key}_name_id_fk FOREIGN KEY (name_id) REFERENCES name_${key} (id);
+        ALTER TABLE name_usage_${key} ADD PRIMARY KEY (id);
+        CREATE index ON name_usage_${key} (parent_id);
+        CREATE index ON name_usage_${key} (name_id);
+        CREATE index ON name_usage_${key} (verbatim_key);
+        CREATE index ON name_usage_${key} (sector_key);
+        ALTER TABLE name_usage_${key} ADD CONSTRAINT name_usage_${key}_name_id_fk FOREIGN KEY (name_id) REFERENCES name_${key} (id);
+        ALTER TABLE name_usage_${key} ADD CONSTRAINT name_usage_${key}_verbatim_key_fk
+            FOREIGN KEY (verbatim_key) REFERENCES verbatim_${key} (key) ON DELETE CASCADE;
+        ALTER TABLE name_usage_${key} ADD CONSTRAINT name_usage_${key}_parent_id_fk
+            FOREIGN KEY (parent_id) REFERENCES name_usage_${key} (id) ON DELETE CASCADE;
 
         ALTER TABLE description_${key} ADD PRIMARY KEY (key);
         CREATE index ON description_${key} (taxon_id);
         CREATE index ON description_${key} (verbatim_key);
-        ALTER TABLE description_${key} ADD CONSTRAINT description_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES taxon_${key} (id) ON DELETE CASCADE;
+        ALTER TABLE description_${key} ADD CONSTRAINT description_${key}_taxon_id_fk
+            FOREIGN KEY (taxon_id) REFERENCES name_usage_${key} (id) ON DELETE CASCADE;
 
         ALTER TABLE distribution_${key} ADD PRIMARY KEY (key);
         CREATE index ON distribution_${key} (taxon_id);
         CREATE index ON distribution_${key} (verbatim_key);
-        ALTER TABLE distribution_${key} ADD CONSTRAINT distribution_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES taxon_${key} (id) ON DELETE CASCADE;
+        ALTER TABLE distribution_${key} ADD CONSTRAINT distribution_${key}_taxon_id_fk
+            FOREIGN KEY (taxon_id) REFERENCES name_usage_${key} (id) ON DELETE CASCADE;
 
         ALTER TABLE media_${key} ADD PRIMARY KEY (key);
         CREATE index ON media_${key} (taxon_id);
         CREATE index ON media_${key} (verbatim_key);
-        ALTER TABLE media_${key} ADD CONSTRAINT media_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES taxon_${key} (id) ON DELETE CASCADE;
+        ALTER TABLE media_${key} ADD CONSTRAINT media_${key}_taxon_id_fk
+            FOREIGN KEY (taxon_id) REFERENCES name_usage_${key} (id) ON DELETE CASCADE;
 
         ALTER TABLE vernacular_name_${key} ADD PRIMARY KEY (key);
         CREATE index ON vernacular_name_${key} (taxon_id);
         CREATE index ON vernacular_name_${key} (verbatim_key);
-        ALTER TABLE vernacular_name_${key} ADD CONSTRAINT vernacular_name_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES taxon_${key} (id) ON DELETE CASCADE;
+        ALTER TABLE vernacular_name_${key} ADD CONSTRAINT vernacular_name_${key}_taxon_id_fk
+            FOREIGN KEY (taxon_id) REFERENCES name_usage_${key} (id) ON DELETE CASCADE;
+
+        <if test="key == @org.col.api.vocab.Datasets@DRAFT_COL">
+            ALTER TABLE estimate ADD CONSTRAINT estimate_reference_fk FOREIGN KEY (reference_id) REFERENCES reference_${key} (id);
+        </if>
     </update>
 
-    <update id="delete" parameterType="map">
-        DROP TABLE IF EXISTS description_${key};
-        DROP TABLE IF EXISTS distribution_${key};
-        DROP TABLE IF EXISTS media_${key};
-        DROP TABLE IF EXISTS vernacular_name_${key};
-        DROP TABLE IF EXISTS taxon_reference_${key};
-        DROP TABLE IF EXISTS synonym_${key};
-        DROP TABLE IF EXISTS taxon_${key};
-        DROP TABLE IF EXISTS name_rel_${key};
-        DROP TABLE IF EXISTS name_${key};
-        DROP TABLE IF EXISTS reference_${key};
-        DROP TABLE IF EXISTS verbatim_${key};
+    <update id="deleteTable" parameterType="map">
+        <if test="table=='reference' and key == @org.col.api.vocab.Datasets@DRAFT_COL">
+            ALTER TABLE estimate DROP CONSTRAINT IF EXISTS estimate_reference_fk;
+        </if>
+        DROP TABLE IF EXISTS ${table}_${key};
     </update>
 
 </mapper>

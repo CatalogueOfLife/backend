@@ -27,14 +27,8 @@ import org.slf4j.LoggerFactory;
  * As we do not map all java map types to this mybatis handler apply the handler manually for the relevant hstore fields
  * in the mapper xml, for example see DatasetImportMapper.xml.
  */
-abstract class HstoreCountTypeHandlerBase<KEY extends Enum> extends BaseTypeHandler<Map<KEY, Integer>> {
+abstract class HstoreCountTypeHandlerBase<KEY extends Comparable> extends BaseTypeHandler<Map<KEY, Integer>> {
   private static final Logger LOG = LoggerFactory.getLogger(HstoreCountTypeHandlerBase.class);
-  
-  private final Class<KEY> enumClass;
-  
-  public HstoreCountTypeHandlerBase(Class<KEY> enumClass) {
-    this.enumClass = enumClass;
-  }
   
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, Map<KEY, Integer> parameter, JdbcType jdbcType)
@@ -66,20 +60,19 @@ abstract class HstoreCountTypeHandlerBase<KEY extends Enum> extends BaseTypeHand
           int val = Integer.parseInt(entry.getValue());
           if (val > 0) {
             if (!Strings.isNullOrEmpty(entry.getKey())) {
-              typedMap.put((KEY) Enum.valueOf(enumClass, entry.getKey()), val);
+              typedMap.put(toKey(entry.getKey()), val);
             }
           }
         } catch (IllegalArgumentException e) {
           // ignore this entry
-          LOG.warn("Illegal enum {} value found in hstore: {}", enumClass.getSimpleName(), entry.getKey());
+          LOG.warn("Illegal {} value found in hstore: {}", getClass().getSimpleName(), entry.getKey());
         }
-      }
-      if (typedMap.size() != rawMap.size()) {
-        LOG.error("BAD TYPE!!!");
       }
     }
     return sortMap(typedMap);
   }
+  
+  abstract KEY toKey(String x) throws IllegalArgumentException;
   
   /**
    * Can be overridden to return sorted maps in custom manners.

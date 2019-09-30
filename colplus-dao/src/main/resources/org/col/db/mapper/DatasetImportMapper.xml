@@ -7,16 +7,22 @@
     <sql id="SELECT">
       dataset_key,
       attempt,
-      state,
-      error,
+      <include refid="org.col.db.mapper.DatasetImportMapper.metricsCols"/>,
       md5,
-      started,
-      finished,
       download_uri,
       download,
       verbatim_count,
+      verbatim_by_type_count
+    </sql>
+
+    <sql id="metricsCols">
+      state,
+      error,
+      started,
+      finished,
       name_count,
       taxon_count,
+      synonym_count,
       reference_count,
       vernacular_count,
       distribution_count,
@@ -29,64 +35,50 @@
       names_by_origin_count,
       usages_by_status_count,
       names_by_status_count,
-      name_relations_by_type_count,
-      verbatim_by_type_count
+      name_relations_by_type_count
     </sql>
 
     <sql id="COLS">
       dataset_key,
-      state,
-      error,
+      <include refid="org.col.db.mapper.DatasetImportMapper.metricsCols"/>,
       md5,
-      started,
-      finished,
       download_uri,
       download,
       verbatim_count,
-      name_count,
-      taxon_count,
-      reference_count,
-      vernacular_count,
-      distribution_count,
-      issues_count,
-      names_by_rank_count,
-      taxa_by_rank_count,
-      names_by_type_count,
-      vernaculars_by_language_count,
-      distributions_by_gazetteer_count,
-      names_by_origin_count,
-      usages_by_status_count,
-      names_by_status_count,
-      name_relations_by_type_count,
       verbatim_by_type_count
     </sql>
 
+    <sql id="metricsProps">
+      #{imp.state},
+      #{imp.error},
+      #{imp.started},
+      #{imp.finished},
+      #{imp.nameCount},
+      #{imp.taxonCount},
+      #{imp.synonymCount},
+      #{imp.referenceCount},
+      #{imp.vernacularCount},
+      #{imp.distributionCount},
+      #{imp.issuesCount, typeHandler=org.col.db.type2.HstoreIssueCountTypeHandler}::hstore,
+      #{imp.namesByRankCount, typeHandler=org.col.db.type2.HstoreRankCountTypeHandler}::hstore,
+      #{imp.taxaByRankCount, typeHandler=org.col.db.type2.HstoreRankCountTypeHandler}::hstore,
+      #{imp.namesByTypeCount, typeHandler=org.col.db.type2.HstoreNameTypeCountTypeHandler}::hstore,
+      #{imp.vernacularsByLanguageCount, typeHandler=org.col.db.type2.HstoreLanguageCountTypeHandler}::hstore,
+      #{imp.distributionsByGazetteerCount, typeHandler=org.col.db.type2.HstoreGazetteerCountTypeHandler}::hstore,
+      #{imp.namesByOriginCount, typeHandler=org.col.db.type2.HstoreOriginCountTypeHandler}::hstore,
+      #{imp.usagesByStatusCount, typeHandler=org.col.db.type2.HstoreTaxStatusCountTypeHandler}::hstore,
+      #{imp.namesByStatusCount, typeHandler=org.col.db.type2.HstoreNomStatusCountTypeHandler}::hstore,
+      #{imp.nameRelationsByTypeCount, typeHandler=org.col.db.type2.HstoreNameRelCountTypeHandler}::hstore
+    </sql>
+
     <sql id="PROPS">
-      #{di.datasetKey},
-      #{di.state},
-      #{di.error},
-      #{di.md5},
-      #{di.started},
-      #{di.finished},
-      #{di.downloadUri},
-      #{di.download},
-      #{di.verbatimCount},
-      #{di.nameCount},
-      #{di.taxonCount},
-      #{di.referenceCount},
-      #{di.vernacularCount},
-      #{di.distributionCount},
-      #{di.issuesCount, typeHandler=org.col.db.type2.HstoreIssueCountTypeHandler}::hstore,
-      #{di.namesByRankCount, typeHandler=org.col.db.type2.HstoreRankCountTypeHandler}::hstore,
-      #{di.taxaByRankCount, typeHandler=org.col.db.type2.HstoreRankCountTypeHandler}::hstore,
-      #{di.namesByTypeCount, typeHandler=org.col.db.type2.HstoreNameTypeCountTypeHandler}::hstore,
-      #{di.vernacularsByLanguageCount, typeHandler=org.col.db.type2.HstoreLanguageCountTypeHandler}::hstore,
-      #{di.distributionsByGazetteerCount, typeHandler=org.col.db.type2.HstoreGazetteerCountTypeHandler}::hstore,
-      #{di.namesByOriginCount, typeHandler=org.col.db.type2.HstoreOriginCountTypeHandler}::hstore,
-      #{di.usagesByStatusCount, typeHandler=org.col.db.type2.HstoreTaxStatusCountTypeHandler}::hstore,
-      #{di.namesByStatusCount, typeHandler=org.col.db.type2.HstoreNomStatusCountTypeHandler}::hstore,
-      #{di.nameRelationsByTypeCount, typeHandler=org.col.db.type2.HstoreNameRelCountTypeHandler}::hstore,
-      #{di.verbatimByTypeCount, typeHandler=org.col.db.type2.HstoreTermCountTypeHandler}::hstore
+      #{imp.datasetKey},
+      <include refid="org.col.db.mapper.DatasetImportMapper.metricsProps"/>,
+      #{imp.md5},
+      #{imp.downloadUri},
+      #{imp.download},
+      #{imp.verbatimCount},
+      #{imp.verbatimByTypeCount}
     </sql>
 
     <sql id="FROM">
@@ -142,7 +134,6 @@
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
 
-
     <select id="countDescription" resultType="integer">
         SELECT count(*) FROM description_${key}
     </select>
@@ -159,7 +150,10 @@
         SELECT count(*) FROM reference_${key}
     </select>
     <select id="countTaxon" resultType="integer">
-        SELECT count(*) FROM taxon_${key}
+        SELECT count(*) FROM name_usage_${key} WHERE NOT is_synonym
+    </select>
+    <select id="countSynonym" resultType="integer">
+        SELECT count(*) FROM name_usage_${key} WHERE is_synonym
     </select>
     <select id="countVerbatim" resultType="integer">
         SELECT count(*) FROM verbatim_${key}
@@ -211,16 +205,13 @@
     </select>
     <select id="countTaxaByRank" resultType="StringCount">
         SELECT n.rank AS key, count(*) AS count
-        FROM taxon_${key} t JOIN name_${key} n ON t.name_id=n.id
+        FROM name_usage_${key} t JOIN name_${key} n ON t.name_id=n.id
+        WHERE NOT t.is_synonym
         GROUP BY n.rank
     </select>
     <select id="countUsagesByStatus" resultType="IntCount">
-        SELECT CASE WHEN provisional THEN 1 ELSE 0 END AS key, count(*) AS count
-        FROM taxon_${key}
-        GROUP BY provisional
-        UNION
         SELECT status AS key, count(*) AS count
-        FROM synonym_${key}
+        FROM name_usage_${key}
         GROUP BY status
     </select>
     <select id="countVerbatimByType" resultType="StringCount">
@@ -235,19 +226,19 @@
     </select>
 
     <insert id="create" parameterType="DatasetImport">
-        <selectKey keyProperty="di.attempt" resultType="integer" order="BEFORE" >
+        <selectKey keyProperty="imp.attempt" resultType="integer" order="BEFORE" >
             SELECT coalesce(max(attempt)+1, 1)
             FROM dataset_import
-            WHERE dataset_key=#{di.datasetKey}
+            WHERE dataset_key=#{imp.datasetKey}
         </selectKey>
         INSERT INTO dataset_import (<include refid="COLS" />, attempt)
-          VALUES (<include refid="PROPS" />, #{di.attempt})
+          VALUES (<include refid="PROPS" />, #{imp.attempt})
     </insert>
 
     <update id="update" parameterType="DatasetImport">
         UPDATE dataset_import
         SET (<include refid="COLS" />) = (<include refid="PROPS" />)
-        WHERE dataset_key=#{di.datasetKey} AND attempt=#{di.attempt}
+        WHERE dataset_key=#{imp.datasetKey} AND attempt=#{imp.attempt}
     </update>
 
 </mapper>

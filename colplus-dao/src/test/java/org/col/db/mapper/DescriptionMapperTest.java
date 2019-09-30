@@ -7,9 +7,6 @@ import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Description;
 import org.col.api.vocab.Gazetteer;
-import org.col.api.vocab.Language;
-
-import static org.col.api.TestEntityGenerator.setUserDate;
 
 /**
  *
@@ -24,7 +21,7 @@ public class DescriptionMapperTest extends TaxonExtensionMapperTest<Description,
 	List<Description> createTestEntities() {
 		List<Description> ds = new ArrayList<>();
 		for (Gazetteer g : Gazetteer.values()) {
-			for (Language l: Language.values()) {
+			for (String l: new String[]{"eng", "deu", "fra"}) {
 				Description d = new Description();
 				d.setCategory("Etymology");
 				d.setDescription(RandomUtils.randomLatinString(1000));

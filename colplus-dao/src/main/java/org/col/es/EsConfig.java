@@ -12,7 +12,7 @@ public class EsConfig {
   /**
    * The default name of the type created within an index.
    */
-  static final String DEFAULT_TYPE_NAME = "_doc";
+  public static final String DEFAULT_TYPE_NAME = "_doc";
   
   /**
    * Environment to prefix indices with to be able to share a single ES instance with multiple CoL+ installations.
@@ -45,5 +45,17 @@ public class EsConfig {
    */
   public String indexName(String name) {
     return environment == null ? name : environment + "-" + name;
+  }
+  
+  /**
+   * An ES expression to match all index names of the configured environment
+   */
+  public String allIndices() {
+    return environment == null ? "*" : environment + "-*";
+  }
+
+  @JsonIgnore
+  public boolean isEmpty() {
+    return hosts == null || nameUsage == null;
   }
 }

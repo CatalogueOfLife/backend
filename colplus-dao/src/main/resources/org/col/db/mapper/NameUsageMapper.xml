@@ -4,109 +4,180 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.col.db.mapper.NameUsageMapper">
 
-    <resultMap id="issueResultMap" type="NameUsageWrapper" autoMapping="true">
-        <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
-    </resultMap>
 
+    <sql id="usageCols">
+        ${alias}.id AS ${prefix}id,
+        ${alias}.dataset_key AS ${prefix}dataset_key,
+        ${alias}.sector_key AS ${prefix}sector_key,
+        ${alias}.verbatim_key AS ${prefix}verbatim_key,
+        ${alias}.status AS ${prefix}status,
+        ${alias}.origin AS ${prefix}origin,
+        ${alias}.parent_id AS ${prefix}parent_id,
+        ${alias}.according_to AS ${prefix}according_to,
+        ${alias}.reference_ids AS ${prefix}reference_ids,
+        ${alias}.remarks AS ${prefix}remarks,
+        ${alias}.created AS ${prefix}created,
+        ${alias}.created_by AS ${prefix}created_by,
+        ${alias}.modified AS ${prefix}modified,
+        ${alias}.modified_by AS ${prefix}modified_by
+    </sql>
 
-    <resultMap id="taxonResultMap" type="NameUsageWrapper" autoMapping="true" extends="issueResultMap">
-        <id column="id" />
-        <result property="classificationIds" column="classificationIds" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
-        <result property="classificationNames" column="classificationNames" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
-        <result property="classificationRanks" column="classificationRanks" typeHandler="org.col.db.type.RankArrayTypeHandler"/>
-        <association property="usage" javaType="Taxon" autoMapping="true">
-            <id property="id" column="id" />
-            <result property="lifezones" column="lifezones" typeHandler="org.col.db.type.LifezoneSetTypeHandler" />
-            <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
-        </association>
-        <collection property="vernacularNames" ofType="VernacularName" autoMapping="true" notNullColumn="v_key">
-            <id property="key" column="v_key"/>
-        </collection>
-    </resultMap>
-
-    <resultMap id="synonymResultMap" type="NameUsageWrapper" autoMapping="true" extends="issueResultMap">
-        <id column="s_id" />
-        <id column="n_id" />
-        <association property="usage" javaType="Synonym" resultMap="org.col.db.mapper.SynonymMapper.synonymResultMap" autoMapping="true">
-            <id column="n_id" />
-            <id column="a_id" />
-        </association>
-    </resultMap>
-
-    <resultMap id="bareNameResultMap" type="NameUsageWrapper" autoMapping="true" extends="issueResultMap">
-        <id column="n_id"/>
-        <association property="usage" javaType="BareName">
-            <id column="n_key" />
-            <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
-        </association>
-    </resultMap>
-
-
-    <sql id="taxonSelectFrom">
-        vbn.issues || vbt.issues AS issues,
+    <sql id="SELECT">
+        u.is_synonym,
+        <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
+            <property name="alias" value="u"/>
+            <property name="prefix" value=""/>
+        </include>,
         <include refid="org.col.db.mapper.NameMapper.nameCols">
             <property name="alias" value="n"/>
             <property name="prefix" value="n_"/>
         </include>,
         <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
-            <property name="alias" value="t"/>
-            <property name="prefix" value=""/>
+            <property name="alias" value="a"/>
+            <property name="prefix" value="a_"/>
         </include>,
-        <if test="datasetKey != @org.col.api.vocab.Datasets@DRAFT_COL">
-            ed.key AS decisionKey,
-        </if>
-        vn.key as v_key, vn.name, vn.latin, vn.language
-    FROM <include refid="org.col.db.mapper.TaxonMapper.FROM"/>
-        LEFT JOIN verbatim_${datasetKey} vbt ON vbt.key=t.verbatim_key
-        LEFT JOIN verbatim_${datasetKey} vbn ON vbn.key=n.verbatim_key
-        LEFT JOIN vernacular_name_${datasetKey} vn ON vn.taxon_id=t.id
-        <if test="datasetKey != @org.col.api.vocab.Datasets@DRAFT_COL">
-            LEFT JOIN decision ed ON ed.subject_id=t.id AND ed.dataset_key=#{datasetKey}
-        </if>
-    </sql>
-    <!--  select all name usages of a dataset
-        Using a optimal fetchsize to enable low memory footprint while keeping good performance using a resulthandler
-    -->
-    <select id="processDatasetTaxa" parameterType="map" resultMap="taxonResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
-        WITH RECURSIVE tree AS(
-            SELECT
-                ARRAY[t.id]::text[] AS classificationIds,
-                ARRAY[n.rank]::rank[] AS classificationRanks,
-                ARRAY[n.scientific_name]::text[] AS classificationNames,
-            <include refid="taxonSelectFrom" />
-	        WHERE t.parent_id IS NULL
-	        
-            UNION
-
-            SELECT
-                array_append(tree.classificationIds, t.id),
-                array_append(tree.classificationRanks, n.rank),
-                array_append(tree.classificationNames, n.scientific_name),
-            <include refid="taxonSelectFrom" />
-                JOIN tree ON (tree.id = t.parent_id)
-	   )
-	   SELECT * FROM tree
-    </select>
-
-    <select id="processDatasetSynonyms" parameterType="map" resultMap="synonymResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
-        SELECT <include refid="org.col.db.mapper.SynonymMapper.SELECT"/>,
-            vbn.issues || vb.issues AS issues
-        FROM <include refid="org.col.db.mapper.SynonymMapper.FROM"/>
-            LEFT JOIN verbatim_${datasetKey} vb  ON vb.key = s.verbatim_key
-            LEFT JOIN verbatim_${datasetKey} vbn ON vbn.key= n.verbatim_key
-        ORDER BY s.taxon_id
-    </select>
-
-    <select id="processDatasetBareNames" parameterType="map" resultMap="bareNameResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
-        SELECT v.issues,
         <include refid="org.col.db.mapper.NameMapper.nameCols">
-            <property name="alias" value="n"/>
-            <property name="prefix" value="n_"/>
+            <property name="alias" value="an"/>
+            <property name="prefix" value="a_n_"/>
         </include>
-        FROM name_${datasetKey} n
-            LEFT JOIN synonym_${datasetKey}  s ON n.id = s.name_id
-            LEFT JOIN taxon_${datasetKey}    t ON n.id = t.name_id
-            LEFT JOIN verbatim_${datasetKey} v ON v.key= n.verbatim_key
-        WHERE t.id IS NULL AND s.taxon_id IS NULL
+    </sql>
+
+    <sql id="COLS">
+        dataset_key,
+        sector_key,
+        verbatim_key,
+        parent_id,
+        name_id,
+        status,
+        is_synonym,
+        origin,
+        according_to,
+        reference_ids,
+        remarks,
+        created_by,
+        modified_by
+    </sql>
+
+    <sql id="PROPS">
+        #{datasetKey},
+        #{sectorKey},
+        #{verbatimKey},
+        #{parentId},
+        #{name.id},
+        #{status},
+        #{status.synonym},
+        #{origin},
+        #{accordingTo},
+        #{referenceIds},
+        #{remarks},
+        #{createdBy},
+        #{modifiedBy}
+    </sql>
+
+    <sql id="FROM">
+        name_usage_${datasetKey} u
+            JOIN name_${datasetKey} n ON u.name_id=n.id
+            LEFT JOIN name_usage_${datasetKey} a ON u.parent_id=a.id AND u.is_synonym
+            LEFT JOIN name_${datasetKey} an ON a.name_id=an.id
+    </sql>
+
+    <resultMap id="usageResultMap" type="NameUsageBase" autoMapping="true">
+        <id property="id" column="id" />
+        <discriminator column="is_synonym" javaType="boolean">
+            <case value="false" resultType="Taxon"   resultMap="org.col.db.mapper.TaxonMapper.taxonResultMap"/>
+            <case value="true"  resultType="Synonym" resultMap="org.col.db.mapper.SynonymMapper.synonymResultMap"/>
+        </discriminator>
+    </resultMap>
+
+    <select id="count" resultType="integer">
+        SELECT count(*) from name_usage_${datasetKey}
     </select>
+
+    <select id="list" resultMap="usageResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        ORDER BY u.id
+        <include refid="org.col.db.mapper.Common.limit" />
+    </select>
+
+    <select id="listByNameID" resultMap="usageResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE u.name_id=#{nameId}
+        ORDER BY u.id
+    </select>
+
+    <select id="listByName" resultMap="usageResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE lower(n.scientific_name) = lower(#{name})
+        <if test="rank != null">
+            AND n.rank=#{rank}::rank
+        </if>
+        ORDER BY u.id
+    </select>
+
+    <update id="updateParentId" parameterType="map">
+        UPDATE name_usage_${datasetKey}
+        SET (parent_id, modified, modified_by)
+        = (#{newParentId}, now(), #{userKey})
+        WHERE parent_id = #{parentId}
+    </update>
+
+    <delete id="deleteBySector" parameterType="map">
+        DELETE FROM name_usage_${datasetKey} WHERE sector_key = #{sectorKey}
+    </delete>
+
+    <select id="processTree" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+        WITH RECURSIVE x AS(
+        SELECT <include refid="SELECT" />
+        <if test="depthFirst">
+            ,concat_ws('|', n.scientific_name, u.id) AS path
+        </if>
+        FROM <include refid="FROM" />
+        WHERE
+        <choose>
+            <when test="startID != null">
+                u.id = #{startID}
+            </when>
+            <otherwise>
+                u.parent_id IS NULL
+            </otherwise>
+        </choose>
+        AND NOT u.is_synonym
+        <if test="lowestRank">
+            AND n.rank &lt;= #{lowestRank}::rank
+        </if>
+
+        UNION
+
+        SELECT <include refid="SELECT" />
+        <if test="depthFirst">
+            ,concat_ws('|', x.path, not u.is_synonym, n.scientific_name, u.id)  AS path
+        </if>
+        FROM <include refid="FROM" />
+        JOIN x ON x.id = u.parent_id
+        <where>
+            <if test="!includeSynonyms">
+                NOT u.is_synonym
+            </if>
+            <if test="exclusions != null and !exclusions.isEmpty()">
+                AND u.id NOT IN
+                <foreach item="id" collection="exclusions" open="(" separator="," close=")">#{id}</foreach>
+            </if>
+            <if test="sectorKey != null">
+                AND u.sector_key = #{sectorKey}
+            </if>
+            <if test="lowestRank">
+                AND n.rank &lt;= #{lowestRank}::rank
+            </if>
+        </where>
+
+        )
+        SELECT * FROM x
+        <if test="depthFirst">
+            ORDER BY x.path
+        </if>
+    </select>
+
 </mapper>

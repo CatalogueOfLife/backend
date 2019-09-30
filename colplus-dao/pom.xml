@@ -35,7 +35,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.col</groupId>
-			<artifactId>colplus-common</artifactId>
+			<artifactId>colplus-parser</artifactId>
 		</dependency>
 
 		<!-- mybatis / DB -->
@@ -52,7 +52,17 @@
 			<artifactId>mybatis</artifactId>
 		</dependency>
 
+		<!-- unicode, transliterations -->
+		<dependency>
+			<groupId>com.ibm.icu</groupId>
+			<artifactId>icu4j</artifactId>
+		</dependency>
+
 		<!-- other -->
+		<dependency>
+			<groupId>com.univocity</groupId>
+			<artifactId>univocity-parsers</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.imgscalr</groupId>
 			<artifactId>imgscalr-lib</artifactId>
@@ -137,11 +147,6 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>ru.yandex.qatools.embed</groupId>
-			<artifactId>postgresql-embedded</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

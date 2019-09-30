@@ -11,6 +11,7 @@
     vn.latin,
     vn.language,
     vn.country,
+    vn.area,
     vn.reference_id,
     vn.created,
     vn.created_by,
@@ -26,6 +27,7 @@
     latin,
     language,
     country,
+    area,
     reference_id,
     created_by,
     modified_by
@@ -39,33 +41,31 @@
     #{obj.latin},
     #{obj.language},
     #{obj.country},
+    #{obj.area},
     #{obj.referenceId},
     #{obj.createdBy},
     #{obj.modifiedBy}
   </sql>
 
   <sql id="FROM">
-    vernacular_name vn
+    vernacular_name_${datasetKey} vn
   </sql>
 
   <resultMap id="vernacularNameResultMap" type="VernacularName" autoMapping="true">
     <id property="key" column="key" />
   </resultMap>
 
-
   <select id="listByTaxon" resultMap="vernacularNameResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE vn.dataset_key = #{datasetKey}
-      AND vn.taxon_id = #{taxonId}
+    WHERE vn.taxon_id = #{taxonId}
     ORDER BY name
   </select>
 
   <select id="get" resultMap="vernacularNameResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE vn.dataset_key = #{datasetKey}
-      AND vn.key = #{key}
+    WHERE vn.key = #{key}
   </select>
 
   <insert id="create" parameterType="VernacularName" useGeneratedKeys="true" keyProperty="obj.key">

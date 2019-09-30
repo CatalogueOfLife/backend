@@ -3,6 +3,7 @@ package org.col.api.model;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 /**
@@ -21,6 +22,13 @@ public class ResultPage<T> extends Page implements Iterable<T> {
     this.setOffset(page.getOffset());
     this.setLimit(page.getLimit());
     this.total = total;
+    this.result = result;
+  }
+  
+  public ResultPage(Page page, List<T> result, Supplier<Integer> count) {
+    this.setOffset(page.getOffset());
+    this.setLimit(page.getLimit());
+    this.total = result.size() == page.getLimit() ? count.get() : page.getOffset() + result.size();
     this.result = result;
   }
   

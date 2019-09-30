@@ -8,10 +8,8 @@ import java.util.stream.Collectors;
 import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.VernacularName;
-import org.col.api.vocab.Language;
 
 import static org.col.api.TestEntityGenerator.newVernacularName;
-import static org.col.api.TestEntityGenerator.setUserDate;
 
 /**
  *
@@ -25,7 +23,7 @@ public class VernacularNameMapperTest extends TaxonExtensionMapperTest<Vernacula
 	@Override
 	List<VernacularName> createTestEntities() {
     List<VernacularName> objs = new ArrayList<>();
-		for (Language l : Language.values()) {
+		for (String l: new String[]{"eng", "deu", "fra"}) {
 			VernacularName v = newVernacularName(RandomUtils.randomLatinString(30));
 			v.setLanguage(l);
 			objs.add(TestEntityGenerator.setUserDate(v));

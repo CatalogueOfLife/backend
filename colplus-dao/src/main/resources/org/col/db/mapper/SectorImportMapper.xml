@@ -5,71 +5,43 @@
 <mapper namespace="org.col.db.mapper.SectorImportMapper">
 
     <sql id="SELECT">
-        sector_key,
-        attempt,
-        state,
-        error,
-        started,
-        finished,
-        name_count,
-        taxon_count,
-        reference_count,
-        vernacular_count,
-        distribution_count,
-        description_count,
-        media_count,
-        issue_count
+        si.type,
+        si.sector_key,
+        si.attempt,
+        <include refid="org.col.db.mapper.DatasetImportMapper.metricsCols"/>
     </sql>
 
     <sql id="COLS">
+        type,
         sector_key,
         attempt,
-        state,
-        error,
-        started,
-        finished,
-        text_tree,
-        names,
-        name_count,
-        taxon_count,
-        reference_count,
-        vernacular_count,
-        distribution_count,
-        description_count,
-        media_count,
-        issue_count
+        <include refid="org.col.db.mapper.DatasetImportMapper.metricsCols"/>
     </sql>
 
     <sql id="PROPS">
+        #{imp.type},
         #{imp.sectorKey},
         #{imp.attempt},
-        #{imp.state},
-        #{imp.error},
-        #{imp.started},
-        #{imp.finished},
-        #{imp.textTree},
-        #{imp.names, typeHandler=org.col.db.type2.StringSetTypeHandler},
-        #{imp.nameCount},
-        #{imp.taxonCount},
-        #{imp.referenceCount},
-        #{imp.vernacularCount},
-        #{imp.distributionCount},
-        #{imp.descriptionCount},
-        #{imp.mediaCount},
-        #{imp.issueCount, typeHandler=org.col.db.type2.HstoreIssueCountTypeHandler}::hstore
+        <include refid="org.col.db.mapper.DatasetImportMapper.metricsProps"/>
     </sql>
 
     <sql id="FROM">
-      sector_import
+      sector_import si
+        <if test="datasetKey != null">
+            JOIN sector s ON s.key=si.sector_key
+        </if>
     </sql>
 
     <sql id="WHERE">
         <where>
-            <if test="key != null">
-                sector_key = #{key}
+            <if test="sectorKey != null">
+                si.sector_key = #{sectorKey}
+            </if>
+            <if test="datasetKey != null">
+                AND s.dataset_key = #{datasetKey}
             </if>
             <if test="states != null &amp;&amp; !states.isEmpty()">
-                AND state IN
+                AND si.state IN
                 <foreach item="state" collection="states" open="(" separator="," close=")">
                     #{state}
                 </foreach>
@@ -84,9 +56,9 @@
     </resultMap>
 
     <select id="get" resultMap="sectorImportResultMap">
-        SELECT <include refid="SELECT" />, text_tree, names
-        FROM <include refid="FROM" />
-        WHERE sector_key=#{key} AND attempt=#{attempt}
+        SELECT <include refid="SELECT" />
+        FROM sector_import si
+        WHERE sector_key=#{sectorKey} AND attempt=#{attempt}
     </select>
 
     <select id="count" resultType="integer">
@@ -108,28 +80,33 @@
           VALUES (<include refid="PROPS" />)
     </insert>
 
+    <delete id="delete" parameterType="map">
+        DELETE FROM sector_import
+        WHERE sector_key=#{key}
+    </delete>
+
     <select id="countDescription" resultType="integer">
         SELECT count(*)
         FROM description_${datasetKey} x
-            JOIN taxon_${datasetKey} t ON t.id=x.taxon_id
+            JOIN name_usage_${datasetKey} t ON t.id=x.taxon_id
         WHERE t.sector_key=${sectorKey}
     </select>
     <select id="countDistribution" resultType="integer">
         SELECT count(*)
         FROM distribution_${datasetKey} x
-            JOIN taxon_${datasetKey} t ON t.id=x.taxon_id
+            JOIN name_usage_${datasetKey} t ON t.id=x.taxon_id
         WHERE t.sector_key=${sectorKey}
     </select>
     <select id="countMedia" resultType="integer">
         SELECT count(*)
         FROM media_${datasetKey} x
-            JOIN taxon_${datasetKey} t ON t.id=x.taxon_id
+            JOIN name_usage_${datasetKey} t ON t.id=x.taxon_id
         WHERE t.sector_key=${sectorKey}
     </select>
     <select id="countVernacular" resultType="integer">
         SELECT count(*)
         FROM vernacular_name_${datasetKey} x
-            JOIN taxon_${datasetKey} t ON t.id=x.taxon_id
+            JOIN name_usage_${datasetKey} t ON t.id=x.taxon_id
         WHERE t.sector_key=${sectorKey}
     </select>
 
@@ -140,7 +117,10 @@
         SELECT count(*) FROM reference_${datasetKey} WHERE sector_key=${sectorKey}
     </select>
     <select id="countTaxon" resultType="integer">
-        SELECT count(*) FROM taxon_${datasetKey} WHERE sector_key=${sectorKey}
+        SELECT count(*) FROM name_usage_${datasetKey} WHERE NOT is_synonym AND sector_key=${sectorKey}
+    </select>
+    <select id="countSynonym" resultType="integer">
+        SELECT count(*) FROM name_usage_${datasetKey} WHERE is_synonym AND sector_key=${sectorKey}
     </select>
 
     <select id="countIssues" resultType="IntCount">
@@ -152,7 +132,7 @@
         UNION
             SELECT vt.key, vt.issues
             FROM verbatim_${datasetKey} vt
-            JOIN taxon_${datasetKey} t ON vt.key=t.verbatim_key
+            JOIN name_usage_${datasetKey} t ON vt.key=t.verbatim_key
             WHERE t.sector_key=${sectorKey}
         UNION
             SELECT vr.key, vr.issues
@@ -166,4 +146,69 @@
         GROUP BY iss
     </select>
 
+
+    <select id="countDistributionsByGazetteer" resultType="IntCount">
+        SELECT gazetteer AS key, count(*) AS count
+        FROM distribution_${datasetKey} x
+            JOIN name_usage_${datasetKey} u ON u.id=x.taxon_id
+        WHERE u.sector_key=${sectorKey}
+        GROUP BY gazetteer
+    </select>
+    <select id="countMediaByType" resultType="IntCount">
+        SELECT type AS key, count(*) AS count
+        FROM media_${datasetKey} x
+            JOIN name_usage_${datasetKey} u ON u.id=x.taxon_id
+        WHERE u.sector_key=${sectorKey}
+        GROUP BY type
+    </select>
+    <select id="countNamesByType" resultType="IntCount">
+        SELECT type AS key, count(*) AS count
+        FROM name_${datasetKey}
+        WHERE sector_key=${sectorKey}
+        GROUP BY type
+    </select>
+    <select id="countNameRelationsByType" resultType="IntCount">
+        SELECT r.type AS key, count(*) AS count
+        FROM name_rel_${datasetKey} r
+            JOIN name_${datasetKey} n ON r.name_id=n.id
+        WHERE n.sector_key=${sectorKey}
+        GROUP BY r.type
+    </select>
+    <select id="countNamesByStatus" resultType="IntCount">
+        SELECT nom_status AS key, count(*) AS count
+        FROM name_${datasetKey}
+        WHERE sector_key=${sectorKey}
+        GROUP BY nom_status
+    </select>
+    <select id="countNamesByOrigin" resultType="IntCount">
+        SELECT origin AS key, count(*) AS count
+        FROM name_${datasetKey}
+        WHERE sector_key=${sectorKey}
+        GROUP BY origin
+    </select>
+    <select id="countNamesByRank" resultType="StringCount">
+        SELECT rank AS key, count(*) AS count
+        FROM name_${datasetKey}
+        WHERE sector_key=${sectorKey}
+        GROUP BY rank
+    </select>
+    <select id="countTaxaByRank" resultType="StringCount">
+        SELECT n.rank AS key, count(*) AS count
+        FROM name_usage_${datasetKey} t JOIN name_${datasetKey} n ON t.name_id=n.id
+        WHERE NOT t.is_synonym AND t.sector_key=${sectorKey}
+        GROUP BY n.rank
+    </select>
+    <select id="countUsagesByStatus" resultType="IntCount">
+        SELECT status AS key, count(*) AS count
+        FROM name_usage_${datasetKey}
+        WHERE sector_key=${sectorKey}
+        GROUP BY status
+    </select>
+    <select id="countVernacularsByLanguage" resultType="StringCount">
+        SELECT language AS key, count(*) AS count
+        FROM vernacular_name_${datasetKey} x
+            JOIN name_usage_${datasetKey} u ON u.id=x.taxon_id
+        WHERE u.sector_key=${sectorKey}
+        GROUP BY language
+    </select>
 </mapper>

@@ -10,6 +10,7 @@ import com.google.common.collect.Maps;
 import org.col.api.model.DatasetImport;
 import org.col.api.model.Page;
 import org.col.api.vocab.*;
+import org.col.common.text.StringUtils;
 import org.col.db.type2.IntCount;
 import org.col.db.type2.StringCount;
 import org.gbif.dwc.terms.AcefTerm;
@@ -52,7 +53,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     d.setNamesByRankCount(mockCount(Rank.class));
     d.setTaxaByRankCount(mockCount(Rank.class));
     d.setNamesByTypeCount(mockCount(NameType.class));
-    d.setVernacularsByLanguageCount(mockCount(Language.class));
+    d.setVernacularsByLanguageCount(mockCount());
     d.setDistributionsByGazetteerCount(mockCount(Gazetteer.class));
     d.setUsagesByStatusCount(mockCount(TaxonomicStatus.class));
     d.setNamesByStatusCount(mockCount(NomStatus.class));
@@ -65,6 +66,14 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
   
   private static DatasetImport create() throws Exception {
     return create(ImportState.DOWNLOADING);
+  }
+  
+  private static Map<String, Integer> mockCount() {
+    Map<String, Integer> cnt = Maps.newHashMap();
+    for (String x = "abc"; !x.equalsIgnoreCase("aca"); x=StringUtils.increase(x)) {
+      cnt.put(x, rnd.nextInt(Integer.MAX_VALUE));
+    }
+    return cnt;
   }
   
   private static <T extends Enum> Map<T, Integer> mockCount(Class<T> clazz) {
@@ -80,10 +89,9 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     DatasetImport d1 = create();
     mapper().create(d1);
     commit();
-    assertEquals((Integer) 1, d1.getAttempt());
+    assertEquals(1, d1.getAttempt());
     
     DatasetImport d2 = mapper().list(d1.getDatasetKey(), null, new Page(0, 100)).get(0);
-    assertNotNull(d2.getAttempt());
     d1.setAttempt(d2.getAttempt());
     assertEquals(d1, d2);
     
@@ -150,7 +158,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
   public void counts() throws Exception {
     assertEquals((Integer) 5, mapper().countName(DATASET11.getKey()));
     assertEquals((Integer) 2, mapper().countTaxon(DATASET11.getKey()));
-    assertEquals((Integer) 2, mapper().countReference(DATASET11.getKey()));
+    assertEquals((Integer) 3, mapper().countReference(DATASET11.getKey()));
     assertEquals((Integer) 5, mapper().countVerbatim(DATASET11.getKey()));
     assertEquals((Integer) 3, mapper().countVernacular(DATASET11.getKey()));
     assertEquals((Integer) 3, mapper().countDistribution(DATASET11.getKey()));
@@ -188,9 +196,9 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     assertCounts(expected, mapper().countDistributionsByGazetteer(DATASET11.getKey()));
     
     expected2.clear();
-    expected2.add(new StringCount(Language.DUTCH.getIso3LetterCode(), 1));
-    expected2.add(new StringCount(Language.ENGLISH.getIso3LetterCode(), 1));
-    expected2.add(new StringCount(Language.GERMAN.getIso3LetterCode(), 1));
+    expected2.add(new StringCount("nld", 1));
+    expected2.add(new StringCount("eng", 1));
+    expected2.add(new StringCount("deu", 1));
     assertCounts(expected2, mapper().countVernacularsByLanguage(DATASET11.getKey()));
     
     expected.clear();

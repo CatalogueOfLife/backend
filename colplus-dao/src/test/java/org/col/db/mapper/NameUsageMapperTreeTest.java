@@ -1,92 +1,90 @@
 package org.col.db.mapper;
 
-import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
-import org.col.api.model.Name;
-import org.col.api.model.Synonym;
-import org.col.api.model.Taxon;
-import org.col.api.model.VernacularName;
-import org.col.api.search.NameUsageWrapper;
+import org.col.api.model.NameUsage;
+import org.col.api.model.NameUsageBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.col.api.TestEntityGenerator.NAME4;
-import static org.junit.Assert.*;
+import static org.col.api.TestEntityGenerator.DATASET11;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
   
+  CountHandler<NameUsageBase> countHandler;
+  
   public NameUsageMapperTreeTest() {
-    super(NameUsageMapper.class, InitMybatisRule.tree());
+    super(NameUsageMapper.class, TestDataRule.tree());
   }
   
-  private AtomicInteger counter = new AtomicInteger(0);
   
   @Test
-  public void processDatasetTaxa() throws Exception {
-    mapper().processDatasetTaxa(NAME4.getDatasetKey(), new ResultHandler<NameUsageWrapper>() {
-      public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
-        counter.incrementAndGet();
-        NameUsageWrapper obj = ctx.getResultObject();
-        Name n = obj.getUsage().getName();
-        assertNotNull(n);
-        assertNotNull(n.getId());
-        assertNotNull(n.getDatasetKey());
+  public void processTree() throws Exception {
+    countHandler = new CountHandler<>();
+    mapper().processTree(DATASET11.getKey(), null, "t2", Sets.newHashSet("skipID"), null, true, false, countHandler);
+    Assert.assertEquals(23, countHandler.counter.get());
+  
+    countHandler.reset();
+    mapper().processTree(DATASET11.getKey(), null,"t2", Sets.newHashSet("t6"), null, true, false, countHandler);
+    Assert.assertEquals(15, countHandler.counter.get());
+  
+    countHandler.reset();
+    mapper().processTree(DATASET11.getKey(), null,"t2", Sets.newHashSet("t6", "t30"), null, true, false, countHandler);
+    Assert.assertEquals(10, countHandler.counter.get());
+  }
+  
+  @Test
+  public void processTreeOrder() throws Exception {
+    CollectIdHandler<NameUsageBase> h = new CollectIdHandler<>();
+    mapper().processTree(DATASET11.getKey(), null,null, null, null, true,false, h);
+    List<String> bfs = ImmutableList.of("t1","t2","t3","t4","t5","t6","t10","t20","t30","t12","t13","t23","t24","t25",
+        "t31","t32","t33","t34", "s11", "s21", "s22", "t15", "t16", "s14");
+    assertEquals(bfs, h.list);
+  
+    h = new CollectIdHandler<>();
+    mapper().processTree(DATASET11.getKey(), null,null, null, null, true, true, h);
+    List<String> dfs = ImmutableList.of("t1","t2","t3","t4","t5","t20","s21","s22","t23","t24","t25",
+        "t30","t31","t32","t33","t34","t6","t10","s11","t12","t13","s14","t15","t16");
+    assertEquals(dfs, h.list);
+  }
+  
+  public static class CountHandler<T extends NameUsageBase> implements ResultHandler<T> {
+    public AtomicInteger counter = new AtomicInteger(0);
+    Set<String> previous = new HashSet<>();
+    
+    public void handleResult(ResultContext<? extends T> ctx) {
+      T u = ctx.getResultObject();
+      assertTrue(counter.get()==0 || previous.contains(u.getParentId()));
 
-        assertTrue(obj.getUsage().isTaxon());
-        Taxon t = (Taxon) obj.getUsage();
-        assertNotNull(t.getId());
-        assertNotNull(t.getAccordingToDate());
-        assertEquals("M.Döring", t.getAccordingTo());
-        assertEquals((Integer) 10, t.getSpeciesEstimate());
-        assertEquals((Integer) 1, t.getVerbatimKey());
-        assertEquals("remark me", t.getRemarks());
-        assertEquals(URI.create("http://myspace.com"), t.getWebpage());
-        if (t.getId().equals("t1")) {
-          assertNull(t.getParentId());
-          assertTrue(obj.getClassification().isEmpty());
-        } else {
-          assertNotNull(t.getParentId());
-          assertFalse(obj.getClassification().isEmpty());
-        }
-
-        for (VernacularName v : ctx.getResultObject().getVernacularNames()) {
-          assertNotNull(v.getName());
-        }
-      }
-    });
-    Assert.assertEquals(20, counter.get());
+      System.out.println(u.getId());
+      previous.add(u.getId());
+      counter.incrementAndGet();
+    }
+    
+    public void reset() {
+      counter.set(0);
+      previous.clear();
+    }
   }
   
-  @Test
-  public void processDatasetSynonyms() throws Exception {
-    mapper().processDatasetSynonyms(NAME4.getDatasetKey(), new ResultHandler<NameUsageWrapper>() {
-      public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
-        counter.incrementAndGet();
-        assertTrue(ctx.getResultObject().getUsage().getStatus().isSynonym());
-        assertTrue(ctx.getResultObject().getUsage().isSynonym());
-        Synonym s = (Synonym) ctx.getResultObject().getUsage();
-        assertNotNull(s.getAccepted());
-        assertEquals("M.Döring", s.getAccordingTo());
-        assertEquals((Integer) 1, s.getVerbatimKey());
-      }
-    });
-    Assert.assertEquals(4, counter.get());
+  public static class CollectIdHandler<T extends NameUsage> implements ResultHandler<T> {
+    public List<String> list = new ArrayList<>();
+    
+    public void handleResult(ResultContext<? extends T> ctx) {
+      T t = ctx.getResultObject();
+      list.add(t.getId());
+    }
   }
   
-  @Test
-  public void processDatasetBareNames() throws Exception {
-    mapper().processDatasetBareNames(NAME4.getDatasetKey(), new ResultHandler<NameUsageWrapper>() {
-      public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
-        counter.incrementAndGet();
-        assertNotNull(ctx.getResultObject());
-        assertNotNull(ctx.getResultObject().getUsage());
-        assertNotNull(ctx.getResultObject().getUsage().getName());
-      }
-    });
-    Assert.assertEquals(0, counter.get());
-  }
 }
