@@ -1,14 +1,14 @@
 package org.col.es.name.suggest;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.col.api.model.Name;
+import org.col.api.model.Taxon;
 import org.col.api.search.NameSuggestRequest;
 import org.col.api.search.NameSuggestResponse;
 import org.col.api.search.NameSuggestion;
+import org.col.api.search.NameUsageWrapper;
 import org.col.es.EsReadTestBase;
 import org.col.es.model.NameStrings;
 import org.col.es.model.NameUsageDocument;
@@ -16,9 +16,10 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
 
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.toSet;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class NameSuggestionServiceTest extends EsReadTestBase {
 
@@ -148,6 +149,102 @@ public class NameSuggestionServiceTest extends EsReadTestBase {
     assertEquals("1", response.getSuggestions().get(2).getUsageId());
     assertEquals("4", response.getSuggestions().get(3).getUsageId());
 
+  }
+
+  @Test // lots of search terms
+  public void test03() {
+
+    NameSuggestRequest query = new NameSuggestRequest();
+    query.setDatasetKey(1);
+    query.setQ("LARUS FUSCUS FUSCUS (LINNAEUS 1752)");
+    query.setVernaculars(true);
+
+    NameUsageDocument doc1 = new NameUsageDocument();
+    doc1.setDatasetKey(1);
+    doc1.setUsageId("1");
+    doc1.setRank(Rank.SPECIES);
+    doc1.setScientificName("Larus fuscus");
+
+    NameUsageDocument doc2 = new NameUsageDocument();
+    doc2.setDatasetKey(1);
+    doc2.setUsageId("2");
+    doc2.setRank(Rank.SPECIES);
+    doc2.setVernacularNames(Arrays.asList("Foo Bar Larusca"));
+
+    indexRaw(doc1, doc2);
+
+    NameSuggestResponse response = suggest(query);
+
+    assertEquals(2, response.getSuggestions().size());
+    // Let's not guess how exactly the documents are rated by Elasticsearch
+
+  }
+
+  @Test // bingo search phrases
+  public void test04() {
+
+    // Let's go through the whose conversion process from NameUsageWrapper to NameUsageDocument
+
+    Name n = new Name();
+    n.setDatasetKey(1);
+    n.setId("1");
+    n.setRank(Rank.SUBSPECIES);
+    n.setGenus("Larus");
+    n.setSpecificEpithet("argentatus");
+    n.setInfraspecificEpithet("argenteus");
+    n.setScientificName("Larus argentatus argenteus");
+
+    Taxon t = new Taxon();
+    t.setId("1");
+    t.setDatasetKey(1);
+    t.setName(n);
+
+    NameUsageWrapper nuw = new NameUsageWrapper(t);
+
+    index(nuw);
+
+    NameSuggestRequest query = new NameSuggestRequest();
+    query.setDatasetKey(1);
+
+    query.setQ("Larus argentatus argenteus");
+    NameSuggestResponse response = suggest(query);
+    float score1 = response.getSuggestions().get(0).getScore();
+
+    // User mixed up specific and infraspecific epithet (still good score)
+    query.setQ("Larus argenteus argentatus");
+    response = suggest(query);
+    float score2 = response.getSuggestions().get(0).getScore();
+
+    // This should actually score higher than the binomial (Larus argentatus)
+    query.setQ("Larus argenteus");
+    response = suggest(query);
+    float score3 = response.getSuggestions().get(0).getScore();
+
+    query.setQ("Larus argentatus");
+    response = suggest(query);
+    float score4 = response.getSuggestions().get(0).getScore();
+
+    query.setQ("argentatus L.");
+    response = suggest(query);
+    float score5 = response.getSuggestions().get(0).getScore();
+
+    query.setQ("argenteus");
+    response = suggest(query);
+    float score6 = response.getSuggestions().get(0).getScore();
+
+    System.out.println("score1: " + score1); // just curious
+    System.out.println("score2: " + score2);
+    System.out.println("score3: " + score3);
+    System.out.println("score4: " + score4);
+    System.out.println("score5: " + score5);
+    System.out.println("score6: " + score6);
+
+    // In fact score1 should be 2/1.8 times score2, but who knows with floating point calculations.
+    assertTrue(score1 > score2);
+    assertTrue(score2 > score3);
+    assertTrue(score3 > score4);
+    assertTrue(score4 > score5);
+    assertTrue(score5 > score6);
   }
 
   private static boolean containsUsageIds(NameSuggestResponse response, NameUsageDocument... docs) {

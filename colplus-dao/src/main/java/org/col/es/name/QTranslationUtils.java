@@ -50,7 +50,7 @@ public class QTranslationUtils {
     } else if (terms.length == 3) {
       return checkEpithetTriplets(terms);
     }
-    return matchSearchPhrase("scientificName", q);
+    return matchSearchPhrase("scientificName", q).withBoost(1.02); // Prefer over vernacular name
   }
 
   private static Query checkAllEpithets(String[] terms) {
@@ -58,7 +58,7 @@ public class QTranslationUtils {
     String termSN = normalizeStrongly(terms[0]);
     // Slightly bump lower ranks
     return new BoolQuery()
-        .should(matchSearchTerm(GENUS_FIELD, termWN).withBoost(1.02)) // Prefer over vernacular name
+        .should(matchSearchTerm(GENUS_FIELD, termWN).withBoost(1.02))
         .should(matchSearchTerm(SPECIES_FIELD, termSN).withBoost(1.05))
         .should(matchSearchTerm(SUBSPECIES_FIELD, termSN).withBoost(1.08));
   }
@@ -76,7 +76,7 @@ public class QTranslationUtils {
         .subquery(new BoolQuery()
             .must(matchGenus(term0WN))
             .must(matchSearchTerm(SUBSPECIES_FIELD, term1SN))
-            .withBoost(1.5))
+            .withBoost(1.6)) // We still like this combination better than the binomial when autocompleting
         .subquery(new BoolQuery()
             .must(matchSearchTerm(SPECIES_FIELD, term0SN))
             .must(matchSearchTerm(SUBSPECIES_FIELD, term1SN))
@@ -101,7 +101,7 @@ public class QTranslationUtils {
             .must(matchSearchTerm(SPECIES_FIELD, term1SN))
             .must(matchSearchTerm(SUBSPECIES_FIELD, term2SN))
             .withBoost(2.0))
-        .subquery(new BoolQuery() // User forgot which was which
+        .subquery(new BoolQuery() // User mixed up specific/infraspecific epithets
             .must(matchGenus(term0WN))
             .must(matchSearchTerm(SUBSPECIES_FIELD, term1SN))
             .must(matchSearchTerm(SPECIES_FIELD, term2SN))
