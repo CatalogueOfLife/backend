@@ -1,8 +1,6 @@
 package org.col.es.mapping;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -12,6 +10,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import static java.lang.Character.isUpperCase;
 import static java.lang.Character.toLowerCase;
+import static java.lang.reflect.Modifier.isPublic;
+import static java.lang.reflect.Modifier.isStatic;
 
 class MappingUtil {
 
@@ -29,73 +29,47 @@ class MappingUtil {
     }
   }
 
-  static ArrayList<Field> getFields(Class<?> cls) {
-    Set<String> names = new HashSet<>();
-    ArrayList<Field> allFields = new ArrayList<>();
-    while (cls != Object.class) {
-      Field[] fields = cls.getDeclaredFields();
-      for (Field f : fields) {
-        if (Modifier.isStatic(f.getModifiers()))
-          continue;
-        if (f.getAnnotation(JsonIgnore.class) != null)
-          continue;
-        if (names.contains(f.getName()))
-          continue;
-        if (!Modifier.isPublic(f.getModifiers()))
-          continue;
-        names.add(f.getName());
-        allFields.add(f);
-      }
-      cls = cls.getSuperclass();
-    }
-    return allFields;
-  }
-
   static ArrayList<Method> getMappedProperties(Class<?> cls) {
     Set<String> names = new HashSet<>();
     ArrayList<Method> allMethods = new ArrayList<>();
     while (cls != Object.class) {
       Method[] methods = cls.getDeclaredMethods();
       for (Method m : methods) {
-        if (Modifier.isStatic(m.getModifiers()))
-          continue;
-        if (m.getAnnotation(JsonIgnore.class) != null)
-          continue;
-        if (names.contains(m.getName()))
-          continue;
-        if (!Modifier.isPublic(m.getModifiers()))
-          continue;
-        if (m.getReturnType() == Void.class)
-          continue;
-        if (m.getParameterCount() != 0)
-          continue;
-        if (!isGetter(m))
-          continue;
-
-        names.add(m.getName());
-        allMethods.add(m);
+        if (names.contains(m.getName())) {
+        } else if (isStatic(m.getModifiers()) == true) {
+        } else if (isPublic(m.getModifiers()) == false) {
+        } else if (isGetter(m) == false) {
+        } else if (m.getAnnotation(NotMapped.class) != null) {
+        } else if (m.getAnnotation(JsonIgnore.class) != null) {
+        } else {
+          names.add(m.getName());
+          allMethods.add(m);
+        }
       }
       cls = cls.getSuperclass();
     }
     return allMethods;
   }
 
-  private static boolean isGetter(Method m) {
-    if (m.getReturnType() == Void.class)
-      return false;
-    if (m.getParameterCount() != 0)
-      return false;
-    return extractProperty(m.getName()) != null;
-  }
-
-  static String extractProperty(String getter) {
-    if (getter.startsWith("get") && getter.length() > 3 && isUpperCase(getter.charAt(3))) {
-      return toLowerCase(getter.charAt(3)) + getter.substring(4);
+  static String getFieldName(Method getter) {
+    String name = getter.getName();
+    if (name.startsWith("get") && name.length() > 3 && isUpperCase(name.charAt(3))) {
+      return toLowerCase(name.charAt(3)) + name.substring(4);
     }
-    if (getter.startsWith("is") && getter.length() > 2 && isUpperCase(getter.charAt(2))) {
-      return toLowerCase(getter.charAt(2)) + getter.substring(3);
+    if (name.startsWith("is") && name.length() > 2 && isUpperCase(name.charAt(2))) {
+      return toLowerCase(name.charAt(2)) + name.substring(3);
     }
     return null;
+  }
+
+  private static boolean isGetter(Method m) {
+    if (m.getReturnType() == void.class) {
+      return false;
+    }
+    if (m.getParameterCount() != 0) {
+      return false;
+    }
+    return getFieldName(m) != null;
   }
 
 }

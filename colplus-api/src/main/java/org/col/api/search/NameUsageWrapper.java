@@ -17,11 +17,11 @@ public class NameUsageWrapper extends SimpleNameClassification {
   private Set<Issue> issues;
   private Integer decisionKey;
   private UUID publisherKey;
-  
+
   public Set<Issue> getIssues() {
     return issues;
   }
-  
+
   public void setIssues(Set<Issue> issues) {
     this.issues = issues;
   }
@@ -39,7 +39,7 @@ public class NameUsageWrapper extends SimpleNameClassification {
   public void setUsage(NameUsage usage) {
     this.usage = usage;
   }
-  
+
   public List<VernacularName> getVernacularNames() {
     return vernacularNames;
   }
@@ -47,28 +47,31 @@ public class NameUsageWrapper extends SimpleNameClassification {
   public void setVernacularNames(List<VernacularName> vernacularNames) {
     this.vernacularNames = vernacularNames;
   }
-  
+
   public Integer getDecisionKey() {
     return decisionKey;
   }
-  
+
   public void setDecisionKey(Integer decisionKey) {
     this.decisionKey = decisionKey;
   }
-  
+
   public UUID getPublisherKey() {
     return publisherKey;
   }
-  
+
   public void setPublisherKey(UUID publisherKey) {
     this.publisherKey = publisherKey;
   }
-  
+
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    if (!super.equals(o)) return false;
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    if (!super.equals(o))
+      return false;
     NameUsageWrapper that = (NameUsageWrapper) o;
     return Objects.equals(usage, that.usage) &&
         Objects.equals(vernacularNames, that.vernacularNames) &&
@@ -76,7 +79,7 @@ public class NameUsageWrapper extends SimpleNameClassification {
         Objects.equals(decisionKey, that.decisionKey) &&
         Objects.equals(publisherKey, that.publisherKey);
   }
-  
+
   @Override
   public int hashCode() {
     return Objects.hash(super.hashCode(), usage, vernacularNames, issues, decisionKey, publisherKey);

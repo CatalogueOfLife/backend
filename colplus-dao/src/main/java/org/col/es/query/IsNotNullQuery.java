@@ -1,19 +1,19 @@
 package org.col.es.query;
 
-public class IsNotNullQuery extends AbstractQuery {
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-  static class Field {
-    final String field;
+public class IsNotNullQuery extends ConstraintQuery<IsNotNullConstraint> {
 
-    Field(String field) {
-      this.field = field;
-    }
-  }
-
-  final Field exists;
+  @JsonProperty("exists")
+  private final IsNotNullConstraint constraint;
 
   public IsNotNullQuery(String field) {
-    this.exists = new Field(field);
+    this.constraint = new IsNotNullConstraint(field);
+  }
+
+  @Override
+  IsNotNullConstraint getConstraint() {
+    return constraint;
   }
 
 }

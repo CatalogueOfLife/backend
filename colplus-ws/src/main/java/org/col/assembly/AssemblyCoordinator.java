@@ -2,7 +2,10 @@ package org.col.assembly;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -12,22 +15,28 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import io.dropwizard.lifecycle.Managed;
+
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.api.model.*;
+import org.col.api.model.ColUser;
+import org.col.api.model.RequestScope;
+import org.col.api.model.Sector;
+import org.col.api.model.SectorImport;
+import org.col.api.model.SimpleName;
 import org.col.api.vocab.Datasets;
 import org.col.common.concurrent.ExecutorUtils;
 import org.col.dao.DatasetImportDao;
 import org.col.db.mapper.CollectResultHandler;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.SectorMapper;
-import org.col.es.NameUsageIndexService;
+import org.col.es.name.index.NameUsageIndexService;
 import org.col.importer.ImportManager;
 import org.gbif.nameparser.utils.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.dropwizard.lifecycle.Managed;
 
 public class AssemblyCoordinator implements Managed {
   static  final Comparator<Sector> SECTOR_ORDER = Comparator.comparing(Sector::getTarget, Comparator.nullsLast(SimpleName::compareTo));

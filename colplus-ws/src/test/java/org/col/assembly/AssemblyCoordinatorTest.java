@@ -1,6 +1,7 @@
 package org.col.assembly;
 
 import com.codahale.metrics.MetricRegistry;
+
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Dataset;
@@ -15,9 +16,12 @@ import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.DatasetMapperTest;
 import org.col.db.mapper.SectorMapper;
 import org.col.db.mapper.TestDataRule;
-import org.col.es.NameUsageIndexService;
+import org.col.es.name.index.NameUsageIndexService;
 import org.gbif.nameparser.api.Rank;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
 
 public class AssemblyCoordinatorTest {
   @ClassRule

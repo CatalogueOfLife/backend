@@ -1,11 +1,13 @@
 package org.col.resources;
 
 import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import io.dropwizard.auth.Auth;
-import io.dropwizard.lifecycle.Managed;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.WsServerConfig;
@@ -17,13 +19,16 @@ import org.col.common.io.DownloadUtil;
 import org.col.dao.SubjectRematcher;
 import org.col.dao.TaxonDao;
 import org.col.dw.auth.Roles;
-import org.col.es.NameUsageIndexService;
+import org.col.es.name.index.NameUsageIndexService;
 import org.col.gbifsync.GbifSync;
 import org.col.img.ImageService;
 import org.col.img.LogoUpdateJob;
 import org.col.importer.ContinuousImporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.dropwizard.auth.Auth;
+import io.dropwizard.lifecycle.Managed;
 
 @Path("/admin")
 @Produces(MediaType.APPLICATION_JSON)

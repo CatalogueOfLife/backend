@@ -11,6 +11,10 @@ public class DateField extends SimpleField {
     super(ESDataType.DATE);
   }
 
+  public DateField(Boolean indexed) {
+    super(ESDataType.DATE, indexed);
+  }
+
   public String getFormat() {
     return format;
   }

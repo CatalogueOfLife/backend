@@ -14,6 +14,8 @@ import org.col.db.PgSetupRule;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.TaxonMapper;
 import org.col.db.mapper.TestDataRule;
+import org.col.es.name.index.NameUsageIndexServiceEs;
+import org.col.es.name.search.NameUsageSearchServiceEs;
 import org.col.es.query.EsSearchRequest;
 import org.col.es.query.Query;
 import org.junit.After;
@@ -30,19 +32,18 @@ import static java.util.stream.Collectors.toList;
  * Base class for tests that want to read/write to both Postgres and Elasticsearch.
  */
 public class EsReadWriteTestBase extends ExternalResource {
-  
+
   private static final Logger LOG = LoggerFactory.getLogger(EsReadWriteTestBase.class);
 
-
   @ClassRule
-  public static final PgSetupRule pgSetupRule = new PgSetupRule();
+  public static final PgSetupRule pgSetupRule = new PgSetupRule(false);
 
   @ClassRule
   public static final EsSetupRule esSetupRule = new EsSetupRule();
 
   @Rule
   public final TestDataRule testDataRule = TestDataRule.apple();
-  
+
   @Before
   public void before() throws Throwable {
     super.before();
@@ -55,14 +56,13 @@ public class EsReadWriteTestBase extends ExternalResource {
       throw new RuntimeException(e);
     }
   }
-  
+
   @After
   public void after() {
     LOG.debug("Test index \"{}\" kept around for inspection", EsSetupRule.TEST_INDEX);
   }
 
-  
-  protected NameUsageIndexService createIndexService() {
+  protected NameUsageIndexServiceEs createIndexService() {
     return new NameUsageIndexServiceEs(
         esSetupRule.getEsClient(),
         esSetupRule.getEsConfig(),
@@ -75,8 +75,8 @@ public class EsReadWriteTestBase extends ExternalResource {
   }
 
   /**
-   * Creates the specified amount of taxa and insert them into Postgres. The taxa all belong to EsSetupRule.DATASET_KEY. Their ids are "t1",
-   * "t2" ... "t${howmany}". Their name ids are "t1_name_id", "t2_name_id" ... "t${howmany}_name_id".
+   * Creates the specified amount of taxa and insert them into Postgres. The taxa all belong to EsSetupRule.DATASET_KEY.
+   * Their ids are "t1", "t2" ... "t${howmany}". Their name ids are "t1_name_id", "t2_name_id" ... "t${howmany}_name_id".
    * 
    * @param howmany
    * @return
@@ -96,8 +96,8 @@ public class EsReadWriteTestBase extends ExternalResource {
   }
 
   /**
-   * Executes the provided query against the text index. The number of returned documents is capped on {Page#MAX_LIMIT Page.MAX_LIMIT}, so
-   * make sure the provided query will yield less documents.
+   * Executes the provided query against the text index. The number of returned documents is capped on {Page#MAX_LIMIT
+   * Page.MAX_LIMIT}, so make sure the provided query will yield less documents.
    */
   protected NameSearchResponse query(Query query) throws IOException {
     EsSearchRequest req = EsSearchRequest.emptyRequest().where(query).size(Page.MAX_LIMIT);
@@ -105,8 +105,10 @@ public class EsReadWriteTestBase extends ExternalResource {
   }
 
   /**
-   * Creates the specified number of taxa. The first taxon will have id "t1", the last "t${howmany}". For each taxon a unique name is
-   * created with a random scientific name. The first name will have id "t1_name_id", the last t${howmany}_name_id".
+   * Creates the specified number of taxa. The taxon will be created using
+   * TestEntityGenerator.newTaxon(datasetKey,id,scientificName). The first taxon will have id "t1", the last
+   * "t${howmany}". For each taxon a unique name is created with a random scientific name. The first name will have id
+   * "t1_name_id", the last t${howmany}_name_id".
    * 
    * @param howmany
    * @return

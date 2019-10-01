@@ -11,6 +11,11 @@ public class SimpleField extends ESField {
     this.type = type;
   }
 
+  public SimpleField(ESDataType type, Boolean index) {
+    this.type = type;
+    this.index = index;
+  }
+
   public Boolean getIndex() {
     return index;
   }

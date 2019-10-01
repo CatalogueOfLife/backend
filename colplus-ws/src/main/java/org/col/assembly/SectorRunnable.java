@@ -8,11 +8,18 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import com.google.common.base.Preconditions;
+
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.api.model.*;
+import org.col.api.model.ColUser;
+import org.col.api.model.EditorialDecision;
+import org.col.api.model.Name;
+import org.col.api.model.Page;
+import org.col.api.model.Sector;
+import org.col.api.model.SectorImport;
+import org.col.api.model.Taxon;
 import org.col.api.util.ObjectUtils;
 import org.col.api.vocab.Datasets;
 import org.col.common.util.LoggingUtils;
@@ -20,7 +27,7 @@ import org.col.db.mapper.DecisionMapper;
 import org.col.db.mapper.SectorImportMapper;
 import org.col.db.mapper.SectorMapper;
 import org.col.db.mapper.TaxonMapper;
-import org.col.es.NameUsageIndexService;
+import org.col.es.name.index.NameUsageIndexService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

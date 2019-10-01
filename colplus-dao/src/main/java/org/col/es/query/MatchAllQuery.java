@@ -1,17 +1,15 @@
 package org.col.es.query;
 
-import java.util.Collections;
-import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class MatchAllQuery extends AbstractQuery {
-
-  public static final MatchAllQuery INSTANCE = new MatchAllQuery();
+public class MatchAllQuery extends ConstraintQuery<Constraint> {
 
   @JsonProperty("match_all")
-  @JsonInclude(JsonInclude.Include.ALWAYS)
-  final Map<?, ?> matchAll = Collections.EMPTY_MAP;
+  private final Constraint constraint = new Constraint();
+
+  @Override
+  Constraint getConstraint() {
+    return constraint;
+  }
 
 }

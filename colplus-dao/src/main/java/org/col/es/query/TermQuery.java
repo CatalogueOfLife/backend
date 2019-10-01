@@ -1,18 +1,24 @@
 package org.col.es.query;
 
-import java.util.Collections;
 import java.util.Map;
 
-public class TermQuery extends AbstractQuery {
+import static java.util.Collections.singletonMap;
 
-  final Map<String, TermValue> term;
+public class TermQuery extends ConstraintQuery<TermConstraint> {
+
+  private final Map<String, TermConstraint> term;
 
   public TermQuery(String field, Object value) {
-    this(field, value, null);
+    term = singletonMap(getField(field), new TermConstraint(value));
   }
 
-  public TermQuery(String field, Object value, Float boost) {
-    term = Collections.singletonMap(field, new TermValue(value, boost));
+  @Override
+  TermConstraint getConstraint() {
+    return term.values().iterator().next();
+  }
+
+  String getField(String field) {
+    return field;
   }
 
 }

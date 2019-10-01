@@ -17,8 +17,7 @@ public class NameSearchResponse extends ResultPage<NameUsageWrapper> {
     this(page, total, result, Collections.emptyMap());
   }
 
-  public NameSearchResponse(Page page, int total, List<NameUsageWrapper> result,
-      Map<NameSearchParameter, Set<FacetValue<?>>> facets) {
+  public NameSearchResponse(Page page, int total, List<NameUsageWrapper> result, Map<NameSearchParameter, Set<FacetValue<?>>> facets) {
     super(page, total, result);
     this.facets = facets;
   }

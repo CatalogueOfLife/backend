@@ -11,6 +11,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import com.google.common.base.Preconditions;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -29,7 +30,7 @@ import org.col.common.tax.AuthorshipNormalizer;
 import org.col.common.util.LoggingUtils;
 import org.col.dao.DatasetImportDao;
 import org.col.dao.SubjectRematcher;
-import org.col.es.NameUsageIndexService;
+import org.col.es.name.index.NameUsageIndexService;
 import org.col.img.ImageService;
 import org.col.img.LogoUpdateJob;
 import org.col.importer.neo.NeoDb;

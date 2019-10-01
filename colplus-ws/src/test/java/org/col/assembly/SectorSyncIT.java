@@ -8,9 +8,14 @@ import java.sql.SQLException;
 import java.util.List;
 
 import com.google.common.base.Charsets;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.*;
+import org.col.api.model.EditorialDecision;
+import org.col.api.model.Name;
+import org.col.api.model.NameUsageBase;
+import org.col.api.model.Sector;
+import org.col.api.model.SimpleName;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Datasets;
 import org.col.api.vocab.Origin;
@@ -18,9 +23,13 @@ import org.col.dao.DatasetImportDao;
 import org.col.dao.NamesTreeDao;
 import org.col.dao.TreeRepoRule;
 import org.col.db.PgSetupRule;
-import org.col.db.mapper.*;
+import org.col.db.mapper.DecisionMapper;
+import org.col.db.mapper.NameUsageMapper;
+import org.col.db.mapper.SectorMapper;
+import org.col.db.mapper.TaxonMapper;
+import org.col.db.mapper.TestDataRule;
 import org.col.db.tree.TextTreePrinter;
-import org.col.es.NameUsageIndexService;
+import org.col.es.name.index.NameUsageIndexService;
 import org.col.importer.PgImportRule;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
@@ -32,7 +41,10 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * Before we start any test we prepare the db with imports that can be reused across tests later on.

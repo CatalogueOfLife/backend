@@ -1,18 +1,28 @@
 package org.col.es.query;
 
-import java.util.Collections;
 import java.util.Map;
 
-public class PrefixQuery extends AbstractQuery {
+import static java.util.Collections.singletonMap;
 
-  final Map<String, TermValue> prefix;
+/**
+ * The startsWith or LIKE "something%" query.
+ *
+ */
+public class PrefixQuery extends ConstraintQuery<TermConstraint> {
+
+  private final Map<String, TermConstraint> prefix;
 
   public PrefixQuery(String field, Object value) {
-    this(field, value, null);
+    prefix = singletonMap(getField(field), new TermConstraint(value));
   }
 
-  public PrefixQuery(String field, Object value, Float boost) {
-    prefix = Collections.singletonMap(field, new TermValue(value, boost));
+  @Override
+  TermConstraint getConstraint() {
+    return prefix.values().iterator().next();
+  }
+
+  String getField(String field) {
+    return field;
   }
 
 }

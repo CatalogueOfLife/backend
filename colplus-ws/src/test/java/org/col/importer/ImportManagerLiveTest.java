@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.io.Files;
-import io.dropwizard.client.HttpClientBuilder;
+
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.col.WsServerConfig;
@@ -14,7 +14,11 @@ import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
-import org.col.api.vocab.*;
+import org.col.api.vocab.DataFormat;
+import org.col.api.vocab.DatasetOrigin;
+import org.col.api.vocab.DatasetType;
+import org.col.api.vocab.ImportState;
+import org.col.api.vocab.Users;
 import org.col.common.tax.AuthorshipNormalizer;
 import org.col.dao.DatasetImportDao;
 import org.col.dao.TreeRepoRule;
@@ -24,13 +28,21 @@ import org.col.db.mapper.TestDataRule;
 import org.col.img.ImageServiceFS;
 import org.col.matching.NameIndexFactory;
 import org.gbif.nameparser.api.NomCode;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.dropwizard.client.HttpClientBuilder;
+
+import static org.junit.Assert.assertFalse;
+
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertFalse;
 
 /**
  * This test needs access to github !!!

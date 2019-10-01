@@ -9,10 +9,10 @@ import java.util.function.Function;
 import com.google.common.collect.ImmutableMap;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import io.dropwizard.cli.ConfiguredCommand;
-import io.dropwizard.setup.Bootstrap;
+
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
@@ -20,7 +20,11 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.WsServerConfig;
 import org.col.api.model.Sector;
-import org.col.api.vocab.*;
+import org.col.api.vocab.Datasets;
+import org.col.api.vocab.NomStatus;
+import org.col.api.vocab.Origin;
+import org.col.api.vocab.TaxonomicStatus;
+import org.col.api.vocab.Users;
 import org.col.common.io.PathUtils;
 import org.col.common.tax.AuthorshipNormalizer;
 import org.col.common.tax.SciNameNormalizer;
@@ -30,8 +34,8 @@ import org.col.db.PgConfig;
 import org.col.db.mapper.DatasetPartitionMapper;
 import org.col.es.EsClientFactory;
 import org.col.es.EsUtil;
-import org.col.es.NameUsageIndexService;
-import org.col.es.NameUsageIndexServiceEs;
+import org.col.es.name.index.NameUsageIndexService;
+import org.col.es.name.index.NameUsageIndexServiceEs;
 import org.col.matching.DatasetMatcher;
 import org.col.matching.NameIndex;
 import org.col.matching.NameIndexFactory;
@@ -41,6 +45,9 @@ import org.gbif.nameparser.api.NameType;
 import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.dropwizard.cli.ConfiguredCommand;
+import io.dropwizard.setup.Bootstrap;
 
 /**
  * Command to initialise a new database schema.

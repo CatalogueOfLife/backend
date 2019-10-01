@@ -12,7 +12,7 @@ public class EsConfig {
   /**
    * The default name of the type created within an index.
    */
-  static final String DEFAULT_TYPE_NAME = "_doc";
+  public static final String DEFAULT_TYPE_NAME = "_doc";
   
   /**
    * Environment to prefix indices with to be able to share a single ES instance with multiple CoL+ installations.

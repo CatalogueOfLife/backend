@@ -62,9 +62,9 @@ public class NameSearchRequest {
   public NameSearchRequest() {}
 
   /**
-   * Creates a shallow copy of this NameSearchRequest. The filters map is copied using EnumMap's copy constructor. Therefore you should not
-   * manipulate the filter values (which are lists) as they are copied by reference. You can, however, add/remove filters, facets and search
-   * content.
+   * Creates a shallow copy of this NameSearchRequest. The filters map is copied using EnumMap's copy constructor.
+   * Therefore you should not manipulate the filter values (which are lists) as they are copied by reference. You can,
+   * however, add/remove filters, facets and search content.
    */
   public NameSearchRequest copy() {
     NameSearchRequest copy = new NameSearchRequest();
@@ -78,9 +78,9 @@ public class NameSearchRequest {
   }
 
   /**
-   * Extracts all query parameters that match a NameSearchParameter and registers them as query filters. Values of query parameters that are
-   * associated with an enum type can be supplied using the name of the enum constant or using the ordinal of the enum constant. In both
-   * cases it is the ordinal that will be registered as the query filter.
+   * Extracts all query parameters that match a NameSearchParameter and registers them as query filters. Values of query
+   * parameters that are associated with an enum type can be supplied using the name of the enum constant or using the
+   * ordinal of the enum constant. In both cases it is the ordinal that will be registered as the query filter.
    */
   public void addQueryParams(MultivaluedMap<String, String> params) {
     for (Map.Entry<String, List<String>> param : params.entrySet()) {
@@ -99,8 +99,8 @@ public class NameSearchRequest {
   }
 
   /*
-   * Primary usage case - parameter values coming in as strings from the HTTP request. Values are validated and converted to the type
-   * associated with the parameter.
+   * Primary usage case - parameter values coming in as strings from the HTTP request. Values are validated and converted
+   * to the type associated with the parameter.
    */
   public void addFilter(NameSearchParameter param, String value) {
     value = StringUtils.trimToNull(value);
@@ -160,8 +160,25 @@ public class NameSearchRequest {
     values.add(value);
   }
 
-  public List<Object> getFilterValue(NameSearchParameter param) {
-    return getFilters().get(param);
+  @SuppressWarnings("unchecked")
+  public <T> List<T> getFilterValues(NameSearchParameter param) {
+    return (List<T>) getFilters().get(param);
+  }
+
+  @SuppressWarnings("unchecked")
+  public <T> T getFilterValue(NameSearchParameter param) {
+    if (hasFilter(param)) {
+      return (T) getFilters().get(param).get(0);
+    }
+    return null;
+  }
+
+  public boolean hasQ() {
+    return StringUtils.isNotBlank(q);
+  }
+
+  public boolean hasFilters() {
+    return filters != null && !filters.isEmpty();
   }
 
   public boolean hasFilter(NameSearchParameter filter) {

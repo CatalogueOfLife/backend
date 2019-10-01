@@ -1,18 +1,27 @@
 package org.col.es.query;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+/**
+ * Abstract base class for a rather small minority of {@link Query} implementations. See {@link Constraint} and
+ * {@link ConstraintQuery}.
+ */
+@SuppressWarnings("unused")
+public class AbstractQuery implements Query {
 
-import org.col.es.EsException;
-import org.col.es.EsModule;
+  private String name;
+  private Double boost;
 
-abstract class AbstractQuery implements Query {
+  @Override
+  @SuppressWarnings("unchecked")
+  public <Q extends Query> Q withName(String name) {
+    this.name = name;
+    return (Q) this;
+  }
 
-  public String toString() {
-    try {
-      return EsModule.QUERY_WRITER.writeValueAsString(this);
-    } catch (JsonProcessingException e) {
-      throw new EsException(e);
-    }
+  @Override
+  @SuppressWarnings("unchecked")
+  public <Q extends Query> Q withBoost(Double boost) {
+    this.boost = boost;
+    return (Q) this;
   }
 
 }
