@@ -41,7 +41,7 @@ public class VerbatimRecord implements IssueContainer, CatalogueEntity, Serializ
   private static final Logger LOG = LoggerFactory.getLogger(VerbatimRecord.class);
   private static final Pattern REMOVE_TAGS = Pattern.compile("</? *[a-z][a-z1-5]{0,5} *>", Pattern.CASE_INSENSITIVE);
   private static final Pattern ECMA_UNICODE = Pattern.compile("\\\\u\\{([0-9a-f]{4})}", Pattern.CASE_INSENSITIVE);
-  private static final Pattern BRACKET_UNICODE = Pattern.compile("<U\\+([0-9a-f]{4})>", Pattern.CASE_INSENSITIVE);
+  private static final Pattern ANGLE_UNICODE = Pattern.compile("<U\\+?([0-9a-f]{4})>", Pattern.CASE_INSENSITIVE);
   
   private Integer key;
   private Integer datasetKey;
@@ -153,7 +153,7 @@ public class VerbatimRecord implements IssueContainer, CatalogueEntity, Serializ
     }
     try {
       String unescaped = ECMA_UNICODE.matcher(x).replaceAll("\\\\u$1");
-      unescaped = BRACKET_UNICODE.matcher(unescaped).replaceAll("\\\\u$1");
+      unescaped = ANGLE_UNICODE.matcher(unescaped).replaceAll("\\\\u$1");
       unescaped = StringEscapeUtils.unescapeEcmaScript(StringEscapeUtils.unescapeHtml4(unescaped));
       unescaped = REMOVE_TAGS.matcher(unescaped).replaceAll("");
       if (!x.equals(unescaped)) {

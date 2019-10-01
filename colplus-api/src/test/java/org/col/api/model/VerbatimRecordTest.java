@@ -46,6 +46,7 @@ public class VerbatimRecordTest extends SerdeTestBase<VerbatimRecord> {
     rec.put(DwcTerm.vernacularName, "&#75;&#101;&#105;&#104;&#228;&#115;&#108;&#117;&#117;&#104;&#97;&#117;&#107;&#105;");
     // from Bob Mesibov
     rec.put(ColdpTerm.scientificName, "Dasysiphonia<U+00A0> japonica");
+    rec.put(ColdpTerm.specificEpithet, "Dasysiphonia<U00A0> japonica");
   }
   
   @Test
@@ -81,6 +82,11 @@ public class VerbatimRecordTest extends SerdeTestBase<VerbatimRecord> {
     init();
     assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
     assertEquals("Dasysiphonia  japonica", v.get(ColdpTerm.scientificName));
+    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+  
+    init();
+    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertEquals("Dasysiphonia  japonica", v.get(ColdpTerm.specificEpithet));
     assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
   }
   
