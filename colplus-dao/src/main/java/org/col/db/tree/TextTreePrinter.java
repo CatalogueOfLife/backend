@@ -138,6 +138,10 @@ public class TextTreePrinter implements ResultHandler<SimpleName> {
       }
       //TODO: flag basionyms
       writer.write(u.getName());
+      if (u.getAuthorship() != null) {
+        writer.write(" ");
+        writer.write(u.getAuthorship());
+      }
       if (u.getRank() != null) {
         writer.write(" [");
         writer.write(u.getRank().name().toLowerCase());
