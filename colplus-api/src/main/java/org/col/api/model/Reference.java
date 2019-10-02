@@ -145,11 +145,11 @@ public class Reference extends DataEntity implements DatasetIDEntity, VerbatimEn
     if (!super.equals(o)) return false;
     Reference reference = (Reference) o;
     return Objects.equals(id, reference.id) &&
-        datasetKey.equals(reference.datasetKey) &&
+        Objects.equals(datasetKey, reference.datasetKey) &&
         Objects.equals(sectorKey, reference.sectorKey) &&
         Objects.equals(verbatimKey, reference.verbatimKey) &&
         Objects.equals(csl, reference.csl) &&
-        citation.equals(reference.citation) &&
+        Objects.equals(citation, reference.citation) &&
         Objects.equals(year, reference.year) &&
         Objects.equals(remarks, reference.remarks);
   }

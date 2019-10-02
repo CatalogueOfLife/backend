@@ -51,7 +51,7 @@ public class ReferenceResource extends DatasetEntityResource<Reference>  {
   public String createColdp(@PathParam("datasetKey") int datasetKey, @Valid ColdpReference obj, @Auth ColUser user) {
     final String id = UUID.randomUUID().toString();
     Reference ref = ReferenceFactory.fromColDP(datasetKey, id, obj.getCitation(), obj.getAuthor(), obj.getYear(), obj.getTitle(),
-        obj.getSource(), obj.getDetails(), obj.getDoi(), obj.getLink(), IssueContainer.DevNullLogging.dataset(datasetKey));
+        obj.getSource(), obj.getDetails(), obj.getDoi(), obj.getLink(), obj.getRemarks(), IssueContainer.DevNullLogging.dataset(datasetKey));
     return dao.create(ref, user.getKey());
   }
   

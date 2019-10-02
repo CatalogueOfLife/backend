@@ -66,7 +66,7 @@
         <jjwt.version>0.10.7</jjwt.version>
         <junit.version>4.12</junit.version>
         <kryo-serializers.version>0.42</kryo-serializers.version>
-        <kryo.version>4.0.1</kryo.version>
+        <kryo.version>4.0.2</kryo.version>
         <logstash-logback.version>5.1</logstash-logback.version>
         <mapdb.version>3.0.5</mapdb.version>
         <mockito.version>2.12.0</mockito.version>

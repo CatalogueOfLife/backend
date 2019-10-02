@@ -21,7 +21,6 @@ import static org.junit.Assert.assertEquals;
 public class ApiKryoFactoryTest {
   Kryo kryo = new ApiKryoFactory().create();
   
-  
   @Test
   public void testName() throws Exception {
     Name n = TestEntityGenerator.newName("1234567");

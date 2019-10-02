@@ -100,7 +100,6 @@ public class SectorResource extends CatalogueEntityResource<Sector> {
     SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
     List<SectorImport> imports = sim.list(key, Datasets.DRAFT_COL, null, states, page);
     return new ResultPage<>(page, imports, () -> sim.count(key, Datasets.DRAFT_COL, null, immutableStates));
-  
   }
   
   @GET

@@ -11,6 +11,7 @@ public class ColdpReference {
   private String details;
   private String doi;
   private String link;
+  private String remarks;
   
   public String getCitation() {
     return citation;
@@ -76,6 +77,15 @@ public class ColdpReference {
     this.link = link;
   }
   
+  public String getRemarks() {
+    return remarks;
+  }
+  
+  public void setRemarks(String remarks) {
+    this.remarks = remarks;
+  }
+  
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -88,11 +98,12 @@ public class ColdpReference {
         Objects.equals(source, that.source) &&
         Objects.equals(details, that.details) &&
         Objects.equals(doi, that.doi) &&
-        Objects.equals(link, that.link);
+        Objects.equals(link, that.link) &&
+        Objects.equals(remarks, that.remarks);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(citation, author, title, year, source, details, doi, link);
+    return Objects.hash(citation, author, title, year, source, details, doi, link, remarks);
   }
 }
