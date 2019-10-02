@@ -14,45 +14,32 @@ import com.codahale.metrics.annotation.Timed;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.api.search.NameSearchRequest;
-import org.col.api.search.NameSuggestRequest;
-import org.col.api.search.NameSuggestResponse;
 import org.col.api.search.NameUsageWrapper;
 import org.col.es.InvalidQueryException;
 import org.col.es.name.search.NameUsageSearchService;
-import org.col.es.name.suggest.NameSuggestionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Path("/name")
+@Path("/name/search")
 @Produces(MediaType.APPLICATION_JSON)
 public class NameSearchResource {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameSearchResource.class);
 
-  private final NameUsageSearchService svcSearch;
-  private final NameSuggestionService svcSuggest;
+  private final NameUsageSearchService searchService;
 
-  public NameSearchResource(NameUsageSearchService svcSearch, NameSuggestionService svcSuggest) {
-    this.svcSearch = svcSearch;
-    this.svcSuggest = svcSuggest;
+  public NameSearchResource(NameUsageSearchService svc) {
+    this.searchService = svc;
   }
 
   @GET
   @Timed
-  @Path("/search")
   public ResultPage<NameUsageWrapper> search(@BeanParam NameSearchRequest query,
-      @Valid @BeanParam Page page,
-      @Context UriInfo uri) throws InvalidQueryException {
+                                             @Valid @BeanParam Page page,
+                                             @Context UriInfo uri) throws InvalidQueryException {
     query.addQueryParams(uri.getQueryParameters());
-    return svcSearch.search(query, page);
-  }
-
-  @GET
-  @Timed
-  @Path("/suggest")
-  public NameSuggestResponse suggest(@BeanParam NameSuggestRequest query) {
-    return svcSuggest.suggest(query);
+    return searchService.search(query, page);
   }
 
 }

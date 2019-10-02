@@ -8,18 +8,18 @@ import org.col.api.search.NameSuggestRequest;
 import org.col.api.search.NameSuggestResponse;
 import org.col.api.search.NameSuggestion;
 import org.col.es.EsException;
+import org.col.es.name.NameUsageQueryService;
 import org.col.es.name.NameUsageResponse;
-import org.col.es.name.NameUsageService;
-import org.col.es.name.search.NameUsageSearchService;
+import org.col.es.name.search.NameUsageSearchServiceEs;
 import org.col.es.query.EsSearchRequest;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NameSuggestionService extends NameUsageService {
+public class NameSuggestionService extends NameUsageQueryService {
 
   @SuppressWarnings("unused")
-  private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchService.class);
+  private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchServiceEs.class);
 
   public NameSuggestionService(String indexName, RestClient client) {
     super(indexName, client);

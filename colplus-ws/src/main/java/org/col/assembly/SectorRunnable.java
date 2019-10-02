@@ -8,11 +8,18 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import com.google.common.base.Preconditions;
+
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.api.model.*;
+import org.col.api.model.ColUser;
+import org.col.api.model.EditorialDecision;
+import org.col.api.model.Name;
+import org.col.api.model.Page;
+import org.col.api.model.Sector;
+import org.col.api.model.SectorImport;
+import org.col.api.model.Taxon;
 import org.col.api.util.ObjectUtils;
 import org.col.api.vocab.Datasets;
 import org.col.common.util.LoggingUtils;
@@ -56,9 +63,9 @@ abstract class SectorRunnable implements Runnable {
     try (SqlSession session = factory.openSession(true)) {
       // check for existance and datasetKey - we will load the real thing for processing only when we get executed!
       sector = loadSector(false);
-      this.datasetKey = sector.getDatasetKey();
+      this.datasetKey = sector.getSubjectDatasetKey();
       // lookup next attempt
-      List<SectorImport> imports = session.getMapper(SectorImportMapper.class).list(sectorKey, null,null, new Page(0,1));
+      List<SectorImport> imports = session.getMapper(SectorImportMapper.class).list(sectorKey, null, null,null, new Page(0,1));
       state.setAttempt(imports == null || imports.isEmpty() ? 1 : imports.get(0).getAttempt() + 1);
       state.setSectorKey(sectorKey);
       state.setDatasetKey(datasetKey);
@@ -123,7 +130,7 @@ abstract class SectorRunnable implements Runnable {
         TaxonMapper tm = session.getMapper(TaxonMapper.class);
         
         // check if target actually exists
-        String msg = "Sector " + s.getKey() + " does have a non existing target " + s.getTarget() + " for dataset " + datasetKey;
+        String msg = "Sector " + s.getKey() + " does have a non existing target " + s.getTarget() + " for dataset " + catalogueKey;
         try {
           ObjectUtils.checkNotNull(s.getTarget(), s + " does not have any target");
           ObjectUtils.checkNotNull(tm.get(catalogueKey, s.getTarget().getId()), "Sector " + s.getKey() + " does have a non existing target id");
@@ -147,7 +154,7 @@ abstract class SectorRunnable implements Runnable {
   private void loadDecisions() {
     try (SqlSession session = factory.openSession(true)) {
       DecisionMapper dm = session.getMapper(DecisionMapper.class);
-      for (EditorialDecision ed : dm.listByDataset(datasetKey, null)) {
+      for (EditorialDecision ed : dm.listBySubjectDataset(catalogueKey, datasetKey, null)) {
         decisions.put(ed.getSubject().getId(), ed);
       }
     }
@@ -165,7 +172,7 @@ abstract class SectorRunnable implements Runnable {
   private void loadAttachedSectors() {
     try (SqlSession session = factory.openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
-      childSectors=sm.listChildSectors(sectorKey);
+      childSectors=sm.listChildSectors(Datasets.DRAFT_COL, sectorKey);
     }
     LOG.info("Loaded {} sectors targeting taxa from sector {}", childSectors.size(), sectorKey);
   }

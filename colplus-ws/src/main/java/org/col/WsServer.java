@@ -1,17 +1,6 @@
 package org.col;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dropwizard.Application;
-import io.dropwizard.client.DropwizardApacheConnector;
-import io.dropwizard.client.HttpClientBuilder;
-import io.dropwizard.client.JerseyClientBuilder;
-import io.dropwizard.client.JerseyClientConfiguration;
-import io.dropwizard.forms.MultiPartBundle;
-import io.dropwizard.jackson.Jackson;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
-
-import static org.col.es.EsConfig.ES_INDEX_NAME_USAGE;
 
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
@@ -28,7 +17,11 @@ import org.col.command.initdb.InitDbCmd;
 import org.col.common.csl.CslUtil;
 import org.col.common.io.DownloadUtil;
 import org.col.common.tax.AuthorshipNormalizer;
-import org.col.dao.*;
+import org.col.dao.DatasetImportDao;
+import org.col.dao.NameDao;
+import org.col.dao.ReferenceDao;
+import org.col.dao.SynonymDao;
+import org.col.dao.TaxonDao;
 import org.col.db.tree.DiffService;
 import org.col.dw.ManagedCloseable;
 import org.col.dw.auth.AuthBundle;
@@ -37,6 +30,7 @@ import org.col.dw.db.MybatisBundle;
 import org.col.dw.es.ManagedEsClient;
 import org.col.dw.health.CslUtilsHealthCheck;
 import org.col.dw.health.DiffHealthCheck;
+import org.col.dw.health.EsHealthCheck;
 import org.col.dw.health.NameParserHealthCheck;
 import org.col.dw.health.NamesIndexHealthCheck;
 import org.col.dw.jersey.ColJerseyBundle;
@@ -44,7 +38,7 @@ import org.col.es.EsClientFactory;
 import org.col.es.name.index.NameUsageIndexService;
 import org.col.es.name.index.NameUsageIndexServiceEs;
 import org.col.es.name.search.NameUsageSearchService;
-import org.col.es.name.suggest.NameSuggestionService;
+import org.col.es.name.search.NameUsageSearchServiceEs;
 import org.col.gbifsync.GbifSync;
 import org.col.img.ImageService;
 import org.col.img.ImageServiceFS;
@@ -53,7 +47,27 @@ import org.col.importer.ImportManager;
 import org.col.matching.NameIndex;
 import org.col.matching.NameIndexFactory;
 import org.col.parser.NameParser;
-import org.col.resources.*;
+import org.col.resources.AdminResource;
+import org.col.resources.AssemblyResource;
+import org.col.resources.DataPackageResource;
+import org.col.resources.DatasetResource;
+import org.col.resources.DecisionResource;
+import org.col.resources.DocsResource;
+import org.col.resources.DuplicateResource;
+import org.col.resources.EstimateResource;
+import org.col.resources.ImporterResource;
+import org.col.resources.MatchingResource;
+import org.col.resources.NameResource;
+import org.col.resources.NameSearchResource;
+import org.col.resources.ParserResource;
+import org.col.resources.ReferenceResource;
+import org.col.resources.SectorResource;
+import org.col.resources.SynonymResource;
+import org.col.resources.TaxonResource;
+import org.col.resources.TreeResource;
+import org.col.resources.UserResource;
+import org.col.resources.VerbatimResource;
+import org.col.resources.VocabResource;
 import org.elasticsearch.client.RestClient;
 import org.gbif.dwc.terms.TermFactory;
 import org.glassfish.jersey.client.rx.RxClient;
@@ -62,6 +76,18 @@ import org.glassfish.jersey.client.spi.ConnectorProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
+
+import io.dropwizard.Application;
+import io.dropwizard.client.DropwizardApacheConnector;
+import io.dropwizard.client.HttpClientBuilder;
+import io.dropwizard.client.JerseyClientBuilder;
+import io.dropwizard.client.JerseyClientConfiguration;
+import io.dropwizard.forms.MultiPartBundle;
+import io.dropwizard.jackson.Jackson;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
+
+import static org.col.es.EsConfig.ES_INDEX_NAME_USAGE;
 
 public class WsServer extends Application<WsServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(WsServer.class);
@@ -143,19 +169,19 @@ public class WsServer extends Application<WsServerConfig> {
     AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
 
     // ES
-    final RestClient esClient = new EsClientFactory(cfg.es).createClient();
-
     NameUsageIndexService indexService;
-    if (esClient == null) {
-      LOG.warn("No Elastic Search configured, use pass through indexing");
+    NameUsageSearchService nuss;
+    if (cfg.es.hosts == null) {
+      LOG.warn("No Elastic Search configured, use pass through indexing & searching");
       indexService = NameUsageIndexService.passThru();
+      nuss = NameUsageSearchService.passThru();
     } else {
+      final RestClient esClient = new EsClientFactory(cfg.es).createClient();
       env.lifecycle().manage(new ManagedEsClient(esClient));
+      env.healthChecks().register("elastic", new EsHealthCheck(esClient, cfg.es));
       indexService = new NameUsageIndexServiceEs(esClient, cfg.es, getSqlSessionFactory());
+      nuss = new NameUsageSearchServiceEs(cfg.es.indexName(ES_INDEX_NAME_USAGE), esClient);
     }
-
-    NameUsageSearchService nuss = new NameUsageSearchService(cfg.es.indexName(ES_INDEX_NAME_USAGE), esClient);
-    NameSuggestionService nss = new NameSuggestionService(cfg.es.indexName(ES_INDEX_NAME_USAGE), esClient);
 
     // images
     final ImageService imgService = new ImageServiceFS(cfg.img);
@@ -178,21 +204,12 @@ public class WsServer extends Application<WsServerConfig> {
         imgService);
     env.lifecycle().manage(importManager);
     env.jersey().register(new ImporterResource(importManager, diDao));
+    ContinuousImporter cImporter = new ContinuousImporter(cfg.importer, importManager, getSqlSessionFactory());
+    env.lifecycle().manage(cImporter);
 
-    if (cfg.importer.continousImportPolling > 0) {
-      LOG.info("Enable continuous importing");
-      env.lifecycle().manage(new ContinuousImporter(cfg.importer, importManager, getSqlSessionFactory()));
-    } else {
-      LOG.warn("Disable continuous importing");
-    }
-
-    // activate gbif sync?
-    if (cfg.gbif.syncFrequency > 0) {
-      LOG.info("Enable GBIF dataset sync");
-      env.lifecycle().manage(new GbifSync(cfg.gbif, getSqlSessionFactory(), jerseyRxClient));
-    } else {
-      LOG.warn("Disable GBIF dataset sync");
-    }
+    // gbif sync
+    GbifSync gbifSync = new GbifSync(cfg.gbif, getSqlSessionFactory(), jerseyRxClient);
+    env.lifecycle().manage(gbifSync);
 
     // exporter
     AcExporter exporter = new AcExporter(cfg);
@@ -217,7 +234,14 @@ public class WsServer extends Application<WsServerConfig> {
 
     // resources
     env.jersey()
-        .register(new AdminResource(getSqlSessionFactory(), new DownloadUtil(httpClient), cfg.normalizer, imgService, indexService, tdao));
+        .register(new AdminResource(getSqlSessionFactory(),
+            new DownloadUtil(httpClient),
+            cfg,
+            imgService,
+            indexService,
+            tdao,
+            cImporter,
+            gbifSync));
     env.jersey().register(new AssemblyResource(assembly, exporter));
     env.jersey().register(new DataPackageResource());
     env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService, cfg, new DownloadUtil(httpClient), diff));
@@ -227,7 +251,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.jersey().register(new EstimateResource(getSqlSessionFactory()));
     env.jersey().register(new MatchingResource(ni));
     env.jersey().register(new NameResource(nuss, ndao));
-    env.jersey().register(new NameSearchResource(nuss, nss));
+    env.jersey().register(new NameSearchResource(nuss));
     env.jersey().register(new ParserResource());
     env.jersey().register(new ReferenceResource(rdao));
     env.jersey().register(new SectorResource(getSqlSessionFactory(), diDao, diff, assembly));

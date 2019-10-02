@@ -266,7 +266,7 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
       // if this taxon had a sector we need to adjust parental counts
       // we keep the sector as a broken sector around
       SectorMapper sm = session.getMapper(SectorMapper.class);
-      for (Sector s : sm.listByTarget(id)) {
+      for (Sector s : sm.listByTarget(Datasets.DRAFT_COL, id)) {
         tMapper.incDatasetSectorCount(Datasets.DRAFT_COL, s.getTarget().getId(), s.getDatasetKey(), -1);
       }
     }
@@ -326,8 +326,8 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
     int counter = 0;
     try (SqlSession session = factory.openSession(false)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      tm.resetDatasetSectorCount(Datasets.DRAFT_COL);
-      for (Sector s : Pager.sectors(factory)) {
+      tm.resetDatasetSectorCount(catalogueKey);
+      for (Sector s : Pager.sectors(catalogueKey, factory)) {
         if (s.getTarget() != null) {
           counter++;
           tm.incDatasetSectorCount(catalogueKey, s.getTarget().getId(), s.getDatasetKey(), 1);

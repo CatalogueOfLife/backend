@@ -25,7 +25,6 @@ import static org.junit.Assert.assertEquals;
 public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
   
   private static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
-  private static final int datasetKey = TestEntityGenerator.TAXON1.getDatasetKey();
   private static int userKey = TestEntityGenerator.USER_EDITOR.getKey();
   private Sector sector;
   
@@ -260,21 +259,21 @@ public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
   
   @Test
   public void incDatasetSectorCount() throws Exception {
-    mapper().incDatasetSectorCount(Datasets.DRAFT_COL, sector.getTarget().getId(), sector.getDatasetKey(), 7);
+    mapper().incDatasetSectorCount(Datasets.DRAFT_COL, sector.getTarget().getId(), sector.getSubjectDatasetKey(), 7);
     TreeNode n = getTreeNode(sector.getTarget().getId());
-    // t4 already has count=1 for dataset 11 when draft tree gets populated
-    assertEquals(8, (int) n.getDatasetSectors().get(sector.getDatasetKey()));
+    // t4 already has count=1 for subject dataset 11 when draft tree gets populated
+    assertEquals(8, n.getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
     // cascades to all parents
-    assertEquals(9, (int) getTreeNode("t3").getDatasetSectors().get(sector.getDatasetKey()));
-    assertEquals(9, (int) getTreeNode("t2").getDatasetSectors().get(sector.getDatasetKey()));
-    assertEquals(9, (int) getTreeNode("t1").getDatasetSectors().get(sector.getDatasetKey()));
+    assertEquals(9, getTreeNode("t3").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
+    assertEquals(9, getTreeNode("t2").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
+    assertEquals(9, getTreeNode("t1").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
   
   
-    mapper().incDatasetSectorCount(Datasets.DRAFT_COL, "unreal", sector.getDatasetKey(), 10);
+    mapper().incDatasetSectorCount(Datasets.DRAFT_COL, "unreal", sector.getSubjectDatasetKey(), 10);
     // cascades to all parents
-    assertEquals(9, (int) getTreeNode("t3").getDatasetSectors().get(sector.getDatasetKey()));
-    assertEquals(9, (int) getTreeNode("t2").getDatasetSectors().get(sector.getDatasetKey()));
-    assertEquals(9, (int) getTreeNode("t1").getDatasetSectors().get(sector.getDatasetKey()));
+    assertEquals(9, getTreeNode("t3").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
+    assertEquals(9, getTreeNode("t2").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
+    assertEquals(9, getTreeNode("t1").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
   
   }
   

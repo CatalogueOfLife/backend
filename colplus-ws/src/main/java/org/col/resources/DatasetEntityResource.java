@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public abstract class DatasetEntityResource<T extends DatasetEntity & UserManaged> {
+public abstract class DatasetEntityResource<T extends DatasetIDEntity & UserManaged> {
 
   private final Class<T> objClass;
   protected final DatasetEntityDao<T, ?> dao;

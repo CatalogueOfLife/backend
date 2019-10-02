@@ -19,7 +19,7 @@ public class DatasetID {
     this.id = id;
   }
   
-  public DatasetID(DatasetEntity t) {
+  public DatasetID(DatasetIDEntity t) {
     this.datasetKey = t.getDatasetKey();
     this.id = t.getId();
   }

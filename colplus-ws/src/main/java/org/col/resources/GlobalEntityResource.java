@@ -3,14 +3,14 @@ package org.col.resources;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import io.dropwizard.auth.Auth;
-import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.exception.NotFoundException;
-import org.col.api.model.*;
+import org.col.api.model.ColUser;
+import org.col.api.model.GlobalEntity;
+import org.col.api.model.UserManaged;
 import org.col.dao.GlobalEntityDao;
 import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
@@ -20,8 +20,8 @@ import org.slf4j.LoggerFactory;
 @Consumes(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public abstract class GlobalEntityResource<T extends GlobalEntity & UserManaged> {
-
-  private final Class<T> objClass;
+  
+  protected final Class<T> objClass;
   protected final GlobalEntityDao<T, ?> dao;
   protected final SqlSessionFactory factory;
 
@@ -32,14 +32,6 @@ public abstract class GlobalEntityResource<T extends GlobalEntity & UserManaged>
     this.objClass = objClass;
     this.dao = dao;
     this.factory = factory;
-  }
-  
-  /**
-   * Default list paging method is not exposed in Jersey so the root path can be overriden.
-   * To expose the default list just delegate here
-   */
-  public ResultPage<T> list(@Valid @BeanParam Page page, @Context SqlSession session) {
-    return dao.list(page);
   }
   
   /**

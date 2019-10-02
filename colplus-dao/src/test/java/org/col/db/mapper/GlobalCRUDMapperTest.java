@@ -1,12 +1,13 @@
 package org.col.db.mapper;
 
 import org.col.api.model.GlobalEntity;
+import org.col.db.GlobalCRUD;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-abstract class GlobalCRUDMapperTest<T extends GlobalEntity, M extends GlobalCRUDMapper<T>> extends MapperTestBase<M> {
+abstract class GlobalCRUDMapperTest<T extends GlobalEntity, M extends GlobalCRUD<T>> extends MapperTestBase<M> {
   
   public GlobalCRUDMapperTest(Class<M> mapperClazz) {
     super(mapperClazz);

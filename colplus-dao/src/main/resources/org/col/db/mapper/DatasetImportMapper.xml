@@ -12,7 +12,8 @@
       download_uri,
       download,
       verbatim_count,
-      verbatim_by_type_count
+      verbatim_by_type_count,
+      verbatim_by_term_count
     </sql>
 
     <sql id="metricsCols">
@@ -45,7 +46,8 @@
       download_uri,
       download,
       verbatim_count,
-      verbatim_by_type_count
+      verbatim_by_type_count,
+      verbatim_by_term_count
     </sql>
 
     <sql id="metricsProps">
@@ -78,7 +80,8 @@
       #{imp.downloadUri},
       #{imp.download},
       #{imp.verbatimCount},
-      #{imp.verbatimByTypeCount}
+      #{imp.verbatimByTypeCount},
+      #{imp.verbatimByTermCount, typeHandler=org.col.db.type2.NestedTermMapTypeHandler}::jsonb
     </sql>
 
     <sql id="FROM">
@@ -112,6 +115,7 @@
         <result property="namesByStatusCount" column="names_by_status_count" typeHandler="org.col.db.type2.HstoreNomStatusCountTypeHandler"/>
         <result property="nameRelationsByTypeCount" column="name_relations_by_type_count" typeHandler="org.col.db.type2.HstoreNameRelCountTypeHandler"/>
         <result property="verbatimByTypeCount" column="verbatim_by_type_count" typeHandler="org.col.db.type2.HstoreTermCountTypeHandler"/>
+        <result property="verbatimByTermCount" column="verbatim_by_term_count" typeHandler="org.col.db.type2.NestedTermMapTypeHandler"/>
     </resultMap>
 
     <select id="get" resultMap="datasetImportResultMap">
@@ -130,7 +134,7 @@
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         <include refid="WHERE" />
-        ORDER BY started DESC, attempt DESC
+        ORDER BY started DESC, attempt DESC, dataset_key
         <include refid="org.col.db.mapper.Common.limit" />
     </select>
 
@@ -218,6 +222,12 @@
         SELECT type AS key, count(*) AS count
         FROM verbatim_${key}
         GROUP BY type
+    </select>
+    <select id="countVerbatimTerms" resultType="StringCount">
+        SELECT t AS key, count(*) AS count
+        FROM verbatim_${key}, lateral jsonb_object_keys(terms) AS t
+        WHERE type = #{rowType}
+        GROUP BY t
     </select>
     <select id="countVernacularsByLanguage" resultType="StringCount">
         SELECT language AS key, count(*) AS count

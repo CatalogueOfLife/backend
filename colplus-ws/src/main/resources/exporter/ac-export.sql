@@ -277,7 +277,7 @@ SELECT
   t.webpage AS web_site,
   -- use the genus classification for virus type (1) names
   CASE
-    WHEN n.type=1 THEN c.genus
+    WHEN n.type=1 THEN coalesce(c.genus, 'Not assigned')
     ELSE (CASE WHEN n.notho=0 THEN '×' ELSE '' END) ||  n.genus
   END AS genus,
   n.infrageneric_epithet AS subgenus,
@@ -310,9 +310,9 @@ SELECT
   CASE WHEN t.is_synonym THEN 0 ELSE 1 END AS is_accepted_name,
   NULL AS GSDTaxonGUID,
   NULL AS GSDNameGUID,
-  NULL AS is_extinct,
-  t.fossil::int AS has_preholocene,
-  t.recent::int AS has_modern
+  CASE WHEN t.extinct THEN 1 ELSE 0 END AS is_extinct,
+  0 AS has_preholocene,
+  0 AS has_modern
 FROM name_{{datasetKey}} n
     JOIN name_usage_{{datasetKey}} t ON n.id=t.name_id
     LEFT JOIN __classification c  ON t.id=c.id

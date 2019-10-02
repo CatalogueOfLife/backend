@@ -26,7 +26,7 @@ import org.col.es.EsModule;
 import org.col.es.EsReadTestBase;
 import org.col.es.model.NameUsageDocument;
 import org.col.es.name.NameUsageWrapperConverter;
-import org.col.es.name.search.NameUsageSearchService;
+import org.col.es.name.search.NameUsageSearchServiceEs;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -38,11 +38,11 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
 
   private static final String dummyPayload = getDummyPayload();
 
-  private static NameUsageSearchService svc;
+  private static NameUsageSearchServiceEs svc;
 
   @BeforeClass
   public static void init() {
-    svc = new NameUsageSearchService(indexName, esSetupRule.getEsClient());
+    svc = new NameUsageSearchServiceEs(indexName, esSetupRule.getEsClient());
   }
 
   @Before

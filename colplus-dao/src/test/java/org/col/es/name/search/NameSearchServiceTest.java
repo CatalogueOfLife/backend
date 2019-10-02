@@ -36,12 +36,12 @@ public class NameSearchServiceTest extends EsReadTestBase {
   private static final Logger LOG = LoggerFactory.getLogger(NameSearchServiceTest.class);
 
   private static RestClient client;
-  private static NameUsageSearchService svc;
+  private static NameUsageSearchServiceEs svc;
 
   @BeforeClass
   public static void init() {
     client = esSetupRule.getEsClient();
-    svc = new NameUsageSearchService(indexName, esSetupRule.getEsClient());
+    svc = new NameUsageSearchServiceEs(indexName, esSetupRule.getEsClient());
   }
 
   @Before

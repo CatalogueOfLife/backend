@@ -7,6 +7,7 @@
   <sql id="SelectVar">
     ${alias}key AS ${prefix}key,
     ${alias}dataset_key AS ${prefix}dataset_key,
+    ${alias}subject_dataset_key AS ${prefix}subject_dataset_key,
     ${alias}subject_id AS ${prefix}subject_id,
     ${alias}subject_name AS ${prefix}subject_name,
     ${alias}subject_authorship AS ${prefix}subject_authorship,
@@ -22,8 +23,9 @@
     ${alias}mode AS ${prefix}mode,
     ${alias}name AS ${prefix}name,
     ${alias}status AS ${prefix}status,
-    ${alias}fossil AS ${prefix}fossil,
-    ${alias}recent AS ${prefix}recent,
+    ${alias}extinct AS ${prefix}extinct,
+    ${alias}temporal_range_start AS ${prefix}temporal_range_start,
+    ${alias}temporal_range_end AS ${prefix}temporal_range_end,
     ${alias}lifezones AS ${prefix}lifezones
   </sql>
 
@@ -36,6 +38,7 @@
 
   <sql id="COLS">
     dataset_key,
+    subject_dataset_key,
     subject_id,
     subject_name,
     subject_authorship,
@@ -49,13 +52,15 @@
     mode,
     name,
     status,
-    fossil,
-    recent,
+    extinct,
+    temporal_range_start,
+    temporal_range_end,
     lifezones
   </sql>
 
   <sql id="PROPS">
     #{datasetKey},
+    #{subjectDatasetKey},
     #{subject.id},
     #{subject.name},
     #{subject.authorship},
@@ -69,13 +74,10 @@
     #{mode},
     #{name, typeHandler=org.col.db.type2.JsonNameHandler}::jsonb,
     #{status},
-    #{fossil},
-    #{recent},
+    #{extinct},
+    #{temporalRangeStart},
+    #{temporalRangeEnd},
     #{lifezones, typeHandler=org.col.db.type.LifezoneSetTypeHandler}
-  </sql>
-
-  <sql id="FROM">
-    decision ed
   </sql>
 
   <resultMap id="decisionResultMap" type="EditorialDecision" autoMapping="true">
@@ -87,17 +89,18 @@
 
   <select id="list" resultMap="decisionResultMap">
     SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
+    FROM decision ed
     ORDER BY ed.key
     <include refid="org.col.db.mapper.Common.limit" />
   </select>
 
-  <select id="listByDataset" resultMap="decisionResultMap">
+  <select id="listBySubjectDataset" resultMap="decisionResultMap">
     SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
+    FROM decision ed
     <where>
-      <if test="datasetKey != null">
-        ed.dataset_key = #{datasetKey}
+      ed.dataset_key = #{datasetKey}
+      <if test="subjectDatasetKey != null">
+        AND ed.subject_dataset_key = #{subjectDatasetKey}
       </if>
       <if test="id != null">
         AND ed.subject_id = #{id}
@@ -108,7 +111,7 @@
 
   <select id="get" resultMap="decisionResultMap">
     SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
+    FROM decision ed
     WHERE key = #{key}
   </select>
 
@@ -130,12 +133,13 @@
 
   <select id="subjectBroken" resultMap="decisionResultMap">
     SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
-      LEFT JOIN name_usage t ON t.dataset_key=ed.dataset_key AND t.id=ed.subject_id
+    FROM decision ed
+      LEFT JOIN name_usage t ON t.dataset_key=ed.subject_dataset_key AND t.id=ed.subject_id
     WHERE t.id IS NULL
-    <if test="datasetKey != null">
       AND ed.dataset_key = #{datasetKey}
-    </if>
+      <if test="subjectDatasetKey != null">
+        AND ed.subject_dataset_key = #{subjectDatasetKey}
+      </if>
     ORDER BY ed.key
   </select>
 

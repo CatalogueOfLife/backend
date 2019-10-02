@@ -4,16 +4,18 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.RematchRequest;
 import org.col.api.model.Sector;
 import org.col.api.model.SimpleName;
+import org.col.api.vocab.Datasets;
 import org.col.api.vocab.Users;
 import org.col.db.MybatisTestUtils;
 import org.col.db.PgSetupRule;
-import org.col.db.mapper.TestDataRule;
 import org.col.db.mapper.SectorMapper;
+import org.col.db.mapper.TestDataRule;
 import org.gbif.nameparser.api.Rank;
-import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class SubjectRematcherTest {
   
@@ -52,12 +54,12 @@ public class SubjectRematcherTest {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
       s1b = sm.get(s1);
-      Assert.assertNotNull(s1b.getSubject().getId());
-      Assert.assertNull(s1b.getTarget().getId());
+      assertNotNull(s1b.getSubject().getId());
+      assertNull(s1b.getTarget().getId());
   
       s2b = sm.get(s2);
-      Assert.assertNotNull(s2b.getSubject().getId());
-      Assert.assertNull(s2b.getTarget().getId());
+      assertNotNull(s2b.getSubject().getId());
+      assertNull(s2b.getTarget().getId());
     }
   
     rem.match(RematchRequest.all());
@@ -66,12 +68,12 @@ public class SubjectRematcherTest {
       SectorMapper sm = session.getMapper(SectorMapper.class);
 
       Sector s1c = sm.get(s1);
-      Assert.assertNull(s1c.getSubject().getId());
-      Assert.assertEquals("t4", s1c.getTarget().getId());
+      assertNull(s1c.getSubject().getId());
+      assertEquals("t4", s1c.getTarget().getId());
   
       Sector s2c = sm.get(s2);
-      Assert.assertNull(s2c.getSubject().getId());
-      Assert.assertEquals("t5", s2c.getTarget().getId());
+      assertNull(s2c.getSubject().getId());
+      assertEquals("t5", s2c.getTarget().getId());
     }
   }
   
@@ -79,7 +81,8 @@ public class SubjectRematcherTest {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       Sector sector = new Sector();
       sector.setMode(mode);
-      sector.setDatasetKey(datasetKey);
+      sector.setDatasetKey(Datasets.DRAFT_COL);
+      sector.setSubjectDatasetKey(datasetKey);
       sector.setSubject(src);
       sector.setTarget(target);
       sector.applyUser(TestDataRule.TEST_USER);

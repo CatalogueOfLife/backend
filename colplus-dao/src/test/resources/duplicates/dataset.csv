@@ -1,2 +1,3 @@
 key,type,title,origin,import_frequency,created_by,modified_by
-1000,6,Duplicate Dataset,0,1,100,100
+3,6,draft col,0,1,100,100
+1000,1,Duplicate Dataset,0,1,100,100

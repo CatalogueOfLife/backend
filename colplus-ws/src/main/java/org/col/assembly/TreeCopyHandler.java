@@ -24,6 +24,8 @@ import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.col.api.util.ObjectUtils.coalesce;
+
 public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(TreeCopyHandler.class);
   private static Set<EntityType> COPY_DATA = ImmutableSet.of(
@@ -44,6 +46,7 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
   private final NameMapper nm;
   private int sCounter = 0;
   private int tCounter = 0;
+  private int ignoredCounter = 0;
   private final Usage target;
   private final Map<RanKnName, Usage> implicits = new HashMap<>();
   private final Map<String, Usage> ids = new HashMap<>();
@@ -185,6 +188,7 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
       applyDecision(u, decisions.get(u.getId()));
     }
     if (skipUsage(u)) {
+      state.setIgnoredUsageCount(++ignoredCounter);
       // skip this taxon, but include children
       LOG.debug("Ignore {} [{}] type={}; status={}", u.getName().scientificNameAuthorship(), u.getId(), u.getName().getType(), u.getName().getNomStatus());
       // use taxons parent also as the parentID for this so children link one level up
@@ -265,19 +269,42 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
         if (ed.getName() != null) {
           Name n = u.getName();
           Name n2 = ed.getName();
-          if (n2.getCode() != null) {
-            n.setCode(n2.getCode());
-          }
-          if (n2.getNomStatus() != null) {
-            n.setNomStatus(n2.getNomStatus());
-          }
-          if (n2.getType() != null) {
-            n.setType(n2.getType());
-          }
-          if (n2.getRank() != null) {
-            n.setRank(n2.getRank());
-          }
-          if (n2.getAuthorship() != null) {
+          
+          if (n2.getScientificName() != null) {
+            // parse a new name!
+            final String name = n2.getScientificName() + " " + coalesce(n2.getAuthorship(), "");
+            NomCode code = coalesce(n2.getCode(), n.getCode());
+            Rank rank = coalesce(n2.getRank(), n.getRank());
+            NameAccordingTo nat = NameParser.PARSER.parse(name, rank, code, IssueContainer.VOID).orElseGet(() -> {
+              LOG.warn("Unparsable decision name {}", name);
+              // add the full, unparsed authorship in this case to not lose it
+              NameAccordingTo nat2 = new NameAccordingTo();
+              nat2.getName().setScientificName(n2.getScientificName());
+              nat2.getName().setAuthorship(n2.getAuthorship());
+              return nat2;
+            });
+            // copy all pure name props
+            Name nn = nat.getName();
+            n.setScientificName(nn.getScientificName());
+            n.setAuthorship(nn.getAuthorship());
+            n.setType(nn.getType());
+            n.setRank(nn.getRank());
+            n.setUninomial(nn.getUninomial());
+            n.setGenus(nn.getGenus());
+            n.setInfragenericEpithet(nn.getInfragenericEpithet());
+            n.setSpecificEpithet(nn.getSpecificEpithet());
+            n.setInfraspecificEpithet(nn.getInfraspecificEpithet());
+            n.setCultivarEpithet(nn.getCultivarEpithet());
+            n.setCandidatus(nn.isCandidatus());
+            n.setNotho(nn.getNotho());
+            n.setCombinationAuthorship(nn.getCombinationAuthorship());
+            n.setBasionymAuthorship(nn.getBasionymAuthorship());
+            n.setSanctioningAuthor(nn.getSanctioningAuthor());
+            n.setAuthorshipNormalized(nn.getAuthorshipNormalized());
+            n.setAppendedPhrase(nn.getAppendedPhrase());
+            
+          } else if (n2.getAuthorship() != null) {
+            // no full name, just changing authorship
             n.setAuthorship(n2.getAuthorship());
             ParsedName pn = NameParser.PARSER.parseAuthorship(n2.getAuthorship()).orElseGet(() -> {
               LOG.warn("Unparsable decision authorship {}", n2.getAuthorship());
@@ -289,6 +316,20 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
             n.setCombinationAuthorship(pn.getCombinationAuthorship());
             n.setSanctioningAuthor(pn.getSanctioningAuthor());
             n.setBasionymAuthorship(pn.getBasionymAuthorship());
+          }
+          // any other changes
+          if (n2.getCode() != null) {
+            n.setCode(n2.getCode());
+          }
+          if (n2.getRank() != null && Rank.UNRANKED != n2.getRank()) {
+            // unranked is the default
+            n.setRank(n2.getRank());
+          }
+          if (n2.getNomStatus() != null) {
+            n.setNomStatus(n2.getNomStatus());
+          }
+          if (n2.getType() != null) {
+            n.setType(n2.getType());
           }
         }
         if (ed.getStatus() != null) {
@@ -303,11 +344,8 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
           if (ed.getLifezones() != null) {
             t.setLifezones(ed.getLifezones());
           }
-          if (ed.getFossil() != null) {
-            t.setFossil(ed.getFossil());
-          }
-          if (ed.getRecent() != null) {
-            t.setRecent(ed.getRecent());
+          if (ed.isExtinct() != null) {
+            t.setExtinct(ed.isExtinct());
           }
         }
       case REVIEWED:

@@ -1,6 +1,7 @@
 package org.col.api.model;
 
 import org.col.api.TestEntityGenerator;
+import org.col.api.datapackage.ColdpTerm;
 import org.col.api.jackson.SerdeTestBase;
 import org.col.api.vocab.Issue;
 import org.gbif.dwc.terms.AcefTerm;
@@ -43,6 +44,9 @@ public class VerbatimRecordTest extends SerdeTestBase<VerbatimRecord> {
     rec.put(AcefTerm.Title, "A new species of <i>Neamia</i> (Perciformes: Apogonidae) from the West Pacific Ocean.");
     // from is-6157 http://api.col.plus/taxon/7/info
     rec.put(DwcTerm.vernacularName, "&#75;&#101;&#105;&#104;&#228;&#115;&#108;&#117;&#117;&#104;&#97;&#117;&#107;&#105;");
+    // from Bob Mesibov
+    rec.put(ColdpTerm.scientificName, "Dasysiphonia<U+00A0> japonica");
+    rec.put(ColdpTerm.specificEpithet, "Dasysiphonia<U00A0> japonica");
   }
   
   @Test
@@ -73,6 +77,16 @@ public class VerbatimRecordTest extends SerdeTestBase<VerbatimRecord> {
     init();
     assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
     assertEquals("Keihäsluuhauki", v.get(DwcTerm.vernacularName));
+    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+  
+    init();
+    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertEquals("Dasysiphonia  japonica", v.get(ColdpTerm.scientificName));
+    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+  
+    init();
+    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertEquals("Dasysiphonia  japonica", v.get(ColdpTerm.specificEpithet));
     assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
   }
   

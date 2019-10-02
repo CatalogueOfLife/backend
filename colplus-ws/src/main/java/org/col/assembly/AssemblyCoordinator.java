@@ -2,7 +2,10 @@ package org.col.assembly;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -12,11 +15,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import io.dropwizard.lifecycle.Managed;
+
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.api.model.*;
+import org.col.api.model.ColUser;
+import org.col.api.model.RequestScope;
+import org.col.api.model.Sector;
+import org.col.api.model.SectorImport;
+import org.col.api.model.SimpleName;
+import org.col.api.vocab.Datasets;
 import org.col.common.concurrent.ExecutorUtils;
 import org.col.dao.DatasetImportDao;
 import org.col.db.mapper.CollectResultHandler;
@@ -27,6 +35,8 @@ import org.col.importer.ImportManager;
 import org.gbif.nameparser.utils.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.dropwizard.lifecycle.Managed;
 
 public class AssemblyCoordinator implements Managed {
   static  final Comparator<Sector> SECTOR_ORDER = Comparator.comparing(Sector::getTarget, Comparator.nullsLast(SimpleName::compareTo));
@@ -112,17 +122,17 @@ public class AssemblyCoordinator implements Managed {
     try (SqlSession session = factory.openSession(true)) {
       try {
         //make sure dataset is currently not imported
-        if (importManager != null && importManager.isRunning(s.getDatasetKey())) {
+        if (importManager != null && importManager.isRunning(s.getSubjectDatasetKey())) {
           LOG.warn("Concurrently running dataset import. Cannot sync {}", s);
-          throw new IllegalArgumentException("Dataset "+s.getDatasetKey()+" currently being imported. Cannot sync " + s);
+          throw new IllegalArgumentException("Dataset "+s.getSubjectDatasetKey()+" currently being imported. Cannot sync " + s);
         }
         NameMapper nm = session.getMapper(NameMapper.class);
-        if (nm.hasData(s.getDatasetKey())) {
+        if (nm.hasData(s.getSubjectDatasetKey())) {
           return;
         }
       } catch (PersistenceException e) {
         // missing partitions cause this
-        LOG.debug("No partition exists for dataset {}", s.getDatasetKey(), e);
+        LOG.debug("No partition exists for dataset {}", s.getSubjectDatasetKey(), e);
       }
     }
     LOG.warn("Cannot sync {} which has never been imported", s);
@@ -141,7 +151,7 @@ public class AssemblyCoordinator implements Managed {
         final AtomicInteger cnt = new AtomicInteger();
         try (SqlSession session = factory.openSession(true)) {
           SectorMapper sm = session.getMapper(SectorMapper.class);
-          sm.processSectors(request.getDatasetKey(), (ctx) -> {
+          sm.processSectors(Datasets.DRAFT_COL, request.getDatasetKey(), (ctx) -> {
             syncSector(ctx.getResultObject().getKey(), user);
             cnt.getAndIncrement();
           });
@@ -208,7 +218,7 @@ public class AssemblyCoordinator implements Managed {
     CollectResultHandler<Sector> collector = new CollectResultHandler<>();
     try (SqlSession session = factory.openSession(false)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
-      sm.processAll(collector);
+      sm.processCatalogue(Datasets.DRAFT_COL, collector);
     }
     collector.getResults().sort(SECTOR_ORDER);
     int failed = 0;

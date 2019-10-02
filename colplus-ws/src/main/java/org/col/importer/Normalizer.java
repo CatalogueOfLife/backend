@@ -2,13 +2,11 @@ package org.col.importer;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
@@ -588,7 +586,7 @@ public class Normalizer implements Callable<Boolean> {
             // we dont want to apply a contradicting classification with the same name
             Node p = Traversals.parentOf(n);
             Node p2 = Traversals.parentWithRankOf(n, parentRank);
-            if ((p != null && p.equals(parent)) || (p2 != null && p2.equals(parent))) {
+            if ((p != null && p.equals(parent)) || (p2 != null && p2.equals(parent) && mappedRanksInBetween(n, p2).isEmpty())) {
               found = true;
             } else if (p == null) {
               // if the matched node has not yet been denormalized we need to compare the classification props
@@ -622,6 +620,14 @@ public class Normalizer implements Callable<Boolean> {
     }
     // finally apply lowest parent to initial node
     store.assignParent(parent, taxon.usageNode);
+  }
+  
+  private Set<Rank> mappedRanksInBetween(Node n, Node n2){
+    return Traversals.parentsUntil(n, n2).stream()
+        .map(NeoProperties::getRankedUsage)
+        .map(ru -> ru.rank)
+        .filter(r -> meta.getDenormedRanksMapped().contains(r))
+        .collect(Collectors.toSet());
   }
   
   /**

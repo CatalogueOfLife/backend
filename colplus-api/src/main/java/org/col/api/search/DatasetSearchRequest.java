@@ -59,10 +59,15 @@ public class DatasetSearchRequest {
   }
   
   public boolean isEmpty() {
-    return StringUtils.isBlank(q) && code == null &&
+    return StringUtils.isBlank(q) &&
+        code == null &&
         contributesTo == null &&
-        format == null && type == null && sortBy == null &&
-        modified == null && created == null && released == null;
+        format == null &&
+        type == null &&
+        sortBy == null &&
+        modified == null &&
+        created == null &&
+        released == null;
   }
   
   public String getQ() {

@@ -21,9 +21,9 @@ public class SimpleName implements Comparable<SimpleName> {
 
   static final Comparator<SimpleName> NATURAL_ORDER =
       Comparator.comparing(SimpleName::getRank, nullSafeEnumComparator)
-          .thenComparing(Comparator.comparing(SimpleName::getName, nullSafeStringComparator))
-          .thenComparing(Comparator.comparing(SimpleName::getAuthorship, nullSafeStringComparator))
-          .thenComparing(Comparator.comparing(SimpleName::getStatus, nullSafeEnumComparator));
+          .thenComparing(SimpleName::getName, nullSafeStringComparator)
+          .thenComparing(SimpleName::getAuthorship, nullSafeStringComparator)
+          .thenComparing(SimpleName::getStatus, nullSafeEnumComparator);
 
   public static SimpleName of(Taxon t) {
     Name n = t.getName();

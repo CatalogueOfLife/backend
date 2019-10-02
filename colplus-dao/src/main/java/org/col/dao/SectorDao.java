@@ -12,13 +12,12 @@ import org.col.api.model.DatasetID;
 import org.col.api.model.Page;
 import org.col.api.model.Sector;
 import org.col.api.model.Taxon;
-import org.col.api.vocab.Datasets;
 import org.col.db.mapper.SectorMapper;
 import org.col.db.mapper.TaxonMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SectorDao extends GlobalEntityDao<Sector, SectorMapper> {
+public class SectorDao extends CatalogueEntityDao<Sector, SectorMapper> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorDao.class);
@@ -37,15 +36,15 @@ public class SectorDao extends GlobalEntityDao<Sector, SectorMapper> {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
   
       // reload full source and target
-      Taxon subject = tm.get(obj.getDatasetKey(), obj.getSubject().getId());
+      Taxon subject = tm.get(obj.getSubjectDatasetKey(), obj.getSubject().getId());
       if (subject == null) {
-        throw new IllegalArgumentException("subject ID " + obj.getSubject().getId() + " not existing in dataset " + obj.getDatasetKey());
+        throw new IllegalArgumentException("subject ID " + obj.getSubject().getId() + " not existing in dataset " + obj.getSubjectDatasetKey());
       }
       obj.setSubject(subject.toSimpleName());
   
-      Taxon target  = tm.get(Datasets.DRAFT_COL, obj.getTarget().getId());
+      Taxon target  = tm.get(obj.getDatasetKey(), obj.getTarget().getId());
       if (target == null) {
-        throw new IllegalArgumentException("target ID " + obj.getTarget().getId() + " not existing in draft CoL");
+        throw new IllegalArgumentException("target ID " + obj.getTarget().getId() + " not existing in catalogue " + obj.getDatasetKey());
       }
       obj.setTarget(target.toSimpleName());
       
@@ -61,7 +60,7 @@ public class SectorDao extends GlobalEntityDao<Sector, SectorMapper> {
         toCopy.add(subject);
       } else {
         // several taxa in MERGE mode
-        toCopy = tm.children(obj.getDatasetKey(), obj.getSubject().getId(), new Page());
+        toCopy = tm.children(obj.getSubjectDatasetKey(), obj.getSubject().getId(), new Page());
       }
   
       for (Taxon t : toCopy) {
@@ -93,7 +92,7 @@ public class SectorDao extends GlobalEntityDao<Sector, SectorMapper> {
   private void incSectorCounts(SqlSession session, Sector s, int delta) {
     if (s != null && s.getTarget() != null) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      tm.incDatasetSectorCount(Datasets.DRAFT_COL, s.getTarget().getId(), s.getDatasetKey(), delta);
+      tm.incDatasetSectorCount(s.getDatasetKey(), s.getTarget().getId(), s.getSubjectDatasetKey(), delta);
     }
   }
 }

@@ -8,8 +8,11 @@ import java.sql.SQLException;
 import java.util.List;
 
 import com.google.common.base.Charsets;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
+import org.col.api.model.EditorialDecision;
+import org.col.api.model.Name;
 import org.col.api.model.NameUsageBase;
 import org.col.api.model.Sector;
 import org.col.api.model.SimpleName;
@@ -20,6 +23,7 @@ import org.col.dao.DatasetImportDao;
 import org.col.dao.NamesTreeDao;
 import org.col.dao.TreeRepoRule;
 import org.col.db.PgSetupRule;
+import org.col.db.mapper.DecisionMapper;
 import org.col.db.mapper.NameUsageMapper;
 import org.col.db.mapper.SectorMapper;
 import org.col.db.mapper.TaxonMapper;
@@ -27,15 +31,20 @@ import org.col.db.mapper.TestDataRule;
 import org.col.db.tree.TextTreePrinter;
 import org.col.es.name.index.NameUsageIndexService;
 import org.col.importer.PgImportRule;
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * Before we start any test we prepare the db with imports that can be reused across tests later on.
@@ -50,7 +59,7 @@ public class SectorSyncIT {
         DataFormat.COLDP, 0,
       NomCode.ZOOLOGICAL,
         DataFormat.ACEF,  5, 6, 11,
-        DataFormat.COLDP, 2,
+        DataFormat.COLDP, 2, 4,
       NomCode.VIRUS,
         DataFormat.ACEF,  14
   );
@@ -89,8 +98,12 @@ public class SectorSyncIT {
   }
   
   NameUsageBase getByID(String id) {
+    return getByID(Datasets.DRAFT_COL, id);
+  }
+  
+  NameUsageBase getByID(int datasetKey, String id) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      return session.getMapper(TaxonMapper.class).get(Datasets.DRAFT_COL, id);
+      return session.getMapper(TaxonMapper.class).get(datasetKey, id);
     }
   }
   
@@ -106,7 +119,8 @@ public class SectorSyncIT {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       Sector sector = new Sector();
       sector.setMode(mode);
-      sector.setDatasetKey(datasetKey);
+      sector.setDatasetKey(Datasets.DRAFT_COL);
+      sector.setSubjectDatasetKey(datasetKey);
       sector.setSubject(src);
       sector.setTarget(target);
       sector.applyUser(TestDataRule.TEST_USER);
@@ -114,10 +128,24 @@ public class SectorSyncIT {
       return sector.getKey();
     }
   }
+  
+  static EditorialDecision createDecision(int datasetKey, SimpleName src, EditorialDecision.Mode mode, Name name) {
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      EditorialDecision ed = new EditorialDecision();
+      ed.setMode(mode);
+      ed.setDatasetKey(Datasets.DRAFT_COL);
+      ed.setSubjectDatasetKey(datasetKey);
+      ed.setSubject(src);
+      ed.setName(name);
+      ed.applyUser(TestDataRule.TEST_USER);
+      session.getMapper(DecisionMapper.class).create(ed);
+      return ed;
+    }
+  }
     
   void syncAll() throws IOException {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      for (Sector s : session.getMapper(SectorMapper.class).list(null)) {
+      for (Sector s : session.getMapper(SectorMapper.class).list(Datasets.DRAFT_COL, null)) {
         sync(s);
       }
     }
@@ -190,6 +218,37 @@ public class SectorSyncIT {
     assertEquals(Origin.SOURCE, vogelii.getOrigin());
   }
   
+  /**
+   * https://github.com/Sp2000/colplus-backend/issues/493
+   */
+  @Test
+  @Ignore
+  public void testDecisions() throws Exception {
+    print(Datasets.DRAFT_COL);
+    print(datasetKey(4, DataFormat.COLDP));
+    final int d4key = datasetKey(4, DataFormat.COLDP);
+  
+    NameUsageBase coleoptera = getByName(d4key, Rank.ORDER, "Coleoptera");
+    NameUsageBase insecta = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
+    createSector(Sector.Mode.ATTACH, coleoptera, insecta);
+    
+    NameUsageBase src = getByID(d4key, "12");
+    createDecision(d4key, simple(src), EditorialDecision.Mode.BLOCK, null);
+  
+    src = getByID(d4key, "11");
+    Name newName = new Name();
+    newName.setScientificName("Euplectus cavicollis");
+    newName.setAuthorship("LeConte, J. L., 1878");
+    createDecision(d4key, simple(src), EditorialDecision.Mode.UPDATE, newName);
+    
+    syncAll();
+    assertTree("cat4.txt");
+  
+    NameUsageBase eucav = getByName(Datasets.DRAFT_COL, Rank.SPECIES, "Euplectus cavicollis");
+    assertEquals("Euplectus cavicollis", eucav.getName().getScientificName());
+    assertEquals(NameType.SCIENTIFIC, eucav.getName().getType());
+  }
+
   /**
    * Nested sectors
    * see https://github.com/Sp2000/colplus-backend/issues/438

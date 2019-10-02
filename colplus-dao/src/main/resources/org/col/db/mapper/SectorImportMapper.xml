@@ -8,6 +8,7 @@
         si.type,
         si.sector_key,
         si.attempt,
+        si.warnings,
         <include refid="org.col.db.mapper.DatasetImportMapper.metricsCols"/>
     </sql>
 
@@ -15,6 +16,7 @@
         type,
         sector_key,
         attempt,
+        warnings,
         <include refid="org.col.db.mapper.DatasetImportMapper.metricsCols"/>
     </sql>
 
@@ -22,12 +24,13 @@
         #{imp.type},
         #{imp.sectorKey},
         #{imp.attempt},
+        #{imp.warnings, typeHandler=org.col.db.type2.StringCollectionArrayTypeHandler},
         <include refid="org.col.db.mapper.DatasetImportMapper.metricsProps"/>
     </sql>
 
     <sql id="FROM">
       sector_import si
-        <if test="datasetKey != null">
+        <if test="subjectDatasetKey != null or datasetKey != null">
             JOIN sector s ON s.key=si.sector_key
         </if>
     </sql>
@@ -39,6 +42,9 @@
             </if>
             <if test="datasetKey != null">
                 AND s.dataset_key = #{datasetKey}
+            </if>
+            <if test="subjectDatasetKey != null">
+                AND s.subject_dataset_key = #{subjectDatasetKey}
             </if>
             <if test="states != null &amp;&amp; !states.isEmpty()">
                 AND si.state IN
@@ -52,6 +58,7 @@
     <!--  A mapping to Name, mostly auto mapped -->
     <resultMap id="sectorImportResultMap" type="SectorImport" autoMapping="true">
         <result property="issueCount" column="issue_count" typeHandler="org.col.db.type2.HstoreIssueCountTypeHandler"/>
+        <result property="warnings" column="warnings" typeHandler="org.col.db.type2.StringCollectionArrayTypeHandler"/>
         <result property="names" column="names" typeHandler="org.col.db.type2.StringSetTypeHandler"/>
     </resultMap>
 

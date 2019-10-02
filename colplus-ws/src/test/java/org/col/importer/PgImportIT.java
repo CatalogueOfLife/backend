@@ -30,6 +30,7 @@ import org.col.importer.neo.model.RankedName;
 import org.col.matching.NameIndexFactory;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.UnknownTerm;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
 
@@ -149,7 +150,6 @@ public class PgImportIT {
   }
   
   
-  
   @Test
   public void testPublishedIn() throws Exception {
     normalizeAndImport(DWCA, 0);
@@ -158,7 +158,7 @@ public class PgImportIT {
     
     Reference pubIn = rdao.get(dataset.getKey(), trametes_modesta.getPublishedInId(), trametes_modesta.getPublishedInPage());
     assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCitation());
-    assertEquals(".neodb.aW6r", pubIn.getId());
+    assertEquals(".neodb.3", pubIn.getId());
   }
   
   @Test
@@ -413,8 +413,7 @@ public class PgImportIT {
       assertEquals(TaxonomicStatus.ACCEPTED, t.getStatus());
       assertEquals("Tester", t.getAccordingTo());
       assertEquals("2008-01-01", t.getAccordingToDate().toString());
-      assertFalse(t.isFossil());
-      assertTrue(t.isRecent());
+      assertFalse(t.isExtinct());
       assertTrue(t.getLifezones().isEmpty());
       assertNull(t.getRemarks());
       assertNull(t.getWebpage());
@@ -580,7 +579,7 @@ public class PgImportIT {
       
       // https://github.com/Sp2000/colplus-backend/issues/237
       VerbatimRecordMapper vm = session.getMapper(VerbatimRecordMapper.class);
-      for (VerbatimRecord v : vm.list(dataset.getKey(), null, null, LogicalOperator.AND, null, new Page(0, 100))) {
+      for (VerbatimRecord v : vm.list(dataset.getKey(), null, null, LogicalOperator.AND, null, null, new Page(0, 100))) {
         for (Term t : v.terms()) {
           assertFalse(t instanceof UnknownTerm);
         }
@@ -638,15 +637,25 @@ public class PgImportIT {
     normalizeAndImport(ACEF, 20);
   }
   
+  /**
+   * https://github.com/Sp2000/colplus-backend/issues/477
+   */
+  @Test
+  public void acefSuperfam() throws Exception {
+    normalizeAndImport(ACEF, 21);
+  }
+  
   @Test
   @Ignore("manual test for debugging entire imports")
   public void testExternalManually() throws Exception {
     // comment out if name matching is needed
     dataset.setContributesTo(null);
+    dataset.setCode(NomCode.BOTANICAL);
+    dataset.setType(DatasetType.NOMENCLATURAL);
     
     //normalizeAndImport(URI.create("https://github.com/mdoering/data-ina/archive/master.zip"), COLDP);
     //normalizeAndImport(URI.create("http://data.canadensys.net/ipt/archive.do?r=vascan"), DataFormat.DWCA);
-    normalizeAndImportArchive(new File("/Users/markus/code/col+/colplus-repo/ACEF/14.tar.gz"), ACEF);
+    normalizeAndImportArchive(new File("/Users/markus/Downloads/28.tar.gz"), ACEF);
   
     //normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/higher-classification.dwca.zip"), DWCA);
     //normalizeAndImportFolder(new File("/Users/markus/code/col+/data-staphbase/coldp"), COLDP);

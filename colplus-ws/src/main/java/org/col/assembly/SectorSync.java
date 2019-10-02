@@ -10,12 +10,28 @@ import java.util.stream.Collectors;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.api.model.*;
-import org.col.api.vocab.*;
+import org.col.api.model.ColUser;
+import org.col.api.model.EditorialDecision;
+import org.col.api.model.Name;
+import org.col.api.model.Sector;
+import org.col.api.model.SectorImport;
+import org.col.api.model.Taxon;
+import org.col.api.vocab.Gazetteer;
+import org.col.api.vocab.Issue;
+import org.col.api.vocab.MediaType;
+import org.col.api.vocab.NomRelType;
+import org.col.api.vocab.NomStatus;
+import org.col.api.vocab.Origin;
+import org.col.api.vocab.TaxonomicStatus;
 import org.col.dao.DatasetImportDao;
 import org.col.dao.MatchingDao;
 import org.col.dao.NamesTreeDao;
-import org.col.db.mapper.*;
+import org.col.db.mapper.NameMapper;
+import org.col.db.mapper.NameUsageMapper;
+import org.col.db.mapper.ReferenceMapper;
+import org.col.db.mapper.SectorImportMapper;
+import org.col.db.mapper.SectorMapper;
+import org.col.db.mapper.TaxonMapper;
 import org.col.es.name.index.NameUsageIndexService;
 import org.gbif.nameparser.api.NameType;
 import org.slf4j.Logger;
@@ -94,17 +110,17 @@ public class SectorSync extends SectorRunnable {
       deleteOld();
       checkIfCancelled();
   
-      state.setState( SectorImport.State.COPYING);
+      state.setState(SectorImport.State.COPYING);
       processTree();
       checkIfCancelled();
-      
+  
     } finally {
       // run these even if we get errors in the main tree copying
       state.setState( SectorImport.State.RELINKING);
       rematchForeignChildren();
       relinkAttachedSectors();
       state.setState( SectorImport.State.INDEXING);
-      indexService.indexSector(sector.getKey());
+      indexService.indexSector(sector);
     }
   
     state.setState( SectorImport.State.FINISHED);

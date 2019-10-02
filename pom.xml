@@ -57,7 +57,6 @@
         <fastutil.version>8.3.0</fastutil.version>
         <gbif-api.version>0.83</gbif-api.version>
         <gbif-parser.version>0.42</gbif-parser.version>
-        <hashids.version>1.0.3</hashids.version>
         <hikaricp.version>3.3.1</hikaricp.version>
         <hk2.version>2.5.0-b32</hk2.version>
         <icu4j.version>64.2</icu4j.version>
@@ -72,7 +71,7 @@
         <mapdb.version>3.0.5</mapdb.version>
         <mockito.version>2.12.0</mockito.version>
         <mybatis.version>3.5.2</mybatis.version>
-        <name-parser.version>3.4.0-SNAPSHOT</name-parser.version>
+        <name-parser.version>3.4.2-SNAPSHOT</name-parser.version>
         <neo4j-algorithms.version>3.4.0.0</neo4j-algorithms.version>
         <neo4j.version>3.4.14</neo4j.version>
         <postgresql.version>42.2.5</postgresql.version>
@@ -501,11 +500,6 @@
                 <groupId>org.imgscalr</groupId>
                 <artifactId>imgscalr-lib</artifactId>
                 <version>${imgscalr.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.hashids</groupId>
-                <artifactId>hashids</artifactId>
-                <version>${hashids.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.univocity</groupId>

@@ -30,19 +30,19 @@ public class SectorDaoTest extends DaoTestBase {
   
     SectorDao dao = new SectorDao(factory());
     Sector s = SectorMapperTest.create();
-    s.setDatasetKey(11);
+    s.setSubjectDatasetKey(11);
     s.getSubject().setId("root-1");
     s.getTarget().setId("t4");
     dao.create(s, user);
   
     s = SectorMapperTest.create();
-    s.setDatasetKey(12);
+    s.setSubjectDatasetKey(12);
     s.getSubject().setId("t2");
     s.getTarget().setId("t5");
     dao.create(s, user);
   
     s = SectorMapperTest.create();
-    s.setDatasetKey(12);
+    s.setSubjectDatasetKey(12);
     s.getSubject().setId("t3");
     s.getTarget().setId("t3");
     dao.create(s, user);

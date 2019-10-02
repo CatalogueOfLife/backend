@@ -5,6 +5,7 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
+ * ThreadPool with a priority blocking queue which is partially exposed through this class.
  * @param <R> the single supported type of runnable that can be executed and kept in a priority queue.
  */
 public class PBQThreadPoolExecutor<R extends Runnable> {

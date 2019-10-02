@@ -3,9 +3,12 @@ package org.col.importer.acef;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import org.col.importer.NormalizationFailedException;
+import jersey.repackaged.com.google.common.collect.ImmutableMap;
 import org.col.csv.CsvReader;
+import org.col.importer.NormalizationFailedException;
 import org.gbif.dwc.terms.AcefTerm;
+import org.gbif.dwc.terms.Term;
+import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +21,16 @@ public class AcefReader extends CsvReader {
   private AcefReader(Path folder) throws IOException {
     super(folder, "acef", "acef");
     validate();
+    detectMappedClassification(AcefTerm.AcceptedSpecies, ImmutableMap.<Term, Rank>builder()
+        .put(AcefTerm.Kingdom, Rank.KINGDOM)
+        .put(AcefTerm.Phylum, Rank.PHYLUM)
+        .put(AcefTerm.Class, Rank.CLASS)
+        .put(AcefTerm.Order, Rank.ORDER)
+        .put(AcefTerm.Superfamily, Rank.SUPERFAMILY)
+        .put(AcefTerm.Family, Rank.FAMILY)
+        .put(AcefTerm.Genus, Rank.GENUS)
+        .build()
+    );
   }
   
   public static AcefReader from(Path folder) throws IOException {

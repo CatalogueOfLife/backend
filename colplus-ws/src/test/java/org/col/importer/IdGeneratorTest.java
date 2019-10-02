@@ -11,16 +11,16 @@ public class IdGeneratorTest {
   @Test
   public void prefixed() {
     IdGenerator gen = new IdGenerator("NI");
-    assertEquals("NIaW6r", gen.next());
+    assertEquals("NI3", gen.next());
   }
   
   @Test
   public void excludeIds() {
     IdGenerator gen = new IdGenerator().setPrefix(Arrays.stream(new String[]{"ice", "12", "214", "-8", "a"}));
-    assertEquals("xaW6r", gen.next());
+    assertEquals("x3", gen.next());
     
     gen = new IdGenerator().setPrefix(Arrays.stream(new String[]{"xice", "xx12", "214", "-8", "a", "0321"}));
-    assertEquals("x0aW6r", gen.next());
+    assertEquals("x03", gen.next());
     
   }
   

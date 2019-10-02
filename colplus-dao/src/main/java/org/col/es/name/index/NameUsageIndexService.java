@@ -2,6 +2,7 @@ package org.col.es.name.index;
 
 import java.util.Collection;
 
+import org.col.api.model.Sector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +13,7 @@ public interface NameUsageIndexService {
   /**
    * Indexes all CoL usages from an entire sector from postgres into ElasticSearch using the bulk API.
    */
-  void indexSector(int sectorKey);
+  void indexSector(Sector sector);
 
   /**
    * Removed all CoL usage docs of the given sector from ElasticSearch, i.e. taxa and synonyms.
@@ -28,13 +29,6 @@ public interface NameUsageIndexService {
    * Re-indexes all datasets from scratch
    */
   void indexAll();
-
-  /**
-   * Indexes given taxa from the same dataset from postgres into ElasticSearch. Only use this method if you are <i>sure</i> the provided ids
-   * don't exist yet in the index, otherwise you will create functionally duplicate documents. Use {@link #sync(int, Collection) sync} to
-   * sync Elasticsearch to Postgres for the provided taxon ids.
-   */
-  void indexTaxa(int datasetKey, Collection<String> taxonIds);
 
   /**
    * Performs a sync between Postgres and Elasticsearch for the provided taxon ids.
@@ -57,8 +51,8 @@ public interface NameUsageIndexService {
     return new NameUsageIndexService() {
 
       @Override
-      public void indexSector(int sectorKey) {
-        LOG.info("No Elastic Search configured, pass through sector {}", sectorKey);
+      public void indexSector(Sector sector) {
+        LOG.info("No Elastic Search configured, pass through sector {}", sector);
       }
 
       @Override
@@ -69,14 +63,6 @@ public interface NameUsageIndexService {
       @Override
       public void indexDataset(int datasetKey) {
         LOG.info("No Elastic Search configured, pass through dataset {}", datasetKey);
-      }
-
-      /**
-       * Indexes all CoL usages from an entire sector from postgres into ElasticSearch using the bulk API.
-       */
-      @Override
-      public void indexTaxa(int datasetKey, Collection<String> taxonIds) {
-        LOG.info("No Elastic Search configured. Passing through taxa {}", taxonIds);
       }
 
       @Override
@@ -91,7 +77,7 @@ public interface NameUsageIndexService {
 
       @Override
       public void updateClassification(int datasetKey, String rootTaxonId) {
-        LOG.info("No Elastic Search configured, pass through taxon {}", rootTaxonId);
+        LOG.info("No Elastic Search configured. Passing through");
       }
 
     };

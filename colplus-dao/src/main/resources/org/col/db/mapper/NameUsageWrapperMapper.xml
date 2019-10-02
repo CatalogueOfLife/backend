@@ -10,9 +10,8 @@
 
 
     <resultMap id="usageResultMap" type="NameUsageWrapper" autoMapping="true" extends="issueResultMap">
-        <id column="id" />
+        <id column="uid" />
         <association property="usage">
-            <id property="id" column="id" />
             <discriminator column="is_synonym" javaType="boolean">
                 <case value="false" resultType="Taxon"   resultMap="org.col.db.mapper.TaxonMapper.taxonResultMap"/>
                 <case value="true"  resultType="Synonym" resultMap="org.col.db.mapper.SynonymMapper.synonymResultMap"/>
@@ -24,15 +23,13 @@
     </resultMap>
 
     <resultMap id="taxonWithClassificationResultMap" type="NameUsageWrapper" autoMapping="true" extends="usageResultMap">
-        <result property="classificationIds" column="classificationIds" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
-        <result property="classificationNames" column="classificationNames" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
-        <result property="classificationRanks" column="classificationRanks" typeHandler="org.col.db.type.RankArrayTypeHandler"/>
+        <id property="id" column="uid" />
+        <result property="classification" column="classification" typeHandler="org.col.db.type2.SimpleNameArrayTypeHandler" />
     </resultMap>
 
-    <resultMap id="classificationResultMap" type="NameUsageWrapper">
-        <result property="classificationIds" column="classificationIds" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
-        <result property="classificationNames" column="classificationNames" typeHandler="org.col.db.type.StringArrayTypeHandler"/>
-        <result property="classificationRanks" column="classificationRanks" typeHandler="org.col.db.type.RankArrayTypeHandler"/>
+    <resultMap id="classificationResultMap" type="SimpleNameClassification">
+        <id property="id" column="uid"/>
+        <result property="classification" column="classification" typeHandler="org.col.db.type2.SimpleNameArrayTypeHandler" />
     </resultMap>
 
     <resultMap id="taxonGetClassificationResultMap" type="NameUsageWrapper" autoMapping="true" extends="usageResultMap">
@@ -49,6 +46,15 @@
     </resultMap>
 
 
+    <sql id="selectClassificationAppend">
+        u.id,
+        array_append(tree.classification, (u.id,n.rank,n.scientific_name)::simple_name)
+    </sql>
+
+    <sql id="fromNameUsage">
+        FROM name_usage_${datasetKey} u JOIN name_${datasetKey} n ON u.name_id=n.id
+    </sql>
+
     <sql id="taxonSelectFrom">
         <include refid="org.col.db.mapper.NameUsageMapper.SELECT" />,
         vbn.issues || vbt.issues AS issues,
@@ -64,59 +70,49 @@
             LEFT JOIN decision ed ON ed.subject_id=u.id AND ed.dataset_key=#{datasetKey}
         </if>
     </sql>
-    <!--  select all name usages of a dataset
-        Using a optimal fetchsize to enable low memory footprint while keeping good performance using a resulthandler
+    <!--
+    select all name usages of a dataset.
     -->
     <select id="processDatasetUsages" parameterType="map" resultMap="taxonWithClassificationResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
         WITH RECURSIVE tree AS(
-            SELECT
-                ARRAY[u.id]::text[] AS classificationIds,
-                ARRAY[n.rank]::rank[] AS classificationRanks,
-                ARRAY[n.scientific_name]::text[] AS classificationNames,
+            SELECT u.id AS uid, classification_sn(#{datasetKey}, u.id, true) AS classification,
             <include refid="taxonSelectFrom" />
 	        WHERE u.parent_id IS NULL AND NOT u.is_synonym
-	        <if test="sectorKey != null">
-	        	AND u.sector_key = #{sectorKey}
-    	    </if>
-	        
-            UNION
-
+        UNION ALL
             SELECT
-                array_append(tree.classificationIds, u.id),
-                array_append(tree.classificationRanks, n.rank),
-                array_append(tree.classificationNames, n.scientific_name),
+                <include refid="selectClassificationAppend"/>,
             <include refid="taxonSelectFrom" />
-                JOIN tree ON (tree.id = u.parent_id)
-		        <if test="sectorKey != null">
-		        	WHERE u.sector_key = #{sectorKey}
-	    	    </if>
+            JOIN tree ON (tree.uid = u.parent_id)
 	   )
 	   SELECT * FROM tree
     </select>
 
-    <select id="processTree" parameterType="map" resultMap="classificationResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">   
+    <select id="processSectorUsages" parameterType="map" resultMap="taxonWithClassificationResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+        <bind name="datasetKey" value="3"/>
         WITH RECURSIVE tree AS(
+            SELECT u.id AS uid, classification_sn(#{datasetKey}, u.id, true) AS classification,
+            <include refid="taxonSelectFrom" />
+            WHERE u.id = #{usageId}
+        UNION ALL
             SELECT
-            	u.id AS id,
-                ARRAY[u.id]::text[] AS classificationIds,
-                ARRAY[n.rank]::rank[] AS classificationRanks,
-                ARRAY[n.scientific_name]::text[] AS classificationNames
-		    FROM name_usage_${datasetKey} u
-            JOIN name_${datasetKey} n ON u.name_id=n.id
-	        WHERE u.id = #{usageId} AND u.dataset_key = #{datasetKey}
-	        
-            UNION
+            <include refid="selectClassificationAppend"/>,
+            <include refid="taxonSelectFrom" />
+            JOIN tree ON (tree.uid = u.parent_id)
+            WHERE u.sector_key = #{sectorKey}
+        )
+        SELECT * FROM tree
+    </select>
 
+    <select id="processTree" parameterType="map" resultMap="classificationResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+        WITH RECURSIVE tree AS(
+            SELECT #{usageId} AS uid, classification_sn(#{datasetKey}, #{usageId}, true) AS classification
+        UNION ALL
             SELECT
-            	u.id,
-                array_append(tree.classificationIds, u.id),
-                array_append(tree.classificationRanks, n.rank),
-                array_append(tree.classificationNames, n.scientific_name)
-		    FROM name_usage_${datasetKey} u
-            JOIN name_${datasetKey} n ON u.name_id=n.id
-            JOIN tree ON (tree.id = u.parent_id)
+                <include refid="selectClassificationAppend"/>
+            <include refid="fromNameUsage"/>
+                JOIN tree ON (tree.uid = u.parent_id)
 	   )
-	   SELECT * FROM tree
+       SELECT * FROM tree
     </select>
 
     <select id="processDatasetBareNames" parameterType="map" resultMap="bareNameResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">

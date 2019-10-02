@@ -1,5 +1,7 @@
 package org.col.importer.neo.traverse;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.col.importer.neo.model.NeoProperties;
@@ -173,5 +175,22 @@ public class Traversals {
       }
     }
     return null;
+  }
+  
+  /**
+   * List all parents or until a given start node is reached, excluding both start and end node.
+   */
+  public static List<Node> parentsUntil(Node start, Node end) {
+    List<Node> nodes = new ArrayList<>();
+    try (ResourceIterator<Node> parents = Traversals.PARENTS.traverse(start).nodes().iterator()) {
+      while (parents.hasNext()) {
+        Node p = parents.next();
+        if (p.equals(end)) {
+          break;
+        }
+        nodes.add(p);
+      }
+    }
+    return nodes;
   }
 }

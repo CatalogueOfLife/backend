@@ -38,7 +38,7 @@ public interface DatasetPartitionMapper {
   default void delete(int key) {
     Lists.reverse(TABLES).forEach(t -> deleteTable(t, key));
   }
-  
+ 
   void deleteTable(@Param("table") String table, @Param("key") int key);
   
   /**

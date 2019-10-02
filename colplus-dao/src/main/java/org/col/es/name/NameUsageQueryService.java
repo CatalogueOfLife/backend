@@ -11,7 +11,7 @@ import org.col.es.EsException;
 import org.col.es.EsModule;
 import org.col.es.EsUtil;
 import org.col.es.model.NameUsageDocument;
-import org.col.es.name.search.NameUsageSearchService;
+import org.col.es.name.search.NameUsageSearchServiceEs;
 import org.col.es.query.EsSearchRequest;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
@@ -23,16 +23,16 @@ import static org.col.es.EsConfig.DEFAULT_TYPE_NAME;
 
 /**
  * Base class of both the search and the suggest service, geared towards retrieving and returning raw documents. It is
- * used internally by the indexing service.
+ * used stand-alone internally by the indexing service.
  */
-public class NameUsageService {
+public class NameUsageQueryService {
 
-  private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchService.class);
+  private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchServiceEs.class);
 
   protected final String index;
   protected final RestClient client;
 
-  public NameUsageService(String indexName, RestClient client) {
+  public NameUsageQueryService(String indexName, RestClient client) {
     this.index = indexName;
     this.client = client;
   }

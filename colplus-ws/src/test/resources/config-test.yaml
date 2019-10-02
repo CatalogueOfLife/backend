@@ -37,7 +37,6 @@ es:
   hosts:
   ports: 9200
   nameUsage:
-    modelClass: org.col.es.model.EsNameUsage
 auth:
   type: map
   users:

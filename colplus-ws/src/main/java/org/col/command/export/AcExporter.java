@@ -98,6 +98,8 @@ public class AcExporter {
     c.createStatement().execute(sqlTable);
     PreparedStatement pst = c.prepareStatement("INSERT INTO __ranks (key, marker) values (?::rank, ?)");
     for (Rank r : Rank.values()) {
+      // exclude infrasp., see https://github.com/Sp2000/colplus-backend/issues/478
+      if (r.isUncomparable()) continue;
       pst.setString(1, r.name().toLowerCase());
       pst.setString(2, r.getMarker());
       pst.execute();

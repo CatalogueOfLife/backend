@@ -133,7 +133,7 @@ public class CatCopy {
     return newKey(r);
   }
   
-  private static <T extends VerbatimEntity & DatasetEntity> T newKey(T e) {
+  private static <T extends VerbatimEntity & DatasetIDEntity> T newKey(T e) {
     e.setVerbatimKey(null);
     e.setId(UUID.randomUUID().toString());
     return e;

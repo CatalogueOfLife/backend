@@ -10,6 +10,7 @@ import org.col.api.model.Page;
 import org.col.api.vocab.ImportState;
 import org.col.db.type2.IntCount;
 import org.col.db.type2.StringCount;
+import org.gbif.dwc.terms.Term;
 
 /**
  * The MyBatis mapper interface for DatasetImport.
@@ -64,6 +65,7 @@ public interface DatasetImportMapper {
   List<StringCount> countNamesByRank(@Param("key") int datasetKey);
   List<StringCount> countTaxaByRank(@Param("key") int datasetKey);
   List<StringCount> countVerbatimByType(@Param("key") int datasetKey);
+  List<StringCount> countVerbatimTerms(@Param("key") int datasetKey, @Param("rowType") Term rowType);
   
   List<StringCount> countVernacularsByLanguage(@Param("key") int datasetKey);
   

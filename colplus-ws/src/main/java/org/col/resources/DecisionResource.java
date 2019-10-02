@@ -1,6 +1,8 @@
 package org.col.resources;
 
 import java.util.List;
+
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -20,7 +22,7 @@ import org.slf4j.LoggerFactory;
 @Path("/decision")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class DecisionResource extends GlobalEntityResource<EditorialDecision> {
+public class DecisionResource extends CatalogueEntityResource<EditorialDecision> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DecisionResource.class);
@@ -30,15 +32,20 @@ public class DecisionResource extends GlobalEntityResource<EditorialDecision> {
   }
   
   @GET
-  public List<EditorialDecision> list(@Context SqlSession session, @QueryParam("datasetKey") Integer datasetKey, @QueryParam("id") String id) {
-    return session.getMapper(DecisionMapper.class).listByDataset(datasetKey, id);
+  public List<EditorialDecision> list(@Context SqlSession session,
+                                      @NotNull @QueryParam("datasetKey") Integer datasetKey,
+                                      @QueryParam("subjectDatasetKey") Integer subjectDatasetKey,
+                                      @QueryParam("id") String id) {
+    return session.getMapper(DecisionMapper.class).listBySubjectDataset(datasetKey, subjectDatasetKey, id);
   }
   
   @GET
   @Path("/broken")
-  public List<EditorialDecision> broken(@Context SqlSession session, @QueryParam("datasetKey") Integer datasetKey) {
+  public List<EditorialDecision> broken(@Context SqlSession session,
+                                        @NotNull @QueryParam("datasetKey") Integer datasetKey,
+                                        @QueryParam("subjectDatasetKey") Integer subjectDatasetKey) {
     DecisionMapper mapper = session.getMapper(DecisionMapper.class);
-    return mapper.subjectBroken(datasetKey);
+    return mapper.subjectBroken(datasetKey, subjectDatasetKey);
   }
   
 }

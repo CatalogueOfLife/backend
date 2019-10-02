@@ -20,7 +20,7 @@ import org.neo4j.graphdb.Node;
  * <p />
  * The modified flag can be used to (manually) track if an instance has changed and needs to be persisted.
  */
-public class NeoUsage implements NeoNode, DatasetEntity, VerbatimEntity {
+public class NeoUsage implements NeoNode, DatasetIDEntity, VerbatimEntity {
   private static final Label[] TAX_LABELS = new Label[]{Labels.USAGE, Labels.TAXON};
   private static final Label[] SYN_LABELS = new Label[]{Labels.USAGE, Labels.SYNONYM};
 

@@ -93,7 +93,7 @@ public class IdentityService {
       cache(user);
       
     } else {
-      LOG.debug("GBIF authentication failed for user {}", username);
+      LOG.debug("Authentication failed for user {}", username);
     }
     return optUser;
   }

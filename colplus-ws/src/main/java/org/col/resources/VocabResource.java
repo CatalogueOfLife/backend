@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.stream.Collectors;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
@@ -15,11 +16,13 @@ import com.google.common.reflect.ClassPath;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.col.api.jackson.PermissiveEnumSerde;
-import org.col.api.model.*;
+import org.col.api.model.ColUser;
+import org.col.api.model.EditorialDecision;
+import org.col.api.model.Sector;
+import org.col.api.model.SectorImport;
 import org.col.api.search.NameSearchParameter;
-import org.col.api.vocab.AreaStandard;
+import org.col.api.vocab.*;
 import org.col.img.ImgConfig;
-import org.col.parser.LanguageParser;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.nameparser.api.Rank;
@@ -32,6 +35,7 @@ public class VocabResource {
   
   private static final Logger LOG = LoggerFactory.getLogger(VocabResource.class);
   private final Map<String, Class<Enum>> vocabs;
+  private final List<String> vocabNames;
   
   public VocabResource() {
     Map<String, Class<Enum>> enums = Maps.newHashMap();
@@ -57,6 +61,13 @@ public class VocabResource {
       LOG.error("Failed to init enum class map", e);
     }
     vocabs = ImmutableMap.copyOf(enums);
+    List<String> names = new ArrayList<>(enums.keySet());
+    names.add("language");
+    names.add("geotime");
+    names.add("terms");
+    names.remove(binaryName(ColDwcTerm.class));
+    Collections.sort(names);
+    vocabNames = ImmutableList.copyOf(names);
   }
   
   private static void add(Map<String, Class<Enum>> enums, Class<?> clazz) {
@@ -69,8 +80,8 @@ public class VocabResource {
   }
   
   @GET
-  public Set<String> list() {
-    return vocabs.keySet();
+  public List<String> list() {
+    return vocabNames;
   }
   
   @GET
@@ -102,15 +113,55 @@ public class VocabResource {
   @GET
   @Path("language")
   public Map<String, String> languageTitles() {
-    return LanguageParser.PARSER.getTitles();
+    return Language.LANGUAGES.values().stream().collect(Collectors.toMap(Language::getCode, Language::getTitle));
   }
   
   @GET
   @Path("language/{code}")
   public String languageTitle(@PathParam("code") String code) {
-    return LanguageParser.PARSER.getTitles().get(code.trim().toLowerCase());
+    return Language.byCode(code).getTitle();
   }
   
+  @GET
+  @Path("geotime")
+  public Collection<GeoTime> geotimes(@QueryParam("type") GeoTimeType type) {
+    if (type == null) {
+      return GeoTime.TIMES.values();
+    }
+    // filter by scale
+    List<GeoTime> times = new ArrayList<>();
+    for (GeoTime gt : GeoTime.TIMES.values()) {
+      if (type.equals(gt.getType())) {
+        times.add(gt);
+      }
+    }
+    Collections.sort(times);
+    return times;
+  }
+  
+  @GET
+  @Path("geotime/{name}")
+  public GeoTime geotime(@PathParam("name") String name) {
+    return GeoTime.byName(name);
+  }
+  
+  @GET
+  @Path("geotime/{name}/children")
+  public List<GeoTime> geotimeChildren(@PathParam("name") String name) {
+    GeoTime time = GeoTime.byName(name);
+    if (time == null) {
+      throw new org.col.api.exception.NotFoundException(GeoTime.class, name);
+    }
+    List<GeoTime> children = new ArrayList<>();
+    for (GeoTime gt : GeoTime.TIMES.values()) {
+      if (gt.getParent() != null && gt.getParent().equals(time)) {
+        children.add(gt);
+      }
+    }
+    Collections.sort(children);
+    return children;
+  }
+
   @GET
   @Path("{name}")
   public List<Map<String, String>> values(@PathParam("name") String name) throws IllegalAccessException {

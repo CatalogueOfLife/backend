@@ -18,10 +18,7 @@ import org.col.importer.neo.model.NeoNameRel;
 import org.col.importer.neo.model.NeoUsage;
 import org.col.importer.neo.model.RelType;
 import org.col.importer.reference.ReferenceFactory;
-import org.col.parser.EnumNote;
-import org.col.parser.NomRelTypeParser;
-import org.col.parser.SafeParser;
-import org.col.parser.TaxonomicStatusParser;
+import org.col.parser.*;
 import org.gbif.dwc.terms.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,9 +74,11 @@ public class ColdpInterpreter extends InterpreterBase {
       t.setAccordingToDate(date(v, Issue.ACCORDING_TO_DATE_INVALID, ColdpTerm.accordingToDate));
       //TODO: ColTerm.accordingToDateID for ORCIDS
       t.setWebpage(uri(v, Issue.URL_INVALID, ColdpTerm.link));
-      t.setFossil(bool(v, Issue.IS_FOSSIL_INVALID, ColdpTerm.fossil));
-      t.setRecent(bool(v, Issue.IS_RECENT_INVALID, ColdpTerm.recent));
+      t.setExtinct(bool(v, Issue.IS_EXTINCT_INVALID, ColdpTerm.extinct));
       t.setRemarks(v.get(ColdpTerm.remarks));
+      // geotime
+      t.setTemporalRangeStart(parse(GeoTimeParser.PARSER, v.get(ColdpTerm.temporalRangeStart)).orNull(Issue.GEOTIME_INVALID, v));
+      t.setTemporalRangeEnd(parse(GeoTimeParser.PARSER, v.get(ColdpTerm.temporalRangeEnd)).orNull(Issue.GEOTIME_INVALID, v));
       // status
       if (Objects.equals(Boolean.TRUE, bool(v, Issue.PROVISIONAL_STATUS_INVALID, ColdpTerm.provisional))) {
         t.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);

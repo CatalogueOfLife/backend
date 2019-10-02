@@ -23,6 +23,7 @@ import com.univocity.parsers.csv.CsvParserSettings;
 import org.apache.commons.text.StringEscapeUtils;
 import org.codehaus.stax2.XMLInputFactory2;
 import org.codehaus.stax2.XMLStreamReader2;
+import org.col.api.datapackage.ColdpTerm;
 import org.col.importer.NormalizationFailedException;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.util.VocabularyUtils;
@@ -32,6 +33,7 @@ import org.col.common.io.PathUtils;
 import org.col.csv.CsvReader;
 import org.col.csv.Schema;
 import org.gbif.dwc.terms.*;
+import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +71,16 @@ public class DwcaReader extends CsvReader {
   
   private DwcaReader(Path folder) throws IOException {
     super(folder, "dwc", "dwca");
+    detectMappedClassification(ColdpTerm.Taxon, jersey.repackaged.com.google.common.collect.ImmutableMap.<Term, Rank>builder()
+        .put(DwcTerm.kingdom, Rank.KINGDOM)
+        .put(DwcTerm.phylum, Rank.PHYLUM)
+        .put(DwcTerm.class_, Rank.CLASS)
+        .put(DwcTerm.order, Rank.ORDER)
+        .put(DwcTerm.family, Rank.FAMILY)
+        .put(DwcTerm.genus, Rank.GENUS)
+        .put(DwcTerm.subgenus, Rank.SUBGENUS)
+        .build()
+    );
   }
   
   public static DwcaReader from(Path folder) throws IOException {

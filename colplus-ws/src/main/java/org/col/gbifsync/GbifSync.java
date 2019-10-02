@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import io.dropwizard.lifecycle.Managed;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.api.vocab.Users;
 import org.col.config.GbifConfig;
 import org.col.api.model.Dataset;
 import org.col.api.model.Page;
@@ -33,10 +34,15 @@ public class GbifSync implements Managed {
   public static final UUID PLAZI_KEY = UUID.fromString("7ce8aef0-9e92-11dc-8738-b8a03c50a862");
   
   private ScheduledExecutorService scheduler;
-  private final GbifSyncJob job;
+  private GbifSyncJob job;
+  private final GbifConfig cfg;
+  private final SqlSessionFactory sessionFactory;
+  private final RxClient<RxCompletionStageInvoker> rxClient;
   
   public GbifSync(GbifConfig gbif, SqlSessionFactory sessionFactory, RxClient<RxCompletionStageInvoker> rxClient) {
-    this.job = new GbifSyncJob(gbif, rxClient, sessionFactory);
+    this.cfg = gbif;
+    this.sessionFactory = sessionFactory;
+    this.rxClient = rxClient;
   }
   
   static class GbifSyncJob implements Runnable {
@@ -107,6 +113,8 @@ public class GbifSync implements Managed {
     private void sync(Dataset gbif, Dataset curr) throws Exception {
       if (curr == null) {
         // create new dataset
+        gbif.setCreatedBy(Users.GBIF_SYNC);
+        gbif.setModifiedBy(Users.GBIF_SYNC);
         mapper.create(gbif);
         created++;
         LOG.info("New dataset {} added from GBIF: {}", gbif.getKey(), gbif.getTitle());
@@ -132,17 +140,35 @@ public class GbifSync implements Managed {
     }
   }
   
+  public boolean isActive() {
+    return job != null;
+  }
+  
+  public void syncNow() {
+    Runnable job = new GbifSyncJob(cfg, rxClient, sessionFactory);
+    job.run();
+  }
+  
   @Override
   public void start() throws Exception {
-    scheduler = Executors.newScheduledThreadPool(1,
-        new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true)
-    );
-    LOG.info("Scheduling GBIF registry sync job every {} hours", job.gbif.syncFrequency);
-    scheduler.scheduleAtFixedRate(job, 0, job.gbif.syncFrequency, TimeUnit.HOURS);
+    if (cfg.syncFrequency > 0) {
+      scheduler = Executors.newScheduledThreadPool(1,
+          new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true)
+      );
+      LOG.info("Enable GBIF registry sync job every {} hours", cfg.syncFrequency);
+      job = new GbifSyncJob(cfg, rxClient, sessionFactory);
+      scheduler.scheduleAtFixedRate(job, 0, cfg.syncFrequency, TimeUnit.HOURS);
+   
+    } else {
+      LOG.warn("Disable GBIF dataset sync");
+    }
   }
   
   @Override
   public void stop() throws Exception {
-    ExecutorUtils.shutdown(scheduler, ExecutorUtils.MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
+    if (scheduler != null) {
+      ExecutorUtils.shutdown(scheduler, ExecutorUtils.MILLIS_TO_DIE, TimeUnit.MILLISECONDS);
+    }
+    job = null;
   }
 }

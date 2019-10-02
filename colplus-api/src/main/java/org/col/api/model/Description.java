@@ -5,6 +5,7 @@ import java.util.Objects;
 import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.col.api.vocab.Language;
 
 public class Description extends DataEntity implements Referenced, VerbatimEntity, GlobalEntity {
   @JsonIgnore
@@ -60,6 +61,10 @@ public class Description extends DataEntity implements Referenced, VerbatimEntit
     this.language = language;
   }
   
+  public void setLanguage(Language language) {
+    this.language = language == null ? null : language.getCode();
+  }
+
   @Override
   public String getReferenceId() {
     return referenceId;

@@ -18,7 +18,7 @@ import org.col.api.search.NameSuggestResponse;
 import org.col.api.search.NameUsageWrapper;
 import org.col.es.model.NameUsageDocument;
 import org.col.es.name.NameUsageWrapperConverter;
-import org.col.es.name.search.NameUsageSearchService;
+import org.col.es.name.search.NameUsageSearchServiceEs;
 import org.col.es.name.suggest.NameSuggestionService;
 import org.col.es.query.EsSearchRequest;
 import org.col.es.query.Query;
@@ -50,7 +50,7 @@ public class EsReadTestBase {
   protected void destroyAndCreateIndex() {
     try {
       EsUtil.deleteIndex(getEsClient(), indexName);
-      EsUtil.createIndex(getEsClient(), indexName, getEsConfig().nameUsage);
+      EsUtil.createIndex(getEsClient(), indexName, NameUsageDocument.class, getEsConfig().nameUsage);
     } catch (IOException e) {
       throw new EsException(e);
     }
@@ -73,11 +73,11 @@ public class EsReadTestBase {
 
   protected List<NameUsageDocument> queryRaw(Query query) {
     EsSearchRequest esr = EsSearchRequest.emptyRequest().where(query);
-    return new NameUsageSearchService(indexName, getEsClient()).getDocuments(esr);
+    return new NameUsageSearchServiceEs(indexName, getEsClient()).getDocuments(esr);
   }
 
   protected List<NameUsageDocument> queryRaw(EsSearchRequest rawRequest) {
-    return new NameUsageSearchService(indexName, getEsClient()).getDocuments(rawRequest);
+    return new NameUsageSearchServiceEs(indexName, getEsClient()).getDocuments(rawRequest);
   }
 
   protected NameUsageDocument toDocument(NameUsageWrapper nameUsage) {
@@ -105,7 +105,7 @@ public class EsReadTestBase {
   }
 
   protected NameSearchResponse search(NameSearchRequest query) {
-    return new NameUsageSearchService(indexName, getEsClient()).search(query, new Page(0, 1000));
+    return new NameUsageSearchServiceEs(indexName, getEsClient()).search(query, new Page(0, 1000));
   }
 
   protected NameSuggestResponse suggest(NameSuggestRequest query) {

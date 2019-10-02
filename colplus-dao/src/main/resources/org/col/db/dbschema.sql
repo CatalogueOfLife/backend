@@ -100,6 +100,10 @@ CREATE TYPE rank AS ENUM (
   'unranked'
 );
 
+-- a simple compound type corresponding to the basics of SimpleName. Often used for building classifications as arrays
+CREATE TYPE simple_name AS (id text, rank rank, name text);
+
+
 CREATE TABLE coluser (
   key serial PRIMARY KEY,
   username TEXT UNIQUE,
@@ -151,6 +155,9 @@ CREATE TABLE dataset (
   modified_by INTEGER NOT NULL
 );
 
+CREATE TABLE dataset_archive (LIKE dataset);
+ALTER TABLE dataset_archive DROP COLUMN doc;
+ALTER TABLE dataset_archive ADD COLUMN catalogue_key INTEGER NOT NULL REFERENCES dataset;
 
 CREATE INDEX ON dataset USING gin (f_unaccent(title) gin_trgm_ops);
 CREATE INDEX ON dataset USING gin (f_unaccent(alias) gin_trgm_ops);
@@ -203,6 +210,7 @@ CREATE TABLE dataset_import (
   names_by_status_count HSTORE,
   name_relations_by_type_count HSTORE,
   verbatim_by_type_count HSTORE,
+  verbatim_by_term_count JSONB,
   media_by_type_count HSTORE,
   PRIMARY KEY (dataset_key, attempt)
 );
@@ -210,6 +218,7 @@ CREATE TABLE dataset_import (
 CREATE TABLE sector (
   key serial PRIMARY KEY,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
+  subject_dataset_key INTEGER NOT NULL REFERENCES dataset,
   subject_id TEXT,
   subject_name TEXT,
   subject_authorship TEXT,
@@ -225,11 +234,12 @@ CREATE TABLE sector (
   mode INTEGER NOT NULL,
   code INTEGER,
   note TEXT,
+  last_data_import_attempt INTEGER,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   created_by INTEGER NOT NULL,
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified_by INTEGER NOT NULL,
-  UNIQUE (dataset_key, subject_id)
+  UNIQUE (dataset_key, subject_dataset_key, subject_id)
 );
 
 CREATE TABLE sector_import (
@@ -248,6 +258,7 @@ CREATE TABLE sector_import (
   distribution_count INTEGER,
   description_count INTEGER,
   media_count INTEGER,
+  ignored_usage_count INTEGER,
   issues_count HSTORE,
   names_by_rank_count HSTORE,
   taxa_by_rank_count HSTORE,
@@ -260,12 +271,14 @@ CREATE TABLE sector_import (
   name_relations_by_type_count HSTORE,
   verbatim_by_type_count HSTORE,
   media_by_type_count HSTORE,
+  warnings TEXT[],
   PRIMARY KEY (sector_key, attempt)
 );
 
 CREATE TABLE decision (
   key serial PRIMARY KEY,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
+  subject_dataset_key INTEGER NOT NULL REFERENCES dataset,
   subject_id TEXT,
   subject_name TEXT,
   subject_authorship TEXT,
@@ -276,26 +289,28 @@ CREATE TABLE decision (
   mode INTEGER NOT NULL,
   status INTEGER,
   name JSONB,
-  fossil BOOLEAN,
-  recent BOOLEAN,
+  extinct BOOLEAN,
+  temporal_range_start TEXT,
+  temporal_range_end TEXT,
   lifezones INTEGER[] DEFAULT '{}',
   note TEXT,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   created_by INTEGER NOT NULL,
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified_by INTEGER NOT NULL,
-  UNIQUE (dataset_key, subject_id)
+  UNIQUE (dataset_key, subject_dataset_key, subject_id)
 );
 
 CREATE TABLE estimate (
   key serial PRIMARY KEY,
+  dataset_key INTEGER NOT NULL REFERENCES dataset,
   subject_id TEXT,
-  subject_name TEXT,
+  subject_name TEXT NOT NULL,
   subject_authorship TEXT,
   subject_rank rank,
   subject_code INTEGER,
   estimate INTEGER,
-  type INTEGER,
+  type INTEGER NOT NULL,
   reference_id TEXT,
   note TEXT,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
@@ -314,8 +329,17 @@ CREATE TABLE verbatim (
   file TEXT,
   type TEXT,
   terms jsonb,
-  issues INT[] DEFAULT '{}'
+  issues INT[] DEFAULT '{}',
+  doc tsvector
 ) PARTITION BY LIST (dataset_key);
+
+CREATE OR REPLACE FUNCTION verbatim_doc_update() RETURNS trigger AS $$
+BEGIN
+    NEW.doc := jsonb_to_tsvector('simple2', coalesce(NEW.terms,'{}'::jsonb), '["string", "numeric"]');
+    RETURN NEW;
+END
+$$
+LANGUAGE plpgsql;
 
 CREATE TABLE reference (
   id TEXT NOT NULL,
@@ -332,7 +356,6 @@ CREATE TABLE reference (
   modified_by INTEGER NOT NULL
 ) PARTITION BY LIST (dataset_key);
 
-
 CREATE OR REPLACE FUNCTION reference_doc_update() RETURNS trigger AS $$
 BEGIN
     NEW.doc :=
@@ -343,7 +366,6 @@ BEGIN
 END
 $$
 LANGUAGE plpgsql;
-
 
 CREATE TABLE name (
   id TEXT NOT NULL,
@@ -427,8 +449,9 @@ CREATE TABLE name_usage (
   according_to TEXT,
   according_to_date DATE,
   reference_ids TEXT[] DEFAULT '{}',
-  fossil BOOLEAN,
-  recent BOOLEAN,
+  extinct BOOLEAN,
+  temporal_range_start TEXT,
+  temporal_range_end TEXT,
   lifezones INTEGER[] DEFAULT '{}',
   webpage TEXT,
   remarks TEXT,
@@ -592,9 +615,37 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+-- return all parent name usages as a simple_name array
+CREATE OR REPLACE FUNCTION classification_sn(v_dataset_key INTEGER, v_id TEXT, v_inc_self BOOLEAN) RETURNS simple_name[] AS $$
+	declare seql TEXT;
+	declare parents simple_name[];
+BEGIN
+    seql := 'WITH RECURSIVE x AS ('
+        || 'SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name)::simple_name AS sn FROM name_usage_' || v_dataset_key || ' t '
+        || '  JOIN name_' || v_dataset_key || ' n ON n.id=t.name_id WHERE t.id = $1'
+        || ' UNION ALL '
+        || 'SELECT t.id, t.parent_id, (t.id,n.rank,n.scientific_name)::simple_name FROM x, name_usage_' || v_dataset_key || ' t '
+        || '  JOIN name_' || v_dataset_key || ' n ON n.id=t.name_id WHERE t.id = x.parent_id'
+        || ') SELECT array_agg(sn) FROM x';
+
+    IF NOT v_inc_self THEN
+        seql := seql || ' WHERE id != $1';
+    END IF;
+
+    EXECUTE seql
+    INTO parents
+    USING v_id;
+    RETURN (array_reverse(parents));
+END;
+$$ LANGUAGE plpgsql;
+
+
 -- INDICES for non partitioned tables
 CREATE index ON dataset (gbif_key);
 CREATE index ON dataset_import (started);
 CREATE index ON dataset_import (dataset_key);
 CREATE index ON sector_import (sector_key);
 CREATE index ON sector (target_id);
+CREATE index ON sector (dataset_key);
+CREATE index ON estimate (dataset_key);
+CREATE index ON decision (dataset_key);

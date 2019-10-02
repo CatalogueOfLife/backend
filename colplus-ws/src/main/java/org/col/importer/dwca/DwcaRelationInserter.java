@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import org.col.api.model.DatasetEntity;
+import org.col.api.model.DatasetIDEntity;
 import org.col.api.model.Name;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.vocab.Issue;
@@ -171,7 +171,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
     return usages;
   }
   
-  private List<RankedUsage> usagesByIds(Iterable<String> taxonIDs, DatasetEntity usage) {
+  private List<RankedUsage> usagesByIds(Iterable<String> taxonIDs, DatasetIDEntity usage) {
     List<RankedUsage> rankedNames = Lists.newArrayList();
     for (String id : taxonIDs) {
       if (!id.equals(usage.getId())) {

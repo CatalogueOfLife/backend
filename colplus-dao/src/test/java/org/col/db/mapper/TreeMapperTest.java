@@ -73,13 +73,15 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     SectorMapper sm = mapper(SectorMapper.class);
     
     Sector s1 = TestEntityGenerator.setUserDate(new Sector());
-    s1.setDatasetKey(dataset11);
+    s1.setDatasetKey(DRAFT_COL);
+    s1.setSubjectDatasetKey(dataset11);
     s1.setSubject(nameref("root-1"));
     s1.setTarget(nameref("t4"));
     sm.create(s1);
     
     Sector s2 = TestEntityGenerator.setUserDate(new Sector());
-    s2.setDatasetKey(dataset11);
+    s2.setDatasetKey(DRAFT_COL);
+    s2.setSubjectDatasetKey(dataset11);
     s2.setSubject(nameref("root-2"));
     s2.setTarget(nameref("t5"));
     sm.create(s2);
@@ -111,19 +113,22 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     DecisionMapper dm = mapper(DecisionMapper.class);
     
     Sector s = TestEntityGenerator.setUserDate(new Sector());
-    s.setDatasetKey(dataset11);
+    s.setDatasetKey(DRAFT_COL);
+    s.setSubjectDatasetKey(dataset11);
     s.setSubject(nameref("t2"));
     s.setTarget(nameref("root-1"));
     sm.create(s);
   
     EditorialDecision d1 = TestEntityGenerator.setUser(new EditorialDecision());
-    d1.setDatasetKey(dataset11);
+    d1.setDatasetKey(DRAFT_COL);
+    d1.setSubjectDatasetKey(dataset11);
     d1.setSubject(nameref("t2"));
     d1.setMode(EditorialDecision.Mode.UPDATE);
     dm.create(d1);
   
     EditorialDecision d2 = TestEntityGenerator.setUser(new EditorialDecision());
-    d2.setDatasetKey(dataset11);
+    d2.setDatasetKey(DRAFT_COL);
+    d2.setSubjectDatasetKey(dataset11);
     d2.setSubject(nameref("t3"));
     d2.setMode(EditorialDecision.Mode.BLOCK);
     dm.create(d2);
@@ -152,9 +157,9 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
   
   SpeciesEstimate newEstimate(String id){
     SpeciesEstimate s = new SpeciesEstimate();
+    s.setDatasetKey(DRAFT_COL);
     s.setEstimate(5678);
-    SimpleName sn = new SimpleName(id, "Abies alba", Rank.SPECIES);
-    s.setSubject(sn);
+    s.setSubject(new SimpleName(id, "Abies alba", Rank.SPECIES));
     s.applyUser(TestEntityGenerator.USER_USER);
     return s;
   }

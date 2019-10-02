@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  * that allows to hook post actions for create, update and delete
  * with access to the old version of the object.
  */
-public class DatasetEntityDao<T extends DatasetEntity & UserManaged, M extends DatasetCRUDMapper<T>> {
+public class DatasetEntityDao<T extends DatasetIDEntity & UserManaged, M extends DatasetCRUDMapper<T>> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetEntityDao.class);
@@ -107,7 +107,7 @@ public class DatasetEntityDao<T extends DatasetEntity & UserManaged, M extends D
     // override to do sth useful
   }
   
-  public static <T extends VerbatimEntity & DatasetEntity> T newKey(T e) {
+  public static <T extends VerbatimEntity & DatasetIDEntity> T newKey(T e) {
     e.setVerbatimKey(null);
     e.setId(UUID.randomUUID().toString());
     return e;

@@ -2,11 +2,11 @@ package org.col.importer;
 
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.io.Files;
-import io.dropwizard.client.HttpClientBuilder;
+
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.col.WsServerConfig;
 import org.col.api.vocab.Users;
 import org.col.command.initdb.InitDbCmd;
-import org.col.WsServerConfig;
 import org.col.common.tax.AuthorshipNormalizer;
 import org.col.dao.TreeRepoRule;
 import org.col.db.PgSetupRule;
@@ -15,7 +15,14 @@ import org.col.es.name.index.NameUsageIndexService;
 import org.col.img.ImageServiceFS;
 import org.col.matching.NameIndexFactory;
 import org.elasticsearch.client.RestClient;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+
+import io.dropwizard.client.HttpClientBuilder;
 
 @Ignore("manual import debugging")
 public class ImportManagerDebugging {
@@ -44,8 +51,6 @@ public class ImportManagerDebugging {
     cfg.db.password = "postgres";
     cfg.es.hosts = "localhost";
     cfg.es.ports = "9200";
-    cfg.es.nameUsage = new IndexConfig();
-    cfg.es.nameUsage.modelClass = "org.col.es.model.EsNameUsage";
     
     return cfg;
   }

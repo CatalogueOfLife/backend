@@ -34,16 +34,17 @@ public class EsUtil {
   private static final Logger LOG = LoggerFactory.getLogger(EsUtil.class);
 
   /**
-   * Creates an index with the provided name and configuration.
+   * Creates an index with the provided name and index configuration, with a document type mapping based on the provided
+   * model class.
    * 
-   * @param <T>
    * @param client
    * @param name
+   * @param modelClass
    * @param config
    * @throws IOException
    */
-  public static <T> void createIndex(RestClient client, String name, IndexConfig config) throws IOException {
-    Mappings mappings = new MappingsFactory().getMapping(config.modelClass);
+  public static void createIndex(RestClient client, String name, Class<?> modelClass, IndexConfig config) throws IOException {
+    Mappings mappings = new MappingsFactory().getMapping(modelClass);
     Settings settings = Settings.getDefaultSettings();
     settings.getIndex().setNumberOfShards(config.numShards);
     settings.getIndex().setNumberOfReplicas(config.numReplicas);

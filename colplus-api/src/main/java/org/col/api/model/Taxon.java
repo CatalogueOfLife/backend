@@ -1,6 +1,5 @@
 package org.col.api.model;
 
-import java.net.URI;
 import java.time.LocalDate;
 import java.util.EnumSet;
 import java.util.Objects;
@@ -8,6 +7,7 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
+import org.col.api.vocab.GeoTime;
 import org.col.api.vocab.Lifezone;
 import org.col.api.vocab.TaxonomicStatus;
 
@@ -17,11 +17,11 @@ import org.col.api.vocab.TaxonomicStatus;
 public class Taxon extends NameUsageBase {
   
   private LocalDate accordingToDate;
-  private Boolean fossil;
-  private Boolean recent;
+  private Boolean extinct;
+  private String temporalRangeStart;
+  private String temporalRangeEnd;
   private Set<Lifezone> lifezones = EnumSet.noneOf(Lifezone.class);
-  private URI webpage;
-
+  
   @Override
   public void setStatus(TaxonomicStatus status) {
     if (Preconditions.checkNotNull(status).isSynonym()) {
@@ -43,36 +43,44 @@ public class Taxon extends NameUsageBase {
     this.accordingToDate = accordingToDate;
   }
   
-  public Boolean isFossil() {
-    return fossil;
+  public Boolean isExtinct() {
+    return extinct;
   }
   
-  public void setFossil(Boolean fossil) {
-    this.fossil = fossil;
+  public void setExtinct(Boolean extinct) {
+    this.extinct = extinct;
   }
   
-  public Boolean isRecent() {
-    return recent;
+  public String getTemporalRangeStart() {
+    return temporalRangeStart;
   }
   
-  public void setRecent(Boolean recent) {
-    this.recent = recent;
+  public void setTemporalRangeStart(String temporalRangeStart) {
+    this.temporalRangeStart = temporalRangeStart;
   }
   
+  public void setTemporalRangeStart(GeoTime start) {
+    this.temporalRangeStart = start == null ? null : start.getName();
+  }
+
+  public String getTemporalRangeEnd() {
+    return temporalRangeEnd;
+  }
+  
+  public void setTemporalRangeEnd(String temporalRangeEnd) {
+    this.temporalRangeEnd = temporalRangeEnd;
+  }
+  
+  public void setTemporalRangeEnd(GeoTime end) {
+    this.temporalRangeEnd = end == null ? null : end.getName();
+  }
+
   public Set<Lifezone> getLifezones() {
     return lifezones;
   }
   
   public void setLifezones(Set<Lifezone> lifezones) {
     this.lifezones = lifezones;
-  }
-  
-  public URI getWebpage() {
-    return webpage;
-  }
-  
-  public void setWebpage(URI webpage) {
-    this.webpage = webpage;
   }
   
   @Override
@@ -82,14 +90,14 @@ public class Taxon extends NameUsageBase {
     if (!super.equals(o)) return false;
     Taxon taxon = (Taxon) o;
     return Objects.equals(accordingToDate, taxon.accordingToDate) &&
-        Objects.equals(fossil, taxon.fossil) &&
-        Objects.equals(recent, taxon.recent) &&
-        Objects.equals(lifezones, taxon.lifezones) &&
-        Objects.equals(webpage, taxon.webpage);
+        Objects.equals(extinct, taxon.extinct) &&
+        Objects.equals(temporalRangeStart, taxon.temporalRangeStart) &&
+        Objects.equals(temporalRangeEnd, taxon.temporalRangeEnd) &&
+        Objects.equals(lifezones, taxon.lifezones);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), accordingToDate, fossil, recent, lifezones, webpage);
+    return Objects.hash(super.hashCode(), accordingToDate, extinct, temporalRangeStart, temporalRangeEnd, lifezones);
   }
 }

@@ -13,6 +13,7 @@ import java.util.zip.DeflaterOutputStream;
 
 import org.col.api.model.Name;
 import org.col.api.model.SimpleName;
+import org.col.api.model.SimpleNameClassification;
 import org.col.api.model.Synonym;
 import org.col.api.model.Taxon;
 import org.col.api.model.VernacularName;
@@ -108,14 +109,13 @@ public class NameUsageWrapperConverter {
    * @param from
    * @param to
    */
-  public static void saveClassification(NameUsageWrapper from, NameUsageDocument to) {
+  public static void saveClassification(SimpleNameClassification from, NameUsageDocument to) {
     if (notEmpty(from.getClassification())) {
       int sz = from.getClassification().size();
       List<String> ids = new ArrayList<>(sz);
       List<Monomial> monomials = new ArrayList<>(sz);
-      SimpleName sn;
-      for (int i = 0; i < sz; i++) {
-        ids.add((sn = from.getClassification().get(i)).getId());
+      for (SimpleName sn : from.getClassification()) {
+        ids.add(sn.getId());
         monomials.add(new Monomial(sn.getRank(), sn.getName()));
       }
       to.setClassification(monomials);
@@ -221,8 +221,6 @@ public class NameUsageWrapperConverter {
     if (nuw.getUsage().getClass() == Taxon.class) {
       Taxon t = (Taxon) nuw.getUsage();
       doc.setSectorKey(t.getSectorKey());
-      doc.setFossil(t.isFossil());
-      doc.setRecent(t.isRecent());
     } else if (nuw.getUsage().getClass() == Synonym.class) {
       Synonym s = (Synonym) nuw.getUsage();
       doc.setSectorKey(s.getAccepted().getSectorKey());

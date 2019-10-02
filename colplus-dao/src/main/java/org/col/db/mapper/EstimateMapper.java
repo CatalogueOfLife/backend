@@ -8,14 +8,15 @@ import org.col.api.model.Page;
 import org.col.api.model.SpeciesEstimate;
 import org.gbif.nameparser.api.Rank;
 
-public interface EstimateMapper extends GlobalCRUDMapper<SpeciesEstimate> {
+public interface EstimateMapper extends CatalogueCRUDMapper<SpeciesEstimate> {
   
   SpeciesEstimate getById(@Param("id") String id);
   
   /**
    * List all estimates that cannot be linked to subject taxa in the catalogue
+   * @param datasetKey the catalogues datasetKey
    */
-  List<SpeciesEstimate> broken();
+  List<SpeciesEstimate> broken(@Param("datasetKey") int datasetKey);
   
   int searchCount(@Nullable @Param("rank") Rank rank
       , @Nullable @Param("min") Integer min

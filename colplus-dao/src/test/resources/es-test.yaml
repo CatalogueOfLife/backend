@@ -1,6 +1,5 @@
 hosts: ${es.hosts}
 ports: ${es.ports}
 nameUsage:
-  modelClass: org.col.es.model.NameUsageDocument
   numShards: 1
   numReplicas: 0

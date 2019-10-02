@@ -237,6 +237,9 @@ public class TestEntityGenerator {
     TAXON2.setName(NAME2);
     TAXON2.setStatus(TaxonomicStatus.ACCEPTED);
     TAXON2.setOrigin(Origin.SOURCE);
+    TAXON2.setExtinct(true);
+    TAXON2.setTemporalRangeStart("Aalenian");
+    TAXON2.setTemporalRangeEnd("Sinemurian");
     TAXON2.setCreatedBy(Users.DB_INIT);
     TAXON2.setModifiedBy(Users.DB_INIT);
 
@@ -301,13 +304,12 @@ public class TestEntityGenerator {
     t.setAccordingToDate(LocalDate.of(2010, 11, 24));
     t.setDatasetKey(datasetKey);
     t.setWebpage(URI.create("http://foo.com"));
-    t.setFossil(true);
+    t.setExtinct(false);
     t.setId(id);
     t.setLifezones(EnumSet.of(Lifezone.BRACKISH, Lifezone.FRESHWATER, Lifezone.TERRESTRIAL));
     t.setName(NAME1);
     t.setOrigin(Origin.SOURCE);
     t.setParentId(TAXON1.getId());
-    t.setRecent(true);
     t.setRemarks("Foo == Bar");
     return t;
   }
@@ -318,18 +320,17 @@ public class TestEntityGenerator {
   public static Taxon newTaxon(int datasetKey, String id, String scientificName) {
     Taxon t = setUserDate(new Taxon());
     t.setStatus(TaxonomicStatus.ACCEPTED);
-    t.setAccordingTo(RandomUtils.randomUnicodeString(8));
+    t.setAccordingTo("Foo");
     t.setAccordingToDate(LocalDate.of(2010, 11, 24));
     t.setDatasetKey(datasetKey);
     t.setWebpage(URI.create("http://foo-bar.com"));
+    t.setExtinct(true);
     t.setId(id);
     t.setLifezones(EnumSet.of(Lifezone.BRACKISH, Lifezone.FRESHWATER, Lifezone.TERRESTRIAL));
     t.setName(setUserDate(newName(datasetKey, id + "_name_id", scientificName)));
     t.setOrigin(Origin.SOURCE);
     t.setParentId(TAXON1.getId());
-    t.setFossil(new Random().nextBoolean());
-    t.setRecent(new Random().nextBoolean());
-    t.setRemarks(RandomUtils.randomUnicodeString(8));
+    t.setRemarks("Foo != Bar");
     return t;
   }
 

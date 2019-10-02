@@ -7,6 +7,7 @@
   <sql id="SelectVar">
     ${alias}key AS ${prefix}key,
     ${alias}dataset_key AS ${prefix}dataset_key,
+    ${alias}subject_dataset_key AS ${prefix}subject_dataset_key,
     ${alias}subject_id AS ${prefix}subject_id,
     ${alias}subject_name AS ${prefix}subject_name,
     ${alias}subject_authorship AS ${prefix}subject_authorship,
@@ -37,6 +38,7 @@
 
   <sql id="COLS">
     dataset_key,
+    subject_dataset_key,
     subject_id,
     subject_name,
     subject_authorship,
@@ -58,6 +60,7 @@
 
   <sql id="PROPS">
     #{datasetKey},
+    #{subjectDatasetKey},
     #{subject.id},
     #{subject.name},
     #{subject.authorship},
@@ -86,8 +89,11 @@
       <if test="idIsNull">
         t.id IS NULL
       </if>
-      <if test="datasetKey != null">
-        AND s.dataset_key = #{datasetKey}
+      <if test="targetDatasetKey != null">
+        AND s.dataset_key = #{targetDatasetKey}
+      </if>
+      <if test="subjectDatasetKey != null">
+        AND s.subject_dataset_key = #{subjectDatasetKey}
       </if>
     </where>
   </sql>
@@ -108,18 +114,22 @@
   <select id="getBySubject" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE dataset_key = #{datasetKey} AND subject_id = #{id}
+    WHERE subject_dataset_key = #{subjectDatasetKey}
+      AND dataset_key = #{targetDatasetKey}
+      AND subject_id = #{id}
   </select>
 
   <select id="listByTarget" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
     WHERE target_id = #{id}
+      AND dataset_key = #{targetDatasetKey}
   </select>
 
-  <select id="processAll" parameterType="map" resultMap="sectorResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+  <select id="processCatalogue" parameterType="map" resultMap="sectorResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
+    WHERE dataset_key = #{datasetKey}
     ORDER BY key
   </select>
 
@@ -127,7 +137,8 @@
   <select id="processSectors" parameterType="map" resultMap="sectorResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE dataset_key = #{datasetKey}
+    WHERE subject_dataset_key = #{subjectDatasetKey}
+      AND dataset_key = #{targetDatasetKey}
     ORDER BY target_rank, key
   </select>
 
@@ -165,7 +176,7 @@
   <select id="listChildSectors" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-      JOIN name_usage_3 t ON t.id=s.target_id
+      JOIN name_usage_${targetDatasetKey} t ON t.id=s.target_id
     WHERE t.sector_key=#{key}
     ORDER BY key
   </select>
@@ -173,7 +184,7 @@
   <select id="subjectBroken" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-      LEFT JOIN name_usage t ON t.id=s.subject_id AND t.dataset_key = #{datasetKey}
+      LEFT JOIN name_usage t ON t.id=s.subject_id AND t.dataset_key=#{subjectDatasetKey}
     <bind name="idIsNull" value="true" />
     <include refid="WHERE" />
     ORDER BY key
@@ -182,7 +193,7 @@
   <select id="targetBroken" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-      LEFT JOIN name_usage_3 t ON t.id=s.target_id
+      LEFT JOIN name_usage_${targetDatasetKey} t ON t.id=s.target_id
     <bind name="idIsNull" value="true" />
     <include refid="WHERE" />
     ORDER BY key

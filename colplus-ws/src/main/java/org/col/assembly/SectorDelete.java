@@ -11,6 +11,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.ColUser;
 import org.col.api.model.Sector;
 import org.col.api.model.SectorImport;
+import org.col.api.vocab.Datasets;
 import org.col.db.mapper.NameUsageMapper;
 import org.col.db.mapper.SectorImportMapper;
 import org.col.db.mapper.SectorMapper;
@@ -57,7 +58,7 @@ public class SectorDelete extends SectorRunnable {
       Set<Integer> childSectors;
       try (SqlSession session = factory.openSession(true)) {
         SectorMapper sm = session.getMapper(SectorMapper.class);
-        childSectors = sm.listChildSectors(sectorKey).stream()
+        childSectors = sm.listChildSectors(Datasets.DRAFT_COL, sectorKey).stream()
             .map(Sector::getKey)
             .collect(Collectors.toSet());
       }

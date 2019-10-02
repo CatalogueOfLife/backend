@@ -11,6 +11,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.api.model.SpeciesEstimate;
+import org.col.api.vocab.Datasets;
 import org.col.dao.EstimateDao;
 import org.col.db.mapper.EstimateMapper;
 import org.gbif.nameparser.api.Rank;
@@ -20,7 +21,7 @@ import org.slf4j.LoggerFactory;
 @Path("/estimate")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class EstimateResource extends GlobalEntityResource<SpeciesEstimate> {
+public class EstimateResource extends CatalogueEntityResource<SpeciesEstimate> {
   
   private final EstimateDao dao;
   
@@ -44,7 +45,7 @@ public class EstimateResource extends GlobalEntityResource<SpeciesEstimate> {
   @Path("/broken")
   public List<SpeciesEstimate> broken(@Context SqlSession session) {
     EstimateMapper mapper = session.getMapper(EstimateMapper.class);
-    return mapper.broken();
+    return mapper.broken(Datasets.DRAFT_COL);
   }
   
 }

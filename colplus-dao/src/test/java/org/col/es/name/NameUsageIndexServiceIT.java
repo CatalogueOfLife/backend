@@ -33,6 +33,7 @@ import static org.junit.Assert.*;
  * in-going out-going name usages slightly to allow them to be compared, but not much. (For example the recursive query
  * we execute in Postgres, and the resulting sort order, cannot be emulated with Elasticsearch.)
  */
+@Ignore
 public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
 
   @Test

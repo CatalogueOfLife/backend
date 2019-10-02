@@ -14,10 +14,9 @@ import org.col.db.PgSetupRule;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.TaxonMapper;
 import org.col.db.mapper.TestDataRule;
-import org.col.es.EsUtil;
-import org.col.es.name.index.NameUsageIndexService;
+import org.col.es.model.NameUsageDocument;
 import org.col.es.name.index.NameUsageIndexServiceEs;
-import org.col.es.name.search.NameUsageSearchService;
+import org.col.es.name.search.NameUsageSearchServiceEs;
 import org.col.es.query.EsSearchRequest;
 import org.col.es.query.Query;
 import org.junit.After;
@@ -53,7 +52,10 @@ public class EsReadWriteTestBase extends ExternalResource {
       LOG.debug("Dumping test index \"{}\"", EsSetupRule.TEST_INDEX);
       EsUtil.deleteIndex(esSetupRule.getEsClient(), EsSetupRule.TEST_INDEX);
       LOG.debug("Creating test index \"{}\"", EsSetupRule.TEST_INDEX);
-      EsUtil.createIndex(esSetupRule.getEsClient(), EsSetupRule.TEST_INDEX, esSetupRule.getEsConfig().nameUsage);
+      EsUtil.createIndex(esSetupRule.getEsClient(),
+          EsSetupRule.TEST_INDEX,
+          NameUsageDocument.class,
+          esSetupRule.getEsConfig().nameUsage);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -64,7 +66,7 @@ public class EsReadWriteTestBase extends ExternalResource {
     LOG.debug("Test index \"{}\" kept around for inspection", EsSetupRule.TEST_INDEX);
   }
 
-  protected NameUsageIndexService createIndexService() {
+  protected NameUsageIndexServiceEs createIndexService() {
     return new NameUsageIndexServiceEs(
         esSetupRule.getEsClient(),
         esSetupRule.getEsConfig(),
@@ -72,8 +74,8 @@ public class EsReadWriteTestBase extends ExternalResource {
         EsSetupRule.TEST_INDEX);
   }
 
-  protected NameUsageSearchService createSearchService() {
-    return new NameUsageSearchService(EsSetupRule.TEST_INDEX, esSetupRule.getEsClient());
+  protected NameUsageSearchServiceEs createSearchService() {
+    return new NameUsageSearchServiceEs(EsSetupRule.TEST_INDEX, esSetupRule.getEsClient());
   }
 
   /**

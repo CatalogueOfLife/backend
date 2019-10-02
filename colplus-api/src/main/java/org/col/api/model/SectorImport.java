@@ -18,7 +18,9 @@ public class SectorImport extends ImportMetrics<SectorImport.State> {
   
   private String type;
   private int sectorKey;
-  private final Queue<String> warnings = EvictingQueue.create(10);
+  private Integer ignoredUsageCount;
+  
+  private final Queue<String> warnings = EvictingQueue.create(25);
   
   public Collection<String> getWarnings() {
     return warnings;
@@ -49,21 +51,12 @@ public class SectorImport extends ImportMetrics<SectorImport.State> {
     this.sectorKey = sectorKey;
   }
   
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    if (!super.equals(o)) return false;
-    SectorImport that = (SectorImport) o;
-    // we dont include warnings as we dont persist them
-    return sectorKey == that.sectorKey &&
-        Objects.equals(type, that.type);
+  public Integer getIgnoredUsageCount() {
+    return ignoredUsageCount;
   }
   
-  @Override
-  public int hashCode() {
-    // we dont include warnings as we dont persist them
-    return Objects.hash(super.hashCode(), type, sectorKey);
+  public void setIgnoredUsageCount(Integer ignoredUsageCount) {
+    this.ignoredUsageCount = ignoredUsageCount;
   }
   
   public static List<State> runningStates() {
@@ -76,6 +69,25 @@ public class SectorImport extends ImportMetrics<SectorImport.State> {
     return Arrays.stream(State.values())
         .filter(Predicates.not(State::isRunning))
         .collect(Collectors.toList());
+  }
+  
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
+    SectorImport that = (SectorImport) o;
+    return sectorKey == that.sectorKey &&
+        Objects.equals(type, that.type) &&
+        Objects.equals(ignoredUsageCount, that.ignoredUsageCount) &&
+        // EvictingQueue has no equals method implemented
+        // for equality this hardly matters, so we just compare the sizes
+        warnings.size() == that.warnings.size();
+  }
+  
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), type, sectorKey, ignoredUsageCount, warnings);
   }
   
   @Override

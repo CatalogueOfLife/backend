@@ -1,5 +1,6 @@
 package org.col.api.model;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -14,7 +15,7 @@ import org.col.api.vocab.TaxonomicStatus;
 /**
  *
  */
-public abstract class NameUsageBase extends DataEntity implements NameUsage, DatasetEntity {
+public abstract class NameUsageBase extends DataEntity implements NameUsage, DatasetIDEntity {
   
   @Nonnull
   private String id;
@@ -30,6 +31,7 @@ public abstract class NameUsageBase extends DataEntity implements NameUsage, Dat
   private Origin origin;
   private String parentId;
   private String accordingTo;
+  private URI webpage;
   private String remarks;
   /**
    * All bibliographic reference ids for the given name usage
@@ -156,6 +158,14 @@ public abstract class NameUsageBase extends DataEntity implements NameUsage, Dat
   
   public SimpleName toSimpleName() {
     return new SimpleName(id, name.getScientificName(), name.getAuthorship(), name.getRank());
+  }
+  
+  public URI getWebpage() {
+    return webpage;
+  }
+  
+  public void setWebpage(URI webpage) {
+    this.webpage = webpage;
   }
   
   @Override

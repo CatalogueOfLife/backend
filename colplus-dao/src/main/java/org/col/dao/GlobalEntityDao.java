@@ -1,13 +1,9 @@
 package org.col.dao;
 
-import java.util.List;
-
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.GlobalEntity;
-import org.col.api.model.Page;
-import org.col.api.model.ResultPage;
-import org.col.db.mapper.GlobalCRUDMapper;
+import org.col.db.GlobalCRUD;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +12,7 @@ import org.slf4j.LoggerFactory;
  * that allows to hook post actions for create, update and delete
  * with access to the old version of the object.
  */
-public class GlobalEntityDao<T extends GlobalEntity, M extends GlobalCRUDMapper<T>> {
+public class GlobalEntityDao<T extends GlobalEntity, M extends GlobalCRUD<T>> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(GlobalEntityDao.class);
@@ -37,15 +33,6 @@ public class GlobalEntityDao<T extends GlobalEntity, M extends GlobalCRUDMapper<
   public T get(Integer key) {
     try (SqlSession session = factory.openSession()) {
       return session.getMapper(mapperClass).get(key);
-    }
-  }
-  
-  public ResultPage<T> list(Page page) {
-    Page p = page == null ? new Page() : page;
-    try (SqlSession session = factory.openSession()) {
-      M mapper = session.getMapper(mapperClass);
-      List<T> result = mapper.list(p);
-      return new ResultPage<>(p, result, mapper::count);
     }
   }
   

@@ -32,6 +32,11 @@ public class DatasetImport extends ImportMetrics<ImportState> {
   
   private Map<Term, Integer> verbatimByTypeCount = Maps.newHashMap();
   
+  /**
+   * Map of row types that return a map of terms and their counts of verbatim records with that type
+   */
+  private Map<Term, Map<Term, Integer>> verbatimByTermCount = Maps.newHashMap();
+
   public URI getDownloadUri() {
     return downloadUri;
   }
@@ -72,6 +77,14 @@ public class DatasetImport extends ImportMetrics<ImportState> {
     this.verbatimByTypeCount = verbatimByTypeCount;
   }
   
+  public Map<Term, Map<Term, Integer>> getVerbatimByTermCount() {
+    return verbatimByTermCount;
+  }
+  
+  public void setVerbatimByTermCount(Map<Term, Map<Term, Integer>> verbatimByTermCount) {
+    this.verbatimByTermCount = verbatimByTermCount;
+  }
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -82,12 +95,13 @@ public class DatasetImport extends ImportMetrics<ImportState> {
         Objects.equals(download, that.download) &&
         Objects.equals(md5, that.md5) &&
         Objects.equals(verbatimCount, that.verbatimCount) &&
-        Objects.equals(verbatimByTypeCount, that.verbatimByTypeCount);
+        Objects.equals(verbatimByTypeCount, that.verbatimByTypeCount) &&
+        Objects.equals(verbatimByTermCount, that.verbatimByTermCount);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), downloadUri, download, md5, verbatimCount, verbatimByTypeCount);
+    return Objects.hash(super.hashCode(), downloadUri, download, md5, verbatimCount, verbatimByTypeCount, verbatimByTermCount);
   }
   
   @Override

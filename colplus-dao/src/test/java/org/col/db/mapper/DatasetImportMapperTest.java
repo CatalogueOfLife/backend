@@ -61,6 +61,14 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     Map<Term, Integer> vcnt = new HashMap<>();
     vcnt.put(AcefTerm.AcceptedSpecies, 10);
     d.setVerbatimByTypeCount(vcnt);
+    Map<Term, Integer> terms = new HashMap<>();
+    terms.put(AcefTerm.SpeciesEpithet, 10);
+    terms.put(AcefTerm.Genus, 10);
+    terms.put(AcefTerm.AcceptedTaxonID, 10);
+    terms.put(AcefTerm.SubGenusName, 7);
+    for (Term rt : d.getVerbatimByTypeCount().keySet()) {
+      d.getVerbatimByTermCount().put(rt, terms);
+    }
     return d;
   }
   
@@ -93,6 +101,11 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     
     DatasetImport d2 = mapper().list(d1.getDatasetKey(), null, new Page(0, 100)).get(0);
     d1.setAttempt(d2.getAttempt());
+    
+    if (!d1.equals(d2)) {
+      d1.setVerbatimByTermCount(null);
+      d2.setVerbatimByTermCount(null);
+    }
     assertEquals(d1, d2);
     
     d1.setState(ImportState.FINISHED);

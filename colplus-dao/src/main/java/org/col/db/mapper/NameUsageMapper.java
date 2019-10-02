@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.ResultHandler;
 import org.col.api.model.NameUsageBase;
 import org.col.api.model.Page;
+import org.col.api.model.SimpleName;
 import org.gbif.nameparser.api.Rank;
 
 /**
@@ -65,5 +66,28 @@ public interface NameUsageMapper {
                    @Param("includeSynonyms") boolean includeSynonyms,
                    @Param("depthFirst") boolean depthFirst,
                    ResultHandler<NameUsageBase> handler);
+  
+  /**
+   * Depth first only implementation using a much lighter object then above.
+   *
+   * Iterates over all accepted descendants in a tree in depth-first order for a given start taxon
+   * and processes them with the supplied handler. If the start taxon is null all root taxa are used.
+   *
+   * An optional exclusion filter can be used to prevent traversal of subtrees.
+   * Synonyms are also traversed if includeSynonyms is true.*
+   *
+   * @param sectorKey optional sector key to limit the traversal to
+   * @param startID taxon id to start the traversal. Will be included in the result. If null start with all root taxa
+   * @param exclusions set of taxon ids to exclude from traversal. This will also exclude all descendants
+   * @param includeSynonyms if true includes synonyms, otherwise only taxa
+   */
+  void processTreeSimple(@Param("datasetKey") int datasetKey,
+                   @Param("sectorKey") Integer sectorKey,
+                   @Param("startID") @Nullable String startID,
+                   @Param("exclusions") @Nullable Set<String> exclusions,
+                   @Param("lowestRank") @Nullable Rank lowestRank,
+                   @Param("includeSynonyms") boolean includeSynonyms,
+                   ResultHandler<SimpleName> handler);
+  
   
 }
