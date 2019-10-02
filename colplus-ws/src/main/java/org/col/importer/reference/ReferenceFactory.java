@@ -93,7 +93,7 @@ public class ReferenceFactory {
    * @return
    */
   public static Reference fromACEF(int datasetKey, String referenceID, String authors, String year, String title, String details, IssueContainer issues) {
-    Reference ref = fromAny(datasetKey, referenceID, null, authors, year, title, details, null, issues);
+    Reference ref = fromAny(datasetKey, referenceID, null, authors, year, title, details, null, null, issues);
     if (ref.getCsl() != null && !StringUtils.isBlank(details)) {
       issues.addIssue(Issue.CITATION_CONTAINER_TITLE_UNPARSED);
     }
@@ -105,8 +105,8 @@ public class ReferenceFactory {
   }
   
   public static Reference fromColDP(int datasetKey, String id, String citation, String authors, String year, String title, String source, String details,
-                             String doi, String link, IssueContainer issues) {
-    Reference ref = fromAny(datasetKey, id, citation, authors, year, title, source, details, issues);
+                             String doi, String link, String remarks, IssueContainer issues) {
+    Reference ref = fromAny(datasetKey, id, citation, authors, year, title, source, details, remarks, issues);
     // add extra link & doi
     if (doi != null || link != null) {
       if (ref.getCsl() == null) {
@@ -120,13 +120,15 @@ public class ReferenceFactory {
   }
   
   public Reference fromColDP(String id, String citation, String authors, String year, String title, String source, String details,
-                             String doi, String link, IssueContainer issues) {
-    return fromColDP(datasetKey, id, citation, authors, year, title, source, details, doi, link, issues);
+                             String doi, String link, String remarks, IssueContainer issues) {
+    return fromColDP(datasetKey, id, citation, authors, year, title, source, details, doi, link, remarks, issues);
   }
   
-  private static Reference fromAny(int datasetKey, String ID, String citation, String authors, String year, String title, String source, String details, IssueContainer issues) {
+  private static Reference fromAny(int datasetKey, String ID, String citation, String authors, String year, String title, String source,
+                                   String details, String remarks, IssueContainer issues) {
     Reference ref = newReference(datasetKey, ID);
     ref.setYear(parseYear(year));
+    ref.setRemarks(remarks);
     if (hasContent(authors, year, title, source)) {
       CslData csl = new CslData();
       ref.setCsl(csl);
