@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -24,6 +23,8 @@ import org.col.es.query.TermQuery;
 import org.col.es.query.TermsQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.util.stream.Collectors.toMap;
 
 public class ClassificationUpdater implements Closeable, ResultHandler<SimpleNameClassification> {
 
@@ -63,7 +64,7 @@ public class ClassificationUpdater implements Closeable, ResultHandler<SimpleNam
 
   private void flush() {
     LOG.debug("Received {} records from Postgres", collected.size());
-    Map<String, SimpleNameClassification> lookups = collected.stream().collect(Collectors.toMap(SimpleNameClassification::getId, Function.identity()));
+    Map<String, SimpleNameClassification> lookups = collected.stream().collect(toMap(SimpleNameClassification::getId, Function.identity()));
     List<NameUsageDocument> documents = loadNameUsages(lookups.keySet());
     LOG.debug("Found {} matching documents", documents.size());
     documents.forEach(doc -> {
@@ -93,8 +94,8 @@ public class ClassificationUpdater implements Closeable, ResultHandler<SimpleNam
   }
 
   /*
-   * Returns bare bones name usage documents containing only the internal document ID (needed for the update later on) and the usage ID (so
-   * they can be matched to the Postgres records).
+   * Returns bare bones name usage documents containing only the internal document ID (needed for the update later on) and
+   * the usage ID (so they can be matched to the Postgres records).
    */
   private List<NameUsageDocument> loadChunk(List<String> terms) {
     EsSearchRequest query = EsSearchRequest.emptyRequest();

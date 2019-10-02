@@ -5,35 +5,13 @@ import java.time.LocalDate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.col.es.EsModule;
-import org.col.es.IndexConfig;
-import org.col.es.query.AutoCompleteQuery;
-import org.col.es.query.BoolQuery;
-import org.col.es.query.ConstantScoreQuery;
-import org.col.es.query.EsSearchRequest;
-import org.col.es.query.IsNotNullQuery;
-import org.col.es.query.IsNullQuery;
-import org.col.es.query.MatchAllQuery;
-import org.col.es.query.PrefixQuery;
-import org.col.es.query.TermQuery;
-import org.col.es.query.TermsQuery;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /*
- * Not really tests here; only to get direct feedback on whether or not the various types of queries are serialized
- * properly.
+ * Not real tests here; just to see whether or not the various types of queries are serialized as expected.
  */
 public class QueryTest {
-
-  // private static final Logger LOG = LoggerFactory.getLogger(QueryTest.class);
-
-  private static final IndexConfig cfg = new IndexConfig();
-
-  @BeforeClass
-  public static void init() {
-    cfg.modelClass = "org.col.es.model.EsNameUsage";
-  }
 
   @Before
   public void before() {

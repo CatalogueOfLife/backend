@@ -51,8 +51,6 @@ public class ImportManagerDebugging {
     cfg.db.password = "postgres";
     cfg.es.hosts = "localhost";
     cfg.es.ports = "9200";
-    cfg.es.nameUsage = new IndexConfig();
-    cfg.es.nameUsage.modelClass = "org.col.es.model.EsNameUsage";
     
     return cfg;
   }

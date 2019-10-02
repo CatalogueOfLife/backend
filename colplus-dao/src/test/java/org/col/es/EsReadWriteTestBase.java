@@ -14,6 +14,7 @@ import org.col.db.PgSetupRule;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.TaxonMapper;
 import org.col.db.mapper.TestDataRule;
+import org.col.es.model.NameUsageDocument;
 import org.col.es.name.index.NameUsageIndexServiceEs;
 import org.col.es.name.search.NameUsageSearchServiceEs;
 import org.col.es.query.EsSearchRequest;
@@ -51,7 +52,10 @@ public class EsReadWriteTestBase extends ExternalResource {
       LOG.debug("Dumping test index \"{}\"", EsSetupRule.TEST_INDEX);
       EsUtil.deleteIndex(esSetupRule.getEsClient(), EsSetupRule.TEST_INDEX);
       LOG.debug("Creating test index \"{}\"", EsSetupRule.TEST_INDEX);
-      EsUtil.createIndex(esSetupRule.getEsClient(), EsSetupRule.TEST_INDEX, esSetupRule.getEsConfig().nameUsage);
+      EsUtil.createIndex(esSetupRule.getEsClient(),
+          EsSetupRule.TEST_INDEX,
+          NameUsageDocument.class,
+          esSetupRule.getEsConfig().nameUsage);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

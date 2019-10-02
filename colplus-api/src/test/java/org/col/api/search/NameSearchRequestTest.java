@@ -49,12 +49,12 @@ public class NameSearchRequestTest extends SerdeTestBase<NameSearchRequest> {
     NameSearchRequest r = new NameSearchRequest();
     r.addFilter(NameSearchParameter.DATASET_KEY, "123");
     r.addFilter(NameSearchParameter.DATASET_KEY, 1234);
-    assertEquals(ImmutableList.of(123, 1234), r.getFilterValue(NameSearchParameter.DATASET_KEY));
+    assertEquals(ImmutableList.of(123, 1234), r.getFilterValues(NameSearchParameter.DATASET_KEY));
     r.addFilter(NameSearchParameter.DATASET_KEY, Lists.newArrayList(1234, 12, 13, 14));
-    assertEquals(ImmutableList.of(123, 1234, 1234, 12, 13, 14), r.getFilterValue(NameSearchParameter.DATASET_KEY));
+    assertEquals(ImmutableList.of(123, 1234, 1234, 12, 13, 14), r.getFilterValues(NameSearchParameter.DATASET_KEY));
 
     r.addFilter(NameSearchParameter.DATASET_KEY, Lists.newArrayList("1", "2"));
-    assertEquals(ImmutableList.of(123, 1234, 1234, 12, 13, 14, 1, 2), r.getFilterValue(NameSearchParameter.DATASET_KEY));
+    assertEquals(ImmutableList.of(123, 1234, 1234, 12, 13, 14, 1, 2), r.getFilterValues(NameSearchParameter.DATASET_KEY));
   }
   
   @Test
@@ -83,7 +83,7 @@ public class NameSearchRequestTest extends SerdeTestBase<NameSearchRequest> {
       String val = testVal(p);
       r.addFilter(p, val);
       r.addFilter(p, Lists.newArrayList(val, val));
-      assertEquals(Lists.newArrayList(val, val, val), r.getFilterValue(p));
+      assertEquals(Lists.newArrayList(val, val, val), r.getFilterValues(p));
     }
     assertEquals(NameSearchParameter.values().length, r.getFilters().size());
   }

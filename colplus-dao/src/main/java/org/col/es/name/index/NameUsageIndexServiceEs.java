@@ -160,7 +160,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     int tCount = 0, bCount = 0;
     try (SqlSession session = factory.openSession()) {
       EsUtil.deleteIndex(client, index);
-      EsUtil.createIndex(client, index, esConfig.nameUsage);
+      EsUtil.createIndex(client, index, NameUsageDocument.class, esConfig.nameUsage);
       List<Integer> keys = session.getMapper(DatasetMapper.class).keys();
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
       for (Integer datasetKey : keys) {
@@ -194,7 +194,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       EsUtil.deleteDataset(client, index, datasetKey);
       EsUtil.refreshIndex(client, index);
     } else {
-      EsUtil.createIndex(client, index, esConfig.nameUsage);
+      EsUtil.createIndex(client, index, NameUsageDocument.class, esConfig.nameUsage);
     }
   }
 

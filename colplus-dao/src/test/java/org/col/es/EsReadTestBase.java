@@ -50,7 +50,7 @@ public class EsReadTestBase {
   protected void destroyAndCreateIndex() {
     try {
       EsUtil.deleteIndex(getEsClient(), indexName);
-      EsUtil.createIndex(getEsClient(), indexName, getEsConfig().nameUsage);
+      EsUtil.createIndex(getEsClient(), indexName, NameUsageDocument.class, getEsConfig().nameUsage);
     } catch (IOException e) {
       throw new EsException(e);
     }

@@ -1,6 +1,5 @@
 package org.col.es.name.search;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -11,8 +10,6 @@ import java.util.stream.Collectors;
 
 import org.col.api.model.Name;
 import org.col.api.model.NameUsage;
-import org.col.api.model.Page;
-import org.col.api.model.ResultPage;
 import org.col.api.model.SimpleName;
 import org.col.api.model.Taxon;
 import org.col.api.search.NameSearchParameter;
@@ -20,29 +17,22 @@ import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.NomStatus;
 import org.col.es.EsReadTestBase;
-import org.col.es.EsUtil;
-import org.col.es.name.NameUsageWrapperConverter;
-import org.col.es.name.search.NameUsageSearchServiceEs;
-import org.elasticsearch.client.RestClient;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.col.api.search.NameSearchParameter.*;
+import static org.col.api.search.NameSearchParameter.DATASET_KEY;
 import static org.col.api.search.NameSearchParameter.DECISION_KEY;
 import static org.col.api.search.NameSearchParameter.NAME_ID;
 import static org.col.api.search.NameSearchParameter.NAME_INDEX_ID;
 import static org.col.api.search.NameSearchParameter.NOM_STATUS;
 import static org.col.api.search.NameSearchParameter.PUBLISHED_IN_ID;
 import static org.col.api.search.NameSearchParameter.PUBLISHER_KEY;
+import static org.col.api.search.NameSearchParameter.SECTOR_KEY;
 import static org.col.api.search.NameSearchParameter.TAXON_ID;
 import static org.col.api.search.NameSearchRequest.IS_NOT_NULL;
 import static org.col.api.search.NameSearchRequest.IS_NULL;
-import static org.col.es.EsUtil.insert;
-import static org.col.es.EsUtil.refreshIndex;
 import static org.junit.Assert.assertEquals;
 
 public class NameSearchTestAllParamsTest extends EsReadTestBase {
@@ -50,25 +40,9 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
   private static final Logger LOG = LoggerFactory.getLogger(NameSearchTestAllParamsTest.class);
   private static EnumSet<NameSearchParameter> tested = EnumSet.noneOf(NameSearchParameter.class);
 
-  private static RestClient client;
-  private static NameUsageSearchServiceEs svc;
-
-  @BeforeClass
-  public static void init() {
-    client = esSetupRule.getEsClient();
-    svc = new NameUsageSearchServiceEs(indexName, esSetupRule.getEsClient());
-  }
-
-  @AfterClass
-  public static void shutdown() throws IOException {
-    // EsUtil.deleteIndex(client, indexName);
-    client.close();
-  }
-
   @Before
-  public void before() throws IOException {
-    EsUtil.deleteIndex(client, indexName);
-    EsUtil.createIndex(client, indexName, getEsConfig().nameUsage);
+  public void before() {
+    destroyAndCreateIndex();
   }
 
   /*
@@ -83,7 +57,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
   }
 
   @Test
-  public void testTaxonID1() throws IOException {
+  public void testTaxonID1() {
 
     SimpleName t1 = new SimpleName("1", null, null);
     SimpleName t2 = new SimpleName("2", null, null);
@@ -100,16 +74,11 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     nuw3.setClassification(Arrays.asList(t3, t4, t5));
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.setClassification(Arrays.asList(t4, t5, t6));
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
 
-    insert(client, indexName, transfer.toDocument(nuw1));
-    insert(client, indexName, transfer.toDocument(nuw2));
-    insert(client, indexName, transfer.toDocument(nuw3));
-    insert(client, indexName, transfer.toDocument(nuw4));
-    refreshIndex(client, indexName);
+    index(nuw1, nuw2, nuw3, nuw4);
 
-    NameSearchRequest req = new NameSearchRequest();
-    req.addFilter(TAXON_ID, "3");
+    NameSearchRequest query = new NameSearchRequest();
+    query.addFilter(TAXON_ID, "3");
 
     /*
      * Yikes - again, remember to resurrect the NameUsageWrappers b/c they will get pruned on insert !!!
@@ -120,15 +89,14 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     nuw4.setClassification(Arrays.asList(t4, t5, t6));
     List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw3);
 
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
-    assertEquals(expected, result.getResult());
+    assertEquals(expected, search(query).getResult());
 
     countdown(TAXON_ID);
 
   }
 
   @Test
-  public void testTaxonID2() throws IOException {
+  public void testTaxonID2() {
     SimpleName t1 = new SimpleName("1", null, null);
     SimpleName t2 = new SimpleName("2", null, null);
     SimpleName t3 = new SimpleName("3", null, null);
@@ -151,17 +119,11 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw6 = minimalNameUsage();
     nuw6.setClassification(Arrays.asList(t6, t7, t8));
 
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
+    index(nuw1, nuw2, nuw3, nuw4);
 
-    insert(client, indexName, transfer.toDocument(nuw1));
-    insert(client, indexName, transfer.toDocument(nuw2));
-    insert(client, indexName, transfer.toDocument(nuw3));
-    insert(client, indexName, transfer.toDocument(nuw4));
-    refreshIndex(client, indexName);
-
-    NameSearchRequest req = new NameSearchRequest();
-    req.addFilter(TAXON_ID, "4");
-    req.addFilter(TAXON_ID, "5");
+    NameSearchRequest query = new NameSearchRequest();
+    query.addFilter(TAXON_ID, "4");
+    query.addFilter(TAXON_ID, "5");
 
     /*
      * Yikes - again, remember to resurrect the NameUsageWrappers b/c they will get pruned on insert !!!
@@ -175,15 +137,14 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     List<NameUsageWrapper> expected = Arrays.asList(nuw2, nuw3, nuw4);
 
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
-    assertEquals(expected, result.getResult());
+    assertEquals(expected, search(query).getResult());
 
     countdown(TAXON_ID);
 
   }
 
   @Test
-  public void testPublisherKey1() throws IOException {
+  public void testPublisherKey1() {
     UUID uuid1 = UUID.randomUUID();
     UUID uuid2 = UUID.randomUUID();
     NameUsageWrapper nuw1 = minimalNameUsage();
@@ -195,16 +156,10 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.setPublisherKey(null);
 
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
+    index(nuw1, nuw2, nuw3, nuw4);
 
-    insert(client, indexName, transfer.toDocument(nuw1));
-    insert(client, indexName, transfer.toDocument(nuw2));
-    insert(client, indexName, transfer.toDocument(nuw3));
-    insert(client, indexName, transfer.toDocument(nuw4));
-    refreshIndex(client, indexName);
-
-    NameSearchRequest req = new NameSearchRequest();
-    req.addFilter(PUBLISHER_KEY, uuid1);
+    NameSearchRequest query = new NameSearchRequest();
+    query.addFilter(PUBLISHER_KEY, uuid1);
 
     /*
      * Yikes - again, remember to resurrect the expected result, because NameUsageWrappers will get pruned on insert !!!
@@ -216,15 +171,14 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2);
 
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
-    assertEquals(expected, result.getResult());
+    assertEquals(expected, search(query).getResult());
 
     countdown(PUBLISHER_KEY);
 
   }
 
   @Test
-  public void testPublisherKey2() throws IOException {
+  public void testPublisherKey2() {
     UUID uuid1 = UUID.randomUUID();
     UUID uuid2 = UUID.randomUUID();
     NameUsageWrapper nuw1 = minimalNameUsage();
@@ -236,16 +190,10 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.setPublisherKey(null);
 
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
+    index(nuw1, nuw2, nuw3, nuw4);
 
-    insert(client, indexName, transfer.toDocument(nuw1));
-    insert(client, indexName, transfer.toDocument(nuw2));
-    insert(client, indexName, transfer.toDocument(nuw3));
-    insert(client, indexName, transfer.toDocument(nuw4));
-    refreshIndex(client, indexName);
-
-    NameSearchRequest req = new NameSearchRequest();
-    req.addFilter(PUBLISHER_KEY, IS_NULL);
+    NameSearchRequest query = new NameSearchRequest();
+    query.addFilter(PUBLISHER_KEY, IS_NULL);
 
     nuw1.setPublisherKey(uuid1);
     nuw2.setPublisherKey(uuid1);
@@ -254,15 +202,14 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     List<NameUsageWrapper> expected = Arrays.asList(nuw4);
 
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
-    assertEquals(expected, result.getResult());
+    assertEquals(expected, search(query).getResult());
 
     countdown(PUBLISHER_KEY);
 
   }
 
   @Test
-  public void testPublisherKey3() throws IOException {
+  public void testPublisherKey3() {
     UUID uuid1 = UUID.randomUUID();
     UUID uuid2 = UUID.randomUUID();
     NameUsageWrapper nuw1 = minimalNameUsage();
@@ -274,16 +221,10 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.setPublisherKey(null);
 
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
+    index(nuw1, nuw2, nuw3, nuw4);
 
-    insert(client, indexName, transfer.toDocument(nuw1));
-    insert(client, indexName, transfer.toDocument(nuw2));
-    insert(client, indexName, transfer.toDocument(nuw3));
-    insert(client, indexName, transfer.toDocument(nuw4));
-    refreshIndex(client, indexName);
-
-    NameSearchRequest req = new NameSearchRequest();
-    req.addFilter(PUBLISHER_KEY, IS_NULL);
+    NameSearchRequest query = new NameSearchRequest();
+    query.addFilter(PUBLISHER_KEY, IS_NULL);
 
     nuw1.setPublisherKey(uuid1);
     nuw2.setPublisherKey(uuid1);
@@ -292,15 +233,14 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     List<NameUsageWrapper> expected = Arrays.asList(nuw4);
 
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
-    assertEquals(expected, result.getResult());
+    assertEquals(expected, search(query).getResult());
 
     countdown(PUBLISHER_KEY);
 
   }
 
   @Test
-  public void testPublisherKey4() throws IOException {
+  public void testPublisherKey4() {
     UUID uuid1 = UUID.randomUUID();
     UUID uuid2 = UUID.randomUUID();
     NameUsageWrapper nuw1 = minimalNameUsage();
@@ -312,16 +252,10 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.setPublisherKey(null);
 
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
+    index(nuw1, nuw2, nuw3, nuw4);
 
-    insert(client, indexName, transfer.toDocument(nuw1));
-    insert(client, indexName, transfer.toDocument(nuw2));
-    insert(client, indexName, transfer.toDocument(nuw3));
-    insert(client, indexName, transfer.toDocument(nuw4));
-    refreshIndex(client, indexName);
-
-    NameSearchRequest req = new NameSearchRequest();
-    req.addFilter(PUBLISHER_KEY, IS_NOT_NULL);
+    NameSearchRequest query = new NameSearchRequest();
+    query.addFilter(PUBLISHER_KEY, IS_NOT_NULL);
 
     nuw1.setPublisherKey(uuid1);
     nuw2.setPublisherKey(uuid1);
@@ -330,15 +264,14 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw3);
 
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
-    assertEquals(expected, result.getResult());
+    assertEquals(expected, search(query).getResult());
 
     countdown(PUBLISHER_KEY);
 
   }
 
   @Test
-  public void testDecisionKey1() throws IOException {
+  public void testDecisionKey1() {
     Integer key1 = 100;
     Integer key2 = 101;
     NameUsageWrapper nuw1 = minimalNameUsage();
@@ -350,16 +283,10 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.setDecisionKey(null);
 
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
+    index(nuw1, nuw2, nuw3, nuw4);
 
-    insert(client, indexName, transfer.toDocument(nuw1));
-    insert(client, indexName, transfer.toDocument(nuw2));
-    insert(client, indexName, transfer.toDocument(nuw3));
-    insert(client, indexName, transfer.toDocument(nuw4));
-    refreshIndex(client, indexName);
-
-    NameSearchRequest req = new NameSearchRequest();
-    req.addFilter(DECISION_KEY, key1);
+    NameSearchRequest query = new NameSearchRequest();
+    query.addFilter(DECISION_KEY, key1);
 
     nuw1.setDecisionKey(key1);
     nuw2.setDecisionKey(key1);
@@ -367,15 +294,14 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     nuw4.setDecisionKey(null);
     List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2);
 
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
-    assertEquals(expected, result.getResult());
+    assertEquals(expected, search(query).getResult());
 
     countdown(DECISION_KEY);
 
   }
 
   @Test
-  public void testDecisionKey2() throws IOException {
+  public void testDecisionKey2() {
     Integer key1 = 100;
     Integer key2 = 101;
     NameUsageWrapper nuw1 = minimalNameUsage();
@@ -387,16 +313,10 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.setDecisionKey(null);
 
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
+    index(nuw1, nuw2, nuw3, nuw4);
 
-    insert(client, indexName, transfer.toDocument(nuw1));
-    insert(client, indexName, transfer.toDocument(nuw2));
-    insert(client, indexName, transfer.toDocument(nuw3));
-    insert(client, indexName, transfer.toDocument(nuw4));
-    refreshIndex(client, indexName);
-
-    NameSearchRequest req = new NameSearchRequest();
-    req.addFilter(DECISION_KEY, IS_NOT_NULL);
+    NameSearchRequest query = new NameSearchRequest();
+    query.addFilter(DECISION_KEY, IS_NOT_NULL);
 
     nuw1.setDecisionKey(key1);
     nuw2.setDecisionKey(key1);
@@ -404,15 +324,14 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     nuw4.setDecisionKey(null);
     List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw3);
 
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
-    assertEquals(expected, result.getResult());
+    assertEquals(expected, search(query).getResult());
 
     countdown(DECISION_KEY);
 
   }
 
   @Test
-  public void testDecisionKey3() throws IOException {
+  public void testDecisionKey3() {
     Integer key1 = 100;
     Integer key2 = 101;
     NameUsageWrapper nuw1 = minimalNameUsage();
@@ -424,16 +343,10 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.setDecisionKey(null);
 
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
+    index(nuw1, nuw2, nuw3, nuw4);
 
-    insert(client, indexName, transfer.toDocument(nuw1));
-    insert(client, indexName, transfer.toDocument(nuw2));
-    insert(client, indexName, transfer.toDocument(nuw3));
-    insert(client, indexName, transfer.toDocument(nuw4));
-    refreshIndex(client, indexName);
-
-    NameSearchRequest req = new NameSearchRequest();
-    req.addFilter(DECISION_KEY, IS_NULL);
+    NameSearchRequest query = new NameSearchRequest();
+    query.addFilter(DECISION_KEY, IS_NULL);
 
     nuw1.setDecisionKey(key1);
     nuw2.setDecisionKey(key1);
@@ -441,15 +354,14 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     nuw4.setDecisionKey(null);
     List<NameUsageWrapper> expected = Arrays.asList(nuw4);
 
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
-    assertEquals(expected, result.getResult());
+    assertEquals(expected, search(query).getResult());
 
     countdown(DECISION_KEY);
 
   }
 
   @Test
-  public void testNameIndexId1() throws IOException {
+  public void testNameIndexId1() {
     String key1 = "100";
     String key2 = "101";
     NameUsageWrapper nuw1 = minimalNameUsage();
@@ -461,16 +373,10 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setNameIndexId(null);
 
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
+    index(nuw1, nuw2, nuw3, nuw4);
 
-    insert(client, indexName, transfer.toDocument(nuw1));
-    insert(client, indexName, transfer.toDocument(nuw2));
-    insert(client, indexName, transfer.toDocument(nuw3));
-    insert(client, indexName, transfer.toDocument(nuw4));
-    refreshIndex(client, indexName);
-
-    NameSearchRequest req = new NameSearchRequest();
-    req.addFilter(NAME_INDEX_ID, key2);
+    NameSearchRequest query = new NameSearchRequest();
+    query.addFilter(NAME_INDEX_ID, key2);
 
     nuw1.getUsage().getName().setNameIndexId(key1);
     nuw2.getUsage().getName().setNameIndexId(key1);
@@ -478,17 +384,13 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     nuw4.getUsage().getName().setNameIndexId(null);
     List<NameUsageWrapper> expected = Arrays.asList(nuw3);
 
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
-    for (NameUsageWrapper u : result.getResult()) {
-      assertEquals(key2, u.getUsage().getName().getNameIndexId());
-    }
-    assertEquals(expected, result.getResult());
+    assertEquals(expected, search(query).getResult());
 
     countdown(NAME_INDEX_ID);
   }
 
   @Test
-  public void testNameIndexId2() throws IOException {
+  public void testNameIndexId2() {
     String key1 = "100";
     String key2 = "101";
     NameUsageWrapper nuw1 = minimalNameUsage();
@@ -500,16 +402,10 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setNameIndexId(null);
 
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
+    index(nuw1, nuw2, nuw3, nuw4);
 
-    insert(client, indexName, transfer.toDocument(nuw1));
-    insert(client, indexName, transfer.toDocument(nuw2));
-    insert(client, indexName, transfer.toDocument(nuw3));
-    insert(client, indexName, transfer.toDocument(nuw4));
-    refreshIndex(client, indexName);
-
-    NameSearchRequest req = new NameSearchRequest();
-    req.addFilter(NAME_INDEX_ID, IS_NULL);
+    NameSearchRequest query = new NameSearchRequest();
+    query.addFilter(NAME_INDEX_ID, IS_NULL);
 
     nuw1.getUsage().getName().setNameIndexId(key1);
     nuw2.getUsage().getName().setNameIndexId(key1);
@@ -517,15 +413,14 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     nuw4.getUsage().getName().setNameIndexId(null);
     List<NameUsageWrapper> expected = Arrays.asList(nuw4);
 
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
-    assertEquals(expected, result.getResult());
+    assertEquals(expected, search(query).getResult());
 
     countdown(NAME_INDEX_ID);
 
   }
 
   @Test
-  public void testNameIndexId3() throws IOException {
+  public void testNameIndexId3() {
     String key1 = "100";
     String key2 = "101";
     NameUsageWrapper nuw1 = minimalNameUsage();
@@ -537,16 +432,10 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setNameIndexId(null);
 
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
+    index(nuw1, nuw2, nuw3, nuw4);
 
-    insert(client, indexName, transfer.toDocument(nuw1));
-    insert(client, indexName, transfer.toDocument(nuw2));
-    insert(client, indexName, transfer.toDocument(nuw3));
-    insert(client, indexName, transfer.toDocument(nuw4));
-    refreshIndex(client, indexName);
-
-    NameSearchRequest req = new NameSearchRequest();
-    req.addFilter(NAME_INDEX_ID, IS_NOT_NULL);
+    NameSearchRequest query = new NameSearchRequest();
+    query.addFilter(NAME_INDEX_ID, IS_NOT_NULL);
 
     nuw1.getUsage().getName().setNameIndexId(key1);
     nuw2.getUsage().getName().setNameIndexId(key1);
@@ -554,15 +443,14 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     nuw4.getUsage().getName().setNameIndexId(null);
     List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw3);
 
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
-    assertEquals(expected, result.getResult());
+    assertEquals(expected, search(query).getResult());
 
     countdown(NAME_INDEX_ID);
 
   }
 
   @Test
-  public void testPublishedInId1() throws IOException {
+  public void testPublishedInId1() {
     String key1 = "100";
     String key2 = "101";
     NameUsageWrapper nuw1 = minimalNameUsage();
@@ -574,16 +462,10 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setPublishedInId(null);
 
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
+    index(nuw1, nuw2, nuw3, nuw4);
 
-    insert(client, indexName, transfer.toDocument(nuw1));
-    insert(client, indexName, transfer.toDocument(nuw2));
-    insert(client, indexName, transfer.toDocument(nuw3));
-    insert(client, indexName, transfer.toDocument(nuw4));
-    refreshIndex(client, indexName);
-
-    NameSearchRequest req = new NameSearchRequest();
-    req.addFilter(PUBLISHED_IN_ID, key2);
+    NameSearchRequest query = new NameSearchRequest();
+    query.addFilter(PUBLISHED_IN_ID, key2);
 
     nuw1.getUsage().getName().setPublishedInId(key1);
     nuw2.getUsage().getName().setPublishedInId(key1);
@@ -591,14 +473,13 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     nuw4.getUsage().getName().setNameIndexId(null);
     List<NameUsageWrapper> expected = Arrays.asList(nuw3);
 
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
-    assertEquals(expected, result.getResult());
+    assertEquals(expected, search(query).getResult());
 
     countdown(PUBLISHED_IN_ID);
   }
 
   @Test
-  public void testPublishedInId2() throws IOException {
+  public void testPublishedInId2() {
     String key1 = "100";
     String key2 = "101";
     NameUsageWrapper nuw1 = minimalNameUsage();
@@ -610,17 +491,11 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setPublishedInId(null);
 
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
+    index(nuw1, nuw2, nuw3, nuw4);
 
-    insert(client, indexName, transfer.toDocument(nuw1));
-    insert(client, indexName, transfer.toDocument(nuw2));
-    insert(client, indexName, transfer.toDocument(nuw3));
-    insert(client, indexName, transfer.toDocument(nuw4));
-    refreshIndex(client, indexName);
-
-    NameSearchRequest req = new NameSearchRequest();
-    req.addFilter(PUBLISHED_IN_ID, key2);
-    req.addFilter(PUBLISHED_IN_ID, IS_NULL);
+    NameSearchRequest query = new NameSearchRequest();
+    query.addFilter(PUBLISHED_IN_ID, key2);
+    query.addFilter(PUBLISHED_IN_ID, IS_NULL);
 
     nuw1.getUsage().getName().setPublishedInId(key1);
     nuw2.getUsage().getName().setPublishedInId(key1);
@@ -628,14 +503,13 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     nuw4.getUsage().getName().setNameIndexId(null);
     List<NameUsageWrapper> expected = Arrays.asList(nuw3, nuw4);
 
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
-    assertEquals(expected, result.getResult());
+    assertEquals(expected, search(query).getResult());
 
     countdown(PUBLISHED_IN_ID);
   }
 
   @Test
-  public void testPublishedInId3() throws IOException {
+  public void testPublishedInId3() {
     String key1 = "100";
     String key2 = "101";
     NameUsageWrapper nuw1 = minimalNameUsage();
@@ -647,16 +521,10 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setPublishedInId(null);
 
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
+    index(nuw1, nuw2, nuw3, nuw4);
 
-    insert(client, indexName, transfer.toDocument(nuw1));
-    insert(client, indexName, transfer.toDocument(nuw2));
-    insert(client, indexName, transfer.toDocument(nuw3));
-    insert(client, indexName, transfer.toDocument(nuw4));
-    refreshIndex(client, indexName);
-
-    NameSearchRequest req = new NameSearchRequest();
-    req.addFilter(PUBLISHED_IN_ID, IS_NOT_NULL);
+    NameSearchRequest query = new NameSearchRequest();
+    query.addFilter(PUBLISHED_IN_ID, IS_NOT_NULL);
 
     nuw1.getUsage().getName().setPublishedInId(key1);
     nuw2.getUsage().getName().setPublishedInId(key1);
@@ -664,14 +532,13 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     nuw4.getUsage().getName().setNameIndexId(null);
     List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw3);
 
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
-    assertEquals(expected, result.getResult());
+    assertEquals(expected, search(query).getResult());
 
     countdown(PUBLISHED_IN_ID);
   }
 
   @Test
-  public void testNameId1() throws IOException {
+  public void testNameId1() {
     String key1 = "100";
     String key2 = "101";
     NameUsageWrapper nuw1 = minimalNameUsage();
@@ -683,16 +550,10 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setId(null);
 
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
+    index(nuw1, nuw2, nuw3, nuw4);
 
-    insert(client, indexName, transfer.toDocument(nuw1));
-    insert(client, indexName, transfer.toDocument(nuw2));
-    insert(client, indexName, transfer.toDocument(nuw3));
-    insert(client, indexName, transfer.toDocument(nuw4));
-    refreshIndex(client, indexName);
-
-    NameSearchRequest req = new NameSearchRequest();
-    req.addFilter(NAME_ID, key1);
+    NameSearchRequest query = new NameSearchRequest();
+    query.addFilter(NAME_ID, key1);
 
     nuw1.getUsage().getName().setId(key1);
     nuw2.getUsage().getName().setId(key1);
@@ -700,14 +561,13 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     nuw4.getUsage().getName().setId(null);
     List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2);
 
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
-    assertEquals(expected, result.getResult());
+    assertEquals(expected, search(query).getResult());
 
     countdown(NAME_ID);
   }
 
   @Test
-  public void testDatasetKey1() throws IOException {
+  public void testDatasetKey1() {
     Integer key1 = 100;
     Integer key2 = 101;
     NameUsageWrapper nuw1 = minimalNameUsage();
@@ -719,16 +579,10 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setDatasetKey(null);
 
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
+    index(nuw1, nuw2, nuw3, nuw4);
 
-    insert(client, indexName, transfer.toDocument(nuw1));
-    insert(client, indexName, transfer.toDocument(nuw2));
-    insert(client, indexName, transfer.toDocument(nuw3));
-    insert(client, indexName, transfer.toDocument(nuw4));
-    refreshIndex(client, indexName);
-
-    NameSearchRequest req = new NameSearchRequest();
-    req.addFilter(DATASET_KEY, key1);
+    NameSearchRequest query = new NameSearchRequest();
+    query.addFilter(DATASET_KEY, key1);
 
     nuw1.getUsage().getName().setDatasetKey(key1);
     nuw2.getUsage().getName().setDatasetKey(key1);
@@ -736,14 +590,13 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     nuw4.getUsage().getName().setDatasetKey(null);
     List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2);
 
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
-    assertEquals(expected, result.getResult());
+    assertEquals(expected, search(query).getResult());
 
     countdown(DATASET_KEY);
   }
 
   @Test
-  public void testDatasetKey2() throws IOException {
+  public void testDatasetKey2() {
     Integer key1 = 100;
     Integer key2 = 101;
     NameUsageWrapper nuw1 = minimalNameUsage();
@@ -755,16 +608,10 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setDatasetKey(null);
 
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
+    index(nuw1, nuw2, nuw3, nuw4);
 
-    insert(client, indexName, transfer.toDocument(nuw1));
-    insert(client, indexName, transfer.toDocument(nuw2));
-    insert(client, indexName, transfer.toDocument(nuw3));
-    insert(client, indexName, transfer.toDocument(nuw4));
-    refreshIndex(client, indexName);
-
-    NameSearchRequest req = new NameSearchRequest();
-    req.addFilter(DATASET_KEY, 345678);
+    NameSearchRequest query = new NameSearchRequest();
+    query.addFilter(DATASET_KEY, 345678);
 
     nuw1.getUsage().getName().setDatasetKey(key1);
     nuw2.getUsage().getName().setDatasetKey(key1);
@@ -772,14 +619,13 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     nuw4.getUsage().getName().setDatasetKey(null);
     List<NameUsageWrapper> expected = Collections.emptyList();
 
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
-    assertEquals(expected, result.getResult());
+    assertEquals(expected, search(query).getResult());
 
     countdown(DATASET_KEY);
   }
 
   @Test
-  public void testNomStatus1() throws IOException {
+  public void testNomStatus1() {
     NameUsageWrapper nuw1 = minimalNameUsage();
     nuw1.getUsage().getName().setNomStatus(NomStatus.CHRESONYM);
     NameUsageWrapper nuw2 = minimalNameUsage();
@@ -789,16 +635,10 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setNomStatus(null);
 
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
+    index(nuw1, nuw2, nuw3, nuw4);
 
-    insert(client, indexName, transfer.toDocument(nuw1));
-    insert(client, indexName, transfer.toDocument(nuw2));
-    insert(client, indexName, transfer.toDocument(nuw3));
-    insert(client, indexName, transfer.toDocument(nuw4));
-    refreshIndex(client, indexName);
-
-    NameSearchRequest req = new NameSearchRequest();
-    req.addFilter(NOM_STATUS, "not established");
+    NameSearchRequest query = new NameSearchRequest();
+    query.addFilter(NOM_STATUS, "not established");
 
     nuw1.getUsage().getName().setNomStatus(NomStatus.CHRESONYM);
     nuw2.getUsage().getName().setNomStatus(NomStatus.REJECTED);
@@ -806,14 +646,13 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     nuw4.getUsage().getName().setNomStatus(null);
     List<NameUsageWrapper> expected = Arrays.asList(nuw3);
 
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
-    assertEquals(expected, result.getResult());
+    assertEquals(expected, search(query).getResult());
 
     countdown(NOM_STATUS);
   }
 
   @Test
-  public void testNomStatus2() throws IOException {
+  public void testNomStatus2() {
     NameUsageWrapper nuw1 = minimalNameUsage();
     nuw1.getUsage().getName().setNomStatus(NomStatus.CHRESONYM);
     NameUsageWrapper nuw2 = minimalNameUsage();
@@ -823,18 +662,12 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setNomStatus(null);
 
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
+    index(nuw1, nuw2, nuw3, nuw4);
 
-    insert(client, indexName, transfer.toDocument(nuw1));
-    insert(client, indexName, transfer.toDocument(nuw2));
-    insert(client, indexName, transfer.toDocument(nuw3));
-    insert(client, indexName, transfer.toDocument(nuw4));
-    refreshIndex(client, indexName);
-
-    NameSearchRequest req = new NameSearchRequest();
-    req.addFilter(NOM_STATUS, NomStatus.CHRESONYM);
-    req.addFilter(NOM_STATUS, NomStatus.REJECTED);
-    req.addFilter(NOM_STATUS, IS_NULL);
+    NameSearchRequest query = new NameSearchRequest();
+    query.addFilter(NOM_STATUS, NomStatus.CHRESONYM);
+    query.addFilter(NOM_STATUS, NomStatus.REJECTED);
+    query.addFilter(NOM_STATUS, IS_NULL);
 
     nuw1.getUsage().getName().setNomStatus(NomStatus.CHRESONYM);
     nuw2.getUsage().getName().setNomStatus(NomStatus.REJECTED);
@@ -842,14 +675,13 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     nuw4.getUsage().getName().setNomStatus(null);
     List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw4);
 
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
-    assertEquals(expected, result.getResult());
+    assertEquals(expected, search(query).getResult());
 
     countdown(NOM_STATUS);
   }
 
   @Test
-  public void testSectorKey1() throws IOException {
+  public void testSectorKey1() {
     Integer key1 = 100;
     Integer key2 = 101;
     NameUsageWrapper nuw1 = minimalNameUsage();
@@ -861,16 +693,10 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = minimalNameUsage();
     ((Taxon) nuw4.getUsage()).setSectorKey(null);
 
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
+    index(nuw1, nuw2, nuw3, nuw4);
 
-    insert(client, indexName, transfer.toDocument(nuw1));
-    insert(client, indexName, transfer.toDocument(nuw2));
-    insert(client, indexName, transfer.toDocument(nuw3));
-    insert(client, indexName, transfer.toDocument(nuw4));
-    refreshIndex(client, indexName);
-
-    NameSearchRequest req = new NameSearchRequest();
-    req.addFilter(SECTOR_KEY, IS_NOT_NULL);
+    NameSearchRequest query = new NameSearchRequest();
+    query.addFilter(SECTOR_KEY, IS_NOT_NULL);
 
     ((Taxon) nuw1.getUsage()).setSectorKey(key1);
     ((Taxon) nuw2.getUsage()).setSectorKey(key1);
@@ -878,8 +704,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
     ((Taxon) nuw4.getUsage()).setSectorKey(null);
     List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw3);
 
-    ResultPage<NameUsageWrapper> result = svc.search(indexName, req, new Page());
-    assertEquals(expected, result.getResult());
+    assertEquals(expected, search(query).getResult());
 
     countdown(SECTOR_KEY);
 

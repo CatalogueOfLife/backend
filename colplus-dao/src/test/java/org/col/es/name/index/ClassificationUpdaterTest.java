@@ -7,19 +7,17 @@ import java.util.List;
 
 import org.col.api.model.Name;
 import org.col.api.model.NameUsage;
-import org.col.api.model.Page;
 import org.col.api.model.SimpleName;
 import org.col.api.model.Synonym;
 import org.col.api.model.Taxon;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchRequest.SortBy;
-import org.col.api.search.NameSearchResponse;
 import org.col.api.search.NameUsageWrapper;
 import org.col.es.EsReadTestBase;
 import org.col.es.EsUtil;
-import org.col.es.name.search.NameUsageSearchServiceEs;
-import org.elasticsearch.client.RestClient;
 import org.gbif.nameparser.api.Rank;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.gbif.nameparser.api.Rank.FAMILY;
@@ -28,21 +26,23 @@ import static org.gbif.nameparser.api.Rank.ORDER;
 import static org.gbif.nameparser.api.Rank.SPECIES;
 import static org.junit.Assert.assertEquals;
 
+@Ignore
 public class ClassificationUpdaterTest extends EsReadTestBase {
 
   private static final int DATASET_KEY = 1000;
 
+  @Before
+  public void before() {
+    destroyAndCreateIndex();
+  }
+
   @Test
   public void test1() throws IOException {
 
-    destroyAndCreateIndex();
-
-    RestClient client = getEsClient();
+    index(createTestObjects());
 
     // Index some test objects
-    NameUsageIndexer indexer = new NameUsageIndexer(client, indexName);
-    indexer.accept(createTestObjects());
-    EsUtil.refreshIndex(client, indexName);
+    NameUsageIndexer indexer = new NameUsageIndexer(getEsClient(), indexName);
 
     // Modify the classification of the test objects and run the updater
     List<NameUsageWrapper> nameUsages = createTestObjects();
@@ -50,26 +50,46 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     try (ClassificationUpdater updater = new ClassificationUpdater(indexer, DATASET_KEY)) {
       nameUsages.forEach(updater::handle);
     }
-    EsUtil.refreshIndex(client, indexName);
+    EsUtil.refreshIndex(getEsClient(), indexName);
 
-    // Make sure that what ends up in ES equals the modified name usages
-    NameUsageSearchServiceEs svc = new NameUsageSearchServiceEs(indexName, client);
+    // Make sure that what ends up in ES equals the modified nam usages
     NameSearchRequest query = new NameSearchRequest();
     query.setSortBy(SortBy.NATIVE);
-    NameSearchResponse nsr = svc.search(query, new Page());
 
-    assertEquals(nameUsages, nsr.getResult());
+    assertEquals(createTestObjects(), search(query).getResult());
 
+  }
+
+  private static List<SimpleName> createClassification(Object... data) {
+    List<SimpleName> cl = new ArrayList<>();
+    for (int i = 0; i < data.length; i = i + 3) {
+      SimpleName sn = new SimpleName();
+      sn.setId((String) data[i]);
+      sn.setRank((Rank) data[i + 1]);
+      sn.setName((String) data[i + 2]);
+    }
+    return cl;
   }
 
   private static List<NameUsageWrapper> createTestObjects() {
 
     NameUsageWrapper nuw1 = new NameUsageWrapper();
-    setClassificationIds(nuw1, Arrays.asList("7", "8", "9", "10"));
-    setClassificationRanks(nuw1, Arrays.asList(ORDER, FAMILY, GENUS, SPECIES));
-    setClassificationNames(nuw1, Arrays.asList("order_1", "family_1", "genus_1", "order_1"));
+    nuw1.setClassification(createClassification(
+        "7",
+        ORDER,
+        "order_1",
+        "8",
+        FAMILY,
+        "family_1",
+        "9",
+        GENUS,
+        "genus_1",
+        "10",
+        SPECIES,
+        "order_1"));
     NameUsage nu = new Taxon();
     nu.setId("10");
+    nuw1.setId("10");
     Name name = new Name();
     name.setDatasetKey(DATASET_KEY);
     name.setNameIndexId("A control value that should survive the update process unchanged");
@@ -77,11 +97,22 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     nuw1.setUsage(nu);
 
     NameUsageWrapper nuw2 = new NameUsageWrapper();
-    setClassificationIds(nuw2, Arrays.asList("17", "18", "19", "20"));
-    setClassificationRanks(nuw2, Arrays.asList(ORDER, FAMILY, GENUS, SPECIES));
-    setClassificationNames(nuw2, Arrays.asList("order_2", "family_2", "genus_2", "species_2"));
+    nuw2.setClassification(createClassification(
+        "17",
+        ORDER,
+        "order_2",
+        "18",
+        FAMILY,
+        "family_2",
+        "19",
+        GENUS,
+        "genus_2",
+        "20",
+        SPECIES,
+        "species_2"));
     nu = new Taxon();
     nu.setId("20");
+    nuw2.setId("20");
     name = new Name();
     name.setDatasetKey(DATASET_KEY);
     name.setNameIndexId("A control value that should survive the update process unchanged");
@@ -89,15 +120,29 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     nuw2.setUsage(nu);
 
     NameUsageWrapper nuw3 = new NameUsageWrapper();
-    setClassificationIds(nuw3, Arrays.asList("17", "18", "19", "20", "777"));
-    setClassificationRanks(nuw3, Arrays.asList(ORDER, FAMILY, GENUS, SPECIES, SPECIES));
-    setClassificationNames(nuw3, Arrays.asList("order_2", "family_2", "genus_2", "species_2", "synonym_2"));
+    nuw3.setClassification(createClassification(
+        "17",
+        ORDER,
+        "order_2",
+        "18",
+        FAMILY,
+        "family_2",
+        "19",
+        GENUS,
+        "genus_2",
+        "20",
+        SPECIES,
+        "species_2",
+        "777",
+        SPECIES,
+        "synonym_2"));
     nu = new Synonym();
     // Create the most minimalistic taxon that will still make it through the indexing process without NPEs etc.
     Taxon accepted = new Taxon();
     accepted.setName(new Name());
     ((Synonym) nu).setAccepted(accepted);
     nu.setId("777");
+    nuw3.setId("777");
     name = new Name();
     name.setDatasetKey(DATASET_KEY);
     name.setNameIndexId("A control value that should survive the update process unchanged");
@@ -105,53 +150,6 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     nuw3.setUsage(nu);
 
     return Arrays.asList(nuw1, nuw2, nuw3);
-  }
-
-  // These odd methods exist to bridge legacy code, where ids, names and ranks were set separately:
-
-  private static void setClassificationNames(NameUsageWrapper nuw, List<String> names) {
-    if (nuw.getClassification() == null) {
-      nuw.setClassification(new ArrayList<>(names.size()));
-      SimpleName sn;
-      for (int i = 0; i < names.size(); i++) {
-        (sn = new SimpleName()).setName(names.get(i));
-        nuw.getClassification().add(sn);
-      }
-    } else {
-      for (int i = 0; i < names.size(); i++) {
-        nuw.getClassification().get(i).setName(names.get(i));
-      }
-    }
-  }
-
-  private static void setClassificationRanks(NameUsageWrapper nuw, List<Rank> ranks) {
-    if (nuw.getClassification() == null) {
-      nuw.setClassification(new ArrayList<>(ranks.size()));
-      SimpleName sn;
-      for (int i = 0; i < ranks.size(); i++) {
-        (sn = new SimpleName()).setRank(ranks.get(i));
-        nuw.getClassification().add(sn);
-      }
-    } else {
-      for (int i = 0; i < ranks.size(); i++) {
-        nuw.getClassification().get(i).setRank(ranks.get(i));
-      }
-    }
-  }
-
-  private static void setClassificationIds(NameUsageWrapper nuw, List<String> ids) {
-    if (nuw.getClassification() == null) {
-      nuw.setClassification(new ArrayList<>(ids.size()));
-      SimpleName sn;
-      for (int i = 0; i < ids.size(); i++) {
-        (sn = new SimpleName()).setId(ids.get(i));
-        nuw.getClassification().add(sn);
-      }
-    } else {
-      for (int i = 0; i < ids.size(); i++) {
-        nuw.getClassification().get(i).setId(ids.get(i));
-      }
-    }
   }
 
 }
