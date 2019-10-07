@@ -61,4 +61,5 @@ public class EsConfig {
   public boolean isEmpty() {
     return hosts == null || nameUsage == null;
   }
+
 }

@@ -1,0 +1,6 @@
+id,homotypic_name_id,verbatim_key,scientific_name,genus,specific_epithet,rank,published_in_id,published_in_page
+http://services.snsb.info/DTNtaxonlists/rest/v0.1/names/DiversityTaxonNames_Insecta/5009538/,name-4,,Apia apis,Apia,apis,species,,
+name-1,name-1,,Malus sylvestris,Malus,sylvestris,species,ref-1,712
+name-2,name-2,,Larus fuscus,Larus,fuscus,species,,
+name-3,name-2,,Larus fusca,Larus,fusca,species,,
+name-4,name-4,,Larus erfundus,Larus,erfundus,species,,

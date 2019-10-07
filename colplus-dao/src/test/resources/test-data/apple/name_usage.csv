@@ -1,0 +1,5 @@
+id,parent_id,status,verbatim_key,name_id,reference_ids,extinct,temporal_range_start,temporal_range_end
+root-1,,0,1,name-1,"{ref-1}",false,,
+root-2,,0,5,name-2,"{ref-1,ref-1b}",true,Aalenian,Sinemurian
+s1,root-2,2,,name-3,{},,,
+s2,root-2,2,,name-4,{},,,

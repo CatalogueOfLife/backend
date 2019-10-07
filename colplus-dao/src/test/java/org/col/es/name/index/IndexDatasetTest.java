@@ -10,7 +10,7 @@ import org.elasticsearch.client.RestClient;
 import org.junit.Ignore;
 import org.junit.Test;
 
-//@Ignore // really only to play around with substantial amounts of data
+@Ignore
 public class IndexDatasetTest extends EsReadWriteTestBase {
 
   @Test
