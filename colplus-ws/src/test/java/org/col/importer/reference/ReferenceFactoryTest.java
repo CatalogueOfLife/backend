@@ -46,12 +46,13 @@ public class ReferenceFactoryTest {
   
   @Test
   public void fromColDP() {
-    Reference r = rf.fromColDP("referenceID", "my full citation to be ignored", "authors", "1920", "title", "source", "7:details", doi, link, issues);
+    Reference r = rf.fromColDP("referenceID", "my full citation to be ignored", "authors", "1920", "title", "source", "7:details", doi, link, "nonsense", issues);
     assertEquals("referenceID", r.getId());
     assertEquals(1920, (int) r.getYear());
     assertEquals("authors", r.getCsl().getAuthor()[0].getFamily());
     assertEquals("title", r.getCsl().getTitle());
     assertEquals("source", r.getCsl().getContainerTitle());
+    assertEquals("nonsense", r.getRemarks());
     assertEquals(doi, r.getCsl().getDOI());
     assertEquals(link, r.getCsl().getURL());
     assertEquals("authors. title. source. 7:details (1920).", r.getCitation());

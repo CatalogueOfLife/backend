@@ -52,6 +52,7 @@ public class ColdpInterpreter extends InterpreterBase {
         v.get(ColdpTerm.details),
         v.get(ColdpTerm.doi),
         v.get(ColdpTerm.link),
+        v.get(ColdpTerm.remarks),
         v
     ));
   }

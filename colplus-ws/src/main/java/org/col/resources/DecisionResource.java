@@ -13,6 +13,7 @@ import javax.ws.rs.core.MediaType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.EditorialDecision;
+import org.col.api.vocab.Datasets;
 import org.col.dao.DecisionDao;
 import org.col.db.mapper.DecisionMapper;
 import org.col.es.name.index.NameUsageIndexService;
@@ -33,19 +34,17 @@ public class DecisionResource extends CatalogueEntityResource<EditorialDecision>
   
   @GET
   public List<EditorialDecision> list(@Context SqlSession session,
-                                      @NotNull @QueryParam("datasetKey") Integer datasetKey,
-                                      @QueryParam("subjectDatasetKey") Integer subjectDatasetKey,
+                                      @QueryParam("datasetKey") Integer datasetKey,
                                       @QueryParam("id") String id) {
-    return session.getMapper(DecisionMapper.class).listBySubjectDataset(datasetKey, subjectDatasetKey, id);
+    return session.getMapper(DecisionMapper.class).listBySubjectDataset(Datasets.DRAFT_COL, datasetKey, id);
   }
   
   @GET
   @Path("/broken")
   public List<EditorialDecision> broken(@Context SqlSession session,
-                                        @NotNull @QueryParam("datasetKey") Integer datasetKey,
-                                        @QueryParam("subjectDatasetKey") Integer subjectDatasetKey) {
+                                        @QueryParam("datasetKey") Integer datasetKey) {
     DecisionMapper mapper = session.getMapper(DecisionMapper.class);
-    return mapper.subjectBroken(datasetKey, subjectDatasetKey);
+    return mapper.subjectBroken(Datasets.DRAFT_COL, datasetKey);
   }
   
 }
