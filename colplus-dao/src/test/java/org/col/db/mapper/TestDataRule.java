@@ -164,6 +164,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     // create required partitions to load data
     partition();
     loadData(false);
+    updateSequences();
     // finally create a test user to use in tests
     session.getMapper(UserMapper.class).create(TEST_USER);
     session.commit();
@@ -192,6 +193,16 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     }
   }
   
+  public void updateSequences() {
+    if (testData.key != null) {
+      try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+        DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
+        pm.updateIdSequences(testData.key);
+        session.commit();
+      }
+    }
+  }
+  
   private void truncate() throws SQLException {
     System.out.println("Truncate tables");
     try (java.sql.Statement st = session.getConnection().createStatement()) {
@@ -199,7 +210,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       st.execute("TRUNCATE dataset CASCADE");
       st.execute("TRUNCATE sector CASCADE");
       st.execute("TRUNCATE estimate CASCADE");
-      st.execute("TRUNCATE decision  CASCADE");
+      st.execute("TRUNCATE decision CASCADE");
       session.getConnection().commit();
     }
   }
@@ -303,6 +314,8 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
           );
     
           c.commit();
+          
+          
   
           runner.runScript(Resources.getResourceAsReader("test-data/sequences.sql"));
         }

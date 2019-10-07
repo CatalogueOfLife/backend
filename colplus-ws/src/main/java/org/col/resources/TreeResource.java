@@ -41,21 +41,27 @@ public class TreeResource {
   }
   
   @GET
-  public ResultPage<TreeNode> root(@PathParam("datasetKey") int datasetKey, @Valid @BeanParam Page page, @Context SqlSession session) {
+  public ResultPage<TreeNode> root(@PathParam("datasetKey") int datasetKey,
+                                   @QueryParam("catalogueKey") int catalogueKey,
+                                   @Valid @BeanParam Page page,
+                                   @Context SqlSession session) {
     Page p = page == null ? new Page(0, DEFAULT_PAGE_SIZE) : page;
-    List<TreeNode> result = session.getMapper(TreeMapper.class).root(datasetKey, p);
+    List<TreeNode> result = session.getMapper(TreeMapper.class).root(catalogueKey, datasetKey, p);
     return new ResultPage<>(p, result, () -> session.getMapper(TaxonMapper.class).countRoot(datasetKey));
   }
   
   @GET
   @Path("{id}")
-  public List<TreeNode> parents(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
-    RankID parent = parseID(id);
+  public List<TreeNode> parents(@PathParam("datasetKey") int datasetKey,
+                                @PathParam("id") String id,
+                                @QueryParam("catalogueKey") int catalogueKey,
+                                @Context SqlSession session) {
+    RankID parent = parseID(datasetKey, id);
     TreeMapper trm = session.getMapper(TreeMapper.class);
-    LinkedList<TreeNode> parents = new LinkedList<>(trm.parents(datasetKey, parent.id));
+    LinkedList<TreeNode> parents = new LinkedList<>(trm.parents(catalogueKey, parent));
     if (parent.rank != null) {
       // this was a placeholder, check how many intermediates we need
-      List<Rank> sedisRanks = trm.childrenRanks(datasetKey, parent.id, parent.rank);
+      List<Rank> sedisRanks = trm.childrenRanks(parent, parent.rank);
       sedisRanks.add(parent.rank);
       TreeNode parentNode = parents.getLast();
       for (Rank r : sedisRanks) {
@@ -68,33 +74,36 @@ public class TreeResource {
   @DELETE
   @Path("{id}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void deleteRecursively(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Auth ColUser user) {
-    dao.deleteRecursively(datasetKey, id, user);
+  public void deleteRecursively(@PathParam("datasetKey") int datasetKey,
+                                @PathParam("id") String id,
+                                @Auth ColUser user) {
+    dao.deleteRecursively(new DSIDValue<>(datasetKey, id), user);
   }
   
   @GET
   @Path("{id}/children")
   public ResultPage<TreeNode> children(@PathParam("datasetKey") int datasetKey,
                                        @PathParam("id") String id,
+                                       @QueryParam("catalogueKey") int catalogueKey,
                                        @QueryParam("insertPlaceholder") boolean insertPlaceholder,
                                                  @Valid @BeanParam Page page, @Context SqlSession session) {
     TreeMapper trm = session.getMapper(TreeMapper.class);
     TaxonMapper tm = session.getMapper(TaxonMapper.class);
     Page p = page == null ? new Page(0, DEFAULT_PAGE_SIZE) : page;
   
-    RankID parent = parseID(id);
-    List<TreeNode> result = trm.children(datasetKey, parent.id, parent.rank, insertPlaceholder, p);;
+    RankID parent = parseID(datasetKey, id);
+    List<TreeNode> result = trm.children(catalogueKey, parent, parent.rank, insertPlaceholder, p);;
 
     Supplier<Integer> countSupplier;
     if (insertPlaceholder && !result.isEmpty()) {
-      countSupplier =  () -> tm.countChildrenWithRank(datasetKey, parent.id, result.get(0).getRank());
+      countSupplier =  () -> tm.countChildrenWithRank(parent, result.get(0).getRank());
     } else {
-      countSupplier =  () -> tm.countChildren(datasetKey, parent.id);
+      countSupplier =  () -> tm.countChildren(parent);
     }
 
     if (insertPlaceholder && !result.isEmpty() && result.size() < p.getLimit()) {
       // we *might* need a placeholder, check if there are more children of other ranks
-      int allChildren = tm.countChildren(datasetKey, parent.id);
+      int allChildren = tm.countChildren(parent);
       if (allChildren > result.size()) {
         TreeNode placeHolder = placeholder(result.get(0), allChildren-result.size());
         result.add(placeHolder);
@@ -123,27 +132,26 @@ public class TreeResource {
     return tn;
   }
   
-  static class RankID {
-    String id;
+  static class RankID extends DSIDValue<String> {
     Rank rank;
   
-    public RankID(String id, Rank rank) {
-      this.id = id;
+    public RankID(int datasetKey, String id, Rank rank) {
+      super(datasetKey, id);
       this.rank = rank;
     }
   }
   
   @VisibleForTesting
-  protected static RankID parseID(String id){
+  protected static RankID parseID(int datasetKey, String id){
     Matcher m = ID_PATTERN.matcher(id);
     if (m.find()) {
       try {
-        return new RankID(m.group(1), Rank.valueOf(m.group(2)));
+        return new RankID(datasetKey, m.group(1), Rank.valueOf(m.group(2)));
       } catch (IllegalArgumentException e) {
         LOG.warn("Bad incertae sedis ID " + id);
       }
     }
-    return new RankID(id, null);
+    return new RankID(datasetKey, id, null);
   }
   
 }

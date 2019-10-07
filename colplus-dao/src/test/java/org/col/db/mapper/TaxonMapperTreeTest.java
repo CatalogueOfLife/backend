@@ -3,6 +3,8 @@ package org.col.db.mapper;
 import java.util.List;
 
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import org.col.api.model.DSID;
+import org.col.api.model.DSIDValue;
 import org.col.api.model.Taxon;
 import org.col.api.model.TaxonCountMap;
 import org.junit.Test;
@@ -23,7 +25,8 @@ public class TaxonMapperTreeTest extends MapperTestBase<TaxonMapper> {
   
   @Test
   public void classificationCounts() throws Exception {
-    List<TaxonCountMap> x = mapper().classificationCounts(DATASET11.getKey(), "t20");
+    DSIDValue<String> key = DSID.key(DATASET11.getKey(), "t20");
+    List<TaxonCountMap> x = mapper().classificationCounts(key);
     assertEquals(6, x.size());
     for (TaxonCountMap c : x) {
       assertNotNull(c.getId());
@@ -31,15 +34,14 @@ public class TaxonMapperTreeTest extends MapperTestBase<TaxonMapper> {
       assertTrue(c.getCount().isEmpty());
     }
 
-    mapper().updateDatasetSectorCount(DATASET11.getKey(), "t2", null);
-    mapper().updateDatasetSectorCount(DATASET11.getKey(), "t2", new Int2IntOpenHashMap());
+    mapper().updateDatasetSectorCount(key.id("t2"), null);
+    mapper().updateDatasetSectorCount(key.id("t2"), new Int2IntOpenHashMap());
     Int2IntOpenHashMap cnt = new Int2IntOpenHashMap();
     cnt.put(45, 6);
     cnt.put(4, 666);
     cnt.put(13, 169);
-    mapper().updateDatasetSectorCount(DATASET11.getKey(), "t3", cnt);
-    
-    x = mapper().classificationCounts(DATASET11.getKey(), "t20");
+    mapper().updateDatasetSectorCount(key.id("t3"), cnt);
+    x = mapper().classificationCounts(key.id("t20"));
     assertEquals(6, x.size());
     for (TaxonCountMap c : x) {
       assertNotNull(c.getId());
@@ -49,7 +51,7 @@ public class TaxonMapperTreeTest extends MapperTestBase<TaxonMapper> {
   
   @Test
   public void classificationSimple() throws Exception {
-    List<?> cl = mapper().classificationSimple(NAME4.getDatasetKey(), "t15");
+    List<?> cl = mapper().classificationSimple(DSID.key(NAME4.getDatasetKey(), "t15"));
     assertEquals(7, cl.size());
   }
   

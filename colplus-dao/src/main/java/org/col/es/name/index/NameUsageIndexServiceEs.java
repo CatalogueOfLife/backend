@@ -91,7 +91,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)) {
         LOG.debug("Indexing usages from sector {}", s.getKey());
-        mapper.processSectorUsages(s.getKey(), s.getTarget().getId(), handler);
+        mapper.processSectorUsages(s.getDatasetKey(), s.getKey(), s.getTarget().getId(), handler);
       }
       EsUtil.refreshIndex(client, index);
       tCount = indexer.documentsIndexed();

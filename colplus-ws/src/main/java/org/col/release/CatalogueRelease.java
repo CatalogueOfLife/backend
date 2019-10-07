@@ -9,9 +9,13 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.DatasetType;
 import org.col.dao.DatasetImportDao;
+import org.col.dao.Partitioner;
+import org.col.db.CRUD;
 import org.col.db.mapper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.col.common.lang.Exceptions.interruptIfCancelled;
 
 public class CatalogueRelease implements Callable<Integer> {
   private static final Logger LOG = LoggerFactory.getLogger(CatalogueRelease.class);
@@ -61,55 +65,81 @@ public class CatalogueRelease implements Callable<Integer> {
   @Override
   public Integer call() throws Exception {
     // prepare new tables
-    //partition(factory, releaseDatasetKey);
+    Partitioner.partition(factory, releaseKey);
     // map ids
     mapIds();
     // copy data
     copyData();
+    // build indices and attach partition
+    Partitioner.indexAndAttach(factory, releaseKey);
     // create metrics
     metrics();
     return releaseKey;
   }
   
   private void metrics() {
+    interruptIfCancelled();
     diDao.generateMetrics(releaseKey);
   }
   
   private void mapIds() {
+    interruptIfCancelled();
     //TODO:
   }
   
   private void copyData() {
-    //copyTable(VerbatimRecordMapper);
-    copyTable(ReferenceMapper.class, Reference.class, x -> {});
-    copyTable(NameMapper.class, Name.class, x -> {});
-    copyTable(TaxonMapper.class, Taxon.class, x -> {});
-    copyTable(SynonymMapper.class, Synonym.class, x -> {});
+    interruptIfCancelled();
+    copyTable(SectorMapper.class, Sector.class, this::updateEntity);
+    copyTable(ReferenceMapper.class, Reference.class, this::updateDatasetID);
+    copyTable(NameMapper.class, Name.class, this::updateDatasetID);
+    copyTable(NameRelationMapper.class, NameRelation.class, this::updateEntity);
+    copyTable(TaxonMapper.class, Taxon.class, this::updateDatasetID);
+    copyTable(SynonymMapper.class, Synonym.class, this::updateDatasetID);
     
-    copyExtTable(VernacularNameMapper.class, VernacularName.class, x -> {});
-    copyExtTable(DistributionMapper.class, Distribution.class, x -> {});
+    copyExtTable(VernacularNameMapper.class, VernacularName.class, this::updateEntity);
+    copyExtTable(DistributionMapper.class, Distribution.class, this::updateEntity);
   }
   
-  private <T> void copyTable(Class<? extends DatasetCopyMapper<T>> mapperClass, Class<T> entity, Consumer<T> updater) {
+  private <K, V extends DataEntity<K>, M extends CRUD<K, V> & ProcessableDataset<V>> void copyTable(Class<M> mapperClass, Class<V> entity, Consumer<V> updater) {
+    interruptIfCancelled();
     try (SqlSession session = factory.openSession(false);
-         TableCopyHandler<T> handler = new TableCopyHandler<T>(factory, entity.getSimpleName(), mapperClass, updater)
+         TableCopyHandler<K, V,M> handler = new TableCopyHandler<>(factory, entity.getSimpleName(), mapperClass, updater)
     ) {
       LOG.info("Copy all {}", entity.getSimpleName());
-      DatasetCopyMapper<T> mapper = session.getMapper(mapperClass);
+      ProcessableDataset<V> mapper = session.getMapper(mapperClass);
       mapper.processDataset(sourceDatasetKey, handler);
       LOG.info("Copied {} {}", handler.getCounter(), entity.getSimpleName());
     }
   }
   
-  private <T extends GlobalEntity> void copyExtTable(Class<? extends TaxonExtensionMapper<T>> mapperClass, Class<T> entity, Consumer<TaxonExtension<T>> updater) {
+  private <V extends DatasetScopedEntity<Integer>> void copyExtTable(Class<? extends TaxonExtensionMapper<V>> mapperClass, Class<V> entity, Consumer<TaxonExtension<V>> updater) {
+    interruptIfCancelled();
     try (SqlSession session = factory.openSession(false);
-         ExtTableCopyHandler<T> handler = new ExtTableCopyHandler<T>(factory, entity.getSimpleName(), mapperClass, updater, releaseKey)
+         ExtTableCopyHandler<V> handler = new ExtTableCopyHandler<V>(factory, entity.getSimpleName(), mapperClass, updater)
     ) {
       LOG.info("Copy all {}", entity.getSimpleName());
-      TaxonExtensionMapper<T> mapper = session.getMapper(mapperClass);
+      TaxonExtensionMapper<V> mapper = session.getMapper(mapperClass);
       mapper.processDataset(sourceDatasetKey, handler);
       LOG.info("Copied {} {}", handler.getCounter(), entity.getSimpleName());
     }
   }
   
+  private <C extends DSID & VerbatimEntity> void updateDatasetID(C obj) {
+    obj.setDatasetKey(releaseKey);
+    obj.setVerbatimKey(null);
+  }
+  private <E extends DatasetScopedEntity<Integer> & VerbatimEntity> void updateEntity(TaxonExtension<E> obj) {
+    obj.getObj().setId(null);
+    obj.getObj().setDatasetKey(releaseKey);
+    obj.getObj().setVerbatimKey(null);
+  }
+  private void updateEntity(NameRelation obj) {
+    obj.setId(null);
+    obj.setDatasetKey(releaseKey);
+    obj.setVerbatimKey(null);
+  }
+  private void updateEntity(Decision obj) {
+    obj.setKey(null);
+    obj.setDatasetKey(releaseKey);
+  }
 }

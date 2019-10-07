@@ -10,12 +10,10 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
-import org.col.api.model.DatasetIDEntity;
-import org.col.api.model.Name;
-import org.col.api.model.Reference;
-import org.col.api.model.UserManaged;
+import org.col.api.model.*;
 import org.col.api.vocab.Datasets;
 import org.col.api.vocab.Origin;
+import org.col.db.CRUD;
 import org.col.db.PgSetupRule;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
@@ -103,22 +101,22 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
     return n;
   }
   
-  private static <T extends DatasetIDEntity & UserManaged> T gen(T obj){
+  private static <T extends DSID & UserManaged> T gen(T obj){
     obj.setDatasetKey(Datasets.DRAFT_COL);
     obj.setId(UUID.randomUUID().toString());
     obj.applyUser(TestEntityGenerator.USER_USER);
     return obj;
   }
   
-  static class ContinuousInserter<T extends DatasetIDEntity & UserManaged> implements Runnable {
+  static class ContinuousInserter<T extends DataEntity<DSID<String>>> implements Runnable {
     private final SqlSessionFactory factory;
-    private final Class<? extends DatasetCRUDMapper<T>> mapperClass;
+    private final Class<? extends CRUD<DSID<String>, T>> mapperClass;
     private final Supplier<T> generator;
     private final Class<T> objClass;
     private long counter;
     boolean stop = false;
     
-    ContinuousInserter(SqlSessionFactory factory, Class<T> objClass, Class<? extends DatasetCRUDMapper<T>> mapperClass, Supplier<T> generator) {
+    ContinuousInserter(SqlSessionFactory factory, Class<T> objClass, Class<? extends CRUD<DSID<String>, T>> mapperClass, Supplier<T> generator) {
       this.factory = factory;
       this.objClass = objClass;
       this.mapperClass = mapperClass;
@@ -132,7 +130,7 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
     @Override
     public void run() {
       try (SqlSession session = factory.openSession(ExecutorType.BATCH, false)) {
-        DatasetCRUDMapper<T> mapper = session.getMapper(mapperClass);
+        CRUD<DSID<String>, T> mapper = session.getMapper(mapperClass);
         
         while (!stop) {
           T obj = generator.get();

@@ -8,12 +8,14 @@ import com.google.common.collect.Lists;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.EditorialDecision;
+import org.col.api.model.Page;
+import org.col.api.model.ResultPage;
 import org.col.db.mapper.DecisionMapper;
 import org.col.es.name.index.NameUsageIndexService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DecisionDao extends CatalogueEntityDao<EditorialDecision, DecisionMapper> {
+public class DecisionDao extends EntityDao<Integer, EditorialDecision, DecisionMapper> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DecisionDao.class);
@@ -23,6 +25,10 @@ public class DecisionDao extends CatalogueEntityDao<EditorialDecision, DecisionM
   public DecisionDao(SqlSessionFactory factory, NameUsageIndexService indexService) {
     super(true, factory, DecisionMapper.class);
     this.indexService = indexService;
+  }
+  
+  public ResultPage<EditorialDecision> list(int datasetKey, Page page) {
+    return super.list(mapperClass, datasetKey, page);
   }
   
   @Override

@@ -10,7 +10,7 @@ import org.neo4j.graphdb.Node;
 /**
  * Simple wrapper to hold a neo4j node together with a name
  */
-public class NeoName implements NeoNode, DatasetIDEntity, VerbatimEntity {
+public class NeoName implements NeoNode, DSID<String>, VerbatimEntity {
   private static final Label[] LABELS = new Label[]{Labels.NAME};
   
   public Node node;

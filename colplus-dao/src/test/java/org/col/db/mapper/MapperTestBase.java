@@ -1,6 +1,9 @@
 package org.col.db.mapper;
 
 import org.apache.ibatis.session.SqlSession;
+import org.col.api.model.Name;
+import org.col.api.model.Synonym;
+import org.col.api.model.Taxon;
 import org.col.dao.DatasetImportDao;
 import org.col.dao.TreeRepoRule;
 import org.col.db.PgSetupRule;
@@ -14,10 +17,9 @@ import org.junit.Rule;
  * A reusable base class for all mybatis mapper tests that takes care of postgres & mybatis.
  * It offers a mapper to test in the implementing subclass.
  */
-public abstract class MapperTestBase<T> {
+public abstract class MapperTestBase<M> {
   
-  
-  private final Class<T> mapperClazz;
+  private final Class<M> mapperClazz;
   
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -28,16 +30,16 @@ public abstract class MapperTestBase<T> {
   @Rule
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
   
-  public MapperTestBase(Class<T> mapperClazz) {
+  public MapperTestBase(Class<M> mapperClazz) {
     this(mapperClazz, TestDataRule.apple());
   }
   
-  public MapperTestBase(Class<T> mapperClazz, TestDataRule testDataRule) {
+  public MapperTestBase(Class<M> mapperClazz, TestDataRule testDataRule) {
     this.mapperClazz = mapperClazz;
     this.testDataRule = testDataRule;
   }
   
-  public T mapper() {
+  public M mapper() {
     return testDataRule.getMapper(mapperClazz);
   }
   
@@ -60,10 +62,23 @@ public abstract class MapperTestBase<T> {
     commit();
   }
   
+  void insertName(Name n) {
+    mapper(NameMapper.class).create(n);
+  }
+
+  void insertTaxon(Taxon t) {
+    mapper(NameMapper.class).create(t.getName());
+    mapper(TaxonMapper.class).create(t);
+  }
+  
+  void insertSynonym(Synonym s) {
+    mapper(NameMapper.class).create(s.getName());
+    mapper(SynonymMapper.class).create(s);
+  }
+  
   protected void printDiff(Object o1, Object o2) {
     Javers javers = JaversBuilder.javers().build();
     Diff diff = javers.compare(o1, o2);
     System.out.println(diff);
   }
-  
 }

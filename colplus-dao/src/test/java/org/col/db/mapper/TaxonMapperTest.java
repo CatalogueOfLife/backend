@@ -1,5 +1,6 @@
 package org.col.db.mapper;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -8,6 +9,7 @@ import com.google.common.collect.Lists;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.*;
 import org.col.api.vocab.Datasets;
+import org.col.api.vocab.TaxonomicStatus;
 import org.col.common.tax.AuthorshipNormalizer;
 import org.col.dao.NameDao;
 import org.col.db.MybatisTestUtils;
@@ -22,7 +24,7 @@ import static org.junit.Assert.assertEquals;
 /**
  *
  */
-public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
+public class TaxonMapperTest extends CRUDPageableTestBase<Taxon, TaxonMapper> {
   
   private static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
   private static int userKey = TestEntityGenerator.USER_EDITOR.getKey();
@@ -46,19 +48,25 @@ public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
   
   @Override
   void updateTestObj(Taxon obj) {
-  
+    obj.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
+    obj.setAccordingToDate(LocalDate.now());
+    obj.setAccordingTo("me and the mary janes");
   }
   
   @Override
-  Taxon createTestEntity() {
-    Taxon t = TestEntityGenerator.newTaxon();
+  Taxon createTestEntity(int dkey) {
+    Name n = TestEntityGenerator.newName(dkey);
+    insertName(n);
+    Taxon t = TestEntityGenerator.newTaxon(n);
     // manually set the child count which is populated on read only
     t.setSectorKey(sector.getKey());
+    t.setDatasetKey(dkey);
     return t;
   }
   
   @Override
   Taxon removeDbCreatedProps(Taxon obj) {
+    obj.getName().setHomotypicNameId(null);
     return TestEntityGenerator.nullifyUserDate(obj);
   }
   
@@ -153,7 +161,7 @@ public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
     
     commit();
     
-    int res = mapper().countChildren(parent.getDatasetKey(), parent.getId());
+    int res = mapper().countChildren(parent);
     assertEquals(3, res);
   }
   
@@ -206,7 +214,7 @@ public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
     
     commit();
     
-    List<Taxon> res = mapper().children(parent.getDatasetKey(), parent.getId(), new Page(0, 5));
+    List<Taxon> res = mapper().children(parent, new Page(0, 5));
     
     assertEquals("01", 4, res.size());
     assertEquals(c2.getId(), res.get(0).getId()); // Family YYY
@@ -248,7 +256,7 @@ public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
     commit();
     
     Taxon sp = parents.removeLast();
-    List<Taxon> classification = mapper().classification(sp.getDatasetKey(), sp.getId());
+    List<Taxon> classification = mapper().classification(sp);
     assertEquals(parents.size(), classification.size());
     
     for (Taxon ht : classification) {
@@ -259,7 +267,7 @@ public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
   
   @Test
   public void incDatasetSectorCount() throws Exception {
-    mapper().incDatasetSectorCount(Datasets.DRAFT_COL, sector.getTarget().getId(), sector.getSubjectDatasetKey(), 7);
+    mapper().incDatasetSectorCount(sector.getTargetAsDatasetID(), sector.getSubjectDatasetKey(), 7);
     TreeNode n = getTreeNode(sector.getTarget().getId());
     // t4 already has count=1 for subject dataset 11 when draft tree gets populated
     assertEquals(8, n.getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
@@ -269,7 +277,7 @@ public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
     assertEquals(9, getTreeNode("t1").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
   
   
-    mapper().incDatasetSectorCount(Datasets.DRAFT_COL, "unreal", sector.getSubjectDatasetKey(), 10);
+    mapper().incDatasetSectorCount(DSID.draftID("unreal"), sector.getSubjectDatasetKey(), 10);
     // cascades to all parents
     assertEquals(9, getTreeNode("t3").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
     assertEquals(9, getTreeNode("t2").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
@@ -278,7 +286,7 @@ public class TaxonMapperTest extends DatasetCRUDTest<Taxon, TaxonMapper> {
   }
   
   private TreeNode getTreeNode(String id) {
-    return session().getMapper(TreeMapper.class).get(Datasets.DRAFT_COL, id);
+    return session().getMapper(TreeMapper.class).get(Datasets.DRAFT_COL, DSID.draftID(id));
     
   }
   

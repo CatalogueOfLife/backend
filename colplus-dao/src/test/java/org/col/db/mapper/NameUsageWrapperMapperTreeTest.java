@@ -27,7 +27,7 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
   @Test
   public void getTaxa() throws Exception {
     
-    List<?> cl = mapper(TaxonMapper.class).classificationSimple(NAME4.getDatasetKey(), "t15");
+    List<?> cl = mapper(TaxonMapper.class).classificationSimple(DSID.key(NAME4.getDatasetKey(), "t15"));
     assertEquals(7, cl.size());
     
     NameUsageWrapper tax = mapper().get(NAME4.getDatasetKey(), "t15");
@@ -82,7 +82,7 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
   public void processSector() throws Exception {
     MybatisTestUtils.populateDraftTree(session());
 
-    mapper().processSectorUsages(1, "t2", new ResultHandler<NameUsageWrapper>() {
+    mapper().processSectorUsages(Datasets.DRAFT_COL, 1, "t2", new ResultHandler<NameUsageWrapper>() {
       public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
         counter.incrementAndGet();
         NameUsageWrapper obj = ctx.getResultObject();

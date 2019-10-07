@@ -91,7 +91,7 @@
     SELECT <include refid="SELECT" />
     FROM decision ed
     ORDER BY ed.key
-    <include refid="org.col.db.mapper.Common.limit" />
+    <include refid="org.col.db.Common.limit" />
   </select>
 
   <select id="listBySubjectDataset" resultMap="decisionResultMap">
@@ -141,6 +141,12 @@
         AND ed.subject_dataset_key = #{subjectDatasetKey}
       </if>
     ORDER BY ed.key
+  </select>
+
+  <select id="processDataset" parameterType="map" resultMap="decisionResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="SELECT" />
+    FROM decision ed
+    WHERE dataset_key=#{datasetKey}
   </select>
 
 </mapper>

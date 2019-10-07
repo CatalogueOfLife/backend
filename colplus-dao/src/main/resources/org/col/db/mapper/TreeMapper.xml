@@ -9,47 +9,32 @@
         t.id,
         t.parent_id,
         t.status,
-        (select count(*) from name_usage_${datasetKey} WHERE parent_id=t.id AND NOT is_synonym) AS child_count,
+        (select count(*) from name_usage_${partition} WHERE parent_id=t.id AND NOT is_synonym) AS child_count,
         t.dataset_sectors,
         <include refid="org.col.db.mapper.NameMapper.minimalNameCols">
             <property name="alias" value="n"/>
             <property name="prefix" value=""/>
         </include>,
-        <choose>
-            <when test="datasetKey != @org.col.api.vocab.Datasets@DRAFT_COL">
-                s.key AS sector_key,
-                <include refid="org.col.db.mapper.DecisionMapper.SelectVar">
-                    <property name="alias" value="ed."/>
-                    <property name="prefix" value="ed_"/>
-                </include>,
-                NULL AS est_key
-            </when>
-            <otherwise>
-                t.sector_key,
-                NULL AS ed_key,
-                <include refid="org.col.db.mapper.EstimateMapper.SelectVar">
-                    <property name="alias" value="est."/>
-                    <property name="prefix" value="est_"/>
-                </include>
-            </otherwise>
-        </choose>
+        coalesce(s.key,t.sector_key) AS sector_key,
+        <include refid="org.col.db.mapper.DecisionMapper.SelectVar">
+            <property name="alias" value="ed."/>
+            <property name="prefix" value="ed_"/>
+        </include>,
+        <include refid="org.col.db.mapper.EstimateMapper.SelectVar">
+            <property name="alias" value="est."/>
+            <property name="prefix" value="est_"/>
+        </include>
     </sql>
 
     <sql id="FROM_USAGE">
-        name_usage_${datasetKey} t JOIN name_${datasetKey} n ON t.name_id=n.id
+        name_usage_${partition} t JOIN name_${partition} n ON t.name_id=n.id
     </sql>
 
     <sql id="FROM">
         <include refid="FROM_USAGE"/>
-        <choose>
-            <when test="datasetKey != @org.col.api.vocab.Datasets@DRAFT_COL">
-                LEFT JOIN sector    s ON  s.subject_id=t.id AND  s.subject_dataset_key=#{datasetKey}
-                LEFT JOIN decision ed ON ed.subject_id=t.id AND ed.subject_dataset_key=#{datasetKey}
-            </when>
-            <otherwise>
-                LEFT JOIN estimate est ON est.subject_id=t.id AND est.dataset_key=#{datasetKey}
-            </otherwise>
-        </choose>
+        LEFT JOIN sector     s ON  s.subject_id=t.id  AND   s.dataset_key=#{catalogueKey} AND  s.subject_dataset_key=#{datasetKey}
+        LEFT JOIN decision  ed ON ed.subject_id=t.id  AND  ed.dataset_key=#{catalogueKey} AND ed.subject_dataset_key=#{datasetKey}
+        LEFT JOIN estimate est ON est.subject_id=t.id AND est.dataset_key=#{datasetKey}
     </sql>
 
     <resultMap id="treeResultMap" type="org.col.api.model.TreeNode$TreeNodeMybatis" autoMapping="true">
@@ -61,25 +46,30 @@
     </resultMap>
 
     <select id="get" resultMap="treeResultMap">
+        <include refid="org.col.db.Common.partitionByKey"/>
+        <bind name="datasetKey" value="key.datasetKey"/>
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE t.id = #{id}
+        WHERE t.id = #{key.id}
     </select>
 
     <select id="root" resultMap="treeResultMap">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE t.parent_id IS NULL AND NOT is_synonym
         ORDER BY n.rank, n.scientific_name
-        <include refid="org.col.db.mapper.Common.limit" />
+        <include refid="org.col.db.Common.limit" />
     </select>
 
     <select id="children" resultMap="treeResultMap">
+        <include refid="org.col.db.Common.partitionByKey"/>
+        <bind name="datasetKey" value="key.datasetKey"/>
         <if test="insertPlaceholder">
             WITH first AS (
                 SELECT t.id, n.rank
                 FROM <include refid="FROM_USAGE" />
-                WHERE t.parent_id = #{id} AND NOT is_synonym
+                WHERE t.parent_id = #{key.id} AND NOT is_synonym
                 <if test="rank!=null">
                     AND n.rank > #{rank}::rank
                 </if>
@@ -90,17 +80,19 @@
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
             <if test="insertPlaceholder">, first</if>
-        WHERE t.parent_id = #{id} AND NOT t.is_synonym
+        WHERE t.parent_id = #{key.id} AND NOT t.is_synonym
             <if test="insertPlaceholder">AND first.rank=n.rank</if>
         ORDER BY n.rank, n.scientific_name
-        <include refid="org.col.db.mapper.Common.limit" />
+        <include refid="org.col.db.Common.limit" />
     </select>
 
     <select id="parents" resultMap="treeResultMap">
+        <include refid="org.col.db.Common.partitionByKey"/>
+        <bind name="datasetKey" value="key.datasetKey"/>
         WITH RECURSIVE x AS(
             SELECT <include refid="SELECT" />
             FROM <include refid="FROM" />
-            WHERE t.id = #{id}
+            WHERE t.id = #{key.id}
         UNION
             SELECT <include refid="SELECT" />
             FROM <include refid="FROM" />, x
@@ -111,9 +103,10 @@
      </select>
 
     <select id="childrenRanks" resultType="Rank">
+        <include refid="org.col.db.Common.partitionByKey"/>
         SELECT DISTINCT n.rank
         FROM <include refid="FROM_USAGE"/>
-        WHERE t.parent_id = #{id}
+        WHERE t.parent_id = #{key.id}
         <if test="rank != null"> AND n.rank &lt; #{rank}::rank</if>
         ORDER BY n.rank
     </select>

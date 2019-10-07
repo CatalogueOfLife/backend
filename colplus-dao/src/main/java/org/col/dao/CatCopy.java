@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import com.ibm.icu.text.Transliterator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.EntityType;
 import org.col.api.vocab.Issue;
@@ -24,15 +23,13 @@ public class CatCopy {
   
   private static final Transliterator transLatin = Transliterator.getInstance("Any-Latin; de-ascii; Latin-ASCII");
   
-  private static final Map<EntityType, Class<? extends TaxonExtensionMapper<? extends GlobalEntity>>> extMapper = new HashMap<>();
+  private static final Map<EntityType, Class<? extends TaxonExtensionMapper<? extends DatasetScopedEntity<Integer>>>> extMapper = new HashMap<>();
   static {
     extMapper.put(EntityType.DISTRIBUTION, DistributionMapper.class);
     extMapper.put(EntityType.VERNACULAR, VernacularNameMapper.class);
     extMapper.put(EntityType.DESCRIPTION, DescriptionMapper.class);
     extMapper.put(EntityType.MEDIA, MediaMapper.class);
   }
-  
-  SqlSessionFactory factory;
   
   
   /**
@@ -45,11 +42,11 @@ public class CatCopy {
    *
    * @return the original source taxon id
    */
-  public static <T extends NameUsageBase> DatasetID copyUsage(final SqlSession session, final T t, final DatasetID targetParent, int user,
+  public static <T extends NameUsageBase> DSID<String> copyUsage(final SqlSession session, final T t, final DSID<String> targetParent, int user,
                                                               Set<EntityType> include,
                                                               Function<Reference, String> lookupReference,
                                                               Function<String, String> lookupByIdReference) {
-    final DatasetID orig = new DatasetID(t);
+    final DSID<String> orig = new DSIDValue<>(t);
     copyName(session, t, targetParent.getDatasetKey(), user, lookupReference);
     
     setKeys(t, targetParent.getDatasetKey());
@@ -73,10 +70,11 @@ public class CatCopy {
     // copy related entities
     for (EntityType type : include) {
       if (t.isTaxon() && extMapper.containsKey(type)) {
-        final TaxonExtensionMapper<GlobalEntity> mapper = (TaxonExtensionMapper<GlobalEntity>) session.getMapper(extMapper.get(type));
-        mapper.listByTaxon(orig.getDatasetKey(), orig.getId()).forEach(e -> {
-          e.setKey(null);
-          ((UserManaged) e).applyUser(user);
+        final TaxonExtensionMapper<DatasetScopedEntity<Integer>> mapper = (TaxonExtensionMapper<DatasetScopedEntity<Integer>>) session.getMapper(extMapper.get(type));
+        mapper.listByTaxon(orig).forEach(e -> {
+          e.setId(null);
+          e.setDatasetKey(targetParent.getDatasetKey());
+          e.applyUser(user);
           // check if the entity refers to a reference which we need to lookup / copy
           if (Referenced.class.isAssignableFrom(e.getClass())) {
             Referenced eRef = (Referenced) e;
@@ -86,7 +84,7 @@ public class CatCopy {
           if (EntityType.VERNACULAR == type) {
             updateVernacularName((VernacularName)e, IssueContainer.VOID);
           }
-          mapper.create(e, t.getId(), targetParent.getDatasetKey());
+          mapper.create(e, t.getId());
         });
         
       } else if (EntityType.NAME_RELATION == type) {
@@ -106,7 +104,7 @@ public class CatCopy {
     n.setOrigin(Origin.SOURCE);
     if (n.getPublishedInId() != null) {
       ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
-      Reference ref = rm.get(n.getDatasetKey(), n.getPublishedInId());
+      Reference ref = rm.get(new DSIDValue(n.getDatasetKey(), n.getPublishedInId()));
       n.setPublishedInId(lookupReference.apply(ref));
     }
     setKeys(n, targetDatasetKey, u.getSectorKey());
@@ -133,7 +131,7 @@ public class CatCopy {
     return newKey(r);
   }
   
-  private static <T extends VerbatimEntity & DatasetIDEntity> T newKey(T e) {
+  private static <T extends VerbatimEntity & DSID> T newKey(T e) {
     e.setVerbatimKey(null);
     e.setId(UUID.randomUUID().toString());
     return e;

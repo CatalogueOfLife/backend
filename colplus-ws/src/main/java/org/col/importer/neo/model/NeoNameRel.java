@@ -2,6 +2,7 @@ package org.col.importer.neo.model;
 
 import java.util.Objects;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.col.api.model.Referenced;
 import org.col.api.model.VerbatimEntity;
 
@@ -62,5 +63,15 @@ public class NeoNameRel implements VerbatimEntity, Referenced {
   public int hashCode() {
     
     return Objects.hash(verbatimKey, type, referenceId, note);
+  }
+  
+  @Override
+  public Integer getDatasetKey() {
+    throw new NotImplementedException("not meant for this");
+  }
+  
+  @Override
+  public void setDatasetKey(Integer key) {
+  
   }
 }

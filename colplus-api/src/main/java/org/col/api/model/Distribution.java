@@ -1,31 +1,20 @@
 package org.col.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Objects;
+
 import org.col.api.vocab.DistributionStatus;
 import org.col.api.vocab.Gazetteer;
-
-import java.util.Objects;
 
 /**
  *
  */
-public class Distribution extends DataEntity implements Referenced, VerbatimEntity, GlobalEntity {
+public class Distribution extends DatasetScopedEntity<Integer> implements Referenced, VerbatimEntity {
   
-  @JsonIgnore
-  private Integer key;
   private Integer verbatimKey;
   private String area;
   private Gazetteer gazetteer;
   private DistributionStatus status;
   private String referenceId;
-  
-  public Integer getKey() {
-    return key;
-  }
-  
-  public void setKey(Integer key) {
-    this.key = key;
-  }
   
   @Override
   public Integer getVerbatimKey() {
@@ -70,27 +59,26 @@ public class Distribution extends DataEntity implements Referenced, VerbatimEnti
   public void setReferenceId(String referenceId) {
     this.referenceId = referenceId;
   }
-
-
+  
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     Distribution that = (Distribution) o;
-    return Objects.equals(key, that.key) &&
-            Objects.equals(verbatimKey, that.verbatimKey) &&
-            Objects.equals(area, that.area) &&
-            gazetteer == that.gazetteer &&
-            status == that.status &&
-            Objects.equals(referenceId, that.referenceId);
+    return Objects.equals(verbatimKey, that.verbatimKey) &&
+        Objects.equals(area, that.area) &&
+        gazetteer == that.gazetteer &&
+        status == that.status &&
+        Objects.equals(referenceId, that.referenceId);
   }
-
+  
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, verbatimKey, area, gazetteer, status, referenceId);
+    return Objects.hash(super.hashCode(), verbatimKey, area, gazetteer, status, referenceId);
   }
-
+  
   @Override
   public String toString() {
     return status == null ? "Unknown" : status + " in " + gazetteer + ":" + area;

@@ -32,8 +32,7 @@ import org.slf4j.LoggerFactory;
 
 @Path("/dataset/{datasetKey}/name")
 @Produces(MediaType.APPLICATION_JSON)
-public class NameResource extends DatasetEntityResource<Name> {
-
+public class NameResource extends AbstractDatasetScopedResource<Name> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameResource.class);
 

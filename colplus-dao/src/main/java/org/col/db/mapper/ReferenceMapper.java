@@ -4,14 +4,17 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
+import org.col.api.model.DSID;
 import org.col.api.model.Page;
 import org.col.api.model.Reference;
 import org.col.api.search.ReferenceSearchRequest;
+import org.col.db.CRUD;
+import org.col.db.DatasetPageable;
 
 /**
  *
  */
-public interface ReferenceMapper extends DatasetCRUDMapper<Reference> {
+public interface ReferenceMapper extends CRUD<DSID<String>, Reference>, ProcessableDataset<Reference>, DatasetPageable<Reference> {
 	
 	/**
    * Selects a number of distinct references from a single dataset by their keys

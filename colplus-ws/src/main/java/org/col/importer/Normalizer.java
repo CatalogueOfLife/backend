@@ -558,6 +558,8 @@ public class Normalizer implements Callable<Boolean> {
     if (taxon.isSynonym()) {
       cl.setGenus(null);
       cl.setSubgenus(null);
+      cl.setSection(null);
+      cl.setSpecies(null);
     }
     
     // now reconstruct the given classification as linked neo4j nodes

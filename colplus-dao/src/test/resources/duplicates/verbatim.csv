@@ -1,4 +1,4 @@
-key,dataset_key,line,file,type,terms,issues
+id,dataset_key,line,file,type,terms,issues
 1,1000,35,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""40"", ""dwc:taxonID"": ""40"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Adiantum aethiopicum Hook. ex Bak."", ""dwc:acceptedNameUsageID"": ""a1""}",{31}
 2,1000,22,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""21"", ""dwc:taxonID"": ""21"", ""dwc:taxonRank"": ""subspecies"", ""dwc:scientificName"": ""Afrotyphlops schlegeli schlegeli (Peters, 1860)""}",{31}
 3,1000,14,Taxon.txt,dwc:Taxon,"{""dwca:ID"": ""13"", ""dwc:taxonID"": ""13"", ""dwc:taxonRank"": ""species"", ""dwc:scientificName"": ""Cleonus thunbergi 1842""}",{31}

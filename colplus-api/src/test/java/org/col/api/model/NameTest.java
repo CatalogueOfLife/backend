@@ -28,6 +28,17 @@ public class NameTest extends SerdeTestBase<Name> {
   }
   
   @Test
+  public void equalsNull() throws Exception {
+    Name n1 = new Name();
+    Name n2 = new Name();
+    assertEquals(n1, n2);
+    
+    n1.setRank(null);
+    n2.setRank(null);
+    assertEquals(n1, n2);
+  }
+  
+  @Test
   public void testAuthorship() throws JsonProcessingException {
     Name n = TestEntityGenerator.newName();
     String json = ApiModule.MAPPER.writeValueAsString(n);

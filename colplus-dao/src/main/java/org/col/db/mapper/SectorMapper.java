@@ -5,8 +5,10 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.ResultHandler;
 import org.col.api.model.Sector;
+import org.col.db.CRUD;
+import org.col.db.DatasetPageable;
 
-public interface SectorMapper extends CatalogueCRUDMapper<Sector> {
+public interface SectorMapper extends CRUD<Integer, Sector>, DatasetPageable<Sector>, ProcessableDataset<Sector> {
   
   Sector getBySubject(@Param("targetDatasetKey") int targetDatasetKey,
                       @Param("subjectDatasetKey") int subjectDatasetKey,

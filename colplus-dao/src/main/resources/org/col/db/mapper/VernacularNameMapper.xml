@@ -5,7 +5,9 @@
 <mapper namespace="org.col.db.mapper.VernacularNameMapper">
 
   <sql id="SELECT">
-    vn.key,
+    vn.id,
+    vn.taxon_id,
+    vn.dataset_key,
     vn.verbatim_key,
     vn.name,
     vn.latin,
@@ -20,8 +22,8 @@
   </sql>
 
   <sql id="COLS">
-    dataset_key,
     taxon_id,
+    dataset_key,
     verbatim_key,
     name,
     latin,
@@ -34,8 +36,8 @@
   </sql>
 
   <sql id="PROPS">
-    #{datasetKey},
     #{taxonId},
+    #{obj.datasetKey},
     #{obj.verbatimKey},
     #{obj.name},
     #{obj.latin},
@@ -47,29 +49,44 @@
     #{obj.modifiedBy}
   </sql>
 
-  <sql id="FROM">
-    vernacular_name_${datasetKey} vn
-  </sql>
+  <sql id="FROM">vernacular_name_${partition} vn</sql>
 
   <resultMap id="vernacularNameResultMap" type="VernacularName" autoMapping="true">
-    <id property="key" column="key" />
+    <id property="id" column="id" />
+  </resultMap>
+
+  <resultMap id="vernacularExtNameResultMap" type="TaxonExtension" autoMapping="true">
+    <id column="id" />
+    <result property="taxonID" column="taxon_id" />
+    <association property="obj" autoMapping="true" javaType="VernacularName">
+      <id property="id" column="id" />
+    </association>
   </resultMap>
 
   <select id="listByTaxon" resultMap="vernacularNameResultMap">
+    <include refid="org.col.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE vn.taxon_id = #{taxonId}
+    WHERE vn.taxon_id = #{key.id}
     ORDER BY name
   </select>
 
   <select id="get" resultMap="vernacularNameResultMap">
+    <include refid="org.col.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE vn.key = #{key}
+    WHERE vn.id = #{key.id}
   </select>
 
-  <insert id="create" parameterType="VernacularName" useGeneratedKeys="true" keyProperty="obj.key">
-    INSERT INTO vernacular_name_${datasetKey} ( <include refid="COLS" />, created, modified)
+  <select id="processDataset" parameterType="map" resultMap="vernacularExtNameResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    <include refid="org.col.db.Common.partitionByDatasetKey"/>
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+  </select>
+
+  <insert id="create" parameterType="VernacularName" useGeneratedKeys="true" keyProperty="obj.id">
+    <include refid="org.col.db.Common.partitionByObj"/>
+    INSERT INTO vernacular_name_${partition} ( <include refid="COLS" />, created, modified)
     VALUES ( <include refid="PROPS" />, now(), now())
   </insert>
 

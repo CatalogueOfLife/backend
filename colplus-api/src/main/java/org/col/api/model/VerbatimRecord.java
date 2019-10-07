@@ -37,13 +37,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Unicode code point escapes indicated by "\\u{}": \\u{2F80}
  * 3) Unicode char escaping using brackets: <U+00A0>
  */
-public class VerbatimRecord implements IssueContainer, CatalogueEntity, Serializable {
+public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(VerbatimRecord.class);
   private static final Pattern REMOVE_TAGS = Pattern.compile("</? *[a-z][a-z1-5]{0,5} *>", Pattern.CASE_INSENSITIVE);
   private static final Pattern ECMA_UNICODE = Pattern.compile("\\\\u\\{([0-9a-f]{4})}", Pattern.CASE_INSENSITIVE);
   private static final Pattern ANGLE_UNICODE = Pattern.compile("<U\\+?([0-9a-f]{4})>", Pattern.CASE_INSENSITIVE);
   
-  private Integer key;
+  private Integer id;
   private Integer datasetKey;
   // instance hash created on load to see if the instance has been changed
   private int _hashKeyOnLoad = -1;
@@ -63,12 +63,12 @@ public class VerbatimRecord implements IssueContainer, CatalogueEntity, Serializ
     this.type = type;
   }
   
-  public Integer getKey() {
-    return key;
+  public Integer getId() {
+    return id;
   }
   
-  public void setKey(Integer key) {
-    this.key = key;
+  public void setId(Integer id) {
+    this.id = id;
   }
   
   public Integer getDatasetKey() {
@@ -348,7 +348,7 @@ public class VerbatimRecord implements IssueContainer, CatalogueEntity, Serializ
   
   @Override
   public String toString() {
-    return "v" + key + "{" + file + "#" + line + ", " + terms.size() + " terms";
+    return "v" + id + "{" + file + "#" + line + ", " + terms.size() + " terms";
   }
   
   public String fileLine() {
@@ -361,7 +361,7 @@ public class VerbatimRecord implements IssueContainer, CatalogueEntity, Serializ
     if (o == null || getClass() != o.getClass()) return false;
     VerbatimRecord that = (VerbatimRecord) o;
     return line == that.line &&
-        Objects.equals(key, that.key) &&
+        Objects.equals(id, that.id) &&
         Objects.equals(datasetKey, that.datasetKey) &&
         Objects.equals(file, that.file) &&
         Objects.equals(type, that.type) &&
@@ -372,7 +372,7 @@ public class VerbatimRecord implements IssueContainer, CatalogueEntity, Serializ
   @Override
   public int hashCode() {
     
-    return Objects.hash(key, datasetKey, line, file, type, terms, issues);
+    return Objects.hash(id, datasetKey, line, file, type, terms, issues);
   }
   
   /**
@@ -380,7 +380,7 @@ public class VerbatimRecord implements IssueContainer, CatalogueEntity, Serializ
    */
   public String toStringComplete() {
     StringBuilder sb = new StringBuilder();
-    sb.append(key).append(" ")
+    sb.append(id).append(" ")
         .append(file).append("#").append(line)
         .append(", " + type)
         .append(": ");
@@ -397,4 +397,5 @@ public class VerbatimRecord implements IssueContainer, CatalogueEntity, Serializ
     }
     return sb.toString();
   }
+  
 }

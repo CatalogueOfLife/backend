@@ -9,9 +9,8 @@ import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.exception.NotFoundException;
 import org.col.api.model.ColUser;
-import org.col.api.model.GlobalEntity;
-import org.col.api.model.UserManaged;
-import org.col.dao.GlobalEntityDao;
+import org.col.api.model.DataEntity;
+import org.col.dao.EntityDao;
 import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,16 +18,16 @@ import org.slf4j.LoggerFactory;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public abstract class GlobalEntityResource<T extends GlobalEntity & UserManaged> {
+public abstract class AbstractGlobalResource<T extends DataEntity<Integer>> {
   
   protected final Class<T> objClass;
-  protected final GlobalEntityDao<T, ?> dao;
+  protected final EntityDao<Integer, T, ?> dao;
   protected final SqlSessionFactory factory;
 
   @SuppressWarnings("unused")
-  private static final Logger LOG = LoggerFactory.getLogger(GlobalEntityResource.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AbstractGlobalResource.class);
 
-  public GlobalEntityResource(Class<T> objClass, GlobalEntityDao<T, ?> dao, SqlSessionFactory factory) {
+  public AbstractGlobalResource(Class<T> objClass, EntityDao<Integer, T, ?> dao, SqlSessionFactory factory) {
     this.objClass = objClass;
     this.dao = dao;
     this.factory = factory;

@@ -11,11 +11,7 @@ import com.google.common.base.Charsets;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.EditorialDecision;
-import org.col.api.model.Name;
-import org.col.api.model.NameUsageBase;
-import org.col.api.model.Sector;
-import org.col.api.model.SimpleName;
+import org.col.api.model.*;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Datasets;
 import org.col.api.vocab.Origin;
@@ -103,7 +99,7 @@ public class SectorSyncIT {
   
   NameUsageBase getByID(int datasetKey, String id) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      return session.getMapper(TaxonMapper.class).get(datasetKey, id);
+      return session.getMapper(TaxonMapper.class).get(DSID.key(datasetKey, id));
     }
   }
   

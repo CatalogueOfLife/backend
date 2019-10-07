@@ -15,7 +15,7 @@
         <association property="decision" javaType="EditorialDecision">
             <id column="decision_key" property="key"/>
         </association>
-        <collection property="classification" ofType="SimpleName" column="{id=id,datasetKey=dataset_key}" autoMapping="true"
+        <collection property="classification" ofType="SimpleName" column="{key.id=id,key.datasetKey=dataset_key}" autoMapping="true"
                     select="org.col.db.mapper.TaxonMapper.classificationSimple"/>
     </resultMap>
 
@@ -28,6 +28,7 @@
     </resultMap>
 
     <select id="namesByIds" resultMap="nameDecisionResultMap">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
         SELECT
         <include refid="org.col.db.mapper.NameMapper.nameCols">
             <property name="alias" value="n"/>
@@ -35,12 +36,13 @@
         </include>,
         coalesce(parseInt(n.combination_year), r.year) AS n_publishedInYear
         FROM
-            name_${datasetKey} n
-            LEFT JOIN reference_${datasetKey} r ON n.published_in_id=r.id
+            name_${partition} n
+            LEFT JOIN reference_${partition} r ON n.published_in_id=r.id
         WHERE n.id IN (<foreach collection="ids" item="id" separator=",">#{id}</foreach>)
     </select>
 
     <select id="usagesByIds" resultMap="usageDecisionResultMap">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
         SELECT
         u.is_synonym,
         <include refid="org.col.db.mapper.TaxonMapper.taxonCols">
@@ -62,11 +64,11 @@
         </include>,
         ed.key AS decision_key
         FROM
-        name_usage_${datasetKey} u
-        JOIN name_${datasetKey} n ON u.name_id=n.id
-        LEFT JOIN name_usage_${datasetKey} a ON u.parent_id=a.id AND u.is_synonym
-        LEFT JOIN name_${datasetKey} an ON a.name_id=an.id
-        LEFT JOIN reference_${datasetKey} r ON n.published_in_id=r.id
+        name_usage_${partition} u
+        JOIN name_${partition} n ON u.name_id=n.id
+        LEFT JOIN name_usage_${partition} a ON u.parent_id=a.id AND u.is_synonym
+        LEFT JOIN name_${partition} an ON a.name_id=an.id
+        LEFT JOIN reference_${partition} r ON n.published_in_id=r.id
         LEFT JOIN decision ed ON ed.subject_id=u.id AND ed.dataset_key=#{datasetKey}
         WHERE u.id IN (<foreach collection="ids" item="id" separator=",">#{id}</foreach>)
     </select>
@@ -123,21 +125,23 @@
     </sql>
 
     <select id="duplicateNames" parameterType="map" resultMap="duplicateResultMap">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
         SELECT <include refid="keyCol" /> AS key, array_agg(n.id) AS ids
-        FROM name_${datasetKey} n
+        FROM name_${partition} n
         <where>
             <include refid="commonWhereClause"/>
         </where>
         GROUP BY <include refid="keyCol" />
         HAVING <include refid="commonHavingClause"/>
         ORDER BY <include refid="keyCol" />
-        <include refid="org.col.db.mapper.Common.limit" />
+        <include refid="org.col.db.Common.limit" />
     </select>
 
     <select id="duplicates" parameterType="map" resultMap="duplicateResultMap">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
         SELECT <include refid="keyCol" /> AS key, array_agg(u.id) AS ids
-        FROM name_usage_${datasetKey} u
-            JOIN name_${datasetKey} n ON u.name_id=n.id
+        FROM name_usage_${partition} u
+            JOIN name_${partition} n ON u.name_id=n.id
             <if test="withDecision != null">
                 LEFT JOIN decision ed ON ed.subject_id=u.id
                     AND ed.subject_dataset_key=#{datasetKey}
@@ -173,6 +177,6 @@
             <if test="!acceptedDifferent">&lt;= 1</if>
         </if>
         ORDER BY <include refid="keyCol" />
-        <include refid="org.col.db.mapper.Common.limit" />
+        <include refid="org.col.db.Common.limit" />
     </select>
 </mapper>

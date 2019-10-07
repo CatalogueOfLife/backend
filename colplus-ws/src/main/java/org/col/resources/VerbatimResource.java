@@ -9,6 +9,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.ibatis.session.SqlSession;
+import org.col.api.model.DSID;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.api.model.VerbatimRecord;
@@ -77,7 +78,7 @@ public class VerbatimResource {
   @Path("{key}")
   public VerbatimRecord get(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @Context SqlSession session) {
     VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
-    return mapper.get(datasetKey, key);
+    return mapper.get(DSID.key(datasetKey, key));
   }
   
 }

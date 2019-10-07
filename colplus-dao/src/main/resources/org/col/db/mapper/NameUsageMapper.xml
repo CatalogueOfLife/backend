@@ -75,10 +75,9 @@
     </sql>
 
     <sql id="FROM">
-        name_usage_${datasetKey} u
-            JOIN name_${datasetKey} n ON u.name_id=n.id
-            LEFT JOIN name_usage_${datasetKey} a ON u.parent_id=a.id AND u.is_synonym
-            LEFT JOIN name_${datasetKey} an ON a.name_id=an.id
+        name_usage_${partition} u JOIN name_${partition} n ON u.name_id=n.id
+            LEFT JOIN name_usage_${partition} a ON u.parent_id=a.id AND u.is_synonym
+            LEFT JOIN name_${partition} an ON a.name_id=an.id
     </sql>
 
     <resultMap id="usageResultMap" type="NameUsageBase" autoMapping="true">
@@ -94,17 +93,20 @@
     </resultMap>
 
     <select id="count" resultType="integer">
-        SELECT count(*) from name_usage_${datasetKey}
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
+        SELECT count(*) FROM name_usage_${partition}
     </select>
 
     <select id="list" resultMap="usageResultMap">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         ORDER BY u.id
-        <include refid="org.col.db.mapper.Common.limit" />
+        <include refid="org.col.db.Common.limit" />
     </select>
 
     <select id="listByNameID" resultMap="usageResultMap">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE u.name_id=#{nameId}
@@ -112,6 +114,7 @@
     </select>
 
     <select id="listByName" resultMap="usageResultMap">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE lower(n.scientific_name) = lower(#{name})
@@ -122,14 +125,15 @@
     </select>
 
     <update id="updateParentId" parameterType="map">
-        UPDATE name_usage_${datasetKey}
-        SET (parent_id, modified, modified_by)
-        = (#{newParentId}, now(), #{userKey})
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
+        UPDATE name_usage_${partition}
+        SET (parent_id, modified, modified_by) = (#{newParentId}, now(), #{userKey})
         WHERE parent_id = #{parentId}
     </update>
 
     <delete id="deleteBySector" parameterType="map">
-        DELETE FROM name_usage_${datasetKey} WHERE sector_key = #{sectorKey}
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
+        DELETE FROM name_usage_${partition} WHERE sector_key = #{sectorKey}
     </delete>
 
     <sql id="WHERE_START">
@@ -166,6 +170,7 @@
     </sql>
 
     <select id="processTree" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
         WITH RECURSIVE x AS(
             SELECT <include refid="SELECT" />
             <if test="depthFirst">
@@ -191,15 +196,16 @@
     </select>
 
     <select id="processTreeSimple" parameterType="map" resultMap="simpleResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
         WITH RECURSIVE x AS(
             SELECT u.id, n.scientific_name, n.authorship, n.rank, n.code, u.status, u.parent_id,
                 concat_ws('|', n.scientific_name, u.id) AS path
-            FROM name_usage_${datasetKey} u JOIN name_${datasetKey} n ON u.name_id=n.id
+            FROM name_usage_${partition} u JOIN name_${partition} n ON u.name_id=n.id
             WHERE <include refid="WHERE_START"/>
         UNION
             SELECT u.id, n.scientific_name, n.authorship, n.rank, n.code, u.status, u.parent_id,
                 concat_ws('|', x.path, not u.is_synonym, n.scientific_name, u.id)
-            FROM name_usage_${datasetKey} u JOIN name_${datasetKey} n ON u.name_id=n.id
+            FROM name_usage_${partition} u JOIN name_${partition} n ON u.name_id=n.id
                 JOIN x ON x.id = u.parent_id
             <include refid="WHERE_UNION"/>
         )

@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 @Path("/dataset/{datasetKey}/taxon")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class TaxonResource extends DatasetEntityResource<Taxon> {
+public class TaxonResource extends AbstractDatasetScopedResource<Taxon> {
   private static String ROOT_PARAM = "root";
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(TaxonResource.class);
@@ -42,7 +42,7 @@ public class TaxonResource extends DatasetEntityResource<Taxon> {
   @GET
   @Path("{id}/children")
   public ResultPage<Taxon> children(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Valid @BeanParam Page page) {
-    return dao.getChildren(datasetKey, id, page);
+    return dao.getChildren(DSID.key(datasetKey, id), page);
   }
   
   @GET
@@ -54,7 +54,7 @@ public class TaxonResource extends DatasetEntityResource<Taxon> {
   @GET
   @Path("{id}/classification")
   public List<Taxon> classification(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
-    return session.getMapper(TaxonMapper.class).classification(datasetKey, id);
+    return session.getMapper(TaxonMapper.class).classification(DSID.key(datasetKey, id));
   }
   
   @GET
