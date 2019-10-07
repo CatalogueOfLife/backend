@@ -2,15 +2,16 @@ package org.col.dao;
 
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.TestEntityGenerator;
+import org.col.api.model.DSID;
 import org.col.api.model.Sector;
 import org.col.api.model.TreeNode;
+import org.col.api.vocab.Datasets;
 import org.col.db.MybatisTestUtils;
 import org.col.db.mapper.SectorMapperTest;
 import org.col.db.mapper.TaxonMapper;
 import org.col.db.mapper.TreeMapper;
 import org.junit.Test;
 
-import static org.col.api.vocab.Datasets.DRAFT_COL;
 import static org.junit.Assert.assertEquals;
 
 public class SectorDaoTest extends DaoTestBase {
@@ -51,25 +52,25 @@ public class SectorDaoTest extends DaoTestBase {
     try (SqlSession session = factory().openSession(true)) {
       TreeMapper tm = session.getMapper(TreeMapper.class);
     
-      TreeNode tn = tm.get(DRAFT_COL, "t5");
-      assertEquals(0, (int) tn.getDatasetSectors().get(11));
-      assertEquals(1, (int) tn.getDatasetSectors().get(12));
+      TreeNode tn = tm.get(Datasets.DRAFT_COL, DSID.draftID("t5"));
+      assertEquals(0, tn.getDatasetSectors().get(11));
+      assertEquals(1, tn.getDatasetSectors().get(12));
   
-      tn = tm.get(DRAFT_COL, "t4");
-      assertEquals(1, (int) tn.getDatasetSectors().get(11));
-      assertEquals(0, (int) tn.getDatasetSectors().get(12));
+      tn = tm.get(Datasets.DRAFT_COL, DSID.draftID("t4"));
+      assertEquals(1, tn.getDatasetSectors().get(11));
+      assertEquals(0, tn.getDatasetSectors().get(12));
 
-      tn = tm.get(DRAFT_COL, "t3");
-      assertEquals(1, (int) tn.getDatasetSectors().get(11));
-      assertEquals(2, (int) tn.getDatasetSectors().get(12));
+      tn = tm.get(Datasets.DRAFT_COL, DSID.draftID("t3"));
+      assertEquals(1, tn.getDatasetSectors().get(11));
+      assertEquals(2, tn.getDatasetSectors().get(12));
     
-      tn = tm.get(DRAFT_COL, "t2");
-      assertEquals(1, (int) tn.getDatasetSectors().get(11));
-      assertEquals(2, (int) tn.getDatasetSectors().get(12));
+      tn = tm.get(Datasets.DRAFT_COL, DSID.draftID("t2"));
+      assertEquals(1, tn.getDatasetSectors().get(11));
+      assertEquals(2, tn.getDatasetSectors().get(12));
     
-      tn = tm.get(DRAFT_COL, "t1");
-      assertEquals(1, (int) tn.getDatasetSectors().get(11));
-      assertEquals(2, (int) tn.getDatasetSectors().get(12));
+      tn = tm.get(Datasets.DRAFT_COL, DSID.draftID("t1"));
+      assertEquals(1, tn.getDatasetSectors().get(11));
+      assertEquals(2, tn.getDatasetSectors().get(12));
     }
   }
   

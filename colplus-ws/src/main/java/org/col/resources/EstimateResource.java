@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 @Path("/estimate")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class EstimateResource extends CatalogueEntityResource<SpeciesEstimate> {
+public class EstimateResource extends AbstractDecisionResource<SpeciesEstimate> {
   
   private final EstimateDao dao;
   

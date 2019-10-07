@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 @Path("/dataset/{datasetKey}/reference")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class ReferenceResource extends DatasetEntityResource<Reference>  {
+public class ReferenceResource extends AbstractDatasetScopedResource<Reference> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(ReferenceResource.class);
@@ -52,7 +52,7 @@ public class ReferenceResource extends DatasetEntityResource<Reference>  {
     final String id = UUID.randomUUID().toString();
     Reference ref = ReferenceFactory.fromColDP(datasetKey, id, obj.getCitation(), obj.getAuthor(), obj.getYear(), obj.getTitle(),
         obj.getSource(), obj.getDetails(), obj.getDoi(), obj.getLink(), IssueContainer.DevNullLogging.dataset(datasetKey));
-    return dao.create(ref, user.getKey());
+    return dao.create(ref, user.getKey()).getId();
   }
   
   /**
@@ -66,6 +66,6 @@ public class ReferenceResource extends DatasetEntityResource<Reference>  {
       csl.setId(UUID.randomUUID().toString());
     }
     Reference ref = ReferenceFactory.fromCsl(datasetKey, csl);
-    return dao.create(ref, user.getKey());
+    return dao.create(ref, user.getKey()).getId();
   }
 }

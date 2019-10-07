@@ -1,4 +1,4 @@
-package org.col.db.mapper;
+package org.col.db;
 
 /**
  * Empty interface to allow common xml snippets.

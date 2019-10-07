@@ -9,10 +9,11 @@ import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.ResultContext;
+import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
-import org.col.api.vocab.Datasets;
 import org.col.api.vocab.EntityType;
 import org.col.api.vocab.Origin;
 import org.col.api.vocab.TaxonomicStatus;
@@ -22,14 +23,14 @@ import org.gbif.nameparser.api.NameType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
+public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonDao.class);
   
   public TaxonDao(SqlSessionFactory factory) {
     super(true, factory, TaxonMapper.class);
   }
   
-  public static DatasetID copyTaxon(SqlSession session, final Taxon t, final DatasetID target, int user, Set<EntityType> include) {
+  public static DSID<String> copyTaxon(SqlSession session, final Taxon t, final DSIDValue<String> target, int user, Set<EntityType> include) {
     return CatCopy.copyUsage(session, t, target, user, include, TaxonDao::devNull, TaxonDao::devNull);
   }
   
@@ -87,19 +88,19 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
     }
   }
   
-  public ResultPage<Taxon> getChildren(int datasetKey, String key, Page page) {
+  public ResultPage<Taxon> getChildren(final DSID<String> key, Page page) {
     try (SqlSession session = factory.openSession(false)) {
       Page p = page == null ? new Page() : page;
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      List<Taxon> result = tm.children(datasetKey, key, p);
-      return new ResultPage<>(p, result, () -> tm.countChildren(datasetKey, key));
+      List<Taxon> result = tm.children(key, p);
+      return new ResultPage<>(p, result, () -> tm.countChildren(key));
     }
   }
   
-  public TaxonInfo getTaxonInfo(int datasetKey, String key) {
+  public TaxonInfo getTaxonInfo(int datasetKey, String id) {
     try (SqlSession session = factory.openSession(false)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      return getTaxonInfo(session, tm.get(datasetKey, key));
+      return getTaxonInfo(session, tm.get(new DSIDValue(datasetKey, id)));
     }
   }
   
@@ -133,16 +134,16 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
     info.getSynonyms().forEach(s -> refIds.addAll(s.getReferenceIds()));
 
     // add all supplementary taxon infos
-    info.setDescriptions(dem.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
+    info.setDescriptions(dem.listByTaxon(taxon));
     info.getDescriptions().forEach(d -> refIds.add(d.getReferenceId()));
     
-    info.setDistributions(dim.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
+    info.setDistributions(dim.listByTaxon(taxon));
     info.getDistributions().forEach(d -> refIds.add(d.getReferenceId()));
     
-    info.setMedia(mm.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
+    info.setMedia(mm.listByTaxon(taxon));
     info.getMedia().forEach(m -> refIds.add(m.getReferenceId()));
     
-    info.setVernacularNames(vm.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
+    info.setVernacularNames(vm.listByTaxon(taxon));
     info.getVernacularNames().forEach(d -> refIds.add(d.getReferenceId()));
     // make sure we did not add null by accident
     refIds.remove(null);
@@ -163,7 +164,7 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
    * @return newly created taxon id
    */
   @Override
-  public String create(Taxon t, int user) {
+  public DSID create(Taxon t, int user) {
     t.setStatusIfNull(TaxonomicStatus.ACCEPTED);
     if (t.getStatus().isSynonym()) {
       throw new IllegalArgumentException("Taxa cannot have a synonym status");
@@ -186,7 +187,7 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
         parseName(n);
         nm.create(n);
       } else {
-        Name nExisting = nm.get(datasetKey, n.getId());
+        Name nExisting = nm.get(new DSIDValue(datasetKey, n.getId()));
         if (nExisting == null) {
           throw new IllegalArgumentException("No name exists with ID " + n.getId() + " in dataset " + datasetKey);
         }
@@ -199,7 +200,7 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
       
       session.commit();
       
-      return t.getId();
+      return t;
     }
   }
   
@@ -225,21 +226,23 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
   protected void updateAfter(Taxon t, Taxon old, int user, TaxonMapper mapper, SqlSession session) {
     // has parent, i.e. classification been changed ?
     if (!Objects.equals(old.getParentId(), t.getParentId())) {
-      parentChanged(mapper, t.getDatasetKey(), t.getId(), old.getParentId(), t.getParentId());
+      parentChanged(mapper, t, old.getParentId(), t.getParentId());
     }
   }
   
-  private static void parentChanged(TaxonMapper tm, int datasetKey, String id, String oldParentId, String newParentId) {
+  private static void parentChanged(TaxonMapper tm, final DSID<String> key, String oldParentId, String newParentId) {
     // migrate entire DatasetSectors from old to new
-    Int2IntOpenHashMap delta = tm.getCounts(datasetKey, id).getCount();
+    Int2IntOpenHashMap delta = tm.getCounts(key).getCount();
     if (delta != null && !delta.isEmpty()) {
+      DSID<String> parentKey =  DSID.key(key.getDatasetKey(), oldParentId);
       // remove delta
-      for (TaxonCountMap tc : tm.classificationCounts(datasetKey, oldParentId)) {
-        tm.updateDatasetSectorCount(Datasets.DRAFT_COL, tc.getId(), mergeMapCounts(tc.getCount(), delta, -1));
+      for (TaxonCountMap tc : tm.classificationCounts(parentKey)) {
+        tm.updateDatasetSectorCount(DSID.draftID(tc.getId()), mergeMapCounts(tc.getCount(), delta, -1));
       }
       // add counts
-      for (TaxonCountMap tc : tm.classificationCounts(datasetKey, newParentId)) {
-        tm.updateDatasetSectorCount(Datasets.DRAFT_COL, tc.getId(), mergeMapCounts(tc.getCount(), delta, 1));
+      parentKey.setId(newParentId);
+      for (TaxonCountMap tc : tm.classificationCounts(parentKey)) {
+        tm.updateDatasetSectorCount(DSID.draftID(tc.getId()), mergeMapCounts(tc.getCount(), delta, 1));
       }
     }
   }
@@ -256,59 +259,57 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
   }
   
   @Override
-  protected void deleteBefore(int datasetKey, String id, Taxon old, int user, TaxonMapper tMapper, SqlSession session) {
-    Taxon t = tMapper.get(datasetKey, id);
+  protected void deleteBefore(DSID<String> did, Taxon old, int user, TaxonMapper tMapper, SqlSession session) {
+    Taxon t = tMapper.get(did);
 
-    int cnt = session.getMapper(NameUsageMapper.class).updateParentId(datasetKey, id, t.getParentId(), user);
+    int cnt = session.getMapper(NameUsageMapper.class).updateParentId(did.getDatasetKey(), did.getId(), t.getParentId(), user);
     LOG.debug("Moved {} children of {} to {}", cnt, t.getId(), t.getParentId());
     
-    if (Datasets.DRAFT_COL == datasetKey) {
-      // if this taxon had a sector we need to adjust parental counts
-      // we keep the sector as a broken sector around
-      SectorMapper sm = session.getMapper(SectorMapper.class);
-      for (Sector s : sm.listByTarget(Datasets.DRAFT_COL, id)) {
-        tMapper.incDatasetSectorCount(Datasets.DRAFT_COL, s.getTarget().getId(), s.getDatasetKey(), -1);
-      }
+    // if this taxon had a sector we need to adjust parental counts
+    // we keep the sector as a broken sector around
+    SectorMapper sm = session.getMapper(SectorMapper.class);
+    for (Sector s : sm.listByTarget(did.getDatasetKey(), did.getId())) {
+      tMapper.incDatasetSectorCount(s.getTargetAsDatasetID(), s.getDatasetKey(), -1);
     }
-    
     // deleting the taxon now should cascade deletes to synonyms, vernaculars, etc but keep the name record!
   }
   
   @Override
-  protected void deleteAfter(int datasetKey, String id, Taxon old, int user, TaxonMapper mapper, SqlSession session) {
+  protected void deleteAfter(DSID<String> did, Taxon old, int user, TaxonMapper mapper, SqlSession session) {
     //TODO: update ES
   }
   
   /**
    * Does a cascading delete and also deletes all sectors included
    */
-  public void deleteRecursively(int datasetKey, String id, ColUser user) {
+  public void deleteRecursively(DSID<String> id, ColUser user) {
     try (SqlSession session = factory.openSession(false)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
       SectorMapper sm = session.getMapper(SectorMapper.class);
       SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
   
       // remember sectors and counts so we can delete them at the end
-      Int2IntOpenHashMap delta = tm.getCounts(datasetKey, id).getCount();
-      LOG.debug("Delete taxon {} and its {} nested sectors from dataset {} by user {}", id, delta.size(), datasetKey, user);
-      List<TaxonCountMap> parents = tm.classificationCounts(datasetKey, id);
+      Int2IntOpenHashMap delta = tm.getCounts(id).getCount();
+      LOG.debug("Delete taxon {} and its {} nested sectors from dataset {} by user {}", id, delta.size(), id.getDatasetKey(), user);
+      List<TaxonCountMap> parents = tm.classificationCounts(id);
 
       // cascading delete removes descendants and vernacular, distributions, descriptions, media
       // but NOT names, name_rels or refs
-      tm.delete(datasetKey, id);
+      tm.delete(id);
       // TODO: remove orphaned names and references
   
       // remove delta from parents
+      DSIDValue<String> key = DSID.copy(id);
       for (TaxonCountMap tc : parents) {
-        if (!tc.getId().equals(id)) {
-          tm.updateDatasetSectorCount(Datasets.DRAFT_COL, tc.getId(), mergeMapCounts(tc.getCount(), delta, -1));
+        if (!tc.getId().equals(id.getId())) {
+          tm.updateDatasetSectorCount(key.id(tc.getId()), mergeMapCounts(tc.getCount(), delta, -1));
         }
       }
       
-      for (int key : delta.keySet()) {
-        LOG.debug("Delete sector {} and its imports by user {}", key, user);
-        sim.delete(key);
-        sm.delete(key);
+      for (int skey : delta.keySet()) {
+        LOG.debug("Delete sector {} and its imports by user {}", skey, user);
+        sim.delete(skey);
+        sm.delete(skey);
       }
       session.commit();
     }
@@ -323,24 +324,33 @@ public class TaxonDao extends DatasetEntityDao<Taxon, TaxonMapper> {
    * @param catalogueKey
    */
   public void updateAllSectorCounts(int catalogueKey, SqlSessionFactory factory) {
-    int counter = 0;
     try (SqlSession session = factory.openSession(false)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
+      SectorMapper sm = session.getMapper(SectorMapper.class);
+      SectorCountUpdHandler handler = new SectorCountUpdHandler(tm);
       tm.resetDatasetSectorCount(catalogueKey);
-      for (Sector s : Pager.sectors(catalogueKey, factory)) {
-        if (s.getTarget() != null) {
-          counter++;
-          tm.incDatasetSectorCount(catalogueKey, s.getTarget().getId(), s.getDatasetKey(), 1);
-        }
-      }
+      sm.processDataset(catalogueKey, handler);
       session.commit();
-      
+      LOG.info("Updated dataset sector counts from {} sectors", handler. counter);
     }
-    LOG.info("Updated dataset sector counts from {} sectors", counter);
   }
   
-  private void updateClassificationOfDescendants(int datasetKey, String rootId) {
+  static class SectorCountUpdHandler implements ResultHandler<Sector> {
+    private final TaxonMapper tm;
+    int counter = 0;
   
+    SectorCountUpdHandler(TaxonMapper tm) {
+      this.tm = tm;
+    }
+  
+    @Override
+    public void handleResult(ResultContext<? extends Sector> ctxt) {
+      Sector s = ctxt.getResultObject();
+      if (s.getTarget() != null) {
+        counter++;
+        tm.incDatasetSectorCount(s.getTargetAsDatasetID(), s.getDatasetKey(), 1);
+      }
+    }
   }
   
   private static String devNull(Reference r) {

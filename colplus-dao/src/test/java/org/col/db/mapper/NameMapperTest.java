@@ -4,9 +4,7 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 import org.col.api.TestEntityGenerator;
-import org.col.api.model.Dataset;
 import org.col.api.model.Name;
-import org.col.api.model.Page;
 import org.col.api.vocab.Datasets;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,7 +15,7 @@ import static org.junit.Assert.*;
 /**
  *
  */
-public class NameMapperTest extends MapperTestBase<NameMapper> {
+public class NameMapperTest extends CRUDPageableTestBase<Name, NameMapper> {
   
   private NameMapper nameMapper;
   
@@ -37,39 +35,32 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
     return n;
   }
   
-  private static Name create(Dataset d) throws Exception {
-    Name n = TestEntityGenerator.newName();
-    n.setDatasetKey(d.getKey());
-    n.setSectorKey(1); // not existing, but FK is not checked
-    n.setHomotypicNameId(NAME1.getId());
+  @Override
+  Name createTestEntity(int dkey) {
+    return TestEntityGenerator.newName(dkey, "sk1");
+  }
+  
+  @Override
+  Name removeDbCreatedProps(Name n) {
+    TestEntityGenerator.nullifyDate(n);
+    n.setHomotypicNameId(null);
     return n;
   }
   
-  @Test
-  public void update() throws Exception {
-    Name n = TestEntityGenerator.newName("sk1");
-    mapper().create(n);
-    commit();
-    
+  @Override
+  void updateTestObj(Name n) {
     n.setAuthorship("Berta & Tomate");
-    mapper().update(n);
-    commit();
-    
-    Name n2 = mapper().get(n.getDatasetKey(), n.getId());
-    
-    printDiff(n, n2);
-    assertEquals(n, n2);
   }
   
   @Test
-  public void roundtrip() throws Exception {
+  public void roundtrip2() throws Exception {
     Name n1 = TestEntityGenerator.newName("sk1");
     nameMapper.create(n1);
     assertNotNull(n1.getId());
     commit();
     
-    Name n1b = nameMapper.get(DATASET11.getKey(), n1.getId());
-    assertEquals(n1, n1b);
+    Name n1b = removeDbCreatedProps(nameMapper.get(n1.getKey()));
+    assertEquals(removeDbCreatedProps(n1), n1b);
     
     // with explicit homotypic group
     Name n2 = TestEntityGenerator.newName("sk2");
@@ -84,37 +75,8 @@ public class NameMapperTest extends MapperTestBase<NameMapper> {
     // n1.setId(n2.getBasionymKey());
     // n2.setBasionymKey(n1);
     
-    Name n2b = nameMapper.get(DATASET11.getKey(), n2.getId());
-    assertEquals(n2, n2b);
-  }
-  
-  @Test
-  public void list() throws Exception {
-    List<Name> names = Lists.newArrayList();
-    names.add(create(TestEntityGenerator.DATASET12));
-    names.add(create(TestEntityGenerator.DATASET12));
-    names.add(create(TestEntityGenerator.DATASET12));
-    names.add(create(TestEntityGenerator.DATASET12));
-    names.add(create(TestEntityGenerator.DATASET12));
-    
-    for (Name n : names) {
-      nameMapper.create(n);
-    }
-    commit();
-    
-    // get first page
-    Page p = new Page(0, 3);
-    
-    List<Name> res = nameMapper.list(TestEntityGenerator.DATASET12.getKey(), p);
-    assertEquals(3, res.size());
-    assertEquals(Lists.partition(names, 3).get(0), res);
-    
-    // next page
-    p.next();
-    res = nameMapper.list(DATASET12.getKey(), p);
-    assertEquals(2, res.size());
-    List<Name> l2 = Lists.partition(names, 3).get(1);
-    assertEquals(l2, res);
+    Name n2b = removeDbCreatedProps(nameMapper.get(n2.getKey()));
+    assertEquals(removeDbCreatedProps(n2), n2b);
   }
   
   @Test

@@ -481,10 +481,10 @@ public class NeoDb implements ReferenceStore {
    */
   public void put(VerbatimRecord v) {
     if (v.hasChanged()) {
-      if (v.getKey() == null) {
-        v.setKey(verbatimSequence.incrementAndGet());
+      if (v.getId() == null) {
+        v.setId(verbatimSequence.incrementAndGet());
       }
-      verbatim.put(v.getKey(), v);
+      verbatim.put(v.getId(), v);
       v.setHashCode();
     }
   }
@@ -1006,7 +1006,7 @@ public class NeoDb implements ReferenceStore {
         copyTerms.put(DwcTerm.parentNameUsageID, sourceTerms.get(DwcTerm.parentNameUsageID));
         copyTerms.put(DwcTerm.parentNameUsage, sourceTerms.get(DwcTerm.parentNameUsage));
         put(copyTerms);
-        u.setVerbatimKey(copyTerms.getKey());
+        u.setVerbatimKey(copyTerms.getId());
       }
     }
     

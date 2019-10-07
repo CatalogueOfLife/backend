@@ -31,13 +31,13 @@ public class NameRelationMapperTest extends MapperTestBase<NameRelationMapper> {
   
   @Test
   public void roundtrip() throws Exception {
-    NameRelation in = newNameAct();
+    NameRelation in = nullifyDate(newNameAct());
     nameRelationMapper.create(in);
     assertNotNull(in.getKey());
     commit();
     List<NameRelation> outs = nameRelationMapper.list(in.getDatasetKey(), in.getNameId());
     assertEquals(1, outs.size());
-    assertEquals(in, outs.get(0));
+    assertEquals(in, nullifyDate(outs.get(0)));
   }
   
   @Test

@@ -5,7 +5,7 @@
 <mapper namespace="org.col.db.mapper.VerbatimRecordMapper">
 
     <sql id="SELECT">
-        v.key,
+        v.id,
         v.dataset_key,
         v.line,
         v.file,
@@ -33,7 +33,7 @@
     </sql>
 
     <sql id="FROM">
-        verbatim_${datasetKey} v
+        verbatim_${partition} v
     </sql>
 
     <sql id="WHERE">
@@ -74,6 +74,7 @@
     </resultMap>
 
     <select id="count" resultType="integer">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
         SELECT coalesce(
         (SELECT
         <choose>
@@ -91,41 +92,46 @@
                         verbatim_count
                     </otherwise>
                 </choose>
-                <include refid="org.col.db.mapper.Common.fromFinishedDatasetImport"/>
+                <include refid="org.col.db.Common.fromFinishedDatasetImport"/>
             </otherwise>
         </choose>
         ), 0)
     </select>
 
     <select id="list" resultMap="verbatimResultMap">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         <include refid="WHERE" />
-        ORDER BY key
-        <include refid="org.col.db.mapper.Common.limit"/>
+        ORDER BY id
+        <include refid="org.col.db.Common.limit"/>
     </select>
 
     <select id="get" resultMap="verbatimResultMap">
+        <include refid="org.col.db.Common.partitionByKey"/>
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE key = #{key}
+        WHERE id = #{key.id}
     </select>
 
     <select id="getIssues" resultMap="verbatimResultMap">
+        <include refid="org.col.db.Common.partitionByKey"/>
         SELECT v.issues
         FROM <include refid="FROM" />
-        WHERE key = #{key}
+        WHERE id = #{key.id}
     </select>
 
-    <insert id="create" parameterType="VerbatimRecord" useGeneratedKeys="true" keyProperty="key">
+    <insert id="create" parameterType="VerbatimRecord" useGeneratedKeys="true" keyProperty="id">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
         INSERT INTO verbatim_${datasetKey} (<include refid="COLS" />)
         VALUES (<include refid="PROPS" />)
     </insert>
 
-    <update id="update" parameterType="VerbatimRecord" keyProperty="key">
+    <update id="update" parameterType="VerbatimRecord" keyProperty="id">
+        <include refid="org.col.db.Common.partitionByKey"/>
         UPDATE verbatim_${datasetKey}
         SET issues = #{issues, typeHandler=org.col.db.type2.IssueSetTypeHandler}::int[]
-        WHERE key = #{key}
+        WHERE id = #{key.id}
     </update>
 
 </mapper>

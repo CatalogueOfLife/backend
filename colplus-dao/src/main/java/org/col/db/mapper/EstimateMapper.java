@@ -6,9 +6,11 @@ import javax.annotation.Nullable;
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.Page;
 import org.col.api.model.SpeciesEstimate;
+import org.col.db.CRUD;
+import org.col.db.DatasetPageable;
 import org.gbif.nameparser.api.Rank;
 
-public interface EstimateMapper extends CatalogueCRUDMapper<SpeciesEstimate> {
+public interface EstimateMapper extends CRUD<Integer, SpeciesEstimate>, DatasetPageable<SpeciesEstimate>, ProcessableDataset<SpeciesEstimate> {
   
   SpeciesEstimate getById(@Param("id") String id);
   

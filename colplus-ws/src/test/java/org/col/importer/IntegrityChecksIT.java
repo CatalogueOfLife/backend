@@ -6,10 +6,7 @@ import java.nio.file.Paths;
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.Dataset;
-import org.col.api.model.DatasetImport;
-import org.col.api.model.Name;
-import org.col.api.model.VerbatimRecord;
+import org.col.api.model.*;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Issue;
 import org.col.command.initdb.InitDbCmd;
@@ -116,9 +113,9 @@ public class IntegrityChecksIT {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
 
       NameMapper nm = session.getMapper(NameMapper.class);
-      Name m = nm.get(dataset.getKey(), "1");
+      Name m = nm.get(new DSIDValue<>(dataset.getKey(), "1"));
       VerbatimRecordMapper v = session.getMapper(VerbatimRecordMapper.class);
-      VerbatimRecord vr = v.get(dataset.getKey(), m.getVerbatimKey());
+      VerbatimRecord vr = v.get(DSID.vkey(m));
 
       // missing species epithet
       assertTrue(vr.hasIssue(Issue.INDETERMINED));

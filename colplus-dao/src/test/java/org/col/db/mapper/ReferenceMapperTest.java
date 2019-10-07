@@ -21,32 +21,37 @@ import static org.junit.Assert.assertEquals;
 /**
  *
  */
-public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
+public class ReferenceMapperTest extends CRUDPageableTestBase<Reference, ReferenceMapper> {
   
   public ReferenceMapperTest() {
     super(ReferenceMapper.class);
   }
   
-  @Test
-  public void roundtrip() throws Exception {
-    Reference r1 = create();
-    mapper().create(r1);
-    commit();
-    Reference r2 = mapper().get(r1.getDatasetKey(), r1.getId());
-    
-    TestEntityGenerator.nullifyUserDate(r1);
-    TestEntityGenerator.nullifyUserDate(r2);
+  @Override
+  Reference createTestEntity(int dkey) {
+    Reference r = newReference();
+    r.setDatasetKey(dkey);
+    return r;
+  }
   
-    assertEquals(r1, r2);
+  @Override
+  Reference removeDbCreatedProps(Reference obj) {
+    return TestEntityGenerator.nullifyUserDate(obj);
+  }
+  
+  @Override
+  void updateTestObj(Reference obj) {
+    obj.setYear(983);
+    obj.setPage("p.19735");
   }
   
   @Test
-  public void count() throws Exception {
+  public void count2() throws Exception {
     // we start with 3 records in reference table, inserted through
     // apple, only two of which belong to DATASET11.
-    mapper().create(create());
-    mapper().create(create());
-    mapper().create(create());
+    mapper().create(newReference());
+    mapper().create(newReference());
+    mapper().create(newReference());
     generateDatasetImport(DATASET11.getKey());
     commit();
     
@@ -54,13 +59,13 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
   }
   
   @Test
-  public void list() throws Exception {
+  public void list2() throws Exception {
     List<Reference> in = new ArrayList<>();
-    in.add(create());
-    in.add(create());
-    in.add(create());
-    in.add(create());
-    in.add(create());
+    in.add(newReference());
+    in.add(newReference());
+    in.add(newReference());
+    in.add(newReference());
+    in.add(newReference());
     for (Reference r : in) {
       mapper().create(r);
     }
@@ -131,10 +136,6 @@ public class ReferenceMapperTest extends MapperTestBase<ReferenceMapper> {
     assertEquals(1, mapper().listByIds(11, Sets.newHashSet("ref-1b")).size());
     assertEquals(0, mapper().listByIds(12, Sets.newHashSet("ref-1b")).size());
     assertEquals(0, mapper().listByIds(12, Sets.newHashSet("ref-2")).size());
-  }
-  
-  private static Reference create() throws Exception {
-    return newReference();
   }
   
   private static CslData createCsl() {

@@ -118,7 +118,7 @@ public class SectorSync extends SectorRunnable {
     final String newParentID = sector.getTarget().getId();
     processForeignChildren((tm, t) -> {
         // remember original parent
-        Taxon parent = tm.get(catalogueKey, t.getParentId());
+        Taxon parent = tm.get(new DSIDValue<>(catalogueKey, t.getParentId()));
         foreignChildrenParents.put(t.getId(), parent.getName());
         // update to new parent
         t.setParentId(newParentID);

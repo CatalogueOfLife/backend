@@ -3,7 +3,10 @@ package org.col.db.mapper;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
+import org.col.api.model.DSID;
 import org.col.api.model.Synonym;
+import org.col.db.CRUD;
+import org.col.db.DatasetPageable;
 
 /**
  * Mapper dealing with methods returning the NameUsage interface, i.e. a name in the context of either a Taxon, TaxonVernacularUsage,
@@ -11,7 +14,7 @@ import org.col.api.model.Synonym;
  * <p>
  * Mapper sql should be reusing sql fragments from the 3 concrete implementations as much as possible avoiding duplication.
  */
-public interface SynonymMapper extends DatasetCRUDMapper<Synonym> {
+public interface SynonymMapper extends CRUD<DSID<String>, Synonym>, ProcessableDataset<Synonym>, DatasetPageable<Synonym> {
   
   /**
    * Return synonyms including misapplied names from the synonym relation table.

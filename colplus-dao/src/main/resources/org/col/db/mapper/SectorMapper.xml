@@ -162,7 +162,7 @@
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
     ORDER BY target_rank, key
-    <include refid="org.col.db.mapper.Common.limit" />
+    <include refid="org.col.db.Common.limit" />
   </select>
 
   <select id="listByDataset" resultMap="sectorResultMap">
@@ -199,5 +199,10 @@
     ORDER BY key
   </select>
 
+  <select id="processDataset" parameterType="map" resultMap="sectorResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    WHERE dataset_key=#{datasetKey}
+  </select>
 
 </mapper>

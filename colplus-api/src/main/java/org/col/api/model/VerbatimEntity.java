@@ -3,7 +3,7 @@ package org.col.api.model;
 /**
  *
  */
-public interface VerbatimEntity {
+public interface VerbatimEntity extends DatasetScoped {
   
   Integer getVerbatimKey();
   

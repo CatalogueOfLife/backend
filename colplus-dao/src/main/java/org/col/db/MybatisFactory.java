@@ -67,8 +67,11 @@ public class MybatisFactory {
   }
   
   private static void registerMapper(MapperRegistry registry) {
+    // register the common mapper with a shorter namespace to keep include statements short
+    registry.addMapper(Common.class);
     // register all mappers from the mapper subpackage
     registry.addMappers(NameMapper.class.getPackage().getName());
+    
   }
   
   private static void registerTypeAliases(TypeAliasRegistry registry) {

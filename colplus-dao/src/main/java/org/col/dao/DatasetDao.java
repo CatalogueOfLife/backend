@@ -19,7 +19,7 @@ import org.col.img.LogoUpdateJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DatasetDao extends GlobalEntityDao<Dataset, DatasetMapper> {
+public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetDao.class);
@@ -39,12 +39,7 @@ public class DatasetDao extends GlobalEntityDao<Dataset, DatasetMapper> {
   }
   
   public ResultPage<Dataset> list(Page page) {
-    Page p = page == null ? new Page() : page;
-    try (SqlSession session = factory.openSession()) {
-      DatasetMapper mapper = session.getMapper(mapperClass);
-      List<Dataset> result = mapper.list(p);
-      return new ResultPage<>(p, result, mapper::count);
-    }
+    return super.list(DatasetMapper.class, page);
   }
   
   public ResultPage<Dataset> search(@Nullable DatasetSearchRequest nullableRequest, @Nullable Page page) {

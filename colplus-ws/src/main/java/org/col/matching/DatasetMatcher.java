@@ -3,9 +3,7 @@ package org.col.matching;
 import java.util.Objects;
 
 import org.apache.ibatis.session.*;
-import org.col.api.model.IssueContainer;
-import org.col.api.model.Name;
-import org.col.api.model.NameMatch;
+import org.col.api.model.*;
 import org.col.api.vocab.Issue;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.VerbatimRecordMapper;
@@ -50,6 +48,7 @@ public class DatasetMatcher {
     private final NameIndex ni;
     private final NameMapper nm;
     private final VerbatimRecordMapper vm;
+    private final DSIDValue<Integer> key;
   
     BulkMatchHandler(boolean updateIssues, NameIndex ni, SqlSessionFactory factory, int datasetKey, boolean allowInserts) {
       this.updateIssues = updateIssues;
@@ -59,6 +58,7 @@ public class DatasetMatcher {
       this.session = factory.openSession(ExecutorType.BATCH, false);
       this.nm = session.getMapper(NameMapper.class);
       this.vm = session.getMapper(VerbatimRecordMapper.class);
+      key = DSID.key(datasetKey, -1);
     }
   
     @Override
@@ -72,7 +72,7 @@ public class DatasetMatcher {
         nm.updateMatch(datasetKey, n.getId(), m.hasMatch() ? m.getName().getId() : null);
         
         if (updateIssues) {
-          IssueContainer v = n.getVerbatimKey() != null ? vm.getIssues(datasetKey, n.getVerbatimKey()) : null;
+          IssueContainer v = n.getVerbatimKey() != null ? vm.getIssues(key.id(n.getVerbatimKey())) : null;
           if (v != null) {
             int hash = v.getIssues().hashCode();
             clearMatchIssues(v);
@@ -85,7 +85,7 @@ public class DatasetMatcher {
             }
             // only update verbatim if issues changed
             if (hash != v.getIssues().hashCode()) {
-              vm.update(datasetKey, n.getVerbatimKey(), v.getIssues());
+              vm.update(key, v.getIssues());
             }
           }
         }

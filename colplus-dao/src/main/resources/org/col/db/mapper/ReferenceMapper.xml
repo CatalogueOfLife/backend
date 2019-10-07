@@ -43,9 +43,9 @@
     </sql>
 
     <sql id="FROM">
-        reference_${datasetKey} r
+        reference_${partition} r
         <if test="_parameter.containsKey('req') and req.issues != null and !req.issues.isEmpty()">
-            JOIN verbatim_${datasetKey} v ON v.key=r.verbatim_key
+            JOIN verbatim_${partition} v ON v.id=r.verbatim_key
         </if>
     </sql>
 
@@ -82,30 +82,22 @@
     </resultMap>
 
     <select id="count" resultType="integer">
-        <if test="datasetKey &lt; 10">
-            SELECT count(*) FROM reference_${datasetKey}
-        </if>
-        <if test="datasetKey &gt;= 10">
-            <include refid="org.col.db.mapper.Common.countFromFinishedDatasetImport">
-                <property name="column" value="reference_count"/>
-            </include>
-        </if>
-    </select>
-
-    <select id="hasData" resultType="boolean">
-        SELECT exists(
-        SELECT id FROM <include refid="FROM" /> LIMIT 1
-        )
+        <include refid="org.col.db.Common.count">
+            <property name="table" value="reference"/>
+            <property name="column" value="reference_count"/>
+        </include>
     </select>
 
     <select id="list" resultMap="referenceResultMap">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         ORDER BY id
-        <include refid="org.col.db.mapper.Common.limit" />
+        <include refid="org.col.db.Common.limit" />
     </select>
 
     <select id="listByIds" resultMap="referenceResultMap">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE id IN
@@ -116,6 +108,7 @@
     </select>
 
     <select id="find" resultMap="referenceResultMap">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE r.citation=#{citation}
@@ -125,6 +118,7 @@
     </select>
 
     <select id="search" resultMap="referenceResultMap">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         <include refid="SEARCH_WHERE" />
@@ -148,29 +142,52 @@
                 </choose>
             </otherwise>
         </choose>
-        <include refid="org.col.db.mapper.Common.limit"/>
+        <include refid="org.col.db.Common.limit"/>
     </select>
 
     <select id="searchCount" resultType="integer">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
         SELECT COUNT(*)
         FROM <include refid="FROM" />
         <include refid="SEARCH_WHERE" />
     </select>
 
     <select id="get" resultMap="referenceResultMap">
+        <include refid="org.col.db.Common.partitionByKey"/>
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE r.id = #{id}
+        WHERE r.id = #{key.id}
     </select>
 
     <insert id="create" parameterType="Reference">
-        INSERT INTO reference_${datasetKey} ( <include refid="COLS" />, created, modified)
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
+        INSERT INTO reference_${partition} ( <include refid="COLS" />, created, modified)
         VALUES ( <include refid="PROPS" />, now(), now())
     </insert>
 
+    <update id="update" parameterType="Name" keyProperty="id">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
+        UPDATE reference_${partition}
+        SET (<include refid="COLS" />, created, modified) = (<include refid="PROPS" />, now(), now())
+        WHERE id = #{id} AND dataset_key=#{datasetKey}
+    </update>
+
+    <delete id="delete" parameterType="map">
+        <include refid="org.col.db.Common.partitionByKey"/>
+        DELETE FROM reference_${partition}
+        WHERE id = #{key.id} AND dataset_key=#{key.datasetKey}
+    </delete>
+
     <delete id="deleteBySector" parameterType="map">
-        DELETE FROM reference_${datasetKey}
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
+        DELETE FROM reference_${partition}
         WHERE sector_key=#{sectorKey}
     </delete>
+
+    <select id="processDataset" parameterType="map" resultMap="referenceResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+    </select>
 
 </mapper>

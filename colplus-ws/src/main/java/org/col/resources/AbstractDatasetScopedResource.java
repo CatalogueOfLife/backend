@@ -18,15 +18,15 @@ import org.slf4j.LoggerFactory;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public abstract class DatasetEntityResource<T extends DatasetIDEntity & UserManaged> {
+public abstract class AbstractDatasetScopedResource<T extends DatasetScopedEntity<String>> {
 
   private final Class<T> objClass;
-  protected final DatasetEntityDao<T, ?> dao;
+  protected final DatasetEntityDao<String, T, ?> dao;
 
   @SuppressWarnings("unused")
-  private static final Logger LOG = LoggerFactory.getLogger(DatasetEntityResource.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AbstractDatasetScopedResource.class);
 
-  public DatasetEntityResource(Class<T> objClass, DatasetEntityDao<T, ?> dao) {
+  public AbstractDatasetScopedResource(Class<T> objClass, DatasetEntityDao<String, T, ?> dao) {
     this.objClass = objClass;
     this.dao = dao;
   }
@@ -55,7 +55,7 @@ public abstract class DatasetEntityResource<T extends DatasetIDEntity & UserMana
   @GET
   @Path("{id}")
   public T get(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id) {
-    T obj = dao.get(datasetKey, id);
+    T obj = dao.get(new DSIDValue<>(datasetKey, id));
     if (obj == null) {
       throw NotFoundException.idNotFound(objClass, datasetKey, id);
     }
@@ -78,7 +78,7 @@ public abstract class DatasetEntityResource<T extends DatasetIDEntity & UserMana
   @Path("{id}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void delete(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Auth ColUser user) {
-    int i = dao.delete(datasetKey, id, user.getKey());
+    int i = dao.delete(new DSIDValue(datasetKey, id), user.getKey());
     if (i == 0) {
       throw NotFoundException.idNotFound(objClass, datasetKey, id);
     }

@@ -2,7 +2,7 @@ package org.col.api.jackson;
 
 import java.io.IOException;
 
-import org.col.api.model.DatasetID;
+import org.col.api.model.DSIDValue;
 import org.col.api.model.EditorialDecision;
 import org.col.api.vocab.Lifezone;
 import org.col.api.vocab.TaxonomicStatus;
@@ -19,9 +19,9 @@ public class ApiModuleTest {
   
   @Test
   public void testJsonCreator() throws IOException {
-    DatasetID did1 = new DatasetID(123, "peter");
+    DSIDValue did1 = new DSIDValue(123, "peter");
     String json = ApiModule.MAPPER.writeValueAsString(did1);
-    DatasetID did2 = ApiModule.MAPPER.readValue(json, DatasetID.class);
+    DSIDValue did2 = ApiModule.MAPPER.readValue(json, DSIDValue.class);
     assertEquals(did1, did2);
   }
   

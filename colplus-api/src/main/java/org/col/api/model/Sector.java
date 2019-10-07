@@ -3,7 +3,6 @@ package org.col.api.model;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.col.api.vocab.Datasets;
 import org.gbif.nameparser.api.NomCode;
 
 /**
@@ -63,13 +62,8 @@ public class Sector extends Decision {
   }
   
   @JsonIgnore
-  public DatasetID getSourceAsDatasetID() {
-    return new DatasetID(datasetKey, subject.getId());
-  }
-  
-  @JsonIgnore
-  public DatasetID getTargetAsDatasetID() {
-    return new DatasetID(Datasets.DRAFT_COL, target.getId());
+  public DSIDValue<String> getTargetAsDatasetID() {
+    return new DSIDValue(getDatasetKey(), target.getId());
   }
   
   @Override
@@ -91,9 +85,10 @@ public class Sector extends Decision {
   @Override
   public String toString() {
     return "Sector{" + getKey() +
-        ", datasetKey=" + datasetKey +
+        ", datasetKey=" + getDatasetKey() +
         ", mode=" + mode +
         ", code=" + code +
+        ", subjectDatasetKey=" + getSubjectDatasetKey() +
         ", subject=" + getSubject() +
         '}';
   }

@@ -4,13 +4,11 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.col.api.vocab.License;
 import org.col.api.vocab.MediaType;
 
-public class Media extends DataEntity implements Referenced, VerbatimEntity, GlobalEntity {
-  @JsonIgnore
-  private Integer key;
+public class Media extends DatasetScopedEntity<Integer> implements Referenced, VerbatimEntity {
+  
   private Integer verbatimKey;
   private URI url;
   private MediaType type;
@@ -21,16 +19,6 @@ public class Media extends DataEntity implements Referenced, VerbatimEntity, Glo
   private License license;
   private URI link;
   private String referenceId;
-  
-  @Override
-  public Integer getKey() {
-    return key;
-  }
-  
-  @Override
-  public void setKey(Integer key) {
-    this.key = key;
-  }
   
   @Override
   public Integer getVerbatimKey() {
@@ -115,28 +103,27 @@ public class Media extends DataEntity implements Referenced, VerbatimEntity, Glo
   public void setReferenceId(String referenceId) {
     this.referenceId = referenceId;
   }
-
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     Media media = (Media) o;
-    return Objects.equals(key, media.key) &&
-            Objects.equals(verbatimKey, media.verbatimKey) &&
-            Objects.equals(url, media.url) &&
-            type == media.type &&
-            Objects.equals(format, media.format) &&
-            Objects.equals(title, media.title) &&
-            Objects.equals(captured, media.captured) &&
-            Objects.equals(capturedBy, media.capturedBy) &&
-            license == media.license &&
-            Objects.equals(link, media.link) &&
-            Objects.equals(referenceId, media.referenceId);
+    return Objects.equals(verbatimKey, media.verbatimKey) &&
+        Objects.equals(url, media.url) &&
+        type == media.type &&
+        Objects.equals(format, media.format) &&
+        Objects.equals(title, media.title) &&
+        Objects.equals(captured, media.captured) &&
+        Objects.equals(capturedBy, media.capturedBy) &&
+        license == media.license &&
+        Objects.equals(link, media.link) &&
+        Objects.equals(referenceId, media.referenceId);
   }
-
+  
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, verbatimKey, url, type, format, title, captured, capturedBy, license, link, referenceId);
+    return Objects.hash(super.hashCode(), verbatimKey, url, type, format, title, captured, capturedBy, license, link, referenceId);
   }
 }

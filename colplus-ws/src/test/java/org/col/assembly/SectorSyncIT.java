@@ -91,7 +91,7 @@ public class SectorSyncIT {
   
   NameUsageBase getByID(int datasetKey, String id) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      return session.getMapper(TaxonMapper.class).get(datasetKey, id);
+      return session.getMapper(TaxonMapper.class).get(new DSIDValue<>(datasetKey, id));
     }
   }
   

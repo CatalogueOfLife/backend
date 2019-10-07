@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
 /**
  *
  */
-public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
+public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMapper> {
 
   public DatasetMapperTest() {
     super(DatasetMapper.class);
@@ -57,7 +57,7 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     d.getOrganisations().add("your org");
     return d;
   }
-
+  
   @Test
   public void roundtrip() throws Exception {
     Dataset d1 = create();
@@ -69,12 +69,16 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     // we generate this on the fly
     d2.setContributesTo(null);
   
-    printDiff(d1, d2);
+    //printDiff(d1, d2);
     assertEquals(d1, d2);
   }
-
+  
+  /**
+   * We only logically delete datasets, dont run super test
+   */
   @Test
-  public void delete() throws Exception {
+  @Override
+  public void deleted() throws Exception {
     Dataset d1 = create();
     mapper().create(d1);
 
@@ -342,17 +346,6 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
   
   }
 
-  private static List<Dataset> removeCreated(List<Dataset> ds) {
-    for (Dataset d : ds) {
-      // dont compare created stamps
-      d.setCreated(null);
-      d.setModified(null);
-      // we generate this on the fly
-      d.setContributesTo(null);
-    }
-    return ds;
-  }
-
   private int createSearchableDataset(String title, String author, String organisation, String description) {
     Dataset ds = new Dataset();
     ds.setTitle(title);
@@ -364,5 +357,32 @@ public class DatasetMapperTest extends MapperTestBase<DatasetMapper> {
     ds.setType(DatasetType.GLOBAL);
     mapper().create(TestEntityGenerator.setUserDate(ds));
     return ds.getKey();
+  }
+  
+  @Override
+  Dataset createTestEntity(int dkey) {
+    return create();
+  }
+  
+  @Override
+  Dataset removeDbCreatedProps(Dataset d) {
+    // dont compare created stamps
+    d.setCreated(null);
+    d.setModified(null);
+    // we generate this on the fly
+    d.setContributesTo(null);
+    return d;
+  }
+  
+  private List<Dataset> removeCreated(List<Dataset> ds) {
+    for (Dataset d : ds) {
+      removeDbCreatedProps(d);
+    }
+    return ds;
+  }
+  
+  @Override
+  void updateTestObj(Dataset d) {
+    d.setDescription("brand new thing");
   }
 }

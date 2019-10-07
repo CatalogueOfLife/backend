@@ -119,14 +119,14 @@ public class SectorSyncTest {
       final VernacularNameMapper vm = session.getMapper(VernacularNameMapper.class);
       List<VernacularName> vNames = new ArrayList<>();
       for (Taxon t : taxa) {
-        vNames.addAll(vm.listByTaxon(Datasets.DRAFT_COL, t.getId()));
+        vNames.addAll(vm.listByTaxon(DSID.draftID(t.getId())));
       }
       assertEquals(3, vNames.size());
   
       final DistributionMapper dm = session.getMapper(DistributionMapper.class);
       List<Distribution> distributions = new ArrayList<>();
       for (Taxon t : taxa) {
-        distributions.addAll(dm.listByTaxon(Datasets.DRAFT_COL, t.getId()));
+        distributions.addAll(dm.listByTaxon(DSID.draftID(t.getId())));
       }
       assertEquals(7, distributions.size());
     }

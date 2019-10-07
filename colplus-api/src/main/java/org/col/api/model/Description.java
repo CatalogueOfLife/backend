@@ -1,31 +1,17 @@
 package org.col.api.model;
 
 import java.util.Objects;
-
 import javax.validation.constraints.Size;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.col.api.vocab.Language;
 
-public class Description extends DataEntity implements Referenced, VerbatimEntity, GlobalEntity {
-  @JsonIgnore
-  private Integer key;
+public class Description extends DatasetScopedEntity<Integer> implements Referenced, VerbatimEntity {
   private Integer verbatimKey;
   private String category;
   private String description;
   @Size(min = 3, max = 3)
   private String language;
   private String referenceId;
-  
-  @Override
-  public Integer getKey() {
-    return key;
-  }
-  
-  @Override
-  public void setKey(Integer key) {
-    this.key = key;
-  }
   
   @Override
   public Integer getVerbatimKey() {
@@ -74,23 +60,23 @@ public class Description extends DataEntity implements Referenced, VerbatimEntit
   public void setReferenceId(String referenceId) {
     this.referenceId = referenceId;
   }
-
+  
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     Description that = (Description) o;
-    return Objects.equals(key, that.key) &&
-            Objects.equals(verbatimKey, that.verbatimKey) &&
-            Objects.equals(category, that.category) &&
-            Objects.equals(description, that.description) &&
-            Objects.equals(language, that.language) &&
-            Objects.equals(referenceId, that.referenceId);
+    return Objects.equals(verbatimKey, that.verbatimKey) &&
+        Objects.equals(category, that.category) &&
+        Objects.equals(description, that.description) &&
+        Objects.equals(language, that.language) &&
+        Objects.equals(referenceId, that.referenceId);
   }
-
+  
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, verbatimKey, category, description, language, referenceId);
+    return Objects.hash(super.hashCode(), verbatimKey, category, description, language, referenceId);
   }
 }

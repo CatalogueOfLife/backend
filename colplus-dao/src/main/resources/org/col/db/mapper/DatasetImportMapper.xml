@@ -135,7 +135,7 @@
         FROM <include refid="FROM" />
         <include refid="WHERE" />
         ORDER BY started DESC, attempt DESC, dataset_key
-        <include refid="org.col.db.mapper.Common.limit" />
+        <include refid="org.col.db.Common.limit" />
     </select>
 
     <select id="countDescription" resultType="integer">

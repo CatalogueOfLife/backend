@@ -7,23 +7,20 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.api.model.DatasetID;
-import org.col.api.model.Page;
-import org.col.api.model.Reference;
-import org.col.api.model.ResultPage;
+import org.col.api.model.*;
 import org.col.api.search.ReferenceSearchRequest;
 import org.col.common.csl.CslUtil;
 import org.col.db.mapper.ReferenceMapper;
 
-public class ReferenceDao extends DatasetEntityDao<Reference, ReferenceMapper> {
+public class ReferenceDao extends DatasetEntityDao<String, Reference, ReferenceMapper> {
   
   
   public ReferenceDao(SqlSessionFactory factory) {
     super(false, factory, ReferenceMapper.class);
   }
   
-  public Reference get(int datasetKey, String id, @Nullable String page) {
-    Reference ref = super.get(datasetKey, id);
+  public Reference get(DSID<String> did, @Nullable String page) {
+    Reference ref = super.get(did);
     if (ref == null) {
       return null;
     }
@@ -34,7 +31,7 @@ public class ReferenceDao extends DatasetEntityDao<Reference, ReferenceMapper> {
   }
   
   @Override
-  public String create(Reference r, int user) {
+  public DSID<String> create(Reference r, int user) {
     // build default citation from csl
     if (r.getCitation() == null && r.getCsl() != null) {
       r.setCitation(CslUtil.buildCitation(r.getCsl()));
@@ -56,8 +53,8 @@ public class ReferenceDao extends DatasetEntityDao<Reference, ReferenceMapper> {
   /**
    * Copies the given nam instance, modifying the original and assigning a new id
    */
-  public static DatasetID copyReference(final SqlSession session, final Reference r, final int targetDatasetKey, int user) {
-    final DatasetID orig = new DatasetID(r);
+  public static DSIDValue<String> copyReference(final SqlSession session, final Reference r, final int targetDatasetKey, int user) {
+    final DSIDValue<String> orig = new DSIDValue<>(r);
     newKey(r);
     r.applyUser(user, true);
     r.setDatasetKey(targetDatasetKey);

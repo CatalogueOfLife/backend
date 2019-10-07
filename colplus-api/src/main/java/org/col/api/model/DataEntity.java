@@ -6,13 +6,17 @@ import java.util.Objects;
 /**
  * Entity that can be created and modified by a user.
  */
-public class DataEntity implements UserManaged {
+public abstract class DataEntity<K> implements UserManaged {
 
   private LocalDateTime created;
   private Integer createdBy;
   private LocalDateTime modified;
   private Integer modifiedBy;
-
+  
+  public abstract K getKey();
+  
+  public abstract void setKey(K key);
+  
   @Override
   public LocalDateTime getCreated() {
     return created;

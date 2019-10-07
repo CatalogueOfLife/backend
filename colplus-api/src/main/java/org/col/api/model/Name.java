@@ -23,19 +23,9 @@ import static org.gbif.nameparser.util.NameFormatter.HYBRID_MARKER;
 /**
  *
  */
-public class Name extends DataEntity implements DatasetIDEntity, VerbatimEntity {
+public class Name extends DatasetScopedEntity<String> implements VerbatimEntity {
   
-  /**
-   * Primary key of the name as given in the dataset dwc:scientificNameID. Only guaranteed to be
-   * unique within a dataset and can follow any kind of schema.
-   */
-  private String id;
-  
-  /**
-   * Key to dataset instance. Defines context of the name key.
-   */
-  @Nonnull
-  private Integer datasetKey;
+
   private Integer sectorKey;
   private Integer verbatimKey;
   
@@ -93,11 +83,7 @@ public class Name extends DataEntity implements DatasetIDEntity, VerbatimEntity 
   
   private String specificEpithet;
   
-  private String specificEpithetQualifier;
-  
   private String infraspecificEpithet;
-
-  private String infraspecificEpithetQualifier;
   
   private String cultivarEpithet;
   
@@ -194,8 +180,7 @@ public class Name extends DataEntity implements DatasetIDEntity, VerbatimEntity 
    * @param n
    */
   public Name(Name n) {
-    this.id = n.id;
-    this.datasetKey = n.datasetKey;
+    this.setKey(n);
     this.sectorKey = n.sectorKey;
     this.homotypicNameId = n.homotypicNameId;
     this.nameIndexId = n.nameIndexId;
@@ -247,24 +232,6 @@ public class Name extends DataEntity implements DatasetIDEntity, VerbatimEntity 
     pn.setNomenclaturalNotes(n.getRemarks());
     pn.setType(n.getType());
     return pn;
-  }
-  
-  public String getId() {
-    return id;
-  }
-  
-  public void setId(String id) {
-    this.id = id;
-  }
-  
-  @Override
-  public Integer getDatasetKey() {
-    return datasetKey;
-  }
-  
-  @Override
-  public void setDatasetKey(Integer key) {
-    this.datasetKey = key;
   }
   
   public Integer getSectorKey() {
@@ -733,15 +700,41 @@ public class Name extends DataEntity implements DatasetIDEntity, VerbatimEntity 
     return NameFormatter.authorshipComplete(toParsedName(this));
   }
   
+  public boolean equalSciName(Name o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    return candidatus == o.candidatus &&
+        Objects.equals(scientificName, o.scientificName) &&
+        Objects.equals(authorship, o.authorship) &&
+        rank == o.rank &&
+        Objects.equals(uninomial, o.uninomial) &&
+        Objects.equals(genus, o.genus) &&
+        Objects.equals(infragenericEpithet, o.infragenericEpithet) &&
+        Objects.equals(specificEpithet, o.specificEpithet) &&
+        Objects.equals(infraspecificEpithet, o.infraspecificEpithet) &&
+        Objects.equals(cultivarEpithet, o.cultivarEpithet) &&
+        Objects.equals(appendedPhrase, o.appendedPhrase) &&
+        notho == o.notho &&
+        Objects.equals(combinationAuthorship, o.combinationAuthorship) &&
+        Objects.equals(basionymAuthorship, o.basionymAuthorship) &&
+        Objects.equals(sanctioningAuthor, o.sanctioningAuthor) &&
+        code == o.code &&
+        nomStatus == o.nomStatus &&
+        Objects.equals(publishedInId, o.publishedInId) &&
+        Objects.equals(publishedInPage, o.publishedInPage) &&
+        Objects.equals(publishedInYear, o.publishedInYear) &&
+        type == o.type;
+  }
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
     Name name = (Name) o;
     return candidatus == name.candidatus &&
-        Objects.equals(id, name.id) &&
-        Objects.equals(datasetKey, name.datasetKey) &&
         Objects.equals(sectorKey, name.sectorKey) &&
+        Objects.equals(verbatimKey, name.verbatimKey) &&
         Objects.equals(homotypicNameId, name.homotypicNameId) &&
         Objects.equals(nameIndexId, name.nameIndexId) &&
         Objects.equals(scientificName, name.scientificName) &&
@@ -770,55 +763,25 @@ public class Name extends DataEntity implements DatasetIDEntity, VerbatimEntity 
         Objects.equals(remarks, name.remarks);
   }
   
-  public boolean equalSciName(Name o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    return candidatus == o.candidatus &&
-        Objects.equals(scientificName, o.scientificName) &&
-        Objects.equals(authorship, o.authorship) &&
-        rank == o.rank &&
-        Objects.equals(uninomial, o.uninomial) &&
-        Objects.equals(genus, o.genus) &&
-        Objects.equals(infragenericEpithet, o.infragenericEpithet) &&
-        Objects.equals(specificEpithet, o.specificEpithet) &&
-        Objects.equals(infraspecificEpithet, o.infraspecificEpithet) &&
-        Objects.equals(cultivarEpithet, o.cultivarEpithet) &&
-        Objects.equals(appendedPhrase, o.appendedPhrase) &&
-        notho == o.notho &&
-        Objects.equals(combinationAuthorship, o.combinationAuthorship) &&
-        Objects.equals(basionymAuthorship, o.basionymAuthorship) &&
-        Objects.equals(sanctioningAuthor, o.sanctioningAuthor) &&
-        code == o.code &&
-        nomStatus == o.nomStatus &&
-        Objects.equals(publishedInId, o.publishedInId) &&
-        Objects.equals(publishedInPage, o.publishedInPage) &&
-        Objects.equals(publishedInYear, o.publishedInYear) &&
-        type == o.type;
-  }
-
   @Override
   public int hashCode() {
-    return Objects.hash(id, datasetKey, sectorKey, homotypicNameId, nameIndexId, scientificName, authorship, rank,
-        uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, appendedPhrase,
-        candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus,
-        publishedInId, publishedInPage, publishedInYear,
-        origin, type, webpage, fossil, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, homotypicNameId, nameIndexId, scientificName, authorship, authorshipNormalized, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, appendedPhrase, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, publishedInYear, origin, type, webpage, fossil, remarks);
   }
   
   @Override
   public String toString() {
-    return id + " " + canonicalNameComplete();
+    return getId() + " " + canonicalNameComplete();
   }
   
   public String toStringComplete() {
     StringBuilder sb = new StringBuilder();
   
-    if (id != null) {
-      sb.append(id);
+    if (getId() != null) {
+      sb.append(getId());
     }
     
     if (this.type != null) {
-      if (id != null) {
+      if (sb.length() > 0) {
         sb.append(" ");
       }
       sb.append("[");

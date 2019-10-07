@@ -23,7 +23,6 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.*;
-import static org.col.api.vocab.Datasets.DRAFT_COL;
 import static org.junit.Assert.*;
 
 public class TaxonDaoTest extends DaoTestBase {
@@ -66,7 +65,7 @@ public class TaxonDaoTest extends DaoTestBase {
 
     assertEquals(2, info.getDistributions().size());
     for (Distribution d : info.getDistributions()) {
-      switch (d.getKey()) {
+      switch (d.getId()) {
         case 1:
           assertEquals("Berlin", d.getArea());
           assertEquals(Gazetteer.TEXT, d.getGazetteer());
@@ -202,9 +201,9 @@ public class TaxonDaoTest extends DaoTestBase {
     t.setDatasetKey(datasetKey);
     t.setStatus(TaxonomicStatus.ACCEPTED);
     
-    String id = tDao.create(t, USER_EDITOR.getKey());
+    DSID id = tDao.create(t, USER_EDITOR.getKey());
     
-    Taxon t2 = tDao.get(datasetKey, id);
+    Taxon t2 = tDao.get(id);
     assertNotNull(t2.getId());
     assertEquals(USER_EDITOR.getKey(), t2.getCreatedBy());
     assertEquals(USER_EDITOR.getKey(), t2.getModifiedBy());
@@ -233,7 +232,7 @@ public class TaxonDaoTest extends DaoTestBase {
 
     id = tDao.create(t, USER_EDITOR.getKey());
 
-    t2 = tDao.get(datasetKey, id);
+    t2 = tDao.get(id);
     assertNotNull(t2.getId());
     assertEquals(USER_EDITOR.getKey(), t2.getCreatedBy());
     assertEquals(USER_EDITOR.getKey(), t2.getModifiedBy());
@@ -261,7 +260,7 @@ public class TaxonDaoTest extends DaoTestBase {
   @Test
   public void updateParentChange(){
     MybatisTestUtils.populateDraftTree(session());
-    Taxon t5 = tDao.get(DRAFT_COL,"t5");
+    Taxon t5 = tDao.get(DSID.draftID("t5"));
     assertEquals("t3", t5.getParentId());
     t5.setParentId("t4");
     tDao.update(t5, USER_EDITOR.getKey());
@@ -269,13 +268,14 @@ public class TaxonDaoTest extends DaoTestBase {
   
   @Test
   public void deleteRecursively() throws Exception {
-    final int dkey = TestDataRule.TestData.TREE.key;
+    final DSIDValue key = DSID.key(TestDataRule.TestData.TREE.key, null);
     MybatisTestUtils.populateTestData(TestDataRule.TestData.TREE);
-
-    assertNotNull(tDao.get(dkey, "t10"));
-    tDao.deleteRecursively(dkey, "t4", USER_EDITOR);
   
-    assertNull(tDao.get(dkey, "t4"));
-    assertNull(tDao.get(dkey, "t10"));
+    
+    assertNotNull(tDao.get(key.id("t10")));
+    tDao.deleteRecursively(key.id("t4"), USER_EDITOR);
+  
+    assertNull(tDao.get(key));
+    assertNull(tDao.get(key.id("t10")));
   }
 }

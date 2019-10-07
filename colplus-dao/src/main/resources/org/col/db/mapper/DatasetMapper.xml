@@ -194,7 +194,7 @@
             <when test="rev">DESC NULLs LAST</when>
             <otherwise>ASC NULLs FIRST</otherwise>
         </choose>
-        <include refid="org.col.db.mapper.Common.limit"/>
+        <include refid="org.col.db.Common.limit"/>
     </select>
 
     <select id="list" resultMap="datasetResultMap">
@@ -202,7 +202,7 @@
         FROM <include refid="FROM" />
         WHERE deleted IS NULL
         ORDER BY key
-        <include refid="org.col.db.mapper.Common.limit"/>
+        <include refid="org.col.db.Common.limit"/>
     </select>
 
     <select id="listNeverImported" resultMap="datasetResultMap">

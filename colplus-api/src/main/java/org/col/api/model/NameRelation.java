@@ -7,8 +7,7 @@ import org.col.api.vocab.NomRelType;
 /**
  * A nomenclatural name relation between two names pointing back in time from the nameId to the relatedNameId.
  */
-public class NameRelation extends DataEntity implements VerbatimEntity, GlobalEntity {
-  private Integer key;
+public class NameRelation extends DatasetScopedEntity<Integer> implements VerbatimEntity {
   private Integer verbatimKey;
   private Integer datasetKey;
   private NomRelType type;
@@ -16,14 +15,6 @@ public class NameRelation extends DataEntity implements VerbatimEntity, GlobalEn
   private String relatedNameId;
   private String publishedInId;
   private String note;
-  
-  public Integer getKey() {
-    return key;
-  }
-  
-  public void setKey(Integer key) {
-    this.key = key;
-  }
   
   @Override
   public Integer getVerbatimKey() {
@@ -87,9 +78,9 @@ public class NameRelation extends DataEntity implements VerbatimEntity, GlobalEn
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
     NameRelation that = (NameRelation) o;
-    return Objects.equals(key, that.key) &&
-        Objects.equals(verbatimKey, that.verbatimKey) &&
+    return Objects.equals(verbatimKey, that.verbatimKey) &&
         Objects.equals(datasetKey, that.datasetKey) &&
         type == that.type &&
         Objects.equals(nameId, that.nameId) &&
@@ -100,7 +91,6 @@ public class NameRelation extends DataEntity implements VerbatimEntity, GlobalEn
   
   @Override
   public int hashCode() {
-    
-    return Objects.hash(key, verbatimKey, datasetKey, type, nameId, relatedNameId, publishedInId, note);
+    return Objects.hash(super.hashCode(), verbatimKey, datasetKey, type, nameId, relatedNameId, publishedInId, note);
   }
 }

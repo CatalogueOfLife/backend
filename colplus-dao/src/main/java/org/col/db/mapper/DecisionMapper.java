@@ -5,8 +5,10 @@ import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 import org.col.api.model.EditorialDecision;
+import org.col.db.CRUD;
+import org.col.db.DatasetPageable;
 
-public interface DecisionMapper extends CatalogueCRUDMapper<EditorialDecision> {
+public interface DecisionMapper extends CRUD<Integer, EditorialDecision>, DatasetPageable<EditorialDecision>, ProcessableDataset<EditorialDecision> {
   
   /**
    * List all decisions from a subject taxa in the source

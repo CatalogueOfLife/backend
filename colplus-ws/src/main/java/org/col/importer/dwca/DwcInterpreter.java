@@ -58,7 +58,7 @@ public class DwcInterpreter extends InterpreterBase {
   
       // shared usage props
       u.setId(v.getFirstRaw(DwcTerm.taxonID, DwcaTerm.ID));
-      u.setVerbatimKey(v.getKey());
+      u.setVerbatimKey(v.getId());
       u.usage.setAccordingTo(v.get(DwcTerm.nameAccordingTo));
       u.usage.addAccordingTo(nat.get().getAccordingTo());
       u.homotypic = TaxonomicStatusParser.isHomotypic(status);
@@ -167,7 +167,7 @@ public class DwcInterpreter extends InterpreterBase {
       if (ref != null) {
         if (ref.getVerbatimKey() == null) {
           // create new reference with verbatim key, we've never seen this before!
-          ref.setVerbatimKey(v.getKey());
+          ref.setVerbatimKey(v.getId());
           store.create(ref);
         }
         obj.setReferenceId(ref.getId());
@@ -202,7 +202,7 @@ public class DwcInterpreter extends InterpreterBase {
         if (ref != null) {
           if (ref.getVerbatimKey() == null) {
             // create new reference with verbatim key, we've never seen this before!
-            ref.setVerbatimKey(v.getKey());
+            ref.setVerbatimKey(v.getId());
             store.create(ref);
           }
           n.setPublishedInId(ref.getId());

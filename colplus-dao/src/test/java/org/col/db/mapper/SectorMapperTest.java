@@ -12,7 +12,7 @@ import org.junit.Test;
 import static org.col.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.*;
 
-public class SectorMapperTest extends GlobalCRUDMapperTest<Sector, SectorMapper> {
+public class SectorMapperTest extends CRUDTestBase<Integer, Sector, SectorMapper> {
   
   private static final int targetDatasetKey = Datasets.DRAFT_COL;
   private static final int subjectDatasetKey = DATASET11.getKey();
@@ -25,12 +25,12 @@ public class SectorMapperTest extends GlobalCRUDMapperTest<Sector, SectorMapper>
     // create a few draft taxa to attach sectors to
     MybatisTestUtils.populateDraftTree(session());
     
-    Sector s1 = createTestEntity();
+    Sector s1 = createTestEntity(targetDatasetKey);
     s1.getSubject().setId(TestEntityGenerator.TAXON1.getId());
     s1.getTarget().setId("t4");
     mapper().create(s1);
   
-    Sector s2 = createTestEntity();
+    Sector s2 = createTestEntity(targetDatasetKey);
     mapper().create(s2);
     commit();
   }
@@ -72,7 +72,7 @@ public class SectorMapperTest extends GlobalCRUDMapperTest<Sector, SectorMapper>
   }
   
   @Override
-  Sector createTestEntity() {
+  Sector createTestEntity(int dkey) {
     return create();
   }
   
@@ -114,4 +114,11 @@ public class SectorMapperTest extends GlobalCRUDMapperTest<Sector, SectorMapper>
     commit();
   }
   
+  @Test
+  public void process(){
+    // processing
+    DecisionMapperTest.CountHandler handler = new DecisionMapperTest.CountHandler();
+    mapper().processDataset(Datasets.DRAFT_COL, handler);
+    assertEquals(0, handler.counter.size());
+  }
 }

@@ -5,7 +5,7 @@ import java.util.stream.Stream;
 
 import com.esotericsoftware.kryo.pool.KryoPool;
 import com.google.common.base.Preconditions;
-import org.col.api.model.DatasetIDEntity;
+import org.col.api.model.DSID;
 import org.col.api.model.VerbatimEntity;
 import org.col.api.vocab.Issue;
 import org.col.common.kryo.map.MapDbObjectSerializer;
@@ -19,7 +19,7 @@ import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NeoCRUDStore<T extends DatasetIDEntity & VerbatimEntity & NeoNode> {
+public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
   private static final Logger LOG = LoggerFactory.getLogger(NeoCRUDStore.class);
   // nodeId -> obj
   private final Map<Long, T> objects;

@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.api.model.DSID;
+import org.col.api.model.DSIDValue;
 import org.col.api.model.Name;
 import org.col.api.model.NameRelation;
 import org.col.api.vocab.NomRelType;
@@ -13,7 +15,7 @@ import org.col.db.mapper.NameRelationMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NameDao extends DatasetEntityDao<Name, NameMapper> {
+public class NameDao extends DatasetEntityDao<String, Name, NameMapper> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameDao.class);
@@ -25,7 +27,7 @@ public class NameDao extends DatasetEntityDao<Name, NameMapper> {
   }
   
   @Override
-  public String create(Name obj, int user) {
+  public DSID<String> create(Name obj, int user) {
     obj.setAuthorshipNormalized(normalizer.normalizeName(obj));
     return super.create(obj, user);
   }
@@ -35,15 +37,15 @@ public class NameDao extends DatasetEntityDao<Name, NameMapper> {
     obj.setAuthorshipNormalized(normalizer.normalizeName(obj));
   }
   
-  public Name getBasionym(int datasetKey, String id) {
+  public Name getBasionym(DSID<String> did) {
     try (SqlSession session = factory.openSession(false)) {
       NameRelationMapper rm = session.getMapper(NameRelationMapper.class);
-      List<NameRelation> rels = rm.listByType(datasetKey, id, NomRelType.BASIONYM);
+      List<NameRelation> rels = rm.listByType(did.getDatasetKey(), did.getId(), NomRelType.BASIONYM);
       if (rels.size() == 1) {
         NameMapper nm = session.getMapper(NameMapper.class);
-        return nm.get(datasetKey, rels.get(0).getRelatedNameId());
+        return nm.get(new DSIDValue<>(did.getDatasetKey(), rels.get(0).getRelatedNameId()));
       } else if (rels.size() > 1) {
-        throw new IllegalStateException("Multiple basionyms found for name " + id);
+        throw new IllegalStateException("Multiple basionyms found for name " + did.getId());
       }
     }
     return null;

@@ -209,7 +209,7 @@ public class AssemblyCoordinator implements Managed {
     CollectResultHandler<Sector> collector = new CollectResultHandler<>();
     try (SqlSession session = factory.openSession(false)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
-      sm.processCatalogue(Datasets.DRAFT_COL, collector);
+      sm.processDataset(Datasets.DRAFT_COL, collector);
     }
     collector.getResults().sort(SECTOR_ORDER);
     int failed = 0;

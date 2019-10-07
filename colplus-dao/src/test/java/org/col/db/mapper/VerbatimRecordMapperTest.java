@@ -39,7 +39,7 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
     
     commit();
     
-    VerbatimRecord r2 = mapper().get(r1.getDatasetKey(), r1.getKey());
+    VerbatimRecord r2 = mapper().get(r1);
     
     assertEquals(r1, r2);
   }

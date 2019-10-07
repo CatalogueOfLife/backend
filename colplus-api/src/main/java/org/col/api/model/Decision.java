@@ -3,10 +3,13 @@ package org.col.api.model;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-public abstract class Decision implements CatalogueEntity, UserManaged {
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+public abstract class Decision extends DataEntity<Integer> implements DatasetScoped {
+  
   protected Integer key;
   protected Integer datasetKey; // the catalogues datasetKey
-  protected Integer subjectDatasetKey; // the datasetKey the subject belongs to
+  protected Integer subjectDatasetKey; // the datasetKey the subject belongs to, not the catalogue!
   protected SimpleName subject;
   protected String note;
   
@@ -14,7 +17,7 @@ public abstract class Decision implements CatalogueEntity, UserManaged {
   private Integer createdBy;
   private LocalDateTime modified;
   private Integer modifiedBy;
-
+  
   @Override
   public Integer getKey() {
     return key;
@@ -53,6 +56,11 @@ public abstract class Decision implements CatalogueEntity, UserManaged {
   
   public void setSubject(SimpleName subject) {
     this.subject = subject;
+  }
+  
+  @JsonIgnore
+  public DSIDValue<String> getSubjectAsDatasetID() {
+    return new DSIDValue<>(subjectDatasetKey, subject.getId());
   }
   
   public String getNote() {
@@ -103,14 +111,15 @@ public abstract class Decision implements CatalogueEntity, UserManaged {
     this.modifiedBy = modifiedBy;
   }
   
-  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
     Decision decision = (Decision) o;
     return Objects.equals(key, decision.key) &&
         Objects.equals(datasetKey, decision.datasetKey) &&
+        Objects.equals(subjectDatasetKey, decision.subjectDatasetKey) &&
         Objects.equals(subject, decision.subject) &&
         Objects.equals(note, decision.note) &&
         Objects.equals(created, decision.created) &&
@@ -121,6 +130,6 @@ public abstract class Decision implements CatalogueEntity, UserManaged {
   
   @Override
   public int hashCode() {
-    return Objects.hash(key, datasetKey, subject, note, created, createdBy, modified, modifiedBy);
+    return Objects.hash(super.hashCode(), key, datasetKey, subjectDatasetKey, subject, note, created, createdBy, modified, modifiedBy);
   }
 }

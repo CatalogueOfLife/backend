@@ -27,7 +27,9 @@ public class Classification {
       Rank.TRIBE,
       Rank.SUBTRIBE,
       Rank.GENUS,
-      Rank.SUBGENUS
+      Rank.SUBGENUS,
+      Rank.SECTION,
+      Rank.SPECIES
   );
   private static final List<Rank> RANKS_REVERSED = ImmutableList.copyOf(Lists.reverse(RANKS));
   
@@ -45,6 +47,8 @@ public class Classification {
   private String subtribe;
   private String genus;
   private String subgenus;
+  private String section;
+  private String species;
   
   public static Classification copy(Classification src) {
     Classification cl = new Classification();
@@ -62,6 +66,8 @@ public class Classification {
     cl.setSubtribe(src.subtribe);
     cl.setGenus(src.genus);
     cl.setSubgenus(src.subgenus);
+    cl.setSection(src.section);
+    cl.setSpecies(src.species);
     return cl;
   }
   
@@ -143,6 +149,22 @@ public class Classification {
   
   public void setSubgenus(String subgenus) {
     this.subgenus = subgenus;
+  }
+  
+  public String getSection() {
+    return section;
+  }
+  
+  public void setSection(String section) {
+    this.section = section;
+  }
+  
+  public String getSpecies() {
+    return species;
+  }
+  
+  public void setSpecies(String species) {
+    this.species = species;
   }
   
   public String getSubphylum() {
@@ -248,6 +270,12 @@ public class Classification {
       case subgenus:
         setSubgenus(name);
         return true;
+      case section:
+        setSection(name);
+        return true;
+      case species:
+        setSpecies(name);
+        return true;
     }
     return false;
   }
@@ -296,6 +324,12 @@ public class Classification {
       case SUBGENUS:
         setSubgenus(name);
         break;
+      case SECTION:
+        setSection(name);
+        break;
+      case SPECIES:
+        setSpecies(name);
+        break;
     }
   }
   
@@ -329,6 +363,10 @@ public class Classification {
         return getGenus();
       case SUBGENUS:
         return getSubgenus();
+      case SECTION:
+        return getSection();
+      case SPECIES:
+        return getSpecies();
     }
     return null;
   }
@@ -378,12 +416,15 @@ public class Classification {
         Objects.equals(tribe, that.tribe) &&
         Objects.equals(subtribe, that.subtribe) &&
         Objects.equals(genus, that.genus) &&
-        Objects.equals(subgenus, that.subgenus);
+        Objects.equals(subgenus, that.subgenus) &&
+        Objects.equals(section, that.section) &&
+        Objects.equals(species, that.species);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(kingdom, phylum, subphylum, class_, subclass, order, suborder, superfamily, family, subfamily, tribe, subtribe, genus, subgenus);
+    return Objects.hash(kingdom, phylum, subphylum, class_, subclass, order, suborder, superfamily, family, subfamily, tribe, subtribe,
+        genus, subgenus, section, species);
   }
   
   public boolean equalsAboveRank(Classification o, Rank lowest) {
