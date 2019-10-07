@@ -19,7 +19,7 @@ import org.col.api.search.NameUsageWrapper;
 import org.col.es.model.NameUsageDocument;
 import org.col.es.name.NameUsageWrapperConverter;
 import org.col.es.name.search.NameUsageSearchServiceEs;
-import org.col.es.name.suggest.NameSuggestionService;
+import org.col.es.name.suggest.NameSuggestionServiceEs;
 import org.col.es.query.EsSearchRequest;
 import org.col.es.query.Query;
 import org.elasticsearch.client.RestClient;
@@ -109,7 +109,7 @@ public class EsReadTestBase {
   }
 
   protected NameSuggestResponse suggest(NameSuggestRequest query) {
-    return new NameSuggestionService(indexName, getEsClient()).suggest(query);
+    return new NameSuggestionServiceEs(indexName, getEsClient()).suggest(query);
   }
 
   /**

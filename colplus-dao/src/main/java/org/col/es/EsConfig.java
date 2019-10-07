@@ -47,7 +47,7 @@ public class EsConfig {
    * @return the index name prefixed with the configured environment
    */
   public String indexName(String name) {
-    return environment == null ? name : environment + "-" + name;
+    return environment == null || environment.equals("<none>") ? name : environment + "-" + name;
   }
 
   /**
