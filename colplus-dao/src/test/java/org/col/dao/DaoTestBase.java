@@ -2,6 +2,8 @@ package org.col.dao;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.api.model.DSID;
+import org.col.api.model.DSIDValue;
 import org.col.db.PgSetupRule;
 import org.col.db.mapper.TestDataRule;
 import org.junit.After;
@@ -56,5 +58,9 @@ public abstract class DaoTestBase {
   
   public void commit() {
     testDataRule.commit();
+  }
+  
+  public DSID key(int datasetKey, String id) {
+    return new DSIDValue(datasetKey, id);
   }
 }

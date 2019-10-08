@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.Lists;
 import org.col.common.concurrent.ExecutorUtils;
+import org.col.dao.Partitioner;
 import org.col.db.PgSetupRule;
 import org.col.db.mapper.TestDataRule;
 import org.junit.ClassRule;
@@ -40,10 +41,10 @@ public class PgImportTest {
     public Boolean call() throws Exception {
       System.out.println("START " + datasetKey);
       System.out.println("PARTITION " + datasetKey);
-      PgImport.partition(PgSetupRule.getSqlSessionFactory(), datasetKey);
+      Partitioner.partition(PgSetupRule.getSqlSessionFactory(), datasetKey);
 
       System.out.println("INDEX & ATTACH " + datasetKey);
-      PgImport.attach(PgSetupRule.getSqlSessionFactory(), datasetKey);
+      Partitioner.indexAndAttach(PgSetupRule.getSqlSessionFactory(), datasetKey);
       System.out.println("FINISHED " + datasetKey);
       return true;
     }

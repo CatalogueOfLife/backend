@@ -1,14 +1,20 @@
 package org.col.dao;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.exception.NotFoundException;
 import org.col.api.model.*;
 import org.col.api.vocab.Datasets;
-import org.col.db.GlobalCRUD;
-import org.col.db.mapper.*;
+import org.col.db.CRUD;
+import org.col.db.mapper.DatasetMapper;
+import org.col.db.mapper.DecisionMapper;
+import org.col.db.mapper.EstimateMapper;
+import org.col.db.mapper.SectorMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -135,7 +141,7 @@ public class SubjectRematcher {
     log();
   }
   
-  private static <T extends GlobalEntity> T getNotNull(GlobalCRUD<T> mapper, int key) throws NotFoundException {
+  private static <T extends Decision> T getNotNull(CRUD<Integer, T> mapper, int key) throws NotFoundException {
     T obj = mapper.get(key);
     if (obj == null) {
       throw new NotFoundException("Key " + key + " does not exist");

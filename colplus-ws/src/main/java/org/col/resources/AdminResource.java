@@ -92,7 +92,7 @@ public class AdminResource {
     if (curr.importer != back.importer) {
       if (cfg.importer.continousImportPolling < 1) {
         // we started the server with no polling, give it a reasonable default
-        cfg.importer.continousImportPolling = 15;
+        cfg.importer.continousImportPolling = 10;
       }
       LOG.info("Set continuous importer to active={}", back.importer);
       startStopManaged(continuousImporter, back.importer);

@@ -47,9 +47,9 @@ abstract class SectorRunnable implements Runnable {
   List<Taxon> foreignChildren;
   // map with foreign child id to original parent name
   Map<String, Name> foreignChildrenParents = new HashMap<>();
-  final Consumer<SectorRunnable> successCallback;
-  final BiConsumer<SectorRunnable, Exception> errorCallback;
-  final LocalDateTime created = LocalDateTime.now();
+  private final Consumer<SectorRunnable> successCallback;
+  private final BiConsumer<SectorRunnable, Exception> errorCallback;
+  private final LocalDateTime created = LocalDateTime.now();
   final ColUser user;
   final SectorImport state = new SectorImport();
   
@@ -133,7 +133,7 @@ abstract class SectorRunnable implements Runnable {
         String msg = "Sector " + s.getKey() + " does have a non existing target " + s.getTarget() + " for dataset " + catalogueKey;
         try {
           ObjectUtils.checkNotNull(s.getTarget(), s + " does not have any target");
-          ObjectUtils.checkNotNull(tm.get(catalogueKey, s.getTarget().getId()), "Sector " + s.getKey() + " does have a non existing target id");
+          ObjectUtils.checkNotNull(tm.get(s.getTargetAsDatasetID()), "Sector " + s.getKey() + " does have a non existing target id");
         } catch (PersistenceException e) {
           throw new IllegalArgumentException(msg, e);
         }
@@ -142,7 +142,7 @@ abstract class SectorRunnable implements Runnable {
         msg = "Sector " + s.getKey() + " does have a non existing subject " + s.getSubject() + " for dataset " + datasetKey;
         try {
           ObjectUtils.checkNotNull(s.getSubject(), s + " does not have any subject");
-          ObjectUtils.checkNotNull(tm.get(datasetKey, s.getSubject().getId()), msg);
+          ObjectUtils.checkNotNull(tm.get(s.getSubjectAsDatasetID()), msg);
         } catch (PersistenceException e) {
           throw new IllegalArgumentException(msg, e);
         }

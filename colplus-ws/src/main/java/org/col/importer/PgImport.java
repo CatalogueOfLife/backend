@@ -16,6 +16,7 @@ import org.col.api.vocab.Users;
 import org.col.common.lang.InterruptedRuntimeException;
 import org.col.common.tax.AuthorshipNormalizer;
 import org.col.config.ImporterConfig;
+import org.col.dao.Partitioner;
 import org.col.db.mapper.*;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NeoDbUtils;
@@ -66,7 +67,7 @@ public class PgImport implements Callable<Boolean> {
   
   @Override
   public Boolean call() throws InterruptedException, InterruptedRuntimeException {
-    partition();
+    Partitioner.partition(sessionFactory, dataset.getKey());
     
     insertVerbatim();
     
@@ -77,8 +78,8 @@ public class PgImport implements Callable<Boolean> {
     insertNameRelations();
     
 		insertUsages();
-
-    attach();
+  
+    Partitioner.indexAndAttach(sessionFactory, dataset.getKey());
     
     updateMetadata();
 		LOG.info("Completed dataset {} insert with {} verbatim records, " +
@@ -87,57 +88,6 @@ public class PgImport implements Callable<Boolean> {
         nCounter, tCounter, sCounter, rCounter, vCounter, diCounter, deCounter, mCounter);
 		return true;
 	}
-
-  private void partition() throws InterruptedException {
-    interruptIfCancelled();
-    partition(sessionFactory, dataset.getKey());
-  }
-  
-  /**
-   * Creates all dataset partitions needed, removing any previous partition and data for the given datasetKey.
-   * To avoid table deadlocks we synchronize this method!
-   * See https://github.com/Sp2000/colplus-backend/issues/127
-   */
-  static synchronized void partition(SqlSessionFactory factory, int datasetKey) {
-    LOG.info("Create empty partition for dataset {}", datasetKey);
-    try (SqlSession session = factory.openSession(false)) {
-      DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
-      // first remove
-      mapper.delete(datasetKey);
-      
-      // then create
-      mapper.create(datasetKey);
-      session.commit();
-    }
-    
-  }
-  
-  /**
-   * Builds indices and finally attaches partitions to main tables.
-   * To avoid table deadlocks on the main table we synchronize this method.
-   */
-  static synchronized void attach(SqlSessionFactory factory, int datasetKey) {
-    LOG.info("Build partition indices for dataset {}", datasetKey);
-    try (SqlSession session = factory.openSession(true)) {
-      // build indices and add dataset bound constraints
-      session.getMapper(DatasetPartitionMapper.class).buildIndices(datasetKey);
-    }
-    
-    try (SqlSession session = factory.openSession(true)) {
-      // attach to main table - this requires an AccessExclusiveLock on all main tables
-      // see https://github.com/Sp2000/colplus-backend/issues/387
-      session.getMapper(DatasetPartitionMapper.class).attach(datasetKey);
-    }
-  }
-  
-  /**
-   * Builds indices and finally attaches partitions to main tables.
-   * To avoid table deadlocks on the main table we synchronize this method.
-   */
-  private void attach() {
-    interruptIfCancelled();
-    attach(sessionFactory, dataset.getKey());
-  }
   
   private void updateMetadata() {
     try (SqlSession session = sessionFactory.openSession(false)) {
@@ -177,8 +127,8 @@ public class PgImport implements Callable<Boolean> {
       int counter = 0;
       Map<Integer, VerbatimRecord> batchCache = new HashMap<>();
       for (VerbatimRecord v : store.verbatimList()) {
-        int storeKey = v.getKey();
-        v.setKey(null);
+        int storeKey = v.getId();
+        v.setId(null);
         v.setDatasetKey(dataset.getKey());
         mapper.create(v);
         batchCache.put(storeKey, v);
@@ -197,12 +147,13 @@ public class PgImport implements Callable<Boolean> {
     session.commit();
     // we only get the new keys after we committed in batch mode!!!
     for (Map.Entry<Integer, VerbatimRecord> e : batchCache.entrySet()) {
-      verbatimKeys.put(e.getKey(), e.getValue().getKey());
+      verbatimKeys.put(e.getKey(), e.getValue().getId());
     }
     batchCache.clear();
   }
   
-  private <T extends VerbatimEntity & UserManaged> T updateVerbatimUserEntity(T ent) {
+  private <T extends VerbatimEntity & UserManaged & DatasetScoped> T updateVerbatimUserEntity(T ent) {
+    ent.setDatasetKey(dataset.getKey());
     return updateUser(updateVerbatimEntity(ent));
   }
   
@@ -359,28 +310,28 @@ public class PgImport implements Callable<Boolean> {
             // insert vernacular
             for (VernacularName vn : u.vernacularNames) {
               updateVerbatimUserEntity(vn);
-              vernacularMapper.create(vn, acc.getId(), dataset.getKey());
+              vernacularMapper.create(vn, acc.getId());
               vCounter.incrementAndGet();
             }
             
             // insert distributions
             for (Distribution d : u.distributions) {
               updateVerbatimUserEntity(d);
-              distributionMapper.create(d, acc.getId(), dataset.getKey());
+              distributionMapper.create(d, acc.getId());
               diCounter.incrementAndGet();
             }
   
             // insert descriptions
             for (Description d : u.descriptions) {
               updateVerbatimUserEntity(d);
-              descriptionMapper.create(d, acc.getId(), dataset.getKey());
+              descriptionMapper.create(d, acc.getId());
               deCounter.incrementAndGet();
             }
   
             // insert media
             for (Media m : u.media) {
               updateVerbatimUserEntity(m);
-              mediaMapper.create(m, acc.getId(), dataset.getKey());
+              mediaMapper.create(m, acc.getId());
               mCounter.incrementAndGet();
             }
             

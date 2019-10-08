@@ -5,13 +5,16 @@ import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.ResultHandler;
+import org.col.api.model.DSID;
 import org.col.api.model.Name;
+import org.col.db.CRUD;
+import org.col.db.DatasetPageable;
 
 /**
  * When creating a new name if the homotypic group key is not yet set the newly created name key will be
  * used to point to the name itself
  */
-public interface NameMapper extends DatasetCRUDMapper<Name> {
+public interface NameMapper extends CRUD<DSID<String>, Name>, ProcessableDataset<Name>, DatasetPageable<Name> {
   
   Name getByUsage(@Param("datasetKey") int datasetKey, @Param("usageId") String usageId);
   
@@ -35,10 +38,9 @@ public interface NameMapper extends DatasetCRUDMapper<Name> {
   List<Name> listByReference(@Param("datasetKey") int datasetKey, @Param("refId") String publishedInId);
   
   /**
-   * Lists all names with the same index name key
-   * across all datasets.
+   * Lists all names with the same names index key across all datasets.
    *
-   * @param nameId from the names index
+   * @param nameId from the names index!
    */
   List<Name> indexGroup(@Param("id") String nameId);
   
@@ -56,5 +58,10 @@ public interface NameMapper extends DatasetCRUDMapper<Name> {
   int deleteOrphans(@Param("datasetKey") int datasetKey);
   
   int deleteBySector(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+  
+  /**
+   * @return true if at least one record for the given dataset exists
+   */
+  boolean hasData(@Param("datasetKey") int datasetKey);
   
 }

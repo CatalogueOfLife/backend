@@ -8,8 +8,11 @@ import org.col.api.vocab.Datasets;
 import org.col.api.vocab.EstimateType;
 import org.col.db.PgSetupRule;
 import org.junit.Before;
+import org.junit.Test;
 
-public class EstimateMapperTest extends GlobalCRUDMapperTest<SpeciesEstimate, EstimateMapper> {
+import static org.junit.Assert.assertEquals;
+
+public class EstimateMapperTest extends CRUDTestBase<Integer, SpeciesEstimate, EstimateMapper> {
   Reference ref;
   
   public EstimateMapperTest() {
@@ -26,7 +29,7 @@ public class EstimateMapperTest extends GlobalCRUDMapperTest<SpeciesEstimate, Es
   }
   
   @Override
-  SpeciesEstimate createTestEntity() {
+  SpeciesEstimate createTestEntity(int dkey) {
     SpeciesEstimate d = new SpeciesEstimate();
     d.setDatasetKey(Datasets.DRAFT_COL);
     d.setSubject(TestEntityGenerator.newSimpleNameWithoutStatusParent());
@@ -52,4 +55,11 @@ public class EstimateMapperTest extends GlobalCRUDMapperTest<SpeciesEstimate, Es
     obj.setEstimate(1289);
   }
   
+  @Test
+  public void process(){
+    // processing
+    DecisionMapperTest.CountHandler handler = new DecisionMapperTest.CountHandler();
+    mapper().processDataset(Datasets.DRAFT_COL, handler);
+    assertEquals(0, handler.counter.size());
+  }
 }

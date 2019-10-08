@@ -7,6 +7,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
+import org.col.api.model.DSID;
 import org.col.api.model.IssueContainer;
 import org.col.api.model.Page;
 import org.col.api.model.VerbatimRecord;
@@ -49,12 +50,12 @@ public interface VerbatimRecordMapper {
                             @Param("page") Page page
   );
   
-  VerbatimRecord get(@Param("datasetKey") int datasetKey, @Param("key") int key);
+  VerbatimRecord get(@Param("key") DSID<Integer> key);
   
-  IssueContainer getIssues(@Param("datasetKey") int datasetKey, @Param("key") int key);
+  IssueContainer getIssues(@Param("key") DSID<Integer> key);
 
   void create(VerbatimRecord record);
   
-  void update(@Param("datasetKey") int datasetKey, @Param("key") int key, @Param("issues") Set<Issue> issues);
+  void update(@Param("key") DSID<Integer> key, @Param("issues") Set<Issue> issues);
 }
 

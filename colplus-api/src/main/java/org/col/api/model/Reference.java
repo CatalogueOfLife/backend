@@ -6,18 +6,8 @@ import javax.annotation.Nonnull;
 /**
  * Simplified citation class linked to an optional serial container.
  */
-public class Reference extends DataEntity implements DatasetIDEntity, VerbatimEntity {
+public class Reference extends DatasetScopedEntity<String> implements VerbatimEntity {
   
-  /**
-   * Original key as provided by the dataset.
-   */
-  private String id;
-  
-  /**
-   * Key to dataset instance. Defines context of the reference key.
-   */
-  @Nonnull
-  private Integer datasetKey;
   private Integer sectorKey;
   private Integer verbatimKey;
   
@@ -43,24 +33,6 @@ public class Reference extends DataEntity implements DatasetIDEntity, VerbatimEn
    * Any informal note about the reference.
    */
   private String remarks;
-  
-  public String getId() {
-    return id;
-  }
-  
-  public void setId(String id) {
-    this.id = id;
-  }
-  
-  @Override
-  public Integer getDatasetKey() {
-    return datasetKey;
-  }
-  
-  @Override
-  public void setDatasetKey(Integer datasetKey) {
-    this.datasetKey = datasetKey;
-  }
   
   public Integer getSectorKey() {
     return sectorKey;
@@ -144,9 +116,7 @@ public class Reference extends DataEntity implements DatasetIDEntity, VerbatimEn
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     Reference reference = (Reference) o;
-    return Objects.equals(id, reference.id) &&
-        Objects.equals(datasetKey, reference.datasetKey) &&
-        Objects.equals(sectorKey, reference.sectorKey) &&
+    return Objects.equals(sectorKey, reference.sectorKey) &&
         Objects.equals(verbatimKey, reference.verbatimKey) &&
         Objects.equals(csl, reference.csl) &&
         Objects.equals(citation, reference.citation) &&
@@ -156,12 +126,13 @@ public class Reference extends DataEntity implements DatasetIDEntity, VerbatimEn
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), id, datasetKey, sectorKey, verbatimKey, csl, citation, year, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, csl, citation, year, remarks);
   }
   
   @Override
   public String toString() {
-    return "Reference{" + "id='" + id + '\'' + ", csl='" + csl + '\'' + '}';
+    return "Reference{" + "id='" + getId() + '\'' + ", csl='" + csl + '\'' + '}';
   }
+  
   
 }

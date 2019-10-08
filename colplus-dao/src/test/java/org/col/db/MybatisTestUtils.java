@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
+import org.col.api.model.DSID;
 import org.col.api.model.Name;
 import org.col.api.model.Taxon;
 import org.col.api.vocab.Origin;
@@ -62,8 +63,8 @@ public class MybatisTestUtils {
     populateTestTree(DRAFT_COL, session);
   
     TaxonMapper tm = session.getMapper(TaxonMapper.class);
-    tm.incDatasetSectorCount(DRAFT_COL, "t4", 11, 1);
-    tm.incDatasetSectorCount(DRAFT_COL, "t5", 11, 1);
+    tm.incDatasetSectorCount(DSID.draftID("t4"), 11, 1);
+    tm.incDatasetSectorCount(DSID.draftID("t5"), 11, 1);
     session.commit();
   }
   
@@ -92,13 +93,7 @@ public class MybatisTestUtils {
   }
   
   private static Taxon draftTaxon(TaxonMapper tm, int datasetKey, String id, Name n, Taxon parent) {
-    Taxon t = TestEntityGenerator.newTaxon(datasetKey, id);
-    t.setName(n);
-    if (parent == null) {
-      t.setParentId(null);
-    } else {
-      t.setParentId(parent.getId());
-    }
+    Taxon t = TestEntityGenerator.newTaxon(n, id, parent==null ? null : parent.getId());
     tm.create(t);
     return t;
   }

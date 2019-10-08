@@ -6,9 +6,7 @@ import org.apache.ibatis.session.ResultHandler;
 /**
  * Minimal mapper that allows to create new entities and stream read them for an entire dataset.
  */
-public interface DatasetCopyMapper<V> {
-  
-  void create(V obj);
+public interface ProcessableDataset<V> {
   
   /**
    * Iterates over all entities of a given dataset and processes them with the supplied handler.

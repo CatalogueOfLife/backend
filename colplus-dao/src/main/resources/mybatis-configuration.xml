@@ -20,4 +20,8 @@
         <package name="org.gbif.nameparser.api" />
         <package name="org.col.db.type2" />
     </typeAliases>
+    <mappers>
+        <mapper class="org.col.db.Common" />
+        <package name="org.col.db.mapper" />
+    </mappers>
 </configuration>

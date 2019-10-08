@@ -1,6 +1,12 @@
 package org.col.db.mapper;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.ibatis.session.ResultContext;
+import org.apache.ibatis.session.ResultHandler;
 import org.col.api.TestEntityGenerator;
+import org.col.api.model.Decision;
 import org.col.api.model.EditorialDecision;
 import org.col.api.vocab.Datasets;
 import org.col.api.vocab.Lifezone;
@@ -10,7 +16,7 @@ import org.junit.Test;
 import static org.col.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.assertEquals;
 
-public class DecisionMapperTest extends GlobalCRUDMapperTest<EditorialDecision, DecisionMapper> {
+public class DecisionMapperTest extends CRUDTestBase<Integer, EditorialDecision, DecisionMapper> {
   
   public DecisionMapperTest() {
     super(DecisionMapper.class);
@@ -21,11 +27,11 @@ public class DecisionMapperTest extends GlobalCRUDMapperTest<EditorialDecision, 
   
   @Test
   public void brokenDecisions() {
-    EditorialDecision d1 = createTestEntity();
+    EditorialDecision d1 = createTestEntity(catalogeKey);
     d1.getSubject().setId(TestEntityGenerator.TAXON1.getId());
     mapper().create(d1);
 
-    EditorialDecision d2 = createTestEntity();
+    EditorialDecision d2 = createTestEntity(catalogeKey);
     mapper().create(d2);
     commit();
     
@@ -42,7 +48,7 @@ public class DecisionMapperTest extends GlobalCRUDMapperTest<EditorialDecision, 
   }
   
   @Override
-  EditorialDecision createTestEntity() {
+  EditorialDecision createTestEntity(int dkey) {
     return create(subjectDatasetKey);
   }
 
@@ -68,6 +74,28 @@ public class DecisionMapperTest extends GlobalCRUDMapperTest<EditorialDecision, 
     obj.setCreated(null);
     obj.setModified(null);
     return obj;
+  }
+  
+  @Test
+  public void process(){
+    // processing
+    CountHandler handler = new CountHandler();
+    mapper().processDataset(catalogeKey, handler);
+    assertEquals(0, handler.counter.size());
+  }
+  
+  public static class CountHandler<T extends Decision> implements ResultHandler<T> {
+    Map<Integer, Integer> counter = new HashMap<>();
+  
+    @Override
+    public void handleResult(ResultContext<? extends T> ctx) {
+      T d = ctx.getResultObject();
+      if (counter.containsKey(d.getDatasetKey())) {
+        counter.put(d.getDatasetKey(), counter.get(d.getDatasetKey()) + 1);
+      } else {
+        counter.put(d.getDatasetKey(), 1);
+      }
+    }
   }
   
 }

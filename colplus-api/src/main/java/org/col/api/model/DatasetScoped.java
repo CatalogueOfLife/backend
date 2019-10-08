@@ -3,7 +3,7 @@ package org.col.api.model;
 /**
  * Entity scoped within a single dataset.
  */
-public interface DatasetEntity {
+public interface DatasetScoped {
   
   Integer getDatasetKey();
   

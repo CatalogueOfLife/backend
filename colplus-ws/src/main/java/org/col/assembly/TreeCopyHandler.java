@@ -63,7 +63,7 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
     tm = session.getMapper(TaxonMapper.class);
     nm = session.getMapper(NameMapper.class);
     // load target taxon
-    Taxon t = tm.get(catalogueKey, sector.getTarget().getId());
+    Taxon t = tm.get(sector.getTargetAsDatasetID());
     target = new Usage(t.getId(), t.getName().getRank(), t.getStatus());
   }
   
@@ -217,8 +217,8 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
     }
     
     // copy usage with all associated information. This assigns a new id !!!
-    DatasetID orig;
-    DatasetID parentDID = new DatasetID(catalogueKey, parent.id);
+    DSID<String> orig;
+    DSID<String> parentDID = new DSIDValue<>(catalogueKey, parent.id);
     orig = CatCopy.copyUsage(session, u, parentDID, user.getKey(), COPY_DATA, this::lookupReference, this::lookupReference);
     // remember old to new id mapping
     ids.put(orig.getId(), usage(u));
@@ -360,7 +360,7 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
         return refIds.get(refID);
       }
       // not seen before, load full reference
-      Reference r = rm.get(sector.getDatasetKey(), refID);
+      Reference r = rm.get(new DSIDValue<>(sector.getDatasetKey(), refID));
       return lookupReference(r);
     }
     return null;
@@ -379,7 +379,7 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
         ref.setDatasetKey(catalogueKey);
         ref.setSectorKey(sector.getKey());
         ref.applyUser(user);
-        DatasetID origID = ReferenceDao.copyReference(session, ref, catalogueKey, user.getKey());
+        DSID<String> origID = ReferenceDao.copyReference(session, ref, catalogueKey, user.getKey());
         refIds.put(origID.getId(), ref.getId());
         return ref.getId();
         

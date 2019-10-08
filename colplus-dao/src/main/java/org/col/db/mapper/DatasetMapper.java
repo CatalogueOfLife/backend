@@ -7,8 +7,10 @@ import org.apache.ibatis.annotations.Param;
 import org.col.api.model.Dataset;
 import org.col.api.model.Page;
 import org.col.api.search.DatasetSearchRequest;
+import org.col.db.CRUD;
+import org.col.db.GlobalPageable;
 
-public interface DatasetMapper extends GlobalCRUDMapper<Dataset> {
+public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Dataset> {
   
   int count(@Param("req") DatasetSearchRequest request);
 

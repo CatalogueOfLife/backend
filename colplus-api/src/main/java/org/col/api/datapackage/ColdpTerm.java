@@ -71,6 +71,8 @@ public enum ColdpTerm implements Term, AlternativeNames {
   temporalRangeEnd,
   lifezone,
   //link,
+  species,
+  section,
   subgenus,
   //genus,
   subtribe,
@@ -139,7 +141,10 @@ public enum ColdpTerm implements Term, AlternativeNames {
       ColdpTerm.class_, ColdpTerm.subclass,
       ColdpTerm.order, ColdpTerm.suborder,
       ColdpTerm.superfamily, ColdpTerm.family, ColdpTerm.subfamily,
-      ColdpTerm.genus, ColdpTerm.subgenus};
+      ColdpTerm.genus, ColdpTerm.subgenus,
+      ColdpTerm.section,
+      ColdpTerm.species
+  };
   
   public static Map<ColdpTerm, List<ColdpTerm>> RESOURCES = ImmutableMap.<ColdpTerm, List<ColdpTerm>>builder()
       .put(Reference, ImmutableList.of(
@@ -187,6 +192,8 @@ public enum ColdpTerm implements Term, AlternativeNames {
           extinct,
           lifezone,
           link,
+          species,
+          section,
           subgenus,
           genus,
           subfamily,

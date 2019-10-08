@@ -323,7 +323,7 @@ CREATE TABLE estimate (
 --
 
 CREATE TABLE verbatim (
-  key serial,
+  id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL,
   line INTEGER,
   file TEXT,
@@ -422,7 +422,7 @@ LANGUAGE plpgsql;
 
 
 CREATE TABLE name_rel (
-  key serial NOT NULL,
+  id INTEGER NOT NULL,
   verbatim_key INTEGER,
   dataset_key INTEGER NOT NULL,
   type INTEGER NOT NULL,
@@ -464,7 +464,7 @@ CREATE TABLE name_usage (
 
 
 CREATE TABLE vernacular_name (
-  key serial NOT NULL,
+  id serial,
   dataset_key INTEGER NOT NULL,
   verbatim_key INTEGER,
   taxon_id TEXT NOT NULL,
@@ -481,7 +481,7 @@ CREATE TABLE vernacular_name (
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE distribution (
-  key serial NOT NULL,
+  id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL,
   verbatim_key INTEGER,
   taxon_id TEXT NOT NULL,
@@ -496,7 +496,7 @@ CREATE TABLE distribution (
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE description (
-  key serial NOT NULL,
+  id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL,
   verbatim_key INTEGER,
   taxon_id TEXT NOT NULL,
@@ -511,7 +511,7 @@ CREATE TABLE description (
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE media (
-  key serial NOT NULL,
+  id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL,
   verbatim_key INTEGER,
   taxon_id TEXT NOT NULL,
@@ -647,5 +647,8 @@ CREATE index ON dataset_import (dataset_key);
 CREATE index ON sector_import (sector_key);
 CREATE index ON sector (target_id);
 CREATE index ON sector (dataset_key);
+CREATE index ON sector (dataset_key, subject_dataset_key, subject_id);
 CREATE index ON estimate (dataset_key);
+CREATE index ON estimate (dataset_key, subject_id);
 CREATE index ON decision (dataset_key);
+CREATE index ON decision (dataset_key, subject_dataset_key, subject_id);

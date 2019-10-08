@@ -124,7 +124,7 @@ public class AcefInterpreter extends InterpreterBase {
     u.usage.addAccordingTo(nat.get().getAccordingTo());
   
     u.setId(v.get(idTerm));
-    u.setVerbatimKey(v.getKey());
+    u.setVerbatimKey(v.getId());
     // flat classification for any usage
     u.classification = interpretClassification(v, synonym);
 

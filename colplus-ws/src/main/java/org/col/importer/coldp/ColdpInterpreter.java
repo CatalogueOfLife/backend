@@ -66,7 +66,7 @@ public class ColdpInterpreter extends InterpreterBase {
       NeoUsage u = NeoUsage.createTaxon(Origin.SOURCE, TaxonomicStatus.ACCEPTED);
       u.nameNode = n.node;
       u.setId(v.getRaw(ColdpTerm.ID));
-      u.setVerbatimKey(v.getKey());
+      u.setVerbatimKey(v.getId());
     
       // taxon
       Taxon t = u.getTaxon();
@@ -117,7 +117,7 @@ public class ColdpInterpreter extends InterpreterBase {
       u.nameNode = n.node;
       String id = v.get(ColdpTerm.taxonID) + "-" + v.getRaw(ColdpTerm.nameID);
       u.setId(id);
-      u.setVerbatimKey(v.getKey());
+      u.setVerbatimKey(v.getId());
   
       Synonym s = u.getSynonym();
       s.setRemarks(v.get(ColdpTerm.remarks));
@@ -201,20 +201,9 @@ public class ColdpInterpreter extends InterpreterBase {
   
   private Classification interpretClassification(VerbatimRecord v) {
     Classification cl = new Classification();
-    cl.setKingdom(v.get(ColdpTerm.kingdom));
-    cl.setPhylum(v.get(ColdpTerm.phylum));
-    cl.setSubphylum(v.get(ColdpTerm.subphylum));
-    cl.setClass_(v.get(ColdpTerm.class_));
-    cl.setSubclass(v.get(ColdpTerm.subclass));
-    cl.setOrder(v.get(ColdpTerm.order));
-    cl.setSuborder(v.get(ColdpTerm.suborder));
-    cl.setSuperfamily(v.get(ColdpTerm.superfamily));
-    cl.setFamily(v.get(ColdpTerm.family));
-    cl.setSubfamily(v.get(ColdpTerm.subfamily));
-    cl.setGenus(v.get(ColdpTerm.genus));
-    cl.setSubgenus(v.get(ColdpTerm.subgenus));
-    cl.setTribe(v.get(ColdpTerm.tribe));
-    cl.setSubtribe(v.get(ColdpTerm.subtribe));
+    for (ColdpTerm term : ColdpTerm.HIGHER_RANKS) {
+      cl.setByTerm(term, v.get(term));
+    }
     return cl;
   }
   

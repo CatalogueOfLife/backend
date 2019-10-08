@@ -10,12 +10,7 @@ import java.util.stream.Collectors;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.col.api.model.ColUser;
-import org.col.api.model.EditorialDecision;
-import org.col.api.model.Name;
-import org.col.api.model.Sector;
-import org.col.api.model.SectorImport;
-import org.col.api.model.Taxon;
+import org.col.api.model.*;
 import org.col.api.vocab.Gazetteer;
 import org.col.api.vocab.Issue;
 import org.col.api.vocab.MediaType;
@@ -134,7 +129,7 @@ public class SectorSync extends SectorRunnable {
     final String newParentID = sector.getTarget().getId();
     processForeignChildren((tm, t) -> {
         // remember original parent
-        Taxon parent = tm.get(catalogueKey, t.getParentId());
+        Taxon parent = tm.get(DSID.key(catalogueKey, t.getParentId()));
         foreignChildrenParents.put(t.getId(), parent.getName());
         // update to new parent
         t.setParentId(newParentID);

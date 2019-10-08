@@ -3,6 +3,7 @@ package org.col.dao;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.api.model.DSID;
 import org.col.api.model.Name;
 import org.col.api.model.Reference;
 import org.col.api.model.Synonym;
@@ -13,7 +14,7 @@ import org.col.db.mapper.SynonymMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SynonymDao extends DatasetEntityDao<Synonym, SynonymMapper> {
+public class SynonymDao extends DatasetEntityDao<String, Synonym, SynonymMapper> {
   private static final Logger LOG = LoggerFactory.getLogger(SynonymDao.class);
   
   public SynonymDao(SqlSessionFactory factory) {
@@ -27,20 +28,20 @@ public class SynonymDao extends DatasetEntityDao<Synonym, SynonymMapper> {
   /**
    * Creates a new Taxon including a name instance if no name id is already given.
    *
-   * @param t
+   * @param syn
    * @param user
    * @return newly created taxon id
    */
   @Override
-  public String create(Synonym t, int user) {
-    t.setStatusIfNull(TaxonomicStatus.SYNONYM);
-    if (!t.getStatus().isSynonym()) {
+  public DSID create(Synonym syn, int user) {
+    syn.setStatusIfNull(TaxonomicStatus.SYNONYM);
+    if (!syn.getStatus().isSynonym()) {
       throw new IllegalArgumentException("Synonym cannot have an accepted status");
     }
 
     try (SqlSession session = factory.openSession(false)) {
-      final int datasetKey = t.getDatasetKey();
-      Name n = t.getName();
+      final int datasetKey = syn.getDatasetKey();
+      Name n = syn.getName();
       NameMapper nm = session.getMapper(NameMapper.class);
       if (n.getId() == null) {
         if (!n.isParsed() && StringUtils.isBlank(n.getScientificName())) {
@@ -55,20 +56,20 @@ public class SynonymDao extends DatasetEntityDao<Synonym, SynonymMapper> {
         TaxonDao.parseName(n);
         nm.create(n);
       } else {
-        Name nExisting = nm.get(datasetKey, n.getId());
+        Name nExisting = nm.get(n);
         if (nExisting == null) {
           throw new IllegalArgumentException("No name exists with ID " + n.getId() + " in dataset " + datasetKey);
         }
       }
       
-      newKey(t);
-      t.setOrigin(Origin.USER);
-      t.applyUser(user);
-      session.getMapper(SynonymMapper.class).create(t);
+      newKey(syn);
+      syn.setOrigin(Origin.USER);
+      syn.applyUser(user);
+      session.getMapper(SynonymMapper.class).create(syn);
       
       session.commit();
       
-      return t.getId();
+      return syn;
     }
   }
   
@@ -78,7 +79,7 @@ public class SynonymDao extends DatasetEntityDao<Synonym, SynonymMapper> {
   }
  
   @Override
-  protected void deleteAfter(int datasetKey, String id, Synonym old, int user, SynonymMapper mapper, SqlSession session) {
+  protected void deleteAfter(DSID id, Synonym old, int user, SynonymMapper mapper, SqlSession session) {
     //TODO: update ES
   }
   

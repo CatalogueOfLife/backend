@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 @Path("/decision")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class DecisionResource extends CatalogueEntityResource<EditorialDecision> {
+public class DecisionResource extends AbstractDecisionResource<EditorialDecision> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DecisionResource.class);

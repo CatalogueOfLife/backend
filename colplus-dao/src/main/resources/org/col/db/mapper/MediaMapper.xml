@@ -5,8 +5,9 @@
 <mapper namespace="org.col.db.mapper.MediaMapper">
 
   <sql id="SELECT">
-    m.key,
+    m.id,
     m.taxon_id,
+    m.dataset_key,
     m.verbatim_key,
     m.url,
     m.type,
@@ -24,8 +25,8 @@
   </sql>
 
   <sql id="COLS">
-    dataset_key,
     taxon_id,
+    dataset_key,
     verbatim_key,
     url,
     type,
@@ -41,8 +42,8 @@
   </sql>
 
   <sql id="PROPS">
-    #{datasetKey},
     #{taxonId},
+    #{obj.datasetKey},
     #{obj.verbatimKey},
     #{obj.url},
     #{obj.type},
@@ -57,30 +58,44 @@
     #{obj.modifiedBy}
   </sql>
 
-  <sql id="FROM">
-    media_${datasetKey} m
-  </sql>
+  <sql id="FROM">media_${partition} m</sql>
 
   <resultMap id="mediaResultMap" type="Media" autoMapping="true">
-    <id property="key" column="key" />
+    <id property="id" column="id" />
   </resultMap>
 
+  <resultMap id="mediaExtResultMap" type="TaxonExtension" autoMapping="true">
+    <id column="id" />
+    <result property="taxonID" column="taxon_id" />
+    <association property="obj" autoMapping="true" javaType="Media">
+      <id property="id" column="id" />
+    </association>
+  </resultMap>
 
   <select id="listByTaxon" resultMap="mediaResultMap">
+    <include refid="org.col.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE m.taxon_id = #{taxonId}
-    ORDER BY m.key
+    WHERE m.taxon_id = #{key.id}
+    ORDER BY m.id
   </select>
 
   <select id="get" resultMap="mediaResultMap">
+    <include refid="org.col.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE m.key = #{key}
+    WHERE m.id = #{key.id}
   </select>
 
-  <insert id="create" parameterType="Media" useGeneratedKeys="true" keyProperty="obj.key">
-    INSERT INTO media_${datasetKey} ( <include refid="COLS" />, created, modified )
+  <select id="processDataset" parameterType="map" resultMap="mediaExtResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    <include refid="org.col.db.Common.partitionByDatasetKey"/>
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+  </select>
+
+  <insert id="create" parameterType="Media" useGeneratedKeys="true" keyProperty="obj.id">
+    <include refid="org.col.db.Common.partitionByObj"/>
+    INSERT INTO media_${partition} ( <include refid="COLS" />, created, modified )
     VALUES ( <include refid="PROPS" />, now(), now() )
   </insert>
 

@@ -156,7 +156,7 @@ public class ColdpInserter extends NeoInserter {
           CslData csl = CslDataConverter.toCslData(cslItem);
           csl.setId(id); // maybe superfluous but safe
           Reference ref = ReferenceFactory.fromCsl(datasetKey, csl);
-          ref.setVerbatimKey(v.getKey());
+          ref.setVerbatimKey(v.getId());
           store.create(ref);
 
         } catch (RuntimeException e) {
@@ -197,11 +197,11 @@ public class ColdpInserter extends NeoInserter {
             }
           }
           Reference ref = ReferenceFactory.fromCsl(datasetKey, csl);
-          ref.setVerbatimKey(v.getKey());
+          ref.setVerbatimKey(v.getId());
           store.create(ref);
           
         } catch (JsonProcessingException | RuntimeException e) {
-          LOG.warn("Failed to convert verbatim csl json {} into Reference: {}", v.getKey(), e.getMessage(), e);
+          LOG.warn("Failed to convert verbatim csl json {} into Reference: {}", v.getId(), e.getMessage(), e);
           v.addIssue(Issue.UNPARSABLE_REFERENCE);
           store.put(v);
         }

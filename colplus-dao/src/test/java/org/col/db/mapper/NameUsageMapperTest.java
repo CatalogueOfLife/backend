@@ -5,6 +5,10 @@ import java.util.List;
 
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.*;
+import org.col.api.vocab.Users;
+import org.col.common.tax.AuthorshipNormalizer;
+import org.col.dao.NameDao;
+import org.col.db.PgSetupRule;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -27,6 +31,8 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   }
   @Test
   public void list() throws Exception {
+    NameDao nameDao = new NameDao(PgSetupRule.getSqlSessionFactory(), AuthorshipNormalizer.createWithoutAuthormap());
+  
     List<Taxon> taxa = new ArrayList<>();
     taxa.add(TestEntityGenerator.newTaxon("t1"));
     taxa.add(TestEntityGenerator.newTaxon("t2"));
@@ -45,8 +51,9 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
     syns.add(TestEntityGenerator.newSynonym(taxa.get(2)));
     syns.add(TestEntityGenerator.newSynonym(taxa.get(2)));
     syns.add(TestEntityGenerator.newSynonym(taxa.get(5)));
-    for (Synonym t : syns) {
-      sm.create(t);
+    for (Synonym s : syns) {
+      nameDao.create(s.getName(), Users.TESTER);
+      sm.create(s);
     }
     commit();
     

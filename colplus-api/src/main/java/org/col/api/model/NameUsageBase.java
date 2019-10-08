@@ -15,12 +15,8 @@ import org.col.api.vocab.TaxonomicStatus;
 /**
  *
  */
-public abstract class NameUsageBase extends DataEntity implements NameUsage, DatasetIDEntity {
+public abstract class NameUsageBase extends DatasetScopedEntity<String> implements NameUsage {
   
-  @Nonnull
-  private String id;
-  @Nonnull
-  private Integer datasetKey;
   private Integer sectorKey;
   private Integer verbatimKey;
   @Nonnull
@@ -37,24 +33,6 @@ public abstract class NameUsageBase extends DataEntity implements NameUsage, Dat
    * All bibliographic reference ids for the given name usage
    */
   private List<String> referenceIds = new ArrayList<>();
-  
-  public String getId() {
-    return id;
-  }
-  
-  public void setId(String id) {
-    this.id = id;
-  }
-  
-  @Override
-  public Integer getDatasetKey() {
-    return datasetKey;
-  }
-  
-  @Override
-  public void setDatasetKey(Integer key) {
-    this.datasetKey = key;
-  }
   
   @Override
   public Integer getVerbatimKey() {
@@ -157,7 +135,7 @@ public abstract class NameUsageBase extends DataEntity implements NameUsage, Dat
   }
   
   public SimpleName toSimpleName() {
-    return new SimpleName(id, name.getScientificName(), name.getAuthorship(), name.getRank());
+    return new SimpleName(getId(), name.getScientificName(), name.getAuthorship(), name.getRank());
   }
   
   public URI getWebpage() {
@@ -173,22 +151,21 @@ public abstract class NameUsageBase extends DataEntity implements NameUsage, Dat
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
-    NameUsageBase taxon = (NameUsageBase) o;
-    return Objects.equals(id, taxon.id) &&
-        Objects.equals(datasetKey, taxon.datasetKey) &&
-        Objects.equals(sectorKey, taxon.sectorKey) &&
-        Objects.equals(verbatimKey, taxon.verbatimKey) &&
-        Objects.equals(name, taxon.name) &&
-        status == taxon.status &&
-        origin == taxon.origin &&
-        Objects.equals(parentId, taxon.parentId) &&
-        Objects.equals(accordingTo, taxon.accordingTo) &&
-        Objects.equals(referenceIds, taxon.referenceIds) &&
-        Objects.equals(remarks, taxon.remarks);
+    NameUsageBase that = (NameUsageBase) o;
+    return Objects.equals(sectorKey, that.sectorKey) &&
+        Objects.equals(verbatimKey, that.verbatimKey) &&
+        Objects.equals(name, that.name) &&
+        status == that.status &&
+        origin == that.origin &&
+        Objects.equals(parentId, that.parentId) &&
+        Objects.equals(accordingTo, that.accordingTo) &&
+        Objects.equals(webpage, that.webpage) &&
+        Objects.equals(remarks, that.remarks) &&
+        Objects.equals(referenceIds, that.referenceIds);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), id, datasetKey, sectorKey, verbatimKey, name, status, origin, parentId, accordingTo, remarks, referenceIds);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, name, status, origin, parentId, accordingTo, webpage, remarks, referenceIds);
   }
 }

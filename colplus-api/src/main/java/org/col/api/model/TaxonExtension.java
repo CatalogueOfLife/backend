@@ -2,7 +2,7 @@ package org.col.api.model;
 
 import java.util.Objects;
 
-public class TaxonExtension<T> {
+public class TaxonExtension<T extends DatasetScopedEntity<Integer>> {
   private String taxonID;
   private T obj;
   

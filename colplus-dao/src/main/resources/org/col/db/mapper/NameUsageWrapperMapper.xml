@@ -17,8 +17,8 @@
                 <case value="true"  resultType="Synonym" resultMap="org.col.db.mapper.SynonymMapper.synonymResultMap"/>
             </discriminator>
         </association>
-        <collection property="vernacularNames" ofType="VernacularName" autoMapping="true" notNullColumn="v_key">
-            <id property="key" column="v_key"/>
+        <collection property="vernacularNames" ofType="VernacularName" autoMapping="true" notNullColumn="v_id">
+            <id property="id" column="v_id"/>
         </collection>
     </resultMap>
 
@@ -33,14 +33,14 @@
     </resultMap>
 
     <resultMap id="taxonGetClassificationResultMap" type="NameUsageWrapper" autoMapping="true" extends="usageResultMap">
-        <collection property="classification" ofType="SimpleName" column="{id=id,datasetKey=dataset_key}" autoMapping="true"
+        <collection property="classification" ofType="SimpleName" column="{key.id=id,key.datasetKey=dataset_key}" autoMapping="true"
                     select="org.col.db.mapper.TaxonMapper.classificationSimple"/>
     </resultMap>
 
     <resultMap id="bareNameResultMap" type="NameUsageWrapper" autoMapping="true" extends="issueResultMap">
         <id column="n_id"/>
         <association property="usage" javaType="BareName">
-            <id column="n_key" />
+            <id column="n_id" />
             <association property="name" javaType="Name" resultMap="org.col.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
         </association>
     </resultMap>
@@ -58,22 +58,19 @@
     <sql id="taxonSelectFrom">
         <include refid="org.col.db.mapper.NameUsageMapper.SELECT" />,
         vbn.issues || vbt.issues AS issues,
-        <if test="datasetKey != @org.col.api.vocab.Datasets@DRAFT_COL">
-            ed.key AS decisionKey,
-        </if>
-        vn.key as v_key, vn.name, vn.latin, vn.language
+        ed.key AS decisionKey,
+        vn.id as v_id, vn.name, vn.latin, vn.language
     FROM <include refid="org.col.db.mapper.NameUsageMapper.FROM"/>
-        LEFT JOIN verbatim_${datasetKey} vbt ON vbt.key=u.verbatim_key
-        LEFT JOIN verbatim_${datasetKey} vbn ON vbn.key=n.verbatim_key
-        LEFT JOIN vernacular_name_${datasetKey} vn ON vn.taxon_id=u.id
-        <if test="datasetKey != @org.col.api.vocab.Datasets@DRAFT_COL">
-            LEFT JOIN decision ed ON ed.subject_id=u.id AND ed.dataset_key=#{datasetKey}
-        </if>
+        LEFT JOIN verbatim_${partition} vbt ON vbt.id=u.verbatim_key
+        LEFT JOIN verbatim_${partition} vbn ON vbn.id=n.verbatim_key
+        LEFT JOIN vernacular_name_${partition} vn ON vn.taxon_id=u.id
+        LEFT JOIN decision ed ON ed.dataset_key=#{datasetKey} AND ed.subject_id=u.id
     </sql>
     <!--
     select all name usages of a dataset.
     -->
     <select id="processDatasetUsages" parameterType="map" resultMap="taxonWithClassificationResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
         WITH RECURSIVE tree AS(
             SELECT u.id AS uid, classification_sn(#{datasetKey}, u.id, true) AS classification,
             <include refid="taxonSelectFrom" />
@@ -88,7 +85,7 @@
     </select>
 
     <select id="processSectorUsages" parameterType="map" resultMap="taxonWithClassificationResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
-        <bind name="datasetKey" value="3"/>
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
         WITH RECURSIVE tree AS(
             SELECT u.id AS uid, classification_sn(#{datasetKey}, u.id, true) AS classification,
             <include refid="taxonSelectFrom" />
@@ -104,6 +101,7 @@
     </select>
 
     <select id="processTree" parameterType="map" resultMap="classificationResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
         WITH RECURSIVE tree AS(
             SELECT #{usageId} AS uid, classification_sn(#{datasetKey}, #{usageId}, true) AS classification
         UNION ALL
@@ -116,14 +114,15 @@
     </select>
 
     <select id="processDatasetBareNames" parameterType="map" resultMap="bareNameResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
         SELECT v.issues,
         <include refid="org.col.db.mapper.NameMapper.nameCols">
             <property name="alias" value="n"/>
             <property name="prefix" value="n_"/>
         </include>
-        FROM name_${datasetKey} n
-            LEFT JOIN name_usage_${datasetKey}  u ON n.id = u.name_id
-            LEFT JOIN verbatim_${datasetKey} v ON v.key= n.verbatim_key
+        FROM name_${partition} n
+            LEFT JOIN name_usage_${partition}  u ON n.id = u.name_id
+            LEFT JOIN verbatim_${partition} v ON v.id= n.verbatim_key
         WHERE u.id IS NULL
         <if test="sectorKey != null">
         	AND n.sector_key = #{sectorKey}
@@ -131,8 +130,8 @@
     </select>
 
     <select id="get" parameterType="map" resultMap="taxonGetClassificationResultMap">
-        SELECT
-        <include refid="taxonSelectFrom" />
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
+        SELECT ${partition} as qwerty, <include refid="taxonSelectFrom" />
         WHERE u.id = #{id}
     </select>
 

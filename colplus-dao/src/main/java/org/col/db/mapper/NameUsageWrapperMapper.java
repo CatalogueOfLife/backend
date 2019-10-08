@@ -24,11 +24,13 @@ public interface NameUsageWrapperMapper {
                             ResultHandler<NameUsageWrapper> handler);
   
   /**
-   * Process all draft catalogue usages from a given sector
+   * Process all catalogue usages from a given sector
+   * @param datasetKey the sectors dataset key. MUST match sector. In theory possible to get in SQL, but to reduce complexity we prefer to submit it explicitly
    * @param sectorKey the sectors key
    * @param usageId the sectors target usage id matching the sectorKey
    */
-  void processSectorUsages(@Param("sectorKey") Integer sectorKey,
+  void processSectorUsages(@Param("datasetKey") Integer datasetKey,
+                           @Param("sectorKey") Integer sectorKey,
                            @Param("usageId") String usageId,
                            ResultHandler<NameUsageWrapper> handler);
 

@@ -12,7 +12,7 @@ import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EstimateDao extends CatalogueEntityDao<SpeciesEstimate, EstimateMapper> {
+public class EstimateDao extends EntityDao<Integer, SpeciesEstimate, EstimateMapper> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(EstimateDao.class);
@@ -20,6 +20,10 @@ public class EstimateDao extends CatalogueEntityDao<SpeciesEstimate, EstimateMap
 
   public EstimateDao(SqlSessionFactory factory) {
     super(true, factory, EstimateMapper.class);
+  }
+  
+  public ResultPage<SpeciesEstimate> list(int datasetKey, Page page) {
+    return super.list(mapperClass, datasetKey, page);
   }
   
   public ResultPage<SpeciesEstimate> search(Rank rank, Integer min, Integer max, Page page) {

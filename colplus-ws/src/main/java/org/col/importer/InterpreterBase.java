@@ -65,7 +65,7 @@ public class InterpreterBase {
     String vname = rec.get(name);
     if (vname != null) {
       VernacularName vn = new VernacularName();
-      vn.setVerbatimKey(rec.getKey());
+      vn.setVerbatimKey(rec.getId());
       vn.setName(vname);
       
       if (translit != null) {
@@ -102,7 +102,7 @@ public class InterpreterBase {
   private Distribution createDistribution(VerbatimRecord rec, Gazetteer standard, String area, DistributionStatus status,
                                           BiConsumer<Distribution, VerbatimRecord> addReference) {
     Distribution d = new Distribution();
-    d.setVerbatimKey(rec.getKey());
+    d.setVerbatimKey(rec.getId());
     d.setGazetteer(standard);
     d.setArea(area);
     d.setStatus(status);
@@ -156,7 +156,7 @@ public class InterpreterBase {
     // require non empty description
     if (rec.hasTerm(description)) {
       Description d = new Description();
-      d.setVerbatimKey(rec.getKey());
+      d.setVerbatimKey(rec.getId());
       d.setCategory(rec.get(category));
       d.setDescription(rec.get(description));
       d.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(lang)).orNull());
@@ -173,7 +173,7 @@ public class InterpreterBase {
     // require media or link url
     if (rec.hasTerm(url) || rec.hasTerm(link)) {
       Media m = new Media();
-      m.setVerbatimKey(rec.getKey());
+      m.setVerbatimKey(rec.getId());
       m.setUrl( uri(rec, Issue.URL_INVALID, url));
       m.setLink( uri(rec, Issue.URL_INVALID, link));
       m.setLicense( SafeParser.parse(LicenseParser.PARSER, rec.get(license)).orNull() );
@@ -343,7 +343,7 @@ public class InterpreterBase {
     
     // common basics
     nat.getName().setId(id);
-    nat.getName().setVerbatimKey(v.getKey());
+    nat.getName().setVerbatimKey(v.getId());
     nat.getName().setOrigin(Origin.SOURCE);
     nat.getName().setWebpage(SafeParser.parse(UriParser.PARSER, link).orNull());
     // name status can be explicitly given or as part of the name remarks

@@ -103,7 +103,7 @@ public abstract class NeoInserter {
         rec.addIssue(Issue.NOT_INTERPRETED);
       }
       // processing might already have flagged issues, load and merge them
-      VerbatimRecord old = store.getVerbatim(rec.getKey());
+      VerbatimRecord old = store.getVerbatim(rec.getId());
       rec.addIssues(old.getIssues());
       store.put(rec);
       counter.incrementAndGet();
@@ -121,7 +121,7 @@ public abstract class NeoInserter {
       Optional<T> opt = interpret.apply(rec);
       if (opt.isPresent()) {
         T obj = opt.get();
-        obj.setVerbatimKey(rec.getKey());
+        obj.setVerbatimKey(rec.getId());
         return add.apply(obj);
       }
       return false;
