@@ -15,6 +15,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
+import org.col.api.vocab.Datasets;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.dao.TaxonDao;
 import org.col.db.mapper.TaxonMapper;
@@ -42,7 +43,7 @@ public class TreeResource {
   
   @GET
   public ResultPage<TreeNode> root(@PathParam("datasetKey") int datasetKey,
-                                   @QueryParam("catalogueKey") int catalogueKey,
+                                   @QueryParam("catalogueKey") @DefaultValue(Datasets.DRAFT_COL+"") int catalogueKey,
                                    @Valid @BeanParam Page page,
                                    @Context SqlSession session) {
     Page p = page == null ? new Page(0, DEFAULT_PAGE_SIZE) : page;
@@ -54,7 +55,7 @@ public class TreeResource {
   @Path("{id}")
   public List<TreeNode> parents(@PathParam("datasetKey") int datasetKey,
                                 @PathParam("id") String id,
-                                @QueryParam("catalogueKey") int catalogueKey,
+                                @QueryParam("catalogueKey") @DefaultValue(Datasets.DRAFT_COL+"") int catalogueKey,
                                 @Context SqlSession session) {
     RankID parent = parseID(datasetKey, id);
     TreeMapper trm = session.getMapper(TreeMapper.class);
@@ -84,7 +85,7 @@ public class TreeResource {
   @Path("{id}/children")
   public ResultPage<TreeNode> children(@PathParam("datasetKey") int datasetKey,
                                        @PathParam("id") String id,
-                                       @QueryParam("catalogueKey") int catalogueKey,
+                                       @QueryParam("catalogueKey") @DefaultValue(Datasets.DRAFT_COL+"") int catalogueKey,
                                        @QueryParam("insertPlaceholder") boolean insertPlaceholder,
                                                  @Valid @BeanParam Page page, @Context SqlSession session) {
     TreeMapper trm = session.getMapper(TreeMapper.class);
