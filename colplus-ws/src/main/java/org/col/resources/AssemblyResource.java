@@ -12,15 +12,13 @@ import javax.ws.rs.core.StreamingOutput;
 
 import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
-import org.col.api.model.ColUser;
-import org.col.api.model.Page;
-import org.col.api.model.ResultPage;
-import org.col.api.model.SectorImport;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.api.model.*;
 import org.col.api.vocab.Datasets;
 import org.col.assembly.AssemblyCoordinator;
 import org.col.assembly.AssemblyState;
-import org.col.api.model.RequestScope;
 import org.col.command.export.AcExporter;
+import org.col.dao.SubjectRematcher;
 import org.col.db.mapper.SectorImportMapper;
 import org.col.dw.auth.Roles;
 import org.slf4j.Logger;
@@ -34,10 +32,12 @@ public class AssemblyResource {
   private static final Logger LOG = LoggerFactory.getLogger(AssemblyResource.class);
   private final AssemblyCoordinator assembly;
   private final AcExporter exporter;
+  private final SqlSessionFactory factory;
   
-  public AssemblyResource(AssemblyCoordinator assembly, AcExporter exporter) {
+  public AssemblyResource(SqlSessionFactory factory, AssemblyCoordinator assembly, AcExporter exporter) {
     this.assembly = assembly;
     this.exporter = exporter;
+    this.factory = factory;
   }
   
   @GET
@@ -114,7 +114,16 @@ public class AssemblyResource {
     };
     return Response.ok(stream).build();
   }
-
+  
+  @POST
+  @Path("/rematch")
+  public SubjectRematcher rematch(@PathParam("catKey") int catKey, RematchRequest req, @Auth ColUser user) {
+    requireDraft(catKey);
+    SubjectRematcher matcher = new SubjectRematcher(factory, catKey, user.getKey());
+    matcher.match(req);
+    return matcher;
+  }
+  
   
   private static void requireDraft(int catKey) {
     if (catKey != Datasets.DRAFT_COL) {

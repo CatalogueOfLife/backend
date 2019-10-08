@@ -304,11 +304,11 @@ CREATE TABLE decision (
 CREATE TABLE estimate (
   key serial PRIMARY KEY,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
-  subject_id TEXT,
-  subject_name TEXT NOT NULL,
-  subject_authorship TEXT,
-  subject_rank rank,
-  subject_code INTEGER,
+  target_id TEXT,
+  target_name TEXT NOT NULL,
+  target_authorship TEXT,
+  target_rank rank,
+  target_code INTEGER,
   estimate INTEGER,
   type INTEGER NOT NULL,
   reference_id TEXT,
@@ -649,6 +649,6 @@ CREATE index ON sector (target_id);
 CREATE index ON sector (dataset_key);
 CREATE index ON sector (dataset_key, subject_dataset_key, subject_id);
 CREATE index ON estimate (dataset_key);
-CREATE index ON estimate (dataset_key, subject_id);
+CREATE index ON estimate (dataset_key, target_id);
 CREATE index ON decision (dataset_key);
 CREATE index ON decision (dataset_key, subject_dataset_key, subject_id);

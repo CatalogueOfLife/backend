@@ -160,7 +160,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     SpeciesEstimate s = new SpeciesEstimate();
     s.setDatasetKey(DRAFT_COL);
     s.setEstimate(5678);
-    s.setSubject(new SimpleName(id, "Abies alba", Rank.SPECIES));
+    s.setTarget(new SimpleName(id, "Abies alba", Rank.SPECIES));
     s.applyUser(TestEntityGenerator.USER_USER);
     return s;
   }

@@ -138,7 +138,7 @@ public class CatalogueRelease implements Callable<Integer> {
     obj.setDatasetKey(releaseKey);
     obj.setVerbatimKey(null);
   }
-  private void updateEntity(Decision obj) {
+  private <T extends DataEntity<Integer> & DatasetScoped> void updateEntity(T obj) {
     obj.setKey(null);
     obj.setDatasetKey(releaseKey);
   }

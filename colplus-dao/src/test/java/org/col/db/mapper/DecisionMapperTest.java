@@ -6,7 +6,8 @@ import java.util.Map;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.col.api.TestEntityGenerator;
-import org.col.api.model.Decision;
+import org.col.api.model.DataEntity;
+import org.col.api.model.DatasetScoped;
 import org.col.api.model.EditorialDecision;
 import org.col.api.vocab.Datasets;
 import org.col.api.vocab.Lifezone;
@@ -84,7 +85,7 @@ public class DecisionMapperTest extends CRUDTestBase<Integer, EditorialDecision,
     assertEquals(0, handler.counter.size());
   }
   
-  public static class CountHandler<T extends Decision> implements ResultHandler<T> {
+  public static class CountHandler<T extends DataEntity<Integer> & DatasetScoped> implements ResultHandler<T> {
     Map<Integer, Integer> counter = new HashMap<>();
   
     @Override

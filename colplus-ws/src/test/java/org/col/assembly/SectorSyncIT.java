@@ -198,7 +198,7 @@ public class SectorSyncIT {
   
     src = getByName(datasetKey(5, DataFormat.ACEF), Rank.CLASS, "Insecta");
     trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
-    createSector(Sector.Mode.MERGE, src, trg);
+    createSector(Sector.Mode.UNION, src, trg);
   
     src = getByName(datasetKey(6, DataFormat.ACEF), Rank.FAMILY, "Theridiidae");
     trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
@@ -303,7 +303,7 @@ public class SectorSyncIT {
   
     NameUsageBase src = getByName(datasetKey(5, DataFormat.ACEF), Rank.CLASS, "Insecta");
     NameUsageBase trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
-    final int s5 = createSector(Sector.Mode.MERGE, src, trg);
+    final int s5 = createSector(Sector.Mode.UNION, src, trg);
 
     src = getByName(datasetKey(6, DataFormat.ACEF), Rank.FAMILY, "Theridiidae");
     trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
@@ -364,7 +364,7 @@ public class SectorSyncIT {
     
     NameUsageBase src = getByName(datasetKey(0, DataFormat.COLDP), Rank.KINGDOM, "Plantae");
     NameUsageBase plant = getByName(Datasets.DRAFT_COL, Rank.KINGDOM, "Plantae");
-    createSector(Sector.Mode.MERGE, src, plant);
+    createSector(Sector.Mode.UNION, src, plant);
   
     final String plantID = plant.getId();
     assertNull(plant.getSectorKey());
@@ -387,7 +387,7 @@ public class SectorSyncIT {
     
     NameUsageBase src = getByName(datasetKey(14, DataFormat.ACEF), Rank.KINGDOM, "Viruses");
     NameUsageBase trg = getByName(Datasets.DRAFT_COL, Rank.KINGDOM, "Viruses");
-    createSector(Sector.Mode.MERGE, src, trg);
+    createSector(Sector.Mode.UNION, src, trg);
     
     syncAll();
     

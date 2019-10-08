@@ -9,7 +9,6 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.exception.NotFoundException;
 import org.col.api.model.*;
-import org.col.api.vocab.Datasets;
 import org.col.db.CRUD;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.DecisionMapper;
@@ -27,6 +26,7 @@ public class SubjectRematcher {
   private DecisionMapper dem;
   private EstimateMapper esm;
   private MatchingDao mdao;
+  private final int catalogueKey;
   private final int userKey;
   
   private MatchCounter sectors   = new MatchCounter();
@@ -34,8 +34,9 @@ public class SubjectRematcher {
   private MatchCounter estimates = new MatchCounter();
   private int datasets = 0;
   
-  public SubjectRematcher(SqlSessionFactory factory, int userKey) {
+  public SubjectRematcher(SqlSessionFactory factory, int catalogueKey, int userKey) {
     this.userKey = userKey;
+    this.catalogueKey = catalogueKey;
     this.factory = factory;
   
   }
@@ -86,21 +87,21 @@ public class SubjectRematcher {
     return datasets;
   }
   
-  private void matchAll() {
+  private void matchAll(int catalogueKey) {
     LOG.info("Rematch all sectors, decisions and estimates across all datasets");
     Set<Integer> datasetKeys = new HashSet<>();
-    Pager.sectors(Datasets.DRAFT_COL, factory).forEach(s -> {
+    Pager.sectors(catalogueKey, factory).forEach(s -> {
       datasetKeys.add(s.getSubjectDatasetKey());
       matchSector(s);
     });
   
-    Pager.decisions(Datasets.DRAFT_COL, factory).forEach(d -> {
+    Pager.decisions(catalogueKey, factory).forEach(d -> {
       datasetKeys.add(d.getSubjectDatasetKey());
       matchDecision(d);
     });
     
     LOG.info("Rematch all estimates for draft catalogue");
-    Pager.estimates(Datasets.DRAFT_COL, factory).forEach(this::matchEstimate);
+    Pager.estimates(catalogueKey, factory).forEach(this::matchEstimate);
 
     datasets = datasetKeys.size();
   }
@@ -121,7 +122,7 @@ public class SubjectRematcher {
         matchDataset(req.getDatasetKey());
   
       } else if (Boolean.TRUE.equals(req.getAll())) {
-        matchAll();
+        matchAll(catalogueKey);
       }
       session.commit();
     }
@@ -132,7 +133,7 @@ public class SubjectRematcher {
     LOG.info("Rematch all sector subjects in dataset {}", datasetKey);
     try(SqlSession session = factory.openSession(true)) {
       init(session);
-      for (Sector s : sm.listByDataset(Datasets.DRAFT_COL, datasetKey)) {
+      for (Sector s : sm.listByDataset(catalogueKey, datasetKey)) {
         matchSectorSubjectOnly(s);
       }
       matchDatasetDecision(datasetKey);
@@ -141,7 +142,7 @@ public class SubjectRematcher {
     log();
   }
   
-  private static <T extends Decision> T getNotNull(CRUD<Integer, T> mapper, int key) throws NotFoundException {
+  private static <T extends DataEntity<Integer>> T getNotNull(CRUD<Integer, T> mapper, int key) throws NotFoundException {
     T obj = mapper.get(key);
     if (obj == null) {
       throw new NotFoundException("Key " + key + " does not exist");
@@ -210,11 +211,11 @@ public class SubjectRematcher {
   }
   
   private void matchEstimate(SpeciesEstimate est) {
-    if (est.getSubject() != null) {
-      NameUsage u = matchUniquely(est, Datasets.DRAFT_COL, est.getSubject());
-      String idBefore = est.getSubject().getId();
-      est.getSubject().setId(u == null ? null : u.getId());
-      if (updateCounter(decisions, idBefore, est.getSubject().getId())) {
+    if (est.getTarget() != null) {
+      NameUsage u = matchUniquely(est, est.getDatasetKey(), est.getTarget());
+      String idBefore = est.getTarget().getId();
+      est.getTarget().setId(u == null ? null : u.getId());
+      if (updateCounter(decisions, idBefore, est.getTarget().getId())) {
         esm.update(est);
       }
     }
@@ -246,7 +247,7 @@ public class SubjectRematcher {
   
   private void matchDataset(final int datasetKey) {
     LOG.info("Rematch all sector subjects in dataset {}", datasetKey);
-    for (Sector s : sm.listByDataset(Datasets.DRAFT_COL, datasetKey)) {
+    for (Sector s : sm.listByDataset(catalogueKey, datasetKey)) {
       matchSector(s);
     }
     matchDatasetDecision(datasetKey);
@@ -255,7 +256,7 @@ public class SubjectRematcher {
   private void matchDatasetDecision(final int datasetKey) {
     LOG.info("Rematch all decision subjects in dataset {}", datasetKey);
     datasets++;
-    for (EditorialDecision d : dem.listBySubjectDataset(Datasets.DRAFT_COL, datasetKey, null)) {
+    for (EditorialDecision d : dem.listBySubjectDataset(catalogueKey, datasetKey, null)) {
       matchDecision(d);
     }
   }
@@ -273,7 +274,7 @@ public class SubjectRematcher {
     }
   }
   
-  private NameUsage matchUniquely(Decision d, int datasetKey, SimpleName sn){
+  private NameUsage matchUniquely(DataEntity<Integer> d, int datasetKey, SimpleName sn){
     List<? extends NameUsage> matches = mdao.matchDataset(sn, datasetKey);
     if (matches.isEmpty()) {
       LOG.warn("{} {} cannot be rematched to dataset {} - lost {}", d.getClass().getSimpleName(), d.getKey(), datasetKey, sn);

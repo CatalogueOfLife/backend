@@ -63,7 +63,7 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
     tm = session.getMapper(TaxonMapper.class);
     nm = session.getMapper(NameMapper.class);
     // load target taxon
-    Taxon t = tm.get(sector.getTargetAsDatasetID());
+    Taxon t = tm.get(sector.getTargetAsDSID());
     target = new Usage(t.getId(), t.getName().getRank(), t.getStatus());
   }
   
@@ -199,7 +199,7 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
     Usage parent;
     // treat root node according to sector mode
     if (sector.getSubject().getId().equals(u.getId())) {
-      if (sector.getMode() == Sector.Mode.MERGE) {
+      if (sector.getMode() == Sector.Mode.UNION) {
         // in merge mode the root node itself is not copied
         // but all child taxa should be linked to the sector target, so remember that ID mapping:
         ids.put(u.getId(), target);

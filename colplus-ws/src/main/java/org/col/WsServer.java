@@ -247,7 +247,7 @@ public class WsServer extends Application<WsServerConfig> {
             tdao,
             cImporter,
             gbifSync));
-    env.jersey().register(new AssemblyResource(assembly, exporter));
+    env.jersey().register(new AssemblyResource(getSqlSessionFactory(), assembly, exporter));
     env.jersey().register(new DataPackageResource());
     env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService, cfg, new DownloadUtil(httpClient), diff));
     env.jersey().register(new DecisionResource(getSqlSessionFactory(), svcIndex));
@@ -255,7 +255,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.jersey().register(new DuplicateResource());
     env.jersey().register(new EstimateResource(getSqlSessionFactory()));
     env.jersey().register(new MatchingResource(ni));
-    env.jersey().register(new NameResource(svcNameSearch, ndao));
+    env.jersey().register(new NameResource(svcNameSearch, ndao, svcSuggest));
     env.jersey().register(new NameSearchResource(svcNameSearch, svcSuggest));
     env.jersey().register(new ParserResource());
     env.jersey().register(new ReferenceResource(rdao));

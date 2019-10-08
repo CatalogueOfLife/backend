@@ -34,11 +34,12 @@ public class EstimateResource extends AbstractDecisionResource<SpeciesEstimate> 
   }
   
   @GET
-  public ResultPage<SpeciesEstimate> search(@QueryParam("rank") Rank rank,
+  public ResultPage<SpeciesEstimate> search(@QueryParam("datasetKey") @DefaultValue(""+Datasets.DRAFT_COL) int datasetKey,
+                                      @QueryParam("rank") Rank rank,
                                       @QueryParam("min") Integer min,
                                       @QueryParam("max") Integer max,
                                       @Valid @BeanParam Page page) {
-    return dao.search(rank, min, max, page);
+    return dao.search(datasetKey, rank, min, max, page);
   }
   
   @GET

@@ -17,13 +17,13 @@ public class AssemblyCoordinatorOrderTest {
   public void compareTo() {
     List<Sector> secs = new ArrayList<>();
     secs.add(sec(Mode.ATTACH, sn(Rank.SPECIES, "Abiès alba", "Mill.")));
-    secs.add(sec(Mode.MERGE, sn(Rank.SPECIES, "Abiès alba", "Miller")));
+    secs.add(sec(Mode.UNION, sn(Rank.SPECIES, "Abiès alba", "Miller")));
     secs.add(sec(null, sn(Rank.GENUS, "Pomela", null)));
     secs.add(sec(Mode.ATTACH, sn(null, "", null)));
     secs.add(sec(Mode.ATTACH, null));
     secs.add(sec(Mode.ATTACH, sn(Rank.SPECIES, "Abieta alba", "")));
     secs.add(sec(Mode.ATTACH, sn(Rank.SUBGENUS, "Pomela", null)));
-    secs.add(sec(Mode.MERGE, sn(Rank.GENUS, "Pomela", null)));
+    secs.add(sec(Mode.UNION, sn(Rank.GENUS, "Pomela", null)));
     secs.add(sec(null, sn(Rank.SPECIES, "Pinus alba", null)));
     secs.add(sec(null, null));
     secs.add(sec(Mode.ATTACH, sn(Rank.GENUS, "Pomela", "Karl")));

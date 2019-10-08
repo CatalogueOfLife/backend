@@ -15,18 +15,20 @@ public interface EstimateMapper extends CRUD<Integer, SpeciesEstimate>, DatasetP
   SpeciesEstimate getById(@Param("id") String id);
   
   /**
-   * List all estimates that cannot be linked to subject taxa in the catalogue
+   * List all estimates that cannot be linked to target taxa in the catalogue
    * @param datasetKey the catalogues datasetKey
    */
   List<SpeciesEstimate> broken(@Param("datasetKey") int datasetKey);
   
-  int searchCount(@Nullable @Param("rank") Rank rank
-      , @Nullable @Param("min") Integer min
-      , @Nullable @Param("max") Integer max);
+  int searchCount(@Param("datasetKey") int datasetKey,
+                  @Nullable @Param("rank") Rank rank,
+                  @Nullable @Param("min") Integer min,
+                  @Nullable @Param("max") Integer max);
   
-  List<SpeciesEstimate> search(@Nullable @Param("rank") Rank rank
-      , @Nullable @Param("min") Integer min
-      , @Nullable @Param("max") Integer max,
-                  @Param("page") Page page);
+  List<SpeciesEstimate> search(@Param("datasetKey") int datasetKey,
+                               @Nullable @Param("rank") Rank rank,
+                               @Nullable @Param("min") Integer min,
+                               @Nullable @Param("max") Integer max,
+                               @Param("page") Page page);
   
 }

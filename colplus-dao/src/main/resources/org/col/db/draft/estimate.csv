@@ -1,4 +1,4 @@
-type,subject_code,subject_rank,subject_name,subject_id,estimate,reference_id,created,modified
+type,target_code,target_rank,target_name,target_id,estimate,reference_id,created,modified
 0,1,family,Fabaceae,d3b242d0-f8b0-42ca-a396-099c129daac6,22000,8,2015-09-21 22:26:15,
 0,1,family,Polygalaceae,997359f1-37da-4732-ae50-08203749033e,1300,13,2015-09-21 22:34:51,
 0,1,family,Quillajaceae,3be02027-435a-422f-ac36-f0a5dc1c614d,2,13,2015-09-21 22:36:54,

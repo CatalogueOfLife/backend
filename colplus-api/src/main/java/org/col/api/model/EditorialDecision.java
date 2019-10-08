@@ -4,6 +4,7 @@ import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.col.api.vocab.Lifezone;
 import org.col.api.vocab.TaxonomicStatus;
 
@@ -15,7 +16,11 @@ import org.col.api.vocab.TaxonomicStatus;
  * If blocked all further configured changes are ignored.
  * Otherwise all non null values from status or name should be applied to the underlying subject.
  */
-public class EditorialDecision extends Decision {
+public class EditorialDecision extends DataEntity<Integer> implements DatasetScoped {
+  private Integer key;
+  private Integer datasetKey; // the catalogues datasetKey
+  private SimpleName subject;
+  private Integer subjectDatasetKey; // the datasetKey the subject belongs to, not the catalogue!
   private Mode mode;
   private Name name;
   private TaxonomicStatus status;
@@ -23,6 +28,7 @@ public class EditorialDecision extends Decision {
   private String temporalRangeStart;
   private String temporalRangeEnd;
   private Set<Lifezone> lifezones = EnumSet.noneOf(Lifezone.class);
+  private String note;
   
   public static enum Mode {
     /**
@@ -48,6 +54,50 @@ public class EditorialDecision extends Decision {
      * If configured, Name updates will be ignored!!!
      */
     UPDATE_RECURSIVE
+  }
+  
+  @Override
+  public Integer getKey() {
+    return key;
+  }
+  
+  @Override
+  public void setKey(Integer key) {
+    this.key = key;
+  }
+  
+  @Override
+  public Integer getDatasetKey() {
+    return datasetKey;
+  }
+  
+  @Override
+  public void setDatasetKey(Integer datasetKey) {
+    this.datasetKey = datasetKey;
+  }
+  
+  public SimpleName getSubject() {
+    return subject;
+  }
+  
+  public void setSubject(SimpleName subject) {
+    this.subject = subject;
+  }
+  
+  public Integer getSubjectDatasetKey() {
+    return subjectDatasetKey;
+  }
+  
+  public void setSubjectDatasetKey(Integer subjectDatasetKey) {
+    this.subjectDatasetKey = subjectDatasetKey;
+  }
+  
+  public String getNote() {
+    return note;
+  }
+  
+  public void setNote(String note) {
+    this.note = note;
   }
   
   public Mode getMode() {
@@ -106,6 +156,11 @@ public class EditorialDecision extends Decision {
     this.lifezones = lifezones;
   }
   
+  @JsonIgnore
+  public DSID<String> getSubjectAsDSID() {
+    return subject == null ? null : DSID.key(subjectDatasetKey, subject.getId());
+  }
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -128,6 +183,6 @@ public class EditorialDecision extends Decision {
   
   @Override
   public String toString() {
-    return "EditorialDecision{" + getKey() + " " + mode + " on " + subject + '}';
+    return "Decision{" + getKey() + " " + mode + " on " + subject + '}';
   }
 }

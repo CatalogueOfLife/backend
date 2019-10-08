@@ -32,7 +32,7 @@ public class EstimateMapperTest extends CRUDTestBase<Integer, SpeciesEstimate, E
   SpeciesEstimate createTestEntity(int dkey) {
     SpeciesEstimate d = new SpeciesEstimate();
     d.setDatasetKey(Datasets.DRAFT_COL);
-    d.setSubject(TestEntityGenerator.newSimpleNameWithoutStatusParent());
+    d.setTarget(TestEntityGenerator.newSimpleNameWithoutStatusParent());
     d.setEstimate(34567);
     d.setType(EstimateType.DESCRIBED_SPECIES_EXTINCT);
     d.setReferenceId(ref.getId());

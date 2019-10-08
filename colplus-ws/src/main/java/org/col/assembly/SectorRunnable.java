@@ -133,7 +133,7 @@ abstract class SectorRunnable implements Runnable {
         String msg = "Sector " + s.getKey() + " does have a non existing target " + s.getTarget() + " for dataset " + catalogueKey;
         try {
           ObjectUtils.checkNotNull(s.getTarget(), s + " does not have any target");
-          ObjectUtils.checkNotNull(tm.get(s.getTargetAsDatasetID()), "Sector " + s.getKey() + " does have a non existing target id");
+          ObjectUtils.checkNotNull(tm.get(s.getTargetAsDSID()), "Sector " + s.getKey() + " does have a non existing target id");
         } catch (PersistenceException e) {
           throw new IllegalArgumentException(msg, e);
         }
@@ -142,7 +142,7 @@ abstract class SectorRunnable implements Runnable {
         msg = "Sector " + s.getKey() + " does have a non existing subject " + s.getSubject() + " for dataset " + datasetKey;
         try {
           ObjectUtils.checkNotNull(s.getSubject(), s + " does not have any subject");
-          ObjectUtils.checkNotNull(tm.get(s.getSubjectAsDatasetID()), msg);
+          ObjectUtils.checkNotNull(tm.get(s.getSubjectAsDSID()), msg);
         } catch (PersistenceException e) {
           throw new IllegalArgumentException(msg, e);
         }

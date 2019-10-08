@@ -19,6 +19,7 @@ import org.col.WsServerConfig;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
 import org.col.api.vocab.DatasetOrigin;
+import org.col.api.vocab.Datasets;
 import org.col.api.vocab.ImportState;
 import org.col.common.concurrent.StartNotifier;
 import org.col.common.io.ChecksumUtils;
@@ -209,8 +210,8 @@ public class ImportJob implements Runnable {
         updateState(ImportState.INDEXING);
         indexService.indexDataset(datasetKey);
   
-        LOG.info("Updating sectors and decisions for dataset {}", datasetKey);
-        new SubjectRematcher(factory, req.createdBy).matchDatasetSubjects(datasetKey);
+        LOG.info("Updating draft sectors and decisions for dataset {}", datasetKey);
+        new SubjectRematcher(factory, Datasets.DRAFT_COL, req.createdBy).matchDatasetSubjects(datasetKey);
   
         LOG.info("Dataset import {} completed in {}", datasetKey,
             DurationFormatUtils.formatDurationHMS(Duration.between(di.getStarted(), LocalDateTime.now()).toMillis()));
