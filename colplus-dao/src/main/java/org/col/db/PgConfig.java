@@ -30,6 +30,12 @@ public class PgConfig extends PgDbConfig {
 
   public int port = 5432;
   
+  /**
+   * If true inserts the needed statistics module for pganalze to read
+   * https://app.pganalyze.com/docs/install/self_managed/04_configure_the_collector_package
+   */
+  public boolean pganalyze = false;
+  
   @Min(1)
   public int maximumPoolSize = 8;
   

@@ -101,6 +101,10 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
       LOG.info("Create new database {}", cfg.db.database);
       st.execute("CREATE DATABASE  \"" + cfg.db.database + "\"" +
           " WITH ENCODING UTF8 LC_COLLATE 'C' LC_CTYPE 'C' OWNER " + cfg.db.user + " TEMPLATE template0");
+      
+      if (cfg.db.pganalyze) {
+        st.execute("CREATE EXTENSION IF NOT EXISTS pg_stat_statements");
+      }
     }
     
     try (Connection con = cfg.db.connect()) {
