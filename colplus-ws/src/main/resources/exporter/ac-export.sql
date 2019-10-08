@@ -125,16 +125,16 @@ COPY (
 
 -- estimates
 COPY (
-  SELECT e.subject_id AS name_code,
-    e.subject_name AS name,
-    e.subject_rank AS rank,
+  SELECT e.target_id AS name_code,
+    e.target_name AS name,
+    e.target_rank AS rank,
     e.estimate,
     r.citation AS source,
     e.created AS inserted,
     e.modified AS updated
   FROM estimate e
     LEFT JOIN reference_{{datasetKey}} r ON r.id=e.reference_id
-  WHERE e.subject_id IS NOT NULL
+  WHERE e.target_id IS NOT NULL
 ) TO 'estimates.csv';
 
 
