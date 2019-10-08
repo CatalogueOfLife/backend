@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import static org.col.es.name.NameUsageWrapperConverter.normalizeStrongly;
 import static org.col.es.name.NameUsageWrapperConverter.normalizeWeakly;
+import static org.col.es.query.AbstractMatchQuery.Operator.AND;
 
 public class QTranslationUtils {
 
@@ -123,7 +124,7 @@ public class QTranslationUtils {
     if (q.length() > MAX_NGRAM_SIZE && countTokens(q) == 1) {
       return new CaseInsensitivePrefixQuery(field, q);
     }
-    return new AutoCompleteQuery(field, q);
+    return new AutoCompleteQuery(field, q).withOperator(AND);
   }
 
   private static Query matchSearchTerm(String field, String term) {
