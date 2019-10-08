@@ -42,6 +42,8 @@ import javax.annotation.Nullable;
  */
 public enum NomStatus {
   
+  ESTABLISHED("nomen validum", null, "available"),
+  
   /**
    * A name that was not validly published according to the rules of the code,
    * or a name that was not accepted by the author in the original publication, for example,
