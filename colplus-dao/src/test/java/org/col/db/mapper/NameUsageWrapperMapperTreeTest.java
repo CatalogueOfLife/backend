@@ -36,46 +36,51 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
   }
   
   @Test
-  public void processDatasetTaxa() throws Exception {
-    AtomicInteger synCounter = new AtomicInteger(0);
-    mapper().processDatasetUsages(NAME4.getDatasetKey(), new ResultHandler<NameUsageWrapper>() {
-      public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
-        counter.incrementAndGet();
-        NameUsageWrapper obj = ctx.getResultObject();
-        Name n = obj.getUsage().getName();
-        assertNotNull(n);
-        assertNotNull(n.getId());
-        assertNotNull(n.getDatasetKey());
-        
-        // classification should always include the taxon itself
-        // https://github.com/Sp2000/colplus-backend/issues/326
-        assertFalse(obj.getClassification().isEmpty());
-        SimpleName last = obj.getClassification().get(obj.getClassification().size()-1);
-        assertEquals(obj.getUsage().getId(), last.getId());
-        
-        if ( obj.getUsage().getId().startsWith("t")) {
-          assertTrue(obj.getUsage().isTaxon());
-          Taxon t = (Taxon) obj.getUsage();
-          assertNotNull(t.getId());
-          assertEquals((Integer) 1, t.getVerbatimKey());
-          if (t.getId().equals("t1")) {
-            assertNull(t.getParentId());
-          } else {
-            assertNotNull(t.getParentId());
-          }
-          for (VernacularName v : ctx.getResultObject().getVernacularNames()) {
-            assertNotNull(v.getName());
-          }
-
+  public void processUsages() throws Exception {
+    DRH handler = new DRH();
+    mapper().processTreeUsages(NAME4.getDatasetKey(), "t5", handler);
+    Assert.assertEquals(12, handler.counter.get());
+    Assert.assertEquals(2, handler.synCounter.get());
+  }
+  
+  public static class DRH implements ResultHandler<NameUsageWrapper> {
+    public AtomicInteger counter = new AtomicInteger(0);
+    public AtomicInteger synCounter = new AtomicInteger(0);
+  
+    @Override
+    public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
+      counter.incrementAndGet();
+      NameUsageWrapper obj = ctx.getResultObject();
+      Name n = obj.getUsage().getName();
+      assertNotNull(n);
+      assertNotNull(n.getId());
+      assertNotNull(n.getDatasetKey());
+  
+      // classification should always include the taxon itself
+      // https://github.com/Sp2000/colplus-backend/issues/326
+      assertFalse(obj.getClassification().isEmpty());
+      SimpleName last = obj.getClassification().get(obj.getClassification().size()-1);
+      assertEquals(obj.getUsage().getId(), last.getId());
+  
+      if ( obj.getUsage().getId().startsWith("t")) {
+        assertTrue(obj.getUsage().isTaxon());
+        Taxon t = (Taxon) obj.getUsage();
+        assertNotNull(t.getId());
+        assertEquals((Integer) 1, t.getVerbatimKey());
+        if (t.getId().equals("t1")) {
+          assertNull(t.getParentId());
         } else {
-          assertTrue(obj.getUsage().isSynonym());
-          synCounter.incrementAndGet();
+          assertNotNull(t.getParentId());
         }
-
+        for (VernacularName v : ctx.getResultObject().getVernacularNames()) {
+          assertNotNull(v.getName());
+        }
+    
+      } else {
+        assertTrue(obj.getUsage().isSynonym());
+        synCounter.incrementAndGet();
       }
-    });
-    Assert.assertEquals(24, counter.get());
-    Assert.assertEquals(4, synCounter.get());
+    }
   }
   
   @Test

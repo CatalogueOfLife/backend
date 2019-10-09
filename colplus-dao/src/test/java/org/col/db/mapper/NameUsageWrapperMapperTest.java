@@ -25,42 +25,33 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
   private AtomicInteger counter = new AtomicInteger(0);
   
   @Test
-  public void processDatasetTaxa() throws Exception {
-    mapper().processDatasetUsages(NAME4.getDatasetKey(), new ResultHandler<NameUsageWrapper>() {
+  public void processDatasetUsages() throws Exception {
+    mapper().processTreeUsages(NAME4.getDatasetKey(), "root-2", new ResultHandler<NameUsageWrapper>() {
       public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
         counter.incrementAndGet();
         NameUsageWrapper obj = ctx.getResultObject();
         assertNotNull(obj.getUsage().getId());
-        if (obj.getUsage().getId().equals("root-1")) {
-          assertEquals(4, obj.getIssues().size());
-        } else {
-          assertTrue(obj.getIssues().isEmpty());
-        }
+        assertTrue(obj.getIssues().isEmpty());
 
         Name n = obj.getUsage().getName();
         assertNotNull(n);
         assertNotNull(n.getId());
         assertNotNull(n.getDatasetKey());
 
-        System.out.println(obj.getUsage().getId());
         if (obj.getUsage().getId().startsWith("root")) {
           assertTrue(obj.getUsage().isTaxon());
           Taxon t = (Taxon) obj.getUsage();
-          System.out.println(t.getParentId());
         } else {
           assertTrue(obj.getUsage().isSynonym());
           Synonym s = (Synonym) obj.getUsage();
           assertNotNull(s.getParentId());
-          System.out.println(s.getParentId());
         }
-        System.out.println(ctx.getResultObject().getClassification());
-
         for (VernacularName v : ctx.getResultObject().getVernacularNames()) {
           assertNotNull(v.getName());
         }
       }
     });
-    assertEquals(4, counter.get());
+    assertEquals(3, counter.get());
   }
   
   @Test

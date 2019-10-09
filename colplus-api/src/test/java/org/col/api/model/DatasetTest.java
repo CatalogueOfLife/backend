@@ -29,13 +29,14 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.setTitle("gfdscdscw");
     d.setDescription("gefzw fuewh gczew fw hfueh j ijdfeiw jfie eö.. few . few .");
     d.setOrigin(DatasetOrigin.UPLOADED);
-    d.setType(DatasetType.GLOBAL);
+    d.setType(DatasetType.TAXONOMIC);
     d.setImportFrequency(Frequency.MONTHLY);
     d.setDataAccess(URI.create("www.gbif.org"));
     d.setWebsite(URI.create("www.gbif.org"));
     d.setLogo(URI.create("www.gbif.org"));
     d.setLicense(License.CC0);
     d.setCitation("cf5twv867cwcgewcwe");
+    d.setGeographicScope("North Africa");
     d.setContact("Me");
     d.getOrganisations().add("bla");
     d.getOrganisations().add("bla");

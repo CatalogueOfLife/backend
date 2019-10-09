@@ -8,6 +8,7 @@ import org.col.api.model.DSID;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetScopedEntity;
 import org.col.api.model.Page;
+import org.col.api.vocab.DatasetOrigin;
 import org.col.api.vocab.DatasetType;
 import org.col.api.vocab.Users;
 import org.col.dao.Partitioner;
@@ -32,7 +33,8 @@ abstract class CRUDPageableTestBase<T extends DatasetScopedEntity<String>, M ext
   public int newDataset(){
     Dataset d = new Dataset();
     d.setTitle("New dataset");
-    d.setType(DatasetType.GLOBAL);
+    d.setType(DatasetType.TAXONOMIC);
+    d.setOrigin(DatasetOrigin.UPLOADED);
     d.applyUser(Users.TESTER);
     mapper(DatasetMapper.class).create(d);
     return d.getKey();

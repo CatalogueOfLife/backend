@@ -28,7 +28,7 @@ public class AcefInserterTest extends InserterBaseTest {
     NeoInserter ins = setup("/acef/0");
     Dataset d = ins.readMetadata().get();
     
-    assertEquals(DatasetType.GLOBAL, d.getType());
+    assertEquals(DatasetType.TAXONOMIC, d.getType());
     assertEquals(DataFormat.ACEF, d.getDataFormat());
     assertEquals("ILDIS World", d.getTitle());
     assertEquals("ILDIS", d.getAlias());

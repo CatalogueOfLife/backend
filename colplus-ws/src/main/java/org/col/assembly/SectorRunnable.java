@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 
 import com.google.common.base.Preconditions;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
@@ -111,6 +112,10 @@ abstract class SectorRunnable implements Runnable {
     state.setState( SectorImport.State.PREPARING);
     // load latest version of the sector again to get the latest target ids
     sector = loadSector(validateSector);
+    if (sector.getMode() == Sector.Mode.MERGE) {
+      //TODO: https://github.com/Sp2000/colplus-backend/issues/509
+      throw new NotImplementedException("Sector merging not implemented yet");
+    }
     loadDecisions();
     loadForeignChildren();
     loadAttachedSectors();

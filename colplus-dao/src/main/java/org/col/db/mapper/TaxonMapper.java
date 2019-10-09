@@ -18,6 +18,8 @@ public interface TaxonMapper extends CRUD<DSID<String>, Taxon>, ProcessableDatas
   
   List<Taxon> listRoot(@Param("datasetKey") int datasetKey, @Param("page") Page page);
   
+  List<String> listRootIds(@Param("datasetKey") int datasetKey);
+
   /**
    * @return list of all parents starting with the immediate parent
    */

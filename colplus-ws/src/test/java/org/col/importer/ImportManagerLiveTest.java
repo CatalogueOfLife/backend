@@ -107,7 +107,7 @@ public class ImportManagerLiveTest {
   
   private Dataset createExternal() {
     Dataset d = new Dataset();
-    d.setType(DatasetType.GLOBAL);
+    d.setType(DatasetType.TAXONOMIC);
     d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setTitle("Moss Bug Base");
     d.setCode(NomCode.BACTERIAL);

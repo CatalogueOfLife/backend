@@ -66,25 +66,8 @@
         LEFT JOIN vernacular_name_${partition} vn ON vn.taxon_id=u.id
         LEFT JOIN decision ed ON ed.dataset_key=#{datasetKey} AND ed.subject_id=u.id
     </sql>
-    <!--
-    select all name usages of a dataset.
-    -->
-    <select id="processDatasetUsages" parameterType="map" resultMap="taxonWithClassificationResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
-        <include refid="org.col.db.Common.partitionByDatasetKey"/>
-        WITH RECURSIVE tree AS(
-            SELECT u.id AS uid, classification_sn(#{datasetKey}, u.id, true) AS classification,
-            <include refid="taxonSelectFrom" />
-	        WHERE u.parent_id IS NULL AND NOT u.is_synonym
-        UNION ALL
-            SELECT
-                <include refid="selectClassificationAppend"/>,
-            <include refid="taxonSelectFrom" />
-            JOIN tree ON (tree.uid = u.parent_id)
-	   )
-	   SELECT * FROM tree
-    </select>
 
-    <select id="processSectorUsages" parameterType="map" resultMap="taxonWithClassificationResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    <select id="processSectorUsages" parameterType="map" resultMap="taxonWithClassificationResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
         <include refid="org.col.db.Common.partitionByDatasetKey"/>
         WITH RECURSIVE tree AS(
             SELECT u.id AS uid, classification_sn(#{datasetKey}, u.id, true) AS classification,
@@ -100,7 +83,22 @@
         SELECT * FROM tree
     </select>
 
-    <select id="processTree" parameterType="map" resultMap="classificationResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    <select id="processTreeUsages" parameterType="map" resultMap="taxonWithClassificationResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
+        WITH RECURSIVE tree AS(
+        SELECT u.id AS uid, classification_sn(#{datasetKey}, u.id, true) AS classification,
+        <include refid="taxonSelectFrom" />
+        WHERE u.id=#{usageId} AND NOT u.is_synonym
+        UNION ALL
+        SELECT
+        <include refid="selectClassificationAppend"/>,
+        <include refid="taxonSelectFrom" />
+        JOIN tree ON (tree.uid = u.parent_id)
+        )
+        SELECT * FROM tree
+    </select>
+
+    <select id="processTree" parameterType="map" resultMap="classificationResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
         <include refid="org.col.db.Common.partitionByDatasetKey"/>
         WITH RECURSIVE tree AS(
             SELECT #{usageId} AS uid, classification_sn(#{datasetKey}, #{usageId}, true) AS classification
@@ -113,7 +111,7 @@
        SELECT * FROM tree
     </select>
 
-    <select id="processDatasetBareNames" parameterType="map" resultMap="bareNameResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    <select id="processDatasetBareNames" parameterType="map" resultMap="bareNameResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
         <include refid="org.col.db.Common.partitionByDatasetKey"/>
         SELECT v.issues,
         <include refid="org.col.db.mapper.NameMapper.nameCols">
@@ -131,9 +129,14 @@
 
     <select id="get" parameterType="map" resultMap="taxonGetClassificationResultMap">
         <include refid="org.col.db.Common.partitionByDatasetKey"/>
-        SELECT ${partition} as qwerty, <include refid="taxonSelectFrom" />
+        SELECT <include refid="taxonSelectFrom" />
         WHERE u.id = #{id}
     </select>
 
+    <select id="getWithoutClassification" parameterType="map" resultMap="taxonWithClassificationResultMap">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
+        SELECT NULL AS classification, <include refid="taxonSelectFrom" />
+        WHERE u.id = #{id}
+    </select>
 
 </mapper>
