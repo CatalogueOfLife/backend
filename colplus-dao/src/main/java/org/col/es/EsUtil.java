@@ -14,6 +14,7 @@ import org.col.es.mapping.MappingsFactory;
 import org.col.es.model.NameUsageDocument;
 import org.col.es.query.BoolQuery;
 import org.col.es.query.EsSearchRequest;
+import org.col.es.query.MatchAllQuery;
 import org.col.es.query.Query;
 import org.col.es.query.TermQuery;
 import org.col.es.query.TermsQuery;
@@ -141,6 +142,18 @@ public class EsUtil {
       from = to;
     }
     return deleted;
+  }
+
+  /**
+   * Deletes all documents from the index, but leaves the index itself intact. Very impractical for production code, but
+   * nice for testing code.
+   * 
+   * @param client
+   * @param index
+   * @throws IOException
+   */
+  public static void truncate(RestClient client, String index) throws IOException {
+    deleteByQuery(client, index, new MatchAllQuery());
   }
 
   /**
