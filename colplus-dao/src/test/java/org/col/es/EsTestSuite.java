@@ -16,6 +16,7 @@ import org.col.es.name.search.NameSearchServiceTest;
 import org.col.es.name.search.QSearchTests;
 import org.col.es.name.search.RequestTranslatorTest;
 import org.col.es.name.search.SortingTest;
+import org.col.es.name.suggest.NameSuggestionServiceTest;
 import org.col.es.query.CollapsibleListTest;
 import org.col.es.query.PrefixQueryTest;
 import org.col.es.query.QueryTest;
@@ -44,6 +45,7 @@ import org.junit.runners.Suite.SuiteClasses;
     NameUsageIndexServiceIT.class,
     NameSearchServiceTest.class,
     NameSearchServiceFacetTest.class,
+    NameSuggestionServiceTest.class,
     NameUsageWrapperConverterTest.class,
     PrefixQueryTest.class,
     QSearchTests.class,

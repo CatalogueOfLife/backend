@@ -56,6 +56,14 @@ public class EsReadTestBase {
     }
   }
 
+  protected void truncate() {
+    try {
+      EsUtil.truncate(getEsClient(), indexName);
+    } catch (IOException e) {
+      throw new EsException(e);
+    }
+  }
+
   protected void indexRaw(Collection<NameUsageDocument> documents) {
     try {
       for (NameUsageDocument doc : documents) {

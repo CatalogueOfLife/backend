@@ -6,6 +6,6 @@ import org.col.es.response.EsResponse;
 /**
  * A subclass of EsResponse narrowed to queries against the name usage index.
  */
-public class NameUsageResponse extends EsResponse<NameUsageDocument, NameUsageAggregation> {
+public class NameUsageEsResponse extends EsResponse<NameUsageDocument, NameUsageAggregation> {
 
 }

@@ -2,28 +2,17 @@ package org.col.es.name;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
-
 import org.col.es.EsModule;
 import org.elasticsearch.client.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Extracts an {@link EsNameSearchResponse} or an {@link NameUsageMultiResponse} from the HTTP response.
+ * Extracts an {@link EsNameSearchResponse} or an {@link NameUsageEsMultiResponse} from the HTTP response.
  */
 public class NameUsageResponseReader {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageResponseReader.class);
-
-  private static final ObjectReader RESPONSE_READER;
-  private static final ObjectReader MULTI_RESPONSE_READER;
-
-  static {
-    RESPONSE_READER = EsModule.MAPPER.readerFor(NameUsageResponse.class);
-    MULTI_RESPONSE_READER = EsModule.MAPPER.readerFor(NameUsageMultiResponse.class);
-  }
 
   private final Response httpResponse;
 
@@ -31,20 +20,18 @@ public class NameUsageResponseReader {
     this.httpResponse = httpResponse;
   }
 
-  public NameUsageResponse readResponse() throws IOException {
-    NameUsageResponse response = RESPONSE_READER.readValue(httpResponse.getEntity().getContent());
+  public NameUsageEsResponse readResponse() throws IOException {
+    NameUsageEsResponse response = EsModule.readEsResponse(httpResponse.getEntity().getContent());
     if (LOG.isTraceEnabled()) {
-      ObjectWriter ow = EsModule.MAPPER.writerFor(NameUsageResponse.class).withDefaultPrettyPrinter();
-      LOG.trace("Receiving response: {}", ow.writeValueAsString(response));
+      LOG.trace("Receiving response: {}", EsModule.writeDebug(response));
     }
     return response;
   }
 
-  public NameUsageMultiResponse readMultiResponse() throws IOException {
-    NameUsageMultiResponse response = MULTI_RESPONSE_READER.readValue(httpResponse.getEntity().getContent());
+  public NameUsageEsMultiResponse readMultiResponse() throws IOException {
+    NameUsageEsMultiResponse response = EsModule.readEsMultiResponse(httpResponse.getEntity().getContent());
     if (LOG.isTraceEnabled()) {
-      ObjectWriter ow = EsModule.MAPPER.writerFor(NameUsageMultiResponse.class).withDefaultPrettyPrinter();
-      LOG.trace("Receiving response: {}", ow.writeValueAsString(response));
+      LOG.trace("Receiving response: {}", EsModule.writeDebug(response));
     }
     return response;
   }

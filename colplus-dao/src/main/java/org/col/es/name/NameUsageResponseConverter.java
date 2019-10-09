@@ -14,9 +14,9 @@ import static java.util.stream.Collectors.toList;
  */
 public class NameUsageResponseConverter {
 
-  protected final NameUsageResponse esResponse;
+  protected final NameUsageEsResponse esResponse;
 
-  public NameUsageResponseConverter(NameUsageResponse response) {
+  public NameUsageResponseConverter(NameUsageEsResponse response) {
     this.esResponse = response;
   }
 

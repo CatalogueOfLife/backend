@@ -21,66 +21,58 @@ public class QueryTest {
   }
 
   @Test
-  public void testConstantScore() {
+  public void testConstantScore() throws JsonProcessingException {
     EsSearchRequest esr = new EsSearchRequest();
     ConstantScoreQuery csq = new ConstantScoreQuery(new TermQuery("genus", "Parus").withBoost(8.1));
     esr.setQuery(csq);
-    System.out.println(serialize(esr));
+    System.out.println(EsModule.writeDebug(esr));
   }
 
   @Test
-  public void testIsNotNull() {
+  public void testIsNotNull() throws JsonProcessingException {
     EsSearchRequest esr = new EsSearchRequest();
     esr.setQuery(new IsNotNullQuery("genus"));
-    System.out.println(serialize(esr));
+    System.out.println(EsModule.writeDebug(esr));
   }
 
   @Test
-  public void testIsNull() {
+  public void testIsNull() throws JsonProcessingException {
     EsSearchRequest esr = new EsSearchRequest();
     esr.setQuery(new IsNullQuery("genus"));
-    System.out.println(serialize(esr));
+    System.out.println(EsModule.writeDebug(esr));
   }
 
   @Test
-  public void testBool() {
+  public void testBool() throws JsonProcessingException {
     EsSearchRequest esr = new EsSearchRequest();
     BoolQuery bq = new BoolQuery().must(new IsNullQuery("genus"))
         .must(new AutoCompleteQuery("area", "Amsterdam"))
         .mustNot(new TermQuery("date", LocalDate.now()));
     esr.setQuery(bq);
-    System.out.println(serialize(esr));
+    System.out.println(EsModule.writeDebug(esr));
   }
 
   @Test
-  public void testTerms() {
+  public void testTerms() throws JsonProcessingException {
     EsSearchRequest esr = new EsSearchRequest();
     BoolQuery bq = new BoolQuery().should(new TermsQuery("age", 1, 2, 3, 4, 5))
         .should(new TermsQuery("genus", "a", "b", "c", "d", "e"));
     esr.setQuery(bq);
-    System.out.println(serialize(esr));
+    System.out.println(EsModule.writeDebug(esr));
   }
 
   @Test
-  public void testPrefix() {
+  public void testPrefix() throws JsonProcessingException {
     EsSearchRequest esr = new EsSearchRequest();
     esr.setQuery(new PrefixQuery("genus", "Parus"));
-    System.out.println(serialize(esr));
+    System.out.println(EsModule.writeDebug(esr));
   }
 
   @Test
-  public void testMatchAll() {
+  public void testMatchAll() throws JsonProcessingException {
     EsSearchRequest esr = new EsSearchRequest();
     esr.setQuery(new MatchAllQuery());
-    System.out.println(serialize(esr));
-  }
-
-  private static String serialize(Object obj) {
-    try {
-      return EsModule.QUERY_WRITER.withDefaultPrettyPrinter().writeValueAsString(obj);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
+    System.out.println(EsModule.writeDebug(esr));
   }
 
 }

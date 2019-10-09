@@ -20,6 +20,7 @@ import org.col.api.model.VernacularName;
 import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.NameField;
 import org.col.common.tax.SciNameNormalizer;
+import org.col.es.EsModule;
 import org.col.es.model.Monomial;
 import org.col.es.model.NameStrings;
 import org.col.es.model.NameUsageDocument;
@@ -45,7 +46,6 @@ import static org.col.api.vocab.NameField.SPECIFIC_EPITHET;
 import static org.col.api.vocab.NameField.UNINOMIAL;
 import static org.col.api.vocab.NameField.WEBPAGE;
 import static org.col.common.collection.CollectionUtils.notEmpty;
-import static org.col.es.EsModule.NAME_USAGE_WRITER;
 
 /**
  * Converts a NameUsageWrapper instance into a NameUsage document. Note that the <i>entire</i> NameUsageWrapper instance
@@ -230,7 +230,7 @@ public class NameUsageWrapperConverter {
     if (ZIP_PAYLOAD) {
       doc.setPayload(deflate(nuw));
     } else {
-      doc.setPayload(NAME_USAGE_WRITER.writeValueAsString(nuw));
+      doc.setPayload(EsModule.write(nuw));
     }
     return doc;
   }
@@ -300,7 +300,7 @@ public class NameUsageWrapperConverter {
   private static String deflate(NameUsageWrapper nuw) throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
     try (DeflaterOutputStream dos = new DeflaterOutputStream(baos)) {
-      NAME_USAGE_WRITER.writeValue(dos, nuw);
+      EsModule.write(nuw, dos);
     }
     return Base64.getEncoder().encodeToString(baos.toByteArray());
   }

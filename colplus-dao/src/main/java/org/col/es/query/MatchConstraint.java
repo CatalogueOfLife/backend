@@ -9,23 +9,15 @@ import com.fasterxml.jackson.annotation.JsonValue;
 @SuppressWarnings("unused")
 class MatchConstraint extends Constraint {
 
-  /**
-   * Determines how to join the subqueries for the terms in the search phrase.
-   *
-   */
-  public static enum Operator {
-    AND, OR;
-  }
-
   private final String query; // The search phrase
   
-  private Operator operator;
+  private AbstractMatchQuery.Operator operator;
 
   MatchConstraint(String query) {
     this.query = query;
   }
 
-  void operator(Operator operator) {
+  void operator(AbstractMatchQuery.Operator operator) {
     this.operator = operator;
   }
 

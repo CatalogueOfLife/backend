@@ -676,11 +676,11 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
       if (NameUsageWrapperConverter.ZIP_PAYLOAD) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
         try (DeflaterOutputStream dos = new DeflaterOutputStream(baos)) {
-          EsModule.NAME_USAGE_WRITER.writeValue(dos, dummy);
+          EsModule.write(dummy,dos);
         }
         return Base64.getEncoder().encodeToString(baos.toByteArray());
       }
-      return EsModule.NAME_USAGE_WRITER.writeValueAsString(dummy);
+      return EsModule.write(dummy);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

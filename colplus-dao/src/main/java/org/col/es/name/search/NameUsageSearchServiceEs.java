@@ -10,7 +10,7 @@ import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchResponse;
 import org.col.es.EsException;
 import org.col.es.name.NameUsageQueryService;
-import org.col.es.name.NameUsageResponse;
+import org.col.es.name.NameUsageEsResponse;
 import org.col.es.query.EsSearchRequest;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
@@ -58,7 +58,7 @@ public class NameUsageSearchServiceEs extends NameUsageQueryService implements N
 
   @VisibleForTesting
   public NameSearchResponse search(String index, EsSearchRequest esSearchRequest, Page page) throws IOException {
-    NameUsageResponse esResponse = executeSearchRequest(index, esSearchRequest);
+    NameUsageEsResponse esResponse = executeSearchRequest(index, esSearchRequest);
     NameSearchResultConverter converter = new NameSearchResultConverter(esResponse);
     return converter.transferResponse(page);
   }

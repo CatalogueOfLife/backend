@@ -6,14 +6,13 @@ import org.col.api.model.Page;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.es.EsModule;
-import org.col.es.name.search.RequestTranslator;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
 import static org.col.api.search.NameSearchParameter.DATASET_KEY;
 import static org.col.api.search.NameSearchParameter.ISSUE;
 import static org.col.api.search.NameSearchParameter.RANK;
-import static org.col.api.search.NameSearchParameter.*;
+import static org.col.api.search.NameSearchParameter.STATUS;
 
 // No real tests here, but generates queries that can be tried out in Kibana.
 public class RequestTranslatorTest {
@@ -22,7 +21,7 @@ public class RequestTranslatorTest {
    * Case: 4 facets, two filters, both corresponding to a facet.
    */
   @Test
-  public void test1() {
+  public void test1() throws JsonProcessingException {
 
     NameSearchRequest nsr = new NameSearchRequest();
 
@@ -36,7 +35,7 @@ public class RequestTranslatorTest {
 
     RequestTranslator t = new RequestTranslator(nsr, new Page());
 
-    System.out.println(serialize(t.translate()));
+    System.out.println(EsModule.write(t.translate()));
 
   }
 
@@ -44,7 +43,7 @@ public class RequestTranslatorTest {
    * Case: 4 facets, three filters, one corresponding to a facet, two non-facet filters.
    */
   @Test
-  public void test2() {
+  public void test2() throws JsonProcessingException {
 
     NameSearchRequest nsr = new NameSearchRequest();
 
@@ -54,12 +53,12 @@ public class RequestTranslatorTest {
     nsr.addFacet(STATUS);
 
     nsr.addFilter(DATASET_KEY, 1000);
-//    nsr.addFilter(PUBLISHED_IN_ID, "ABCD");
+    // nsr.addFilter(PUBLISHED_IN_ID, "ABCD");
     nsr.setQ("Car");
 
     RequestTranslator t = new RequestTranslator(nsr, new Page());
 
-    System.out.println(serialize(t.translate()));
+    System.out.println(EsModule.write(t.translate()));
 
   }
 
@@ -67,7 +66,7 @@ public class RequestTranslatorTest {
    * Case: 3 facets, two non-facet filters.
    */
   @Test
-  public void test3() {
+  public void test3() throws JsonProcessingException {
 
     NameSearchRequest nsr = new NameSearchRequest();
 
@@ -80,15 +79,15 @@ public class RequestTranslatorTest {
 
     RequestTranslator t = new RequestTranslator(nsr, new Page());
 
-    System.out.println(serialize(t.translate()));
+    System.out.println(EsModule.write(t.translate()));
 
   }
 
   /*
-   * Case: 4 factes, no filters.
+   * Case: 4 facets, no filters.
    */
   @Test
-  public void test4() {
+  public void test4() throws JsonProcessingException {
 
     NameSearchRequest nsr = new NameSearchRequest();
 
@@ -99,7 +98,7 @@ public class RequestTranslatorTest {
 
     RequestTranslator t = new RequestTranslator(nsr, new Page());
 
-    System.out.println(serialize(t.translate()));
+    System.out.println(EsModule.write(t.translate()));
 
   }
 
@@ -107,27 +106,19 @@ public class RequestTranslatorTest {
    * Case: 1 facet, two non-facet filters
    */
   @Test
-  public void test5() {
+  public void test5() throws JsonProcessingException {
 
     NameSearchRequest nsr = new NameSearchRequest();
 
     nsr.addFacet(RANK);
-    
+
     nsr.addFilter(DATASET_KEY, 1000);
     nsr.setQ("Car");
-    
+
     RequestTranslator t = new RequestTranslator(nsr, new Page());
 
-    System.out.println(serialize(t.translate()));
+    System.out.println(EsModule.write(t.translate()));
 
-  }
-
-  private static String serialize(Object obj) {
-    try {
-      return EsModule.QUERY_WRITER.withDefaultPrettyPrinter().writeValueAsString(obj);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
   }
 
 }
