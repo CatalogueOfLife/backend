@@ -267,7 +267,7 @@ public class TaxonMapperTest extends CRUDPageableTestBase<Taxon, TaxonMapper> {
   
   @Test
   public void incDatasetSectorCount() throws Exception {
-    mapper().incDatasetSectorCount(sector.getTargetAsDatasetID(), sector.getSubjectDatasetKey(), 7);
+    mapper().incDatasetSectorCount(sector.getTargetAsDSID(), sector.getSubjectDatasetKey(), 7);
     TreeNode n = getTreeNode(sector.getTarget().getId());
     // t4 already has count=1 for subject dataset 11 when draft tree gets populated
     assertEquals(8, n.getDatasetSectors().get((int) sector.getSubjectDatasetKey()));

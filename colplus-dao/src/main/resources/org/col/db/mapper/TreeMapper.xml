@@ -34,7 +34,7 @@
         <include refid="FROM_USAGE"/>
         LEFT JOIN sector     s ON  s.subject_id=t.id  AND   s.dataset_key=#{catalogueKey} AND  s.subject_dataset_key=#{datasetKey}
         LEFT JOIN decision  ed ON ed.subject_id=t.id  AND  ed.dataset_key=#{catalogueKey} AND ed.subject_dataset_key=#{datasetKey}
-        LEFT JOIN estimate est ON est.subject_id=t.id AND est.dataset_key=#{datasetKey}
+        LEFT JOIN estimate est ON est.target_id=t.id AND est.dataset_key=#{datasetKey}
     </sql>
 
     <resultMap id="treeResultMap" type="org.col.api.model.TreeNode$TreeNodeMybatis" autoMapping="true">

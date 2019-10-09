@@ -41,12 +41,12 @@ public class SubjectRematcherTest {
         new SimpleName(null, "Malus sylvestris", Rank.SPECIES),
         new SimpleName(null, "Coleoptera", Rank.ORDER)
     );
-    int s2 = createSector(Sector.Mode.MERGE, datasetKey,
+    int s2 = createSector(Sector.Mode.UNION, datasetKey,
         new SimpleName(null, "Larus fuscus", Rank.SPECIES),
         new SimpleName(null, "Lepidoptera", Rank.ORDER)
     );
   
-    SubjectRematcher rem = new SubjectRematcher(PgSetupRule.getSqlSessionFactory(), Users.TESTER);
+    SubjectRematcher rem = new SubjectRematcher(PgSetupRule.getSqlSessionFactory(), Datasets.DRAFT_COL, Users.TESTER);
     rem.matchDatasetSubjects(datasetKey);
   
     Sector s1b;

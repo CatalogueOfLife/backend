@@ -30,7 +30,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     super(true, factory, TaxonMapper.class);
   }
   
-  public static DSID<String> copyTaxon(SqlSession session, final Taxon t, final DSIDValue<String> target, int user, Set<EntityType> include) {
+  public static DSID<String> copyTaxon(SqlSession session, final Taxon t, final DSID<String> target, int user, Set<EntityType> include) {
     return CatCopy.copyUsage(session, t, target, user, include, TaxonDao::devNull, TaxonDao::devNull);
   }
   
@@ -269,7 +269,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     // we keep the sector as a broken sector around
     SectorMapper sm = session.getMapper(SectorMapper.class);
     for (Sector s : sm.listByTarget(did.getDatasetKey(), did.getId())) {
-      tMapper.incDatasetSectorCount(s.getTargetAsDatasetID(), s.getDatasetKey(), -1);
+      tMapper.incDatasetSectorCount(s.getTargetAsDSID(), s.getDatasetKey(), -1);
     }
     // deleting the taxon now should cascade deletes to synonyms, vernaculars, etc but keep the name record!
   }
@@ -348,7 +348,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       Sector s = ctxt.getResultObject();
       if (s.getTarget() != null) {
         counter++;
-        tm.incDatasetSectorCount(s.getTargetAsDatasetID(), s.getDatasetKey(), 1);
+        tm.incDatasetSectorCount(s.getTargetAsDSID(), s.getDatasetKey(), 1);
       }
     }
   }

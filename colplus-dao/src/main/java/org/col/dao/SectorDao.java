@@ -32,17 +32,17 @@ public class SectorDao extends EntityDao<Integer, Sector, SectorMapper> {
     try (SqlSession session = factory.openSession(ExecutorType.SIMPLE, false)) {
       SectorMapper mapper = session.getMapper(SectorMapper.class);
   
-      final DSIDValue did = obj.getTargetAsDatasetID();
+      final DSID<String> did = obj.getTargetAsDSID();
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
   
       // reload full source and target
-      Taxon subject = tm.get(obj.getSubjectAsDatasetID());
+      Taxon subject = tm.get(obj.getSubjectAsDSID());
       if (subject == null) {
         throw new IllegalArgumentException("subject ID " + obj.getSubject().getId() + " not existing in dataset " + obj.getSubjectDatasetKey());
       }
       obj.setSubject(subject.toSimpleName());
   
-      Taxon target  = tm.get(obj.getTargetAsDatasetID());
+      Taxon target  = tm.get(obj.getTargetAsDSID());
       if (target == null) {
         throw new IllegalArgumentException("target ID " + obj.getTarget().getId() + " not existing in catalogue " + obj.getDatasetKey());
       }
@@ -60,7 +60,7 @@ public class SectorDao extends EntityDao<Integer, Sector, SectorMapper> {
         toCopy.add(subject);
       } else {
         // several taxa in MERGE mode
-        toCopy = tm.children(obj.getSubjectAsDatasetID(), new Page());
+        toCopy = tm.children(obj.getSubjectAsDSID(), new Page());
       }
   
       for (Taxon t : toCopy) {
@@ -92,7 +92,7 @@ public class SectorDao extends EntityDao<Integer, Sector, SectorMapper> {
   private void incSectorCounts(SqlSession session, Sector s, int delta) {
     if (s != null && s.getTarget() != null) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      tm.incDatasetSectorCount(s.getTargetAsDatasetID(), s.getSubjectDatasetKey(), delta);
+      tm.incDatasetSectorCount(s.getTargetAsDSID(), s.getSubjectDatasetKey(), delta);
     }
   }
 }

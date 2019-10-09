@@ -17,6 +17,7 @@ import com.google.common.cache.LoadingCache;
 import org.col.api.model.Dataset;
 import org.col.api.model.Page;
 import org.col.api.vocab.DataFormat;
+import org.col.api.vocab.DatasetOrigin;
 import org.col.api.vocab.DatasetType;
 import org.col.api.vocab.License;
 import org.col.config.GbifConfig;
@@ -150,6 +151,7 @@ public class DatasetPager {
     d.setDescription(g.description);
     Optional<GEndpoint> dwca = g.endpoints.stream().filter(e -> e.type.equalsIgnoreCase("DWC_ARCHIVE")).findFirst();
     if (dwca.isPresent()) {
+      d.setOrigin(DatasetOrigin.EXTERNAL);
       d.setDataFormat(DataFormat.DWCA);
       d.setDataAccess(uri(dwca.get().url));
     } else {

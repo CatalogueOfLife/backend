@@ -7,11 +7,11 @@
   <sql id="SelectVar">
     ${alias}key AS ${prefix}key,
     ${alias}dataset_key AS ${prefix}dataset_key,
-    ${alias}subject_id AS ${prefix}subject_id,
-    ${alias}subject_name AS ${prefix}subject_name,
-    ${alias}subject_authorship AS ${prefix}subject_authorship,
-    ${alias}subject_rank AS ${prefix}subject_rank,
-    ${alias}subject_code AS ${prefix}subject_code,
+    ${alias}target_id AS ${prefix}target_id,
+    ${alias}target_name AS ${prefix}target_name,
+    ${alias}target_authorship AS ${prefix}target_authorship,
+    ${alias}target_rank AS ${prefix}target_rank,
+    ${alias}target_code AS ${prefix}target_code,
     ${alias}note AS ${prefix}note,
     ${alias}modified AS ${prefix}modified,
     ${alias}modified_by AS ${prefix}modified_by,
@@ -31,11 +31,11 @@
 
   <sql id="COLS">
     dataset_key,
-    subject_id,
-    subject_name,
-    subject_authorship,
-    subject_rank,
-    subject_code,
+    target_id,
+    target_name,
+    target_authorship,
+    target_rank,
+    target_code,
     note,
     modified,
     modified_by,
@@ -46,11 +46,11 @@
 
   <sql id="PROPS">
     #{datasetKey},
-    #{subject.id},
-    #{subject.name},
-    #{subject.authorship},
-    #{subject.rank}::rank,
-    #{subject.code},
+    #{target.id},
+    #{target.name},
+    #{target.authorship},
+    #{target.rank}::rank,
+    #{target.code},
     #{note},
     now(),
     #{modifiedBy},
@@ -65,7 +65,7 @@
 
   <resultMap id="estimateResultMap" type="SpeciesEstimate" autoMapping="true">
     <id property="key" column="key" />
-    <association property="subject" javaType="SimpleName" autoMapping="true" columnPrefix="subject_" />
+    <association property="target" javaType="SimpleName" autoMapping="true" columnPrefix="target_" />
   </resultMap>
 
   <select id="list" resultMap="estimateResultMap">
@@ -84,7 +84,7 @@
   <select id="getById" resultMap="estimateResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE subject_id = #{id}
+    WHERE target_id = #{id}
   </select>
 
   <insert id="create" parameterType="SpeciesEstimate" useGeneratedKeys="true" keyProperty="key">
@@ -114,8 +114,9 @@
 
   <sql id="WHERE">
     <where>
+      est.dataset_key = #{datasetKey}
       <if test="rank != null">
-        est.subject_rank = #{rank}::rank
+        est.target_rank = #{rank}::rank
       </if>
       <if test="min != null">
         AND est.estimate &gt;= #{min}
@@ -130,7 +131,7 @@
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
     <include refid="WHERE"/>
-    ORDER BY est.subject_rank, est.subject_name
+    ORDER BY est.target_rank, est.target_name
     <include refid="org.col.db.Common.limit" />
   </select>
 
