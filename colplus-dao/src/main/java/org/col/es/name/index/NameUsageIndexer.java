@@ -5,7 +5,6 @@ import java.text.DecimalFormat;
 import java.util.List;
 import java.util.function.Consumer;
 
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Charsets;
 
 import org.col.api.search.NameUsageWrapper;
@@ -23,7 +22,6 @@ import org.slf4j.LoggerFactory;
 class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageIndexer.class);
-  private static final ObjectWriter WRITER = EsModule.writerFor(NameUsageDocument.class);
 
   // Set to true for extra statistics (make sure it's false in production)
   private static final boolean EXTRA_STATS = false;
@@ -68,7 +66,7 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
     try {
       for (NameUsageDocument doc : documents) {
         buf.append(indexHeader);
-        buf.append(WRITER.writeValueAsString(doc));
+        buf.append(EsModule.write(doc));
         buf.append("\n");
       }
       sendBatch(documents.size());
@@ -91,7 +89,7 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
         buf.append(getUpdateHeader(doc.getDocumentId()));
         doc.setDocumentId(null);
         buf.append("{\"doc\":");
-        buf.append(WRITER.writeValueAsString(doc));
+        buf.append(EsModule.write(doc));
         buf.append("}\n");
       }
       sendBatch(documents.size());
@@ -106,7 +104,7 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
     try {
       for (NameUsageWrapper nuw : batch) {
         buf.append(indexHeader);
-        buf.append(WRITER.writeValueAsString(transfer.toDocument(nuw)));
+        buf.append(EsModule.write(transfer.toDocument(nuw)));
         buf.append("\n");
       }
       sendBatch(batch.size());
@@ -124,7 +122,7 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
       String json;
       for (NameUsageWrapper nuw : batch) {
         buf.append(indexHeader);
-        buf.append(json = WRITER.writeValueAsString(transfer.toDocument(nuw)));
+        buf.append(json = EsModule.write(transfer.toDocument(nuw)));
         docSize += json.getBytes(Charsets.UTF_8).length;
         buf.append("\n");
       }

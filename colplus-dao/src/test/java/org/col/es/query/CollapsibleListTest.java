@@ -18,7 +18,7 @@ public class CollapsibleListTest {
     CollapsibleList<String> list = new CollapsibleList<>();
     Object obj = list.collapse();
     assertNull(obj);
-    System.out.println(EsModule.MAPPER.writeValueAsString(list));
+    System.out.println(EsModule.writeDebug(list));
   }
 
   @Test
@@ -27,7 +27,7 @@ public class CollapsibleListTest {
     list.add("one");
     Object obj = list.collapse();
     assertEquals(String.class, obj.getClass());
-    System.out.println(EsModule.MAPPER.writeValueAsString(list));
+    System.out.println(EsModule.writeDebug(list));
   }
 
   @Test
@@ -38,7 +38,7 @@ public class CollapsibleListTest {
     list.add("three");
     Object obj = list.collapse();
     assertEquals(ArrayList.class, obj.getClass());
-    System.out.println(EsModule.MAPPER.writeValueAsString(list));
+    System.out.println(EsModule.writeDebug(list));
   }
 
 }

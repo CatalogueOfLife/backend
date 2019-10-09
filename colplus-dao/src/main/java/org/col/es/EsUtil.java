@@ -5,15 +5,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import org.col.es.ddl.Index6Definition;
 import org.col.es.ddl.Index7Definition;
 import org.col.es.ddl.IndexDefinition;
-import org.col.es.ddl.JsonUtil;
 import org.col.es.ddl.Settings;
 import org.col.es.mapping.Mappings;
 import org.col.es.mapping.MappingsFactory;
+import org.col.es.model.NameUsageDocument;
 import org.col.es.query.BoolQuery;
 import org.col.es.query.EsSearchRequest;
 import org.col.es.query.Query;
@@ -25,9 +23,6 @@ import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.col.es.ddl.JsonUtil.pretty;
-import static org.col.es.ddl.JsonUtil.readIntoMap;
 
 public class EsUtil {
 
@@ -55,10 +50,10 @@ public class EsUtil {
       indexDef = new Index6Definition(settings, mappings);
     }
     if (LOG.isTraceEnabled()) {
-      LOG.trace("Creating index {}: {}", name, pretty(indexDef));
+      LOG.trace("Creating index {}: {}", name, EsModule.writeDebug(indexDef));
     }
     Request request = new Request("PUT", name);
-    request.setJsonEntity(JsonUtil.serialize(indexDef));
+    request.setJsonEntity(EsModule.write(indexDef));
     executeRequest(client, request);
   }
 
@@ -191,7 +186,7 @@ public class EsUtil {
     Request request = new Request("GET", indexName + "/_count");
     Response response = executeRequest(client, request);
     try {
-      return (Integer) readIntoMap(response.getEntity().getContent()).get("count");
+      return (Integer) EsModule.readIntoMap(response.getEntity().getContent()).get("count");
     } catch (UnsupportedOperationException | IOException e) {
       throw new EsException(e);
     }
@@ -200,16 +195,15 @@ public class EsUtil {
   /**
    * Inserts the provided object into the provided index and returns the generated document ID.
    * 
-   * @param <T>
    * @param client
    * @param index
    * @param obj
    * @return
    * @throws IOException
    */
-  public static <T> String insert(RestClient client, String index, T obj) throws IOException {
+  public static String insert(RestClient client, String index, NameUsageDocument obj) throws IOException {
     Request request = new Request("POST", index + "/_doc");
-    request.setJsonEntity(serialize(obj));
+    request.setJsonEntity(EsModule.write(obj));
     Response response = executeRequest(client, request);
     return readFromResponse(response, "_id");
   }
@@ -233,17 +227,8 @@ public class EsUtil {
   @SuppressWarnings("unchecked")
   public static <T> T readFromResponse(Response response, String property) {
     try {
-      return (T) readIntoMap(response.getEntity().getContent()).get(property);
+      return (T) EsModule.readIntoMap(response.getEntity().getContent()).get(property);
     } catch (UnsupportedOperationException | IOException e) {
-      throw new EsException(e);
-    }
-  }
-
-  // Used for indexing/retrieving **documents**. Use JsonUtil when creating the indexes themselves!
-  private static String serialize(Object obj) {
-    try {
-      return EsModule.MAPPER.writeValueAsString(obj);
-    } catch (JsonProcessingException e) {
       throw new EsException(e);
     }
   }

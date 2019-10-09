@@ -14,8 +14,6 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.zip.InflaterInputStream;
 
-import com.fasterxml.jackson.databind.ObjectReader;
-
 import org.col.api.model.Page;
 import org.col.api.search.FacetValue;
 import org.col.api.search.NameSearchParameter;
@@ -24,7 +22,7 @@ import org.col.api.search.NameUsageWrapper;
 import org.col.es.EsModule;
 import org.col.es.model.NameUsageDocument;
 import org.col.es.name.NameUsageAggregation;
-import org.col.es.name.NameUsageResponse;
+import org.col.es.name.NameUsageEsResponse;
 import org.col.es.name.NameUsageWrapperConverter;
 import org.col.es.response.Bucket;
 import org.col.es.response.EsFacet;
@@ -50,9 +48,9 @@ import static org.col.api.search.NameSearchParameter.TYPE;
  */
 class NameSearchResultConverter {
 
-  private final NameUsageResponse esResponse;
+  private final NameUsageEsResponse esResponse;
 
-  NameSearchResultConverter(NameUsageResponse esResponse) {
+  NameSearchResultConverter(NameUsageEsResponse esResponse) {
     this.esResponse = esResponse;
   }
 
@@ -73,14 +71,13 @@ class NameSearchResultConverter {
   private List<NameUsageWrapper> transferNameUsages() throws IOException {
     List<SearchHit<NameUsageDocument>> hits = esResponse.getHits().getHits();
     List<NameUsageWrapper> nuws = new ArrayList<>(hits.size());
-    ObjectReader reader = EsModule.NAME_USAGE_READER;
     for (SearchHit<NameUsageDocument> hit : hits) {
       String payload = hit.getSource().getPayload();
       NameUsageWrapper nuw;
       if (NameUsageWrapperConverter.ZIP_PAYLOAD) {
-        nuw = (NameUsageWrapper) reader.readValue(inflate(payload));
+        nuw = EsModule.readNameUsageWrapper(inflate(payload));
       } else {
-        nuw = (NameUsageWrapper) reader.readValue(payload);
+        nuw = EsModule.readNameUsageWrapper(payload);
       }
       NameUsageWrapperConverter.enrichPayload(nuw, hit.getSource());
       nuws.add(nuw);

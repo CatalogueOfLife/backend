@@ -175,8 +175,9 @@ public class NameSuggestionServiceTest extends EsReadTestBase {
 
     NameSuggestResponse response = suggest(query);
 
-    assertEquals(2, response.getSuggestions().size());
-    // Let's not guess how exactly the documents are rated by Elasticsearch
+    // We have switched from ORing the search terms to ANDing the search terms
+    //assertEquals(2, response.getSuggestions().size());
+    assertEquals(0, response.getSuggestions().size());
 
   }
 

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 /**
  * The outer-most object of an Elasticsearch document type mapping; the structure associated with the "mappings" field
- * in an index definition.
+ * in an index definition. Serializing this object yields a valid document type mapping.
  */
 @JsonPropertyOrder({"dynamic", "properties"})
 public class Mappings extends ComplexField {

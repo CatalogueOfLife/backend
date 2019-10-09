@@ -10,7 +10,7 @@ import org.col.api.search.NameSuggestResponse;
 import org.col.api.search.NameSuggestion;
 import org.col.es.EsException;
 import org.col.es.name.NameUsageQueryService;
-import org.col.es.name.NameUsageResponse;
+import org.col.es.name.NameUsageEsResponse;
 import org.col.es.name.search.NameUsageSearchServiceEs;
 import org.col.es.query.EsSearchRequest;
 import org.elasticsearch.client.RestClient;
@@ -31,7 +31,7 @@ public class NameSuggestionServiceEs extends NameUsageQueryService implements Na
     validateRequest(request);
     RequestTranslator translator = new RequestTranslator(request);
     EsSearchRequest query = translator.translate();
-    NameUsageResponse esResponse;
+    NameUsageEsResponse esResponse;
     try {
       esResponse = executeSearchRequest(index, query);
     } catch (IOException e) {

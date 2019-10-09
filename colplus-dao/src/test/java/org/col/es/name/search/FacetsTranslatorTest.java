@@ -132,9 +132,10 @@ public class FacetsTranslatorTest {
     request.addFilter(ISSUE, Issue.BASIONYM_ID_INVALID);
     request.addFilter(ISSUE, Issue.CHAINED_SYNONYM);
 
-    // Just one filter corresponding to a facet. For that facet, the aggregation should collapse into a simple terms
-    // aggregation, while for
-    // the others a filter aggregation should be generated.
+    /*
+     * Just one filter corresponding to a facet. For that facet, the aggregation should collapse into a simple terms
+     * aggregation, while for the others a filter aggregation should be generated.
+     */
 
     // Add non-facet filters
     request.addFilter(NAME_ID, "ABCDEFG");
@@ -165,7 +166,7 @@ public class FacetsTranslatorTest {
 
   private static String serialize(Object obj) {
     try {
-      return EsModule.MAPPER.writer().withDefaultPrettyPrinter().writeValueAsString(obj);
+      return EsModule.writeDebug(obj);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }

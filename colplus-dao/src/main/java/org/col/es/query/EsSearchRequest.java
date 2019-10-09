@@ -8,6 +8,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import org.col.es.EsException;
 import org.col.es.EsModule;
 
 /**
@@ -134,9 +135,9 @@ public class EsSearchRequest {
 
   public String toString() {
     try {
-      return EsModule.QUERY_WRITER.writeValueAsString(this);
+      return EsModule.write(this);
     } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
+      throw new EsException(e);
     }
   }
 

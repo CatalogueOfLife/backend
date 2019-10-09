@@ -2,6 +2,8 @@ package org.col.es.query;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import static java.util.Collections.singletonMap;
 
 /**
@@ -16,6 +18,10 @@ public abstract class AbstractMatchQuery extends ConstraintQuery<MatchConstraint
    */
   public static enum Operator {
     AND, OR;
+    @JsonValue
+    public String toString() {
+      return name();
+    }
   }
 
   private final Map<String, MatchConstraint> match;

@@ -3,6 +3,7 @@ package org.col.es.ddl;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.col.es.EsModule;
 import org.col.es.EsUtil;
 
 /**
@@ -14,7 +15,7 @@ public class Settings {
 
   public static Settings getDefaultSettings() throws IOException {
     InputStream is = EsUtil.class.getResourceAsStream("es-settings.json");
-    return JsonUtil.MAPPER.readValue(is, Settings.class);
+    return EsModule.readDDLObject(is, Settings.class);
   }
 
   private Analysis analysis;

@@ -53,12 +53,12 @@ public class MappingsFactory {
 
   /**
    * Whether to map enums to Elasticsearch's integer datatype or to the keyword datatype. Default true. This is more or
-   * less separate from how you **serialize** enums. Obviously when serializing enums to strings, you have no choice but
-   * to use the keyword datatype. But when serializing enums to integers, you still have the choice of storing them as
-   * strings or as integers. There can be good reasons to store them as strings (see Elasticsearch performance tuning
-   * guide). Specifying the datatype mapping here saves you from having to decorate each and every enum in the data model
-   * with the @MapToType annotation. You can still use the @MapToType to override the global behaviour. Note that in
-   * EsModule we specify that we want enums to be serialized using their ordinal value, so we are indeed free to choose
+   * less separate from how you <i>serialize</i> enums. Obviously when serializing enums to strings, you have no choice
+   * but to use the keyword datatype. But when serializing enums to integers, you still have the choice of storing them as
+   * strings or as integers. And there can be good reasons to store integers as strings (see Elasticsearch performance
+   * tuning guide). Specifying the datatype mapping here saves you from having to decorate each and every enum in the data
+   * model with the @MapToType annotation. You can still use the @MapToType to override the global behaviour. Note that in
+   * {@link EsModule} we specify that we want enums to be serialized as integers, so we are <i>indeed</i> free to choose
    * between the keyword and integer datatype.
    */
   public boolean isMapEnumToInt() {
@@ -152,8 +152,8 @@ public class MappingsFactory {
       /*
        * String fields always have datatype KEYWORD. However, if they are not analyzed by the (no-op) KEYWORD analyzer, but
        * they __are__ analyzed using one or more other analyzers, the field will not be indexed as-is. It will only be indexed
-       * using the other analyzers, and queries must target the "multi fields" underneath the main
-       * field to access the indexed values. 
+       * using the other analyzers, and queries can only target the "multi fields" underneath the main field to access the
+       * indexed values.
        */
       Analyzers annotation = fm.getAnnotation(Analyzers.class);
       if (annotation != null) {

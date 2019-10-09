@@ -3,8 +3,6 @@ package org.col.es.name;
 import java.io.IOException;
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.annotations.VisibleForTesting;
 
 import org.col.es.EsException;
@@ -70,37 +68,37 @@ public class NameUsageQueryService {
 
   @VisibleForTesting
   List<NameUsageDocument> getDocuments(String index, EsSearchRequest esSearchRequest) throws IOException {
-    NameUsageResponse esResponse = executeSearchRequest(index, esSearchRequest);
+    NameUsageEsResponse esResponse = executeSearchRequest(index, esSearchRequest);
     NameUsageResponseConverter transfer = new NameUsageResponseConverter(esResponse);
     return transfer.getDocuments();
   }
 
   @VisibleForTesting
   List<NameUsageDocument> getDocumentsWithDocId(String index, EsSearchRequest esSearchRequest) throws IOException {
-    NameUsageResponse esResponse = executeSearchRequest(index, esSearchRequest);
+    NameUsageEsResponse esResponse = executeSearchRequest(index, esSearchRequest);
     NameUsageResponseConverter transfer = new NameUsageResponseConverter(esResponse);
     return transfer.getDocumentsWithDocId();
   }
 
-  protected NameUsageResponse executeSearchRequest(String index, EsSearchRequest esSearchRequest) throws IOException {
+  protected NameUsageEsResponse executeSearchRequest(String index, EsSearchRequest esSearchRequest) throws IOException {
     if (LOG.isTraceEnabled()) {
-      LOG.trace("Executing query: {}", writeQuery(esSearchRequest, true));
+      LOG.trace("Executing query: {}", EsModule.writeDebug(esSearchRequest));
     }
     String endpoint = String.format("/%s/%s/_search", index, DEFAULT_TYPE_NAME);
     Request httpRequest = new Request("GET", endpoint);
-    httpRequest.setJsonEntity(writeQuery(esSearchRequest, false));
+    httpRequest.setJsonEntity(EsModule.write(esSearchRequest));
     Response httpResponse = EsUtil.executeRequest(client, httpRequest);
     NameUsageResponseReader reader = new NameUsageResponseReader(httpResponse);
     return reader.readResponse();
   }
 
-  protected NameUsageMultiResponse executeMultiSearchRequest(String index, EsSearchRequest... esSearchRequests) throws IOException {
+  protected NameUsageEsMultiResponse executeMultiSearchRequest(String index, EsSearchRequest... esSearchRequests) throws IOException {
     StringBuilder sb = new StringBuilder(128);
     for (int i = 0; i < esSearchRequests.length; ++i) {
       if (LOG.isTraceEnabled()) {
-        LOG.trace("Multi search query - part {}: {}", i + 1, writeQuery(esSearchRequests[i], true));
+        LOG.trace("Multi search query - part {}: {}", i + 1, EsModule.writeDebug(esSearchRequests[i]));
       }
-      sb.append(writeQuery(esSearchRequests[i], false));
+      sb.append(EsModule.write(esSearchRequests[i]));
     }
     String endpoint = String.format("/%s/%s/_msearch", index, DEFAULT_TYPE_NAME);
     Request httpRequest = new Request("GET", endpoint);
@@ -108,14 +106,6 @@ public class NameUsageQueryService {
     Response httpResponse = EsUtil.executeRequest(client, httpRequest);
     NameUsageResponseReader reader = new NameUsageResponseReader(httpResponse);
     return reader.readMultiResponse();
-  }
-
-  private static String writeQuery(EsSearchRequest esSearchRequest, boolean pretty) throws JsonProcessingException {
-    ObjectWriter ow = EsModule.QUERY_WRITER;
-    if (pretty) {
-      ow = ow.withDefaultPrettyPrinter();
-    }
-    return ow.writeValueAsString(esSearchRequest);
   }
 
 }

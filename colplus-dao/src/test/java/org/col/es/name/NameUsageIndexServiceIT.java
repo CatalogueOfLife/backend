@@ -25,7 +25,8 @@ import org.junit.Test;
 import static java.util.stream.Collectors.toList;
 
 import static org.col.db.PgSetupRule.getSqlSessionFactory;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /*
  * Full round-trips into Postgres via DAOs, out of Postgres via the NameUsageWrapperMapper, into Elasticsearch via the
@@ -135,7 +136,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     decision.setDatasetKey(11);
     decision.setCreatedBy(0);
     decision.setModifiedBy(0);
-    System.out.println(EsModule.MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(decision));
+    System.out.println(EsModule.writeDebug(decision));
   }
 
   private static void massageTaxa(List<Taxon> taxa) {
