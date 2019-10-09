@@ -13,6 +13,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.Sector;
 import org.col.api.search.NameUsageWrapper;
+import org.col.dao.NameUsageProcessor;
 import org.col.db.mapper.BatchResultHandler;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.NameUsageWrapperMapper;
@@ -60,17 +61,20 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   public void indexDataset(int datasetKey) {
     NameUsageIndexer indexer = new NameUsageIndexer(client, index);
     int tCount, bCount;
-    try (SqlSession session = factory.openSession()) {
+    try {
       createOrEmptyIndex(datasetKey);
-      NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)) {
         LOG.debug("Indexing usages from dataset {}", datasetKey);
-        mapper.processDatasetUsages(datasetKey, handler);
+        new NameUsageProcessor(factory, datasetKey).processDataset(handler);
       }
       EsUtil.refreshIndex(client, index);
       tCount = indexer.documentsIndexed();
       indexer.reset();
-      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)) {
+
+      try (SqlSession session = factory.openSession(true);
+          BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)
+      ) {
+        NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
         LOG.debug("Indexing bare names from dataset {}", datasetKey);
         mapper.processDatasetBareNames(datasetKey, null, handler);
       }
@@ -158,21 +162,26 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   public void indexAll() {
     NameUsageIndexer indexer = new NameUsageIndexer(client, index);
     int tCount = 0, bCount = 0;
-    try (SqlSession session = factory.openSession()) {
+    try {
       EsUtil.deleteIndex(client, index);
       EsUtil.createIndex(client, index, NameUsageDocument.class, esConfig.nameUsage);
-      List<Integer> keys = session.getMapper(DatasetMapper.class).keys();
-      NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
+      List<Integer> keys;
+      try (SqlSession session = factory.openSession(true)) {
+        keys = session.getMapper(DatasetMapper.class).keys();
+      }
       for (Integer datasetKey : keys) {
         int tc, bc;
         try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)) {
-          LOG.debug("Indexing taxa for dataset {}", datasetKey);
-          mapper.processDatasetUsages(datasetKey, handler);
+          LOG.debug("Indexing usages from dataset {}", datasetKey);
+          new NameUsageProcessor(factory, datasetKey).processDataset(handler);
         }
         EsUtil.refreshIndex(client, index);
         tc = indexer.documentsIndexed();
         indexer.reset();
-        try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)) {
+        try (SqlSession session = factory.openSession(true);
+             BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)
+        ) {
+          NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
           LOG.debug("Indexing bare names for dataset {}", datasetKey);
           mapper.processDatasetBareNames(datasetKey, null, handler);
         }

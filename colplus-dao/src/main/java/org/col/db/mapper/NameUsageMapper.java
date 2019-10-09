@@ -82,7 +82,7 @@ public interface NameUsageMapper {
    * @param includeSynonyms if true includes synonyms, otherwise only taxa
    */
   void processTreeSimple(@Param("datasetKey") int datasetKey,
-                   @Param("sectorKey") Integer sectorKey,
+                   @Param("sectorKey") @Nullable Integer sectorKey,
                    @Param("startID") @Nullable String startID,
                    @Param("exclusions") @Nullable Set<String> exclusions,
                    @Param("lowestRank") @Nullable Rank lowestRank,

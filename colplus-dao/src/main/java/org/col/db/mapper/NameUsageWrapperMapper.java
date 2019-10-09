@@ -16,14 +16,6 @@ import org.col.api.search.NameUsageWrapper;
 public interface NameUsageWrapperMapper {
 
   /**
-   * Iterates over all taxa with their vernaculars for a given dataset and processes them with the supplied handler. This allows a single
-   * query to efficiently stream all its values without keeping them in memory. The classification attached includes the taxon or synonym
-   * itself!
-   */
-  void processDatasetUsages(@Param("datasetKey") Integer datasetKey,
-                            ResultHandler<NameUsageWrapper> handler);
-  
-  /**
    * Process all catalogue usages from a given sector
    * @param datasetKey the sectors dataset key. MUST match sector. In theory possible to get in SQL, but to reduce complexity we prefer to submit it explicitly
    * @param sectorKey the sectors key
@@ -33,7 +25,14 @@ public interface NameUsageWrapperMapper {
                            @Param("sectorKey") Integer sectorKey,
                            @Param("usageId") String usageId,
                            ResultHandler<NameUsageWrapper> handler);
-
+  
+  /**
+   * Traverses a subtree returning full NameUsageWrapper objects.
+   * The first SimpleName in each classification list represents the usage being processed.
+   */
+  void processTreeUsages(@Param("datasetKey") Integer datasetKey,
+                         @Param("usageId") String usageId,
+                         ResultHandler<NameUsageWrapper> handler);
   /**
    * Iterates over all bare names not linked to a synonym or taxon for a given dataset and processes them with the supplied handler. This
    * allows a single query to efficiently stream all its values without keeping them in memory.
@@ -52,5 +51,11 @@ public interface NameUsageWrapperMapper {
 
   NameUsageWrapper get(@Param("datasetKey") int datasetKey,
                        @Param("id") String taxonId);
-
+  
+  /**
+   * @return the full wrapper object but without the recursive classification property
+   */
+  NameUsageWrapper getWithoutClassification(@Param("datasetKey") int datasetKey,
+                       @Param("id") String taxonId);
+  
 }

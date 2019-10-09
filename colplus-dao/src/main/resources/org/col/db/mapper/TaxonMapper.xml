@@ -107,7 +107,15 @@
         ORDER BY id
         <include refid="org.col.db.Common.limit" />
     </select>
-    
+
+    <select id="listRootIds" resultType="string">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
+        SELECT id
+        FROM name_usage_${partition}
+        WHERE parent_id IS NULL AND NOT is_synonym
+        ORDER BY id
+    </select>
+
     <select id="children" resultMap="taxonResultMap">
         <include refid="org.col.db.Common.partitionByKey"/>
         SELECT <include refid="SELECT" />
