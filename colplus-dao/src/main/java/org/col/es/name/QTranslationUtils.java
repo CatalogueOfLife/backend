@@ -57,8 +57,7 @@ public class QTranslationUtils {
   private static Query checkAllEpithets(String[] terms) {
     String termWN = normalizeWeakly(terms[0]);
     String termSN = normalizeStrongly(terms[0]);
-    // Slightly bump lower ranks
-    return new BoolQuery()
+    return new BoolQuery() // Prefer subspecies over species and species over genera
         .should(matchSearchTerm(GENUS_FIELD, termWN).withBoost(1.02))
         .should(matchSearchTerm(SPECIES_FIELD, termSN).withBoost(1.05))
         .should(matchSearchTerm(SUBSPECIES_FIELD, termSN).withBoost(1.08));
@@ -118,8 +117,8 @@ public class QTranslationUtils {
 
   private static Query matchSearchPhrase(String field, String q) {
     /*
-     * If the user has typed one big search term we still try to helpful. With multiple big search terms the search/suggest
-     * service just blanks out.
+     * If the user has typed one big search term we still try to be helpful. With multiple big search terms the
+     * search/suggest service just blanks out.
      */
     if (q.length() > MAX_NGRAM_SIZE && countTokens(q) == 1) {
       return new CaseInsensitivePrefixQuery(field, q);
