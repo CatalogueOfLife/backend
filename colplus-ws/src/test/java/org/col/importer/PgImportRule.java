@@ -12,6 +12,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.ColUser;
 import org.col.api.model.Dataset;
 import org.col.api.vocab.DataFormat;
+import org.col.api.vocab.DatasetOrigin;
 import org.col.api.vocab.DatasetType;
 import org.col.common.tax.AuthorshipNormalizer;
 import org.col.config.ImporterConfig;
@@ -146,6 +147,7 @@ public class PgImportRule extends ExternalResource {
     dataset.setModifiedBy(IMPORT_USER.getKey());
     dataset.setDataFormat(tr.format);
     dataset.setType(tr.type);
+    dataset.setOrigin(DatasetOrigin.UPLOADED);
     dataset.setCode(tr.code);
     dataset.setTitle("Test Dataset " + source.toString());
 

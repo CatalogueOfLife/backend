@@ -8,6 +8,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.col.api.model.*;
 import org.col.api.vocab.DataFormat;
+import org.col.api.vocab.DatasetOrigin;
+import org.col.api.vocab.DatasetType;
 import org.col.api.vocab.Issue;
 import org.col.command.initdb.InitDbCmd;
 import org.col.common.tax.AuthorshipNormalizer;
@@ -54,6 +56,8 @@ public class IntegrityChecksIT {
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
     dataset = new Dataset();
+    dataset.setType(DatasetType.OTHER);
+    dataset.setOrigin(DatasetOrigin.UPLOADED);
     dataset.setCreatedBy(TestDataRule.TEST_USER.getKey());
     dataset.setModifiedBy(TestDataRule.TEST_USER.getKey());
 

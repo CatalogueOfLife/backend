@@ -37,6 +37,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     Dataset d = new Dataset();
     d.applyUser(Users.DB_INIT);
     d.setType(DatasetType.TAXONOMIC);
+    d.setOrigin(DatasetOrigin.UPLOADED);
     d.setGbifKey(UUID.randomUUID());
     d.setTitle(RandomUtils.randomLatinString(80));
     d.setDescription(RandomUtils.randomLatinString(500));
@@ -355,6 +356,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     ds.getOrganisations().add(organisation);
     ds.setDescription(description);
     ds.setType(DatasetType.TAXONOMIC);
+    ds.setOrigin(DatasetOrigin.UPLOADED);
     mapper().create(TestEntityGenerator.setUserDate(ds));
     return ds.getKey();
   }

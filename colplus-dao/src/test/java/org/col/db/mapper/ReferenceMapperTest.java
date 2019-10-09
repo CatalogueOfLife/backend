@@ -5,9 +5,7 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
-import org.col.api.model.CslData;
 import org.col.api.model.Page;
 import org.col.api.model.Reference;
 import org.col.api.search.ReferenceSearchRequest;
@@ -136,16 +134,6 @@ public class ReferenceMapperTest extends CRUDPageableTestBase<Reference, Referen
     assertEquals(1, mapper().listByIds(11, Sets.newHashSet("ref-1b")).size());
     assertEquals(0, mapper().listByIds(12, Sets.newHashSet("ref-1b")).size());
     assertEquals(0, mapper().listByIds(12, Sets.newHashSet("ref-2")).size());
-  }
-  
-  private static CslData createCsl() {
-    CslData item = new CslData();
-    item.setTitle(RandomUtils.randomLatinString(80));
-    item.setContainerTitle(RandomUtils.randomLatinString(100));
-    item.setPublisher("Springer");
-    item.setYearSuffix("1988b");
-    item.setDOI("doi:10.1234/" + RandomUtils.randomLatinString(20));
-    return item;
   }
   
 }
