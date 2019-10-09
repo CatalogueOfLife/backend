@@ -83,10 +83,9 @@ public class NameSearchRequest {
    * ordinal of the enum constant. In both cases it is the ordinal that will be registered as the query filter.
    */
   public void addQueryParams(MultivaluedMap<String, String> params) {
-    for (Map.Entry<String, List<String>> param : params.entrySet()) {
-      VocabularyUtils.lookup(param.getKey(), NameSearchParameter.class).ifPresent(p -> {
-        addFilter(p, param.getValue());
-      });
+    for (Map.Entry<String, List<String>> entry : params.entrySet()) {
+      NameSearchParameter param = VocabularyUtils.lookupEnum(entry.getKey(), NameSearchParameter.class);
+      addFilter(param, entry.getValue());
     }
   }
 
