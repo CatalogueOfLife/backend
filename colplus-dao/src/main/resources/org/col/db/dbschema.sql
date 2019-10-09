@@ -122,7 +122,7 @@ CREATE TABLE coluser (
 
 CREATE TABLE dataset (
   key serial PRIMARY KEY,
-  type INTEGER NOT NULL DEFAULT 4,
+  type INTEGER NOT NULL DEFAULT 7,
   title TEXT NOT NULL,
   alias TEXT,
   gbif_key UUID,
@@ -135,6 +135,7 @@ CREATE TABLE dataset (
   version TEXT,
   released DATE,
   citation TEXT,
+  geographic_scope TEXT,
   website TEXT,
   logo TEXT,
   data_format INTEGER,

@@ -14,6 +14,7 @@ import javax.ws.rs.core.UriBuilder;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.Dataset;
 import org.col.api.model.Page;
 import org.col.api.vocab.DataFormat;
@@ -168,10 +169,11 @@ public class DatasetPager {
           break;
         case "TAXONOMIC_AUTHORITY":
         case "GLOBAL_SPECIES_DATASET":
-          d.setType(DatasetType.GLOBAL);
-          break;
         case "INVENTORY_REGIONAL":
-          d.setType(DatasetType.REGIONAL);
+          d.setType(DatasetType.TAXONOMIC);
+          break;
+        case "INVENTORY_THEMATIC":
+          d.setType(DatasetType.THEMATIC);
           break;
         case "TREATMENT_ARTICLE":
           d.setType(DatasetType.ARTICLE);
@@ -184,6 +186,7 @@ public class DatasetPager {
     }
     d.setWebsite(uri(g.homepage));
     d.setLicense(SafeParser.parse(LicenseParser.PARSER, g.license).orElse(License.UNSPECIFIED, License.OTHER));
+    d.setGeographicScope(coverage(g.geographicCoverages));
     //TODO: convert contact and authors
     d.setContact(null);
     d.setAuthorsAndEditors(null);
@@ -202,6 +205,13 @@ public class DatasetPager {
     return SafeParser.parse(UriParser.PARSER, url).orNull();
   }
   
+  static String coverage(List<GCoverage> coverages) {
+    return coverages == null ? null : coverages.stream()
+        .filter(c -> c!= null && !StringUtils.isBlank(c.description))
+        .map(c -> c.description)
+        .collect(Collectors.joining("; "));
+  }
+  
   static class GResp {
     public boolean endOfRecords;
     public List<GDataset> results;
@@ -217,6 +227,7 @@ public class DatasetPager {
     public String description;
     public String homepage;
     public GCitation citation;
+    public List<GCoverage> geographicCoverages;
     public String license;
     public String modified;
     public LocalDateTime pubDate;
@@ -229,6 +240,10 @@ public class DatasetPager {
     public String url;
   }
   
+  static class GCoverage {
+    public String description;
+  }
+
   static class GEndpoint {
     public String type;
     public String url;

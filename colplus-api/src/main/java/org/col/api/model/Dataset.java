@@ -22,7 +22,7 @@ import org.gbif.nameparser.api.NomCode;
 public class Dataset extends DataEntity<Integer> {
   private Integer key;
   @NotNull
-  private DatasetType type = DatasetType.OTHER;
+  private DatasetType type;
   @NotNull
   @NotBlank
   private String title;
@@ -37,6 +37,7 @@ public class Dataset extends DataEntity<Integer> {
   private String version;
   private LocalDate released;
   private String citation;
+  private String geographicScope;
   @AbsoluteURI
   private URI website;
   private String group;
@@ -163,6 +164,14 @@ public class Dataset extends DataEntity<Integer> {
   
   public void setVersion(String version) {
     this.version = version;
+  }
+  
+  public String getGeographicScope() {
+    return geographicScope;
+  }
+  
+  public void setGeographicScope(String geographicScope) {
+    this.geographicScope = geographicScope;
   }
   
   /**
@@ -349,6 +358,7 @@ public class Dataset extends DataEntity<Integer> {
         Objects.equals(version, dataset.version) &&
         Objects.equals(released, dataset.released) &&
         Objects.equals(citation, dataset.citation) &&
+        Objects.equals(geographicScope, dataset.geographicScope) &&
         Objects.equals(website, dataset.website) &&
         Objects.equals(group, dataset.group) &&
         Objects.equals(logo, dataset.logo) &&
@@ -368,7 +378,7 @@ public class Dataset extends DataEntity<Integer> {
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, type, title, alias, gbifKey, gbifPublisherKey, description, organisations, contact, authorsAndEditors, license, version, released, citation, website, group, logo, dataFormat, dataAccess, origin, importFrequency, code, size, confidence, completeness, notes, contributesTo, imported, deleted);
+    return Objects.hash(super.hashCode(), key, type, title, alias, gbifKey, gbifPublisherKey, description, organisations, contact, authorsAndEditors, license, version, released, citation, geographicScope, website, group, logo, dataFormat, dataAccess, origin, importFrequency, code, size, confidence, completeness, notes, contributesTo, imported, deleted);
   }
   
   @Override
