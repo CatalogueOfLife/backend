@@ -46,7 +46,7 @@ public class Dataset extends DataEntity<Integer> {
   @AbsoluteURI
   private URI dataAccess;
   @NotNull
-  private DatasetOrigin origin = DatasetOrigin.UPLOADED;
+  private DatasetOrigin origin;
   private Frequency importFrequency;
   private NomCode code;
   private Integer size;
