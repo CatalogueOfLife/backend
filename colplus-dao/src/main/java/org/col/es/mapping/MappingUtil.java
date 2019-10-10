@@ -36,13 +36,12 @@ class MappingUtil {
     while (cls != Object.class) {
       Method[] methods = cls.getDeclaredMethods();
       for (Method m : methods) {
-        if (names.contains(m.getName())) {
-        } else if (isStatic(m.getModifiers()) == true) {
-        } else if (isPublic(m.getModifiers()) == false) {
-        } else if (isGetter(m) == false) {
-        } else if (m.getAnnotation(NotMapped.class) != null) {
-        } else if (m.getAnnotation(JsonIgnore.class) != null) {
-        } else {
+        if (!names.contains(m.getName())
+            && !isStatic(m.getModifiers())
+            && isPublic(m.getModifiers())
+            && isGetter(m)
+            && m.getAnnotation(NotMapped.class) == null
+            && m.getAnnotation(JsonIgnore.class) == null) {
           names.add(m.getName());
           allMethods.add(m);
         }
@@ -57,14 +56,13 @@ class MappingUtil {
     ArrayList<Field> allFields = new ArrayList<>();
     while (cls != Object.class) {
       Field[] fields = cls.getDeclaredFields();
-      for (Field m : fields) {
-        if (names.contains(m.getName())) {
-        } else if (isStatic(m.getModifiers()) == true) {
-        } else if (m.getAnnotation(NotMapped.class) != null) {
-        } else if (m.getAnnotation(JsonIgnore.class) != null) {
-        } else {
-          names.add(m.getName());
-          allFields.add(m);
+      for (Field f : fields) {
+        if (!names.contains(f.getName())
+            && !isStatic(f.getModifiers())
+            && f.getAnnotation(NotMapped.class) == null
+            && f.getAnnotation(JsonIgnore.class) == null) {
+          names.add(f.getName());
+          allFields.add(f);
         }
       }
       cls = cls.getSuperclass();
