@@ -44,7 +44,7 @@ public class NameSearchResource {
   public ResultPage<NameUsageWrapper> search(@BeanParam NameSearchRequest query,
       @Valid @BeanParam Page page,
       @Context UriInfo uri) throws InvalidQueryException {
-    query.addQueryParams(uri.getQueryParameters());
+    query.addFilters(uri.getQueryParameters());
     return searchService.search(query, page);
   }
 

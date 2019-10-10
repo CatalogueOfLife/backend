@@ -51,7 +51,7 @@ public class NameResource extends AbstractDatasetScopedResource<Name> {
   @Path("search")
   public ResultPage<NameUsageWrapper> search(@PathParam("datasetKey") int datasetKey, @BeanParam NameSearchRequest query,
                                              @Valid @BeanParam Page page, @Context UriInfo uri) throws InvalidQueryException {
-    query.addQueryParams(uri.getQueryParameters());
+    query.addFilters(uri.getQueryParameters());
     if (query.hasFilter(NameSearchParameter.DATASET_KEY)) {
       throw new IllegalArgumentException("No further datasetKey parameter allowed, search already scoped to datasetKey=" + datasetKey);
     }

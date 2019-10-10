@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -18,6 +18,8 @@ import com.google.common.base.Preconditions;
 
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.util.VocabularyUtils;
+
+import static org.col.api.util.VocabularyUtils.lookupEnum;
 
 public class NameSearchRequest {
 
@@ -82,11 +84,20 @@ public class NameSearchRequest {
    * parameters that are associated with an enum type can be supplied using the name of the enum constant or using the
    * ordinal of the enum constant. In both cases it is the ordinal that will be registered as the query filter.
    */
-  public void addQueryParams(MultivaluedMap<String, String> params) {
-    for (Map.Entry<String, List<String>> entry : params.entrySet()) {
-      NameSearchParameter param = VocabularyUtils.lookupEnum(entry.getKey(), NameSearchParameter.class);
-      addFilter(param, entry.getValue());
-    }
+  public void addFilters(MultivaluedMap<String, String> params) {
+    Set<String> nonFilters = new HashSet<String>(Arrays.asList(
+        "offset",
+        "limit",
+        "facet",
+        "content",
+        "q",
+        "sortBy",
+        "highlight",
+        "reverse"));
+    params.entrySet().stream().filter(e -> !nonFilters.contains(e.getKey())).forEach(e -> {
+      NameSearchParameter p = lookupEnum(e.getKey(), NameSearchParameter.class); // Allow IllegalArgumentException
+      addFilter(p, e.getValue());
+    });
   }
 
   public void addFilter(NameSearchParameter param, Iterable<?> values) {
