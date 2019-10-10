@@ -77,7 +77,7 @@ class MappingUtil {
    * With us stringy fields are always mapped to the KEYWORD datatype (never TEXT). However, if they are not analyzed
    * using the KEYWORD analyzer, they will not be indexed as-is. They will only be indexed using the other analyzers
    * specified for the field and queries can only target the "multi fields" underneath the main field to access the
-   * indexed values. The main field becomes a ghostly hook for the "multi fields" underneat it (which is OK - it's all
+   * indexed values. The main field becomes a ghostly hook for the "multi fields" underneath it (which is OK - it's all
    * just syntax; it has no space or performance implications).
    */
   private static Boolean isIndexedField(AnnotatedElement fm, ESDataType esType) {
