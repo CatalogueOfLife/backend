@@ -10,7 +10,6 @@ import org.col.api.TestEntityGenerator;
 import org.col.api.model.Dataset;
 import org.col.api.model.Reference;
 import org.col.api.vocab.DataFormat;
-import org.col.api.vocab.DatasetType;
 import org.col.api.vocab.License;
 import org.col.common.csl.CslUtil;
 import org.col.img.ImageService;
@@ -20,8 +19,7 @@ import org.col.importer.reference.ReferenceFactory;
 import org.gbif.nameparser.api.NomCode;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class ColdpInserterTest extends InserterBaseTest {
   
@@ -30,7 +28,7 @@ public class ColdpInserterTest extends InserterBaseTest {
     NeoInserter ins = setup("/coldp/0");
     Dataset d = ins.readMetadata().get();
     
-    assertEquals(DatasetType.OTHER, d.getType());
+    assertNull(d.getType());
     assertEquals(DataFormat.COLDP, d.getDataFormat());
     assertEquals("The full dataset title", d.getTitle());
     assertNotNull(d.getDescription());

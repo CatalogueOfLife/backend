@@ -10,6 +10,7 @@ import org.col.api.model.ResultPage;
 import org.col.api.search.DatasetSearchRequest;
 import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.DatasetOrigin;
+import org.col.api.vocab.DatasetType;
 import org.col.api.vocab.Frequency;
 import org.col.db.mapper.TestDataRule;
 import org.junit.Ignore;
@@ -60,6 +61,7 @@ public class DatasetResourceTest extends ResourceTestBase {
   public void create() {
     Dataset d = new Dataset();
     d.setTitle("s3s3derftg");
+    d.setType(DatasetType.OTHER);
     d.setOrigin(DatasetOrigin.UPLOADED);
     d.setContact("me");
     d.setReleased(LocalDate.now());
