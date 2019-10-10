@@ -1,24 +1,44 @@
 package org.col.es.mapping;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import static java.lang.Character.isUpperCase;
-import static java.lang.Character.toLowerCase;
-import static java.lang.reflect.Modifier.isPublic;
-import static java.lang.reflect.Modifier.isStatic;
+import static org.col.es.mapping.ESDataType.KEYWORD;
+import static org.col.es.mapping.MultiField.AUTO_COMPLETE;
+import static org.col.es.mapping.MultiField.DEFAULT;
+import static org.col.es.mapping.MultiField.IGNORE_CASE;
 
 class MappingUtil {
 
-  /*
-   * Returns the type argument for a generic type (e.g. Person for List<Person>)
-   */
+  static SimpleField createSimpleField(AnnotatedElement fm, ESDataType datatype) {
+    Boolean indexed = isIndexedField(fm, datatype);
+    SimpleField sf;
+    if (datatype == KEYWORD) {
+      sf = new KeywordField(indexed);
+      addMultiFields(fm, (KeywordField) sf);
+    } else if (datatype == ESDataType.DATE) {
+      sf = new DateField(indexed);
+    } else {
+      sf = new SimpleField(datatype, indexed);
+    }
+    return sf;
+  }
+
+  static Set<Class<?>> newAncestor(Set<Class<?>> ancestors, Class<?> ancestor) {
+    Set<Class<?>> set = new HashSet<>(ancestors);
+    set.add(ancestor);
+    return set;
+  }
+
+  static boolean isA(Class<?> cls, Class<?> interfaceOrSuper) {
+    return interfaceOrSuper.isAssignableFrom(cls);
+  }
+
+  // Returns 1st type argument for generic type (e.g. Person for List<Person>)
   static Class<?> getClassForTypeArgument(Type t) {
     String s = t.getTypeName();
     int i = s.indexOf('<');
@@ -30,65 +50,46 @@ class MappingUtil {
     }
   }
 
-  static ArrayList<Method> getMappedProperties(Class<?> cls) {
-    Set<String> names = new HashSet<>();
-    ArrayList<Method> allMethods = new ArrayList<>();
-    while (cls != Object.class) {
-      Method[] methods = cls.getDeclaredMethods();
-      for (Method m : methods) {
-        if (!names.contains(m.getName())
-            && !isStatic(m.getModifiers())
-            && isPublic(m.getModifiers())
-            && isGetter(m)
-            && m.getAnnotation(NotMapped.class) == null
-            && m.getAnnotation(JsonIgnore.class) == null) {
-          names.add(m.getName());
-          allMethods.add(m);
+  private static void addMultiFields(AnnotatedElement fm, KeywordField kf) {
+    Analyzers annotation = fm.getAnnotation(Analyzers.class);
+    if (annotation != null && annotation.value().length != 0) {
+      List<Analyzer> analyzers = Arrays.asList(annotation.value());
+      for (Analyzer a : analyzers) {
+        switch (a) {
+          case IGNORE_CASE:
+            kf.addMultiField(IGNORE_CASE);
+            break;
+          case DEFAULT:
+            kf.addMultiField(DEFAULT);
+            break;
+          case AUTO_COMPLETE:
+            kf.addMultiField(AUTO_COMPLETE);
+            break;
+          case KEYWORD:
+          default:
+            break;
         }
       }
-      cls = cls.getSuperclass();
     }
-    return allMethods;
   }
 
-  static ArrayList<Field> getMappedFields(Class<?> cls) {
-    Set<String> names = new HashSet<>();
-    ArrayList<Field> allFields = new ArrayList<>();
-    while (cls != Object.class) {
-      Field[] fields = cls.getDeclaredFields();
-      for (Field f : fields) {
-        if (!names.contains(f.getName())
-            && !isStatic(f.getModifiers())
-            && f.getAnnotation(NotMapped.class) == null
-            && f.getAnnotation(JsonIgnore.class) == null) {
-          names.add(f.getName());
-          allFields.add(f);
+  /*
+   * With us stringy fields are always mapped to the KEYWORD datatype (never TEXT). However, if they are not analyzed
+   * using the KEYWORD analyzer, they will not be indexed as-is. They will only be indexed using the other analyzers
+   * specified for the field and queries can only target the "multi fields" underneath the main field to access the
+   * indexed values. The main field becomes a ghostly hook for the "multi fields" underneat it (which is OK - it's all
+   * just syntax; it has no space or performance implications).
+   */
+  private static Boolean isIndexedField(AnnotatedElement fm, ESDataType esType) {
+    if (esType == KEYWORD) {
+      Analyzers annotation = fm.getAnnotation(Analyzers.class);
+      if (annotation != null) {
+        if (!Arrays.asList(annotation.value()).contains(Analyzer.KEYWORD)) {
+          return Boolean.FALSE;
         }
       }
-      cls = cls.getSuperclass();
     }
-    return allFields;
-  }
-
-  static String getFieldName(Method getter) {
-    String name = getter.getName();
-    if (name.startsWith("get") && name.length() > 3 && isUpperCase(name.charAt(3))) {
-      return toLowerCase(name.charAt(3)) + name.substring(4);
-    }
-    if (name.startsWith("is") && name.length() > 2 && isUpperCase(name.charAt(2))) {
-      return toLowerCase(name.charAt(2)) + name.substring(3);
-    }
-    return null;
-  }
-
-  private static boolean isGetter(Method m) {
-    if (m.getReturnType() == void.class) {
-      return false;
-    }
-    if (m.getParameterCount() != 0) {
-      return false;
-    }
-    return getFieldName(m) != null;
+    return fm.getAnnotation(NotIndexed.class) == null ? null : Boolean.FALSE;
   }
 
 }

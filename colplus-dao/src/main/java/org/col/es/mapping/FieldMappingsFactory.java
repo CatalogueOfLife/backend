@@ -1,30 +1,35 @@
 package org.col.es.mapping;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import static java.lang.reflect.Modifier.isStatic;
+
 import static org.col.es.mapping.ESDataType.NESTED;
-import static org.col.es.mapping.MappingUtil.getMappedFields;
+import static org.col.es.mapping.MappingUtil.*;
 
 /**
  * Generates an Elasticsearch document type mapping from a {@link Class} object.
  */
 public class FieldMappingsFactory extends MappingsFactory {
 
-  protected void addFieldsToDocument(ComplexField document, Class<?> type, HashSet<Class<?>> ancestors) {
+  protected void addFields(ComplexField document, Class<?> type, Set<Class<?>> ancestors) {
     Set<String> fields = new HashSet<>();
     for (Field field : getMappedFields(type)) {
       String fieldName = field.getName();
       fields.add(fieldName);
-      ESField esField = createESField(field, ancestors);
+      ESField esField = createField(field, ancestors);
       esField.setName(fieldName);
       document.addField(fieldName, esField);
     }
   }
 
-  private ESField createESField(Field field, HashSet<Class<?>> ancestors) {
+  private ESField createField(Field field, Set<Class<?>> ancestors) {
     ESDataType esType;
     MapToType annotation = field.getAnnotation(MapToType.class);
     if (annotation != null) {
@@ -32,17 +37,17 @@ public class FieldMappingsFactory extends MappingsFactory {
     } else {
       Class<?> mapToType = mapType(field.getType(), field.getGenericType());
       esType = DataTypeMap.INSTANCE.getESType(mapToType);
-      if (esType == null) { // we are dealing with a nested object
-        if (ancestors.contains(mapToType)) { // Circular class composition, just too complicated
+      if (esType == null) { // we are dealing with a complex type
+        if (ancestors.contains(mapToType)) {
           throw new ClassCircularityException(field, mapToType);
         }
-        return createDocument(field, mapToType, newTree(ancestors, mapToType));
+        return createSubDocument(field, mapToType, MappingUtil.newAncestor(ancestors, mapToType));
       }
     }
     return createSimpleField(field, esType);
   }
 
-  private ComplexField createDocument(Field field, Class<?> mapToType, HashSet<Class<?>> ancestors) {
+  private ComplexField createSubDocument(Field field, Class<?> mapToType, Set<Class<?>> ancestors) {
     Class<?> realType = field.getType();
     ComplexField document;
     if (realType.isArray() || isA(realType, Collection.class)) {
@@ -50,8 +55,27 @@ public class FieldMappingsFactory extends MappingsFactory {
     } else {
       document = new ComplexField();
     }
-    addFieldsToDocument(document, mapToType, ancestors);
+    addFields(document, mapToType, ancestors);
     return document;
+  }
+
+  private static ArrayList<Field> getMappedFields(Class<?> cls) {
+    Set<String> names = new HashSet<>();
+    ArrayList<Field> allFields = new ArrayList<>();
+    while (cls != Object.class) {
+      Field[] fields = cls.getDeclaredFields();
+      for (Field f : fields) {
+        if (!names.contains(f.getName())
+            && !isStatic(f.getModifiers())
+            && f.getAnnotation(NotMapped.class) == null
+            && f.getAnnotation(JsonIgnore.class) == null) {
+          names.add(f.getName());
+          allFields.add(f);
+        }
+      }
+      cls = cls.getSuperclass();
+    }
+    return allFields;
   }
 
 }

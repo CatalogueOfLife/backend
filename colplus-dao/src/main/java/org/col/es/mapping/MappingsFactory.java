@@ -1,19 +1,15 @@
 package org.col.es.mapping;
 
-import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
+import java.util.Set;
 
 import org.col.es.EsModule;
 
-import static org.col.es.mapping.ESDataType.KEYWORD;
+import static java.util.Collections.emptySet;
+
+import static org.col.es.mapping.MappingUtil.newAncestor;
 import static org.col.es.mapping.MappingUtil.getClassForTypeArgument;
-import static org.col.es.mapping.MultiField.AUTO_COMPLETE;
-import static org.col.es.mapping.MultiField.DEFAULT;
-import static org.col.es.mapping.MultiField.IGNORE_CASE;
 
 public abstract class MappingsFactory {
 
@@ -29,7 +25,7 @@ public abstract class MappingsFactory {
 
   protected MappingsFactory() {}
 
-   /**
+  /**
    * Creates a document type mapping for the specified class name.
    *
    * @param className
@@ -51,7 +47,7 @@ public abstract class MappingsFactory {
    */
   public Mappings getMapping(Class<?> type) {
     Mappings mappings = new Mappings();
-    addFieldsToDocument(mappings, type, newTree(new HashSet<>(), type));
+    addFields(mappings, type, newAncestor(emptySet(), type));
     return mappings;
   }
 
@@ -72,87 +68,21 @@ public abstract class MappingsFactory {
   public void setMapEnumToInt(boolean mapEnumToInt) {
     this.mapEnumToInt = mapEnumToInt;
   }
-  
-  protected static SimpleField createSimpleField(AnnotatedElement fm, ESDataType datatype) {
-    Boolean indexed = isIndexedField(fm, datatype);
-    SimpleField sf;
-    if (datatype == KEYWORD) {
-      sf = new KeywordField(indexed);
-      addMultiFields((KeywordField) sf, fm);
-    } else if (datatype == ESDataType.DATE) {
-      sf = new DateField(indexed);
-    } else {
-      sf = new SimpleField(datatype, indexed);
+
+  protected abstract void addFields(ComplexField document, Class<?> type, Set<Class<?>> ancestors);
+
+  protected Class<?> mapType(Class<?> type, Type typeArg) {
+    // For multi-valued types we map the element type, not the type itself
+    if (type.isArray()) {
+      return mapType(type.getComponentType(), null);
     }
-    return sf;
-  }
-
-
-  protected abstract void addFieldsToDocument(ComplexField document, Class<?> type, HashSet<Class<?>> ancestors);
-
-  private static void addMultiFields(KeywordField kf, AnnotatedElement fm) {
-    Analyzers annotation = fm.getAnnotation(Analyzers.class);
-    if (annotation != null && annotation.value().length != 0) {
-      List<Analyzer> analyzers = Arrays.asList(annotation.value());
-      for (Analyzer a : analyzers) {
-        switch (a) {
-          case IGNORE_CASE:
-            kf.addMultiField(IGNORE_CASE);
-            break;
-          case DEFAULT:
-            kf.addMultiField(DEFAULT);
-            break;
-          case AUTO_COMPLETE:
-            kf.addMultiField(AUTO_COMPLETE);
-            break;
-          case KEYWORD:
-          default:
-            break;
-        }
-      }
-    }
-  }
-
-  private static Boolean isIndexedField(AnnotatedElement fm, ESDataType esType) {
-    if (esType == KEYWORD) {
-      /*
-       * String fields always have datatype KEYWORD. However, if they are not analyzed by the (no-op) KEYWORD analyzer, but
-       * they __are__ analyzed using one or more other analyzers, the field will not be indexed as-is. It will only be indexed
-       * using the other analyzers, and queries can only target the "multi fields" underneath the main field to access the
-       * indexed values.
-       */
-      Analyzers annotation = fm.getAnnotation(Analyzers.class);
-      if (annotation != null) {
-        if (!Arrays.asList(annotation.value()).contains(Analyzer.KEYWORD)) {
-          return Boolean.FALSE;
-        }
-      }
-    }
-    return fm.getAnnotation(NotIndexed.class) == null ? null : Boolean.FALSE;
-  }
-
-  protected static HashSet<Class<?>> newTree(HashSet<Class<?>> ancestors, Class<?> newType) {
-    HashSet<Class<?>> set = new HashSet<>();
-    set.addAll(ancestors);
-    set.add(newType);
-    return set;
-  }
-
-  protected Class<?> mapType(Class<?> cls, Type typeArg) {
-    if (cls.isArray()) {
-      return mapType(cls.getComponentType(), null);
-    }
-    if (Collection.class.isAssignableFrom(cls)) {
+    if (Collection.class.isAssignableFrom(type)) {
       return mapType(getClassForTypeArgument(typeArg), null);
     }
-    if (cls.isEnum()) {
+    if (type.isEnum()) {
       return mapEnumToInt ? int.class : String.class;
     }
-    return cls;
-  }
-
-  protected static boolean isA(Class<?> cls, Class<?> interfaceOrSuperClass) {
-    return interfaceOrSuperClass.isAssignableFrom(cls);
+    return type;
   }
 
 }
