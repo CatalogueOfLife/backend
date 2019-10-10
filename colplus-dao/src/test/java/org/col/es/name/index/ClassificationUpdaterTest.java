@@ -13,6 +13,7 @@ import org.col.api.model.Taxon;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchRequest.SortBy;
 import org.col.api.search.NameUsageWrapper;
+import org.col.es.EsModule;
 import org.col.es.EsReadTestBase;
 import org.col.es.EsUtil;
 import org.gbif.nameparser.api.Rank;
@@ -39,14 +40,14 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
   @Test
   public void test1() throws IOException {
 
+    // Index some test objects
     index(createTestObjects());
 
-    // Index some test objects
     NameUsageIndexer indexer = new NameUsageIndexer(getEsClient(), indexName);
 
     // Modify the classification of the test objects and run the updater
     List<NameUsageWrapper> nameUsages = createTestObjects();
-    nameUsages.forEach(nu -> nu.getClassification().forEach(sn -> sn.setName(sn.getName() + " UPDATED")));
+    nameUsages.forEach(nu -> nu.getClassification().forEach(sn -> sn.setName(sn.getName() + " (updated name)")));
     try (ClassificationUpdater updater = new ClassificationUpdater(indexer, DATASET_KEY)) {
       nameUsages.forEach(updater::handle);
     }
@@ -56,19 +57,13 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     NameSearchRequest query = new NameSearchRequest();
     query.setSortBy(SortBy.NATIVE);
 
-    assertEquals(createTestObjects(), search(query).getResult());
+    System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+    System.out.println(EsModule.writeDebug(createTestObjects().get(0)));
+    System.out.println("************************************************************************************");
+    System.out.println(EsModule.writeDebug(search(query).getResult().get(0)));
 
-  }
+    assertEquals(createTestObjects().get(0), search(query).getResult().get(0));
 
-  private static List<SimpleName> createClassification(Object... data) {
-    List<SimpleName> cl = new ArrayList<>();
-    for (int i = 0; i < data.length; i = i + 3) {
-      SimpleName sn = new SimpleName();
-      sn.setId((String) data[i]);
-      sn.setRank((Rank) data[i + 1]);
-      sn.setName((String) data[i + 2]);
-    }
-    return cl;
   }
 
   private static List<NameUsageWrapper> createTestObjects() {
@@ -137,7 +132,7 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
         SPECIES,
         "synonym_2"));
     nu = new Synonym();
-    // Create the most minimalistic taxon that will still make it through the indexing process without NPEs etc.
+    // The most minimalistic taxon that will still make it through the indexing process without NPEs etc.
     Taxon accepted = new Taxon();
     accepted.setName(new Name());
     ((Synonym) nu).setAccepted(accepted);
@@ -150,6 +145,17 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     nuw3.setUsage(nu);
 
     return Arrays.asList(nuw1, nuw2, nuw3);
+  }
+
+  private static List<SimpleName> createClassification(Object... data) {
+    List<SimpleName> cl = new ArrayList<>();
+    for (int i = 0; i < data.length; i = i + 3) {
+      SimpleName sn = new SimpleName();
+      sn.setId((String) data[i]);
+      sn.setRank((Rank) data[i + 1]);
+      sn.setName((String) data[i + 2]);
+    }
+    return cl;
   }
 
 }

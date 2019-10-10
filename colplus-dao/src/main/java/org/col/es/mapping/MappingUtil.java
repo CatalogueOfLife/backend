@@ -1,5 +1,6 @@
 package org.col.es.mapping;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -49,6 +50,26 @@ class MappingUtil {
       cls = cls.getSuperclass();
     }
     return allMethods;
+  }
+
+  static ArrayList<Field> getMappedFields(Class<?> cls) {
+    Set<String> names = new HashSet<>();
+    ArrayList<Field> allFields = new ArrayList<>();
+    while (cls != Object.class) {
+      Field[] fields = cls.getDeclaredFields();
+      for (Field m : fields) {
+        if (names.contains(m.getName())) {
+        } else if (isStatic(m.getModifiers()) == true) {
+        } else if (m.getAnnotation(NotMapped.class) != null) {
+        } else if (m.getAnnotation(JsonIgnore.class) != null) {
+        } else {
+          names.add(m.getName());
+          allFields.add(m);
+        }
+      }
+      cls = cls.getSuperclass();
+    }
+    return allFields;
   }
 
   static String getFieldName(Method getter) {

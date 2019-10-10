@@ -40,7 +40,8 @@ public class EsUtil {
    * @throws IOException
    */
   public static void createIndex(RestClient client, String name, Class<?> modelClass, IndexConfig config) throws IOException {
-    Mappings mappings = new MappingsFactory().getMapping(modelClass);
+    MappingsFactory factory = MappingsFactory.usingFields();
+    Mappings mappings = factory.getMapping(modelClass);
     Settings settings = Settings.getDefaultSettings();
     settings.getIndex().setNumberOfShards(config.numShards);
     settings.getIndex().setNumberOfReplicas(config.numReplicas);

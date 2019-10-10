@@ -1,31 +1,35 @@
 package org.col.es.mapping;
 
 import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+
+import org.col.es.EsModule;
 
 import static org.col.es.mapping.ESDataType.KEYWORD;
-import static org.col.es.mapping.ESDataType.NESTED;
 import static org.col.es.mapping.MappingUtil.getClassForTypeArgument;
-import static org.col.es.mapping.MappingUtil.getFieldName;
-import static org.col.es.mapping.MappingUtil.getMappedProperties;
 import static org.col.es.mapping.MultiField.AUTO_COMPLETE;
 import static org.col.es.mapping.MultiField.DEFAULT;
 import static org.col.es.mapping.MultiField.IGNORE_CASE;
 
-/**
- * Generates an Elasticsearch document type mapping from a {@link Class} object.
- */
-public class MappingsFactory {
+public abstract class MappingsFactory {
+
+  public static MappingsFactory usingFields() {
+    return new FieldMappingsFactory();
+  }
+
+  public static MappingsFactory usingGetters() {
+    return new GetterMappingsFactory();
+  }
 
   private boolean mapEnumToInt = true;
 
-  /**
+  protected MappingsFactory() {}
+
+   /**
    * Creates a document type mapping for the specified class name.
    *
    * @param className
@@ -47,7 +51,7 @@ public class MappingsFactory {
    */
   public Mappings getMapping(Class<?> type) {
     Mappings mappings = new Mappings();
-    addFieldsToDocument(mappings, type, newTree(new HashSet<>(0), type));
+    addFieldsToDocument(mappings, type, newTree(new HashSet<>(), type));
     return mappings;
   }
 
@@ -68,37 +72,8 @@ public class MappingsFactory {
   public void setMapEnumToInt(boolean mapEnumToInt) {
     this.mapEnumToInt = mapEnumToInt;
   }
-
-  private void addFieldsToDocument(ComplexField document, Class<?> type, HashSet<Class<?>> ancestors) {
-    Set<String> fields = new HashSet<>();
-    for (Method method : getMappedProperties(type)) {
-      String fieldName = getFieldName(method);
-      fields.add(fieldName);
-      ESField esField = createESField(method, ancestors);
-      esField.setName(fieldName);
-      document.addField(fieldName, esField);
-    }
-  }
-
-  private ESField createESField(Method method, HashSet<Class<?>> ancestors) {
-    ESDataType esType;
-    MapToType annotation = method.getAnnotation(MapToType.class);
-    if (annotation != null) {
-      esType = annotation.value();
-    } else {
-      Class<?> mapToType = mapType(method.getReturnType(), method.getGenericReturnType());
-      esType = DataTypeMap.INSTANCE.getESType(mapToType);
-      if (esType == null) { // we are dealing with a nested object
-        if (ancestors.contains(mapToType)) {
-          throw new ClassCircularityException(method, mapToType);
-        }
-        return createDocument(method, mapToType, newTree(ancestors, mapToType));
-      }
-    }
-    return createSimpleField(method, esType);
-  }
-
-  private static SimpleField createSimpleField(AnnotatedElement fm, ESDataType datatype) {
+  
+  protected static SimpleField createSimpleField(AnnotatedElement fm, ESDataType datatype) {
     Boolean indexed = isIndexedField(fm, datatype);
     SimpleField sf;
     if (datatype == KEYWORD) {
@@ -112,17 +87,8 @@ public class MappingsFactory {
     return sf;
   }
 
-  private ComplexField createDocument(Method method, Class<?> mapToType, HashSet<Class<?>> ancestors) {
-    Class<?> realType = method.getReturnType();
-    ComplexField document;
-    if (realType.isArray() || isA(realType, Collection.class)) {
-      document = new ComplexField(NESTED);
-    } else {
-      document = new ComplexField();
-    }
-    addFieldsToDocument(document, mapToType, ancestors);
-    return document;
-  }
+
+  protected abstract void addFieldsToDocument(ComplexField document, Class<?> type, HashSet<Class<?>> ancestors);
 
   private static void addMultiFields(KeywordField kf, AnnotatedElement fm) {
     Analyzers annotation = fm.getAnnotation(Analyzers.class);
@@ -165,32 +131,27 @@ public class MappingsFactory {
     return fm.getAnnotation(NotIndexed.class) == null ? null : Boolean.FALSE;
   }
 
-  /*
-   * Maps a Java class to another Java class that must be used in its place. The latter class is then mapped to an
-   * Elasticsearch data type. When mapping arrays, it's not the array that is mapped but the class of its elements. No
-   * array type exists or is required in Elasticsearch. Fields are intrinsically multi-valued.
-   */
-  private Class<?> mapType(Class<?> type, Type typeArg) {
-    if (type.isArray()) {
-      return mapType(type.getComponentType(), null);
-    }
-    if (Collection.class.isAssignableFrom(type)) {
-      return mapType(getClassForTypeArgument(typeArg), null);
-    }
-    if (type.isEnum()) {
-      return mapEnumToInt ? int.class : String.class;
-    }
-    return type;
-  }
-
-  private static HashSet<Class<?>> newTree(HashSet<Class<?>> ancestors, Class<?> newType) {
+  protected static HashSet<Class<?>> newTree(HashSet<Class<?>> ancestors, Class<?> newType) {
     HashSet<Class<?>> set = new HashSet<>();
     set.addAll(ancestors);
     set.add(newType);
     return set;
   }
 
-  private static boolean isA(Class<?> cls, Class<?> interfaceOrSuperClass) {
+  protected Class<?> mapType(Class<?> cls, Type typeArg) {
+    if (cls.isArray()) {
+      return mapType(cls.getComponentType(), null);
+    }
+    if (Collection.class.isAssignableFrom(cls)) {
+      return mapType(getClassForTypeArgument(typeArg), null);
+    }
+    if (cls.isEnum()) {
+      return mapEnumToInt ? int.class : String.class;
+    }
+    return cls;
+  }
+
+  protected static boolean isA(Class<?> cls, Class<?> interfaceOrSuperClass) {
     return interfaceOrSuperClass.isAssignableFrom(cls);
   }
 

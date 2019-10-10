@@ -56,7 +56,7 @@ public class NameUsageWrapperConverter {
   /**
    * Whether or not to zip the stringified NameUsageWrapper.
    */
-  public static final boolean ZIP_PAYLOAD = true;
+  public static final boolean ZIP_PAYLOAD = false;
 
   /**
    * Provides a weakly normalized version of the provided string (typically a scientific name). Whatever normalization

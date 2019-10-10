@@ -26,25 +26,30 @@ import static org.col.es.mapping.Analyzer.IGNORE_CASE;
  */
 public class NameUsageDocument {
 
-  // Elasticsearch's own id for the document. Note that this id is NOT part of the document and document type mapping. It
-  // comes along as metadata with the search response, outside the JSON document itself. We "artificially" add it after
-  // deserialization of the JSON document. Therefore the getter for documentId is @NotMapped.
+  /*
+   * Elasticsearch's own id for the document. Note that this id is NOT part of the document and must therefore not be
+   * included in the document type mapping. It comes along as metadata with the search response, outside the JSON document
+   * itself. We artificially add it after deserialization of the JSON document. When indexing this field **must** be null.
+   * Since we use strict typing, Elasticsearch would complain if the field were present in the JSON document.
+   */
+  @NotMapped
   private String documentId;
-
   private String usageId;
+  @MapToType(ESDataType.KEYWORD)
   private Integer datasetKey;
+  @MapToType(ESDataType.KEYWORD)
   private Integer sectorKey;
-
-  // The scientific name as-is is actually not indexed (searchable), but still placed it outside the payload, so we can
-  // quickly access it in the name suggestion service.
+  @Analyzers({IGNORE_CASE, AUTO_COMPLETE})
   private String scientificName;
   private NameStrings nameStrings;
-
+  @Analyzers({IGNORE_CASE, AUTO_COMPLETE})
   private String authorship;
   private String nameId;
   private String nameIndexId;
   private String publishedInId;
+  @MapToType(ESDataType.KEYWORD)
   private Integer decisionKey;
+  @MapToType(ESDataType.KEYWORD)
   private UUID publisherKey;
   private Rank rank;
   private NameType type;
@@ -53,22 +58,25 @@ public class NameUsageDocument {
   private Set<NameField> nameFields;
   private TaxonomicStatus status;
   private Set<Issue> issues;
+  @Analyzers({IGNORE_CASE, AUTO_COMPLETE})
   private List<String> vernacularNames;
   private List<String> classificationIds;
   private List<Monomial> classification;
   private Boolean fossil;
   private Boolean recent;
-
-  // If this name usage document represents a synonym this field contains the accepted name, otherwise it is null. Not
-  // indexed (searchable), but still placed outside the payload, so we can quickly access it in the name suggestion
-  // service.
+  /*
+   * If this document represents a synonym this field contains the accepted name, otherwise it is null. Not indexed
+   * (searchable), but still placed outside the payload, so we can quickly access it in the name suggestion service.
+   */
+  @NotIndexed
   private String acceptedName;
-
-  // Contains the (possibly zipped) serialization of the entire NameUsageWrapper object as we got it from postgres. This
-  // is a binary field, which never is indexed (no need to mark it as such).
+  /*
+   * Contains the (possibly zipped) serialization of the entire NameUsageWrapper object as we got it from postgres. This
+   * is stored as a (base64-encoded) binary field, which never is indexed (no need to mark it as such).
+   */
+  @MapToType(ESDataType.BINARY)
   private String payload;
 
-  @NotMapped
   public String getDocumentId() {
     return documentId;
   }
@@ -85,7 +93,6 @@ public class NameUsageDocument {
     this.usageId = usageId;
   }
 
-  @MapToType(ESDataType.KEYWORD)
   public Integer getDatasetKey() {
     return datasetKey;
   }
@@ -94,7 +101,6 @@ public class NameUsageDocument {
     this.datasetKey = datasetKey;
   }
 
-  @MapToType(ESDataType.KEYWORD)
   public Integer getSectorKey() {
     return sectorKey;
   }
@@ -103,7 +109,6 @@ public class NameUsageDocument {
     this.sectorKey = sectorKey;
   }
 
-  @Analyzers({IGNORE_CASE, AUTO_COMPLETE})
   public String getScientificName() {
     return scientificName;
   }
@@ -120,7 +125,6 @@ public class NameUsageDocument {
     this.nameStrings = nameStrings;
   }
 
-  @Analyzers({IGNORE_CASE, AUTO_COMPLETE})
   public String getAuthorship() {
     return authorship;
   }
@@ -153,7 +157,6 @@ public class NameUsageDocument {
     this.publishedInId = publishedInId;
   }
 
-  @MapToType(ESDataType.KEYWORD)
   public Integer getDecisionKey() {
     return decisionKey;
   }
@@ -162,7 +165,6 @@ public class NameUsageDocument {
     this.decisionKey = decisionKey;
   }
 
-  @MapToType(ESDataType.KEYWORD)
   public UUID getPublisherKey() {
     return publisherKey;
   }
@@ -219,7 +221,6 @@ public class NameUsageDocument {
     this.status = status;
   }
 
-  @Analyzers({IGNORE_CASE, AUTO_COMPLETE})
   public List<String> getVernacularNames() {
     return vernacularNames;
   }
@@ -268,7 +269,6 @@ public class NameUsageDocument {
     this.recent = recent;
   }
 
-  @NotIndexed
   public String getAcceptedName() {
     return acceptedName;
   }
@@ -277,7 +277,6 @@ public class NameUsageDocument {
     this.acceptedName = acceptedName;
   }
 
-  @MapToType(ESDataType.BINARY)
   public String getPayload() {
     return payload;
   }

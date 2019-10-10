@@ -25,19 +25,19 @@ import static org.col.es.name.NameUsageWrapperConverter.normalizeWeakly;
  */
 public class NameStrings {
 
-  /*
-   * Currently we only allow the suggest service to hit species and lower, but this does not apply to the regular search.
-   */
+  @Analyzers({KEYWORD, AUTO_COMPLETE})
   private String genusOrMonomialWN;
   /*
    * We store the 1st letter of the genus separately to allow for fast term queries for search phrases like "P. major" or
    * "P major". Also note that the minimum ngram token size is 2, so we couldn't use an ngram search for this type of
    * search phrases. We could of course fall back on a prefix search for the genus in these cases (like we do for all
-   * components of the search phrase if their length exceeds the __maximum__ ngram token size), but these are not
+   * components of the search phrase if their length exceeds the **maximum** ngram token size), but these are not
    * efficient.
    */
   private String genusLetter;
+  @Analyzers({KEYWORD, AUTO_COMPLETE})
   private String specificEpithetSN;
+  @Analyzers({KEYWORD, AUTO_COMPLETE})
   private String infraspecificEpithetSN;
 
   /**
@@ -70,7 +70,6 @@ public class NameStrings {
     this.genusLetter = genusLetter;
   }
 
-  @Analyzers({KEYWORD, AUTO_COMPLETE})
   public String getGenusOrMonomialWN() {
     return genusOrMonomialWN;
   }
@@ -79,7 +78,6 @@ public class NameStrings {
     this.genusOrMonomialWN = genusWN;
   }
 
-  @Analyzers({KEYWORD, AUTO_COMPLETE})
   public String getSpecificEpithetSN() {
     return specificEpithetSN;
   }
@@ -88,7 +86,6 @@ public class NameStrings {
     this.specificEpithetSN = specificEpithetSN;
   }
 
-  @Analyzers({KEYWORD, AUTO_COMPLETE})
   public String getInfraspecificEpithetSN() {
     return infraspecificEpithetSN;
   }

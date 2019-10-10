@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * of an undeclared field. You can also use the @JsonIgnore annotation for the same purpose, but that may be too drastic.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
+@Target({ElementType.METHOD,ElementType.FIELD})
 public @interface NotMapped {
 
 }
