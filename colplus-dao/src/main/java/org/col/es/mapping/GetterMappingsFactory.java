@@ -38,7 +38,7 @@ class GetterMappingsFactory extends MappingsFactory {
     if (annotation != null) {
       esType = annotation.value();
     } else {
-      Class<?> mapToType = mapType(method.getReturnType(), method.getGenericReturnType());
+      Class<?> mapToType = getMappedType(method.getReturnType(), method.getGenericReturnType());
       esType = DataTypeMap.INSTANCE.getESType(mapToType);
       if (esType == null) { // we are dealing with a complex type
         if (ancestors.contains(mapToType)) {

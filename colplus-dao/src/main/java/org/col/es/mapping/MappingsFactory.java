@@ -8,8 +8,9 @@ import org.col.es.EsModule;
 
 import static java.util.Collections.emptySet;
 
-import static org.col.es.mapping.MappingUtil.newAncestor;
 import static org.col.es.mapping.MappingUtil.getClassForTypeArgument;
+import static org.col.es.mapping.MappingUtil.isA;
+import static org.col.es.mapping.MappingUtil.newAncestor;
 
 public abstract class MappingsFactory {
 
@@ -24,20 +25,6 @@ public abstract class MappingsFactory {
   private boolean mapEnumToInt = true;
 
   protected MappingsFactory() {}
-
-  /**
-   * Creates a document type mapping for the specified class name.
-   *
-   * @param className
-   * @return
-   */
-  public Mappings getMapping(String className) {
-    try {
-      return getMapping(Class.forName(className));
-    } catch (ClassNotFoundException e) {
-      throw new MappingException("No such class: " + className);
-    }
-  }
 
   /**
    * Creates a document type mapping for the specified class.
@@ -69,15 +56,29 @@ public abstract class MappingsFactory {
     this.mapEnumToInt = mapEnumToInt;
   }
 
+  /**
+   * 
+   * @param document The document or sub-document to add the fields to
+   * @param type The Java type to model the (sub-)document after
+   * @param ancestors All Java types in the ancestry of the (sub-) document, all the way up to the Java type that the
+   *        document type mapping itself was modeled after. Used to detect circular graphs.
+   */
   protected abstract void addFields(ComplexField document, Class<?> type, Set<Class<?>> ancestors);
 
-  protected Class<?> mapType(Class<?> type, Type typeArg) {
+  /**
+   * Returns the Java type that should be used to look up the the Elasticsearch datatype in the {@link DataTypeMap}.
+   * 
+   * @param type
+   * @param typeArg
+   * @return
+   */
+  protected Class<?> getMappedType(Class<?> type, Type typeArg) {
     // For multi-valued types we map the element type, not the type itself
     if (type.isArray()) {
-      return mapType(type.getComponentType(), null);
+      return getMappedType(type.getComponentType(), null);
     }
-    if (Collection.class.isAssignableFrom(type)) {
-      return mapType(getClassForTypeArgument(typeArg), null);
+    if (isA(type, Collection.class)) {
+      return getMappedType(getClassForTypeArgument(typeArg), null);
     }
     if (type.isEnum()) {
       return mapEnumToInt ? int.class : String.class;
