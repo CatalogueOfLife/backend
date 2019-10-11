@@ -27,7 +27,7 @@ import static org.gbif.nameparser.api.Rank.ORDER;
 import static org.gbif.nameparser.api.Rank.SPECIES;
 import static org.junit.Assert.assertEquals;
 
-@Ignore
+// @Ignore
 public class ClassificationUpdaterTest extends EsReadTestBase {
 
   private static final int DATASET_KEY = 1000;
@@ -53,16 +53,16 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     }
     EsUtil.refreshIndex(getEsClient(), indexName);
 
+    // Always create wrapper objects afresh b/c they will be pruned upon insert
+    List<NameUsageWrapper> expected = createTestObjects();
+    expected.forEach(nu -> nu.getClassification().forEach(sn -> sn.setName(sn.getName() + " (updated name)")));
+
     // Make sure that what ends up in ES equals the modified nam usages
     NameSearchRequest query = new NameSearchRequest();
     query.setSortBy(SortBy.NATIVE);
+    List<NameUsageWrapper> actual = search(query).getResult();
 
-    System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-    System.out.println(EsModule.writeDebug(createTestObjects().get(0)));
-    System.out.println("************************************************************************************");
-    System.out.println(EsModule.writeDebug(search(query).getResult().get(0)));
-
-    assertEquals(createTestObjects().get(0), search(query).getResult().get(0));
+    assertEquals(expected, actual);
 
   }
 
@@ -154,6 +154,7 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
       sn.setId((String) data[i]);
       sn.setRank((Rank) data[i + 1]);
       sn.setName((String) data[i + 2]);
+      cl.add(sn);
     }
     return cl;
   }
