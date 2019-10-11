@@ -13,12 +13,10 @@ import org.col.api.model.Taxon;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchRequest.SortBy;
 import org.col.api.search.NameUsageWrapper;
-import org.col.es.EsModule;
 import org.col.es.EsReadTestBase;
 import org.col.es.EsUtil;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.gbif.nameparser.api.Rank.FAMILY;
@@ -27,7 +25,6 @@ import static org.gbif.nameparser.api.Rank.ORDER;
 import static org.gbif.nameparser.api.Rank.SPECIES;
 import static org.junit.Assert.assertEquals;
 
-// @Ignore
 public class ClassificationUpdaterTest extends EsReadTestBase {
 
   private static final int DATASET_KEY = 1000;
@@ -46,6 +43,7 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     NameUsageIndexer indexer = new NameUsageIndexer(getEsClient(), indexName);
 
     // Modify the classification of the test objects and run the updater
+    // Always create wrapper objects afresh b/c they will be pruned upon insert
     List<NameUsageWrapper> nameUsages = createTestObjects();
     nameUsages.forEach(nu -> nu.getClassification().forEach(sn -> sn.setName(sn.getName() + " (updated name)")));
     try (ClassificationUpdater updater = new ClassificationUpdater(indexer, DATASET_KEY)) {
