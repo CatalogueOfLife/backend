@@ -2,14 +2,14 @@ package org.col.db.tree;
 
 import java.io.*;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -29,9 +29,7 @@ public class DiffService {
   private final SqlSessionFactory factory;
   private final NamesTreeDao dao;
   
-  private final static Splitter ATTEMPTS = Splitter.on("..").trimResults();
-  private final static Splitter LINE_SPLITTER = Splitter.on('\n');
-  
+  private final static Pattern ATTEMPTS = Pattern.compile("^(\\d+)\\.\\.(\\d+)$");
   static enum DiffType {TREE, NAMES};
   
   public DiffService(SqlSessionFactory factory, NamesTreeDao dao) {
@@ -97,7 +95,8 @@ public class DiffService {
     return files;
   }
   
-  private int[] parseAttempts(String attempts, Supplier<List<? extends ImportAttempt>> importSupplier) {
+  @VisibleForTesting
+  protected int[] parseAttempts(String attempts, Supplier<List<? extends ImportAttempt>> importSupplier) {
     int a1;
     int a2;
     try {
@@ -110,9 +109,16 @@ public class DiffService {
         a2=imports.get(0).getAttempt();
 
       } else {
-        Iterator<String> attIter = ATTEMPTS.split(attempts).iterator();
-        a1 = Integer.parseInt(attIter.next());
-        a2 = Integer.parseInt(attIter.next());
+        Matcher m = ATTEMPTS.matcher(attempts);
+        if (m.find()) {
+          a1 = Integer.parseInt(m.group(1));
+          a2 = Integer.parseInt(m.group(2));
+          if (a1 >= a2) {
+            throw new IllegalArgumentException("first attempt must be lower than second");
+          }
+        } else {
+          throw new IllegalArgumentException("attempts must be separated by a two dots ..");
+        }
       }
       return new int[]{a1, a2};
       
@@ -121,13 +127,13 @@ public class DiffService {
     }
   }
   
-
-  private NamesDiff namesDiff(int key, int[] atts, Function<Integer, File> getFile) {
+  
+  @VisibleForTesting
+  protected NamesDiff namesDiff(int key, int[] atts, Function<Integer, File> getFile) throws IOException {
     File[] files = attemptToFiles(atts, getFile);
     final NamesDiff diff = new NamesDiff(key, atts[0], atts[1]);
-    //TODO: read names...
-    Set<String> n1 = null;
-    Set<String> n2 = null;
+    Set<String> n1 = NamesTreeDao.readNames(files[0]);
+    Set<String> n2 = NamesTreeDao.readNames(files[1]);
     
     diff.setDeleted(new HashSet<>(n1));
     diff.getDeleted().removeAll(n2);
