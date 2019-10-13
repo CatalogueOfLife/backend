@@ -164,7 +164,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
    * @return newly created taxon id
    */
   @Override
-  public DSID create(Taxon t, int user) {
+  public DSID<String> create(Taxon t, int user) {
     t.setStatusIfNull(TaxonomicStatus.ACCEPTED);
     if (t.getStatus().isSynonym()) {
       throw new IllegalArgumentException("Taxa cannot have a synonym status");
@@ -187,7 +187,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
         parseName(n);
         nm.create(n);
       } else {
-        Name nExisting = nm.get(new DSIDValue(datasetKey, n.getId()));
+        Name nExisting = nm.get(DSID.key(datasetKey, n.getId()));
         if (nExisting == null) {
           throw new IllegalArgumentException("No name exists with ID " + n.getId() + " in dataset " + datasetKey);
         }
@@ -235,14 +235,16 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     Int2IntOpenHashMap delta = tm.getCounts(key).getCount();
     if (delta != null && !delta.isEmpty()) {
       DSID<String> parentKey =  DSID.key(key.getDatasetKey(), oldParentId);
+      // reusable catalogue key instance
+      final DSIDValue<String> catKey = DSID.key(key.getDatasetKey(), "");
       // remove delta
       for (TaxonCountMap tc : tm.classificationCounts(parentKey)) {
-        tm.updateDatasetSectorCount(DSID.draftID(tc.getId()), mergeMapCounts(tc.getCount(), delta, -1));
+        tm.updateDatasetSectorCount(catKey.id(tc.getId()), mergeMapCounts(tc.getCount(), delta, -1));
       }
       // add counts
       parentKey.setId(newParentId);
       for (TaxonCountMap tc : tm.classificationCounts(parentKey)) {
-        tm.updateDatasetSectorCount(DSID.draftID(tc.getId()), mergeMapCounts(tc.getCount(), delta, 1));
+        tm.updateDatasetSectorCount(catKey.id(tc.getId()), mergeMapCounts(tc.getCount(), delta, 1));
       }
     }
   }
@@ -269,7 +271,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     // we keep the sector as a broken sector around
     SectorMapper sm = session.getMapper(SectorMapper.class);
     for (Sector s : sm.listByTarget(did.getDatasetKey(), did.getId())) {
-      tMapper.incDatasetSectorCount(s.getTargetAsDSID(), s.getDatasetKey(), -1);
+      tMapper.incDatasetSectorCount(s.getTargetAsDSID(), s.getSubjectDatasetKey(), -1);
     }
     // deleting the taxon now should cascade deletes to synonyms, vernaculars, etc but keep the name record!
   }
@@ -348,7 +350,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       Sector s = ctxt.getResultObject();
       if (s.getTarget() != null) {
         counter++;
-        tm.incDatasetSectorCount(s.getTargetAsDSID(), s.getDatasetKey(), 1);
+        tm.incDatasetSectorCount(s.getTargetAsDSID(), s.getSubjectDatasetKey(), 1);
       }
     }
   }

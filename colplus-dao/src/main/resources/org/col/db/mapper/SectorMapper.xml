@@ -126,14 +126,6 @@
       AND dataset_key = #{targetDatasetKey}
   </select>
 
-  <select id="processCatalogue" parameterType="map" resultMap="sectorResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
-    WHERE dataset_key = #{datasetKey}
-    ORDER BY key
-  </select>
-
-
   <select id="processSectors" parameterType="map" resultMap="sectorResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
