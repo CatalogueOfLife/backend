@@ -160,6 +160,7 @@ public class ColdpInterpreter extends InterpreterBase {
     return interpretDescription(rec, this::setReference,
         ColdpTerm.description,
         ColdpTerm.category,
+        ColdpTerm.format,
         ColdpTerm.language);
   }
   

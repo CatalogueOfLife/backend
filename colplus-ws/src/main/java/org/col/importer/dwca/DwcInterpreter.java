@@ -140,6 +140,7 @@ public class DwcInterpreter extends InterpreterBase {
     return interpretDescription(rec, this::setReference,
         DcTerm.description,
         DcTerm.type,
+        DcTerm.format,
         DcTerm.language);
   }
   
