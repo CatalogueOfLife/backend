@@ -19,7 +19,6 @@ import org.col.es.name.index.NameUsageIndexService;
 import org.col.es.query.TermQuery;
 import org.col.es.query.TermsQuery;
 import org.gbif.nameparser.api.Rank;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static java.util.stream.Collectors.toList;
@@ -34,7 +33,7 @@ import static org.junit.Assert.assertNull;
  * in-going out-going name usages slightly to allow them to be compared, but not much. (For example the recursive query
  * we execute in Postgres, and the resulting sort order, cannot be emulated with Elasticsearch.)
  */
-//@Ignore
+// @Ignore
 public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
 
   @Test
@@ -128,7 +127,6 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     res = query(new TermQuery("usageId", pgTaxa.get(2).getId()));
     assertNull(res.getResult().get(0).getDecisionKey());
   }
-
 
   // Some JSON to send using the REST API
   void printDecision() throws JsonProcessingException {

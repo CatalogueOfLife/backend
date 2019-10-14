@@ -70,9 +70,19 @@ public class NameSearchRequest {
    */
   public NameSearchRequest copy() {
     NameSearchRequest copy = new NameSearchRequest();
-    copy.filters = new EnumMap<>(getFilters());
-    copy.facets = EnumSet.copyOf(getFacets());
-    copy.content = EnumSet.copyOf(getContent());
+    if (filters != null) {
+      copy.filters = new EnumMap<>(NameSearchParameter.class);
+      copy.filters.putAll(filters);
+
+    }
+    if (facets != null) {
+      copy.facets = EnumSet.noneOf(NameSearchParameter.class);
+      copy.facets.addAll(facets);
+    }
+    if (content != null) {
+      copy.content = EnumSet.noneOf(SearchContent.class);
+      copy.content.addAll(content);
+    }
     copy.q = q;
     copy.sortBy = sortBy;
     copy.highlight = highlight;
