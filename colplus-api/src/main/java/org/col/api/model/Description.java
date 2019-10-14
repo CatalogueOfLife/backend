@@ -4,10 +4,12 @@ import java.util.Objects;
 import javax.validation.constraints.Size;
 
 import org.col.api.vocab.Language;
+import org.col.api.vocab.TextFormat;
 
 public class Description extends DatasetScopedEntity<Integer> implements Referenced, VerbatimEntity {
   private Integer verbatimKey;
   private String category;
+  private TextFormat format;
   private String description;
   @Size(min = 3, max = 3)
   private String language;
@@ -29,6 +31,14 @@ public class Description extends DatasetScopedEntity<Integer> implements Referen
   
   public void setCategory(String category) {
     this.category = category;
+  }
+  
+  public TextFormat getFormat() {
+    return format;
+  }
+  
+  public void setFormat(TextFormat format) {
+    this.format = format;
   }
   
   public String getDescription() {
@@ -70,6 +80,7 @@ public class Description extends DatasetScopedEntity<Integer> implements Referen
     Description that = (Description) o;
     return Objects.equals(verbatimKey, that.verbatimKey) &&
         Objects.equals(category, that.category) &&
+        format == that.format &&
         Objects.equals(description, that.description) &&
         Objects.equals(language, that.language) &&
         Objects.equals(referenceId, that.referenceId);
@@ -77,6 +88,6 @@ public class Description extends DatasetScopedEntity<Integer> implements Referen
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), verbatimKey, category, description, language, referenceId);
+    return Objects.hash(super.hashCode(), verbatimKey, category, format, description, language, referenceId);
   }
 }

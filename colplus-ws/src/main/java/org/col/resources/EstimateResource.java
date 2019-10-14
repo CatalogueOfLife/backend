@@ -44,9 +44,10 @@ public class EstimateResource extends AbstractDecisionResource<SpeciesEstimate> 
   
   @GET
   @Path("/broken")
-  public List<SpeciesEstimate> broken(@Context SqlSession session) {
+  public List<SpeciesEstimate> broken(@QueryParam("datasetKey") @DefaultValue(""+Datasets.DRAFT_COL) int datasetKey,
+                                      @Context SqlSession session) {
     EstimateMapper mapper = session.getMapper(EstimateMapper.class);
-    return mapper.broken(Datasets.DRAFT_COL);
+    return mapper.broken(datasetKey);
   }
   
 }

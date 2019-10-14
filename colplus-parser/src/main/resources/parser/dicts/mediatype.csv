@@ -1,13 +1,17 @@
 bild,IMAGE
 bilder,IMAGE
 film,VIDEO
+foto,IMAGE
 images,IMAGE
+mov,VIDEO
 movie,VIDEO
 movies,VIDEO
 movingimage,VIDEO
 movingimages,VIDEO
 photo,IMAGE
 photos,IMAGE
+pic,IMAGE
 picture,IMAGE
 pictures,IMAGE
+still,IMAGE
 stillimage,IMAGE

@@ -502,6 +502,7 @@ CREATE TABLE description (
   verbatim_key INTEGER,
   taxon_id TEXT NOT NULL,
   category TEXT,
+  format INTEGER,
   description TEXT NOT NULL,
   language CHAR(3),
   reference_id TEXT,

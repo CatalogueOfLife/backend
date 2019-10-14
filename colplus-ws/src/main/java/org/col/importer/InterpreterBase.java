@@ -152,12 +152,13 @@ public class InterpreterBase {
   }
   
   protected List<Description> interpretDescription(VerbatimRecord rec, BiConsumer<Description, VerbatimRecord> addReference,
-                                                   Term description, Term category, Term lang) {
+                                                   Term description, Term category, Term format, Term lang) {
     // require non empty description
     if (rec.hasTerm(description)) {
       Description d = new Description();
       d.setVerbatimKey(rec.getId());
       d.setCategory(rec.get(category));
+      d.setFormat(SafeParser.parse(TextFormatParser.PARSER, rec.get(format)).orNull());
       d.setDescription(rec.get(description));
       d.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(lang)).orNull());
   

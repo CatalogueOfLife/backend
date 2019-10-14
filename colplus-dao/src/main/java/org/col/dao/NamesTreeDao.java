@@ -1,6 +1,8 @@
 package org.col.dao;
 
 import java.io.*;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.ibatis.session.ResultContext;
@@ -28,6 +30,12 @@ public class NamesTreeDao {
   public NamesTreeDao(SqlSessionFactory factory, File repo) {
     this.factory = factory;
     this.repo = repo;
+  }
+  
+  public static Set<String> readNames(File nf) throws IOException{
+    try (BufferedReader br = Utf8IOUtils.readerFromFile(nf)) {
+      return br.lines().collect(Collectors.toSet());
+    }
   }
   
   public int updateDatasetNames(int datasetKey, int attempt) {

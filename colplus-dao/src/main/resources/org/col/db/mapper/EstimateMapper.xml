@@ -106,7 +106,7 @@
   <select id="broken" resultMap="estimateResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-      LEFT JOIN name_usage_3 t ON t.id=est.subject_id
+      LEFT JOIN name_usage_3 t ON t.id=est.target_id
     WHERE t.id IS NULL
     ORDER BY est.key
   </select>
