@@ -13,12 +13,10 @@ import org.col.api.model.Taxon;
 import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameSearchRequest.SortBy;
 import org.col.api.search.NameUsageWrapper;
-import org.col.es.EsModule;
 import org.col.es.EsReadTestBase;
 import org.col.es.EsUtil;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.gbif.nameparser.api.Rank.FAMILY;
@@ -27,7 +25,6 @@ import static org.gbif.nameparser.api.Rank.ORDER;
 import static org.gbif.nameparser.api.Rank.SPECIES;
 import static org.junit.Assert.assertEquals;
 
-@Ignore
 public class ClassificationUpdaterTest extends EsReadTestBase {
 
   private static final int DATASET_KEY = 1000;
@@ -46,6 +43,7 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     NameUsageIndexer indexer = new NameUsageIndexer(getEsClient(), indexName);
 
     // Modify the classification of the test objects and run the updater
+    // Always create wrapper objects afresh b/c they will be pruned upon insert
     List<NameUsageWrapper> nameUsages = createTestObjects();
     nameUsages.forEach(nu -> nu.getClassification().forEach(sn -> sn.setName(sn.getName() + " (updated name)")));
     try (ClassificationUpdater updater = new ClassificationUpdater(indexer, DATASET_KEY)) {
@@ -53,16 +51,16 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     }
     EsUtil.refreshIndex(getEsClient(), indexName);
 
+    // Always create wrapper objects afresh b/c they will be pruned upon insert
+    List<NameUsageWrapper> expected = createTestObjects();
+    expected.forEach(nu -> nu.getClassification().forEach(sn -> sn.setName(sn.getName() + " (updated name)")));
+
     // Make sure that what ends up in ES equals the modified nam usages
     NameSearchRequest query = new NameSearchRequest();
     query.setSortBy(SortBy.NATIVE);
+    List<NameUsageWrapper> actual = search(query).getResult();
 
-    System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-    System.out.println(EsModule.writeDebug(createTestObjects().get(0)));
-    System.out.println("************************************************************************************");
-    System.out.println(EsModule.writeDebug(search(query).getResult().get(0)));
-
-    assertEquals(createTestObjects().get(0), search(query).getResult().get(0));
+    assertEquals(expected, actual);
 
   }
 
@@ -154,6 +152,7 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
       sn.setId((String) data[i]);
       sn.setRank((Rank) data[i + 1]);
       sn.setName((String) data[i + 2]);
+      cl.add(sn);
     }
     return cl;
   }

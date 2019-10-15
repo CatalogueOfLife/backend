@@ -19,7 +19,6 @@ import org.col.es.name.index.NameUsageIndexService;
 import org.col.es.query.TermQuery;
 import org.col.es.query.TermsQuery;
 import org.gbif.nameparser.api.Rank;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static java.util.stream.Collectors.toList;
@@ -34,7 +33,7 @@ import static org.junit.Assert.assertNull;
  * in-going out-going name usages slightly to allow them to be compared, but not much. (For example the recursive query
  * we execute in Postgres, and the resulting sort order, cannot be emulated with Elasticsearch.)
  */
-@Ignore
+// @Ignore
 public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
 
   @Test
@@ -63,6 +62,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     decision.setSubject(SimpleName.of(edited));
     decision.setMode(Mode.UPDATE);
     decision.setDatasetKey(edited.getDatasetKey());
+    decision.setSubjectDatasetKey(edited.getDatasetKey());
     decision.setCreatedBy(edited.getCreatedBy());
     decision.setModifiedBy(edited.getCreatedBy());
     // Save the decision to postgres: triggers sync() on the index service
@@ -86,6 +86,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     decision.setSubject(SimpleName.of(edited));
     decision.setMode(Mode.UPDATE);
     decision.setDatasetKey(edited.getDatasetKey());
+    decision.setSubjectDatasetKey(edited.getDatasetKey());
     decision.setCreatedBy(edited.getCreatedBy());
     decision.setModifiedBy(edited.getCreatedBy());
     // Save the decision to postgres: triggers sync() on the index service
@@ -114,6 +115,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     decision.setSubject(SimpleName.of(edited));
     decision.setMode(Mode.UPDATE);
     decision.setDatasetKey(edited.getDatasetKey());
+    decision.setSubjectDatasetKey(edited.getDatasetKey());
     decision.setCreatedBy(edited.getCreatedBy());
     decision.setModifiedBy(edited.getCreatedBy());
     // Save the decision to postgres: triggers sync() on the index service
@@ -126,9 +128,8 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     assertNull(res.getResult().get(0).getDecisionKey());
   }
 
-  @Test
-  @Ignore // Just some JSON to send using the REST API
-  public void printDecision() throws JsonProcessingException {
+  // Some JSON to send using the REST API
+  void printDecision() throws JsonProcessingException {
     SimpleName sn = new SimpleName("s1", "Larus Fuscus", Rank.SPECIES);
     EditorialDecision decision = new EditorialDecision();
     decision.setSubject(sn);
