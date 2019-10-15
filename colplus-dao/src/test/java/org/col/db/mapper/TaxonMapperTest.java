@@ -79,6 +79,7 @@ public class TaxonMapperTest extends CRUDPageableTestBase<Taxon, TaxonMapper> {
     generateDatasetImport(DATASET11.getKey());
     
     assertEquals(5, mapper().count(DATASET11.getKey()));
+    assertEquals(3, mapper().countChildrenWithRank(DSID.key(DATASET11.getKey(), "root-1"), Rank.SPECIES));
   }
   
   @Test
