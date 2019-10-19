@@ -89,7 +89,7 @@ public class SectorDao extends EntityDao<Integer, Sector, SectorMapper> {
     incSectorCounts(session, old, -1);
   }
   
-  private void incSectorCounts(SqlSession session, Sector s, int delta) {
+  public static void incSectorCounts(SqlSession session, Sector s, int delta) {
     if (s != null && s.getTarget() != null) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
       tm.incDatasetSectorCount(s.getTargetAsDSID(), s.getSubjectDatasetKey(), delta);
