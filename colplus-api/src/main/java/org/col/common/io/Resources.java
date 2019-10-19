@@ -63,4 +63,16 @@ public class Resources {
     return new File(ClassLoader.getSystemResource(resourceName).getFile());
   }
   
+  /**
+   * Copies a classpath resource to a tmp file
+   * @return newly copied tmp file
+   */
+  public static File tmpCopy(String resourceName) throws IOException {
+    File f = File.createTempFile("rescopy", "");
+    OutputStream out = new FileOutputStream(f);
+    IOUtils.copy(stream(resourceName), out);
+    out.close();
+    return f;
+  }
+  
 }

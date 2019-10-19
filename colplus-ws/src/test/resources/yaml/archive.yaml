@@ -1,0 +1,12 @@
+format: ACEF
+files:
+  - name: AcceptedSpecies.csv
+    url: http://rameau.snv.jussieu.fr/4d4life/psyllist/AcceptedSpecies.csv
+    encoding: UTF-8
+    delimiter: ",|"
+    quotation: "\""
+    header:
+     - acef:AcceptedTaxonID
+     - acef:Kingdom
+     - acef:Phylum
+     - acef:Class

@@ -18,6 +18,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.WsServerConfig;
 import org.col.api.model.Dataset;
 import org.col.api.model.DatasetImport;
+import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.DatasetOrigin;
 import org.col.api.vocab.Datasets;
 import org.col.api.vocab.ImportState;
@@ -36,6 +37,7 @@ import org.col.img.ImageService;
 import org.col.img.LogoUpdateJob;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NeoDbFactory;
+import org.col.importer.yaml.DistributedArchiveService;
 import org.col.matching.NameIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +64,7 @@ public class ImportJob implements Runnable {
   private final NameUsageIndexService indexService;
   private final ImageService imgService;
   private final AuthorshipNormalizer aNormalizer;
+  private final DistributedArchiveService distributedArchiveService;
   
   private final StartNotifier notifier;
   private final Consumer<ImportRequest> successCallback;
@@ -80,6 +83,7 @@ public class ImportJob implements Runnable {
     this.req = req;
     this.cfg = cfg;
     this.downloader = downloader;
+    this.distributedArchiveService = new DistributedArchiveService(downloader.getClient());
     this.factory = factory;
     this.index = index;
     this.aNormalizer = aNormalizer;
@@ -158,9 +162,18 @@ public class ImportJob implements Runnable {
       LoggingUtils.setDatasetMDC(datasetKey, getAttempt(), getClass());
       LOG.info("Start new import attempt {} for {} dataset {}: {}", di.getAttempt(), dataset.getOrigin(), datasetKey, dataset.getTitle());
   
-      File source = cfg.normalizer.source(datasetKey);
       boolean isModified;
-      if (dataset.getOrigin() == DatasetOrigin.UPLOADED) {
+      File source = cfg.normalizer.source(datasetKey);
+      if (dataset.getDataFormat() == DataFormat.PROXY) {
+        // we have a yaml descriptor for distributed archives, download files individually
+        if (dataset.getOrigin() == DatasetOrigin.UPLOADED) {
+          dataset.setDataFormat(distributedArchiveService.uploaded(source));
+        } else if (dataset.getOrigin() == DatasetOrigin.EXTERNAL) {
+          dataset.setDataFormat(distributedArchiveService.download(di.getDownloadUri(), source));
+        }
+        isModified = lastMD5IsDifferent(source);
+        
+      } else if (dataset.getOrigin() == DatasetOrigin.UPLOADED) {
         // did we import that very archive before already?
         isModified = lastMD5IsDifferent(source);
         

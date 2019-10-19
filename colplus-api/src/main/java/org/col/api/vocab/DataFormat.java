@@ -25,6 +25,12 @@ public enum DataFormat {
    * COL Data Package
    * See https://github.com/CoL-Data/package-specs
    */
-  COLDP
+  COLDP,
+  
+  /**
+   * YAML based distributed archive descriptor that proxies remote data files.
+   * See https://github.com/Sp2000/colplus-backend/issues/518
+   */
+  PROXY
   
 }

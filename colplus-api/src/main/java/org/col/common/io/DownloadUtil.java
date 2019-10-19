@@ -181,4 +181,8 @@ public class DownloadUtil {
     }
   }
   
+  public CloseableHttpClient getClient() {
+    return hc;
+  }
+  
 }
