@@ -9,7 +9,9 @@ import java.util.function.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import org.apache.ibatis.session.SqlSession;
+import org.col.api.TestEntityGenerator;
 import org.col.api.model.Duplicate;
+import org.col.api.model.EditorialDecision;
 import org.col.api.model.Page;
 import org.col.api.vocab.MatchingMode;
 import org.col.api.vocab.NameCategory;
@@ -74,6 +76,36 @@ public class DuplicateMapperTest {
   
   @Test
   public void usagesByIds() {
+    List<Duplicate.UsageDecision> res = mapper.usagesByIds(datasetKey, Lists.immutableListOf("45", "46"));
+    assertEquals(2, res.size());
+    for (Duplicate.UsageDecision u : res) {
+      assertFalse(u.getClassification().isEmpty());
+      assertNull(u.getDecision());
+    }
+  
+    // now with a decision
+    DecisionMapper dm = session.getMapper(DecisionMapper.class);
+  
+    EditorialDecision d1 = TestEntityGenerator.setUser(new EditorialDecision());
+    d1.setDatasetKey(datasetKey);
+    d1.setSubjectDatasetKey(datasetKey);
+    d1.setSubject(TreeMapperTest.nameref("45"));
+    d1.setMode(EditorialDecision.Mode.UPDATE);
+    dm.create(d1);
+    
+    res = mapper.usagesByIds(datasetKey, Lists.immutableListOf("45", "46"));
+    assertEquals(2, res.size());
+    for (Duplicate.UsageDecision u : res) {
+      assertFalse(u.getClassification().isEmpty());
+    }
+    EditorialDecision d = res.get(0).getDecision();
+    assertNotNull(d);
+    assertNotNull(d.getKey());
+    assertEquals(TestEntityGenerator.nullifyDate(d), d1);
+  }
+  
+  @Test
+  public void usagesWithDecisions() {
     List<Duplicate.UsageDecision> res = mapper.usagesByIds(datasetKey, Lists.immutableListOf("45", "46"));
     assertEquals(2, res.size());
     for (Duplicate.UsageDecision u : res) {

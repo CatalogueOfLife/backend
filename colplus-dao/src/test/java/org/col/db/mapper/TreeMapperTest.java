@@ -221,7 +221,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     return nodes;
   }
   
-  private static SimpleName nameref(String id) {
+  static SimpleName nameref(String id) {
     SimpleName nr = new SimpleName();
     nr.setId(id);
     return nr;

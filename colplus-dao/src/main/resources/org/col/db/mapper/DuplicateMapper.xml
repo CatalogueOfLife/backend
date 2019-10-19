@@ -12,9 +12,7 @@
     <resultMap id="usageDecisionResultMap" type="UsageDecision" autoMapping="true">
         <id column="u.id"/>
         <association property="usage" resultMap="org.col.db.mapper.NameUsageMapper.usageResultMap" />
-        <association property="decision" javaType="EditorialDecision">
-            <id column="decision_key" property="key"/>
-        </association>
+        <association property="decision" resultMap="org.col.db.mapper.DecisionMapper.decisionResultMap" columnPrefix="ed_" notNullColumn="key"/>
         <collection property="classification" ofType="SimpleName" column="{key.id=id,key.datasetKey=dataset_key}" autoMapping="true"
                     select="org.col.db.mapper.TaxonMapper.classificationSimple"/>
     </resultMap>
@@ -62,7 +60,10 @@
             <property name="alias" value="an"/>
             <property name="prefix" value="a_n_"/>
         </include>,
-        ed.key AS decision_key
+        <include refid="org.col.db.mapper.DecisionMapper.SelectVar">
+            <property name="alias" value="ed."/>
+            <property name="prefix" value="ed_"/>
+        </include>
         FROM
         name_usage_${partition} u
         JOIN name_${partition} n ON u.name_id=n.id
