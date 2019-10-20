@@ -24,10 +24,7 @@ public class WsServerConfigTest {
   private static final YamlConfigurationFactory<WsServerConfig> factory =
       new YamlConfigurationFactory<>(WsServerConfig.class, validator, objectMapper, "dw");
   
-  @Test
   public static WsServerConfig readTestConfig() throws Exception {
-    // File cfgFile = new File(ResourceHelpers.resourceFilePath("config-test.yaml"));
-    //return factory.build(cfgFile);
     return factory.build(new ConfigurationSourceProvider() {
       @Override
       public InputStream open(String path) throws IOException {
