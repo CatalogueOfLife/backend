@@ -71,7 +71,9 @@ public class ImporterResource {
 
   @POST
   @Path("{key}")
-  @Consumes({MediaType.TEXT_PLAIN, MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_TSV, MoreMediaTypes.TEXT_YAML, MoreMediaTypes.TEXT_WILDCARD})
+  @Consumes({MediaType.TEXT_PLAIN, MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_TSV,
+      MoreMediaTypes.TEXT_YAML, MoreMediaTypes.APP_YAML,
+      MoreMediaTypes.TEXT_WILDCARD})
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public ImportRequest uploadCsv(@PathParam("key") int datasetKey, @Auth ColUser user, InputStream archive) throws IOException {
     return importManager.submit(datasetKey, archive, user);

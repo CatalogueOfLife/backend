@@ -10,7 +10,8 @@ public class MoreMediaTypes {
   
   public final static String APP_GZIP = "application/gzip";
   public final static String APP_ZIP = "application/zip";
-  
+  public final static String APP_YAML = "application/x-yaml";
+
   public final static String APP_JSON_COLDP = "application/vnd.coldp+json";
   public final static String APP_JSON_CSL   = "application/vnd.citationstyles.csl+json";
   
