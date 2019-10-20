@@ -59,6 +59,8 @@
         <gbif-parser.version>0.42</gbif-parser.version>
         <hikaricp.version>3.3.1</hikaricp.version>
         <hk2.version>2.5.0-b32</hk2.version>
+        <!-- even though managed in DW BOM, it conflicts with ES BOM and we gotta manage this manually -->
+        <httpcore.version>4.4.12</httpcore.version>
         <icu4j.version>64.2</icu4j.version>
         <java-diff-utils.version>4.0</java-diff-utils.version>
         <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
@@ -450,6 +452,17 @@
                 <groupId>org.elasticsearch.client</groupId>
                 <artifactId>elasticsearch-rest-client</artifactId>
                 <version>${elasticsearch.version}</version>
+            </dependency>
+            <!-- httpcore needs at least 4.4.7 for dropwizard. ES 6.5 uses 4.4.5 still -->
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore-nio</artifactId>
+                <version>${httpcore.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <version>${httpcore.version}</version>
             </dependency>
 
             <!-- unicode, transliterations

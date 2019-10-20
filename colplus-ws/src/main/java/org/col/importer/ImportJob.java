@@ -37,7 +37,7 @@ import org.col.img.ImageService;
 import org.col.img.LogoUpdateJob;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NeoDbFactory;
-import org.col.importer.yaml.DistributedArchiveService;
+import org.col.importer.proxy.DistributedArchiveService;
 import org.col.matching.NameIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

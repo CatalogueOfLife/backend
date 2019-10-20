@@ -1,4 +1,4 @@
-package org.col.importer.yaml;
+package org.col.importer.proxy;
 
 import java.io.*;
 import java.net.URI;
@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -52,7 +53,8 @@ public class DistributedArchiveService {
   }
   
   private ArchiveDescriptor read(InputStream is) throws IOException {
-    return DESCRIPTOR_READER.readValue(is);
+    ArchiveDescriptor ad = DESCRIPTOR_READER.readValue(is);
+    return ad;
   }
   
   /**
@@ -97,10 +99,13 @@ public class DistributedArchiveService {
     private void fetchHeader() throws IOException {
       if (fd.header != null && !fd.header.isEmpty()) {
         // skip original header up to first newline
-        int intch;
-        while ((intch = original.read()) != -1) {
-          if (intch == '\n') break;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte b;
+        while ((b = (byte) original.read()) != -1) {
+          if (b == '\n' || b == '\r') break;
+          baos.write(new byte[]{b}, 0, 1);
         }
+        deriveCsvFormat(baos.toString(fd.encoding));
         // create new header as byte array
         StringBuilder sb = new StringBuilder();
         for (Term t : fd.header) {
@@ -120,6 +125,20 @@ public class DistributedArchiveService {
         sb.append("\n");
         // convert header string to array
         header = sb.toString().getBytes(fd.encoding);
+      }
+    }
+  
+    private void deriveCsvFormat(String line) {
+      if (fd.delimiter == null) {
+        int cols = fd.header.size();
+        for (char delim : new char[]{',', '\t', ';', '|'}) {
+          int cnt = StringUtils.countMatches(line, delim);
+          // cols are columns, cnt are number of delimiters which should be one less
+          if (cnt+1 == cols) {
+            fd.delimiter = String.valueOf(delim);
+            break;
+          }
+        }
       }
     }
     

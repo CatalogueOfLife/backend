@@ -33,6 +33,9 @@ client:
   maxConnectionsPerRoute: 16
   keepAlive: 0ms
   retries: 1
+  tls:
+    verifyHostname: false
+    trustSelfSignedCertificates: true
 es:
   hosts:
   ports: 9200

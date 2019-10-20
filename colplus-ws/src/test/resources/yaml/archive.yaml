@@ -10,3 +10,21 @@ files:
      - acef:Kingdom
      - acef:Phylum
      - acef:Class
+  - name: NameReferencesLinks.csv
+    url: http://www.hemiptera-databases.org/4d4life/psyllist/SourceDatabase.csv
+    header:
+      - acef:DatabaseFullName
+      - acef:DatabaseShortName
+      - acef:DatabaseVersion
+      - acef:ReleaseDate
+      - acef:AuthorsEditors
+      - acef:TaxonomicCoverage
+      - acef:GroupNameInEnglish
+      - acef:Abstract
+      - acef:Organisation
+      - acef:HomeURL
+      - acef:Coverage
+      - acef:Completeness
+      - acef:Confidence
+      - acef:LogoFileName
+      - acef:ContactPerson

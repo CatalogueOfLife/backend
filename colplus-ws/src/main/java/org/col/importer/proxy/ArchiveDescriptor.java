@@ -1,4 +1,4 @@
-package org.col.importer.yaml;
+package org.col.importer.proxy;
 
 import java.util.List;
 
@@ -14,8 +14,8 @@ public class ArchiveDescriptor {
     public String name;
     public String url;
     public String encoding = "UTF-8";
-    public String delimiter = ",";
-    public String quotation = "\"";
+    public String delimiter;
+    public String quotation;
     public List<Term> header;
   }
 
