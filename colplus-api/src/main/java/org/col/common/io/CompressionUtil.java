@@ -61,7 +61,6 @@ public class CompressionUtil {
       }
     }
     
-    
     return files;
   }
   

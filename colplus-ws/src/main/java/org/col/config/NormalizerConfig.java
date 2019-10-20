@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 public class NormalizerConfig {
   
   private static final Logger LOG = LoggerFactory.getLogger(NormalizerConfig.class);
+  public static final String ARCHIVE_SUFFIX = "archive";
   
   /**
    * Archive directory to store larger amount of data
@@ -55,7 +56,7 @@ public class NormalizerConfig {
    * and compare files for changes.
    */
   public File source(int datasetKey) {
-    return new File(archiveDir, String.valueOf(datasetKey) + ".archive");
+    return new File(archiveDir, String.valueOf(datasetKey) + "." + ARCHIVE_SUFFIX);
   }
   
   

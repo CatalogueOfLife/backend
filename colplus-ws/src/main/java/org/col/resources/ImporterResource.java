@@ -65,10 +65,17 @@ public class ImporterResource {
   @Path("{key}")
   @Consumes({MoreMediaTypes.APP_GZIP, MoreMediaTypes.APP_ZIP, MediaType.APPLICATION_OCTET_STREAM})
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public ImportRequest upload(@PathParam("key") int datasetKey, @Auth ColUser user, InputStream archive) throws IOException {
+  public ImportRequest uploadArchive(@PathParam("key") int datasetKey, @Auth ColUser user, InputStream archive) throws IOException {
     return importManager.submit(datasetKey, archive, user);
   }
-  
+
+  @POST
+  @Path("{key}")
+  @Consumes({MediaType.TEXT_PLAIN, MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_TSV, MoreMediaTypes.TEXT_YAML, MoreMediaTypes.TEXT_WILDCARD})
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public ImportRequest uploadCsv(@PathParam("key") int datasetKey, @Auth ColUser user, InputStream archive) throws IOException {
+    return importManager.submit(datasetKey, archive, user);
+  }
   
   @DELETE
   @Path("{key}")

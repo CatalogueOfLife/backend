@@ -53,8 +53,12 @@ public class DistributedArchiveService {
   }
   
   private ArchiveDescriptor read(InputStream is) throws IOException {
-    ArchiveDescriptor ad = DESCRIPTOR_READER.readValue(is);
-    return ad;
+    try {
+      return DESCRIPTOR_READER.readValue(is);
+    } catch (IOException e) {
+      LOG.error("Failed to read proxy archive descriptor", e);
+      throw new IllegalArgumentException("Failed to read proxy archive descriptor: "+e.getMessage());
+    }
   }
   
   /**
@@ -80,6 +84,9 @@ public class DistributedArchiveService {
           IOUtils.copy(new ReplacedHeaderStream(resp.getEntity().getContent(), fd), zipOut);
         }
       }
+    } catch (IOException e) {
+      LOG.error("Error creating proxied {} archive at {}", ad.format, archiveFile, e);
+      throw e;
     }
     return ad.format;
   }

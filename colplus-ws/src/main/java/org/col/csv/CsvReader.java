@@ -27,6 +27,7 @@ import com.univocity.parsers.common.TextParsingException;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import org.apache.commons.lang3.StringUtils;
+import org.col.config.NormalizerConfig;
 import org.col.importer.MappingFlags;
 import org.col.importer.NormalizationFailedException;
 import org.col.api.model.VerbatimRecord;
@@ -359,24 +360,35 @@ public class CsvReader {
   
   protected Optional<Term> detectRowType(Schema schema, String termPrefix) {
     String fn = PathUtils.getBasename(schema.file);
-    Optional<Term> rt = findTerm(termPrefix, fn, true);
-    if (!rt.isPresent() || rt.get() instanceof UnknownTerm) {
-      Optional<Term> orig = rt;
-      // try without plural s
-      if (fn.endsWith("s")) {
-        rt = findTerm(termPrefix, fn.substring(0,fn.length() - 1), true);
-      }
-      // specials for taxon/taxa
+    // special treatment for archives which are just one CSV file - the filename does not matter in this case!
+    String ext = PathUtils.getFileExtension(schema.file);
+    Optional<Term> rt;
+    if (ext.equalsIgnoreCase(NormalizerConfig.ARCHIVE_SUFFIX)) {
+      // use dwc core
+      rt = Optional.of(DwcTerm.Taxon);
+      LOG.info("Use dwc:Taxon rowType for single text file {}", schema.file);
+      
+    } else {
+      rt = findTerm(termPrefix, fn, true);
       if (!rt.isPresent() || rt.get() instanceof UnknownTerm) {
-        if (fn.equalsIgnoreCase("taxa")) {
-          rt = findTerm(termPrefix, "Taxon", true);
+        Optional<Term> orig = rt;
+        // try without plural s
+        if (fn.endsWith("s")) {
+          rt = findTerm(termPrefix, fn.substring(0,fn.length() - 1), true);
+        }
+        // specials for taxon/taxa
+        if (!rt.isPresent() || rt.get() instanceof UnknownTerm) {
+          if (fn.equalsIgnoreCase("taxa")) {
+            rt = findTerm(termPrefix, "Taxon", true);
+          }
+        }
+        // revert to first parsed unknown term
+        if (!rt.isPresent() || rt.get() instanceof UnknownTerm) {
+          rt = orig;
         }
       }
-      // revert to first parsed unknown term
-      if (!rt.isPresent() || rt.get() instanceof UnknownTerm) {
-        rt = orig;
-      }
     }
+    
     return rt;
   }
   
