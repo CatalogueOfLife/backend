@@ -668,7 +668,21 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity 
    * @See NameFormatter.canonicalComplete()
    */
   public String canonicalNameComplete() {
-    return isParsed() ? NameFormatter.canonicalComplete(toParsedName(this)) : scientificNameAuthorship();
+    return completeName(false);
+  }
+  
+  /**
+   * @return the complete canonical name formatted with basic html tags
+   */
+  @JsonProperty(value = "formattedName", access = JsonProperty.Access.READ_ONLY)
+  public String canonicalNameCompleteHtml() {
+    return completeName(true);
+  }
+  
+  private String completeName(boolean html) {
+    return isParsed() ?
+        NameFormatter.buildName(toParsedName(this), true, true, true, true, true, true, false, true, true, false, true, true, true, html)
+        : scientificNameAuthorship();
   }
   
   /**
@@ -683,14 +697,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity 
       sb.append(authorship);
     }
     return sb.toString();
-  }
-
-  /**
-   * @return the complete canonical name formatted with basic html tags
-   */
-  @JsonProperty(value = "formattedName", access = JsonProperty.Access.READ_ONLY)
-  public String canonicalNameCompleteHtml() {
-    return isParsed() ? NameFormatter.canonicalCompleteHtml(toParsedName(this)) : scientificNameAuthorship();
   }
   
   /**
