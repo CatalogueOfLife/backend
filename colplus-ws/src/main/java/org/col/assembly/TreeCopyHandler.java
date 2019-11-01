@@ -336,7 +336,7 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
           try {
             u.setStatus(ed.getStatus());
           } catch (IllegalArgumentException e) {
-            LOG.warn("Cannot convert {} {} {} into {}", u.getName().getRank(), u.getStatus(), u.getName().canonicalNameComplete(), ed.getStatus(), e);
+            LOG.warn("Cannot convert {} {} {} into {}", u.getName().getRank(), u.getStatus(), u.getName().canonicalNameWithAuthorship(), ed.getStatus(), e);
           }
         }
         if (u.isTaxon()) {

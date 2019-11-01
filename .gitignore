@@ -1,10 +1,13 @@
 **/*.iml
 **/target
 **/.idea
+
+colplus-dao/127.0.0.1/
+colplus-dao/dataset/
 colplus-ws/graphs/
 colplus-ws/localhost/
-**/.DS_Store
 
+**/.DS_Store
 **/.project
 **/.classpath
 **/.settings/

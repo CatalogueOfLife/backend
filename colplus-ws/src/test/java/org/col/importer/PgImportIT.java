@@ -396,7 +396,7 @@ public class PgImportIT {
       SynonymMapper synMapper = session.getMapper(SynonymMapper.class);
       
       Taxon t = tdao.get(key(dataset.getKey(), "Rho-144"));
-      assertEquals("Afrogamasellus lokelei Daele, 1976", t.getName().canonicalNameComplete());
+      assertEquals("Afrogamasellus lokelei Daele, 1976", t.getName().canonicalNameWithAuthorship());
       
       List<Taxon> classific = taxMapper.classification(t);
       LinkedList<RankedName> expected =
@@ -409,7 +409,7 @@ public class PgImportIT {
       for (Taxon ht : classific) {
         RankedName expect = expected.removeLast();
         assertEquals(expect.rank, ht.getName().getRank());
-        assertEquals(expect.name, ht.getName().canonicalNameComplete());
+        assertEquals(expect.name, ht.getName().canonicalNameWithAuthorship());
       }
       
       assertEquals(TaxonomicStatus.ACCEPTED, t.getStatus());
@@ -422,14 +422,14 @@ public class PgImportIT {
       
       // test synonym
       Name sn = ndao.get(key(dataset.getKey(), "Rho-140"));
-      assertEquals("Rhodacarus guevarai Guevara-Benitez, 1974", sn.canonicalNameComplete());
+      assertEquals("Rhodacarus guevarai Guevara-Benitez, 1974", sn.canonicalNameWithAuthorship());
       
       // in acef name & taxon ids are the same
       Synonym syn = synMapper.get(key(dataset.getKey(), sn.getId()));
       assertNotNull(syn);
       
       t = tdao.get(key(dataset.getKey(), "Rho-61"));
-      assertEquals("Multidentorhodacarus denticulatus (Berlese, 1920)", t.getName().canonicalNameComplete());
+      assertEquals("Multidentorhodacarus denticulatus (Berlese, 1920)", t.getName().canonicalNameWithAuthorship());
       assertEquals(t, syn.getAccepted());
     }
   }
@@ -485,7 +485,7 @@ public class PgImportIT {
     
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       Taxon annua = tdao.get(key(dataset.getKey(), "4"));
-      assertEquals("Poa annua L.", annua.getName().canonicalNameComplete());
+      assertEquals("Poa annua L.", annua.getName().canonicalNameWithAuthorship());
       
       TaxonInfo info = tdao.getTaxonInfo(annua);
       Reference pubIn = info.getReference(annua.getName().getPublishedInId());
@@ -575,9 +575,9 @@ public class PgImportIT {
       List<NameUsageBase> syns = um.listByNameID(dataset.getKey(), "1006-s3");
       assertEquals(1, syns.size());
       Synonym s3 = (Synonym) syns.get(0);
-      assertEquals("Leonida taraxacoida Vill.", s3.getName().canonicalNameComplete());
+      assertEquals("Leonida taraxacoida Vill.", s3.getName().canonicalNameWithAuthorship());
       assertEquals("1006", s3.getAccepted().getId());
-      assertEquals("Leontodon taraxacoides (Vill.) Mérat", s3.getAccepted().getName().canonicalNameComplete());
+      assertEquals("Leontodon taraxacoides (Vill.) Mérat", s3.getAccepted().getName().canonicalNameWithAuthorship());
       
       // https://github.com/Sp2000/colplus-backend/issues/237
       VerbatimRecordMapper vm = session.getMapper(VerbatimRecordMapper.class);

@@ -40,7 +40,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage t = usageByID("1099-sp16");
       assertFalse(t.isSynonym());
-      assertEquals("Pinus palustris Mill.", t.usage.getName().canonicalNameComplete());
+      assertEquals("Pinus palustris Mill.", t.usage.getName().canonicalNameWithAuthorship());
       assertEquals(URI.create("http://dx.doi.org/10.3897/BDJ.2.e1099"), t.getTaxon().getWebpage());
     }
   }
@@ -312,7 +312,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       for (Node n : Iterators.loop(store.getNeo().findNodes(Labels.USAGE))) {
         u = store.usageWithName(n);
         if (u.usage.getName().getOrigin() == Origin.SOURCE) {
-          System.out.println(u.usage.getStatus() + ": " + u.usage.getName().canonicalNameComplete());
+          System.out.println(u.usage.getStatus() + ": " + u.usage.getName().canonicalNameWithAuthorship());
           System.out.println("  " + u.usage.getName().getRemarks());
           System.out.println("  " + u.usage.getAccordingTo());
           assertNotNull(u.usage.getAccordingTo());
@@ -320,7 +320,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       }
       
       u = usageByID("8");
-      assertEquals("Anthurium lanceum Engl., nom.illeg.", u.usage.getName().canonicalNameComplete());
+      assertEquals("Anthurium lanceum Engl.", u.usage.getName().canonicalNameWithAuthorship());
       assertEquals("nom.illeg.", u.usage.getName().getRemarks());
       assertEquals("Markus non. A.lancea.", u.usage.getAccordingTo());
       assertEquals(NomStatus.UNACCEPTABLE, u.usage.getName().getNomStatus());

@@ -65,7 +65,7 @@ public class NameTest extends SerdeTestBase<Name> {
     n.setSpecificEpithet("alba");
     n.setNotho(NamePart.SPECIFIC);
     n.setRank(Rank.SUBSPECIES);
-    assertEquals("Abies × alba ssp.", n.canonicalNameComplete());
+    assertEquals("Abies × alba ssp.", n.canonicalNameWithAuthorship());
     
     n.setInfraspecificEpithet("alpina");
     n.getCombinationAuthorship().setYear("1999");
@@ -74,7 +74,17 @@ public class NameTest extends SerdeTestBase<Name> {
     n.getBasionymAuthorship().setYear("1899");
     n.getBasionymAuthorship().getAuthors().add("Lin.");
     n.getBasionymAuthorship().getAuthors().add("Deca.");
-    assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999", n.canonicalNameComplete());
+    assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999", n.canonicalNameWithAuthorship());
+    
+    n.setRemarks("nom.illeg.");
+    assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999", n.canonicalNameWithAuthorship());
+    assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999", n.canonicalNameWithAuthorship());
+    assertEquals("Abies × alba subsp. alpina", n.canonicalNameWithoutAuthorship());
+  
+    n.setAppendedPhrase("bla bla");
+    assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999 bla bla", n.canonicalNameWithAuthorship());
+    assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999 bla bla", n.canonicalNameWithAuthorship());
+    assertEquals("Abies × alba subsp. alpina bla bla", n.canonicalNameWithoutAuthorship());
   }
   
   /**
@@ -87,8 +97,8 @@ public class NameTest extends SerdeTestBase<Name> {
     n.setSpecificEpithet("subsalsa");
     n.setInfraspecificEpithet("subsalsa");
     n.setRank(Rank.INFRASPECIFIC_NAME);
-    assertEquals("Spirulina subsalsa subsalsa", n.canonicalNameComplete());
+    assertEquals("Spirulina subsalsa subsalsa", n.canonicalNameWithAuthorship());
     n.setCode(NomCode.BACTERIAL);
-    assertEquals("Spirulina subsalsa subsalsa", n.canonicalNameComplete());
+    assertEquals("Spirulina subsalsa subsalsa", n.canonicalNameWithAuthorship());
   }
 }

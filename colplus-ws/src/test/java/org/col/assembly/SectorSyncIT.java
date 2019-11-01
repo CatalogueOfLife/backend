@@ -104,7 +104,7 @@ public class SectorSyncIT {
   }
   
   private static SimpleName simple(NameUsageBase nu) {
-    return new SimpleName(nu.getId(), nu.getName().canonicalNameComplete(), nu.getName().getRank());
+    return new SimpleName(nu.getId(), nu.getName().canonicalNameWithAuthorship(), nu.getName().getRank());
   }
   
   static int createSector(Sector.Mode mode, NameUsageBase src, NameUsageBase target) {

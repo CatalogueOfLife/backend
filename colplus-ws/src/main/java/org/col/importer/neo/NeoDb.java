@@ -391,7 +391,7 @@ public class NeoDb implements ReferenceStore {
       u.usage.setName(null);
       usages.create(u);
     } else {
-      LOG.debug("Skip usage {} as no name node was created for {}", u.getId(), nn.name.canonicalNameComplete());
+      LOG.debug("Skip usage {} as no name node was created for {}", u.getId(), nn.name.canonicalNameWithAuthorship());
     }
     return u.nameNode;
   }

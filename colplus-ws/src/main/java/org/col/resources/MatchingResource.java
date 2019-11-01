@@ -43,7 +43,7 @@ public class MatchingResource {
     // trusted inserts should only happen during imports, not exposing public webservices.
     Name n = name(q, rank, code);
     NameMatch m = ni.match(n, trusted, verbose);
-    LOG.debug("Matching {} to {}", n.canonicalNameComplete(), m);
+    LOG.debug("Matching {} to {}", n.canonicalNameWithAuthorship(), m);
     return m;
   }
   

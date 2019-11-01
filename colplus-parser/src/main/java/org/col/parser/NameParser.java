@@ -159,7 +159,7 @@ public class NameParser implements Parser<NameAccordingTo> {
   }
   
   public Optional<NameType> determineType(Name name) {
-    String sciname = name.canonicalNameComplete();
+    String sciname = name.canonicalNameWithAuthorship();
     if (StringUtils.isBlank(sciname)) {
       return Optional.of(NameType.NO_NAME);
     }

@@ -292,9 +292,9 @@ public class InterpreterBase {
       // parse the reconstructed name without authorship
       // cant use the atomized name just like that cause we would miss name type detection (virus,
       // hybrid, placeholder, garbage)
-      Optional<NameAccordingTo> natFromAtom = NameParser.PARSER.parse(atom.canonicalNameComplete(), rank, code, v);
+      Optional<NameAccordingTo> natFromAtom = NameParser.PARSER.parse(atom.canonicalNameWithAuthorship(), rank, code, v);
       if (!natFromAtom.isPresent()) {
-        LOG.warn("Failed to parse {} {} ({}) from given atoms. Use name atoms directly: {}/{}/{}/{}", rank, atom.canonicalNameComplete(), id,
+        LOG.warn("Failed to parse {} {} ({}) from given atoms. Use name atoms directly: {}/{}/{}/{}", rank, atom.canonicalNameWithAuthorship(), id,
             atom.getGenus(), atom.getInfragenericEpithet(), atom.getSpecificEpithet(), atom.getInfraspecificEpithet()
         );
         v.addIssue(Issue.PARSED_NAME_DIFFERS);
@@ -311,7 +311,7 @@ public class InterpreterBase {
               !Objects.equals(atom.getSpecificEpithet(), nat.getName().getSpecificEpithet()) ||
               !Objects.equals(atom.getInfraspecificEpithet(), nat.getName().getInfraspecificEpithet())
             ) {
-            LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", nat.getName().canonicalNameComplete(), atom.canonicalNameComplete());
+            LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", nat.getName().canonicalNameWithAuthorship(), atom.canonicalNameWithAuthorship());
             v.addIssue(Issue.PARSED_NAME_DIFFERS);
             
             // use original name atoms if they do not contain a space
@@ -326,7 +326,7 @@ public class InterpreterBase {
               nat.getName().setInfraspecificEpithet(atom.getInfraspecificEpithet());
               // we have a parsed name, so its not virus or hybrid, but parsing could have detected something weird
               if (NameType.SCIENTIFIC != nat.getName().getType()) {
-                LOG.info("Use type=scientific for {} even though parsed name of type {}", nat.getName().canonicalNameComplete(), nat.getName().getType());
+                LOG.info("Use type=scientific for {} even though parsed name of type {}", nat.getName().canonicalNameWithAuthorship(), nat.getName().getType());
                 nat.getName().setType(NameType.SCIENTIFIC);
               }
             }

@@ -285,7 +285,7 @@ public class DuplicateDaoTest {
       for (Duplicate d : dups) {
         System.out.println("\n#" + idx++ + "  " + d.getKey() + " ---");
         for (Duplicate.UsageDecision u : d.getUsages()) {
-          System.out.print(" " + u.getUsage().getId() + "  " + u.getUsage().getName().canonicalNameComplete() + "  " + u.getUsage().getStatus());
+          System.out.print(" " + u.getUsage().getId() + "  " + u.getUsage().getName().canonicalNameWithAuthorship() + "  " + u.getUsage().getStatus());
           System.out.print(" -- " + u.getUsage().getName().getAuthorshipNormalized() + " -- ");
           if (u.getUsage().isSynonym()) {
             Synonym s = (Synonym) u.getUsage();

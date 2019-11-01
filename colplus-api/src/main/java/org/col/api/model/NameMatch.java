@@ -74,7 +74,7 @@ public class NameMatch {
         sb.append(": [");
         boolean first = true;
         for (Name a : alternatives) {
-          sb.append(a.canonicalNameComplete());
+          sb.append(a.canonicalNameWithAuthorship());
           if (first) {
             first = false;
           } else {
@@ -85,7 +85,7 @@ public class NameMatch {
         break;
       default:
         sb.append(": ")
-            .append(name.canonicalNameComplete());
+            .append(name.canonicalNameWithAuthorship());
     }
     
     return sb.toString();

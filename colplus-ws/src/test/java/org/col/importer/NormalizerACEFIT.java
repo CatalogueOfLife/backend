@@ -104,7 +104,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
       // denormed family
       u = byName("Fabaceae", null);
       assertEquals("Fabaceae", u.usage.getName().getScientificName());
-      assertEquals("Fabaceae", u.usage.getName().canonicalNameComplete());
+      assertEquals("Fabaceae", u.usage.getName().canonicalNameWithAuthorship());
       assertNull(u.usage.getName().authorshipComplete());
       assertEquals(Rank.FAMILY, u.usage.getName().getRank());
     }
@@ -188,7 +188,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
       for (Node n : Iterators.loop(store.getNeo().findNodes(Labels.USAGE))) {
         u = store.usageWithName(n);
         if (u.usage.getName().getOrigin() == Origin.SOURCE) {
-          System.out.println(u.usage.getStatus() + ": " + u.usage.getName().canonicalNameComplete());
+          System.out.println(u.usage.getStatus() + ": " + u.usage.getName().canonicalNameWithAuthorship());
           System.out.println("  " + u.usage.getName().getRemarks());
           System.out.println("  " + u.usage.getAccordingTo());
           assertNotNull(u.usage.getAccordingTo());

@@ -162,16 +162,16 @@ public class NameIndexMapDB implements NameIndex {
     
     if (!m.hasMatch() && allowInserts) {
       if (MatchType.AMBIGUOUS == m.getType()) {
-        LOG.debug("Do not insert ambiguous name match: {}", name.canonicalNameComplete());
+        LOG.debug("Do not insert ambiguous name match: {}", name.canonicalNameWithAuthorship());
       } else if (INDEX_NAME_TYPES.contains(name.getType())) {
         m.setName(insert(name));
         m.setType(MatchType.INSERTED);
-        LOG.debug("Inserted: {}", m.getName().canonicalNameComplete());
+        LOG.debug("Inserted: {}", m.getName().canonicalNameWithAuthorship());
       } else {
-        LOG.debug("Do not insert {} name: {}", name.getType(), name.canonicalNameComplete());
+        LOG.debug("Do not insert {} name: {}", name.getType(), name.canonicalNameWithAuthorship());
       }
     }
-    LOG.debug("Matched {} => {}", name.canonicalNameComplete(), m);
+    LOG.debug("Matched {} => {}", name.canonicalNameWithAuthorship(), m);
     return m;
   }
   
@@ -183,7 +183,7 @@ public class NameIndexMapDB implements NameIndex {
     final boolean compareAuthorship = query.hasAuthorship();
     final boolean compareCode = query.getCode() != null;
     final String queryname = SciNameNormalizer.normalizedAscii(query.canonicalNameWithoutAuthorship());
-    final String queryfullname = SciNameNormalizer.normalizedAscii(query.canonicalName());
+    final String queryfullname = SciNameNormalizer.normalizedAscii(query.canonicalNameWithAuthorship());
     final String queryauthorship = Strings.nullToEmpty(SciNameNormalizer.normalizedAscii(query.authorshipComplete()));
     // calculate score by rank, nomCode & authorship
     // immediately filtering no matches with a negative score
@@ -204,7 +204,7 @@ public class NameIndexMapDB implements NameIndex {
       }
       
       // exact full name match: =5
-      if (queryfullname.equalsIgnoreCase(SciNameNormalizer.normalizedAscii(n.canonicalName()))) {
+      if (queryfullname.equalsIgnoreCase(SciNameNormalizer.normalizedAscii(n.canonicalNameWithAuthorship()))) {
         score = 5;
         
       } else {
@@ -239,7 +239,7 @@ public class NameIndexMapDB implements NameIndex {
       
     } else {
       // multiple, ambiguous matches
-      LOG.debug("Ambiguous match ({} hits) for {}", matches.size(), query.canonicalNameComplete());
+      LOG.debug("Ambiguous match ({} hits) for {}", matches.size(), query.canonicalNameWithAuthorship());
       NameMatch m = new NameMatch();
       m.setType(MatchType.AMBIGUOUS);
       m.setAlternatives(matches);
@@ -270,7 +270,7 @@ public class NameIndexMapDB implements NameIndex {
   private static NameMatch buildMatch(Name query, Name match) {
     NameMatch m = new NameMatch();
     m.setName(match);
-    if (query.canonicalName().equalsIgnoreCase(match.canonicalName())) {
+    if (query.canonicalNameWithAuthorship().equalsIgnoreCase(match.canonicalNameWithAuthorship())) {
       m.setType(MatchType.EXACT);
     } else {
       m.setType(MatchType.VARIANT);

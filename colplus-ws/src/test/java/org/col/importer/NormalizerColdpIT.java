@@ -29,13 +29,13 @@ public class NormalizerColdpIT extends NormalizerITBase {
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage t = usageByID("1000");
       assertFalse(t.isSynonym());
-      assertEquals("Platycarpha glomerata (Thunberg) A.P.de Candolle", t.usage.getName().canonicalNameComplete());
+      assertEquals("Platycarpha glomerata (Thunberg) A.P.de Candolle", t.usage.getName().canonicalNameWithAuthorship());
   
       t = usageByNameID("1006-s3");
       assertTrue(t.isSynonym());
       assertEquals("1006-1006-s3", t.getId());
       assertEquals("1006-s3", t.usage.getName().getId());
-      assertEquals("Leonida taraxacoida Vill.", t.usage.getName().canonicalNameComplete());
+      assertEquals("Leonida taraxacoida Vill.", t.usage.getName().canonicalNameWithAuthorship());
   
       List<NameRelation> rels = store.relations(t.nameNode);
       assertEquals(1, rels.size());
@@ -44,7 +44,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
       t = accepted(t.node);
       assertFalse(t.isSynonym());
       assertEquals("1006", t.getId());
-      assertEquals("Leontodon taraxacoides (Vill.) Mérat", t.usage.getName().canonicalNameComplete());
+      assertEquals("Leontodon taraxacoides (Vill.) Mérat", t.usage.getName().canonicalNameWithAuthorship());
       
       parents(t.node, "102", "30", "20", "10", "1");
       
