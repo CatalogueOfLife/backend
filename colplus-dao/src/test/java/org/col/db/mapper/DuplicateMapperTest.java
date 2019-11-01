@@ -75,7 +75,7 @@ public class DuplicateMapperTest {
   }
   
   @Test
-  public void usagesByIds() {
+  public void usagesWithDecisions() {
     List<Duplicate.UsageDecision> res = mapper.usagesByIds(datasetKey, Lists.immutableListOf("45", "46"));
     assertEquals(2, res.size());
     for (Duplicate.UsageDecision u : res) {
@@ -105,11 +105,13 @@ public class DuplicateMapperTest {
   }
   
   @Test
-  public void usagesWithDecisions() {
-    List<Duplicate.UsageDecision> res = mapper.usagesByIds(datasetKey, Lists.immutableListOf("45", "46"));
+  public void usagesByIds() {
+    List<Duplicate.UsageDecision> res = mapper.usagesByIds(datasetKey, Lists.immutableListOf("55", "46"));
     assertEquals(2, res.size());
     for (Duplicate.UsageDecision u : res) {
       assertFalse(u.getClassification().isEmpty());
+      assertNull(u.getDecision());
+      assertNotNull(u.getUsage());
     }
   }
   
