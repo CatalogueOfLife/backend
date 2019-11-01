@@ -251,7 +251,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
     normalize(10);
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage u = usageByID("Scr-13-.01-.01-.00-.001-.001-.014-.b");
-      assertEquals("Odontotrypes farkaci habaensis", u.usage.getName().getScientificName());
+      assertEquals("Odontotrypes (Thorectomimus) farkaci habaensis", u.usage.getName().getScientificName());
       assertEquals("Ochi, Kon & Bai, 2018", u.usage.getName().authorshipComplete());
       assertEquals(Rank.INFRASPECIFIC_NAME, u.usage.getName().getRank());
 
