@@ -13,6 +13,7 @@ import org.col.api.TestEntityGenerator;
 import org.col.api.model.Duplicate;
 import org.col.api.model.EditorialDecision;
 import org.col.api.model.Page;
+import org.col.api.vocab.Datasets;
 import org.col.api.vocab.MatchingMode;
 import org.col.api.vocab.NameCategory;
 import org.col.api.vocab.TaxonomicStatus;
@@ -87,7 +88,7 @@ public class DuplicateMapperTest {
     DecisionMapper dm = session.getMapper(DecisionMapper.class);
   
     EditorialDecision d1 = TestEntityGenerator.setUser(new EditorialDecision());
-    d1.setDatasetKey(datasetKey);
+    d1.setDatasetKey(Datasets.DRAFT_COL);
     d1.setSubjectDatasetKey(datasetKey);
     d1.setSubject(TreeMapperTest.nameref("45"));
     d1.setMode(EditorialDecision.Mode.UPDATE);
