@@ -8,7 +8,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 import javax.ws.rs.core.HttpHeaders;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -75,9 +74,10 @@ public class GBIFAuthentication implements AuthenticationProvider {
   
   @Override
   public Optional<ColUser> authenticate(String username, String password) {
-    if (authenticateGBIF(username, password)) {
+    String usernameStrict = authenticateGBIF(username, password);
+    if (usernameStrict != null) {
       // GBIF authentication does not provide us with the full user, we need to look it up again
-      ColUser user = getFullGbifUser(username);
+      ColUser user = getFullGbifUser(usernameStrict);
       return Optional.ofNullable(user);
     } else {
       LOG.debug("GBIF authentication failed for user {}", username);
@@ -92,18 +92,28 @@ public class GBIFAuthentication implements AuthenticationProvider {
    * https://github.com/gbif/registry/issues/67
    * https://stackoverflow.com/questions/7242316/what-encoding-should-i-use-for-http-basic-authentication
    * https://tools.ietf.org/html/rfc7617#section-2.1
+   *
+   * @return the username or null if auth failed
    */
   @VisibleForTesting
-  boolean authenticateGBIF(String username, String password) {
+  String authenticateGBIF(String username, String password) {
     HttpGet get = new HttpGet(loginUri);
     get.addHeader(HttpHeaders.AUTHORIZATION, basicAuthHeader(username, password));
     try (CloseableHttpResponse resp = http.execute(get)) {
-      LOG.debug("GBIF authentication response for {}: {}", username, resp);
-      return resp.getStatusLine().getStatusCode() == 200;
+      if (resp.getStatusLine().getStatusCode() == 200) {
+        // we retrieve the username from the response as we can also authenticate with the email address
+        GUser gbif = OM.readValue(resp.getEntity().getContent(), GUser.class);
+        if (gbif != null && gbif.userName != null && !username.equalsIgnoreCase(gbif.userName)) {
+          LOG.debug("GBIF user for {} is {}", username, gbif.userName);
+          username = gbif.userName;
+        }
+        LOG.debug("GBIF authentication response for {}: {}", username, resp);
+        return username;
+      }
     } catch (Exception e) {
       LOG.error("GBIF BasicAuth error for user {}", username, e);
     }
-    return false;
+    return null;
   }
   
   public static String basicAuthHeader(String username, String password) {

@@ -139,4 +139,10 @@
         WHERE u.id = #{id}
     </select>
 
+
+
+    <select id="search" parameterType="map" resultMap="taxonWithClassificationResultMap">
+        <include refid="org.col.db.Common.partitionByDatasetKey"/>
+    </select>
+
 </mapper>

@@ -1,10 +1,13 @@
 package org.col.db.mapper;
 
+import java.util.List;
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.ResultHandler;
+import org.col.api.model.Page;
 import org.col.api.model.SimpleNameClassification;
+import org.col.api.search.NameSearchRequest;
 import org.col.api.search.NameUsageWrapper;
 
 /**
@@ -58,4 +61,11 @@ public interface NameUsageWrapperMapper {
   NameUsageWrapper getWithoutClassification(@Param("datasetKey") int datasetKey,
                        @Param("id") String taxonId);
   
+  /**
+   * WARNING! experimental, not fully implemented !!!
+   */
+  List<NameUsageWrapper> search(@Param("datasetKey") int datasetKey,
+                                @Param("req") NameSearchRequest request,
+                                @Param("page") Page page);
+
 }

@@ -27,40 +27,40 @@ public class SectorDao extends EntityDao<Integer, Sector, SectorMapper> {
   }
   
   @Override
-  public Integer create(Sector obj, int user) {
-    obj.applyUser(user);
+  public Integer create(Sector s, int user) {
+    s.applyUser(user);
     try (SqlSession session = factory.openSession(ExecutorType.SIMPLE, false)) {
       SectorMapper mapper = session.getMapper(SectorMapper.class);
   
-      final DSID<String> did = obj.getTargetAsDSID();
+      final DSID<String> did = s.getTargetAsDSID();
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
   
       // reload full source and target
-      Taxon subject = tm.get(obj.getSubjectAsDSID());
+      Taxon subject = tm.get(s.getSubjectAsDSID());
       if (subject == null) {
-        throw new IllegalArgumentException("subject ID " + obj.getSubject().getId() + " not existing in dataset " + obj.getSubjectDatasetKey());
+        throw new IllegalArgumentException("subject ID " + s.getSubject().getId() + " not existing in dataset " + s.getSubjectDatasetKey());
       }
-      obj.setSubject(subject.toSimpleName());
+      s.setSubject(subject.toSimpleName());
   
-      Taxon target  = tm.get(obj.getTargetAsDSID());
+      Taxon target  = tm.get(s.getTargetAsDSID());
       if (target == null) {
-        throw new IllegalArgumentException("target ID " + obj.getTarget().getId() + " not existing in catalogue " + obj.getDatasetKey());
+        throw new IllegalArgumentException("target ID " + s.getTarget().getId() + " not existing in catalogue " + s.getDatasetKey());
       }
-      obj.setTarget(target.toSimpleName());
+      s.setTarget(target.toSimpleName());
       
       
-      // create sector key
-      mapper.create(obj);
-      final Integer secKey = obj.getKey();
+      // creates sector key
+      mapper.create(s);
+      final Integer secKey = s.getKey();
   
       List<Taxon> toCopy = new ArrayList<>();
       // create direct children in catalogue
-      if (Sector.Mode.ATTACH == obj.getMode()) {
+      if (Sector.Mode.ATTACH == s.getMode()) {
         // one taxon in ATTACH mode
         toCopy.add(subject);
       } else {
         // several taxa in MERGE mode
-        toCopy = tm.children(obj.getSubjectAsDSID(), new Page());
+        toCopy = tm.children(s.getSubjectAsDSID(), new Page());
       }
   
       for (Taxon t : toCopy) {
@@ -68,7 +68,7 @@ public class SectorDao extends EntityDao<Integer, Sector, SectorMapper> {
         TaxonDao.copyTaxon(session, t, did, user, Collections.emptySet());
       }
   
-      incSectorCounts(session, obj, 1);
+      incSectorCounts(session, s, 1);
   
       session.commit();
       return secKey;

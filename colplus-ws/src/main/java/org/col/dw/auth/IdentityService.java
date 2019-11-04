@@ -78,7 +78,7 @@ public class IdentityService {
       try (SqlSession session = sqlSessionFactory.openSession(true)) {
         UserMapper mapper = session.getMapper(UserMapper.class);
         // try to find existing user in Col db, otherwise create new one otherwise
-        ColUser existing = mapper.getByUsername(username);
+        ColUser existing = mapper.getByUsername(user.getUsername());
         if (existing != null) {
           user.setKey(existing.getKey());
           mapper.update(user);

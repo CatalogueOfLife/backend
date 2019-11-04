@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
@@ -21,7 +22,12 @@ public class NameSearchResponse extends ResultPage<NameUsageWrapper> {
     super(page, total, result);
     this.facets = facets;
   }
-
+  
+  public NameSearchResponse(Page page, List<NameUsageWrapper> result, Map<NameSearchParameter, Set<FacetValue<?>>> facets, Supplier<Integer> count) {
+    super(page, result, count);
+    this.facets = facets;
+  }
+    
   public Map<NameSearchParameter, Set<FacetValue<?>>> getFacets() {
     return facets;
   }

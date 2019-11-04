@@ -38,8 +38,8 @@ public class GBIFAuthenticationTest {
   @Test
   @Ignore("GBIF service needs to be mocked - this uses live services")
   public void authenticateGBIF() {
-    Assert.assertTrue(gbif.authenticateGBIF("markus", "xxx"));
-    Assert.assertTrue(gbif.authenticateGBIF("colplus", "xxx"));
+    Assert.assertEquals("markus", gbif.authenticateGBIF("markus", "xxx"));
+    Assert.assertEquals("colplus", gbif.authenticateGBIF("colplus", "xxx"));
   }
   
   @Test

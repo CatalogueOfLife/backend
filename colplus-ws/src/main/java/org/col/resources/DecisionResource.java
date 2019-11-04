@@ -1,12 +1,7 @@
 package org.col.resources;
 
 import java.util.List;
-
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
@@ -34,17 +29,19 @@ public class DecisionResource extends AbstractDecisionResource<EditorialDecision
   
   @GET
   public List<EditorialDecision> list(@Context SqlSession session,
+                                      @QueryParam("catalogueKey") @DefaultValue(""+Datasets.DRAFT_COL) int catalogueKey,
                                       @QueryParam("datasetKey") Integer datasetKey,
                                       @QueryParam("id") String id) {
-    return session.getMapper(DecisionMapper.class).listBySubjectDataset(Datasets.DRAFT_COL, datasetKey, id);
+    return session.getMapper(DecisionMapper.class).listBySubjectDataset(catalogueKey, datasetKey, id);
   }
   
   @GET
   @Path("/broken")
   public List<EditorialDecision> broken(@Context SqlSession session,
+                                        @QueryParam("catalogueKey") @DefaultValue(""+Datasets.DRAFT_COL) int catalogueKey,
                                         @QueryParam("datasetKey") Integer datasetKey) {
     DecisionMapper mapper = session.getMapper(DecisionMapper.class);
-    return mapper.subjectBroken(Datasets.DRAFT_COL, datasetKey);
+    return mapper.subjectBroken(catalogueKey, datasetKey);
   }
   
 }

@@ -62,9 +62,4 @@ public class NameUsageProcessor {
     }
   }
   
-  public static void main (String[] args) {
-    for (Locale l : Collator.getAvailableLocales()) {
-      System.out.println(l);
-    }
-  }
 }
