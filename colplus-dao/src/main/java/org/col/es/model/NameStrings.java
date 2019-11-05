@@ -46,8 +46,11 @@ public class NameStrings {
    * @param name
    */
   public NameStrings(Name name) {
-    if (name.getRank().higherThan(Rank.GENUS) && name.getUninomial() != null) {
+    if (name.getUninomial() != null) {
       genusOrMonomialWN = normalizeWeakly(name.getUninomial());
+      if (name.getRank() == Rank.GENUS) {
+        genusLetter = String.valueOf(name.getUninomial().charAt(0)).toLowerCase();
+      }
     } else if (name.getGenus() != null) {
       genusLetter = String.valueOf(name.getGenus().charAt(0)).toLowerCase();
       genusOrMonomialWN = normalizeWeakly(name.getGenus());
