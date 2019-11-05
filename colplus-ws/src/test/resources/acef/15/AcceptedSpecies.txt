@@ -5,3 +5,8 @@ c,Animalia,Arthropoda,Scytodidae,Stedocys,,leopoldi,"(Giltay, 1935)",,accepted
 d,Animalia,Arthropoda,Scytodidae,Stedocys,,pagodas,"Labarque, Grismado, Ramírez, Yan & Griswold, 2009",,accepted
 e,Animalia,Arthropoda,Scytodidae,Stedocys,,uenorum,"Ono, 1995",,accepted
 f,Animalia,Arthropoda,Scytodidae,Scytodes,,,"Latreille, 1804",,accepted
+aa,Animalia,Arthropoda,Scarabaeidae,Onthophagus,Afrostrandius,pseudoplebejus,"Moretto, 2009",,accepted
+ab,Animalia,Arthropoda,Scarabaeidae,Onthophagus,Afrostrandius,,"Moretto, 2009",,accepted
+ac,Animalia,Arthropoda,Scarabaeidae,Onthophagus,Afrostrandius,demeyeri,"Moretto, 2009",,accepted
+ad,Animalia,Arthropoda,Scarabaeidae,Onthophagus,Sunenaga,avocetta,"Arrow, 1933",,accepted
+ae,Animalia,Arthropoda,Scarabaeidae,Onthophagus,Sunenaga,,"Ochi, 2003",,accepted

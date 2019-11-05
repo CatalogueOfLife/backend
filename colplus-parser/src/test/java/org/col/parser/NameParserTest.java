@@ -5,6 +5,7 @@ import java.util.Set;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import org.col.api.model.IssueContainer;
 import org.col.api.model.Name;
 import org.col.api.model.NameAccordingTo;
 import org.col.api.vocab.NomStatus;
@@ -40,6 +41,10 @@ public class NameParserTest {
   @Test
   public void parseSubgenera() throws Exception {
     assertName("Eteone subgen. Mysta", "Eteone subgen. Mysta")
+        .infraGeneric("Eteone", Rank.SUBGENUS, "Mysta")
+        .nothingElse();
+    
+    assertName("Eteone (Mysta)", Rank.SUBGENUS, NomCode.ZOOLOGICAL, "Eteone (Mysta)")
         .infraGeneric("Eteone", Rank.SUBGENUS, "Mysta")
         .nothingElse();
   }
@@ -248,11 +253,19 @@ public class NameParserTest {
   }
   
   static NameAssertion assertName(String rawName, String sciname, NameType type) throws UnparsableException {
-    NameAccordingTo n = parser.parse(rawName).get();
+    return assertName(rawName, null, null, sciname, type);
+  }
+  
+  static NameAssertion assertName(String rawName, Rank rank, NomCode code, String sciname) throws UnparsableException {
+    return assertName(rawName, rank, code, sciname, NameType.SCIENTIFIC);
+  }
+  
+  static NameAssertion assertName(String rawName, Rank rank, NomCode code, String sciname, NameType type) throws UnparsableException {
+    NameAccordingTo n = parser.parse(rawName, rank, code, IssueContainer.VOID).get();
     assertEquals(sciname, n.getName().getScientificName());
     return new NameAssertion(n.getName()).type(type);
   }
-  
+
   static class NameAssertion {
     private final Name n;
     private Set<NP> tested = Sets.newHashSet();

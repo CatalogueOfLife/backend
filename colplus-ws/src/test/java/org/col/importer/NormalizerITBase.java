@@ -15,6 +15,7 @@ import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.col.config.NormalizerConfig;
 import org.col.img.ImageService;
+import org.col.importer.coldp.MetadataParser;
 import org.col.importer.neo.NeoDb;
 import org.col.importer.neo.NeoDbFactory;
 import org.col.importer.neo.NotUniqueRuntimeException;
@@ -33,6 +34,7 @@ import org.col.api.vocab.DataFormat;
 import org.col.api.vocab.Issue;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 import org.junit.After;
 import org.junit.Before;
 import org.neo4j.graphdb.Direction;
@@ -81,13 +83,34 @@ abstract class NormalizerITBase {
     normalize(datasetKey, null);
   }
   
+  public static Optional<NomCode> readDatasetCode(String resourceDir) {
+    URL metaUrl = NormalizerTreeIT.class.getResource(resourceDir + "/metadata.yaml");
+    if (metaUrl != null) {
+      try {
+        Optional<Dataset> meta = MetadataParser.readMetadata(metaUrl.openStream());
+        if (meta.isPresent()) {
+          NomCode code = meta.get().getCode();
+          System.out.println("Use code " + code);
+          return Optional.of(code);
+        }
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+    return Optional.empty();
+  }
+  
   /**
    * Normalizes an archive from the test resources
    * and checks its printed txt tree against the expected tree
    *
    */
   public void normalize(int datasetKey, @Nullable NomCode code) throws Exception {
-    URL url = getClass().getResource("/" + format.name().toLowerCase() + "/" + datasetKey);
+    String resourceDir = "/" + format.name().toLowerCase() + "/" + datasetKey;
+    URL url = getClass().getResource(resourceDir);
+    if (code == null) {
+      code = readDatasetCode(resourceDir).orElse(null);
+    }
     normalize(Paths.get(url.toURI()), code);
   }
   
@@ -236,6 +259,14 @@ abstract class NormalizerITBase {
     return store.usageWithName(store.usages().nodeByID(id));
   }
   
+  public NeoUsage usageByName(Rank rank, String name) {
+    List<Node> usages = store.usagesByName(name, null, rank, true);
+    if (usages.size()!=1) {
+      throw new IllegalStateException(usages.size() + " usage nodes matching " + rank + " " + name);
+    }
+    return store.usageWithName(usages.get(0));
+  }
+
   public NeoName nameByID(String id) {
     return store.names().objByID(id);
   }

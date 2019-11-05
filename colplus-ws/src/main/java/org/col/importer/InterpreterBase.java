@@ -238,6 +238,14 @@ public class InterpreterBase {
     return epithet;
   }
   
+  private static void setDefaultNameType(Name n) {
+    if (n.getCode() == NomCode.VIRUS) {
+      n.setType(NameType.VIRUS);
+    } else {
+      n.setType(NameType.SCIENTIFIC);
+    }
+  }
+  
   public Optional<NameAccordingTo> interpretName(final String id, final String vrank, final String sciname, final String authorship,
                                                  final String genus, final String infraGenus, final String species, final String infraspecies,
                                                  final String cultivar,final String phrase,
@@ -250,22 +258,7 @@ public class InterpreterBase {
     atom.setInfraspecificEpithet(lowercaseEpithet(infraspecies, v));
     atom.setCultivarEpithet(cultivar);
     atom.setAppendedPhrase(phrase);
-    return interpretName(id, vrank, sciname, authorship, isAtomized, atom, nomCode, nomStatus, link, remarks, v);
-  }
-  
-  private static void setDefaultNameType(Name n) {
-    if (n.getCode() == NomCode.VIRUS) {
-      n.setType(NameType.VIRUS);
-    } else {
-      n.setType(NameType.SCIENTIFIC);
-    }
-  }
-  
-  Optional<NameAccordingTo> interpretName(final String id, final String vrank, final String sciname, final String authorship,
-                                                  final boolean isAtomized, final Name atom,
-                                                  String nomCode, String nomStatus, String link, String remarks, VerbatimRecord v) {
-    NameAccordingTo nat;
-    
+
     // parse rank & code as they improve name parsing
     Rank rank = SafeParser.parse(RankParser.PARSER, vrank).orElse(Rank.UNRANKED, Issue.RANK_INVALID, v);
     atom.setRank(rank);
@@ -273,11 +266,14 @@ public class InterpreterBase {
     atom.setCode(code);
     setDefaultNameType(atom);
   
-    // populate uninomial?
-    if (!atom.isBinomial() && rank.isSupraspecific() && atom.getGenus() != null) {
+    // populate uninomial instead of genus?
+    if (!atom.isBinomial() && rank.isGenusOrSuprageneric() && atom.getGenus() != null && atom.getInfragenericEpithet() == null) {
       atom.setUninomial(atom.getGenus());
       atom.setGenus(null);
     }
+  
+    NameAccordingTo nat;
+  
     // we can getUsage the scientific name in various ways.
     // we parse all names from the scientificName + optional authorship
     // or use the atomized parts which we also use to validate the parsing result.

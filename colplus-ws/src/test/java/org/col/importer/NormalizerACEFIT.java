@@ -247,7 +247,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
   }
   
   @Test
-  public void acefInfrspecies() throws Exception {
+  public void acefInfraspecies() throws Exception {
     normalize(10);
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage u = usageByID("Scr-13-.01-.01-.00-.001-.001-.014-.b");
@@ -325,6 +325,16 @@ public class NormalizerACEFIT extends NormalizerITBase {
       assertEquals("Scyloxes asiatica carambula", t.usage.getName().getScientificName());
       assertEquals("Dunin, 2001", t.usage.getName().getAuthorship());
       assertEquals(Rank.INFRASPECIFIC_NAME, t.usage.getName().getRank());
+  
+      t = usageByID("ae");
+      assertEquals("Onthophagus (Sunenaga)", t.usage.getName().getScientificName());
+      assertEquals("Ochi, 2003", t.usage.getName().getAuthorship());
+      assertEquals(Rank.SUBGENUS, t.usage.getName().getRank());
+  
+      t = usageByName(Rank.GENUS, "Onthophagus");
+      assertEquals("Onthophagus", t.usage.getName().getScientificName());
+      assertNull(t.usage.getName().getAuthorship());
+      assertEquals(Rank.GENUS, t.usage.getName().getRank());
     }
   }
   

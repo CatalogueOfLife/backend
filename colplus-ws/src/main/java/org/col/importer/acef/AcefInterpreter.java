@@ -174,8 +174,15 @@ public class AcefInterpreter extends InterpreterBase {
     } else {
       if (v.hasTerm(AcefTerm.SpeciesEpithet)) {
         rank = Rank.SPECIES.name();
-      } else {
+      } else if (v.hasTerm(AcefTerm.SubGenusName)) {
+        rank = Rank.SUBGENUS.name();
+      } else if (v.hasTerm(AcefTerm.Genus)) {
         rank = Rank.GENUS.name();
+      } else {
+        // missing name data!
+        v.addIssue(Issue.NOT_INTERPRETED);
+        v.addIssue(Issue.MISSING_GENUS);
+        return Optional.empty();
       }
       authorship = v.get(AcefTerm.AuthorString);
     }
