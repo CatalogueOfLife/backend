@@ -55,6 +55,8 @@ public class ImageServiceFS implements ImageService {
         writeImage(locator.apply(ImgConfig.Scale.ORIGINAL), img);
         writeImage(locator.apply(ImgConfig.Scale.LARGE), scale(img, ImgConfig.Scale.LARGE));
         writeImage(locator.apply(ImgConfig.Scale.SMALL), scale(img, ImgConfig.Scale.SMALL));
+        writeImage(locator.apply(ImgConfig.Scale.AC_SMALL), scale(img, ImgConfig.Scale.AC_SMALL));
+        writeImage(locator.apply(ImgConfig.Scale.AC_MEDIUM), scale(img, ImgConfig.Scale.AC_MEDIUM));
       }
     } catch (IOException e) {
       LOG.error("Failed to update all sizes for image {} {}", locator.apply(ImgConfig.Scale.ORIGINAL), img, e);

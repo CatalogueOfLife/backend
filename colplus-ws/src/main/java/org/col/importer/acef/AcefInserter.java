@@ -165,6 +165,7 @@ public class AcefInserter extends NeoInserter {
           for (String accID : syn.getValue()) {
             NeoUsage accU = store.usages().objByID(accID);
             if (accU == null) {
+              //TODO: log issue
             } else {
               synU.node.createRelationshipTo(accU.node, RelType.SYNONYM_OF);
             }

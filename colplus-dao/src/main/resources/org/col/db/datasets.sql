@@ -382,6 +382,8 @@ UPDATE dataset SET alias='CoL Management Classification', title='A Higher Level 
 UPDATE dataset SET alias='IRMNG', title='Interim Register of Marine and Nonmarine Genera' WHERE key=1501;
 UPDATE dataset SET alias='Animal biodiversity', title='An Outline of Higher-level Classification and Survey of Taxonomic Richness (Addenda 2013)1' WHERE key=1502;
 
+-- take logos from repo
+UPDATE dataset SET logo='https://github.com/Sp2000/colplus-repo/raw/master/logos/' || replace(alias,' ','_') || '.png' WHERE alias IS NOT NULL AND key > 999 AND key < 2000;
 
 --------------------------
 -- NEW DATASETS
