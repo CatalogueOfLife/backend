@@ -1,4 +1,4 @@
-package org.col.command.export;
+package org.col.assembly;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,7 +47,7 @@ public class AcExporterTest {
   
   @Test
   public void export() throws Exception {
-    AcExporter exp = new AcExporter(cfg);
+    AcExporter exp = new AcExporter(cfg, PgSetupRule.getSqlSessionFactory());
     StringWriter writer = new StringWriter();
     arch = exp.export(Datasets.DRAFT_COL, writer);
     System.out.println("LOGS:\n");
@@ -83,7 +83,7 @@ public class AcExporterTest {
     final AcExporter exp;
   
     ExporterRunnable(WsServerConfig cfg) {
-      this.exp = new AcExporter(cfg);
+      this.exp = new AcExporter(cfg, PgSetupRule.getSqlSessionFactory());
     }
   
     @Override

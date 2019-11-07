@@ -1,7 +1,15 @@
 package org.col;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import io.dropwizard.Application;
+import io.dropwizard.client.DropwizardApacheConnector;
+import io.dropwizard.client.HttpClientBuilder;
+import io.dropwizard.client.JerseyClientBuilder;
+import io.dropwizard.client.JerseyClientConfiguration;
+import io.dropwizard.forms.MultiPartBundle;
+import io.dropwizard.jackson.Jackson;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -9,30 +17,21 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.datapackage.ColdpTerm;
 import org.col.api.jackson.ApiModule;
 import org.col.api.vocab.ColDwcTerm;
+import org.col.assembly.AcExporter;
 import org.col.assembly.AssemblyCoordinator;
 import org.col.command.es.IndexAllCmd;
-import org.col.command.export.AcExporter;
-import org.col.command.export.ExportCmd;
 import org.col.command.initdb.InitDbCmd;
 import org.col.common.csl.CslUtil;
 import org.col.common.io.DownloadUtil;
 import org.col.common.tax.AuthorshipNormalizer;
-import org.col.dao.DatasetImportDao;
-import org.col.dao.NameDao;
-import org.col.dao.ReferenceDao;
-import org.col.dao.SynonymDao;
-import org.col.dao.TaxonDao;
+import org.col.dao.*;
 import org.col.db.tree.DiffService;
 import org.col.dw.ManagedCloseable;
 import org.col.dw.auth.AuthBundle;
 import org.col.dw.cors.CorsBundle;
 import org.col.dw.db.MybatisBundle;
 import org.col.dw.es.ManagedEsClient;
-import org.col.dw.health.CslUtilsHealthCheck;
-import org.col.dw.health.DiffHealthCheck;
-import org.col.dw.health.EsHealthCheck;
-import org.col.dw.health.NameParserHealthCheck;
-import org.col.dw.health.NamesIndexHealthCheck;
+import org.col.dw.health.*;
 import org.col.dw.jersey.ColJerseyBundle;
 import org.col.es.EsClientFactory;
 import org.col.es.name.index.NameUsageIndexService;
@@ -49,27 +48,7 @@ import org.col.importer.ImportManager;
 import org.col.matching.NameIndex;
 import org.col.matching.NameIndexFactory;
 import org.col.parser.NameParser;
-import org.col.resources.AdminResource;
-import org.col.resources.AssemblyResource;
-import org.col.resources.DataPackageResource;
-import org.col.resources.DatasetResource;
-import org.col.resources.DecisionResource;
-import org.col.resources.DocsResource;
-import org.col.resources.DuplicateResource;
-import org.col.resources.EstimateResource;
-import org.col.resources.ImporterResource;
-import org.col.resources.MatchingResource;
-import org.col.resources.NameResource;
-import org.col.resources.NameSearchResource;
-import org.col.resources.ParserResource;
-import org.col.resources.ReferenceResource;
-import org.col.resources.SectorResource;
-import org.col.resources.SynonymResource;
-import org.col.resources.TaxonResource;
-import org.col.resources.TreeResource;
-import org.col.resources.UserResource;
-import org.col.resources.VerbatimResource;
-import org.col.resources.VocabResource;
+import org.col.resources.*;
 import org.elasticsearch.client.RestClient;
 import org.gbif.dwc.terms.TermFactory;
 import org.glassfish.jersey.client.rx.RxClient;
@@ -78,16 +57,6 @@ import org.glassfish.jersey.client.spi.ConnectorProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
-
-import io.dropwizard.Application;
-import io.dropwizard.client.DropwizardApacheConnector;
-import io.dropwizard.client.HttpClientBuilder;
-import io.dropwizard.client.JerseyClientBuilder;
-import io.dropwizard.client.JerseyClientConfiguration;
-import io.dropwizard.forms.MultiPartBundle;
-import io.dropwizard.jackson.Jackson;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
 
 import static org.col.es.EsConfig.ES_INDEX_NAME_USAGE;
 
@@ -124,7 +93,6 @@ public class WsServer extends Application<WsServerConfig> {
     // add some cli commands not accessible via the admin interface
     bootstrap.addCommand(new InitDbCmd());
     bootstrap.addCommand(new IndexAllCmd());
-    bootstrap.addCommand(new ExportCmd());
   }
 
   @Override
@@ -217,7 +185,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.lifecycle().manage(gbifSync);
 
     // exporter
-    AcExporter exporter = new AcExporter(cfg);
+    AcExporter exporter = new AcExporter(cfg, getSqlSessionFactory());
 
     // assembly
     AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), diDao, svcIndex, env.metrics());

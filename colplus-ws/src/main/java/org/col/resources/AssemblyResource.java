@@ -17,7 +17,7 @@ import org.col.api.model.*;
 import org.col.api.vocab.Datasets;
 import org.col.assembly.AssemblyCoordinator;
 import org.col.assembly.AssemblyState;
-import org.col.command.export.AcExporter;
+import org.col.assembly.AcExporter;
 import org.col.dao.SubjectRematcher;
 import org.col.db.mapper.SectorImportMapper;
 import org.col.dw.auth.Roles;

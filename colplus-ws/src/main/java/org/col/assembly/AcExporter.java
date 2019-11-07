@@ -1,19 +1,28 @@
-package org.col.command.export;
+package org.col.assembly;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.WsServerConfig;
+import org.col.api.model.Dataset;
+import org.col.api.model.Page;
+import org.col.api.search.DatasetSearchRequest;
 import org.col.common.io.CompressionUtil;
+import org.col.db.mapper.DatasetMapper;
+import org.col.img.ImgConfig;
 import org.col.postgres.PgCopyUtils;
 import org.gbif.nameparser.api.Rank;
 import org.postgresql.jdbc.PgConnection;
@@ -28,12 +37,14 @@ public class AcExporter {
   private static final Pattern COPY_END   = Pattern.compile("^\\s*\\)\\s*TO\\s*'(.+)'");
   private static final Pattern VAR_DATASET_KEY = Pattern.compile("\\{\\{datasetKey}}", Pattern.CASE_INSENSITIVE);
   private final WsServerConfig cfg;
+  private final SqlSessionFactory factory;
   private Writer logger;
   // we only allow a single export to run at a time
   private static boolean LOCK = false;
 
-  public AcExporter(WsServerConfig cfg) {
+  public AcExporter(WsServerConfig cfg, SqlSessionFactory factory) {
     this.cfg = cfg;
+    this.factory = factory;
   }
   
   private synchronized boolean aquireLock(){
@@ -73,6 +84,11 @@ public class AcExporter {
       } catch (UnsupportedEncodingException e) {
         throw new RuntimeException(e);
       }
+      // include images
+      exportLogos(catalogueKey, csvDir);
+      
+      // TODO: include citation.ini
+      
       // zip up archive and move to download
       File arch = new File(cfg.downloadDir, "ac-export.zip");
       log("Zip up archive and move to download");
@@ -91,6 +107,37 @@ public class AcExporter {
       this.logger = null;
       releaseLock();
     }
+  }
+  
+  private void exportLogos(int catalogueKey, File dir) throws IOException {
+    log("Export logos");
+    File logoDir = new File(dir, "logos");
+    logoDir.mkdir();
+  
+    int counter = 0;
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      DatasetSearchRequest req = new DatasetSearchRequest();
+      req.setContributesTo(catalogueKey);
+      List<Dataset> resp = dm.search(req, new Page(0,1000));
+      for (Dataset d : resp) {
+        Path p = cfg.img.datasetLogo(d.getKey(), ImgConfig.Scale.AC_MEDIUM);
+        if (java.nio.file.Files.exists(p)) {
+          File img =  new File(logoDir, (d.getKey()-1000) + ".png");
+          Files.copy(p.toFile(), img);
+          
+          p = cfg.img.datasetLogo(d.getKey(), ImgConfig.Scale.AC_SMALL);
+          img =  new File(logoDir, (d.getKey()-1000) + "-sm.png");
+          Files.copy(p.toFile(), img);
+          counter++;
+          
+        } else {
+          LOG.warn("Missing logo for dataset {}: {}", d.getKey(), d.getTitle());
+          log("Missing logo for dataset " + d.getTitle());
+        }
+      }
+    }
+    log(counter + " logos exported");
   }
   
   private static void setupTables(Connection c) throws SQLException, IOException {
