@@ -160,7 +160,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   })
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public Response uploadLogo(@PathParam("key") int key, InputStream img) throws IOException {
-    imgService.putDatasetLogo(get(key), ImageServiceFS.read(img));
+    imgService.putDatasetLogo(key, ImageServiceFS.read(img));
     return Response.ok().build();
   }
   
@@ -168,7 +168,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @Path("{key}/logo")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public Response deleteLogo(@PathParam("key") int key) throws IOException {
-    imgService.putDatasetLogo(get(key), null);
+    imgService.putDatasetLogo(key, null);
     return Response.ok().build();
   }
   

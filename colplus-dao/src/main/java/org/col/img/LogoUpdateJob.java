@@ -112,7 +112,7 @@ public class LogoUpdateJob implements Runnable {
       try {
         downloader.download(dataset.getLogo(), logo);
         // now read image and copy to logo repo for resizing
-        imgService.putDatasetLogo(dataset, ImageIO.read(logo));
+        imgService.putDatasetLogo(dataset.getKey(), ImageIO.read(logo));
         return true;
     
       } catch (DownloadException e) {
