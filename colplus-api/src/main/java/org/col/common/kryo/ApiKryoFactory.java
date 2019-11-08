@@ -88,6 +88,7 @@ public class ApiKryoFactory implements KryoFactory {
     kryo.register(Kingdom.class);
     kryo.register(License.class);
     kryo.register(Lifezone.class);
+    kryo.register(MatchType.class);
     kryo.register(MediaType.class);
     kryo.register(NamePart.class);
     kryo.register(NameType.class);

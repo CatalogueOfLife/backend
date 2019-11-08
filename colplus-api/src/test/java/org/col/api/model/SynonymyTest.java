@@ -17,7 +17,11 @@ public class SynonymyTest extends SerdeTestBase<Synonymy> {
   
   @Override
   public Synonymy genTestValue() throws Exception {
-    return TestEntityGenerator.newSynonymy();
+    Synonymy s = TestEntityGenerator.newSynonymy();
+    // being ignored in json
+    s.getHomotypic().forEach(n -> n.setNameIndexId(null));
+    s.getHeterotypic().forEach(nl -> nl.forEach(n -> n.setNameIndexId(null)));
+    return s;
   }
   
   @Test

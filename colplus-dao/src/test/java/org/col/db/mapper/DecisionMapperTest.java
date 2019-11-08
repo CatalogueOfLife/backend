@@ -74,6 +74,10 @@ public class DecisionMapperTest extends CRUDTestBase<Integer, EditorialDecision,
   EditorialDecision removeDbCreatedProps(EditorialDecision obj) {
     obj.setCreated(null);
     obj.setModified(null);
+    if (obj.getName() != null) {
+      // we store the name as JSON and thereby lose its name index id
+      obj.getName().setNameIndexId(null);
+    }
     return obj;
   }
   
