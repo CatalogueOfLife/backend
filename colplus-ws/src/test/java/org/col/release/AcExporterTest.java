@@ -1,10 +1,7 @@
-package org.col.assembly;
+package org.col.release;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.StringWriter;
-import java.sql.SQLException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
@@ -12,13 +9,10 @@ import org.apache.ibatis.session.SqlSession;
 import org.col.WsServerConfig;
 import org.col.api.model.Dataset;
 import org.col.api.vocab.Datasets;
-import org.col.common.io.DevNullWriter;
 import org.col.db.PgSetupRule;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.TestDataRule;
 import org.junit.*;
-
-import static org.junit.Assert.assertEquals;
 
 public class AcExporterTest {
   
@@ -63,49 +57,6 @@ public class AcExporterTest {
     arch = exp.export(Datasets.DRAFT_COL, writer);
     System.out.println("LOGS:\n");
     System.out.println(writer.toString());
-  }
-  
-  @Test
-  public void exportConcurrently() throws Exception {
-    final AtomicInteger exCounter = new AtomicInteger(0);
-    
-    Thread.UncaughtExceptionHandler h = new Thread.UncaughtExceptionHandler() {
-      public void uncaughtException(Thread th, Throwable ex) {
-        exCounter.incrementAndGet();
-        System.out.println("Uncaught exception: " + ex);
-      }
-    };
-    
-    Thread t1 = new Thread(new ExporterRunnable(cfg));
-    t1.setUncaughtExceptionHandler(h);
-  
-    Thread t2 = new Thread(new ExporterRunnable(cfg));
-    t2.setUncaughtExceptionHandler(h);
-
-    t1.start();
-    t2.start();
-    t1.join();
-    t2.join();
-    
-    assertEquals(1, exCounter.get());
-  }
-  
-  static class ExporterRunnable implements Runnable {
-    final AcExporter exp;
-  
-    ExporterRunnable(WsServerConfig cfg) {
-      this.exp = new AcExporter(cfg, PgSetupRule.getSqlSessionFactory());
-    }
-  
-    @Override
-    public void run() {
-      try {
-        File arch = exp.export(Datasets.DRAFT_COL, new DevNullWriter());
-        System.out.println("Export done: " + arch.getAbsolutePath());
-      } catch (IOException | SQLException e) {
-        throw new RuntimeException(e);
-      }
-    }
   }
   
 }

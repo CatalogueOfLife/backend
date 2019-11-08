@@ -1,26 +1,30 @@
 package org.col.resources;
 
-import java.io.*;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 
 import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
 import org.col.api.vocab.Datasets;
+import org.col.release.AcExporter;
 import org.col.assembly.AssemblyCoordinator;
 import org.col.assembly.AssemblyState;
-import org.col.assembly.AcExporter;
+import org.col.common.concurrent.NamedThreadFactory;
+import org.col.dao.DatasetImportDao;
 import org.col.dao.SubjectRematcher;
 import org.col.db.mapper.SectorImportMapper;
 import org.col.dw.auth.Roles;
+import org.col.release.CatalogueRelease;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,12 +36,17 @@ public class AssemblyResource {
   private static final Logger LOG = LoggerFactory.getLogger(AssemblyResource.class);
   private final AssemblyCoordinator assembly;
   private final AcExporter exporter;
+  private final DatasetImportDao diDao;
+  private CatalogueRelease release;
   private final SqlSessionFactory factory;
+  private static final ThreadPoolExecutor RELEASE_EXEC = new ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS,
+      new ArrayBlockingQueue(1), new NamedThreadFactory("col-release"), new ThreadPoolExecutor.DiscardPolicy());
   
-  public AssemblyResource(SqlSessionFactory factory, AssemblyCoordinator assembly, AcExporter exporter) {
+  public AssemblyResource(SqlSessionFactory factory, DatasetImportDao diDao, AssemblyCoordinator assembly, AcExporter exporter) {
     this.assembly = assembly;
     this.exporter = exporter;
     this.factory = factory;
+    this.diDao = diDao;
   }
   
   @GET
@@ -90,29 +99,32 @@ public class AssemblyResource {
     return session.getMapper(SectorImportMapper.class).get(sectorKey, attempt);
   }
   
-  @POST
-  @Path("/exportAC")
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  @Produces(MediaType.TEXT_PLAIN)
-  public Response exportAC(@PathParam("catKey") int catKey, @Auth ColUser user) {
+  @GET
+  @Path("/release")
+  public Object releaseState(@PathParam("catKey") int catKey) {
     requireDraft(catKey);
+    if (release == null) {
+      return "idle";
+    }
+    return release.getState();
+  }
   
-    StreamingOutput stream = new StreamingOutput() {
-      @Override
-      public void write(OutputStream os) throws IOException, WebApplicationException {
-        Writer writer = new OutputStreamWriter(os);
-        try {
-          exporter.export(catKey, writer);
-        } catch (Throwable e) {
-          writer.append("\n\n");
-          PrintWriter pw = new PrintWriter(writer);
-          e.printStackTrace(pw);
-          pw.flush();
-        }
-        writer.flush();
-      }
-    };
-    return Response.ok(stream).build();
+  @POST
+  @Path("/release")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public Integer release(@PathParam("catKey") int catKey, @Auth ColUser user) {
+    requireDraft(catKey);
+
+    CatalogueRelease rel = CatalogueRelease.release(factory, exporter, diDao, catKey, user.getKey());
+    final int key = rel.getReleaseKey();
+  
+    CompletableFuture.runAsync(rel, RELEASE_EXEC).thenApply(x -> {
+      // clear release reference when job is done
+      release = null;
+      return x;
+    });
+
+    return key;
   }
   
   @POST

@@ -17,7 +17,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.datapackage.ColdpTerm;
 import org.col.api.jackson.ApiModule;
 import org.col.api.vocab.ColDwcTerm;
-import org.col.assembly.AcExporter;
+import org.col.release.AcExporter;
 import org.col.assembly.AssemblyCoordinator;
 import org.col.command.es.IndexAllCmd;
 import org.col.command.initdb.InitDbCmd;
@@ -215,7 +215,7 @@ public class WsServer extends Application<WsServerConfig> {
             tdao,
             cImporter,
             gbifSync));
-    env.jersey().register(new AssemblyResource(getSqlSessionFactory(), assembly, exporter));
+    env.jersey().register(new AssemblyResource(getSqlSessionFactory(), diDao, assembly, exporter));
     env.jersey().register(new DataPackageResource());
     env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService, cfg, new DownloadUtil(httpClient), diff));
     env.jersey().register(new DecisionResource(getSqlSessionFactory(), svcIndex));

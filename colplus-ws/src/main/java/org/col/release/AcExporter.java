@@ -1,4 +1,4 @@
-package org.col.assembly;
+package org.col.release;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -26,6 +26,7 @@ import org.col.api.model.Dataset;
 import org.col.api.model.Page;
 import org.col.api.search.DatasetSearchRequest;
 import org.col.common.io.CompressionUtil;
+import org.col.common.io.Utf8IOUtils;
 import org.col.db.mapper.DatasetMapper;
 import org.col.img.ImgConfig;
 import org.col.postgres.PgCopyUtils;
@@ -56,26 +57,12 @@ public class AcExporter {
   private final WsServerConfig cfg;
   private final SqlSessionFactory factory;
   private Writer logger;
-  // we only allow a single export to run at a time
-  private static boolean LOCK = false;
 
   public AcExporter(WsServerConfig cfg, SqlSessionFactory factory) {
     this.cfg = cfg;
     this.factory = factory;
   }
   
-  private synchronized boolean aquireLock(){
-    if (!LOCK) {
-      LOCK = true;
-      return true;
-    }
-    return false;
-  }
-  
-  private synchronized void releaseLock(){
-    LOCK = false;
-  }
-
   private void log(String msg) throws IOException {
     logger.append(msg);
     logger.append("\n");
@@ -87,9 +74,6 @@ public class AcExporter {
    */
   public File export(int catalogueKey, Writer writer) throws IOException, SQLException, IllegalStateException {
     File csvDir = new File(cfg.normalizer.scratchDir(catalogueKey), "exports");
-    if (!aquireLock()) {
-      throw new IllegalStateException("There is a running export already");
-    }
     try {
       this.logger = writer;
       // create csv files
@@ -123,7 +107,6 @@ public class AcExporter {
       FileUtils.deleteQuietly(csvDir);
       log("Export completed");
       this.logger = null;
-      releaseLock();
     }
   }
   
@@ -143,7 +126,7 @@ public class AcExporter {
       data.put("d", d);
       
       Template temp = fmk.getTemplate("credits.ftl");
-      Writer out = new OutputStreamWriter(System.out);
+      Writer out = Utf8IOUtils.writerFromFile(cf);
       temp.process(data, out);
     } catch (TemplateException e) {
       LOG.error("Failed to write credits", e);

@@ -1,7 +1,10 @@
 package org.col.release;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.time.LocalDate;
-import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -18,19 +21,24 @@ import org.slf4j.LoggerFactory;
 
 import static org.col.common.lang.Exceptions.interruptIfCancelled;
 
-public class CatalogueRelease implements Callable<Integer> {
+public class CatalogueRelease implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(CatalogueRelease.class);
   
   private final SqlSessionFactory factory;
   private final DatasetImportDao diDao;
+  private final AcExporter exporter;
   private final int user;
   private final int sourceDatasetKey;
   private final int releaseKey;
   private final Dataset release;
+  private final Writer exportWriter = new StringWriter();
+  // we only allow a single release to run at a time
+  private static boolean LOCK = false;
   
-  private CatalogueRelease(SqlSessionFactory factory, DatasetImportDao diDao, int sourceDatasetKey, Dataset release, int userKey) {
+  private CatalogueRelease(SqlSessionFactory factory, AcExporter exporter, DatasetImportDao diDao, int sourceDatasetKey, Dataset release, int userKey) {
     this.factory = factory;
     this.diDao = diDao;
+    this.exporter = exporter;
     this.sourceDatasetKey = sourceDatasetKey;
     this.release = release;
     releaseKey = release.getKey();
@@ -41,7 +49,10 @@ public class CatalogueRelease implements Callable<Integer> {
    * Release the catalogue into a new dataset
    * @param catalogueKey the draft catalogue to be released, e.g. 3 for the CoL draft
    */
-  public static CatalogueRelease release(SqlSessionFactory factory, DatasetImportDao diDao, int catalogueKey, int userKey) {
+  public static CatalogueRelease release(SqlSessionFactory factory, AcExporter exporter, DatasetImportDao diDao, int catalogueKey, int userKey) {
+    if (!aquireLock()) {
+      throw new IllegalStateException("There is a running release already");
+    }
     Dataset release;
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
@@ -56,8 +67,41 @@ public class CatalogueRelease implements Callable<Integer> {
       release.setVersion(today.toString());
       release.setCitation(buildCitation(release));
       dm.create(release);
+      return new CatalogueRelease(factory, exporter, diDao, catalogueKey, release, userKey);
+  
+    } catch (Exception e) {
+      LOG.error("Error creating release for catalogue {}", catalogueKey, e);
+      releaseLock();
+      throw new RuntimeException(e);
     }
-    return new CatalogueRelease(factory, diDao, catalogueKey, release, userKey);
+  }
+  
+  private static synchronized boolean aquireLock(){
+    if (!LOCK) {
+      LOCK = true;
+      return true;
+    }
+    return false;
+  }
+  
+  private static synchronized void releaseLock(){
+    LOCK = false;
+  }
+  
+  public int getReleaseKey() {
+    return releaseKey;
+  }
+  
+  public int getSourceDatasetKey() {
+    return sourceDatasetKey;
+  }
+  
+  public Object getState() {
+    if (exportWriter == null) {
+      return "still releasing ...";
+    } else {
+      return exporter.toString();
+    }
   }
   
   @VisibleForTesting
@@ -84,18 +128,26 @@ public class CatalogueRelease implements Callable<Integer> {
    * @return The new released datasetKey
    */
   @Override
-  public Integer call() throws Exception {
-    // prepare new tables
-    Partitioner.partition(factory, releaseKey);
-    // map ids
-    mapIds();
-    // copy data
-    copyData();
-    // build indices and attach partition
-    Partitioner.indexAndAttach(factory, releaseKey);
-    // create metrics
-    metrics();
-    return releaseKey;
+  public void run() {
+    try {
+      // prepare new tables
+      Partitioner.partition(factory, releaseKey);
+      // map ids
+      mapIds();
+      // copy data
+      copyData();
+      // build indices and attach partition
+      Partitioner.indexAndAttach(factory, releaseKey);
+      // create metrics
+      metrics();
+      // ac-export
+      export();
+      
+    } catch (IOException e) {
+      LOG.error("Error releasing catalogue {} into dataset {}", sourceDatasetKey, releaseKey, e);
+    } finally {
+      releaseLock();
+    }
   }
   
   private void metrics() {
@@ -163,4 +215,18 @@ public class CatalogueRelease implements Callable<Integer> {
     obj.setKey(null);
     obj.setDatasetKey(releaseKey);
   }
+  
+  public void export() throws IOException {
+    interruptIfCancelled();
+    try {
+      exporter.export(releaseKey, exportWriter);
+    } catch (Throwable e) {
+      exportWriter.append("\n\n");
+      PrintWriter pw = new PrintWriter(exportWriter);
+      e.printStackTrace(pw);
+      pw.flush();
+    }
+    exportWriter.flush();
+  }
+  
 }
