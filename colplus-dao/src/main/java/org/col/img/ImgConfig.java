@@ -14,9 +14,8 @@ public class ImgConfig extends PgDbConfig {
   public enum Scale {
     ORIGINAL,
     LARGE,
-    SMALL,
-    AC_MEDIUM,
-    AC_SMALL
+    MEDIUM,
+    SMALL
   }
   
   @NotNull
@@ -26,24 +25,19 @@ public class ImgConfig extends PgDbConfig {
   public Size small = new Size(30, 90);
   
   @NotNull
-  public Size large = new Size(100, 300);
-  
-  @NotNull
-  public Size acSmall = new Size(30, 470);
-  
-  @NotNull
-  public Size acMedium = new Size(100, 470);
+  public Size medium = new Size(100, 300);
 
+  @NotNull
+  public Size large = new Size(200, 600);
+  
   public Size size(Scale scale) {
     switch (scale) {
       case LARGE:
         return large;
+      case MEDIUM:
+        return medium;
       case SMALL:
         return small;
-      case AC_SMALL:
-        return acSmall;
-      case AC_MEDIUM:
-        return acMedium;
     }
     throw new IllegalArgumentException("No raw size supported");
   }

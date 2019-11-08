@@ -146,12 +146,12 @@ public class AcExporter {
       req.setContributesTo(catalogueKey);
       List<Dataset> resp = dm.search(req, new Page(0,1000));
       for (Dataset d : resp) {
-        Path p = cfg.img.datasetLogo(d.getKey(), ImgConfig.Scale.AC_MEDIUM);
+        Path p = cfg.img.datasetLogo(d.getKey(), ImgConfig.Scale.MEDIUM);
         if (java.nio.file.Files.exists(p)) {
           File img =  new File(logoDir, (d.getKey()-1000) + ".png");
           Files.copy(p.toFile(), img);
           
-          p = cfg.img.datasetLogo(d.getKey(), ImgConfig.Scale.AC_SMALL);
+          p = cfg.img.datasetLogo(d.getKey(), ImgConfig.Scale.SMALL);
           img =  new File(logoDir, (d.getKey()-1000) + "-sm.png");
           Files.copy(p.toFile(), img);
           counter++;
