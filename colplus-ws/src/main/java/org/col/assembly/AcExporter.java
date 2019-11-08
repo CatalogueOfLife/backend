@@ -7,11 +7,16 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.io.Files;
+import freemarker.template.*;
+import no.api.freemarker.java8.Java8ObjectWrapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -36,6 +41,18 @@ public class AcExporter {
   private static final Pattern COPY_START = Pattern.compile("^\\s*COPY\\s*\\(");
   private static final Pattern COPY_END   = Pattern.compile("^\\s*\\)\\s*TO\\s*'(.+)'");
   private static final Pattern VAR_DATASET_KEY = Pattern.compile("\\{\\{datasetKey}}", Pattern.CASE_INSENSITIVE);
+  private static final Version freemarkerVersion = Configuration.VERSION_2_3_28;
+  private static final Configuration fmk = new Configuration(freemarkerVersion);
+  static {
+    fmk.setClassForTemplateLoading(AcExporter.class, "/exporter");
+    // see https://freemarker.apache.org/docs/pgui_quickstart_createconfiguration.html
+    fmk.setDefaultEncoding("UTF-8");
+    fmk.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+    fmk.setLogTemplateExceptions(false);
+    fmk.setWrapUncheckedExceptions(true);
+    // allow the use of java8 dates, see https://github.com/lazee/freemarker-java-8
+    fmk.setObjectWrapper(new Java8ObjectWrapper(freemarkerVersion));
+  }
   private final WsServerConfig cfg;
   private final SqlSessionFactory factory;
   private Writer logger;
@@ -86,8 +103,9 @@ public class AcExporter {
       }
       // include images
       exportLogos(catalogueKey, csvDir);
-      
-      // TODO: include citation.ini
+  
+      // export citation.ini
+      exportCitations(catalogueKey, csvDir);
       
       // zip up archive and move to download
       File arch = new File(cfg.downloadDir, "ac-export.zip");
@@ -106,6 +124,30 @@ public class AcExporter {
       log("Export completed");
       this.logger = null;
       releaseLock();
+    }
+  }
+  
+  private void exportCitations(int catalogueKey, File dir) throws IOException {
+    log("Export citations");
+    File cf = new File(dir, "credits.ini");
+  
+    Map<String, Object> data = new HashMap<>();
+  
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      Dataset d = dm.get(catalogueKey);
+      if (d.getReleased()==null) {
+        // use today as default release date if missing
+        d.setReleased(LocalDate.now());
+      }
+      data.put("d", d);
+      
+      Template temp = fmk.getTemplate("credits.ftl");
+      Writer out = new OutputStreamWriter(System.out);
+      temp.process(data, out);
+    } catch (TemplateException e) {
+      LOG.error("Failed to write credits", e);
+      throw new RuntimeException(e);
     }
   }
   

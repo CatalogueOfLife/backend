@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
@@ -27,7 +28,7 @@ public class CatalogueRelease implements Callable<Integer> {
   private final int releaseKey;
   private final Dataset release;
   
-  public CatalogueRelease(SqlSessionFactory factory, DatasetImportDao diDao, int sourceDatasetKey, Dataset release, int userKey) {
+  private CatalogueRelease(SqlSessionFactory factory, DatasetImportDao diDao, int sourceDatasetKey, Dataset release, int userKey) {
     this.factory = factory;
     this.diDao = diDao;
     this.sourceDatasetKey = sourceDatasetKey;
@@ -51,12 +52,32 @@ public class CatalogueRelease implements Callable<Integer> {
       release.setType(DatasetType.CATALOGUE);
       release.setModifiedBy(userKey);
       release.setCreatedBy(userKey);
-      release.setTitle(release.getTitle() + " - released " + today);
       release.setReleased(today);
-      //TODO: create new release dataset
+      release.setVersion(today.toString());
+      release.setCitation(buildCitation(release));
       dm.create(release);
     }
     return new CatalogueRelease(factory, diDao, catalogueKey, release, userKey);
+  }
+  
+  @VisibleForTesting
+  protected static String buildCitation(Dataset d){
+    // ${d.authorsAndEditors?join(", ")}, eds. (${d.released.format('yyyy')}). ${d.title}, ${d.released.format('yyyy-MM-dd')}. Digital resource at www.catalogueoflife.org/col. Species 2000: Naturalis, Leiden, the Netherlands. ISSN 2405-8858.
+    StringBuilder sb = new StringBuilder();
+    for (String au : d.getAuthorsAndEditors()) {
+      if (sb.length() > 1) {
+        sb.append(", ");
+      }
+      sb.append(au);
+    }
+    sb.append(" (")
+      .append(d.getReleased().getYear())
+      .append("). ")
+      .append(d.getTitle())
+      .append(", ")
+      .append(d.getReleased().toString())
+      .append(". Digital resource at www.catalogueoflife.org/col. Species 2000: Naturalis, Leiden, the Netherlands. ISSN 2405-8858.");
+    return sb.toString();
   }
   
   /**
