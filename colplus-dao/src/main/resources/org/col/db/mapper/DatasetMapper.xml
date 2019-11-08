@@ -38,7 +38,7 @@
       deleted,
       di.finished AS imported,
       di.verbatim_count AS size,
-      case exists(select 1 from sector s where s.dataset_key=d.key) when true then array[3] end AS contributes_to
+      (select array_agg(distinct s.dataset_key) from sector s where s.subject_dataset_key=d.key) AS contributes_to
     </sql>
 
     <sql id="COLS">
