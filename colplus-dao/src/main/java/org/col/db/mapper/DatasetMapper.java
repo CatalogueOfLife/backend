@@ -3,7 +3,10 @@ package org.col.db.mapper;
 import java.util.List;
 import java.util.UUID;
 
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.session.ResultHandler;
 import org.col.api.model.Dataset;
 import org.col.api.model.Page;
 import org.col.api.search.DatasetSearchRequest;
@@ -13,6 +16,12 @@ import org.col.db.GlobalPageable;
 public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Dataset> {
   
   int count(@Param("req") DatasetSearchRequest request);
+  
+  /**
+   * Iterates over all datasets of a given dataset and processes them with the supplied handler.
+   * @param filter optional SQL where clause (without WHERE)
+   */
+  void process(@Nullable @Param("filter") String filter, ResultHandler<Dataset> handler);
 
   List<Dataset> search(@Param("req") DatasetSearchRequest request, @Param("page") Page page);
   

@@ -2,8 +2,8 @@ package org.col.img;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
@@ -11,10 +11,11 @@ import javax.imageio.ImageIO;
 import com.google.common.base.Strings;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.ibatis.session.ResultContext;
+import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.Dataset;
-import org.col.api.model.Page;
 import org.col.common.io.DownloadException;
 import org.col.common.io.DownloadUtil;
 import org.col.db.mapper.DatasetMapper;
@@ -69,28 +70,32 @@ public class LogoUpdateJob implements Runnable {
   }
   
   private void updateAll() {
-    Page page = new Page(0, 25);
-    List<Dataset> datasets = null;
-    int counter = 0;
-    int failed = 0;
-    while (datasets == null || !datasets.isEmpty()) {
-      try (SqlSession session = factory.openSession()) {
-        LOG.debug("Retrieving next dataset page for {}", page);
-        datasets = session.getMapper(DatasetMapper.class).list(page);
-        for (Dataset d : datasets) {
-          Boolean result = pullLogo(d);
+    AtomicInteger counter = new AtomicInteger();
+    AtomicInteger failed = new AtomicInteger();
+    try (SqlSession session = factory.openSession()) {
+      LOG.info("Update all logos");
+      session.getMapper(DatasetMapper.class).process("logo IS NOT NULL", new ResultHandler<Dataset>() {
+        @Override
+        public void handleResult(ResultContext<? extends Dataset> ctx) {
+          Boolean result = pullLogo(ctx.getResultObject());
           if (result != null) {
             if (result) {
-              counter++;
+              counter.incrementAndGet();
             } else {
-              failed++;
+              failed.incrementAndGet();
             }
           }
         }
-        page.next();
-      }
+      });
+      LOG.info("Finished pulling all logos");
+      
+    } catch (Exception e) {
+      LOG.error("Error updating all logos", e);
+      throw e;
+      
+    } finally {
+      LOG.info("Pulled {} external logos, failed {}", counter, failed);
     }
-    LOG.info("Pulled {} external logos, failed {}", counter, failed);
   }
   
   /**

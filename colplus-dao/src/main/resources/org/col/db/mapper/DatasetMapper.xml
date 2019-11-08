@@ -160,6 +160,14 @@
         WHERE deleted IS NULL
     </select>
 
+    <select id="process" parameterType="map" resultMap="datasetResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE deleted IS NULL
+        <if test="filter != null">AND ${filter}</if>
+        ORDER BY key
+    </select>
+
     <select id="search" resultMap="datasetResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
