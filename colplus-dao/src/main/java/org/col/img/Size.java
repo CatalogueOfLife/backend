@@ -8,21 +8,21 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Size {
   
-  private int width;
   private int height;
+  private int width;
   
   @JsonCreator
-  public Size(@JsonProperty("width") @Min(10) int width, @JsonProperty("height") @Min(10) int height) {
-    this.width = width;
+  public Size(@JsonProperty("height") @Min(10) int height, @JsonProperty("width") @Min(10) int width) {
     this.height = height;
-  }
-  
-  public int getWidth() {
-    return width;
+    this.width = width;
   }
   
   public int getHeight() {
     return height;
+  }
+  
+  public int getWidth() {
+    return width;
   }
   
   @Override

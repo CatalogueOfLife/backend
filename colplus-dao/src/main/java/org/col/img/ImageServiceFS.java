@@ -63,9 +63,12 @@ public class ImageServiceFS implements ImageService {
     }
   }
   
+  /**
+   * Scales the image keeping proportions and restricting primarily by the images height.
+   */
   private BufferedImage scale(BufferedImage raw, ImgConfig.Scale scale) {
     final Size size = cfg.size(scale);
-    return Scalr.resize(raw, Scalr.Method.ULTRA_QUALITY, size.getWidth(), size.getHeight());
+    return Scalr.resize(raw, Scalr.Method.ULTRA_QUALITY, Scalr.Mode.FIT_TO_HEIGHT, size.getWidth(), size.getHeight());
   }
   
   private void writeImage(Path p, BufferedImage img) throws IOException {

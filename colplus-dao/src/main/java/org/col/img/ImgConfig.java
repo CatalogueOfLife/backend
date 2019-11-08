@@ -23,16 +23,16 @@ public class ImgConfig extends PgDbConfig {
   public Path repo;
   
   @NotNull
-  public Size small = new Size(90, 60);
+  public Size small = new Size(30, 90);
   
   @NotNull
-  public Size large = new Size(300, 200);
+  public Size large = new Size(100, 300);
   
   @NotNull
-  public Size acSmall = new Size(470, 30);
+  public Size acSmall = new Size(30, 470);
   
   @NotNull
-  public Size acMedium = new Size(470, 100);
+  public Size acMedium = new Size(100, 470);
 
   public Size size(Scale scale) {
     switch (scale) {
