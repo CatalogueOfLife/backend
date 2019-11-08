@@ -375,6 +375,7 @@ CREATE TABLE name (
   verbatim_key INTEGER,
   homotypic_name_id TEXT NOT NULL,
   name_index_id TEXT,
+  name_index_match_type INTEGER,
   scientific_name TEXT NOT NULL,
   scientific_name_normalized TEXT NOT NULL,
   authorship TEXT,

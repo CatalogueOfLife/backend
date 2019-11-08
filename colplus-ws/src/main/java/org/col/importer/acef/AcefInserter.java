@@ -175,7 +175,7 @@ public class AcefInserter extends NeoInserter {
       tx.success();
     
     } catch (RuntimeException e) {
-      throw new NormalizationFailedException("Failed to read ACEF files", e);
+      throw new NormalizationFailedException("Failed to insert ACEF files", e);
     }
   }
   

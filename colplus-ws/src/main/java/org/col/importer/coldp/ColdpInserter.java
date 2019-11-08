@@ -115,7 +115,7 @@ public class ColdpInserter extends NeoInserter {
       );
       
     } catch (RuntimeException e) {
-      throw new NormalizationFailedException("Failed to read ColDP files", e);
+      throw new NormalizationFailedException("Failed to insert ColDP files", e);
     }
   }
   

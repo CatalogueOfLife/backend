@@ -12,6 +12,7 @@ import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.jackson.IsEmptyFilter;
 import org.col.api.util.ObjectUtils;
+import org.col.api.vocab.MatchType;
 import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.Origin;
 import org.col.common.tax.SciNameNormalizer;
@@ -39,7 +40,14 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity 
   /**
    * Id from the names index grouping all distinct scientific names
    */
+  @JsonIgnore
   private String nameIndexId;
+  
+  /**
+   * Match type that resulted in the nameIndexId.
+   */
+  @JsonIgnore
+  private MatchType nameIndexMatchType;
   
   /**
    * Entire canonical name string with a rank marker for infragenerics and infraspecfics, but
@@ -184,6 +192,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity 
     this.sectorKey = n.sectorKey;
     this.homotypicNameId = n.homotypicNameId;
     this.nameIndexId = n.nameIndexId;
+    this.nameIndexMatchType = n.nameIndexMatchType;
     this.scientificName = n.scientificName;
     this.rank = n.rank;
     this.uninomial = n.uninomial;
@@ -258,6 +267,14 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity 
   
   public void setNameIndexId(String nameIndexId) {
     this.nameIndexId = nameIndexId;
+  }
+  
+  public MatchType getNameIndexMatchType() {
+    return nameIndexMatchType;
+  }
+  
+  public void setNameIndexMatchType(MatchType nameIndexMatchType) {
+    this.nameIndexMatchType = nameIndexMatchType;
   }
   
   public String getScientificName() {
@@ -702,32 +719,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity 
     return NameFormatter.authorshipComplete(toParsedName(this));
   }
   
-  public boolean equalSciName(Name o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    return candidatus == o.candidatus &&
-        Objects.equals(scientificName, o.scientificName) &&
-        Objects.equals(authorship, o.authorship) &&
-        rank == o.rank &&
-        Objects.equals(uninomial, o.uninomial) &&
-        Objects.equals(genus, o.genus) &&
-        Objects.equals(infragenericEpithet, o.infragenericEpithet) &&
-        Objects.equals(specificEpithet, o.specificEpithet) &&
-        Objects.equals(infraspecificEpithet, o.infraspecificEpithet) &&
-        Objects.equals(cultivarEpithet, o.cultivarEpithet) &&
-        Objects.equals(appendedPhrase, o.appendedPhrase) &&
-        notho == o.notho &&
-        Objects.equals(combinationAuthorship, o.combinationAuthorship) &&
-        Objects.equals(basionymAuthorship, o.basionymAuthorship) &&
-        Objects.equals(sanctioningAuthor, o.sanctioningAuthor) &&
-        code == o.code &&
-        nomStatus == o.nomStatus &&
-        Objects.equals(publishedInId, o.publishedInId) &&
-        Objects.equals(publishedInPage, o.publishedInPage) &&
-        Objects.equals(publishedInYear, o.publishedInYear) &&
-        type == o.type;
-  }
-  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -739,6 +730,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity 
         Objects.equals(verbatimKey, name.verbatimKey) &&
         Objects.equals(homotypicNameId, name.homotypicNameId) &&
         Objects.equals(nameIndexId, name.nameIndexId) &&
+        nameIndexMatchType == name.nameIndexMatchType &&
         Objects.equals(scientificName, name.scientificName) &&
         Objects.equals(authorship, name.authorship) &&
         rank == name.rank &&
@@ -767,7 +759,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity 
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, homotypicNameId, nameIndexId, scientificName, authorship, authorshipNormalized, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, appendedPhrase, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, publishedInYear, origin, type, webpage, fossil, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, homotypicNameId, nameIndexId, nameIndexMatchType, scientificName, authorship, authorshipNormalized, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, appendedPhrase, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, publishedInYear, origin, type, webpage, fossil, remarks);
   }
   
   @Override

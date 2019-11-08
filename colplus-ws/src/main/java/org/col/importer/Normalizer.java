@@ -263,23 +263,24 @@ public class Normalizer implements Callable<Boolean> {
     // track duplicates, map index name ids to first verbatim key
     // if synonym negate the verbatim key to track status without needing more memory
     final Map<String, Integer> nameIds = new HashMap<>();
-    store.names().all().forEach(t -> {
-      NameMatch m = index.match(t.name, true, false);
+    store.names().all().forEach(nn -> {
+      NameMatch m = index.match(nn.name, true, false);
       if (m.hasMatch()) {
-        t.name.setNameIndexId(m.getName().getId());
-        store.names().update(t);
+        nn.name.setNameIndexId(m.getName().getId());
+        nn.name.setNameIndexMatchType(m.getType());
+        store.names().update(nn);
         // track duplicates regardless of status - but only for verbatim records!
-        if (t.name.getVerbatimKey() != null) {
+        if (nn.name.getVerbatimKey() != null) {
           if (nameIds.containsKey(m.getName().getId())) {
             store.addIssues(nameIds.get(m.getName().getId()), Issue.DUPLICATE_NAME);
-            store.addIssues(t.name, Issue.DUPLICATE_NAME);
+            store.addIssues(nn.name, Issue.DUPLICATE_NAME);
           } else {
-            nameIds.put(m.getName().getId(), t.name.getVerbatimKey());
+            nameIds.put(m.getName().getId(), nn.name.getVerbatimKey());
           }
         }
       }
       if (m.getType().issue != null) {
-        store.addIssues(t.name, m.getType().issue);
+        store.addIssues(nn.name, m.getType().issue);
       }
       counts.get(m.getType()).incrementAndGet();
     });

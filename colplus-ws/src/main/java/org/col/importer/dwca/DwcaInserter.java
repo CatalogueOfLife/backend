@@ -88,7 +88,7 @@ public class DwcaInserter extends NeoInserter {
       );
       
     } catch (RuntimeException e) {
-      throw new NormalizationFailedException("Failed to batch insert DwC-A data", e);
+      throw new NormalizationFailedException("Failed to insert DwC-A data", e);
     }
   }
   
