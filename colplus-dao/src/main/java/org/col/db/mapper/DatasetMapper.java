@@ -15,6 +15,15 @@ import org.col.db.GlobalPageable;
 
 public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Dataset> {
   
+  /**
+   * Copies a given dataset key into the archive with the given catalogueKey
+   * @param key
+   * @param catalogueKey
+   */
+  void createArchive(@Param("key") int key, @Param("catalogueKey") int catalogueKey);
+  
+  Dataset getArchive(@Param("key") int key, @Param("catalogueKey") int catalogueKey);
+
   int count(@Param("req") DatasetSearchRequest request);
   
   /**
@@ -52,8 +61,6 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
 
   Dataset getByGBIF(@Param("key") UUID key);
   
-  Dataset getByCatalogue(@Param("key") int key, @Param("catalogueKey") int catalogueKey);
-
   /**
    * @return the last import attempt or null if never attempted
    */

@@ -74,6 +74,22 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     assertEquals(d1, d2);
   }
   
+  @Test
+  public void archive() throws Exception {
+    Dataset d1 = create();
+    mapper().create(d1);
+    commit();
+  
+    mapper().createArchive(d1.getKey(), Datasets.DRAFT_COL);
+    // reload to also get the creation/modified dates
+    d1 = mapper().get(d1.getKey());
+    
+    Dataset d2 = mapper().getArchive(d1.getKey(), Datasets.DRAFT_COL);
+    
+    //printDiff(d1, d2);
+    assertEquals(d1, d2);
+  }
+  
   /**
    * We only logically delete datasets, dont run super test
    */

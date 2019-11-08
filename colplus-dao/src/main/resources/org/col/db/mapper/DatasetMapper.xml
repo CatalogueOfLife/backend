@@ -255,21 +255,28 @@
       WHERE key = #{key}
     </select>
 
+    <select id="getArchive" resultMap="datasetResultMap">
+        SELECT <include refid="SELECT" />
+        FROM dataset_archive d LEFT JOIN dataset_import di ON d.last_data_import_attempt=di.attempt AND d.key=di.dataset_key
+        WHERE key = #{key} AND catalogue_key = #{catalogueKey}
+    </select>
+
     <select id="getByGBIF" resultMap="datasetResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE gbif_key = #{key}
     </select>
 
-    <select id="getByCatalogue" resultMap="datasetResultMap">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE key = #{key} AND catalogue_key = #{catalogueKey}
-    </select>
-
     <insert id="create" parameterType="Dataset" useGeneratedKeys="true" keyProperty="key">
       INSERT INTO dataset (<include refid="COLS" />, created, modified)
              VALUES (<include refid="PROPS" />, now(), now())
+    </insert>
+
+    <insert id="createArchive" parameterType="map">
+        INSERT INTO dataset_archive (key, catalogue_key, <include refid="COLS" />, created, modified)
+        SELECT key, #{catalogueKey}, <include refid="COLS" />, created, modified
+        FROM dataset d
+        WHERE d.key = #{key}
     </insert>
 
     <update id="update" parameterType="Dataset">
