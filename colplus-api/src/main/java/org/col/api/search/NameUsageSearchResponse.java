@@ -10,25 +10,25 @@ import java.util.function.Supplier;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 
-public class NameSearchResponse extends ResultPage<NameUsageWrapper> {
+public class NameUsageSearchResponse extends ResultPage<NameUsageWrapper> {
 
-  private final Map<NameSearchParameter, Set<FacetValue<?>>> facets;
+  private final Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets;
 
-  public NameSearchResponse(Page page, int total, List<NameUsageWrapper> result) {
+  public NameUsageSearchResponse(Page page, int total, List<NameUsageWrapper> result) {
     this(page, total, result, Collections.emptyMap());
   }
 
-  public NameSearchResponse(Page page, int total, List<NameUsageWrapper> result, Map<NameSearchParameter, Set<FacetValue<?>>> facets) {
+  public NameUsageSearchResponse(Page page, int total, List<NameUsageWrapper> result, Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets) {
     super(page, total, result);
     this.facets = facets;
   }
   
-  public NameSearchResponse(Page page, List<NameUsageWrapper> result, Map<NameSearchParameter, Set<FacetValue<?>>> facets, Supplier<Integer> count) {
+  public NameUsageSearchResponse(Page page, List<NameUsageWrapper> result, Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets, Supplier<Integer> count) {
     super(page, result, count);
     this.facets = facets;
   }
     
-  public Map<NameSearchParameter, Set<FacetValue<?>>> getFacets() {
+  public Map<NameUsageSearchParameter, Set<FacetValue<?>>> getFacets() {
     return facets;
   }
 
@@ -40,7 +40,7 @@ public class NameSearchResponse extends ResultPage<NameUsageWrapper> {
       return false;
     if (!super.equals(o))
       return false;
-    NameSearchResponse that = (NameSearchResponse) o;
+    NameUsageSearchResponse that = (NameUsageSearchResponse) o;
     return Objects.equals(facets, that.facets);
   }
 

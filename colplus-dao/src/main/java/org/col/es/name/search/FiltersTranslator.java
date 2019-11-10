@@ -2,8 +2,8 @@ package org.col.es.name.search;
 
 import java.util.Set;
 
-import org.col.api.search.NameSearchParameter;
-import org.col.api.search.NameSearchRequest;
+import org.col.api.search.NameUsageSearchParameter;
+import org.col.api.search.NameUsageSearchRequest;
 import org.col.es.InvalidQueryException;
 import org.col.es.query.BoolQuery;
 import org.col.es.query.Query;
@@ -16,15 +16,15 @@ import org.col.es.query.Query;
  */
 class FiltersTranslator {
 
-  private final NameSearchRequest request;
+  private final NameUsageSearchRequest request;
 
-  FiltersTranslator(NameSearchRequest request) {
+  FiltersTranslator(NameUsageSearchRequest request) {
     this.request = request;
   }
 
   Query translate() throws InvalidQueryException {
     FilterTranslator ft = new FilterTranslator(request);
-    Set<NameSearchParameter> params = request.getFilters().keySet();
+    Set<NameUsageSearchParameter> params = request.getFilters().keySet();
     if (params.size() == 1) {
       return params.stream().map(ft::translate).findFirst().get();
     }

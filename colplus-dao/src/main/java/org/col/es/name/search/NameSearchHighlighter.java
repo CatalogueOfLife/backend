@@ -7,15 +7,15 @@ import java.util.stream.Collectors;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import org.col.api.search.NameSearchRequest;
-import org.col.api.search.NameSearchRequest.SearchContent;
-import org.col.api.search.NameSearchResponse;
+import org.col.api.search.NameUsageSearchRequest;
+import org.col.api.search.NameUsageSearchRequest.SearchContent;
+import org.col.api.search.NameUsageSearchResponse;
 import org.col.api.search.NameUsageWrapper;
 import org.gbif.nameparser.api.Authorship;
 
-import static org.col.api.search.NameSearchRequest.SearchContent.AUTHORSHIP;
-import static org.col.api.search.NameSearchRequest.SearchContent.SCIENTIFIC_NAME;
-import static org.col.api.search.NameSearchRequest.SearchContent.VERNACULAR_NAME;
+import static org.col.api.search.NameUsageSearchRequest.SearchContent.AUTHORSHIP;
+import static org.col.api.search.NameUsageSearchRequest.SearchContent.SCIENTIFIC_NAME;
+import static org.col.api.search.NameUsageSearchRequest.SearchContent.VERNACULAR_NAME;
 import static org.col.common.collection.CollectionUtils.isEmpty;
 import static org.col.es.name.NameUsageWrapperConverter.normalizeStrongly;
 import static org.col.es.name.NameUsageWrapperConverter.normalizeWeakly;
@@ -34,14 +34,14 @@ class NameSearchHighlighter {
   private static final String HIGHLIGHT_BEGIN = "<em class='highlight'>";
   private static final String HIGHLIGHT_END = "</em>";
   
-  private final NameSearchRequest request;
-  private final NameSearchResponse response;
+  private final NameUsageSearchRequest request;
+  private final NameUsageSearchResponse response;
 
   private final Pattern pattern; // pattern for authorship and vernacular names
   private final Pattern patternWN; // pattern for weakly normalized Q
   private final Pattern patternSN; // pattern for strongly normalized Q
 
-  NameSearchHighlighter(NameSearchRequest request, NameSearchResponse response) {
+  NameSearchHighlighter(NameUsageSearchRequest request, NameUsageSearchResponse response) {
     this.request = request;
     this.response = response;
     Set<SearchContent> sc = request.getContent();

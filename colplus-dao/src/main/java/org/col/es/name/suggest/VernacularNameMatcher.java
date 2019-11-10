@@ -3,7 +3,7 @@ package org.col.es.name.suggest;
 import java.util.Arrays;
 import java.util.List;
 
-import org.col.api.search.NameSuggestRequest;
+import org.col.api.search.NameUsageSuggestRequest;
 
 /**
  * Determines which of the vernacular names in a usage document actually matched the search phrase (q). Using named
@@ -16,7 +16,7 @@ class VernacularNameMatcher {
 
   private final String[] terms;
 
-  VernacularNameMatcher(NameSuggestRequest request) {
+  VernacularNameMatcher(NameUsageSuggestRequest request) {
     this.terms = tokenize(request.getQ());
   }
 

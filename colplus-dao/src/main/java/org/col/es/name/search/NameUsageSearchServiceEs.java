@@ -6,8 +6,8 @@ import com.google.common.annotations.VisibleForTesting;
 
 import org.apache.commons.lang3.StringUtils;
 import org.col.api.model.Page;
-import org.col.api.search.NameSearchRequest;
-import org.col.api.search.NameSearchResponse;
+import org.col.api.search.NameUsageSearchRequest;
+import org.col.api.search.NameUsageSearchResponse;
 import org.col.es.EsException;
 import org.col.es.name.NameUsageQueryService;
 import org.col.es.name.NameUsageEsResponse;
@@ -16,8 +16,8 @@ import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.col.api.search.NameSearchParameter.DATASET_KEY;
-import static org.col.api.search.NameSearchParameter.USAGE_ID;
+import static org.col.api.search.NameUsageSearchParameter.DATASET_KEY;
+import static org.col.api.search.NameUsageSearchParameter.USAGE_ID;
 
 public class NameUsageSearchServiceEs extends NameUsageQueryService implements NameUsageSearchService {
 
@@ -35,7 +35,7 @@ public class NameUsageSearchServiceEs extends NameUsageQueryService implements N
    * @param page
    * @return
    */
-  public NameSearchResponse search(NameSearchRequest request, Page page) {
+  public NameUsageSearchResponse search(NameUsageSearchRequest request, Page page) {
     try {
       return search(index, request, page);
     } catch (IOException e) {
@@ -44,11 +44,11 @@ public class NameUsageSearchServiceEs extends NameUsageQueryService implements N
   }
 
   @VisibleForTesting
-  public NameSearchResponse search(String index, NameSearchRequest request, Page page) throws IOException {
+  public NameUsageSearchResponse search(String index, NameUsageSearchRequest request, Page page) throws IOException {
     validateRequest(request);
     RequestTranslator translator = new RequestTranslator(request, page);
     EsSearchRequest esSearchRequest = translator.translate();
-    NameSearchResponse response = search(index, esSearchRequest, page);
+    NameUsageSearchResponse response = search(index, esSearchRequest, page);
     if (mustHighlight(request, response)) {
       NameSearchHighlighter highlighter = new NameSearchHighlighter(request, response);
       highlighter.highlightNameUsages();
@@ -57,14 +57,14 @@ public class NameUsageSearchServiceEs extends NameUsageQueryService implements N
   }
 
   @VisibleForTesting
-  public NameSearchResponse search(String index, EsSearchRequest esSearchRequest, Page page) throws IOException {
+  public NameUsageSearchResponse search(String index, EsSearchRequest esSearchRequest, Page page) throws IOException {
     NameUsageEsResponse esResponse = executeSearchRequest(index, esSearchRequest);
     NameSearchResultConverter converter = new NameSearchResultConverter(esResponse);
     return converter.transferResponse(page);
   }
 
-  private static void validateRequest(NameSearchRequest request) {
-    NameSearchRequest copy = request.copy();
+  private static void validateRequest(NameUsageSearchRequest request) {
+    NameUsageSearchRequest copy = request.copy();
     if (copy.hasFilter(USAGE_ID)) {
       if (copy.getFilterValues(USAGE_ID).size() > 1) {
         throw new EsException("Bad search request: only one usage id allowed");
@@ -81,7 +81,7 @@ public class NameUsageSearchServiceEs extends NameUsageQueryService implements N
     // More validations ...
   }
 
-  private static boolean mustHighlight(NameSearchRequest request, NameSearchResponse res) {
+  private static boolean mustHighlight(NameUsageSearchRequest request, NameUsageSearchResponse res) {
     return request.isHighlight()
         && !res.getResult().isEmpty()
         && !StringUtils.isEmpty(request.getQ())

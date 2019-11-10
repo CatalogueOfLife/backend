@@ -11,7 +11,7 @@ import org.gbif.nameparser.api.Rank;
 /**
  * Represents a single suggestion coming back from the NameSuggestionService.
  */
-public class NameSuggestion {
+public class NameUsageSuggestion {
 
   // Whether this suggestion contains a scientific name or a vernacular name
   private boolean vernacularName;
@@ -124,7 +124,7 @@ public class NameSuggestion {
       return false;
     if (getClass() != obj.getClass())
       return false;
-    NameSuggestion other = (NameSuggestion) obj;
+    NameUsageSuggestion other = (NameUsageSuggestion) obj;
     return Objects.equals(acceptedName, other.acceptedName) && Objects.equals(match, other.match) && nomCode == other.nomCode
         && rank == other.rank && Float.floatToIntBits(score) == Float.floatToIntBits(other.score) && status == other.status
         && Objects.equals(usageId, other.usageId) && vernacularName == other.vernacularName;

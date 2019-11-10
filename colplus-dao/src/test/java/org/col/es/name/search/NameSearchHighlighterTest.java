@@ -9,8 +9,8 @@ import java.util.stream.Collectors;
 import org.col.api.model.Name;
 import org.col.api.model.Taxon;
 import org.col.api.model.VernacularName;
-import org.col.api.search.NameSearchRequest;
-import org.col.api.search.NameSearchRequest.SearchContent;
+import org.col.api.search.NameUsageSearchRequest;
+import org.col.api.search.NameUsageSearchRequest.SearchContent;
 import org.col.api.search.NameUsageWrapper;
 import org.gbif.nameparser.api.Authorship;
 import org.junit.Test;
@@ -46,7 +46,7 @@ public class NameSearchHighlighterTest {
   }
 
   private static NameSearchHighlighter createHighlighter(String q, SearchContent... sc) {
-    NameSearchRequest nsr = new NameSearchRequest();
+    NameUsageSearchRequest nsr = new NameUsageSearchRequest();
     nsr.setQ(q);
     if (sc.length == 0) {
       nsr.setContent(EnumSet.allOf(SearchContent.class));

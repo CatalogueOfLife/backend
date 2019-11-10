@@ -2,16 +2,16 @@ package org.col.es.name.search;
 
 import java.util.List;
 
-import org.col.api.search.NameSearchRequest;
-import org.col.api.search.NameSearchRequest.SortBy;
+import org.col.api.search.NameUsageSearchRequest;
+import org.col.api.search.NameUsageSearchRequest.SortBy;
 import org.col.es.query.CollapsibleList;
 import org.col.es.query.SortField;
 
 class SortByTranslator {
 
-  private final NameSearchRequest request;
+  private final NameUsageSearchRequest request;
 
-  SortByTranslator(NameSearchRequest request) {
+  SortByTranslator(NameUsageSearchRequest request) {
     this.request = request;
   }
 

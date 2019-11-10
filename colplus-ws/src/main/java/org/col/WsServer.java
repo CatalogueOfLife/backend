@@ -38,8 +38,8 @@ import org.col.es.name.index.NameUsageIndexService;
 import org.col.es.name.index.NameUsageIndexServiceEs;
 import org.col.es.name.search.NameUsageSearchService;
 import org.col.es.name.search.NameUsageSearchServiceEs;
-import org.col.es.name.suggest.NameSuggestionService;
-import org.col.es.name.suggest.NameSuggestionServiceEs;
+import org.col.es.name.suggest.NameUsageSuggestionService;
+import org.col.es.name.suggest.NameUsageSuggestionServiceEs;
 import org.col.gbifsync.GbifSync;
 import org.col.img.ImageService;
 import org.col.img.ImageServiceFS;
@@ -141,19 +141,19 @@ public class WsServer extends Application<WsServerConfig> {
     // ES
     NameUsageIndexService svcIndex;
     NameUsageSearchService svcNameSearch;
-    NameSuggestionService svcSuggest;
+    NameUsageSuggestionService svcSuggest;
     if (cfg.es.hosts == null) {
       LOG.warn("No Elastic Search configured, use pass through indexing & searching");
       svcIndex = NameUsageIndexService.passThru();
       svcNameSearch = NameUsageSearchService.passThru();
-      svcSuggest = NameSuggestionService.passThru();
+      svcSuggest = NameUsageSuggestionService.passThru();
     } else {
       final RestClient esClient = new EsClientFactory(cfg.es).createClient();
       env.lifecycle().manage(new ManagedEsClient(esClient));
       env.healthChecks().register("elastic", new EsHealthCheck(esClient, cfg.es));
       svcIndex = new NameUsageIndexServiceEs(esClient, cfg.es, getSqlSessionFactory());
       svcNameSearch = new NameUsageSearchServiceEs(cfg.es.indexName(ES_INDEX_NAME_USAGE), esClient);
-      svcSuggest = new NameSuggestionServiceEs(cfg.es.indexName(ES_INDEX_NAME_USAGE), esClient);
+      svcSuggest = new NameUsageSuggestionServiceEs(cfg.es.indexName(ES_INDEX_NAME_USAGE), esClient);
     }
 
     // images
@@ -224,7 +224,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.jersey().register(new EstimateResource(getSqlSessionFactory()));
     env.jersey().register(new MatchingResource(ni));
     env.jersey().register(new NameResource(svcNameSearch, ndao, svcSuggest));
-    env.jersey().register(new NameSearchResource(svcNameSearch, svcSuggest));
+    env.jersey().register(new NameUsageSearchResource(svcNameSearch, svcSuggest));
     env.jersey().register(new ParserResource());
     env.jersey().register(new ReferenceResource(rdao));
     env.jersey().register(new SectorResource(getSqlSessionFactory(), diDao, diff, assembly));

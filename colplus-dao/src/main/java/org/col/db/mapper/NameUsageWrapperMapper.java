@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.ResultHandler;
 import org.col.api.model.Page;
 import org.col.api.model.SimpleNameClassification;
-import org.col.api.search.NameSearchRequest;
+import org.col.api.search.NameUsageSearchRequest;
 import org.col.api.search.NameUsageWrapper;
 
 /**
@@ -65,7 +65,7 @@ public interface NameUsageWrapperMapper {
    * WARNING! experimental, not fully implemented !!!
    */
   List<NameUsageWrapper> search(@Param("datasetKey") int datasetKey,
-                                @Param("req") NameSearchRequest request,
+                                @Param("req") NameUsageSearchRequest request,
                                 @Param("page") Page page);
 
 }

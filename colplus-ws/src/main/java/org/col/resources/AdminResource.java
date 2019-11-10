@@ -37,6 +37,7 @@ public class AdminResource {
   private final TaxonDao tdao;
   private final NameUsageIndexService indexService;
   private Thread indexingThread;
+  private Thread logoThread;
   // background processes
   private final ContinuousImporter continuousImporter;
   private final GbifSync gbifSync;
@@ -103,7 +104,13 @@ public class AdminResource {
   @POST
   @Path("/logo-update")
   public String updateAllLogos() {
-    LogoUpdateJob.updateAllAsync(factory, downloader, cfg.normalizer::scratchFile, imgService);
+    if (logoThread != null) {
+      throw new IllegalStateException("Logo updater is already running");
+    }
+    LogoUpdateJob job = LogoUpdateJob.updateAllAsync(factory, downloader, cfg.normalizer::scratchFile, imgService);
+    logoThread = new Thread(new LogoJob(job), "logo-updater");
+    logoThread.setDaemon(false);
+    logoThread.start();
     return "Started Logo Updater";
   }
   
@@ -127,12 +134,32 @@ public class AdminResource {
     if (req != null && (req.getDatasetKey() != null || req.getAll() != null && req.getAll())) {
       IndexJob job = new IndexJob(req, user);
       indexingThread = new Thread(job, "Es-Reindexer");
+      indexingThread.setDaemon(false);
       indexingThread.start();
     } else {
       throw new IllegalArgumentException("Only all or datasetKey properties are supported");
     }
   }
   
+  class LogoJob implements Runnable {
+    private final LogoUpdateJob job;
+  
+    LogoJob(LogoUpdateJob job) {
+      this.job = job;
+    }
+  
+    @Override
+    public void run() {
+      try {
+        job.run();
+      } catch (Exception e){
+        LOG.error("Error updating all logos", e);
+      } finally {
+        logoThread = null;
+      }
+    }
+  }
+
   class IndexJob implements Runnable {
     private final RequestScope req;
     private final ColUser user;

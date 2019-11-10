@@ -5,8 +5,8 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import org.col.api.search.NameSearchRequest;
-import org.col.api.search.NameSearchRequest.SearchContent;
+import org.col.api.search.NameUsageSearchRequest;
+import org.col.api.search.NameUsageSearchRequest.SearchContent;
 import org.col.es.query.Highlight;
 
 import static org.col.common.collection.CollectionUtils.isEmpty;
@@ -19,9 +19,9 @@ import static org.col.common.collection.CollectionUtils.isEmpty;
  */
 class HighlightTranslator {
 
-  private final NameSearchRequest request;
+  private final NameUsageSearchRequest request;
 
-  HighlightTranslator(NameSearchRequest request) {
+  HighlightTranslator(NameUsageSearchRequest request) {
     this.request = request;
   }
 

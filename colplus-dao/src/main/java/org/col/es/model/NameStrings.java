@@ -3,7 +3,7 @@ package org.col.es.model;
 import java.util.Objects;
 
 import org.col.api.model.Name;
-import org.col.api.search.NameSearchResponse;
+import org.col.api.search.NameUsageSearchResponse;
 import org.col.es.mapping.Analyzers;
 import org.gbif.nameparser.api.Rank;
 
@@ -14,7 +14,7 @@ import static org.col.es.name.NameUsageWrapperConverter.normalizeWeakly;
 
 /**
  * An object embedded within the name usage document solely aimed at optimizing searchability. The name strings within
- * this class do not contribute to the response returned to the client ({@link NameSearchResponse}). They are meant to
+ * this class do not contribute to the response returned to the client ({@link NameUsageSearchResponse}). They are meant to
  * match search phrases as best and as cheaply as possible. A {@code NameStrings} object is created from the
  * {@link Name} in the indexed documents on the one hand and from the search phrase on the other, and the matching the
  * search phrase against the documents is done via the {@code NameStrings} object. To ensure that the search phrase is

@@ -5,9 +5,9 @@ import java.util.Set;
 
 import org.col.api.model.Name;
 import org.col.api.model.Taxon;
-import org.col.api.search.NameSuggestRequest;
-import org.col.api.search.NameSuggestResponse;
-import org.col.api.search.NameSuggestion;
+import org.col.api.search.NameUsageSuggestRequest;
+import org.col.api.search.NameUsageSuggestResponse;
+import org.col.api.search.NameUsageSuggestion;
 import org.col.api.search.NameUsageWrapper;
 import org.col.es.EsReadTestBase;
 import org.col.es.model.NameStrings;
@@ -21,7 +21,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class NameSuggestionServiceTest extends EsReadTestBase {
+public class NameUsageSuggestionServiceTest extends EsReadTestBase {
 
   @Before
   public void before() {
@@ -31,7 +31,7 @@ public class NameSuggestionServiceTest extends EsReadTestBase {
   @Test // The basics
   public void test01() {
 
-    NameSuggestRequest query = new NameSuggestRequest();
+    NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetKey(1);
     query.setQ("abcde");
 
@@ -85,7 +85,7 @@ public class NameSuggestionServiceTest extends EsReadTestBase {
 
     indexRaw(doc1, doc2, doc3, doc4, doc5, doc6);
 
-    NameSuggestResponse response = suggest(query);
+    NameUsageSuggestResponse response = suggest(query);
 
     assertTrue(containsUsageIds(response, doc1, doc2, doc3));
 
@@ -94,7 +94,7 @@ public class NameSuggestionServiceTest extends EsReadTestBase {
   @Test // Relevance goes from infraspecific epithet -> specific epithet -> genus -> vernacular name
   public void test02() {
 
-    NameSuggestRequest query = new NameSuggestRequest();
+    NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetKey(1);
     query.setQ("abcde");
     query.setVernaculars(true);
@@ -131,7 +131,7 @@ public class NameSuggestionServiceTest extends EsReadTestBase {
 
     indexRaw(doc1, doc2, doc3, doc4);
 
-    NameSuggestResponse response = suggest(query);
+    NameUsageSuggestResponse response = suggest(query);
 
     assertEquals(4, response.getSuggestions().size());
     assertEquals("3", response.getSuggestions().get(0).getUsageId());
@@ -154,7 +154,7 @@ public class NameSuggestionServiceTest extends EsReadTestBase {
   @Test // lots of search terms
   public void test03() {
 
-    NameSuggestRequest query = new NameSuggestRequest();
+    NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetKey(1);
     query.setQ("LARUS FUSCUS FUSCUS (LINNAEUS 1752)");
     query.setVernaculars(true);
@@ -173,7 +173,7 @@ public class NameSuggestionServiceTest extends EsReadTestBase {
 
     indexRaw(doc1, doc2);
 
-    NameSuggestResponse response = suggest(query);
+    NameUsageSuggestResponse response = suggest(query);
 
     // We have switched from ORing the search terms to ANDing the search terms
     //assertEquals(2, response.getSuggestions().size());
@@ -204,11 +204,11 @@ public class NameSuggestionServiceTest extends EsReadTestBase {
 
     index(nuw);
 
-    NameSuggestRequest query = new NameSuggestRequest();
+    NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetKey(1);
 
     query.setQ("Larus argentatus argenteus");
-    NameSuggestResponse response = suggest(query);
+    NameUsageSuggestResponse response = suggest(query);
     float score1 = response.getSuggestions().get(0).getScore();
 
     // User mixed up specific and infraspecific epithet (still good score)
@@ -248,9 +248,9 @@ public class NameSuggestionServiceTest extends EsReadTestBase {
     assertTrue(score5 > score6);
   }
 
-  private static boolean containsUsageIds(NameSuggestResponse response, NameUsageDocument... docs) {
+  private static boolean containsUsageIds(NameUsageSuggestResponse response, NameUsageDocument... docs) {
     Set<String> expected = Arrays.stream(docs).map(NameUsageDocument::getUsageId).collect(toSet());
-    Set<String> actual = response.getSuggestions().stream().map(NameSuggestion::getUsageId).collect(toSet());
+    Set<String> actual = response.getSuggestions().stream().map(NameUsageSuggestion::getUsageId).collect(toSet());
     return expected.equals(actual);
   }
 

@@ -6,8 +6,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.col.api.model.Page;
-import org.col.api.search.NameSearchRequest;
-import org.col.api.search.NameSearchRequest.SortBy;
+import org.col.api.search.NameUsageSearchRequest;
+import org.col.api.search.NameUsageSearchRequest.SortBy;
 import org.col.es.EsReadTestBase;
 import org.col.es.model.NameUsageDocument;
 import org.col.es.query.EsSearchRequest;
@@ -41,7 +41,7 @@ public class SortingTest extends EsReadTestBase {
 
     List<NameUsageDocument> expected = Arrays.asList(docA, docB, docC, docD, docE);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setSortBy(SortBy.NAME);
     EsSearchRequest esQuery = new RequestTranslator(query, new Page()).translate();
     List<NameUsageDocument> result = queryRaw(esQuery);
@@ -65,7 +65,7 @@ public class SortingTest extends EsReadTestBase {
 
     List<NameUsageDocument> expected = Arrays.asList(docE, docD, docC, docB, docA);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setSortBy(SortBy.NAME);
     query.setReverse(true);
     EsSearchRequest esQuery = new RequestTranslator(query, new Page()).translate();
@@ -90,7 +90,7 @@ public class SortingTest extends EsReadTestBase {
 
     indexRaw(docs);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setSortBy(null);
     EsSearchRequest esQuery = new RequestTranslator(query, new Page()).translate();
     List<NameUsageDocument> result = queryRaw(esQuery);
@@ -114,7 +114,7 @@ public class SortingTest extends EsReadTestBase {
 
     indexRaw(docs);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setSortBy(SortBy.NATIVE);
     EsSearchRequest esQuery = new RequestTranslator(query, new Page()).translate();
     List<NameUsageDocument> result = queryRaw(esQuery);
@@ -180,7 +180,7 @@ public class SortingTest extends EsReadTestBase {
     Collections.shuffle(docs);
     indexRaw(docs);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setSortBy(SortBy.TAXONOMIC);
     EsSearchRequest esQuery = new RequestTranslator(query, new Page()).translate();
 
@@ -258,7 +258,7 @@ public class SortingTest extends EsReadTestBase {
     Collections.shuffle(docs);
     indexRaw(docs);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setSortBy(SortBy.TAXONOMIC);
     query.setReverse(true);
     EsSearchRequest esQuery = new RequestTranslator(query, new Page()).translate();

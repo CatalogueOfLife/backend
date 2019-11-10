@@ -6,9 +6,9 @@ import java.util.EnumSet;
 import org.col.api.model.Name;
 import org.col.api.model.Taxon;
 import org.col.api.model.VernacularName;
-import org.col.api.search.NameSearchRequest;
-import org.col.api.search.NameSearchRequest.SearchContent;
-import org.col.api.search.NameSearchResponse;
+import org.col.api.search.NameUsageSearchRequest;
+import org.col.api.search.NameUsageSearchRequest.SearchContent;
+import org.col.api.search.NameUsageSearchResponse;
 import org.col.api.search.NameUsageWrapper;
 import org.col.es.EsReadTestBase;
 import org.junit.Before;
@@ -31,7 +31,7 @@ public class QSearchTests extends EsReadTestBase {
   public void test1() {
 
     // ==> The query
-    NameSearchRequest request = new NameSearchRequest();
+    NameUsageSearchRequest request = new NameUsageSearchRequest();
     request.setQ("Parus maj");
     request.setContent(EnumSet.of(SearchContent.SCIENTIFIC_NAME));
 
@@ -44,7 +44,7 @@ public class QSearchTests extends EsReadTestBase {
     NameUsageWrapper w0 = new NameUsageWrapper(t);
     index(w0);
 
-    NameSearchResponse response = search(request);
+    NameUsageSearchResponse response = search(request);
 
     assertEquals(1, response.getResult().size());
   }
@@ -53,7 +53,7 @@ public class QSearchTests extends EsReadTestBase {
   public void test2() {
 
     // ==> The query
-    NameSearchRequest request = new NameSearchRequest();
+    NameUsageSearchRequest request = new NameUsageSearchRequest();
     request.setQ("PARUS MAJ");
     request.setContent(EnumSet.of(SearchContent.SCIENTIFIC_NAME));
 
@@ -66,7 +66,7 @@ public class QSearchTests extends EsReadTestBase {
     NameUsageWrapper w0 = new NameUsageWrapper(t);
     index(w0);
 
-    NameSearchResponse response = search(request);
+    NameUsageSearchResponse response = search(request);
 
     assertEquals(1, response.getResult().size());
   }
@@ -75,7 +75,7 @@ public class QSearchTests extends EsReadTestBase {
   public void test3() {
 
     // ==> The query
-    NameSearchRequest request = new NameSearchRequest();
+    NameUsageSearchRequest request = new NameUsageSearchRequest();
     request.setQ("PARUS MAJORANA");
     request.setContent(EnumSet.of(SearchContent.SCIENTIFIC_NAME));
 
@@ -88,7 +88,7 @@ public class QSearchTests extends EsReadTestBase {
     NameUsageWrapper w0 = new NameUsageWrapper(t);
     index(w0);
 
-    NameSearchResponse response = search(request);
+    NameUsageSearchResponse response = search(request);
 
     assertEquals(0, response.getResult().size());
   }
@@ -97,7 +97,7 @@ public class QSearchTests extends EsReadTestBase {
   public void test4() {
 
     // ==> The query
-    NameSearchRequest request = new NameSearchRequest();
+    NameUsageSearchRequest request = new NameUsageSearchRequest();
     request.setQ("Parus majorana major");
     request.setContent(EnumSet.of(SearchContent.SCIENTIFIC_NAME));
 
@@ -110,7 +110,7 @@ public class QSearchTests extends EsReadTestBase {
     NameUsageWrapper w0 = new NameUsageWrapper(t);
     index(w0);
 
-    NameSearchResponse response = search(request);
+    NameUsageSearchResponse response = search(request);
 
     assertEquals(0, response.getResult().size());
   }
@@ -119,7 +119,7 @@ public class QSearchTests extends EsReadTestBase {
   public void test5() {
 
     // ==> The query
-    NameSearchRequest request = new NameSearchRequest();
+    NameUsageSearchRequest request = new NameUsageSearchRequest();
     request.setQ("rosy");
     request.setContent(EnumSet.of(SearchContent.VERNACULAR_NAME));
 
@@ -135,7 +135,7 @@ public class QSearchTests extends EsReadTestBase {
     w0.setVernacularNames(Arrays.asList(vn));
     index(w0);
 
-    NameSearchResponse response = search(request);
+    NameUsageSearchResponse response = search(request);
 
     assertEquals(1, response.getResult().size());
   }
@@ -144,7 +144,7 @@ public class QSearchTests extends EsReadTestBase {
   public void test6() {
 
     // ==> The query
-    NameSearchRequest request = new NameSearchRequest();
+    NameUsageSearchRequest request = new NameUsageSearchRequest();
     request.setQ("EAT");
     request.setContent(EnumSet.of(SearchContent.VERNACULAR_NAME));
 
@@ -160,7 +160,7 @@ public class QSearchTests extends EsReadTestBase {
     w0.setVernacularNames(Arrays.asList(vn));
     index(w0);
 
-    NameSearchResponse response = search(request);
+    NameUsageSearchResponse response = search(request);
 
     assertEquals(1, response.getResult().size());
   }
@@ -169,7 +169,7 @@ public class QSearchTests extends EsReadTestBase {
   public void test7() {
 
     // ==> The query
-    NameSearchRequest request = new NameSearchRequest();
+    NameUsageSearchRequest request = new NameUsageSearchRequest();
     request.setQ("Rosy Bee Eat");
     request.setContent(EnumSet.of(SearchContent.VERNACULAR_NAME));
 
@@ -185,7 +185,7 @@ public class QSearchTests extends EsReadTestBase {
     w0.setVernacularNames(Arrays.asList(vn));
     index(w0);
 
-    NameSearchResponse response = search(request);
+    NameUsageSearchResponse response = search(request);
 
     assertEquals(1, response.getResult().size());
   }
@@ -194,7 +194,7 @@ public class QSearchTests extends EsReadTestBase {
   public void test8() {
 
     // ==> The query
-    NameSearchRequest request = new NameSearchRequest();
+    NameUsageSearchRequest request = new NameUsageSearchRequest();
     request.setQ("Eat Rosy Bee");
     request.setContent(EnumSet.of(SearchContent.VERNACULAR_NAME));
 
@@ -210,7 +210,7 @@ public class QSearchTests extends EsReadTestBase {
     w0.setVernacularNames(Arrays.asList(vn));
     index(w0);
 
-    NameSearchResponse response = search(request);
+    NameUsageSearchResponse response = search(request);
 
     assertEquals(1, response.getResult().size());
   }
@@ -219,7 +219,7 @@ public class QSearchTests extends EsReadTestBase {
   public void test9() {
 
     // ==> The query
-    NameSearchRequest request = new NameSearchRequest();
+    NameUsageSearchRequest request = new NameUsageSearchRequest();
     request.setQ("Eat Rosy Bee");
     request.setContent(EnumSet.of(SearchContent.VERNACULAR_NAME));
 
@@ -235,7 +235,7 @@ public class QSearchTests extends EsReadTestBase {
     w0.setVernacularNames(Arrays.asList(vn));
     index(w0);
 
-    NameSearchResponse response = search(request);
+    NameUsageSearchResponse response = search(request);
 
     assertEquals(1, response.getResult().size());
   }

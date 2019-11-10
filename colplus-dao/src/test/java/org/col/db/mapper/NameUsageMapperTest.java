@@ -29,6 +29,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
     tm = mapper(TaxonMapper.class);
     sm = mapper(SynonymMapper.class);
   }
+  
   @Test
   public void list() throws Exception {
     NameDao nameDao = new NameDao(PgSetupRule.getSqlSessionFactory(), AuthorshipNormalizer.createWithoutAuthormap());

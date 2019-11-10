@@ -20,7 +20,7 @@ import org.col.api.model.ColUser;
 import org.col.api.model.EditorialDecision;
 import org.col.api.model.Sector;
 import org.col.api.model.SectorImport;
-import org.col.api.search.NameSearchParameter;
+import org.col.api.search.NameUsageSearchParameter;
 import org.col.api.vocab.*;
 import org.col.img.ImgConfig;
 import org.gbif.dwc.terms.Term;
@@ -53,7 +53,7 @@ public class VocabResource {
           EditorialDecision.Mode.class,
           Sector.Mode.class,
           SectorImport.State.class,
-          NameSearchParameter.class)) {
+          NameUsageSearchParameter.class)) {
         add(enums, clazz);
       }
       

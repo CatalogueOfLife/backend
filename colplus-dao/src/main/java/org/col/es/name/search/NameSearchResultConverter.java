@@ -16,8 +16,8 @@ import java.util.zip.InflaterInputStream;
 
 import org.col.api.model.Page;
 import org.col.api.search.FacetValue;
-import org.col.api.search.NameSearchParameter;
-import org.col.api.search.NameSearchResponse;
+import org.col.api.search.NameUsageSearchParameter;
+import org.col.api.search.NameUsageSearchResponse;
 import org.col.api.search.NameUsageWrapper;
 import org.col.es.EsModule;
 import org.col.es.model.NameUsageDocument;
@@ -28,20 +28,20 @@ import org.col.es.response.Bucket;
 import org.col.es.response.EsFacet;
 import org.col.es.response.SearchHit;
 
-import static org.col.api.search.NameSearchParameter.DATASET_KEY;
-import static org.col.api.search.NameSearchParameter.DECISION_KEY;
-import static org.col.api.search.NameSearchParameter.FIELD;
-import static org.col.api.search.NameSearchParameter.ISSUE;
-import static org.col.api.search.NameSearchParameter.NAME_ID;
-import static org.col.api.search.NameSearchParameter.NAME_INDEX_ID;
-import static org.col.api.search.NameSearchParameter.NOM_STATUS;
-import static org.col.api.search.NameSearchParameter.PUBLISHED_IN_ID;
-import static org.col.api.search.NameSearchParameter.PUBLISHER_KEY;
-import static org.col.api.search.NameSearchParameter.RANK;
-import static org.col.api.search.NameSearchParameter.SECTOR_KEY;
-import static org.col.api.search.NameSearchParameter.STATUS;
-import static org.col.api.search.NameSearchParameter.TAXON_ID;
-import static org.col.api.search.NameSearchParameter.TYPE;
+import static org.col.api.search.NameUsageSearchParameter.DATASET_KEY;
+import static org.col.api.search.NameUsageSearchParameter.DECISION_KEY;
+import static org.col.api.search.NameUsageSearchParameter.FIELD;
+import static org.col.api.search.NameUsageSearchParameter.ISSUE;
+import static org.col.api.search.NameUsageSearchParameter.NAME_ID;
+import static org.col.api.search.NameUsageSearchParameter.NAME_INDEX_ID;
+import static org.col.api.search.NameUsageSearchParameter.NOM_STATUS;
+import static org.col.api.search.NameUsageSearchParameter.PUBLISHED_IN_ID;
+import static org.col.api.search.NameUsageSearchParameter.PUBLISHER_KEY;
+import static org.col.api.search.NameUsageSearchParameter.RANK;
+import static org.col.api.search.NameUsageSearchParameter.SECTOR_KEY;
+import static org.col.api.search.NameUsageSearchParameter.STATUS;
+import static org.col.api.search.NameUsageSearchParameter.TAXON_ID;
+import static org.col.api.search.NameUsageSearchParameter.TYPE;
 
 /**
  * Converts the Elasticsearch response to a NameSearchResponse instance.
@@ -61,11 +61,11 @@ class NameSearchResultConverter {
    * @return
    * @throws IOException
    */
-  NameSearchResponse transferResponse(Page page) throws IOException {
+  NameUsageSearchResponse transferResponse(Page page) throws IOException {
     int total = esResponse.getHits().getTotalNumHits();
     List<NameUsageWrapper> nameUsages = transferNameUsages();
-    Map<NameSearchParameter, Set<FacetValue<?>>> facets = transferFacets();
-    return new NameSearchResponse(page, total, nameUsages, facets);
+    Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets = transferFacets();
+    return new NameUsageSearchResponse(page, total, nameUsages, facets);
   }
 
   private List<NameUsageWrapper> transferNameUsages() throws IOException {
@@ -85,12 +85,12 @@ class NameSearchResultConverter {
     return nuws;
   }
 
-  private Map<NameSearchParameter, Set<FacetValue<?>>> transferFacets() {
+  private Map<NameUsageSearchParameter, Set<FacetValue<?>>> transferFacets() {
     if (esResponse.getAggregations() == null) {
       return Collections.emptyMap();
     }
     NameUsageAggregation esFacets = esResponse.getAggregations().getContextFilter().getFacetsContainer();
-    Map<NameSearchParameter, Set<FacetValue<?>>> facets = new EnumMap<>(NameSearchParameter.class);
+    Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets = new EnumMap<>(NameUsageSearchParameter.class);
     addIfPresent(facets, DATASET_KEY, esFacets.getDatasetKey());
     addIfPresent(facets, DECISION_KEY, esFacets.getDecisionKey());
     addIfPresent(facets, FIELD, esFacets.getField());
@@ -108,7 +108,7 @@ class NameSearchResultConverter {
     return facets;
   }
 
-  private static void addIfPresent(Map<NameSearchParameter, Set<FacetValue<?>>> facets, NameSearchParameter param, EsFacet esFacet) {
+  private static void addIfPresent(Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets, NameUsageSearchParameter param, EsFacet esFacet) {
     if (esFacet != null) {
       if (param.type() == String.class) {
         facets.put(param, createStringBuckets(esFacet));
@@ -148,7 +148,7 @@ class NameSearchResultConverter {
     return facet;
   }
 
-  private static <U extends Enum<U>> Set<FacetValue<?>> createEnumBuckets(EsFacet esFacet, NameSearchParameter param) {
+  private static <U extends Enum<U>> Set<FacetValue<?>> createEnumBuckets(EsFacet esFacet, NameUsageSearchParameter param) {
     @SuppressWarnings("unchecked")
     Class<U> enumClass = (Class<U>) param.type();
     TreeSet<FacetValue<?>> facet = new TreeSet<>();

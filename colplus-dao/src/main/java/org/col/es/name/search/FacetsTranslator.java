@@ -2,8 +2,8 @@ package org.col.es.name.search;
 
 import java.util.Map;
 
-import org.col.api.search.NameSearchParameter;
-import org.col.api.search.NameSearchRequest;
+import org.col.api.search.NameUsageSearchParameter;
+import org.col.api.search.NameUsageSearchRequest;
 import org.col.es.name.NameUsageFieldLookup;
 import org.col.es.query.Aggregation;
 import org.col.es.query.FacetAggregation;
@@ -29,24 +29,24 @@ import static org.col.es.name.search.RequestTranslator.generateQuery;
  */
 class FacetsTranslator {
 
-  private final NameSearchRequest request;
+  private final NameUsageSearchRequest request;
 
-  FacetsTranslator(NameSearchRequest request) {
+  FacetsTranslator(NameUsageSearchRequest request) {
     this.request = request;
   }
 
   Map<String, Aggregation> translate() {
-    NameSearchRequest copy = request.copy();
+    NameUsageSearchRequest copy = request.copy();
     copy.getFilters().keySet().retainAll(request.getFacets());
     copy.setQ(null);
     GlobalAggregation context = new GlobalAggregation();
     FilterAggregation ctxFilterAgg = new FilterAggregation(getContextFilter());
     context.setNestedAggregations(singletonMap(getContextFilterLabel(), ctxFilterAgg));
-    for (NameSearchParameter facet : copy.getFacets()) {
+    for (NameUsageSearchParameter facet : copy.getFacets()) {
       String field = NameUsageFieldLookup.INSTANCE.lookup(facet);
       // Temporarily remove the filter corresponding to the facet (if any), otherwise the values retrieved for the facet would collapse to
       // those specified by the filter.
-      NameSearchRequest temp = copy.copy();
+      NameUsageSearchRequest temp = copy.copy();
       temp.removeFilter(facet);
       Aggregation agg = new FacetAggregation(field, generateQuery(temp));
       ctxFilterAgg.addNestedAggregation(getFacetLabel(facet), agg);
@@ -58,7 +58,7 @@ class FacetsTranslator {
     if (request.getFilters().isEmpty()) { // might still have a Q
       return generateQuery(request);
     }
-    NameSearchRequest copy = request.copy();
+    NameUsageSearchRequest copy = request.copy();
     copy.getFilters().keySet().removeAll(request.getFacets());
     return generateQuery(copy);
   }

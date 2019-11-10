@@ -1,6 +1,6 @@
 package org.col.es.name.suggest;
 
-import org.col.api.search.NameSuggestRequest;
+import org.col.api.search.NameUsageSuggestRequest;
 import org.col.es.query.BoolQuery;
 import org.col.es.query.EsSearchRequest;
 import org.col.es.query.RangeQuery;
@@ -14,9 +14,9 @@ import static org.gbif.nameparser.api.Rank.SPECIES;
  */
 class RequestTranslator {
 
-  private final NameSuggestRequest request;
+  private final NameUsageSuggestRequest request;
 
-  RequestTranslator(NameSuggestRequest request) {
+  RequestTranslator(NameUsageSuggestRequest request) {
     this.request = request;
   }
 

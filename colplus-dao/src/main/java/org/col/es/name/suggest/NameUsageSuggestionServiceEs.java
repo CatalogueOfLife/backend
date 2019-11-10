@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.col.api.search.NameSuggestRequest;
-import org.col.api.search.NameSuggestResponse;
-import org.col.api.search.NameSuggestion;
+import org.col.api.search.NameUsageSuggestRequest;
+import org.col.api.search.NameUsageSuggestResponse;
+import org.col.api.search.NameUsageSuggestion;
 import org.col.es.EsException;
 import org.col.es.name.NameUsageQueryService;
 import org.col.es.name.NameUsageEsResponse;
@@ -17,17 +17,17 @@ import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NameSuggestionServiceEs extends NameUsageQueryService implements NameSuggestionService {
+public class NameUsageSuggestionServiceEs extends NameUsageQueryService implements NameUsageSuggestionService {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchServiceEs.class);
 
-  public NameSuggestionServiceEs(String indexName, RestClient client) {
+  public NameUsageSuggestionServiceEs(String indexName, RestClient client) {
     super(indexName, client);
   }
 
   @Override
-  public NameSuggestResponse suggest(NameSuggestRequest request) {
+  public NameUsageSuggestResponse suggest(NameUsageSuggestRequest request) {
     validateRequest(request);
     RequestTranslator translator = new RequestTranslator(request);
     EsSearchRequest query = translator.translate();
@@ -37,7 +37,7 @@ public class NameSuggestionServiceEs extends NameUsageQueryService implements Na
     } catch (IOException e) {
       throw new EsException(e);
     }
-    List<NameSuggestion> suggestions = new ArrayList<>();
+    List<NameUsageSuggestion> suggestions = new ArrayList<>();
     SuggestionFactory factory = new SuggestionFactory(request);
     esResponse.getHits().getHits().forEach(hit -> {
       if (hit.matchedQuery(QTranslator.SN_QUERY_NAME)) {
@@ -47,10 +47,10 @@ public class NameSuggestionServiceEs extends NameUsageQueryService implements Na
         suggestions.add(factory.createSuggestion(hit, true));
       }
     });
-    return new NameSuggestResponse(suggestions);
+    return new NameUsageSuggestResponse(suggestions);
   }
 
-  private static void validateRequest(NameSuggestRequest request) {
+  private static void validateRequest(NameUsageSuggestRequest request) {
     if (StringUtils.isBlank(request.getQ())) {
       throw new EsException("Missing q parameter");
     }

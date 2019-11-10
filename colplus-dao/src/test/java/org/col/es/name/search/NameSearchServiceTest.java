@@ -12,9 +12,9 @@ import org.col.api.model.Name;
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.api.model.VernacularName;
-import org.col.api.search.NameSearchParameter;
-import org.col.api.search.NameSearchRequest;
-import org.col.api.search.NameSearchResponse;
+import org.col.api.search.NameUsageSearchParameter;
+import org.col.api.search.NameUsageSearchRequest;
+import org.col.api.search.NameUsageSearchResponse;
 import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.Issue;
 import org.col.es.EsReadTestBase;
@@ -54,9 +54,9 @@ public class NameSearchServiceTest extends EsReadTestBase {
     NameUsageWrapperConverter converter = new NameUsageWrapperConverter();
 
     // Define search
-    NameSearchRequest nsr = new NameSearchRequest();
+    NameUsageSearchRequest nsr = new NameUsageSearchRequest();
     nsr.setHighlight(false);
-    nsr.addFilter(NameSearchParameter.ISSUE, Issue.ACCEPTED_NAME_MISSING);
+    nsr.addFilter(NameUsageSearchParameter.ISSUE, Issue.ACCEPTED_NAME_MISSING);
 
     // Match
     NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
@@ -105,8 +105,8 @@ public class NameSearchServiceTest extends EsReadTestBase {
     NameUsageWrapperConverter converter = new NameUsageWrapperConverter();
 
     // Find all documents with an issue of either ACCEPTED_NAME_MISSING or ACCORDING_TO_DATE_INVALID
-    NameSearchRequest nsr = new NameSearchRequest();
-    nsr.addFilter(NameSearchParameter.ISSUE, EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID));
+    NameUsageSearchRequest nsr = new NameUsageSearchRequest();
+    nsr.addFilter(NameUsageSearchParameter.ISSUE, EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID));
 
     // Match
     NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
@@ -160,9 +160,9 @@ public class NameSearchServiceTest extends EsReadTestBase {
     NameUsageWrapperConverter converter = new NameUsageWrapperConverter();
 
     // Find all documents with an issue of any of ACCEPTED_NAME_MISSING, ACCORDING_TO_DATE_INVALID, BASIONYM_ID_INVALID
-    NameSearchRequest nsr = new NameSearchRequest();
+    NameUsageSearchRequest nsr = new NameUsageSearchRequest();
     nsr.setHighlight(false);
-    nsr.addFilter(NameSearchParameter.ISSUE,
+    nsr.addFilter(NameUsageSearchParameter.ISSUE,
         Issue.ACCEPTED_NAME_MISSING,
         Issue.ACCORDING_TO_DATE_INVALID,
         Issue.BASIONYM_ID_INVALID);
@@ -214,7 +214,7 @@ public class NameSearchServiceTest extends EsReadTestBase {
     NameUsageWrapperConverter converter = new NameUsageWrapperConverter();
 
     // Define search
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setHighlight(false);
     query.setQ("UNLIKE");
 
@@ -260,10 +260,10 @@ public class NameSearchServiceTest extends EsReadTestBase {
     NameUsageWrapperConverter converter = new NameUsageWrapperConverter();
 
     // Define search
-    NameSearchRequest nsr = new NameSearchRequest();
+    NameUsageSearchRequest nsr = new NameUsageSearchRequest();
     nsr.setHighlight(false);
     // Only search in authorship field
-    nsr.setContent(EnumSet.of(NameSearchRequest.SearchContent.AUTHORSHIP));
+    nsr.setContent(EnumSet.of(NameUsageSearchRequest.SearchContent.AUTHORSHIP));
     nsr.setQ("UNLIKE");
 
     // No match
@@ -308,9 +308,9 @@ public class NameSearchServiceTest extends EsReadTestBase {
     NameUsageWrapperConverter converter = new NameUsageWrapperConverter();
 
     // Define search condition
-    NameSearchRequest nsr = new NameSearchRequest();
+    NameUsageSearchRequest nsr = new NameUsageSearchRequest();
     nsr.setHighlight(false);
-    nsr.addFilter(NameSearchParameter.ISSUE, NameSearchRequest.IS_NULL);
+    nsr.addFilter(NameUsageSearchParameter.ISSUE, NameUsageSearchRequest.IS_NULL);
 
     // Match
     NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
@@ -341,8 +341,8 @@ public class NameSearchServiceTest extends EsReadTestBase {
     NameUsageWrapperConverter converter = new NameUsageWrapperConverter();
 
     // Define search condition
-    NameSearchRequest nsr = new NameSearchRequest();
-    nsr.addFilter(NameSearchParameter.ISSUE, NameSearchRequest.IS_NOT_NULL);
+    NameUsageSearchRequest nsr = new NameUsageSearchRequest();
+    nsr.addFilter(NameUsageSearchParameter.ISSUE, NameUsageSearchRequest.IS_NOT_NULL);
 
     // No match
     NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
@@ -373,9 +373,9 @@ public class NameSearchServiceTest extends EsReadTestBase {
     NameUsageWrapperConverter converter = new NameUsageWrapperConverter();
 
     // Find all documents where the uninomial field is not empty
-    NameSearchRequest nsr = new NameSearchRequest();
+    NameUsageSearchRequest nsr = new NameUsageSearchRequest();
     nsr.setHighlight(false);
-    nsr.addFilter(NameSearchParameter.FIELD, "uninomial");
+    nsr.addFilter(NameUsageSearchParameter.FIELD, "uninomial");
 
     // Match
     Name n = new Name();
@@ -423,9 +423,9 @@ public class NameSearchServiceTest extends EsReadTestBase {
     NameUsageWrapperConverter converter = new NameUsageWrapperConverter();
 
     // Find all documents where the uninomial field is not empty
-    NameSearchRequest nsr = new NameSearchRequest();
+    NameUsageSearchRequest nsr = new NameUsageSearchRequest();
     nsr.setHighlight(false);
-    nsr.addFilter(NameSearchParameter.FIELD, "uninomial", "remarks", "specific_epithet");
+    nsr.addFilter(NameUsageSearchParameter.FIELD, "uninomial", "remarks", "specific_epithet");
 
     // Match
     Name n = new Name();
@@ -473,9 +473,9 @@ public class NameSearchServiceTest extends EsReadTestBase {
     NameUsageWrapperConverter converter = new NameUsageWrapperConverter();
 
     // Find all documents where the uninomial field is not empty
-    NameSearchRequest nsr = new NameSearchRequest();
+    NameUsageSearchRequest nsr = new NameUsageSearchRequest();
     nsr.setHighlight(false);
-    nsr.addFilter(NameSearchParameter.FIELD, "uninomial", "remarks", "specific_epithet");
+    nsr.addFilter(NameUsageSearchParameter.FIELD, "uninomial", "remarks", "specific_epithet");
 
     // Match
     Name n = new Name();
@@ -531,12 +531,12 @@ public class NameSearchServiceTest extends EsReadTestBase {
 
   @Test
   public void testWithBigQ() {
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setHighlight(false);
     query.setQ("ABCDEFGHIJKLMNOPQRSTUVW");
     List<NameUsageWrapper> documents = testWithBigQ_data();
     index(documents);
-    NameSearchResponse response = search(query);
+    NameUsageSearchResponse response = search(query);
     assertEquals(2, response.getResult().size());
   }
 
@@ -565,23 +565,23 @@ public class NameSearchServiceTest extends EsReadTestBase {
   // Issue #207
   @Test
   public void testWithSmthii__1() {
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setHighlight(false);
     query.setQ("Smithi");
     index(testWithSmthii_data());
     // Expect all to come back
-    NameSearchResponse result = search(query);
+    NameUsageSearchResponse result = search(query);
     assertEquals(testWithSmthii_data(), result.getResult());
   }
 
   @Test
   public void testWithSmthii__2() {
-    NameSearchRequest nsr = new NameSearchRequest();
+    NameUsageSearchRequest nsr = new NameUsageSearchRequest();
     nsr.setHighlight(false);
     nsr.setQ("Smithii");
     index(testWithSmthii_data());
     // Expect all to come back
-    NameSearchResponse result = search(nsr);
+    NameUsageSearchResponse result = search(nsr);
     assertEquals(testWithSmthii_data(), result.getResult());
   }
 

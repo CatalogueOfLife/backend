@@ -10,8 +10,8 @@ import org.col.api.model.NameUsage;
 import org.col.api.model.SimpleName;
 import org.col.api.model.Synonym;
 import org.col.api.model.Taxon;
-import org.col.api.search.NameSearchRequest;
-import org.col.api.search.NameSearchRequest.SortBy;
+import org.col.api.search.NameUsageSearchRequest;
+import org.col.api.search.NameUsageSearchRequest.SortBy;
 import org.col.api.search.NameUsageWrapper;
 import org.col.es.EsReadTestBase;
 import org.col.es.EsUtil;
@@ -56,7 +56,7 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     expected.forEach(nu -> nu.getClassification().forEach(sn -> sn.setName(sn.getName() + " (updated name)")));
 
     // Make sure that what ends up in ES equals the modified nam usages
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setSortBy(SortBy.NATIVE);
     List<NameUsageWrapper> actual = search(query).getResult();
 

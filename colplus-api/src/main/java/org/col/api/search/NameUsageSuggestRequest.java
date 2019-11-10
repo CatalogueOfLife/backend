@@ -6,7 +6,7 @@ import javax.ws.rs.QueryParam;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class NameSuggestRequest {
+public class NameUsageSuggestRequest {
 
   @QueryParam("q")
   private String q;
@@ -67,7 +67,7 @@ public class NameSuggestRequest {
       return false;
     if (getClass() != obj.getClass())
       return false;
-    NameSuggestRequest other = (NameSuggestRequest) obj;
+    NameUsageSuggestRequest other = (NameUsageSuggestRequest) obj;
     return Objects.equals(datasetKey, other.datasetKey) && Objects.equals(limit, other.limit) && Objects.equals(q, other.q)
         && Objects.equals(vernaculars, other.vernaculars);
   }

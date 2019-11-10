@@ -64,7 +64,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     try {
       createOrEmptyIndex(datasetKey);
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)) {
-        LOG.debug("Indexing usages from dataset {}", datasetKey);
+        LOG.info("Indexing usages from dataset {}", datasetKey);
         new NameUsageProcessor(factory, datasetKey).processDataset(handler);
       }
       EsUtil.refreshIndex(client, index);
@@ -75,7 +75,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
           BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)
       ) {
         NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
-        LOG.debug("Indexing bare names from dataset {}", datasetKey);
+        LOG.info("Indexing bare names from dataset {}", datasetKey);
         mapper.processDatasetBareNames(datasetKey, null, handler);
       }
       EsUtil.refreshIndex(client, index);
@@ -94,14 +94,14 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       Integer datasetKey = clearSector(session, s.getKey());
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)) {
-        LOG.debug("Indexing usages from sector {}", s.getKey());
+        LOG.info("Indexing usages from sector {}", s.getKey());
         mapper.processSectorUsages(s.getDatasetKey(), s.getKey(), s.getTarget().getId(), handler);
       }
       EsUtil.refreshIndex(client, index);
       tCount = indexer.documentsIndexed();
       indexer.reset();
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)) {
-        LOG.debug("Indexing bare names from sector {}", s.getKey());
+        LOG.info("Indexing bare names from sector {}", s.getKey());
         mapper.processDatasetBareNames(datasetKey, s.getKey(), handler);
       }
       EsUtil.refreshIndex(client, index);

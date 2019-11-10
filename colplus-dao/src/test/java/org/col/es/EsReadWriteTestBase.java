@@ -9,7 +9,7 @@ import org.col.api.RandomUtils;
 import org.col.api.TestEntityGenerator;
 import org.col.api.model.Page;
 import org.col.api.model.Taxon;
-import org.col.api.search.NameSearchResponse;
+import org.col.api.search.NameUsageSearchResponse;
 import org.col.db.PgSetupRule;
 import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.TaxonMapper;
@@ -103,7 +103,7 @@ public class EsReadWriteTestBase extends ExternalResource {
    * Executes the provided query against the text index. The number of returned documents is capped on {Page#MAX_LIMIT
    * Page.MAX_LIMIT}, so make sure the provided query will yield less documents.
    */
-  protected NameSearchResponse query(Query query) throws IOException {
+  protected NameUsageSearchResponse query(Query query) throws IOException {
     EsSearchRequest req = EsSearchRequest.emptyRequest().where(query).size(Page.MAX_LIMIT);
     return createSearchService().search(EsSetupRule.TEST_INDEX, req, new Page(Page.MAX_LIMIT));
   }

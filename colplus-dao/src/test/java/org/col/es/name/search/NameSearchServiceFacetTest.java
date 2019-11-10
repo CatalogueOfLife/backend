@@ -17,16 +17,15 @@ import org.col.api.model.NameUsage;
 import org.col.api.model.Page;
 import org.col.api.model.Taxon;
 import org.col.api.search.FacetValue;
-import org.col.api.search.NameSearchParameter;
-import org.col.api.search.NameSearchRequest;
-import org.col.api.search.NameSearchResponse;
+import org.col.api.search.NameUsageSearchParameter;
+import org.col.api.search.NameUsageSearchRequest;
+import org.col.api.search.NameUsageSearchResponse;
 import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.Issue;
 import org.col.es.EsModule;
 import org.col.es.EsReadTestBase;
 import org.col.es.model.NameUsageDocument;
 import org.col.es.name.NameUsageWrapperConverter;
-import org.col.es.name.search.NameUsageSearchServiceEs;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -65,8 +64,8 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
   public void testSingleFacetWithoutFilters() throws IOException {
 
     // ==> Define search
-    NameSearchRequest request = new NameSearchRequest();
-    request.addFacet(NameSearchParameter.RANK);
+    NameUsageSearchRequest request = new NameUsageSearchRequest();
+    request.addFacet(NameUsageSearchParameter.RANK);
     // Don't forget this one; we're going to indexRaw more than 10 docs
     Page page = new Page(100);
 
@@ -133,16 +132,16 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
     doc.setRank(Rank.SPECIES);
     indexRaw(doc);
 
-    NameSearchResponse result = svc.search(indexName, request, page);
+    NameUsageSearchResponse result = svc.search(indexName, request, page);
 
-    Map<NameSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
+    Map<NameUsageSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
     Set<FacetValue<?>> rankFacet = new TreeSet<>();
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.KINGDOM.ordinal(), 4));
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.PHYLUM.ordinal(), 4));
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.GENUS.ordinal(), 3));
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.CLASS.ordinal(), 2));
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.SPECIES.ordinal(), 1));
-    expected.put(NameSearchParameter.RANK, rankFacet);
+    expected.put(NameUsageSearchParameter.RANK, rankFacet);
 
     assertEquals(expected, result.getFacets());
 
@@ -152,9 +151,9 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
   public void testTwoFacetsWithoutFilters() throws IOException {
 
     // ==> Define search
-    NameSearchRequest request = new NameSearchRequest();
-    request.addFacet(NameSearchParameter.RANK);
-    request.addFacet(NameSearchParameter.ISSUE);
+    NameUsageSearchRequest request = new NameUsageSearchRequest();
+    request.addFacet(NameUsageSearchParameter.RANK);
+    request.addFacet(NameUsageSearchParameter.ISSUE);
     Page page = new Page(100);
 
     NameUsageDocument doc = newDocument();
@@ -228,9 +227,9 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
     // CITATION_UNPARSED: 2 docs
     // CLASSIFICATION_NOT_APPLIED: 1 doc
 
-    NameSearchResponse result = svc.search(indexName, request, page);
+    NameUsageSearchResponse result = svc.search(indexName, request, page);
 
-    Map<NameSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
+    Map<NameUsageSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
 
     Set<FacetValue<?>> rankFacet = new TreeSet<>();
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.KINGDOM.ordinal(), 4));
@@ -238,7 +237,7 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.GENUS.ordinal(), 3));
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.CLASS.ordinal(), 2));
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.SPECIES.ordinal(), 1));
-    expected.put(NameSearchParameter.RANK, rankFacet);
+    expected.put(NameUsageSearchParameter.RANK, rankFacet);
 
     Set<FacetValue<?>> issueFacet = new TreeSet<>();
     issueFacet.add(FacetValue.forEnum(Issue.class, Issue.ACCEPTED_NAME_MISSING.ordinal(), 5));
@@ -246,7 +245,7 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
     issueFacet.add(FacetValue.forEnum(Issue.class, Issue.ACCEPTED_ID_INVALID.ordinal(), 2));
     issueFacet.add(FacetValue.forEnum(Issue.class, Issue.CITATION_UNPARSED.ordinal(), 2));
     issueFacet.add(FacetValue.forEnum(Issue.class, Issue.CLASSIFICATION_NOT_APPLIED.ordinal(), 1));
-    expected.put(NameSearchParameter.ISSUE, issueFacet);
+    expected.put(NameUsageSearchParameter.ISSUE, issueFacet);
 
     assertEquals(expected, result.getFacets());
 
@@ -256,10 +255,10 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
   public void testThreeFacetsWithoutFilters() throws IOException {
 
     // ==> Define search
-    NameSearchRequest request = new NameSearchRequest();
-    request.addFacet(NameSearchParameter.RANK);
-    request.addFacet(NameSearchParameter.ISSUE);
-    request.addFacet(NameSearchParameter.PUBLISHED_IN_ID);
+    NameUsageSearchRequest request = new NameUsageSearchRequest();
+    request.addFacet(NameUsageSearchParameter.RANK);
+    request.addFacet(NameUsageSearchParameter.ISSUE);
+    request.addFacet(NameUsageSearchParameter.PUBLISHED_IN_ID);
     Page page = new Page(100);
 
     String PUB_ID1 = "PUB_0001";
@@ -355,9 +354,9 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
     // PUB_ID1: 6 docs
     // PUB_ID2: 4 docs
 
-    NameSearchResponse result = svc.search(indexName, request, page);
+    NameUsageSearchResponse result = svc.search(indexName, request, page);
 
-    Map<NameSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
+    Map<NameUsageSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
 
     Set<FacetValue<?>> rankFacet = new TreeSet<>();
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.KINGDOM.ordinal(), 4)); // Descending doc count !!!
@@ -365,7 +364,7 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.GENUS.ordinal(), 3));
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.CLASS.ordinal(), 2));
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.SPECIES.ordinal(), 1));
-    expected.put(NameSearchParameter.RANK, rankFacet);
+    expected.put(NameUsageSearchParameter.RANK, rankFacet);
 
     Set<FacetValue<?>> issueFacet = new TreeSet<>();
     issueFacet.add(FacetValue.forEnum(Issue.class, Issue.ACCEPTED_NAME_MISSING.ordinal(), 5));
@@ -373,12 +372,12 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
     issueFacet.add(FacetValue.forEnum(Issue.class, Issue.ACCEPTED_ID_INVALID.ordinal(), 2));
     issueFacet.add(FacetValue.forEnum(Issue.class, Issue.CITATION_UNPARSED.ordinal(), 2));
     issueFacet.add(FacetValue.forEnum(Issue.class, Issue.CLASSIFICATION_NOT_APPLIED.ordinal(), 1));
-    expected.put(NameSearchParameter.ISSUE, issueFacet);
+    expected.put(NameUsageSearchParameter.ISSUE, issueFacet);
 
     Set<FacetValue<?>> pubIdFacet = new TreeSet<>();
     pubIdFacet.add(FacetValue.forString(PUB_ID1, 6));
     pubIdFacet.add(FacetValue.forString(PUB_ID2, 4));
-    expected.put(NameSearchParameter.PUBLISHED_IN_ID, pubIdFacet);
+    expected.put(NameUsageSearchParameter.PUBLISHED_IN_ID, pubIdFacet);
 
     assertEquals(expected, result.getFacets());
 
@@ -391,11 +390,11 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
     String PUB_ID2 = "PUB_0002";
 
     // Define search
-    NameSearchRequest request = new NameSearchRequest();
-    request.addFacet(NameSearchParameter.RANK);
-    request.addFacet(NameSearchParameter.ISSUE);
-    request.addFacet(NameSearchParameter.PUBLISHED_IN_ID);
-    request.addFilter(NameSearchParameter.PUBLISHED_IN_ID, PUB_ID1);
+    NameUsageSearchRequest request = new NameUsageSearchRequest();
+    request.addFacet(NameUsageSearchParameter.RANK);
+    request.addFacet(NameUsageSearchParameter.ISSUE);
+    request.addFacet(NameUsageSearchParameter.PUBLISHED_IN_ID);
+    request.addFilter(NameUsageSearchParameter.PUBLISHED_IN_ID, PUB_ID1);
     Page page = new Page(100);
 
     NameUsageDocument doc = newDocument();
@@ -490,25 +489,25 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
     // PUB_ID1: 6 docs (SHOULD NOT BE AFFECTED BY FILTER !)
     // PUB_ID2: 4 docs
 
-    NameSearchResponse result = svc.search(indexName, request, page);
+    NameUsageSearchResponse result = svc.search(indexName, request, page);
 
-    Map<NameSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
+    Map<NameUsageSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
 
     Set<FacetValue<?>> rankFacet = new TreeSet<>();
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.KINGDOM.ordinal(), 3));
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.PHYLUM.ordinal(), 1));
     rankFacet.add(FacetValue.forEnum(Rank.class, Rank.GENUS.ordinal(), 2));
-    expected.put(NameSearchParameter.RANK, rankFacet);
+    expected.put(NameUsageSearchParameter.RANK, rankFacet);
 
     Set<FacetValue<?>> issueFacet = new TreeSet<>();
     issueFacet.add(FacetValue.forEnum(Issue.class, Issue.ACCEPTED_NAME_MISSING.ordinal(), 2));
     issueFacet.add(FacetValue.forEnum(Issue.class, Issue.BASIONYM_ID_INVALID.ordinal(), 3));
-    expected.put(NameSearchParameter.ISSUE, issueFacet);
+    expected.put(NameUsageSearchParameter.ISSUE, issueFacet);
 
     Set<FacetValue<?>> pubIdFacet = new TreeSet<>();
     pubIdFacet.add(FacetValue.forString(PUB_ID1, 6));
     pubIdFacet.add(FacetValue.forString(PUB_ID2, 4));
-    expected.put(NameSearchParameter.PUBLISHED_IN_ID, pubIdFacet);
+    expected.put(NameUsageSearchParameter.PUBLISHED_IN_ID, pubIdFacet);
 
     assertEquals(expected, result.getFacets());
 
@@ -517,8 +516,8 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
   @Test // Make sure UUID facets work OK
   public void testPublisherKey() throws IOException {
     // Define search
-    NameSearchRequest nsr = new NameSearchRequest();
-    nsr.addFacet(NameSearchParameter.PUBLISHER_KEY);
+    NameUsageSearchRequest nsr = new NameUsageSearchRequest();
+    nsr.addFacet(NameUsageSearchParameter.PUBLISHER_KEY);
     Page page = new Page(100);
 
     UUID uuid1 = UUID.randomUUID();
@@ -555,13 +554,13 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
     nuw6.setPublisherKey(null);
     nuw7.setPublisherKey(null);
 
-    Map<NameSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
+    Map<NameUsageSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
     Set<FacetValue<?>> pkFacet = new TreeSet<>();
     pkFacet.add(FacetValue.forUuid(uuid1, 3));
     pkFacet.add(FacetValue.forUuid(uuid2, 2));
-    expected.put(NameSearchParameter.PUBLISHER_KEY, pkFacet);
+    expected.put(NameUsageSearchParameter.PUBLISHER_KEY, pkFacet);
 
-    NameSearchResponse result = svc.search(indexName, nsr, page);
+    NameUsageSearchResponse result = svc.search(indexName, nsr, page);
 
     assertEquals(expected, result.getFacets());
 
@@ -570,8 +569,8 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
   @Test
   public void testSectorKey() throws IOException {
     // Define search
-    NameSearchRequest nsr = new NameSearchRequest();
-    nsr.addFacet(NameSearchParameter.SECTOR_KEY);
+    NameUsageSearchRequest nsr = new NameUsageSearchRequest();
+    nsr.addFacet(NameUsageSearchParameter.SECTOR_KEY);
     Page page = new Page(100);
 
     Integer key1 = 1000;
@@ -608,13 +607,13 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
     ((Taxon) nuw6.getUsage()).setSectorKey(null);
     ((Taxon) nuw7.getUsage()).setSectorKey(null);
 
-    Map<NameSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
+    Map<NameUsageSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
     Set<FacetValue<?>> skFacet = new TreeSet<>();
     skFacet.add(FacetValue.forInteger(key1, 3));
     skFacet.add(FacetValue.forInteger(key2, 2));
-    expected.put(NameSearchParameter.SECTOR_KEY, skFacet);
+    expected.put(NameUsageSearchParameter.SECTOR_KEY, skFacet);
 
-    NameSearchResponse result = svc.search(indexName, nsr, page);
+    NameUsageSearchResponse result = svc.search(indexName, nsr, page);
 
     assertEquals(expected, result.getFacets());
 
@@ -624,8 +623,8 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
   public void testDatasetKey() throws IOException {
 
     // Define search
-    NameSearchRequest request = new NameSearchRequest();
-    request.addFacet(NameSearchParameter.DATASET_KEY);
+    NameUsageSearchRequest request = new NameUsageSearchRequest();
+    request.addFacet(NameUsageSearchParameter.DATASET_KEY);
     Page page = new Page(100);
 
     Integer key1 = 1000;
@@ -658,13 +657,13 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
     nuw6.getUsage().getName().setDatasetKey(null);
     nuw7.getUsage().getName().setDatasetKey(null);
 
-    Map<NameSearchParameter, Set<FacetValue<?>>> expectedFacets = new HashMap<>();
+    Map<NameUsageSearchParameter, Set<FacetValue<?>>> expectedFacets = new HashMap<>();
     Set<FacetValue<?>> datasetFacet = new TreeSet<>();
     datasetFacet.add(FacetValue.forInteger(key1, 3));
     datasetFacet.add(FacetValue.forInteger(key2, 2));
-    expectedFacets.put(NameSearchParameter.DATASET_KEY, datasetFacet);
+    expectedFacets.put(NameUsageSearchParameter.DATASET_KEY, datasetFacet);
 
-    NameSearchResponse result = svc.search(indexName, request, page);
+    NameUsageSearchResponse result = svc.search(indexName, request, page);
 
     assertEquals(expectedFacets, result.getFacets());
 

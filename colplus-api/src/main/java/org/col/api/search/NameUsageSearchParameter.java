@@ -10,7 +10,7 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
-public enum NameSearchParameter {
+public enum NameUsageSearchParameter {
 
   USAGE_ID(String.class),
 
@@ -82,7 +82,7 @@ public enum NameSearchParameter {
 
   private final Class<?> type;
 
-  NameSearchParameter(Class<?> type) {
+  NameUsageSearchParameter(Class<?> type) {
     this.type = type;
   }
 

@@ -6,28 +6,28 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.col.api.search.NameSearchParameter;
+import org.col.api.search.NameUsageSearchParameter;
 import org.col.es.response.Aggregations;
 import org.col.es.response.ContextFilterWrapper;
 import org.col.es.response.EsFacet;
 
-import static org.col.api.search.NameSearchParameter.*;
-import static org.col.api.search.NameSearchParameter.DECISION_KEY;
-import static org.col.api.search.NameSearchParameter.FIELD;
-import static org.col.api.search.NameSearchParameter.FOSSIL;
-import static org.col.api.search.NameSearchParameter.ISSUE;
-import static org.col.api.search.NameSearchParameter.NAME_ID;
-import static org.col.api.search.NameSearchParameter.NAME_INDEX_ID;
-import static org.col.api.search.NameSearchParameter.NOM_CODE;
-import static org.col.api.search.NameSearchParameter.NOM_STATUS;
-import static org.col.api.search.NameSearchParameter.PUBLISHED_IN_ID;
-import static org.col.api.search.NameSearchParameter.PUBLISHER_KEY;
-import static org.col.api.search.NameSearchParameter.RANK;
-import static org.col.api.search.NameSearchParameter.RECENT;
-import static org.col.api.search.NameSearchParameter.SECTOR_KEY;
-import static org.col.api.search.NameSearchParameter.STATUS;
-import static org.col.api.search.NameSearchParameter.TAXON_ID;
-import static org.col.api.search.NameSearchParameter.TYPE;
+import static org.col.api.search.NameUsageSearchParameter.*;
+import static org.col.api.search.NameUsageSearchParameter.DECISION_KEY;
+import static org.col.api.search.NameUsageSearchParameter.FIELD;
+import static org.col.api.search.NameUsageSearchParameter.FOSSIL;
+import static org.col.api.search.NameUsageSearchParameter.ISSUE;
+import static org.col.api.search.NameUsageSearchParameter.NAME_ID;
+import static org.col.api.search.NameUsageSearchParameter.NAME_INDEX_ID;
+import static org.col.api.search.NameUsageSearchParameter.NOM_CODE;
+import static org.col.api.search.NameUsageSearchParameter.NOM_STATUS;
+import static org.col.api.search.NameUsageSearchParameter.PUBLISHED_IN_ID;
+import static org.col.api.search.NameUsageSearchParameter.PUBLISHER_KEY;
+import static org.col.api.search.NameUsageSearchParameter.RANK;
+import static org.col.api.search.NameUsageSearchParameter.RECENT;
+import static org.col.api.search.NameUsageSearchParameter.SECTOR_KEY;
+import static org.col.api.search.NameUsageSearchParameter.STATUS;
+import static org.col.api.search.NameUsageSearchParameter.TAXON_ID;
+import static org.col.api.search.NameUsageSearchParameter.TYPE;
 
 /**
  * Determines and provides the labels to use for the various facets. We need to centralize this so that the query
@@ -57,11 +57,11 @@ public class NameUsageFacetLabels {
   /*
    * Maps NameSearchParameters to the labels to be used in aggregation queries
    */
-  private static final EnumMap<NameSearchParameter, String> facetLabels;
+  private static final EnumMap<NameUsageSearchParameter, String> facetLabels;
 
   static {
 
-    facetLabels = new EnumMap<>(NameSearchParameter.class);
+    facetLabels = new EnumMap<>(NameUsageSearchParameter.class);
     facetLabels.put(DATASET_KEY, DATASET_KEY_FACET);
     facetLabels.put(DECISION_KEY, DECISION_KEY_FACET);
     facetLabels.put(FIELD, FIELD_FACET);
@@ -81,8 +81,8 @@ public class NameUsageFacetLabels {
     facetLabels.put(FOSSIL, FOSSIL_FACET);
     facetLabels.put(RECENT, RECENT_FACET);
 
-    if (facetLabels.size() != NameSearchParameter.values().length) {
-      Set<NameSearchParameter> all = new HashSet<NameSearchParameter>(Arrays.asList(NameSearchParameter.values()));
+    if (facetLabels.size() != NameUsageSearchParameter.values().length) {
+      Set<NameUsageSearchParameter> all = new HashSet<NameUsageSearchParameter>(Arrays.asList(NameUsageSearchParameter.values()));
       all.removeAll(facetLabels.keySet());
       String unmapped = all.stream().map(Enum::name).collect(Collectors.joining(", "));
       String msg = "Some name search parameters not mapped to aggregation labels: " + unmapped;
@@ -91,7 +91,7 @@ public class NameUsageFacetLabels {
 
   }
 
-  public static String getFacetLabel(NameSearchParameter param) {
+  public static String getFacetLabel(NameUsageSearchParameter param) {
     return facetLabels.get(param);
   }
 

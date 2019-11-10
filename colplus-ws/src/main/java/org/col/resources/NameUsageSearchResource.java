@@ -13,27 +13,27 @@ import com.codahale.metrics.annotation.Timed;
 
 import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
-import org.col.api.search.NameSearchRequest;
-import org.col.api.search.NameSuggestRequest;
-import org.col.api.search.NameSuggestResponse;
+import org.col.api.search.NameUsageSearchRequest;
+import org.col.api.search.NameUsageSuggestRequest;
+import org.col.api.search.NameUsageSuggestResponse;
 import org.col.api.search.NameUsageWrapper;
 import org.col.es.InvalidQueryException;
 import org.col.es.name.search.NameUsageSearchService;
-import org.col.es.name.suggest.NameSuggestionService;
+import org.col.es.name.suggest.NameUsageSuggestionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Path("/name")
+@Path("/nameusage")
 @Produces(MediaType.APPLICATION_JSON)
-public class NameSearchResource {
+public class NameUsageSearchResource {
 
   @SuppressWarnings("unused")
-  private static final Logger LOG = LoggerFactory.getLogger(NameSearchResource.class);
+  private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchResource.class);
 
   private final NameUsageSearchService searchService;
-  private final NameSuggestionService suggestService;
+  private final NameUsageSuggestionService suggestService;
 
-  public NameSearchResource(NameUsageSearchService search, NameSuggestionService suggest) {
+  public NameUsageSearchResource(NameUsageSearchService search, NameUsageSuggestionService suggest) {
     this.searchService = search;
     this.suggestService = suggest;
   }
@@ -41,7 +41,7 @@ public class NameSearchResource {
   @GET
   @Timed
   @Path("/search")
-  public ResultPage<NameUsageWrapper> search(@BeanParam NameSearchRequest query,
+  public ResultPage<NameUsageWrapper> search(@BeanParam NameUsageSearchRequest query,
       @Valid @BeanParam Page page,
       @Context UriInfo uri) throws InvalidQueryException {
     query.addFilters(uri.getQueryParameters());
@@ -51,7 +51,7 @@ public class NameSearchResource {
   @GET
   @Timed
   @Path("/suggest")
-  public NameSuggestResponse suggest(@BeanParam NameSuggestRequest query) throws InvalidQueryException {
+  public NameUsageSuggestResponse suggest(@BeanParam NameUsageSuggestRequest query) throws InvalidQueryException {
     return suggestService.suggest(query);
   }
 

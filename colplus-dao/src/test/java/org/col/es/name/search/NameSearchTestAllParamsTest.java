@@ -12,8 +12,8 @@ import org.col.api.model.Name;
 import org.col.api.model.NameUsage;
 import org.col.api.model.SimpleName;
 import org.col.api.model.Taxon;
-import org.col.api.search.NameSearchParameter;
-import org.col.api.search.NameSearchRequest;
+import org.col.api.search.NameUsageSearchParameter;
+import org.col.api.search.NameUsageSearchRequest;
 import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.NomStatus;
 import org.col.es.EsReadTestBase;
@@ -22,23 +22,23 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.col.api.search.NameSearchParameter.DATASET_KEY;
-import static org.col.api.search.NameSearchParameter.DECISION_KEY;
-import static org.col.api.search.NameSearchParameter.NAME_ID;
-import static org.col.api.search.NameSearchParameter.NAME_INDEX_ID;
-import static org.col.api.search.NameSearchParameter.NOM_STATUS;
-import static org.col.api.search.NameSearchParameter.PUBLISHED_IN_ID;
-import static org.col.api.search.NameSearchParameter.PUBLISHER_KEY;
-import static org.col.api.search.NameSearchParameter.SECTOR_KEY;
-import static org.col.api.search.NameSearchParameter.TAXON_ID;
-import static org.col.api.search.NameSearchRequest.IS_NOT_NULL;
-import static org.col.api.search.NameSearchRequest.IS_NULL;
+import static org.col.api.search.NameUsageSearchParameter.DATASET_KEY;
+import static org.col.api.search.NameUsageSearchParameter.DECISION_KEY;
+import static org.col.api.search.NameUsageSearchParameter.NAME_ID;
+import static org.col.api.search.NameUsageSearchParameter.NAME_INDEX_ID;
+import static org.col.api.search.NameUsageSearchParameter.NOM_STATUS;
+import static org.col.api.search.NameUsageSearchParameter.PUBLISHED_IN_ID;
+import static org.col.api.search.NameUsageSearchParameter.PUBLISHER_KEY;
+import static org.col.api.search.NameUsageSearchParameter.SECTOR_KEY;
+import static org.col.api.search.NameUsageSearchParameter.TAXON_ID;
+import static org.col.api.search.NameUsageSearchRequest.IS_NOT_NULL;
+import static org.col.api.search.NameUsageSearchRequest.IS_NULL;
 import static org.junit.Assert.assertEquals;
 
 public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameSearchTestAllParamsTest.class);
-  private static EnumSet<NameSearchParameter> tested = EnumSet.noneOf(NameSearchParameter.class);
+  private static EnumSet<NameUsageSearchParameter> tested = EnumSet.noneOf(NameUsageSearchParameter.class);
 
   @Before
   public void before() {
@@ -77,7 +77,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     index(nuw1, nuw2, nuw3, nuw4);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(TAXON_ID, "3");
 
     /*
@@ -121,7 +121,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     index(nuw1, nuw2, nuw3, nuw4);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(TAXON_ID, "4");
     query.addFilter(TAXON_ID, "5");
 
@@ -158,7 +158,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     index(nuw1, nuw2, nuw3, nuw4);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(PUBLISHER_KEY, uuid1);
 
     /*
@@ -192,7 +192,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     index(nuw1, nuw2, nuw3, nuw4);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(PUBLISHER_KEY, IS_NULL);
 
     nuw1.setPublisherKey(uuid1);
@@ -223,7 +223,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     index(nuw1, nuw2, nuw3, nuw4);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(PUBLISHER_KEY, IS_NULL);
 
     nuw1.setPublisherKey(uuid1);
@@ -254,7 +254,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     index(nuw1, nuw2, nuw3, nuw4);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(PUBLISHER_KEY, IS_NOT_NULL);
 
     nuw1.setPublisherKey(uuid1);
@@ -285,7 +285,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     index(nuw1, nuw2, nuw3, nuw4);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(DECISION_KEY, key1);
 
     nuw1.setDecisionKey(key1);
@@ -315,7 +315,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     index(nuw1, nuw2, nuw3, nuw4);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(DECISION_KEY, IS_NOT_NULL);
 
     nuw1.setDecisionKey(key1);
@@ -345,7 +345,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     index(nuw1, nuw2, nuw3, nuw4);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(DECISION_KEY, IS_NULL);
 
     nuw1.setDecisionKey(key1);
@@ -375,7 +375,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     index(nuw1, nuw2, nuw3, nuw4);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(NAME_INDEX_ID, key2);
 
     nuw1.getUsage().getName().setNameIndexId(key1);
@@ -404,7 +404,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     index(nuw1, nuw2, nuw3, nuw4);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(NAME_INDEX_ID, IS_NULL);
 
     nuw1.getUsage().getName().setNameIndexId(key1);
@@ -434,7 +434,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     index(nuw1, nuw2, nuw3, nuw4);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(NAME_INDEX_ID, IS_NOT_NULL);
 
     nuw1.getUsage().getName().setNameIndexId(key1);
@@ -464,7 +464,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     index(nuw1, nuw2, nuw3, nuw4);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(PUBLISHED_IN_ID, key2);
 
     nuw1.getUsage().getName().setPublishedInId(key1);
@@ -493,7 +493,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     index(nuw1, nuw2, nuw3, nuw4);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(PUBLISHED_IN_ID, key2);
     query.addFilter(PUBLISHED_IN_ID, IS_NULL);
 
@@ -523,7 +523,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     index(nuw1, nuw2, nuw3, nuw4);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(PUBLISHED_IN_ID, IS_NOT_NULL);
 
     nuw1.getUsage().getName().setPublishedInId(key1);
@@ -552,7 +552,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     index(nuw1, nuw2, nuw3, nuw4);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(NAME_ID, key1);
 
     nuw1.getUsage().getName().setId(key1);
@@ -581,7 +581,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     index(nuw1, nuw2, nuw3, nuw4);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(DATASET_KEY, key1);
 
     nuw1.getUsage().getName().setDatasetKey(key1);
@@ -610,7 +610,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     index(nuw1, nuw2, nuw3, nuw4);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(DATASET_KEY, 345678);
 
     nuw1.getUsage().getName().setDatasetKey(key1);
@@ -637,7 +637,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     index(nuw1, nuw2, nuw3, nuw4);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(NOM_STATUS, "not established");
 
     nuw1.getUsage().getName().setNomStatus(NomStatus.CHRESONYM);
@@ -664,7 +664,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     index(nuw1, nuw2, nuw3, nuw4);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(NOM_STATUS, NomStatus.CHRESONYM);
     query.addFilter(NOM_STATUS, NomStatus.REJECTED);
     query.addFilter(NOM_STATUS, IS_NULL);
@@ -695,7 +695,7 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
     index(nuw1, nuw2, nuw3, nuw4);
 
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(SECTOR_KEY, IS_NOT_NULL);
 
     ((Taxon) nuw1.getUsage()).setSectorKey(key1);
@@ -710,16 +710,16 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
   }
 
-  private static void countdown(NameSearchParameter param) {
+  private static void countdown(NameUsageSearchParameter param) {
     tested.add(param);
     LOG.info("####  Name search parameter {} unit tested  ####", param);
-    if (tested.size() == NameSearchParameter.values().length) {
+    if (tested.size() == NameUsageSearchParameter.values().length) {
       LOG.info("####  All name search parameters tested!  ####");
     } else {
-      LOG.info("####  {} parameter(s) tested. {} more to go  ####", tested.size(), NameSearchParameter.values().length - tested.size());
-      Set<NameSearchParameter> todo = EnumSet.allOf(NameSearchParameter.class);
+      LOG.info("####  {} parameter(s) tested. {} more to go  ####", tested.size(), NameUsageSearchParameter.values().length - tested.size());
+      Set<NameUsageSearchParameter> todo = EnumSet.allOf(NameUsageSearchParameter.class);
       todo.removeAll(tested);
-      String todoStr = todo.stream().map(NameSearchParameter::toString).collect(Collectors.joining(", "));
+      String todoStr = todo.stream().map(NameUsageSearchParameter::toString).collect(Collectors.joining(", "));
       LOG.info("####  Missing: {}  ####", todoStr);
     }
   }

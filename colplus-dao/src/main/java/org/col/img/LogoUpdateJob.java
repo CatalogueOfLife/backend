@@ -31,14 +31,14 @@ public class LogoUpdateJob implements Runnable {
   private final BiFunction<Integer, String, File> scratchFileFunc;
   private final Dataset dataset;
   
+  
   /**
-   * Pulls all dataset logos asynchroneously in a new thread.
+   * Creates a new job pulling all dataset logos asynchroneously.
    * @param scratchFileFunc function to return a scratch dir for a given datasetKey
+   * @return new thread ready to be started
    */
-  public static void updateAllAsync(SqlSessionFactory factory, DownloadUtil downloader, BiFunction<Integer, String, File> scratchFileFunc, ImageService imgService) {
-    Thread thread = new Thread(new LogoUpdateJob(null, factory, downloader, scratchFileFunc, imgService), "logo-updater");
-    thread.setDaemon(false);
-    thread.start();
+  public static LogoUpdateJob updateAllAsync(SqlSessionFactory factory, DownloadUtil downloader, BiFunction<Integer, String, File> scratchFileFunc, ImageService imgService) {
+    return new LogoUpdateJob(null, factory, downloader, scratchFileFunc, imgService);
   }
   
   public static void updateDatasetAsync(Dataset d, SqlSessionFactory factory, DownloadUtil downloader, BiFunction<Integer, String, File> scratchFileFunc, ImageService imgService) {

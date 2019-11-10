@@ -8,7 +8,7 @@ import javax.ws.rs.core.MediaType;
 
 import org.col.api.model.Page;
 import org.col.api.search.DatasetSearchRequest;
-import org.col.api.search.NameSearchRequest;
+import org.col.api.search.NameUsageSearchRequest;
 
 import static org.glassfish.jersey.client.authentication.HttpAuthenticationFeature.HTTP_AUTHENTICATION_BASIC_PASSWORD;
 import static org.glassfish.jersey.client.authentication.HttpAuthenticationFeature.HTTP_AUTHENTICATION_BASIC_USERNAME;
@@ -67,7 +67,7 @@ public class ApiUtils {
     return (T[]) values.toArray();
   }
 
-  public static WebTarget applySearch(WebTarget wt, NameSearchRequest search) {
+  public static WebTarget applySearch(WebTarget wt, NameUsageSearchRequest search) {
     return wt;
   }
   

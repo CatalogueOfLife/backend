@@ -25,7 +25,7 @@ import org.col.db.mapper.NameMapper;
 import org.col.db.mapper.NameRelationMapper;
 import org.col.es.InvalidQueryException;
 import org.col.es.name.search.NameUsageSearchService;
-import org.col.es.name.suggest.NameSuggestionService;
+import org.col.es.name.suggest.NameUsageSuggestionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,9 +37,9 @@ public class NameResource extends AbstractDatasetScopedResource<Name> {
 
   private final NameDao dao;
   private final NameUsageSearchService searchService;
-  private final NameSuggestionService suggestService;
+  private final NameUsageSuggestionService suggestService;
 
-  public NameResource(NameUsageSearchService svc, NameDao dao, NameSuggestionService suggestService) {
+  public NameResource(NameUsageSearchService svc, NameDao dao, NameUsageSuggestionService suggestService) {
     super(Name.class, dao);
     this.dao = dao;
     this.searchService = svc;
@@ -49,20 +49,20 @@ public class NameResource extends AbstractDatasetScopedResource<Name> {
   @GET
   @Timed
   @Path("search")
-  public ResultPage<NameUsageWrapper> search(@PathParam("datasetKey") int datasetKey, @BeanParam NameSearchRequest query,
+  public ResultPage<NameUsageWrapper> search(@PathParam("datasetKey") int datasetKey, @BeanParam NameUsageSearchRequest query,
                                              @Valid @BeanParam Page page, @Context UriInfo uri) throws InvalidQueryException {
     query.addFilters(uri.getQueryParameters());
-    if (query.hasFilter(NameSearchParameter.DATASET_KEY)) {
+    if (query.hasFilter(NameUsageSearchParameter.DATASET_KEY)) {
       throw new IllegalArgumentException("No further datasetKey parameter allowed, search already scoped to datasetKey=" + datasetKey);
     }
-    query.addFilter(NameSearchParameter.DATASET_KEY, datasetKey);
+    query.addFilter(NameUsageSearchParameter.DATASET_KEY, datasetKey);
     return searchService.search(query, page);
   }
   
   @GET
   @Timed
   @Path("suggest")
-  public NameSuggestResponse suggest(@PathParam("datasetKey") int datasetKey, @BeanParam NameSuggestRequest query) throws InvalidQueryException {
+  public NameUsageSuggestResponse suggest(@PathParam("datasetKey") int datasetKey, @BeanParam NameUsageSuggestRequest query) throws InvalidQueryException {
     if (query.getDatasetKey() != null && !query.getDatasetKey().equals(datasetKey)) {
       throw new IllegalArgumentException("No further datasetKey parameter allowed, suggest already scoped to datasetKey=" + datasetKey);
     }

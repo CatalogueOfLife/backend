@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.col.api.search.NameSearchParameter;
-import org.col.api.search.NameSearchRequest;
+import org.col.api.search.NameUsageSearchParameter;
+import org.col.api.search.NameUsageSearchRequest;
 import org.col.es.InvalidQueryException;
 import org.col.es.name.NameUsageFieldLookup;
 import org.col.es.query.BoolQuery;
@@ -15,8 +15,8 @@ import org.col.es.query.Query;
 import org.col.es.query.TermQuery;
 import org.col.es.query.TermsQuery;
 
-import static org.col.api.search.NameSearchRequest.IS_NOT_NULL;
-import static org.col.api.search.NameSearchRequest.IS_NULL;
+import static org.col.api.search.NameUsageSearchRequest.IS_NOT_NULL;
+import static org.col.api.search.NameUsageSearchRequest.IS_NULL;
 
 /**
  * Translates a single request parameter into an Elasticsearch query. If the parameter is multi-valued and contains no symbolic values (like
@@ -24,13 +24,13 @@ import static org.col.api.search.NameSearchRequest.IS_NULL;
  */
 class FilterTranslator {
 
-  private final NameSearchRequest request;
+  private final NameUsageSearchRequest request;
 
-  FilterTranslator(NameSearchRequest request) {
+  FilterTranslator(NameUsageSearchRequest request) {
     this.request = request;
   }
 
-  Query translate(NameSearchParameter param) throws InvalidQueryException {
+  Query translate(NameUsageSearchParameter param) throws InvalidQueryException {
     List<Query> queries = new ArrayList<>();
     String field = NameUsageFieldLookup.INSTANCE.lookup(param);
     if (containsNullValue(param)) {
@@ -54,7 +54,7 @@ class FilterTranslator {
     return query;
   }
 
-  private List<?> getLiteralValues(NameSearchParameter param) throws InvalidQueryException {
+  private List<?> getLiteralValues(NameUsageSearchParameter param) throws InvalidQueryException {
     return request.getFilterValues(param)
         .stream()
         .filter(this::isLiteral)
@@ -66,12 +66,12 @@ class FilterTranslator {
   }
 
   // Is one of the values of the query parameter the symbol for IS NULL?
-  private boolean containsNullValue(NameSearchParameter param) {
+  private boolean containsNullValue(NameUsageSearchParameter param) {
     return request.getFilterValues(param).stream().anyMatch(s -> s.equals(IS_NULL));
   }
 
   // Is one of the values of the query parameter the symbol for IS NOT NULL?
-  private boolean containsNotNullValue(NameSearchParameter param) {
+  private boolean containsNotNullValue(NameUsageSearchParameter param) {
     return request.getFilterValues(param).stream().anyMatch(s -> s.equals(IS_NOT_NULL));
   }
 }

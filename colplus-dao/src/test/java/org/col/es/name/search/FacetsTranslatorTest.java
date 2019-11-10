@@ -4,19 +4,18 @@ import java.util.EnumSet;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import org.col.api.search.NameSearchRequest;
-import org.col.api.search.NameSearchRequest.SearchContent;
+import org.col.api.search.NameUsageSearchRequest;
+import org.col.api.search.NameUsageSearchRequest.SearchContent;
 import org.col.api.vocab.Issue;
 import org.col.es.EsModule;
-import org.col.es.name.search.FacetsTranslator;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
-import static org.col.api.search.NameSearchParameter.DATASET_KEY;
-import static org.col.api.search.NameSearchParameter.ISSUE;
-import static org.col.api.search.NameSearchParameter.NAME_ID;
-import static org.col.api.search.NameSearchParameter.RANK;
-import static org.col.api.search.NameSearchParameter.STATUS;
+import static org.col.api.search.NameUsageSearchParameter.DATASET_KEY;
+import static org.col.api.search.NameUsageSearchParameter.ISSUE;
+import static org.col.api.search.NameUsageSearchParameter.NAME_ID;
+import static org.col.api.search.NameUsageSearchParameter.RANK;
+import static org.col.api.search.NameUsageSearchParameter.STATUS;
 
 /*
  * No real tests here. Just to make sure we don't get exceptions & to peek at the results of specifying an aggregation
@@ -27,7 +26,7 @@ public class FacetsTranslatorTest {
   @Test
   public void test1() {
 
-    NameSearchRequest request = new NameSearchRequest();
+    NameUsageSearchRequest request = new NameUsageSearchRequest();
 
     // Add facets + corresponding filters
 
@@ -61,7 +60,7 @@ public class FacetsTranslatorTest {
   @Test
   public void test2() {
 
-    NameSearchRequest request = new NameSearchRequest();
+    NameUsageSearchRequest request = new NameUsageSearchRequest();
 
     // Add facets + corresponding filters
 
@@ -92,7 +91,7 @@ public class FacetsTranslatorTest {
   @Test
   public void test3() {
 
-    NameSearchRequest request = new NameSearchRequest();
+    NameUsageSearchRequest request = new NameUsageSearchRequest();
 
     // Add facets + corresponding filters
 
@@ -119,7 +118,7 @@ public class FacetsTranslatorTest {
   @Test
   public void test4() {
 
-    NameSearchRequest request = new NameSearchRequest();
+    NameUsageSearchRequest request = new NameUsageSearchRequest();
 
     // Add facets + corresponding filters
 
@@ -151,7 +150,7 @@ public class FacetsTranslatorTest {
   @Test
   public void test5() {
 
-    NameSearchRequest request = new NameSearchRequest();
+    NameUsageSearchRequest request = new NameUsageSearchRequest();
 
     request.addFacet(ISSUE);
     request.addFacet(DATASET_KEY);

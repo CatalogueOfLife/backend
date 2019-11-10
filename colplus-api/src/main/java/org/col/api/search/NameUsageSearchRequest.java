@@ -21,7 +21,7 @@ import org.col.api.util.VocabularyUtils;
 
 import static org.col.api.util.VocabularyUtils.lookupEnum;
 
-public class NameSearchRequest {
+public class NameUsageSearchRequest {
 
   public static enum SearchContent {
     SCIENTIFIC_NAME, AUTHORSHIP, VERNACULAR_NAME
@@ -41,10 +41,10 @@ public class NameSearchRequest {
    */
   public static final String IS_NULL = "_NULL";
 
-  private EnumMap<NameSearchParameter, List<Object>> filters;
+  private EnumMap<NameUsageSearchParameter, List<Object>> filters;
 
   @QueryParam("facet")
-  private Set<NameSearchParameter> facets;
+  private Set<NameUsageSearchParameter> facets;
 
   @QueryParam("content")
   private Set<SearchContent> content;
@@ -61,22 +61,22 @@ public class NameSearchRequest {
   @QueryParam("reverse")
   private boolean reverse;
 
-  public NameSearchRequest() {}
+  public NameUsageSearchRequest() {}
 
   /**
    * Creates a shallow copy of this NameSearchRequest. The filters map is copied using EnumMap's copy constructor.
    * Therefore you should not manipulate the filter values (which are lists) as they are copied by reference. You can,
    * however, add/remove filters, facets and search content.
    */
-  public NameSearchRequest copy() {
-    NameSearchRequest copy = new NameSearchRequest();
+  public NameUsageSearchRequest copy() {
+    NameUsageSearchRequest copy = new NameUsageSearchRequest();
     if (filters != null) {
-      copy.filters = new EnumMap<>(NameSearchParameter.class);
+      copy.filters = new EnumMap<>(NameUsageSearchParameter.class);
       copy.filters.putAll(filters);
 
     }
     if (facets != null) {
-      copy.facets = EnumSet.noneOf(NameSearchParameter.class);
+      copy.facets = EnumSet.noneOf(NameUsageSearchParameter.class);
       copy.facets.addAll(facets);
     }
     if (content != null) {
@@ -105,16 +105,16 @@ public class NameSearchRequest {
         "highlight",
         "reverse"));
     params.entrySet().stream().filter(e -> !nonFilters.contains(e.getKey())).forEach(e -> {
-      NameSearchParameter p = lookupEnum(e.getKey(), NameSearchParameter.class); // Allow IllegalArgumentException
+      NameUsageSearchParameter p = lookupEnum(e.getKey(), NameUsageSearchParameter.class); // Allow IllegalArgumentException
       addFilter(p, e.getValue());
     });
   }
 
-  public void addFilter(NameSearchParameter param, Iterable<?> values) {
+  public void addFilter(NameUsageSearchParameter param, Iterable<?> values) {
     values.forEach((s) -> addFilter(param, s == null ? IS_NULL : s.toString()));
   }
 
-  public void addFilter(NameSearchParameter param, Object... values) {
+  public void addFilter(NameUsageSearchParameter param, Object... values) {
     Arrays.stream(values).forEach((v) -> addFilter(param, v == null ? IS_NULL : v.toString()));
   }
 
@@ -122,7 +122,7 @@ public class NameSearchRequest {
    * Primary usage case - parameter values coming in as strings from the HTTP request. Values are validated and converted
    * to the type associated with the parameter.
    */
-  public void addFilter(NameSearchParameter param, String value) {
+  public void addFilter(NameUsageSearchParameter param, String value) {
     value = StringUtils.trimToNull(value);
     if (value == null || value.equals(IS_NULL)) {
       addFilterValue(param, IS_NULL);
@@ -156,22 +156,22 @@ public class NameSearchRequest {
     }
   }
 
-  public void addFilter(NameSearchParameter param, Integer value) {
+  public void addFilter(NameUsageSearchParameter param, Integer value) {
     Preconditions.checkNotNull(value, "Null values not allowed for non-strings");
     addFilter(param, value.toString());
   }
 
-  public void addFilter(NameSearchParameter param, Enum<?> value) {
+  public void addFilter(NameUsageSearchParameter param, Enum<?> value) {
     Preconditions.checkNotNull(value, "Null values not allowed for non-strings");
     addFilter(param, String.valueOf(value.ordinal()));
   }
 
-  public void addFilter(NameSearchParameter param, UUID value) {
+  public void addFilter(NameUsageSearchParameter param, UUID value) {
     Preconditions.checkNotNull(value, "Null values not allowed for non-strings");
     addFilter(param, String.valueOf(value));
   }
 
-  private void addFilterValue(NameSearchParameter param, Object value) {
+  private void addFilterValue(NameUsageSearchParameter param, Object value) {
     List<Object> values = getFilters().get(param);
     if (values == null) {
       values = new ArrayList<>();
@@ -181,12 +181,12 @@ public class NameSearchRequest {
   }
 
   @SuppressWarnings("unchecked")
-  public <T> List<T> getFilterValues(NameSearchParameter param) {
+  public <T> List<T> getFilterValues(NameUsageSearchParameter param) {
     return (List<T>) getFilters().get(param);
   }
 
   @SuppressWarnings("unchecked")
-  public <T> T getFilterValue(NameSearchParameter param) {
+  public <T> T getFilterValue(NameUsageSearchParameter param) {
     if (hasFilter(param)) {
       return (T) getFilters().get(param).get(0);
     }
@@ -201,28 +201,28 @@ public class NameSearchRequest {
     return filters != null && !filters.isEmpty();
   }
 
-  public boolean hasFilter(NameSearchParameter filter) {
+  public boolean hasFilter(NameUsageSearchParameter filter) {
     return getFilters().containsKey(filter);
   }
 
-  public List<Object> removeFilter(NameSearchParameter filter) {
+  public List<Object> removeFilter(NameUsageSearchParameter filter) {
     return getFilters().remove(filter);
   }
 
-  public void addFacet(NameSearchParameter facet) {
+  public void addFacet(NameUsageSearchParameter facet) {
     getFacets().add(facet);
   }
 
-  public EnumMap<NameSearchParameter, List<Object>> getFilters() {
+  public EnumMap<NameUsageSearchParameter, List<Object>> getFilters() {
     if (filters == null) {
-      return (filters = new EnumMap<>(NameSearchParameter.class));
+      return (filters = new EnumMap<>(NameUsageSearchParameter.class));
     }
     return filters;
   }
 
-  public Set<NameSearchParameter> getFacets() {
+  public Set<NameUsageSearchParameter> getFacets() {
     if (facets == null) {
-      return (facets = EnumSet.noneOf(NameSearchParameter.class));
+      return (facets = EnumSet.noneOf(NameUsageSearchParameter.class));
     }
     return facets;
   }
@@ -291,7 +291,7 @@ public class NameSearchRequest {
       return true;
     if (o == null || getClass() != o.getClass())
       return false;
-    NameSearchRequest that = (NameSearchRequest) o;
+    NameUsageSearchRequest that = (NameUsageSearchRequest) o;
     return Objects.equals(content, that.content)
         && Objects.equals(facets, that.facets)
         && Objects.equals(filters, that.filters)
@@ -306,7 +306,7 @@ public class NameSearchRequest {
     return Objects.hash(super.hashCode(), content, facets, filters, q, sortBy, highlight, reverse);
   }
 
-  private static IllegalArgumentException illegalValueForParameter(NameSearchParameter param, String value) {
+  private static IllegalArgumentException illegalValueForParameter(NameUsageSearchParameter param, String value) {
     String err = String.format("Illegal value for parameter %s: %s", param, value);
     return new IllegalArgumentException(err);
   }

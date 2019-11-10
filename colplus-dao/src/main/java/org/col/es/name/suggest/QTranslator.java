@@ -1,6 +1,6 @@
 package org.col.es.name.suggest;
 
-import org.col.api.search.NameSuggestRequest;
+import org.col.api.search.NameUsageSuggestRequest;
 import org.col.es.query.BoolQuery;
 import org.col.es.query.Query;
 
@@ -12,9 +12,9 @@ class QTranslator {
   static final String SN_QUERY_NAME = "sn";
   static final String VN_QUERY_NAME = "vn";
 
-  private final NameSuggestRequest request;
+  private final NameUsageSuggestRequest request;
 
-  QTranslator(NameSuggestRequest request) {
+  QTranslator(NameUsageSuggestRequest request) {
     this.request = request;
   }
 

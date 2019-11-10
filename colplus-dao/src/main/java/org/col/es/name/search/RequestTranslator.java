@@ -1,22 +1,22 @@
 package org.col.es.name.search;
 
 import org.col.api.model.Page;
-import org.col.api.search.NameSearchRequest;
+import org.col.api.search.NameUsageSearchRequest;
 import org.col.es.query.BoolQuery;
 import org.col.es.query.EsSearchRequest;
 import org.col.es.query.MatchAllQuery;
 import org.col.es.query.Query;
 import org.col.es.query.TermQuery;
 
-import static org.col.api.search.NameSearchParameter.DATASET_KEY;
-import static org.col.api.search.NameSearchParameter.USAGE_ID;
+import static org.col.api.search.NameUsageSearchParameter.DATASET_KEY;
+import static org.col.api.search.NameUsageSearchParameter.USAGE_ID;
 
 /**
  * Translates a NameSearchRequest into a native Elasticsearch search request.
  */
 class RequestTranslator {
 
-  static Query generateQuery(NameSearchRequest request) {
+  static Query generateQuery(NameUsageSearchRequest request) {
     Query query;
     String usageId = request.getFilterValue(USAGE_ID);
     if (usageId != null) {
@@ -40,10 +40,10 @@ class RequestTranslator {
     return query;
   }
 
-  private final NameSearchRequest request;
+  private final NameUsageSearchRequest request;
   private final Page page;
 
-  RequestTranslator(NameSearchRequest request, Page page) {
+  RequestTranslator(NameUsageSearchRequest request, Page page) {
     this.request = request;
     this.page = page;
   }

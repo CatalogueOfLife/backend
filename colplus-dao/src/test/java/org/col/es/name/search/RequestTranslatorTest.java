@@ -3,16 +3,16 @@ package org.col.es.name.search;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.col.api.model.Page;
-import org.col.api.search.NameSearchRequest;
+import org.col.api.search.NameUsageSearchRequest;
 import org.col.api.vocab.TaxonomicStatus;
 import org.col.es.EsModule;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
-import static org.col.api.search.NameSearchParameter.DATASET_KEY;
-import static org.col.api.search.NameSearchParameter.ISSUE;
-import static org.col.api.search.NameSearchParameter.RANK;
-import static org.col.api.search.NameSearchParameter.STATUS;
+import static org.col.api.search.NameUsageSearchParameter.DATASET_KEY;
+import static org.col.api.search.NameUsageSearchParameter.ISSUE;
+import static org.col.api.search.NameUsageSearchParameter.RANK;
+import static org.col.api.search.NameUsageSearchParameter.STATUS;
 
 // No real tests here, but generates queries that can be tried out in Kibana.
 public class RequestTranslatorTest {
@@ -23,7 +23,7 @@ public class RequestTranslatorTest {
   @Test
   public void test1() throws JsonProcessingException {
 
-    NameSearchRequest nsr = new NameSearchRequest();
+    NameUsageSearchRequest nsr = new NameUsageSearchRequest();
 
     nsr.addFacet(ISSUE);
     nsr.addFacet(DATASET_KEY);
@@ -45,7 +45,7 @@ public class RequestTranslatorTest {
   @Test
   public void test2() throws JsonProcessingException {
 
-    NameSearchRequest nsr = new NameSearchRequest();
+    NameUsageSearchRequest nsr = new NameUsageSearchRequest();
 
     nsr.addFacet(ISSUE);
     nsr.addFacet(DATASET_KEY);
@@ -68,7 +68,7 @@ public class RequestTranslatorTest {
   @Test
   public void test3() throws JsonProcessingException {
 
-    NameSearchRequest nsr = new NameSearchRequest();
+    NameUsageSearchRequest nsr = new NameUsageSearchRequest();
 
     nsr.addFacet(ISSUE);
     nsr.addFacet(DATASET_KEY);
@@ -89,7 +89,7 @@ public class RequestTranslatorTest {
   @Test
   public void test4() throws JsonProcessingException {
 
-    NameSearchRequest nsr = new NameSearchRequest();
+    NameUsageSearchRequest nsr = new NameUsageSearchRequest();
 
     nsr.addFacet(ISSUE);
     nsr.addFacet(DATASET_KEY);
@@ -108,7 +108,7 @@ public class RequestTranslatorTest {
   @Test
   public void test5() throws JsonProcessingException {
 
-    NameSearchRequest nsr = new NameSearchRequest();
+    NameUsageSearchRequest nsr = new NameUsageSearchRequest();
 
     nsr.addFacet(RANK);
 

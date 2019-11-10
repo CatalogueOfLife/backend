@@ -2,8 +2,8 @@ package org.col.es.name.suggest;
 
 import java.util.List;
 
-import org.col.api.search.NameSuggestRequest;
-import org.col.api.search.NameSuggestion;
+import org.col.api.search.NameUsageSuggestRequest;
+import org.col.api.search.NameUsageSuggestion;
 import org.col.es.model.NameUsageDocument;
 import org.col.es.response.SearchHit;
 
@@ -11,7 +11,7 @@ class SuggestionFactory {
 
   private final VernacularNameMatcher matcher;
 
-  SuggestionFactory(NameSuggestRequest request) {
+  SuggestionFactory(NameUsageSuggestRequest request) {
     if (request.suggestVernaculars()) {
       this.matcher = new VernacularNameMatcher(request);
     } else {
@@ -20,8 +20,8 @@ class SuggestionFactory {
     }
   }
 
-  NameSuggestion createSuggestion(SearchHit<NameUsageDocument> hit, boolean isVernacularName) {
-    NameSuggestion suggestion = new NameSuggestion();
+  NameUsageSuggestion createSuggestion(SearchHit<NameUsageDocument> hit, boolean isVernacularName) {
+    NameUsageSuggestion suggestion = new NameUsageSuggestion();
     suggestion.setScore(hit.getScore());
     suggestion.setVernacularName(isVernacularName);
     NameUsageDocument doc = hit.getSource();

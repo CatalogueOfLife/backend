@@ -6,8 +6,8 @@ import java.util.List;
 
 import org.col.api.model.Name;
 import org.col.api.model.Taxon;
-import org.col.api.search.NameSearchRequest;
-import org.col.api.search.NameSearchRequest.SearchContent;
+import org.col.api.search.NameUsageSearchRequest;
+import org.col.api.search.NameUsageSearchRequest.SearchContent;
 import org.col.api.search.NameUsageWrapper;
 import org.col.es.EsReadTestBase;
 import org.junit.Before;
@@ -34,7 +34,7 @@ public class Issue333 extends EsReadTestBase {
   @Test
   public void test1() {
     index(createTestObjects());
-    NameSearchRequest query = new NameSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
     // This was said to only return the binomial, but not the trinomial.
     query.setContent(EnumSet.of(SearchContent.SCIENTIFIC_NAME));
     query.setQ("trilineatu");

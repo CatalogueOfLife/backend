@@ -10,7 +10,7 @@ import org.col.api.model.EditorialDecision;
 import org.col.api.model.EditorialDecision.Mode;
 import org.col.api.model.SimpleName;
 import org.col.api.model.Taxon;
-import org.col.api.search.NameSearchResponse;
+import org.col.api.search.NameUsageSearchResponse;
 import org.col.dao.DecisionDao;
 import org.col.es.EsModule;
 import org.col.es.EsReadWriteTestBase;
@@ -42,7 +42,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     List<Taxon> pgTaxa = createPgTaxa(7);
     createIndexService().indexDataset(EsSetupRule.DATASET_KEY);
     List<String> ids = pgTaxa.stream().map(Taxon::getId).collect(toList());
-    NameSearchResponse res = query(new TermsQuery("usageId", ids));
+    NameUsageSearchResponse res = query(new TermsQuery("usageId", ids));
     List<Taxon> esTaxa = res.getResult().stream().map(nuw -> (Taxon) nuw.getUsage()).collect(toList());
     massageTaxa(pgTaxa);
     massageTaxa(esTaxa);
@@ -68,7 +68,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     // Save the decision to postgres: triggers sync() on the index service
     DecisionDao dao = new DecisionDao(getSqlSessionFactory(), svc);
     int key = dao.create(decision, edited.getCreatedBy());
-    NameSearchResponse res = query(new TermQuery("decisionKey", key));
+    NameUsageSearchResponse res = query(new TermQuery("decisionKey", key));
     assertEquals(1, res.getResult().size());
     assertEquals(edited.getId(), res.getResult().get(0).getUsage().getId());
   }
@@ -92,7 +92,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     // Save the decision to postgres: triggers sync() on the index service
     DecisionDao dao = new DecisionDao(getSqlSessionFactory(), svc);
     int key = dao.create(decision, edited.getCreatedBy());
-    NameSearchResponse res = query(new TermQuery("decisionKey", key));
+    NameUsageSearchResponse res = query(new TermQuery("decisionKey", key));
     assertEquals(pgTaxa.get(0).getId(), res.getResult().get(0).getUsage().getId());
     decision.setKey(key);
     // Change subject of the decision so now 2 taxa should be deleted first and then re-indexed.
@@ -121,7 +121,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     // Save the decision to postgres: triggers sync() on the index service
     DecisionDao dao = new DecisionDao(getSqlSessionFactory(), svc);
     int key = dao.create(decision, edited.getCreatedBy());
-    NameSearchResponse res = query(new TermQuery("decisionKey", key));
+    NameUsageSearchResponse res = query(new TermQuery("decisionKey", key));
     assertEquals(pgTaxa.get(2).getId(), res.getResult().get(0).getUsage().getId());
     dao.delete(key, 0);
     res = query(new TermQuery("usageId", pgTaxa.get(2).getId()));
