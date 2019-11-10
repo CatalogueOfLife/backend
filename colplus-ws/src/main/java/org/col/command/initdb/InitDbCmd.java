@@ -249,7 +249,7 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
 
   public static void setupStandardPartitions(SqlSession session) {
     DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
-    for (int key : new int[]{Datasets.COL, Datasets.NAME_INDEX, Datasets.DRAFT_COL}) {
+    for (int key : new int[]{Datasets.NAME_INDEX, Datasets.DRAFT_COL}) {
       LOG.info("Create catalogue partition {}", key);
       pm.delete(key);
       pm.create(key);

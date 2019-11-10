@@ -106,7 +106,7 @@
     </sql>
 
     <sql id="SEARCH_WHERE">
-        deleted IS NULL
+        deleted IS NULL AND key != 1
         <if test="req != null">
             <if test="req.q != null">
                 AND (

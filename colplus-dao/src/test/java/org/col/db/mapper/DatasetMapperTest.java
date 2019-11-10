@@ -114,16 +114,16 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
 
   @Test
   public void count() throws Exception {
-    assertEquals(5, mapper().count(null));
+    assertEquals(3, mapper().count(null));
 
     mapper().create(create());
     mapper().create(create());
     // even thogh not committed we are in the same session so we see the new
     // datasets already
-    assertEquals(7, mapper().count(null));
+    assertEquals(5, mapper().count(null));
 
     commit();
-    assertEquals(7, mapper().count(null));
+    assertEquals(5, mapper().count(null));
   }
 
   @Test
@@ -149,7 +149,6 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
 
   private List<Dataset> createExpected() throws Exception {
     List<Dataset> ds = Lists.newArrayList();
-    ds.add(mapper().get(Datasets.COL));
     ds.add(mapper().get(Datasets.NAME_INDEX));
     ds.add(mapper().get(Datasets.DRAFT_COL));
     ds.add(mapper().get(TestEntityGenerator.DATASET11.getKey()));
@@ -195,7 +194,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     // next page (d9)
     p.next();
     res = removeCreated(mapper().list(p));
-    assertEquals(2, res.size());
+    assertEquals(1, res.size());
   }
 
   @Test
@@ -262,10 +261,10 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
 
     // apple.sql contains one dataset from 2017
     query.setCreated(LocalDate.parse("2018-02-01"));
-    assertEquals(8, mapper().search(query, new Page()).size());
+    assertEquals(6, mapper().search(query, new Page()).size());
 
     query.setCreated(LocalDate.parse("2016-02-01"));
-    assertEquals(9, mapper().search(query, new Page()).size());
+    assertEquals(7, mapper().search(query, new Page()).size());
 
     query.setReleased(LocalDate.parse("2007-11-21"));
     query.setModified(LocalDate.parse("2031-12-31"));

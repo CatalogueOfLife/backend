@@ -30,11 +30,11 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
   @Test
   public void createDelete() {
     // we only create the prov-cat partition in the InitMybatisRule
-    mapper().delete(Datasets.COL);
-    mapper().create(Datasets.COL);
-    mapper().buildIndices(Datasets.COL);
-    mapper().attach(Datasets.COL);
-    mapper().delete(Datasets.COL);
+    mapper().delete(Datasets.DRAFT_COL);
+    mapper().create(Datasets.DRAFT_COL);
+    mapper().buildIndices(Datasets.DRAFT_COL);
+    mapper().attach(Datasets.DRAFT_COL);
+    mapper().delete(Datasets.DRAFT_COL);
   }
   
   /**
@@ -44,11 +44,11 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
   @Test
   public void concurrentAttach() throws Exception {
     
-    mapper().delete(Datasets.COL);
-    mapper().create(Datasets.COL);
-    mapper().buildIndices(Datasets.COL);
-    mapper().attach(Datasets.COL);
-    mapper().delete(Datasets.COL);
+    mapper().delete(Datasets.DRAFT_COL);
+    mapper().create(Datasets.DRAFT_COL);
+    mapper().buildIndices(Datasets.DRAFT_COL);
+    mapper().attach(Datasets.DRAFT_COL);
+    mapper().delete(Datasets.DRAFT_COL);
   
     // run continuous ref and name imports
     ContinuousInserter<Reference> refIns = new ContinuousInserter<Reference>(PgSetupRule.getSqlSessionFactory(),
