@@ -38,11 +38,13 @@ public class NameUsageProcessor {
    * to avoid large in memory or even external pg temp files dissect the problem into the following steps:
    *
    *  1. list all root taxa, then iterate through each of them separately with
-   *  2. call the SimpleName tree processor that iterates over all usages in taxonomic order and
-   *  3. a) built the flat classification in java, call getWrapperDetail for each id and stream results
-   *     b) keep entire SimpleName tree in memory (needs how much of java heap then for large animalia datasets???) with a new parent (SimpleName) object reference.
-   *        Load wrapper details from db in large batches of 1-10.000 by using usageID ranges instead of random id ordering.
-   *        ID Ranges must make sure the java sorting is exactly the same as the postgres (C-collation) sorting.
+   *  2. call the SimpleName tree processor that iterates over all usages in taxonomic order and generates the classification
+   *  3. call getWrapperDetail for each id to get the full object without classification and stream results
+   *
+   *  Alternatively one could hold the entire classification in memory (10 million only need ~500MB)
+   *  and select the wrapper objects in batch id ranges.
+   *  But that would require traversing the entire tree so we are sure we have processed all ids, not just children of the root node.
+   *  ID ranges must make sure the java sorting is exactly the same as the postgres (C-collation) sorting.
    *
    * @param consumer
    */
