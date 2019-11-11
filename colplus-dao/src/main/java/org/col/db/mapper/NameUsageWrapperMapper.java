@@ -17,7 +17,7 @@ import org.col.api.search.NameUsageWrapper;
  * Mapper sql should be reusing sql fragments from the 3 concrete implementations as much as possible avoiding duplication.
  */
 public interface NameUsageWrapperMapper {
-
+  
   /**
    * Process all catalogue usages from a given sector
    * @param datasetKey the sectors dataset key. MUST match sector. In theory possible to get in SQL, but to reduce complexity we prefer to submit it explicitly

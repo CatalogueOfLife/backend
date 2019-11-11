@@ -13,6 +13,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.Sector;
 import org.col.api.search.NameUsageWrapper;
+import org.col.common.func.BatchConsumer;
 import org.col.dao.NameUsageProcessor;
 import org.col.db.mapper.BatchResultHandler;
 import org.col.db.mapper.DatasetMapper;
@@ -63,7 +64,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     int tCount, bCount;
     try {
       createOrEmptyIndex(datasetKey);
-      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)) {
+      try (BatchConsumer<NameUsageWrapper> handler = new BatchConsumer<>(indexer, BATCH_SIZE)) {
         LOG.info("Indexing usages from dataset {}", datasetKey);
         new NameUsageProcessor(factory, datasetKey).processDataset(handler);
       }
@@ -171,7 +172,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       }
       for (Integer datasetKey : keys) {
         int tc, bc;
-        try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)) {
+        try (BatchConsumer<NameUsageWrapper> handler = new BatchConsumer<>(indexer, BATCH_SIZE)) {
           LOG.debug("Indexing usages from dataset {}", datasetKey);
           new NameUsageProcessor(factory, datasetKey).processDataset(handler);
         }

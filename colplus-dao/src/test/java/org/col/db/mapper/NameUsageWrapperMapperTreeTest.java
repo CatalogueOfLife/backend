@@ -8,6 +8,7 @@ import org.apache.ibatis.session.ResultHandler;
 import org.col.api.model.*;
 import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.Datasets;
+import org.col.dao.NameUsageProcessorTest;
 import org.col.db.MybatisTestUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -43,43 +44,10 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
     Assert.assertEquals(2, handler.synCounter.get());
   }
   
-  public static class DRH implements ResultHandler<NameUsageWrapper> {
-    public AtomicInteger counter = new AtomicInteger(0);
-    public AtomicInteger synCounter = new AtomicInteger(0);
-  
+  public static class DRH extends NameUsageProcessorTest.DRH implements ResultHandler<NameUsageWrapper> {
     @Override
     public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
-      counter.incrementAndGet();
-      NameUsageWrapper obj = ctx.getResultObject();
-      Name n = obj.getUsage().getName();
-      assertNotNull(n);
-      assertNotNull(n.getId());
-      assertNotNull(n.getDatasetKey());
-  
-      // classification should always include the taxon itself
-      // https://github.com/Sp2000/colplus-backend/issues/326
-      assertFalse(obj.getClassification().isEmpty());
-      SimpleName last = obj.getClassification().get(obj.getClassification().size()-1);
-      assertEquals(obj.getUsage().getId(), last.getId());
-  
-      if ( obj.getUsage().getId().startsWith("t")) {
-        assertTrue(obj.getUsage().isTaxon());
-        Taxon t = (Taxon) obj.getUsage();
-        assertNotNull(t.getId());
-        assertEquals((Integer) 1, t.getVerbatimKey());
-        if (t.getId().equals("t1")) {
-          assertNull(t.getParentId());
-        } else {
-          assertNotNull(t.getParentId());
-        }
-        for (VernacularName v : ctx.getResultObject().getVernacularNames()) {
-          assertNotNull(v.getName());
-        }
-    
-      } else {
-        assertTrue(obj.getUsage().isSynonym());
-        synCounter.incrementAndGet();
-      }
+      accept(ctx.getResultObject());
     }
   }
   

@@ -4,10 +4,13 @@ import java.text.Collator;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Consumer;
 
+import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.api.model.SimpleNameClassification;
 import org.col.api.search.NameUsageWrapper;
 import org.col.db.mapper.NameUsageWrapperMapper;
 import org.col.db.mapper.TaxonMapper;
@@ -41,24 +44,45 @@ public class NameUsageProcessor {
    *        Load wrapper details from db in large batches of 1-10.000 by using usageID ranges instead of random id ordering.
    *        ID Ranges must make sure the java sorting is exactly the same as the postgres (C-collation) sorting.
    *
-   * @param handler
+   * @param consumer
    */
-  public void processDataset(ResultHandler<NameUsageWrapper> handler) {
+  public void processDataset(Consumer<NameUsageWrapper> consumer) {
     List<String> rootIds;
     try (SqlSession s = factory.openSession(true)) {
       rootIds = s.getMapper(TaxonMapper.class).listRootIds(datasetKey);
     }
-    LOG.debug("Process dataset {} with {} root taxa", datasetKey, rootIds.size());
+    LOG.info("Process dataset {} with {} root taxa", datasetKey, rootIds.size());
     for (String id : rootIds) {
-      processTree(datasetKey, id, handler);
+      processTree(datasetKey, id, consumer);
     }
   }
   
-  private void processTree(int datasetKey, String id, ResultHandler<NameUsageWrapper> handler) {
+  private void processTree(int datasetKey, String id, Consumer<NameUsageWrapper> consumer) {
     LOG.debug("Process dataset {} tree with root taxon {}", datasetKey, id);
     try (SqlSession s = factory.openSession(true)) {
-      NameUsageWrapperMapper nuwm = s.getMapper(NameUsageWrapperMapper.class);
-      nuwm.processTreeUsages(datasetKey, id, handler);
+      final NameUsageWrapperMapper nuwm = s.getMapper(NameUsageWrapperMapper.class);
+      SNCHandler handler = new SNCHandler(consumer, nuwm, datasetKey);
+      nuwm.processTree(datasetKey, id, handler);
+    }
+  }
+  
+  static class SNCHandler implements ResultHandler<SimpleNameClassification> {
+    final Consumer<NameUsageWrapper> handler;
+    final NameUsageWrapperMapper nuwm;
+    final int datasetKey;
+
+    SNCHandler(Consumer<NameUsageWrapper> handler, NameUsageWrapperMapper nuwm, int datasetKey) {
+      this.handler = handler;
+      this.nuwm = nuwm;
+      this.datasetKey = datasetKey;
+    }
+
+    @Override
+    public void handleResult(ResultContext<? extends SimpleNameClassification> ctx) {
+      SimpleNameClassification cl = ctx.getResultObject();
+      NameUsageWrapper obj = nuwm.getWithoutClassification(datasetKey, cl.getId());
+      obj.setClassification(cl.getClassification());
+      handler.accept(obj);
     }
   }
   

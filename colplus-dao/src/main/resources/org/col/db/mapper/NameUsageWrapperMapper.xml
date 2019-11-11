@@ -135,11 +135,9 @@
 
     <select id="getWithoutClassification" parameterType="map" resultMap="taxonWithClassificationResultMap">
         <include refid="org.col.db.Common.partitionByDatasetKey"/>
-        SELECT NULL AS classification, <include refid="taxonSelectFrom" />
+        SELECT u.id AS uid, NULL AS classification, <include refid="taxonSelectFrom" />
         WHERE u.id = #{id}
     </select>
-
-
 
     <select id="search" parameterType="map" resultMap="taxonWithClassificationResultMap">
         <include refid="org.col.db.Common.partitionByDatasetKey"/>
