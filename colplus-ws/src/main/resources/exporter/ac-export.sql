@@ -11,19 +11,19 @@ DROP SEQUENCE IF EXISTS __unassigned_seq;
 
 CREATE TABLE __coverage AS
     -- ATTACH MODE
-    SELECT s.dataset_key, subject_rank AS rank, subject_name AS name, array_to_string(classification(3, target_id, true), ' - ') AS classification
-    FROM sector s JOIN name_usage_3 t ON s.target_id=t.id
-    WHERE s.mode=0
+    SELECT s.subject_dataset_key, subject_rank AS rank, subject_name AS name, array_to_string(classification(3, target_id, true), ' - ') AS classification
+    FROM sector s JOIN name_usage_{{datasetKey}} t ON s.target_id=t.id
+    WHERE s.mode=0 AND s.dataset_key={{datasetKey}}
   UNION ALL
     -- MERGE MODE
-    SELECT s.dataset_key, target_rank AS rank, target_name AS name, array_to_string(classification(3, target_id, false), ' - ') AS classification
-    FROM sector s JOIN name_usage_3 t ON s.target_id=t.id
-    WHERE s.mode=1;
+    SELECT s.subject_dataset_key, target_rank AS rank, target_name AS name, array_to_string(classification(3, target_id, false), ' - ') AS classification
+    FROM sector s JOIN name_usage_{{datasetKey}} t ON s.target_id=t.id
+    WHERE s.mode=1 AND s.dataset_key={{datasetKey}};
 
 CREATE TABLE __coverage2 AS
-    SELECT dataset_key, string_agg(classification || ' - ' || groups, ';\n') AS coverage FROM (
-        SELECT dataset_key, classification, string_agg(name, ', ') AS groups FROM __coverage GROUP BY dataset_key, classification
-    ) AS foo GROUP BY dataset_key;
+    SELECT subject_dataset_key AS dataset_key, string_agg(classification || ' - ' || groups, ';\n') AS coverage FROM (
+        SELECT subject_dataset_key, classification, string_agg(name, ', ') AS groups FROM __coverage GROUP BY subject_dataset_key, classification
+    ) AS foo GROUP BY subject_dataset_key;
 CREATE INDEX ON __coverage2 (dataset_key);
 
 
@@ -59,7 +59,7 @@ SELECT DISTINCT ON (d.key)
 FROM dataset d
     JOIN dataset_import i ON i.dataset_key=d.key
     LEFT JOIN __coverage2 cov ON cov.dataset_key=d.key
-WHERE d.key IN (SELECT distinct dataset_key FROM sector)
+WHERE d.key IN (SELECT distinct subject_dataset_key FROM sector WHERE dataset_key={{datasetKey}})
 ORDER BY d.key ASC, i.attempt DESC
 )
 
