@@ -224,6 +224,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.jersey().register(new EstimateResource(getSqlSessionFactory()));
     env.jersey().register(new MatchingResource(ni));
     env.jersey().register(new NameResource(ndao));
+    env.jersey().register(new NameUsageDatasetSearchResource(svcNameSearch, svcSuggest));
     env.jersey().register(new NameUsageSearchResource(svcNameSearch, svcSuggest));
     env.jersey().register(new ParserResource());
     env.jersey().register(new ReferenceResource(rdao));

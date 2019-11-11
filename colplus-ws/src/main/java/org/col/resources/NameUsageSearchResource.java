@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Produces(MediaType.APPLICATION_JSON)
+@Path("/nameusage")
 public class NameUsageSearchResource {
 
   @SuppressWarnings("unused")
@@ -33,7 +34,7 @@ public class NameUsageSearchResource {
 
   @GET
   @Timed
-  @Path("/nameusage/search")
+  @Path("search")
   public ResultPage<NameUsageWrapper> search(@BeanParam NameUsageSearchRequest query,
       @Valid @BeanParam Page page,
       @Context UriInfo uri) throws InvalidQueryException {
@@ -43,35 +44,8 @@ public class NameUsageSearchResource {
   
   @GET
   @Timed
-  @Path("/nameusage/suggest")
+  @Path("suggest")
   public NameUsageSuggestResponse suggest(@BeanParam NameUsageSuggestRequest query) throws InvalidQueryException {
-    return suggestService.suggest(query);
-  }
-  
-  @GET
-  @Timed
-  @Path("/dataset/{datasetKey}/nameusage/search")
-  public ResultPage<NameUsageWrapper> searchDataset(@PathParam("datasetKey") int datasetKey,
-                                                    @BeanParam NameUsageSearchRequest query,
-                                                    @Valid @BeanParam Page page,
-                                                    @Context UriInfo uri) throws InvalidQueryException {
-    query.addFilters(uri.getQueryParameters());
-    if (query.hasFilter(NameUsageSearchParameter.DATASET_KEY)) {
-      throw new IllegalArgumentException("No further datasetKey parameter allowed, search already scoped to datasetKey=" + datasetKey);
-    }
-    query.addFilter(NameUsageSearchParameter.DATASET_KEY, datasetKey);
-    return searchService.search(query, page);
-  }
-
-  @GET
-  @Timed
-  @Path("/dataset/{datasetKey}/nameusage/suggest")
-  public NameUsageSuggestResponse suggestDataset(@PathParam("datasetKey") int datasetKey,
-                                                 @BeanParam NameUsageSuggestRequest query) throws InvalidQueryException {
-    if (query.getDatasetKey() != null && !query.getDatasetKey().equals(datasetKey)) {
-      throw new IllegalArgumentException("No further datasetKey parameter allowed, suggest already scoped to datasetKey=" + datasetKey);
-    }
-    query.setDatasetKey(datasetKey);
     return suggestService.suggest(query);
   }
 }
