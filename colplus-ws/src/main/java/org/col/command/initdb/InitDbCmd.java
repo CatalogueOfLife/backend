@@ -139,6 +139,11 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
     if (cfg.normalizer.archiveDir.exists()) {
       FileUtils.cleanDirectory(cfg.normalizer.archiveDir);
     }
+  
+    LOG.info("Clear metrics repo {}", cfg.metricsRepo);
+    if (cfg.metricsRepo.exists()) {
+      FileUtils.cleanDirectory(cfg.metricsRepo);
+    }
 
     // load draft catalogue data
     HikariConfig hikari = cfg.db.hikariConfig();
