@@ -80,10 +80,11 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   public File namesIndexFile;
   
   /**
-   * Directory to store text tree and name index lists for each dataset and sector import attempt
+   * Directory to store text tree, name index lists and other metrics for each dataset and sector import attempt
+   * on disc.
    */
   @NotNull
-  public File textTreeRepo = new File("/tmp/trees");
+  public File metricsRepo = new File("/tmp/metrics");
 
   /**
    * Directory to store export archives
@@ -101,6 +102,7 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
     return cors;
   }
   
+
   public WsServerConfig() {
     try {
       version = new Properties();

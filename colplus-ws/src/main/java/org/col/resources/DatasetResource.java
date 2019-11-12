@@ -54,7 +54,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     super(Dataset.class, new DatasetDao(factory, downloader, imgService, cfg.normalizer::scratchFile), factory);
     this.dao = (DatasetDao) super.dao;
     this.imgService = imgService;
-    this.diDao = new DatasetImportDao(factory, cfg.textTreeRepo);
+    this.diDao = new DatasetImportDao(factory, cfg.metricsRepo);
     this.diff = diff;
   }
   

@@ -164,7 +164,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.lifecycle().manage(new ManagedCloseable(ni));
     env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));
 
-    final DatasetImportDao diDao = new DatasetImportDao(getSqlSessionFactory(), cfg.textTreeRepo);
+    final DatasetImportDao diDao = new DatasetImportDao(getSqlSessionFactory(), cfg.metricsRepo);
 
     // async importer
     final ImportManager importManager = new ImportManager(cfg,

@@ -172,6 +172,6 @@ public class NamesTreeDao {
   }
   
   private File sectorDir(int sectorKey) {
-    return new File(repo, "sector" + sectorKey);
+    return new File(repo, "sector/" + sectorKey);
   }
 }

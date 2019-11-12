@@ -33,7 +33,7 @@ public class NameParserHealthCheck extends HealthCheck {
             ) {
           return Result.healthy();
         }
-        return Result.unhealthy("Wrong result: " + name);
+        return Result.unhealthy("Wrong result: " + name.toStringComplete());
         
       }
       return Result.unhealthy("Missing result");

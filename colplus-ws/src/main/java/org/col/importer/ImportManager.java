@@ -91,7 +91,7 @@ public class ImportManager implements Managed {
     this.aNormalizer = aNormalizer;
     this.imgService = imgService;
     this.indexService = indexService;
-    this.dao = new DatasetImportDao(factory, cfg.textTreeRepo);
+    this.dao = new DatasetImportDao(factory, cfg.metricsRepo);
     importTimer = registry.timer("org.col.import.timer");
     failed = registry.counter("org.col.import.failed");
   }
@@ -423,7 +423,7 @@ public class ImportManager implements Managed {
 
   private void cancelAndReschedule(ImportState state, boolean truncate) {
     int counter = 0;
-    DatasetImportDao dao = new DatasetImportDao(factory, cfg.textTreeRepo);
+    DatasetImportDao dao = new DatasetImportDao(factory, cfg.metricsRepo);
     Iterator<DatasetImport> iter = PagingUtil.pageAll(p -> dao.list(null, Lists.newArrayList(state), p));
     while (iter.hasNext()) {
       DatasetImport di = iter.next();
