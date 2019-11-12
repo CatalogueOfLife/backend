@@ -245,12 +245,13 @@ public class WsServer extends Application<WsServerConfig> {
 
   private void clearTmp(WsServerConfig cfg) {
     LOG.info("Clear scratch dir {}", cfg.normalizer.scratchDir);
-    try {
-      FileUtils.cleanDirectory(cfg.normalizer.scratchDir);
-    } catch (IOException e) {
-      LOG.error("Error cleaning scratch dir {}", cfg.normalizer.scratchDir, e);
+    if (cfg.normalizer.scratchDir != null && cfg.normalizer.scratchDir.exists()) {
+      try {
+        FileUtils.cleanDirectory(cfg.normalizer.scratchDir);
+      } catch (IOException e) {
+        LOG.error("Error cleaning scratch dir {}", cfg.normalizer.scratchDir, e);
+      }
     }
-  
   }
   
   /**
