@@ -1,5 +1,7 @@
 package org.col;
 
+import java.io.IOException;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.Application;
 import io.dropwizard.client.DropwizardApacheConnector;
@@ -10,6 +12,7 @@ import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import org.apache.commons.io.FileUtils;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -110,6 +113,8 @@ public class WsServer extends Application<WsServerConfig> {
 
   @Override
   public void run(WsServerConfig cfg, Environment env) throws Exception {
+    clearTmp(cfg);
+    
     // http client pool is managed via DW lifecycle already
     httpClient = new HttpClientBuilder(env).using(cfg.client).build(getName());
 
@@ -130,6 +135,7 @@ public class WsServer extends Application<WsServerConfig> {
     // name parser
     NameParser.PARSER.register(env.metrics());
     env.healthChecks().register("name-parser", new NameParserHealthCheck());
+    env.lifecycle().manage(new ManagedCloseable(NameParser.PARSER));
 
     // time CSL Util
     CslUtil.register(env.metrics());
@@ -237,6 +243,16 @@ public class WsServer extends Application<WsServerConfig> {
     env.jersey().register(new VocabResource());
   }
 
+  private void clearTmp(WsServerConfig cfg) {
+    LOG.info("Clear scratch dir {}", cfg.normalizer.scratchDir);
+    try {
+      FileUtils.cleanDirectory(cfg.normalizer.scratchDir);
+    } catch (IOException e) {
+      LOG.error("Error cleaning scratch dir {}", cfg.normalizer.scratchDir, e);
+    }
+  
+  }
+  
   /**
    * Mostly copied from HttpClientBuilder
    */

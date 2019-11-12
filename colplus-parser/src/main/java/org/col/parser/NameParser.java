@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Wrapper around the GBIF Name parser to deal with col Name and API.
  */
-public class NameParser implements Parser<NameAccordingTo> {
+public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
   private static Logger LOG = LoggerFactory.getLogger(NameParser.class);
   public static final NameParser PARSER = new NameParser();
   private static final NameParserGBIF PARSER_INTERNAL = new NameParserGBIF();
@@ -84,7 +84,7 @@ public class NameParser implements Parser<NameAccordingTo> {
     // try to add an authorship if not yet there
     if (nat.getName().isParsed() && !Strings.isNullOrEmpty(authorship)) {
       ParsedName pnAuthorship = parseAuthorship(authorship).orElseGet(() -> {
-        LOG.warn("Unparsable authorship {}", authorship);
+        LOG.info("Unparsable authorship {}", authorship);
         v.addIssue(Issue.UNPARSABLE_AUTHORSHIP);
         // add the full, unparsed authorship in this case to not lose it
         ParsedName pn = new ParsedName();
@@ -230,4 +230,10 @@ public class NameParser implements Parser<NameAccordingTo> {
     return nat;
   }
   
+  @Override
+  public void close() throws Exception {
+    if (PARSER_INTERNAL != null) {
+      PARSER_INTERNAL.close();
+    }
+  }
 }

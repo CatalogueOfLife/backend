@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.SqlSession;
@@ -74,7 +75,7 @@ public class NamesTreeDao {
     NamesWriter(File f) {
       this.f=f;
       try {
-        w = Utf8IOUtils.writerFromFile(f);
+        w = Utf8IOUtils.writerFromGzipFile(f);
         
       } catch (IOException e) {
         LOG.error("Failed to write to {}", f.getAbsolutePath());
@@ -108,21 +109,22 @@ public class NamesTreeDao {
   }
 
   public int updateDatasetTree(int datasetKey, int attempt) throws IOException {
-    Writer writer = Utf8IOUtils.writerFromFile(treeFile(datasetKey, attempt));
-    int count = TextTreePrinter.dataset(datasetKey, factory, writer).print();
-    LOG.info("Written text tree with {} lines for dataset {}-{}", count, datasetKey, attempt);
-    return count;
+    try (Writer writer = Utf8IOUtils.writerFromGzipFile(treeFile(datasetKey, attempt))) {
+      int count = TextTreePrinter.dataset(datasetKey, factory, writer).print();
+      LOG.info("Written text tree with {} lines for dataset {}-{}", count, datasetKey, attempt);
+      return count;
+    }
   }
   
   public int updateSectorTree(int sectorKey, int attempt) throws IOException {
-    Writer writer = Utf8IOUtils.writerFromFile(sectorTreeFile(sectorKey, attempt));
-    int count = 0;
-    try (SqlSession session = factory.openSession(true)) {
+    try (Writer writer = Utf8IOUtils.writerFromGzipFile(sectorTreeFile(sectorKey, attempt));
+         SqlSession session = factory.openSession(true)
+    ){
       Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
-      count = TextTreePrinter.sector(s.getSubjectDatasetKey(), sectorKey, factory, writer).print();
+      int count = TextTreePrinter.sector(s.getSubjectDatasetKey(), sectorKey, factory, writer).print();
+      LOG.info("Written text tree with {} lines for sector {}-{}", count, sectorKey, attempt);
+      return count;
     }
-    LOG.info("Written text tree with {} lines for sector {}-{}", count, sectorKey, attempt);
-    return count;
   }
 
   public Stream<String> getDatasetNames(int datasetKey, int attempt) {
@@ -143,7 +145,7 @@ public class NamesTreeDao {
 
   private static Stream<String> streamFile(File f) {
     try {
-      BufferedReader br = Utf8IOUtils.readerFromFile(f);
+      BufferedReader br = Utf8IOUtils.readerFromGzipFile(f);
       return br.lines();
     } catch (IOException e) {
       LOG.warn("Failed to stream file {}", f.getAbsolutePath());
@@ -152,26 +154,36 @@ public class NamesTreeDao {
   }
   
   public File sectorTreeFile(int sectorKey, int attempt) {
-    return new File(sectorDir(sectorKey), "tree/"+attempt+".txt");
+    return new File(sectorDir(sectorKey), "tree/"+attempt+".txt.gz");
   }
   
   public File sectorNamesFile(int sectorKey, int attempt) {
-    return new File(sectorDir(sectorKey), "names/"+attempt+".txt");
+    return new File(sectorDir(sectorKey), "names/"+attempt+".txt.gz");
   }
   
   public File treeFile(int datasetKey, int attempt) {
-    return new File(datasetDir(datasetKey), "tree/"+attempt+".txt");
+    return new File(datasetDir(datasetKey), "tree/"+attempt+".txt.gz");
   }
   
   public File namesFile(int datasetKey, int attempt) {
-    return new File(datasetDir(datasetKey), "names/"+attempt+".txt");
+    return new File(datasetDir(datasetKey), "names/"+attempt+".txt.gz");
   }
   
   private File datasetDir(int datasetKey) {
-    return new File(repo, "dataset/" + datasetKey);
+    return new File(repo, "dataset/" + bucket(datasetKey) + "/" + datasetKey);
   }
   
   private File sectorDir(int sectorKey) {
-    return new File(repo, "sector/" + sectorKey);
+    return new File(repo, "sector/" + bucket(sectorKey) + "/" + sectorKey);
+  }
+  
+  /**
+   * Assigns a given evenly distributed integer to a bucket of max 1000 items so we do not overload the filesystem
+   * @param x
+   * @return 000-999
+   */
+  @VisibleForTesting
+  protected static String bucket(int x) {
+    return String.format("%03d", Math.abs(x) % 1000);
   }
 }

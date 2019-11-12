@@ -2,7 +2,7 @@ package org.col.dao;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class CatCopyTest {
   
@@ -14,4 +14,5 @@ public class CatCopyTest {
     assertEquals("Alphabetikos Katalogos", CatCopy.latinName("Αλφαβητικός Κατάλογος"));
     assertEquals("Doering Spass", CatCopy.latinName("Döring Spaß"));
   }
+  
 }
