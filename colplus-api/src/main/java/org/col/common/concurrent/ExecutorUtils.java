@@ -24,10 +24,10 @@ public class ExecutorUtils {
   
   public static void shutdown(ExecutorService exec, int timeout, TimeUnit unit) {
     try {
-      LOG.debug("attempt to shutdown executor within {} {}", timeout, unit);
+      LOG.info("attempt to shutdown executor within {} {}", timeout, unit);
       exec.shutdown();
       if (exec.awaitTermination(timeout, unit)) {
-        LOG.debug("shutdown succeeded orderly");
+        LOG.info("shutdown succeeded orderly");
       } else {
         forceShutdown(exec);
       }
