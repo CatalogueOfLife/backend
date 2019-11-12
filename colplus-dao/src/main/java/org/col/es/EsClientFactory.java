@@ -33,8 +33,8 @@ public class EsClientFactory {
               @Override
               public RequestConfig.Builder customizeRequestConfig(RequestConfig.Builder requestConfigBuilder) {
                 return requestConfigBuilder
-                    .setConnectTimeout(10000)
-                    .setSocketTimeout(120000);
+                    .setConnectTimeout(cfg.connectTimeout)
+                    .setSocketTimeout(cfg.socketTimeout);
               }
             }).build();
   }

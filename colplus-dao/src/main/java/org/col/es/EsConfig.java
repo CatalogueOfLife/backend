@@ -34,7 +34,22 @@ public class EsConfig {
    * Configuration settings for the name usage index
    */
   public IndexConfig nameUsage;
-
+  
+  /**
+   * Determines the timeout in milliseconds until a RESTClient connection is established.
+   * A timeout value of zero is interpreted as an infinite timeout.
+   * See https://www.elastic.co/guide/en/elasticsearch/client/java-rest/current/_timeouts.html
+   */
+  public int connectTimeout = 10000;
+  
+  /**
+   * Defines the RESTClient socket timeout in milliseconds,
+   * which is the timeout for waiting for data  or, put differently,
+   * a maximum period inactivity between two consecutive data packets).
+   * See https://www.elastic.co/guide/en/elasticsearch/client/java-rest/current/_timeouts.html
+   */
+  public int socketTimeout = 120000;
+  
   /**
    * @return true if an embedded es server should be used
    */
