@@ -21,7 +21,6 @@ public class NameUsageProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageProcessor.class);
 
   private final SqlSessionFactory factory;
-  private final int datasetKey;
   
   public final static Comparator<String> PG_C_COLLATION = (left, right) -> {
     Collator collator = Collator.getInstance(Locale.ROOT);
@@ -29,9 +28,8 @@ public class NameUsageProcessor {
     return collator.compare(left.replaceAll("\\p{Punct}", ""), right.replaceAll("\\p{Punct}", ""));
   };
   
-  public NameUsageProcessor(SqlSessionFactory factory, int datasetKey) {
+  public NameUsageProcessor(SqlSessionFactory factory) {
     this.factory = factory;
-    this.datasetKey = datasetKey;
   }
   
   /**
@@ -48,7 +46,7 @@ public class NameUsageProcessor {
    *
    * @param consumer
    */
-  public void processDataset(Consumer<NameUsageWrapper> consumer) {
+  public void processDataset(int datasetKey, Consumer<NameUsageWrapper> consumer) {
     List<String> rootIds;
     try (SqlSession s = factory.openSession(true)) {
       rootIds = s.getMapper(TaxonMapper.class).listRootIds(datasetKey);
@@ -59,12 +57,27 @@ public class NameUsageProcessor {
     }
   }
   
+  /**
+   * Process all catalogue usages from a given sector
+   * @param datasetKey the sectors dataset key. MUST match sector. In theory possible to get in SQL, but to reduce complexity we prefer to submit it explicitly
+   * @param sectorKey the sectors key
+   * @param id the sectors target usage id matching the sectorKey
+   */
+  public void processSector(int datasetKey, int sectorKey, String id, Consumer<NameUsageWrapper> consumer) {
+    LOG.info("Process sector{} of dataset {} with target {}", sectorKey, datasetKey, id);
+    try (SqlSession s = factory.openSession(true)) {
+      final NameUsageWrapperMapper nuwm = s.getMapper(NameUsageWrapperMapper.class);
+      SNCHandler handler = new SNCHandler(consumer, nuwm, datasetKey);
+      nuwm.processTree(datasetKey, sectorKey, id, handler);
+    }
+  }
+  
   private void processTree(int datasetKey, String id, Consumer<NameUsageWrapper> consumer) {
     LOG.debug("Process dataset {} tree with root taxon {}", datasetKey, id);
     try (SqlSession s = factory.openSession(true)) {
       final NameUsageWrapperMapper nuwm = s.getMapper(NameUsageWrapperMapper.class);
       SNCHandler handler = new SNCHandler(consumer, nuwm, datasetKey);
-      nuwm.processTree(datasetKey, id, handler);
+      nuwm.processTree(datasetKey, null, id, handler);
     }
   }
   

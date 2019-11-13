@@ -46,15 +46,6 @@
     </resultMap>
 
 
-    <sql id="selectClassificationAppend">
-        u.id,
-        array_append(tree.classification, (u.id,n.rank,n.scientific_name)::simple_name)
-    </sql>
-
-    <sql id="fromNameUsage">
-        FROM name_usage_${datasetKey} u JOIN name_${datasetKey} n ON u.name_id=n.id
-    </sql>
-
     <sql id="taxonSelectFrom">
         <include refid="org.col.db.mapper.NameUsageMapper.SELECT" />,
         vbn.issues || vbt.issues AS issues,
@@ -67,46 +58,17 @@
         LEFT JOIN decision ed ON ed.dataset_key=#{datasetKey} AND ed.subject_id=u.id
     </sql>
 
-    <select id="processSectorUsages" parameterType="map" resultMap="taxonWithClassificationResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-        <include refid="org.col.db.Common.partitionByDatasetKey"/>
-        WITH RECURSIVE tree AS(
-            SELECT u.id AS uid, classification_sn(#{datasetKey}, u.id, true) AS classification,
-            <include refid="taxonSelectFrom" />
-            WHERE u.id = #{usageId}
-        UNION ALL
-            SELECT
-            <include refid="selectClassificationAppend"/>,
-            <include refid="taxonSelectFrom" />
-            JOIN tree ON (tree.uid = u.parent_id)
-            WHERE u.sector_key = #{sectorKey}
-        )
-        SELECT * FROM tree
-    </select>
-
-    <select id="processTreeUsages" parameterType="map" resultMap="taxonWithClassificationResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-        <include refid="org.col.db.Common.partitionByDatasetKey"/>
-        WITH RECURSIVE tree AS(
-        SELECT u.id AS uid, classification_sn(#{datasetKey}, u.id, true) AS classification,
-        <include refid="taxonSelectFrom" />
-        WHERE u.id=#{usageId} AND NOT u.is_synonym
-        UNION ALL
-        SELECT
-        <include refid="selectClassificationAppend"/>,
-        <include refid="taxonSelectFrom" />
-        JOIN tree ON (tree.uid = u.parent_id)
-        )
-        SELECT * FROM tree
-    </select>
 
     <select id="processTree" parameterType="map" resultMap="classificationResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
         <include refid="org.col.db.Common.partitionByDatasetKey"/>
         WITH RECURSIVE tree AS(
             SELECT #{usageId} AS uid, classification_sn(#{datasetKey}, #{usageId}, true) AS classification
         UNION ALL
-            SELECT
-                <include refid="selectClassificationAppend"/>
-            <include refid="fromNameUsage"/>
-                JOIN tree ON (tree.uid = u.parent_id)
+            SELECT u.id, array_append(tree.classification, (u.id,n.rank,n.scientific_name)::simple_name)
+            FROM name_usage_${datasetKey} u JOIN name_${datasetKey} n ON u.name_id=n.id JOIN tree ON (tree.uid = u.parent_id)
+            <if test="sectorKey != null">
+                WHERE u.sector_key = #{sectorKey}
+            </if>
 	   )
        SELECT * FROM tree
     </select>

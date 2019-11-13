@@ -18,24 +18,15 @@ import org.col.api.search.NameUsageWrapper;
  */
 public interface NameUsageWrapperMapper {
   
-  /**
-   * Process all catalogue usages from a given sector
-   * @param datasetKey the sectors dataset key. MUST match sector. In theory possible to get in SQL, but to reduce complexity we prefer to submit it explicitly
-   * @param sectorKey the sectors key
-   * @param usageId the sectors target usage id matching the sectorKey
-   */
-  void processSectorUsages(@Param("datasetKey") Integer datasetKey,
-                           @Param("sectorKey") Integer sectorKey,
-                           @Param("usageId") String usageId,
-                           ResultHandler<NameUsageWrapper> handler);
+  NameUsageWrapper get(@Param("datasetKey") int datasetKey,
+                       @Param("id") String taxonId);
   
   /**
-   * Traverses a subtree returning full NameUsageWrapper objects.
-   * The first SimpleName in each classification list represents the usage being processed.
+   * @return the full wrapper object but without the recursive classification property
    */
-  void processTreeUsages(@Param("datasetKey") Integer datasetKey,
-                         @Param("usageId") String usageId,
-                         ResultHandler<NameUsageWrapper> handler);
+  NameUsageWrapper getWithoutClassification(@Param("datasetKey") int datasetKey,
+                                            @Param("id") String taxonId);
+  
   /**
    * Iterates over all bare names not linked to a synonym or taxon for a given dataset and processes them with the supplied handler. This
    * allows a single query to efficiently stream all its values without keeping them in memory.
@@ -44,22 +35,16 @@ public interface NameUsageWrapperMapper {
                                @Nullable @Param("sectorKey") Integer sectorKey,
                                ResultHandler<NameUsageWrapper> handler);
   
+  
+  
   /**
    * Traverses a subtree returning classifications as list of simple names objects only.
    * The first SimpleName in each classification list represents the usage being processed.
    */
   void processTree(@Param("datasetKey") Integer datasetKey,
+                   @Nullable @Param("sectorKey") Integer sectorKey,
                    @Param("usageId") String usageId,
                    ResultHandler<SimpleNameClassification> handler);
-
-  NameUsageWrapper get(@Param("datasetKey") int datasetKey,
-                       @Param("id") String taxonId);
-  
-  /**
-   * @return the full wrapper object but without the recursive classification property
-   */
-  NameUsageWrapper getWithoutClassification(@Param("datasetKey") int datasetKey,
-                       @Param("id") String taxonId);
   
   /**
    * WARNING! experimental, not fully implemented !!!

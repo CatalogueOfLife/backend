@@ -42,12 +42,10 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   private final EsConfig esConfig;
   private final String index;
   private final SqlSessionFactory factory;
+  private final NameUsageProcessor processor;
 
   public NameUsageIndexServiceEs(RestClient client, EsConfig esConfig, SqlSessionFactory factory) {
-    this.client = client;
-    this.index = esConfig.indexName(ES_INDEX_NAME_USAGE);
-    this.esConfig = esConfig;
-    this.factory = factory;
+    this(client, esConfig, factory, esConfig.indexName(ES_INDEX_NAME_USAGE));
   }
 
   @VisibleForTesting
@@ -56,6 +54,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     this.index = index;
     this.esConfig = esConfig;
     this.factory = factory;
+    this.processor = new NameUsageProcessor(factory);
   }
 
   @Override
@@ -66,7 +65,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       createOrEmptyIndex(datasetKey);
       try (BatchConsumer<NameUsageWrapper> handler = new BatchConsumer<>(indexer, BATCH_SIZE)) {
         LOG.info("Indexing usages from dataset {}", datasetKey);
-        new NameUsageProcessor(factory, datasetKey).processDataset(handler);
+        processor.processDataset(datasetKey, handler);
       }
       EsUtil.refreshIndex(client, index);
       tCount = indexer.documentsIndexed();
@@ -94,9 +93,9 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     try (SqlSession session = factory.openSession()) {
       Integer datasetKey = clearSector(session, s.getKey());
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
-      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)) {
+      try (BatchConsumer<NameUsageWrapper> handler = new BatchConsumer<>(indexer, BATCH_SIZE)) {
         LOG.info("Indexing usages from sector {}", s.getKey());
-        mapper.processSectorUsages(s.getDatasetKey(), s.getKey(), s.getTarget().getId(), handler);
+        processor.processSector(s.getDatasetKey(), s.getKey(), s.getTarget().getId(), handler);
       }
       EsUtil.refreshIndex(client, index);
       tCount = indexer.documentsIndexed();
@@ -150,7 +149,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     try (SqlSession session = factory.openSession()) {
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
       try (ClassificationUpdater updater = new ClassificationUpdater(indexer, datasetKey)) {
-        mapper.processTree(datasetKey, rootTaxonId, updater);
+        mapper.processTree(datasetKey, null, rootTaxonId, updater);
       }
       EsUtil.refreshIndex(client, index);
     } catch (IOException e) {
@@ -174,7 +173,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
         int tc, bc;
         try (BatchConsumer<NameUsageWrapper> handler = new BatchConsumer<>(indexer, BATCH_SIZE)) {
           LOG.debug("Indexing usages from dataset {}", datasetKey);
-          new NameUsageProcessor(factory, datasetKey).processDataset(handler);
+          processor.processDataset(datasetKey, handler);
         }
         EsUtil.refreshIndex(client, index);
         tc = indexer.documentsIndexed();

@@ -5,11 +5,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
-import org.col.api.model.*;
+import org.col.api.model.DSID;
+import org.col.api.model.SimpleName;
+import org.col.api.model.SimpleNameClassification;
 import org.col.api.search.NameUsageWrapper;
-import org.col.api.vocab.Datasets;
-import org.col.dao.NameUsageProcessorTest;
-import org.col.db.MybatisTestUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -35,48 +34,6 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
     assertFalse(tax.getClassification().isEmpty());
     assertEquals(cl, tax.getClassification());
   }
-  
-  @Test
-  public void processUsages() throws Exception {
-    DRH handler = new DRH();
-    mapper().processTreeUsages(NAME4.getDatasetKey(), "t5", handler);
-    Assert.assertEquals(12, handler.counter.get());
-    Assert.assertEquals(2, handler.synCounter.get());
-  }
-  
-  public static class DRH extends NameUsageProcessorTest.DRH implements ResultHandler<NameUsageWrapper> {
-    @Override
-    public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
-      accept(ctx.getResultObject());
-    }
-  }
-  
-  @Test
-  public void processSector() throws Exception {
-    MybatisTestUtils.populateDraftTree(session());
-
-    mapper().processSectorUsages(Datasets.DRAFT_COL, 1, "t2", new ResultHandler<NameUsageWrapper>() {
-      public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
-        counter.incrementAndGet();
-        NameUsageWrapper obj = ctx.getResultObject();
-        Name n = obj.getUsage().getName();
-        assertNotNull(n);
-        assertNotNull(n.getId());
-        assertEquals(Datasets.DRAFT_COL, (int) obj.getUsage().getDatasetKey());
-        assertEquals(Datasets.DRAFT_COL, (int) n.getDatasetKey());
-        
-        // classification should always include the taxon itself
-        // https://github.com/Sp2000/colplus-backend/issues/326
-        assertFalse(obj.getClassification().isEmpty());
-        SimpleName last = obj.getClassification().get(obj.getClassification().size()-1);
-        assertEquals(obj.getUsage().getId(), last.getId());
-        
-        // we have no sector, so we just get the root usage back
-        assertEquals(obj.getUsage().getId(), last.getId());
-      }
-    });
-    Assert.assertEquals(1, counter.get());
-  }
 
   @Test
   public void processDatasetBareNames() throws Exception {
@@ -93,7 +50,7 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
   
   @Test
   public void processSubtree() throws Exception {
-    mapper().processTree(NAME4.getDatasetKey(), "t4",new ResultHandler<SimpleNameClassification>() {
+    mapper().processTree(NAME4.getDatasetKey(), null, "t4",new ResultHandler<SimpleNameClassification>() {
       public void handleResult(ResultContext<? extends SimpleNameClassification> ctx) {
         counter.incrementAndGet();
         SimpleNameClassification obj = ctx.getResultObject();
