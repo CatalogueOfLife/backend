@@ -114,7 +114,7 @@ COPY (
     ) AS year,
     csl->>'title' AS title,
     csl->>'container-title' AS source,
-    coalesce(s.dataset_key, 1500) - 1000 AS database_id,
+    coalesce(s.subject_dataset_key, 1500) - 1000 AS database_id,
     r.id AS reference_code
   FROM reference_{{datasetKey}} r
     JOIN __ref_keys rk ON rk.id=r.id
@@ -146,7 +146,7 @@ INSERT INTO __tax_keys (id) SELECT id FROM name_usage_{{datasetKey}};
 -- specialists aka scrutinizer
 CREATE TABLE __scrutinizer (key serial, dataset_key int, name text, unique(dataset_key, name));
 INSERT INTO __scrutinizer (name, dataset_key)
-    SELECT DISTINCT t.according_to, s.dataset_key
+    SELECT DISTINCT t.according_to, s.subject_dataset_key
         FROM name_usage_{{datasetKey}} t
             LEFT JOIN sector s ON t.sector_key=s.key
         WHERE t.according_to IS NOT NULL;
@@ -159,7 +159,7 @@ COPY (
 -- unnest with empty or null arrays removes the entire row
 COPY (
     WITH lifezones_x AS (
-        SELECT t.id, unnest(t.lifezones) AS lfz, s.dataset_key
+        SELECT t.id, unnest(t.lifezones) AS lfz, s.subject_dataset_key
         FROM name_usage_{{datasetKey}} t
             JOIN __tax_keys tk ON t.id=tk.id
             LEFT JOIN sector s ON t.sector_key=s.key
@@ -178,7 +178,7 @@ CREATE TABLE __classification AS (
 WITH RECURSIVE tree AS(
     SELECT
         tk.key AS key,
-        s.dataset_key AS dataset_key,
+        s.subject_dataset_key AS dataset_key,
         t.id AS id,
         n.rank AS rank,
         CASE WHEN n.rank='kingdom' THEN n.scientific_name ELSE NULL END AS kingdom,
@@ -198,7 +198,7 @@ WITH RECURSIVE tree AS(
   UNION
     SELECT
         tk.key,
-        s.dataset_key,
+        s.subject_dataset_key,
         t.id,
         n.rank,
         CASE WHEN n.rank='kingdom' THEN n.scientific_name ELSE tree.kingdom END,
@@ -336,7 +336,7 @@ COPY (
     trim(v.country) AS country,
     trim(v.area) AS area,
     rk.key as reference_id,
-    coalesce(s.dataset_key, 1500) - 1000 AS database_id,
+    coalesce(s.subject_dataset_key, 1500) - 1000 AS database_id,
     NULL AS is_infraspecies,
     r.id as reference_code 
   FROM vernacular_name_{{datasetKey}} v
@@ -354,7 +354,7 @@ COPY (
     d.area AS distribution, 
     CASE WHEN d.gazetteer=0 THEN 'TDWG' WHEN d.gazetteer=1 THEN 'ISO' WHEN d.gazetteer=2 THEN 'FAO' ELSE 'TEXT' END AS StandardInUse,
     CASE WHEN d.status=0 THEN 'Native' WHEN d.status=1 THEN 'Domesticated' WHEN d.status=2 THEN 'Alien' WHEN d.status=3 THEN 'Uncertain' END AS DistributionStatus,
-    coalesce(s.dataset_key, 1500) - 1000 AS database_id
+    coalesce(s.subject_dataset_key, 1500) - 1000 AS database_id
   FROM distribution_{{datasetKey}} d
       JOIN name_usage_{{datasetKey}} t ON t.id=d.taxon_id
       LEFT JOIN sector s ON t.sector_key=s.key
@@ -368,7 +368,7 @@ COPY (
     'NomRef' AS reference_type, -- NomRef, TaxAccRef, ComNameRef
     rk.key AS reference_id,
     r.id AS reference_code,
-    coalesce(s.dataset_key, 1500) - 1000 AS database_id
+    coalesce(s.subject_dataset_key, 1500) - 1000 AS database_id
   FROM name_{{datasetKey}} n
     JOIN name_usage_{{datasetKey}} t ON t.name_id=n.id
     JOIN reference_{{datasetKey}} r ON r.id=n.published_in_id
@@ -382,7 +382,7 @@ COPY (
     'TaxAccRef' AS reference_type, -- NomRef, TaxAccRef, ComNameRef
     rk.key AS reference_id,
     r.id AS reference_code,
-    coalesce(s.dataset_key, 1500) - 1000 AS database_id
+    coalesce(s.subject_dataset_key, 1500) - 1000 AS database_id
   FROM
     (SELECT id, UNNEST(reference_ids) AS rid FROM name_usage_{{datasetKey}}) u
     JOIN reference_{{datasetKey}} r ON r.id=u.rid

@@ -1,9 +1,6 @@
 package org.col.release;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.time.LocalDate;
 import java.util.function.Consumer;
 
@@ -30,8 +27,7 @@ public class CatalogueRelease implements Runnable {
   private final int user;
   private final int sourceDatasetKey;
   private final int releaseKey;
-  private final Dataset release;
-  private final Writer exportWriter = new StringWriter();
+  private final org.col.release.Logger logger = new org.col.release.Logger(LOG);
   // we only allow a single release to run at a time
   private static boolean LOCK = false;
   
@@ -40,7 +36,6 @@ public class CatalogueRelease implements Runnable {
     this.diDao = diDao;
     this.exporter = exporter;
     this.sourceDatasetKey = sourceDatasetKey;
-    this.release = release;
     releaseKey = release.getKey();
     this.user = userKey;
   }
@@ -96,12 +91,8 @@ public class CatalogueRelease implements Runnable {
     return sourceDatasetKey;
   }
   
-  public Object getState() {
-    if (exportWriter == null) {
-      return "still releasing ...";
-    } else {
-      return exporter.toString();
-    }
+  public String getState() {
+    return logger.toString();
   }
   
   @VisibleForTesting
@@ -130,6 +121,7 @@ public class CatalogueRelease implements Runnable {
   @Override
   public void run() {
     try {
+      logger.log("Release catalogue "+sourceDatasetKey+" to new dataset" + releaseKey);
       // prepare new tables
       Partitioner.partition(factory, releaseKey);
       // map ids
@@ -157,6 +149,7 @@ public class CatalogueRelease implements Runnable {
   
   private void mapIds() {
     interruptIfCancelled();
+    logger.log("Map IDs");
     //TODO:
   }
   
@@ -178,10 +171,10 @@ public class CatalogueRelease implements Runnable {
     try (SqlSession session = factory.openSession(false);
          TableCopyHandler<K, V,M> handler = new TableCopyHandler<>(factory, entity.getSimpleName(), mapperClass, updater)
     ) {
-      LOG.info("Copy all {}", entity.getSimpleName());
+      logger.log("Copy all " + entity.getSimpleName());
       ProcessableDataset<V> mapper = session.getMapper(mapperClass);
       mapper.processDataset(sourceDatasetKey, handler);
-      LOG.info("Copied {} {}", handler.getCounter(), entity.getSimpleName());
+      logger.log("Copied " + handler.getCounter() +" "+ entity.getSimpleName());
     }
   }
   
@@ -190,10 +183,10 @@ public class CatalogueRelease implements Runnable {
     try (SqlSession session = factory.openSession(false);
          ExtTableCopyHandler<V> handler = new ExtTableCopyHandler<V>(factory, entity.getSimpleName(), mapperClass, updater)
     ) {
-      LOG.info("Copy all {}", entity.getSimpleName());
+      logger.log("Copy all " + entity.getSimpleName());
       TaxonExtensionMapper<V> mapper = session.getMapper(mapperClass);
       mapper.processDataset(sourceDatasetKey, handler);
-      LOG.info("Copied {} {}", handler.getCounter(), entity.getSimpleName());
+      logger.log("Copied " + handler.getCounter() +" "+ entity.getSimpleName());
     }
   }
   
@@ -219,14 +212,14 @@ public class CatalogueRelease implements Runnable {
   public void export() throws IOException {
     interruptIfCancelled();
     try {
-      exporter.export(releaseKey, exportWriter);
+      exporter.export(releaseKey, logger);
     } catch (Throwable e) {
-      exportWriter.append("\n\n");
-      PrintWriter pw = new PrintWriter(exportWriter);
-      e.printStackTrace(pw);
-      pw.flush();
+      LOG.error("Error exporting catalogue {}", releaseKey, e);
+      logger.log("\n\nERROR!");
+      if (e.getMessage() != null) {
+        logger.log(e.getMessage());
+      }
     }
-    exportWriter.flush();
   }
   
 }

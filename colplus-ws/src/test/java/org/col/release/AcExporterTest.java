@@ -1,7 +1,6 @@
 package org.col.release;
 
 import java.io.File;
-import java.io.StringWriter;
 
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
@@ -53,10 +52,10 @@ public class AcExporterTest {
       dm.update(d);
     }
     
-    StringWriter writer = new StringWriter();
-    arch = exp.export(Datasets.DRAFT_COL, writer);
+    Logger lg = new Logger();
+    arch = exp.export(Datasets.DRAFT_COL, lg);
     System.out.println("LOGS:\n");
-    System.out.println(writer.toString());
+    System.out.println(lg.toString());
   }
   
 }
