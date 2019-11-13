@@ -56,62 +56,58 @@ public class AcExporter {
   }
   private final WsServerConfig cfg;
   private final SqlSessionFactory factory;
-  private Writer logger;
+  private org.col.release.Logger logger;
 
   public AcExporter(WsServerConfig cfg, SqlSessionFactory factory) {
     this.cfg = cfg;
     this.factory = factory;
   }
   
-  private void log(String msg) throws IOException {
-    logger.append(msg);
-    logger.append("\n");
-    logger.flush();
-  }
-  
   /**
    * @return final archive
    */
-  public File export(int catalogueKey, Writer writer) throws IOException, SQLException, IllegalStateException {
-    File csvDir = new File(cfg.normalizer.scratchDir(catalogueKey), "exports");
+  public File export(int catalogueKey, org.col.release.Logger logger) throws IOException, SQLException, IllegalStateException {
+    File expDir = new File(cfg.normalizer.scratchDir(catalogueKey), "exports");
+    LOG.info("Export catalogue {} to {}", catalogueKey, expDir.getAbsolutePath());
     try {
-      this.logger = writer;
+      logger.setLog(LOG);
+      this.logger = logger;
       // create csv files
       try (Connection c = cfg.db.connect()) {
         c.setAutoCommit(false);
         setupTables(c);
         InputStream sql = AcExporter.class.getResourceAsStream(EXPORT_SQL);
-        executeAcExportSql(catalogueKey, (PgConnection)c, new BufferedReader(new InputStreamReader(sql, StandardCharsets.UTF_8)), csvDir);
+        executeAcExportSql(catalogueKey, (PgConnection)c, new BufferedReader(new InputStreamReader(sql, StandardCharsets.UTF_8)), expDir);
       } catch (UnsupportedEncodingException e) {
         throw new RuntimeException(e);
       }
       // include images
-      exportLogos(catalogueKey, csvDir);
+      exportLogos(catalogueKey, expDir);
   
       // export citation.ini
-      exportCitations(catalogueKey, csvDir);
+      exportCitations(catalogueKey, expDir);
       
       // zip up archive and move to download
       File arch = new File(cfg.downloadDir, "ac-export.zip");
-      log("Zip up archive and move to download");
+      logger.log("Zip up archive and move to download");
       if (arch.exists()) {
         LOG.debug("Remove previous export file {}", arch.getAbsolutePath());
       }
       LOG.info("Creating final export archive {}", arch.getAbsolutePath());
-      CompressionUtil.zipDir(csvDir, arch);
+      CompressionUtil.zipDir(expDir, arch);
       return arch;
       
     } finally {
-      LOG.debug("Remove temp export directory {}", csvDir.getAbsolutePath());
-      log("Clean up temp files");
-      FileUtils.deleteQuietly(csvDir);
-      log("Export completed");
+      LOG.debug("Remove temp export directory {}", expDir.getAbsolutePath());
+      logger.log("Clean up temp files");
+      FileUtils.deleteQuietly(expDir);
+      logger.log("Export completed");
       this.logger = null;
     }
   }
   
   private void exportCitations(int catalogueKey, File dir) throws IOException {
-    log("Export citations");
+    logger.log("Export citations");
     File cf = new File(dir, "credits.ini");
   
     Map<String, Object> data = new HashMap<>();
@@ -134,9 +130,9 @@ public class AcExporter {
     }
   }
   
-  private void exportLogos(int catalogueKey, File dir) throws IOException {
-    log("Export logos");
-    File logoDir = new File(dir, "logos");
+  private void exportLogos(int catalogueKey, File expDir) throws IOException {
+    logger.log("Export logos for sources of catalogue " + catalogueKey);
+    File logoDir = new File(expDir, "logos");
     logoDir.mkdir();
   
     int counter = 0;
@@ -145,6 +141,7 @@ public class AcExporter {
       DatasetSearchRequest req = new DatasetSearchRequest();
       req.setContributesTo(catalogueKey);
       List<Dataset> resp = dm.search(req, new Page(0,1000));
+      logger.log("Found " +resp.size()+ " source datasets of catalogue " + catalogueKey);
       for (Dataset d : resp) {
         Path p = cfg.img.datasetLogo(d.getKey(), ImgConfig.Scale.MEDIUM);
         if (java.nio.file.Files.exists(p)) {
@@ -158,11 +155,11 @@ public class AcExporter {
           
         } else {
           LOG.warn("Missing logo for dataset {}: {}", d.getKey(), d.getTitle());
-          log("Missing logo for dataset " + d.getTitle());
+          logger.log("Missing logo for dataset " + d.getTitle());
         }
       }
     }
-    log(counter + " logos exported");
+    logger.log(counter + " logos exported");
   }
   
   private static void setupTables(Connection c) throws SQLException, IOException {
@@ -196,7 +193,7 @@ public class AcExporter {
         // copy to file
         File f = new File(csvDir, m.group(1).trim());
         Files.createParentDirs(f);
-        log("Exporting " + f.getName());
+        logger.log("Exporting " + f.getName());
         LOG.info("Exporting {}", f.getAbsolutePath());
         PgCopyUtils.dump(con, sb.toString(), f, COPY_WITH);
         sb = new StringBuilder();
@@ -219,10 +216,10 @@ public class AcExporter {
     try (Statement stmnt = con.createStatement()) {
       if (sql.startsWith("--")) {
         if (sql.contains("\n")) {
-          log(StringUtils.capitalize(sql.substring(3, sql.indexOf('\n'))));
+          logger.log(StringUtils.capitalize(sql.substring(3, sql.indexOf('\n'))));
         }
       } else if (sql.contains(" ")){
-        log("Execute " + sql.substring(0, sql.indexOf(' ')) + " SQL");
+        logger.log("Execute " + sql.substring(0, sql.indexOf(' ')) + " SQL");
       }
       stmnt.execute(sql);
       con.commit();

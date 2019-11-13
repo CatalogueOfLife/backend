@@ -30,14 +30,7 @@ import org.col.api.model.UserManaged;
 import org.col.api.model.VerbatimRecord;
 import org.col.api.model.VernacularName;
 import org.col.api.search.NameUsageWrapper;
-import org.col.api.vocab.CSLRefType;
-import org.col.api.vocab.Country;
-import org.col.api.vocab.Issue;
-import org.col.api.vocab.Lifezone;
-import org.col.api.vocab.NomStatus;
-import org.col.api.vocab.Origin;
-import org.col.api.vocab.TaxonomicStatus;
-import org.col.api.vocab.Users;
+import org.col.api.vocab.*;
 import org.col.common.csl.CslUtil;
 import org.col.common.tax.AuthorshipNormalizer;
 import org.gbif.dwc.terms.DcTerm;
@@ -278,6 +271,16 @@ public class TestEntityGenerator {
     vn.setLatin(name);
     vn.setLanguage(lang);
     return vn;
+  }
+  
+  public static Dataset newDataset(String title) {
+    Dataset d = new Dataset();
+    d.setTitle(title);
+    d.setAlias(title);
+    d.setType(DatasetType.CATALOGUE);
+    d.setLicense(License.CC0);
+    d.setOrigin(DatasetOrigin.MANAGED);
+    return d;
   }
 
   /*

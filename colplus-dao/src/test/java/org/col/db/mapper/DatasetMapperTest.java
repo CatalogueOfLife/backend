@@ -225,10 +225,10 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     assertEquals("01", 3, count);
   }
   
-  private void createSector(int datasetKey) {
+  private void createSector(int datasetKey, int subjectDatasetKey) {
     Sector s = new Sector();
-    s.setDatasetKey(Datasets.DRAFT_COL);
-    s.setSubjectDatasetKey(datasetKey);
+    s.setDatasetKey(datasetKey);
+    s.setSubjectDatasetKey(subjectDatasetKey);
     s.setMode(Sector.Mode.ATTACH);
     s.setSubject(TestEntityGenerator.newSimpleName());
     s.setTarget(TestEntityGenerator.newSimpleName());
@@ -251,8 +251,8 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     final Integer d4 = createSearchableDataset("FOO", "bar", "BAR", null);
     final Integer d5 = createSearchableDataset("WORMS worms", "beard", "WORMS", "Worms with even more worms than worms");
     mapper().delete(d5);
-    createSector(d3);
-    createSector(d4);
+    createSector(Datasets.DRAFT_COL, d3);
+    createSector(Datasets.DRAFT_COL, d4);
     commit();
 
     DatasetSearchRequest query = new DatasetSearchRequest();
@@ -360,6 +360,28 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     List<Dataset> res = mapper().search(query, new Page());
     assertEquals(1, res.size());
   
+    // create another catalogue to test non draft sectors
+    Dataset cat = TestEntityGenerator.newDataset("cat2");
+    TestEntityGenerator.setUser(cat);
+    mapper(DatasetMapper.class).create(cat);
+    // new sectors
+    createSector(cat.getKey(), d1);
+    createSector(cat.getKey(), d5);
+    commit();
+  
+    // old query should still be the same
+    query = DatasetSearchRequest.byQuery("worms");
+    query.setContributesTo(Datasets.DRAFT_COL);
+    assertEquals(1, mapper().search(query, new Page()).size());
+  
+    query = new DatasetSearchRequest();
+    query.setContributesTo(Datasets.DRAFT_COL);
+    assertEquals(2, mapper().search(query, new Page()).size());
+  
+    query = new DatasetSearchRequest();
+    query.setContributesTo(cat.getKey());
+    // d5 was deleted!
+    assertEquals(1, mapper().search(query, new Page()).size());
   }
 
   private int createSearchableDataset(String title, String author, String organisation, String description) {

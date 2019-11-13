@@ -101,7 +101,7 @@ public class AssemblyResource {
   
   @GET
   @Path("/release")
-  public Object releaseState(@PathParam("catKey") int catKey) {
+  public String releaseState(@PathParam("catKey") int catKey) {
     requireDraft(catKey);
     if (release == null) {
       return "idle";
