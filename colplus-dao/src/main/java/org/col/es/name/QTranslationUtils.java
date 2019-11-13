@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import static org.col.es.name.NameUsageWrapperConverter.normalizeStrongly;
 import static org.col.es.name.NameUsageWrapperConverter.normalizeWeakly;
-import static org.col.es.query.AbstractMatchQuery.Operator.AND;
+import static org.col.es.query.AbstractMatchQuery.Operator.*;
 
 public class QTranslationUtils {
 
@@ -23,6 +23,7 @@ public class QTranslationUtils {
 
   private static int MAX_NGRAM_SIZE = 10; // see es-settings.json
 
+  private static final String SN_FIELD = "scientificName";
   private static final String GENUS_FIELD = "nameStrings.genusOrMonomialWN";
   private static final String SPECIES_FIELD = "nameStrings.specificEpithetSN";
   private static final String SUBSPECIES_FIELD = "nameStrings.infraspecificEpithetSN";
@@ -51,16 +52,18 @@ public class QTranslationUtils {
     } else if (terms.length == 3) {
       return checkEpithetTriplets(terms);
     }
-    return matchSearchPhrase("scientificName", q).withBoost(1.02); // Prefer over vernacular name
+    return matchSearchPhrase(SN_FIELD, q).withBoost(1.02); // Prefer over vernacular name
   }
 
   private static Query checkAllEpithets(String[] terms) {
     String termWN = normalizeWeakly(terms[0]);
     String termSN = normalizeStrongly(terms[0]);
-    return new BoolQuery() // Prefer subspecies over species and species over genera
-        .should(matchSearchTerm(GENUS_FIELD, termWN).withBoost(1.02))
-        .should(matchSearchTerm(SPECIES_FIELD, termSN).withBoost(1.05))
-        .should(matchSearchTerm(SUBSPECIES_FIELD, termSN).withBoost(1.08));
+    return new DisMaxQuery()
+        .subquery(new BoolQuery() // Prefer subspecies over species and species over genera
+            .should(matchSearchTerm(GENUS_FIELD, termWN).withBoost(1.02))
+            .should(matchSearchTerm(SPECIES_FIELD, termSN).withBoost(1.05))
+            .should(matchSearchTerm(SUBSPECIES_FIELD, termSN).withBoost(1.08)))
+        .subquery(matchSearchTerm(SN_FIELD, terms[0]).withBoost(0.8));
   }
 
   private static Query checkEpithetPairs(String[] terms) {
@@ -117,8 +120,8 @@ public class QTranslationUtils {
 
   private static Query matchSearchPhrase(String field, String q) {
     /*
-     * If the user has typed one big search term we still try to be helpful. With multiple big search terms the
-     * search/suggest service just blanks out.
+     * If the user has typed one big search term we still try to help. With multiple big search terms the search/suggest
+     * service just blanks out.
      */
     if (q.length() > MAX_NGRAM_SIZE && countTokens(q) == 1) {
       return new CaseInsensitivePrefixQuery(field, q);
