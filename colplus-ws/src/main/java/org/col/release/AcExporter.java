@@ -87,7 +87,7 @@ public class AcExporter {
       // export citation.ini
       exportCitations(catalogueKey, expDir);
       
-      // zip up archive and move to download
+      // zip up archive in download directory
       File arch = new File(cfg.downloadDir, "export-"+catalogueKey+".zip");
       logger.log("Zip up archive and move to download");
       if (arch.exists()) {
@@ -95,6 +95,12 @@ public class AcExporter {
       }
       LOG.info("Creating final export archive {}", arch.getAbsolutePath());
       CompressionUtil.zipDir(expDir, arch, true);
+      // create sym link to point to latest export
+      File symlink = new File(cfg.downloadDir, "ac-export.zip");
+      if (symlink.exists()) {
+        symlink.delete();
+      }
+      java.nio.file.Files.createSymbolicLink(symlink.toPath(), arch.toPath());
       return arch;
       
     } finally {
