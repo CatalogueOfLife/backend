@@ -88,13 +88,13 @@ public class AcExporter {
       exportCitations(catalogueKey, expDir);
       
       // zip up archive and move to download
-      File arch = new File(cfg.downloadDir, "ac-export.zip");
+      File arch = new File(cfg.downloadDir, "export-"+catalogueKey+".zip");
       logger.log("Zip up archive and move to download");
       if (arch.exists()) {
         LOG.debug("Remove previous export file {}", arch.getAbsolutePath());
       }
       LOG.info("Creating final export archive {}", arch.getAbsolutePath());
-      CompressionUtil.zipDir(expDir, arch);
+      CompressionUtil.zipDir(expDir, arch, true);
       return arch;
       
     } finally {
