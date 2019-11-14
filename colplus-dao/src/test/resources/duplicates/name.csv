@@ -1,62 +1,62 @@
-id,dataset_key,sector_key,verbatim_key,homotypic_name_id,name_index_id,scientific_name,authorship,rank,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,appended_phrase,candidatus,notho,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,published_in_id,published_in_page,code,nom_status,origin,type,webpage,fossil,remarks,created,created_by,modified,modified_by
-h1,1000,,44,h1,+lg-6p,Animalia,,kingdom,Animalia,,,,,,,f,,{},{},,{},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-15,1000,,14,15,ql-e65,Euops nigra,"Kono, 1927",species,,Euops,,nigra,,,,f,,{},{},,{Kono},{},1927,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-59,1000,,45,59,w6dy6k,Cyclosorus cuneatus,(C.Chr.) Ching,species,,Cyclosorus,,cuneatus,,,,f,,{C.Chr.},{},,{Ching},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-a2,1000,,42,a2,5lme.7,Testata accepta,,species,,Testata,,accepta,,,,f,,{},{},,{},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-42,1000,,12,42,w.pa.b,Adiantum aethiopicum,Thunb.,species,,Adiantum,,aethiopicum,,,,f,,{},{},,{Thunb.},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-55,1000,,16,55,alzkle,Athyrium pectinatum,Bedd.,species,,Athyrium,,pectinatum,,,,f,,{},{},,{Bedd.},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-19,1000,,47,19,86xml3,Flatosaria ståli,"(Haglund, 1899)",species,,Flatosaria,,ståli,,,,f,,{Haglund},{},1899,{},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-2,1000,,10,2,3l3-lq,Actinomyces neui,"Funke & al., 1994",species,,Actinomyces,,neui,,,,f,,{},{},,"{Funke,al.}",{},1994,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-11,1000,,40,11,g678lj,Cleonus pudicus,"Ménetriés, 1849",species,,Cleonus,,pudicus,,,,f,,{},{},,{Ménetriés},{},1849,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-28,1000,,18,28,y.n5.n,Garthia gaudichaudii subsp. dorbignii,"(Duméril & Bibron, 1836)",subspecies,,Garthia,,gaudichaudii,dorbignii,,,f,,"{Duméril,Bibron}",{},1836,{},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-46,1000,,49,46,bl$_6d,Acrostichum aureum,L.,species,,Acrostichum,,aureum,,,,f,,{},{},,{L.},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-51,1000,,38,51,d6+nlj,Asplenium shikokianum,Bak.,species,,Asplenium,,shikokianum,,,,f,,{},{},,{Bak.},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-23,1000,,8,23,olamld,Anolis ricordii subsp. leberi,"Williams, 1965",subspecies,,Anolis,,ricordii,leberi,,,f,,{},{},,{Williams},{},1965,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-6,1000,,51,6,w.4j.+,Brachytarsus nebulosus,,species,,Brachytarsus,,nebulosus,,,,f,,{},{},,{},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-7,1000,,20,7,nl_ql+,Ceropegia juttae,(Dinter) Bruyns,species,,Ceropegia,,juttae,,,,f,,{Dinter},{},,{Bruyns},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-24,1000,,36,24,5lj4l4,Aspidoscelis deppii subsp. schizophorus,"(Smith & Brandon, 1968)",subspecies,,Aspidoscelis,,deppii,schizophorus,,,f,,"{Smith,Brandon}",{},1968,{},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-50,1000,,6,50,+6w3ln,Adiantum fructuosum,Poepp. ex Spreng.,species,,Adiantum,,fructuosum,,,,f,,{},{},,{Spreng.},{Poepp.},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-47,1000,,22,47,_.oj6-,Adiantum fragile,Boj.,species,,Adiantum,,fragile,,,,f,,{},{},,{Boj.},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-27,1000,,53,27,y.n5.n,Garthia gaudichaudii subsp. dorbignii,"(Duméril & Bibron, 1836)",subspecies,,Garthia,,gaudichaudii,dorbignii,,,f,,"{Duméril,Bibron}",{},1836,{},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-10,1000,,4,10,d69gl5,Cleonus aquila,"Fahraeus, 1842",species,,Cleonus,,aquila,,,,f,,{},{},,{Fahraeus},{},1842,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-3,1000,,34,3,p6b_68,Actinoscytina belmontensis,"Tillyard, 1926",species,,Actinoscytina,,belmontensis,,,,f,,{},{},,{Tillyard},{},1926,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-20,1000,,24,20,m.rzlw,Afrotyphlops schlegelii subsp. schlegelii,"(Peters, 1860)",subspecies,,Afrotyphlops,,schlegelii,schlegelii,,,f,,{Peters},{},1860,{},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-54,1000,,55,54,alzkle,Athyrium pectinatum,(Wall. ex Mett.) Bedd.,species,,Athyrium,,pectinatum,,,,f,,{Mett.},{Wall.},,{Bedd.},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-43,1000,,32,43,9.e96m,Actiniopteris australis,(L.fil.) Link,species,,Actiniopteris,,australis,,,,f,,{L.fil.},{},,{Link},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-a1,1000,,2,a1,_.vy.$,Testum acceptum,,species,,Testum,,acceptum,,,,f,,{},{},,{},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-60,1000,,26,60,elka6y,Cyclosorus cuneatus,Ching ex Shing,species,,Cyclosorus,,cuneatus,,,,f,,{},{},,{Shing},{Ching},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-14,1000,,57,14,$.8jlj,Cleonus tunbergi,1842,species,,Cleonus,,tunbergi,,,,f,,{},{},,{},{},1842,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-h2,1000,,27,h2,_6qz6k,Plantae,,kingdom,Plantae,,,,,,,f,,{},{},,{},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-16,1000,,30,16,ql-e65,Euops nigra,"Kôno, 1927",species,,Euops,,nigra,,,,f,,{},{},,{Kôno},{},1927,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-58,1000,,1,58,j6yqlr,Botrypus virginianus,(L.) Michx.,species,,Botrypus,,virginianus,,,,f,,{L.},{},,{Michx.},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-a3,1000,,29,a3,m.5wp.,Testitus acceptus,,species,,Testitus,,acceptus,,,,f,,{},{},,{},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-41,1000,,56,41,+.g--l,Adiantum aethiopicum,L.,species,,Adiantum,,aethiopicum,,,,f,,{},{},,{L.},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-56,1000,,28,56,q.-9e.,Athyrium pectinatum,Fée,species,,Athyrium,,pectinatum,,,,f,,{},{},,{Fée},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-18,1000,,3,18,86xml3,Flatosaria stali,"(Haglund, 1899)",species,,Flatosaria,,stali,,,,f,,{Haglund},{},1899,{},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-1,1000,,54,1,3l3-lq,Actinomyces neuii,"Funke & al., 1994",species,,Actinomyces,,neuii,,,,f,,{},{},,"{Funke,al.}",{},1994,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-12,1000,,31,12,g678lj,Cleonus pudicus,"Ménétriés, 1849",species,,Cleonus,,pudicus,,,,f,,{},{},,{Ménétriés},{},1849,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-29,1000,,25,29,wldby.,Malayopython reticulatus subsp. jampeanus,"(Auliya & al., 2002)",subspecies,,Malayopython,,reticulatus,jampeanus,,,f,,"{Auliya,al.}",{},2002,{},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-45,1000,,5,45,5.m3el,Acrostichum aureum,Cav.,species,,Acrostichum,,aureum,,,,f,,{},{},,{Cav.},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-52,1000,,33,52,w6pqal,Asplenium shikokianum,Mak.,species,,Asplenium,,shikokianum,,,,f,,{},{},,{Mak.},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-22,1000,,52,22,olamld,Anolis ricordii subsp. leberi,"Williams, 1965",subspecies,,Anolis,,ricordii,leberi,,,f,,{},{},,{Williams},{},1965,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-5,1000,,7,5,w.4j.+,Brachytarsus nebulosus,,species,,Brachytarsus,,nebulosus,,,,f,,{},{},,{},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-8,1000,,23,8,nl_ql+,Ceropegia juttae,(Dinter) Bruyns,species,,Ceropegia,,juttae,,,,f,,{Dinter},{},,{Bruyns},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-25,1000,,35,25,5lj4l4,Aspidoscelis deppii subsp. schizophorus,"(Brandon & Smith, 1968)",subspecies,,Aspidoscelis,,deppii,schizophorus,,,f,,"{Brandon,Smith}",{},1968,{},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-49,1000,,50,49,a.z+kl,Adiantum fructuosum,Kunze,species,,Adiantum,,fructuosum,,,,f,,{},{},,{Kunze},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-48,1000,,21,48,8lx8m6,Adiantum fragile,Sw.,species,,Adiantum,,fragile,,,,f,,{},{},,{Sw.},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-26,1000,,9,26,5lj4l4,Aspidoscelis deppii subsp. schizophorus,,subspecies,,Aspidoscelis,,deppii,schizophorus,,,f,,{},{},,{},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-9,1000,,48,9,d69gl5,Cleonus aquila,"Fåhraeus, 1842",species,,Cleonus,,aquila,,,,f,,{},{},,{Fåhraeus},{},1842,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-4,1000,,37,4,p6b_68,Actinoscytina belmontensis,"Tillyard, 1926",species,,Actinoscytina,,belmontensis,,,,f,,{},{},,{Tillyard},{},1926,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-21,1000,,19,21,m.rzlw,Afrotyphlops schlegeli subsp. schlegeli,"(Peters, 1860)",subspecies,,Afrotyphlops,,schlegeli,schlegeli,,,f,,{Peters},{},1860,{},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-53,1000,,11,53,3.3w-l,Athyrium pectinatum,(Wall. ex Hope) C.Presl,species,,Athyrium,,pectinatum,,,,f,,{Hope},{Wall.},,{C.Presl},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-44,1000,,39,44,gl7x86,Actiniopteris australis,Ettingsh.,species,,Actiniopteris,,australis,,,,f,,{},{},,{Ettingsh.},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-30,1000,,46,30,wldby.,Malayopython reticulatus subsp. jampeanus,"(Auliya, 2002)",subspecies,,Malayopython,,reticulatus,jampeanus,,,f,,{Auliya},{},2002,{},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-13,1000,,13,13,$.8jlj,Cleonus thunbergi,1842,species,,Cleonus,,thunbergi,,,,f,,{},{},,{},{},1842,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-f1,1000,,17,f1,y6no5l,Asteraceae,,family,Asteraceae,,,,,,,f,,{},{},,{},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-17,1000,,41,17,ql-e65,Euops nigrum,"Kono, 1927",species,,Euops,,nigrum,,,,f,,{},{},,{Kono},{},1927,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-57,1000,,43,57,b.$9_.,Botrypus virginianus,(L.) Holub,species,,Botrypus,,virginianus,,,,f,,{L.},{},,{Holub},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-40,1000,,15,40,dl+3n6,Adiantum aethiopicum,Hook. ex Bak.,species,,Adiantum,,aethiopicum,,,,f,,{},{},,{Bak.},{Hook.},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-m1,1000,,15,m1,,Achillea asplenifolia,Vent.,species_aggregate,,Achillea,,asplenifolia,,,,f,,{},{},,{Vent.},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-m2,1000,,15,m2,,Achillea asplenifolia,,species_aggregate,,Achillea,,asplenifolia,,,,f,,{},{},,{},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-m3,1000,,15,m3,,Achillea nigra,Vent.,species,,Achillea,,nigra,,,,f,,{},{},,{Vent.},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
-m4,1000,,15,m4,,Achillea nigra,,species,,Achillea,,nigra,,,,f,,{},{},,{},{},,,,,,,0,0,,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+id,dataset_key,sector_key,verbatim_key,homotypic_name_id,name_index_id,scientific_name,authorship,rank,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,appended_phrase,candidatus,notho,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,published_in_id,published_in_page,code,nom_status,origin,type,webpage,remarks,created,created_by,modified,modified_by
+h1,1000,,44,h1,+lg-6p,Animalia,,kingdom,Animalia,,,,,,,f,,{},{},,{},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+15,1000,,14,15,ql-e65,Euops nigra,"Kono, 1927",species,,Euops,,nigra,,,,f,,{},{},,{Kono},{},1927,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+59,1000,,45,59,w6dy6k,Cyclosorus cuneatus,(C.Chr.) Ching,species,,Cyclosorus,,cuneatus,,,,f,,{C.Chr.},{},,{Ching},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+a2,1000,,42,a2,5lme.7,Testata accepta,,species,,Testata,,accepta,,,,f,,{},{},,{},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+42,1000,,12,42,w.pa.b,Adiantum aethiopicum,Thunb.,species,,Adiantum,,aethiopicum,,,,f,,{},{},,{Thunb.},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+55,1000,,16,55,alzkle,Athyrium pectinatum,Bedd.,species,,Athyrium,,pectinatum,,,,f,,{},{},,{Bedd.},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+19,1000,,47,19,86xml3,Flatosaria ståli,"(Haglund, 1899)",species,,Flatosaria,,ståli,,,,f,,{Haglund},{},1899,{},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+2,1000,,10,2,3l3-lq,Actinomyces neui,"Funke & al., 1994",species,,Actinomyces,,neui,,,,f,,{},{},,"{Funke,al.}",{},1994,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+11,1000,,40,11,g678lj,Cleonus pudicus,"Ménetriés, 1849",species,,Cleonus,,pudicus,,,,f,,{},{},,{Ménetriés},{},1849,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+28,1000,,18,28,y.n5.n,Garthia gaudichaudii subsp. dorbignii,"(Duméril & Bibron, 1836)",subspecies,,Garthia,,gaudichaudii,dorbignii,,,f,,"{Duméril,Bibron}",{},1836,{},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+46,1000,,49,46,bl$_6d,Acrostichum aureum,L.,species,,Acrostichum,,aureum,,,,f,,{},{},,{L.},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+51,1000,,38,51,d6+nlj,Asplenium shikokianum,Bak.,species,,Asplenium,,shikokianum,,,,f,,{},{},,{Bak.},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+23,1000,,8,23,olamld,Anolis ricordii subsp. leberi,"Williams, 1965",subspecies,,Anolis,,ricordii,leberi,,,f,,{},{},,{Williams},{},1965,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+6,1000,,51,6,w.4j.+,Brachytarsus nebulosus,,species,,Brachytarsus,,nebulosus,,,,f,,{},{},,{},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+7,1000,,20,7,nl_ql+,Ceropegia juttae,(Dinter) Bruyns,species,,Ceropegia,,juttae,,,,f,,{Dinter},{},,{Bruyns},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+24,1000,,36,24,5lj4l4,Aspidoscelis deppii subsp. schizophorus,"(Smith & Brandon, 1968)",subspecies,,Aspidoscelis,,deppii,schizophorus,,,f,,"{Smith,Brandon}",{},1968,{},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+50,1000,,6,50,+6w3ln,Adiantum fructuosum,Poepp. ex Spreng.,species,,Adiantum,,fructuosum,,,,f,,{},{},,{Spreng.},{Poepp.},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+47,1000,,22,47,_.oj6-,Adiantum fragile,Boj.,species,,Adiantum,,fragile,,,,f,,{},{},,{Boj.},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+27,1000,,53,27,y.n5.n,Garthia gaudichaudii subsp. dorbignii,"(Duméril & Bibron, 1836)",subspecies,,Garthia,,gaudichaudii,dorbignii,,,f,,"{Duméril,Bibron}",{},1836,{},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+10,1000,,4,10,d69gl5,Cleonus aquila,"Fahraeus, 1842",species,,Cleonus,,aquila,,,,f,,{},{},,{Fahraeus},{},1842,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+3,1000,,34,3,p6b_68,Actinoscytina belmontensis,"Tillyard, 1926",species,,Actinoscytina,,belmontensis,,,,f,,{},{},,{Tillyard},{},1926,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+20,1000,,24,20,m.rzlw,Afrotyphlops schlegelii subsp. schlegelii,"(Peters, 1860)",subspecies,,Afrotyphlops,,schlegelii,schlegelii,,,f,,{Peters},{},1860,{},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+54,1000,,55,54,alzkle,Athyrium pectinatum,(Wall. ex Mett.) Bedd.,species,,Athyrium,,pectinatum,,,,f,,{Mett.},{Wall.},,{Bedd.},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+43,1000,,32,43,9.e96m,Actiniopteris australis,(L.fil.) Link,species,,Actiniopteris,,australis,,,,f,,{L.fil.},{},,{Link},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+a1,1000,,2,a1,_.vy.$,Testum acceptum,,species,,Testum,,acceptum,,,,f,,{},{},,{},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+60,1000,,26,60,elka6y,Cyclosorus cuneatus,Ching ex Shing,species,,Cyclosorus,,cuneatus,,,,f,,{},{},,{Shing},{Ching},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+14,1000,,57,14,$.8jlj,Cleonus tunbergi,1842,species,,Cleonus,,tunbergi,,,,f,,{},{},,{},{},1842,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+h2,1000,,27,h2,_6qz6k,Plantae,,kingdom,Plantae,,,,,,,f,,{},{},,{},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+16,1000,,30,16,ql-e65,Euops nigra,"Kôno, 1927",species,,Euops,,nigra,,,,f,,{},{},,{Kôno},{},1927,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+58,1000,,1,58,j6yqlr,Botrypus virginianus,(L.) Michx.,species,,Botrypus,,virginianus,,,,f,,{L.},{},,{Michx.},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+a3,1000,,29,a3,m.5wp.,Testitus acceptus,,species,,Testitus,,acceptus,,,,f,,{},{},,{},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+41,1000,,56,41,+.g--l,Adiantum aethiopicum,L.,species,,Adiantum,,aethiopicum,,,,f,,{},{},,{L.},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+56,1000,,28,56,q.-9e.,Athyrium pectinatum,Fée,species,,Athyrium,,pectinatum,,,,f,,{},{},,{Fée},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+18,1000,,3,18,86xml3,Flatosaria stali,"(Haglund, 1899)",species,,Flatosaria,,stali,,,,f,,{Haglund},{},1899,{},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+1,1000,,54,1,3l3-lq,Actinomyces neuii,"Funke & al., 1994",species,,Actinomyces,,neuii,,,,f,,{},{},,"{Funke,al.}",{},1994,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+12,1000,,31,12,g678lj,Cleonus pudicus,"Ménétriés, 1849",species,,Cleonus,,pudicus,,,,f,,{},{},,{Ménétriés},{},1849,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+29,1000,,25,29,wldby.,Malayopython reticulatus subsp. jampeanus,"(Auliya & al., 2002)",subspecies,,Malayopython,,reticulatus,jampeanus,,,f,,"{Auliya,al.}",{},2002,{},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+45,1000,,5,45,5.m3el,Acrostichum aureum,Cav.,species,,Acrostichum,,aureum,,,,f,,{},{},,{Cav.},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+52,1000,,33,52,w6pqal,Asplenium shikokianum,Mak.,species,,Asplenium,,shikokianum,,,,f,,{},{},,{Mak.},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+22,1000,,52,22,olamld,Anolis ricordii subsp. leberi,"Williams, 1965",subspecies,,Anolis,,ricordii,leberi,,,f,,{},{},,{Williams},{},1965,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+5,1000,,7,5,w.4j.+,Brachytarsus nebulosus,,species,,Brachytarsus,,nebulosus,,,,f,,{},{},,{},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+8,1000,,23,8,nl_ql+,Ceropegia juttae,(Dinter) Bruyns,species,,Ceropegia,,juttae,,,,f,,{Dinter},{},,{Bruyns},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+25,1000,,35,25,5lj4l4,Aspidoscelis deppii subsp. schizophorus,"(Brandon & Smith, 1968)",subspecies,,Aspidoscelis,,deppii,schizophorus,,,f,,"{Brandon,Smith}",{},1968,{},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+49,1000,,50,49,a.z+kl,Adiantum fructuosum,Kunze,species,,Adiantum,,fructuosum,,,,f,,{},{},,{Kunze},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+48,1000,,21,48,8lx8m6,Adiantum fragile,Sw.,species,,Adiantum,,fragile,,,,f,,{},{},,{Sw.},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+26,1000,,9,26,5lj4l4,Aspidoscelis deppii subsp. schizophorus,,subspecies,,Aspidoscelis,,deppii,schizophorus,,,f,,{},{},,{},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+9,1000,,48,9,d69gl5,Cleonus aquila,"Fåhraeus, 1842",species,,Cleonus,,aquila,,,,f,,{},{},,{Fåhraeus},{},1842,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+4,1000,,37,4,p6b_68,Actinoscytina belmontensis,"Tillyard, 1926",species,,Actinoscytina,,belmontensis,,,,f,,{},{},,{Tillyard},{},1926,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+21,1000,,19,21,m.rzlw,Afrotyphlops schlegeli subsp. schlegeli,"(Peters, 1860)",subspecies,,Afrotyphlops,,schlegeli,schlegeli,,,f,,{Peters},{},1860,{},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+53,1000,,11,53,3.3w-l,Athyrium pectinatum,(Wall. ex Hope) C.Presl,species,,Athyrium,,pectinatum,,,,f,,{Hope},{Wall.},,{C.Presl},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+44,1000,,39,44,gl7x86,Actiniopteris australis,Ettingsh.,species,,Actiniopteris,,australis,,,,f,,{},{},,{Ettingsh.},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+30,1000,,46,30,wldby.,Malayopython reticulatus subsp. jampeanus,"(Auliya, 2002)",subspecies,,Malayopython,,reticulatus,jampeanus,,,f,,{Auliya},{},2002,{},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+13,1000,,13,13,$.8jlj,Cleonus thunbergi,1842,species,,Cleonus,,thunbergi,,,,f,,{},{},,{},{},1842,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+f1,1000,,17,f1,y6no5l,Asteraceae,,family,Asteraceae,,,,,,,f,,{},{},,{},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+17,1000,,41,17,ql-e65,Euops nigrum,"Kono, 1927",species,,Euops,,nigrum,,,,f,,{},{},,{Kono},{},1927,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+57,1000,,43,57,b.$9_.,Botrypus virginianus,(L.) Holub,species,,Botrypus,,virginianus,,,,f,,{L.},{},,{Holub},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+40,1000,,15,40,dl+3n6,Adiantum aethiopicum,Hook. ex Bak.,species,,Adiantum,,aethiopicum,,,,f,,{},{},,{Bak.},{Hook.},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+m1,1000,,15,m1,,Achillea asplenifolia,Vent.,species_aggregate,,Achillea,,asplenifolia,,,,f,,{},{},,{Vent.},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+m2,1000,,15,m2,,Achillea asplenifolia,,species_aggregate,,Achillea,,asplenifolia,,,,f,,{},{},,{},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+m3,1000,,15,m3,,Achillea nigra,Vent.,species,,Achillea,,nigra,,,,f,,{},{},,{Vent.},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
+m4,1000,,15,m4,,Achillea nigra,,species,,Achillea,,nigra,,,,f,,{},{},,{},{},,,,,,,0,0,,,2019-04-30 09:40:50.757379,10,2019-04-30 09:40:50.757379,10
