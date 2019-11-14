@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
-
+  
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageIndexer.class);
 
   // Set to true for extra statistics (make sure it's false in production)

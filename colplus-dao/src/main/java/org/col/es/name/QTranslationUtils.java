@@ -63,7 +63,7 @@ public class QTranslationUtils {
             .should(matchSearchTerm(GENUS_FIELD, termWN).withBoost(1.02))
             .should(matchSearchTerm(SPECIES_FIELD, termSN).withBoost(1.05))
             .should(matchSearchTerm(SUBSPECIES_FIELD, termSN).withBoost(1.08)))
-        .subquery(matchSearchTerm(SN_FIELD, terms[0]).withBoost(0.8));
+        .subquery(matchSearchPhrase(SN_FIELD, terms[0]).withBoost(0.8));
   }
 
   private static Query checkEpithetPairs(String[] terms) {
