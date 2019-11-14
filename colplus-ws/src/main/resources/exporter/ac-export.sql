@@ -168,7 +168,7 @@ COPY (
     SELECT NULL AS record_id, 
         id AS name_code, 
         CASE WHEN lfz=0 THEN 'brackish' WHEN lfz=1 THEN 'freshwater' WHEN lfz=2 THEN 'marine' WHEN lfz=3 THEN 'terrestrial' END AS lifezone, 
-        coalesce(dataset_key, 1500) - 1000 AS database_id
+        coalesce(subject_dataset_key, 1500) - 1000 AS database_id
     FROM lifezones_x
 ) TO 'lifezone.csv';
 

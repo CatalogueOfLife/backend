@@ -37,7 +37,8 @@ public class AcExporterTest {
     FileUtils.deleteQuietly(cfg.downloadDir);
     FileUtils.deleteQuietly(cfg.normalizer.scratchDir);
     if (arch != null) {
-      FileUtils.deleteQuietly(arch);
+      System.out.println(arch.getAbsolutePath());
+      //FileUtils.deleteQuietly(arch);
     }
   }
   

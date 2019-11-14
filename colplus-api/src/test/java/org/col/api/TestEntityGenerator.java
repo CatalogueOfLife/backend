@@ -426,7 +426,8 @@ public class TestEntityGenerator {
     n.setAppendedPhrase("ACTT 675213");
     n.setWebpage(URI.create("http://gbif.org"));
     n.setNotho(NamePart.SPECIFIC);
-    n.setFossil(true);
+    n.setTypeStatus(TypeStatus.HOLOTYPE);
+    n.setTypeMaterial("UGANDA: adult ♂, CW 21.5, CL 14.4, CH 7.4, FW 6.5 mm, Imatong Mountains, near border with South Sudan (3.79° N, 32.87° E), at 2,134 m asl, 11 Aug. 1955, L.C. Beadle (NHM 1955.11.8.26–27).");
     n.setRank(rank);
     n.setOrigin(Origin.SOURCE);
     n.setType(NameType.SCIENTIFIC);
