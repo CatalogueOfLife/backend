@@ -360,11 +360,13 @@ public class InterpreterBase {
     nat.getName().setId(id);
     nat.getName().setVerbatimKey(v.getId());
     nat.getName().setOrigin(Origin.SOURCE);
-    nat.getName().setWebpage(SafeParser.parse(UriParser.PARSER, link).orNull());
+    nat.getName().setWebpage(parse(UriParser.PARSER, link).orNull());
+    nat.getName().setTypeMaterial(typeMaterial);
+    nat.getName().setTypeStatus(parse(TypeStatusParser.PARSER, typeStatus).orNull(Issue.TYPE_STATUS_INVALID, v));
     // name status can be explicitly given or as part of the name remarks
-    nat.getName().setNomStatus(SafeParser.parse(NomStatusParser.PARSER, nomStatus).orElse(
-        SafeParser.parse(NomStatusParser.PARSER, nat.getName().getRemarks()).orNull()
-        , Issue.NOMENCLATURAL_STATUS_INVALID, v));
+    nat.getName().setNomStatus(parse(NomStatusParser.PARSER, nomStatus).orElse(
+        parse(NomStatusParser.PARSER, nat.getName().getRemarks()).orNull(), Issue.NOMENCLATURAL_STATUS_INVALID, v)
+    );
     // applies default dataset code if we cannot find or parse any
     // Always make sure this happens BEFORE we update the canonical scientific name
     nat.getName().setCode(code);

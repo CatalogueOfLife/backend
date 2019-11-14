@@ -109,6 +109,9 @@ public enum Issue {
   NOMENCLATURAL_CODE_INVALID(NAME, Level.ERROR,
       "dwc:nomenclaturalCode could not be interpreted"),
   
+  TYPE_STATUS_INVALID(NAME, Level.WARNING,
+      "typeStatus could not be interpreted"),
+
   BASIONYM_AUTHOR_MISMATCH(NAME, Level.ERROR,
       "A recombination with a basionym authorship which does not match the authorship of the linked basionym"),
   

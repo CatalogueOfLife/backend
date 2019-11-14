@@ -184,8 +184,8 @@ public class ColdpInterpreter extends InterpreterBase {
         v.get(ColdpTerm.code), v.get(ColdpTerm.status),
         v.get(ColdpTerm.typeStatus), v.get(ColdpTerm.typeMaterial),
         v.get(ColdpTerm.link), v.get(ColdpTerm.remarks), v);
-    // publishedIn & typeReferenceId
     if (opt.isPresent()) {
+      // publishedIn & typeReferenceId
       Name n = opt.get().getName();
       setReference(v, ColdpTerm.typeReferenceId, n::setTypeReferenceId);
       setReference(v, ColdpTerm.publishedInID, rid -> {
@@ -193,6 +193,9 @@ public class ColdpInterpreter extends InterpreterBase {
           n.setPublishedInPage(v.get(ColdpTerm.publishedInPage));
           n.setPublishedInYear(parseYear(ColdpTerm.publishedInYear, v));
       });
+      if (v.hasTerm(ColdpTerm.original)) {
+        // TODO: what shall we do with the original flag???
+      }
     }
     return opt.map(NeoName::new);
   }
