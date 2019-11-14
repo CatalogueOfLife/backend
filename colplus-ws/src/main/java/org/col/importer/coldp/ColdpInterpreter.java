@@ -181,21 +181,18 @@ public class ColdpInterpreter extends InterpreterBase {
         v.get(ColdpTerm.rank), v.get(ColdpTerm.scientificName), v.get(ColdpTerm.authorship),
         v.get(ColdpTerm.genus), v.get(ColdpTerm.infragenericEpithet), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet),
         v.get(ColdpTerm.cultivarEpithet), v.get(ColdpTerm.appendedPhrase),
-        v.get(ColdpTerm.code), v.get(ColdpTerm.status), v.get(ColdpTerm.link), v.get(ColdpTerm.remarks), v);
-    // publishedIn
+        v.get(ColdpTerm.code), v.get(ColdpTerm.status),
+        v.get(ColdpTerm.typeStatus), v.get(ColdpTerm.typeMaterial),
+        v.get(ColdpTerm.link), v.get(ColdpTerm.remarks), v);
+    // publishedIn & typeReferenceId
     if (opt.isPresent()) {
       Name n = opt.get().getName();
-      if (v.hasTerm(ColdpTerm.publishedInID)) {
-        Reference ref = refFactory.find(v.get(ColdpTerm.publishedInID), null);
-        if (ref != null) {
-          n.setPublishedInId(ref.getId());
+      setReference(v, ColdpTerm.typeReferenceId, n::setTypeReferenceId);
+      setReference(v, ColdpTerm.publishedInID, rid -> {
+          n.setPublishedInId(rid);
           n.setPublishedInPage(v.get(ColdpTerm.publishedInPage));
           n.setPublishedInYear(parseYear(ColdpTerm.publishedInYear, v));
-        } else {
-          LOG.info("ReferenceID {} not existing but referred from Name file line {}", v.get(ColdpTerm.publishedInID), v.fileLine());
-          v.addIssue(Issue.REFERENCE_ID_INVALID);
-        }
-      }
+      });
     }
     return opt.map(NeoName::new);
   }
@@ -209,19 +206,7 @@ public class ColdpInterpreter extends InterpreterBase {
   }
   
   private void setReference(Referenced obj, VerbatimRecord v) {
-    if (v.hasAny(ColdpTerm.referenceID, ColdpTerm.publishedInID)) {
-      Reference r = refFactory.find(v.getFirstRaw(ColdpTerm.referenceID, ColdpTerm.publishedInID), null);
-      if (r != null) {
-        obj.setReferenceId(r.getId());
-      } else {
-        LOG.info("ReferenceID {} not existing but referred from {} {}",
-            v.get(ColdpTerm.referenceID),
-            obj.getClass().getSimpleName(),
-            v.fileLine()
-        );
-        v.addIssue(Issue.REFERENCE_ID_INVALID);
-      }
-    }
+    super.setReference(v, ColdpTerm.referenceID, obj::setReferenceId);
   }
   
 }

@@ -193,6 +193,7 @@ public class DwcInterpreter extends InterpreterBase {
         v.getFirst(GbifTerm.genericName, DwcTerm.genus), v.get(DwcTerm.subgenus),
         v.get(DwcTerm.specificEpithet), v.get(DwcTerm.infraspecificEpithet), null, null,
         v.get(DwcTerm.nomenclaturalCode), v.get(DwcTerm.nomenclaturalStatus),
+        v.get(DwcTerm.typeStatus), null,
         v.getRaw(DcTerm.references), v.get(DwcTerm.nomenclaturalStatus), v);
     
     // publishedIn

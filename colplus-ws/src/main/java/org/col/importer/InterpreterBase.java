@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.Year;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
@@ -58,6 +59,21 @@ public class InterpreterBase {
       return false;
     }
     return true;
+  }
+  
+  protected Reference setReference(VerbatimRecord v, Term refIdTerm, Consumer<String> refIdConsumer){
+    Reference ref = null;
+    if (v.hasTerm(refIdTerm)) {
+      String rid = v.getRaw(refIdTerm);
+      ref = refFactory.find(rid, null);
+      if (ref == null) {
+        LOG.debug("ReferenceID {} not existing but referred from {} in file {} line {}", rid, refIdTerm.prefixedName(), v.getFile(), v.fileLine());
+        v.addIssue(Issue.REFERENCE_ID_INVALID);
+      } else {
+        refIdConsumer.accept(ref.getId());
+      }
+    }
+    return ref;
   }
   
   protected List<VernacularName> interpretVernacular(VerbatimRecord rec, BiConsumer<VernacularName, VerbatimRecord> addReference,
@@ -249,7 +265,9 @@ public class InterpreterBase {
   public Optional<NameAccordingTo> interpretName(final String id, final String vrank, final String sciname, final String authorship,
                                                  final String genus, final String infraGenus, final String species, final String infraspecies,
                                                  final String cultivar,final String phrase,
-                                                 String nomCode, String nomStatus, String link, String remarks, VerbatimRecord v) {
+                                                 String nomCode, String nomStatus,
+                                                 String typeStatus, String typeMaterial,
+                                                 String link, String remarks, VerbatimRecord v) {
     final boolean isAtomized = ObjectUtils.anyNotNull(genus, infraGenus, species, infraspecies);
     Name atom = new Name();
     atom.setGenus(genus);
