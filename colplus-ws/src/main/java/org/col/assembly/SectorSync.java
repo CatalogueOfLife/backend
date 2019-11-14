@@ -203,7 +203,7 @@ public class SectorSync extends SectorRunnable {
 
   private void processTree() {
     final Set<String> blockedIds = decisions.values().stream()
-        .filter(ed -> ed.getMode().equals(EditorialDecision.Mode.BLOCK))
+        .filter(ed -> ed.getMode().equals(EditorialDecision.Mode.BLOCK) && ed.getSubject().getId() != null)
         .map(ed -> ed.getSubject().getId())
         .collect(Collectors.toSet());
     try (SqlSession session = factory.openSession(false);
