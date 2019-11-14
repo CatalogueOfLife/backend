@@ -114,11 +114,15 @@ public class AssemblyResource {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public Integer release(@PathParam("catKey") int catKey, @Auth ColUser user) {
     requireDraft(catKey);
-
-    CatalogueRelease rel = CatalogueRelease.release(factory, exporter, diDao, catKey, user.getKey());
-    final int key = rel.getReleaseKey();
   
-    CompletableFuture.runAsync(rel, RELEASE_EXEC).thenApply(x -> {
+    if (release != null) {
+      throw new IllegalStateException("Release "+release.getSourceDatasetKey() + " to " + release.getReleaseKey() + " is already running");
+    }
+  
+    release = CatalogueRelease.release(factory, exporter, diDao, catKey, user.getKey());
+    final int key = release.getReleaseKey();
+  
+    CompletableFuture.runAsync(release, RELEASE_EXEC).thenApply(x -> {
       // clear release reference when job is done
       release = null;
       return x;
