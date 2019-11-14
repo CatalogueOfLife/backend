@@ -6,6 +6,7 @@ import javax.ws.rs.core.MediaType;
 
 import io.dropwizard.auth.Auth;
 import io.dropwizard.lifecycle.Managed;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.WsServerConfig;
@@ -139,6 +140,12 @@ public class AdminResource {
     } else {
       throw new IllegalArgumentException("Only all or datasetKey properties are supported");
     }
+  }
+  
+  @POST
+  @Path("/rematch")
+  public void rematch(RequestScope req, @Auth ColUser user) {
+    throw new NotImplementedException("Rematching names is not implemented yet");
   }
   
   class LogoJob implements Runnable {

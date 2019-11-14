@@ -15,6 +15,7 @@ import org.col.api.util.ObjectUtils;
 import org.col.api.vocab.MatchType;
 import org.col.api.vocab.NomStatus;
 import org.col.api.vocab.Origin;
+import org.col.api.vocab.TypeStatus;
 import org.col.common.tax.SciNameNormalizer;
 import org.gbif.nameparser.api.*;
 import org.gbif.nameparser.util.NameFormatter;
@@ -158,7 +159,27 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity 
    * The value is readonly!
    */
   private Integer publishedInYear;
-
+  
+  /**
+   * The status of the type material, e.g. holotype
+   * Type status should only be associated with the original name, not with a recombination.
+   */
+  private TypeStatus typeStatus;
+  
+  /**
+   * Material citation(s) of the type material, i.e. type specimens.
+   * The citation can include multiple specimens, e.g. in case of type series.
+   * The citation is ideally given in the verbatim form as it was used in the original publication of the name or the subsequent designation.
+   * Type material should only be associated with the original name, not with a recombination.
+   */
+  private String typeMaterial;
+  
+  /**
+   * A referenceID pointing to the Reference table indicating the publication of the type designation.
+   * Most often this is equivalent to the original publishedInID, but for subsequent designations the later reference can be cited.
+   */
+  private String typeReferenceId;
+  
   @Nonnull
   private Origin origin;
   
@@ -168,11 +189,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity 
   private NameType type;
   
   private URI webpage;
-  
-  /**
-   * true if the type specimen of the name is a fossil
-   */
-  private Boolean fossil;
   
   /**
    * Any informal note about the nomenclature of the name
@@ -215,7 +231,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity 
     this.origin = n.origin;
     this.type = n.type;
     this.webpage = n.webpage;
-    this.fossil = n.fossil;
     this.remarks = n.remarks;
   }
   
@@ -369,14 +384,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity 
   
   public void setHomotypicNameId(String homotypicNameId) {
     this.homotypicNameId = homotypicNameId;
-  }
-  
-  public Boolean getFossil() {
-    return fossil;
-  }
-  
-  public void setFossil(Boolean fossil) {
-    this.fossil = fossil;
   }
   
   public NomStatus getNomStatus() {
@@ -533,6 +540,30 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity 
   
   public void setNotho(NamePart notho) {
     this.notho = notho;
+  }
+  
+  public String getTypeMaterial() {
+    return typeMaterial;
+  }
+  
+  public void setTypeMaterial(String typeMaterial) {
+    this.typeMaterial = typeMaterial;
+  }
+  
+  public TypeStatus getTypeStatus() {
+    return typeStatus;
+  }
+  
+  public void setTypeStatus(TypeStatus typeStatus) {
+    this.typeStatus = typeStatus;
+  }
+  
+  public String getTypeReferenceId() {
+    return typeReferenceId;
+  }
+  
+  public void setTypeReferenceId(String typeReferenceId) {
+    this.typeReferenceId = typeReferenceId;
   }
   
   public String getRemarks() {
@@ -750,16 +781,18 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity 
         Objects.equals(publishedInId, name.publishedInId) &&
         Objects.equals(publishedInPage, name.publishedInPage) &&
         Objects.equals(publishedInYear, name.publishedInYear) &&
+        Objects.equals(typeStatus, name.typeStatus) &&
+        Objects.equals(typeMaterial, name.typeMaterial) &&
+        Objects.equals(typeReferenceId, name.typeReferenceId) &&
         origin == name.origin &&
         type == name.type &&
         Objects.equals(webpage, name.webpage) &&
-        Objects.equals(fossil, name.fossil) &&
         Objects.equals(remarks, name.remarks);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, homotypicNameId, nameIndexId, nameIndexMatchType, scientificName, authorship, authorshipNormalized, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, appendedPhrase, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, publishedInYear, origin, type, webpage, fossil, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, homotypicNameId, nameIndexId, nameIndexMatchType, scientificName, authorship, authorshipNormalized, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, appendedPhrase, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, publishedInYear, typeStatus, typeMaterial, typeReferenceId, origin, type, webpage, remarks);
   }
   
   @Override
