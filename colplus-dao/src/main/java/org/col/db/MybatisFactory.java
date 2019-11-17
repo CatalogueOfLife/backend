@@ -53,7 +53,6 @@ public class MybatisFactory {
     // aliases
     registerTypeAliases(mybatisCfg.getTypeAliasRegistry());
     
-    
     // type handler
     registerTypeHandlers(mybatisCfg.getTypeHandlerRegistry());
     

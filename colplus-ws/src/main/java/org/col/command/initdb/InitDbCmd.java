@@ -101,10 +101,9 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
       LOG.info("Create new database {}", cfg.db.database);
       st.execute("CREATE DATABASE  \"" + cfg.db.database + "\"" +
           " WITH ENCODING UTF8 LC_COLLATE 'C' LC_CTYPE 'C' OWNER " + cfg.db.user + " TEMPLATE template0");
-      
-      if (cfg.db.pganalyze) {
-        st.execute("CREATE EXTENSION IF NOT EXISTS pg_stat_statements");
-      }
+  
+      LOG.info("Use UTC timezone for {}", cfg.db.database);
+      st.execute("ALTER DATABASE  \"" + cfg.db.database + "\" SET timezone TO 'UTC'");
     }
     
     try (Connection con = cfg.db.connect()) {
