@@ -34,7 +34,7 @@
   <sql id="PROPS">
     #{verbatimKey},
     #{datasetKey},
-    #{type},
+    #{type}::NOMRELTYPE,
     #{nameId},
     #{relatedNameId},
     #{publishedInId},
@@ -70,7 +70,7 @@
     SELECT <include refid="SELECT" />
     FROM name_rel_${partition} nr
     WHERE nr.dataset_key = #{datasetKey}
-      AND nr.type=#{type}
+      AND nr.type=#{type}::NOMRELTYPE
       AND nr.name_id = #{nameId}
     ORDER BY nr.id
   </select>

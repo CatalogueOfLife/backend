@@ -39,7 +39,7 @@
       #{email},
       #{orcid},
       #{country},
-      #{roles, typeHandler=org.col.db.type2.RoleSetTypeHandler},
+      #{roles, typeHandler=org.col.db.type.RoleSetTypeHandler},
       #{settings, typeHandler=org.col.db.type2.HstoreMapTypeHandler}::hstore,
       #{lastLogin},
       #{deleted}
@@ -51,7 +51,7 @@
 
     <resultMap id="userResultMap" type="ColUser" autoMapping="true">
         <id property="key" column="key" />
-        <result property="roles" column="roles" typeHandler="org.col.db.type2.RoleSetTypeHandler"/>
+        <result property="roles" column="roles" typeHandler="org.col.db.type.RoleSetTypeHandler"/>
         <result property="settings" column="settings" typeHandler="org.col.db.type2.HstoreMapTypeHandler"/>
     </resultMap>
 

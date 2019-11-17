@@ -29,7 +29,7 @@
         #{file},
         #{type},
         #{terms, typeHandler=org.col.db.type2.TermMapTypeHandler}::jsonb,
-        #{issues, typeHandler=org.col.db.type2.IssueSetTypeHandler}::int[]
+        #{issues, typeHandler=org.col.db.type.IssueSetTypeHandler}::ISSUE[]
     </sql>
 
     <sql id="FROM">
@@ -60,7 +60,7 @@
             </if>
             <if test="issues != null and !issues.isEmpty()">
                 AND v.issues @>
-                <foreach item="issue" index="index" collection="issues" open="array[" separator="," close="]">${issue.ordinal()}</foreach>
+                <foreach item="issue" index="index" collection="issues" open="array[" separator="," close="]">'${issue.name()}'::ISSUE</foreach>
             </if>
             <if test="q != null">
                 AND v.doc @@ plainto_tsquery('simple2', #{q})
@@ -70,7 +70,7 @@
 
     <resultMap id="verbatimResultMap" type="VerbatimRecord" autoMapping="true">
         <result property="terms" column="terms" typeHandler="org.col.db.type2.TermMapTypeHandler"/>
-        <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
+        <result property="issues" column="issues" typeHandler="org.col.db.type.IssueSetTypeHandler" />
     </resultMap>
 
     <select id="count" resultType="integer">
@@ -130,7 +130,7 @@
     <update id="update" parameterType="VerbatimRecord" keyProperty="id">
         <include refid="org.col.db.Common.partitionByKey"/>
         UPDATE verbatim_${datasetKey}
-        SET issues = #{issues, typeHandler=org.col.db.type2.IssueSetTypeHandler}::int[]
+        SET issues = #{issues, typeHandler=org.col.db.type.IssueSetTypeHandler}::ISSUE[]
         WHERE id = #{key.id}
     </update>
 

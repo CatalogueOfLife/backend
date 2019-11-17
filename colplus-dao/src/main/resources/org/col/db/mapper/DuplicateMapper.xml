@@ -91,7 +91,7 @@
             </if>
         </if>
         <if test="ranks != null and !ranks.isEmpty()">
-            AND n.rank IN (<foreach collection="ranks" item="r" separator=",">#{r}::rank</foreach>)
+            AND n.rank IN (<foreach collection="ranks" item="r" separator=",">#{r}::RANK</foreach>)
         </if>
     </sql>
 
@@ -152,14 +152,14 @@
         <where>
             <include refid="commonWhereClause"/>
             <if test="status != null and !status.isEmpty()">
-                AND u.status IN (<foreach collection="status" item="st" separator=",">#{st}</foreach>)
+                AND u.status IN (<foreach collection="status" item="st" separator=",">#{st}::TAXONOMICSTATUS</foreach>)
             </if>
         </where>
         GROUP BY <include refid="keyCol" />
         HAVING <include refid="commonHavingClause"/>
         <if test="status != null and status.size() &gt; 1">
             <!-- make sure all requested status are covered at least once -->
-            AND array_agg(u.status) @> array[<foreach collection="status" item="st" separator=",">#{st}</foreach>]
+            AND array_agg(u.status) @> array[<foreach collection="status" item="st" separator=",">#{st}::TAXONOMICSTATUS</foreach>]
         </if>
         <if test="sectorKey != null">
             <!-- make sure at least one name comes from the requested sector -->

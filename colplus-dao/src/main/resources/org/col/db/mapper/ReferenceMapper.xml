@@ -68,7 +68,7 @@
                 </if>
                 <if test="req.issues != null and !req.issues.isEmpty()">
                     AND v.issues @>
-                    <foreach item="issue" index="index" collection="req.issues" open="array[" separator="," close="]">${issue.ordinal()}</foreach>
+                    <foreach item="issue" index="index" collection="req.issues" open="array[" separator="," close="]">'${issue.name()}'::ISSUE</foreach>
                 </if>
             </where>
         </if>

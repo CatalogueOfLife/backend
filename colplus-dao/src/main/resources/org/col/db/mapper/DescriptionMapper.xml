@@ -38,7 +38,7 @@
     #{obj.datasetKey},
     #{obj.verbatimKey},
     #{obj.category},
-    #{obj.format},
+    #{obj.format}::TEXTFORMAT,
     #{obj.description},
     #{obj.language},
     #{obj.referenceId},

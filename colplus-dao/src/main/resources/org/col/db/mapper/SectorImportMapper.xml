@@ -5,6 +5,7 @@
 <mapper namespace="org.col.db.mapper.SectorImportMapper">
 
     <sql id="SELECT">
+        si.state,
         si.type,
         si.sector_key,
         si.attempt,
@@ -13,6 +14,7 @@
     </sql>
 
     <sql id="COLS">
+        state,
         type,
         sector_key,
         attempt,
@@ -21,6 +23,7 @@
     </sql>
 
     <sql id="PROPS">
+        #{imp.state}::SECTORIMPORT_STATE,
         #{imp.type},
         #{imp.sectorKey},
         #{imp.attempt},
@@ -49,7 +52,7 @@
             <if test="states != null &amp;&amp; !states.isEmpty()">
                 AND si.state IN
                 <foreach item="state" collection="states" open="(" separator="," close=")">
-                    #{state}
+                    #{state}::SECTORIMPORT_STATE
                 </foreach>
             </if>
         </where>
@@ -130,7 +133,7 @@
         SELECT count(*) FROM name_usage_${datasetKey} WHERE is_synonym AND sector_key=${sectorKey}
     </select>
 
-    <select id="countIssues" resultType="IntCount">
+    <select id="countIssues" resultType="StringCount">
         WITH issues AS (
             SELECT vn.id, vn.issues
             FROM verbatim_${datasetKey} vn
@@ -154,40 +157,40 @@
     </select>
 
 
-    <select id="countDistributionsByGazetteer" resultType="IntCount">
+    <select id="countDistributionsByGazetteer" resultType="StringCount">
         SELECT gazetteer AS key, count(*) AS count
         FROM distribution_${datasetKey} x
             JOIN name_usage_${datasetKey} u ON u.id=x.taxon_id
         WHERE u.sector_key=${sectorKey}
         GROUP BY gazetteer
     </select>
-    <select id="countMediaByType" resultType="IntCount">
+    <select id="countMediaByType" resultType="StringCount">
         SELECT type AS key, count(*) AS count
         FROM media_${datasetKey} x
             JOIN name_usage_${datasetKey} u ON u.id=x.taxon_id
         WHERE u.sector_key=${sectorKey}
         GROUP BY type
     </select>
-    <select id="countNamesByType" resultType="IntCount">
+    <select id="countNamesByType" resultType="StringCount">
         SELECT type AS key, count(*) AS count
         FROM name_${datasetKey}
         WHERE sector_key=${sectorKey}
         GROUP BY type
     </select>
-    <select id="countNameRelationsByType" resultType="IntCount">
+    <select id="countNameRelationsByType" resultType="StringCount">
         SELECT r.type AS key, count(*) AS count
         FROM name_rel_${datasetKey} r
             JOIN name_${datasetKey} n ON r.name_id=n.id
         WHERE n.sector_key=${sectorKey}
         GROUP BY r.type
     </select>
-    <select id="countNamesByStatus" resultType="IntCount">
+    <select id="countNamesByStatus" resultType="StringCount">
         SELECT nom_status AS key, count(*) AS count
         FROM name_${datasetKey}
         WHERE sector_key=${sectorKey}
         GROUP BY nom_status
     </select>
-    <select id="countNamesByOrigin" resultType="IntCount">
+    <select id="countNamesByOrigin" resultType="StringCount">
         SELECT origin AS key, count(*) AS count
         FROM name_${datasetKey}
         WHERE sector_key=${sectorKey}
@@ -205,7 +208,7 @@
         WHERE NOT t.is_synonym AND t.sector_key=${sectorKey}
         GROUP BY n.rank
     </select>
-    <select id="countUsagesByStatus" resultType="IntCount">
+    <select id="countUsagesByStatus" resultType="StringCount">
         SELECT status AS key, count(*) AS count
         FROM name_usage_${datasetKey}
         WHERE sector_key=${sectorKey}

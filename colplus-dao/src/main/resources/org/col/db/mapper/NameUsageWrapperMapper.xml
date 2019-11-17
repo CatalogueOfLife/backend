@@ -5,7 +5,7 @@
 <mapper namespace="org.col.db.mapper.NameUsageWrapperMapper">
 
     <resultMap id="issueResultMap" type="NameUsageWrapper" autoMapping="true">
-        <result property="issues" column="issues" typeHandler="org.col.db.type2.IssueSetTypeHandler" />
+        <result property="issues" column="issues" typeHandler="org.col.db.type.IssueSetTypeHandler" />
     </resultMap>
 
 

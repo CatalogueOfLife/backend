@@ -9,11 +9,15 @@ import java.util.stream.Stream;
 import org.col.common.id.IdConverter;
 import org.col.common.text.StringUtils;
 
+/**
+ * Generator for string identifiers using backed by an integer sequence.
+ * Identifiers can have a shared prefix and are based on pure case sensitive latin alphanumerical characters.
+ */
 public class IdGenerator {
   private static final String availChars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
   private static final char PREFERRED_PREFIX = 'x';
   
-  private final Supplier<Integer> counter;
+  private final Supplier<Integer> intIdSupplier;
   private final IdConverter idConverter = IdConverter.LATIN32;
   private String prefix;
   
@@ -27,22 +31,22 @@ public class IdGenerator {
   
   public IdGenerator(String prefix, int start) {
     this.prefix = prefix;
-    counter = new AtomicInteger(start)::incrementAndGet;
+    intIdSupplier = new AtomicInteger(start)::incrementAndGet;
   }
   
   /**
-   * Uses a shared counter
+   * Uses a shared counter with no prefix
    */
-  public IdGenerator(Supplier<Integer> start) {
-    this("", start);
+  public IdGenerator(Supplier<Integer> intIdSupplier) {
+    this("", intIdSupplier);
   }
   
   /**
-   * Uses a shared counter
+   * Uses a shared counter with a custom prefix
    */
-  public IdGenerator(String prefix, Supplier<Integer> start) {
+  public IdGenerator(String prefix, Supplier<Integer> intIdSupplier) {
     this.prefix = prefix;
-    counter = start;
+    this.intIdSupplier = intIdSupplier;
   }
   
   private static String smallestNonExistingPrefix(Stream<String> existingIds) {
@@ -83,7 +87,7 @@ public class IdGenerator {
   }
   
   public String next() {
-    return id(counter.get());
+    return id(intIdSupplier.get());
   }
   
 }

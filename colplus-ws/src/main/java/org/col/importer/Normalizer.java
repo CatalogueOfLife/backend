@@ -261,7 +261,6 @@ public class Normalizer implements Callable<Boolean> {
       counts.put(mt, new AtomicInteger(0));
     }
     // track duplicates, map index name ids to first verbatim key
-    // if synonym negate the verbatim key to track status without needing more memory
     final Map<String, Integer> nameIds = new HashMap<>();
     store.names().all().forEach(nn -> {
       NameMatch m = index.match(nn.name, true, false);

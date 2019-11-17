@@ -8,7 +8,6 @@ import org.apache.ibatis.annotations.Param;
 import org.col.api.model.DatasetImport;
 import org.col.api.model.Page;
 import org.col.api.vocab.ImportState;
-import org.col.db.type2.IntCount;
 import org.col.db.type2.StringCount;
 import org.gbif.dwc.terms.Term;
 
@@ -50,18 +49,18 @@ public interface DatasetImportMapper {
   
   Integer countVernacular(@Param("key") int datasetKey);
   
-  List<IntCount> countDistributionsByGazetteer(@Param("key") int datasetKey);
+  List<StringCount> countDistributionsByGazetteer(@Param("key") int datasetKey);
   
-  List<IntCount> countIssues(@Param("key") int datasetKey);
-  List<IntCount> countMediaByType(@Param("key") int datasetKey);
-  List<IntCount> countNameRelationsByType(@Param("key") int datasetKey);
+  List<StringCount> countIssues(@Param("key") int datasetKey);
+  List<StringCount> countMediaByType(@Param("key") int datasetKey);
+  List<StringCount> countNameRelationsByType(@Param("key") int datasetKey);
   
-  List<IntCount> countNamesByOrigin(@Param("key") int datasetKey);
-  List<IntCount> countNamesByStatus(@Param("key") int datasetKey);
+  List<StringCount> countNamesByOrigin(@Param("key") int datasetKey);
+  List<StringCount> countNamesByStatus(@Param("key") int datasetKey);
   
-  List<IntCount> countNamesByType(@Param("key") int datasetKey);
+  List<StringCount> countNamesByType(@Param("key") int datasetKey);
   
-  List<IntCount> countUsagesByStatus(@Param("key") int datasetKey);
+  List<StringCount> countUsagesByStatus(@Param("key") int datasetKey);
   List<StringCount> countNamesByRank(@Param("key") int datasetKey);
   List<StringCount> countTaxaByRank(@Param("key") int datasetKey);
   List<StringCount> countVerbatimByType(@Param("key") int datasetKey);
