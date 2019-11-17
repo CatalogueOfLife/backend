@@ -20,11 +20,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.WsServerConfig;
 import org.col.api.model.Sector;
-import org.col.api.vocab.Datasets;
-import org.col.api.vocab.NomStatus;
-import org.col.api.vocab.Origin;
-import org.col.api.vocab.TaxonomicStatus;
-import org.col.api.vocab.Users;
+import org.col.api.vocab.*;
 import org.col.common.io.PathUtils;
 import org.col.common.tax.AuthorshipNormalizer;
 import org.col.common.tax.SciNameNormalizer;
@@ -197,6 +193,7 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
         .put("modified_by", Users.DB_INIT)
         .build());
     PgCopyUtils.copy(pgc, "estimate", "/org/col/db/draft/estimate.csv", ImmutableMap.<String, Object>builder()
+        .put("type", EstimateType.DESCRIBED_SPECIES_LIVING)
         .put("dataset_key", Datasets.DRAFT_COL)
         .put("created_by", Users.DB_INIT)
         .put("modified_by", Users.DB_INIT)

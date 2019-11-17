@@ -5,7 +5,12 @@
 --   commented out ids are ignored from ACEF dumps because we have a superior coldp archive already
 --------------------------
 
--- origin:  0=EXTERNAL, 1=UPLOADED, 2=MANAGED
+-- origin:  EXTERNAL, UPLOADED, MANAGED
+-- type:  NOMENCLATURAL, TAXONOMIC, ARTICLE, PERSONAL, OTU, CATALOGUE, THEMATIC, OTHER
+-- code:  BACTERIAL, BOTANICAL, CULTIVARS, VIRUS, ZOOLOGICAL
+-- data_format:  DWCA, ACEF, TCS, COLDP
+
+
 INSERT INTO dataset (key, origin, type, title, import_frequency, created_by, modified_by, data_format, data_access)
 SELECT x.id+1000, 'EXTERNAL', 'TAXONOMIC', 'GSD ' || x.id, 1, 0, 0, 'ACEF', 'https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/' || x.id || '.tar.gz'
 FROM (SELECT unnest(array[
@@ -178,16 +183,14 @@ FROM (SELECT unnest(array[
 99
 ]) AS id) AS x;
 
--- code:  http://api.col.plus/vocab/nomCode
---          0=bacterial, 1=botanical, 2=cultivars, 3=virus, 4=zoological
 
-UPDATE dataset SET code=1 WHERE key IN (
+UPDATE dataset SET code='BOTANICAL' WHERE key IN (
 	1015,1025,1036,1038,1040,1041,1045,1048,1066,1074,1097,1098,1163
 );
-UPDATE dataset SET code=3 WHERE key IN (
+UPDATE dataset SET code='VIRUS' WHERE key IN (
 	1014
 );
-UPDATE dataset SET code=4 WHERE key IN (
+UPDATE dataset SET code='ZOOLOGICAL' WHERE key IN (
 	1005,1006,1008,1009,1010,1011,1018,1020,1021,1022,1023,1026,1027,1029,1030,1031,1032,1034,1037,1039,1042,1044,
 	1046,1047,1049,1050,1051,1052,1054,1055,1057,1058,1059,1061,1062,1063,1065,1067,1068,1069,1070,1076,1078,
 	1080,1081,1082,1085,1086,1087,1088,1089,1090,1091,1092,1093,1094,1095,1096,1099,1100,1103,1104,1105,1106,
@@ -196,16 +199,16 @@ UPDATE dataset SET code=4 WHERE key IN (
 
 -- removed, old sources which we mark as deleted
 INSERT INTO dataset (key, origin, title, created_by, modified_by, deleted) VALUES 
-	('1016', 0, 'IOPI-GPC', 0, 0, now()),
-	('1041', 0, 'Systematic Myriapod Database', 0, 0, now()),
-	('1043', 0, 'lecypages', 0, 0, now()),
-	('1056', 0, 'lhd', 0, 0, now()),
-	('1060', 0, 'worms_proseriata-kalyptorhynchia', 0, 0, now()),
-	('1064', 0, 'solanaceae_source', 0, 0, now()),
-	('1117', 0, 'chenobase', 0, 0, now()),
-	('1135', 0, 'fada_turbellaria', 0, 0, now()),
-	('1159', 0, 'fada_copepoda', 0, 0, now()),
-	('1165', 0, 'faeu_turbellaria', 0, 0, now());
+	('1016', 'EXTERNAL', 'IOPI-GPC', 0, 0, now()),
+	('1041', 'EXTERNAL', 'Systematic Myriapod Database', 0, 0, now()),
+	('1043', 'EXTERNAL', 'lecypages', 0, 0, now()),
+	('1056', 'EXTERNAL', 'lhd', 0, 0, now()),
+	('1060', 'EXTERNAL', 'worms_proseriata-kalyptorhynchia', 0, 0, now()),
+	('1064', 'EXTERNAL', 'solanaceae_source', 0, 0, now()),
+	('1117', 'EXTERNAL', 'chenobase', 0, 0, now()),
+	('1135', 'EXTERNAL', 'fada_turbellaria', 0, 0, now()),
+	('1159', 'EXTERNAL', 'fada_copepoda', 0, 0, now()),
+	('1165', 'EXTERNAL', 'faeu_turbellaria', 0, 0, now());
 
 
 -- dataset titles, will be overwritten by actual titles in the archives
@@ -389,16 +392,6 @@ UPDATE dataset SET logo='https://github.com/Sp2000/colplus-repo/raw/master/logos
 -- NEW DATASETS
 --   since late 2018 managed in their own github repos
 --------------------------
-
--- for enums we use the int ordinal, i.e. array index starting with 0:
--- origin:  http://api.col.plus/vocab/datasetorigin
---          0=EXTERNAL, 1=UPLOADED, 2=MANAGED
--- type:  http://api.col.plus/vocab/datasettype
---          0=nomenclatural, 1=taxonomic, 2=article, 3=personal, 4=otu, 5=catalogue, 6=thematic, 7=other
--- code:  http://api.col.plus/vocab/nomCode
---          0=bacterial, 1=botanical, 2=cultivars, 3=virus, 4=zoological
--- data_format:  http://api.col.plus/vocab/dataformat
---          0=dwca, 1=acef, 2=tcs, 3=coldp
 
 -- use keys from range 1000-1500 for CoL GSD IDs+1000
 INSERT INTO dataset (key, origin, type, code, title, import_frequency, created_by, modified_by, data_format, data_access) VALUES

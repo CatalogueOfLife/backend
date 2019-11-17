@@ -116,16 +116,16 @@
                 )
             </if>
             <if test="req.code != null">
-                AND code=#{req.code}
+                AND code=#{req.code}::NOMCODE
             </if>
             <if test="req.type != null">
-                AND type=#{req.type}
+                AND type=#{req.type}::DATASETTYPE
             </if>
             <if test="req.contributesTo != null">
                 AND exists(select 1 from sector s WHERE dataset_key=#{req.contributesTo} AND s.subject_dataset_key=d.key)
             </if>
             <if test="req.format != null">
-                AND data_format=#{req.format}
+                AND data_format=#{req.format}::DATAFORMAT
             </if>
             <if test="req.modified != null">
                 AND di.finished > #{req.modified}

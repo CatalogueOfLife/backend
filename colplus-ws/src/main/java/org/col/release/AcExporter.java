@@ -175,7 +175,7 @@ public class AcExporter {
     for (Rank r : Rank.values()) {
       // exclude infrasp., see https://github.com/Sp2000/colplus-backend/issues/478
       if (r.isUncomparable()) continue;
-      pst.setString(1, r.name().toLowerCase());
+      pst.setString(1, r.name());
       pst.setString(2, r.getMarker());
       pst.execute();
     }
