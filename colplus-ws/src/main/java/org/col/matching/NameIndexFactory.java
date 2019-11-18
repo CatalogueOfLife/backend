@@ -30,7 +30,7 @@ public class NameIndexFactory {
       }
       
       @Override
-      public long size() {
+      public int size() {
         return 0;
       }
       
@@ -56,7 +56,8 @@ public class NameIndexFactory {
   
   public static NameIndex memory(SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) {
     LOG.info("Use volatile in memory names index");
-    return new NameIndexMapDB(DBMaker.memoryDB(), authorshipNormalizer, Datasets.NAME_INDEX, sqlFactory);
+    NameIndexStore store = new NameIndexMapDBStore(DBMaker.memoryDB());
+    return new NameIndexImpl(store, authorshipNormalizer, Datasets.NAME_INDEX, sqlFactory);
   }
 
   /**
@@ -72,7 +73,8 @@ public class NameIndexFactory {
     DBMaker.Maker maker = DBMaker
         .fileDB(location)
         .fileMmapEnableIfSupported();
-    return new NameIndexMapDB(maker, authorshipNormalizer, Datasets.NAME_INDEX, sqlFactory);
+    NameIndexStore store = new NameIndexMapDBStore(maker);
+    return new NameIndexImpl(store, authorshipNormalizer, Datasets.NAME_INDEX, sqlFactory);
   }
   
 }

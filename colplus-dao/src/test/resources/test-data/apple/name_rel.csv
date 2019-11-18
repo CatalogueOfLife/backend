@@ -1,2 +1,2 @@
 id,type,name_id,related_name_id
-1,0,name-2,name-3
+1,SPELLING_CORRECTION,name-2,name-3

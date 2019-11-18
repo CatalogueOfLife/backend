@@ -7,6 +7,7 @@
     <sql id="SELECT">
       dataset_key,
       attempt,
+      state,
       <include refid="org.col.db.mapper.DatasetImportMapper.metricsCols"/>,
       md5,
       download_uri,
@@ -17,7 +18,6 @@
     </sql>
 
     <sql id="metricsCols">
-      state,
       error,
       started,
       finished,
@@ -41,6 +41,7 @@
 
     <sql id="COLS">
       dataset_key,
+      state,
       <include refid="org.col.db.mapper.DatasetImportMapper.metricsCols"/>,
       md5,
       download_uri,
@@ -51,7 +52,6 @@
     </sql>
 
     <sql id="metricsProps">
-      #{imp.state},
       #{imp.error},
       #{imp.started},
       #{imp.finished},
@@ -75,6 +75,7 @@
 
     <sql id="PROPS">
       #{imp.datasetKey},
+      #{imp.state}::IMPORTSTATE,
       <include refid="org.col.db.mapper.DatasetImportMapper.metricsProps"/>,
       #{imp.md5},
       #{imp.downloadUri},
@@ -96,7 +97,7 @@
             <if test="states != null &amp;&amp; !states.isEmpty()">
                 AND state IN
                 <foreach item="state" index="idx" collection="states" open="(" separator="," close=")">
-                    #{state}
+                    #{state}::IMPORTSTATE
                 </foreach>
             </if>
         </where>
@@ -166,38 +167,38 @@
         SELECT count(*) FROM vernacular_name_${key}
     </select>
 
-    <select id="countDistributionsByGazetteer" resultType="IntCount">
+    <select id="countDistributionsByGazetteer" resultType="StringCount">
       SELECT gazetteer AS key, count(*) AS count
       FROM distribution_${key}
       GROUP BY gazetteer
     </select>
-    <select id="countIssues" resultType="IntCount">
+    <select id="countIssues" resultType="StringCount">
         SELECT iss AS key, count(*) AS count FROM (
          SELECT unnest(issues) iss from verbatim_${key}
         ) AS dis
         GROUP BY iss
     </select>
-    <select id="countMediaByType" resultType="IntCount">
+    <select id="countMediaByType" resultType="StringCount">
         SELECT type AS key, count(*) AS count
         FROM media_${key}
         GROUP BY type
     </select>
-    <select id="countNamesByType" resultType="IntCount">
+    <select id="countNamesByType" resultType="StringCount">
         SELECT type AS key, count(*) AS count
         FROM name_${key}
         GROUP BY type
     </select>
-    <select id="countNameRelationsByType" resultType="IntCount">
+    <select id="countNameRelationsByType" resultType="StringCount">
         SELECT type AS key, count(*) AS count
         FROM name_rel_${key}
         GROUP BY type
     </select>
-    <select id="countNamesByStatus" resultType="IntCount">
+    <select id="countNamesByStatus" resultType="StringCount">
         SELECT nom_status AS key, count(*) AS count
         FROM name_${key}
         GROUP BY nom_status
     </select>
-    <select id="countNamesByOrigin" resultType="IntCount">
+    <select id="countNamesByOrigin" resultType="StringCount">
         SELECT origin AS key, count(*) AS count
         FROM name_${key}
         GROUP BY origin
@@ -213,7 +214,7 @@
         WHERE NOT t.is_synonym
         GROUP BY n.rank
     </select>
-    <select id="countUsagesByStatus" resultType="IntCount">
+    <select id="countUsagesByStatus" resultType="StringCount">
         SELECT status AS key, count(*) AS count
         FROM name_usage_${key}
         GROUP BY status

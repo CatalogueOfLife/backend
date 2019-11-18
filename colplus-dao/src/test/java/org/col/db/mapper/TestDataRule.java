@@ -326,8 +326,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   }
   
   private String isSynonym(String[] row) {
-    int statusKey = Integer.valueOf(row[testData.taxStatusColumn]);
-    TaxonomicStatus ts = TaxonomicStatus.values()[statusKey];
+    TaxonomicStatus ts = TaxonomicStatus.valueOf(row[testData.taxStatusColumn]);
     return String.valueOf(ts.isSynonym());
   }
   

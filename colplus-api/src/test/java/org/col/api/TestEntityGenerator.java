@@ -558,7 +558,7 @@ public class TestEntityGenerator {
     rec.put(UnknownTerm.build("http://col.plus/terms/punk"),
         RandomUtils.randomLatinString(500 + RND.nextInt(2000)));
     rec.addIssue(Issue.ACCEPTED_NAME_MISSING);
-    rec.addIssue(Issue.POTENTIAL_VARIANT);
+    rec.addIssue(Issue.NAME_VARIANT);
     return rec;
   }
 
@@ -588,7 +588,7 @@ public class TestEntityGenerator {
   public static NameUsageWrapper newNameUsageTaxonWrapper() {
     NameUsageWrapper nuw = new NameUsageWrapper();
     nuw.setUsage(TAXON1);
-    EnumSet<Issue> issues = EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.POTENTIAL_VARIANT,
+    EnumSet<Issue> issues = EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.NAME_VARIANT,
         Issue.DISTRIBUTION_AREA_INVALID);
     nuw.setIssues(issues);
     nuw.setVernacularNames(
@@ -599,7 +599,7 @@ public class TestEntityGenerator {
   public static NameUsageWrapper newNameUsageSynonymWrapper() {
     NameUsageWrapper nuw = new NameUsageWrapper();
     nuw.setUsage(SYN2);
-    EnumSet<Issue> issues = EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.POTENTIAL_VARIANT,
+    EnumSet<Issue> issues = EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.NAME_VARIANT,
         Issue.DISTRIBUTION_AREA_INVALID);
     nuw.setIssues(issues);
     return nuw;

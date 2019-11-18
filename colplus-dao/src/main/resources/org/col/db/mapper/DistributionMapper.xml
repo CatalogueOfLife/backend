@@ -36,8 +36,8 @@
     #{obj.datasetKey},
     #{obj.verbatimKey},
     #{obj.area},
-    #{obj.gazetteer},
-    #{obj.status},
+    #{obj.gazetteer}::GAZETTEER,
+    #{obj.status}::DISTRIBUTIONSTATUS,
     #{obj.referenceId},
     #{obj.createdBy},
     #{obj.modifiedBy}

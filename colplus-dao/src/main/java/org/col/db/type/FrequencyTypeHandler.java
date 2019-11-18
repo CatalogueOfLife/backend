@@ -6,7 +6,7 @@ import org.col.api.vocab.Frequency;
 
 /**
  * MyBatis type handler for {@link Frequency}.
- * Converts the frequency into days forr easy comparison of intervals in SQL.
+ * Converts the frequency into days for easy comparison of intervals in SQL.
  * Null is converted to the WEEKLY enum entry.
  */
 @MappedTypes(Frequency.class)

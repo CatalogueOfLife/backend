@@ -45,6 +45,13 @@ public class DwcaInserter extends NeoInserter {
           u -> store.createNameAndUsage(u) != null
       );
   
+      // TODO: read type specimen extension and update name usage!
+      // http://rs.gbif.org/extension/gbif/1.0/typesandspecimen.xml
+      //updateEntities(reader, DwcTerm.Taxon,
+      //    inter::interpret,
+      //    u -> store.createNameAndUsage(u) != null
+      //);
+  
       insertNameRelations(reader, ColDwcTerm.NameRelations,
           inter::interpretNameRelations,
           DwcaTerm.ID,

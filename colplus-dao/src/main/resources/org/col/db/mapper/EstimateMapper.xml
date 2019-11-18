@@ -49,13 +49,13 @@
     #{target.id},
     #{target.name},
     #{target.authorship},
-    #{target.rank}::rank,
-    #{target.code},
+    #{target.rank}::RANK,
+    #{target.code}::NOMCODE,
     #{note},
     now(),
     #{modifiedBy},
     #{estimate},
-    #{type},
+    #{type}::ESTIMATETYPE,
     #{referenceId}
   </sql>
 

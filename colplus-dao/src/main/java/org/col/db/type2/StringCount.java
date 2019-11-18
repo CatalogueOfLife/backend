@@ -9,6 +9,10 @@ public class StringCount {
   public StringCount() {
   }
   
+  public StringCount(Enum key, Integer count) {
+    this(key.name(), count);
+  }
+  
   public StringCount(String key, Integer count) {
     this.key = key;
     this.count = count;

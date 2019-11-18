@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
+import org.apache.ibatis.type.TypeException;
 import org.col.api.model.SimpleName;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
@@ -16,7 +17,7 @@ import org.slf4j.LoggerFactory;
 public class SimpleNameArrayTypeHandler extends BaseTypeHandler<List<SimpleName>> {
   
   private static final Logger LOG = LoggerFactory.getLogger(SimpleNameArrayTypeHandler.class);
-  private static Pattern PARSER = Pattern.compile("^\\(([^,]+),([a-z_]+),(.*)\\)$");
+  private static Pattern PARSER = Pattern.compile("^\\(([^,]+),([A-Z_]+),(.*)\\)$");
   
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, List<SimpleName> parameter, JdbcType jdbcType) throws SQLException {
@@ -49,7 +50,7 @@ public class SimpleNameArrayTypeHandler extends BaseTypeHandler<List<SimpleName>
           cl.add(new SimpleName(m.group(1), m.group(3), rank));
         } else {
           // can that really be???
-          LOG.warn("Failed to parse {} to SimpleName", o);
+          throw new TypeException("Failed to parse "+o+" to SimpleName");
         }
       }
     }

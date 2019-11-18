@@ -5,9 +5,14 @@
 --   commented out ids are ignored from ACEF dumps because we have a superior coldp archive already
 --------------------------
 
--- origin:  0=EXTERNAL, 1=UPLOADED, 2=MANAGED
+-- origin:  EXTERNAL, UPLOADED, MANAGED
+-- type:  NOMENCLATURAL, TAXONOMIC, ARTICLE, PERSONAL, OTU, CATALOGUE, THEMATIC, OTHER
+-- code:  BACTERIAL, BOTANICAL, CULTIVARS, VIRUS, ZOOLOGICAL
+-- data_format:  DWCA, ACEF, TCS, COLDP
+
+
 INSERT INTO dataset (key, origin, type, title, import_frequency, created_by, modified_by, data_format, data_access)
-SELECT x.id+1000, 0, 1, 'GSD ' || x.id, 1, 0, 0, 1, 'https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/' || x.id || '.tar.gz'
+SELECT x.id+1000, 'EXTERNAL', 'TAXONOMIC', 'GSD ' || x.id, 1, 0, 0, 'ACEF', 'https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/' || x.id || '.tar.gz'
 FROM (SELECT unnest(array[
 10,
 100,
@@ -178,16 +183,14 @@ FROM (SELECT unnest(array[
 99
 ]) AS id) AS x;
 
--- code:  http://api.col.plus/vocab/nomCode
---          0=bacterial, 1=botanical, 2=cultivars, 3=virus, 4=zoological
 
-UPDATE dataset SET code=1 WHERE key IN (
+UPDATE dataset SET code='BOTANICAL' WHERE key IN (
 	1015,1025,1036,1038,1040,1041,1045,1048,1066,1074,1097,1098,1163
 );
-UPDATE dataset SET code=3 WHERE key IN (
+UPDATE dataset SET code='VIRUS' WHERE key IN (
 	1014
 );
-UPDATE dataset SET code=4 WHERE key IN (
+UPDATE dataset SET code='ZOOLOGICAL' WHERE key IN (
 	1005,1006,1008,1009,1010,1011,1018,1020,1021,1022,1023,1026,1027,1029,1030,1031,1032,1034,1037,1039,1042,1044,
 	1046,1047,1049,1050,1051,1052,1054,1055,1057,1058,1059,1061,1062,1063,1065,1067,1068,1069,1070,1076,1078,
 	1080,1081,1082,1085,1086,1087,1088,1089,1090,1091,1092,1093,1094,1095,1096,1099,1100,1103,1104,1105,1106,
@@ -196,16 +199,16 @@ UPDATE dataset SET code=4 WHERE key IN (
 
 -- removed, old sources which we mark as deleted
 INSERT INTO dataset (key, origin, title, created_by, modified_by, deleted) VALUES 
-	('1016', 0, 'IOPI-GPC', 0, 0, now()),
-	('1041', 0, 'Systematic Myriapod Database', 0, 0, now()),
-	('1043', 0, 'lecypages', 0, 0, now()),
-	('1056', 0, 'lhd', 0, 0, now()),
-	('1060', 0, 'worms_proseriata-kalyptorhynchia', 0, 0, now()),
-	('1064', 0, 'solanaceae_source', 0, 0, now()),
-	('1117', 0, 'chenobase', 0, 0, now()),
-	('1135', 0, 'fada_turbellaria', 0, 0, now()),
-	('1159', 0, 'fada_copepoda', 0, 0, now()),
-	('1165', 0, 'faeu_turbellaria', 0, 0, now());
+	('1016', 'EXTERNAL', 'IOPI-GPC', 0, 0, now()),
+	('1041', 'EXTERNAL', 'Systematic Myriapod Database', 0, 0, now()),
+	('1043', 'EXTERNAL', 'lecypages', 0, 0, now()),
+	('1056', 'EXTERNAL', 'lhd', 0, 0, now()),
+	('1060', 'EXTERNAL', 'worms_proseriata-kalyptorhynchia', 0, 0, now()),
+	('1064', 'EXTERNAL', 'solanaceae_source', 0, 0, now()),
+	('1117', 'EXTERNAL', 'chenobase', 0, 0, now()),
+	('1135', 'EXTERNAL', 'fada_turbellaria', 0, 0, now()),
+	('1159', 'EXTERNAL', 'fada_copepoda', 0, 0, now()),
+	('1165', 'EXTERNAL', 'faeu_turbellaria', 0, 0, now());
 
 
 -- dataset titles, will be overwritten by actual titles in the archives
@@ -390,16 +393,6 @@ UPDATE dataset SET logo='https://github.com/Sp2000/colplus-repo/raw/master/logos
 --   since late 2018 managed in their own github repos
 --------------------------
 
--- for enums we use the int ordinal, i.e. array index starting with 0:
--- origin:  http://api.col.plus/vocab/datasetorigin
---          0=EXTERNAL, 1=UPLOADED, 2=MANAGED
--- type:  http://api.col.plus/vocab/datasettype
---          0=nomenclatural, 1=taxonomic, 2=article, 3=personal, 4=otu, 5=catalogue, 6=thematic, 7=other
--- code:  http://api.col.plus/vocab/nomCode
---          0=bacterial, 1=botanical, 2=cultivars, 3=virus, 4=zoological
--- data_format:  http://api.col.plus/vocab/dataformat
---          0=dwca, 1=acef, 2=tcs, 3=coldp
-
 -- use keys from range 1000-1500 for CoL GSD IDs+1000
 INSERT INTO dataset (key, origin, type, code, title, import_frequency, created_by, modified_by, data_format, data_access) VALUES
 --('1027', 0, 1, 4, 'Scarabs',           1, 0, 0, 1, 'https://github.com/Sp2000/data-scarabs/archive/master.zip'),
@@ -412,12 +405,12 @@ INSERT INTO dataset (key, origin, type, code, title, import_frequency, created_b
 --('1202', 0, 1, 4, 'WoRMS Amphipoda',   1, 0, 0, 1, 'https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/202.tar.gz'),
 --('1203', 0, 1, 4, 'ThripsWiki',        1, 0, 0, 1, 'https://github.com/Sp2000/data-thrips/archive/master.zip'),
 --('1204', 0, 1, 4, 'StaphBase',         1, 0, 0, 3, 'https://github.com/Sp2000/data-staphbase/archive/master.zip'),
-('1206', 0, 1, 4, 'Sepidiini',         1, 0, 0, 1, 'https://github.com/gdower/data-sepidiini/archive/master.zip');
+('1206', 'EXTERNAL', 'TAXONOMIC', 'ZOOLOGICAL', 'Sepidiini',         1, 0, 0, 'ACEF', 'https://github.com/gdower/data-sepidiini/archive/master.zip');
 
 UPDATE dataset set alias=title WHERE key < 2000 and alias IS NULL;
 
 INSERT INTO dataset (key, origin, type, code, title, alias, import_frequency, created_by, modified_by, data_format, data_access)
-VALUES ('1000', 0, 1, null, 'Col Hierarchy', 'ColH', 1, 0, 0, 3, 'https://github.com/Sp2000/col-hierarchy/archive/master.zip');
+VALUES ('1000', 'EXTERNAL', 'TAXONOMIC', null, 'Col Hierarchy', 'ColH', 1, 0, 0, 'COLDP', 'https://github.com/Sp2000/col-hierarchy/archive/master.zip');
 
 
 --------------------------
@@ -437,10 +430,10 @@ ALTER SEQUENCE dataset_key_seq RESTART WITH 1700;
 -- data_format:  http://api.col.plus/vocab/dataformat
 --          0=dwca, 1=acef, 2=tcs, 3=coldp, 4=proxy
 INSERT INTO dataset (origin, type, code, title, import_frequency, created_by, modified_by, data_format, data_access) VALUES
-(0, 7, 1, 'ColDP Example',           7, 0, 0, 3, 'https://github.com/Sp2000/coldp/archive/master.zip'),
-(0, 7, 4, 'Testing Data ACEF',       7, 0, 0, 1, 'https://github.com/Sp2000/data-testing/archive/master.zip'),
-(0, 7, 4, 'Duplicates Testing Data', 7, 0, 0, 3, 'https://raw.githubusercontent.com/Sp2000/data-unit-tests/master/duplicates.zip'),
-(0, 7, 4, 'Testing Data ColDP',      7, 0, 0, 3, 'https://github.com/Sp2000/data-testing/archive/master.zip');
+('EXTERNAL', 'OTHER', 'BOTANICAL',  'ColDP Example',           7, 0, 0, 'COLDP', 'https://github.com/Sp2000/coldp/archive/master.zip'),
+('EXTERNAL', 'OTHER', 'ZOOLOGICAL', 'Testing Data ACEF',       7, 0, 0, 'ACEF', 'https://github.com/Sp2000/data-testing/archive/master.zip'),
+('EXTERNAL', 'OTHER', 'ZOOLOGICAL', 'Duplicates Testing Data', 7, 0, 0, 'COLDP', 'https://raw.githubusercontent.com/Sp2000/data-unit-tests/master/duplicates.zip'),
+('EXTERNAL', 'OTHER', 'ZOOLOGICAL', 'Testing Data ColDP',      7, 0, 0, 'COLDP', 'https://github.com/Sp2000/data-testing/archive/master.zip');
 
 
 
@@ -454,58 +447,58 @@ ALTER SEQUENCE dataset_key_seq RESTART WITH 2000;
 -- all datasets from https://github.com/gbif/checklistbank/blob/master/checklistbank-nub/nub-sources.tsv
 -- excluding CoL, the GBIF patches and entire organisation or installations which we add below as lists of datasets
 -- nom codes: 0=BACTERIAL, 1=BOTANICAL, 2=CULTIVARS, 3=VIRUS, 4=ZOOLOGICAL
--- types      0=nomenclatural, 1=taxonomic, 2=article, 3=personal, 4=otu, 5=catalogue, 6=thematic, 7=other
+-- types      0=NOMENCLATURAL, 1=TAXONOMIC, 2=ARTICLE, 3=PERSONAL, 4=OTU, 5=CATALOGUE, 6=THEMATIC, 7=OTHER
 
 INSERT INTO dataset (gbif_key, type, created_by, modified_by, origin, code, data_format, data_access, title, alias) VALUES
-    (null, 1, 0, 0, 0, 1, 0, 'https://storage.googleapis.com/powop-content/backbone/powoNames.zip', 'PoWO Names', 'PoWo'),
-    (null, 1, 0, 0, 0, 1, 0, 'https://storage.googleapis.com/powop-content/backbone/powoPlantFamilies.zip', 'PoWO Families', null),
-    (null, 0, 0, 0, 0, 1, 0, 'https://github.com/mdoering/mycobank/archive/master.zip', 'MycoBank', 'MycoBank'),
-    (null, 0, 0, 0, 0, 1, 3, 'https://github.com/mdoering/data-ina/archive/master.zip', 'INA', 'INA'),
-    (null, 1, 0, 0, 0, 1, 0, 'http://104.198.143.165/files/WFO_Backbone/_WFOCompleteBackbone/WFO_Backbone.zip', 'WFO Backbone', 'WFO'),
-    ('00e791be-36ae-40ee-8165-0b2cb0b8c84f', 6, 12, 12, 0, null, 0, 'https://github.com/mdoering/famous-organism/archive/master.zip', 'Species named after famous people', null),
-    ('046bbc50-cae2-47ff-aa43-729fbf53f7c5', 0, 12, 12, 0, 1,    0, 'https://github.com/mdoering/ipni/raw/master/ipni.zip', 'International Plant Names Index', 'IPNI'),
-    ('0938172b-2086-439c-a1dd-c21cb0109ed5', 1, 12, 12, 0, null, 0, 'http://www.irmng.org/export/IRMNG_genera_DwCA.zip', 'The Interim Register of Marine and Nonmarine Genera', 'IRMNG'),
-    ('0e61f8fe-7d25-4f81-ada7-d970bbb2c6d6', 1, 12, 12, 0, null, 0, 'http://ipt.gbif.fr/archive.do?r=taxref-test', 'TAXREF', 'TAXREF'),
-    ('1c1f2cfc-8370-414f-9202-9f00ccf51413', 1, 12, 12, 0, 1,    0, 'http://rs.gbif.org/datasets/protected/euro_med.zip', 'Euro+Med PlantBase data sample', 'Euro+Med'),
-    ('1ec61203-14fa-4fbd-8ee5-a4a80257b45a', 1, 12, 12, 0, null, 0, 'http://ipt.taibif.tw/archive.do?r=taibnet_com_all', 'The National Checklist of Taiwan', null),
-    ('2d59e5db-57ad-41ff-97d6-11f5fb264527', 1, 12, 12, 0, null, 0, 'http://www.marinespecies.org/dwca/WoRMS_DwC-A.zip', 'World Register of Marine Species', 'WoRMS'),
-    ('3f8a1297-3259-4700-91fc-acc4170b27ce', 1, 12, 12, 0, 1,    0, 'http://data.canadensys.net/ipt/archive.do?r=vascan', 'Database of Vascular Plants of Canada (VASCAN)', 'VASCAN'),
-    ('47f16512-bf31-410f-b272-d151c996b2f6', 1, 12, 12, 0, 4,    0, 'http://rs.gbif.org/datasets/clements.zip', 'The Clements Checklist', null),
-    ('4dd32523-a3a3-43b7-84df-4cda02f15cf7', 1, 12, 12, 0, null, 0, 'http://api.biodiversitydata.nl/v2/taxon/dwca/getDataSet/nsr', 'Checklist Dutch Species Register - Nederlands Soortenregister', null),
-    ('52a423d2-0486-4e77-bcee-6350d708d6ff', 0, 12, 12, 0, 0,    0, 'http://rs.gbif.org/datasets/dsmz.zip', 'Prokaryotic Nomenclature Up-to-date', null),
-    ('5c7bf05c-2890-48e8-9b65-a6060cb75d6d', 7, 12, 12, 0, 4,    0, 'http://ipt.zin.ru:8080/ipt/archive.do?r=zin_megophryidae_bufonidae', 'Catalogue of the type specimens of Bufonidae and Megophryidae (Amphibia: Anura) from research collections of the Zoological Institute,', null),
-    ('65c9103f-2fbf-414b-9b0b-e47ca96c5df2', 1, 12, 12, 0, 4,    0, 'http://ipt.biodiversity.be/archive.do?r=afromoths', 'Afromoths, online database of Afrotropical moth species (Lepidoptera)', 'Afromoths'),
-    ('66dd0960-2d7d-46ee-a491-87b9adcfe7b1', 1, 12, 12, 0, 1,    0, 'http://rs.gbif.org/datasets/grin_archive.zip', 'GRIN Taxonomy', 'GRIN'),
-    ('672aca30-f1b5-43d3-8a2b-c1606125fa1b', 1, 12, 12, 0, 4,    0, 'http://rs.gbif.org/datasets/msw3.zip', 'Mammal Species of the World', 'MSW3'),
-    ('6cfd67d6-4f9b-400b-8549-1933ac27936f', 7, 12, 12, 0, null, 0, 'http://api.gbif.org/v1/occurrence/download/request/dwca-type-specimen-checklist.zip', 'GBIF Type Specimen Names', null),
-    ('7a9bccd4-32fc-420e-a73b-352b92267571', 1, 12, 12, 0, 4,    0, 'http://data.canadensys.net/ipt/archive.do?r=coleoptera-ca-ak', 'Checklist of Beetles (Coleoptera) of Canada and Alaska. Second Edition.', null),
-    ('7ea21580-4f06-469d-995b-3f713fdcc37c', 1, 12, 12, 0, 1,    0, 'https://github.com/gbif/algae/archive/master.zip', 'GBIF Algae Classification', null),
-    ('80b4b440-eaca-4860-aadf-d0dfdd3e856e', 0, 12, 12, 0, 4,    0, 'https://github.com/gbif/iczn-lists/archive/master.zip', 'Official Lists and Indexes of Names in Zoology', null),
-    ('8d431c96-9e2f-4249-8b0a-d875e3273908', 7, 12, 12, 0, 4,    0, 'http://ipt.zin.ru:8080/ipt/archive.do?r=zin_cosmopterigidae', 'Catalogue of the type specimens of Cosmopterigidae (Lepidoptera: Gelechioidea) from research collections of the Zoological Institute, R', null),
-    ('8dc469b3-8e61-4f6f-b9db-c70dbbc8858c', 1, 12, 12, 0, null, 0, 'https://raw.githubusercontent.com/mdoering/ion-taxonomic-hierarchy/master/classification.tsv', 'ION Taxonomic Hierarchy', null),
-    ('90d9e8a6-0ce1-472d-b682-3451095dbc5a', 1, 12, 12, 0, 4,    0, 'http://rs.gbif.org/datasets/protected/fauna_europaea.zip', 'Fauna Europaea', 'FaEu'),
-    ('96dfd141-7bca-4f82-9325-4420d24e0793', 1, 12, 12, 0, 4,    0, 'http://plazi.cs.umb.edu/GgServer/dwca/49CC45D6B497E6D97BDDF3C0D38289E2.zip', 'Spinnengids', null),
-    ('9ca92552-f23a-41a8-a140-01abaa31c931', 1, 12, 12, 0, null, 0, 'http://rs.gbif.org/datasets/itis.zip', 'Integrated Taxonomic Information System (ITIS)', 'ITIS'),
-    ('a43ec6d8-7b8a-4868-ad74-56b824c75698', 1, 12, 12, 0, null, 0, 'http://ipt.gbif.pt/ipt/archive.do?r=uac_checklist_madeira', 'A list of the terrestrial fungi, flora and fauna of Madeira and Selvagens archipelagos', null),
-    ('a6c6cead-b5ce-4a4e-8cf5-1542ba708dec', 1, 12, 12, 0, null, 0, 'https://data.gbif.no/ipt/archive.do?r=artsnavn', 'Artsnavnebasen', null),
-    ('aacd816d-662c-49d2-ad1a-97e66e2a2908', 1, 12, 12, 0, 1,    0, 'http://ipt.jbrj.gov.br/jbrj/archive.do?r=lista_especies_flora_brasil', 'Brazilian Flora 2020 project - Projeto Flora do Brasil 2020', null),
-    ('b267ac9b-6516-458e-bea7-7643842187f7', 7, 12, 12, 0, 4,    0, 'http://ipt.zin.ru:8080/ipt/archive.do?r=zin_polycestinae', 'Catalogue of the type specimens of Polycestinae (Coleoptera: Buprestidae) from research collections of the Zoological Institute, Russia', null),
-    ('bd25fbf7-278f-41d6-bc17-9f08f2632f70', 1, 12, 12, 0, 4,    0, 'http://ipt.biodiversity.be/archive.do?r=mrac_fruitfly_checklist', 'True Fruit Flies (Diptera, Tephritidae) of the Afrotropical Region', null),
-    ('bf3db7c9-5e5d-4fd0-bd5b-94539eaf9598', 0, 12, 12, 0, 1,    0, 'http://rs.gbif.org/datasets/index_fungorum.zip', 'Index Fungorum', null),
-    ('c33ce2f2-c3cc-43a5-a380-fe4526d63650', 1, 12, 12, 0, null, 0, 'http://rs.gbif.org/datasets/pbdb.zip', 'The Paleobiology Database', null),
-    ('c696e5ee-9088-4d11-bdae-ab88daffab78', 1, 12, 12, 0, 4,    0, 'http://rs.gbif.org/datasets/ioc.zip', 'IOC World Bird List, v8.1', null),
-    ('c8227bb4-4143-443f-8cb2-51f9576aff14', 0, 12, 12, 0, 4,    0, 'http://zoobank.org:8080/ipt/archive.do?r=zoobank', 'ZooBank', null),
-    ('d8fb1600-d636-4b35-aa0d-d4f292c1b424', 1, 12, 12, 0, 4,    0, 'http://rs.gbif.org/datasets/protected/fauna_europaea-lepidoptera.zip', 'Fauna Europaea - Lepidoptera', null),
-    ('d9a4eedb-e985-4456-ad46-3df8472e00e8', 1, 12, 12, 0, 1,    0, 'https://zenodo.org/record/1194673/files/dwca.zip', 'The Plant List with literature', null),
-    ('da38f103-4410-43d1-b716-ea6b1b92bbac', 1, 12, 12, 0, 4,    0, 'http://ipt.saiab.ac.za/archive.do?r=catalogueofafrotropicalbees', 'Catalogue of Afrotropical Bees', null),
-    ('de8934f4-a136-481c-a87a-b0b202b80a31', 1, 12, 12, 0, null, 0, 'http://www.gbif.se/ipt/archive.do?r=test', 'Dyntaxa. Svensk taxonomisk databas', 'Dyntaxa'),
-    ('ded724e7-3fde-49c5-bfa3-03b4045c4c5f', 1, 12, 12, 0, 1,    0, 'http://wp5.e-taxonomy.eu/download/data/dwca/cichorieae.zip', 'International Cichorieae Network (ICN): Cichorieae Portal', null),
-    ('e01b0cbb-a10a-420c-b5f3-a3b20cc266ad', 1, 12, 12, 0, 3,    0, 'http://rs.gbif.org/datasets/ictv.zip', 'ICTV Master Species List', 'ICTV'),
-    ('e1c9e885-9d8c-45b5-9f7d-b710ac2b303b', 1, 12, 12, 0, null, 0, 'http://ipt.taibif.tw/archive.do?r=taibnet_endemic', 'Endemic species in Taiwan', null),
-    ('e402255a-aed1-4701-9b96-14368e1b5d6b', 1, 12, 12, 0, 4,    0, 'http://ctap.inhs.uiuc.edu/dmitriev/DwCArchive.zip', '3i - Typhlocybinae Database', null),
-    ('e768b669-5f12-42b3-9bc7-ede76e4436fa', 1, 12, 12, 0, 4,    0, 'http://plazi.cs.umb.edu/GgServer/dwca/61134126326DC5BE0901E529D48F9481.zip', 'Carabodes cephalotes', null),
-    ('f43069fe-38c1-43e3-8293-37583dcf5547', 1, 12, 12, 0, 1,    0, 'https://svampe.databasen.org/dwc/DMS_Fun_taxa.zip', 'Danish Mycological Society - Checklist of Fungi', null),
-    ('56c83fd9-533b-4b77-a67a-cf521816866e', 1, 12, 12, 0, 4,    0, 'http://ipt.pensoft.net/archive.do?r=tenebrionidae_north_america', 'Catalogue of Tenebrionidae (Coleoptera) of North America', null);
+    (null, 'TAXONOMIC', 0, 0, 'EXTERNAL', 'BOTANICAL', 'DWCA', 'https://storage.googleapis.com/powop-content/backbone/powoNames.zip', 'PoWO Names', 'PoWo'),
+    (null, 'TAXONOMIC', 0, 0, 'EXTERNAL', 'BOTANICAL', 'DWCA', 'https://storage.googleapis.com/powop-content/backbone/powoPlantFamilies.zip', 'PoWO Families', null),
+    (null, 'NOMENCLATURAL', 0, 0, 'EXTERNAL', 'BOTANICAL', 'DWCA', 'https://github.com/mdoering/mycobank/archive/master.zip', 'MycoBank', 'MycoBank'),
+    (null, 'NOMENCLATURAL', 0, 0, 'EXTERNAL', 'BOTANICAL', 'COLDP', 'https://github.com/mdoering/data-ina/archive/master.zip', 'INA', 'INA'),
+    (null, 'TAXONOMIC', 0, 0, 'EXTERNAL', 'BOTANICAL', 'DWCA', 'http://104.198.143.165/files/WFO_Backbone/_WFOCompleteBackbone/WFO_Backbone.zip', 'WFO Backbone', 'WFO'),
+    ('00e791be-36ae-40ee-8165-0b2cb0b8c84f', 'THEMATIC', 12, 12,'EXTERNAL', null, 'DWCA', 'https://github.com/mdoering/famous-organism/archive/master.zip', 'Species named after famous people', null),
+    ('046bbc50-cae2-47ff-aa43-729fbf53f7c5', 'NOMENCLATURAL', 12, 12,'EXTERNAL', 'BOTANICAL', 'DWCA', 'https://github.com/mdoering/ipni/raw/master/ipni.zip', 'International Plant Names Index', 'IPNI'),
+    ('0938172b-2086-439c-a1dd-c21cb0109ed5', 'TAXONOMIC', 12, 12,'EXTERNAL', null, 'DWCA', 'http://www.irmng.org/export/IRMNG_genera_DwCA.zip', 'The Interim Register of Marine and Nonmarine Genera', 'IRMNG'),
+    ('0e61f8fe-7d25-4f81-ada7-d970bbb2c6d6', 'TAXONOMIC', 12, 12,'EXTERNAL', null, 'DWCA', 'http://ipt.gbif.fr/archive.do?r=taxref-test', 'TAXREF', 'TAXREF'),
+    ('1c1f2cfc-8370-414f-9202-9f00ccf51413', 'TAXONOMIC', 12, 12,'EXTERNAL', 'BOTANICAL', 'DWCA', 'http://rs.gbif.org/datasets/protected/euro_med.zip', 'Euro+Med PlantBase data sample', 'Euro+Med'),
+    ('1ec61203-14fa-4fbd-8ee5-a4a80257b45a', 'TAXONOMIC', 12, 12,'EXTERNAL', null, 'DWCA', 'http://ipt.taibif.tw/archive.do?r=taibnet_com_all', 'The National Checklist of Taiwan', null),
+    ('2d59e5db-57ad-41ff-97d6-11f5fb264527', 'TAXONOMIC', 12, 12,'EXTERNAL', null, 'DWCA', 'http://www.marinespecies.org/dwca/WoRMS_DwC-A.zip', 'World Register of Marine Species', 'WoRMS'),
+    ('3f8a1297-3259-4700-91fc-acc4170b27ce', 'TAXONOMIC', 12, 12,'EXTERNAL', 'BOTANICAL', 'DWCA', 'http://data.canadensys.net/ipt/archive.do?r=vascan', 'Database of Vascular Plants of Canada (VASCAN)', 'VASCAN'),
+    ('47f16512-bf31-410f-b272-d151c996b2f6', 'TAXONOMIC', 12, 12,'EXTERNAL', 'ZOOLOGICAL', 'DWCA', 'http://rs.gbif.org/datasets/clements.zip', 'The Clements Checklist', null),
+    ('4dd32523-a3a3-43b7-84df-4cda02f15cf7', 'TAXONOMIC', 12, 12,'EXTERNAL', null, 'DWCA', 'http://api.biodiversitydata.nl/v2/taxon/dwca/getDataSet/nsr', 'Checklist Dutch Species Register - Nederlands Soortenregister', null),
+    ('52a423d2-0486-4e77-bcee-6350d708d6ff', 'NOMENCLATURAL', 12, 12,'EXTERNAL', 'BACTERIAL', 'DWCA', 'http://rs.gbif.org/datasets/dsmz.zip', 'Prokaryotic Nomenclature Up-to-date', null),
+    ('5c7bf05c-2890-48e8-9b65-a6060cb75d6d', 'OTHER', 12, 12,'EXTERNAL', 'ZOOLOGICAL', 'DWCA', 'http://ipt.zin.ru:8080/ipt/archive.do?r=zin_megophryidae_bufonidae', 'Catalogue of the type specimens of Bufonidae and Megophryidae (Amphibia: Anura) from research collections of the Zoological Institute,', null),
+    ('65c9103f-2fbf-414b-9b0b-e47ca96c5df2', 'TAXONOMIC', 12, 12,'EXTERNAL', 'ZOOLOGICAL', 'DWCA', 'http://ipt.biodiversity.be/archive.do?r=afromoths', 'Afromoths, online database of Afrotropical moth species (Lepidoptera)', 'Afromoths'),
+    ('66dd0960-2d7d-46ee-a491-87b9adcfe7b1', 'TAXONOMIC', 12, 12,'EXTERNAL', 'BOTANICAL', 'DWCA', 'http://rs.gbif.org/datasets/grin_archive.zip', 'GRIN Taxonomy', 'GRIN'),
+    ('672aca30-f1b5-43d3-8a2b-c1606125fa1b', 'TAXONOMIC', 12, 12,'EXTERNAL', 'ZOOLOGICAL', 'DWCA', 'http://rs.gbif.org/datasets/msw3.zip', 'Mammal Species of the World', 'MSW3'),
+    ('6cfd67d6-4f9b-400b-8549-1933ac27936f', 'OTHER', 12, 12,'EXTERNAL', null, 'DWCA', 'http://api.gbif.org/v1/occurrence/download/request/dwca-type-specimen-checklist.zip', 'GBIF Type Specimen Names', null),
+    ('7a9bccd4-32fc-420e-a73b-352b92267571', 'TAXONOMIC', 12, 12,'EXTERNAL', 'ZOOLOGICAL', 'DWCA', 'http://data.canadensys.net/ipt/archive.do?r=coleoptera-ca-ak', 'Checklist of Beetles (Coleoptera) of Canada and Alaska. Second Edition.', null),
+    ('7ea21580-4f06-469d-995b-3f713fdcc37c', 'TAXONOMIC', 12, 12,'EXTERNAL', 'BOTANICAL', 'DWCA', 'https://github.com/gbif/algae/archive/master.zip', 'GBIF Algae Classification', null),
+    ('80b4b440-eaca-4860-aadf-d0dfdd3e856e', 'NOMENCLATURAL', 12, 12,'EXTERNAL', 'ZOOLOGICAL', 'DWCA', 'https://github.com/gbif/iczn-lists/archive/master.zip', 'Official Lists and Indexes of Names in Zoology', null),
+    ('8d431c96-9e2f-4249-8b0a-d875e3273908', 'OTHER', 12, 12,'EXTERNAL', 'ZOOLOGICAL', 'DWCA', 'http://ipt.zin.ru:8080/ipt/archive.do?r=zin_cosmopterigidae', 'Catalogue of the type specimens of Cosmopterigidae (Lepidoptera: Gelechioidea) from research collections of the Zoological Institute, R', null),
+    ('8dc469b3-8e61-4f6f-b9db-c70dbbc8858c', 'TAXONOMIC', 12, 12,'EXTERNAL', null, 'DWCA', 'https://raw.githubusercontent.com/mdoering/ion-taxonomic-hierarchy/master/classification.tsv', 'ION Taxonomic Hierarchy', null),
+    ('90d9e8a6-0ce1-472d-b682-3451095dbc5a', 'TAXONOMIC', 12, 12,'EXTERNAL', 'ZOOLOGICAL', 'DWCA', 'http://rs.gbif.org/datasets/protected/fauna_europaea.zip', 'Fauna Europaea', 'FaEu'),
+    ('96dfd141-7bca-4f82-9325-4420d24e0793', 'TAXONOMIC', 12, 12,'EXTERNAL', 'ZOOLOGICAL', 'DWCA', 'http://plazi.cs.umb.edu/GgServer/dwca/49CC45D6B497E6D97BDDF3C0D38289E2.zip', 'Spinnengids', null),
+    ('9ca92552-f23a-41a8-a140-01abaa31c931', 'TAXONOMIC', 12, 12,'EXTERNAL', null, 'DWCA', 'http://rs.gbif.org/datasets/itis.zip', 'Integrated Taxonomic Information System (ITIS)', 'ITIS'),
+    ('a43ec6d8-7b8a-4868-ad74-56b824c75698', 'TAXONOMIC', 12, 12,'EXTERNAL', null, 'DWCA', 'http://ipt.gbif.pt/ipt/archive.do?r=uac_checklist_madeira', 'A list of the terrestrial fungi, flora and fauna of Madeira and Selvagens archipelagos', null),
+    ('a6c6cead-b5ce-4a4e-8cf5-1542ba708dec', 'TAXONOMIC', 12, 12,'EXTERNAL', null, 'DWCA', 'https://data.gbif.no/ipt/archive.do?r=artsnavn', 'Artsnavnebasen', null),
+    ('aacd816d-662c-49d2-ad1a-97e66e2a2908', 'TAXONOMIC', 12, 12,'EXTERNAL', 'BOTANICAL', 'DWCA', 'http://ipt.jbrj.gov.br/jbrj/archive.do?r=lista_especies_flora_brasil', 'Brazilian Flora 2020 project - Projeto Flora do Brasil 2020', null),
+    ('b267ac9b-6516-458e-bea7-7643842187f7', 'OTHER', 12, 12,'EXTERNAL', 'ZOOLOGICAL', 'DWCA', 'http://ipt.zin.ru:8080/ipt/archive.do?r=zin_polycestinae', 'Catalogue of the type specimens of Polycestinae (Coleoptera: Buprestidae) from research collections of the Zoological Institute, Russia', null),
+    ('bd25fbf7-278f-41d6-bc17-9f08f2632f70', 'TAXONOMIC', 12, 12,'EXTERNAL', 'ZOOLOGICAL', 'DWCA', 'http://ipt.biodiversity.be/archive.do?r=mrac_fruitfly_checklist', 'True Fruit Flies (Diptera, Tephritidae) of the Afrotropical Region', null),
+    ('bf3db7c9-5e5d-4fd0-bd5b-94539eaf9598', 'NOMENCLATURAL', 12, 12,'EXTERNAL', 'BOTANICAL', 'DWCA', 'http://rs.gbif.org/datasets/index_fungorum.zip', 'Index Fungorum', null),
+    ('c33ce2f2-c3cc-43a5-a380-fe4526d63650', 'TAXONOMIC', 12, 12,'EXTERNAL', null, 'DWCA', 'http://rs.gbif.org/datasets/pbdb.zip', 'The Paleobiology Database', null),
+    ('c696e5ee-9088-4d11-bdae-ab88daffab78', 'TAXONOMIC', 12, 12,'EXTERNAL', 'ZOOLOGICAL', 'DWCA', 'http://rs.gbif.org/datasets/ioc.zip', 'IOC World Bird List, v8.1', null),
+    ('c8227bb4-4143-443f-8cb2-51f9576aff14', 'NOMENCLATURAL', 12, 12,'EXTERNAL', 'ZOOLOGICAL', 'DWCA', 'http://zoobank.org:8080/ipt/archive.do?r=zoobank', 'ZooBank', null),
+    ('d8fb1600-d636-4b35-aa0d-d4f292c1b424', 'TAXONOMIC', 12, 12,'EXTERNAL', 'ZOOLOGICAL', 'DWCA', 'http://rs.gbif.org/datasets/protected/fauna_europaea-lepidoptera.zip', 'Fauna Europaea - Lepidoptera', null),
+    ('d9a4eedb-e985-4456-ad46-3df8472e00e8', 'TAXONOMIC', 12, 12,'EXTERNAL', 'BOTANICAL', 'DWCA', 'https://zenodo.org/record/1194673/files/dwca.zip', 'The Plant List with literature', null),
+    ('da38f103-4410-43d1-b716-ea6b1b92bbac', 'TAXONOMIC', 12, 12,'EXTERNAL', 'ZOOLOGICAL', 'DWCA', 'http://ipt.saiab.ac.za/archive.do?r=catalogueofafrotropicalbees', 'Catalogue of Afrotropical Bees', null),
+    ('de8934f4-a136-481c-a87a-b0b202b80a31', 'TAXONOMIC', 12, 12,'EXTERNAL', null, 'DWCA', 'http://www.gbif.se/ipt/archive.do?r=test', 'Dyntaxa. Svensk taxonomisk databas', 'Dyntaxa'),
+    ('ded724e7-3fde-49c5-bfa3-03b4045c4c5f', 'TAXONOMIC', 12, 12,'EXTERNAL', 'BOTANICAL', 'DWCA', 'http://wp5.e-taxonomy.eu/download/data/dwca/cichorieae.zip', 'International Cichorieae Network (ICN): Cichorieae Portal', null),
+    ('e01b0cbb-a10a-420c-b5f3-a3b20cc266ad', 'TAXONOMIC', 12, 12,'EXTERNAL', 'VIRUS', 'DWCA', 'http://rs.gbif.org/datasets/ictv.zip', 'ICTV Master Species List', 'ICTV'),
+    ('e1c9e885-9d8c-45b5-9f7d-b710ac2b303b', 'TAXONOMIC', 12, 12,'EXTERNAL', null, 'DWCA', 'http://ipt.taibif.tw/archive.do?r=taibnet_endemic', 'Endemic species in Taiwan', null),
+    ('e402255a-aed1-4701-9b96-14368e1b5d6b', 'TAXONOMIC', 12, 12,'EXTERNAL', 'ZOOLOGICAL', 'DWCA', 'http://ctap.inhs.uiuc.edu/dmitriev/DwCArchive.zip', '3i - Typhlocybinae Database', null),
+    ('e768b669-5f12-42b3-9bc7-ede76e4436fa', 'TAXONOMIC', 12, 12,'EXTERNAL', 'ZOOLOGICAL', 'DWCA', 'http://plazi.cs.umb.edu/GgServer/dwca/61134126326DC5BE0901E529D48F9481.zip', 'Carabodes cephalotes', null),
+    ('f43069fe-38c1-43e3-8293-37583dcf5547', 'TAXONOMIC', 12, 12,'EXTERNAL', 'BOTANICAL', 'DWCA', 'https://svampe.databasen.org/dwc/DMS_Fun_taxa.zip', 'Danish Mycological Society - Checklist of Fungi', null),
+    ('56c83fd9-533b-4b77-a67a-cf521816866e', 'TAXONOMIC', 12, 12,'EXTERNAL', 'ZOOLOGICAL', 'DWCA', 'http://ipt.pensoft.net/archive.do?r=tenebrionidae_north_america', 'Catalogue of Tenebrionidae (Coleoptera) of North America', null);
 
 UPDATE dataset SET import_frequency = 7
 WHERE key >= 2000;

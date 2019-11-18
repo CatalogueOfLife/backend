@@ -8,7 +8,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.apache.ibatis.transaction.TransactionFactory;
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
-import org.apache.ibatis.type.EnumOrdinalTypeHandler;
+import org.apache.ibatis.type.EnumTypeHandler;
 import org.apache.ibatis.type.TypeAliasRegistry;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 import org.col.api.model.Duplicate;
@@ -16,9 +16,7 @@ import org.col.api.model.Name;
 import org.col.api.model.TreeNode;
 import org.col.api.search.NameUsageWrapper;
 import org.col.db.mapper.NameMapper;
-import org.col.db.type.RankTypeHandler;
 import org.col.db.type.UuidTypeHandler;
-import org.col.db.type2.IntCount;
 import org.col.db.type2.StringCount;
 import org.gbif.nameparser.api.ParsedName;
 import org.slf4j.Logger;
@@ -55,7 +53,6 @@ public class MybatisFactory {
     // aliases
     registerTypeAliases(mybatisCfg.getTypeAliasRegistry());
     
-    
     // type handler
     registerTypeHandlers(mybatisCfg.getTypeHandlerRegistry());
     
@@ -79,7 +76,6 @@ public class MybatisFactory {
     registry.registerAliases(Name.class.getPackage().getName());
     registry.registerAliases(ParsedName.class.getPackage().getName());
     registry.registerAliases(NameUsageWrapper.class.getPackage().getName());
-    registry.registerAlias(IntCount.class);
     registry.registerAlias(StringCount.class);
     registry.registerAlias("TreeNodeMybatis", TreeNode.TreeNodeMybatis.class);
     registry.registerAlias("UsageDecision", Duplicate.UsageDecision.class);
@@ -89,9 +85,7 @@ public class MybatisFactory {
   private static void registerTypeHandlers(TypeHandlerRegistry registry) {
     // register all type handler from the type subpackage
     registry.register(UuidTypeHandler.class.getPackage().getName());
-    registry.setDefaultEnumTypeHandler(EnumOrdinalTypeHandler.class);
-    registry.register(RankTypeHandler.class);
-    
+    registry.setDefaultEnumTypeHandler(EnumTypeHandler.class);
   }
   
 }

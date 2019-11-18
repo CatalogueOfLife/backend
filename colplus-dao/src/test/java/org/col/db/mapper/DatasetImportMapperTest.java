@@ -11,7 +11,6 @@ import org.col.api.model.DatasetImport;
 import org.col.api.model.Page;
 import org.col.api.vocab.*;
 import org.col.common.text.StringUtils;
-import org.col.db.type2.IntCount;
 import org.col.db.type2.StringCount;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
@@ -179,65 +178,65 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
   
   @Test
   public void countMaps() throws Exception {
-    Set<IntCount> expected = new HashSet<>();
-    expected.add(new IntCount(Issue.ESCAPED_CHARACTERS, 1));
-    expected.add(new IntCount(Issue.REFERENCE_ID_INVALID, 2));
-    expected.add(new IntCount(Issue.ID_NOT_UNIQUE, 1));
-    expected.add(new IntCount(Issue.URL_INVALID, 1));
-    expected.add(new IntCount(Issue.INCONSISTENT_AUTHORSHIP, 1));
-    expected.add(new IntCount(Issue.UNUSUAL_NAME_CHARACTERS, 1));
+    Set<StringCount> expected = new HashSet<>();
+    expected.add(new StringCount(Issue.ESCAPED_CHARACTERS, 1));
+    expected.add(new StringCount(Issue.REFERENCE_ID_INVALID, 2));
+    expected.add(new StringCount(Issue.ID_NOT_UNIQUE, 1));
+    expected.add(new StringCount(Issue.URL_INVALID, 1));
+    expected.add(new StringCount(Issue.INCONSISTENT_AUTHORSHIP, 1));
+    expected.add(new StringCount(Issue.UNUSUAL_NAME_CHARACTERS, 1));
     assertCounts(expected, mapper().countIssues(DATASET11.getKey()));
-    
-    Set<StringCount> expected2 = new HashSet<>();
-    expected2.add(new StringCount(Rank.SPECIES.name().toLowerCase(), 5));
-    assertCounts(expected2, mapper().countNamesByRank(DATASET11.getKey()));
-    
-    expected2.clear();
-    expected2.add(new StringCount(Rank.SPECIES.name().toLowerCase(), 2));
-    assertCounts(expected2, mapper().countTaxaByRank(DATASET11.getKey()));
+  
+    expected.clear();
+    expected.add(new StringCount(Rank.SPECIES.name(), 5));
+    assertCounts(expected, mapper().countNamesByRank(DATASET11.getKey()));
     
     expected.clear();
-    expected.add(new IntCount(Origin.SOURCE, 5));
+    expected.add(new StringCount(Rank.SPECIES.name(), 2));
+    assertCounts(expected, mapper().countTaxaByRank(DATASET11.getKey()));
+    
+    expected.clear();
+    expected.add(new StringCount(Origin.SOURCE, 5));
     assertCounts(expected, mapper().countNamesByOrigin(DATASET11.getKey()));
     
     expected.clear();
-    expected.add(new IntCount(NameType.SCIENTIFIC, 5));
+    expected.add(new StringCount(NameType.SCIENTIFIC, 5));
     assertCounts(expected, mapper().countNamesByType(DATASET11.getKey()));
     
     expected.clear();
-    expected.add(new IntCount(Gazetteer.TEXT, 3));
+    expected.add(new StringCount(Gazetteer.TEXT, 3));
     assertCounts(expected, mapper().countDistributionsByGazetteer(DATASET11.getKey()));
     
-    expected2.clear();
-    expected2.add(new StringCount("nld", 1));
-    expected2.add(new StringCount("eng", 1));
-    expected2.add(new StringCount("deu", 1));
-    assertCounts(expected2, mapper().countVernacularsByLanguage(DATASET11.getKey()));
+    expected.clear();
+    expected.add(new StringCount("nld", 1));
+    expected.add(new StringCount("eng", 1));
+    expected.add(new StringCount("deu", 1));
+    assertCounts(expected, mapper().countVernacularsByLanguage(DATASET11.getKey()));
     
     expected.clear();
-    expected.add(new IntCount(TaxonomicStatus.ACCEPTED, 2));
-    expected.add(new IntCount(TaxonomicStatus.SYNONYM, 2));
+    expected.add(new StringCount(TaxonomicStatus.ACCEPTED, 2));
+    expected.add(new StringCount(TaxonomicStatus.SYNONYM, 2));
     assertCounts(expected, mapper().countUsagesByStatus(DATASET11.getKey()));
     
     assertEmpty(mapper().countNamesByStatus(DATASET11.getKey()));
     
     expected.clear();
-    expected.add(new IntCount(NomRelType.SPELLING_CORRECTION, 1));
+    expected.add(new StringCount(NomRelType.SPELLING_CORRECTION, 1));
     assertCounts(expected, mapper().countNameRelationsByType(DATASET11.getKey()));
     
-    expected2.clear();
-    expected2.add(new StringCount(AcefTerm.AcceptedSpecies.prefixedName(), 3));
-    expected2.add(new StringCount(AcefTerm.Synonyms.prefixedName(), 2));
-    assertCounts(expected2, mapper().countVerbatimByType(DATASET11.getKey()));
+    expected.clear();
+    expected.add(new StringCount(AcefTerm.AcceptedSpecies.prefixedName(), 3));
+    expected.add(new StringCount(AcefTerm.Synonyms.prefixedName(), 2));
+    assertCounts(expected, mapper().countVerbatimByType(DATASET11.getKey()));
   }
   
   private static <T> void assertCounts(Set<T> expected, List<T> actual) {
     assertEquals(expected, new HashSet<>(actual));
   }
   
-  private static <T> void assertEmpty(List<IntCount> actual) {
+  private static <T> void assertEmpty(List<StringCount> actual) {
     if (actual.isEmpty()) return;
-    for (IntCount cnt : actual) {
+    for (StringCount cnt : actual) {
       assertNull(cnt.getKey());
     }
   }

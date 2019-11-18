@@ -13,12 +13,12 @@ CREATE TABLE __coverage AS
     -- ATTACH MODE
     SELECT s.subject_dataset_key, subject_rank AS rank, subject_name AS name, array_to_string(classification(3, target_id, true), ' - ') AS classification
     FROM sector s JOIN name_usage_{{datasetKey}} t ON s.target_id=t.id
-    WHERE s.mode=0 AND s.dataset_key={{datasetKey}}
+    WHERE s.mode='ATTACH' AND s.dataset_key={{datasetKey}}
   UNION ALL
     -- MERGE MODE
     SELECT s.subject_dataset_key, target_rank AS rank, target_name AS name, array_to_string(classification(3, target_id, false), ' - ') AS classification
     FROM sector s JOIN name_usage_{{datasetKey}} t ON s.target_id=t.id
-    WHERE s.mode=1 AND s.dataset_key={{datasetKey}};
+    WHERE s.mode='UNION' AND s.dataset_key={{datasetKey}};
 
 CREATE TABLE __coverage2 AS
     SELECT subject_dataset_key AS dataset_key, string_agg(classification || ' - ' || groups, ';\n') AS coverage FROM (
@@ -158,18 +158,13 @@ COPY (
 -- lifezones
 -- unnest with empty or null arrays removes the entire row
 COPY (
-    WITH lifezones_x AS (
-        SELECT t.id, unnest(t.lifezones) AS lfz, s.subject_dataset_key
-        FROM name_usage_{{datasetKey}} t
-            JOIN __tax_keys tk ON t.id=tk.id
-            LEFT JOIN sector s ON t.sector_key=s.key
-        WHERE t.lifezones IS NOT NULL
-    )
-    SELECT NULL AS record_id, 
-        id AS name_code, 
-        CASE WHEN lfz=0 THEN 'brackish' WHEN lfz=1 THEN 'freshwater' WHEN lfz=2 THEN 'marine' WHEN lfz=3 THEN 'terrestrial' END AS lifezone, 
-        coalesce(subject_dataset_key, 1500) - 1000 AS database_id
-    FROM lifezones_x
+    SELECT t.id AS record_id,
+        unnest(t.lifezones) AS lifezone,
+        coalesce(s.subject_dataset_key, 1500) - 1000 AS database_id
+    FROM name_usage_{{datasetKey}} t
+        JOIN __tax_keys tk ON t.id=tk.id
+        LEFT JOIN sector s ON t.sector_key=s.key
+    WHERE t.lifezones IS NOT NULL
 ) TO 'lifezone.csv';
 
 
@@ -181,15 +176,15 @@ WITH RECURSIVE tree AS(
         s.subject_dataset_key AS dataset_key,
         t.id AS id,
         n.rank AS rank,
-        CASE WHEN n.rank='kingdom' THEN n.scientific_name ELSE NULL END AS kingdom,
-        CASE WHEN n.rank='phylum' THEN n.scientific_name ELSE NULL END AS phylum,
-        CASE WHEN n.rank='class' THEN n.scientific_name ELSE NULL END AS "class",
-        CASE WHEN n.rank='order' THEN n.scientific_name ELSE NULL END AS "order",
-        CASE WHEN n.rank='superfamily' THEN n.scientific_name ELSE NULL END AS superfamily,
-        CASE WHEN n.rank='family' THEN n.scientific_name ELSE NULL END AS family,
-        CASE WHEN n.rank='genus' THEN n.scientific_name ELSE NULL END AS genus,
-        CASE WHEN n.rank='family' THEN t.id ELSE NULL END AS family_id,
-        CASE WHEN n.rank='species' THEN t.id ELSE NULL END AS species_id
+        CASE WHEN n.rank='KINGDOM' THEN n.scientific_name ELSE NULL END AS kingdom,
+        CASE WHEN n.rank='PHYLUM' THEN n.scientific_name ELSE NULL END AS phylum,
+        CASE WHEN n.rank='CLASS' THEN n.scientific_name ELSE NULL END AS "class",
+        CASE WHEN n.rank='ORDER' THEN n.scientific_name ELSE NULL END AS "order",
+        CASE WHEN n.rank='SUPERFAMILY' THEN n.scientific_name ELSE NULL END AS superfamily,
+        CASE WHEN n.rank='FAMILY' THEN n.scientific_name ELSE NULL END AS family,
+        CASE WHEN n.rank='GENUS' THEN n.scientific_name ELSE NULL END AS genus,
+        CASE WHEN n.rank='FAMILY' THEN t.id ELSE NULL END AS family_id,
+        CASE WHEN n.rank='SPECIES' THEN t.id ELSE NULL END AS species_id
     FROM name_usage_{{datasetKey}} t
         JOIN __tax_keys tk ON t.id=tk.id
         JOIN name_{{datasetKey}} n ON n.id=t.name_id
@@ -201,15 +196,15 @@ WITH RECURSIVE tree AS(
         s.subject_dataset_key,
         t.id,
         n.rank,
-        CASE WHEN n.rank='kingdom' THEN n.scientific_name ELSE tree.kingdom END,
-        CASE WHEN n.rank='phylum' THEN n.scientific_name ELSE tree.phylum END,
-        CASE WHEN n.rank='class' THEN n.scientific_name ELSE tree.class END,
-        CASE WHEN n.rank='order' THEN n.scientific_name ELSE tree."order" END,
-        CASE WHEN n.rank='superfamily' THEN n.scientific_name ELSE tree.superfamily END,
-        CASE WHEN n.rank='family' THEN n.scientific_name ELSE tree.family END,
-        CASE WHEN n.rank='genus' THEN n.scientific_name ELSE tree.genus END,
-        CASE WHEN n.rank='family' THEN t.id ELSE tree.family_id END,
-        CASE WHEN n.rank='species' THEN t.id ELSE tree.species_id END AS species_id
+        CASE WHEN n.rank='KINGDOM' THEN n.scientific_name ELSE tree.kingdom END,
+        CASE WHEN n.rank='PHYLUM' THEN n.scientific_name ELSE tree.phylum END,
+        CASE WHEN n.rank='CLASS' THEN n.scientific_name ELSE tree.class END,
+        CASE WHEN n.rank='ORDER' THEN n.scientific_name ELSE tree."order" END,
+        CASE WHEN n.rank='SUPERFAMILY' THEN n.scientific_name ELSE tree.superfamily END,
+        CASE WHEN n.rank='FAMILY' THEN n.scientific_name ELSE tree.family END,
+        CASE WHEN n.rank='GENUS' THEN n.scientific_name ELSE tree.genus END,
+        CASE WHEN n.rank='FAMILY' THEN t.id ELSE tree.family_id END,
+        CASE WHEN n.rank='SPECIES' THEN t.id ELSE tree.species_id END AS species_id
     FROM name_usage_{{datasetKey}} t
         JOIN __tax_keys tk ON t.id=tk.id
         JOIN name_{{datasetKey}} n ON n.id=t.name_id
@@ -220,7 +215,7 @@ SELECT * FROM tree
 );
 
 CREATE INDEX ON __classification (rank);
-DELETE FROM __classification WHERE rank < 'family'::rank;
+DELETE FROM __classification WHERE rank < 'FAMILY'::rank;
 -- now we have only families and below left
 
 -- create incertae sedis families if missing
@@ -233,7 +228,7 @@ ALTER  TABLE __classification2 ALTER COLUMN key SET DEFAULT nextval('__record_id
 ALTER  TABLE __classification2 ALTER COLUMN id  SET DEFAULT 'inc.sed-' || nextval('__unassigned_seq');
 ALTER  TABLE __classification2 ALTER COLUMN family_id  SET DEFAULT 'inc.sed-' || currval('__unassigned_seq');
 INSERT  INTO __classification2 (dataset_key, rank, kingdom, phylum ,class, "order", superfamily, family)
-    SELECT DISTINCT dataset_key, 'family'::rank, kingdom, phylum ,class, "order", superfamily, 'Not assigned'
+    SELECT DISTINCT dataset_key, 'FAMILY'::rank, kingdom, phylum ,class, "order", superfamily, 'Not assigned'
         FROM __classification
         WHERE family_id IS NULL;
 CREATE UNIQUE INDEX ON __classification2 (dataset_key, coalesce(kingdom,''), coalesce(phylum,''), coalesce(class,''), coalesce("order",''), coalesce(superfamily));
@@ -264,7 +259,7 @@ SELECT key AS record_id,
       id AS family_code, 
       1 AS is_accepted_name
     FROM __classification
-    WHERE rank='family'
+    WHERE rank='FAMILY'
 ) TO 'families.csv';
 
 
@@ -275,31 +270,30 @@ SELECT
   tk.key AS record_id,
   t.id AS name_code,
   t.webpage AS web_site,
-  -- use the genus classification for virus type (1) names
+  -- use the genus classification for virus type names
   CASE
-    WHEN n.type=1 THEN coalesce(c.genus, 'Not assigned')
-    ELSE (CASE WHEN n.notho=0 THEN '×' ELSE '' END) ||  n.genus
+    WHEN n.type='VIRUS' THEN coalesce(c.genus, 'Not assigned')
+    ELSE (CASE WHEN n.notho='GENERIC' THEN '×' ELSE '' END) ||  n.genus
   END AS genus,
   n.infrageneric_epithet AS subgenus,
-  -- notho types: 0=GENERIC, 1=INFRAGENERIC, 2=SPECIFIC, 3=INFRASPECIFIC
   CASE
-    -- parsable names: 0=SCIENTIFIC, 1=VIRUS, 2=HYBRID_FORMULA, 3=INFORMAL, 4=OTU, 5=PLACEHOLDER, 6=NO_NAME
-    WHEN n.type IN (0,3) THEN (CASE WHEN n.notho=2 THEN '×' ELSE '' END) || n.specific_epithet
+    -- parsable names
+    WHEN n.type IN ('SCIENTIFIC','INFORMAL') THEN (CASE WHEN n.notho='SPECIFIC' THEN '×' ELSE '' END) || n.specific_epithet
     -- unparsable ones
     ELSE n.scientific_name
   END AS species,
-  CASE WHEN n.rank > 'species'::rank THEN c.species_id ELSE NULL END AS infraspecies_parent_name_code,
-  CASE WHEN n.notho=3 THEN '×' ELSE '' END || n.infraspecific_epithet AS infraspecies,
-  CASE WHEN n.rank > 'species'::rank THEN r.marker ELSE NULL END AS infraspecies_marker,  -- uses __ranks table created in AcExporter java code!
+  CASE WHEN n.rank > 'SPECIES'::rank THEN c.species_id ELSE NULL END AS infraspecies_parent_name_code,
+  CASE WHEN n.notho='INFRASPECIFIC' THEN '×' ELSE '' END || n.infraspecific_epithet AS infraspecies,
+  CASE WHEN n.rank > 'SPECIES'::rank THEN r.marker ELSE NULL END AS infraspecies_marker,  -- uses __ranks table created in AcExporter java code!
   concat_ws(', ', n.authorship, n.remarks, n.appended_phrase) AS author,
   CASE WHEN t.is_synonym THEN t.parent_id ELSE t.id END AS accepted_name_code,
   t.remarks AS comment,
   t.according_to_date AS scrutiny_date,
-  CASE WHEN t.status=0 THEN 1
-       WHEN t.status=1 THEN 4
-       WHEN t.status=2 THEN 5
-       WHEN t.status=3 THEN 2
-       WHEN t.status=4 THEN 3
+  CASE WHEN t.status='ACCEPTED' THEN 1
+       WHEN t.status='PROVISIONALLY_ACCEPTED' THEN 4
+       WHEN t.status='SYNONYM' THEN 5
+       WHEN t.status='AMBIGUOUS_SYNONYM' THEN 2
+       WHEN t.status='MISAPPLIED' THEN 3
   END AS sp2000_status_id, -- 1=ACCEPTED, 2=AMBIGUOUS_SYNONYM, 3=MISAPPLIED, 4=PROVISIONALLY_ACCEPTED, 5=SYNONYM
                            -- Java: ACCEPTED,PROVISIONALLY_ACCEPTED,SYNONYM,AMBIGUOUS_SYNONYM,MISAPPLIED
   CASE WHEN t.is_synonym THEN coalesce(cs.dataset_key, 1500) - 1000 ELSE coalesce(c.dataset_key, 1500) - 1000 END AS database_id,
@@ -321,7 +315,7 @@ FROM name_{{datasetKey}} n
     LEFT JOIN __ranks r ON n.rank=r.key
     LEFT JOIN __scrutinizer sc ON t.according_to=sc.name AND c.dataset_key=sc.dataset_key
     LEFT JOIN __tax_keys tk ON t.id=tk.id
-WHERE n.rank >= 'species'::rank
+WHERE n.rank >= 'SPECIES'::rank
 
 ) TO 'scientific_names.csv';
 
@@ -352,8 +346,8 @@ COPY (
   SELECT nextval('__record_id_seq') AS record_id,
     d.taxon_id AS name_code, 
     d.area AS distribution, 
-    CASE WHEN d.gazetteer=0 THEN 'TDWG' WHEN d.gazetteer=1 THEN 'ISO' WHEN d.gazetteer=2 THEN 'FAO' ELSE 'TEXT' END AS StandardInUse,
-    CASE WHEN d.status=0 THEN 'Native' WHEN d.status=1 THEN 'Domesticated' WHEN d.status=2 THEN 'Alien' WHEN d.status=3 THEN 'Uncertain' END AS DistributionStatus,
+    d.gazetteer::text AS StandardInUse,
+    initcap(d.status::text) AS DistributionStatus,
     coalesce(s.subject_dataset_key, 1500) - 1000 AS database_id
   FROM distribution_{{datasetKey}} d
       JOIN name_usage_{{datasetKey}} t ON t.id=d.taxon_id

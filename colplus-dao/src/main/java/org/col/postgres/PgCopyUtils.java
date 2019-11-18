@@ -6,10 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 import com.google.common.base.Joiner;
@@ -28,6 +25,7 @@ import org.slf4j.LoggerFactory;
 public class PgCopyUtils {
   private static final Logger LOG = LoggerFactory.getLogger(PgCopyUtils.class);
   private static final Joiner HEADER_JOINER = Joiner.on(",");
+  private static final String[] EMPTY_ARRAY = new String[0];
   
   public static long copy(PgConnection con, String table, String resourceName) throws IOException, SQLException {
     return copy(con, table, resourceName, Collections.emptyMap(), null, "");
@@ -64,7 +62,7 @@ public class PgCopyUtils {
    * @return parses a postgres array given as <pre>{Duméril,Bibron}</pre>
    */
   public static String[] splitPgArray(String x) {
-    return x.substring(1, x.length()-1).split(",");
+    return x == null ? EMPTY_ARRAY : x.substring(1, x.length()-1).split(",");
   }
   
   public static String buildPgArray(String[] x) {
@@ -143,7 +141,7 @@ public class PgCopyUtils {
           // empty string
           values.add(null);
         } else if (val.getClass().isEnum()) {
-          values.add(String.valueOf(((Enum) val).ordinal()));
+          values.add(((Enum) val).name());
         } else {
           values.add(val.toString());
         }

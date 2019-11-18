@@ -254,7 +254,7 @@
         SET dataset_sectors = NULL
         FROM name n
         WHERE n.id=u.name_id
-            AND n.rank &lt; 'genus'
+            AND n.rank &lt; 'GENUS'
             AND NOT u.is_synonym
     </update>
 

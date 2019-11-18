@@ -72,7 +72,7 @@
     </sql>
 
     <sql id="PROPS">
-      #{type},
+      #{type}::datasettype,
       #{title},
       #{gbifKey},
       #{gbifPublisherKey},
@@ -80,18 +80,18 @@
       #{organisations, typeHandler=org.col.db.type.StringArrayTypeHandler},
       #{contact},
       #{authorsAndEditors, typeHandler=org.col.db.type.StringArrayTypeHandler},
-      #{license},
+      #{license}::LICENSE,
       #{version},
       #{released},
       #{citation},
       #{geographicScope},
       #{website},
       #{logo},
-      #{dataFormat},
+      #{dataFormat}::DATAFORMAT,
       #{dataAccess},
-      #{origin},
+      #{origin}::datasetorigin,
       #{importFrequency, typeHandler=org.col.db.type.FrequencyTypeHandler},
-      #{code},
+      #{code}::NOMCODE,
       #{notes},
       #{alias},
       #{group},
@@ -116,16 +116,16 @@
                 )
             </if>
             <if test="req.code != null">
-                AND code=#{req.code}
+                AND code=#{req.code}::NOMCODE
             </if>
             <if test="req.type != null">
-                AND type=#{req.type}
+                AND type=#{req.type}::DATASETTYPE
             </if>
             <if test="req.contributesTo != null">
                 AND exists(select 1 from sector s WHERE dataset_key=#{req.contributesTo} AND s.subject_dataset_key=d.key)
             </if>
             <if test="req.format != null">
-                AND data_format=#{req.format}
+                AND data_format=#{req.format}::DATAFORMAT
             </if>
             <if test="req.modified != null">
                 AND di.finished > #{req.modified}
@@ -238,7 +238,7 @@
                 AND d.import_frequency > 0
         ORDER BY d.key, di.attempt DESC
         ) AS latest
-        WHERE state != 0 AND (finished + import_frequency * interval '1 day') &lt;  now()
+        WHERE state != 'WAITING'::importstate AND (finished + import_frequency * interval '1 day') &lt;  now()
         ORDER BY finished ASC
         LIMIT #{limit}
     </select>

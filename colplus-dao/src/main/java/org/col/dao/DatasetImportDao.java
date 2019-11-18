@@ -17,7 +17,6 @@ import org.col.api.model.ResultPage;
 import org.col.api.vocab.*;
 import org.col.db.mapper.DatasetImportMapper;
 import org.col.db.mapper.DatasetMapper;
-import org.col.db.type2.IntCount;
 import org.col.db.type2.StringCount;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
@@ -198,12 +197,11 @@ public class DatasetImportDao {
     return map;
   }
   
-  public static <K extends Enum> Map<K, Integer> countMap(Class<K> clazz, List<IntCount> counts) {
-    K[] values = clazz.getEnumConstants();
+  public static <K extends Enum<K>> Map<K, Integer> countMap(Class<K> clazz, List<StringCount> counts) {
     Map<K, Integer> map = new HashMap<>(counts.size());
-    for (IntCount cnt : counts) {
+    for (StringCount cnt : counts) {
       if (cnt.getKey() != null) {
-        map.put(values[cnt.getKey()], cnt.getCount());
+        map.put(Enum.valueOf(clazz, cnt.getKey()), cnt.getCount());
       }
     }
     return map;

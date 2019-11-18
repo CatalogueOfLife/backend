@@ -16,89 +16,519 @@ $func$
 SELECT public.unaccent('public.unaccent', $1)  -- schema-qualify function and dictionary
 $func$  LANGUAGE sql IMMUTABLE;
 
-CREATE TYPE rank AS ENUM (
-  'domain',
-  'realm',
-  'subrealm',
-  'superkingdom',
-  'kingdom',
-  'subkingdom',
-  'infrakingdom',
-  'superphylum',
-  'phylum',
-  'subphylum',
-  'infraphylum',
-  'superclass',
-  'class',
-  'subclass',
-  'infraclass',
-  'parvclass',
-  'superlegion',
-  'legion',
-  'sublegion',
-  'infralegion',
-  'supercohort',
-  'cohort',
-  'subcohort',
-  'infracohort',
-  'magnorder',
-  'grandorder',
-  'superorder',
-  'order',
-  'suborder',
-  'infraorder',
-  'parvorder',
-  'megafamily',
-  'grandfamily',
-  'superfamily',
-  'epifamily',
-  'family',
-  'subfamily',
-  'infrafamily',
-  'supertribe',
-  'tribe',
-  'subtribe',
-  'infratribe',
-  'suprageneric_name',
-  'genus',
-  'subgenus',
-  'infragenus',
-  'supersection',
-  'section',
-  'subsection',
-  'superseries',
-  'series',
-  'subseries',
-  'infrageneric_name',
-  'species_aggregate',
-  'species',
-  'infraspecific_name',
-  'grex',
-  'subspecies',
-  'cultivar_group',
-  'convariety',
-  'infrasubspecific_name',
-  'proles',
-  'natio',
-  'aberration',
-  'morph',
-  'variety',
-  'subvariety',
-  'form',
-  'subform',
-  'pathovar',
-  'biovar',
-  'chemovar',
-  'morphovar',
-  'phagovar',
-  'serovar',
-  'chemoform',
-  'forma_specialis',
-  'cultivar',
-  'strain',
-  'other',
-  'unranked'
+
+-- all enum types produces via PgSetupRuleTest.pgEnumSql()
+CREATE TYPE AREASTANDARD AS ENUM (
+  'TDWG',
+  'ISO',
+  'FAO',
+  'FAO_FISHING',
+  'LONGHURST',
+  'TEOW',
+  'IHO',
+  'TEXT'
 );
+
+CREATE TYPE COLUSER_ROLE AS ENUM (
+  'USER',
+  'EDITOR',
+  'ADMIN'
+);
+
+CREATE TYPE CONTINENT AS ENUM (
+  'AFRICA',
+  'ANTARCTICA',
+  'ASIA',
+  'OCEANIA',
+  'EUROPE',
+  'NORTH_AMERICA',
+  'SOUTH_AMERICA'
+);
+
+CREATE TYPE DATAFORMAT AS ENUM (
+  'DWCA',
+  'ACEF',
+  'TCS',
+  'COLDP',
+  'PROXY'
+);
+
+CREATE TYPE DATASETORIGIN AS ENUM (
+  'EXTERNAL',
+  'UPLOADED',
+  'MANAGED'
+);
+
+CREATE TYPE DATASETTYPE AS ENUM (
+  'NOMENCLATURAL',
+  'TAXONOMIC',
+  'ARTICLE',
+  'PERSONAL',
+  'OTU',
+  'CATALOGUE',
+  'THEMATIC',
+  'OTHER'
+);
+
+CREATE TYPE DESCRIPTIONCATEGORY AS ENUM (
+  'BIOLOGY',
+  'CONSERVATION',
+  'HABITAT',
+  'USE',
+  'DISTRIBUTION',
+  'DESCRIPTION',
+  'ETYMOLOGY',
+  'TREATMENT',
+  'MISCELLANEOUS',
+  'NOMENCLATURE',
+  'STRATIGRAPHY',
+  'TAXONOMY',
+  'TYPIFICATION',
+  'OTHER'
+);
+
+CREATE TYPE DISTRIBUTIONSTATUS AS ENUM (
+  'NATIVE',
+  'DOMESTICATED',
+  'ALIEN',
+  'UNCERTAIN'
+);
+
+CREATE TYPE EDITORIALDECISION_MODE AS ENUM (
+  'BLOCK',
+  'REVIEWED',
+  'UPDATE',
+  'UPDATE_RECURSIVE'
+);
+
+CREATE TYPE ENTITYTYPE AS ENUM (
+  'ANY',
+  'NAME',
+  'NAME_RELATION',
+  'NAME_USAGE',
+  'DESCRIPTION',
+  'DISTRIBUTION',
+  'MEDIA',
+  'VERNACULAR',
+  'REFERENCE'
+);
+
+CREATE TYPE ESTIMATETYPE AS ENUM (
+  'DESCRIBED_SPECIES_LIVING',
+  'DESCRIBED_SPECIES_EXTINCT',
+  'ESTIMATED_SPECIES'
+);
+
+CREATE TYPE GAZETTEER AS ENUM (
+  'TDWG',
+  'ISO',
+  'FAO',
+  'LONGHURST',
+  'TEOW',
+  'IHO',
+  'TEXT'
+);
+
+CREATE TYPE IMPORTSTATE AS ENUM (
+  'WAITING',
+  'DOWNLOADING',
+  'PROCESSING',
+  'INSERTING',
+  'INDEXING',
+  'BUILDING_METRICS',
+  'UNCHANGED',
+  'FINISHED',
+  'CANCELED',
+  'FAILED'
+);
+
+CREATE TYPE ISSUE AS ENUM (
+  'NOT_INTERPRETED',
+  'ESCAPED_CHARACTERS',
+  'REFERENCE_ID_INVALID',
+  'ID_NOT_UNIQUE',
+  'URL_INVALID',
+  'PARTIAL_DATE',
+  'UNPARSABLE_NAME',
+  'PARTIALLY_PARSABLE_NAME',
+  'UNPARSABLE_AUTHORSHIP',
+  'DOUBTFUL_NAME',
+  'INCONSISTENT_AUTHORSHIP',
+  'INCONSISTENT_NAME',
+  'PARSED_NAME_DIFFERS',
+  'UNUSUAL_NAME_CHARACTERS',
+  'MULTI_WORD_EPITHET',
+  'UPPERCASE_EPITHET',
+  'CONTAINS_REFERENCE',
+  'NULL_EPITHET',
+  'BLACKLISTED_EPITHET',
+  'SUBSPECIES_ASSIGNED',
+  'LC_MONOMIAL',
+  'INDETERMINED',
+  'HIGHER_RANK_BINOMIAL',
+  'QUESTION_MARKS_REMOVED',
+  'REPL_ENCLOSING_QUOTE',
+  'MISSING_GENUS',
+  'NOMENCLATURAL_STATUS_INVALID',
+  'NOMENCLATURAL_CODE_INVALID',
+  'TYPE_STATUS_INVALID',
+  'BASIONYM_AUTHOR_MISMATCH',
+  'BASIONYM_DERIVED',
+  'CONFLICTING_BASIONYM_COMBINATION',
+  'CHAINED_BASIONYM',
+  'NAME_NOT_UNIQUE',
+  'NAME_MATCH_INSERTED',
+  'NAME_MATCH_VARIANT',
+  'NAME_MATCH_AMBIGUOUS',
+  'NAME_MATCH_NONE',
+  'POTENTIAL_CHRESONYM',
+  'PUBLISHED_BEFORE_GENUS',
+  'BASIONYM_ID_INVALID',
+  'RANK_INVALID',
+  'UNMATCHED_NAME_BRACKETS',
+  'TRUNCATED_NAME',
+  'DUPLICATE_NAME',
+  'NAME_VARIANT',
+  'TAXON_VARIANT',
+  'TAXON_ID_INVALID',
+  'NAME_ID_INVALID',
+  'PARENT_ID_INVALID',
+  'ACCEPTED_ID_INVALID',
+  'ACCEPTED_NAME_MISSING',
+  'TAXONOMIC_STATUS_INVALID',
+  'PROVISIONAL_STATUS_INVALID',
+  'LIFEZONE_INVALID',
+  'IS_EXTINCT_INVALID',
+  'GEOTIME_INVALID',
+  'ACCORDING_TO_DATE_INVALID',
+  'CHAINED_SYNONYM',
+  'PARENT_CYCLE',
+  'SYNONYM_PARENT',
+  'CLASSIFICATION_RANK_ORDER_INVALID',
+  'CLASSIFICATION_NOT_APPLIED',
+  'PARENT_NAME_MISMATCH',
+  'DERIVED_TAXONOMIC_STATUS',
+  'TAXONOMIC_STATUS_DOUBTFUL',
+  'SYNONYM_DATA_MOVED',
+  'SYNONYM_DATA_REMOVED',
+  'REFTYPE_INVALID',
+  'VERNACULAR_NAME_INVALID',
+  'VERNACULAR_LANGUAGE_INVALID',
+  'VERNACULAR_COUNTRY_INVALID',
+  'VERNACULAR_NAME_TRANSLITERATED',
+  'DISTRIBUTION_INVALID',
+  'DISTRIBUTION_AREA_INVALID',
+  'DISTRIBUTION_STATUS_INVALID',
+  'DISTRIBUTION_GAZETEER_INVALID',
+  'MEDIA_CREATED_DATE_INVALID',
+  'UNPARSABLE_YEAR',
+  'UNLIKELY_YEAR',
+  'MULTIPLE_PUBLISHED_IN_REFERENCES',
+  'UNPARSABLE_REFERENCE',
+  'UNPARSABLE_REFERENCE_TYPE',
+  'UNMATCHED_REFERENCE_BRACKETS',
+  'CITATION_CONTAINER_TITLE_UNPARSED',
+  'CITATION_DETAILS_UNPARSED',
+  'CITATION_AUTHORS_UNPARSED',
+  'CITATION_UNPARSED'
+);
+
+CREATE TYPE KINGDOM AS ENUM (
+  'INCERTAE_SEDIS',
+  'ANIMALIA',
+  'ARCHAEA',
+  'BACTERIA',
+  'CHROMISTA',
+  'FUNGI',
+  'PLANTAE',
+  'PROTOZOA',
+  'VIRUSES'
+);
+
+CREATE TYPE LICENSE AS ENUM (
+  'CC0',
+  'CC_BY',
+  'CC_BY_NC',
+  'UNSPECIFIED',
+  'OTHER'
+);
+
+CREATE TYPE LIFEZONE AS ENUM (
+  'BRACKISH',
+  'FRESHWATER',
+  'MARINE',
+  'TERRESTRIAL'
+);
+
+CREATE TYPE MATCHINGMODE AS ENUM (
+  'STRICT',
+  'FUZZY'
+);
+
+CREATE TYPE MATCHTYPE AS ENUM (
+  'EXACT',
+  'VARIANT',
+  'INSERTED',
+  'AMBIGUOUS',
+  'NONE'
+);
+
+CREATE TYPE MEDIATYPE AS ENUM (
+  'IMAGE',
+  'VIDEO',
+  'AUDIO'
+);
+
+CREATE TYPE NAMECATEGORY AS ENUM (
+  'UNINOMIAL',
+  'BINOMIAL',
+  'TRINOMIAL'
+);
+
+CREATE TYPE NAMEFIELD AS ENUM (
+  'UNINOMIAL',
+  'GENUS',
+  'INFRAGENERIC_EPITHET',
+  'SPECIFIC_EPITHET',
+  'INFRASPECIFIC_EPITHET',
+  'CULTIVAR_EPITHET',
+  'APPENDED_PHRASE',
+  'CANDIDATUS',
+  'NOTHO',
+  'BASIONYM_AUTHORS',
+  'BASIONYM_EX_AUTHORS',
+  'BASIONYM_YEAR',
+  'COMBINATION_AUTHORS',
+  'COMBINATION_EX_AUTHORS',
+  'COMBINATION_YEAR',
+  'SANCTIONING_AUTHOR',
+  'NOM_STATUS',
+  'PUBLISHED_IN_ID',
+  'PUBLISHED_IN_PAGE',
+  'WEBPAGE',
+  'REMARKS'
+);
+
+CREATE TYPE NAMEPART AS ENUM (
+  'GENERIC',
+  'INFRAGENERIC',
+  'SPECIFIC',
+  'INFRASPECIFIC'
+);
+
+CREATE TYPE NAMETYPE AS ENUM (
+  'SCIENTIFIC',
+  'VIRUS',
+  'HYBRID_FORMULA',
+  'INFORMAL',
+  'OTU',
+  'PLACEHOLDER',
+  'NO_NAME'
+);
+
+CREATE TYPE NOMCODE AS ENUM (
+  'BACTERIAL',
+  'BOTANICAL',
+  'CULTIVARS',
+  'VIRUS',
+  'ZOOLOGICAL'
+);
+
+CREATE TYPE NOMRELTYPE AS ENUM (
+  'SPELLING_CORRECTION',
+  'BASIONYM',
+  'BASED_ON',
+  'REPLACEMENT_NAME',
+  'CONSERVED',
+  'LATER_HOMONYM',
+  'SUPERFLUOUS',
+  'HOMOTYPIC',
+  'TYPE'
+);
+
+CREATE TYPE NOMSTATUS AS ENUM (
+  'ESTABLISHED',
+  'NOT_ESTABLISHED',
+  'ACCEPTABLE',
+  'UNACCEPTABLE',
+  'CONSERVED',
+  'REJECTED',
+  'DOUBTFUL',
+  'MANUSCRIPT',
+  'CHRESONYM'
+);
+
+CREATE TYPE ORIGIN AS ENUM (
+  'SOURCE',
+  'DENORMED_CLASSIFICATION',
+  'VERBATIM_PARENT',
+  'VERBATIM_ACCEPTED',
+  'VERBATIM_BASIONYM',
+  'AUTONYM',
+  'IMPLICIT_NAME',
+  'MISSING_ACCEPTED',
+  'BASIONYM_PLACEHOLDER',
+  'EX_AUTHOR_SYNONYM',
+  'NAME_MATCHING',
+  'USER',
+  'OTHER'
+);
+
+CREATE TYPE RANK AS ENUM (
+  'DOMAIN',
+  'REALM',
+  'SUBREALM',
+  'SUPERKINGDOM',
+  'KINGDOM',
+  'SUBKINGDOM',
+  'INFRAKINGDOM',
+  'SUPERPHYLUM',
+  'PHYLUM',
+  'SUBPHYLUM',
+  'INFRAPHYLUM',
+  'SUPERCLASS',
+  'CLASS',
+  'SUBCLASS',
+  'INFRACLASS',
+  'PARVCLASS',
+  'SUPERLEGION',
+  'LEGION',
+  'SUBLEGION',
+  'INFRALEGION',
+  'SUPERCOHORT',
+  'COHORT',
+  'SUBCOHORT',
+  'INFRACOHORT',
+  'MAGNORDER',
+  'GRANDORDER',
+  'SUPERORDER',
+  'ORDER',
+  'SUBORDER',
+  'INFRAORDER',
+  'PARVORDER',
+  'MEGAFAMILY',
+  'GRANDFAMILY',
+  'SUPERFAMILY',
+  'EPIFAMILY',
+  'FAMILY',
+  'SUBFAMILY',
+  'INFRAFAMILY',
+  'SUPERTRIBE',
+  'TRIBE',
+  'SUBTRIBE',
+  'INFRATRIBE',
+  'SUPRAGENERIC_NAME',
+  'GENUS',
+  'SUBGENUS',
+  'INFRAGENUS',
+  'SUPERSECTION',
+  'SECTION',
+  'SUBSECTION',
+  'SUPERSERIES',
+  'SERIES',
+  'SUBSERIES',
+  'INFRAGENERIC_NAME',
+  'SPECIES_AGGREGATE',
+  'SPECIES',
+  'INFRASPECIFIC_NAME',
+  'GREX',
+  'SUBSPECIES',
+  'CULTIVAR_GROUP',
+  'CONVARIETY',
+  'INFRASUBSPECIFIC_NAME',
+  'PROLES',
+  'NATIO',
+  'ABERRATION',
+  'MORPH',
+  'VARIETY',
+  'SUBVARIETY',
+  'FORM',
+  'SUBFORM',
+  'PATHOVAR',
+  'BIOVAR',
+  'CHEMOVAR',
+  'MORPHOVAR',
+  'PHAGOVAR',
+  'SEROVAR',
+  'CHEMOFORM',
+  'FORMA_SPECIALIS',
+  'CULTIVAR',
+  'STRAIN',
+  'OTHER',
+  'UNRANKED'
+);
+
+CREATE TYPE SECTORIMPORT_STATE AS ENUM (
+  'WAITING',
+  'PREPARING',
+  'COPYING',
+  'DELETING',
+  'RELINKING',
+  'INDEXING',
+  'FINISHED',
+  'CANCELED',
+  'FAILED'
+);
+
+CREATE TYPE SECTOR_MODE AS ENUM (
+  'ATTACH',
+  'UNION',
+  'MERGE'
+);
+
+CREATE TYPE TAXONOMICSTATUS AS ENUM (
+  'ACCEPTED',
+  'PROVISIONALLY_ACCEPTED',
+  'SYNONYM',
+  'AMBIGUOUS_SYNONYM',
+  'MISAPPLIED'
+);
+
+CREATE TYPE TEXTFORMAT AS ENUM (
+  'HTML',
+  'MARKDOWN',
+  'PLAIN_TEXT'
+);
+
+CREATE TYPE TYPESTATUS AS ENUM (
+  'ALLOLECTOTYPE',
+  'ALLONEOTYPE',
+  'ALLOTYPE',
+  'COTYPE',
+  'EPITYPE',
+  'ERGATOTYPE',
+  'EXEPITYPE',
+  'EXHOLOTYPE',
+  'EXISOTYPE',
+  'EXLECTOTYPE',
+  'EXNEOTYPE',
+  'EXPARATYPE',
+  'EXSYNTYPE',
+  'EXTYPE',
+  'HAPANTOTYPE',
+  'HOLOTYPE',
+  'ICONOTYPE',
+  'ISOLECTOTYPE',
+  'ISONEOTYPE',
+  'ISOSYNTYPE',
+  'ISOTYPE',
+  'LECTOTYPE',
+  'NEOTYPE',
+  'PARALECTOTYPE',
+  'PARANEOTYPE',
+  'PARATYPE',
+  'PLASTOHOLOTYPE',
+  'PLASTOISOTYPE',
+  'PLASTOLECTOTYPE',
+  'PLASTONEOTYPE',
+  'PLASTOPARATYPE',
+  'PLASTOSYNTYPE',
+  'PLASTOTYPE',
+  'SYNTYPE',
+  'TOPOTYPE',
+  'OTHER'
+);
+
 
 -- a simple compound type corresponding to the basics of SimpleName. Often used for building classifications as arrays
 CREATE TYPE simple_name AS (id text, rank rank, name text);
@@ -106,54 +536,54 @@ CREATE TYPE simple_name AS (id text, rank rank, name text);
 
 CREATE TABLE coluser (
   key serial PRIMARY KEY,
+  last_login TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  deleted TIMESTAMP WITHOUT TIME ZONE,
   username TEXT UNIQUE,
   firstname TEXT,
   lastname TEXT,
   email TEXT,
   orcid TEXT,
   country TEXT,
-  roles int[],
-  settings HSTORE,
-  last_login TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  deleted TIMESTAMP WITHOUT TIME ZONE
+  roles COLUSER_ROLE[],
+  settings HSTORE
 );
 
 
 CREATE TABLE dataset (
   key serial PRIMARY KEY,
-  type INTEGER NOT NULL DEFAULT 7,
-  title TEXT NOT NULL,
-  alias TEXT,
+  type DATASETTYPE NOT NULL DEFAULT 'OTHER',
   gbif_key UUID,
   gbif_publisher_key UUID,
+  license LICENSE,
+  released DATE,
+  data_format DATAFORMAT,
+  confidence INTEGER CHECK (confidence > 0 AND confidence <= 5),
+  completeness INTEGER CHECK (completeness >= 0 AND completeness <= 100),
+  origin DATASETORIGIN NOT NULL,
+  import_frequency INTEGER NOT NULL DEFAULT 7,
+  code NOMCODE,
+  last_data_import_attempt INTEGER,
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  deleted TIMESTAMP WITHOUT TIME ZONE,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  title TEXT NOT NULL,
+  alias TEXT,
   description TEXT,
   organisations TEXT[] DEFAULT '{}',
   contact TEXT,
   authors_and_editors TEXT[] DEFAULT '{}',
-  license INTEGER,
   version TEXT,
-  released DATE,
   citation TEXT,
   geographic_scope TEXT,
   website TEXT,
   logo TEXT,
-  data_format INTEGER,
   data_access TEXT,
   "group" TEXT,
-  confidence INTEGER CHECK (confidence > 0 AND confidence <= 5),
-  completeness INTEGER CHECK (completeness >= 0 AND completeness <= 100),
-  origin INTEGER NOT NULL,
-  import_frequency INTEGER NOT NULL DEFAULT 7,
-  code INTEGER,
   notes text,
-  last_data_import_attempt INTEGER,
-  deleted TIMESTAMP WITHOUT TIME ZONE,
-  doc tsvector,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  created_by INTEGER NOT NULL,
-  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified_by INTEGER NOT NULL
+  doc tsvector
 );
 
 CREATE TABLE dataset_archive (LIKE dataset);
@@ -184,12 +614,9 @@ CREATE TRIGGER dataset_trigger BEFORE INSERT OR UPDATE
 CREATE TABLE dataset_import (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   attempt INTEGER NOT NULL,
-  state INTEGER NOT NULL,
-  error TEXT,
-  md5 TEXT,
+  state IMPORTSTATE NOT NULL,
   started TIMESTAMP WITHOUT TIME ZONE,
   finished TIMESTAMP WITHOUT TIME ZONE,
-  download_uri TEXT,
   download TIMESTAMP WITHOUT TIME ZONE,
   verbatim_count INTEGER,
   name_count INTEGER,
@@ -213,6 +640,9 @@ CREATE TABLE dataset_import (
   verbatim_by_type_count HSTORE,
   verbatim_by_term_count JSONB,
   media_by_type_count HSTORE,
+  error TEXT,
+  md5 TEXT,
+  download_uri TEXT,
   PRIMARY KEY (dataset_key, attempt)
 );
 
@@ -220,37 +650,35 @@ CREATE TABLE sector (
   key serial PRIMARY KEY,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   subject_dataset_key INTEGER NOT NULL REFERENCES dataset,
+  subject_rank RANK,
+  subject_code NOMCODE,
+  subject_status TAXONOMICSTATUS,
+  target_rank RANK,
+  target_code NOMCODE,
+  mode SECTOR_MODE NOT NULL,
+  code NOMCODE,
+  last_data_import_attempt INTEGER,
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   subject_id TEXT,
   subject_name TEXT,
   subject_authorship TEXT,
-  subject_rank rank,
-  subject_code INTEGER,
-  subject_status INTEGER,
   subject_parent TEXT,
   target_id TEXT,
   target_name TEXT,
   target_authorship TEXT,
-  target_rank rank,
-  target_code INTEGER,
-  mode INTEGER NOT NULL,
-  code INTEGER,
   note TEXT,
-  last_data_import_attempt INTEGER,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  created_by INTEGER NOT NULL,
-  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified_by INTEGER NOT NULL,
   UNIQUE (dataset_key, subject_dataset_key, subject_id)
 );
 
 CREATE TABLE sector_import (
   sector_key INTEGER NOT NULL REFERENCES sector,
   attempt INTEGER NOT NULL,
-  type TEXT NOT NULL,
-  state INTEGER NOT NULL,
-  error TEXT,
   started TIMESTAMP WITHOUT TIME ZONE,
   finished TIMESTAMP WITHOUT TIME ZONE,
+  state SECTORIMPORT_STATE NOT NULL,
   name_count INTEGER,
   taxon_count INTEGER,
   synonym_count INTEGER,
@@ -272,7 +700,9 @@ CREATE TABLE sector_import (
   name_relations_by_type_count HSTORE,
   verbatim_by_type_count HSTORE,
   media_by_type_count HSTORE,
+  type TEXT NOT NULL,
   warnings TEXT[],
+  error TEXT,
   PRIMARY KEY (sector_key, attempt)
 );
 
@@ -280,44 +710,44 @@ CREATE TABLE decision (
   key serial PRIMARY KEY,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   subject_dataset_key INTEGER NOT NULL REFERENCES dataset,
+  subject_rank rank,
+  subject_code NOMCODE,
+  subject_status TAXONOMICSTATUS,
+  mode EDITORIALDECISION_MODE NOT NULL,
+  status TAXONOMICSTATUS,
+  extinct BOOLEAN,
+  lifezones LIFEZONE[] DEFAULT '{}',
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   subject_id TEXT,
   subject_name TEXT,
   subject_authorship TEXT,
-  subject_rank rank,
-  subject_code INTEGER,
-  subject_status INTEGER,
   subject_parent TEXT,
-  mode INTEGER NOT NULL,
-  status INTEGER,
-  name JSONB,
-  extinct BOOLEAN,
   temporal_range_start TEXT,
   temporal_range_end TEXT,
-  lifezones INTEGER[] DEFAULT '{}',
+  name JSONB,
   note TEXT,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  created_by INTEGER NOT NULL,
-  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified_by INTEGER NOT NULL,
   UNIQUE (dataset_key, subject_dataset_key, subject_id)
 );
 
 CREATE TABLE estimate (
   key serial PRIMARY KEY,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
+  target_rank RANK,
+  target_code NOMCODE,
+  estimate INTEGER,
+  type ESTIMATETYPE NOT NULL,
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   target_id TEXT,
   target_name TEXT NOT NULL,
   target_authorship TEXT,
-  target_rank rank,
-  target_code INTEGER,
-  estimate INTEGER,
-  type INTEGER NOT NULL,
   reference_id TEXT,
-  note TEXT,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  created_by INTEGER NOT NULL,
-  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified_by INTEGER NOT NULL
+  note TEXT
 );
 --
 -- PARTITIONED DATA TABLES
@@ -330,7 +760,7 @@ CREATE TABLE verbatim (
   file TEXT,
   type TEXT,
   terms jsonb,
-  issues INT[] DEFAULT '{}',
+  issues ISSUE[] DEFAULT '{}',
   doc tsvector
 ) PARTITION BY LIST (dataset_key);
 
@@ -347,14 +777,14 @@ CREATE TABLE reference (
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   verbatim_key INTEGER,
+  year INTEGER,
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   csl JSONB,
   citation TEXT,
-  year int,
-  doc tsvector,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  created_by INTEGER NOT NULL,
-  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified_by INTEGER NOT NULL
+  doc tsvector
 ) PARTITION BY LIST (dataset_key);
 
 CREATE OR REPLACE FUNCTION reference_doc_update() RETURNS trigger AS $$
@@ -370,17 +800,28 @@ LANGUAGE plpgsql;
 
 CREATE TABLE name (
   id TEXT NOT NULL,
+  candidatus BOOLEAN DEFAULT FALSE,
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   verbatim_key INTEGER,
+  name_index_match_type MATCHTYPE,
+  rank RANK NOT NULL,
+  notho NAMEPART,
+  code NOMCODE,
+  nom_status NOMSTATUS,
+  type_status TYPESTATUS,
+  origin ORIGIN NOT NULL,
+  type NAMETYPE NOT NULL,
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   homotypic_name_id TEXT NOT NULL,
   name_index_id TEXT,
-  name_index_match_type INTEGER,
   scientific_name TEXT NOT NULL,
   scientific_name_normalized TEXT NOT NULL,
   authorship TEXT,
   authorship_normalized TEXT[],
-  rank rank NOT NULL,
   uninomial TEXT,
   genus TEXT,
   infrageneric_epithet TEXT,
@@ -388,8 +829,6 @@ CREATE TABLE name (
   infraspecific_epithet TEXT,
   cultivar_epithet TEXT,
   appended_phrase TEXT,
-  candidatus BOOLEAN DEFAULT FALSE,
-  notho integer,
   basionym_authors TEXT[] DEFAULT '{}',
   basionym_ex_authors TEXT[] DEFAULT '{}',
   basionym_year TEXT,
@@ -399,19 +838,10 @@ CREATE TABLE name (
   sanctioning_author TEXT,
   published_in_id TEXT,
   published_in_page TEXT,
-  code INTEGER,
-  nom_status INTEGER,
-  type_status INTEGER,
   type_material TEXT,
   type_reference_id TEXT,
-  origin INTEGER NOT NULL,
-  type INTEGER NOT NULL,
   webpage TEXT,
-  remarks TEXT,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  created_by INTEGER NOT NULL,
-  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified_by INTEGER NOT NULL
+  remarks TEXT
 ) PARTITION BY LIST (dataset_key);
 
 
@@ -429,41 +859,41 @@ CREATE TABLE name_rel (
   id INTEGER NOT NULL,
   verbatim_key INTEGER,
   dataset_key INTEGER NOT NULL,
-  type INTEGER NOT NULL,
+  type NOMRELTYPE NOT NULL,
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   name_id TEXT NOT NULL,
   related_name_id TEXT NULL,
   published_in_id TEXT,
-  note TEXT,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  created_by INTEGER NOT NULL,
-  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified_by INTEGER NOT NULL
+  note TEXT
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE name_usage (
   id TEXT NOT NULL,
+  is_synonym BOOLEAN NOT NULL,
+  extinct BOOLEAN,
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   verbatim_key INTEGER,
+  status TAXONOMICSTATUS NOT NULL,
+  origin ORIGIN NOT NULL,
+  according_to_date DATE,
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   parent_id TEXT,
   name_id TEXT NOT NULL,
-  status INTEGER NOT NULL,
-  is_synonym BOOLEAN NOT NULL,
-  origin INTEGER NOT NULL,
   according_to TEXT,
-  according_to_date DATE,
   reference_ids TEXT[] DEFAULT '{}',
-  extinct BOOLEAN,
   temporal_range_start TEXT,
   temporal_range_end TEXT,
-  lifezones INTEGER[] DEFAULT '{}',
+  lifezones LIFEZONE[] DEFAULT '{}',
   webpage TEXT,
   remarks TEXT,
-  dataset_sectors JSONB,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  created_by INTEGER NOT NULL,
-  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified_by INTEGER NOT NULL
+  dataset_sectors JSONB
 ) PARTITION BY LIST (dataset_key);
 
 
@@ -471,70 +901,69 @@ CREATE TABLE vernacular_name (
   id serial,
   dataset_key INTEGER NOT NULL,
   verbatim_key INTEGER,
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  language CHAR(3),
+  country CHAR(2),
   taxon_id TEXT NOT NULL,
   name TEXT NOT NULL,
   latin TEXT,
-  language CHAR(3),
-  country CHAR(2),
   area TEXT,
-  reference_id TEXT,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  created_by INTEGER NOT NULL,
-  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified_by INTEGER NOT NULL
+  reference_id TEXT
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE distribution (
   id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL,
   verbatim_key INTEGER,
+  gazetteer GAZETTEER NOT NULL,
+  status DISTRIBUTIONSTATUS,
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   taxon_id TEXT NOT NULL,
   area TEXT NOT NULL,
-  gazetteer INTEGER NOT NULL,
-  status INTEGER,
-  reference_id TEXT,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  created_by INTEGER NOT NULL,
-  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified_by INTEGER NOT NULL
+  reference_id TEXT
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE description (
   id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL,
   verbatim_key INTEGER,
+  format TEXTFORMAT,
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  language CHAR(3),
   taxon_id TEXT NOT NULL,
   category TEXT,
-  format INTEGER,
   description TEXT NOT NULL,
-  language CHAR(3),
-  reference_id TEXT,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  created_by INTEGER NOT NULL,
-  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified_by INTEGER NOT NULL
+  reference_id TEXT
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE media (
   id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL,
   verbatim_key INTEGER,
+  type MEDIATYPE,
+  captured DATE,
+  license LICENSE,
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   taxon_id TEXT NOT NULL,
   url TEXT,
-  type INTEGER,
   format TEXT,
   title TEXT,
-  captured DATE,
   captured_by TEXT,
-  license INTEGER,
   link TEXT,
-  reference_id TEXT,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  created_by INTEGER NOT NULL,
-  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified_by INTEGER NOT NULL
+  reference_id TEXT
 ) PARTITION BY LIST (dataset_key);
-
 
 
 -- FUNCTIONS
