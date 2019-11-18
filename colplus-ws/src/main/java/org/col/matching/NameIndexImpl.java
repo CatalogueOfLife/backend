@@ -73,8 +73,8 @@ public class NameIndexImpl implements NameIndex {
           counter.set(storeSize);
         }
       }
+      LOG.info("Started name index with {} names", counter.get());
       idGen = new IdGenerator(counter::incrementAndGet);
-      LOG.info("Started name index with {} names", store.count());
     }
   
   private int countPg() {
