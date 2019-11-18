@@ -30,6 +30,10 @@ public abstract class MapperTestBase<M> {
   @Rule
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
   
+  public MapperTestBase() {
+    this(null, TestDataRule.empty());
+  }
+
   public MapperTestBase(Class<M> mapperClazz) {
     this(mapperClazz, TestDataRule.apple());
   }

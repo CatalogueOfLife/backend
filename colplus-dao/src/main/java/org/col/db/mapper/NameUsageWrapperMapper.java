@@ -1,13 +1,10 @@
 package org.col.db.mapper;
 
-import java.util.List;
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.ResultHandler;
-import org.col.api.model.Page;
 import org.col.api.model.SimpleNameClassification;
-import org.col.api.search.NameUsageSearchRequest;
 import org.col.api.search.NameUsageWrapper;
 
 /**
@@ -36,7 +33,6 @@ public interface NameUsageWrapperMapper {
                                ResultHandler<NameUsageWrapper> handler);
   
   
-  
   /**
    * Traverses a subtree returning classifications as list of simple names objects only.
    * The first SimpleName in each classification list represents the usage being processed.
@@ -45,12 +41,5 @@ public interface NameUsageWrapperMapper {
                    @Nullable @Param("sectorKey") Integer sectorKey,
                    @Param("usageId") String usageId,
                    ResultHandler<SimpleNameClassification> handler);
-  
-  /**
-   * WARNING! experimental, not fully implemented !!!
-   */
-  List<NameUsageWrapper> search(@Param("datasetKey") int datasetKey,
-                                @Param("req") NameUsageSearchRequest request,
-                                @Param("page") Page page);
 
 }
