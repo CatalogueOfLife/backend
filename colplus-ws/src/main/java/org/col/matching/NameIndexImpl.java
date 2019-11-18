@@ -60,7 +60,7 @@ public class NameIndexImpl implements NameIndex {
       this.datasetKey = datasetKey;
       this.sqlFactory = Preconditions.checkNotNull(sqlFactory);
       dao = new NameDao(sqlFactory, normalizer);
-      int storeSize = store.size();
+      int storeSize = store.count();
       if (storeSize == 0) {
         loadFromPg();
       } else {
@@ -74,7 +74,7 @@ public class NameIndexImpl implements NameIndex {
         }
       }
       idGen = new IdGenerator(counter::incrementAndGet);
-      LOG.info("Started name index with {} names", store.size());
+      LOG.info("Started name index with {} names", store.count());
     }
   
   private int countPg() {

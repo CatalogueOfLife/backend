@@ -2,13 +2,13 @@ package org.col.matching;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.pool.KryoPool;
 import org.col.api.model.Name;
 import org.col.common.kryo.ApiKryoFactory;
 import org.col.common.kryo.map.MapDbObjectSerializer;
-import org.mapdb.Atomic;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.Serializer;
@@ -23,7 +23,6 @@ public class NameIndexMapDBStore implements NameIndexStore {
   
   private final DB db;
   private final KryoPool pool;
-  private final Atomic.Integer counter;
   private final Map<String, NameList> names;
   
   static class NameList extends ArrayList<Name> {
@@ -54,8 +53,6 @@ public class NameIndexMapDBStore implements NameIndexStore {
       pool = new KryoPool.Builder(new NameIndexKryoFactory())
           .softReferences()
           .build();
-      counter = db.atomicInteger("counter", 0)
-          .createOrOpen();
       names = db.hashMap("names")
           .keySerializer(Serializer.STRING_ASCII)
           .valueSerializer(new MapDbObjectSerializer<>(NameList.class, pool, 128))
@@ -67,7 +64,11 @@ public class NameIndexMapDBStore implements NameIndexStore {
   
   
   @Override
-  public int size() {
+  public int count() {
+    AtomicInteger counter = new AtomicInteger(0);
+    names.values().forEach(vl -> {
+      counter.addAndGet(vl.size());
+    });
     return counter.get();
   }
   

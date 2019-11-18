@@ -6,7 +6,7 @@ import org.col.api.model.Name;
 
 public interface NameIndexStore extends AutoCloseable {
   
-  int size();
+  int count();
   
   ArrayList<Name> get(String key);
   
