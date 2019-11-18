@@ -70,7 +70,6 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       EsUtil.refreshIndex(client, index);
       tCount = indexer.documentsIndexed();
       indexer.reset();
-
       try (SqlSession session = factory.openSession(true);
           BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)
       ) {
@@ -129,6 +128,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
         String first = taxonIds.iterator().next();
         LOG.info("Syncing {} taxa incl {} from dataset {}", taxonIds.size(), first, datasetKey);
         int deleted = EsUtil.deleteNameUsages(client, index, datasetKey, taxonIds);
+        EsUtil.refreshIndex(client, index);
         int inserted = indexNameUsages(datasetKey, taxonIds);
         EsUtil.refreshIndex(client, index);
         LOG.info("Finished syncing {} taxa incl {} from dataset {}. Deleted: {}. Inserted: {}.",
