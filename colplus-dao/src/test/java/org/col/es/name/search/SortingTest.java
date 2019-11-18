@@ -277,4 +277,33 @@ public class SortingTest extends EsReadTestBase {
 
   }
 
+  public void testSortIndexingOrderReversed() {
+    NameUsageDocument a = new NameUsageDocument();
+    NameUsageDocument b = new NameUsageDocument();
+    NameUsageDocument c = new NameUsageDocument();
+    NameUsageDocument d = new NameUsageDocument();
+    NameUsageDocument e = new NameUsageDocument();
+    List<NameUsageDocument> docs = Arrays.asList(a, b, c, d, e);
+    indexRaw(docs);
+
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.setSortBy(SortBy.NATIVE);
+    query.setReverse(true);
+    EsSearchRequest esQuery = new RequestTranslator(query, new Page()).translate();
+
+    List<NameUsageDocument> result = queryRaw(esQuery);
+
+    Collections.reverse(docs);
+    assertEquals(docs, result);
+
+    // Let's just do this one more time.
+    truncate();   
+    Collections.shuffle(docs);
+    indexRaw(docs);
+    queryRaw(esQuery);
+    Collections.reverse(docs);
+    assertEquals(docs, result);
+    
+  }
+
 }

@@ -22,7 +22,7 @@ class SortByTranslator {
     if (request.getSortBy() == SortBy.TAXONOMIC) {
       return CollapsibleList.of(new SortField("rank", !request.isReverse()), new SortField("scientificName"));
     }
-    return CollapsibleList.of(SortField.DOC);
+    return CollapsibleList.of(request.isReverse() ? SortField.DOC_DESC : SortField.DOC);
   }
 
 }

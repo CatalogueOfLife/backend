@@ -9,7 +9,9 @@ import static org.col.es.query.SortOptions.Order.DESC;
 
 public class SortField {
 
+  // Sort in the order in which documents were indexed
   public static final SortField DOC = new SortField("_doc");
+  public static final SortField DOC_DESC = new SortField("_doc", false);
   public static final SortField SCORE = new SortField("_score");
 
   final String field;

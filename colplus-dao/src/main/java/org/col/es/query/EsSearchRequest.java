@@ -26,10 +26,12 @@ public class EsSearchRequest {
   }
 
   @JsonProperty("_source")
-  private List<String> select;
+  private Object select;
   private Query query;
   @JsonProperty("aggs")
   private Map<String, Aggregation> aggregations;
+  @JsonProperty("search_after")
+  private List<String> searchAfter;
   private List<SortField> sort;
   private Integer size;
   private Integer from;
@@ -37,7 +39,11 @@ public class EsSearchRequest {
   // Fluent interface
 
   public EsSearchRequest select(String... fields) {
-    select = CollapsibleList.of(fields);
+    if (fields == null || fields.length == 0) {
+      select = Boolean.FALSE;
+    } else {
+      select = CollapsibleList.of(fields);
+    }
     return this;
   }
 
@@ -63,12 +69,16 @@ public class EsSearchRequest {
 
   // Regular getters/setters
 
-  public List<String> getSelect() {
+  public Object getSelect() {
     return select;
   }
 
   public void setSelect(List<String> select) {
     this.select = select;
+  }
+
+  public void setSelect(boolean allOrNone) {
+    this.select = allOrNone;
   }
 
   public Query getQuery() {
@@ -85,6 +95,14 @@ public class EsSearchRequest {
 
   public void setAggregations(Map<String, Aggregation> aggregations) {
     this.aggregations = aggregations;
+  }
+
+  public List<String> getSearchAfter() {
+    return searchAfter;
+  }
+
+  public void setSearchAfter(List<String> searchAfter) {
+    this.searchAfter = searchAfter;
   }
 
   public Integer getFrom() {

@@ -2,7 +2,6 @@ package org.col.es.name.index;
 
 import java.io.Closeable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -98,14 +97,13 @@ public class ClassificationUpdater implements Closeable, ResultHandler<SimpleNam
    * the usage ID (so they can be matched to the Postgres records).
    */
   private List<NameUsageDocument> loadChunk(List<String> terms) {
-    EsSearchRequest query = EsSearchRequest.emptyRequest();
-    BoolQuery constraints = new BoolQuery()
-        .filter(new TermsQuery("usageId", terms))
-        .filter(new TermQuery("datasetKey", datasetKey));
-    query.select("usageId");
-    query.setQuery(constraints);
-    query.setSort(Arrays.asList(SortField.DOC));
-    query.setSize(terms.size());
+    EsSearchRequest query = EsSearchRequest.emptyRequest()
+        .select("usageId")
+        .where(new BoolQuery()
+            .filter(new TermsQuery("usageId", terms))
+            .filter(new TermQuery("datasetKey", datasetKey)))
+        .sortBy(SortField.DOC)
+        .size(terms.size());
     NameUsageQueryService svc = new NameUsageQueryService(indexer.getIndexName(), indexer.getEsClient());
     return svc.getDocumentsWithDocId(query);
   }
