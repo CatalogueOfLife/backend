@@ -16,6 +16,7 @@ import org.col.es.query.BoolQuery;
 import org.col.es.query.EsSearchRequest;
 import org.col.es.query.MatchAllQuery;
 import org.col.es.query.Query;
+import org.col.es.query.SortField;
 import org.col.es.query.TermQuery;
 import org.col.es.query.TermsQuery;
 import org.elasticsearch.client.Request;
@@ -168,12 +169,15 @@ public class EsUtil {
    * @throws IOException
    */
   public static int deleteByQuery(RestClient client, String index, Query query) throws IOException {
-    Request request = new Request("POST", index + "/_delete_by_query");
-    EsSearchRequest esRequest = new EsSearchRequest();
+    Request request = new Request("POST", index + "/_delete_by_query/?timeout=12h");
+    EsSearchRequest esRequest = EsSearchRequest.emptyRequest()
+        .select()
+        .where(query)
+        .sortBy(SortField.DOC);
     esRequest.setQuery(query);
     request.setJsonEntity(esRequest.toString());
     Response response = executeRequest(client, request);
-    return readFromResponse(response, "total");
+    return readFromResponse(response, "deleted");
   }
 
   /**
