@@ -157,7 +157,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
       // could not find anything?
       if (usages.isEmpty()) {
         v.addIssue(invalidIdIssue);
-        LOG.info("{} {} not existing", idTerm.simpleName(), unsplitIds);
+        LOG.debug("{} {} not existing", idTerm.simpleName(), unsplitIds);
       }
     }
 
@@ -193,7 +193,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
       // could not find anything?
       if (n == null) {
         v.addIssue(invalidIdIssue);
-        LOG.info("{} {} not existing", idTerm.simpleName(), id);
+        LOG.debug("{} {} not existing", idTerm.simpleName(), id);
       }
     }
     
