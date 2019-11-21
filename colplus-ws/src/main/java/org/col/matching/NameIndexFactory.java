@@ -12,6 +12,7 @@ import org.col.api.model.Name;
 import org.col.api.model.NameMatch;
 import org.col.api.vocab.Datasets;
 import org.col.common.tax.AuthorshipNormalizer;
+import org.mapdb.DBException;
 import org.mapdb.DBMaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,7 +74,14 @@ public class NameIndexFactory {
     DBMaker.Maker maker = DBMaker
         .fileDB(location)
         .fileMmapEnableIfSupported();
-    NameIndexStore store = new NameIndexMapDBStore(maker);
+    NameIndexStore store;
+    try {
+      store = new NameIndexMapDBStore(maker);
+    } catch (DBException.DataCorruption e) {
+      LOG.warn("NamesIndex mapdb was corrupt. Remove and rebuild index from scratch", e);
+      location.delete();
+      store = new NameIndexMapDBStore(maker);
+    }
     return new NameIndexImpl(store, authorshipNormalizer, Datasets.NAME_INDEX, sqlFactory);
   }
   

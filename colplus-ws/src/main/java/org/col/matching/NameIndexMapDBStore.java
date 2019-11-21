@@ -10,6 +10,7 @@ import org.col.api.model.Name;
 import org.col.common.kryo.ApiKryoFactory;
 import org.col.common.kryo.map.MapDbObjectSerializer;
 import org.mapdb.DB;
+import org.mapdb.DBException;
 import org.mapdb.DBMaker;
 import org.mapdb.Serializer;
 import org.slf4j.Logger;
@@ -48,7 +49,7 @@ public class NameIndexMapDBStore implements NameIndexStore {
     }
   }
   
-  public NameIndexMapDBStore(DBMaker.Maker dbMaker) {
+  public NameIndexMapDBStore(DBMaker.Maker dbMaker) throws DBException.DataCorruption {
       this.db = dbMaker.make();
       pool = new KryoPool.Builder(new NameIndexKryoFactory())
           .softReferences()
