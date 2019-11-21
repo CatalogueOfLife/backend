@@ -62,7 +62,6 @@ public class NameIndexMapDBStore implements NameIndexStore {
           .createOrOpen();
     }
   
-  
   @Override
   public int count() {
     AtomicInteger counter = new AtomicInteger(0);

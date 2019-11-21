@@ -6,6 +6,9 @@ import org.col.api.model.Name;
 
 public interface NameIndexStore extends AutoCloseable {
   
+  /**
+   * Counts all name usages. Potentially an expensive operation.
+   */
   int count();
   
   ArrayList<Name> get(String key);
