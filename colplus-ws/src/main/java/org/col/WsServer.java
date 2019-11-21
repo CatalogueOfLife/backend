@@ -70,7 +70,8 @@ public class WsServer extends Application<WsServerConfig> {
   private final AuthBundle auth = new AuthBundle();
   protected CloseableHttpClient httpClient;
   protected RxClient<RxCompletionStageInvoker> jerseyRxClient;
-
+  private NameIndex ni;
+  
   public static void main(final String[] args) throws Exception {
     SLF4JBridgeHandler.install();
     new WsServer().run(args);
@@ -166,7 +167,7 @@ public class WsServer extends Application<WsServerConfig> {
     final ImageService imgService = new ImageServiceFS(cfg.img);
 
     // name index
-    NameIndex ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, getSqlSessionFactory(), aNormalizer);
+    ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, getSqlSessionFactory(), aNormalizer);
     env.lifecycle().manage(new ManagedCloseable(ni));
     env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));
 
@@ -242,7 +243,20 @@ public class WsServer extends Application<WsServerConfig> {
     env.jersey().register(new VerbatimResource());
     env.jersey().register(new VocabResource());
   }
-
+  
+  @Override
+  protected void onFatalError() {
+    LOG.error("Fatal statup error, try to close names index gracely");
+    if (ni != null) {
+      try {
+        ni.close();
+      } catch (Exception e) {
+        LOG.error("Failed to shutdown names index", e);
+      }
+    }
+    System.exit(1);
+  }
+  
   private void clearTmp(WsServerConfig cfg) {
     LOG.info("Clear scratch dir {}", cfg.normalizer.scratchDir);
     if (cfg.normalizer.scratchDir != null && cfg.normalizer.scratchDir.exists()) {
