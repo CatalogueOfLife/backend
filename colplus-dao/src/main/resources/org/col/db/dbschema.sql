@@ -853,24 +853,6 @@ END
 $$
 LANGUAGE plpgsql;
 
--- function to trigger names index change notifications and pass just the operation|nameID|scientificName|authorship as the payload.
--- must be bound to name_1 table during partition setup
-CREATE OR REPLACE FUNCTION notify_nidx_change() RETURNS TRIGGER AS $$
-    DECLARE
-    data text;
-    BEGIN
-        IF (TG_OP = 'INSERT') THEN
-            data = TG_OP || '|' || NEW.id || '|' || NEW.scientific_name || '|' || NEW.authorship;
-        ELSE
-            -- keep the old name for deletions and updates as we cannot retrieve them anymore
-            data = TG_OP || '|' || OLD.id || '|' || OLD.scientific_name || '|' || OLD.authorship;
-        END IF;
-        -- Execute pg_notify(channel, notification)
-        PERFORM pg_notify('nidx', data);
-        RETURN NEW;
-    END;
-$$ LANGUAGE plpgsql;
-
 
 CREATE TABLE name_rel (
   id INTEGER NOT NULL,

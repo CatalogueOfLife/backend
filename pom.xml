@@ -386,11 +386,6 @@
                 <version>${postgresql.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.impossibl.pgjdbc-ng</groupId>
-                <artifactId>pgjdbc-ng</artifactId>
-                <version>${pgjdbc-ng}</version>
-            </dependency>
-            <dependency>
                 <groupId>com.zaxxer</groupId>
                 <artifactId>HikariCP</artifactId>
                 <version>${hikaricp.version}</version>

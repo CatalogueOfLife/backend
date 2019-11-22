@@ -11,11 +11,6 @@
             ON name_${key} FOR EACH ROW
             WHEN (NEW.homotypic_name_id IS NULL)
             EXECUTE PROCEDURE homotypic_name_id_default();
-            <if test="key == @org.col.api.vocab.Datasets@NAME_INDEX">
-                CREATE TRIGGER nidx_change
-                AFTER INSERT OR UPDATE OR DELETE ON name_${key}
-                FOR EACH ROW EXECUTE PROCEDURE notify_nidx_change();
-            </if>
         </if>
         <if test="table == 'reference'">
             CREATE TRIGGER reference_trigger_${key} BEFORE INSERT OR UPDATE
