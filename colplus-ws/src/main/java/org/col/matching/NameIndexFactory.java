@@ -82,6 +82,7 @@ public class NameIndexFactory {
       location.delete();
       store = new NameIndexMapDBStore(maker);
     }
+    LOG.info("Opened names index");
     return new NameIndexImpl(store, authorshipNormalizer, Datasets.NAME_INDEX, sqlFactory);
   }
   

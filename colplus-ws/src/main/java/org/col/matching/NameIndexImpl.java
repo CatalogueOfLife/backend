@@ -1,5 +1,6 @@
 package org.col.matching;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -47,6 +48,7 @@ public class NameIndexImpl implements NameIndex {
   private final int datasetKey;
   private final SqlSessionFactory sqlFactory;
   private final NameDao dao;
+  private LocalDateTime startedLoading;
   
   
   /**
@@ -85,6 +87,7 @@ public class NameIndexImpl implements NameIndex {
   
   private void loadFromPg() {
     LOG.info("Loading names from postgres into names index");
+    startedLoading = LocalDateTime.now();
     counter.set(0);
     try (SqlSession s = sqlFactory.openSession()) {
       NameMapper mapper = s.getMapper(NameMapper.class);
@@ -94,6 +97,21 @@ public class NameIndexImpl implements NameIndex {
       };
       mapper.processDataset(datasetKey, handler);
       LOG.info("Loaded {} names from postgres into names index", counter);
+    }
+  }
+  
+  public void loadFromPgSince(LocalDateTime since) {
+    LOG.info("Loading names from postgres into names index");
+    final AtomicInteger newCnt = new AtomicInteger();
+    try (SqlSession s = sqlFactory.openSession()) {
+      NameMapper mapper = s.getMapper(NameMapper.class);
+      ResultHandler<Name> handler = ctx -> {
+        addWithID(ctx.getResultObject());
+        counter.incrementAndGet();
+        newCnt.incrementAndGet();
+      };
+      mapper.processSince(datasetKey, since, handler);
+      LOG.info("Loaded {} additional names since {} from postgres into names index", newCnt, since);
     }
   }
   

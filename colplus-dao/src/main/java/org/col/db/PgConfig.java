@@ -121,6 +121,13 @@ public class PgConfig extends PgDbConfig {
   }
   
   /**
+   * @return connection URL for the alternative pgjdbc-ng driver
+   */
+  public String jdbcNgUrl() {
+    return "jdbc:pgsql://" + host + ":" + port + "/" + database;
+  }
+
+  /**
    * @return a new hikari connection pool for the configured db
    */
   public HikariDataSource pool() {

@@ -1,5 +1,6 @@
 package org.col.db.mapper;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import javax.annotation.Nullable;
 
@@ -24,7 +25,14 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, ProcessableDataset
   void processIndexIds(@Param("datasetKey") int datasetKey,
                        @Nullable @Param("sectorKey") Integer sectorKey,
                        ResultHandler<String> handler);
-
+  
+  /**
+   * Iterates over all names of a given dataset that have been modified since the given time and processes them with the supplied handler.
+   */
+  void processSince(@Param("datasetKey") int datasetKey,
+                    @Param("since") LocalDateTime since,
+                    ResultHandler<Name> handler);
+  
   /**
    * Lists all homotypic names based on the same homotypic name key
    *

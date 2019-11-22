@@ -150,7 +150,7 @@ public class CatalogueRelease implements Runnable {
   private void mapIds() {
     interruptIfCancelled();
     logger.log("Map IDs");
-    //TODO:
+    //TODO: match & generate ids
   }
   
   private void copyData() {
