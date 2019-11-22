@@ -100,7 +100,7 @@ public class NameIndexImpl implements NameIndex {
     }
   }
   
-  public void loadFromPgSince(LocalDateTime since) {
+  public void loadFromPgSinceStart() {
     LOG.info("Loading names from postgres into names index");
     final AtomicInteger newCnt = new AtomicInteger();
     try (SqlSession s = sqlFactory.openSession()) {
@@ -110,8 +110,8 @@ public class NameIndexImpl implements NameIndex {
         counter.incrementAndGet();
         newCnt.incrementAndGet();
       };
-      mapper.processSince(datasetKey, since, handler);
-      LOG.info("Loaded {} additional names since {} from postgres into names index", newCnt, since);
+      mapper.processSince(datasetKey, startedLoading, handler);
+      LOG.info("Loaded {} additional names since start {} from postgres into names index", newCnt, startedLoading);
     }
   }
   
@@ -287,6 +287,9 @@ public class NameIndexImpl implements NameIndex {
     ArrayList<Name> group;
     if (store.containsKey(key)) {
       group = store.get(key);
+      // remove previous version if itt already existed.
+      // Note that if the scientificName changed the key is likely different !!!
+      group.removeIf(ex -> ex.getId().equals(name.getId()));
     } else {
       group = new ArrayList<>(1);
     }

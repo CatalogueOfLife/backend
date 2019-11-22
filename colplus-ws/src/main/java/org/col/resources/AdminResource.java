@@ -21,6 +21,8 @@ import org.col.gbifsync.GbifSync;
 import org.col.img.ImageService;
 import org.col.img.LogoUpdateJob;
 import org.col.importer.ContinuousImporter;
+import org.col.matching.NameIndex;
+import org.col.matching.NameIndexImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +39,7 @@ public class AdminResource {
   private final ImageService imgService;
   private final TaxonDao tdao;
   private final NameUsageIndexService indexService;
+  private final NameIndex ni;
   private Thread indexingThread;
   private Thread logoThread;
   // background processes
@@ -44,10 +47,11 @@ public class AdminResource {
   private final GbifSync gbifSync;
   
   
-  public AdminResource(SqlSessionFactory factory, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService,
+  public AdminResource(SqlSessionFactory factory, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
                        NameUsageIndexService indexService, TaxonDao tdao, ContinuousImporter continuousImporter, GbifSync gbifSync) {
     this.factory = factory;
     this.imgService = imgService;
+    this.ni = ni;
     this.cfg = cfg;
     this.downloader = downloader;
     this.tdao = tdao;
@@ -146,6 +150,12 @@ public class AdminResource {
   @Path("/rematch")
   public void rematch(RequestScope req, @Auth ColUser user) {
     throw new NotImplementedException("Rematching names is not implemented yet");
+  }
+  
+  @POST
+  @Path("/loadNamesIndexSinceStart")
+  public void loadNidxSince(@Auth ColUser user) {
+    ((NameIndexImpl) ni).loadFromPgSinceStart();
   }
   
   class LogoJob implements Runnable {
