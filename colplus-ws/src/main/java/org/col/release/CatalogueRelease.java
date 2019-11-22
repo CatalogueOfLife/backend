@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.util.function.Consumer;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.ibatis.session.ResultContext;
+import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
@@ -164,6 +166,19 @@ public class CatalogueRelease implements Runnable {
     
     copyExtTable(VernacularNameMapper.class, VernacularName.class, this::updateEntity);
     copyExtTable(DistributionMapper.class, Distribution.class, this::updateEntity);
+    copyTable(EstimateMapper.class, SpeciesEstimate.class, this::updateEntity);
+    // archive dataset metadata
+    try (SqlSession session = factory.openSession(false)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      dm.process(null, sourceDatasetKey, new ResultHandler<Dataset>() {
+        @Override
+        public void handleResult(ResultContext<? extends Dataset> ctxt) {
+          Dataset d = ctxt.getResultObject();
+          LOG.debug("Archive dataset {}: {}", d.getKey(), d.getTitle());
+          dm.createArchive(d.getKey(), releaseKey);
+        }
+      });
+    }
   }
   
   private <K, V extends DataEntity<K>, M extends CRUD<K, V> & ProcessableDataset<V>> void copyTable(Class<M> mapperClass, Class<V> entity, Consumer<V> updater) {

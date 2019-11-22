@@ -218,6 +218,7 @@ public class WsServer extends Application<WsServerConfig> {
             new DownloadUtil(httpClient),
             cfg,
             imgService,
+            ni,
             svcIndex,
             tdao,
             cImporter,

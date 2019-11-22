@@ -74,7 +74,7 @@ public class LogoUpdateJob implements Runnable {
     AtomicInteger failed = new AtomicInteger();
     try (SqlSession session = factory.openSession()) {
       LOG.info("Update all logos");
-      session.getMapper(DatasetMapper.class).process("logo IS NOT NULL", new ResultHandler<Dataset>() {
+      session.getMapper(DatasetMapper.class).process("logo IS NOT NULL", null, new ResultHandler<Dataset>() {
         @Override
         public void handleResult(ResultContext<? extends Dataset> ctx) {
           Boolean result = pullLogo(ctx.getResultObject());

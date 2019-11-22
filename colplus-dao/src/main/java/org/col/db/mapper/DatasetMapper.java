@@ -29,8 +29,11 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   /**
    * Iterates over all datasets of a given dataset and processes them with the supplied handler.
    * @param filter optional SQL where clause (without WHERE)
+   * @param catalogueKey optional filter returning only datasets being constituents of the given catalogueKey
    */
-  void process(@Nullable @Param("filter") String filter, ResultHandler<Dataset> handler);
+  void process(@Nullable @Param("filter") String filter,
+               @Nullable @Param("catalogueKey") Integer catalogueKey,
+               ResultHandler<Dataset> handler);
 
   List<Dataset> search(@Param("req") DatasetSearchRequest request, @Param("page") Page page);
   

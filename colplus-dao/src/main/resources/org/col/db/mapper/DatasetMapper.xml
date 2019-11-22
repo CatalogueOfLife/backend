@@ -164,6 +164,9 @@
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE deleted IS NULL
+        <if test="catalogueKey != null">
+            AND exists(select 1 from sector s WHERE dataset_key=#{catalogueKey} AND s.subject_dataset_key=d.key)
+        </if>
         <if test="filter != null">AND ${filter}</if>
         ORDER BY key
     </select>
