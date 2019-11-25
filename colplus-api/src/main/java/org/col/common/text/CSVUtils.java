@@ -1,7 +1,12 @@
 package org.col.common.text;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
+
+import org.col.common.io.Utf8IOUtils;
 
 public class CSVUtils {
   
@@ -73,6 +78,14 @@ public class CSVUtils {
     add(result, curVal);
     
     return result;
+  }
+  
+  /**
+   * Reads an UTF8 CSV stream separated by commas and generates a stream or rows, each being a list of columns.
+   */
+  public static Stream<List<String>> parse(InputStream in) {
+    BufferedReader br = Utf8IOUtils.readerFromStream(in);
+    return br.lines().map(CSVUtils::parseLine);
   }
   
   private static void add(List<String> row, StringBuffer col){

@@ -16,7 +16,7 @@ public class InitDbCmdTest extends CmdTestBase {
   
   @Test
   public void testInitCmd() throws Exception {
-    assertTrue(run("initdb", "--prompt", "0"));
+    assertTrue(run("initdb", "--prompt", "0").isEmpty());
   }
 
 }

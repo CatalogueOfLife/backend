@@ -8,6 +8,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
@@ -25,9 +27,6 @@ import org.col.config.GbifConfig;
 import org.col.parser.LicenseParser;
 import org.col.parser.SafeParser;
 import org.col.parser.UriParser;
-import org.glassfish.jersey.client.rx.RxClient;
-import org.glassfish.jersey.client.rx.RxWebTarget;
-import org.glassfish.jersey.client.rx.java8.RxCompletionStageInvoker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,28 +38,25 @@ public class DatasetPager {
   
   private final Page page = new Page(100);
   private boolean hasNext = true;
-  final RxWebTarget<RxCompletionStageInvoker> dataset;
-  final RxWebTarget<RxCompletionStageInvoker> datasets;
-  final RxWebTarget<RxCompletionStageInvoker> publisher;
-  final RxClient<RxCompletionStageInvoker> client;
+  final WebTarget dataset;
+  final WebTarget datasets;
+  final WebTarget publisher;
+  final Client client;
   private final LoadingCache<UUID, String> pCache;
   
-  public DatasetPager(RxClient<RxCompletionStageInvoker> client, GbifConfig gbif) {
+  public DatasetPager(Client client, GbifConfig gbif) {
     this.client = client;
-    dataset = client
-        .target(UriBuilder.fromUri(gbif.api).path("/dataset"));
-    datasets = client
-        .target(UriBuilder.fromUri(gbif.api).path("/dataset"))
+    dataset = client.target(UriBuilder.fromUri(gbif.api).path("/dataset"));
+    datasets = client.target(UriBuilder.fromUri(gbif.api).path("/dataset"))
         .queryParam("type", "CHECKLIST");
-    publisher = client
-        .target(UriBuilder.fromUri(gbif.api).path("/organization/"));
+    publisher = client.target(UriBuilder.fromUri(gbif.api).path("/organization/"));
     
     pCache = CacheBuilder.newBuilder()
         .maximumSize(1000)
         .build(new CacheLoader<UUID, String>() {
                  @Override
                  public String load(UUID key) throws Exception {
-                   RxWebTarget<RxCompletionStageInvoker> pubDetail = publisher.path(key.toString());
+                   WebTarget pubDetail = publisher.path(key.toString());
                    LOG.info("Retrieve publisher {}", pubDetail.getUri());
                    GPublisher p = pubDetail.request()
                        .accept(MediaType.APPLICATION_JSON_TYPE)
@@ -76,7 +72,7 @@ public class DatasetPager {
     return hasNext;
   }
   
-  private RxWebTarget<RxCompletionStageInvoker> datasetPage() {
+  private WebTarget datasetPage() {
     return datasets
         .queryParam("offset", page.getOffset())
         .queryParam("limit", page.getLimit());

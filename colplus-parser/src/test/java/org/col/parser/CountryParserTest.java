@@ -33,13 +33,6 @@ public class CountryParserTest extends ParserTestBase<Country> {
     assertUnparsable("XAZ");
     assertUnparsable("unknown");
   }
-  
-  @Test
-  public void testGbifEnumCoverage() throws Exception {
-    for (org.gbif.api.vocabulary.Country c : org.gbif.api.vocabulary.Country.values()) {
-      Country c2 = ((CountryParser) parser).convertFromGbif(c);
-    }
-  }
 
   @Override
   List<String> additionalUnparsableValues() {

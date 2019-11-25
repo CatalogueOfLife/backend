@@ -74,10 +74,6 @@
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-server</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.ext.rx</groupId>
-            <artifactId>jersey-rx-client-java8</artifactId>
-        </dependency>
 
 		<!-- col & gbif -->
         <dependency>

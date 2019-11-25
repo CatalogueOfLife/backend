@@ -36,7 +36,7 @@ public class BooleanParserTest extends ParserTestBase<Boolean> {
 
   @Override
   List<String> additionalUnparsableValues() {
-    return Lists.newArrayList("t ru e", "a", "2");
+    return Lists.newArrayList("t ur e", "a", "2");
   }
 
 }

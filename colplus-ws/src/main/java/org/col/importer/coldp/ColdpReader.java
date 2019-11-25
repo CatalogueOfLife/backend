@@ -6,8 +6,8 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import jersey.repackaged.com.google.common.collect.ImmutableMap;
 import org.col.api.datapackage.ColdpTerm;
 import org.col.common.io.PathUtils;
 import org.col.csv.CsvReader;

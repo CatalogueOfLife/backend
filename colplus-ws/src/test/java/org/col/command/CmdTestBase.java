@@ -78,7 +78,7 @@ public abstract class CmdTestBase {
   /**
    * Executes the cli with the given arguments, adding a final argument to the test config file.
    */
-  public boolean run(String... args) throws Exception {
+  public Optional<Throwable> run(String... args) throws Exception {
     // now run the real arg
     final int N = args.length;
     args = Arrays.copyOf(args, N + 1);

@@ -1,6 +1,9 @@
 package org.col.common.csl;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
@@ -30,29 +33,31 @@ public class CslUtil {
   }
   
   static class ReferenceProvider implements ItemDataProvider {
-    private static final String ID = "1";
-    private CslData data;
+    private static final AtomicInteger counter = new AtomicInteger();
+    private Map<String, CslData> data = new ConcurrentHashMap<>();
     
-    public void setData(CslData data) {
-      this.data = data;
+    public String setData(CslData data) {
+      String key = String.valueOf(counter.incrementAndGet());
+      this.data.put(key, data);
+      return key;
     }
     
     @Override
     public CSLItemData retrieveItem(String id) {
-      final String idOrig = data.getId();
+      CslData item = data.remove(id);
+      final String idOrig = item.getId();
       try {
-        data.setId(id);
-        CSLItemData itemData = CslDataConverter.toCSLItemData(data);
-        return itemData;
+        item.setId(id);
+        return CslDataConverter.toCSLItemData(item);
         
       } finally {
-        data.setId(idOrig);
+        item.setId(idOrig);
       }
     }
     
     @Override
     public String[] getIds() {
-      return new String[]{ID};
+      return data.keySet().stream().map(String::toString).toArray(String[]::new);
     }
   }
   
@@ -85,8 +90,8 @@ public class CslUtil {
   }
   
   private static synchronized String buildCitationInternal(CslData data) {
-    provider.setData(data);
-    csl.registerCitationItems(ReferenceProvider.ID);
+    String key = provider.setData(data);
+    csl.registerCitationItems(key);
     return csl.makeBibliography().getEntries()[0].trim();
   }
   

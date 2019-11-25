@@ -1,66 +1,47 @@
 package org.col.parser;
 
 import java.util.Optional;
-import java.util.regex.Pattern;
 
-import com.google.common.annotations.VisibleForTesting;
-import org.col.api.util.VocabularyUtils;
 import org.col.api.vocab.Country;
+import org.col.common.text.CSVUtils;
 
 /**
  * CoL country parser wrapping the GBIF country parser
  */
-public class CountryParser extends GbifParserBased<Country, org.gbif.api.vocabulary.Country> {
+public class CountryParser extends EnumParser<Country> {
   public static final Parser<Country> PARSER = new CountryParser();
-  public static final Pattern USER_DEF = Pattern.compile("^(AA[A-Z]?|Q[M-Z][A-Z]?|X[A-Z][A-Z]?|ZZ[A-Z]?)$", Pattern.CASE_INSENSITIVE);
 
   public CountryParser() {
-    super(Country.class, org.gbif.common.parsers.CountryParser.getInstance());
+    super("iso3166/country.csv", Country.class);
+    //    0           ,    1           ,    2           ,    3           ,    4           ,    5           ,     6           ,     7           ,     8           ,              9                 ,              10             ,             11            ,         12          ,              13             , 14,          15        ,          16       ,          17         ,          18        ,          19         ,          20        ,          21        ,          22       ,          23         ,          24        ,          25         ,          26        ,        27       , 28    ,  29     ,30,Developed / Developing Countries,Dial,EDGAR,FIFA,FIPS,GAUL,Geoname ID,Global Code,Global Name,IOC,ITU,Intermediate Region Code,Intermediate Region Name,Land Locked Developing Countries (LLDC),Languages,Least Developed Countries (LDC),MARC,Region Code,Region Name,Small Island Developing States (SIDS),Sub-region Code,Sub-region Name,TLD,WMO,is_independent
+    //official_name_ar,official_name_cn,official_name_en,official_name_es,official_name_fr,official_name_ru,ISO3166-1-Alpha-2,ISO3166-1-Alpha-3,ISO3166-1-numeric,ISO4217-currency_alphabetic_code,ISO4217-currency_country_name,ISO4217-currency_minor_unit,ISO4217-currency_name,ISO4217-currency_numeric_code,M49,UNTERM Arabic Formal,UNTERM Arabic Short,UNTERM Chinese Formal,UNTERM Chinese Short,UNTERM English Formal,UNTERM English Short,UNTERM French Formal,UNTERM French Short,UNTERM Russian Formal,UNTERM Russian Short,UNTERM Spanish Formal,UNTERM Spanish Short,CLDR display name,Capital,Continent,DS,Developed / Developing Countries,Dial,EDGAR,FIFA,FIPS,GAUL,Geoname ID,Global Code,Global Name,IOC,ITU,Intermediate Region Code,Intermediate Region Name,Land Locked Developing Countries (LLDC),Languages,Least Developed Countries (LDC),MARC,Region Code,Region Name,Small Island Developing States (SIDS),Sub-region Code,Sub-region Name,TLD,WMO,is_independent
+    CSVUtils.parse(getClass().getResourceAsStream("/parser/dicts/iso3166/country-codes_csv.csv")).forEach(row -> {
+      Optional<Country> opt = Country.fromIsoCode(row.get(7));
+      opt.ifPresent(c -> {
+        addNoOverwrite(row.get(0), c); // official_name_ar
+        addNoOverwrite(row.get(1), c); // official_name_cn
+        addNoOverwrite(row.get(2), c); // official_name_en
+        addNoOverwrite(row.get(3), c); // official_name_es
+        addNoOverwrite(row.get(4), c); // official_name_fr
+        addNoOverwrite(row.get(5), c); // official_name_ru
+        for (int idx = 14; idx<28; idx++) {
+          addNoOverwrite(row.get(idx), c); // M49 & UNTERM & CDLR
+        }
+      });
+    });
+  
+    // also make sure we have all official iso countries mapped
+    for (Country c : Country.values()) {
+      add(c.getTitle(), c);
+      add(c.getIso2LetterCode(), c);
+      add(c.getIso3LetterCode(), c);
+      add(c.getIsoNumericalCode(), c);
+    }
   }
-
+  
   @Override
   public Optional<Country> parse(String value) throws UnparsableException {
-    try {
-      return super.parse(value);
-    } catch (UnparsableException e) {
-      if (value.equalsIgnoreCase(Country.INTERNATIONAL_WATERS.getIso2LetterCode()) ||
-          value.equalsIgnoreCase(Country.INTERNATIONAL_WATERS.getIso3LetterCode())) {
-        return Optional.of(Country.INTERNATIONAL_WATERS);
-      }
-      // try to parser number codes too
-      try {
-        int number = Integer.parseInt(value);
-        if (number > 0 && number <= 902) {
-          for (Country c : Country.values()) {
-            if (c.getIsoNumericalCode() != null && c.getIsoNumericalCode().equals(number)) {
-              return Optional.of(c);
-            }
-          }
-        }
-      } catch (NumberFormatException e1) {
-      }
-      // no idea...
-      throw e;
-    }
-  }
-
-  @Override
-  @VisibleForTesting
-  protected Country convertFromGbif(org.gbif.api.vocabulary.Country value) throws UnparsableException {
-    switch (value) {
-      case UNKNOWN:
-      case USER_DEFINED:
-        return null;
-      default:
-        if (value.getIso2LetterCode() == null) {
-          return null;
-        }
-        try {
-          return VocabularyUtils.convertEnum(Country.class, value);
-        } catch (IllegalArgumentException e) {
-          // unknown enum value
-          throw new UnparsableException("Failed to convert GBIF Country " + value + " into a CoL+ country enumeration", e);
-        }
-    }
+    Optional<Country> x = super.parse(value);
+    return x;
   }
 }

@@ -52,7 +52,7 @@ public class ColdpInserterTest extends InserterBaseTest {
   
   @Test
   public void bibtex() throws Exception {
-    // warm up Nashorn
+    // warm up GraalVM
     CslUtil.buildCitation(TestEntityGenerator.newReference("My Sharona"));
     CslUtil.buildCitation(TestEntityGenerator.newReference("Telecon in Death Valley"));
     // use timer to trace csl citation builder

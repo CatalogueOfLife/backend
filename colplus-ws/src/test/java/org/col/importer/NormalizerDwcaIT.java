@@ -86,7 +86,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       assertEquals("Crepis pulchra", t.usage.getName().getScientificName());
 
       // check vernaculars
-      Map<String, String> expV = jersey.repackaged.com.google.common.collect.Maps.newHashMap();
+      Map<String, String> expV = Maps.newHashMap();
       expV.put("deu", "Schöner Pippau");
       expV.put("eng", "smallflower hawksbeard");
       assertEquals(expV.size(), t.vernacularNames.size());

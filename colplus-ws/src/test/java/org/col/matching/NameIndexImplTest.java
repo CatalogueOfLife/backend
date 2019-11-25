@@ -10,7 +10,6 @@ import org.col.api.TestEntityGenerator;
 import org.col.api.model.IssueContainer;
 import org.col.api.model.Name;
 import org.col.api.model.NameMatch;
-import org.col.api.vocab.Issue;
 import org.col.api.vocab.MatchType;
 import org.col.common.tax.AuthorshipNormalizer;
 import org.col.db.PgSetupRule;
@@ -171,10 +170,6 @@ public class NameIndexImplTest {
    */
   @Test
   public void testSubgenusLookup() throws Exception {
-    for (Issue i : Issue.values()) {
-      System.out.println(String.format("%02d  %s", i.ordinal(), i.name()));
-    }
-    System.exit(1);
     ni = NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer);
     Collection<Name> names = Lists.newArrayList(
         name(1, "Animalia", Rank.KINGDOM, NomCode.ZOOLOGICAL),

@@ -62,6 +62,18 @@
             <artifactId>locales</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jbibtex</groupId>
+            <artifactId>jbibtex</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.graalvm.js</groupId>
+            <artifactId>js</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
         </dependency>

@@ -2,6 +2,7 @@ package org.col.gbifsync;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -9,9 +10,6 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import org.col.config.GbifConfig;
 import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.client.rx.Rx;
-import org.glassfish.jersey.client.rx.RxClient;
-import org.glassfish.jersey.client.rx.java8.RxCompletionStageInvoker;
 import org.glassfish.jersey.logging.LoggingFeature;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -28,8 +26,8 @@ public class DatasetPagerTest {
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     ClientConfig cfg = new ClientConfig(jacksonJsonProvider);
     cfg.register(new LoggingFeature(Logger.getLogger(getClass().getName()), Level.ALL, LoggingFeature.Verbosity.PAYLOAD_ANY, 1024));
-    
-    RxClient<RxCompletionStageInvoker> client = Rx.from(ClientBuilder.newClient(cfg), RxCompletionStageInvoker.class);
+  
+    final Client client = ClientBuilder.newClient(cfg);
     
     DatasetPager pager = new DatasetPager(client, new GbifConfig());
     while (pager.hasNext()) {

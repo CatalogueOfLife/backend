@@ -35,7 +35,7 @@ public class CslUtilTest {
   
   @Test
   public void cslCitation() {
-    CSLItemData csl = new CSLItemDataBuilder()
+    CSLItemDataBuilder builder = new CSLItemDataBuilder()
         .abstrct("bcgenwgz ew hcehnuew")
         .title("my Title")
         .accessed(1999)
@@ -43,8 +43,14 @@ public class CslUtilTest {
         .DOI("10.1093/database/baw125")
         .URL("gbif.org")
         .ISSN("1758-0463")
-        .originalTitle("my orig tittel")
-        .build();
+        .originalTitle("my orig tittel");
+    
+    CSLItemData csl = builder.build();
     assertEquals("Döring, M. (n.d.). my Title. https://doi.org/10.1093/database/baw125", CslUtil.buildCitation(CslDataConverter.toCslData(csl)));
+    
+    for (int x=1; x<10; x++){
+      csl = builder.title("title-"+x).build();
+      assertEquals("Döring, M. (n.d.). title-"+x+". https://doi.org/10.1093/database/baw125", CslUtil.buildCitation(CslDataConverter.toCslData(csl)));
+    }
   }
 }

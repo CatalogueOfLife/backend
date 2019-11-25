@@ -71,7 +71,7 @@ public class DwcaReader extends CsvReader {
   
   private DwcaReader(Path folder) throws IOException {
     super(folder, "dwc", "dwca");
-    detectMappedClassification(ColdpTerm.Taxon, jersey.repackaged.com.google.common.collect.ImmutableMap.<Term, Rank>builder()
+    detectMappedClassification(ColdpTerm.Taxon, ImmutableMap.<Term, Rank>builder()
         .put(DwcTerm.kingdom, Rank.KINGDOM)
         .put(DwcTerm.phylum, Rank.PHYLUM)
         .put(DwcTerm.class_, Rank.CLASS)

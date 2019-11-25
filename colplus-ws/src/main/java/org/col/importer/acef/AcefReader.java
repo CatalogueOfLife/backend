@@ -3,7 +3,7 @@ package org.col.importer.acef;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import jersey.repackaged.com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap;
 import org.col.csv.CsvReader;
 import org.col.importer.NormalizationFailedException;
 import org.gbif.dwc.terms.AcefTerm;

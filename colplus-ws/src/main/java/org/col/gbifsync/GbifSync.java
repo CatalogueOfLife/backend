@@ -7,6 +7,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import javax.ws.rs.client.Client;
+
 import io.dropwizard.lifecycle.Managed;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -18,8 +20,6 @@ import org.col.common.concurrent.ExecutorUtils;
 import org.col.common.util.LoggingUtils;
 import org.col.db.mapper.DatasetMapper;
 import org.gbif.nameparser.utils.NamedThreadFactory;
-import org.glassfish.jersey.client.rx.RxClient;
-import org.glassfish.jersey.client.rx.java8.RxCompletionStageInvoker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -37,16 +37,16 @@ public class GbifSync implements Managed {
   private GbifSyncJob job;
   private final GbifConfig cfg;
   private final SqlSessionFactory sessionFactory;
-  private final RxClient<RxCompletionStageInvoker> rxClient;
+  private final Client client;
   
-  public GbifSync(GbifConfig gbif, SqlSessionFactory sessionFactory, RxClient<RxCompletionStageInvoker> rxClient) {
+  public GbifSync(GbifConfig gbif, SqlSessionFactory sessionFactory, Client client) {
     this.cfg = gbif;
     this.sessionFactory = sessionFactory;
-    this.rxClient = rxClient;
+    this.client = client;
   }
   
   static class GbifSyncJob implements Runnable {
-    private final RxClient<RxCompletionStageInvoker> rxClient;
+    private final Client client;
     private final SqlSessionFactory sessionFactory;
     private final GbifConfig gbif;
     private int created;
@@ -55,9 +55,9 @@ public class GbifSync implements Managed {
     private DatasetMapper mapper;
     private DatasetPager pager;
     
-    public GbifSyncJob(GbifConfig gbif, RxClient<RxCompletionStageInvoker> rxClient, SqlSessionFactory sessionFactory) {
+    public GbifSyncJob(GbifConfig gbif, Client client, SqlSessionFactory sessionFactory) {
       this.gbif = gbif;
-      this.rxClient = rxClient;
+      this.client = client;
       this.sessionFactory = sessionFactory;
     }
     
@@ -65,7 +65,7 @@ public class GbifSync implements Managed {
     public void run() {
       MDC.put(LoggingUtils.MDC_KEY_TASK, getClass().getSimpleName());
       try (SqlSession session = sessionFactory.openSession(true)) {
-        pager = new DatasetPager(rxClient, gbif);
+        pager = new DatasetPager(client, gbif);
         mapper = session.getMapper(DatasetMapper.class);
         if (gbif.insert) {
           syncAll();
@@ -145,7 +145,7 @@ public class GbifSync implements Managed {
   }
   
   public void syncNow() {
-    Runnable job = new GbifSyncJob(cfg, rxClient, sessionFactory);
+    Runnable job = new GbifSyncJob(cfg, client, sessionFactory);
     job.run();
   }
   
@@ -156,7 +156,7 @@ public class GbifSync implements Managed {
           new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true)
       );
       LOG.info("Enable GBIF registry sync job every {} hours", cfg.syncFrequency);
-      job = new GbifSyncJob(cfg, rxClient, sessionFactory);
+      job = new GbifSyncJob(cfg, client, sessionFactory);
       scheduler.scheduleAtFixedRate(job, 0, cfg.syncFrequency, TimeUnit.HOURS);
    
     } else {

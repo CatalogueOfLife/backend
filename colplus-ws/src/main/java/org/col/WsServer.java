@@ -1,6 +1,7 @@
 package org.col;
 
 import java.io.IOException;
+import javax.ws.rs.client.Client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.Application;
@@ -20,7 +21,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.datapackage.ColdpTerm;
 import org.col.api.jackson.ApiModule;
 import org.col.api.vocab.ColDwcTerm;
-import org.col.release.AcExporter;
 import org.col.assembly.AssemblyCoordinator;
 import org.col.command.es.IndexAllCmd;
 import org.col.command.initdb.InitDbCmd;
@@ -51,11 +51,10 @@ import org.col.importer.ImportManager;
 import org.col.matching.NameIndex;
 import org.col.matching.NameIndexFactory;
 import org.col.parser.NameParser;
+import org.col.release.AcExporter;
 import org.col.resources.*;
 import org.elasticsearch.client.RestClient;
 import org.gbif.dwc.terms.TermFactory;
-import org.glassfish.jersey.client.rx.RxClient;
-import org.glassfish.jersey.client.rx.java8.RxCompletionStageInvoker;
 import org.glassfish.jersey.client.spi.ConnectorProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,7 +68,7 @@ public class WsServer extends Application<WsServerConfig> {
   private final MybatisBundle mybatis = new MybatisBundle();
   private final AuthBundle auth = new AuthBundle();
   protected CloseableHttpClient httpClient;
-  protected RxClient<RxCompletionStageInvoker> jerseyRxClient;
+  protected Client jerseyClient;
   private NameIndex ni;
   
   public static void main(final String[] args) throws Exception {
@@ -126,8 +125,8 @@ public class WsServer extends Application<WsServerConfig> {
         .using((ConnectorProvider) (cl,
             runtimeConfig) -> new DropwizardApacheConnector(httpClient, requestConfig(cfg.client), cfg.client.isChunkedEncodingEnabled()));
     // build both syncroneous and reactive clients sharing the same thread pool
-
-    jerseyRxClient = builder.buildRx(getName(), RxCompletionStageInvoker.class);
+  
+    jerseyClient = builder.build(getName());
 
     // finally provide the SqlSessionFactory & http client
     auth.getIdentityService().setSqlSessionFactory(mybatis.getSqlSessionFactory());
@@ -188,7 +187,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.lifecycle().manage(cImporter);
 
     // gbif sync
-    GbifSync gbifSync = new GbifSync(cfg.gbif, getSqlSessionFactory(), jerseyRxClient);
+    GbifSync gbifSync = new GbifSync(cfg.gbif, getSqlSessionFactory(), jerseyClient);
     env.lifecycle().manage(gbifSync);
 
     // exporter
