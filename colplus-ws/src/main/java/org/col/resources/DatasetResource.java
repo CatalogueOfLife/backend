@@ -27,6 +27,7 @@ import org.col.common.io.DownloadUtil;
 import org.col.dao.DatasetDao;
 import org.col.dao.DatasetImportDao;
 import org.col.db.mapper.DatasetMapper;
+import org.col.db.mapper.SectorMapper;
 import org.col.db.tree.DiffService;
 import org.col.db.tree.NamesDiff;
 import org.col.db.tree.TextTreePrinter;
@@ -59,9 +60,14 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   }
   
   @GET
-  public ResultPage<Dataset> search(@Valid @BeanParam Page page, @BeanParam DatasetSearchRequest req,
-                                  @Context SqlSession session) {
+  public ResultPage<Dataset> search(@Valid @BeanParam Page page, @BeanParam DatasetSearchRequest req) {
     return dao.search(req, page);
+  }
+  
+  @GET
+  @Path("catalogues")
+  public List<Integer> listCatalogues(@Context SqlSession session) {
+    return session.getMapper(SectorMapper.class).listTargetDatasetKeys();
   }
   
   @GET

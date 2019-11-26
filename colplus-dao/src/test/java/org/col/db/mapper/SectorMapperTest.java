@@ -71,6 +71,13 @@ public class SectorMapperTest extends CRUDTestBase<Integer, Sector, SectorMapper
     assertEquals(0, mapper().targetBroken(targetDatasetKey,543432).size());
   }
   
+  @Test
+  public void listTargetDatasetKeys() {
+    assertEquals(0, mapper().listTargetDatasetKeys().size());
+    add2Sectors();
+    assertEquals(1, mapper().listTargetDatasetKeys().size());
+  }
+  
   @Override
   Sector createTestEntity(int dkey) {
     return create();
