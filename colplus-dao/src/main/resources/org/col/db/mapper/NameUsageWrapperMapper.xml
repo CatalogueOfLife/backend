@@ -56,7 +56,7 @@
 
     <select id="processTree" parameterType="map" resultMap="classificationResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
         <include refid="org.col.db.Common.partitionByDatasetKey"/>
-        WITH RECURSIVE tree AS(
+        WITH RECURSIVE tree AS (
             SELECT #{usageId} AS uid, classification_sn(#{datasetKey}, #{usageId}, true) AS classification
         UNION ALL
             SELECT u.id, array_append(tree.classification, (u.id,n.rank,n.scientific_name)::simple_name)
@@ -66,6 +66,9 @@
             </if>
 	   )
        SELECT * FROM tree
+       <if test="sectorKey != null">
+            WHERE uid != #{usageId} OR (SELECT sector_key=#{sectorKey} FROM name_usage_${datasetKey} WHERE id=#{usageId})
+       </if>
     </select>
 
     <select id="processDatasetBareNames" parameterType="map" resultMap="bareNameResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">

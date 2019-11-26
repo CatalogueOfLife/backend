@@ -8,7 +8,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.google.common.annotations.VisibleForTesting;
-
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.Sector;
@@ -18,20 +17,16 @@ import org.col.dao.NameUsageProcessor;
 import org.col.db.mapper.BatchResultHandler;
 import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.NameUsageWrapperMapper;
-import org.col.db.mapper.SectorMapper;
 import org.col.es.EsConfig;
 import org.col.es.EsException;
 import org.col.es.EsUtil;
 import org.col.es.model.NameUsageDocument;
-import org.col.es.name.NameUsageQueryService;
-import org.col.es.query.EsSearchRequest;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-
 import static org.col.es.EsConfig.ES_INDEX_NAME_USAGE;
 
 public class NameUsageIndexServiceEs implements NameUsageIndexService {
@@ -90,18 +85,19 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     NameUsageIndexer indexer = new NameUsageIndexer(client, index);
     int tCount, bCount;
     try (SqlSession session = factory.openSession()) {
-      Integer datasetKey = clearSector(session, s.getKey());
+      deleteSector(s.getKey());
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
+      
       try (BatchConsumer<NameUsageWrapper> handler = new BatchConsumer<>(indexer, BATCH_SIZE)) {
         LOG.info("Indexing usages from sector {}", s.getKey());
-        processor.processSector(s.getDatasetKey(), s.getKey(), s.getTarget().getId(), handler);
+        processor.processSector(s, handler);
       }
-      EsUtil.refreshIndex(client, index);
       tCount = indexer.documentsIndexed();
       indexer.reset();
+      
       try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)) {
         LOG.info("Indexing bare names from sector {}", s.getKey());
-        mapper.processDatasetBareNames(datasetKey, s.getKey(), handler);
+        mapper.processDatasetBareNames(s.getDatasetKey(), s.getKey(), handler);
       }
       EsUtil.refreshIndex(client, index);
       bCount = indexer.documentsIndexed();
@@ -113,8 +109,9 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
   @Override
   public void deleteSector(int sectorKey) {
-    try (SqlSession session = factory.openSession()) {
-      clearSector(session, sectorKey);
+    try {
+      int cnt = EsUtil.deleteSector(client, index, sectorKey);
+      LOG.info("Deleted all {} documents from sector {} from index {}", cnt, sectorKey, index);
       EsUtil.refreshIndex(client, index);
     } catch (IOException e) {
       throw new EsException(e);
@@ -230,27 +227,6 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       indexer.accept(usages);
       return indexer.documentsIndexed();
     }
-  }
-
-  /**
-   * @return datasetKey of the deleted sector
-   */
-  private Integer clearSector(SqlSession session, Integer sectorKey) throws IOException {
-    EsSearchRequest query = EsSearchRequest.emptyRequest();
-    query.select("datasetKey").whereEquals("sectorKey", sectorKey).size(1);
-    NameUsageQueryService svc = new NameUsageQueryService(index, client);
-    List<NameUsageDocument> result = svc.getDocuments(query);
-    if (result.size() != 0) {
-      int cnt = EsUtil.deleteSector(client, index, sectorKey);
-      LOG.debug("Deleted all {} documents from sector {} from index {}", cnt, sectorKey, index);
-      return result.get(0).getDatasetKey();
-    }
-    SectorMapper mapper = session.getMapper(SectorMapper.class);
-    Sector sector = mapper.get(sectorKey);
-    if (sector == null) {
-      throw new IllegalArgumentException("No such sector: " + sectorKey);
-    }
-    return sector.getDatasetKey();
   }
 
   private void logDatasetTotals(int datasetKey, int tCount, int bCount) {

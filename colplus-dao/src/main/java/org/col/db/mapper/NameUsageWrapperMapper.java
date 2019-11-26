@@ -32,10 +32,13 @@ public interface NameUsageWrapperMapper {
                                @Nullable @Param("sectorKey") Integer sectorKey,
                                ResultHandler<NameUsageWrapper> handler);
   
-  
   /**
    * Traverses a subtree returning classifications as list of simple names objects only.
    * The first SimpleName in each classification list represents the usage being processed.
+   *
+   * @param datasetKey the dataset, e.g. catalogue, to process
+   * @param sectorKey the optional sector to restrict the processed usages to
+   * @param usageId the root usage to start processing the tree. Will be included in the processed result
    */
   void processTree(@Param("datasetKey") Integer datasetKey,
                    @Nullable @Param("sectorKey") Integer sectorKey,
