@@ -1,7 +1,10 @@
 package org.col.es.name;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collection;
@@ -10,7 +13,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
 
+import org.apache.commons.io.IOUtils;
+import org.col.api.model.BareName;
 import org.col.api.model.Name;
 import org.col.api.model.SimpleName;
 import org.col.api.model.SimpleNameClassification;
@@ -57,6 +63,46 @@ public class NameUsageWrapperConverter {
    * Whether or not to zip the stringified NameUsageWrapper.
    */
   public static final boolean ZIP_PAYLOAD = true;
+
+  /**
+   * Serializes, deflates and base64-encodes a NameUsageWrapper. NB you can't store raw byte arrays in Elasticsearch. You
+   * must base64-encode them.
+   */
+  public static String deflate(NameUsageWrapper nuw) throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+    try (DeflaterOutputStream dos = new DeflaterOutputStream(baos)) {
+      EsModule.write(nuw, dos);
+    }
+    byte[] bytes = Base64.getEncoder().encode(baos.toByteArray());
+    return new String(bytes, StandardCharsets.UTF_8);
+  }
+
+  /**
+   * Base64-decodes, unzips and deserializes the provided payload string back to a NameUsageWrapper instance.
+   * 
+   * @param payload
+   * @return
+   * @throws IOException
+   */
+  public static NameUsageWrapper inflate(String payload) throws IOException {
+    byte[] bytes = Base64.getDecoder().decode(payload.getBytes());
+    ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+    return EsModule.readNameUsageWrapper(new InflaterInputStream(bais));
+  }
+
+  /**
+   * Base64-decodes and unzips the provided payload string. For testing purposes only.
+   * 
+   * @param payload
+   * @return
+   * @throws IOException
+   */
+  public static String inflateToJson(String payload) throws IOException {
+    byte[] bytes = Base64.getDecoder().decode(payload.getBytes());
+    ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+    InputStream is = new InflaterInputStream(bais);
+    return IOUtils.toString(is, StandardCharsets.UTF_8);
+  }
 
   /**
    * Provides a weakly normalized version of the provided string (typically a scientific name). Whatever normalization
@@ -145,11 +191,18 @@ public class NameUsageWrapperConverter {
     name.setPublishedInId(null);
     name.setType(null);
     if (nuw.getUsage().getClass() == Taxon.class) {
-      ((Taxon) nuw.getUsage()).setSectorKey(null);
+      Taxon t = (Taxon) nuw.getUsage();
+      t.setDatasetKey(null);
+      t.setSectorKey(null);
     } else if (nuw.getUsage().getClass() == Synonym.class) {
       Synonym s = (Synonym) nuw.getUsage();
+      s.setDatasetKey(null);
+      s.getAccepted().setDatasetKey(null);
       s.getAccepted().setSectorKey(null);
       s.getAccepted().getName().setScientificName(null);
+    } else {
+      BareName b = (BareName) nuw.getUsage();
+      b.setDatasetKey(null);
     }
     if (notEmpty(nuw.getVernacularNames())) {
       nuw.getVernacularNames().forEach(vn -> vn.setName(null));
@@ -177,11 +230,18 @@ public class NameUsageWrapperConverter {
     name.setPublishedInId(doc.getPublishedInId());
     name.setType(doc.getType());
     if (nuw.getUsage().getClass() == Taxon.class) {
-      ((Taxon) nuw.getUsage()).setSectorKey(doc.getSectorKey());
+      Taxon t = (Taxon) nuw.getUsage();
+      t.setDatasetKey(doc.getDatasetKey());
+      t.setSectorKey(doc.getSectorKey());
     } else if (nuw.getUsage().getClass() == Synonym.class) {
       Synonym s = (Synonym) nuw.getUsage();
+      s.setDatasetKey(doc.getDatasetKey());
+      s.getAccepted().setDatasetKey(doc.getDatasetKey());
       s.getAccepted().setSectorKey(doc.getSectorKey());
       s.getAccepted().getName().setScientificName(doc.getAcceptedName());
+    } else {
+      BareName b = (BareName) nuw.getUsage();
+      b.setDatasetKey(doc.getDatasetKey());
     }
     if (notEmpty(doc.getVernacularNames())) {
       for (int i = 0; i < doc.getVernacularNames().size(); ++i) {
@@ -291,18 +351,6 @@ public class NameUsageWrapperConverter {
     if (val != null) {
       fields.add(nf);
     }
-  }
-
-  /*
-   * Deflates and base64-encodes the stringified NameUsageWrapper. NB you can't store raw byte arrays in Elasticsearch.
-   * You must base64 encode them.
-   */
-  private static String deflate(NameUsageWrapper nuw) throws IOException {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
-    try (DeflaterOutputStream dos = new DeflaterOutputStream(baos)) {
-      EsModule.write(nuw, dos);
-    }
-    return Base64.getEncoder().encodeToString(baos.toByteArray());
   }
 
 }

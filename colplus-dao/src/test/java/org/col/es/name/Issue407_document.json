@@ -1,0 +1,18 @@
+ {
+	"usageId": "1",
+	"datasetKey": 11,
+	"scientificName": "Plantae",
+	"nameStrings": {
+		"genusOrMonomialWN": "plantae"
+	},
+	"nameId": "1",
+	"nameIndexId": "QLP",
+	"rank": 4,
+	"type": 0,
+	"nomCode": 1,
+	"nameFields": [
+		0
+	],
+	"status": 0,
+	"payload": "eJydkE1OwzAQhe8yawvsNM2fqgohNghRseiu6mJInDAisSvHQZQq1+ICXIxJIFXLAiF29vO852\/eAaiADBQI6FqsNGQHuPL7HR9gzWLuNHrNI5tAqlQoJYJAJCKIRBiJOJmFci6l3B4Hr\/eQKSmgsQWV9BfjNDk5C\/TYan+nh3ssWXnR7hE9NaMUCzDYjJy\/ss2TOI3UP9hOjT\/ZzkhSAU+2sVwW5StGup2KdGieIQu5UUPGNoQ1PzzUaDzqoVI0BfGWXQtZiXWrWbIFb6QEWEcVGcj4rx26dmD0ruOJ0roGPS+xGpeHBS2\/ExeXtIReQOu\/IuVZCua5dQWZam3ZdX9x8\/Hu+MYY+tWTyf2RoaZSv1mjOWIz2\/b9J6XtoK4="
+}

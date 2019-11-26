@@ -1,6 +1,7 @@
 package org.col.es.name;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.col.es.EsModule;
 import org.elasticsearch.client.Response;
@@ -14,6 +15,14 @@ public class NameUsageResponseReader {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageResponseReader.class);
 
+  public static NameUsageEsResponse readResponse(InputStream is) throws IOException {
+    NameUsageEsResponse response = EsModule.readEsResponse(is);
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("Receiving response: {}", EsModule.writeDebug(response));
+    }
+    return response;
+  }
+
   private final Response httpResponse;
 
   public NameUsageResponseReader(Response httpResponse) {
@@ -21,11 +30,7 @@ public class NameUsageResponseReader {
   }
 
   public NameUsageEsResponse readResponse() throws IOException {
-    NameUsageEsResponse response = EsModule.readEsResponse(httpResponse.getEntity().getContent());
-    if (LOG.isTraceEnabled()) {
-      LOG.trace("Receiving response: {}", EsModule.writeDebug(response));
-    }
-    return response;
+    return readResponse(httpResponse.getEntity().getContent());
   }
 
   public NameUsageEsMultiResponse readMultiResponse() throws IOException {

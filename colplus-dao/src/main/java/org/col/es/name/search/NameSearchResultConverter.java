@@ -1,10 +1,7 @@
 package org.col.es.name.search;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
@@ -12,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
-import java.util.zip.InflaterInputStream;
 
 import org.col.api.model.Page;
 import org.col.api.search.FacetValue;
@@ -75,7 +71,7 @@ class NameSearchResultConverter {
       String payload = hit.getSource().getPayload();
       NameUsageWrapper nuw;
       if (NameUsageWrapperConverter.ZIP_PAYLOAD) {
-        nuw = EsModule.readNameUsageWrapper(inflate(payload));
+        nuw = NameUsageWrapperConverter.inflate(payload);
       } else {
         nuw = EsModule.readNameUsageWrapper(payload);
       }
@@ -108,7 +104,8 @@ class NameSearchResultConverter {
     return facets;
   }
 
-  private static void addIfPresent(Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets, NameUsageSearchParameter param, EsFacet esFacet) {
+  private static void addIfPresent(Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets, NameUsageSearchParameter param,
+      EsFacet esFacet) {
     if (esFacet != null) {
       if (param.type() == String.class) {
         facets.put(param, createStringBuckets(esFacet));
@@ -156,12 +153,6 @@ class NameSearchResultConverter {
       facet.add(FacetValue.forEnum(enumClass, b.getKey(), b.getDocCount()));
     }
     return facet;
-  }
-
-  private static InputStream inflate(String payload) {
-    byte[] bytes = Base64.getDecoder().decode(payload.getBytes());
-    ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-    return new InflaterInputStream(bais);
   }
 
 }
