@@ -134,6 +134,11 @@
     ORDER BY target_rank, key
   </select>
 
+  <select id="listTargetDatasetKeys" resultType="integer">
+    SELECT DISTINCT dataset_key
+    FROM <include refid="FROM" />
+  </select>
+
   <insert id="create" parameterType="Sector" useGeneratedKeys="true" keyProperty="key">
     INSERT INTO sector ( <include refid="COLS" />, created_by )
     VALUES ( <include refid="PROPS" />, #{createdBy} )

@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import org.col.api.datapackage.ColdpTerm;
@@ -45,6 +46,10 @@ public class ApiModule extends SimpleModule {
     mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     
     mapper.registerModule(new ApiModule());
+    
+    // flaky with java 11
+    // if broken consider the experimental replacement blackbird: https://github.com/stevenschlansker/jackson-blackbird
+    mapper.registerModule(new AfterburnerModule());
   
     mapper.addHandler(new CslArrayMismatchHandler());
     

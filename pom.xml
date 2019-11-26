@@ -286,6 +286,7 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
             <!-- HK2 dependency injection - follow closely the version used by Jersey via Dropwizard -->
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>

@@ -51,4 +51,9 @@ public interface SectorMapper extends CRUD<Integer, Sector>, DatasetPageable<Sec
                       @Param("subjectDatasetKey") int subjectDatasetKey,
                       ResultHandler<Sector> handler);
   
+  /**
+   * Returns a list of unique dataset keys from all catalogues that have at least one sector.
+   */
+  List<Integer> listTargetDatasetKeys();
+  
 }

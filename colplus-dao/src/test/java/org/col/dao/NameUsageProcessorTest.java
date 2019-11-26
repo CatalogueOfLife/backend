@@ -1,21 +1,23 @@
 package org.col.dao;
 
+import java.sql.Connection;
+import java.sql.Statement;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-import org.col.api.model.Name;
-import org.col.api.model.SimpleName;
-import org.col.api.model.Taxon;
-import org.col.api.model.VernacularName;
+import org.col.api.TestEntityGenerator;
+import org.col.api.model.*;
 import org.col.api.search.NameUsageWrapper;
 import org.col.api.vocab.Datasets;
 import org.col.db.MybatisTestUtils;
 import org.col.db.PgSetupRule;
+import org.col.db.mapper.SectorMapper;
 import org.col.db.mapper.TestDataRule;
 import org.junit.Assert;
 import org.junit.Test;
 
 import static org.col.api.TestEntityGenerator.NAME4;
+import static org.col.api.vocab.Datasets.DRAFT_COL;
 import static org.junit.Assert.*;
 
 public class NameUsageProcessorTest extends DaoTestBase {
@@ -79,8 +81,24 @@ public class NameUsageProcessorTest extends DaoTestBase {
     MybatisTestUtils.populateDraftTree(session());
     AtomicInteger counter = new AtomicInteger(0);
   
+    SectorMapper sm = mapper(SectorMapper.class);
+  
+    Sector s = TestEntityGenerator.setUserDate(new Sector());
+    s.setDatasetKey(DRAFT_COL);
+    s.setSubjectDatasetKey(DRAFT_COL);
+    s.setTarget(new SimpleName("t2", null, null));
+    sm.create(s);
+    
+    // we update the sector key of a few usages so we mock a sync
+    try (Connection con = PgSetupRule.getSqlSessionFactory().openSession().getConnection();
+        Statement st = con.createStatement();
+    ) {
+      st.execute("UPDATE name_usage_" + DRAFT_COL + " SET sector_key="+s.getKey()+" WHERE id NOT IN ('t1', 't2') ");
+      con.commit();
+    }
+    
     NameUsageProcessor proc = new NameUsageProcessor(PgSetupRule.getSqlSessionFactory());
-    proc.processSector(Datasets.DRAFT_COL, 1, "t2", new Consumer<NameUsageWrapper>() {
+    proc.processSector(s, new Consumer<NameUsageWrapper>() {
       public void accept(NameUsageWrapper obj) {
         counter.incrementAndGet();
         Name n = obj.getUsage().getName();
@@ -99,6 +117,7 @@ public class NameUsageProcessorTest extends DaoTestBase {
         assertEquals(obj.getUsage().getId(), last.getId());
       }
     });
-    Assert.assertEquals(1, counter.get());
+    // we do not want the target node that does have sectorKey=NULL !!!
+    Assert.assertEquals(3, counter.get());
   }
 }

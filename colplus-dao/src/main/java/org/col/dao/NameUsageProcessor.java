@@ -6,10 +6,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.col.api.model.Sector;
 import org.col.api.model.SimpleNameClassification;
 import org.col.api.search.NameUsageWrapper;
 import org.col.db.mapper.NameUsageWrapperMapper;
@@ -53,31 +56,29 @@ public class NameUsageProcessor {
     }
     LOG.info("Process dataset {} with {} root taxa", datasetKey, rootIds.size());
     for (String id : rootIds) {
-      processTree(datasetKey, id, consumer);
+      processTree(datasetKey, null, id, consumer);
     }
   }
   
   /**
    * Process all catalogue usages from a given sector
-   * @param datasetKey the sectors dataset key. MUST match sector. In theory possible to get in SQL, but to reduce complexity we prefer to submit it explicitly
-   * @param sectorKey the sectors key
-   * @param id the sectors target usage id matching the sectorKey
+   * @param s the sector to process
    */
-  public void processSector(int datasetKey, int sectorKey, String id, Consumer<NameUsageWrapper> consumer) {
-    LOG.info("Process sector{} of dataset {} with target {}", sectorKey, datasetKey, id);
-    try (SqlSession s = factory.openSession(true)) {
-      final NameUsageWrapperMapper nuwm = s.getMapper(NameUsageWrapperMapper.class);
-      SNCHandler handler = new SNCHandler(consumer, nuwm, datasetKey);
-      nuwm.processTree(datasetKey, sectorKey, id, handler);
+  public void processSector(Sector s, Consumer<NameUsageWrapper> consumer) {
+    if (s.getTarget().getId() == null) {
+      LOG.warn("Sector {} with target {} is broken. Do not process", s.getKey(), s.getTarget());
+      return;
     }
+    LOG.info("Process sector{} of dataset {} with target {}", s.getKey(), s.getDatasetKey(), s.getTarget());
+    processTree(s.getDatasetKey(), s.getKey(), s.getTarget().getId(), consumer);
   }
   
-  private void processTree(int datasetKey, String id, Consumer<NameUsageWrapper> consumer) {
+  private void processTree(int datasetKey, @Nullable Integer sectorKey, String id, Consumer<NameUsageWrapper> consumer) {
     LOG.debug("Process dataset {} tree with root taxon {}", datasetKey, id);
     try (SqlSession s = factory.openSession(true)) {
       final NameUsageWrapperMapper nuwm = s.getMapper(NameUsageWrapperMapper.class);
       SNCHandler handler = new SNCHandler(consumer, nuwm, datasetKey);
-      nuwm.processTree(datasetKey, null, id, handler);
+      nuwm.processTree(datasetKey, sectorKey, id, handler);
     }
   }
   
