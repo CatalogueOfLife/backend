@@ -15,15 +15,17 @@ import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.col.api.model.*;
+import org.col.api.vocab.DatasetType;
 import org.col.api.vocab.Datasets;
-import org.col.release.AcExporter;
 import org.col.assembly.AssemblyCoordinator;
 import org.col.assembly.AssemblyState;
 import org.col.common.concurrent.NamedThreadFactory;
 import org.col.dao.DatasetImportDao;
 import org.col.dao.SubjectRematcher;
+import org.col.db.mapper.DatasetMapper;
 import org.col.db.mapper.SectorImportMapper;
 import org.col.dw.auth.Roles;
+import org.col.release.AcExporter;
 import org.col.release.CatalogueRelease;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,6 +134,25 @@ public class AssemblyResource {
   }
   
   @POST
+  @Path("/export")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public String export(@PathParam("catKey") int catKey, @Auth ColUser user) {
+    requireCatalogue(catKey);
+  
+    org.col.release.Logger logger = new org.col.release.Logger(LOG);
+    try {
+      exporter.export(catKey, logger);
+    } catch (Throwable e) {
+      LOG.error("Error exporting catalogue {}", catKey, e);
+      logger.log("\n\nERROR!");
+      if (e.getMessage() != null) {
+        logger.log(e.getMessage());
+      }
+    }
+    return logger.toString();
+  }
+  
+  @POST
   @Path("/rematch")
   public SubjectRematcher rematch(@PathParam("catKey") int catKey, RematchRequest req, @Auth ColUser user) {
     requireDraft(catKey);
@@ -144,6 +165,15 @@ public class AssemblyResource {
   private static void requireDraft(int catKey) {
     if (catKey != Datasets.DRAFT_COL) {
       throw new IllegalArgumentException("Only the draft CoL can be assembled at this stage");
+    }
+  }
+  
+  private void requireCatalogue(int catKey) {
+    try (SqlSession s = factory.openSession()) {
+      Dataset d = s.getMapper(DatasetMapper.class).get(catKey);
+      if (d.getType() != DatasetType.CATALOGUE) {
+        throw new IllegalArgumentException("Only catalogue type datasets can be assembled. Dataset " + catKey + " is of type " + d.getType());
+      }
     }
   }
 }
