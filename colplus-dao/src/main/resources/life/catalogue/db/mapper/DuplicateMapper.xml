@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.DuplicateMapper">
+
+    <resultMap id="duplicateResultMap" type="DuplicateMybatis" autoMapping="true">
+        <id column="key" property="key" />
+        <result property="usages" column="ids" typeHandler="life.catalogue.db.type.StringArrayTypeHandler" />
+    </resultMap>
+
+    <resultMap id="usageDecisionResultMap" type="UsageDecision" autoMapping="true">
+        <id column="u.id"/>
+        <association property="usage" resultMap="life.catalogue.db.mapper.NameUsageMapper.usageResultMap" />
+        <association property="decision" resultMap="life.catalogue.db.mapper.DecisionMapper.decisionResultMap" columnPrefix="ed_" notNullColumn="key"/>
+        <collection property="classification" ofType="SimpleName" column="{key.id=id,key.datasetKey=dataset_key}" autoMapping="true"
+                    select="life.catalogue.db.mapper.TaxonMapper.classificationSimple"/>
+    </resultMap>
+
+    <resultMap id="nameDecisionResultMap" type="UsageDecision" autoMapping="true">
+        <id column="n_id"/>
+        <association property="usage" javaType="BareName">
+            <id column="n_id" />
+            <association property="name" javaType="Name" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
+        </association>
+    </resultMap>
+
+    <select id="namesByIds" resultMap="nameDecisionResultMap">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        SELECT
+        <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
+            <property name="alias" value="n"/>
+            <property name="prefix" value="n_"/>
+        </include>,
+        coalesce(parseInt(n.combination_year), r.year) AS n_publishedInYear
+        FROM
+            name_${partition} n
+            LEFT JOIN reference_${partition} r ON n.published_in_id=r.id
+        WHERE n.id IN (<foreach collection="ids" item="id" separator=",">#{id}</foreach>)
+    </select>
+
+    <select id="usagesByIds" resultMap="usageDecisionResultMap">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        SELECT
+        u.is_synonym,
+        <include refid="life.catalogue.db.mapper.TaxonMapper.taxonCols">
+            <property name="alias" value="u"/>
+            <property name="prefix" value=""/>
+        </include>,
+        <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
+            <property name="alias" value="n"/>
+            <property name="prefix" value="n_"/>
+        </include>,
+        coalesce(parseInt(n.combination_year), r.year) AS n_publishedInYear,
+        <include refid="life.catalogue.db.mapper.TaxonMapper.taxonCols">
+            <property name="alias" value="a"/>
+            <property name="prefix" value="a_"/>
+        </include>,
+        <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
+            <property name="alias" value="an"/>
+            <property name="prefix" value="a_n_"/>
+        </include>,
+        <include refid="life.catalogue.db.mapper.DecisionMapper.SelectVar">
+            <property name="alias" value="ed."/>
+            <property name="prefix" value="ed_"/>
+        </include>
+        FROM
+        name_usage_${partition} u
+        JOIN name_${partition} n ON u.name_id=n.id
+        LEFT JOIN name_usage_${partition} a ON u.parent_id=a.id AND u.is_synonym
+        LEFT JOIN name_${partition} an ON a.name_id=an.id
+        LEFT JOIN reference_${partition} r ON n.published_in_id=r.id
+        LEFT JOIN decision ed ON ed.subject_id=u.id AND ed.subject_dataset_key=#{datasetKey}
+        WHERE u.id IN (<foreach collection="ids" item="id" separator=",">#{id}</foreach>)
+    </select>
+
+    <sql id="keyCol">
+        <choose>
+            <when test="mode.name() == 'FUZZY'">scientific_name_normalized</when>
+            <otherwise>lower(scientific_name)</otherwise>
+        </choose>
+    </sql>
+
+    <sql id="commonWhereClause">
+        <if test="category != null">
+            <if test="category.highest != null">
+                AND n.rank &gt;= #{category.highest}::rank
+            </if>
+            <if test="category.lowest != null">
+                AND n.rank &lt;= #{category.lowest}::rank
+            </if>
+        </if>
+        <if test="ranks != null and !ranks.isEmpty()">
+            AND n.rank IN (<foreach collection="ranks" item="r" separator=",">#{r}::RANK</foreach>)
+        </if>
+    </sql>
+
+    <sql id="commonHavingClause">
+        count(*) >= #{minSize}
+        <if test="authorshipDifferent != null">
+            AND count(
+            <!-- count null as being different,see https://github.com/Sp2000/colplus-backend/issues/457 -->
+            DISTINCT <choose><when test="mode.name() == 'FUZZY'">COALESCE(n.authorship_normalized, '{}')</when>
+                             <otherwise>COALESCE(n.authorship, '')</otherwise>
+                     </choose>
+            )
+            <!-- make sure at least 2 authorships are different -->
+            <if test="authorshipDifferent">&gt; 1</if>
+            <!-- make sure all authorships are the same -->
+            <if test="!authorshipDifferent">&lt;= 1</if>
+        </if>
+        <if test="rankDifferent != null">
+            AND count(DISTINCT n.rank)
+            <!-- make sure at least 2 ranks are different -->
+            <if test="rankDifferent">&gt; 1</if>
+            <!-- make sure all ranks are the same -->
+            <if test="!rankDifferent">&lt;= 1</if>
+        </if>
+        <if test="codeDifferent != null">
+            AND count(DISTINCT n.code)
+            <!-- make sure at least 2 nom codes are different -->
+            <if test="codeDifferent">&gt; 1</if>
+            <!-- make sure all nom codes are the same -->
+            <if test="!codeDifferent">&lt;= 1</if>
+        </if>
+    </sql>
+
+    <select id="duplicateNames" parameterType="map" resultMap="duplicateResultMap">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        SELECT <include refid="keyCol" /> AS key, array_agg(n.id) AS ids
+        FROM name_${partition} n
+        <where>
+            <include refid="commonWhereClause"/>
+        </where>
+        GROUP BY <include refid="keyCol" />
+        HAVING <include refid="commonHavingClause"/>
+        ORDER BY <include refid="keyCol" />
+        <include refid="life.catalogue.db.Common.limit" />
+    </select>
+
+    <select id="duplicates" parameterType="map" resultMap="duplicateResultMap">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        SELECT <include refid="keyCol" /> AS key, array_agg(u.id) AS ids
+        FROM name_usage_${partition} u
+            JOIN name_${partition} n ON u.name_id=n.id
+            <if test="withDecision != null">
+                LEFT JOIN decision ed ON ed.subject_id=u.id
+                    AND ed.subject_dataset_key=#{datasetKey}
+                    <!-- magic draft col number for now! -->
+                    AND ed.dataset_key=3
+            </if>
+        <where>
+            <include refid="commonWhereClause"/>
+            <if test="status != null and !status.isEmpty()">
+                AND u.status IN (<foreach collection="status" item="st" separator=",">#{st}::TAXONOMICSTATUS</foreach>)
+            </if>
+        </where>
+        GROUP BY <include refid="keyCol" />
+        HAVING <include refid="commonHavingClause"/>
+        <if test="status != null and status.size() &gt; 1">
+            <!-- make sure all requested status are covered at least once -->
+            AND array_agg(u.status) @> array[<foreach collection="status" item="st" separator=",">#{st}::TAXONOMICSTATUS</foreach>]
+        </if>
+        <if test="sectorKey != null">
+            <!-- make sure at least one name comes from the requested sector -->
+            AND array_agg(u.sector_key) @> array[${sectorKey}]
+        </if>
+        <if test="withDecision != null">
+            AND count(DISTINCT ed.key)
+                <if test="withDecision">&gt; 0</if>
+                <if test="!withDecision">= 0</if>
+        </if>
+        <if test="acceptedDifferent != null">
+            AND count(DISTINCT CASE u.is_synonym WHEN true THEN u.parent_id ELSE u.id END)
+            <!-- make sure at least 2 parents are different -->
+            <if test="acceptedDifferent">&gt; 1</if>
+            <!-- make sure all parent ids are the same -->
+            <if test="!acceptedDifferent">&lt;= 1</if>
+        </if>
+        ORDER BY <include refid="keyCol" />
+        <include refid="life.catalogue.db.Common.limit" />
+    </select>
+</mapper>

@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.VerbatimRecordMapper">
+
+    <sql id="SELECT">
+        v.id,
+        v.dataset_key,
+        v.line,
+        v.file,
+        v.type,
+        v.terms,
+        v.issues
+    </sql>
+
+    <sql id="COLS">
+        dataset_key,
+        line,
+        file,
+        type,
+        terms,
+        issues
+    </sql>
+
+    <sql id="PROPS">
+        #{datasetKey},
+        #{line},
+        #{file},
+        #{type},
+        #{terms, typeHandler=life.catalogue.db.type2.TermMapTypeHandler}::jsonb,
+        #{issues, typeHandler=life.catalogue.db.type.IssueSetTypeHandler}::ISSUE[]
+    </sql>
+
+    <sql id="FROM">
+        verbatim_${partition} v
+    </sql>
+
+    <sql id="WHERE">
+        <where>
+            <if test="types != null and !types.isEmpty()">
+                AND v.type IN
+                <foreach item="type" index="index" collection="types" open="(" separator="," close=")">#{type, typeHandler=life.catalogue.db.type.TermTypeHandler}</foreach>
+            </if>
+            <if test="terms != null and !terms.isEmpty()">
+                AND
+                <choose>
+                    <when test="termOp.name() == 'OR'">
+                        <foreach item="val" index="term" collection="terms" open="(" separator=" OR " close=")">
+                            v.terms @> '{"${term}": "${val}"}'
+                        </foreach>
+                    </when>
+                    <otherwise>
+                        v.terms @>
+                        <foreach item="val" index="term" collection="terms" open="'{" separator="," close="}'">
+                            "${term}": "${val}"
+                        </foreach>
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="issues != null and !issues.isEmpty()">
+                AND v.issues @>
+                <foreach item="issue" index="index" collection="issues" open="array[" separator="," close="]">'${issue.name()}'::ISSUE</foreach>
+            </if>
+            <if test="q != null">
+                AND v.doc @@ plainto_tsquery('simple2', #{q})
+            </if>
+        </where>
+    </sql>
+
+    <resultMap id="verbatimResultMap" type="VerbatimRecord" autoMapping="true">
+        <result property="terms" column="terms" typeHandler="life.catalogue.db.type2.TermMapTypeHandler"/>
+        <result property="issues" column="issues" typeHandler="life.catalogue.db.type.IssueSetTypeHandler" />
+    </resultMap>
+
+    <select id="count" resultType="integer">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        SELECT coalesce(
+        (SELECT
+        <choose>
+            <when test="q != null or (terms != null and !terms.isEmpty()) or (issues != null and !issues.isEmpty()) or (types != null and types.size > 1)">
+                count(*)
+                FROM <include refid="FROM" />
+                <include refid="WHERE" />
+            </when>
+            <otherwise>
+                <choose>
+                    <when test="types != null and !types.isEmpty()">
+                        (verbatim_by_type_count->#{types[0], typeHandler=life.catalogue.db.type.TermTypeHandler})::int
+                    </when>
+                    <otherwise>
+                        verbatim_count
+                    </otherwise>
+                </choose>
+                <include refid="life.catalogue.db.Common.fromFinishedDatasetImport"/>
+            </otherwise>
+        </choose>
+        ), 0)
+    </select>
+
+    <select id="list" resultMap="verbatimResultMap">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        <include refid="WHERE" />
+        ORDER BY id
+        <include refid="life.catalogue.db.Common.limit"/>
+    </select>
+
+    <select id="get" resultMap="verbatimResultMap">
+        <include refid="life.catalogue.db.Common.partitionByKey"/>
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE id = #{key.id}
+    </select>
+
+    <select id="getIssues" resultMap="verbatimResultMap">
+        <include refid="life.catalogue.db.Common.partitionByKey"/>
+        SELECT v.issues
+        FROM <include refid="FROM" />
+        WHERE id = #{key.id}
+    </select>
+
+    <insert id="create" parameterType="VerbatimRecord" useGeneratedKeys="true" keyProperty="id">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        INSERT INTO verbatim_${datasetKey} (<include refid="COLS" />)
+        VALUES (<include refid="PROPS" />)
+    </insert>
+
+    <update id="update" parameterType="VerbatimRecord" keyProperty="id">
+        <include refid="life.catalogue.db.Common.partitionByKey"/>
+        UPDATE verbatim_${datasetKey}
+        SET issues = #{issues, typeHandler=life.catalogue.db.type.IssueSetTypeHandler}::ISSUE[]
+        WHERE id = #{key.id}
+    </update>
+
+</mapper>

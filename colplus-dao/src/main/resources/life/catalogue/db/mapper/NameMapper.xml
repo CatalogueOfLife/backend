@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.NameMapper">
+
+    <sql id="minimalNameCols">
+        ${alias}.id AS ${prefix}id,
+        ${alias}.scientific_name AS ${prefix}scientific_name,
+        ${alias}.authorship AS ${prefix}authorship,
+        ${alias}.rank AS ${prefix}rank,
+        ${alias}.uninomial AS ${prefix}uninomial,
+        ${alias}.genus AS ${prefix}genus,
+        ${alias}.infrageneric_epithet AS ${prefix}infrageneric_epithet,
+        ${alias}.specific_epithet AS ${prefix}specific_epithet,
+        ${alias}.infraspecific_epithet AS ${prefix}infraspecific_epithet,
+        ${alias}.cultivar_epithet AS ${prefix}cultivar_epithet,
+        ${alias}.appended_phrase AS ${prefix}appended_phrase,
+        ${alias}.candidatus AS ${prefix}candidatus,
+        ${alias}.notho AS ${prefix}notho,
+        ${alias}.basionym_authors AS ${prefix}basionym_authors,
+        ${alias}.basionym_ex_authors AS ${prefix}basionym_ex_authors,
+        ${alias}.basionym_year AS ${prefix}basionym_year,
+        ${alias}.combination_authors AS ${prefix}combination_authors,
+        ${alias}.combination_ex_authors AS ${prefix}combination_ex_authors,
+        ${alias}.combination_year AS ${prefix}combination_year,
+        ${alias}.sanctioning_author AS ${prefix}sanctioning_author,
+        ${alias}.code AS ${prefix}code
+    </sql>
+
+    <sql id="nameCols">
+        <include refid="life.catalogue.db.mapper.NameMapper.minimalNameCols" />,
+        ${alias}.dataset_key AS ${prefix}dataset_key,
+        ${alias}.sector_key AS ${prefix}sector_key,
+        ${alias}.verbatim_key AS ${prefix}verbatim_key,
+        ${alias}.name_index_id AS ${prefix}name_index_id,
+        ${alias}.name_index_match_type AS ${prefix}name_index_match_type,
+        ${alias}.homotypic_name_id AS ${prefix}homotypic_name_id,
+        ${alias}.published_in_id AS ${prefix}published_in_id,
+        ${alias}.published_in_page AS ${prefix}published_in_page,
+        ${alias}.nom_status AS ${prefix}nom_status,
+        ${alias}.type_status AS ${prefix}type_status,
+        ${alias}.type_material AS ${prefix}type_material,
+        ${alias}.type_reference_id AS ${prefix}type_reference_id,
+        ${alias}.origin AS ${prefix}origin,
+        ${alias}.type AS ${prefix}type,
+        ${alias}.webpage AS ${prefix}webpage,
+        ${alias}.remarks AS ${prefix}remarks,
+        ${alias}.created AS ${prefix}created,
+        ${alias}.created_by AS ${prefix}created_by,
+        ${alias}.modified AS ${prefix}modified,
+        ${alias}.modified_by AS ${prefix}modified_by
+    </sql>
+
+    <sql id="SELECT">
+        <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
+            <property name="alias" value="n"/>
+            <property name="prefix" value=""/>
+        </include>
+    </sql>
+
+
+    <sql id="COLS">
+        id,
+        dataset_key,
+        sector_key,
+        verbatim_key,
+        name_index_id,
+        name_index_match_type,
+        homotypic_name_id,
+        scientific_name,
+        scientific_name_normalized,
+        authorship,
+        authorship_normalized,
+        rank,
+        uninomial,
+        genus,
+        infrageneric_epithet,
+        specific_epithet,
+        infraspecific_epithet,
+        cultivar_epithet,
+        appended_phrase,
+        candidatus,
+        notho,
+        basionym_authors,
+        basionym_ex_authors,
+        basionym_year,
+        combination_authors,
+        combination_ex_authors,
+        combination_year,
+        sanctioning_author,
+        published_in_id,
+        published_in_page,
+        code,
+        nom_status,
+        type_status,
+        type_material,
+        type_reference_id,
+        origin,
+        type,
+        webpage,
+        remarks,
+        created_by,
+        modified_by
+    </sql>
+
+    <sql id="PROPS">
+        #{id},
+        #{datasetKey},
+        #{sectorKey},
+        #{verbatimKey},
+        #{nameIndexId},
+        #{nameIndexMatchType}::MATCHTYPE,
+        #{homotypicNameId},
+        #{scientificName},
+        #{scientificNameNormalized},
+        #{authorship},
+        #{authorshipNormalized},
+        #{rank}::RANK,
+        #{uninomial},
+        #{genus},
+        #{infragenericEpithet},
+        #{specificEpithet},
+        #{infraspecificEpithet},
+        #{cultivarEpithet},
+        #{appendedPhrase},
+        #{candidatus},
+        #{notho}::NAMEPART,
+        #{basionymAuthorship.authors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
+        #{basionymAuthorship.exAuthors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
+        #{basionymAuthorship.year},
+        #{combinationAuthorship.authors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
+        #{combinationAuthorship.exAuthors,
+        typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
+        #{combinationAuthorship.year},
+        #{sanctioningAuthor},
+        #{publishedInId},
+        #{publishedInPage},
+        #{code}::NOMCODE,
+        #{nomStatus}::NOMSTATUS,
+        #{typeStatus}::TYPESTATUS,
+        #{typeMaterial},
+        #{typeReferenceId},
+        #{origin}::ORIGIN,
+        #{type}::NAMETYPE,
+        #{webpage},
+        #{remarks},
+        #{createdBy},
+        #{modifiedBy}
+    </sql>
+
+    <sql id="FROM">name_${partition} n</sql>
+
+     <!-- A mapping to Name, mostly auto mapped -->
+    <resultMap id="nameResultMap" type="Name" autoMapping="true">
+        <id property="id" column="id" />
+        <association property="combinationAuthorship" javaType="Authorship">
+            <result property="authors" column="combination_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler" />
+            <result property="exAuthors" column="combination_ex_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler" />
+            <result property="year" column="combination_year" />
+        </association>
+        <association property="basionymAuthorship" javaType="Authorship">
+            <result property="authors" column="basionym_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler" />
+            <result property="exAuthors" column="basionym_ex_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler" />
+            <result property="year" column="basionym_year" />
+        </association>
+    </resultMap>
+
+    <select id="count" resultType="integer">
+        <include refid="life.catalogue.db.Common.count">
+            <property name="table" value="name"/>
+            <property name="column" value="name_count"/>
+            <property name="where" value="true"/>
+        </include>
+    </select>
+
+    <select id="hasData" resultType="boolean">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        SELECT exists(
+            SELECT id FROM <include refid="FROM" /> LIMIT 1
+        )
+    </select>
+
+    <select id="list" resultMap="nameResultMap">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        ORDER BY id
+        <include refid="life.catalogue.db.Common.limit" />
+    </select>
+
+    <select id="listByReference" resultMap="nameResultMap">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE n.published_in_id = #{refId}
+        ORDER BY id
+    </select>
+
+    <select id="get" resultMap="nameResultMap">
+        <include refid="life.catalogue.db.Common.partitionByKey"/>
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE n.id = #{key.id}
+    </select>
+
+    <select id="getByUsage" resultMap="nameResultMap">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+            JOIN name_usage_${datasetKey} u ON u.name_id=n.id
+        WHERE u.id = #{usageId}
+    </select>
+
+    <select id="processIndexIds" resultType="String" >
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        SELECT DISTINCT name_index_id
+        FROM <include refid="FROM" />
+        <if test="sectorKey != null">
+            WHERE sector_key = #{sectorKey}
+        </if>
+    </select>
+
+    <select id="homotypicGroup" resultMap="nameResultMap">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+          JOIN name_${partition} ns ON n.homotypic_name_id=ns.homotypic_name_id AND n.dataset_key=ns.dataset_key
+        WHERE ns.id=#{id}
+    </select>
+
+    <select id="indexGroup" resultMap="nameResultMap">
+        SELECT <include refid="SELECT" />
+        FROM name n
+        WHERE n.name_index_id=#{id}
+    </select>
+
+    <insert id="create" parameterType="Name" useGeneratedKeys="false" keyProperty="id">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        INSERT INTO name_${partition} (<include refid="COLS" />, created, modified)
+        VALUES (<include refid="PROPS" />, now(), now())
+    </insert>
+
+    <update id="update" parameterType="Name" keyProperty="id">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        UPDATE name_${partition}
+        SET (<include refid="COLS" />, created, modified) = (<include refid="PROPS" />, now(), now())
+        WHERE id = #{id} AND dataset_key=#{datasetKey}
+    </update>
+
+    <update id="updateMatch" parameterType="map" keyProperty="id">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        UPDATE name_${partition}
+        SET (name_index_id, modified) = (#{nameIndexID}, now())
+        WHERE id = #{id} AND dataset_key=#{datasetKey}
+    </update>
+
+    <delete id="delete" parameterType="map">
+        <include refid="life.catalogue.db.Common.partitionByKey"/>
+        DELETE FROM name_${partition}
+        WHERE id = #{key.id} AND dataset_key=#{key.datasetKey}
+    </delete>
+
+    <delete id="deleteOrphans" parameterType="map">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        DELETE FROM name_${partition} n
+        WHERE NOT EXISTS (
+            SELECT NULL
+            FROM name_usage_${partition} u
+            WHERE n.id = i.name_id AND n.dataset_key=#{datasetKey} AND u.dataset_key=#{datasetKey}
+        )
+    </delete>
+
+    <delete id="deleteBySector" parameterType="map">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        DELETE FROM name_${partition}
+        WHERE sector_key=#{sectorKey} AND dataset_key=#{datasetKey}
+    </delete>
+
+    <select id="processDataset" parameterType="map" resultMap="nameResultMap" resultOrdered="true" fetchSize="2500" resultSetType="FORWARD_ONLY">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+    </select>
+
+    <select id="processSince" parameterType="map" resultMap="nameResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE modified &gt; #{since}
+    </select>
+</mapper>

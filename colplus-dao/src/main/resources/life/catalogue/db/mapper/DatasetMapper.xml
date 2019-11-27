@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.DatasetMapper">
+
+    <sql id="SELECT">
+      key,
+      type,
+      title,
+      gbif_key,
+      gbif_publisher_key,
+      description,
+      organisations,
+      contact,
+      authors_and_editors,
+      license,
+      version,
+      released,
+      citation,
+      geographic_scope,
+      website,
+      logo,
+      data_format,
+      data_access,
+      origin,
+      import_frequency,
+      code,
+      notes,
+      alias,
+      "group",
+      confidence,
+      completeness,
+      created,
+      created_by,
+      modified,
+      modified_by,
+      deleted,
+      di.finished AS imported,
+      di.verbatim_count AS size,
+      (select array_agg(distinct s.dataset_key) from sector s where s.subject_dataset_key=d.key) AS contributes_to
+    </sql>
+
+    <sql id="COLS">
+      type,
+      title,
+      gbif_key,
+      gbif_publisher_key,
+      description,
+      organisations,
+      contact,
+      authors_and_editors,
+      license,
+      version,
+      released,
+      citation,
+      geographic_scope,
+      website,
+      logo,
+      data_format,
+      data_access,
+      origin,
+      import_frequency,
+      code,
+      notes,
+      alias,
+      "group",
+      confidence,
+      completeness,
+      created_by,
+      modified_by
+    </sql>
+
+    <sql id="PROPS">
+      #{type}::datasettype,
+      #{title},
+      #{gbifKey},
+      #{gbifPublisherKey},
+      #{description},
+      #{organisations, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
+      #{contact},
+      #{authorsAndEditors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
+      #{license}::LICENSE,
+      #{version},
+      #{released},
+      #{citation},
+      #{geographicScope},
+      #{website},
+      #{logo},
+      #{dataFormat}::DATAFORMAT,
+      #{dataAccess},
+      #{origin}::datasetorigin,
+      #{importFrequency, typeHandler=life.catalogue.db.type.FrequencyTypeHandler},
+      #{code}::NOMCODE,
+      #{notes},
+      #{alias},
+      #{group},
+      #{confidence},
+      #{completeness},
+      #{createdBy},
+      #{modifiedBy}
+    </sql>
+
+    <sql id="FROM">
+        dataset d LEFT JOIN dataset_import di ON d.last_data_import_attempt=di.attempt AND d.key=di.dataset_key
+    </sql>
+
+    <sql id="SEARCH_WHERE">
+        deleted IS NULL AND key != 1
+        <if test="req != null">
+            <if test="req.q != null">
+                AND (
+                    f_unaccent(title) ILIKE f_unaccent('%${req.q}%')
+                    OR f_unaccent(alias) ILIKE f_unaccent('%${req.q}%')
+                    OR doc @@ plainto_tsquery('simple2', #{req.q})
+                )
+            </if>
+            <if test="req.code != null">
+                AND code=#{req.code}::NOMCODE
+            </if>
+            <if test="req.type != null">
+                AND type=#{req.type}::DATASETTYPE
+            </if>
+            <if test="req.contributesTo != null">
+                AND exists(select 1 from sector s WHERE dataset_key=#{req.contributesTo} AND s.subject_dataset_key=d.key)
+            </if>
+            <if test="req.format != null">
+                AND data_format=#{req.format}::DATAFORMAT
+            </if>
+            <if test="req.modified != null">
+                AND di.finished > #{req.modified}
+            </if>
+            <if test="req.created != null">
+                AND created > #{req.created}
+            </if>
+            <if test="req.released != null">
+                AND released > #{req.released}
+            </if>
+        </if>
+    </sql>
+
+    <!--  A mapping to Name, mostly auto mapped -->
+    <resultMap id="datasetResultMap" type="Dataset" autoMapping="true">
+        <id property="key" column="key" />
+        <result property="contributesTo" column="contributes_to" typeHandler="life.catalogue.db.type2.IntegerSetTypeHandler" />
+        <result property="organisations" column="organisations" typeHandler="life.catalogue.db.type.StringArrayTypeHandler" />
+        <result property="authorsAndEditors" column="authors_and_editors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler" />
+        <result property="importFrequency" column="import_frequency" typeHandler="life.catalogue.db.type.FrequencyTypeHandler" />
+    </resultMap>
+
+    <select id="count" resultType="integer">
+        SELECT COUNT(*)
+        FROM <include refid="FROM" />
+        WHERE <include refid="SEARCH_WHERE" />
+    </select>
+
+    <select id="keys" resultType="integer">
+        SELECT key
+        FROM dataset
+        WHERE deleted IS NULL
+    </select>
+
+    <select id="process" parameterType="map" resultMap="datasetResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE deleted IS NULL
+        <if test="catalogueKey != null">
+            AND exists(select 1 from sector s WHERE dataset_key=#{catalogueKey} AND s.subject_dataset_key=d.key)
+        </if>
+        <if test="filter != null">AND ${filter}</if>
+        ORDER BY key
+    </select>
+
+    <select id="search" resultMap="datasetResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE <include refid="SEARCH_WHERE" />
+        ORDER BY
+        <bind name="rev" value="req.reverse" />
+        <choose>
+            <when test="req == null || req.sortBy == null">
+                key
+            </when>
+            <otherwise>
+                <bind name="sortBy" value="req.sortBy.name()" />
+                <choose>
+                    <when test="sortBy == 'RELEVANCE'">
+                        ts_rank_cd(doc, plainto_tsquery('simple2', #{req.q}))
+                        <bind name="rev" value="!req.reverse" />
+                    </when>
+                    <when test="sortBy == 'SIZE' || sortBy == 'CREATED' || sortBy == 'MODIFIED'">
+                        ${req.sortBy.name().toLowerCase()}
+                        <bind name="rev" value="!req.reverse" />
+                    </when>
+                    <when test="sortBy == 'AUTHORS'">
+                        lower(authors_and_editors[1])
+                    </when>
+                    <when test="sortBy == 'TITLE'">
+                        lower(title)
+                    </when>
+                    <otherwise>
+                        ${req.sortBy.name().toLowerCase()}
+                    </otherwise>
+                </choose>
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="rev">DESC NULLs LAST</when>
+            <otherwise>ASC NULLs FIRST</otherwise>
+        </choose>
+        <include refid="life.catalogue.db.Common.limit"/>
+    </select>
+
+    <select id="list" resultMap="datasetResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE deleted IS NULL
+        ORDER BY key
+        <include refid="life.catalogue.db.Common.limit"/>
+    </select>
+
+    <select id="listNeverImported" resultMap="datasetResultMap">
+        SELECT <include refid="SELECT" />
+        FROM dataset d
+          LEFT JOIN dataset_import di ON di.dataset_key=d.key
+        WHERE d.deleted IS NULL
+          AND d.import_frequency >= 0
+          AND di.attempt IS NULL
+        ORDER BY d.key ASC
+        LIMIT #{limit}
+    </select>
+
+    <select id="listToBeImported" resultMap="datasetResultMap">
+        SELECT *
+        FROM (
+            SELECT DISTINCT ON (d.key) di.state, di.finished, <include refid="SELECT" />
+            FROM dataset d
+              LEFT JOIN dataset_import di ON di.dataset_key=d.key
+            WHERE d.deleted IS NULL
+                AND di.finished IS NOT NULL
+                AND d.import_frequency > 0
+        ORDER BY d.key, di.attempt DESC
+        ) AS latest
+        WHERE state != 'WAITING'::importstate AND (finished + import_frequency * interval '1 day') &lt;  now()
+        ORDER BY finished ASC
+        LIMIT #{limit}
+    </select>
+
+    <select id="exists" resultType="integer">
+        SELECT key
+        FROM dataset
+        WHERE key = #{key} AND deleted IS NULL
+    </select>
+
+    <select id="get" resultMap="datasetResultMap">
+      SELECT <include refid="SELECT" />
+      FROM <include refid="FROM" />
+      WHERE key = #{key}
+    </select>
+
+    <select id="getArchive" resultMap="datasetResultMap">
+        SELECT <include refid="SELECT" />
+        FROM dataset_archive d LEFT JOIN dataset_import di ON d.last_data_import_attempt=di.attempt AND d.key=di.dataset_key
+        WHERE key = #{key} AND catalogue_key = #{catalogueKey}
+    </select>
+
+    <select id="getByGBIF" resultMap="datasetResultMap">
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE gbif_key = #{key}
+    </select>
+
+    <insert id="create" parameterType="Dataset" useGeneratedKeys="true" keyProperty="key">
+      INSERT INTO dataset (<include refid="COLS" />, created, modified)
+             VALUES (<include refid="PROPS" />, now(), now())
+    </insert>
+
+    <insert id="createArchive" parameterType="map">
+        INSERT INTO dataset_archive (key, catalogue_key, <include refid="COLS" />, created, modified)
+        SELECT key, #{catalogueKey}, <include refid="COLS" />, created, modified
+        FROM dataset d
+        WHERE d.key = #{key}
+    </insert>
+
+    <update id="update" parameterType="Dataset">
+        UPDATE dataset
+        SET (<include refid="COLS" />, modified)
+          = (<include refid="PROPS" />, now())
+        WHERE key = #{key}
+    </update>
+
+    <select id="lastImportAttempt" resultType="Integer">
+        SELECT last_data_import_attempt
+        FROM dataset
+        WHERE key=#{key}
+    </select>
+
+    <update id="updateLastImport" parameterType="integer">
+        UPDATE dataset
+        SET last_data_import_attempt = #{attempt}
+        WHERE key = #{key}
+    </update>
+
+    <update id="delete" parameterType="map">
+        UPDATE dataset SET deleted = now(), last_data_import_attempt=null
+        WHERE key = #{key}
+    </update>
+
+</mapper>

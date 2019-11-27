@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.DecisionMapper">
+
+  <sql id="SelectVar">
+    ${alias}key AS ${prefix}key,
+    ${alias}dataset_key AS ${prefix}dataset_key,
+    ${alias}subject_dataset_key AS ${prefix}subject_dataset_key,
+    ${alias}subject_id AS ${prefix}subject_id,
+    ${alias}subject_name AS ${prefix}subject_name,
+    ${alias}subject_authorship AS ${prefix}subject_authorship,
+    ${alias}subject_rank AS ${prefix}subject_rank,
+    ${alias}subject_code AS ${prefix}subject_code,
+    ${alias}subject_status AS ${prefix}subject_status,
+    ${alias}subject_parent AS ${prefix}subject_parent,
+    ${alias}note AS ${prefix}note,
+    ${alias}modified AS ${prefix}modified,
+    ${alias}modified_by AS ${prefix}modified_by,
+    ${alias}created AS ${prefix}created,
+    ${alias}created_by AS ${prefix}created_by,
+    ${alias}mode AS ${prefix}mode,
+    ${alias}name AS ${prefix}name,
+    ${alias}status AS ${prefix}status,
+    ${alias}extinct AS ${prefix}extinct,
+    ${alias}temporal_range_start AS ${prefix}temporal_range_start,
+    ${alias}temporal_range_end AS ${prefix}temporal_range_end,
+    ${alias}lifezones AS ${prefix}lifezones
+  </sql>
+
+  <sql id="SELECT">
+    <include refid="life.catalogue.db.mapper.DecisionMapper.SelectVar">
+      <property name="alias" value="ed."/>
+      <property name="prefix" value=""/>
+    </include>
+  </sql>
+
+  <sql id="COLS">
+    dataset_key,
+    subject_dataset_key,
+    subject_id,
+    subject_name,
+    subject_authorship,
+    subject_rank,
+    subject_code,
+    subject_status,
+    subject_parent,
+    note,
+    modified,
+    modified_by,
+    mode,
+    name,
+    status,
+    extinct,
+    temporal_range_start,
+    temporal_range_end,
+    lifezones
+  </sql>
+
+  <sql id="PROPS">
+    #{datasetKey},
+    #{subjectDatasetKey},
+    #{subject.id},
+    #{subject.name},
+    #{subject.authorship},
+    #{subject.rank}::RANK,
+    #{subject.code}::NOMCODE,
+    #{subject.status}::TAXONOMICSTATUS,
+    #{subject.parent},
+    #{note},
+    now(),
+    #{modifiedBy},
+    #{mode}::EDITORIALDECISION_MODE,
+    #{name, typeHandler=life.catalogue.db.type2.JsonNameHandler}::jsonb,
+    #{status}::TAXONOMICSTATUS,
+    #{extinct},
+    #{temporalRangeStart},
+    #{temporalRangeEnd},
+    #{lifezones, typeHandler=life.catalogue.db.type.LifezoneSetTypeHandler}
+  </sql>
+
+  <resultMap id="decisionResultMap" type="EditorialDecision" autoMapping="true">
+    <id property="key" column="key" />
+    <result property="name" column="name" typeHandler="life.catalogue.db.type2.JsonNameHandler" />
+    <result property="lifezones" column="lifezones" typeHandler="life.catalogue.db.type.LifezoneSetTypeHandler" />
+    <association property="subject" javaType="SimpleName" autoMapping="true" columnPrefix="subject_" />
+  </resultMap>
+
+  <select id="list" resultMap="decisionResultMap">
+    SELECT <include refid="SELECT" />
+    FROM decision ed
+    ORDER BY ed.key
+    <include refid="life.catalogue.db.Common.limit" />
+  </select>
+
+  <select id="listBySubjectDataset" resultMap="decisionResultMap">
+    SELECT <include refid="SELECT" />
+    FROM decision ed
+    <where>
+      ed.dataset_key = #{datasetKey}
+      <if test="subjectDatasetKey != null">
+        AND ed.subject_dataset_key = #{subjectDatasetKey}
+      </if>
+      <if test="id != null">
+        AND ed.subject_id = #{id}
+      </if>
+    </where>
+    ORDER BY ed.key
+  </select>
+
+  <select id="get" resultMap="decisionResultMap">
+    SELECT <include refid="SELECT" />
+    FROM decision ed
+    WHERE key = #{key}
+  </select>
+
+  <insert id="create" parameterType="Sector" useGeneratedKeys="true" keyProperty="key">
+    INSERT INTO decision ( <include refid="COLS" />, created_by )
+    VALUES ( <include refid="PROPS" />, #{createdBy} )
+  </insert>
+
+  <update id="update" parameterType="Sector">
+    UPDATE decision
+    SET (<include refid="COLS" />) = (<include refid="PROPS" />)
+    WHERE key = #{key}
+  </update>
+
+  <delete id="delete" parameterType="map">
+    DELETE FROM decision
+    WHERE key = #{key}
+  </delete>
+
+  <select id="subjectBroken" resultMap="decisionResultMap">
+    SELECT <include refid="SELECT" />
+    FROM decision ed
+      LEFT JOIN name_usage t ON t.dataset_key=ed.subject_dataset_key AND t.id=ed.subject_id
+    WHERE t.id IS NULL
+      AND ed.dataset_key = #{datasetKey}
+      <if test="subjectDatasetKey != null">
+        AND ed.subject_dataset_key = #{subjectDatasetKey}
+      </if>
+    ORDER BY ed.key
+  </select>
+
+  <select id="processDataset" parameterType="map" resultMap="decisionResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="SELECT" />
+    FROM decision ed
+    WHERE dataset_key=#{datasetKey}
+  </select>
+
+</mapper>

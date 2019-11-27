@@ -1,0 +1,25 @@
+package life.catalogue.es.query;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import life.catalogue.es.query.Query;
+
+public class DisMaxQuery extends ConstraintQuery<DisMaxConstraint> {
+
+  @JsonProperty("dis_max")
+  private final DisMaxConstraint constraint;
+
+  public DisMaxQuery() {
+    constraint = new DisMaxConstraint();
+  }
+
+  public DisMaxQuery subquery(Query query) {
+    constraint.subquery(query);
+    return this;
+  }
+
+  @Override
+  DisMaxConstraint getConstraint() {
+    return constraint;
+  }
+
+}

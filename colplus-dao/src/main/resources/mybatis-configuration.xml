@@ -12,16 +12,16 @@
     which are otherwise setup via code in the MybatisFactory.
     -->
     <typeAliases>
-        <typeAlias type="org.col.api.model.TreeNode$TreeNodeMybatis" alias="TreeNodeMybatis" />
-        <typeAlias type="org.col.api.model.Duplicate$UsageDecision" alias="UsageDecision" />
-        <typeAlias type="org.col.api.model.Duplicate$Mybatis" alias="DuplicateMybatis" />
-        <package name="org.col.api.model" />
-        <package name="org.col.api.search" />
+        <typeAlias type="life.catalogue.api.model.TreeNode$TreeNodeMybatis" alias="TreeNodeMybatis" />
+        <typeAlias type="life.catalogue.api.model.Duplicate$UsageDecision" alias="UsageDecision" />
+        <typeAlias type="life.catalogue.api.model.Duplicate$Mybatis" alias="DuplicateMybatis" />
+        <package name="life.catalogue.api.model" />
+        <package name="life.catalogue.api.search" />
         <package name="org.gbif.nameparser.api" />
-        <package name="org.col.db.type2" />
+        <package name="life.catalogue.db.type2" />
     </typeAliases>
     <mappers>
-        <mapper class="org.col.db.Common" />
-        <package name="org.col.db.mapper" />
+        <mapper class="life.catalogue.db.Common" />
+        <package name="life.catalogue.db.mapper" />
     </mappers>
 </configuration>

@@ -1,0 +1,91 @@
+package life.catalogue.db;
+
+import javax.sql.DataSource;
+
+import org.apache.ibatis.binding.MapperRegistry;
+import org.apache.ibatis.session.Configuration;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import org.apache.ibatis.transaction.TransactionFactory;
+import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
+import org.apache.ibatis.type.EnumTypeHandler;
+import org.apache.ibatis.type.TypeAliasRegistry;
+import org.apache.ibatis.type.TypeHandlerRegistry;
+import life.catalogue.api.model.Duplicate;
+import life.catalogue.api.model.Name;
+import life.catalogue.api.model.TreeNode;
+import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.type.UuidTypeHandler;
+import life.catalogue.db.type2.StringCount;
+import org.gbif.nameparser.api.ParsedName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Configures mybatis and provides a SqlSessionFactory for a given datasource.
+ */
+public class MybatisFactory {
+  
+  private static final Logger LOG = LoggerFactory.getLogger(MybatisFactory.class);
+  
+  /**
+   * Configures an existing datasource with type aliases, handlers and mappers for
+   * a mybatis sessionfactory. This can be used in test environments or proper
+   * dropwizard applications.
+   *
+   * @param dataSource
+   * @param environmentName
+   */
+  public static SqlSessionFactory configure(DataSource dataSource, String environmentName) {
+    LOG.debug("Configure MyBatis");
+    TransactionFactory transactionFactory = new JdbcTransactionFactory();
+    org.apache.ibatis.mapping.Environment mybatisEnv = new org.apache.ibatis.mapping.Environment(
+        environmentName, transactionFactory, dataSource);
+    
+    Configuration mybatisCfg = new Configuration(mybatisEnv);
+    mybatisCfg.setMapUnderscoreToCamelCase(true);
+    mybatisCfg.setLazyLoadingEnabled(false);
+    mybatisCfg.setCacheEnabled(false);
+    // mybatisCfg.setLocalCacheScope(LocalCacheScope.STATEMENT);
+    // mybatisCfg.setDefaultExecutorType(ExecutorType.SIMPLE);
+    
+    // aliases
+    registerTypeAliases(mybatisCfg.getTypeAliasRegistry());
+    
+    // type handler
+    registerTypeHandlers(mybatisCfg.getTypeHandlerRegistry());
+    
+    // mapper
+    registerMapper(mybatisCfg.getMapperRegistry());
+    
+    SqlSessionFactoryBuilder builder = new SqlSessionFactoryBuilder();
+    return builder.build(mybatisCfg);
+  }
+  
+  private static void registerMapper(MapperRegistry registry) {
+    // register the common mapper with a shorter namespace to keep include statements short
+    registry.addMapper(Common.class);
+    // register all mappers from the mapper subpackage
+    registry.addMappers(NameMapper.class.getPackage().getName());
+    
+  }
+  
+  private static void registerTypeAliases(TypeAliasRegistry registry) {
+    // register all aliases from the api packages
+    registry.registerAliases(Name.class.getPackage().getName());
+    registry.registerAliases(ParsedName.class.getPackage().getName());
+    registry.registerAliases(NameUsageWrapper.class.getPackage().getName());
+    registry.registerAlias(StringCount.class);
+    registry.registerAlias("TreeNodeMybatis", TreeNode.TreeNodeMybatis.class);
+    registry.registerAlias("UsageDecision", Duplicate.UsageDecision.class);
+    registry.registerAlias("DuplicateMybatis", Duplicate.Mybatis.class);
+  }
+  
+  private static void registerTypeHandlers(TypeHandlerRegistry registry) {
+    // register all type handler from the type subpackage
+    registry.register(UuidTypeHandler.class.getPackage().getName());
+    registry.setDefaultEnumTypeHandler(EnumTypeHandler.class);
+  }
+  
+}

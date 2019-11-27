@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.EstimateMapper">
+
+  <sql id="SelectVar">
+    ${alias}key AS ${prefix}key,
+    ${alias}dataset_key AS ${prefix}dataset_key,
+    ${alias}target_id AS ${prefix}target_id,
+    ${alias}target_name AS ${prefix}target_name,
+    ${alias}target_authorship AS ${prefix}target_authorship,
+    ${alias}target_rank AS ${prefix}target_rank,
+    ${alias}target_code AS ${prefix}target_code,
+    ${alias}note AS ${prefix}note,
+    ${alias}modified AS ${prefix}modified,
+    ${alias}modified_by AS ${prefix}modified_by,
+    ${alias}created AS ${prefix}created,
+    ${alias}created_by AS ${prefix}created_by,
+    ${alias}estimate AS ${prefix}estimate,
+    ${alias}type AS ${prefix}type,
+    ${alias}reference_id AS ${prefix}reference_id
+  </sql>
+
+  <sql id="SELECT">
+    <include refid="life.catalogue.db.mapper.EstimateMapper.SelectVar">
+      <property name="alias" value="est."/>
+      <property name="prefix" value=""/>
+    </include>
+  </sql>
+
+  <sql id="COLS">
+    dataset_key,
+    target_id,
+    target_name,
+    target_authorship,
+    target_rank,
+    target_code,
+    note,
+    modified,
+    modified_by,
+    estimate,
+    type,
+    reference_id
+  </sql>
+
+  <sql id="PROPS">
+    #{datasetKey},
+    #{target.id},
+    #{target.name},
+    #{target.authorship},
+    #{target.rank}::RANK,
+    #{target.code}::NOMCODE,
+    #{note},
+    now(),
+    #{modifiedBy},
+    #{estimate},
+    #{type}::ESTIMATETYPE,
+    #{referenceId}
+  </sql>
+
+  <sql id="FROM">
+    estimate est
+  </sql>
+
+  <resultMap id="estimateResultMap" type="SpeciesEstimate" autoMapping="true">
+    <id property="key" column="key" />
+    <association property="target" javaType="SimpleName" autoMapping="true" columnPrefix="target_" />
+  </resultMap>
+
+  <select id="list" resultMap="estimateResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    ORDER BY est.key
+    <include refid="life.catalogue.db.Common.limit" />
+  </select>
+
+  <select id="get" resultMap="estimateResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    WHERE key = #{key}
+  </select>
+
+  <select id="getById" resultMap="estimateResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    WHERE target_id = #{id}
+  </select>
+
+  <insert id="create" parameterType="SpeciesEstimate" useGeneratedKeys="true" keyProperty="key">
+    INSERT INTO estimate ( <include refid="COLS" />, created_by )
+    VALUES ( <include refid="PROPS" />, #{createdBy} )
+  </insert>
+
+  <update id="update" parameterType="SpeciesEstimate">
+    UPDATE estimate
+    SET (<include refid="COLS" />) = (<include refid="PROPS" />)
+    WHERE key = #{key}
+  </update>
+
+  <delete id="delete" parameterType="map">
+    DELETE FROM estimate
+    WHERE key = #{key}
+  </delete>
+
+  <select id="broken" resultMap="estimateResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+      LEFT JOIN name_usage_3 t ON t.id=est.target_id
+    WHERE t.id IS NULL
+    ORDER BY est.key
+  </select>
+
+
+  <sql id="WHERE">
+    <where>
+      est.dataset_key = #{datasetKey}
+      <if test="rank != null">
+        est.target_rank = #{rank}::rank
+      </if>
+      <if test="min != null">
+        AND est.estimate &gt;= #{min}
+      </if>
+      <if test="max != null">
+        AND est.estimate &lt;= #{max}
+      </if>
+    </where>
+  </sql>
+
+  <select id="search" resultMap="estimateResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    <include refid="WHERE"/>
+    ORDER BY est.target_rank, est.target_name
+    <include refid="life.catalogue.db.Common.limit" />
+  </select>
+
+  <select id="searchCount" resultType="int">
+    SELECT count(*)
+    FROM <include refid="FROM" />
+    <include refid="WHERE"/>
+  </select>
+
+  <select id="processDataset" parameterType="map" resultMap="estimateResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    WHERE dataset_key=#{datasetKey}
+  </select>
+
+</mapper>
