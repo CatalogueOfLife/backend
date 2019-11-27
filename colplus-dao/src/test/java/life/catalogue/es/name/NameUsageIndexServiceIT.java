@@ -7,7 +7,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.EditorialDecision;
@@ -23,19 +22,16 @@ import life.catalogue.dao.TaxonDao;
 import life.catalogue.es.EsModule;
 import life.catalogue.es.EsReadWriteTestBase;
 import life.catalogue.es.EsSetupRule;
-import life.catalogue.es.EsUtil;
 import life.catalogue.es.model.NameUsageDocument;
 import life.catalogue.es.name.index.NameUsageIndexService;
 import life.catalogue.es.query.TermQuery;
 import life.catalogue.es.query.TermsQuery;
 import org.gbif.nameparser.api.Rank;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static java.util.stream.Collectors.toList;
-
 import static life.catalogue.db.PgSetupRule.getSqlSessionFactory;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -97,7 +93,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
 
     // Extract a taxon from the JSON pasted by thomas into #407. That JSON doesn't have a JSON key (that was the issue), but
     // that suits us fine now.
-    InputStream is = getClass().getResourceAsStream("Issue407_document.json");
+    InputStream is = getClass().getResourceAsStream("/elastic/Issue407_document.json");
     NameUsageDocument doc = EsModule.readDocument(is);
     NameUsageWrapper nuw = NameUsageWrapperConverter.inflate(doc.getPayload());
     NameUsageWrapperConverter.enrichPayload(nuw, doc);
@@ -116,7 +112,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     svc.indexDataset(DATASET_KEY);
 
     // Now create the decision
-    is = getClass().getResourceAsStream("Issue407_decision.json");
+    is = getClass().getResourceAsStream("/elastic/Issue407_decision.json");
     EditorialDecision decision = ApiModule.MAPPER.readValue(is, EditorialDecision.class);
 
     // As it is, the sync-upon-create will not work (the decision will not end up in ES)
