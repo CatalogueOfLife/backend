@@ -5,20 +5,18 @@ import java.time.LocalDate;
 import java.util.function.Consumer;
 
 import com.google.common.annotations.VisibleForTesting;
-import life.catalogue.db.mapper.NameRelationMapper;
-import life.catalogue.db.mapper.ReferenceMapper;
-import life.catalogue.db.mapper.TaxonExtensionMapper;
-import life.catalogue.db.mapper.VernacularNameMapper;
-import org.apache.ibatis.session.ResultContext;
-import org.apache.ibatis.session.ResultHandler;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.Partitioner;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.mapper.*;
+import life.catalogue.es.name.index.NameUsageIndexService;
+import org.apache.ibatis.session.ResultContext;
+import org.apache.ibatis.session.ResultHandler;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,19 +27,23 @@ public class CatalogueRelease implements Runnable {
   
   private final SqlSessionFactory factory;
   private final DatasetImportDao diDao;
+  private final NameUsageIndexService indexService;
   private final AcExporter exporter;
   private final int user;
   private final int sourceDatasetKey;
   private final int releaseKey;
+  private final Dataset release;
   private final life.catalogue.release.Logger logger = new life.catalogue.release.Logger(LOG);
   // we only allow a single release to run at a time
   private static boolean LOCK = false;
   
-  private CatalogueRelease(SqlSessionFactory factory, AcExporter exporter, DatasetImportDao diDao, int sourceDatasetKey, Dataset release, int userKey) {
+  private CatalogueRelease(SqlSessionFactory factory, NameUsageIndexService indexService, AcExporter exporter, DatasetImportDao diDao, int sourceDatasetKey, Dataset release, int userKey) {
     this.factory = factory;
+    this.indexService = indexService;
     this.diDao = diDao;
     this.exporter = exporter;
     this.sourceDatasetKey = sourceDatasetKey;
+    this.release = release;
     releaseKey = release.getKey();
     this.user = userKey;
   }
@@ -50,7 +52,7 @@ public class CatalogueRelease implements Runnable {
    * Release the catalogue into a new dataset
    * @param catalogueKey the draft catalogue to be released, e.g. 3 for the CoL draft
    */
-  public static CatalogueRelease release(SqlSessionFactory factory, AcExporter exporter, DatasetImportDao diDao, int catalogueKey, int userKey) {
+  public static CatalogueRelease release(SqlSessionFactory factory, NameUsageIndexService indexService, AcExporter exporter, DatasetImportDao diDao, int catalogueKey, int userKey) {
     if (!aquireLock()) {
       throw new IllegalStateException("There is a running release already");
     }
@@ -68,7 +70,7 @@ public class CatalogueRelease implements Runnable {
       release.setVersion(today.toString());
       release.setCitation(buildCitation(release));
       dm.create(release);
-      return new CatalogueRelease(factory, exporter, diDao, catalogueKey, release, userKey);
+      return new CatalogueRelease(factory, indexService, exporter, diDao, catalogueKey, release, userKey);
   
     } catch (Exception e) {
       LOG.error("Error creating release for catalogue {}", catalogueKey, e);
@@ -140,17 +142,29 @@ public class CatalogueRelease implements Runnable {
       metrics();
       // ac-export
       export();
+      // ES index
+      index();
       
     } catch (IOException e) {
+      logger.log("Error releasing catalogue " + sourceDatasetKey + " into dataset " + releaseKey);
       LOG.error("Error releasing catalogue {} into dataset {}", sourceDatasetKey, releaseKey, e);
     } finally {
       releaseLock();
     }
   }
   
+  private void index() {
+    logger.log("Build search index for catalogue " + releaseKey);
+    indexService.indexDataset(releaseKey);
+  }
+  
   private void metrics() {
     interruptIfCancelled();
-    diDao.generateMetrics(releaseKey);
+    logger.log("Build import metrics for catalogue " +  releaseKey);
+    DatasetImport di = diDao.create(release);
+    di.setState(ImportState.FINISHED);
+    diDao.updateMetrics(di);
+    logger.log("Created new import metrics for dataset " + releaseKey + ", attempt " + di.getAttempt());
   }
   
   private void mapIds() {

@@ -1,14 +1,13 @@
 package life.catalogue.release;
 
 import com.google.common.io.Files;
-import life.catalogue.release.AcExporter;
-import life.catalogue.release.CatalogueRelease;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.TestDataRule;
+import life.catalogue.es.name.index.NameUsageIndexService;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -48,7 +47,7 @@ public class CatalogueReleaseTest {
   }
   
   private CatalogueRelease buildRelease() {
-    return CatalogueRelease.release(PgSetupRule.getSqlSessionFactory(), exp, diDao, TestDataRule.TestData.APPLE.key, Users.TESTER);
+    return CatalogueRelease.release(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), exp, diDao, TestDataRule.TestData.APPLE.key, Users.TESTER);
   }
   
   @Test

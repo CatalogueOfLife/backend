@@ -12,6 +12,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import io.dropwizard.auth.Auth;
+import life.catalogue.es.name.index.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.*;
@@ -39,12 +40,14 @@ public class AssemblyResource {
   private final AssemblyCoordinator assembly;
   private final AcExporter exporter;
   private final DatasetImportDao diDao;
+  private final NameUsageIndexService indexService;
   private CatalogueRelease release;
   private final SqlSessionFactory factory;
   private static final ThreadPoolExecutor RELEASE_EXEC = new ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS,
       new ArrayBlockingQueue(1), new NamedThreadFactory("col-release"), new ThreadPoolExecutor.DiscardPolicy());
   
-  public AssemblyResource(SqlSessionFactory factory, DatasetImportDao diDao, AssemblyCoordinator assembly, AcExporter exporter) {
+  public AssemblyResource(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, AssemblyCoordinator assembly, AcExporter exporter) {
+    this.indexService = indexService;
     this.assembly = assembly;
     this.exporter = exporter;
     this.factory = factory;
@@ -121,7 +124,7 @@ public class AssemblyResource {
       throw new IllegalStateException("Release "+release.getSourceDatasetKey() + " to " + release.getReleaseKey() + " is already running");
     }
   
-    release = CatalogueRelease.release(factory, exporter, diDao, catKey, user.getKey());
+    release = CatalogueRelease.release(factory, indexService, exporter, diDao, catKey, user.getKey());
     final int key = release.getReleaseKey();
   
     CompletableFuture.runAsync(release, RELEASE_EXEC).thenApply(x -> {
