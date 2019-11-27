@@ -85,7 +85,6 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
   }
 
   @Test
-  // @Ignore
   public void issue407() throws IOException {
 
     int USER_ID = 10;
@@ -110,25 +109,30 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     // Index the dataset containing the taxon
     NameUsageIndexService svc = createIndexService();
     svc.indexDataset(DATASET_KEY);
-
+  
+    // make sure the decision is empty
+    NameUsageSearchResponse res = query(new TermQuery("usageId", dsid.getId())); // Query ES for the usage
+    assertEquals(1, res.getResult().size()); // Yes, it's there!
+    assertNull(res.getResult().get(0).getDecisionKey()); // and no decision key yet
+  
     // Now create the decision
     is = getClass().getResourceAsStream("/elastic/Issue407_decision.json");
     EditorialDecision decision = ApiModule.MAPPER.readValue(is, EditorialDecision.class);
 
-    // As it is, the sync-upon-create will not work (the decision will not end up in ES)
-
-    // But this intervention (deviation from Thomas's data) will make it work.
+    // the taxon has been assigned a new id, use it for the decision
     decision.getSubject().setId(taxon.getId());
 
     DecisionDao ddao = new DecisionDao(getSqlSessionFactory(), svc);
     int key = ddao.create(decision, USER_ID);
     LOG.info(">>>>>>> Decision inserted into database: {}\n", EsModule.writeDebug(decision));
 
-    NameUsageSearchResponse res = query(new TermQuery("decisionKey", key)); // Query ES for the decision key
     res = query(new TermQuery("decisionKey", key)); // Query ES for the decision key
     assertEquals(1, res.getResult().size()); // Yes, it's there!
     assertEquals(taxon.getId(), res.getResult().get(0).getUsage().getId()); // And it belongs to the taxon we just inserted
-
+  
+    res = query(new TermQuery("usageId", dsid.getId())); // Query ES for the usage
+    assertEquals(1, res.getResult().size()); // Yes, it's there!
+    assertEquals(key, (int) res.getResult().get(0).getDecisionKey()); // make sure it has the decision key
   }
 
   @Test
