@@ -89,43 +89,49 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
   }
 
   @Test
-  @Ignore
+  // @Ignore
   public void issue407() throws IOException {
 
     int USER_ID = 10;
     int DATASET_KEY = 11;
 
-    // Extract a taxon from the JSON pasted by thomas into #407.
+    // Extract a taxon from the JSON pasted by thomas into #407. That JSON doesn't have a JSON key (that was the issue), but
+    // that suits us fine now.
     InputStream is = getClass().getResourceAsStream("Issue407_document.json");
     NameUsageDocument doc = EsModule.readDocument(is);
     NameUsageWrapper nuw = NameUsageWrapperConverter.inflate(doc.getPayload());
     NameUsageWrapperConverter.enrichPayload(nuw, doc);
     Taxon taxon = (Taxon) nuw.getUsage();
 
-    // Insert it into Postgres
+    // Insert that taxon into Postgres
     NameDao ndao = new NameDao(getSqlSessionFactory(), new AuthorshipNormalizer(Collections.emptyMap()));
-    LOG.info("##################### Inserting name into database:\n{}", EsModule.writeDebug(taxon.getName()));
     DSID<String> dsid = ndao.create(taxon.getName(), USER_ID);
-    LOG.info("##################### Name inserted into database. ID: {}", dsid.getId());
+    LOG.info(">>>>>>> Name inserted into database. ID: {}\n", dsid.getId());
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory());
-    LOG.info("##################### Inserting taxon into database:\n{}", EsModule.writeDebug(taxon));
     dsid = tdao.create(taxon, USER_ID);
-    LOG.info("##################### Taxon inserted into database. ID: {}", dsid.getId());
+    LOG.info(">>>>>>> Taxon inserted into database. ID: {}\n", EsModule.writeDebug(taxon));
 
     // Index the dataset containing the taxon
     NameUsageIndexService svc = createIndexService();
     svc.indexDataset(DATASET_KEY);
-    LOG.info("##################### Number of documents in test index: {}",
-        EsUtil.count(esSetupRule.getEsClient(), EsSetupRule.TEST_INDEX));
 
     // Now create the decision
     is = getClass().getResourceAsStream("Issue407_decision.json");
     EditorialDecision decision = ApiModule.MAPPER.readValue(is, EditorialDecision.class);
+
+    // As it is, the sync-upon-create will not work (the decision will not end up in ES)
+
+    // But this intervention (deviation from Thomas's data) will make it work.
+    decision.getSubject().setId(taxon.getId());
+
     DecisionDao ddao = new DecisionDao(getSqlSessionFactory(), svc);
     int key = ddao.create(decision, USER_ID);
-    LOG.info("##################### Decision in Issue407_decision.json inserted into postgres database. ID: {}", key);
+    LOG.info(">>>>>>> Decision inserted into database: {}\n", EsModule.writeDebug(decision));
 
-    // Now we should see the decision-enriched document (but indeed don't)
+    NameUsageSearchResponse res = query(new TermQuery("decisionKey", key)); // Query ES for the decision key
+    res = query(new TermQuery("decisionKey", key)); // Query ES for the decision key
+    assertEquals(1, res.getResult().size()); // Yes, it's there!
+    assertEquals(taxon.getId(), res.getResult().get(0).getUsage().getId()); // And it belongs to the taxon we just inserted
 
   }
 

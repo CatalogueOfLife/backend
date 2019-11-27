@@ -38,7 +38,7 @@ public class EsReadWriteTestBase extends ExternalResource {
   private static final Logger LOG = LoggerFactory.getLogger(EsReadWriteTestBase.class);
 
   @ClassRule
-  public static final PgSetupRule pgSetupRule = new PgSetupRule();
+  public static final PgSetupRule pgSetupRule = new PgSetupRule(false);
 
   @ClassRule
   public static final EsSetupRule esSetupRule = new EsSetupRule();
