@@ -237,12 +237,18 @@
             WHERE u.id = x.parent_id
         )
         UPDATE name_usage_${partition}
-        SET dataset_sectors = jsonb_set(
-            coalesce(dataset_sectors, '{}'::jsonb),
-            '{"${dkey}"}',
-            to_jsonb( coalesce( (dataset_sectors->'${dkey}')::int, 0) + ${delta} ),
-            true
-        )
+        SET dataset_sectors =
+            CASE coalesce((dataset_sectors->'${dkey}')::int, 0) + ${delta}
+            WHEN 0 THEN
+                dataset_sectors - '${dkey}'
+            ELSE
+                jsonb_set(
+                    coalesce(dataset_sectors, '{}'::jsonb),
+                    '{"${dkey}"}',
+                    to_jsonb( coalesce( (dataset_sectors->'${dkey}')::int, 0) + ${delta} ),
+                    true
+                )
+            END
         WHERE id IN (SELECT id FROM x)
     </update>
 

@@ -20,6 +20,7 @@ import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  *
@@ -268,9 +269,12 @@ public class TaxonMapperTest extends CRUDPageableTestBase<Taxon, TaxonMapper> {
   
   @Test
   public void incDatasetSectorCount() throws Exception {
-    mapper().incDatasetSectorCount(sector.getTargetAsDSID(), sector.getSubjectDatasetKey(), 7);
     TreeNode n = getTreeNode(sector.getTarget().getId());
     // t4 already has count=1 for subject dataset 11 when draft tree gets populated
+    assertEquals(1, n.getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
+    
+    mapper().incDatasetSectorCount(sector.getTargetAsDSID(), sector.getSubjectDatasetKey(), 7);
+    n = getTreeNode(sector.getTarget().getId());
     assertEquals(8, n.getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
     // cascades to all parents
     assertEquals(9, getTreeNode("t3").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
@@ -279,11 +283,19 @@ public class TaxonMapperTest extends CRUDPageableTestBase<Taxon, TaxonMapper> {
   
   
     mapper().incDatasetSectorCount(DSID.draftID("unreal"), sector.getSubjectDatasetKey(), 10);
-    // cascades to all parents
+    // no change
     assertEquals(9, getTreeNode("t3").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
     assertEquals(9, getTreeNode("t2").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
     assertEquals(9, getTreeNode("t1").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
   
+    // remove keys, see https://github.com/Sp2000/colplus-backend/issues/567
+    mapper().incDatasetSectorCount(sector.getTargetAsDSID(), sector.getSubjectDatasetKey(), -8);
+    commit();
+    n = getTreeNode(sector.getTarget().getId());
+    assertFalse(n.getDatasetSectors().containsKey((int) sector.getSubjectDatasetKey()));
+    assertEquals(1, getTreeNode("t3").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
+    assertEquals(1, getTreeNode("t2").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
+    assertEquals(1, getTreeNode("t1").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
   }
   
   private TreeNode getTreeNode(String id) {
