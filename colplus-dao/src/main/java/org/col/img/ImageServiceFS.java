@@ -36,6 +36,7 @@ public class ImageServiceFS implements ImageService {
   
   @Override
   public void putDatasetLogo(int datasetKey, BufferedImage img) throws IOException {
+    LOG.info("{} logo for dataset {}", img == null ? "Delete" : "Change", datasetKey);
     storeAllImageSizes(img, s -> cfg.datasetLogo(datasetKey, s));
   }
 

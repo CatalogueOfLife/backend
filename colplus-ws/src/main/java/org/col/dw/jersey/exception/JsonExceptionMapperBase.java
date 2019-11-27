@@ -17,11 +17,19 @@ public class JsonExceptionMapperBase<T extends Throwable> implements ExceptionMa
   
   private static final Logger LOG = LoggerFactory.getLogger(JsonExceptionMapperBase.class);
   private final Response.StatusType errorCode;
+  private final boolean debug;
+  private final boolean stacktrace;
   
   public JsonExceptionMapperBase(Response.StatusType errorCode) {
-    this.errorCode = errorCode;
+    this(errorCode, false, true);
   }
   
+  public JsonExceptionMapperBase(Response.StatusType errorCode, boolean debug, boolean stacktrace) {
+    this.errorCode = errorCode;
+    this.debug = debug;
+    this.stacktrace = stacktrace;
+  }
+
   public static Response.ResponseBuilder jsonErrorResponseBuilder(Response.StatusType errorCode, String message) {
     return Response
         .status(errorCode)
@@ -34,9 +42,21 @@ public class JsonExceptionMapperBase<T extends Throwable> implements ExceptionMa
   }
   
   @Override
-  public Response toResponse(T exception) {
-    LOG.info(exception.getMessage(), exception);
-    return jsonErrorResponse(errorCode, message(exception));
+  public Response toResponse(T ex) {
+    if (debug) {
+      if (stacktrace) {
+        LOG.debug("{}: {}", ex.getClass().getSimpleName(), ex.getMessage(), ex);
+      } else {
+        LOG.debug("{}: {}", ex.getClass().getSimpleName(), ex.getMessage());
+      }
+    } else {
+      if (stacktrace) {
+        LOG.info("{}: {}", ex.getClass().getSimpleName(), ex.getMessage(), ex);
+      } else {
+        LOG.info("{}: {}", ex.getClass().getSimpleName(), ex.getMessage());
+      }
+    }
+    return jsonErrorResponse(errorCode, message(ex));
   }
   
   String message(T e) {

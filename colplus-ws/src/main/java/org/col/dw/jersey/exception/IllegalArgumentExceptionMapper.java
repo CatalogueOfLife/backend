@@ -10,6 +10,6 @@ import javax.ws.rs.ext.Provider;
 public class IllegalArgumentExceptionMapper extends JsonExceptionMapperBase<IllegalArgumentException> {
   
   public IllegalArgumentExceptionMapper() {
-    super(Response.Status.BAD_REQUEST);
+    super(Response.Status.BAD_REQUEST, false, false);
   }
 }

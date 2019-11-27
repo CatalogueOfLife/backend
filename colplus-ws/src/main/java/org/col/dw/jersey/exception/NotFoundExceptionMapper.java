@@ -12,6 +12,6 @@ import org.col.api.exception.NotFoundException;
 public class NotFoundExceptionMapper extends JsonExceptionMapperBase<NotFoundException> {
   
   public NotFoundExceptionMapper() {
-    super(Response.Status.NOT_FOUND);
+    super(Response.Status.NOT_FOUND, true, false);
   }
 }

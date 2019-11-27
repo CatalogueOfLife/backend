@@ -202,7 +202,7 @@ public class PgCopyUtils {
     
     try (FileWriter writer = new FileWriter(out)) {
       CopyManager copy = con.getCopyAPI();
-      System.out.println(sql);
+      //System.out.println(sql);
       copy.copyOut("COPY (" + sql + ") TO STDOUT WITH "+with, writer);
     }
   }

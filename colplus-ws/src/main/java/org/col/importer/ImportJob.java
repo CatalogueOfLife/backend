@@ -256,7 +256,7 @@ public class ImportJob implements Runnable {
       LOG.warn("Dataset {} import cancelled. Log to db", datasetKey);
       dao.updateImportCancelled(di);
       
-    } catch (Exception e) {
+    } catch (Throwable e) {
       // failed import
       LOG.error("Dataset {} import failed. {}. Log to db", datasetKey, e.getMessage(), e);
       dao.updateImportFailure(di, e);

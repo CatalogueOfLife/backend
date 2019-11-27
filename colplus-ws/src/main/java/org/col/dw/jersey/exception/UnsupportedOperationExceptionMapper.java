@@ -10,7 +10,7 @@ import javax.ws.rs.ext.Provider;
 public class UnsupportedOperationExceptionMapper extends JsonExceptionMapperBase<UnsupportedOperationException> {
   
   public UnsupportedOperationExceptionMapper() {
-    super(Response.Status.NOT_IMPLEMENTED);
+    super(Response.Status.NOT_IMPLEMENTED, false, false);
   }
   
   @Override

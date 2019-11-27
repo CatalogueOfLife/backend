@@ -39,9 +39,7 @@ import org.col.api.model.Page;
 import org.col.api.model.ResultPage;
 import org.col.api.util.ObjectUtils;
 import org.col.api.util.PagingUtil;
-import org.col.api.vocab.DatasetOrigin;
-import org.col.api.vocab.ImportState;
-import org.col.api.vocab.Users;
+import org.col.api.vocab.*;
 import org.col.assembly.AssemblyCoordinator;
 import org.col.common.concurrent.PBQThreadPoolExecutor;
 import org.col.common.concurrent.StartNotifier;
@@ -319,8 +317,10 @@ public class ImportManager implements Managed {
         throw new IllegalArgumentException("Dataset " + datasetKey + " is deleted and cannot be imported");
       } else if (d.getOrigin() == DatasetOrigin.MANAGED) {
         throw new IllegalArgumentException("Dataset " + datasetKey + " is managed and cannot be imported");
-      } else if (d.getKey() < 100) {
+      } else if (d.getType() == DatasetType.CATALOGUE) {
         throw new IllegalArgumentException("Dataset " + datasetKey + " is an assembled catalogue and cannot be imported");
+      } else if (d.getKey() == Datasets.NAME_INDEX) {
+        throw new IllegalArgumentException("Dataset " + datasetKey + " is the names index and cannot be imported");
       }
       return d;
     }

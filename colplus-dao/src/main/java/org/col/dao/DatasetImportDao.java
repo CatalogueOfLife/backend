@@ -243,11 +243,11 @@ public class DatasetImportDao {
   /**
    * Creates a new dataset import instance without metrics for a failed import.
    */
-  public void updateImportFailure(DatasetImport di, Exception e) {
+  public void updateImportFailure(DatasetImport di, Throwable e) {
     di.setFinished(LocalDateTime.now());
     di.setState(ImportState.FAILED);
     // System.out.println(ExceptionUtils.getMessage(e));
-    di.setError(e.getMessage());
+    di.setError(e.getClass().getSimpleName() + ": " + e.getMessage());
     update(di);
   }
   
