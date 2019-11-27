@@ -1,25 +1,38 @@
 package org.col.es.name;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import org.col.api.jackson.ApiModule;
+import org.col.api.model.DSID;
 import org.col.api.model.EditorialDecision;
 import org.col.api.model.EditorialDecision.Mode;
 import org.col.api.model.SimpleName;
 import org.col.api.model.Taxon;
 import org.col.api.search.NameUsageSearchResponse;
+import org.col.api.search.NameUsageWrapper;
+import org.col.common.tax.AuthorshipNormalizer;
 import org.col.dao.DecisionDao;
+import org.col.dao.NameDao;
+import org.col.dao.TaxonDao;
 import org.col.es.EsModule;
 import org.col.es.EsReadWriteTestBase;
 import org.col.es.EsSetupRule;
+import org.col.es.EsUtil;
+import org.col.es.model.NameUsageDocument;
 import org.col.es.name.index.NameUsageIndexService;
 import org.col.es.query.TermQuery;
 import org.col.es.query.TermsQuery;
 import org.gbif.nameparser.api.Rank;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.util.stream.Collectors.toList;
 
@@ -35,6 +48,8 @@ import static org.junit.Assert.assertNull;
  */
 // @Ignore
 public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
+
+  private static final Logger LOG = LoggerFactory.getLogger(NameUsageIndexServiceIT.class);
 
   @Test
   public void indexDatasetTaxaOnly() throws IOException {
@@ -71,6 +86,47 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     NameUsageSearchResponse res = query(new TermQuery("decisionKey", key));
     assertEquals(1, res.getResult().size());
     assertEquals(edited.getId(), res.getResult().get(0).getUsage().getId());
+  }
+
+  @Test
+  @Ignore
+  public void issue407() throws IOException {
+
+    int USER_ID = 10;
+    int DATASET_KEY = 11;
+
+    // Extract a taxon from the JSON pasted by thomas into #407.
+    InputStream is = getClass().getResourceAsStream("Issue407_document.json");
+    NameUsageDocument doc = EsModule.readDocument(is);
+    NameUsageWrapper nuw = NameUsageWrapperConverter.inflate(doc.getPayload());
+    NameUsageWrapperConverter.enrichPayload(nuw, doc);
+    Taxon taxon = (Taxon) nuw.getUsage();
+
+    // Insert it into Postgres
+    NameDao ndao = new NameDao(getSqlSessionFactory(), new AuthorshipNormalizer(Collections.emptyMap()));
+    LOG.info("##################### Inserting name into database:\n{}", EsModule.writeDebug(taxon.getName()));
+    DSID<String> dsid = ndao.create(taxon.getName(), USER_ID);
+    LOG.info("##################### Name inserted into database. ID: {}", dsid.getId());
+    TaxonDao tdao = new TaxonDao(getSqlSessionFactory());
+    LOG.info("##################### Inserting taxon into database:\n{}", EsModule.writeDebug(taxon));
+    dsid = tdao.create(taxon, USER_ID);
+    LOG.info("##################### Taxon inserted into database. ID: {}", dsid.getId());
+
+    // Index the dataset containing the taxon
+    NameUsageIndexService svc = createIndexService();
+    svc.indexDataset(DATASET_KEY);
+    LOG.info("##################### Number of documents in test index: {}",
+        EsUtil.count(esSetupRule.getEsClient(), EsSetupRule.TEST_INDEX));
+
+    // Now create the decision
+    is = getClass().getResourceAsStream("Issue407_decision.json");
+    EditorialDecision decision = ApiModule.MAPPER.readValue(is, EditorialDecision.class);
+    DecisionDao ddao = new DecisionDao(getSqlSessionFactory(), svc);
+    int key = ddao.create(decision, USER_ID);
+    LOG.info("##################### Decision in Issue407_decision.json inserted into postgres database. ID: {}", key);
+
+    // Now we should see the decision-enriched document (but indeed don't)
+
   }
 
   @Test

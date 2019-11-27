@@ -127,8 +127,12 @@ public class EsModule extends SimpleModule {
     return multiResponseReader.readValue(is);
   }
 
-  public static NameUsageDocument readDocument(String s) throws IOException {
-    return documentReader.readValue(s);
+  public static NameUsageDocument readDocument(InputStream is) throws IOException {
+    return documentReader.readValue(is);
+  }
+
+  public static NameUsageDocument readDocument(String json) throws IOException {
+    return documentReader.readValue(json);
   }
 
   public static NameUsageWrapper readNameUsageWrapper(InputStream is) throws IOException {
