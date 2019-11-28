@@ -1,5 +1,7 @@
 package life.catalogue.db.mapper;
 
+import life.catalogue.api.model.Page;
+import life.catalogue.api.search.SectorSearchRequest;
 import org.apache.ibatis.exceptions.PersistenceException;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
@@ -60,15 +62,27 @@ public class SectorMapperTest extends CRUDTestBase<Integer, Sector, SectorMapper
   @Test
   public void brokenSubjects() {
     add2Sectors();
-    assertEquals(1, mapper().subjectBroken(targetDatasetKey,subjectDatasetKey).size());
-    assertEquals(0, mapper().subjectBroken(targetDatasetKey,543432).size());
+
+    SectorSearchRequest req = SectorSearchRequest.byDataset(targetDatasetKey,subjectDatasetKey);
+    req.setBroken(true);
+    req.setTarget(false);
+    assertEquals(1, mapper().search(req, new Page()).size());
+    
+    req.setSubjectDatasetKey(543432);
+    assertEquals(0, mapper().search(req, new Page()).size());
   }
   
   @Test
   public void brokenTargets() {
     add2Sectors();
-    assertEquals(1, mapper().targetBroken(targetDatasetKey, subjectDatasetKey).size());
-    assertEquals(0, mapper().targetBroken(targetDatasetKey,543432).size());
+  
+    SectorSearchRequest req = SectorSearchRequest.byDataset(targetDatasetKey,subjectDatasetKey);
+    req.setBroken(true);
+    req.setTarget(true);
+    assertEquals(1, mapper().search(req, new Page()).size());
+  
+    req.setSubjectDatasetKey(543432);
+    assertEquals(0, mapper().search(req, new Page()).size());
   }
   
   @Test

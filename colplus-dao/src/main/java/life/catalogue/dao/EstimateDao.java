@@ -2,13 +2,13 @@ package life.catalogue.dao;
 
 import java.util.List;
 
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.SpeciesEstimate;
+import life.catalogue.api.search.EstimateSearchRequest;
 import life.catalogue.db.mapper.EstimateMapper;
-import org.gbif.nameparser.api.Rank;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,16 +22,13 @@ public class EstimateDao extends EntityDao<Integer, SpeciesEstimate, EstimateMap
     super(true, factory, EstimateMapper.class);
   }
   
-  public ResultPage<SpeciesEstimate> list(int datasetKey, Page page) {
-    return super.list(mapperClass, datasetKey, page);
-  }
-  
-  public ResultPage<SpeciesEstimate> search(int datasetKey, Rank rank, Integer min, Integer max, Page page) {
+  public ResultPage<SpeciesEstimate> search(EstimateSearchRequest request, Page page) {
     Page p = page == null ? new Page() : page;
     try (SqlSession session = factory.openSession()) {
-      EstimateMapper mapper = session.getMapper(mapperClass);
-      List<SpeciesEstimate> result = mapper.search(datasetKey, rank, min, max, p);
-      return new ResultPage<>(p, result, () -> mapper.searchCount(datasetKey, rank, min, max));
+      EstimateMapper mapper = session.getMapper(EstimateMapper.class);
+      List<SpeciesEstimate> result = mapper.search(request, p);
+      return new ResultPage<>(p, result, () -> mapper.countSearch(request));
     }
   }
+  
 }

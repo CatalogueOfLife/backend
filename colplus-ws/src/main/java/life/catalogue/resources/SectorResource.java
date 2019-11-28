@@ -6,16 +6,14 @@ import java.util.List;
 import java.util.stream.Stream;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import com.google.common.collect.ImmutableList;
 import io.dropwizard.auth.Auth;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.*;
+import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.dao.DatasetImportDao;
@@ -25,6 +23,8 @@ import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.tree.DiffService;
 import life.catalogue.db.tree.NamesDiff;
 import life.catalogue.dw.auth.Roles;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,12 +38,19 @@ public class SectorResource extends AbstractDecisionResource<Sector> {
   private final DatasetImportDao diDao;
   private final DiffService diff;
   private final AssemblyCoordinator assembly;
+  private final SectorDao dao;
   
   public SectorResource(SqlSessionFactory factory, DatasetImportDao diDao, DiffService diffService, AssemblyCoordinator assembly) {
     super(Sector.class, new SectorDao(factory), factory);
     this.diDao = diDao;
     this.diff = diffService;
     this.assembly = assembly;
+    dao = (SectorDao) super.dao;
+  }
+  
+  @GET
+  public ResultPage<Sector> search(@Valid @BeanParam Page page, @BeanParam SectorSearchRequest req) {
+    return dao.search(req, page);
   }
   
   @DELETE
@@ -66,24 +73,6 @@ public class SectorResource extends AbstractDecisionResource<Sector> {
       counter++;
     }
     LOG.info("Scheduled deletion of all {} draft sectors for dataset {}", counter, datasetKey);
-  }
-  
-  @GET
-  public List<Sector> list(@Context SqlSession session, @QueryParam("datasetKey") Integer datasetKey) {
-    return session.getMapper(SectorMapper.class).listByDataset(Datasets.DRAFT_COL, datasetKey);
-  }
-  
-  @GET
-  @Path("/broken")
-  public List<Sector> broken(@Context SqlSession session,
-                             @QueryParam("target") boolean target,
-                             @NotNull @QueryParam("datasetKey") Integer datasetKey) {
-    SectorMapper mapper = session.getMapper(SectorMapper.class);
-    if (target) {
-      return mapper.targetBroken(Datasets.DRAFT_COL, datasetKey);
-    } else {
-      return mapper.subjectBroken(Datasets.DRAFT_COL, datasetKey);
-    }
   }
   
   @GET

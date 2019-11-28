@@ -3,10 +3,10 @@ package life.catalogue.api.search;
 import java.util.Objects;
 import javax.ws.rs.QueryParam;
 
-import life.catalogue.api.model.EditorialDecision;
+import life.catalogue.api.model.Sector;
 import org.gbif.nameparser.api.Rank;
 
-public class DecisionSearchRequest {
+public class SectorSearchRequest {
   
   @QueryParam("id")
   private String id;
@@ -21,7 +21,7 @@ public class DecisionSearchRequest {
   private Rank rank;
   
   @QueryParam("mode")
-  private EditorialDecision.Mode mode;
+  private Sector.Mode mode;
 
   @QueryParam("userKey")
   private Integer userKey;
@@ -29,14 +29,18 @@ public class DecisionSearchRequest {
   @QueryParam("broken")
   private boolean broken = false;
   
-  public static DecisionSearchRequest byCatalogue(int datasetKey){
-    DecisionSearchRequest req = new DecisionSearchRequest();
+  @QueryParam("target")
+  private boolean target = false;
+  
+  
+  public static SectorSearchRequest byCatalogue(int datasetKey){
+    SectorSearchRequest req = new SectorSearchRequest();
     req.datasetKey = datasetKey;
     return req;
   }
 
-  public static DecisionSearchRequest byDataset(int datasetKey, int subjectDatasetKey){
-    DecisionSearchRequest req = byCatalogue(datasetKey);
+  public static SectorSearchRequest byDataset(int datasetKey, int subjectDatasetKey){
+    SectorSearchRequest req = byCatalogue(datasetKey);
     req.subjectDatasetKey = subjectDatasetKey;
     return req;
   }
@@ -65,12 +69,20 @@ public class DecisionSearchRequest {
     this.subjectDatasetKey = subjectDatasetKey;
   }
   
-  public EditorialDecision.Mode getMode() {
+  public Sector.Mode getMode() {
     return mode;
   }
   
-  public void setMode(EditorialDecision.Mode mode) {
+  public void setMode(Sector.Mode mode) {
     this.mode = mode;
+  }
+  
+  public boolean isTarget() {
+    return target;
+  }
+  
+  public void setTarget(boolean target) {
+    this.target = target;
   }
   
   public Rank getRank() {
@@ -101,8 +113,9 @@ public class DecisionSearchRequest {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    DecisionSearchRequest that = (DecisionSearchRequest) o;
+    SectorSearchRequest that = (SectorSearchRequest) o;
     return broken == that.broken &&
+        target == that.target &&
         Objects.equals(id, that.id) &&
         Objects.equals(datasetKey, that.datasetKey) &&
         Objects.equals(subjectDatasetKey, that.subjectDatasetKey) &&
@@ -113,6 +126,6 @@ public class DecisionSearchRequest {
   
   @Override
   public int hashCode() {
-    return Objects.hash(id, datasetKey, subjectDatasetKey, rank, mode, userKey, broken);
+    return Objects.hash(id, datasetKey, subjectDatasetKey, rank, mode, userKey, broken, target);
   }
 }

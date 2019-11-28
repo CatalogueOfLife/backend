@@ -116,16 +116,16 @@
           AND ed.subject_rank = #{req.rank}::RANK
         </if>
         <if test="req.userKey != null">
-          AND ed.created_by = #{req.userKey}
+          AND ed.modified_by = #{req.userKey}
         </if>
       </where>
     </if>
   </sql>
 
   <select id="countSearch" resultType="integer">
-    SELECT count(*) FROM decision ed
-    <include refid="WHERE"/>
-  </select>
+  SELECT count(*) FROM decision ed
+  <include refid="WHERE"/>
+</select>
 
   <select id="search" resultMap="decisionResultMap">
     SELECT <include refid="SELECT" />

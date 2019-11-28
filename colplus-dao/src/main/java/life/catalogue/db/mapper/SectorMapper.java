@@ -2,22 +2,24 @@ package life.catalogue.db.mapper;
 
 import java.util.List;
 
+import life.catalogue.api.search.SectorSearchRequest;
+import life.catalogue.db.Searchable;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.ResultHandler;
 import life.catalogue.api.model.Sector;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.DatasetPageable;
 
-public interface SectorMapper extends CRUD<Integer, Sector>, DatasetPageable<Sector>, ProcessableDataset<Sector> {
+public interface SectorMapper extends CRUD<Integer, Sector>, DatasetPageable<Sector>, ProcessableDataset<Sector>, Searchable<Sector, SectorSearchRequest> {
   
-  Sector getBySubject(@Param("targetDatasetKey") int targetDatasetKey,
+  Sector getBySubject(@Param("datasetKey") int datasetKey,
                       @Param("subjectDatasetKey") int subjectDatasetKey,
                       @Param("id") String id);
   
-  List<Sector> listByTarget(@Param("targetDatasetKey") int targetDatasetKey,
+  List<Sector> listByTarget(@Param("datasetKey") int datasetKey,
                             @Param("id") String id);
 
-  List<Sector> listByDataset(@Param("targetDatasetKey") int targetDatasetKey,
+  List<Sector> listByDataset(@Param("datasetKey") int datasetKey,
                              @Param("subjectDatasetKey") int subjectDatasetKey);
   
   /**
@@ -25,22 +27,6 @@ public interface SectorMapper extends CRUD<Integer, Sector>, DatasetPageable<Sec
    */
   List<Sector> listChildSectors(@Param("targetDatasetKey") int targetDatasetKey,
                                 @Param("key") int sectorKey);
-
-  /**
-   * List all sectors that cannot anymore be linked to subject taxa in the source
-   * @param targetDatasetKey the targets datasetKey
-   * @param subjectDatasetKey the subjects datasetKey
-   */
-  List<Sector> subjectBroken(@Param("targetDatasetKey") int targetDatasetKey,
-                             @Param("subjectDatasetKey") int subjectDatasetKey);
-  
-  /**
-   * List all sectors from a source dataset that cannot anymore be linked to attachment points in a targets catalogue
-   * @param targetDatasetKey the targets datasetKey
-   * @param subjectDatasetKey the subjects datasetKey
-   */
-  List<Sector> targetBroken(@Param("targetDatasetKey") int targetDatasetKey,
-                            @Param("subjectDatasetKey") int subjectDatasetKey);
   
   /**
    * Process all sectors for a given subject dataset and target catalogue

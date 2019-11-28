@@ -5,12 +5,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import life.catalogue.api.model.*;
+import life.catalogue.api.search.SectorSearchRequest;
+import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.TaxonMapper;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import life.catalogue.api.model.*;
-import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.db.mapper.TaxonMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,8 +23,13 @@ public class SectorDao extends EntityDao<Integer, Sector, SectorMapper> {
     super(true, factory, SectorMapper.class);
   }
   
-  public ResultPage<Sector> list(int datasetKey, Page page) {
-    return super.list(mapperClass, datasetKey, page);
+  public ResultPage<Sector> search(SectorSearchRequest request, Page page) {
+    Page p = page == null ? new Page() : page;
+    try (SqlSession session = factory.openSession()) {
+      SectorMapper mapper = session.getMapper(SectorMapper.class);
+      List<Sector> result = mapper.search(request, p);
+      return new ResultPage<>(p, result, () -> mapper.countSearch(request));
+    }
   }
   
   @Override

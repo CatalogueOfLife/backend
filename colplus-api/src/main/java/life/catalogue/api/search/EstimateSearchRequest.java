@@ -3,10 +3,9 @@ package life.catalogue.api.search;
 import java.util.Objects;
 import javax.ws.rs.QueryParam;
 
-import life.catalogue.api.model.EditorialDecision;
 import org.gbif.nameparser.api.Rank;
 
-public class DecisionSearchRequest {
+public class EstimateSearchRequest {
   
   @QueryParam("id")
   private String id;
@@ -14,14 +13,14 @@ public class DecisionSearchRequest {
   @QueryParam("datasetKey")
   private Integer datasetKey;
   
-  @QueryParam("subjectDatasetKey")
-  private Integer subjectDatasetKey;
-  
   @QueryParam("rank")
   private Rank rank;
   
-  @QueryParam("mode")
-  private EditorialDecision.Mode mode;
+  @QueryParam("min")
+  private Integer min;
+  
+  @QueryParam("max")
+  private Integer max;
 
   @QueryParam("userKey")
   private Integer userKey;
@@ -29,15 +28,9 @@ public class DecisionSearchRequest {
   @QueryParam("broken")
   private boolean broken = false;
   
-  public static DecisionSearchRequest byCatalogue(int datasetKey){
-    DecisionSearchRequest req = new DecisionSearchRequest();
+  public static EstimateSearchRequest byCatalogue(int datasetKey){
+    EstimateSearchRequest req = new EstimateSearchRequest();
     req.datasetKey = datasetKey;
-    return req;
-  }
-
-  public static DecisionSearchRequest byDataset(int datasetKey, int subjectDatasetKey){
-    DecisionSearchRequest req = byCatalogue(datasetKey);
-    req.subjectDatasetKey = subjectDatasetKey;
     return req;
   }
   
@@ -57,28 +50,28 @@ public class DecisionSearchRequest {
     this.datasetKey = datasetKey;
   }
   
-  public Integer getSubjectDatasetKey() {
-    return subjectDatasetKey;
-  }
-  
-  public void setSubjectDatasetKey(Integer subjectDatasetKey) {
-    this.subjectDatasetKey = subjectDatasetKey;
-  }
-  
-  public EditorialDecision.Mode getMode() {
-    return mode;
-  }
-  
-  public void setMode(EditorialDecision.Mode mode) {
-    this.mode = mode;
-  }
-  
   public Rank getRank() {
     return rank;
   }
   
   public void setRank(Rank rank) {
     this.rank = rank;
+  }
+  
+  public Integer getMin() {
+    return min;
+  }
+  
+  public void setMin(Integer min) {
+    this.min = min;
+  }
+  
+  public Integer getMax() {
+    return max;
+  }
+  
+  public void setMax(Integer max) {
+    this.max = max;
   }
   
   public Integer getUserKey() {
@@ -101,18 +94,18 @@ public class DecisionSearchRequest {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    DecisionSearchRequest that = (DecisionSearchRequest) o;
+    EstimateSearchRequest that = (EstimateSearchRequest) o;
     return broken == that.broken &&
         Objects.equals(id, that.id) &&
         Objects.equals(datasetKey, that.datasetKey) &&
-        Objects.equals(subjectDatasetKey, that.subjectDatasetKey) &&
         rank == that.rank &&
-        mode == that.mode &&
+        Objects.equals(min, that.min) &&
+        Objects.equals(max, that.max) &&
         Objects.equals(userKey, that.userKey);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(id, datasetKey, subjectDatasetKey, rank, mode, userKey, broken);
+    return Objects.hash(id, datasetKey, rank, min, max, userKey, broken);
   }
 }

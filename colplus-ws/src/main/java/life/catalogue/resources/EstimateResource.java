@@ -1,20 +1,18 @@
 package life.catalogue.resources;
 
-import java.util.List;
 import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
+import javax.ws.rs.BeanParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.SpeciesEstimate;
-import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.search.EstimateSearchRequest;
 import life.catalogue.dao.EstimateDao;
-import life.catalogue.db.mapper.EstimateMapper;
-import org.gbif.nameparser.api.Rank;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,20 +32,8 @@ public class EstimateResource extends AbstractDecisionResource<SpeciesEstimate> 
   }
   
   @GET
-  public ResultPage<SpeciesEstimate> search(@QueryParam("datasetKey") @DefaultValue(""+Datasets.DRAFT_COL) int datasetKey,
-                                      @QueryParam("rank") Rank rank,
-                                      @QueryParam("min") Integer min,
-                                      @QueryParam("max") Integer max,
-                                      @Valid @BeanParam Page page) {
-    return dao.search(datasetKey, rank, min, max, page);
-  }
-  
-  @GET
-  @Path("/broken")
-  public List<SpeciesEstimate> broken(@QueryParam("datasetKey") @DefaultValue(""+Datasets.DRAFT_COL) int datasetKey,
-                                      @Context SqlSession session) {
-    EstimateMapper mapper = session.getMapper(EstimateMapper.class);
-    return mapper.broken(datasetKey);
+  public ResultPage<SpeciesEstimate> search(@Valid @BeanParam Page page, @BeanParam EstimateSearchRequest req) {
+    return dao.search(req, page);
   }
   
 }

@@ -61,6 +61,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
   }
 
   @Test
+  @Ignore
   public void createEditorialDecision() throws IOException {
     // Insert 3 taxa into postgres
     NameUsageIndexService svc = createIndexService();
@@ -137,6 +138,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
   }
 
   @Test
+  @Ignore
   public void updateEditorialDecision() throws IOException {
     // Insert 3 taxa into postgresindexDatasetTaxaOnly
     NameUsageIndexService svc = createIndexService();
@@ -167,6 +169,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
   }
 
   @Test
+  @Ignore
   public void deleteEditorialDecision() throws IOException {
     NameUsageIndexService svc = createIndexService();
     List<Taxon> pgTaxa = createPgTaxa(4);

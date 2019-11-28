@@ -103,28 +103,35 @@
     WHERE key = #{key}
   </delete>
 
-  <select id="broken" resultMap="estimateResultMap">
-    SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
-      LEFT JOIN name_usage_3 t ON t.id=est.target_id
-    WHERE t.id IS NULL
-    ORDER BY est.key
-  </select>
-
-
   <sql id="WHERE">
-    <where>
-      est.dataset_key = #{datasetKey}
-      <if test="rank != null">
-        est.target_rank = #{rank}::rank
+    <if test="req != null">
+      <if test="req.broken">
+        LEFT JOIN name_usage t ON t.dataset_key=est.dataset_key AND t.id=est.target_id
       </if>
-      <if test="min != null">
-        AND est.estimate &gt;= #{min}
-      </if>
-      <if test="max != null">
-        AND est.estimate &lt;= #{max}
-      </if>
-    </where>
+      <where>
+        <if test="req.broken">
+          t.id IS NULL
+        </if>
+        <if test="req.id != null">
+          AND est.target_id = #{req.id}
+        </if>
+        <if test="req.datasetKey != null">
+          AND est.dataset_key = #{req.datasetKey}
+        </if>
+        <if test="req.userKey != null">
+          AND est.modified_by = #{req.userKey}
+        </if>
+        <if test="req.rank != null">
+          AND est.target_rank = #{req.rank}::RANK
+        </if>
+        <if test="req.min != null">
+          AND est.estimate &gt;= #{req.min}
+        </if>
+        <if test="req.max != null">
+          AND est.estimate &lt;= #{req.max}
+        </if>
+      </where>
+    </if>
   </sql>
 
   <select id="search" resultMap="estimateResultMap">
@@ -135,7 +142,7 @@
     <include refid="life.catalogue.db.Common.limit" />
   </select>
 
-  <select id="searchCount" resultType="int">
+  <select id="countSearch" resultType="int">
     SELECT count(*)
     FROM <include refid="FROM" />
     <include refid="WHERE"/>

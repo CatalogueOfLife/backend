@@ -85,17 +85,40 @@
   </sql>
 
   <sql id="WHERE">
-    <where>
-      <if test="idIsNull">
-        t.id IS NULL
+    <if test="req != null">
+      <if test="req.broken">
+          LEFT JOIN name_usage t ON
+        <if test="req.target">
+          t.id=s.target_id AND t.dataset_key=s.dataset_key
+        </if>
+        <if test="!req.target">
+          t.id=s.subject_id AND t.dataset_key=s.subject_dataset_key
+        </if>
       </if>
-      <if test="targetDatasetKey != null">
-        AND s.dataset_key = #{targetDatasetKey}
-      </if>
-      <if test="subjectDatasetKey != null">
-        AND s.subject_dataset_key = #{subjectDatasetKey}
-      </if>
-    </where>
+      <where>
+        <if test="req.broken">
+          t.id IS NULL
+        </if>
+        <if test="req.id != null">
+          AND s.subject_id = #{req.id}
+        </if>
+        <if test="req.datasetKey != null">
+          AND s.dataset_key = #{req.datasetKey}
+        </if>
+        <if test="req.subjectDatasetKey != null">
+          AND s.subject_dataset_key = #{req.subjectDatasetKey}
+        </if>
+        <if test="req.rank != null">
+          AND s.subject_rank = #{req.rank}::RANK
+        </if>
+        <if test="req.mode != null">
+          AND s.mode = #{req.mode}::SECTOR_MODE
+        </if>
+        <if test="req.userKey != null">
+          AND s.modified_by = #{req.userKey}
+        </if>
+      </where>
+    </if>
   </sql>
 
   <!-- A mapping to Distribution, mostly auto mapped -->
@@ -115,7 +138,7 @@
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
     WHERE subject_dataset_key = #{subjectDatasetKey}
-      AND dataset_key = #{targetDatasetKey}
+      AND dataset_key = #{datasetKey}
       AND subject_id = #{id}
   </select>
 
@@ -123,7 +146,14 @@
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
     WHERE target_id = #{id}
-      AND dataset_key = #{targetDatasetKey}
+      AND dataset_key = #{datasetKey}
+  </select>
+
+  <select id="listByDataset" resultMap="sectorResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    WHERE subject_dataset_key = #{subjectDatasetKey}
+      AND dataset_key = #{datasetKey}
   </select>
 
   <select id="processSectors" parameterType="map" resultMap="sectorResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
@@ -131,7 +161,7 @@
     FROM <include refid="FROM" />
     WHERE subject_dataset_key = #{subjectDatasetKey}
       AND dataset_key = #{targetDatasetKey}
-    ORDER BY target_rank, key
+    ORDER BY target_rank
   </select>
 
   <select id="listTargetDatasetKeys" resultType="integer">
@@ -162,14 +192,6 @@
     <include refid="life.catalogue.db.Common.limit" />
   </select>
 
-  <select id="listByDataset" resultMap="sectorResultMap">
-    SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
-    <bind name="idIsNull" value="false" />
-    <include refid="WHERE" />
-    ORDER BY target_rank, key
-  </select>
-
   <select id="listChildSectors" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
@@ -178,22 +200,18 @@
     ORDER BY key
   </select>
 
-  <select id="subjectBroken" resultMap="sectorResultMap">
-    SELECT <include refid="SELECT" />
+  <select id="countSearch" resultType="integer">
+    SELECT count(*)
     FROM <include refid="FROM" />
-      LEFT JOIN name_usage t ON t.id=s.subject_id AND t.dataset_key=#{subjectDatasetKey}
-    <bind name="idIsNull" value="true" />
-    <include refid="WHERE" />
-    ORDER BY key
+    <include refid="WHERE"/>
   </select>
 
-  <select id="targetBroken" resultMap="sectorResultMap">
+  <select id="search" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-      LEFT JOIN name_usage_${targetDatasetKey} t ON t.id=s.target_id
-    <bind name="idIsNull" value="true" />
-    <include refid="WHERE" />
-    ORDER BY key
+    <include refid="WHERE"/>
+    ORDER BY key desc
+    <include refid="life.catalogue.db.Common.limit" />
   </select>
 
   <select id="processDataset" parameterType="map" resultMap="sectorResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
