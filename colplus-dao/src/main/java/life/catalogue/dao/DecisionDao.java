@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.collect.Lists;
-
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
+import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.es.name.index.NameUsageIndexService;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,8 +27,13 @@ public class DecisionDao extends EntityDao<Integer, EditorialDecision, DecisionM
     this.indexService = indexService;
   }
 
-  public ResultPage<EditorialDecision> list(int datasetKey, Page page) {
-    return super.list(mapperClass, datasetKey, page);
+  public ResultPage<EditorialDecision> search(DecisionSearchRequest request, Page page) {
+    Page p = page == null ? new Page() : page;
+    try (SqlSession session = factory.openSession()) {
+      DecisionMapper mapper = session.getMapper(DecisionMapper.class);
+      List<EditorialDecision> result = mapper.search(request, p);
+      return new ResultPage<>(p, result, () -> mapper.countSearch(request));
+    }
   }
 
   @Override

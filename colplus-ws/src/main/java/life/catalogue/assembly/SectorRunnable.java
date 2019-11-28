@@ -9,6 +9,8 @@ import java.util.function.Consumer;
 
 import com.google.common.base.Preconditions;
 
+import life.catalogue.api.search.DecisionSearchRequest;
+import life.catalogue.dao.Pager;
 import life.catalogue.db.mapper.SectorImportMapper;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -159,7 +161,7 @@ abstract class SectorRunnable implements Runnable {
   private void loadDecisions() {
     try (SqlSession session = factory.openSession(true)) {
       DecisionMapper dm = session.getMapper(DecisionMapper.class);
-      for (EditorialDecision ed : dm.listBySubjectDataset(catalogueKey, datasetKey, null)) {
+      for (EditorialDecision ed : Pager.decisions(factory, DecisionSearchRequest.byDataset(catalogueKey, datasetKey))) {
         decisions.put(ed.getSubject().getId(), ed);
       }
     }

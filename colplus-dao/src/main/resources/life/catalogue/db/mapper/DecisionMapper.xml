@@ -94,19 +94,45 @@
     <include refid="life.catalogue.db.Common.limit" />
   </select>
 
-  <select id="listBySubjectDataset" resultMap="decisionResultMap">
+  <sql id="WHERE">
+    <if test="req != null">
+      <if test="req.broken">
+        LEFT JOIN name_usage t ON t.dataset_key=ed.subject_dataset_key AND t.id=ed.subject_id
+      </if>
+      <where>
+        <if test="req.broken">
+          t.id IS NULL
+        </if>
+        <if test="req.id != null">
+          AND ed.subject_id = #{req.id}
+        </if>
+        <if test="req.datasetKey != null">
+          AND ed.dataset_key = #{req.datasetKey}
+        </if>
+        <if test="req.subjectDatasetKey != null">
+          AND ed.subject_dataset_key = #{req.subjectDatasetKey}
+        </if>
+        <if test="req.rank != null">
+          AND ed.subject_rank = #{req.rank}::RANK
+        </if>
+        <if test="req.userKey != null">
+          AND ed.created_by = #{req.userKey}
+        </if>
+      </where>
+    </if>
+  </sql>
+
+  <select id="countSearch" resultType="integer">
+    SELECT count(*) FROM decision ed
+    <include refid="WHERE"/>
+  </select>
+
+  <select id="search" resultMap="decisionResultMap">
     SELECT <include refid="SELECT" />
     FROM decision ed
-    <where>
-      ed.dataset_key = #{datasetKey}
-      <if test="subjectDatasetKey != null">
-        AND ed.subject_dataset_key = #{subjectDatasetKey}
-      </if>
-      <if test="id != null">
-        AND ed.subject_id = #{id}
-      </if>
-    </where>
-    ORDER BY ed.key
+    <include refid="WHERE"/>
+    ORDER BY ed.key desc
+    <include refid="life.catalogue.db.Common.limit" />
   </select>
 
   <select id="get" resultMap="decisionResultMap">
@@ -130,18 +156,6 @@
     DELETE FROM decision
     WHERE key = #{key}
   </delete>
-
-  <select id="subjectBroken" resultMap="decisionResultMap">
-    SELECT <include refid="SELECT" />
-    FROM decision ed
-      LEFT JOIN name_usage t ON t.dataset_key=ed.subject_dataset_key AND t.id=ed.subject_id
-    WHERE t.id IS NULL
-      AND ed.dataset_key = #{datasetKey}
-      <if test="subjectDatasetKey != null">
-        AND ed.subject_dataset_key = #{subjectDatasetKey}
-      </if>
-    ORDER BY ed.key
-  </select>
 
   <select id="processDataset" parameterType="map" resultMap="decisionResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT" />

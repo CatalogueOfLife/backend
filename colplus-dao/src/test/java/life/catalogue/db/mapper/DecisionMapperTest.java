@@ -3,6 +3,7 @@ package life.catalogue.db.mapper;
 import java.util.HashMap;
 import java.util.Map;
 
+import life.catalogue.api.search.DecisionSearchRequest;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import life.catalogue.api.TestEntityGenerator;
@@ -35,11 +36,26 @@ public class DecisionMapperTest extends CRUDTestBase<Integer, EditorialDecision,
     EditorialDecision d2 = createTestEntity(catalogeKey);
     mapper().create(d2);
     commit();
+  
+    DecisionSearchRequest req = DecisionSearchRequest.byCatalogue(catalogeKey);
+    assertEquals(2, mapper().search(req,null).size());
     
-    assertEquals(2, mapper().listBySubjectDataset(catalogeKey,null, null).size());
-    assertEquals(2, mapper().listBySubjectDataset(catalogeKey, subjectDatasetKey, null).size());
-    assertEquals(1, mapper().listBySubjectDataset(catalogeKey, subjectDatasetKey, TestEntityGenerator.TAXON1.getId()).size());
-    assertEquals(1, mapper().subjectBroken(catalogeKey, subjectDatasetKey).size());
+    req.setSubjectDatasetKey(subjectDatasetKey);
+    assertEquals(2, mapper().search(req,null).size());
+    
+    req.setId(TestEntityGenerator.TAXON1.getId());
+    assertEquals(1, mapper().search(req,null).size());
+  
+    req = DecisionSearchRequest.byDataset(catalogeKey, subjectDatasetKey);
+    req.setBroken(true);
+    assertEquals(1, mapper().search(req,null).size());
+  
+    req = DecisionSearchRequest.byCatalogue(catalogeKey);
+    req.setUserKey(d1.getCreatedBy());
+    assertEquals(2, mapper().search(req,null).size());
+  
+    req.setUserKey(999);
+    assertEquals(0, mapper().search(req,null).size());
   }
   
   @Override

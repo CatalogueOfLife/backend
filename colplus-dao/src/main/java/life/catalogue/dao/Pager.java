@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import com.google.common.base.Preconditions;
+import life.catalogue.api.search.DecisionSearchRequest;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.*;
@@ -60,14 +61,28 @@ public class Pager<T> implements Iterable<T> {
   }
 
   public static Iterable<Dataset> datasets(final SqlSessionFactory factory, int contributesTo) {
-    final DatasetSearchRequest req;
-    req = new DatasetSearchRequest();
+    DatasetSearchRequest req = new DatasetSearchRequest();
     req.setContributesTo(contributesTo);
+    return datasets(factory, req);
+  }
+  
+  public static Iterable<Dataset> datasets(final SqlSessionFactory factory, final DatasetSearchRequest req) {
     return new Pager<>(DEFAULT_PAGE_SIZE, new Function<Page, List<Dataset>>() {
       @Override
       public List<Dataset> apply(Page page) {
         try (SqlSession session = factory.openSession()) {
           return session.getMapper(DatasetMapper.class).search(req, page);
+        }
+      }
+    });
+  }
+  
+  public static Iterable<EditorialDecision> decisions(final SqlSessionFactory factory, final DecisionSearchRequest req) {
+    return new Pager<>(DEFAULT_PAGE_SIZE, new Function<Page, List<EditorialDecision>>() {
+      @Override
+      public List<EditorialDecision> apply(Page page) {
+        try (SqlSession session = factory.openSession()) {
+          return session.getMapper(DecisionMapper.class).search(req, page);
         }
       }
     });

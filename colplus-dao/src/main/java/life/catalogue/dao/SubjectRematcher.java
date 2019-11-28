@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import life.catalogue.api.search.DecisionSearchRequest;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.exception.NotFoundException;
@@ -256,7 +257,7 @@ public class SubjectRematcher {
   private void matchDatasetDecision(final int datasetKey) {
     LOG.info("Rematch all decision subjects in dataset {}", datasetKey);
     datasets++;
-    for (EditorialDecision d : dem.listBySubjectDataset(catalogueKey, datasetKey, null)) {
+    for (EditorialDecision d : Pager.decisions(factory, DecisionSearchRequest.byDataset(catalogueKey, datasetKey))) {
       matchDecision(d);
     }
   }
