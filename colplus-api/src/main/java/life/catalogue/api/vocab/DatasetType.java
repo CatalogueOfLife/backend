@@ -35,12 +35,6 @@ public enum DatasetType {
   OTU,
   
   /**
-   * An assembled catalogue build on sectors & decisions.
-   * Subtype of TAXONOMIC.
-   */
-  CATALOGUE,
-  
-  /**
    * A dataset focussed on a specific theme like invasiveness, keys, etc.
    */
   THEMATIC,

@@ -652,12 +652,12 @@ public class PgImportIT {
   public void testExternalManually() throws Exception {
     // comment out if name matching is needed
     dataset.setContributesTo(null);
-    dataset.setCode(NomCode.BOTANICAL);
-    dataset.setType(DatasetType.NOMENCLATURAL);
+    dataset.setCode(NomCode.ZOOLOGICAL);
+    dataset.setType(DatasetType.TAXONOMIC);
     
     //normalizeAndImport(URI.create("https://github.com/mdoering/data-ina/archive/master.zip"), COLDP);
-    normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/162.tar.gz"), ACEF);
-    //normalizeAndImportArchive(new File("/Users/markus/Downloads/28.tar.gz"), ACEF);
+    //normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/162.tar.gz"), ACEF);
+    normalizeAndImportArchive(new File("/Users/markus/Desktop/2057.zip"), COLDP);
   
     //normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/higher-classification.dwca.zip"), DWCA);
     //normalizeAndImportFolder(new File("/Users/markus/code/col+/data-staphbase/coldp"), COLDP);

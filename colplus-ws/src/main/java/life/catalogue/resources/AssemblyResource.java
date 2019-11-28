@@ -12,11 +12,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import io.dropwizard.auth.Auth;
-import life.catalogue.es.name.index.NameUsageIndexService;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.AssemblyState;
@@ -26,8 +23,11 @@ import life.catalogue.dao.SubjectRematcher;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.dw.auth.Roles;
+import life.catalogue.es.name.index.NameUsageIndexService;
 import life.catalogue.release.AcExporter;
 import life.catalogue.release.CatalogueRelease;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -140,7 +140,7 @@ public class AssemblyResource {
   @Path("/export")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public String export(@PathParam("catKey") int catKey, @Auth ColUser user) {
-    requireCatalogue(catKey);
+    requireManaged(catKey);
   
     life.catalogue.release.Logger logger = new life.catalogue.release.Logger(LOG);
     try {
@@ -171,11 +171,11 @@ public class AssemblyResource {
     }
   }
   
-  private void requireCatalogue(int catKey) {
+  private void requireManaged(int catKey) {
     try (SqlSession s = factory.openSession()) {
       Dataset d = s.getMapper(DatasetMapper.class).get(catKey);
-      if (d.getType() != DatasetType.CATALOGUE) {
-        throw new IllegalArgumentException("Only catalogue type datasets can be assembled. Dataset " + catKey + " is of type " + d.getType());
+      if (d.getOrigin() != DatasetOrigin.MANAGED) {
+        throw new IllegalArgumentException("Only managed datasets can be assembled. Dataset " + catKey + " is of origin " + d.getOrigin());
       }
     }
   }

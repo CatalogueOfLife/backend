@@ -317,8 +317,6 @@ public class ImportManager implements Managed {
         throw new IllegalArgumentException("Dataset " + datasetKey + " is deleted and cannot be imported");
       } else if (d.getOrigin() == DatasetOrigin.MANAGED) {
         throw new IllegalArgumentException("Dataset " + datasetKey + " is managed and cannot be imported");
-      } else if (d.getType() == DatasetType.CATALOGUE) {
-        throw new IllegalArgumentException("Dataset " + datasetKey + " is an assembled catalogue and cannot be imported");
       } else if (d.getKey() == Datasets.NAME_INDEX) {
         throw new IllegalArgumentException("Dataset " + datasetKey + " is the names index and cannot be imported");
       }

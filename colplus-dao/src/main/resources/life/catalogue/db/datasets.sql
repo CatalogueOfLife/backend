@@ -6,7 +6,7 @@
 --------------------------
 
 -- origin:  EXTERNAL, UPLOADED, MANAGED
--- type:  NOMENCLATURAL, TAXONOMIC, ARTICLE, PERSONAL, OTU, CATALOGUE, THEMATIC, OTHER
+-- type:  NOMENCLATURAL, TAXONOMIC, ARTICLE, PERSONAL, OTU, THEMATIC, OTHER
 -- code:  BACTERIAL, BOTANICAL, CULTIVARS, VIRUS, ZOOLOGICAL
 -- data_format:  DWCA, ACEF, TCS, COLDP
 
@@ -446,8 +446,6 @@ ALTER SEQUENCE dataset_key_seq RESTART WITH 2000;
 
 -- all datasets from https://github.com/gbif/checklistbank/blob/master/checklistbank-nub/nub-sources.tsv
 -- excluding CoL, the GBIF patches and entire organisation or installations which we add below as lists of datasets
--- nom codes: 0=BACTERIAL, 1=BOTANICAL, 2=CULTIVARS, 3=VIRUS, 4=ZOOLOGICAL
--- types      0=NOMENCLATURAL, 1=TAXONOMIC, 2=ARTICLE, 3=PERSONAL, 4=OTU, 5=CATALOGUE, 6=THEMATIC, 7=OTHER
 
 INSERT INTO dataset (gbif_key, type, created_by, modified_by, origin, code, data_format, data_access, title, alias) VALUES
     (null, 'TAXONOMIC', 0, 0, 'EXTERNAL', 'BOTANICAL', 'DWCA', 'https://storage.googleapis.com/powop-content/backbone/powoNames.zip', 'PoWO Names', 'PoWo'),

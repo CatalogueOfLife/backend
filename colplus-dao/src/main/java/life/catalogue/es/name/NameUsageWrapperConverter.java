@@ -178,7 +178,7 @@ public class NameUsageWrapperConverter {
    */
   public static void prunePayload(NameUsageWrapper nuw) {
     nuw.getUsage().setId(null);
-    nuw.setDecisionKey(null);
+    nuw.setDecisions(null);
     nuw.setPublisherKey(null);
     nuw.setIssues(null);
     nuw.setClassification(null);
@@ -217,7 +217,7 @@ public class NameUsageWrapperConverter {
    */
   public static void enrichPayload(NameUsageWrapper nuw, NameUsageDocument doc) {
     nuw.getUsage().setId(doc.getUsageId());
-    nuw.setDecisionKey(doc.getDecisionKey());
+    //TODO: nuw.setDecisions();
     nuw.setPublisherKey(doc.getPublisherKey());
     nuw.setIssues(doc.getIssues());
     nuw.setClassification(extractClassifiction(doc));
@@ -266,7 +266,7 @@ public class NameUsageWrapperConverter {
     Name name = nuw.getUsage().getName();
     doc.setAuthorship(name.authorshipComplete());
     doc.setDatasetKey(name.getDatasetKey());
-    doc.setDecisionKey(nuw.getDecisionKey());
+    //TODO: doc.setDecisionKey(nuw.getDecisionKey());
     doc.setNameId(name.getId());
     doc.setNameIndexId(name.getNameIndexId());
     doc.setNomCode(name.getCode());

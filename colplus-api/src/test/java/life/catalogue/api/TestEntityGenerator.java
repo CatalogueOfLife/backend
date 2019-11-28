@@ -277,7 +277,7 @@ public class TestEntityGenerator {
     Dataset d = new Dataset();
     d.setTitle(title);
     d.setAlias(title);
-    d.setType(DatasetType.CATALOGUE);
+    d.setType(DatasetType.TAXONOMIC);
     d.setLicense(License.CC0);
     d.setOrigin(DatasetOrigin.MANAGED);
     return d;

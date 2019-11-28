@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 
 import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.Partitioner;
@@ -59,11 +59,16 @@ public class CatalogueRelease implements Runnable {
     Dataset release;
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      LocalDate today = LocalDate.now();
       // create new dataset based on current metadata
       release = dm.get(catalogueKey);
+      if (release.getOrigin() != DatasetOrigin.MANAGED) {
+        throw new IllegalArgumentException("Only managed datasets can be released, but origin is " + release.getOrigin());
+      }
+      
+      LocalDate today = LocalDate.now();
       release.setKey(null);
-      release.setType(DatasetType.CATALOGUE);
+      release.setAlias(null);
+      release.setLocked(true);
       release.setModifiedBy(userKey);
       release.setCreatedBy(userKey);
       release.setReleased(today);

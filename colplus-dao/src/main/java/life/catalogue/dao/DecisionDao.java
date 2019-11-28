@@ -34,9 +34,12 @@ public class DecisionDao extends EntityDao<Integer, EditorialDecision, DecisionM
   @Override
   protected void createAfter(EditorialDecision obj, int user, DecisionMapper mapper, SqlSession session) {
     if (obj.getSubject().getId() != null) {
-      LOG.info("Starting sync (on CREATE) with Elasticsearch for name {} in dataset {}",
-          obj.getSubject().getId(),
-          obj.getSubjectDatasetKey());
+      LOG.info("Starting ES sync on CREATE for {}: {} from dataset {} in catalogue {}",
+          obj.getMode(),
+          obj.getSubject(),
+          obj.getDatasetKey(),
+          obj.getSubjectDatasetKey()
+      );
       indexService.sync(obj.getSubjectDatasetKey(), Lists.newArrayList(obj.getSubject().getId()));
     }
   }
@@ -47,7 +50,12 @@ public class DecisionDao extends EntityDao<Integer, EditorialDecision, DecisionM
    */
   @Override
   protected void updateAfter(EditorialDecision obj, EditorialDecision old, int user, DecisionMapper mapper, SqlSession session) {
-    LOG.info("Starting sync (on UPDATE) with Elasticsearch");
+    LOG.info("Starting ES sync on UPDATE for {}: {} from dataset {} in catalogue {}",
+        obj.getMode(),
+        obj.getSubject(),
+        obj.getDatasetKey(),
+        obj.getSubjectDatasetKey()
+    );
     final List<String> ids = new ArrayList<>();
     if (old != null && old.getSubject().getId() != null && !old.getSubject().getId().equals(obj.getSubject().getId())) {
       ids.add(old.getSubject().getId());
@@ -61,7 +69,12 @@ public class DecisionDao extends EntityDao<Integer, EditorialDecision, DecisionM
   @Override
   protected void deleteAfter(Integer key, EditorialDecision old, int user, DecisionMapper mapper, SqlSession session) {
     if (old != null && old.getSubject().getId() != null) {
-      LOG.info("Starting sync (on DELETE) with Elasticsearch");
+      LOG.info("Starting ES sync on DELETE for {}: {} from dataset {} in catalogue {}",
+          old.getMode(),
+          old.getSubject(),
+          old.getDatasetKey(),
+          old.getSubjectDatasetKey()
+      );
       indexService.sync(old.getSubjectDatasetKey(), Lists.newArrayList(old.getSubject().getId()));
     }
   }

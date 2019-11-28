@@ -125,7 +125,6 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
         String first = taxonIds.iterator().next();
         LOG.info("Syncing {} taxa (first id: {}) from dataset {}", taxonIds.size(), first, datasetKey);
         int deleted = EsUtil.deleteNameUsages(client, index, datasetKey, taxonIds);
-        EsUtil.refreshIndex(client, index);
         int inserted = indexNameUsages(datasetKey, taxonIds);
         EsUtil.refreshIndex(client, index);
         LOG.info("Finished syncing {} taxa (first id: {}) from dataset {}. Deleted: {}. Inserted: {}.",
