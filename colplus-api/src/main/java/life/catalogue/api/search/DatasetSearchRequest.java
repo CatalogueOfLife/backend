@@ -5,6 +5,7 @@ import java.util.Objects;
 import javax.ws.rs.QueryParam;
 
 import com.google.common.base.Preconditions;
+import life.catalogue.api.vocab.Origin;
 import org.apache.commons.lang3.StringUtils;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetType;
@@ -34,6 +35,9 @@ public class DatasetSearchRequest {
   @QueryParam("format")
   private DataFormat format;
   
+  @QueryParam("origin")
+  private Origin origin;
+
   @QueryParam("type")
   private DatasetType type;
   
@@ -64,6 +68,7 @@ public class DatasetSearchRequest {
         contributesTo == null &&
         format == null &&
         type == null &&
+        origin == null &&
         sortBy == null &&
         modified == null &&
         created == null &&
@@ -110,6 +115,14 @@ public class DatasetSearchRequest {
     this.type = type;
   }
   
+  public Origin getOrigin() {
+    return origin;
+  }
+  
+  public void setOrigin(Origin origin) {
+    this.origin = origin;
+  }
+  
   public LocalDate getModified() {
     return modified;
   }
@@ -150,6 +163,7 @@ public class DatasetSearchRequest {
     this.reverse = reverse;
   }
   
+  
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -160,6 +174,7 @@ public class DatasetSearchRequest {
         code == that.code &&
         Objects.equals(contributesTo, that.contributesTo) &&
         format == that.format &&
+        origin == that.origin &&
         type == that.type &&
         Objects.equals(modified, that.modified) &&
         Objects.equals(created, that.created) &&
@@ -169,6 +184,6 @@ public class DatasetSearchRequest {
   
   @Override
   public int hashCode() {
-    return Objects.hash(q, code, contributesTo, format, type, modified, created, released, sortBy, reverse);
+    return Objects.hash(q, code, contributesTo, format, origin, type, modified, created, released, sortBy, reverse);
   }
 }
