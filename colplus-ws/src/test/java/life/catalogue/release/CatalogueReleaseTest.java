@@ -2,12 +2,16 @@ package life.catalogue.release;
 
 import com.google.common.io.Files;
 import life.catalogue.WsServerConfig;
+import life.catalogue.api.model.Dataset;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.TestDataRule;
 import life.catalogue.es.name.index.NameUsageIndexService;
+import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -29,6 +33,7 @@ public class CatalogueReleaseTest {
   WsServerConfig cfg;
   DatasetImportDao diDao;
   AcExporter exp;
+  Dataset d;
   
   @Before
   public void init()  {
@@ -38,6 +43,15 @@ public class CatalogueReleaseTest {
     cfg.normalizer.scratchDir  = Files.createTempDir();
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     exp = new AcExporter(cfg, PgSetupRule.getSqlSessionFactory());
+    
+    // dataset needs to be a managed one
+    try (SqlSession s = PgSetupRule.getSqlSessionFactory().openSession()) {
+      DatasetMapper dm = s.getMapper(DatasetMapper.class);
+      d = dm.get(TestDataRule.TestData.APPLE.key);
+      d.setOrigin(DatasetOrigin.MANAGED);
+      dm.update(d);
+      s.commit();
+    }
   }
   
   @Test
@@ -47,7 +61,7 @@ public class CatalogueReleaseTest {
   }
   
   private CatalogueRelease buildRelease() {
-    return CatalogueRelease.release(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), exp, diDao, TestDataRule.TestData.APPLE.key, Users.TESTER);
+    return CatalogueRelease.release(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), exp, diDao, d.getKey(), Users.TESTER);
   }
   
   @Test

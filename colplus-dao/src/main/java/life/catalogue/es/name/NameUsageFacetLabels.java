@@ -62,7 +62,6 @@ public class NameUsageFacetLabels {
 
     facetLabels = new EnumMap<>(NameUsageSearchParameter.class);
     facetLabels.put(DATASET_KEY, DATASET_KEY_FACET);
-    //TODO: facetLabels.put(DECISION_KEY, DECISION_KEY_FACET);
     facetLabels.put(FIELD, FIELD_FACET);
     facetLabels.put(ISSUE, ISSUE_FACET);
     facetLabels.put(NAME_ID, NAME_ID_FACET);
@@ -79,6 +78,9 @@ public class NameUsageFacetLabels {
     facetLabels.put(NOM_CODE, NOM_CODE_FACET);
     facetLabels.put(FOSSIL, FOSSIL_FACET);
     facetLabels.put(RECENT, RECENT_FACET);
+    //TODO: update to a real mapping !!!
+    facetLabels.put(DECISION_DATASET_KEY, "DECISION_DATASET_KEY");
+    facetLabels.put(DECISION_MODE, "DECISION_MODE");
 
     if (facetLabels.size() != NameUsageSearchParameter.values().length) {
       Set<NameUsageSearchParameter> all = new HashSet<NameUsageSearchParameter>(Arrays.asList(NameUsageSearchParameter.values()));

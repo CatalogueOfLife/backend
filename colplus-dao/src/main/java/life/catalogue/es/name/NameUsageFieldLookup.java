@@ -19,7 +19,6 @@ public class NameUsageFieldLookup extends EnumMap<NameUsageSearchParameter, Stri
     super(NameUsageSearchParameter.class);
     putSingle(USAGE_ID, "usageId");
     putSingle(DATASET_KEY, "datasetKey");
-    //TODO: putSingle(DECISION_KEY, "decisionKey");
     putSingle(FIELD, "nameFields");
     putSingle(FOSSIL, "fossil");
     putSingle(ISSUE, "issues");
@@ -35,6 +34,10 @@ public class NameUsageFieldLookup extends EnumMap<NameUsageSearchParameter, Stri
     putSingle(SECTOR_KEY, "sectorKey");
     putSingle(TYPE, "type");
     putSingle(TAXON_ID, "classificationIds");
+    //TODO: update to a real mapping !!!
+    putSingle(DECISION_DATASET_KEY, "DECISION_DATASET_KEY");
+    putSingle(DECISION_MODE, "DECISION_MODE");
+  
     if (size() != NameUsageSearchParameter.values().length) {
       throw new IllegalStateException("Not all name search parameters mapped to document fields");
     }
