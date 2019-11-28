@@ -1,14 +1,7 @@
 package life.catalogue.es.name.search;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.UUID;
+import java.util.*;
 
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.FacetValue;
@@ -24,20 +17,7 @@ import life.catalogue.es.response.Bucket;
 import life.catalogue.es.response.EsFacet;
 import life.catalogue.es.response.SearchHit;
 
-import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.DECISION_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.FIELD;
-import static life.catalogue.api.search.NameUsageSearchParameter.ISSUE;
-import static life.catalogue.api.search.NameUsageSearchParameter.NAME_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.NAME_INDEX_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.NOM_STATUS;
-import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHED_IN_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHER_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.RANK;
-import static life.catalogue.api.search.NameUsageSearchParameter.SECTOR_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.STATUS;
-import static life.catalogue.api.search.NameUsageSearchParameter.TAXON_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.TYPE;
+import static life.catalogue.api.search.NameUsageSearchParameter.*;
 
 /**
  * Converts the Elasticsearch response to a NameSearchResponse instance.
@@ -88,7 +68,7 @@ class NameSearchResultConverter {
     NameUsageAggregation esFacets = esResponse.getAggregations().getContextFilter().getFacetsContainer();
     Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets = new EnumMap<>(NameUsageSearchParameter.class);
     addIfPresent(facets, DATASET_KEY, esFacets.getDatasetKey());
-    addIfPresent(facets, DECISION_KEY, esFacets.getDecisionKey());
+    //TODO: addIfPresent(facets, DECISION_KEY, esFacets.getDecisionKey());
     addIfPresent(facets, FIELD, esFacets.getField());
     addIfPresent(facets, ISSUE, esFacets.getIssue());
     addIfPresent(facets, NAME_ID, esFacets.getNameId());

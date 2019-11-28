@@ -12,7 +12,6 @@ import life.catalogue.es.response.ContextFilterWrapper;
 import life.catalogue.es.response.EsFacet;
 
 import static life.catalogue.api.search.NameUsageSearchParameter.*;
-import static life.catalogue.api.search.NameUsageSearchParameter.DECISION_KEY;
 import static life.catalogue.api.search.NameUsageSearchParameter.FIELD;
 import static life.catalogue.api.search.NameUsageSearchParameter.FOSSIL;
 import static life.catalogue.api.search.NameUsageSearchParameter.ISSUE;
@@ -63,7 +62,7 @@ public class NameUsageFacetLabels {
 
     facetLabels = new EnumMap<>(NameUsageSearchParameter.class);
     facetLabels.put(DATASET_KEY, DATASET_KEY_FACET);
-    facetLabels.put(DECISION_KEY, DECISION_KEY_FACET);
+    //TODO: facetLabels.put(DECISION_KEY, DECISION_KEY_FACET);
     facetLabels.put(FIELD, FIELD_FACET);
     facetLabels.put(ISSUE, ISSUE_FACET);
     facetLabels.put(NAME_ID, NAME_ID_FACET);

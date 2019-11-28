@@ -4,24 +4,7 @@ import java.util.EnumMap;
 
 import life.catalogue.api.search.NameUsageSearchParameter;
 
-import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.DECISION_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.FIELD;
-import static life.catalogue.api.search.NameUsageSearchParameter.FOSSIL;
-import static life.catalogue.api.search.NameUsageSearchParameter.ISSUE;
-import static life.catalogue.api.search.NameUsageSearchParameter.NAME_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.NAME_INDEX_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.NOM_CODE;
-import static life.catalogue.api.search.NameUsageSearchParameter.NOM_STATUS;
-import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHED_IN_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHER_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.RANK;
-import static life.catalogue.api.search.NameUsageSearchParameter.RECENT;
-import static life.catalogue.api.search.NameUsageSearchParameter.SECTOR_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.STATUS;
-import static life.catalogue.api.search.NameUsageSearchParameter.TAXON_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.TYPE;
-import static life.catalogue.api.search.NameUsageSearchParameter.USAGE_ID;
+import static life.catalogue.api.search.NameUsageSearchParameter.*;
 
 /**
  * Maps a name search parameter the corresponding Elasticsearch field(s). In principle a name search parameter may be
@@ -36,7 +19,7 @@ public class NameUsageFieldLookup extends EnumMap<NameUsageSearchParameter, Stri
     super(NameUsageSearchParameter.class);
     putSingle(USAGE_ID, "usageId");
     putSingle(DATASET_KEY, "datasetKey");
-    putSingle(DECISION_KEY, "decisionKey");
+    //TODO: putSingle(DECISION_KEY, "decisionKey");
     putSingle(FIELD, "nameFields");
     putSingle(FOSSIL, "fossil");
     putSingle(ISSUE, "issues");

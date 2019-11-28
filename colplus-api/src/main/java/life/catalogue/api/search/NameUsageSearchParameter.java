@@ -2,6 +2,7 @@ package life.catalogue.api.search;
 
 import java.util.UUID;
 
+import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NameField;
 import life.catalogue.api.vocab.NomStatus;
@@ -15,8 +16,22 @@ public enum NameUsageSearchParameter {
   USAGE_ID(String.class),
 
   DATASET_KEY(Integer.class),
-
-  DECISION_KEY(Integer.class),
+  
+  /**
+   * This takes the datasetKey of the managed catalogue to filter decisions by, not usages.
+   * It will prune the list of decisions to just the ones matching the datasetKey.
+   * I.e. the list only contains a single decision at max if one catalogue is given
+   * so the UI can quickly determine if a decision exists at all for a given usage
+   * and does not have to ignore decisions from other catalogues.
+   */
+  DECISION_DATASET_KEY(Integer.class),
+  
+  /**
+   * Allows to filter usages based on the existence of a decision with the matching MODE.
+   * NOT_NULL or NULL can be used here to filter usages to just the ones
+   * with or without any decision (from the requested DECISION_DATASET_KEY if given)
+   */
+  DECISION_MODE(EditorialDecision.Mode.class),
 
   FIELD(NameField.class),
 
