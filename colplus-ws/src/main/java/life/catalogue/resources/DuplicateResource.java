@@ -41,11 +41,11 @@ public class DuplicateResource {
                               @QueryParam("rankDifferent") Boolean rankDifferent,
                               @QueryParam("codeDifferent") Boolean codeDifferent,
                               @QueryParam("withDecision") Boolean withDecision,
-                              @QueryParam("decisionDatasetKey") @DefaultValue(Datasets.DRAFT_COL+"") int decisionDatasetKey,
+                              @QueryParam("catalogueKey") @DefaultValue(Datasets.DRAFT_COL+"") int catalogueKey,
                               @Valid @BeanParam Page page, @Context SqlSession session) {
     DuplicateDao dao = new DuplicateDao(session);
     if (entity == null || entity == EntityType.NAME_USAGE) {
-        return dao.findUsages(mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, decisionDatasetKey, page);
+        return dao.findUsages(mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, catalogueKey, page);
       
     } else if (entity == EntityType.NAME) {
         return dao.findNames(mode, minSize, datasetKey, category, ranks, authorshipDifferent, rankDifferent, codeDifferent, page);
