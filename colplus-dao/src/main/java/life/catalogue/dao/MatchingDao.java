@@ -1,17 +1,16 @@
 package life.catalogue.dao;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,12 +29,17 @@ public class MatchingDao {
     nMapper = session.getMapper(NameMapper.class);
   }
   
+  /**
+   * Strictly matches a simple name to name usages from a given dataset
+   * @param name
+   * @param datasetKey
+   */
   public List<? extends NameUsage> matchDataset(SimpleName name, int datasetKey) {
     List<NameUsageBase> matches = new ArrayList<>();
     // https://github.com/Sp2000/colplus-backend/issues/283
     for (NameUsageBase t : uMapper.listByName(datasetKey, name.getName(), name.getRank())) {
       // take authorship, code, status and parent as optional filters, i.e. if null accept any value
-      if (StringUtils.trimToNull(name.getAuthorship()) != null && !Objects.equals(name.getAuthorship(), t.getName().authorshipComplete())) {
+      if (StringUtils.trimToNull(name.getAuthorship()) != null && !name.getAuthorship().equalsIgnoreCase(t.getName().authorshipComplete())) {
         continue;
       }
       if (name.getStatus() != null && !Objects.equals(name.getStatus(), t.getStatus())) {
@@ -44,18 +48,21 @@ public class MatchingDao {
       if (name.getCode() != null && !Objects.equals(name.getCode(), t.getName().getCode())) {
         continue;
       }
-      matches.add(t);
-    }
-    if (!matches.isEmpty() && name.getParent() != null) {
-      Iterator<NameUsageBase> iter = matches.iterator();
-      while(iter.hasNext()) {
-        NameUsageBase u = iter.next();
+      if (name.getParent() != null) {
+        // synonyms already have their parent name. For taxa we need to look that up
         // https://github.com/Sp2000/colplus-backend/issues/349
-        Name parent = nMapper.getByUsage(datasetKey, u.getParentId());
+        Name parent;
+        if (t.isSynonym()) {
+          Synonym s = (Synonym) t;
+          parent = s.getAccepted().getName();
+        } else {
+          parent = nMapper.getByUsage(datasetKey, t.getParentId());
+        }
         if (parent == null || !name.getParent().equalsIgnoreCase(parent.getScientificName())) {
-          iter.remove();
+          continue;
         }
       }
+      matches.add(t);
     }
     return matches;
   }
