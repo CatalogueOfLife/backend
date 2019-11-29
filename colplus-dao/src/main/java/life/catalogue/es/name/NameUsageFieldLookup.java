@@ -35,7 +35,7 @@ public class NameUsageFieldLookup extends EnumMap<NameUsageSearchParameter, Stri
     putSingle(TYPE, "type");
     putSingle(TAXON_ID, "classificationIds");
     //TODO: update to a real mapping !!!
-    putSingle(DECISION_DATASET_KEY, "DECISION_DATASET_KEY");
+    putSingle(CATALOGUE_KEY, "DECISION_DATASET_KEY");
     putSingle(DECISION_MODE, "DECISION_MODE");
   
     if (size() != NameUsageSearchParameter.values().length) {

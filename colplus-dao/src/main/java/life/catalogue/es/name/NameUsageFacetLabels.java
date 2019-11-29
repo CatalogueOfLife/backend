@@ -79,7 +79,7 @@ public class NameUsageFacetLabels {
     facetLabels.put(FOSSIL, FOSSIL_FACET);
     facetLabels.put(RECENT, RECENT_FACET);
     //TODO: update to a real mapping !!!
-    facetLabels.put(DECISION_DATASET_KEY, "DECISION_DATASET_KEY");
+    facetLabels.put(CATALOGUE_KEY, "DECISION_DATASET_KEY");
     facetLabels.put(DECISION_MODE, "DECISION_MODE");
 
     if (facetLabels.size() != NameUsageSearchParameter.values().length) {

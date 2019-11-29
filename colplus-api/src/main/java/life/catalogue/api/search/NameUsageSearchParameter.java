@@ -24,7 +24,7 @@ public enum NameUsageSearchParameter {
    * so the UI can quickly determine if a decision exists at all for a given usage
    * and does not have to ignore decisions from other catalogues.
    */
-  DECISION_DATASET_KEY(Integer.class),
+  CATALOGUE_KEY(Integer.class),
   
   /**
    * Allows to filter usages based on the existence of a decision with the matching MODE.
