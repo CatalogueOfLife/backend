@@ -382,6 +382,14 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     query.setContributesTo(cat.getKey());
     // d5 was deleted!
     assertEquals(1, mapper().search(query, new Page()).size());
+    
+    // by origin
+    query = new DatasetSearchRequest();
+    query.setOrigin(DatasetOrigin.MANAGED);
+    assertEquals(2, mapper().search(query, new Page()).size());
+  
+    query.setOrigin(DatasetOrigin.EXTERNAL);
+    assertEquals(2, mapper().search(query, new Page()).size());
   }
 
   private int createSearchableDataset(String title, String author, String organisation, String description) {

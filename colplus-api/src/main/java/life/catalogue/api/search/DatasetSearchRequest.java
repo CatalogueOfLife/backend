@@ -5,10 +5,10 @@ import java.util.Objects;
 import javax.ws.rs.QueryParam;
 
 import com.google.common.base.Preconditions;
-import life.catalogue.api.vocab.Origin;
-import org.apache.commons.lang3.StringUtils;
 import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
+import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.NomCode;
 
 public class DatasetSearchRequest {
@@ -36,7 +36,7 @@ public class DatasetSearchRequest {
   private DataFormat format;
   
   @QueryParam("origin")
-  private Origin origin;
+  private DatasetOrigin origin;
 
   @QueryParam("type")
   private DatasetType type;
@@ -115,11 +115,11 @@ public class DatasetSearchRequest {
     this.type = type;
   }
   
-  public Origin getOrigin() {
+  public DatasetOrigin getOrigin() {
     return origin;
   }
   
-  public void setOrigin(Origin origin) {
+  public void setOrigin(DatasetOrigin origin) {
     this.origin = origin;
   }
   

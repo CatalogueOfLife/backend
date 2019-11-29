@@ -54,11 +54,11 @@ public class SubjectRematcherTest {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
       s1b = sm.get(s1);
-      assertNotNull(s1b.getSubject().getId());
+      assertEquals("root-1", s1b.getSubject().getId());
       assertNull(s1b.getTarget().getId());
   
       s2b = sm.get(s2);
-      assertNotNull(s2b.getSubject().getId());
+      assertEquals("root-2", s2b.getSubject().getId());
       assertNull(s2b.getTarget().getId());
     }
   
@@ -68,11 +68,11 @@ public class SubjectRematcherTest {
       SectorMapper sm = session.getMapper(SectorMapper.class);
 
       Sector s1c = sm.get(s1);
-      assertNull(s1c.getSubject().getId());
+      assertEquals("root-1", s1c.getSubject().getId());
       assertEquals("t4", s1c.getTarget().getId());
   
       Sector s2c = sm.get(s2);
-      assertNull(s2c.getSubject().getId());
+      assertEquals("root-2", s2c.getSubject().getId());
       assertEquals("t5", s2c.getTarget().getId());
     }
   }

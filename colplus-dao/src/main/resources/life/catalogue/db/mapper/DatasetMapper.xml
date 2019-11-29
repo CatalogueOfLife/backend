@@ -125,7 +125,7 @@
                 AND type=#{req.type}::DATASETTYPE
             </if>
             <if test="req.origin != null">
-                AND origin=#{req.origin}::ORIGIN
+                AND origin=#{req.origin}::DATASETORIGIN
             </if>
             <if test="req.contributesTo != null">
                 AND exists(select 1 from sector s WHERE dataset_key=#{req.contributesTo} AND s.subject_dataset_key=d.key)

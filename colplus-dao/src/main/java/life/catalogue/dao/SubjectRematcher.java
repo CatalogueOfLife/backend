@@ -157,8 +157,8 @@ public class SubjectRematcher {
     if (t != null) {
       // see if we already have a sector attached
       Sector s2 = sm.getBySubject(s.getDatasetKey(), s.getSubjectDatasetKey(), t.getId());
-      if (s2 != null) {
-        LOG.warn("Sector {} seems to be a duplicate of {} for {} in dataset {}", s, s2, t.getName().getScientificName(), s.getDatasetKey());
+      if (s2 != null && !s2.getKey().equals(s.getKey())) {
+        LOG.warn("Sector {} seems to be a duplicate of {} for {} in catalogue {}. Keep sector {} broken", s, s2, t.getName().getScientificName(), s.getDatasetKey(), s.getKey());
       } else {
         s.getSubject().setId(t.getId());
       }
