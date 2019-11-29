@@ -146,8 +146,7 @@
             <if test="withDecision != null">
                 LEFT JOIN decision ed ON ed.subject_id=u.id
                     AND ed.subject_dataset_key=#{datasetKey}
-                    <!-- magic draft col number for now! -->
-                    AND ed.dataset_key=3
+                    AND ed.dataset_key=#{catalogueKey}
             </if>
         <where>
             <include refid="commonWhereClause"/>

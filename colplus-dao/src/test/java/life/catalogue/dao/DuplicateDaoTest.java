@@ -230,7 +230,7 @@ public class DuplicateDaoTest {
       } else {
         watch.resume();
       }
-      List<Duplicate> result = dao.findUsages(mode, minSize, datasetKey, sectorDatasetKey, category, ranks, status, authorshipDifferent, acceptedDifferent, null, null, withDecision, page);
+      List<Duplicate> result = dao.findUsages(mode, minSize, datasetKey, sectorDatasetKey, category, ranks, status, authorshipDifferent, acceptedDifferent, null, null, withDecision, Datasets.DRAFT_COL, page);
       watch.suspend();
       return result;
     }

@@ -32,18 +32,18 @@ public class DuplicateDao {
   
   public List<Duplicate> findNames(MatchingMode mode, Integer minSize, int datasetKey, NameCategory category, Set<Rank> ranks,
                                    Boolean rankDifferent, Boolean codeDifferent, Boolean authorshipDifferent, Page page) {
-    return find(true, mode, minSize, datasetKey, null, category, ranks, null, authorshipDifferent, null, rankDifferent, codeDifferent,null, page);
+    return find(true, mode, minSize, datasetKey, null, category, ranks, null, authorshipDifferent, null, rankDifferent, codeDifferent,null, null, page);
   }
   
   public List<Duplicate> findUsages(MatchingMode mode, Integer minSize, int datasetKey, Integer sectorKey, NameCategory category, Set<Rank> ranks,
                               Set<TaxonomicStatus> status, Boolean authorshipDifferent, Boolean acceptedDifferent, Boolean rankDifferent,
-                                    Boolean codeDifferent, Boolean withDecision, Page page) {
-    return find(false, mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, page);
+                                    Boolean codeDifferent, Boolean withDecision, Integer catalogueKey, Page page) {
+    return find(false, mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, catalogueKey, page);
   }
   
   private List<Duplicate> find(boolean compareNames, MatchingMode mode, Integer minSize, int datasetKey, Integer sectorKey, NameCategory category, Set<Rank> ranks,
                               Set<TaxonomicStatus> status, Boolean authorshipDifferent, Boolean acceptedDifferent,
-                               Boolean rankDifferent, Boolean codeDifferent, Boolean withDecision, Page page) {
+                               Boolean rankDifferent, Boolean codeDifferent, Boolean withDecision, Integer catalogueKey, Page page) {
     mode = ObjectUtils.defaultIfNull(mode, MatchingMode.STRICT);
     minSize = ObjectUtils.defaultIfNull(minSize, 2);
     Preconditions.checkArgument(minSize > 1, "minimum group size must at least be 2");
@@ -53,7 +53,7 @@ public class DuplicateDao {
     if (compareNames) {
       dupsTmp = mapper.duplicateNames(mode, minSize, datasetKey, category, ranks, authorshipDifferent, rankDifferent, codeDifferent, page);
     } else {
-      dupsTmp = mapper.duplicates(mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, page);
+      dupsTmp = mapper.duplicates(mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, catalogueKey, page);
     }
     if (dupsTmp.isEmpty()) {
       return Collections.EMPTY_LIST;

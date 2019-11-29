@@ -38,6 +38,7 @@ public interface DuplicateMapper {
                              @Param("rankDifferent") Boolean rankDifferent,
                              @Param("codeDifferent") Boolean codeDifferent,
                              @Param("withDecision") Boolean withDecision,
+                             @Param("catalogueKey") Integer catalogueKey,
                              @Param("page") Page page);
   
   /**

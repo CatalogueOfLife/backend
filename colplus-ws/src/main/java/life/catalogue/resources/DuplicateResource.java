@@ -7,13 +7,10 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import life.catalogue.api.vocab.*;
 import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.model.Duplicate;
 import life.catalogue.api.model.Page;
-import life.catalogue.api.vocab.EntityType;
-import life.catalogue.api.vocab.MatchingMode;
-import life.catalogue.api.vocab.NameCategory;
-import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.DuplicateDao;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
@@ -44,10 +41,11 @@ public class DuplicateResource {
                               @QueryParam("rankDifferent") Boolean rankDifferent,
                               @QueryParam("codeDifferent") Boolean codeDifferent,
                               @QueryParam("withDecision") Boolean withDecision,
+                              @QueryParam("decisionDatasetKey") @DefaultValue(Datasets.DRAFT_COL+"") int decisionDatasetKey,
                               @Valid @BeanParam Page page, @Context SqlSession session) {
     DuplicateDao dao = new DuplicateDao(session);
     if (entity == null || entity == EntityType.NAME_USAGE) {
-        return dao.findUsages(mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, page);
+        return dao.findUsages(mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, decisionDatasetKey, page);
       
     } else if (entity == EntityType.NAME) {
         return dao.findNames(mode, minSize, datasetKey, category, ranks, authorshipDifferent, rankDifferent, codeDifferent, page);
