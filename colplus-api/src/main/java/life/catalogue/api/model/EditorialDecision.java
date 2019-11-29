@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.Lifezone;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
@@ -161,6 +162,15 @@ public class EditorialDecision extends DataEntity<Integer> implements DatasetSco
     return subject == null ? null : DSID.key(subjectDatasetKey, subject.getId());
   }
   
+  @JsonIgnore
+  public SimpleDecision asSimpleDecision() {
+    SimpleDecision sd = new SimpleDecision();
+    sd.setKey(key);
+    sd.setDatasetKey(datasetKey);
+    sd.setMode(mode);
+    return sd;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

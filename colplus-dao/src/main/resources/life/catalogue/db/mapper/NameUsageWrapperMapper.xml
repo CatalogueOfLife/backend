@@ -17,8 +17,11 @@
                 <case value="true"  resultType="Synonym" resultMap="life.catalogue.db.mapper.SynonymMapper.synonymResultMap"/>
             </discriminator>
         </association>
-        <collection property="vernacularNames" ofType="VernacularName" autoMapping="true" notNullColumn="v_id">
-            <id property="id" column="v_id"/>
+        <collection property="vernacularNames" ofType="VernacularName" autoMapping="true" columnPrefix="v_" notNullColumn="id">
+            <id property="id" column="id"/>
+        </collection>
+        <collection property="decisions" ofType="SimpleDecision" autoMapping="true" columnPrefix="ed_" notNullColumn="key">
+            <id property="key" column="key"/>
         </collection>
     </resultMap>
 
@@ -40,17 +43,16 @@
         </association>
     </resultMap>
 
-
     <sql id="taxonSelectFrom">
         <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT" />,
         vbn.issues || vbt.issues AS issues,
-        ed.key AS decisionKey,
-        vn.id as v_id, vn.name, vn.latin, vn.language
+        ed.key AS ed_key, ed.dataset_key AS ed_dataset_key, ed.mode AS ed_mode,
+        vn.id AS v_id, vn.name AS v_name, vn.latin AS v_latin, vn.language AS v_language
     FROM <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM"/>
         LEFT JOIN verbatim_${partition} vbt ON vbt.id=u.verbatim_key
         LEFT JOIN verbatim_${partition} vbn ON vbn.id=n.verbatim_key
         LEFT JOIN vernacular_name_${partition} vn ON vn.taxon_id=u.id
-        LEFT JOIN decision ed ON ed.dataset_key=#{datasetKey} AND ed.subject_id=u.id
+        LEFT JOIN decision ed ON ed.subject_dataset_key=#{datasetKey} AND ed.subject_id=u.id
     </sql>
 
 
@@ -89,7 +91,7 @@
 
     <select id="get" parameterType="map" resultMap="taxonGetClassificationResultMap">
         <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        SELECT <include refid="taxonSelectFrom" />
+        SELECT u.id AS uid, <include refid="taxonSelectFrom" />
         WHERE u.id = #{id}
     </select>
 
