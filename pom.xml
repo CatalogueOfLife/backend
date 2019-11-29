@@ -424,6 +424,12 @@
                 <artifactId>neo4j-kernel</artifactId>
                 <version>${neo4j.version}</version>
             </dependency>
+            <!-- somehow missing from neo4j-kernel deps on java 11: https://github.com/Sp2000/colplus-backend/issues/573 -->
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk15on</artifactId>
+                <version>1.64</version>
+            </dependency>
             <dependency>
                 <groupId>org.neo4j</groupId>
                 <artifactId>neo4j-cypher</artifactId>
