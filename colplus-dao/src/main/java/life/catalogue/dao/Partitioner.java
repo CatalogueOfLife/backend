@@ -49,6 +49,20 @@ public class Partitioner {
     }
   }
   
+  public static synchronized void delete(SqlSessionFactory factory, int datasetKey) {
+    try (SqlSession session = factory.openSession(false)) {
+      delete(session, datasetKey);
+      session.commit();
+    }
+  }
+  
+  public static synchronized void delete(SqlSession session, int datasetKey) {
+    interruptIfCancelled();
+    LOG.info("Delete partition for dataset {}", datasetKey);
+    DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
+    mapper.delete(datasetKey);
+  }
+  
   /**
    * Builds indices and finally attaches partitions to main tables.
    * To avoid table deadlocks on the main table we synchronize this method.

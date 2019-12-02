@@ -34,6 +34,8 @@ public interface DatasetImportMapper {
   void create(@Param("imp") DatasetImport datasetImport);
   
   void update(@Param("imp") DatasetImport datasetImport);
+  
+  void deleteByDataset(@Param("datasetKey") int datasetKey);
 
   Integer countDescription(@Param("key") int datasetKey);
   Integer countDistribution(@Param("key") int datasetKey);

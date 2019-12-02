@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.SqlSession;
@@ -107,7 +108,16 @@ public class NamesTreeDao {
       }
     }
   }
-
+  
+  /**
+   * Deletes all metrics stored for the given dataset, incl tree and name index sets.
+   */
+  public void deleteByDataset(int datasetKey) throws IOException {
+    File dir = datasetDir(datasetKey);
+    FileUtils.deleteDirectory(dir);
+    LOG.info("Deleted all file metrics for dataset {}", datasetKey);
+  }
+  
   public int updateDatasetTree(int datasetKey, int attempt) throws IOException {
     try (Writer writer = Utf8IOUtils.writerFromGzipFile(treeFile(datasetKey, attempt))) {
       int count = TextTreePrinter.dataset(datasetKey, factory, writer).print();

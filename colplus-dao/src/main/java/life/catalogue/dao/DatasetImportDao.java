@@ -263,4 +263,14 @@ public class DatasetImportDao {
     mapper.update(di);
   }
   
+  public void removeMetrics(int datasetKey) {
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
+      mapper.deleteByDataset(datasetKey);
+      treeDao.deleteByDataset(datasetKey);
+      
+    } catch (IOException e) {
+      LOG.error("Failed to remove all metrics for dataset {}", datasetKey, e);
+    }
+  }
 }

@@ -5,9 +5,6 @@ import java.util.List;
 import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
@@ -16,6 +13,9 @@ import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,15 +27,18 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
   private final DownloadUtil downloader;
   private final ImageService imgService;
   private final BiFunction<Integer, String, File> scratchFileFunc;
+  private final DatasetImportDao diDao;
   
   public DatasetDao(SqlSessionFactory factory,
                     DownloadUtil downloader,
                     ImageService imgService,
+                    DatasetImportDao diDao,
                     BiFunction<Integer, String, File> scratchFileFunc) {
     super(false, factory, DatasetMapper.class);
     this.downloader = downloader;
     this.imgService = imgService;
     this.scratchFileFunc = scratchFileFunc;
+    this.diDao = diDao;
   }
   
   public ResultPage<Dataset> list(Page page) {
@@ -61,6 +64,14 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
       List<Dataset> result = dm.search(req, page);
       return new ResultPage<>(page, result, () -> dm.count(req));
     }
+  }
+  
+  @Override
+  protected void deleteBefore(Integer key, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
+    Partitioner.delete(session, key);
+    session.commit();
+    // now also clear filesystem
+    diDao.removeMetrics(key);
   }
   
   @Override
