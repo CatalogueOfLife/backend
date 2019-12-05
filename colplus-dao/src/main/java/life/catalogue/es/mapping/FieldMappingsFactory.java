@@ -14,7 +14,7 @@ import static life.catalogue.es.mapping.MappingUtil.createSimpleField;
 import static life.catalogue.es.mapping.MappingUtil.isA;
 
 /**
- * Generates an Elasticsearch document type mapping from a {@link Class} object.
+ * Generates an Elasticsearch document type mapping from the fields {@link Class}.
  */
 public class FieldMappingsFactory extends MappingsFactory {
 

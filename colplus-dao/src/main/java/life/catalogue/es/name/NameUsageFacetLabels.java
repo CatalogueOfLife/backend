@@ -35,7 +35,8 @@ import static life.catalogue.api.search.NameUsageSearchParameter.TYPE;
 public class NameUsageFacetLabels {
 
   static final String DATASET_KEY_FACET = "DATASET_KEY_FACET";
-  static final String DECISION_KEY_FACET = "DECISION_KEY_FACET";
+  static final String CATALOGUE_KEY_FACET = "CATALOGUE_KEY_FACET";
+  static final String DECISION_MODE_FACET = "DECISION_MODE_FACET";
   static final String FIELD_FACET = "FIELD_FACET";
   static final String ISSUE_FACET = "ISSUE_FACET";
   static final String NAME_ID_FACET = "NAME_ID_FACET";
@@ -78,9 +79,8 @@ public class NameUsageFacetLabels {
     facetLabels.put(NOM_CODE, NOM_CODE_FACET);
     facetLabels.put(FOSSIL, FOSSIL_FACET);
     facetLabels.put(RECENT, RECENT_FACET);
-    //TODO: update to a real mapping !!!
-    facetLabels.put(CATALOGUE_KEY, "DECISION_DATASET_KEY");
-    facetLabels.put(DECISION_MODE, "DECISION_MODE");
+    facetLabels.put(CATALOGUE_KEY, CATALOGUE_KEY_FACET);
+    facetLabels.put(DECISION_MODE, DECISION_MODE_FACET);
 
     if (facetLabels.size() != NameUsageSearchParameter.values().length) {
       Set<NameUsageSearchParameter> all = new HashSet<NameUsageSearchParameter>(Arrays.asList(NameUsageSearchParameter.values()));

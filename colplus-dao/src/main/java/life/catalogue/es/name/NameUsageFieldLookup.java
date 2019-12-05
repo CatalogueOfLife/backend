@@ -4,7 +4,25 @@ import java.util.EnumMap;
 
 import life.catalogue.api.search.NameUsageSearchParameter;
 
-import static life.catalogue.api.search.NameUsageSearchParameter.*;
+import static life.catalogue.api.search.NameUsageSearchParameter.CATALOGUE_KEY;
+import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
+import static life.catalogue.api.search.NameUsageSearchParameter.DECISION_MODE;
+import static life.catalogue.api.search.NameUsageSearchParameter.FIELD;
+import static life.catalogue.api.search.NameUsageSearchParameter.FOSSIL;
+import static life.catalogue.api.search.NameUsageSearchParameter.ISSUE;
+import static life.catalogue.api.search.NameUsageSearchParameter.NAME_ID;
+import static life.catalogue.api.search.NameUsageSearchParameter.NAME_INDEX_ID;
+import static life.catalogue.api.search.NameUsageSearchParameter.NOM_CODE;
+import static life.catalogue.api.search.NameUsageSearchParameter.NOM_STATUS;
+import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHED_IN_ID;
+import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHER_KEY;
+import static life.catalogue.api.search.NameUsageSearchParameter.RANK;
+import static life.catalogue.api.search.NameUsageSearchParameter.RECENT;
+import static life.catalogue.api.search.NameUsageSearchParameter.SECTOR_KEY;
+import static life.catalogue.api.search.NameUsageSearchParameter.STATUS;
+import static life.catalogue.api.search.NameUsageSearchParameter.TAXON_ID;
+import static life.catalogue.api.search.NameUsageSearchParameter.TYPE;
+import static life.catalogue.api.search.NameUsageSearchParameter.USAGE_ID;
 
 /**
  * Maps a name search parameter the corresponding Elasticsearch field(s). In principle a name search parameter may be
@@ -34,10 +52,9 @@ public class NameUsageFieldLookup extends EnumMap<NameUsageSearchParameter, Stri
     putSingle(SECTOR_KEY, "sectorKey");
     putSingle(TYPE, "type");
     putSingle(TAXON_ID, "classificationIds");
-    //TODO: update to a real mapping !!!
-    putSingle(CATALOGUE_KEY, "DECISION_DATASET_KEY");
-    putSingle(DECISION_MODE, "DECISION_MODE");
-  
+    putSingle(CATALOGUE_KEY, "decisions.catalogueKey");
+    putSingle(DECISION_MODE, "decisions.mode");
+
     if (size() != NameUsageSearchParameter.values().length) {
       throw new IllegalStateException("Not all name search parameters mapped to document fields");
     }

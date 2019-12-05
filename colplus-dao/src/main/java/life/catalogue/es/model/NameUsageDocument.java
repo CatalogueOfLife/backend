@@ -5,6 +5,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
+
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NameField;
 import life.catalogue.api.vocab.NomStatus;
@@ -14,9 +18,6 @@ import life.catalogue.es.mapping.ESDataType;
 import life.catalogue.es.mapping.MapToType;
 import life.catalogue.es.mapping.NotIndexed;
 import life.catalogue.es.mapping.NotMapped;
-import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
 
 import static life.catalogue.es.mapping.Analyzer.AUTO_COMPLETE;
 import static life.catalogue.es.mapping.Analyzer.IGNORE_CASE;
@@ -48,8 +49,6 @@ public class NameUsageDocument {
   private String nameIndexId;
   private String publishedInId;
   @MapToType(ESDataType.KEYWORD)
-  private Integer decisionKey;
-  @MapToType(ESDataType.KEYWORD)
   private UUID publisherKey;
   private Rank rank;
   private NameType type;
@@ -64,6 +63,10 @@ public class NameUsageDocument {
   private List<Monomial> classification;
   private Boolean fossil;
   private Boolean recent;
+  
+  private List<EsDecision> decisions;
+
+
   /*
    * If this document represents a synonym this field contains the accepted name, otherwise it is null. Not indexed
    * (searchable), but still placed outside the payload, so we can quickly access it in the name suggestion service.
@@ -155,14 +158,6 @@ public class NameUsageDocument {
 
   public void setPublishedInId(String publishedInId) {
     this.publishedInId = publishedInId;
-  }
-
-  public Integer getDecisionKey() {
-    return decisionKey;
-  }
-
-  public void setDecisionKey(Integer decisionKey) {
-    this.decisionKey = decisionKey;
   }
 
   public UUID getPublisherKey() {
@@ -285,6 +280,14 @@ public class NameUsageDocument {
     this.payload = source;
   }
 
+  public List<EsDecision> getDecisions() {
+    return decisions;
+  }
+
+  public void setDecisions(List<EsDecision> decisions) {
+    this.decisions = decisions;
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(acceptedName,
@@ -292,7 +295,7 @@ public class NameUsageDocument {
         classification,
         classificationIds,
         datasetKey,
-        decisionKey,
+        decisions,
         documentId,
         fossil,
         issues,
@@ -326,7 +329,7 @@ public class NameUsageDocument {
     NameUsageDocument other = (NameUsageDocument) obj;
     return Objects.equals(acceptedName, other.acceptedName) && Objects.equals(authorship, other.authorship)
         && Objects.equals(classification, other.classification) && Objects.equals(classificationIds, other.classificationIds)
-        && Objects.equals(datasetKey, other.datasetKey) && Objects.equals(decisionKey, other.decisionKey)
+        && Objects.equals(datasetKey, other.datasetKey) && Objects.equals(decisions, other.decisions)
         && Objects.equals(documentId, other.documentId) && Objects.equals(fossil, other.fossil) && Objects.equals(issues, other.issues)
         && Objects.equals(nameFields, other.nameFields) && Objects.equals(nameId, other.nameId)
         && Objects.equals(nameIndexId, other.nameIndexId) && Objects.equals(nameStrings, other.nameStrings) && nomCode == other.nomCode

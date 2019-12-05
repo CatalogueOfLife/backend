@@ -17,7 +17,7 @@ import static life.catalogue.es.mapping.MappingUtil.isA;
 import static life.catalogue.es.mapping.MappingUtil.newAncestor;
 
 /**
- * Generates an Elasticsearch document type mapping from a {@link Class} object.
+ * Generates an Elasticsearch document type mapping from the getters of a {@link Class}.
  */
 class GetterMappingsFactory extends MappingsFactory {
 

@@ -6,7 +6,7 @@ import life.catalogue.es.response.EsFacet;
 import life.catalogue.es.response.Aggregation;
 
 import static life.catalogue.es.name.NameUsageFacetLabels.DATASET_KEY_FACET;
-import static life.catalogue.es.name.NameUsageFacetLabels.DECISION_KEY_FACET;
+import static life.catalogue.es.name.NameUsageFacetLabels.*;
 import static life.catalogue.es.name.NameUsageFacetLabels.FIELD_FACET;
 import static life.catalogue.es.name.NameUsageFacetLabels.ISSUE_FACET;
 import static life.catalogue.es.name.NameUsageFacetLabels.NAME_ID_FACET;
@@ -25,8 +25,11 @@ public class NameUsageAggregation extends Aggregation {
   @JsonProperty(DATASET_KEY_FACET)
   private EsFacet datasetKey;
 
-  @JsonProperty(DECISION_KEY_FACET)
-  private EsFacet decisionKey;
+  @JsonProperty(CATALOGUE_KEY_FACET)
+  private EsFacet catalogueKey;
+
+  @JsonProperty(DECISION_MODE_FACET)
+  private EsFacet decisionMode;
 
   @JsonProperty(FIELD_FACET)
   private EsFacet field;
@@ -72,8 +75,12 @@ public class NameUsageAggregation extends Aggregation {
     return datasetKey;
   }
 
-  public EsFacet getDecisionKey() {
-    return decisionKey;
+  public EsFacet getCatalogueKey() {
+    return catalogueKey;
+  }
+
+  public EsFacet getDecisionMode() {
+    return decisionMode;
   }
 
   public EsFacet getField() {
@@ -123,5 +130,6 @@ public class NameUsageAggregation extends Aggregation {
   public EsFacet getType() {
     return type;
   }
+
 
 }

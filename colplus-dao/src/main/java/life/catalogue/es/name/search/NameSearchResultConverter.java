@@ -68,7 +68,8 @@ class NameSearchResultConverter {
     NameUsageAggregation esFacets = esResponse.getAggregations().getContextFilter().getFacetsContainer();
     Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets = new EnumMap<>(NameUsageSearchParameter.class);
     addIfPresent(facets, DATASET_KEY, esFacets.getDatasetKey());
-    //TODO: addIfPresent(facets, DECISION_KEY, esFacets.getDecisionKey());
+    addIfPresent(facets, CATALOGUE_KEY, esFacets.getCatalogueKey());
+    addIfPresent(facets, DECISION_MODE, esFacets.getDecisionMode());
     addIfPresent(facets, FIELD, esFacets.getField());
     addIfPresent(facets, ISSUE, esFacets.getIssue());
     addIfPresent(facets, NAME_ID, esFacets.getNameId());

@@ -16,6 +16,7 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 import org.apache.commons.io.IOUtils;
+
 import life.catalogue.api.model.BareName;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.SimpleName;
@@ -27,9 +28,12 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.NameField;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.es.EsModule;
+import life.catalogue.es.model.EsDecision;
 import life.catalogue.es.model.Monomial;
 import life.catalogue.es.model.NameStrings;
 import life.catalogue.es.model.NameUsageDocument;
+
+import static java.util.stream.Collectors.toList;
 
 import static life.catalogue.api.vocab.NameField.BASIONYM_AUTHORS;
 import static life.catalogue.api.vocab.NameField.BASIONYM_EX_AUTHORS;
@@ -178,7 +182,6 @@ public class NameUsageWrapperConverter {
    */
   public static void prunePayload(NameUsageWrapper nuw) {
     nuw.getUsage().setId(null);
-    nuw.setDecisions(null);
     nuw.setPublisherKey(null);
     nuw.setIssues(null);
     nuw.setClassification(null);
@@ -217,7 +220,6 @@ public class NameUsageWrapperConverter {
    */
   public static void enrichPayload(NameUsageWrapper nuw, NameUsageDocument doc) {
     nuw.getUsage().setId(doc.getUsageId());
-    //TODO: nuw.setDecisions();
     nuw.setPublisherKey(doc.getPublisherKey());
     nuw.setIssues(doc.getIssues());
     nuw.setClassification(extractClassifiction(doc));
@@ -266,7 +268,10 @@ public class NameUsageWrapperConverter {
     Name name = nuw.getUsage().getName();
     doc.setAuthorship(name.authorshipComplete());
     doc.setDatasetKey(name.getDatasetKey());
-    //TODO: doc.setDecisionKey(nuw.getDecisionKey());
+    if (nuw.getDecisions() != null) {
+      nuw.getDecisions().stream().map(EsDecision::from).collect(toList());
+    }
+    // doc.setDecisions();
     doc.setNameId(name.getId());
     doc.setNameIndexId(name.getNameIndexId());
     doc.setNomCode(name.getCode());

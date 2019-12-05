@@ -5,19 +5,18 @@ import java.util.List;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import life.catalogue.es.EsException;
-import life.catalogue.es.EsModule;
-import life.catalogue.es.EsUtil;
-import life.catalogue.es.model.NameUsageDocument;
-import life.catalogue.es.name.search.NameUsageSearchServiceEs;
-import life.catalogue.es.query.EsSearchRequest;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static life.catalogue.es.EsConfig.DEFAULT_TYPE_NAME;
+import life.catalogue.es.EsException;
+import life.catalogue.es.EsModule;
+import life.catalogue.es.EsUtil;
+import life.catalogue.es.model.NameUsageDocument;
+import life.catalogue.es.name.search.NameUsageSearchServiceEs;
+import life.catalogue.es.query.EsSearchRequest;
 
 /**
  * Base class of both the search and the suggest service, geared towards retrieving and returning raw documents. It is
@@ -84,7 +83,7 @@ public class NameUsageQueryService {
     if (LOG.isTraceEnabled()) {
       LOG.trace("Executing query: {}", EsModule.writeDebug(esSearchRequest));
     }
-    String endpoint = String.format("/%s/%s/_search", index, DEFAULT_TYPE_NAME);
+    String endpoint = String.format("/%s/_search", index);
     Request httpRequest = new Request("GET", endpoint);
     httpRequest.setJsonEntity(EsModule.write(esSearchRequest));
     Response httpResponse = EsUtil.executeRequest(client, httpRequest);
@@ -100,7 +99,7 @@ public class NameUsageQueryService {
       }
       sb.append(EsModule.write(esSearchRequests[i]));
     }
-    String endpoint = String.format("/%s/%s/_msearch", index, DEFAULT_TYPE_NAME);
+    String endpoint = String.format("/%s/_msearch", index);
     Request httpRequest = new Request("GET", endpoint);
     httpRequest.setJsonEntity(sb.toString());
     Response httpResponse = EsUtil.executeRequest(client, httpRequest);

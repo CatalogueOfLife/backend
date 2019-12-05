@@ -4,6 +4,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class BoolQuery extends ConstraintQuery<BoolConstraint> {
 
+  public static BoolQuery withFilters(Query... filters) {
+    BoolQuery bq = new BoolQuery();
+    for (Query filter : filters) {
+      bq.filter(filter);
+    }
+    return bq;
+  }
+
   @JsonProperty("bool")
   private final BoolConstraint constraint;
 
