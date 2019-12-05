@@ -1,7 +1,14 @@
 package life.catalogue.es.name.search;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.UUID;
 
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.FacetValue;
@@ -17,7 +24,22 @@ import life.catalogue.es.response.Bucket;
 import life.catalogue.es.response.EsFacet;
 import life.catalogue.es.response.SearchHit;
 
-import static life.catalogue.api.search.NameUsageSearchParameter.*;
+import static life.catalogue.api.search.NameUsageSearchParameter.CATALOGUE_KEY;
+import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
+import static life.catalogue.api.search.NameUsageSearchParameter.DECISION_MODE;
+import static life.catalogue.api.search.NameUsageSearchParameter.FIELD;
+import static life.catalogue.api.search.NameUsageSearchParameter.ISSUE;
+import static life.catalogue.api.search.NameUsageSearchParameter.NAME_ID;
+import static life.catalogue.api.search.NameUsageSearchParameter.NAME_INDEX_ID;
+import static life.catalogue.api.search.NameUsageSearchParameter.NOM_STATUS;
+import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHED_IN_ID;
+import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHER_KEY;
+import static life.catalogue.api.search.NameUsageSearchParameter.RANK;
+import static life.catalogue.api.search.NameUsageSearchParameter.SECTOR_DATASET_KEY;
+import static life.catalogue.api.search.NameUsageSearchParameter.SECTOR_KEY;
+import static life.catalogue.api.search.NameUsageSearchParameter.STATUS;
+import static life.catalogue.api.search.NameUsageSearchParameter.TAXON_ID;
+import static life.catalogue.api.search.NameUsageSearchParameter.TYPE;
 
 /**
  * Converts the Elasticsearch response to a NameSearchResponse instance.
@@ -79,6 +101,7 @@ class NameSearchResultConverter {
     addIfPresent(facets, PUBLISHER_KEY, esFacets.getPublisherKey());
     addIfPresent(facets, RANK, esFacets.getRank());
     addIfPresent(facets, SECTOR_KEY, esFacets.getSectorKey());
+    addIfPresent(facets, SECTOR_DATASET_KEY, esFacets.getSectorDatasetKey());
     addIfPresent(facets, STATUS, esFacets.getStatus());
     addIfPresent(facets, TAXON_ID, esFacets.getTaxonId());
     addIfPresent(facets, TYPE, esFacets.getType());

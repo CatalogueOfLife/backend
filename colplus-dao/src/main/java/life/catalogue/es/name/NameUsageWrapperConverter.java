@@ -271,7 +271,7 @@ public class NameUsageWrapperConverter {
     if (nuw.getDecisions() != null) {
       nuw.getDecisions().stream().map(EsDecision::from).collect(toList());
     }
-    // doc.setDecisions();
+    doc.setSectorDatasetKey(nuw.getSectorDatasetKey());
     doc.setNameId(name.getId());
     doc.setNameIndexId(name.getNameIndexId());
     doc.setNomCode(name.getCode());

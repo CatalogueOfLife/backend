@@ -36,6 +36,7 @@ public class NameUsageFacetLabels {
 
   static final String DATASET_KEY_FACET = "DATASET_KEY_FACET";
   static final String CATALOGUE_KEY_FACET = "CATALOGUE_KEY_FACET";
+  static final String SECTOR_DATASET_KEY_FACET = "SECTOR_DATASET_KEY_FACET";
   static final String DECISION_MODE_FACET = "DECISION_MODE_FACET";
   static final String FIELD_FACET = "FIELD_FACET";
   static final String ISSUE_FACET = "ISSUE_FACET";
@@ -81,6 +82,7 @@ public class NameUsageFacetLabels {
     facetLabels.put(RECENT, RECENT_FACET);
     facetLabels.put(CATALOGUE_KEY, CATALOGUE_KEY_FACET);
     facetLabels.put(DECISION_MODE, DECISION_MODE_FACET);
+    facetLabels.put(SECTOR_DATASET_KEY, SECTOR_DATASET_KEY_FACET);
 
     if (facetLabels.size() != NameUsageSearchParameter.values().length) {
       Set<NameUsageSearchParameter> all = new HashSet<NameUsageSearchParameter>(Arrays.asList(NameUsageSearchParameter.values()));

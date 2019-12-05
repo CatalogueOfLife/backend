@@ -18,6 +18,7 @@ import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHED_IN_ID
 import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHER_KEY;
 import static life.catalogue.api.search.NameUsageSearchParameter.RANK;
 import static life.catalogue.api.search.NameUsageSearchParameter.RECENT;
+import static life.catalogue.api.search.NameUsageSearchParameter.SECTOR_DATASET_KEY;
 import static life.catalogue.api.search.NameUsageSearchParameter.SECTOR_KEY;
 import static life.catalogue.api.search.NameUsageSearchParameter.STATUS;
 import static life.catalogue.api.search.NameUsageSearchParameter.TAXON_ID;
@@ -50,6 +51,7 @@ public class NameUsageFieldLookup extends EnumMap<NameUsageSearchParameter, Stri
     putSingle(RECENT, "recent");
     putSingle(STATUS, "status");
     putSingle(SECTOR_KEY, "sectorKey");
+    putSingle(SECTOR_DATASET_KEY, "sectorDatasetKey");
     putSingle(TYPE, "type");
     putSingle(TAXON_ID, "classificationIds");
     putSingle(CATALOGUE_KEY, "decisions.catalogueKey");

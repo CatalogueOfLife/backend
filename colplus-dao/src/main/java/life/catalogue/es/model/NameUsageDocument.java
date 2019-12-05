@@ -35,11 +35,14 @@ public class NameUsageDocument {
    */
   @NotMapped
   private String documentId;
+
   private String usageId;
   @MapToType(ESDataType.KEYWORD)
   private Integer datasetKey;
   @MapToType(ESDataType.KEYWORD)
   private Integer sectorKey;
+  @MapToType(ESDataType.KEYWORD)
+  private Integer sectorDatasetKey;
   @Analyzers({IGNORE_CASE, AUTO_COMPLETE})
   private String scientificName;
   private NameStrings nameStrings;
@@ -60,12 +63,11 @@ public class NameUsageDocument {
   @Analyzers({IGNORE_CASE, AUTO_COMPLETE})
   private List<String> vernacularNames;
   private List<String> classificationIds;
-  private List<Monomial> classification;
   private Boolean fossil;
   private Boolean recent;
-  
-  private List<EsDecision> decisions;
 
+  private List<Monomial> classification;
+  private List<EsDecision> decisions;
 
   /*
    * If this document represents a synonym this field contains the accepted name, otherwise it is null. Not indexed
@@ -110,6 +112,14 @@ public class NameUsageDocument {
 
   public void setSectorKey(Integer sectorKey) {
     this.sectorKey = sectorKey;
+  }
+
+  public Integer getSectorDatasetKey() {
+    return sectorDatasetKey;
+  }
+
+  public void setSectorDatasetKey(Integer sectorDatasetKey) {
+    this.sectorDatasetKey = sectorDatasetKey;
   }
 
   public String getScientificName() {
@@ -311,6 +321,7 @@ public class NameUsageDocument {
         rank,
         recent,
         scientificName,
+        sectorDatasetKey,
         sectorKey,
         status,
         type,
@@ -335,8 +346,9 @@ public class NameUsageDocument {
         && Objects.equals(nameIndexId, other.nameIndexId) && Objects.equals(nameStrings, other.nameStrings) && nomCode == other.nomCode
         && nomStatus == other.nomStatus && Objects.equals(payload, other.payload) && Objects.equals(publishedInId, other.publishedInId)
         && Objects.equals(publisherKey, other.publisherKey) && rank == other.rank && Objects.equals(recent, other.recent)
-        && Objects.equals(scientificName, other.scientificName) && Objects.equals(sectorKey, other.sectorKey) && status == other.status
-        && type == other.type && Objects.equals(usageId, other.usageId) && Objects.equals(vernacularNames, other.vernacularNames);
+        && Objects.equals(scientificName, other.scientificName) && Objects.equals(sectorDatasetKey, other.sectorDatasetKey)
+        && Objects.equals(sectorKey, other.sectorKey) && status == other.status && type == other.type
+        && Objects.equals(usageId, other.usageId) && Objects.equals(vernacularNames, other.vernacularNames);
   }
 
 }

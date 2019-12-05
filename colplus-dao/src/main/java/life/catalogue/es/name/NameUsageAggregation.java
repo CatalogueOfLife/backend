@@ -2,11 +2,12 @@ package life.catalogue.es.name;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import life.catalogue.es.response.EsFacet;
 import life.catalogue.es.response.Aggregation;
+import life.catalogue.es.response.EsFacet;
 
+import static life.catalogue.es.name.NameUsageFacetLabels.CATALOGUE_KEY_FACET;
 import static life.catalogue.es.name.NameUsageFacetLabels.DATASET_KEY_FACET;
-import static life.catalogue.es.name.NameUsageFacetLabels.*;
+import static life.catalogue.es.name.NameUsageFacetLabels.DECISION_MODE_FACET;
 import static life.catalogue.es.name.NameUsageFacetLabels.FIELD_FACET;
 import static life.catalogue.es.name.NameUsageFacetLabels.ISSUE_FACET;
 import static life.catalogue.es.name.NameUsageFacetLabels.NAME_ID_FACET;
@@ -15,6 +16,7 @@ import static life.catalogue.es.name.NameUsageFacetLabels.NOM_STATUS_FACET;
 import static life.catalogue.es.name.NameUsageFacetLabels.PUBLISHED_IN_ID_FACET;
 import static life.catalogue.es.name.NameUsageFacetLabels.PUBLISHER_KEY_FACET;
 import static life.catalogue.es.name.NameUsageFacetLabels.RANK_FACET;
+import static life.catalogue.es.name.NameUsageFacetLabels.SECTOR_DATASET_KEY_FACET;
 import static life.catalogue.es.name.NameUsageFacetLabels.SECTOR_KEY_FACET;
 import static life.catalogue.es.name.NameUsageFacetLabels.STATUS_FACET;
 import static life.catalogue.es.name.NameUsageFacetLabels.TAXON_ID_FACET;
@@ -58,6 +60,9 @@ public class NameUsageAggregation extends Aggregation {
   @JsonProperty(SECTOR_KEY_FACET)
   private EsFacet sectorKey;
 
+  @JsonProperty(SECTOR_DATASET_KEY_FACET)
+  private EsFacet sectorDatasetKey;
+
   @JsonProperty(STATUS_FACET)
   private EsFacet status;
 
@@ -66,10 +71,6 @@ public class NameUsageAggregation extends Aggregation {
 
   @JsonProperty(TYPE_FACET)
   private EsFacet type;
-
-  public int getDocCount() {
-    return docCount;
-  }
 
   public EsFacet getDatasetKey() {
     return datasetKey;
@@ -119,6 +120,10 @@ public class NameUsageAggregation extends Aggregation {
     return sectorKey;
   }
 
+  public EsFacet getSectorDatasetKey() {
+    return sectorDatasetKey;
+  }
+
   public EsFacet getStatus() {
     return status;
   }
@@ -130,6 +135,5 @@ public class NameUsageAggregation extends Aggregation {
   public EsFacet getType() {
     return type;
   }
-
 
 }
