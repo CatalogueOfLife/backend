@@ -1,34 +1,21 @@
 package life.catalogue.assembly;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.sql.SQLException;
-import java.util.List;
-
 import com.google.common.base.Charsets;
-
-import life.catalogue.assembly.SectorDelete;
-import life.catalogue.assembly.SectorSync;
-import org.apache.commons.io.IOUtils;
-import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.NamesTreeDao;
+import life.catalogue.dao.TaxonDao;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.mapper.DecisionMapper;
-import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.db.mapper.TaxonMapper;
-import life.catalogue.db.mapper.TestDataRule;
+import life.catalogue.db.mapper.*;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.es.name.index.NameUsageIndexService;
 import life.catalogue.importer.PgImportRule;
+import org.apache.commons.io.IOUtils;
+import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -39,10 +26,14 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.sql.SQLException;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 /**
  * Before we start any test we prepare the db with imports that can be reused across tests later on.
@@ -72,6 +63,7 @@ public class SectorSyncIT {
 
   DatasetImportDao diDao;
   NamesTreeDao treeDao;
+  TaxonDao tdao;
   
   @Before
   public void init () throws IOException, SQLException {
@@ -80,6 +72,7 @@ public class SectorSyncIT {
     // reset draft
     dataRule.truncateDraft();
     dataRule.loadData(true);
+    tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory());
   }
   
   
@@ -104,7 +97,7 @@ public class SectorSyncIT {
       return session.getMapper(TaxonMapper.class).get(DSID.key(datasetKey, id));
     }
   }
-  
+
   private static SimpleName simple(NameUsageBase nu) {
     return new SimpleName(nu.getId(), nu.getName().canonicalNameWithAuthorship(), nu.getName().getRank());
   }
@@ -196,24 +189,27 @@ public class SectorSyncIT {
   
     NameUsageBase src = getByName(datasetKey(1, DataFormat.ACEF), Rank.ORDER, "Fabales");
     NameUsageBase trg = getByName(Datasets.DRAFT_COL, Rank.PHYLUM, "Tracheophyta");
-    createSector(Sector.Mode.ATTACH, src, trg);
+    int s1 = createSector(Sector.Mode.ATTACH, src, trg);
   
     src = getByName(datasetKey(5, DataFormat.ACEF), Rank.CLASS, "Insecta");
     trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
-    createSector(Sector.Mode.UNION, src, trg);
+    int s2 = createSector(Sector.Mode.UNION, src, trg);
   
     src = getByName(datasetKey(6, DataFormat.ACEF), Rank.FAMILY, "Theridiidae");
     trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
-    createSector(Sector.Mode.ATTACH, src, trg);
+    int s3 = createSector(Sector.Mode.ATTACH, src, trg);
 
     syncAll();
     assertTree("cat1_5_6.txt");
   
-    NameUsageBase vogelii   = getByName(Datasets.DRAFT_COL, Rank.SUBSPECIES, "Astragalus vogelii subsp. vogelii");
-    assertEquals(2, (int) vogelii.getSectorKey());
+    Taxon vogelii = (Taxon) getByName(Datasets.DRAFT_COL, Rank.SUBSPECIES, "Astragalus vogelii subsp. vogelii");
+    assertEquals(s1, (int) vogelii.getSectorKey());
   
     NameUsageBase sp   = getByID(vogelii.getParentId());
     assertEquals(Origin.SOURCE, vogelii.getOrigin());
+
+    TaxonInfo ti = tdao.getTaxonInfo(vogelii);
+    assertEquals(1, ti.getReferences().size());
   }
   
   /**

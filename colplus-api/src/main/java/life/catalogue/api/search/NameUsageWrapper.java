@@ -1,11 +1,14 @@
 package life.catalogue.api.search;
 
-import java.util.*;
-
 import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.SimpleNameClassification;
 import life.catalogue.api.model.VernacularName;
 import life.catalogue.api.vocab.Issue;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 
 public class NameUsageWrapper extends SimpleNameClassification {
 
@@ -13,6 +16,7 @@ public class NameUsageWrapper extends SimpleNameClassification {
   private List<VernacularName> vernacularNames;
   private Set<Issue> issues;
   private List<SimpleDecision> decisions;
+  private Integer sectorDatasetKey;
   private UUID publisherKey;
 
   public Set<Issue> getIssues() {
@@ -52,7 +56,15 @@ public class NameUsageWrapper extends SimpleNameClassification {
   public void setDecisions(List<SimpleDecision> decisions) {
     this.decisions = decisions;
   }
-  
+
+  public Integer getSectorDatasetKey() {
+    return sectorDatasetKey;
+  }
+
+  public void setSectorDatasetKey(Integer sectorDatasetKey) {
+    this.sectorDatasetKey = sectorDatasetKey;
+  }
+
   public UUID getPublisherKey() {
     return publisherKey;
   }
@@ -63,22 +75,20 @@ public class NameUsageWrapper extends SimpleNameClassification {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o)
-      return true;
-    if (o == null || getClass() != o.getClass())
-      return false;
-    if (!super.equals(o))
-      return false;
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
     NameUsageWrapper that = (NameUsageWrapper) o;
     return Objects.equals(usage, that.usage) &&
-        Objects.equals(vernacularNames, that.vernacularNames) &&
-        Objects.equals(issues, that.issues) &&
-        Objects.equals(decisions, that.decisions) &&
-        Objects.equals(publisherKey, that.publisherKey);
+            Objects.equals(vernacularNames, that.vernacularNames) &&
+            Objects.equals(issues, that.issues) &&
+            Objects.equals(decisions, that.decisions) &&
+            Objects.equals(sectorDatasetKey, that.sectorDatasetKey) &&
+            Objects.equals(publisherKey, that.publisherKey);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), usage, vernacularNames, issues, decisions, publisherKey);
+    return Objects.hash(super.hashCode(), usage, vernacularNames, issues, decisions, sectorDatasetKey, publisherKey);
   }
 }
