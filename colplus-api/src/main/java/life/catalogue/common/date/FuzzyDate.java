@@ -1,5 +1,10 @@
 package life.catalogue.common.date;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonValue;
+import org.apache.commons.lang3.StringUtils;
+
 import java.time.*;
 import java.time.temporal.TemporalAccessor;
 import java.util.Objects;
@@ -11,17 +16,75 @@ import static java.time.temporal.ChronoField.*;
  * its YEAR field set. Other fields may be unknown, in which case the date is said to be fuzzy.
  */
 public final class FuzzyDate {
-
+  // only Year, YearMonth or LocalDate allowed here!!!
   private final TemporalAccessor ta;
+
+  public static FuzzyDate of(int year) {
+    return new FuzzyDate(Year.of(year));
+  }
+
+  public static FuzzyDate of(int year, int month) {
+    return new FuzzyDate(YearMonth.of(year, month));
+  }
+
+  public static FuzzyDate of(int year, int month, int day) {
+    return new FuzzyDate(LocalDate.of(year, month, day));
+  }
+
+  public static FuzzyDate now() {
+    return new FuzzyDate(LocalDate.now());
+  }
+
+  /**
+   * Potentially incomplete iso date with year required
+   * E.g. 1919, 1919-10, 1919-10-23
+   */
+  @JsonCreator
+  public static FuzzyDate of(String isoDate) {
+    if (StringUtils.isBlank(isoDate)) return null;
+
+    int dashCnt = StringUtils.countMatches(isoDate, '-');
+    switch (dashCnt) {
+      case 0:
+        return new FuzzyDate(Year.parse(isoDate));
+      case 1:
+        return new FuzzyDate(YearMonth.parse(isoDate));
+      case 2:
+        return new FuzzyDate(LocalDate.parse(isoDate));
+    }
+    throw new IllegalArgumentException("No fuzzy ISO date");
+  }
 
   public FuzzyDate(TemporalAccessor ta) {
     // Won't happen when obtaining a FuzzyDate from the FuzzyDateParser, but
     // since this is a public constructor ...
     Objects.requireNonNull(ta, "ta");
-    if (!ta.isSupported(YEAR)) {
+
+    // make sure we deal with one of the 3 suported classes
+    if (ta instanceof Year || ta instanceof YearMonth || ta instanceof LocalDate) {
+      this.ta = ta;
+    } else if (!ta.isSupported(YEAR)) {
       throw new IllegalArgumentException("Cannot create FuzzyDate without a year");
+    } else {
+      // copy fuzzy date
+      this.ta = bestMatch(ta);
     }
-    this.ta = ta;
+  }
+
+  /**
+   * Returns a {@link LocalDate} if year, month and day are known; a {@link YearMonth} if year and
+   * month are known; or a {@link Year} if only the year is known.
+   *
+   * @return
+   */
+  private static TemporalAccessor bestMatch(TemporalAccessor ta) {
+    if (ta.isSupported(MONTH_OF_YEAR)) {
+      if (ta.isSupported(DAY_OF_MONTH)) {
+        return LocalDate.of(ta.get(YEAR), ta.get(MONTH_OF_YEAR), ta.get(DAY_OF_MONTH));
+      }
+      return YearMonth.of(ta.get(YEAR), ta.get(MONTH_OF_YEAR));
+    }
+    return Year.of(ta.get(YEAR));
   }
 
   /**
@@ -29,6 +92,7 @@ public final class FuzzyDate {
    *
    * @return
    */
+  @JsonIgnore
   public LocalDate toLocalDate() {
     if (ta.getClass() == LocalDate.class) {
       return (LocalDate) ta;
@@ -49,19 +113,11 @@ public final class FuzzyDate {
   }
 
   /**
-   * Returns a {@link LocalDate} if year, month and day are known; a {@link YearMonth} if year and
-   * month are known; or a {@link Year} if only the year is known.
-   *
-   * @return
+   * @return Year, YearMonth or LocalDate instance represeting this fuzzy date
    */
-  public TemporalAccessor bestMatch() {
-    if (ta.isSupported(MONTH_OF_YEAR)) {
-      if (ta.isSupported(DAY_OF_MONTH)) {
-        return LocalDate.of(ta.get(YEAR), ta.get(MONTH_OF_YEAR), ta.get(DAY_OF_MONTH));
-      }
-      return YearMonth.of(ta.get(YEAR), ta.get(MONTH_OF_YEAR));
-    }
-    return Year.of(ta.get(YEAR));
+  @JsonValue
+  public TemporalAccessor getDate() {
+    return ta;
   }
 
   /**
@@ -69,6 +125,7 @@ public final class FuzzyDate {
    *
    * @return
    */
+  @JsonIgnore
   public boolean isFuzzyDate() {
     return !ta.isSupported(MONTH_OF_YEAR) || !ta.isSupported(DAY_OF_MONTH);
   }
@@ -83,7 +140,11 @@ public final class FuzzyDate {
 
   @Override
   public int hashCode() {
-
     return Objects.hash(ta);
+  }
+
+  @Override
+  public String toString() {
+    return ta.toString();
   }
 }

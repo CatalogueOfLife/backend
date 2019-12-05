@@ -1,22 +1,22 @@
 package life.catalogue.api.model;
 
-import java.time.LocalDate;
-import java.util.EnumSet;
-import java.util.Objects;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import life.catalogue.api.vocab.GeoTime;
 import life.catalogue.api.vocab.Lifezone;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.common.date.FuzzyDate;
+
+import java.util.EnumSet;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  *
  */
 public class Taxon extends NameUsageBase {
   
-  private LocalDate accordingToDate;
+  private FuzzyDate accordingToDate;
   private Boolean extinct;
   private String temporalRangeStart;
   private String temporalRangeEnd;
@@ -35,11 +35,11 @@ public class Taxon extends NameUsageBase {
     return getStatus() == TaxonomicStatus.PROVISIONALLY_ACCEPTED;
   }
   
-  public LocalDate getAccordingToDate() {
+  public FuzzyDate getAccordingToDate() {
     return accordingToDate;
   }
   
-  public void setAccordingToDate(LocalDate accordingToDate) {
+  public void setAccordingToDate(FuzzyDate accordingToDate) {
     this.accordingToDate = accordingToDate;
   }
   

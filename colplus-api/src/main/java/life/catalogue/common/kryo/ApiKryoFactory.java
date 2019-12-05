@@ -1,10 +1,5 @@
 package life.catalogue.common.kryo;
 
-import java.net.URI;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
-
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.pool.KryoFactory;
 import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer;
@@ -12,9 +7,17 @@ import de.javakaffee.kryoserializers.guava.ImmutableListSerializer;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.common.date.FuzzyDate;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.*;
+
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Year;
+import java.time.YearMonth;
+import java.util.*;
 
 
 /**
@@ -59,6 +62,13 @@ public class ApiKryoFactory implements KryoFactory {
     kryo.register(int[][].class);
     kryo.register(String[].class);
 
+    // date/time
+    kryo.register(FuzzyDate.class);
+    kryo.register(Year.class);
+    kryo.register(YearMonth.class);
+    kryo.register(LocalDate.class);
+    kryo.register(LocalDateTime.class);
+
     // java & commons
     kryo.register(ArrayList.class);
     kryo.register(HashMap.class);
@@ -66,8 +76,6 @@ public class ApiKryoFactory implements KryoFactory {
     kryo.register(int[].class);
     kryo.register(LinkedHashMap.class);
     kryo.register(LinkedList.class);
-    kryo.register(LocalDate.class);
-    kryo.register(LocalDateTime.class);
     kryo.register(URI.class, new URISerializer());
     kryo.register(UUID.class, new UUIDSerializer());
     UnmodifiableCollectionsSerializer.registerSerializers( kryo );

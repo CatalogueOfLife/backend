@@ -1,32 +1,17 @@
 package life.catalogue.es.name;
 
+import life.catalogue.api.search.NameUsageSearchParameter;
+import life.catalogue.es.response.Aggregations;
+import life.catalogue.es.response.ContextFilterWrapper;
+import life.catalogue.es.response.EsFacet;
+
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import life.catalogue.api.search.NameUsageSearchParameter;
-import life.catalogue.es.response.Aggregations;
-import life.catalogue.es.response.ContextFilterWrapper;
-import life.catalogue.es.response.EsFacet;
-
 import static life.catalogue.api.search.NameUsageSearchParameter.*;
-import static life.catalogue.api.search.NameUsageSearchParameter.FIELD;
-import static life.catalogue.api.search.NameUsageSearchParameter.FOSSIL;
-import static life.catalogue.api.search.NameUsageSearchParameter.ISSUE;
-import static life.catalogue.api.search.NameUsageSearchParameter.NAME_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.NAME_INDEX_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.NOM_CODE;
-import static life.catalogue.api.search.NameUsageSearchParameter.NOM_STATUS;
-import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHED_IN_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHER_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.RANK;
-import static life.catalogue.api.search.NameUsageSearchParameter.RECENT;
-import static life.catalogue.api.search.NameUsageSearchParameter.SECTOR_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.STATUS;
-import static life.catalogue.api.search.NameUsageSearchParameter.TAXON_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.TYPE;
 
 /**
  * Determines and provides the labels to use for the various facets. We need to centralize this so that the query

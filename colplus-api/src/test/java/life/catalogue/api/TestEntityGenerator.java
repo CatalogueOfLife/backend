@@ -1,34 +1,20 @@
 package life.catalogue.api;
 
-import java.net.URI;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.csl.CslUtil;
+import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.tax.AuthorshipNormalizer;
-import org.gbif.dwc.terms.DcTerm;
-import org.gbif.dwc.terms.DwcTerm;
-import org.gbif.dwc.terms.GbifTerm;
-import org.gbif.dwc.terms.Term;
-import org.gbif.dwc.terms.UnknownTerm;
-import org.gbif.nameparser.api.Authorship;
-import org.gbif.nameparser.api.NamePart;
-import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
+import org.gbif.dwc.terms.*;
+import org.gbif.nameparser.api.*;
+
+import java.net.URI;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * utility class to metrics new test instances to be used in tests.
@@ -294,7 +280,7 @@ public class TestEntityGenerator {
     Taxon t = setUserDate(new Taxon());
     t.setStatus(TaxonomicStatus.ACCEPTED);
     t.setAccordingTo("Foo");
-    t.setAccordingToDate(LocalDate.of(2010, 11, 24));
+    t.setAccordingToDate(FuzzyDate.of(2010, 11, 24));
     t.setDatasetKey(n.getDatasetKey());
     t.setWebpage(URI.create("http://foo.com"));
     t.setExtinct(false);
@@ -317,7 +303,7 @@ public class TestEntityGenerator {
     Taxon t = setUserDate(new Taxon());
     t.setStatus(TaxonomicStatus.ACCEPTED);
     t.setAccordingTo("Foo");
-    t.setAccordingToDate(LocalDate.of(2010, 11, 24));
+    t.setAccordingToDate(FuzzyDate.of(2010, 11, 24));
     t.setDatasetKey(datasetKey);
     t.setWebpage(URI.create("http://foo-bar.com"));
     t.setExtinct(true);

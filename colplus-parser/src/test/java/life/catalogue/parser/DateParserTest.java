@@ -1,5 +1,12 @@
 package life.catalogue.parser;
 
+import com.google.common.collect.Lists;
+import life.catalogue.common.date.FuzzyDate;
+import life.catalogue.parser.DateParser.DateStringFilter;
+import life.catalogue.parser.DateParser.ParseSpec;
+import org.junit.Ignore;
+import org.junit.Test;
+
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -10,13 +17,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-
-import com.google.common.collect.Lists;
-import life.catalogue.common.date.FuzzyDate;
-import life.catalogue.parser.DateParser.DateStringFilter;
-import life.catalogue.parser.DateParser.ParseSpec;
-import org.junit.Ignore;
-import org.junit.Test;
 
 import static org.junit.Assert.*;
 
@@ -33,7 +33,7 @@ public class DateParserTest {
     assertNotNull("01", parsed);
     assertNotNull("02", parsed.get());
     assertFalse("03", parsed.get().isFuzzyDate());
-    assertEquals("04", LocalDate.class, parsed.get().bestMatch().getClass());
+    assertEquals("04", LocalDate.class, parsed.get().getDate().getClass());
     assertEquals("05", parsed.get().toLocalDate(), LocalDate.of(2004, 4, 12));
   }
 
@@ -44,7 +44,7 @@ public class DateParserTest {
     assertNotNull("01", parsed);
     assertNotNull("02", parsed.get());
     assertFalse("03", parsed.get().isFuzzyDate());
-    assertEquals("04", LocalDate.class, parsed.get().bestMatch().getClass());
+    assertEquals("04", LocalDate.class, parsed.get().getDate().getClass());
     assertEquals("05", parsed.get().toLocalDate(), LocalDate.of(2004, 7, 22));
   }
 
@@ -55,7 +55,7 @@ public class DateParserTest {
     assertNotNull("01", parsed);
     assertNotNull("02", parsed.get());
     assertFalse("03", parsed.get().isFuzzyDate());
-    assertEquals("04", LocalDate.class, parsed.get().bestMatch().getClass());
+    assertEquals("04", LocalDate.class, parsed.get().getDate().getClass());
     assertEquals("05", parsed.get().toLocalDate(), LocalDate.of(2004, 3, 3));
   }
 
@@ -87,7 +87,7 @@ public class DateParserTest {
     assertNotNull("01", parsed);
     assertNotNull("02", parsed.get());
     assertTrue("03", parsed.get().isFuzzyDate());
-    assertEquals("04", Year.class, parsed.get().bestMatch().getClass());
+    assertEquals("04", Year.class, parsed.get().getDate().getClass());
     assertEquals("05", parsed.get().toLocalDate(), LocalDate.of(2004, 1, 1));
   }
 
@@ -98,7 +98,7 @@ public class DateParserTest {
     assertNotNull("01", parsed);
     assertNotNull("02", parsed.get());
     assertTrue("03", parsed.get().isFuzzyDate());
-    assertEquals("04", YearMonth.class, parsed.get().bestMatch().getClass());
+    assertEquals("04", YearMonth.class, parsed.get().getDate().getClass());
     assertEquals("05", parsed.get().toLocalDate(), LocalDate.of(2004, 4, 1));
   }
 
@@ -110,7 +110,7 @@ public class DateParserTest {
     assertNotNull("01", parsed);
     assertNotNull("02", parsed.get());
     assertFalse("03", parsed.get().isFuzzyDate());
-    assertEquals("04", LocalDate.class, parsed.get().bestMatch().getClass());
+    assertEquals("04", LocalDate.class, parsed.get().getDate().getClass());
     assertEquals("05", parsed.get().toLocalDate(), LocalDate.of(2007, 10, 13));
   }
 
@@ -121,7 +121,7 @@ public class DateParserTest {
     assertNotNull("01", parsed);
     assertNotNull("02", parsed.get());
     assertFalse("03", parsed.get().isFuzzyDate());
-    assertEquals("04", LocalDate.class, parsed.get().bestMatch().getClass());
+    assertEquals("04", LocalDate.class, parsed.get().getDate().getClass());
     assertEquals("05", parsed.get().toLocalDate(), LocalDate.of(2007, 10, 13));
   }
 
@@ -225,7 +225,7 @@ public class DateParserTest {
     DateParser parser = new DateParser(parseSpecs);
     Optional<FuzzyDate> date = parser.parse("2008a");
     assertTrue("01", date.get().isFuzzyDate());
-    assertEquals("02", Year.class, date.get().bestMatch().getClass());
+    assertEquals("02", Year.class, date.get().getDate().getClass());
     assertEquals("03", date.get().toLocalDate(), LocalDate.of(2008, 1, 1));
   }
 
@@ -256,7 +256,7 @@ public class DateParserTest {
   public void test103() throws UnparsableException {
     Optional<FuzzyDate> date = DateParser.PARSER.parse("2005");
     assertNotNull("01", date);
-    assertEquals("02", Year.class, date.get().bestMatch().getClass());
+    assertEquals("02", Year.class, date.get().getDate().getClass());
     assertEquals("03", LocalDate.of(2005, 01, 01), date.get().toLocalDate());
   }
 

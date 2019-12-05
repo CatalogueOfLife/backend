@@ -1,15 +1,11 @@
 package life.catalogue.db.mapper;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-
 import com.google.common.collect.Lists;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.NameDao;
 import life.catalogue.db.MybatisTestUtils;
@@ -17,6 +13,10 @@ import life.catalogue.db.PgSetupRule;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.assertEquals;
@@ -50,7 +50,7 @@ public class TaxonMapperTest extends CRUDPageableTestBase<Taxon, TaxonMapper> {
   @Override
   void updateTestObj(Taxon obj) {
     obj.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
-    obj.setAccordingToDate(LocalDate.now());
+    obj.setAccordingToDate(FuzzyDate.now());
     obj.setAccordingTo("me and the mary janes");
   }
   
