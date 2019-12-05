@@ -4,9 +4,6 @@ import java.time.*;
 import java.time.temporal.TemporalAccessor;
 import java.util.Objects;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import static java.time.temporal.ChronoField.*;
 
 /**
@@ -14,21 +11,17 @@ import static java.time.temporal.ChronoField.*;
  * its YEAR field set. Other fields may be unknown, in which case the date is said to be fuzzy.
  */
 public final class FuzzyDate {
-  private static final Logger LOG = LoggerFactory.getLogger(FuzzyDate.class);
 
   private final TemporalAccessor ta;
-  private final String verbatim;
 
-  public FuzzyDate(TemporalAccessor ta, String verbatim) {
+  public FuzzyDate(TemporalAccessor ta) {
     // Won't happen when obtaining a FuzzyDate from the FuzzyDateParser, but
     // since this is a public constructor ...
     Objects.requireNonNull(ta, "ta");
-    Objects.requireNonNull(verbatim, "verbatim");
     if (!ta.isSupported(YEAR)) {
       throw new IllegalArgumentException("Cannot create FuzzyDate without a year");
     }
     this.ta = ta;
-    this.verbatim = verbatim;
   }
 
   /**
@@ -80,27 +73,17 @@ public final class FuzzyDate {
     return !ta.isSupported(MONTH_OF_YEAR) || !ta.isSupported(DAY_OF_MONTH);
   }
 
-  /**
-   * Returns the original date string from which this FuzzyDateInstance was created.
-   *
-   * @return
-   */
-  public String getVerbatim() {
-    return verbatim;
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     FuzzyDate fuzzyDate = (FuzzyDate) o;
-    return Objects.equals(ta, fuzzyDate.ta) &&
-        Objects.equals(verbatim, fuzzyDate.verbatim);
+    return Objects.equals(ta, fuzzyDate.ta);
   }
 
   @Override
   public int hashCode() {
 
-    return Objects.hash(ta, verbatim);
+    return Objects.hash(ta);
   }
 }

@@ -1,14 +1,14 @@
 package life.catalogue.parser;
 
+import life.catalogue.common.date.FuzzyDate;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.time.DateTimeException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.Year;
-import java.time.YearMonth;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.ResolverStyle;
@@ -18,11 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
-
-import org.apache.commons.lang3.StringUtils;
-import life.catalogue.common.date.FuzzyDate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static java.time.temporal.ChronoField.YEAR;
 
@@ -177,7 +172,7 @@ public class DateParser implements Parser<FuzzyDate> {
         if (!ta.isSupported(YEAR)) {
           throw new UnparsableException("Missing year in date string: " + text);
         }
-        return Optional.of(new FuzzyDate(ta, text));
+        return Optional.of(new FuzzyDate(ta));
       } catch (DateTimeException e) {
         // Next one then
         if (debug) {
