@@ -16,7 +16,7 @@ public class FuzzyDateTest extends SerdeTestBase<FuzzyDate> {
 
     @Override
     public FuzzyDate genTestValue() throws Exception {
-        FuzzyDate fd = FuzzyDate.of(1800 + rnd.nextInt(230), rnd.nextInt(12));
+        FuzzyDate fd = FuzzyDate.of(1800 + rnd.nextInt(230), 1 + rnd.nextInt(12));
         return fd;
     }
 
