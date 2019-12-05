@@ -1,7 +1,5 @@
 package life.catalogue.api.search;
 
-import java.util.UUID;
-
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NameField;
@@ -10,6 +8,8 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
+
+import java.util.UUID;
 
 public enum NameUsageSearchParameter {
 
@@ -74,6 +74,12 @@ public enum NameUsageSearchParameter {
    * the Synonym instance itself.
    */
   SECTOR_KEY(Integer.class),
+
+  /**
+   * The dataset key of the corresponding sector attached to a taxon.
+   * Synonyms inherit the key by their accepted taxon, but do not expose the key on the Synonym instance itself.
+   */
+  SECTOR_DATASET_KEY(Integer.class),
 
   /**
    * TaxonomicStatus
