@@ -15,8 +15,6 @@ import org.gbif.nameparser.api.*;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Year;
-import java.time.YearMonth;
 import java.util.*;
 
 
@@ -63,9 +61,7 @@ public class ApiKryoFactory implements KryoFactory {
     kryo.register(String[].class);
 
     // date/time
-    kryo.register(FuzzyDate.class);
-    kryo.register(Year.class);
-    kryo.register(YearMonth.class);
+    kryo.register(FuzzyDate.class, new FuzzyDateSerializer());
     kryo.register(LocalDate.class);
     kryo.register(LocalDateTime.class);
 

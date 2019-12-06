@@ -1,8 +1,5 @@
 package life.catalogue.common.kryo;
 
-import java.io.ByteArrayOutputStream;
-import java.util.List;
-
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
@@ -12,6 +9,9 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import org.gbif.dwc.terms.*;
 import org.junit.Test;
+
+import java.io.ByteArrayOutputStream;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -35,6 +35,15 @@ public class ApiKryoFactoryTest {
     r.setDatasetKey(77);
     r.setCsl(TestEntityGenerator.createCsl());
     assertSerde(r);
+  }
+
+  @Test
+  public void testUsages() throws Exception {
+    Taxon t = TestEntityGenerator.newTaxon("bla bla");
+    assertSerde(t);
+
+    Synonym s = TestEntityGenerator.newSynonym(t);
+    assertSerde(s);
   }
 
   @Test
