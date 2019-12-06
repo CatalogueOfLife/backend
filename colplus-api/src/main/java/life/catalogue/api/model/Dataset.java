@@ -1,13 +1,5 @@
 package life.catalogue.api.model;
 
-import java.net.URI;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
@@ -15,6 +7,14 @@ import life.catalogue.api.constraints.AbsoluteURI;
 import life.catalogue.api.constraints.NotBlank;
 import life.catalogue.api.vocab.*;
 import org.gbif.nameparser.api.NomCode;
+
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
 
 /**
  * Metadata about a dataset or a subset of it if parentKey is given.
@@ -63,7 +63,8 @@ public class Dataset extends DataEntity<Integer> {
   private Set<Integer> contributesTo;
   private LocalDateTime imported;
   private LocalDateTime deleted;
-  
+  private Map<String, String> settings = new HashMap<>();
+
   public Integer getKey() {
     return key;
   }
@@ -345,7 +346,39 @@ public class Dataset extends DataEntity<Integer> {
   public void setCompleteness(Integer completeness) {
     this.completeness = completeness;
   }
-  
+
+  public String getSetting(String key) {
+    return settings.getOrDefault(key, null);
+  }
+
+  public String getSetting(DatasetSettings key) {
+    return settings.get(key.name());
+  }
+
+  public String getSetting(DatasetSettings key, String defaultValue) {
+    return settings.getOrDefault(key.name(), defaultValue);
+  }
+
+  public void putSetting(String key, String value) {
+    settings.put(key, value);
+  }
+
+  public boolean containsSetting(DatasetSettings key) {
+    return settings.containsKey(key.name());
+  }
+
+  public boolean containsSetting(String key) {
+    return settings.containsKey(key);
+  }
+
+  public Map<String, ?> getSettings() {
+    return settings;
+  }
+
+  public void setSettings(Map<String, String> settings) {
+    this.settings = settings;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -383,12 +416,16 @@ public class Dataset extends DataEntity<Integer> {
         Objects.equals(notes, dataset.notes) &&
         Objects.equals(contributesTo, dataset.contributesTo) &&
         Objects.equals(imported, dataset.imported) &&
-        Objects.equals(deleted, dataset.deleted);
+        Objects.equals(deleted, dataset.deleted) &&
+        Objects.equals(settings, dataset.settings);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, type, title, alias, gbifKey, gbifPublisherKey, description, organisations, contact, authorsAndEditors, license, version, released, citation, geographicScope, website, group, logo, dataFormat, dataAccess, origin, locked, importFrequency, code, size, confidence, completeness, notes, contributesTo, imported, deleted);
+    return Objects.hash(super.hashCode(), key, type, title, alias, gbifKey, gbifPublisherKey, description, organisations,
+            contact, authorsAndEditors, license, version, released, citation, geographicScope, website, group, logo,
+            dataFormat, dataAccess, origin, locked, importFrequency, code, size, confidence, completeness, notes,
+            contributesTo, imported, deleted, settings);
   }
   
   @Override

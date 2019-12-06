@@ -1,21 +1,13 @@
 package life.catalogue.importer;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.VerbatimEntity;
 import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.vocab.DatasetSettings;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.collection.DefaultMap;
 import life.catalogue.csv.CsvReader;
+import life.catalogue.csv.Schema;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.importer.neo.NeoDb;
@@ -27,6 +19,17 @@ import org.gbif.dwc.terms.Term;
 import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 
@@ -51,8 +54,28 @@ public abstract class NeoInserter {
     this.store = store;
     this.refFactory = refFactory;
     this.imgService = imgService;
+    // update CSV reader with manual dataset settings if existing
+    // see https://github.com/Sp2000/colplus-backend/issues/582
+    for (Schema s : reader.schemas()) {
+      setChar(DatasetSettings.CSV_DELIMITER, s.settings.getFormat()::setDelimiter);
+      setChar(DatasetSettings.CSV_QUOTE, s.settings.getFormat()::setQuote);
+      setChar(DatasetSettings.CSV_QUOTE_ESCAPE, s.settings.getFormat()::setQuoteEscape);
+    }
   }
-  
+
+  private void setChar(DatasetSettings key, Consumer<Character> setter) {
+    if (store.getDataset().containsSetting(key)) {
+      String val = store.getDataset().getSetting(key);
+      if (!val.isEmpty()) {
+        if (val.length() != 1) {
+          LOG.warn("Setting {} must be a single character but got >>{}<< instead. Ignore setting", key, val);
+        } else {
+          setter.accept(val.charAt(0));
+        }
+      }
+    }
+  }
+
   public final void insertAll() throws NormalizationFailedException {
     // the key will be preserved by the store
     Optional<Dataset> d = readMetadata();

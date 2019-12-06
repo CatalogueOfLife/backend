@@ -1,15 +1,6 @@
 package life.catalogue.importer.acef;
 
-import java.io.IOException;
-import java.net.URI;
-import java.nio.file.Path;
-import java.time.LocalDate;
-import java.util.*;
-import javax.annotation.Nullable;
-
 import com.google.common.base.Splitter;
-import life.catalogue.parser.*;
-import org.apache.commons.lang3.StringUtils;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Reference;
 import life.catalogue.api.model.VerbatimRecord;
@@ -25,11 +16,20 @@ import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.reference.ReferenceFactory;
+import life.catalogue.parser.*;
+import org.apache.commons.lang3.StringUtils;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.util.*;
 
 import static com.google.common.base.Strings.emptyToNull;
 

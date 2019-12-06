@@ -1,12 +1,5 @@
 package life.catalogue.db.mapper;
 
-import java.net.URI;
-import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
 import com.google.common.collect.Lists;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
@@ -21,6 +14,13 @@ import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -56,6 +56,9 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     d.setCode(NomCode.ZOOLOGICAL);
     d.getOrganisations().add("my org");
     d.getOrganisations().add("your org");
+    d.putSetting("band", "Stooges");
+    d.putSetting("firstAlbum", "1973");
+    d.putSetting("homepage", "http://the.stooges.fun");
     return d;
   }
   

@@ -1,17 +1,20 @@
 package life.catalogue.db.type2;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.base.Strings;
+import life.catalogue.api.jackson.ApiModule;
+import org.apache.ibatis.type.BaseTypeHandler;
+import org.apache.ibatis.type.JdbcType;
+import org.apache.ibatis.type.MappedJdbcTypes;
+
 import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.base.Strings;
-import org.apache.ibatis.type.BaseTypeHandler;
-import org.apache.ibatis.type.JdbcType;
-import org.apache.ibatis.type.MappedJdbcTypes;
-import life.catalogue.api.jackson.ApiModule;
 
 /**
  * A generic mybatis type handler that translates an object to the postgres jsonb database type
@@ -19,48 +22,55 @@ import life.catalogue.api.jackson.ApiModule;
  */
 @MappedJdbcTypes(JdbcType.OTHER)
 public class JsonAbstractHandler<T> extends BaseTypeHandler<T> {
-  
-  private final Class<T> clazz;
-  
-  public JsonAbstractHandler(Class<T> clazz) {
-    this.clazz = clazz;
+
+  private final ObjectReader reader;
+  private final ObjectWriter writer;
+  private final String typeName;
+
+  public JsonAbstractHandler(String typeName, TypeReference<T> typeRef) {
+    this.typeName = typeName;
+    // object readers & writers are slightly more performant than simple object mappers
+    // they also are thread safe!
+    reader = ApiModule.MAPPER.readerFor(typeRef);
+    writer = ApiModule.MAPPER.writerFor(typeRef);
   }
   
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, T parameter,
                                   JdbcType jdbcType) throws SQLException {
     try {
-      String x = ApiModule.MAPPER.writeValueAsString(parameter);
+      String x = writer.writeValueAsString(parameter);
       ps.setString(i, x);
     } catch (JsonProcessingException e) {
-      throw new SQLException("Unable to convert " + clazz.getSimpleName() + " to JSONB", e);
+      throw new SQLException("Unable to convert " + typeName + " to JSONB", e);
     }
   }
   
   @Override
   public T getNullableResult(ResultSet rs, String columnName) throws SQLException {
-    return fromString(rs.getString(columnName));
+    return fromJson(rs.getString(columnName));
   }
   
   @Override
   public T getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
-    return fromString(rs.getString(columnIndex));
+    return fromJson(rs.getString(columnIndex));
   }
   
   @Override
   public T getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
-    return fromString(cs.getString(columnIndex));
+    return fromJson(cs.getString(columnIndex));
   }
   
 
-  private T fromString(String jsonb) throws SQLException {
-    if (!Strings.isNullOrEmpty(jsonb)) {
+  private T fromJson(String json) throws SQLException {
+    if (!Strings.isNullOrEmpty(json)) {
       try {
-        return ApiModule.MAPPER.readValue(jsonb, clazz);
+        return reader.readValue(json);
       } catch (IOException e) {
-        throw new SQLException("Unable to convert JSONB to " + clazz.getSimpleName(), e);
+        throw new SQLException("Unable to convert JSONB to " + typeName, e);
       }
     }
     return null;
   }
+
 }

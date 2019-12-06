@@ -32,6 +32,7 @@
       "group",
       confidence,
       completeness,
+      settings,
       created,
       created_by,
       modified,
@@ -69,6 +70,7 @@
       "group",
       confidence,
       completeness,
+      settings,
       created_by,
       modified_by
     </sql>
@@ -100,6 +102,7 @@
       #{group},
       #{confidence},
       #{completeness},
+      #{settings, typeHandler=life.catalogue.db.type2.StringMapTypeHandler}::JSONB,
       #{createdBy},
       #{modifiedBy}
     </sql>
@@ -152,6 +155,7 @@
         <result property="organisations" column="organisations" typeHandler="life.catalogue.db.type.StringArrayTypeHandler" />
         <result property="authorsAndEditors" column="authors_and_editors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler" />
         <result property="importFrequency" column="import_frequency" typeHandler="life.catalogue.db.type.FrequencyTypeHandler" />
+        <result property="settings" column="settings" typeHandler="life.catalogue.db.type2.StringMapTypeHandler" />
     </resultMap>
 
     <select id="count" resultType="integer">

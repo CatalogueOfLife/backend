@@ -583,6 +583,7 @@ CREATE TABLE dataset (
   data_access TEXT,
   "group" TEXT,
   notes text,
+  settings JSONB,
   doc tsvector
 );
 
