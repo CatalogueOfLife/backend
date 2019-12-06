@@ -1,5 +1,25 @@
 package life.catalogue.importer;
 
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.*;
+import life.catalogue.common.date.FuzzyDate;
+import life.catalogue.importer.neo.NeoDb;
+import life.catalogue.importer.reference.ReferenceFactory;
+import life.catalogue.parser.*;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.gbif.dwc.terms.Term;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.Year;
@@ -8,26 +28,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.annotation.Nullable;
-
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
-import life.catalogue.parser.*;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
-import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.*;
-import life.catalogue.common.date.FuzzyDate;
-import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.reference.ReferenceFactory;
-import org.gbif.dwc.terms.Term;
-import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static life.catalogue.parser.SafeParser.parse;
 
@@ -209,6 +209,11 @@ public class InterpreterBase {
   }
 
   protected LocalDate date(VerbatimRecord v, Issue invalidIssue, Term term) {
+    FuzzyDate fd = fuzzydate(v, invalidIssue, term);
+    return fd == null ? null : fd.toLocalDate();
+  }
+
+  protected FuzzyDate fuzzydate(VerbatimRecord v, Issue invalidIssue, Term term) {
     Optional<FuzzyDate> date;
     try {
       date = DateParser.PARSER.parse(v.get(term));
@@ -220,7 +225,7 @@ public class InterpreterBase {
       if (date.get().isFuzzyDate()) {
         v.addIssue(Issue.PARTIAL_DATE);
       }
-      return date.get().toLocalDate();
+      return date.get();
     }
     return null;
   }

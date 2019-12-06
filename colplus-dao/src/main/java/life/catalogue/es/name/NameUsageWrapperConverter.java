@@ -1,29 +1,6 @@
 package life.catalogue.es.name;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterInputStream;
-
-import org.apache.commons.io.IOUtils;
-
-import life.catalogue.api.model.BareName;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.model.SimpleNameClassification;
-import life.catalogue.api.model.Synonym;
-import life.catalogue.api.model.Taxon;
-import life.catalogue.api.model.VernacularName;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.NameField;
 import life.catalogue.common.tax.SciNameNormalizer;
@@ -32,29 +9,20 @@ import life.catalogue.es.model.EsDecision;
 import life.catalogue.es.model.Monomial;
 import life.catalogue.es.model.NameStrings;
 import life.catalogue.es.model.NameUsageDocument;
+import org.apache.commons.io.IOUtils;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
 
 import static java.util.stream.Collectors.toList;
-
-import static life.catalogue.api.vocab.NameField.BASIONYM_AUTHORS;
-import static life.catalogue.api.vocab.NameField.BASIONYM_EX_AUTHORS;
-import static life.catalogue.api.vocab.NameField.BASIONYM_YEAR;
-import static life.catalogue.api.vocab.NameField.CANDIDATUS;
-import static life.catalogue.api.vocab.NameField.COMBINATION_AUTHORS;
-import static life.catalogue.api.vocab.NameField.COMBINATION_EX_AUTHORS;
-import static life.catalogue.api.vocab.NameField.COMBINATION_YEAR;
-import static life.catalogue.api.vocab.NameField.CULTIVAR_EPITHET;
-import static life.catalogue.api.vocab.NameField.GENUS;
-import static life.catalogue.api.vocab.NameField.INFRAGENERIC_EPITHET;
-import static life.catalogue.api.vocab.NameField.INFRASPECIFIC_EPITHET;
-import static life.catalogue.api.vocab.NameField.NOM_STATUS;
-import static life.catalogue.api.vocab.NameField.NOTHO;
-import static life.catalogue.api.vocab.NameField.PUBLISHED_IN_ID;
-import static life.catalogue.api.vocab.NameField.PUBLISHED_IN_PAGE;
-import static life.catalogue.api.vocab.NameField.REMARKS;
-import static life.catalogue.api.vocab.NameField.SANCTIONING_AUTHOR;
-import static life.catalogue.api.vocab.NameField.SPECIFIC_EPITHET;
-import static life.catalogue.api.vocab.NameField.UNINOMIAL;
-import static life.catalogue.api.vocab.NameField.WEBPAGE;
+import static life.catalogue.api.vocab.NameField.*;
 import static life.catalogue.common.collection.CollectionUtils.notEmpty;
 
 /**

@@ -1,19 +1,16 @@
 package life.catalogue.importer.acef;
 
-import java.util.List;
-import java.util.Optional;
-
 import com.google.common.base.Strings;
-import life.catalogue.importer.MappingFlags;
-import life.catalogue.importer.InterpreterBase;
-import life.catalogue.importer.NameValidator;
-import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.model.NeoUsage;
-import life.catalogue.importer.reference.ReferenceFactory;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.importer.InterpreterBase;
+import life.catalogue.importer.MappingFlags;
+import life.catalogue.importer.NameValidator;
+import life.catalogue.importer.neo.NeoDb;
+import life.catalogue.importer.neo.model.NeoUsage;
+import life.catalogue.importer.reference.ReferenceFactory;
 import life.catalogue.parser.EnumNote;
 import life.catalogue.parser.RankParser;
 import life.catalogue.parser.SafeParser;
@@ -25,6 +22,9 @@ import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Optional;
 
 import static life.catalogue.parser.SafeParser.parse;
 
@@ -112,7 +112,7 @@ public class AcefInterpreter extends InterpreterBase {
       Taxon t = u.getTaxon();
       t.setOrigin(Origin.SOURCE);
       t.setAccordingTo(v.get(AcefTerm.LTSSpecialist));
-      t.setAccordingToDate(date(v, Issue.ACCORDING_TO_DATE_INVALID, AcefTerm.LTSDate));
+      t.setAccordingToDate(fuzzydate(v, Issue.ACCORDING_TO_DATE_INVALID, AcefTerm.LTSDate));
       t.setExtinct(bool(v, Issue.IS_EXTINCT_INVALID, AcefTerm.IsExtinct));
       t.setRemarks(v.get(AcefTerm.AdditionalData));
   

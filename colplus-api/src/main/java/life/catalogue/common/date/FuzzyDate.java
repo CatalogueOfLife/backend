@@ -1,7 +1,6 @@
 package life.catalogue.common.date;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import org.apache.commons.lang3.StringUtils;
 
@@ -92,7 +91,6 @@ public final class FuzzyDate {
    *
    * @return
    */
-  @JsonIgnore
   public LocalDate toLocalDate() {
     if (ta.getClass() == LocalDate.class) {
       return (LocalDate) ta;
@@ -115,7 +113,6 @@ public final class FuzzyDate {
   /**
    * @return Year, YearMonth or LocalDate instance represeting this fuzzy date
    */
-  @JsonValue
   public TemporalAccessor getDate() {
     return ta;
   }
@@ -125,7 +122,6 @@ public final class FuzzyDate {
    *
    * @return
    */
-  @JsonIgnore
   public boolean isFuzzyDate() {
     return !ta.isSupported(MONTH_OF_YEAR) || !ta.isSupported(DAY_OF_MONTH);
   }
@@ -144,6 +140,7 @@ public final class FuzzyDate {
   }
 
   @Override
+  @JsonValue
   public String toString() {
     return ta.toString();
   }

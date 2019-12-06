@@ -1,9 +1,5 @@
 package life.catalogue.importer.coldp;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
@@ -22,6 +18,10 @@ import life.catalogue.parser.*;
 import org.gbif.dwc.terms.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import static life.catalogue.parser.SafeParser.parse;
 
@@ -72,7 +72,7 @@ public class ColdpInterpreter extends InterpreterBase {
       Taxon t = u.getTaxon();
       t.setOrigin(Origin.SOURCE);
       t.setAccordingTo(v.get(ColdpTerm.accordingTo));
-      t.setAccordingToDate(date(v, Issue.ACCORDING_TO_DATE_INVALID, ColdpTerm.accordingToDate));
+      t.setAccordingToDate(fuzzydate(v, Issue.ACCORDING_TO_DATE_INVALID, ColdpTerm.accordingToDate));
       //TODO: ColTerm.accordingToDateID for ORCIDS
       t.setWebpage(uri(v, Issue.URL_INVALID, ColdpTerm.link));
       t.setExtinct(bool(v, Issue.IS_EXTINCT_INVALID, ColdpTerm.extinct));
