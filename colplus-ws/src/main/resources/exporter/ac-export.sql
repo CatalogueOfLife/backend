@@ -8,6 +8,7 @@ DROP TABLE IF EXISTS __coverage2;
 DROP SEQUENCE IF EXISTS __record_id_seq;
 DROP SEQUENCE IF EXISTS __unassigned_seq;
 
+SET client_encoding = 'UTF8';
 
 CREATE TABLE __coverage AS
     -- ATTACH MODE
