@@ -1,11 +1,7 @@
 package life.catalogue.assembly;
 
-import java.util.*;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import life.catalogue.db.mapper.ReferenceMapper;
-import org.apache.ibatis.session.*;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.EntityType;
@@ -15,14 +11,18 @@ import life.catalogue.dao.CatCopy;
 import life.catalogue.dao.DatasetEntityDao;
 import life.catalogue.dao.ReferenceDao;
 import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.ReferenceMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.parser.NameParser;
+import org.apache.ibatis.session.*;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.*;
 
 import static life.catalogue.api.util.ObjectUtils.coalesce;
 
@@ -360,8 +360,13 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
         return refIds.get(refID);
       }
       // not seen before, load full reference
-      Reference r = rm.get(new DSIDValue<>(sector.getDatasetKey(), refID));
-      return lookupReference(r);
+      Reference r = rm.get(new DSIDValue<>(sector.getSubjectDatasetKey(), refID));
+      if (r != null) {
+        return lookupReference(r);
+      } else {
+        LOG.warn("Reference {} is missing in source dataset {}", refID, sector.getSubjectDatasetKey());
+        refIds.put(refID, null);
+      }
     }
     return null;
   }

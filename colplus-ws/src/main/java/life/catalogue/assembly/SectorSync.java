@@ -1,36 +1,25 @@
 package life.catalogue.assembly;
 
+import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.*;
+import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.dao.MatchingDao;
+import life.catalogue.dao.NamesTreeDao;
+import life.catalogue.db.mapper.*;
+import life.catalogue.es.name.index.NameUsageIndexService;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.gbif.nameparser.api.NameType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
-import life.catalogue.db.mapper.ReferenceMapper;
-import life.catalogue.db.mapper.SectorImportMapper;
-import org.apache.ibatis.session.ExecutorType;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Gazetteer;
-import life.catalogue.api.vocab.Issue;
-import life.catalogue.api.vocab.MediaType;
-import life.catalogue.api.vocab.NomRelType;
-import life.catalogue.api.vocab.NomStatus;
-import life.catalogue.api.vocab.Origin;
-import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.MatchingDao;
-import life.catalogue.dao.NamesTreeDao;
-import life.catalogue.db.mapper.NameMapper;
-import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.db.mapper.TaxonMapper;
-import life.catalogue.es.name.index.NameUsageIndexService;
-import org.gbif.nameparser.api.NameType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static life.catalogue.dao.DatasetImportDao.countMap;
 

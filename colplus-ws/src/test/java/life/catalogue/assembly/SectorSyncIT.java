@@ -31,7 +31,9 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -96,6 +98,15 @@ public class SectorSyncIT {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       return session.getMapper(TaxonMapper.class).get(DSID.key(datasetKey, id));
     }
+  }
+
+  Taxon getDraftTaxonBySourceID(int sourceDatasetKey, String id) {
+    Taxon src;
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      TaxonMapper tm = session.getMapper(TaxonMapper.class);
+      src = tm.get(DSID.key(sourceDatasetKey, id));
+    }
+    return (Taxon) getByName(Datasets.DRAFT_COL, src.getName().getRank(), src.getName().getScientificName());
   }
 
   private static SimpleName simple(NameUsageBase nu) {
@@ -204,12 +215,37 @@ public class SectorSyncIT {
   
     Taxon vogelii = (Taxon) getByName(Datasets.DRAFT_COL, Rank.SUBSPECIES, "Astragalus vogelii subsp. vogelii");
     assertEquals(s1, (int) vogelii.getSectorKey());
-  
-    NameUsageBase sp   = getByID(vogelii.getParentId());
+
+    Taxon sp = (Taxon) getByID(vogelii.getParentId());
     assertEquals(Origin.SOURCE, vogelii.getOrigin());
 
-    TaxonInfo ti = tdao.getTaxonInfo(vogelii);
-    assertEquals(1, ti.getReferences().size());
+    TaxonInfo ti = tdao.getTaxonInfo(sp);
+
+    Reference r = ti.getReference(sp.getName().getPublishedInId());
+    assertEquals(sp.getDatasetKey(), r.getDatasetKey());
+    assertEquals(sp.getSectorKey(), r.getSectorKey());
+    assertEquals("Greuter,W. et al. (Eds.). Med-Checklist Vol.4 (published). (1989).", r.getCitation());
+    assertEquals(2, ti.getReferences().size());
+
+    final int s1dk = datasetKey(1, DataFormat.ACEF);
+    Taxon t = getDraftTaxonBySourceID(s1dk, "13287");
+    assertEquals(Datasets.DRAFT_COL, (int) t.getDatasetKey());
+    // 19 vernaculars, 5 distinct refs
+    ti = tdao.getTaxonInfo(t);
+    assertEquals(19, ti.getVernacularNames().size());
+    Set<String> keys = new HashSet<>();
+    for (VernacularName vn : ti.getVernacularNames()) {
+      assertEquals(Datasets.DRAFT_COL, (int) vn.getDatasetKey());
+      assertNotNull(vn.getName());
+      if (vn.getReferenceId() != null) {
+        r = ti.getReference(vn.getReferenceId());
+        keys.add(r.getId());
+        assertEquals(Datasets.DRAFT_COL, (int) r.getDatasetKey());
+        assertEquals(t.getSectorKey(), r.getSectorKey());
+        assertNotNull(r.getCitation());
+      }
+    }
+    assertEquals(5, keys.size());
   }
   
   /**
