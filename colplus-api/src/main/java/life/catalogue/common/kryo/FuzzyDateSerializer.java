@@ -14,11 +14,11 @@ public class FuzzyDateSerializer extends Serializer<FuzzyDate> {
 
   @Override
   public void write(final Kryo kryo, final Output output, final FuzzyDate fd) {
-    output.writeString(fd.toString());
+    output.writeInt(fd.toInt(), true);
   }
 
   @Override
-  public FuzzyDate read(final Kryo kryo, final Input input, final Class<FuzzyDate> uriClass) {
-    return FuzzyDate.of(input.readString());
+  public FuzzyDate read(final Kryo kryo, final Input input, final Class<FuzzyDate> clazz) {
+    return FuzzyDate.fromInt(input.readInt(true));
   }
 }

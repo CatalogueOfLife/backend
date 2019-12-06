@@ -29,6 +29,21 @@ public class FuzzyDateTest extends SerdeTestBase<FuzzyDate> {
     }
 
     @Test
+    public void testToInt() {
+        testIntSerde(FuzzyDate.of(1919));
+        testIntSerde(FuzzyDate.of(1919,1));
+        testIntSerde(FuzzyDate.of(1919,8, 7));
+        testIntSerde(FuzzyDate.of(2050,12, 31));
+        testIntSerde(FuzzyDate.of(877,1, 1));
+    }
+
+    private void testIntSerde(FuzzyDate fd) {
+        int x = fd.toInt();
+        FuzzyDate fd2 = FuzzyDate.fromInt(x);
+        assertEquals(fd, fd2);
+    }
+
+    @Test
     public void testToString() {
         FuzzyDate fd = FuzzyDate.of(1919);
         assertEquals("1919", fd.toString());

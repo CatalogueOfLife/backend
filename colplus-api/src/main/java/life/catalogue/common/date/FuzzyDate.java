@@ -15,6 +15,8 @@ import static java.time.temporal.ChronoField.*;
  * its YEAR field set. Other fields may be unknown, in which case the date is said to be fuzzy.
  */
 public final class FuzzyDate {
+  private static final int DAY_PER_MONTH = 32;
+  private static final int DAY_PER_YEAR  = DAY_PER_MONTH * 13;
   // only Year, YearMonth or LocalDate allowed here!!!
   private final TemporalAccessor ta;
 
@@ -52,6 +54,25 @@ public final class FuzzyDate {
         return new FuzzyDate(LocalDate.parse(isoDate));
     }
     throw new IllegalArgumentException("No fuzzy ISO date");
+  }
+
+  public static FuzzyDate fromInt(int x) {
+    if (x <= 0) return null;
+    int y = x / DAY_PER_YEAR;
+    x -= y*DAY_PER_YEAR;
+
+    if (x > 0) {
+      int m = x / DAY_PER_MONTH;
+      x -= m*DAY_PER_MONTH;
+
+      if (x > 0) {
+        return FuzzyDate.of(y,m,x);
+
+      } else {
+        return FuzzyDate.of(y,m);
+      }
+    }
+    return FuzzyDate.of(y);
   }
 
   public FuzzyDate(TemporalAccessor ta) {
@@ -143,5 +164,20 @@ public final class FuzzyDate {
   @JsonValue
   public String toString() {
     return ta.toString();
+  }
+
+  /**
+   * Int representation of the fuzzy date. Can be reconstructed via the fromInt factory method.
+   * @return a single int representing the fuzzy date
+   */
+  public int toInt() {
+    int x = ta.get(YEAR) * DAY_PER_YEAR;
+    if (ta.isSupported(MONTH_OF_YEAR)) {
+      x += ta.get(MONTH_OF_YEAR) * DAY_PER_MONTH;
+      if (ta.isSupported(DAY_OF_MONTH)) {
+        x += ta.get(DAY_OF_MONTH);
+      }
+    }
+    return x;
   }
 }
