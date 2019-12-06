@@ -1,19 +1,9 @@
 package life.catalogue.importer;
 
-import java.io.File;
-import java.net.URI;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
-import life.catalogue.db.mapper.*;
-import org.apache.commons.io.FileUtils;
-import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.ReferenceSearchRequest;
 import life.catalogue.api.vocab.*;
@@ -23,16 +13,26 @@ import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.mapper.*;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
 import life.catalogue.importer.neo.model.RankedName;
 import life.catalogue.matching.NameIndexFactory;
+import org.apache.commons.io.FileUtils;
+import org.apache.ibatis.session.SqlSession;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
+
+import java.io.File;
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 import static life.catalogue.api.TestEntityGenerator.setUserDate;
 import static life.catalogue.api.vocab.DataFormat.*;
@@ -414,7 +414,7 @@ public class PgImportIT {
       
       assertEquals(TaxonomicStatus.ACCEPTED, t.getStatus());
       assertEquals("Tester", t.getAccordingTo());
-      assertEquals("2008-01-01", t.getAccordingToDate().toString());
+      assertEquals("2008", t.getAccordingToDate().toString());
       assertFalse(t.isExtinct());
       assertTrue(t.getLifezones().isEmpty());
       assertNull(t.getRemarks());
