@@ -1,14 +1,5 @@
 package life.catalogue.db;
 
-import java.io.IOException;
-import java.sql.Array;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-
 import com.google.common.base.Joiner;
 import com.google.common.reflect.ClassPath;
 import life.catalogue.api.model.ColUser;
@@ -20,6 +11,15 @@ import life.catalogue.db.type.BaseEnumSetTypeHandler;
 import org.gbif.nameparser.api.Rank;
 import org.junit.ClassRule;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 import static junit.framework.TestCase.assertEquals;
 
@@ -66,6 +66,7 @@ public class PgSetupRuleTest {
     enums.remove(CSLRefType.class);
     enums.remove(Frequency.class);
     enums.remove(GeoTimeType.class);
+    enums.remove(DatasetSettings.class);
     // sort and print
     enums.sort(Comparator.comparing(cl -> BaseEnumSetTypeHandler.pgEnumName(cl)));
     return enums;
