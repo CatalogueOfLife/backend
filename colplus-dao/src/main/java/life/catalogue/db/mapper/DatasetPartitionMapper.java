@@ -1,9 +1,9 @@
 package life.catalogue.db.mapper;
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 public interface DatasetPartitionMapper {
 
@@ -88,5 +88,11 @@ public interface DatasetPartitionMapper {
   }
   
   void attachTable(@Param("table") String table, @Param("key") int key);
-  
+
+  /**
+   * Checks whether the partition for the given datasetKey exists already.
+   * @param key datasetKey
+   * @return true if partition tables exist
+   */
+  boolean exists(@Param("key") int key);
 }

@@ -1,29 +1,27 @@
 package life.catalogue.es.name.index;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 import com.google.common.annotations.VisibleForTesting;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.common.func.BatchConsumer;
 import life.catalogue.dao.NameUsageProcessor;
 import life.catalogue.db.mapper.BatchResultHandler;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.NameUsageWrapperMapper;
 import life.catalogue.es.EsConfig;
 import life.catalogue.es.EsException;
 import life.catalogue.es.EsUtil;
 import life.catalogue.es.model.NameUsageDocument;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
@@ -164,21 +162,26 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       List<Integer> keys;
       try (SqlSession session = factory.openSession(true)) {
         keys = session.getMapper(DatasetMapper.class).keys();
+        int allDatasets = keys.size();
+        // first check if we have data partitions - otherwise all queries below throw
+        DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
+        keys.removeIf(key -> !dpm.exists(key));
+        LOG.info("Index {} datasets with data partitions out of all {} datasets", keys.size(), allDatasets);
       }
+
       for (Integer datasetKey : keys) {
         int tc, bc;
         try (BatchConsumer<NameUsageWrapper> handler = new BatchConsumer<>(indexer, BATCH_SIZE)) {
-          LOG.debug("Indexing usages from dataset {}", datasetKey);
+          LOG.info("Indexing usages from dataset {}", datasetKey);
           processor.processDataset(datasetKey, handler);
         }
-        EsUtil.refreshIndex(client, index);
         tc = indexer.documentsIndexed();
         indexer.reset();
         try (SqlSession session = factory.openSession(true);
              BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)
         ) {
           NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
-          LOG.debug("Indexing bare names for dataset {}", datasetKey);
+          LOG.info("Indexing bare names for dataset {}", datasetKey);
           mapper.processDatasetBareNames(datasetKey, null, handler);
         }
         EsUtil.refreshIndex(client, index);

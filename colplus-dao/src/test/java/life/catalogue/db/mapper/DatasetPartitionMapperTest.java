@@ -1,13 +1,5 @@
 package life.catalogue.db.mapper;
 
-import java.util.Random;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
-
-import org.apache.ibatis.session.ExecutorType;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
@@ -15,10 +7,19 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.PgSetupRule;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
+import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionMapper> {
   Random rnd = new Random();
@@ -36,7 +37,13 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
     mapper().attach(Datasets.DRAFT_COL);
     mapper().delete(Datasets.DRAFT_COL);
   }
-  
+
+  @Test
+  public void exists() {
+    Assert.assertTrue(mapper().exists(Datasets.DRAFT_COL));
+    Assert.assertFalse(mapper().exists(9999));
+  }
+
   /**
    * Attaching requires an AccessExclusiveLock on the partitioned tables
    * which often leads to deadlocks, see https://github.com/Sp2000/colplus-backend/issues/387
