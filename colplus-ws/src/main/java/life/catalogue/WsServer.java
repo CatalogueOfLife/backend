@@ -1,8 +1,5 @@
 package life.catalogue;
 
-import java.io.IOException;
-import javax.ws.rs.client.Client;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.Application;
 import io.dropwizard.client.DropwizardApacheConnector;
@@ -13,11 +10,6 @@ import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import org.apache.commons.io.FileUtils;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.vocab.ColDwcTerm;
@@ -53,12 +45,23 @@ import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.parser.NameParser;
 import life.catalogue.release.AcExporter;
 import life.catalogue.resources.*;
+import life.catalogue.resources.parser.CountryParserResource;
+import life.catalogue.resources.parser.LanguageParserResource;
+import life.catalogue.resources.parser.NameParserResource;
+import org.apache.commons.io.FileUtils;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.elasticsearch.client.RestClient;
 import org.gbif.dwc.terms.TermFactory;
 import org.glassfish.jersey.client.spi.ConnectorProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
+
+import javax.ws.rs.client.Client;
+import java.io.IOException;
 
 import static life.catalogue.es.EsConfig.ES_INDEX_NAME_USAGE;
 
@@ -233,7 +236,6 @@ public class WsServer extends Application<WsServerConfig> {
     env.jersey().register(new NameResource(ndao));
     env.jersey().register(new NameUsageDatasetSearchResource(svcNameSearch, svcSuggest));
     env.jersey().register(new NameUsageSearchResource(svcNameSearch, svcSuggest));
-    env.jersey().register(new ParserResource());
     env.jersey().register(new ReferenceResource(rdao));
     env.jersey().register(new SectorResource(getSqlSessionFactory(), diDao, diff, assembly));
     env.jersey().register(new SynonymResource(sdao));
@@ -242,6 +244,11 @@ public class WsServer extends Application<WsServerConfig> {
     env.jersey().register(new UserResource(auth.getJwtCodec()));
     env.jersey().register(new VerbatimResource());
     env.jersey().register(new VocabResource());
+    // parsers
+    env.jersey().register(new NameParserResource());
+    env.jersey().register(new CountryParserResource());
+    env.jersey().register(new LanguageParserResource());
+
   }
   
   @Override
