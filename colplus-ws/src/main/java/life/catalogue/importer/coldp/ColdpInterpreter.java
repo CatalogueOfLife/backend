@@ -144,6 +144,7 @@ public class ColdpInterpreter extends InterpreterBase {
         ColdpTerm.name,
         ColdpTerm.transliteration,
         ColdpTerm.language,
+        ColdpTerm.sex,
         ColdpTerm.area,
         ColdpTerm.country
     );

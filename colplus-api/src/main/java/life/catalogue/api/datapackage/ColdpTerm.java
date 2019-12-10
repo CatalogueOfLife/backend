@@ -1,15 +1,15 @@
 package life.catalogue.api.datapackage;
 
-import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import org.gbif.dwc.terms.AlternativeNames;
 import org.gbif.dwc.terms.Term;
+
+import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * CoL terms covering all columns needed for the new CoL Data Package submission format:
@@ -130,7 +130,6 @@ public enum ColdpTerm implements Term, AlternativeNames {
   transliteration,
   //language,
   country,
-  lifeStage,
   sex
   //referenceID
   ;
@@ -243,7 +242,6 @@ public enum ColdpTerm implements Term, AlternativeNames {
           transliteration,
           language,
           country,
-          lifeStage,
           sex,
           referenceID)
       ).build();

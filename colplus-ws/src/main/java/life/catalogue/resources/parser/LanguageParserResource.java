@@ -9,7 +9,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-@Path("/parser/country")
+@Path("/parser/language")
 @Produces(MediaType.APPLICATION_JSON)
 public class LanguageParserResource extends AbstractParserResource<Language> {
 

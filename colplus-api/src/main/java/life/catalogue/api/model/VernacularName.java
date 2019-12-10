@@ -1,10 +1,11 @@
 package life.catalogue.api.model;
 
-import java.util.Objects;
-import javax.validation.constraints.Size;
-
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.Language;
+import life.catalogue.api.vocab.Sex;
+
+import javax.validation.constraints.Size;
+import java.util.Objects;
 
 public class VernacularName extends DatasetScopedEntity<Integer> implements Referenced, VerbatimEntity {
   
@@ -15,6 +16,7 @@ public class VernacularName extends DatasetScopedEntity<Integer> implements Refe
   private String language;
   private Country country;
   private String area;
+  private Sex sex;
   private String referenceId;
   
   @Override
@@ -73,7 +75,15 @@ public class VernacularName extends DatasetScopedEntity<Integer> implements Refe
   public void setArea(String area) {
     this.area = area;
   }
-  
+
+  public Sex getSex() {
+    return sex;
+  }
+
+  public void setSex(Sex sex) {
+    this.sex = sex;
+  }
+
   @Override
   public String getReferenceId() {
     return referenceId;
@@ -82,8 +92,8 @@ public class VernacularName extends DatasetScopedEntity<Integer> implements Refe
   public void setReferenceId(String referenceId) {
     this.referenceId = referenceId;
   }
-  
-  
+
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -91,19 +101,20 @@ public class VernacularName extends DatasetScopedEntity<Integer> implements Refe
     if (!super.equals(o)) return false;
     VernacularName that = (VernacularName) o;
     return Objects.equals(verbatimKey, that.verbatimKey) &&
-        Objects.equals(name, that.name) &&
-        Objects.equals(latin, that.latin) &&
-        Objects.equals(language, that.language) &&
-        country == that.country &&
-        Objects.equals(area, that.area) &&
-        Objects.equals(referenceId, that.referenceId);
+            Objects.equals(name, that.name) &&
+            Objects.equals(latin, that.latin) &&
+            Objects.equals(language, that.language) &&
+            country == that.country &&
+            Objects.equals(area, that.area) &&
+            sex == that.sex &&
+            Objects.equals(referenceId, that.referenceId);
   }
-  
+
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), verbatimKey, name, latin, language, country, area, referenceId);
+    return Objects.hash(super.hashCode(), verbatimKey, name, latin, language, country, area, sex, referenceId);
   }
-  
+
   @Override
   public String toString() {
     return "VernacularName{" + getId() + " " + name + "/" + language +  "}";

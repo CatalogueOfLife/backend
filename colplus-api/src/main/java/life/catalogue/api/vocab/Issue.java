@@ -255,7 +255,10 @@ public enum Issue {
   
   VERNACULAR_LANGUAGE_INVALID(VERNACULAR, Level.WARNING,
       "A vernacular name extension record attached to this name usage has an unparsable language."),
-  
+
+  VERNACULAR_SEX_INVALID(VERNACULAR, Level.WARNING,
+          "A vernacular name extension record attached to this name usage has an unparsable sex."),
+
   VERNACULAR_COUNTRY_INVALID(VERNACULAR, Level.WARNING,
       "A vernacular name extension record attached to this name usage has an unparsable country."),
 

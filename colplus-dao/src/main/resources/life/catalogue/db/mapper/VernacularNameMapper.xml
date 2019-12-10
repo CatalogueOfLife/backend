@@ -14,6 +14,7 @@
     vn.language,
     vn.country,
     vn.area,
+    vn.sex,
     vn.reference_id,
     vn.created,
     vn.created_by,
@@ -30,6 +31,7 @@
     language,
     country,
     area,
+    sex,
     reference_id,
     created_by,
     modified_by
@@ -44,6 +46,7 @@
     #{obj.language},
     #{obj.country},
     #{obj.area},
+    #{obj.sex},
     #{obj.referenceId},
     #{obj.createdBy},
     #{obj.modifiedBy}

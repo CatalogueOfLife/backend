@@ -1,10 +1,8 @@
 package life.catalogue.importer.dwca;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
 import com.google.common.collect.Lists;
+import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.*;
 import life.catalogue.importer.InterpreterBase;
 import life.catalogue.importer.MappingFlags;
 import life.catalogue.importer.neo.NeoDb;
@@ -12,8 +10,6 @@ import life.catalogue.importer.neo.model.NeoNameRel;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.reference.ReferenceFactory;
-import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.*;
 import life.catalogue.parser.EnumNote;
 import life.catalogue.parser.NomRelTypeParser;
 import life.catalogue.parser.SafeParser;
@@ -24,6 +20,10 @@ import org.gbif.dwc.terms.DwcaTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Interprets a verbatim record and transforms it into a name, taxon and unique references.
@@ -131,6 +131,7 @@ public class DwcInterpreter extends InterpreterBase {
         DwcTerm.vernacularName,
         null,
         DcTerm.language,
+        DwcTerm.sex,
         DwcTerm.locality,
         DwcTerm.countryCode, DwcTerm.country
     );

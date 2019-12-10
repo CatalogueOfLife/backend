@@ -911,6 +911,7 @@ CREATE TABLE vernacular_name (
   name TEXT NOT NULL,
   latin TEXT,
   area TEXT,
+  sex SEX,
   reference_id TEXT
 ) PARTITION BY LIST (dataset_key);
 
