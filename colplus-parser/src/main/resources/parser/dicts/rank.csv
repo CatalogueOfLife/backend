@@ -32,6 +32,7 @@ agregate,SPECIES_AGGREGATE
 alliance
 alpha,INFRASPECIFIC_NAME
 ap,INFRASUBSPECIFIC_NAME
+art,SPECIES
 biotype,BIOVAR
 branch,UNRANKED
 bv,BIOVAR
@@ -239,6 +240,7 @@ ukl,SUBCLASS
 unknown,UNRANKED
 unranked clade,UNRANKED
 unterabteilung,SUBPHYLUM
+unterart,SUBSPECIES
 v,VARIETY
 var,VARIETY
 varie as,VARIETY
