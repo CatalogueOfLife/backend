@@ -101,6 +101,7 @@ public class ApiKryoFactory implements KryoFactory {
     kryo.register(NomStatus.class);
     kryo.register(Origin.class);
     kryo.register(Rank.class);
+    kryo.register(Sex.class);
     kryo.register(TaxonomicStatus.class);
     kryo.register(TextFormat.class);
     kryo.register(TypeStatus.class);
