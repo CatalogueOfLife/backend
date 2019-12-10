@@ -45,9 +45,8 @@ import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.parser.NameParser;
 import life.catalogue.release.AcExporter;
 import life.catalogue.resources.*;
-import life.catalogue.resources.parser.CountryParserResource;
-import life.catalogue.resources.parser.LanguageParserResource;
 import life.catalogue.resources.parser.NameParserResource;
+import life.catalogue.resources.parser.ParserResource;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
@@ -246,9 +245,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.jersey().register(new VocabResource());
     // parsers
     env.jersey().register(new NameParserResource());
-    env.jersey().register(new CountryParserResource());
-    env.jersey().register(new LanguageParserResource());
-
+    env.jersey().register(new ParserResource<>());
   }
   
   @Override
