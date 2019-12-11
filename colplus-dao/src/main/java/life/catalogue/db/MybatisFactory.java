@@ -1,16 +1,5 @@
 package life.catalogue.db;
 
-import javax.sql.DataSource;
-
-import org.apache.ibatis.binding.MapperRegistry;
-import org.apache.ibatis.session.Configuration;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.ibatis.session.SqlSessionFactoryBuilder;
-import org.apache.ibatis.transaction.TransactionFactory;
-import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
-import org.apache.ibatis.type.EnumTypeHandler;
-import org.apache.ibatis.type.TypeAliasRegistry;
-import org.apache.ibatis.type.TypeHandlerRegistry;
 import life.catalogue.api.model.Duplicate;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.TreeNode;
@@ -18,9 +7,18 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.type.UuidTypeHandler;
 import life.catalogue.db.type2.StringCount;
+import org.apache.ibatis.binding.MapperRegistry;
+import org.apache.ibatis.session.*;
+import org.apache.ibatis.transaction.TransactionFactory;
+import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
+import org.apache.ibatis.type.EnumTypeHandler;
+import org.apache.ibatis.type.TypeAliasRegistry;
+import org.apache.ibatis.type.TypeHandlerRegistry;
 import org.gbif.nameparser.api.ParsedName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.sql.DataSource;
 
 /**
  * Configures mybatis and provides a SqlSessionFactory for a given datasource.
@@ -46,9 +44,12 @@ public class MybatisFactory {
     Configuration mybatisCfg = new Configuration(mybatisEnv);
     mybatisCfg.setMapUnderscoreToCamelCase(true);
     mybatisCfg.setLazyLoadingEnabled(false);
+    // Disable all caching. Local session scoped caching is on be default and causing OOM problems for our indexing
+    // see https://programmer.help/blogs/step-by-step-learning-the-caching-features-of-mybatis.html
+    mybatisCfg.setLocalCacheScope(LocalCacheScope.STATEMENT);
+    // 2nd level cache
     mybatisCfg.setCacheEnabled(false);
-    // mybatisCfg.setLocalCacheScope(LocalCacheScope.STATEMENT);
-    // mybatisCfg.setDefaultExecutorType(ExecutorType.SIMPLE);
+    mybatisCfg.setDefaultExecutorType(ExecutorType.SIMPLE);
     
     // aliases
     registerTypeAliases(mybatisCfg.getTypeAliasRegistry());

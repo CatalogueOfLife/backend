@@ -30,7 +30,7 @@ import static life.catalogue.es.EsConfig.ES_INDEX_NAME_USAGE;
 public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageIndexServiceEs.class);
-  private static final int BATCH_SIZE = 4096;
+  private static final int BATCH_SIZE = 1000;
   private final RestClient client;
   private final EsConfig esConfig;
   private final String index;
@@ -169,7 +169,9 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
         LOG.info("Index {} datasets with data partitions out of all {} datasets", keys.size(), allDatasets);
       }
 
+      int counter = 1;
       for (Integer datasetKey : keys) {
+        LOG.info("Index {}/{} dataset {}", counter, keys.size(), datasetKey);
         int tc, bc;
         try (BatchConsumer<NameUsageWrapper> handler = new BatchConsumer<>(indexer, BATCH_SIZE)) {
           LOG.info("Indexing usages from dataset {}", datasetKey);
