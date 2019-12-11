@@ -3,7 +3,6 @@ package life.catalogue.assembly;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.google.common.collect.ImmutableList;
 import io.dropwizard.lifecycle.Managed;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
@@ -17,6 +16,7 @@ import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.utils.NamedThreadFactory;
+import org.neo4j.helpers.collection.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -209,7 +209,7 @@ public class AssemblyCoordinator implements Managed {
     List<Sector> sectors;
     try (SqlSession session = factory.openSession(false)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
-      sectors = ImmutableList.copyOf(sm.processDataset(Datasets.DRAFT_COL));
+      sectors = Iterables.asList(sm.processDataset(Datasets.DRAFT_COL));
     }
     sectors.sort(SECTOR_ORDER);
     int failed = 0;
