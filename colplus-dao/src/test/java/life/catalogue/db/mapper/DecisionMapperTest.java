@@ -1,19 +1,18 @@
 package life.catalogue.db.mapper;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import life.catalogue.api.search.DecisionSearchRequest;
-import org.apache.ibatis.session.ResultContext;
-import org.apache.ibatis.session.ResultHandler;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DataEntity;
 import life.catalogue.api.model.DatasetScoped;
 import life.catalogue.api.model.EditorialDecision;
+import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Lifezone;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.assertEquals;
@@ -101,16 +100,15 @@ public class DecisionMapperTest extends CRUDTestBase<Integer, EditorialDecision,
   public void process(){
     // processing
     CountHandler handler = new CountHandler();
-    mapper().processDataset(catalogeKey, handler);
+    mapper().processDataset(catalogeKey).forEach(handler);
     assertEquals(0, handler.counter.size());
   }
   
-  public static class CountHandler<T extends DataEntity<Integer> & DatasetScoped> implements ResultHandler<T> {
+  public static class CountHandler<T extends DataEntity<Integer> & DatasetScoped> implements Consumer<T> {
     Map<Integer, Integer> counter = new HashMap<>();
   
     @Override
-    public void handleResult(ResultContext<? extends T> ctx) {
-      T d = ctx.getResultObject();
+    public void accept(T d) {
       if (counter.containsKey(d.getDatasetKey())) {
         counter.put(d.getDatasetKey(), counter.get(d.getDatasetKey()) + 1);
       } else {

@@ -1,14 +1,14 @@
 package life.catalogue.db.mapper;
 
-import java.util.List;
-
-import life.catalogue.api.search.SectorSearchRequest;
-import life.catalogue.db.Searchable;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.session.ResultHandler;
 import life.catalogue.api.model.Sector;
+import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.DatasetPageable;
+import life.catalogue.db.Searchable;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.cursor.Cursor;
+
+import java.util.List;
 
 public interface SectorMapper extends CRUD<Integer, Sector>, DatasetPageable<Sector>, ProcessableDataset<Sector>, Searchable<Sector, SectorSearchRequest> {
   
@@ -33,9 +33,8 @@ public interface SectorMapper extends CRUD<Integer, Sector>, DatasetPageable<Sec
    * @param targetDatasetKey the targets datasetKey
    * @param subjectDatasetKey the subjects datasetKey
    */
-  void processSectors(@Param("targetDatasetKey") int targetDatasetKey,
-                      @Param("subjectDatasetKey") int subjectDatasetKey,
-                      ResultHandler<Sector> handler);
+  Cursor<Sector> processSectors(@Param("targetDatasetKey") int targetDatasetKey,
+                        @Param("subjectDatasetKey") int subjectDatasetKey);
   
   /**
    * Returns a list of unique dataset keys from all catalogues that have at least one sector.

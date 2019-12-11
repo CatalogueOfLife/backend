@@ -1,9 +1,5 @@
 package life.catalogue.release;
 
-import java.io.IOException;
-import java.time.LocalDate;
-import java.util.function.Consumer;
-
 import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -19,6 +15,10 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.function.Consumer;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 
@@ -211,7 +211,7 @@ public class CatalogueRelease implements Runnable {
     ) {
       logger.log("Copy all " + entity.getSimpleName());
       ProcessableDataset<V> mapper = session.getMapper(mapperClass);
-      mapper.processDataset(sourceDatasetKey, handler);
+      mapper.processDataset(sourceDatasetKey).forEach(handler);
       logger.log("Copied " + handler.getCounter() +" "+ entity.getSimpleName());
     }
   }
@@ -223,7 +223,7 @@ public class CatalogueRelease implements Runnable {
     ) {
       logger.log("Copy all " + entity.getSimpleName());
       TaxonExtensionMapper<V> mapper = session.getMapper(mapperClass);
-      mapper.processDataset(sourceDatasetKey, handler);
+      mapper.processDataset(sourceDatasetKey).forEach(handler);
       logger.log("Copied " + handler.getCounter() +" "+ entity.getSimpleName());
     }
   }

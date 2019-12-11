@@ -1,14 +1,17 @@
 package life.catalogue.matching;
 
-import java.util.Objects;
-
-import org.apache.ibatis.session.*;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.VerbatimRecordMapper;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
+import java.util.function.Consumer;
 
 public class DatasetMatcher {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetMatcher.class);
@@ -31,14 +34,14 @@ public class DatasetMatcher {
     try (SqlSession session = factory.openSession(false)){
       NameMapper nm = session.getMapper(NameMapper.class);
       BulkMatchHandler h = new BulkMatchHandler(updateIssues, ni, factory, datasetKey, allowInserts);
-      nm.processDataset(datasetKey, h);
+      nm.processDataset(datasetKey).forEach(h);
       LOG.info("Updated {} out of {} name matches for dataset {}", h.updates, h.counter, datasetKey);
       return h.updates;
     }
   }
   
   
-  static class BulkMatchHandler implements ResultHandler<Name>, AutoCloseable {
+  static class BulkMatchHandler implements Consumer<Name>, AutoCloseable {
     int counter = 0;
     int updates = 0;
     private final boolean updateIssues;
@@ -62,9 +65,8 @@ public class DatasetMatcher {
     }
   
     @Override
-    public void handleResult(ResultContext<? extends Name> ctx) {
+    public void accept(Name n) {
       counter++;
-      Name n = ctx.getResultObject();
       String oldId = n.getNameIndexId();
       NameMatch m = ni.match(n, allowInserts, false);
       

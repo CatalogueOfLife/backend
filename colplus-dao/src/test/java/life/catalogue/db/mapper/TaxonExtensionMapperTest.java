@@ -1,18 +1,16 @@
 package life.catalogue.db.mapper;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import life.catalogue.db.mapper.TaxonExtensionMapper;
-import org.apache.ibatis.session.ResultContext;
-import org.apache.ibatis.session.ResultHandler;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DatasetScopedEntity;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.TaxonExtension;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -57,16 +55,15 @@ abstract class TaxonExtensionMapperTest<T extends DatasetScopedEntity<Integer>, 
   
     // processing
     CountHandler handler = new CountHandler();
-    mapper().processDataset(tax.getDatasetKey(), handler);
+    mapper().processDataset(tax.getDatasetKey()).forEach(handler);
     assertEquals(1, handler.counter.size());
     assertEquals(originals.size(), (int) handler.counter.get(tax.getId()));
   }
   
-  public class CountHandler implements ResultHandler<TaxonExtension<T>> {
+  public class CountHandler implements Consumer<TaxonExtension<T>> {
     Map<String, Integer> counter = new HashMap<>();
     
-    public void handleResult(ResultContext<? extends TaxonExtension<T>> ctx) {
-      TaxonExtension<T> te = ctx.getResultObject();
+    public void accept(TaxonExtension<T> te) {
       assertEquals(tax.getId(), te.getTaxonID());
       if (counter.containsKey(te.getTaxonID())) {
         counter.put(te.getTaxonID(), counter.get(te.getTaxonID()) + 1);

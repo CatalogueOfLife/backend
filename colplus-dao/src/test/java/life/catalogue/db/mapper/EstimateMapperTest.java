@@ -1,13 +1,12 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.db.mapper.ReferenceMapper;
-import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Reference;
 import life.catalogue.api.model.SpeciesEstimate;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.EstimateType;
 import life.catalogue.db.PgSetupRule;
+import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -60,7 +59,7 @@ public class EstimateMapperTest extends CRUDTestBase<Integer, SpeciesEstimate, E
   public void process(){
     // processing
     DecisionMapperTest.CountHandler handler = new DecisionMapperTest.CountHandler();
-    mapper().processDataset(Datasets.DRAFT_COL, handler);
+    mapper().processDataset(Datasets.DRAFT_COL).forEach(handler);
     assertEquals(0, handler.counter.size());
   }
 }

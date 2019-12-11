@@ -1,35 +1,24 @@
 package life.catalogue.dao;
 
-import java.text.Collator;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-import java.util.function.Consumer;
-
-import javax.annotation.Nullable;
-
-import org.apache.ibatis.session.ResultContext;
-import org.apache.ibatis.session.ResultHandler;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleNameClassification;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.db.mapper.NameUsageWrapperMapper;
 import life.catalogue.db.mapper.TaxonMapper;
+import org.apache.ibatis.cursor.Cursor;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.function.Consumer;
 
 public class NameUsageProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageProcessor.class);
 
   private final SqlSessionFactory factory;
-  
-  public final static Comparator<String> PG_C_COLLATION = (left, right) -> {
-    Collator collator = Collator.getInstance(Locale.ROOT);
-    collator.setStrength(Collator.PRIMARY);
-    return collator.compare(left.replaceAll("\\p{Punct}", ""), right.replaceAll("\\p{Punct}", ""));
-  };
   
   public NameUsageProcessor(SqlSessionFactory factory) {
     this.factory = factory;
@@ -77,29 +66,13 @@ public class NameUsageProcessor {
     LOG.debug("Process dataset {} tree with root taxon {}", datasetKey, id);
     try (SqlSession s = factory.openSession(true)) {
       final NameUsageWrapperMapper nuwm = s.getMapper(NameUsageWrapperMapper.class);
-      SNCHandler handler = new SNCHandler(consumer, nuwm, datasetKey);
-      nuwm.processTree(datasetKey, sectorKey, id, handler);
+      Cursor<SimpleNameClassification> c = nuwm.processTree(datasetKey, sectorKey, id);
+      for (SimpleNameClassification cl : c) {
+        NameUsageWrapper obj = nuwm.getWithoutClassification(datasetKey, cl.getId());
+        obj.setClassification(cl.getClassification());
+        consumer.accept(obj);
+      }
     }
   }
-  
-  static class SNCHandler implements ResultHandler<SimpleNameClassification> {
-    final Consumer<NameUsageWrapper> handler;
-    final NameUsageWrapperMapper nuwm;
-    final int datasetKey;
 
-    SNCHandler(Consumer<NameUsageWrapper> handler, NameUsageWrapperMapper nuwm, int datasetKey) {
-      this.handler = handler;
-      this.nuwm = nuwm;
-      this.datasetKey = datasetKey;
-    }
-
-    @Override
-    public void handleResult(ResultContext<? extends SimpleNameClassification> ctx) {
-      SimpleNameClassification cl = ctx.getResultObject();
-      NameUsageWrapper obj = nuwm.getWithoutClassification(datasetKey, cl.getId());
-      obj.setClassification(cl.getClassification());
-      handler.accept(obj);
-    }
-  }
-  
 }

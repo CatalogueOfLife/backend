@@ -1,18 +1,9 @@
 package life.catalogue.matching;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import org.apache.ibatis.session.ResultHandler;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.MatchType;
@@ -25,11 +16,20 @@ import life.catalogue.dao.NameDao;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.importer.IdGenerator;
 import life.catalogue.matching.authorship.AuthorComparator;
+import org.apache.ibatis.session.ResultHandler;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * NameMatching implementation that is backed by a generic store with a list of names keyed to their normalised
@@ -91,11 +91,10 @@ public class NameIndexImpl implements NameIndex {
     counter.set(0);
     try (SqlSession s = sqlFactory.openSession()) {
       NameMapper mapper = s.getMapper(NameMapper.class);
-      ResultHandler<Name> handler = ctx -> {
-        addWithID(ctx.getResultObject());
+      mapper.processDataset(datasetKey).forEach(n -> {
+        addWithID(n);
         counter.incrementAndGet();
-      };
-      mapper.processDataset(datasetKey, handler);
+      });
       LOG.info("Loaded {} names from postgres into names index", counter);
     }
   }

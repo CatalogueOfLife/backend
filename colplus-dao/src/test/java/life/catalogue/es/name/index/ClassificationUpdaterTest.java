@@ -1,15 +1,6 @@
 package life.catalogue.es.name.index;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.NameUsage;
-import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.model.Synonym;
-import life.catalogue.api.model.Taxon;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchRequest.SortBy;
 import life.catalogue.api.search.NameUsageWrapper;
@@ -19,10 +10,12 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.gbif.nameparser.api.Rank.FAMILY;
-import static org.gbif.nameparser.api.Rank.GENUS;
-import static org.gbif.nameparser.api.Rank.ORDER;
-import static org.gbif.nameparser.api.Rank.SPECIES;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.gbif.nameparser.api.Rank.*;
 import static org.junit.Assert.assertEquals;
 
 public class ClassificationUpdaterTest extends EsReadTestBase {
@@ -46,9 +39,7 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     // Always create wrapper objects afresh b/c they will be pruned upon insert
     List<NameUsageWrapper> nameUsages = createTestObjects();
     nameUsages.forEach(nu -> nu.getClassification().forEach(sn -> sn.setName(sn.getName() + " (updated name)")));
-    try (ClassificationUpdater updater = new ClassificationUpdater(indexer, DATASET_KEY)) {
-      nameUsages.forEach(updater::handle);
-    }
+    new ClassificationUpdater(indexer, DATASET_KEY).accept(nameUsages);
     EsUtil.refreshIndex(getEsClient(), indexName);
 
     // Always create wrapper objects afresh b/c they will be pruned upon insert
@@ -61,7 +52,6 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     List<NameUsageWrapper> actual = search(query).getResult();
 
     assertEquals(expected, actual);
-
   }
 
   private static List<NameUsageWrapper> createTestObjects() {

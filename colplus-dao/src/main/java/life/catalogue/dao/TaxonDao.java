@@ -1,27 +1,26 @@
 package life.catalogue.dao;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import life.catalogue.db.mapper.*;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.session.ResultContext;
-import org.apache.ibatis.session.ResultHandler;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.db.mapper.*;
 import life.catalogue.parser.NameParser;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.NameType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Consumer;
 
 public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonDao.class);
@@ -329,15 +328,15 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     try (SqlSession session = factory.openSession(false)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
       SectorMapper sm = session.getMapper(SectorMapper.class);
-      SectorCountUpdHandler handler = new SectorCountUpdHandler(tm);
       tm.resetDatasetSectorCount(catalogueKey);
-      sm.processDataset(catalogueKey, handler);
+      SectorCountUpdHandler scConsumer = new SectorCountUpdHandler(tm);
+      sm.processDataset(catalogueKey).forEach(scConsumer);
       session.commit();
-      LOG.info("Updated dataset sector counts from {} sectors", handler. counter);
+      LOG.info("Updated dataset sector counts from {} sectors", scConsumer.counter);
     }
   }
   
-  static class SectorCountUpdHandler implements ResultHandler<Sector> {
+  static class SectorCountUpdHandler implements Consumer<Sector> {
     private final TaxonMapper tm;
     int counter = 0;
   
@@ -346,8 +345,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     }
   
     @Override
-    public void handleResult(ResultContext<? extends Sector> ctxt) {
-      Sector s = ctxt.getResultObject();
+    public void accept(Sector s) {
       if (s.getTarget() != null) {
         counter++;
         tm.incDatasetSectorCount(s.getTargetAsDSID(), s.getSubjectDatasetKey(), 1);

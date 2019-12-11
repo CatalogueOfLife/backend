@@ -1,15 +1,15 @@
 package life.catalogue.db.mapper;
 
-import java.util.List;
-import java.util.Set;
-import javax.annotation.Nullable;
-
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.session.ResultHandler;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.SimpleName;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.cursor.Cursor;
 import org.gbif.nameparser.api.Rank;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Mapper dealing with methods returning the NameUsage interface, i.e. a name in the context of either a Taxon, TaxonVernacularUsage,
@@ -58,14 +58,13 @@ public interface NameUsageMapper {
    * @param includeSynonyms if true includes synonyms, otherwise only taxa
    * @param depthFirst if true uses a depth first traversal which is more expensive then breadth first!
    */
-  void processTree(@Param("datasetKey") int datasetKey,
-                   @Param("sectorKey") Integer sectorKey,
-                   @Param("startID") @Nullable String startID,
-                   @Param("exclusions") @Nullable Set<String> exclusions,
-                   @Param("lowestRank") @Nullable Rank lowestRank,
-                   @Param("includeSynonyms") boolean includeSynonyms,
-                   @Param("depthFirst") boolean depthFirst,
-                   ResultHandler<NameUsageBase> handler);
+  Cursor<NameUsageBase> processTree(@Param("datasetKey") int datasetKey,
+                     @Param("sectorKey") Integer sectorKey,
+                     @Param("startID") @Nullable String startID,
+                     @Param("exclusions") @Nullable Set<String> exclusions,
+                     @Param("lowestRank") @Nullable Rank lowestRank,
+                     @Param("includeSynonyms") boolean includeSynonyms,
+                     @Param("depthFirst") boolean depthFirst);
   
   /**
    * Depth first only implementation using a much lighter object then above.
@@ -81,13 +80,12 @@ public interface NameUsageMapper {
    * @param exclusions set of taxon ids to exclude from traversal. This will also exclude all descendants
    * @param includeSynonyms if true includes synonyms, otherwise only taxa
    */
-  void processTreeSimple(@Param("datasetKey") int datasetKey,
+  Cursor<SimpleName> processTreeSimple(@Param("datasetKey") int datasetKey,
                    @Param("sectorKey") @Nullable Integer sectorKey,
                    @Param("startID") @Nullable String startID,
                    @Param("exclusions") @Nullable Set<String> exclusions,
                    @Param("lowestRank") @Nullable Rank lowestRank,
-                   @Param("includeSynonyms") boolean includeSynonyms,
-                   ResultHandler<SimpleName> handler);
+                   @Param("includeSynonyms") boolean includeSynonyms);
   
   
 }

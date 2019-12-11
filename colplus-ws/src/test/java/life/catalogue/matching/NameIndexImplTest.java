@@ -1,11 +1,7 @@
 package life.catalogue.matching;
 
-import java.util.Collection;
-import java.util.Set;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
@@ -17,12 +13,16 @@ import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.TestDataRule;
 import life.catalogue.importer.IdGenerator;
 import life.catalogue.parser.NameParser;
+import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.util.Collection;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -50,7 +50,7 @@ public class NameIndexImplTest {
     assertEquals(0, ni.size());
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()) {
       NameMapper nm = session.getMapper(NameMapper.class);
-      nm.processDataset(11, ctx -> ni.add(ctx.getResultObject()));
+      nm.processDataset(11).forEach(ni::add);
     }
   }
   

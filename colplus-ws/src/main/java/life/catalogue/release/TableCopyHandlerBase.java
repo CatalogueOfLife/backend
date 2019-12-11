@@ -1,12 +1,14 @@
 package life.catalogue.release;
 
-import java.util.function.Consumer;
-
-import org.apache.ibatis.session.*;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-abstract class TableCopyHandlerBase<T> implements ResultHandler<T>, AutoCloseable {
+import java.util.function.Consumer;
+
+abstract class TableCopyHandlerBase<T> implements Consumer<T>, AutoCloseable {
   
   private static final Logger LOG = LoggerFactory.getLogger(TableCopyHandlerBase.class);
   private static final int BATCHSIZE = 10000;
@@ -38,8 +40,7 @@ abstract class TableCopyHandlerBase<T> implements ResultHandler<T>, AutoCloseabl
   abstract void create(T obj);
   
   @Override
-  public void handleResult(ResultContext<? extends T> ctxt) {
-    T obj = ctxt.getResultObject();
+  public void accept(T obj) {
     updater.accept(obj);
     create(obj);
     // commit in batches

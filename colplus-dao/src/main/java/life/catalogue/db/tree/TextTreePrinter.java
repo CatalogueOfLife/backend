@@ -1,19 +1,21 @@
 package life.catalogue.db.tree;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.util.*;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.session.ResultContext;
-import org.apache.ibatis.session.ResultHandler;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.Rank;
+
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * Print an entire dataset in the indented text format used by TxtPrinter.
@@ -36,7 +38,7 @@ import org.gbif.nameparser.api.Rank;
  * Absinthium viridifolium var. rupestre (L.) Besser
  * </pre>
  */
-public class TextTreePrinter implements ResultHandler<SimpleName> {
+public class TextTreePrinter implements Consumer<SimpleName> {
   public static final String SYNONYM_SYMBOL = "*";
   public static final String BASIONYM_SYMBOL = "$";
   
@@ -100,7 +102,8 @@ public class TextTreePrinter implements ResultHandler<SimpleName> {
     try {
       session = factory.openSession(true);
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-      num.processTreeSimple(datasetKey, sectorKey, startID, null, lowestRank, true, this);
+      num.processTreeSimple(datasetKey, sectorKey, startID, null, lowestRank, true)
+              .forEach(this);
 
     } finally {
       writer.flush();
@@ -114,9 +117,8 @@ public class TextTreePrinter implements ResultHandler<SimpleName> {
   }
   
   @Override
-  public void handleResult(ResultContext<? extends SimpleName> resultContext) {
+  public void accept(SimpleName u) {
     try {
-      SimpleName u = resultContext.getResultObject();
       // send end signals
       while (!parents.isEmpty() && !parents.peekLast().getId().equals(u.getParent())) {
         end(parents.removeLast());

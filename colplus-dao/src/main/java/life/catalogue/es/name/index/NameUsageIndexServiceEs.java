@@ -1,11 +1,12 @@
 package life.catalogue.es.name.index;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Iterables;
 import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.SimpleNameClassification;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.common.func.BatchConsumer;
 import life.catalogue.dao.NameUsageProcessor;
-import life.catalogue.db.mapper.BatchResultHandler;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.NameUsageWrapperMapper;
@@ -13,6 +14,7 @@ import life.catalogue.es.EsConfig;
 import life.catalogue.es.EsException;
 import life.catalogue.es.EsUtil;
 import life.catalogue.es.model.NameUsageDocument;
+import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.elasticsearch.client.RestClient;
@@ -20,7 +22,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
@@ -63,12 +68,11 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       EsUtil.refreshIndex(client, index);
       tCount = indexer.documentsIndexed();
       indexer.reset();
-      try (SqlSession session = factory.openSession(true);
-          BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)
-      ) {
-        NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
+      try (SqlSession session = factory.openSession(true)) {
         LOG.info("Indexing bare names from dataset {}", datasetKey);
-        mapper.processDatasetBareNames(datasetKey, null, handler);
+        NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
+        Cursor<NameUsageWrapper> cursor = mapper.processDatasetBareNames(datasetKey, null);
+        Iterables.partition(cursor, BATCH_SIZE).forEach(indexer);
       }
       EsUtil.refreshIndex(client, index);
       bCount = indexer.documentsIndexed();
@@ -85,18 +89,18 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     try (SqlSession session = factory.openSession()) {
       deleteSector(s.getKey());
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
-      
+
       try (BatchConsumer<NameUsageWrapper> handler = new BatchConsumer<>(indexer, BATCH_SIZE)) {
         LOG.info("Indexing usages from sector {}", s.getKey());
         processor.processSector(s, handler);
       }
       tCount = indexer.documentsIndexed();
       indexer.reset();
-      
-      try (BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)) {
-        LOG.info("Indexing bare names from sector {}", s.getKey());
-        mapper.processDatasetBareNames(s.getDatasetKey(), s.getKey(), handler);
-      }
+
+      LOG.info("Indexing bare names from sector {}", s.getKey());
+      Cursor<NameUsageWrapper> cursor = mapper.processDatasetBareNames(s.getDatasetKey(), s.getKey());
+      Iterables.partition(cursor, BATCH_SIZE).forEach(indexer);
+
       EsUtil.refreshIndex(client, index);
       bCount = indexer.documentsIndexed();
     } catch (IOException e) {
@@ -142,9 +146,9 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     NameUsageIndexer indexer = new NameUsageIndexer(client, index);
     try (SqlSession session = factory.openSession()) {
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
-      try (ClassificationUpdater updater = new ClassificationUpdater(indexer, datasetKey)) {
-        mapper.processTree(datasetKey, null, rootTaxonId, updater);
-      }
+      Cursor<SimpleNameClassification> cursor = mapper.processTree(datasetKey, null, rootTaxonId);
+      ClassificationUpdater updater = new ClassificationUpdater(indexer, datasetKey);
+      Iterables.partition(cursor, BATCH_SIZE).forEach(updater);
       EsUtil.refreshIndex(client, index);
     } catch (IOException e) {
       throw new EsException(e);
@@ -179,12 +183,11 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
         }
         tc = indexer.documentsIndexed();
         indexer.reset();
-        try (SqlSession session = factory.openSession(true);
-             BatchResultHandler<NameUsageWrapper> handler = new BatchResultHandler<>(indexer, BATCH_SIZE)
-        ) {
-          NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
+        try (SqlSession session = factory.openSession(true)) {
           LOG.info("Indexing bare names for dataset {}", datasetKey);
-          mapper.processDatasetBareNames(datasetKey, null, handler);
+          NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
+          Cursor<NameUsageWrapper> cursor = mapper.processDatasetBareNames(datasetKey, null);
+          Iterables.partition(cursor, BATCH_SIZE).forEach(indexer);
         }
         EsUtil.refreshIndex(client, index);
         bc = indexer.documentsIndexed();

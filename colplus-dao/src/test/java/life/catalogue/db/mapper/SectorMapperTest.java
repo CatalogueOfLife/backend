@@ -139,7 +139,7 @@ public class SectorMapperTest extends CRUDTestBase<Integer, Sector, SectorMapper
   public void process(){
     // processing
     DecisionMapperTest.CountHandler handler = new DecisionMapperTest.CountHandler();
-    mapper().processDataset(Datasets.DRAFT_COL, handler);
+    mapper().processDataset(Datasets.DRAFT_COL).forEach(handler);
     assertEquals(0, handler.counter.size());
   }
 }

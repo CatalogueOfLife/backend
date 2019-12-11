@@ -1,42 +1,33 @@
 package life.catalogue.assembly;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+import com.google.common.collect.ImmutableList;
+import io.dropwizard.lifecycle.Managed;
+import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.Datasets;
+import life.catalogue.common.concurrent.ExecutorUtils;
+import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.es.name.index.NameUsageIndexService;
+import life.catalogue.importer.ImportManager;
+import org.apache.ibatis.exceptions.PersistenceException;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.gbif.nameparser.utils.NamedThreadFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
-
-import life.catalogue.importer.ImportManager;
-import org.apache.ibatis.exceptions.PersistenceException;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import life.catalogue.api.model.ColUser;
-import life.catalogue.api.model.RequestScope;
-import life.catalogue.api.model.Sector;
-import life.catalogue.api.model.SectorImport;
-import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.common.concurrent.ExecutorUtils;
-import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.db.mapper.CollectResultHandler;
-import life.catalogue.db.mapper.NameMapper;
-import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.es.name.index.NameUsageIndexService;
-import org.gbif.nameparser.utils.NamedThreadFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.dropwizard.lifecycle.Managed;
 
 public class AssemblyCoordinator implements Managed {
   static  final Comparator<Sector> SECTOR_ORDER = Comparator.comparing(Sector::getTarget, Comparator.nullsLast(SimpleName::compareTo));
@@ -151,8 +142,8 @@ public class AssemblyCoordinator implements Managed {
         final AtomicInteger cnt = new AtomicInteger();
         try (SqlSession session = factory.openSession(true)) {
           SectorMapper sm = session.getMapper(SectorMapper.class);
-          sm.processSectors(Datasets.DRAFT_COL, request.getDatasetKey(), (ctx) -> {
-            syncSector(ctx.getResultObject().getKey(), user);
+          sm.processSectors(Datasets.DRAFT_COL, request.getDatasetKey()).forEach(s -> {
+            syncSector(s.getKey(), user);
             cnt.getAndIncrement();
           });
         }
@@ -214,15 +205,15 @@ public class AssemblyCoordinator implements Managed {
   }
   
   private int syncAll(ColUser user) {
-    LOG.warn("Sync all sectors triggered by user {}", user);
-    CollectResultHandler<Sector> collector = new CollectResultHandler<>();
+    LOG.warn("Sync all sectors. Triggered by user {}", user);
+    List<Sector> sectors;
     try (SqlSession session = factory.openSession(false)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
-      sm.processDataset(Datasets.DRAFT_COL, collector);
+      sectors = ImmutableList.copyOf(sm.processDataset(Datasets.DRAFT_COL));
     }
-    collector.getResults().sort(SECTOR_ORDER);
+    sectors.sort(SECTOR_ORDER);
     int failed = 0;
-    for (Sector s : collector.getResults()) {
+    for (Sector s : sectors) {
       try {
         syncSector(s.getKey(), user);
       } catch (RuntimeException e) {
@@ -230,7 +221,7 @@ public class AssemblyCoordinator implements Managed {
         failed++;
       }
     }
-    int queued = collector.getResults().size()-failed;
+    int queued = sectors.size()-failed;
     LOG.info("Scheduled {} sectors for sync, {} failed", queued, failed);
     return queued;
   }

@@ -23,10 +23,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 import static life.catalogue.api.util.ObjectUtils.coalesce;
 
-public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoCloseable {
+public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(TreeCopyHandler.class);
   private static Set<EntityType> COPY_DATA = ImmutableSet.of(
       EntityType.REFERENCE,
@@ -66,7 +67,7 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
     Taxon t = tm.get(sector.getTargetAsDSID());
     target = new Usage(t.getId(), t.getName().getRank(), t.getStatus());
   }
-  
+
   private static class Usage {
     String id;
     Rank rank;
@@ -173,10 +174,9 @@ public class TreeCopyHandler implements ResultHandler<NameUsageBase>, AutoClosea
     }
     return parent;
   }
-  
+
   @Override
-  public void handleResult(ResultContext<? extends NameUsageBase> ctxt) {
-    NameUsageBase u = ctxt.getResultObject();
+  public void accept(NameUsageBase u) {
     u.setSectorKey(sector.getKey());
     u.getName().setSectorKey(sector.getKey());
     // before we apply a specific decision

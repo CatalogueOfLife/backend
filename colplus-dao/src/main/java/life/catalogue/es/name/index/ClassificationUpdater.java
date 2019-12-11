@@ -1,69 +1,38 @@
 package life.catalogue.es.name.index;
 
-import java.io.Closeable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-
-import com.google.common.annotations.VisibleForTesting;
-
-import org.apache.ibatis.session.ResultContext;
-import org.apache.ibatis.session.ResultHandler;
 import life.catalogue.api.model.SimpleNameClassification;
 import life.catalogue.es.model.NameUsageDocument;
 import life.catalogue.es.name.NameUsageQueryService;
 import life.catalogue.es.name.NameUsageWrapperConverter;
-import life.catalogue.es.query.BoolQuery;
-import life.catalogue.es.query.EsSearchRequest;
-import life.catalogue.es.query.SortField;
-import life.catalogue.es.query.TermQuery;
-import life.catalogue.es.query.TermsQuery;
+import life.catalogue.es.query.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import static java.util.stream.Collectors.toMap;
 
-public class ClassificationUpdater implements Closeable, ResultHandler<SimpleNameClassification> {
+public class ClassificationUpdater implements Consumer<List<? extends SimpleNameClassification>> {
 
   private static final Logger LOG = LoggerFactory.getLogger(ClassificationUpdater.class);
 
-  private static final int BATCH_SIZE = 4096;
-
-  private final List<SimpleNameClassification> collected;
   private final NameUsageIndexer indexer;
   private final int datasetKey;
 
   public ClassificationUpdater(NameUsageIndexer indexer, int datasetKey) {
-    this.collected = new ArrayList<>(BATCH_SIZE);
     this.indexer = indexer;
     this.datasetKey = datasetKey;
   }
 
   @Override
-  public void handleResult(ResultContext<? extends SimpleNameClassification> resultContext) {
-    handle(resultContext.getResultObject());
-  }
-
-  @Override
-  public void close() {
-    if (collected.size() != 0) {
-      flush();
-    }
-  }
-
-  @VisibleForTesting
-  void handle(SimpleNameClassification nuw) {
-    collected.add(nuw);
-    if (collected.size() == BATCH_SIZE) {
-      flush();
-    }
-  }
-
-  private void flush() {
-    LOG.debug("Received {} records from Postgres", collected.size());
-    Map<String, SimpleNameClassification> lookups = collected.stream().collect(toMap(SimpleNameClassification::getId, Function.identity()));
+  public void accept(List<? extends SimpleNameClassification> batch) {
+    LOG.debug("Received {} records from Postgres", batch.size());
+    Map<String, SimpleNameClassification> lookups = batch.stream().collect(toMap(SimpleNameClassification::getId, Function.identity()));
     List<NameUsageDocument> documents = loadNameUsages(lookups.keySet());
     LOG.debug("Found {} matching documents", documents.size());
     documents.forEach(doc -> {
@@ -73,11 +42,10 @@ public class ClassificationUpdater implements Closeable, ResultHandler<SimpleNam
     });
     indexer.update(documents);
     LOG.debug("Updated {} documents", documents.size());
-    collected.clear();
   }
 
   private List<NameUsageDocument> loadNameUsages(Set<String> ids) {
-    List<NameUsageDocument> usages = new ArrayList<>(collected.size());
+    List<NameUsageDocument> usages = new ArrayList<>(ids.size());
     List<String> terms = new ArrayList<>(1024);
     for (String id : ids) {
       terms.add(id);

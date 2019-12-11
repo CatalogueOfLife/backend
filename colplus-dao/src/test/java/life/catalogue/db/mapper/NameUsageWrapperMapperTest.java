@@ -6,8 +6,7 @@ import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.Datasets;
-import org.apache.ibatis.session.ResultContext;
-import org.apache.ibatis.session.ResultHandler;
+import org.apache.ibatis.cursor.Cursor;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -30,13 +29,12 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
   
   @Test
   public void processDatasetBareNames() throws Exception {
-    mapper().processDatasetBareNames(NAME4.getDatasetKey(), null,new ResultHandler<NameUsageWrapper>() {
-      public void handleResult(ResultContext<? extends NameUsageWrapper> ctx) {
+    Cursor<NameUsageWrapper> c = mapper().processDatasetBareNames(NAME4.getDatasetKey(), null);
+    c.forEach(obj -> {
         counter.incrementAndGet();
-        assertNotNull(ctx.getResultObject());
-        assertNotNull(ctx.getResultObject().getUsage());
-        assertNotNull(ctx.getResultObject().getUsage().getName());
-      }
+        assertNotNull(obj);
+        assertNotNull(obj.getUsage());
+        assertNotNull(obj.getUsage().getName());
     });
     Assert.assertEquals(1, counter.get());
   }
