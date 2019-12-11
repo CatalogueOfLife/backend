@@ -1,15 +1,15 @@
 package life.catalogue.db.mapper;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import javax.annotation.Nullable;
-
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.session.ResultHandler;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Name;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.DatasetPageable;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.cursor.Cursor;
+
+import javax.annotation.Nullable;
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * When creating a new name if the homotypic group key is not yet set the newly created name key will be
@@ -22,16 +22,14 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, ProcessableDataset
   /**
    * Lists all distinct name index ids from the names table.
    */
-  void processIndexIds(@Param("datasetKey") int datasetKey,
-                       @Nullable @Param("sectorKey") Integer sectorKey,
-                       ResultHandler<String> handler);
+  Cursor<String> processIndexIds(@Param("datasetKey") int datasetKey,
+                         @Nullable @Param("sectorKey") Integer sectorKey);
   
   /**
    * Iterates over all names of a given dataset that have been modified since the given time and processes them with the supplied handler.
    */
-  void processSince(@Param("datasetKey") int datasetKey,
-                    @Param("since") LocalDateTime since,
-                    ResultHandler<Name> handler);
+  Cursor<Name> processSince(@Param("datasetKey") int datasetKey,
+                    @Param("since") LocalDateTime since);
   
   /**
    * Lists all homotypic names based on the same homotypic name key

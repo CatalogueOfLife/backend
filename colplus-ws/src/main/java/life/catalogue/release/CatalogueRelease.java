@@ -9,8 +9,6 @@ import life.catalogue.dao.Partitioner;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.name.index.NameUsageIndexService;
-import org.apache.ibatis.session.ResultContext;
-import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -193,13 +191,9 @@ public class CatalogueRelease implements Runnable {
     // archive dataset metadata
     try (SqlSession session = factory.openSession(false)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      dm.process(null, sourceDatasetKey, new ResultHandler<Dataset>() {
-        @Override
-        public void handleResult(ResultContext<? extends Dataset> ctxt) {
-          Dataset d = ctxt.getResultObject();
-          LOG.debug("Archive dataset {}: {}", d.getKey(), d.getTitle());
-          dm.createArchive(d.getKey(), releaseKey);
-        }
+      dm.process(null, sourceDatasetKey).forEach(d -> {
+        LOG.debug("Archive dataset {}: {}", d.getKey(), d.getTitle());
+        dm.createArchive(d.getKey(), releaseKey);
       });
     }
   }

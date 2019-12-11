@@ -1,17 +1,16 @@
 package life.catalogue.db.mapper;
 
-import java.util.List;
-import java.util.UUID;
-
-import javax.annotation.Nullable;
-
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.session.ResultHandler;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.GlobalPageable;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.cursor.Cursor;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.UUID;
 
 public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Dataset> {
   
@@ -31,9 +30,8 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    * @param filter optional SQL where clause (without WHERE)
    * @param catalogueKey optional filter returning only datasets being constituents of the given catalogueKey
    */
-  void process(@Nullable @Param("filter") String filter,
-               @Nullable @Param("catalogueKey") Integer catalogueKey,
-               ResultHandler<Dataset> handler);
+  Cursor<Dataset> process(@Nullable @Param("filter") String filter,
+                          @Nullable @Param("catalogueKey") Integer catalogueKey);
 
   List<Dataset> search(@Param("req") DatasetSearchRequest request, @Param("page") Page page);
   

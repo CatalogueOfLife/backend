@@ -1,26 +1,24 @@
 package life.catalogue.img;
 
+import com.google.common.base.Strings;
+import life.catalogue.api.model.Dataset;
+import life.catalogue.common.io.DownloadException;
+import life.catalogue.common.io.DownloadUtil;
+import life.catalogue.db.mapper.DatasetMapper;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
-import javax.annotation.Nullable;
-import javax.imageio.ImageIO;
-
-import com.google.common.base.Strings;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.ibatis.session.ResultContext;
-import org.apache.ibatis.session.ResultHandler;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.common.io.DownloadException;
-import life.catalogue.common.io.DownloadUtil;
-import life.catalogue.db.mapper.DatasetMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class LogoUpdateJob implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(LogoUpdateJob.class);
@@ -74,16 +72,13 @@ public class LogoUpdateJob implements Runnable {
     AtomicInteger failed = new AtomicInteger();
     try (SqlSession session = factory.openSession()) {
       LOG.info("Update all logos");
-      session.getMapper(DatasetMapper.class).process("logo IS NOT NULL", null, new ResultHandler<Dataset>() {
-        @Override
-        public void handleResult(ResultContext<? extends Dataset> ctx) {
-          Boolean result = pullLogo(ctx.getResultObject());
-          if (result != null) {
-            if (result) {
-              counter.incrementAndGet();
-            } else {
-              failed.incrementAndGet();
-            }
+      session.getMapper(DatasetMapper.class).process("logo IS NOT NULL", null).forEach(d -> {
+        Boolean result = pullLogo(d);
+        if (result != null) {
+          if (result) {
+            counter.incrementAndGet();
+          } else {
+            failed.incrementAndGet();
           }
         }
       });

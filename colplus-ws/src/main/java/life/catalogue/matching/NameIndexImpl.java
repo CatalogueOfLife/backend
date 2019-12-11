@@ -16,7 +16,6 @@ import life.catalogue.dao.NameDao;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.importer.IdGenerator;
 import life.catalogue.matching.authorship.AuthorComparator;
-import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.NameType;
@@ -104,12 +103,11 @@ public class NameIndexImpl implements NameIndex {
     final AtomicInteger newCnt = new AtomicInteger();
     try (SqlSession s = sqlFactory.openSession()) {
       NameMapper mapper = s.getMapper(NameMapper.class);
-      ResultHandler<Name> handler = ctx -> {
-        addWithID(ctx.getResultObject());
+      mapper.processSince(datasetKey, startedLoading).forEach(n -> {
+        addWithID(n);
         counter.incrementAndGet();
         newCnt.incrementAndGet();
-      };
-      mapper.processSince(datasetKey, startedLoading, handler);
+      });
       LOG.info("Loaded {} additional names since start {} from postgres into names index", newCnt, startedLoading);
     }
   }

@@ -1,23 +1,22 @@
 package life.catalogue.dao;
 
-import java.io.*;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.google.common.annotations.VisibleForTesting;
-import org.apache.commons.io.FileUtils;
-import org.apache.ibatis.session.ResultContext;
-import org.apache.ibatis.session.ResultHandler;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.Sector;
 import life.catalogue.common.io.Utf8IOUtils;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.tree.TextTreePrinter;
+import org.apache.commons.io.FileUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.*;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * DAO giving read and write access to potentially large text trees and name lists
@@ -46,7 +45,7 @@ public class NamesTreeDao {
         NamesWriter handler = new NamesWriter(namesFile(datasetKey, attempt))
     ){
       NameMapper nm = session.getMapper(NameMapper.class);
-      nm.processIndexIds(datasetKey, null, handler);
+      nm.processIndexIds(datasetKey, null).forEach(handler);
       count = handler.counter;
       LOG.info("Written {} index names for dataset {}-{}", count, datasetKey, attempt);
     }
@@ -56,19 +55,19 @@ public class NamesTreeDao {
   public int updateSectorNames(int sectorKey, int attempt) {
     int count;
     try (SqlSession session = factory.openSession(true);
-         NamesWriter handler = new NamesWriter(sectorNamesFile(sectorKey, attempt))
+         NamesWriter idConsumer = new NamesWriter(sectorNamesFile(sectorKey, attempt))
     ){
       SectorMapper sm = session.getMapper(SectorMapper.class);
       NameMapper nm = session.getMapper(NameMapper.class);
       Sector s = sm.get(sectorKey);
-      nm.processIndexIds(s.getSubjectDatasetKey(), sectorKey, handler);
-      count = handler.counter;
+      nm.processIndexIds(s.getSubjectDatasetKey(), sectorKey).forEach(idConsumer);
+      count = idConsumer.counter;
       LOG.info("Written {} index names for sector {}-{}", count, sectorKey, attempt);
     }
     return count;
   }
 
-  static class NamesWriter implements ResultHandler<String>, AutoCloseable {
+  static class NamesWriter implements Consumer<String>, AutoCloseable {
     public int counter = 0;
     private final File f;
     private final BufferedWriter w;
@@ -94,9 +93,8 @@ public class NamesTreeDao {
     }
   
     @Override
-    public void handleResult(ResultContext<? extends String> resultContext) {
+    public void accept(String id) {
       try {
-        String id = resultContext.getResultObject();
         if (id != null) {
           counter++;
           w.append(id);
