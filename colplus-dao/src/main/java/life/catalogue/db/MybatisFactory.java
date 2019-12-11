@@ -1,5 +1,6 @@
 package life.catalogue.db;
 
+import com.google.common.base.Preconditions;
 import life.catalogue.api.model.Duplicate;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.TreeNode;
@@ -15,10 +16,14 @@ import org.apache.ibatis.type.EnumTypeHandler;
 import org.apache.ibatis.type.TypeAliasRegistry;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 import org.gbif.nameparser.api.ParsedName;
+import org.gbif.nameparser.utils.Closer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * Configures mybatis and provides a SqlSessionFactory for a given datasource.
@@ -61,9 +66,35 @@ public class MybatisFactory {
     registerMapper(mybatisCfg.getMapperRegistry());
     
     SqlSessionFactoryBuilder builder = new SqlSessionFactoryBuilder();
-    return builder.build(mybatisCfg);
+    return requireUtf8Encoding(builder.build(mybatisCfg));
   }
-  
+
+  private static SqlSessionFactory requireUtf8Encoding(SqlSessionFactory factory) {
+    Connection c = null;
+    Statement st = null;
+    try (SqlSession session = factory.openSession()) {
+      c = session.getConnection();
+      st = c.createStatement();
+
+      st.execute("SHOW SERVER_ENCODING");
+      st.getResultSet().next();
+      String cs = st.getResultSet().getString(1);
+      Preconditions.checkArgument("UTF8".equalsIgnoreCase(cs), "Bad server encoding");
+
+      st.execute("SHOW CLIENT_ENCODING");
+      st.getResultSet().next();
+      cs = st.getResultSet().getString(1);
+      Preconditions.checkArgument("UTF8".equalsIgnoreCase(cs), "Bad client encoding");
+
+    } catch (SQLException e) {
+      LOG.error("Failed to setup mybatis session factory", e);
+
+    } finally {
+      Closer.closeQuitely(st, c);
+    }
+    return factory;
+  }
+
   private static void registerMapper(MapperRegistry registry) {
     // register the common mapper with a shorter namespace to keep include statements short
     registry.addMapper(Common.class);

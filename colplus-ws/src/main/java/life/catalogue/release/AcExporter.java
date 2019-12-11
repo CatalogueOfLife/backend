@@ -1,5 +1,26 @@
 package life.catalogue.release;
 
+import com.google.common.io.Files;
+import freemarker.template.*;
+import life.catalogue.WsServerConfig;
+import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.search.DatasetSearchRequest;
+import life.catalogue.common.io.CompressionUtil;
+import life.catalogue.common.io.Utf8IOUtils;
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.img.ImgConfig;
+import life.catalogue.postgres.PgCopyUtils;
+import no.api.freemarker.java8.Java8ObjectWrapper;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.gbif.nameparser.api.Rank;
+import org.postgresql.jdbc.PgConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -14,31 +35,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.common.io.Files;
-import freemarker.template.*;
-import no.api.freemarker.java8.Java8ObjectWrapper;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import life.catalogue.WsServerConfig;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.search.DatasetSearchRequest;
-import life.catalogue.common.io.CompressionUtil;
-import life.catalogue.common.io.Utf8IOUtils;
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.img.ImgConfig;
-import life.catalogue.postgres.PgCopyUtils;
-import org.gbif.nameparser.api.Rank;
-import org.postgresql.jdbc.PgConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class AcExporter {
   private static final Logger LOG = LoggerFactory.getLogger(AcExporter.class);
   private static final String EXPORT_SQL = "/exporter/ac-export.sql";
-  private static final String COPY_WITH = "CSV HEADER NULL '\\N'";
+  private static final String COPY_WITH = "CSV HEADER NULL '\\N' ENCODING 'UTF8' ";
   private static final Pattern COPY_START = Pattern.compile("^\\s*COPY\\s*\\(");
   private static final Pattern COPY_END   = Pattern.compile("^\\s*\\)\\s*TO\\s*'(.+)'");
   private static final Pattern VAR_DATASET_KEY = Pattern.compile("\\{\\{datasetKey}}", Pattern.CASE_INSENSITIVE);

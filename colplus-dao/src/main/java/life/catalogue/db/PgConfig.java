@@ -1,16 +1,17 @@
 package life.catalogue.db;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.Objects;
-import javax.validation.constraints.Min;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.ibatis.jdbc.ScriptRunner;
+
+import javax.validation.constraints.Min;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Objects;
 
 /**
  * A configuration for the postgres database connection pool as used by the mybatis layer.
@@ -113,7 +114,12 @@ public class PgConfig extends PgDbConfig {
    * @return a new simple postgres jdbc connection to the given db on this pg server
    */
   public Connection connect(PgDbConfig db) throws SQLException {
-    return DriverManager.getConnection(jdbcUrl(db), Strings.emptyToNull(db.user), Strings.emptyToNull(db.password));
+    Connection c = DriverManager.getConnection(jdbcUrl(db), Strings.emptyToNull(db.user), Strings.emptyToNull(db.password));
+    // enforce UTF8 connections, see https://github.com/Sp2000/colplus-backend/issues/577
+    try (Statement st = c.createStatement()) {
+      st.execute("SET client_encoding = 'UTF8'");
+    }
+    return c;
   }
   
   private String jdbcUrl(PgDbConfig db) {

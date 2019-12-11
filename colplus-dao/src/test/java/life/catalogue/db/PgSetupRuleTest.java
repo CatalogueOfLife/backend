@@ -27,8 +27,18 @@ public class PgSetupRuleTest {
   
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
-  
-  
+
+
+  /**
+   * https://github.com/Sp2000/colplus-backend/issues/577
+   */
+  @Test
+  public void connectionCharset() throws Exception {
+    try (Connection c = pgSetupRule.connect()) {
+      PgConfigTest.connectionTest(c);
+    }
+  }
+
   @Test
   public void pgEnums() throws Exception {
     try (Connection c = pgSetupRule.connect()) {
