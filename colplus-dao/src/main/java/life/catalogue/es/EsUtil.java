@@ -1,30 +1,24 @@
 package life.catalogue.es;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import life.catalogue.es.mapping.Mappings;
-import life.catalogue.es.mapping.MappingsFactory;
 import life.catalogue.es.ddl.Index6Definition;
 import life.catalogue.es.ddl.Index7Definition;
 import life.catalogue.es.ddl.IndexDefinition;
 import life.catalogue.es.ddl.Settings;
+import life.catalogue.es.mapping.Mappings;
+import life.catalogue.es.mapping.MappingsFactory;
 import life.catalogue.es.model.NameUsageDocument;
-import life.catalogue.es.query.BoolQuery;
-import life.catalogue.es.query.EsSearchRequest;
-import life.catalogue.es.query.MatchAllQuery;
-import life.catalogue.es.query.Query;
-import life.catalogue.es.query.SortField;
-import life.catalogue.es.query.TermQuery;
-import life.catalogue.es.query.TermsQuery;
+import life.catalogue.es.query.*;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class EsUtil {
 
@@ -57,6 +51,7 @@ public class EsUtil {
     }
     Request request = new Request("PUT", name);
     request.setJsonEntity(EsModule.write(indexDef));
+    LOG.warn("Creating new ES Index {}", name);
     executeRequest(client, request);
   }
 
@@ -68,6 +63,7 @@ public class EsUtil {
    * @throws IOException
    */
   public static void deleteIndex(RestClient client, String name) throws IOException {
+    LOG.warn("Deleting ES Index {}", name);
     Request request = new Request("DELETE", name);
     Response response = null;
     try {
