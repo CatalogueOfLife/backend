@@ -4,13 +4,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import life.catalogue.es.mapping.Mappings;
-import life.catalogue.es.mapping.MappingsFactory;
+import java.util.Set;
+import org.elasticsearch.client.Request;
+import org.elasticsearch.client.Response;
+import org.elasticsearch.client.ResponseException;
+import org.elasticsearch.client.RestClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import life.catalogue.es.ddl.Index6Definition;
 import life.catalogue.es.ddl.Index7Definition;
 import life.catalogue.es.ddl.IndexDefinition;
 import life.catalogue.es.ddl.Settings;
+import life.catalogue.es.mapping.Mappings;
+import life.catalogue.es.mapping.MappingsFactory;
 import life.catalogue.es.model.NameUsageDocument;
 import life.catalogue.es.query.BoolQuery;
 import life.catalogue.es.query.EsSearchRequest;
@@ -19,20 +25,13 @@ import life.catalogue.es.query.Query;
 import life.catalogue.es.query.SortField;
 import life.catalogue.es.query.TermQuery;
 import life.catalogue.es.query.TermsQuery;
-import org.elasticsearch.client.Request;
-import org.elasticsearch.client.Response;
-import org.elasticsearch.client.ResponseException;
-import org.elasticsearch.client.RestClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class EsUtil {
 
   private static final Logger LOG = LoggerFactory.getLogger(EsUtil.class);
 
   /**
-   * Creates an index with the provided name and index configuration, with a document type mapping based on the provided
-   * model class.
+   * Creates an index with the provided name and index configuration, with a document type mapping based on the provided model class.
    * 
    * @param client
    * @param name
@@ -96,9 +95,16 @@ public class EsUtil {
     return response.getStatusLine().getStatusCode() == 200;
   }
 
+  public static Set<String> listAliases(RestClient client, String index) throws IOException {
+    if (!indexExists(client, index)) {
+      throw new IllegalArgumentException("No such index: " + index);
+    }
+    Response response = executeRequest(client, new Request("GET", index));
+    return null;
+  }
+
   /**
-   * Removes the dataset corresponding to the provided key. You must still refresh the index for the changes to become
-   * visible.
+   * Removes the dataset corresponding to the provided key. You must still refresh the index for the changes to become visible.
    * 
    * @param client
    * @param index
@@ -111,8 +117,7 @@ public class EsUtil {
   }
 
   /**
-   * Removes the sector corresponding to the provided key. You must still refresh the index for the changes to become
-   * visible.
+   * Removes the sector corresponding to the provided key. You must still refresh the index for the changes to become visible.
    * 
    * @param client
    * @param index
@@ -125,8 +130,8 @@ public class EsUtil {
   }
 
   /**
-   * Delete the documents corresponding to the provided dataset key and usage IDs. Returns the number of documents
-   * actually deleted. You must still refresh the index for the changes to become visible.
+   * Delete the documents corresponding to the provided dataset key and usage IDs. Returns the number of documents actually deleted. You
+   * must still refresh the index for the changes to become visible.
    */
   public static int deleteNameUsages(RestClient client, String index, int datasetKey, Collection<String> usageIds) throws IOException {
     if (usageIds.isEmpty()) {
@@ -147,8 +152,8 @@ public class EsUtil {
   }
 
   /**
-   * Deletes all documents from the index, but leaves the index itself intact. Very impractical for production code, but
-   * nice for testing code.
+   * Deletes all documents from the index, but leaves the index itself intact. Very impractical for production code, but nice for testing
+   * code.
    * 
    * @param client
    * @param index
@@ -159,8 +164,7 @@ public class EsUtil {
   }
 
   /**
-   * Deletes all documents satisfying the provided query constraint(s). You must still refresh the index for the changes
-   * to become visible.
+   * Deletes all documents satisfying the provided query constraint(s). You must still refresh the index for the changes to become visible.
    * 
    * @param client
    * @param index

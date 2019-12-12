@@ -34,7 +34,9 @@ public class EsSearchRequest {
   private List<String> searchAfter;
   private List<SortField> sort;
   private Integer size;
-  private Integer from;
+  private Integer from; 
+  @JsonProperty("track_total_hits")
+  private Boolean trackTotalHits;
 
   // Fluent interface
 
@@ -127,6 +129,14 @@ public class EsSearchRequest {
 
   public void setSize(Integer size) {
     this.size = size;
+  }
+  
+  public Boolean getTrackTotalHits() {
+    return trackTotalHits;
+  }
+
+  public void setTrackTotalHits(Boolean trackTotalHits) {
+    this.trackTotalHits = trackTotalHits;
   }
 
   @Override
