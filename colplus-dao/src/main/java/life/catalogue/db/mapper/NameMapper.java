@@ -58,16 +58,18 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, ProcessableDataset
    */
   void updateMatch(@Param("datasetKey") int datasetKey, @Param("id") String id, @Param("nameIndexID") String nameIndexID);
   
-  /**
-   * Delete all bare names of a dataset
-   */
-  int deleteOrphans(@Param("datasetKey") int datasetKey);
-  
   int deleteBySector(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   
   /**
    * @return true if at least one record for the given dataset exists
    */
   boolean hasData(@Param("datasetKey") int datasetKey);
-  
+
+  /**
+   * Deletes all names that do not have at least one name usage, i.e. remove all bare names.
+   * @param datasetKey the datasetKey to restrict the deletion to
+   * @param before optional timestamp to restrict deletions to orphans before the given time
+   * @return number of deleted names
+   */
+  int deleteOrphans(@Param("datasetKey") int datasetKey, @Param("before") @Nullable LocalDateTime before);
 }

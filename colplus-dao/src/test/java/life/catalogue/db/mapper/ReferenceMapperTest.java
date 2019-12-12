@@ -1,11 +1,7 @@
 package life.catalogue.db.mapper;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import life.catalogue.db.mapper.ReferenceMapper;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Reference;
@@ -14,8 +10,12 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Issue;
 import org.junit.Test;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 import static life.catalogue.api.TestEntityGenerator.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -56,7 +56,23 @@ public class ReferenceMapperTest extends CRUDPageableTestBase<Reference, Referen
     
     assertEquals(6, mapper().count(DATASET11.getKey()));
   }
-  
+
+  @Test
+  public void deleteOrphans() throws Exception {
+    LocalDateTime before = LocalDateTime.of(2019,3,21,21,8);
+    Reference r = newReference();
+    mapper().create(r);
+    commit();
+
+    assertNotNull(mapper().get(r));
+    mapper().deleteOrphans(r.getDatasetKey(), before);
+    commit();
+
+    assertNotNull(mapper().get(r));
+    mapper().deleteOrphans(r.getDatasetKey(), null);
+    assertNull(mapper().get(r));
+  }
+
   @Test
   public void list2() throws Exception {
     List<Reference> in = new ArrayList<>();

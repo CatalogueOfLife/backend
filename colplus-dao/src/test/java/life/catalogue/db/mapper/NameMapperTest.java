@@ -1,13 +1,15 @@
 package life.catalogue.db.mapper;
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.vocab.Datasets;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static life.catalogue.api.TestEntityGenerator.*;
 import static org.junit.Assert.*;
@@ -91,6 +93,38 @@ public class NameMapperTest extends CRUDPageableTestBase<Name, NameMapper> {
     commit();
     
     assertEquals(7, nameMapper.count(DATASET11.getKey()));
+  }
+
+  @Test
+  public void deleteOrphans() throws Exception {
+    LocalDateTime bFirst = LocalDateTime.now();
+    TimeUnit.SECONDS.sleep(1);
+    Name n1 = TestEntityGenerator.newName("n1");
+    TestEntityGenerator.nullifyDate(n1);
+    nameMapper.create(n1);
+    commit();
+    assertNotNull(nameMapper.get(n1.getKey()));
+
+    TimeUnit.SECONDS.sleep(1);
+    Name n2 = TestEntityGenerator.newName("n2");
+    TestEntityGenerator.nullifyDate(n2);
+    nameMapper.create(n2);
+    commit();
+    assertNotNull(nameMapper.get(n2.getKey()));
+
+    int dels = nameMapper.deleteOrphans(n1.getDatasetKey(), bFirst);
+    assertEquals(1, dels);
+    commit();
+    // should still be there
+    assertNotNull(nameMapper.get(n1.getKey()));
+    assertNotNull(nameMapper.get(n2.getKey()));
+
+    dels = nameMapper.deleteOrphans(n1.getDatasetKey(), null);
+    assertEquals(2, dels);
+    commit();
+    // all should be gone now
+    assertNull(nameMapper.get(n1.getKey()));
+    assertNull(nameMapper.get(n2.getKey()));
   }
   
   @Test

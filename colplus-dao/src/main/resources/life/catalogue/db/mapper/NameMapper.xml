@@ -267,8 +267,11 @@
         WHERE NOT EXISTS (
             SELECT NULL
             FROM name_usage_${partition} u
-            WHERE n.id = i.name_id AND n.dataset_key=#{datasetKey} AND u.dataset_key=#{datasetKey}
+            WHERE n.id = u.name_id
         )
+        <if test="before!=null">
+            AND n.modified &lt; #{before}
+        </if>
     </delete>
 
     <delete id="deleteBySector" parameterType="map">
