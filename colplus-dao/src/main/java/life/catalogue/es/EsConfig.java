@@ -34,6 +34,7 @@ public class EsConfig {
    * Determines the timeout in milliseconds until a RESTClient connection is established. A timeout value of zero is
    * interpreted as an infinite timeout. See
    * https://www.elastic.co/guide/en/elasticsearch/client/java-rest/current/_timeouts.html
+   *
    */
   public int connectTimeout = 10000;
 
@@ -41,8 +42,10 @@ public class EsConfig {
    * Defines the RESTClient socket timeout in milliseconds, which is the timeout for waiting for data or, put differently,
    * a maximum period inactivity between two consecutive data packets). See
    * https://www.elastic.co/guide/en/elasticsearch/client/java-rest/current/_timeouts.html
+   *
+   * Defaults here to 15 minutes = 900.000ms
    */
-  public int socketTimeout = 120000;
+  public int socketTimeout = 900000;
 
   /**
    * @return true if an embedded es server should be used

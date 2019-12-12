@@ -14,7 +14,7 @@ import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.vocab.ColDwcTerm;
 import life.catalogue.assembly.AssemblyCoordinator;
-import life.catalogue.command.es.IndexAllCmd;
+import life.catalogue.command.es.IndexCmd;
 import life.catalogue.command.initdb.InitDbCmd;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.io.DownloadUtil;
@@ -97,7 +97,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // add some cli commands not accessible via the admin interface
     bootstrap.addCommand(new InitDbCmd());
-    bootstrap.addCommand(new IndexAllCmd());
+    bootstrap.addCommand(new IndexCmd());
   }
 
   @Override
@@ -250,9 +250,9 @@ public class WsServer extends Application<WsServerConfig> {
   
   @Override
   protected void onFatalError() {
-    LOG.error("Fatal statup error, try to close names index gracely");
     if (ni != null) {
       try {
+        LOG.error("Fatal statup error, closing names index gracefully");
         ni.close();
       } catch (Exception e) {
         LOG.error("Failed to shutdown names index", e);
