@@ -1,6 +1,7 @@
 package life.catalogue.resources;
 
 import io.dropwizard.auth.Auth;
+import io.dropwizard.jersey.jsr310.LocalDateTimeParam;
 import life.catalogue.api.model.*;
 import life.catalogue.api.model.coldp.ColdpReference;
 import life.catalogue.api.search.ReferenceSearchRequest;
@@ -18,7 +19,6 @@ import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Path("/dataset/{datasetKey}/reference")
@@ -74,16 +74,19 @@ public class ReferenceResource extends AbstractDatasetScopedResource<Reference> 
   @GET
   @Path("orphans")
   public ResultPage<Reference> listOrphans(@PathParam("datasetKey") int datasetKey,
-                                      @QueryParam("before") LocalDateTime before,
-                                      @Valid @BeanParam Page page) {
-    return dao.listOrphans(datasetKey, before, page);
+                                           @QueryParam("before") LocalDateTimeParam before,
+                                           @Valid @BeanParam Page page) {
+    return dao.listOrphans(datasetKey, before==null ? null : before.get(), page);
   }
 
   @DELETE
   @Path("orphans")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public int delete(@PathParam("datasetKey") int datasetKey, @QueryParam("before") LocalDateTime before, @Auth ColUser user, @Context SqlSession session) {
-    int cnt = session.getMapper(ReferenceMapper.class).deleteOrphans(datasetKey, before);
+  public int delete(@PathParam("datasetKey") int datasetKey,
+                    @QueryParam("before") LocalDateTimeParam before,
+                    @Auth ColUser user,
+                    @Context SqlSession session) {
+    int cnt = session.getMapper(ReferenceMapper.class).deleteOrphans(datasetKey, before==null ? null : before.get());
     session.commit();
     return cnt;
   }

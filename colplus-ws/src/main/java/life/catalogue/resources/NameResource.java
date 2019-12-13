@@ -1,6 +1,7 @@
 package life.catalogue.resources;
 
 import io.dropwizard.auth.Auth;
+import io.dropwizard.jersey.jsr310.LocalDateTimeParam;
 import life.catalogue.api.model.*;
 import life.catalogue.dao.NameDao;
 import life.catalogue.db.mapper.NameMapper;
@@ -15,7 +16,6 @@ import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Path("/dataset/{datasetKey}/name")
@@ -54,16 +54,19 @@ public class NameResource extends AbstractDatasetScopedResource<Name> {
   @GET
   @Path("orphans")
   public ResultPage<Name> listOrphans(@PathParam("datasetKey") int datasetKey,
-                                      @QueryParam("before") LocalDateTime before,
+                                      @QueryParam("before") LocalDateTimeParam before,
                                       @Valid @BeanParam Page page) {
-    return dao.listOrphans(datasetKey, before, page);
+    return dao.listOrphans(datasetKey, before==null ? null : before.get(), page);
   }
 
   @DELETE
   @Path("orphans")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public int delete(@PathParam("datasetKey") int datasetKey, @QueryParam("before") LocalDateTime before, @Auth ColUser user, @Context SqlSession session) {
-    int cnt = session.getMapper(NameMapper.class).deleteOrphans(datasetKey, before);
+  public int delete(@PathParam("datasetKey") int datasetKey,
+                    @QueryParam("before") LocalDateTimeParam before,
+                    @Auth ColUser user,
+                    @Context SqlSession session) {
+    int cnt = session.getMapper(NameMapper.class).deleteOrphans(datasetKey, before==null ? null : before.get());
     session.commit();
     return cnt;
   }
