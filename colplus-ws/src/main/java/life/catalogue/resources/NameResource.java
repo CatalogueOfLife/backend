@@ -1,21 +1,22 @@
 package life.catalogue.resources;
 
-import java.util.List;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-
-import org.apache.ibatis.session.SqlSession;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.NameRelation;
+import io.dropwizard.auth.Auth;
+import life.catalogue.api.model.*;
 import life.catalogue.dao.NameDao;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameRelationMapper;
+import life.catalogue.dw.auth.Roles;
+import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.security.RolesAllowed;
+import javax.validation.Valid;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Path("/dataset/{datasetKey}/name")
 @Produces(MediaType.APPLICATION_JSON)
@@ -48,5 +49,22 @@ public class NameResource extends AbstractDatasetScopedResource<Name> {
   @Path("{id}/group")
   public List<Name> getIndexGroup(@PathParam("id") String id, @Context SqlSession session) {
     return session.getMapper(NameMapper.class).indexGroup(id);
+  }
+
+  @GET
+  @Path("orphans")
+  public ResultPage<Name> listOrphans(@PathParam("datasetKey") int datasetKey,
+                                      @QueryParam("before") LocalDateTime before,
+                                      @Valid @BeanParam Page page) {
+    return dao.listOrphans(datasetKey, before, page);
+  }
+
+  @DELETE
+  @Path("orphans")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public int delete(@PathParam("datasetKey") int datasetKey, @QueryParam("before") LocalDateTime before, @Auth ColUser user, @Context SqlSession session) {
+    int cnt = session.getMapper(NameMapper.class).deleteOrphans(datasetKey, before);
+    session.commit();
+    return cnt;
   }
 }

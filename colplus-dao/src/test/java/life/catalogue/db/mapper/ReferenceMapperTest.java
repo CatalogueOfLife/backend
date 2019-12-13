@@ -74,6 +74,21 @@ public class ReferenceMapperTest extends CRUDPageableTestBase<Reference, Referen
   }
 
   @Test
+  public void listOrphans() throws Exception {
+    LocalDateTime bFirst = LocalDateTime.now();
+    Reference r = newReference();
+    mapper().create(r);
+    mapper().create(newReference());
+    commit();
+
+    List<Reference> dels = mapper().listOrphans(r.getDatasetKey(), bFirst, new Page());
+    assertEquals(1, dels.size());
+
+    dels = mapper().listOrphans(r.getDatasetKey(), null, new Page());
+    assertEquals(3, dels.size());
+  }
+
+  @Test
   public void list2() throws Exception {
     List<Reference> in = new ArrayList<>();
     in.add(newReference());

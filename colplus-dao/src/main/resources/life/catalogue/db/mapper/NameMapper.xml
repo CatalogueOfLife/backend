@@ -261,9 +261,7 @@
         WHERE id = #{key.id} AND dataset_key=#{key.datasetKey}
     </delete>
 
-    <delete id="deleteOrphans" parameterType="map">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        DELETE FROM name_${partition} n
+    <sql id="orphanWhere">
         WHERE NOT EXISTS (
             SELECT NULL
             FROM name_usage_${partition} u
@@ -272,7 +270,21 @@
         <if test="before!=null">
             AND n.modified &lt; #{before}
         </if>
+    </sql>
+
+    <delete id="deleteOrphans" parameterType="map">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        DELETE FROM name_${partition} n
+        <include refid="orphanWhere"/>
     </delete>
+
+    <select id="listOrphans" parameterType="map" resultMap="nameResultMap">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        <include refid="orphanWhere"/>
+        <include refid="life.catalogue.db.Common.limit"/>
+    </select>
 
     <delete id="deleteBySector" parameterType="map">
         <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>

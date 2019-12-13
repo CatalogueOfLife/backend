@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Name;
+import life.catalogue.api.model.Page;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.DatasetPageable;
 import org.apache.ibatis.annotations.Param;
@@ -72,4 +73,8 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, ProcessableDataset
    * @return number of deleted names
    */
   int deleteOrphans(@Param("datasetKey") int datasetKey, @Param("before") @Nullable LocalDateTime before);
+
+  List<Name> listOrphans(@Param("datasetKey") int datasetKey,
+                         @Param("before") @Nullable LocalDateTime before,
+                         @Param("page") Page page);
 }

@@ -3,6 +3,7 @@ package life.catalogue.db.mapper;
 import com.google.common.collect.Lists;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Name;
+import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.Datasets;
 import org.junit.Before;
 import org.junit.Test;
@@ -125,6 +126,22 @@ public class NameMapperTest extends CRUDPageableTestBase<Name, NameMapper> {
     // all should be gone now
     assertNull(nameMapper.get(n1.getKey()));
     assertNull(nameMapper.get(n2.getKey()));
+  }
+
+  @Test
+  public void listOrphans() throws Exception {
+    LocalDateTime bFirst = LocalDateTime.now();
+
+    Name n = TestEntityGenerator.newName("n1");
+    nameMapper.create(n);
+    nameMapper.create(TestEntityGenerator.newName("n2"));
+    commit();
+
+    List<Name> dels = nameMapper.listOrphans(n.getDatasetKey(), bFirst, new Page());
+    assertEquals(1, dels.size());
+
+    dels = nameMapper.listOrphans(n.getDatasetKey(), null, new Page());
+    assertEquals(3, dels.size());
   }
   
   @Test

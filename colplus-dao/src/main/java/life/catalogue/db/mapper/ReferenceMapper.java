@@ -44,4 +44,7 @@ public interface ReferenceMapper extends CRUD<DSID<String>, Reference>, Processa
 	 */
 	int deleteOrphans(@Param("datasetKey") int datasetKey, @Param("before") @Nullable LocalDateTime before);
 
+	List<Reference> listOrphans(@Param("datasetKey") int datasetKey,
+							    @Param("before") @Nullable LocalDateTime before,
+							    @Param("page") Page page);
 }
