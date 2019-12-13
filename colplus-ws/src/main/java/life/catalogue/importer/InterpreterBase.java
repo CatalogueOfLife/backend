@@ -141,7 +141,6 @@ public class InterpreterBase {
       
       } else {
         List<Distribution> distributions = new ArrayList<>();
-        boolean rawAdded = false;
         for (String loc : MULTIVAL.split(locRaw)) {
           // add gazetteer prefix if not yet included
           if (standard != null && loc.indexOf(':') < 0) {
@@ -149,11 +148,9 @@ public class InterpreterBase {
           }
           AreaParser.Area area = SafeParser.parse(AreaParser.PARSER, loc).orNull(Issue.DISTRIBUTION_AREA_INVALID, rec);
           if (area == null) {
-            // failed to parse. Keep the full original area as a single text entry once in addition to whatever parses here well
-            if (!rawAdded) {
-              rawAdded=true;
-              distributions.add( createDistribution(rec, Gazetteer.TEXT, locRaw, status, addReference) );
-            }
+            // failed to parse. Keep the original area snippet as a text entry instead
+            // see https://github.com/Sp2000/colplus-backend/issues/585
+            distributions.add( createDistribution(rec, Gazetteer.TEXT, loc, status, addReference) );
           } else {
             // check if we have contradicting extracted a gazetteer
             if (standard != null && area.standard != Gazetteer.TEXT && area.standard != standard) {

@@ -206,7 +206,6 @@ public class PgCopyUtils {
     
     try (Writer writer = UTF8IOUtils.writerFromFile(out)) {
       CopyManager copy = con.getCopyAPI();
-      //System.out.println(sql);
       copy.copyOut("COPY (" + sql + ") TO STDOUT WITH "+with, writer);
     }
   }
