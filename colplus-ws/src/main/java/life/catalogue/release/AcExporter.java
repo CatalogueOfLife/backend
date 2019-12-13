@@ -7,7 +7,7 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.common.io.CompressionUtil;
-import life.catalogue.common.io.Utf8IOUtils;
+import life.catalogue.common.io.UTF8IOUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.img.ImgConfig;
 import life.catalogue.postgres.PgCopyUtils;
@@ -128,7 +128,7 @@ public class AcExporter {
       data.put("d", d);
       
       Template temp = fmk.getTemplate("credits.ftl");
-      Writer out = Utf8IOUtils.writerFromFile(cf);
+      Writer out = UTF8IOUtils.writerFromFile(cf);
       temp.process(data, out);
     } catch (TemplateException e) {
       LOG.error("Failed to write credits", e);

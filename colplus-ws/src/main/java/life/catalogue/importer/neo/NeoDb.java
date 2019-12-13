@@ -27,7 +27,7 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.csl.CslUtil;
-import life.catalogue.common.io.Utf8IOUtils;
+import life.catalogue.common.io.UTF8IOUtils;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.importer.IdGenerator;
@@ -786,7 +786,7 @@ public class NeoDb implements ReferenceStore {
    */
   public void dump(File file) {
     try {
-      Writer writer = Utf8IOUtils.writerFromFile(file);
+      Writer writer = UTF8IOUtils.writerFromFile(file);
       PrinterUtils.dumpDotFile(neo, writer);
       writer.close();
       System.out.println("Wrote graph to " + file.getAbsolutePath());

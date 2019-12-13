@@ -1,13 +1,13 @@
 package life.catalogue.common.io;
 
+import com.google.common.io.Files;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import com.google.common.io.Files;
-
-public class Utf8IOUtils {
+public class UTF8IOUtils {
   
   public static BufferedWriter writerFromGzipFile(File f) throws IOException {
     Files.createParentDirs(f);
