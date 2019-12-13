@@ -1,16 +1,12 @@
 package life.catalogue.dao;
 
-import java.io.File;
-import java.util.List;
-import java.util.function.BiFunction;
-import javax.annotation.Nullable;
-
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.es.name.index.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +14,12 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.BiFunction;
 
 public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
   
@@ -28,17 +30,20 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
   private final ImageService imgService;
   private final BiFunction<Integer, String, File> scratchFileFunc;
   private final DatasetImportDao diDao;
+  private final NameUsageIndexService indexService;
   
   public DatasetDao(SqlSessionFactory factory,
                     DownloadUtil downloader,
                     ImageService imgService,
                     DatasetImportDao diDao,
+                    NameUsageIndexService indexService,
                     BiFunction<Integer, String, File> scratchFileFunc) {
     super(false, factory, DatasetMapper.class);
     this.downloader = downloader;
     this.imgService = imgService;
     this.scratchFileFunc = scratchFileFunc;
     this.diDao = diDao;
+    this.indexService = indexService;
   }
   
   public ResultPage<Dataset> list(Page page) {
@@ -73,7 +78,13 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
     // now also clear filesystem
     diDao.removeMetrics(key);
   }
-  
+
+  @Override
+  protected void deleteAfter(Integer key, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
+    // clear search index asnychroneously
+    CompletableFuture.runAsync(() -> indexService.deleteDataset(key));
+  }
+
   @Override
   protected void createAfter(Dataset obj, int user, DatasetMapper mapper, SqlSession session) {
     pullLogo(obj);
