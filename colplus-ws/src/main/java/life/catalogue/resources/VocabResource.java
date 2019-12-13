@@ -1,20 +1,10 @@
 package life.catalogue.resources;
 
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.ClassPath;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.ColUser;
 import life.catalogue.api.model.EditorialDecision;
@@ -23,11 +13,21 @@ import life.catalogue.api.model.SectorImport;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.vocab.*;
 import life.catalogue.img.ImgConfig;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Path("/vocab")
 @Produces(MediaType.APPLICATION_JSON)
@@ -113,7 +113,7 @@ public class VocabResource {
   @GET
   @Path("language")
   public Map<String, String> languageTitles() {
-    return Language.LANGUAGES.values().stream().collect(Collectors.toMap(Language::getCode, Language::getTitle));
+    return Language.values().stream().collect(Collectors.toMap(Language::getCode, Language::getTitle));
   }
   
   @GET

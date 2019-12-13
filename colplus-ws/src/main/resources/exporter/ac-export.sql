@@ -347,13 +347,14 @@ COPY (
 COPY (
   SELECT nextval('__record_id_seq') AS record_id,
     d.taxon_id AS name_code, 
-    d.area AS distribution, 
+    CASE WHEN d.gazetteer = 'ISO'::GAZETTEER THEN c.title ELSE d.area END AS distribution,
     d.gazetteer::text AS StandardInUse,
     initcap(d.status::text) AS DistributionStatus,
     coalesce(s.subject_dataset_key, 1500) - 1000 AS database_id
   FROM distribution_{{datasetKey}} d
       JOIN name_usage_{{datasetKey}} t ON t.id=d.taxon_id
       LEFT JOIN sector s ON t.sector_key=s.key
+      LEFT JOIN __country c ON c.code=d.area
 ) TO 'distribution.csv';
 
 

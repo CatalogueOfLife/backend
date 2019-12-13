@@ -1,14 +1,14 @@
 package life.catalogue.api.vocab;
 
+import com.google.common.collect.ImmutableMap;
+import life.catalogue.common.io.Resources;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+
 import java.io.BufferedReader;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-
-import com.google.common.collect.ImmutableMap;
-import org.apache.commons.lang3.StringUtils;
-import life.catalogue.common.io.Resources;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Immutable ISO 639 3 letter language class to be used as singletons.
@@ -19,7 +19,11 @@ public class Language implements Comparable<Language> {
   public static String ISO_CODE_FILE = "vocab/language/iso-639-3_Name_Index_20190408.tab";
   
   public static final Map<String, Language> LANGUAGES = ImmutableMap.copyOf(load());
-  
+
+  public static Collection<Language> values() {
+    return LANGUAGES.values();
+  }
+
   private static Map<String, Language> load() {
     // Id	Print_Name	Inverted_Name
     BufferedReader br = Resources.reader(ISO_CODE_FILE);
