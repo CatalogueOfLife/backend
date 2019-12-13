@@ -216,6 +216,11 @@
         WHERE id = #{key.id}
     </delete>
 
+    <delete id="deleteByDataset" parameterType="map">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        DELETE FROM name_usage_${partition} WHERE NOT is_synonym
+    </delete>
+
     <select id="foreignChildren" resultMap="taxonResultMap">
         <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
         SELECT <include refid="SELECT" />

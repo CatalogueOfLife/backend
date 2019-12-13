@@ -110,4 +110,10 @@
         <include refid="life.catalogue.db.Common.partitionByKey"/>
         DELETE FROM name_usage_${partition} WHERE id = #{key.id} AND is_synonym
     </delete>
+
+    <delete id="deleteByDataset" parameterType="map">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        DELETE FROM name_usage_${partition} WHERE is_synonym
+    </delete>
+
 </mapper>

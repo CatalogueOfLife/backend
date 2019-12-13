@@ -5,7 +5,11 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.common.io.DownloadUtil;
+import life.catalogue.db.DatasetPageable;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.DecisionMapper;
+import life.catalogue.db.mapper.EstimateMapper;
+import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.name.index.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
@@ -77,6 +81,10 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
     session.commit();
     // now also clear filesystem
     diDao.removeMetrics(key);
+    // remove decisions, sectors and estimates
+    for (Class<DatasetPageable<?>> mapperCLass : new Class[]{SectorMapper.class, DecisionMapper.class, EstimateMapper.class}) {
+      session.getMapper(mapperCLass).deleteByDataset(key);
+    }
   }
 
   @Override

@@ -156,6 +156,10 @@
       AND dataset_key = #{datasetKey}
   </select>
 
+  <delete id="deleteByDataset" parameterType="map">
+    DELETE FROM sector WHERE dataset_key = #{datasetKey}
+  </delete>
+
   <select id="processSectors" parameterType="map" resultMap="sectorResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
