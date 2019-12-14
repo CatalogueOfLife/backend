@@ -246,5 +246,5 @@ public class EsUtil {
       throw new EsException(e);
     }
   }
-  
+
 }

@@ -1,16 +1,5 @@
 package life.catalogue.resources;
 
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-
 import io.dropwizard.auth.Auth;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -30,6 +19,17 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.security.RolesAllowed;
+import javax.validation.Valid;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 @Path("/assembly/{catKey}")
 @Produces(MediaType.APPLICATION_JSON)
@@ -56,7 +56,7 @@ public class AssemblyResource {
   
   @GET
   public AssemblyState state(@PathParam("catKey") int catKey) {
-    requireDraft(catKey);
+    requireManagedNoLock(catKey);
     return assembly.getState();
   }
   
@@ -82,7 +82,7 @@ public class AssemblyResource {
   @Path("/sync")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void sync(@PathParam("catKey") int catKey, RequestScope request, @Auth ColUser user) {
-    requireDraft(catKey);
+    requireManagedNoLock(catKey);
     assembly.sync(request, user);
   }
   
@@ -90,7 +90,7 @@ public class AssemblyResource {
   @Path("/sync/{sectorKey}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void deleteSync(@PathParam("catKey") int catKey, @PathParam("sectorKey") int sectorKey, @Auth ColUser user) {
-    requireDraft(catKey);
+    requireManagedNoLock(catKey);
     assembly.cancel(sectorKey, user);
   }
   
@@ -100,14 +100,14 @@ public class AssemblyResource {
                                        @PathParam("sectorKey") int sectorKey,
                                        @PathParam("attempt") int attempt,
                                        @Context SqlSession session) {
-    requireDraft(catKey);
+    requireManagedNoLock(catKey);
     return session.getMapper(SectorImportMapper.class).get(sectorKey, attempt);
   }
   
   @GET
   @Path("/release")
   public String releaseState(@PathParam("catKey") int catKey) {
-    requireDraft(catKey);
+    requireManagedNoLock(catKey);
     if (release == null) {
       return "idle";
     }
@@ -118,7 +118,7 @@ public class AssemblyResource {
   @Path("/release")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public Integer release(@PathParam("catKey") int catKey, @Auth ColUser user) {
-    requireDraft(catKey);
+    requireManagedNoLock(catKey);
   
     if (release != null) {
       throw new IllegalStateException("Release "+release.getSourceDatasetKey() + " to " + release.getReleaseKey() + " is already running");
@@ -140,7 +140,7 @@ public class AssemblyResource {
   @Path("/export")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public String export(@PathParam("catKey") int catKey, @Auth ColUser user) {
-    requireManaged(catKey);
+    requireManaged(catKey, true);
   
     life.catalogue.release.Logger logger = new life.catalogue.release.Logger(LOG);
     try {
@@ -158,24 +158,28 @@ public class AssemblyResource {
   @POST
   @Path("/rematch")
   public SubjectRematcher rematch(@PathParam("catKey") int catKey, RematchRequest req, @Auth ColUser user) {
-    requireDraft(catKey);
+    requireManagedNoLock(catKey);
     SubjectRematcher matcher = new SubjectRematcher(factory, catKey, user.getKey());
     matcher.match(req);
     return matcher;
   }
   
   
-  private static void requireDraft(int catKey) {
-    if (catKey != Datasets.DRAFT_COL) {
-      throw new IllegalArgumentException("Only the draft CoL can be assembled at this stage");
-    }
+  private void requireManagedNoLock(int catKey) {
+    requireManaged(catKey, false);
   }
-  
-  private void requireManaged(int catKey) {
+
+  private void requireManaged(int catKey, boolean allowLocked) {
     try (SqlSession s = factory.openSession()) {
       Dataset d = s.getMapper(DatasetMapper.class).get(catKey);
+      if (d.getDeleted() != null) {
+        throw new IllegalArgumentException("The dataset " + catKey + " is deleted and cannot be assembled.");
+      }
       if (d.getOrigin() != DatasetOrigin.MANAGED) {
         throw new IllegalArgumentException("Only managed datasets can be assembled. Dataset " + catKey + " is of origin " + d.getOrigin());
+      }
+      if (!allowLocked && d.isLocked()) {
+        throw new IllegalArgumentException("The dataset " + catKey + " is locked and cannot be assembled.");
       }
     }
   }
