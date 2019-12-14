@@ -90,7 +90,11 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
   @Override
   protected void deleteAfter(Integer key, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
     // clear search index asnychroneously
-    CompletableFuture.runAsync(() -> indexService.deleteDataset(key));
+    CompletableFuture.supplyAsync(() -> indexService.deleteDataset(key))
+            .exceptionally(e -> {
+              LOG.error("Failed to delete ES docs for dataset {}", key, e.getCause());
+              return 0;
+            });
   }
 
   @Override

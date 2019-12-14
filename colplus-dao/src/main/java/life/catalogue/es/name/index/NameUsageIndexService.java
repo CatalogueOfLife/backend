@@ -27,8 +27,9 @@ public interface NameUsageIndexService {
 
   /**
    * Removes an entire dataset from ElasticSearch.
+   * @return number of deleted docs
    */
-  void deleteDataset(int datasetKey);
+  int deleteDataset(int datasetKey);
 
   /**
    * Re-indexes all datasets from scratch
@@ -71,8 +72,9 @@ public interface NameUsageIndexService {
       }
 
       @Override
-      public void deleteDataset(int datasetKey) {
+      public int deleteDataset(int datasetKey) {
         LOG.info("No Elastic Search configured, pass through deletion of dataset {}", datasetKey);
+        return 0;
       }
 
       @Override

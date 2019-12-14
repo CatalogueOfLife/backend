@@ -104,12 +104,13 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
 
   @Override
-  public void deleteDataset(int datasetKey) {
+  public int deleteDataset(int datasetKey) {
     try {
       LOG.info("Removing dataset {} from index {}", datasetKey, index);
       int cnt = EsUtil.deleteDataset(client, index, datasetKey);
       LOG.info("Deleted all {} documents from dataset {} from index {}", cnt, datasetKey, index);
       EsUtil.refreshIndex(client, index);
+      return cnt;
     } catch (IOException e) {
       throw new EsException(e);
     }
