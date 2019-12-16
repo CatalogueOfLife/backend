@@ -49,7 +49,9 @@ public class TsvBodyWriter implements MessageBodyWriter<Stream<Object[]>> {
       if (sb.length() > 0) {
         sb.append('\t');
       }
-      sb.append(col.toString().replaceAll("\t", " "));
+      if (col != null) {
+        sb.append(col.toString().replaceAll("\t", " "));
+      }
     }
     return sb.toString();
   }
