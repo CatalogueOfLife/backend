@@ -1,0 +1,41 @@
+#languages
+# https://query.wikidata.org/
+
+SELECT ?l ?iso ?ietf ?native ?len ?lde ?lfr ?les ?lru ?lzh ?lpt ?lit
+WHERE
+{
+  ?l wdt:P31 wd:Q34770.
+  ?l wdt:P220 ?iso.
+  OPTIONAL {
+  	?l wdt:P1705 ?native.
+  }
+  OPTIONAL {
+  	?l wdt:P305 ?ietf
+  }
+  OPTIONAL {
+  	?l rdfs:label ?len filter (lang(?len) = "en").
+  }
+  OPTIONAL {
+  	?l rdfs:label ?lde filter (lang(?lde) = "de").
+  }
+  OPTIONAL {
+  	?l rdfs:label ?lfr filter (lang(?lfr) = "fr").
+  }
+  OPTIONAL {
+  	?l rdfs:label ?les filter (lang(?les) = "es").
+  }
+  OPTIONAL {
+  	?l rdfs:label ?lru filter (lang(?lru) = "ru").
+  }
+  OPTIONAL {
+  	?l rdfs:label ?lzh filter (lang(?lzh) = "zh").
+  }
+  OPTIONAL {
+  	?l rdfs:label ?lpt filter (lang(?lpt) = "pt").
+  }
+  OPTIONAL {
+  	?l rdfs:label ?lit filter (lang(?lit) = "it").
+  }
+}
+
+
