@@ -29,7 +29,7 @@ public class NameUsageDatasetSearchResource {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageDatasetSearchResource.class);
-  private static final Joiner COMMA_CAT = Joiner.on(',').skipNulls();
+  private static final Joiner COMMA_CAT = Joiner.on(';').skipNulls();
   private static final Object[][] NAME_HEADER = new Object[1][];
   static {
     NAME_HEADER[0] = new Object[]{"ID", "parentID", "status", "rank", "scientificName", "authorship", "issues"};
