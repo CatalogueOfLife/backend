@@ -294,7 +294,7 @@
 
     <delete id="deleteByDataset" parameterType="map">
         <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        TRUNCATE name_${partition}
+        TRUNCATE name_${partition} CASCADE
     </delete>
 
     <select id="processDataset" parameterType="map" resultMap="nameResultMap" resultOrdered="true" fetchSize="2500" resultSetType="FORWARD_ONLY">

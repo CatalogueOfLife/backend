@@ -77,14 +77,15 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
   
   @Override
   protected void deleteBefore(Integer key, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
-    Partitioner.delete(session, key);
-    session.commit();
-    // now also clear filesystem
-    diDao.removeMetrics(key);
     // remove decisions, sectors and estimates
     for (Class<DatasetPageable<?>> mapperCLass : new Class[]{SectorMapper.class, DecisionMapper.class, EstimateMapper.class}) {
       session.getMapper(mapperCLass).deleteByDataset(key);
     }
+    // delete data partitions
+    Partitioner.delete(session, key);
+    session.commit();
+    // now also clear filesystem
+    diDao.removeMetrics(key);
   }
 
   @Override
