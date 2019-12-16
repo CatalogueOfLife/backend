@@ -77,20 +77,16 @@
        </if>
     </select>
 
-    <select id="processTree2" parameterType="map" resultMap="classificationResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    <select id="processDatasetUsageOnly" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
         <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        WITH RECURSIVE tree AS (
-        SELECT #{usageId} AS uid, classification_sn(#{datasetKey}, #{usageId}, true) AS classification
-        UNION ALL
-        SELECT u.id, array_append(tree.classification, (u.id,n.rank,n.scientific_name)::simple_name)
-        FROM name_usage_${datasetKey} u JOIN name_${datasetKey} n ON u.name_id=n.id JOIN tree ON (tree.uid = u.parent_id)
-        <if test="sectorKey != null">
-            WHERE u.sector_key = #{sectorKey}
-        </if>
-        )
-        SELECT * FROM tree
-        <if test="sectorKey != null">
-            WHERE uid != #{usageId} OR (SELECT sector_key=#{sectorKey} FROM name_usage_${datasetKey} WHERE id=#{usageId})
+        SELECT u.id AS uid, null AS ed_key, null AS v_id,
+            <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT" />,
+            vbn.issues || vbt.issues AS issues
+        FROM <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM"/>
+            LEFT JOIN verbatim_${partition} vbt ON vbt.id=u.verbatim_key
+            LEFT JOIN verbatim_${partition} vbn ON vbn.id=n.verbatim_key
+        <if test="withIssueOnly">
+            WHERE array_length(vbn.issues, 1) > 0 OR array_length(vbt.issues, 1) > 0
         </if>
     </select>
 
