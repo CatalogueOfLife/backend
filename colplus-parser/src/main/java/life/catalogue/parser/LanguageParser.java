@@ -82,8 +82,8 @@ public class LanguageParser extends ParserBase<Language> {
     addMapping("language-native.tab", 0,  null, 1,2);
     // custom manually curated entries: ISO3	VALUE
     addMapping("language-custom.tab", 0,  1);
-    // WikiData SPARQL download: url	iso	native	len	lde	lfr	les	lru	lzh	lpt	lit
-    addMapping("query.tsv", 1,  null, 2,3,4,5,6,7,8,9,10);
+    // WikiData SPARQL download: url	iso	ietf	native	len	lde	lfr	les	lru	lzh	lpt	lit
+    addMapping("query.tsv", 1,  null, 2,3,4,5,6,7,8,9,10,11);
   }
   
   /**
