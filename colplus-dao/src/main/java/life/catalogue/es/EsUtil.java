@@ -165,7 +165,7 @@ public class EsUtil {
    * @throws IOException
    */
   public static int deleteByQuery(RestClient client, String index, Query query) throws IOException {
-    Request request = new Request("POST", index + "/_delete_by_query/?timeout=6h");
+    Request request = new Request("POST", index + "/_delete_by_query/?timeout=6h&conflicts=proceed");
     EsSearchRequest esRequest = EsSearchRequest.emptyRequest()
         .select()
         .where(query)
