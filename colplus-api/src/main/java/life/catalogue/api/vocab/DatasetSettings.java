@@ -19,5 +19,10 @@ public enum DatasetSettings {
      * the single character used for escaping quotes inside an already quoted value.
      * For example '"' for CSV
      */
-    CSV_QUOTE_ESCAPE
+    CSV_QUOTE_ESCAPE,
+
+    /**
+     * Overrides the gazetteer standard to use in all distribution interpretations for the dataset.
+     */
+    DISTRIBUTION_GAZETTEER;
 }

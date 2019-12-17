@@ -363,11 +363,11 @@ public class Dataset extends DataEntity<Integer> {
     settings.put(key, value);
   }
 
-  public boolean containsSetting(DatasetSettings key) {
+  public boolean hasSetting(DatasetSettings key) {
     return settings.containsKey(key.name());
   }
 
-  public boolean containsSetting(String key) {
+  public boolean hasSetting(String key) {
     return settings.containsKey(key);
   }
 

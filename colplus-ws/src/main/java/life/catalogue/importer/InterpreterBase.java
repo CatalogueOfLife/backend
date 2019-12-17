@@ -1,7 +1,5 @@
 package life.catalogue.importer;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import life.catalogue.api.model.*;
@@ -37,13 +35,14 @@ import static life.catalogue.parser.SafeParser.parse;
 public class InterpreterBase {
   
   private static final Logger LOG = LoggerFactory.getLogger(InterpreterBase.class);
-  protected static final Splitter MULTIVAL = Splitter.on(CharMatcher.anyOf(";|,@")).trimResults().omitEmptyStrings();
+  protected static final Pattern WORDS_PATTERN = Pattern.compile("[\\w\\s:-]+", Pattern.UNICODE_CHARACTER_CLASS);
   private static final int MIN_YEAR = 1500;
   private static final int MAX_YEAR = Year.now().getValue() + 10;
   private static final Pattern YEAR_PATTERN = Pattern.compile("^(\\d{3,4})\\s*(\\?)?(?!\\d)");
   
   protected final NeoDb store;
   protected final Dataset dataset;
+  private final Gazetteer distributionStandard;
   protected final ReferenceFactory refFactory;
   private final MediaInterpreter mediaInterpreter = new MediaInterpreter();
 
@@ -51,6 +50,12 @@ public class InterpreterBase {
     this.dataset = dataset;
     this.refFactory = refFactory;
     this.store = store;
+    if (dataset.hasSetting(DatasetSettings.DISTRIBUTION_GAZETTEER)) {
+      distributionStandard = parse(GazetteerParser.PARSER, dataset.getSetting(DatasetSettings.DISTRIBUTION_GAZETTEER))
+              .orElse(Gazetteer.TEXT);
+    } else {
+      distributionStandard = null;
+    }
   }
   
   protected boolean requireTerm(VerbatimRecord v, Term term, Issue notExistingIssue){
@@ -110,15 +115,19 @@ public class InterpreterBase {
     // require location
     if (rec.hasTerm(tArea)) {
       // which standard?
-      Gazetteer gazetteer = parse(GazetteerParser.PARSER, rec.get(tGazetteer))
-          .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, rec);
-      
+      Gazetteer gazetteer;
+      if (distributionStandard != null) {
+        gazetteer = distributionStandard;
+      } else {
+        gazetteer = parse(GazetteerParser.PARSER, rec.get(tGazetteer))
+            .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, rec);
+      }
       return createDistributions(gazetteer, rec.get(tArea), rec.get(tStatus), rec, addReference);
     }
     return Collections.emptyList();
   }
   
-  private Distribution createDistribution(VerbatimRecord rec, Gazetteer standard, String area, DistributionStatus status,
+  private static Distribution createDistribution(VerbatimRecord rec, Gazetteer standard, String area, DistributionStatus status,
                                           BiConsumer<Distribution, VerbatimRecord> addReference) {
     Distribution d = new Distribution();
     d.setVerbatimKey(rec.getId());
@@ -129,7 +138,7 @@ public class InterpreterBase {
     return d;
   }
   
-  protected List<Distribution> createDistributions(@Nullable Gazetteer standard, final String locRaw, String statusRaw, VerbatimRecord rec,
+  protected static List<Distribution> createDistributions(@Nullable Gazetteer standard, final String locRaw, String statusRaw, VerbatimRecord rec,
                                                    BiConsumer<Distribution, VerbatimRecord> addReference) {
     if (locRaw != null) {
 
@@ -141,23 +150,18 @@ public class InterpreterBase {
       
       } else {
         List<Distribution> distributions = new ArrayList<>();
-        for (String loc : MULTIVAL.split(locRaw)) {
+        for (String loc : words(locRaw)) {
           // add gazetteer prefix if not yet included
           if (standard != null && loc.indexOf(':') < 0) {
             loc = standard.locationID(loc);
           }
           AreaParser.Area area = SafeParser.parse(AreaParser.PARSER, loc).orNull(Issue.DISTRIBUTION_AREA_INVALID, rec);
-          if (area == null) {
-            // failed to parse. Keep the original area snippet as a text entry instead
-            // see https://github.com/Sp2000/colplus-backend/issues/585
-            distributions.add( createDistribution(rec, Gazetteer.TEXT, loc, status, addReference) );
-          } else {
+          if (area != null) {
             // check if we have contradicting extracted a gazetteer
             if (standard != null && area.standard != Gazetteer.TEXT && area.standard != standard) {
               LOG.info("Area standard {} found in area {} different from explicitly given standard {} for {}",
                         area.standard, area.area, standard, rec);
             }
-            
             distributions.add(createDistribution(rec, area.standard, area.area, status, addReference));
           }
         }
@@ -166,7 +170,17 @@ public class InterpreterBase {
     }
     return Collections.emptyList();
   }
-  
+
+  private static List<String> words(String x) {
+    if (x == null) return Collections.EMPTY_LIST;
+    Matcher m = WORDS_PATTERN.matcher(x);
+    List<String> words = new ArrayList<>();
+    while (m.find()) {
+      words.add(m.group(0));
+    }
+    return words;
+  }
+
   protected List<Description> interpretDescription(VerbatimRecord rec, BiConsumer<Description, VerbatimRecord> addReference,
                                                    Term description, Term category, Term format, Term lang) {
     // require non empty description
@@ -394,7 +408,7 @@ public class InterpreterBase {
   protected void setLifezones(Taxon t, VerbatimRecord v, Term lifezone) {
     String raw = v.get(lifezone);
     if (raw != null) {
-      for (String lzv : MULTIVAL.split(raw)) {
+      for (String lzv : words(raw)) {
         Lifezone lz = parse(LifezoneParser.PARSER, lzv).orNull(Issue.LIFEZONE_INVALID, v);
         if (lz != null) {
           t.getLifezones().add(lz);

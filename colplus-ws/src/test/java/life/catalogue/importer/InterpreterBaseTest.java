@@ -1,13 +1,15 @@
 package life.catalogue.importer;
 
-import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.importer.reference.ReferenceFactory;
 import life.catalogue.importer.reference.ReferenceStore;
-import life.catalogue.api.model.Dataset;
 import org.junit.Test;
 import org.mockito.Mock;
+
+import java.util.List;
+import java.util.function.BiConsumer;
 
 import static org.junit.Assert.*;
 
@@ -56,5 +58,26 @@ public class InterpreterBaseTest {
     assertNull(InterpreterBase.parseYear("january", issues));
     assertTrue(issues.hasIssue(Issue.UNPARSABLE_YEAR));
   }
-  
+
+  @Test
+  public void createDistributions() throws Exception {
+    assertDistributions(Gazetteer.ISO, "DE", "DE");
+    assertDistributions(Gazetteer.ISO, "DE,fr,es", "DE", "FR", "ES");
+    assertDistributions(Gazetteer.ISO, "az-tar; AZ; ", "AZ-TAR", "AZ");
+  }
+
+  private void assertDistributions(Gazetteer std, String loc, String... expected) {
+    List<Distribution> dis = InterpreterBase.createDistributions(std, loc, "present", new VerbatimRecord(), new BiConsumer<Distribution, VerbatimRecord>() {
+      @Override
+      public void accept(Distribution distribution, VerbatimRecord verbatimRecord) {
+        // dont do anything
+      }
+    });
+
+    int counter = 0;
+    for (Distribution d : dis) {
+      assertEquals(std, d.getGazetteer());
+      assertEquals(expected[counter++], d.getArea());
+    }
+  }
 }

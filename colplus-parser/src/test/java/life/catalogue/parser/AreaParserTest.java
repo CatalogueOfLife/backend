@@ -1,11 +1,10 @@
 package life.catalogue.parser;
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
 import life.catalogue.api.vocab.Gazetteer;
-import life.catalogue.parser.AreaParser;
 import org.junit.Test;
+
+import java.util.List;
 
 /**
  *
@@ -33,11 +32,12 @@ public class AreaParserTest extends ParserTestBase<AreaParser.Area> {
     assertParse(new AreaParser.Area("27.12.a.4", Gazetteer.FAO), "fish:27.12.a.4");
     assertParse(new AreaParser.Area("27.12.c", Gazetteer.FAO), "fish:27.12.C");
     assertParse(new AreaParser.Area("27.3.d.28.2", Gazetteer.FAO), "fish:27.3.d.28.2");
+    assertParse(new AreaParser.Area("AZ-TAR", Gazetteer.ISO), "iso:AZ-tar");
   }
   
   @Override
   List<String> unparsableValues() {
     return Lists.newArrayList(".", "?", "---", "öüä", "#67#", "wtf", "nothing", "t ru e", "a", "2",
-        "Nig", "har:123", "iso:gggg", "tdwg:432", "f:37.4.1", "fish:7458923");
+        "Nig", "har:123", "iso:gggg", "tdwg:432", "f:37.4.1", "fish:7458923", "iso:NE-ANATOLIA");
   }
 }
