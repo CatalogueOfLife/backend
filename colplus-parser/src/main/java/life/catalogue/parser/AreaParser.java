@@ -102,6 +102,13 @@ public class AreaParser implements Parser<AreaParser.Area> {
             }
             break;
           }
+        } else {
+          // try to parse full country names
+          Optional<Country> c = CountryParser.PARSER.parse(areaClean);
+          if (c.isPresent()) {
+            areaClean = c.get().getIso2LetterCode();
+            break;
+          }
         }
         throw new UnparsableException(Country.class, area);
 

@@ -35,7 +35,7 @@ import static life.catalogue.parser.SafeParser.parse;
 public class InterpreterBase {
   
   private static final Logger LOG = LoggerFactory.getLogger(InterpreterBase.class);
-  protected static final Pattern WORDS_PATTERN = Pattern.compile("[\\w\\s:-]+", Pattern.UNICODE_CHARACTER_CLASS);
+  protected static final Pattern AREA_VALUE_PATTERN = Pattern.compile("[\\w\\s:.-]+", Pattern.UNICODE_CHARACTER_CLASS);
   private static final int MIN_YEAR = 1500;
   private static final int MAX_YEAR = Year.now().getValue() + 10;
   private static final Pattern YEAR_PATTERN = Pattern.compile("^(\\d{3,4})\\s*(\\?)?(?!\\d)");
@@ -173,7 +173,7 @@ public class InterpreterBase {
 
   private static List<String> words(String x) {
     if (x == null) return Collections.EMPTY_LIST;
-    Matcher m = WORDS_PATTERN.matcher(x);
+    Matcher m = AREA_VALUE_PATTERN.matcher(x);
     List<String> words = new ArrayList<>();
     while (m.find()) {
       words.add(m.group(0));
