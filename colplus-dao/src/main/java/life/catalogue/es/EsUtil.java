@@ -1,32 +1,40 @@
 package life.catalogue.es;
 
-import life.catalogue.es.ddl.Index6Definition;
-import life.catalogue.es.ddl.Index7Definition;
-import life.catalogue.es.ddl.IndexDefinition;
-import life.catalogue.es.ddl.Settings;
-import life.catalogue.es.mapping.Mappings;
-import life.catalogue.es.mapping.MappingsFactory;
-import life.catalogue.es.model.NameUsageDocument;
-import life.catalogue.es.query.*;
+import java.io.IOException;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import life.catalogue.es.ddl.IndexDefinition;
+import life.catalogue.es.ddl.Settings;
+import life.catalogue.es.mapping.Mappings;
+import life.catalogue.es.mapping.MappingsFactory;
+import life.catalogue.es.model.NameUsageDocument;
+import life.catalogue.es.query.BoolQuery;
+import life.catalogue.es.query.EsSearchRequest;
+import life.catalogue.es.query.MatchAllQuery;
+import life.catalogue.es.query.Query;
+import life.catalogue.es.query.SortField;
+import life.catalogue.es.query.TermQuery;
+import life.catalogue.es.query.TermsQuery;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
+/**
+ * Utility class for interacting with Elasticsearch.
+ * 
+ */
 public class EsUtil {
 
   private static final Logger LOG = LoggerFactory.getLogger(EsUtil.class);
 
   /**
-   * Creates an index with the provided name and index configuration, with a document type mapping based on the provided
-   * model class.
+   * Creates an index with the provided name and index configuration, with a document type mapping based on the provided model class.
    * 
    * @param client
    * @param name
@@ -40,19 +48,58 @@ public class EsUtil {
     Settings settings = Settings.getDefaultSettings();
     settings.getIndex().setNumberOfShards(config.numShards);
     settings.getIndex().setNumberOfReplicas(config.numReplicas);
-    IndexDefinition<?> indexDef;
-    if (EsServerVersion.getInstance(client).is(7)) {
-      indexDef = new Index7Definition(settings, mappings);
-    } else {
-      indexDef = new Index6Definition(settings, mappings);
-    }
-    if (LOG.isTraceEnabled()) {
-      LOG.trace("Creating index {}: {}", name, EsModule.writeDebug(indexDef));
-    }
+    IndexDefinition indexDef = new IndexDefinition(settings, mappings);
+    LOG.trace("Creating index {}: {}", name, EsModule.writeDebug(indexDef));
     Request request = new Request("PUT", name);
     request.setJsonEntity(EsModule.write(indexDef));
     LOG.warn("Creating new ES Index {}", name);
     executeRequest(client, request);
+  }
+
+  /**
+   * Creates an alias with the current timestamp appended to the base name of the index.
+   * 
+   * @param client
+   * @param index
+   * @throws IOException
+   */
+  public static void createDefaultAlias(RestClient client, String index) throws IOException {
+    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("uuuuMMddHHmmss");
+    String alias = index + "-" + dtf.format(Instant.now());
+    createAlias(client, index, alias);
+  }
+
+  /**
+   * Creates the provided alias for the provided index.
+   * 
+   * @param client
+   * @param index
+   * @param alias
+   * @throws IOException
+   */
+  public static void createAlias(RestClient client, String index, String alias) throws IOException {
+    Request request = new Request("PUT", index + "/_alias/" + alias);
+    executeRequest(client, request);
+  }
+
+  /**
+   * Returns all metadata about an index.
+   * 
+   * @param client
+   * @param name
+   * @return
+   * @throws IOException
+   */
+  public static IndexDefinition getIndexDefinition(RestClient client, String name) throws IOException {
+    try {
+      Response response = client.performRequest(new Request("GET", name));
+      return EsModule.readDDLObject(response.getEntity().getContent(), IndexDefinition.class);
+    } catch (ResponseException e) {
+      if (e.getResponse().getStatusLine().getStatusCode() == 404) { // That's OK
+        throw new IllegalArgumentException("No such index: \"" + name + "\"");
+      }
+      throw new EsException(e);
+    }
   }
 
   /**
@@ -67,7 +114,7 @@ public class EsUtil {
     Request request = new Request("DELETE", name);
     Response response = null;
     try {
-      response = client.performRequest(request);
+      response = client.performRequest(new Request("DELETE", name));
     } catch (ResponseException e) {
       if (e.getResponse().getStatusLine().getStatusCode() == 404) { // That's OK
         return;
@@ -76,6 +123,19 @@ public class EsUtil {
     if (response.getStatusLine().getStatusCode() >= 400) {
       throw new EsException(response.getStatusLine().getReasonPhrase());
     }
+  }
+
+  /**
+   * Deletes the provided alias.
+   * 
+   * @param client
+   * @param index
+   * @param alias
+   * @throws IOException
+   */
+  public static void deleteAlias(RestClient client, String index, String alias) throws IOException {
+    Request request = new Request("DELETE", index + "/_alias/" + alias);
+    executeRequest(client, request);
   }
 
   /**
@@ -93,8 +153,7 @@ public class EsUtil {
   }
 
   /**
-   * Removes the dataset corresponding to the provided key. You must still refresh the index for the changes to become
-   * visible.
+   * Removes the dataset corresponding to the provided key. You must still refresh the index for the changes to become visible.
    * 
    * @param client
    * @param index
@@ -107,8 +166,7 @@ public class EsUtil {
   }
 
   /**
-   * Removes the sector corresponding to the provided key. You must still refresh the index for the changes to become
-   * visible.
+   * Removes the sector corresponding to the provided key. You must still refresh the index for the changes to become visible.
    * 
    * @param client
    * @param index
@@ -121,8 +179,8 @@ public class EsUtil {
   }
 
   /**
-   * Delete the documents corresponding to the provided dataset key and usage IDs. Returns the number of documents
-   * actually deleted. You must still refresh the index for the changes to become visible.
+   * Delete the documents corresponding to the provided dataset key and usage IDs. Returns the number of documents actually deleted. You
+   * must still refresh the index for the changes to become visible.
    */
   public static int deleteNameUsages(RestClient client, String index, int datasetKey, Collection<String> usageIds) throws IOException {
     if (usageIds.isEmpty()) {
@@ -143,8 +201,8 @@ public class EsUtil {
   }
 
   /**
-   * Deletes all documents from the index, but leaves the index itself intact. Very impractical for production code, but
-   * nice for testing code.
+   * Deletes all documents from the index, but leaves the index itself intact. Very impractical for production code, but nice for testing
+   * code.
    * 
    * @param client
    * @param index
@@ -155,8 +213,7 @@ public class EsUtil {
   }
 
   /**
-   * Deletes all documents satisfying the provided query constraint(s). You must still refresh the index for the changes
-   * to become visible.
+   * Deletes all documents satisfying the provided query constraint(s). You must still refresh the index for the changes to become visible.
    * 
    * @param client
    * @param index
@@ -236,6 +293,16 @@ public class EsUtil {
       throw new EsException(response.getStatusLine().getReasonPhrase());
     }
     return response;
+  }
+
+  /**
+   * Whether or not Elasticsearch returned an OK response.
+   * 
+   * @param response
+   * @return
+   */
+  public static boolean acknowlegded(Response response) {
+    return readFromResponse(response, "acknowlegded");
   }
 
   @SuppressWarnings("unchecked")

@@ -26,8 +26,8 @@ import static life.catalogue.api.vocab.NameField.*;
 import static life.catalogue.common.collection.CollectionUtils.notEmpty;
 
 /**
- * Converts a NameUsageWrapper instance into a NameUsage document. Note that the <i>entire</i> NameUsageWrapper instance
- * is serialized (and possibly zipped) and placed into the payload field of the NameUsage document.
+ * Converts a NameUsageWrapper instance into a NameUsage document. Note that the <i>entire</i> NameUsageWrapper instance is serialized (and
+ * possibly zipped) and placed into the payload field of the NameUsage document.
  */
 public class NameUsageWrapperConverter {
 
@@ -37,8 +37,8 @@ public class NameUsageWrapperConverter {
   public static final boolean ZIP_PAYLOAD = true;
 
   /**
-   * Serializes, deflates and base64-encodes a NameUsageWrapper. NB you can't store raw byte arrays in Elasticsearch. You
-   * must base64-encode them.
+   * Serializes, deflates and base64-encodes a NameUsageWrapper. NB you can't store raw byte arrays in Elasticsearch. You must base64-encode
+   * them.
    */
   public static String deflate(NameUsageWrapper nuw) throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
@@ -77,9 +77,8 @@ public class NameUsageWrapperConverter {
   }
 
   /**
-   * Provides a weakly normalized version of the provided string (typically a scientific name). Whatever normalization
-   * method we choose, we must make sure it is used both at index time (here) and at query time (QTranslator). Hence this
-   * public static method.
+   * Provides a weakly normalized version of the provided string (typically a scientific name). Whatever normalization method we choose, we
+   * must make sure it is used both at index time (here) and at query time (QTranslator). Hence this public static method.
    */
   public static String normalizeWeakly(String s) {
     if (s == null) {
@@ -89,10 +88,9 @@ public class NameUsageWrapperConverter {
   }
 
   /**
-   * Provides a strongly normalized version of the provided string (typically a scientific name). For strong normalization
-   * it is even more important that this method is used both at index time and at query time, because the order in which
-   * the string is lowercased and normalized matters! Subtle bugs will arise if the order is different at index time and
-   * at query time.
+   * Provides a strongly normalized version of the provided string (typically a scientific name). For strong normalization it is even more
+   * important that this method is used both at index time and at query time, because the order in which the string is lowercased and
+   * normalized matters! Subtle bugs will arise if the order is different at index time and at query time.
    */
   public static String normalizeStrongly(String s) {
     if (s == null) {
@@ -142,9 +140,9 @@ public class NameUsageWrapperConverter {
   }
 
   /**
-   * Nullifies fields in the NameUsageWrapper object that are already indexed separately so as to make the payload (and
-   * the entire document) as small as possible and to cut down as much as possible on JSON processing. It's not necessary
-   * to prune away everything that can be pruned away, as long as this method mirrors enrichPayload().
+   * Nullifies fields in the NameUsageWrapper object that are already indexed separately so as to make the payload (and the entire document)
+   * as small as possible and to cut down as much as possible on JSON processing. It's not necessary to prune away everything that can be
+   * pruned away, as long as this method mirrors enrichPayload().
    * 
    * @param nuw
    */
@@ -237,7 +235,7 @@ public class NameUsageWrapperConverter {
     doc.setAuthorship(name.authorshipComplete());
     doc.setDatasetKey(name.getDatasetKey());
     if (nuw.getDecisions() != null) {
-      nuw.getDecisions().stream().map(EsDecision::from).collect(toList());
+      doc.setDecisions(nuw.getDecisions().stream().map(EsDecision::from).collect(toList()));
     }
     doc.setSectorDatasetKey(nuw.getSectorDatasetKey());
     doc.setNameId(name.getId());
