@@ -61,12 +61,19 @@ public class NameUsageSearchRequest {
   @QueryParam("reverse")
   private boolean reverse;
 
+  /*
+   * We separate catalogue key parameter from the other name search parameters because its function is very different from the other name
+   * search parameters. We do this as soon as possible (here in this class, while registering the filters and their values). This way the
+   * search code per se doesn't need to be bothered by it.
+   */
+  private Integer catalogKey;
+
   public NameUsageSearchRequest() {}
 
   /**
-   * Creates a shallow copy of this NameSearchRequest. The filters map is copied using EnumMap's copy constructor.
-   * Therefore you should not manipulate the filter values (which are lists) as they are copied by reference. You can,
-   * however, add/remove filters, facets and search content.
+   * Creates a shallow copy of this NameSearchRequest. The filters map is copied using EnumMap's copy constructor. Therefore you should not
+   * manipulate the filter values (which are lists) as they are copied by reference. You can, however, add/remove filters, facets and search
+   * content.
    */
   public NameUsageSearchRequest copy() {
     NameUsageSearchRequest copy = new NameUsageSearchRequest();
@@ -83,6 +90,7 @@ public class NameUsageSearchRequest {
       copy.content = EnumSet.noneOf(SearchContent.class);
       copy.content.addAll(content);
     }
+    copy.catalogKey = catalogKey;
     copy.q = q;
     copy.sortBy = sortBy;
     copy.highlight = highlight;
@@ -90,9 +98,9 @@ public class NameUsageSearchRequest {
   }
 
   /**
-   * Extracts all query parameters that match a NameSearchParameter and registers them as query filters. Values of query
-   * parameters that are associated with an enum type can be supplied using the name of the enum constant or using the
-   * ordinal of the enum constant. In both cases it is the ordinal that will be registered as the query filter.
+   * Extracts all query parameters that match a NameSearchParameter and registers them as query filters. Values of query parameters that are
+   * associated with an enum type can be supplied using the name of the enum constant or using the ordinal of the enum constant. In both
+   * cases it is the ordinal that will be registered as the query filter.
    */
   public void addFilters(MultivaluedMap<String, String> params) {
     Set<String> nonFilters = new HashSet<String>(Arrays.asList(
@@ -119,8 +127,8 @@ public class NameUsageSearchRequest {
   }
 
   /*
-   * Primary usage case - parameter values coming in as strings from the HTTP request. Values are validated and converted
-   * to the type associated with the parameter.
+   * Primary usage case - parameter values coming in as strings from the HTTP request. Values are validated and converted to the type
+   * associated with the parameter.
    */
   public void addFilter(NameUsageSearchParameter param, String value) {
     value = StringUtils.trimToNull(value);
@@ -172,12 +180,11 @@ public class NameUsageSearchRequest {
   }
 
   private void addFilterValue(NameUsageSearchParameter param, Object value) {
-    List<Object> values = getFilters().get(param);
-    if (values == null) {
-      values = new ArrayList<>();
-      filters.put(param, values);
+    if (param == NameUsageSearchParameter.CATALOGUE_KEY) {
+      catalogKey = (Integer) value;
+    } else {
+      getFilters().computeIfAbsent(param, k -> new ArrayList<>()).add(value);
     }
-    values.add(value);
   }
 
   @SuppressWarnings("unchecked")
@@ -205,8 +212,10 @@ public class NameUsageSearchRequest {
     return getFilters().containsKey(filter);
   }
 
-  public List<Object> removeFilter(NameUsageSearchParameter filter) {
-    return getFilters().remove(filter);
+  public void removeFilter(NameUsageSearchParameter filter) {
+    if (filters != null) {
+      filters.remove(filter);
+    }
   }
 
   public void addFacet(NameUsageSearchParameter facet) {
@@ -274,11 +283,16 @@ public class NameUsageSearchRequest {
     this.reverse = reverse;
   }
 
+  public Integer getCatalogKey() {
+    return catalogKey;
+  }
+
   @JsonIgnore
   public boolean isEmpty() {
     return content == null
         && (facets == null || facets.isEmpty())
         && (filters == null || filters.isEmpty())
+        && catalogKey == null
         && q == null
         && sortBy == null
         && highlight == false
@@ -286,24 +300,22 @@ public class NameUsageSearchRequest {
   }
 
   @Override
-  public boolean equals(Object o) {
-    if (this == o)
-      return true;
-    if (o == null || getClass() != o.getClass())
-      return false;
-    NameUsageSearchRequest that = (NameUsageSearchRequest) o;
-    return Objects.equals(content, that.content)
-        && Objects.equals(facets, that.facets)
-        && Objects.equals(filters, that.filters)
-        && Objects.equals(q, that.q)
-        && sortBy == that.sortBy
-        && highlight == that.highlight
-        && reverse == that.reverse;
+  public int hashCode() {
+    return Objects.hash(catalogKey, content, facets, filters, highlight, q, reverse, sortBy);
   }
 
   @Override
-  public int hashCode() {
-    return Objects.hash(super.hashCode(), content, facets, filters, q, sortBy, highlight, reverse);
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    NameUsageSearchRequest other = (NameUsageSearchRequest) obj;
+    return Objects.equals(catalogKey, other.catalogKey) && Objects.equals(content, other.content) && Objects.equals(facets, other.facets)
+        && Objects.equals(filters, other.filters) && highlight == other.highlight && Objects.equals(q, other.q) && reverse == other.reverse
+        && sortBy == other.sortBy;
   }
 
   private static IllegalArgumentException illegalValueForParameter(NameUsageSearchParameter param, String value) {

@@ -1,23 +1,22 @@
 package life.catalogue.es.name.search;
 
+import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
+import static life.catalogue.api.search.NameUsageSearchParameter.USAGE_ID;
 import java.io.IOException;
-
-import com.google.common.annotations.VisibleForTesting;
-
+import java.util.Arrays;
 import org.apache.commons.lang3.StringUtils;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.search.NameUsageSearchRequest;
-import life.catalogue.api.search.NameUsageSearchResponse;
-import life.catalogue.es.EsException;
-import life.catalogue.es.name.NameUsageQueryService;
-import life.catalogue.es.name.NameUsageEsResponse;
-import life.catalogue.es.query.EsSearchRequest;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.USAGE_ID;
+import com.google.common.annotations.VisibleForTesting;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.api.search.NameUsageSearchResponse;
+import life.catalogue.api.search.SimpleDecision;
+import life.catalogue.es.EsException;
+import life.catalogue.es.name.NameUsageEsResponse;
+import life.catalogue.es.name.NameUsageQueryService;
+import life.catalogue.es.query.EsSearchRequest;
 
 public class NameUsageSearchServiceEs extends NameUsageQueryService implements NameUsageSearchService {
 
@@ -52,6 +51,16 @@ public class NameUsageSearchServiceEs extends NameUsageQueryService implements N
     if (mustHighlight(request, response)) {
       NameSearchHighlighter highlighter = new NameSearchHighlighter(request, response);
       highlighter.highlightNameUsages();
+    }
+    if (request.getCatalogKey() != null) {
+      response.getResult().stream().forEach(nuw -> {
+        if (nuw.getDecisions() != null) {
+          SimpleDecision match = nuw.getDecisions().stream()
+              .filter(d -> d.getDatasetKey().equals(request.getCatalogKey()))
+              .findFirst().orElse(null);
+          nuw.setDecisions(match == null ? null : Arrays.asList(match));
+        }
+      });
     }
     return response;
   }

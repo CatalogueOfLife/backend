@@ -1,14 +1,10 @@
 package life.catalogue.es.model;
 
 import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import life.catalogue.api.model.EditorialDecision.Mode;
 import life.catalogue.api.search.SimpleDecision;
-import life.catalogue.es.mapping.ESDataType;
-import life.catalogue.es.mapping.MapToType;
 
 public class EsDecision {
 
@@ -16,9 +12,7 @@ public class EsDecision {
     return new EsDecision(decision.getDatasetKey(), decision.getMode());
   }
 
-  @MapToType(ESDataType.KEYWORD)
   private final Integer catalogueKey;
-  @MapToType(ESDataType.KEYWORD)
   private final Mode mode;
 
   @JsonCreator
