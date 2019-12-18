@@ -102,7 +102,7 @@ public enum TypeStatus {
    *  (c) the holotype and those specimens which, even if not seen by the author of the description or diagnosis
    *  validating the name, were indicated as types (syntypes or paratypes) of the name at its valid publication;
    *
-   *  (d) the isotypes or isosyntypes1 of the name irrespective of whether such specimens were seen
+   *  (d) the isotypes or isosyntypes of the name irrespective of whether such specimens were seen
    *  by either the author of the validating description or diagnosis or the author of the name (but see Art. 7.8, 7.9, and F.3.9).
    */
   ORIGINAL_MATERIAL(BOTANICAL),

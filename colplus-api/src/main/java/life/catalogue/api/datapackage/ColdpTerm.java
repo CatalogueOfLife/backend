@@ -57,14 +57,12 @@ public enum ColdpTerm implements Term, AlternativeNames {
   //remarks,
 
   TypeMaterial(true),
-  //ID,
   //nameID,
   //citation,
   //status,
   referenceID,
   //link,
   //remarks,
-
 
   Taxon(true),
   // ID,
@@ -188,6 +186,13 @@ public enum ColdpTerm implements Term, AlternativeNames {
           relatedNameID,
           type,
           publishedInID,
+          remarks)
+      ).put(TypeMaterial, ImmutableList.of(
+          nameID,
+          citation,
+          status,
+          referenceID,
+          link,
           remarks)
       ).put(Taxon, ImmutableList.of(
           ID,
