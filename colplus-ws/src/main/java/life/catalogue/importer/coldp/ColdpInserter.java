@@ -1,14 +1,5 @@
 package life.catalogue.importer.coldp;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.nio.file.Path;
-import java.util.Map;
-import java.util.Optional;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import de.undercouch.citeproc.bibtex.BibTeXConverter;
@@ -32,6 +23,15 @@ import org.gbif.dwc.terms.UnknownTerm;
 import org.jbibtex.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.nio.file.Path;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  *
@@ -78,6 +78,9 @@ public class ColdpInserter extends NeoInserter {
           inter::interpretNameRelations,
           ColdpTerm.nameID,
           ColdpTerm.relatedNameID
+      );
+      interpretTypeMaterial(reader, ColdpTerm.TypeMaterial,
+              inter::interpretTypeMaterial
       );
 
       // taxa

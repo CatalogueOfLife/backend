@@ -6,6 +6,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.dao.NameDao;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameRelationMapper;
+import life.catalogue.db.mapper.TypeMaterialMapper;
 import life.catalogue.dw.auth.Roles;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
@@ -43,6 +44,14 @@ public class NameResource extends AbstractDatasetScopedResource<Name> {
       @PathParam("id") String id, @Context SqlSession session) {
     NameRelationMapper mapper = session.getMapper(NameRelationMapper.class);
     return mapper.list(datasetKey, id);
+  }
+
+  @GET
+  @Path("{id}/types")
+  public List<TypeMaterial> getTypeMaterial(@PathParam("datasetKey") int datasetKey,
+                                         @PathParam("id") String id, @Context SqlSession session) {
+    TypeMaterialMapper mapper = session.getMapper(TypeMaterialMapper.class);
+    return mapper.listByName(DSID.key(datasetKey, id));
   }
 
   @GET

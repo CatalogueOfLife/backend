@@ -33,7 +33,7 @@ public enum Issue {
       "We remove the subsequent records but flag the first record with this issue."),
   
   URL_INVALID(ANY, Level.ERROR,
-      "dc:references, acef:InfraSpeciesURL or acef:SpeciesURL cannot be interpreted into a valid URL"),
+      "Any of the coldp:link, dc:references, acef:InfraSpeciesURL, acef:SpeciesURL or other terms that are supposed to be URLs cannot be interpreted into a valid URL"),
   
   PARTIAL_DATE(ANY, Level.WARNING,
       "Date string was provided a year, but month and/or day were absent"),
@@ -111,9 +111,6 @@ public enum Issue {
   NOMENCLATURAL_CODE_INVALID(NAME, Level.ERROR,
       "dwc:nomenclaturalCode could not be interpreted"),
   
-  TYPE_STATUS_INVALID(NAME, Level.WARNING,
-      "typeStatus could not be interpreted"),
-
   BASIONYM_AUTHOR_MISMATCH(NAME, Level.ERROR,
       "A recombination with a basionym authorship which does not match the authorship of the linked basionym"),
   
@@ -165,7 +162,16 @@ public enum Issue {
   
   NAME_VARIANT(NAME, Level.INFO,
       "Multiple variants of the same name appear several times in the dataset."),
-  
+
+
+  //
+  // TYPE MATERIAL ISSUES
+  //
+
+  TYPE_STATUS_INVALID(TYPE_MATERIAL, Level.WARNING,
+          "type status could not be interpreted"),
+
+
   //
   // TAXON ISSUES
   //

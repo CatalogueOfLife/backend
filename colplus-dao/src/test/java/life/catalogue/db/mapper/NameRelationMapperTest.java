@@ -1,12 +1,12 @@
 package life.catalogue.db.mapper;
 
-import java.util.List;
-
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.NameRelation;
 import life.catalogue.api.vocab.NomRelType;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.List;
 
 import static life.catalogue.api.TestEntityGenerator.*;
 import static org.junit.Assert.assertEquals;
@@ -31,7 +31,7 @@ public class NameRelationMapperTest extends MapperTestBase<NameRelationMapper> {
   
   @Test
   public void roundtrip() throws Exception {
-    NameRelation in = nullifyDate(newNameAct());
+    NameRelation in = nullifyDate(newNameRelation());
     nameRelationMapper.create(in);
     assertNotNull(in.getKey());
     commit();
@@ -46,9 +46,9 @@ public class NameRelationMapperTest extends MapperTestBase<NameRelationMapper> {
     assertEquals(0, nameRelationMapper.list(NAME1.getDatasetKey(), NAME1.getId()).size());
     assertEquals(1, nameRelationMapper.list(NAME2.getDatasetKey(), NAME2.getId()).size());
     
-    nameRelationMapper.create(newNameAct());
-    nameRelationMapper.create(newNameAct(NomRelType.BASED_ON));
-    nameRelationMapper.create(newNameAct(NomRelType.CONSERVED));
+    nameRelationMapper.create(newNameRelation());
+    nameRelationMapper.create(newNameRelation(NomRelType.BASED_ON));
+    nameRelationMapper.create(newNameRelation(NomRelType.CONSERVED));
     commit();
     List<NameRelation> nas = nameRelationMapper.list(NAME1.getDatasetKey(), NAME1.getId());
     
@@ -57,7 +57,7 @@ public class NameRelationMapperTest extends MapperTestBase<NameRelationMapper> {
     assertEquals(4, nameRelationMapper.list(NAME2.getDatasetKey(), NAME2.getId()).size());
   }
   
-  private static NameRelation newNameAct(NomRelType type) {
+  private static NameRelation newNameRelation(NomRelType type) {
     NameRelation na = TestEntityGenerator.setUserDate(new NameRelation());
     na.setDatasetKey(DATASET11.getKey());
     na.setType(type);
@@ -66,8 +66,8 @@ public class NameRelationMapperTest extends MapperTestBase<NameRelationMapper> {
     return na;
   }
   
-  private static NameRelation newNameAct() {
-    return newNameAct(NomRelType.REPLACEMENT_NAME);
+  private static NameRelation newNameRelation() {
+    return newNameRelation(NomRelType.REPLACEMENT_NAME);
   }
   
 }

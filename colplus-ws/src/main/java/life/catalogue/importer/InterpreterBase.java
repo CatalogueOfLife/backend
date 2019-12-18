@@ -55,6 +55,7 @@ public class InterpreterBase {
               .orElse(Gazetteer.TEXT);
       LOG.info("Dataset wide distribution standard found in settings: {}", distributionStandard);
     } else {
+      LOG.info("No dataset wide distribution standard found in settings: {}", dataset.getSettings());
       distributionStandard = null;
     }
   }
@@ -81,7 +82,7 @@ public class InterpreterBase {
     }
     return ref;
   }
-  
+
   protected List<VernacularName> interpretVernacular(VerbatimRecord rec, BiConsumer<VernacularName, VerbatimRecord> addReference,
                                                      Term name, Term translit, Term lang, Term sex, Term area, Term... countryTerms) {
     String vname = rec.get(name);
@@ -286,7 +287,6 @@ public class InterpreterBase {
                                                  final String genus, final String infraGenus, final String species, final String infraspecies,
                                                  final String cultivar,final String phrase,
                                                  String nomCode, String nomStatus,
-                                                 String typeStatus, String typeMaterial,
                                                  String link, String remarks, VerbatimRecord v) {
     final boolean isAtomized = ObjectUtils.anyNotNull(genus, infraGenus, species, infraspecies);
     Name atom = new Name();
@@ -380,9 +380,7 @@ public class InterpreterBase {
     nat.getName().setId(id);
     nat.getName().setVerbatimKey(v.getId());
     nat.getName().setOrigin(Origin.SOURCE);
-    nat.getName().setWebpage(parse(UriParser.PARSER, link).orNull());
-    nat.getName().setTypeMaterial(typeMaterial);
-    nat.getName().setTypeStatus(parse(TypeStatusParser.PARSER, typeStatus).orNull(Issue.TYPE_STATUS_INVALID, v));
+    nat.getName().setLink(parse(UriParser.PARSER, link).orNull());
     // name status can be explicitly given or as part of the name remarks
     nat.getName().setNomStatus(parse(NomStatusParser.PARSER, nomStatus).orElse(
         parse(NomStatusParser.PARSER, nat.getName().getRemarks()).orNull(), Issue.NOMENCLATURAL_STATUS_INVALID, v)

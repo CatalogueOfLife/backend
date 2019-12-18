@@ -1,16 +1,16 @@
 package life.catalogue.importer.neo.model;
 
-import java.util.Objects;
-
-import org.apache.commons.lang3.NotImplementedException;
 import life.catalogue.api.model.Referenced;
 import life.catalogue.api.model.VerbatimEntity;
+import org.apache.commons.lang3.NotImplementedException;
+
+import java.util.Objects;
 
 public class NeoNameRel implements VerbatimEntity, Referenced {
   private Integer verbatimKey;
   private RelType type;
   private String referenceId;
-  private String note;
+  private String remarks;
   
   @Override
   public Integer getVerbatimKey() {
@@ -40,12 +40,12 @@ public class NeoNameRel implements VerbatimEntity, Referenced {
     this.referenceId = referenceId;
   }
   
-  public String getNote() {
-    return note;
+  public String getRemarks() {
+    return remarks;
   }
   
-  public void setNote(String note) {
-    this.note = note;
+  public void setRemarks(String remarks) {
+    this.remarks = remarks;
   }
   
   @Override
@@ -56,13 +56,13 @@ public class NeoNameRel implements VerbatimEntity, Referenced {
     return Objects.equals(verbatimKey, that.verbatimKey) &&
         type == that.type &&
         Objects.equals(referenceId, that.referenceId) &&
-        Objects.equals(note, that.note);
+        Objects.equals(remarks, that.remarks);
   }
   
   @Override
   public int hashCode() {
     
-    return Objects.hash(verbatimKey, type, referenceId, note);
+    return Objects.hash(verbatimKey, type, referenceId, remarks);
   }
   
   @Override

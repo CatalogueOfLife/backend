@@ -8,6 +8,7 @@ public enum EntityType {
   NAME,
   NAME_RELATION,
   NAME_USAGE,
+  TYPE_MATERIAL,
   DESCRIPTION,
   DISTRIBUTION,
   MEDIA,

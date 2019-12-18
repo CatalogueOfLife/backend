@@ -1,13 +1,13 @@
 package life.catalogue.api.model;
 
-import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.Objects;
-
 import com.google.common.collect.Maps;
 import life.catalogue.api.vocab.*;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
+
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.Objects;
 
 public class ImportMetrics<T extends Enum> implements ImportAttempt {
   
@@ -39,6 +39,7 @@ public class ImportMetrics<T extends Enum> implements ImportAttempt {
   private Integer taxonCount;
   private Integer synonymCount;
   private Integer referenceCount;
+  private Integer typeMaterialCount;
   private Integer descriptionCount;
   private Integer distributionCount;
   private Integer mediaCount;
@@ -48,6 +49,7 @@ public class ImportMetrics<T extends Enum> implements ImportAttempt {
   private Map<Origin, Integer> namesByOriginCount = Maps.newHashMap();
   private Map<Rank, Integer> namesByRankCount = Maps.newHashMap();
   private Map<NomRelType, Integer> nameRelationsByTypeCount = Maps.newHashMap();
+  private Map<TypeStatus, Integer> typeMaterialByStatusCount = Maps.newHashMap();
   private Map<Gazetteer, Integer> distributionsByGazetteerCount = Maps.newHashMap();
   private Map<String, Integer> vernacularsByLanguageCount = Maps.newHashMap();
   private Map<MediaType, Integer> mediaByTypeCount = Maps.newHashMap();
@@ -246,7 +248,23 @@ public class ImportMetrics<T extends Enum> implements ImportAttempt {
   public void setUsagesByStatusCount(Map<TaxonomicStatus, Integer> usagesByStatusCount) {
     this.usagesByStatusCount = usagesByStatusCount;
   }
-  
+
+  public Integer getTypeMaterialCount() {
+    return typeMaterialCount;
+  }
+
+  public void setTypeMaterialCount(Integer typeMaterialCount) {
+    this.typeMaterialCount = typeMaterialCount;
+  }
+
+  public Map<TypeStatus, Integer> getTypeMaterialByStatusCount() {
+    return typeMaterialByStatusCount;
+  }
+
+  public void setTypeMaterialByStatusCount(Map<TypeStatus, Integer> typeMaterialByStatusCount) {
+    this.typeMaterialByStatusCount = typeMaterialByStatusCount;
+  }
+
   /**
    * @return count of all usages, i.e. all taxa and synonyms, regardless of their status
    */
@@ -269,43 +287,46 @@ public class ImportMetrics<T extends Enum> implements ImportAttempt {
   public void setIssuesCount(Map<Issue, Integer> issuesCount) {
     this.issuesCount = issuesCount;
   }
-  
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     ImportMetrics<?> that = (ImportMetrics<?>) o;
     return attempt == that.attempt &&
-        Objects.equals(state, that.state) &&
-        Objects.equals(started, that.started) &&
-        Objects.equals(finished, that.finished) &&
-        Objects.equals(error, that.error) &&
-        Objects.equals(nameCount, that.nameCount) &&
-        Objects.equals(taxonCount, that.taxonCount) &&
-        Objects.equals(synonymCount, that.synonymCount) &&
-        Objects.equals(referenceCount, that.referenceCount) &&
-        Objects.equals(descriptionCount, that.descriptionCount) &&
-        Objects.equals(distributionCount, that.distributionCount) &&
-        Objects.equals(mediaCount, that.mediaCount) &&
-        Objects.equals(vernacularCount, that.vernacularCount) &&
-        Objects.equals(namesByTypeCount, that.namesByTypeCount) &&
-        Objects.equals(namesByStatusCount, that.namesByStatusCount) &&
-        Objects.equals(namesByOriginCount, that.namesByOriginCount) &&
-        Objects.equals(namesByRankCount, that.namesByRankCount) &&
-        Objects.equals(nameRelationsByTypeCount, that.nameRelationsByTypeCount) &&
-        Objects.equals(distributionsByGazetteerCount, that.distributionsByGazetteerCount) &&
-        Objects.equals(vernacularsByLanguageCount, that.vernacularsByLanguageCount) &&
-        Objects.equals(mediaByTypeCount, that.mediaByTypeCount) &&
-        Objects.equals(usagesByStatusCount, that.usagesByStatusCount) &&
-        Objects.equals(taxaByRankCount, that.taxaByRankCount) &&
-        Objects.equals(issuesCount, that.issuesCount);
+            Objects.equals(datasetKey, that.datasetKey) &&
+            Objects.equals(state, that.state) &&
+            Objects.equals(started, that.started) &&
+            Objects.equals(finished, that.finished) &&
+            Objects.equals(error, that.error) &&
+            Objects.equals(nameCount, that.nameCount) &&
+            Objects.equals(taxonCount, that.taxonCount) &&
+            Objects.equals(synonymCount, that.synonymCount) &&
+            Objects.equals(referenceCount, that.referenceCount) &&
+            Objects.equals(typeMaterialCount, that.typeMaterialCount) &&
+            Objects.equals(descriptionCount, that.descriptionCount) &&
+            Objects.equals(distributionCount, that.distributionCount) &&
+            Objects.equals(mediaCount, that.mediaCount) &&
+            Objects.equals(vernacularCount, that.vernacularCount) &&
+            Objects.equals(namesByTypeCount, that.namesByTypeCount) &&
+            Objects.equals(namesByStatusCount, that.namesByStatusCount) &&
+            Objects.equals(namesByOriginCount, that.namesByOriginCount) &&
+            Objects.equals(namesByRankCount, that.namesByRankCount) &&
+            Objects.equals(nameRelationsByTypeCount, that.nameRelationsByTypeCount) &&
+            Objects.equals(typeMaterialByStatusCount, that.typeMaterialByStatusCount) &&
+            Objects.equals(distributionsByGazetteerCount, that.distributionsByGazetteerCount) &&
+            Objects.equals(vernacularsByLanguageCount, that.vernacularsByLanguageCount) &&
+            Objects.equals(mediaByTypeCount, that.mediaByTypeCount) &&
+            Objects.equals(usagesByStatusCount, that.usagesByStatusCount) &&
+            Objects.equals(taxaByRankCount, that.taxaByRankCount) &&
+            Objects.equals(issuesCount, that.issuesCount);
   }
-  
+
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, attempt, state, started, finished, error, nameCount, taxonCount, synonymCount, referenceCount, descriptionCount, distributionCount, mediaCount, vernacularCount, namesByTypeCount, namesByStatusCount, namesByOriginCount, namesByRankCount, nameRelationsByTypeCount, distributionsByGazetteerCount, vernacularsByLanguageCount, mediaByTypeCount, usagesByStatusCount, taxaByRankCount, issuesCount);
+    return Objects.hash(datasetKey, attempt, state, started, finished, error, nameCount, taxonCount, synonymCount, referenceCount, typeMaterialCount, descriptionCount, distributionCount, mediaCount, vernacularCount, namesByTypeCount, namesByStatusCount, namesByOriginCount, namesByRankCount, nameRelationsByTypeCount, typeMaterialByStatusCount, distributionsByGazetteerCount, vernacularsByLanguageCount, mediaByTypeCount, usagesByStatusCount, taxaByRankCount, issuesCount);
   }
-  
+
   @Override
   public String toString() {
     return getClass().getSimpleName() + "{" +

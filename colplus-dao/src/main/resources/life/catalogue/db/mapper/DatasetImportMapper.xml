@@ -151,6 +151,9 @@
     <select id="countName" resultType="integer">
         SELECT count(*) FROM name_${key}
     </select>
+    <select id="countTypeMaterial" resultType="integer">
+        SELECT count(*) FROM type_material_${key}
+    </select>
     <select id="countReference" resultType="integer">
         SELECT count(*) FROM reference_${key}
     </select>
@@ -207,6 +210,11 @@
         SELECT rank AS key, count(*) AS count
         FROM name_${key}
         GROUP BY rank
+    </select>
+    <select id="countTypeMaterialByStatus" resultType="StringCount">
+        SELECT status AS key, count(*) AS count
+        FROM type_material_${key}
+        GROUP BY status
     </select>
     <select id="countTaxaByRank" resultType="StringCount">
         SELECT n.rank AS key, count(*) AS count

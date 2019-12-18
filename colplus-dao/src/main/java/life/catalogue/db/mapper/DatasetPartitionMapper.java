@@ -13,6 +13,7 @@ public interface DatasetPartitionMapper {
       "reference",
       "name",
       "name_rel",
+      "type_material",
       "name_usage",
       "description",
       "distribution",
@@ -23,6 +24,7 @@ public interface DatasetPartitionMapper {
   List<String> SERIAL_TABLES = Lists.newArrayList(
       "verbatim",
       "name_rel",
+      "type_material",
       "description",
       "distribution",
       "media",

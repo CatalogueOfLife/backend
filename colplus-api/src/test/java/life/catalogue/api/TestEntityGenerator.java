@@ -282,7 +282,7 @@ public class TestEntityGenerator {
     t.setAccordingTo("Foo");
     t.setAccordingToDate(FuzzyDate.of(2010, 11, 24));
     t.setDatasetKey(n.getDatasetKey());
-    t.setWebpage(URI.create("http://foo.com"));
+    t.setLink(URI.create("http://foo.com"));
     t.setExtinct(false);
     t.setId(id);
     t.setLifezones(EnumSet.of(Lifezone.BRACKISH, Lifezone.FRESHWATER, Lifezone.TERRESTRIAL));
@@ -305,7 +305,7 @@ public class TestEntityGenerator {
     t.setAccordingTo("Foo");
     t.setAccordingToDate(FuzzyDate.of(2010, 11, 24));
     t.setDatasetKey(datasetKey);
-    t.setWebpage(URI.create("http://foo-bar.com"));
+    t.setLink(URI.create("http://foo-bar.com"));
     t.setExtinct(true);
     t.setId(id);
     t.setLifezones(EnumSet.of(Lifezone.BRACKISH, Lifezone.FRESHWATER, Lifezone.TERRESTRIAL));
@@ -396,10 +396,8 @@ public class TestEntityGenerator {
     n.setCandidatus(true);
     n.setCultivarEpithet("Red Rose");
     n.setAppendedPhrase("ACTT 675213");
-    n.setWebpage(URI.create("http://gbif.org"));
+    n.setLink(URI.create("http://gbif.org"));
     n.setNotho(NamePart.SPECIFIC);
-    n.setTypeStatus(TypeStatus.HOLOTYPE);
-    n.setTypeMaterial("UGANDA: adult ♂, CW 21.5, CL 14.4, CH 7.4, FW 6.5 mm, Imatong Mountains, near border with South Sudan (3.79° N, 32.87° E), at 2,134 m asl, 11 Aug. 1955, L.C. Beadle (NHM 1955.11.8.26–27).");
     n.setRank(rank);
     n.setOrigin(Origin.SOURCE);
     n.setType(NameType.SCIENTIFIC);
@@ -437,7 +435,17 @@ public class TestEntityGenerator {
     n.applyUser(Users.TESTER);
     return n;
   }
-  
+
+  public static TypeMaterial newType(int datasetKey, String nameID) {
+    TypeMaterial tm = new TypeMaterial();
+    tm.setDatasetKey(datasetKey);
+    tm.setNameId(nameID);
+    tm.setStatus(TypeStatus.HOLOTYPE);
+    tm.setCitation("UGANDA: adult ♂, CW 21.5, CL 14.4, CH 7.4, FW 6.5 mm, Imatong Mountains, near border with South Sudan (3.79° N, 32.87° E), at 2,134 m asl, 11 Aug. 1955, L.C. Beadle (NHM 1955.11.8.26–27).");
+    tm.applyUser(Users.TESTER);
+    return tm;
+  }
+
   public static Taxon newTaxon(int datasetKey) {
     // prepare taxon to hook extensions to
     Taxon tax = new Taxon();
@@ -449,8 +457,7 @@ public class TestEntityGenerator {
     tax.applyUser(Users.TESTER);
     return tax;
   }
-  
-  
+
   public static Synonymy newSynonymy() {
     Synonymy s = new Synonymy();
     s.addHeterotypicGroup(newNames(1 + RND.nextInt(3)));
@@ -652,8 +659,9 @@ public class TestEntityGenerator {
     return managed;
   }
 
-  public static <T extends UserManaged> void nullifyUserDate(Collection<T> managed) {
+  public static <T extends UserManaged> Collection<T> nullifyUserDate(Collection<T> managed) {
     managed.forEach(TestEntityGenerator::nullifyUserDate);
+    return managed;
   }
 
   public static <T extends UserManaged> T setUser(T managed) {

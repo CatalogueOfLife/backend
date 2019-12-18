@@ -121,7 +121,8 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     DescriptionMapper dem = session.getMapper(DescriptionMapper.class);
     MediaMapper mm = session.getMapper(MediaMapper.class);
     ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
-  
+    TypeMaterialMapper tmm = session.getMapper(TypeMaterialMapper.class);
+
     TaxonInfo info = new TaxonInfo();
     info.setTaxon(taxon);
     // all reference keys so we can select their details at the end
@@ -144,6 +145,16 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     
     info.setVernacularNames(vm.listByTaxon(taxon));
     info.getVernacularNames().forEach(d -> refIds.add(d.getReferenceId()));
+
+    // add all type material
+    info.getTypeMaterial().put(taxon.getName().getId(), tmm.listByName(taxon.getName()));
+    info.getSynonyms().forEach(s -> info.getTypeMaterial().put(s.getName().getId(), tmm.listByName(s.getName())));
+    info.getTypeMaterial().values().forEach(
+            types -> types.forEach(
+                    t -> refIds.add(t.getReferenceId())
+            )
+    );
+
     // make sure we did not add null by accident
     refIds.remove(null);
     

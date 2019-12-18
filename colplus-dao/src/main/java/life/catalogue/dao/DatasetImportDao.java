@@ -1,15 +1,7 @@
 package life.catalogue.dao;
 
-import java.io.File;
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.function.Function;
-
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.Page;
@@ -18,12 +10,20 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.type2.StringCount;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.function.Function;
 
 public class DatasetImportDao {
   
@@ -159,6 +159,7 @@ public class DatasetImportDao {
     di.setDistributionCount(mapper.countDistribution(key));
     di.setMediaCount(mapper.countMedia(key));
     di.setNameCount(mapper.countName(key));
+    di.setTypeMaterialCount(mapper.countTypeMaterial(key));
     di.setReferenceCount(mapper.countReference(key));
     di.setSynonymCount(mapper.countSynonym(key));
     di.setTaxonCount(mapper.countTaxon(key));
@@ -173,6 +174,7 @@ public class DatasetImportDao {
     di.setNamesByRankCount(countMap(DatasetImportDao::parseRank, mapper.countNamesByRank(key)));
     di.setNamesByStatusCount(DatasetImportDao.countMap(NomStatus.class, mapper.countNamesByStatus(key)));
     di.setNamesByTypeCount(DatasetImportDao.countMap(NameType.class, mapper.countNamesByType(key)));
+    di.setTypeMaterialByStatusCount(DatasetImportDao.countMap(TypeStatus.class, mapper.countTypeMaterialByStatus(key)));
     di.setTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(key)));
     di.setUsagesByStatusCount(DatasetImportDao.countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(key)));
     di.setVerbatimByTypeCount(countMap(DatasetImportDao::parseRowType, mapper.countVerbatimByType(key)));

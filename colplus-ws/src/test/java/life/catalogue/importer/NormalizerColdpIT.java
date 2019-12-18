@@ -1,15 +1,15 @@
 package life.catalogue.importer;
 
-import java.util.List;
-
-import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.api.model.NameRelation;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomRelType;
+import life.catalogue.importer.neo.model.NeoUsage;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
+
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -65,6 +65,12 @@ public class NormalizerColdpIT extends NormalizerITBase {
         assertNotNull(r.getCitation());
         assertNotNull(r.getCsl().getTitle());
       });
+
+      t = usageByNameID("1001c");
+      assertFalse(t.isSynonym());
+      assertEquals("1001c", t.getId());
+
+      assertEquals(3, store.typeMaterial().size());
     }
   }
   

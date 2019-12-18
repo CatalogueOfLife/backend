@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.TypeMaterialMapper">
+
+    <sql id="SELECT">
+        id,
+        dataset_key,
+        sector_key,
+        verbatim_key,
+        name_id,
+        citation,
+        status,
+        reference_id,
+        link,
+        remarks,
+        created,
+        created_by,
+        modified,
+        modified_by
+    </sql>
+
+    <sql id="COLS">
+        dataset_key,
+        sector_key,
+        verbatim_key,
+        name_id,
+        citation,
+        status,
+        reference_id,
+        link,
+        remarks,
+        created_by,
+        modified_by
+    </sql>
+
+    <sql id="PROPS">
+        #{datasetKey},
+        #{sectorKey},
+        #{verbatimKey},
+        #{nameId},
+        #{citation},
+        #{status}::TYPESTATUS,
+        #{referenceId},
+        #{link},
+        #{remarks},
+        #{createdBy},
+        #{modifiedBy}
+    </sql>
+
+    <sql id="FROM">
+        type_material_${partition}
+    </sql>
+
+    <resultMap id="typeResultMap" type="TypeMaterial" autoMapping="true">
+        <id property="id" column="id" />
+    </resultMap>
+
+    <select id="listByName" resultMap="typeResultMap">
+        <include refid="life.catalogue.db.Common.partitionByKey"/>
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE name_id = #{key.id}
+        ORDER BY id
+    </select>
+
+    <select id="get" resultMap="typeResultMap">
+        <include refid="life.catalogue.db.Common.partitionByKey"/>
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE id = #{key.id}
+    </select>
+
+    <insert id="create" parameterType="TypeMaterial" useGeneratedKeys="true" keyProperty="id">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        INSERT INTO type_material_${partition} ( <include refid="COLS" />, created, modified)
+        VALUES ( <include refid="PROPS" />, now(), now())
+    </insert>
+
+    <update id="update" parameterType="TypeMaterial" keyProperty="id">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        UPDATE type_material_${partition}
+        SET (<include refid="COLS" />, created, modified) = (<include refid="PROPS" />, now(), now())
+        WHERE id = #{id} AND dataset_key=#{datasetKey}
+    </update>
+
+    <delete id="delete" parameterType="map">
+        <include refid="life.catalogue.db.Common.partitionByKey"/>
+        DELETE FROM type_material_${partition}
+        WHERE id = #{key.id} AND dataset_key=#{key.datasetKey}
+    </delete>
+
+    <select id="processDataset" parameterType="map" resultMap="typeResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+    </select>
+
+</mapper>

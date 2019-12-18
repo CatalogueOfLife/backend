@@ -1,27 +1,8 @@
 package life.catalogue.importer.neo;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javax.annotation.Nullable;
-
 import com.esotericsoftware.kryo.pool.KryoPool;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.UnmodifiableIterator;
-import life.catalogue.importer.neo.model.*;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Origin;
@@ -33,9 +14,12 @@ import life.catalogue.common.text.StringUtils;
 import life.catalogue.importer.IdGenerator;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.NodeBatchProcessor.BatchConsumer;
+import life.catalogue.importer.neo.model.*;
 import life.catalogue.importer.neo.printer.PrinterUtils;
 import life.catalogue.importer.neo.traverse.Traversals;
 import life.catalogue.importer.reference.ReferenceStore;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
 import org.mapdb.Atomic;
@@ -54,6 +38,19 @@ import org.neo4j.unsafe.batchinsert.BatchInserter;
 import org.neo4j.unsafe.batchinsert.BatchInserters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A persistence mechanism for storing core taxonomy & names propLabel and relations in an embedded
@@ -80,7 +77,9 @@ public class NeoDb implements ReferenceStore {
   // verbatimKey sequence and lookup
   private final AtomicInteger verbatimSequence = new AtomicInteger(0);
   private final Map<Integer, VerbatimRecord> verbatim;
-  
+  private final AtomicInteger typeSequence = new AtomicInteger(0);
+  private final Map<Integer, TypeMaterial> typeMaterial;
+
   private final File neoDir;
   private final KryoPool pool;
   private BatchInserter inserter;
@@ -123,6 +122,10 @@ public class NeoDb implements ReferenceStore {
           .keySerializer(Serializer.STRING)
           .valueSerializer(new MapDbObjectSerializer(Reference.class, pool, 128))
           .createOrOpen();
+      typeMaterial= mapDb.hashMap("typeMaterial")
+              .keySerializer(Serializer.INTEGER)
+              .valueSerializer(new MapDbObjectSerializer(TypeMaterial.class, pool, 128))
+              .createOrOpen();
       refIndexCitation = mapDb.hashMap("refIndexCitation")
           .keySerializer(Serializer.STRING)
           .valueSerializer(Serializer.STRING)
@@ -213,7 +216,11 @@ public class NeoDb implements ReferenceStore {
     }
     return u;
   }
-  
+
+  public Collection<TypeMaterial> typeMaterial() {
+    return typeMaterial.values();
+  }
+
   /**
    * @return a collection of all name relations with name key using node ids.
    */
@@ -223,7 +230,7 @@ public class NeoDb implements ReferenceStore {
     nr.setType(RelType.valueOf(r.getType().name()).nomRelType);
     nr.setNameId(names.objByNode(r.getStartNode()).getId());
     nr.setRelatedNameId(names.objByNode(r.getEndNode()).getId());
-    nr.setNote((String) r.getProperty(NeoProperties.NOTE, null));
+    nr.setRemarks((String) r.getProperty(NeoProperties.NOTE, null));
     nr.setPublishedInId((String) r.getProperty(NeoProperties.REF_ID, null));
     if (r.hasProperty(NeoProperties.VERBATIM_KEY)) {
       nr.setVerbatimKey((Integer) r.getProperty(NeoProperties.VERBATIM_KEY));
@@ -487,6 +494,13 @@ public class NeoDb implements ReferenceStore {
       verbatim.put(v.getId(), v);
       v.setHashCode();
     }
+  }
+
+  public void add(TypeMaterial tm) {
+    if (tm.getNameId() == null) {
+      throw new IllegalArgumentException("nameID required");
+    }
+    typeMaterial.put(typeSequence.incrementAndGet(), tm);
   }
   
   /**

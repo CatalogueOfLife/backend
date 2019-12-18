@@ -105,6 +105,7 @@ CREATE TYPE ENTITYTYPE AS ENUM (
   'NAME',
   'NAME_RELATION',
   'NAME_USAGE',
+  'TYPE_MATERIAL',
   'DESCRIPTION',
   'DISTRIBUTION',
   'MEDIA',
@@ -623,6 +624,7 @@ CREATE TABLE dataset_import (
   download TIMESTAMP WITHOUT TIME ZONE,
   verbatim_count INTEGER,
   name_count INTEGER,
+  type_material_count INTEGER,
   taxon_count INTEGER,
   synonym_count INTEGER,
   reference_count INTEGER,
@@ -640,6 +642,7 @@ CREATE TABLE dataset_import (
   usages_by_status_count HSTORE,
   names_by_status_count HSTORE,
   name_relations_by_type_count HSTORE,
+  type_material_by_status_count HSTORE,
   verbatim_by_type_count HSTORE,
   verbatim_by_term_count JSONB,
   media_by_type_count HSTORE,
@@ -812,7 +815,6 @@ CREATE TABLE name (
   notho NAMEPART,
   code NOMCODE,
   nom_status NOMSTATUS,
-  type_status TYPESTATUS,
   origin ORIGIN NOT NULL,
   type NAMETYPE NOT NULL,
   created_by INTEGER NOT NULL,
@@ -841,9 +843,7 @@ CREATE TABLE name (
   sanctioning_author TEXT,
   published_in_id TEXT,
   published_in_page TEXT,
-  type_material TEXT,
-  type_reference_id TEXT,
-  webpage TEXT,
+  link TEXT,
   remarks TEXT
 ) PARTITION BY LIST (dataset_key);
 
@@ -869,7 +869,24 @@ CREATE TABLE name_rel (
   name_id TEXT NOT NULL,
   related_name_id TEXT NULL,
   published_in_id TEXT,
-  note TEXT
+  remarks TEXT
+) PARTITION BY LIST (dataset_key);
+
+CREATE TABLE type_material (
+  id INTEGER NOT NULL,
+  dataset_key INTEGER NOT NULL,
+  sector_key INTEGER,
+  verbatim_key INTEGER,
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  name_id TEXT NOT NULL,
+  citation TEXT,
+  status TYPESTATUS,
+  reference_id TEXT,
+  link TEXT,
+  remarks TEXT
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE name_usage (
@@ -893,7 +910,7 @@ CREATE TABLE name_usage (
   temporal_range_start TEXT,
   temporal_range_end TEXT,
   lifezones LIFEZONE[] DEFAULT '{}',
-  webpage TEXT,
+  link TEXT,
   remarks TEXT,
   dataset_sectors JSONB
 ) PARTITION BY LIST (dataset_key);

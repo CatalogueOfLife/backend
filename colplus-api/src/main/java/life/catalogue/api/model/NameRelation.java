@@ -1,8 +1,8 @@
 package life.catalogue.api.model;
 
-import java.util.Objects;
-
 import life.catalogue.api.vocab.NomRelType;
+
+import java.util.Objects;
 
 /**
  * A nomenclatural name relation between two names pointing back in time from the nameId to the relatedNameId.
@@ -14,7 +14,7 @@ public class NameRelation extends DatasetScopedEntity<Integer> implements Verbat
   private String nameId;
   private String relatedNameId;
   private String publishedInId;
-  private String note;
+  private String remarks;
   
   @Override
   public Integer getVerbatimKey() {
@@ -66,12 +66,12 @@ public class NameRelation extends DatasetScopedEntity<Integer> implements Verbat
     this.publishedInId = publishedInId;
   }
   
-  public String getNote() {
-    return note;
+  public String getRemarks() {
+    return remarks;
   }
   
-  public void setNote(String note) {
-    this.note = note;
+  public void setRemarks(String remarks) {
+    this.remarks = remarks;
   }
   
   @Override
@@ -86,11 +86,11 @@ public class NameRelation extends DatasetScopedEntity<Integer> implements Verbat
         Objects.equals(nameId, that.nameId) &&
         Objects.equals(relatedNameId, that.relatedNameId) &&
         Objects.equals(publishedInId, that.publishedInId) &&
-        Objects.equals(note, that.note);
+        Objects.equals(remarks, that.remarks);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), verbatimKey, datasetKey, type, nameId, relatedNameId, publishedInId, note);
+    return Objects.hash(super.hashCode(), verbatimKey, datasetKey, type, nameId, relatedNameId, publishedInId, remarks);
   }
 }

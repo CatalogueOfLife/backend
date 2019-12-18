@@ -1,9 +1,6 @@
 package life.catalogue.api.model;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Aggregated taxon information
@@ -16,9 +13,14 @@ public class TaxonInfo {
   private List<VernacularName> vernacularNames;
   private List<Media> media;
   private List<Description> descriptions;
-  
+
   /**
-   * Lookup of referernceID to reference so the same reference can be shared across different objects
+   * Lookup of types for a given nameID
+   */
+  private Map<String, List<TypeMaterial>> typeMaterial = new HashMap<>();
+
+  /**
+   * Lookup of referenceID to reference so the same reference can be shared across different objects
    * saving json serialization size.
    */
   private Map<String, Reference> references = new HashMap<>();
@@ -97,7 +99,19 @@ public class TaxonInfo {
       }
     }
   }
-  
+
+  public List<TypeMaterial> getTypeMaterial(String nameID) {
+    return typeMaterial.getOrDefault(nameID, Collections.emptyList());
+  }
+
+  public Map<String, List<TypeMaterial>> getTypeMaterial() {
+    return typeMaterial;
+  }
+
+  public void setTypeMaterial(Map<String, List<TypeMaterial>> typeMaterial) {
+    this.typeMaterial = typeMaterial;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -109,12 +123,13 @@ public class TaxonInfo {
         Objects.equals(vernacularNames, taxonInfo.vernacularNames) &&
         Objects.equals(media, taxonInfo.media) &&
         Objects.equals(descriptions, taxonInfo.descriptions) &&
+        Objects.equals(typeMaterial, taxonInfo.typeMaterial) &&
         Objects.equals(references, taxonInfo.references);
   }
   
   @Override
   public int hashCode() {
     
-    return Objects.hash(taxon, synonyms, distributions, vernacularNames, media, descriptions, references);
+    return Objects.hash(taxon, synonyms, distributions, vernacularNames, media, descriptions, typeMaterial, references);
   }
 }

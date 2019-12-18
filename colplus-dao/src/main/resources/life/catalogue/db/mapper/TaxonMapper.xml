@@ -12,7 +12,7 @@
         ${alias}.temporal_range_start AS ${prefix}temporal_range_start,
         ${alias}.temporal_range_end AS ${prefix}temporal_range_end,
         ${alias}.lifezones AS ${prefix}lifezones,
-        ${alias}.webpage AS ${prefix}webpage
+        ${alias}.link AS ${prefix}link
     </sql>
 
     <sql id="SELECT">
@@ -34,7 +34,7 @@
         temporal_range_start,
         temporal_range_end,
         lifezones,
-        webpage
+        link
     </sql>
 
     <sql id="PROPS">
@@ -44,7 +44,7 @@
         #{temporalRangeStart},
         #{temporalRangeEnd},
         #{lifezones, typeHandler=life.catalogue.db.type.LifezoneSetTypeHandler},
-        #{webpage, typeHandler=life.catalogue.db.type.UriTypeHandler}
+        #{link, typeHandler=life.catalogue.db.type.UriTypeHandler}
     </sql>
 
     <sql id="FROM">

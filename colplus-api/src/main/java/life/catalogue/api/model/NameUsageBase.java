@@ -1,16 +1,16 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Preconditions;
+import life.catalogue.api.vocab.Origin;
+import life.catalogue.api.vocab.TaxonomicStatus;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.annotation.Nonnull;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nonnull;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Preconditions;
-import org.apache.commons.lang3.StringUtils;
-import life.catalogue.api.vocab.Origin;
-import life.catalogue.api.vocab.TaxonomicStatus;
 
 /**
  *
@@ -27,7 +27,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   private Origin origin;
   private String parentId;
   private String accordingTo;
-  private URI webpage;
+  private URI link;
   private String remarks;
   /**
    * All bibliographic reference ids for the given name usage
@@ -138,12 +138,12 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
     return new SimpleName(getId(), name.getScientificName(), name.getAuthorship(), name.getRank());
   }
   
-  public URI getWebpage() {
-    return webpage;
+  public URI getLink() {
+    return link;
   }
   
-  public void setWebpage(URI webpage) {
-    this.webpage = webpage;
+  public void setLink(URI link) {
+    this.link = link;
   }
   
   @Override
@@ -159,13 +159,13 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
         origin == that.origin &&
         Objects.equals(parentId, that.parentId) &&
         Objects.equals(accordingTo, that.accordingTo) &&
-        Objects.equals(webpage, that.webpage) &&
+        Objects.equals(link, that.link) &&
         Objects.equals(remarks, that.remarks) &&
         Objects.equals(referenceIds, that.referenceIds);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, name, status, origin, parentId, accordingTo, webpage, remarks, referenceIds);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, name, status, origin, parentId, accordingTo, link, remarks, referenceIds);
   }
 }

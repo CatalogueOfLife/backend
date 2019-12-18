@@ -1,24 +1,23 @@
 package life.catalogue.api.model;
 
-import java.net.URI;
-import java.util.List;
-import java.util.Objects;
-import javax.annotation.Nonnull;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
-import org.apache.commons.lang3.StringUtils;
 import life.catalogue.api.jackson.IsEmptyFilter;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.Origin;
-import life.catalogue.api.vocab.TypeStatus;
 import life.catalogue.common.tax.SciNameNormalizer;
+import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.*;
 import org.gbif.nameparser.util.NameFormatter;
+
+import javax.annotation.Nonnull;
+import java.net.URI;
+import java.util.List;
+import java.util.Objects;
 
 import static org.gbif.nameparser.util.NameFormatter.HYBRID_MARKER;
 
@@ -159,27 +158,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity 
    * The value is readonly!
    */
   private Integer publishedInYear;
-  
-  /**
-   * The status of the type material, e.g. holotype
-   * Type status should only be associated with the original name, not with a recombination.
-   */
-  private TypeStatus typeStatus;
-  
-  /**
-   * Material citation(s) of the type material, i.e. type specimens.
-   * The citation can include multiple specimens, e.g. in case of type series.
-   * The citation is ideally given in the verbatim form as it was used in the original publication of the name or the subsequent designation.
-   * Type material should only be associated with the original name, not with a recombination.
-   */
-  private String typeMaterial;
-  
-  /**
-   * A referenceID pointing to the Reference table indicating the publication of the type designation.
-   * Most often this is equivalent to the original publishedInID, but for subsequent designations the later reference can be cited.
-   */
-  private String typeReferenceId;
-  
+
   @Nonnull
   private Origin origin;
   
@@ -188,7 +167,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity 
    */
   private NameType type;
   
-  private URI webpage;
+  private URI link;
   
   /**
    * Any informal note about the nomenclature of the name
@@ -230,7 +209,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity 
     this.publishedInYear = n.publishedInYear;
     this.origin = n.origin;
     this.type = n.type;
-    this.webpage = n.webpage;
+    this.link = n.link;
     this.remarks = n.remarks;
   }
   
@@ -394,12 +373,12 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity 
     this.nomStatus = nomStatus;
   }
   
-  public URI getWebpage() {
-    return webpage;
+  public URI getLink() {
+    return link;
   }
   
-  public void setWebpage(URI webpage) {
-    this.webpage = webpage;
+  public void setLink(URI link) {
+    this.link = link;
   }
   
   public Authorship getCombinationAuthorship() {
@@ -540,30 +519,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity 
   
   public void setNotho(NamePart notho) {
     this.notho = notho;
-  }
-  
-  public String getTypeMaterial() {
-    return typeMaterial;
-  }
-  
-  public void setTypeMaterial(String typeMaterial) {
-    this.typeMaterial = typeMaterial;
-  }
-  
-  public TypeStatus getTypeStatus() {
-    return typeStatus;
-  }
-  
-  public void setTypeStatus(TypeStatus typeStatus) {
-    this.typeStatus = typeStatus;
-  }
-  
-  public String getTypeReferenceId() {
-    return typeReferenceId;
-  }
-  
-  public void setTypeReferenceId(String typeReferenceId) {
-    this.typeReferenceId = typeReferenceId;
   }
   
   public String getRemarks() {
@@ -781,18 +736,15 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity 
         Objects.equals(publishedInId, name.publishedInId) &&
         Objects.equals(publishedInPage, name.publishedInPage) &&
         Objects.equals(publishedInYear, name.publishedInYear) &&
-        Objects.equals(typeStatus, name.typeStatus) &&
-        Objects.equals(typeMaterial, name.typeMaterial) &&
-        Objects.equals(typeReferenceId, name.typeReferenceId) &&
         origin == name.origin &&
         type == name.type &&
-        Objects.equals(webpage, name.webpage) &&
+        Objects.equals(link, name.link) &&
         Objects.equals(remarks, name.remarks);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, homotypicNameId, nameIndexId, nameIndexMatchType, scientificName, authorship, authorshipNormalized, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, appendedPhrase, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, publishedInYear, typeStatus, typeMaterial, typeReferenceId, origin, type, webpage, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, homotypicNameId, nameIndexId, nameIndexMatchType, scientificName, authorship, authorshipNormalized, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, appendedPhrase, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, publishedInYear, origin, type, link, remarks);
   }
   
   @Override

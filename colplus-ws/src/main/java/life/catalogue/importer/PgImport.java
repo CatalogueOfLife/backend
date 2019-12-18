@@ -1,23 +1,14 @@
 package life.catalogue.importer;
 
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import life.catalogue.db.mapper.*;
-import org.apache.ibatis.session.ExecutorType;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.dao.Partitioner;
+import life.catalogue.db.mapper.*;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbUtils;
 import life.catalogue.importer.neo.model.Labels;
@@ -26,10 +17,19 @@ import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.neo.traverse.StartEndHandler;
 import life.catalogue.importer.neo.traverse.TreeWalker;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 
@@ -54,7 +54,8 @@ public class PgImport implements Callable<Boolean> {
   private final AtomicInteger deCounter = new AtomicInteger(0);
   private final AtomicInteger mCounter = new AtomicInteger(0);
   private final AtomicInteger vCounter = new AtomicInteger(0);
-  
+  private final AtomicInteger tmCounter = new AtomicInteger(0);
+
   public PgImport(int datasetKey, NeoDb store, SqlSessionFactory sessionFactory, AuthorshipNormalizer aNormalizer,
                   ImporterConfig cfg) {
     this.dataset = store.getDataset();
@@ -76,8 +77,10 @@ public class PgImport implements Callable<Boolean> {
     insertNames();
     
     insertNameRelations();
-    
-		insertUsages();
+
+    insertTypeMaterial();
+
+    insertUsages();
   
     Partitioner.indexAndAttach(sessionFactory, dataset.getKey());
     
@@ -88,7 +91,7 @@ public class PgImport implements Callable<Boolean> {
         nCounter, tCounter, sCounter, rCounter, vCounter, diCounter, deCounter, mCounter);
 		return true;
 	}
-  
+
   private void updateMetadata() {
     try (SqlSession session = sessionFactory.openSession(false)) {
       LOG.info("Updating dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
@@ -245,11 +248,28 @@ public class PgImport implements Callable<Boolean> {
     }
   }
 
-	/**
-	 * insert taxa/synonyms with all the rest
-	 */
-	private void insertUsages() throws InterruptedException {
-		try (SqlSession session = sessionFactory.openSession(ExecutorType.BATCH,false)) {
+  private void insertTypeMaterial() {
+    try (final SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
+      final TypeMaterialMapper tmm = session.getMapper(TypeMaterialMapper.class);
+      LOG.debug("Inserting type material");
+      for (TypeMaterial tm : store.typeMaterial()) {
+        updateVerbatimUserEntity(tm);
+        tmm.create(tm);
+        if (tmCounter.incrementAndGet() % batchSize == 0) {
+          interruptIfCancelled();
+          session.commit();
+        }
+      }
+      session.commit();
+    }
+    LOG.info("Inserted {} type material records", tmCounter);
+  }
+
+  /**
+   * insert taxa/synonyms with all the rest
+   */
+  private void insertUsages() throws InterruptedException {
+    try (SqlSession session = sessionFactory.openSession(ExecutorType.BATCH,false)) {
       LOG.info("Inserting remaining names and all taxa");
       DescriptionMapper descriptionMapper = session.getMapper(DescriptionMapper.class);
       DistributionMapper distributionMapper = session.getMapper(DistributionMapper.class);

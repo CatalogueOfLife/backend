@@ -2,10 +2,7 @@ package life.catalogue.importer.coldp;
 
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Issue;
-import life.catalogue.api.vocab.NomRelType;
-import life.catalogue.api.vocab.Origin;
-import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.vocab.*;
 import life.catalogue.importer.InterpreterBase;
 import life.catalogue.importer.MappingFlags;
 import life.catalogue.importer.neo.NeoDb;
@@ -74,7 +71,7 @@ public class ColdpInterpreter extends InterpreterBase {
       t.setAccordingTo(v.get(ColdpTerm.accordingTo));
       t.setAccordingToDate(fuzzydate(v, Issue.ACCORDING_TO_DATE_INVALID, ColdpTerm.accordingToDate));
       //TODO: ColTerm.accordingToDateID for ORCIDS
-      t.setWebpage(uri(v, Issue.URL_INVALID, ColdpTerm.link));
+      t.setLink(uri(v, Issue.URL_INVALID, ColdpTerm.link));
       t.setExtinct(bool(v, Issue.IS_EXTINCT_INVALID, ColdpTerm.extinct));
       t.setRemarks(v.get(ColdpTerm.remarks));
       // geotime
@@ -131,13 +128,24 @@ public class ColdpInterpreter extends InterpreterBase {
     SafeParser<NomRelType> type = SafeParser.parse(NomRelTypeParser.PARSER, rec.get(ColdpTerm.type));
     if (type.isPresent()) {
       rel.setType(RelType.from(type.get()));
-      rel.setNote(rec.get(ColdpTerm.remarks));
+      rel.setRemarks(rec.get(ColdpTerm.remarks));
       setReference(rel, rec);
       return Optional.of(rel);
     }
     return Optional.empty();
   }
-  
+
+  Optional<TypeMaterial> interpretTypeMaterial(VerbatimRecord rec) {
+    TypeMaterial m = new TypeMaterial();
+    m.setNameId(rec.getRaw(ColdpTerm.nameID));
+    m.setCitation(rec.get(ColdpTerm.citation));
+    m.setStatus(SafeParser.parse(TypeStatusParser.PARSER, rec.get(ColdpTerm.status)).orElse(TypeStatus.OTHER, Issue.TYPE_STATUS_INVALID, rec));
+    m.setLink(uri(rec, Issue.URL_INVALID, ColdpTerm.link));
+    m.setRemarks(rec.get(ColdpTerm.remarks));
+    setReference(m, rec);
+    return Optional.of(m);
+  }
+
   List<VernacularName> interpretVernacular(VerbatimRecord rec) {
     return super.interpretVernacular(rec,
         this::setReference,
@@ -183,12 +191,10 @@ public class ColdpInterpreter extends InterpreterBase {
         v.get(ColdpTerm.genus), v.get(ColdpTerm.infragenericEpithet), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet),
         v.get(ColdpTerm.cultivarEpithet), v.get(ColdpTerm.appendedPhrase),
         v.get(ColdpTerm.code), v.get(ColdpTerm.status),
-        v.get(ColdpTerm.typeStatus), v.get(ColdpTerm.typeMaterial),
         v.get(ColdpTerm.link), v.get(ColdpTerm.remarks), v);
     if (opt.isPresent()) {
-      // publishedIn & typeReferenceId
+      // publishedIn
       Name n = opt.get().getName();
-      setReference(v, ColdpTerm.typeReferenceId, n::setTypeReferenceId);
       setReference(v, ColdpTerm.publishedInID, rid -> {
           n.setPublishedInId(rid);
           n.setPublishedInPage(v.get(ColdpTerm.publishedInPage));

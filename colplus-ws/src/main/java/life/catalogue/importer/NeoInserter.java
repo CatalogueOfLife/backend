@@ -1,6 +1,7 @@
 package life.catalogue.importer;
 
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.TypeMaterial;
 import life.catalogue.api.model.VerbatimEntity;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.DatasetSettings;
@@ -205,7 +206,25 @@ public abstract class NeoInserter {
       return false;
     });
   }
-  
+
+  protected void interpretTypeMaterial(final CsvReader reader, final Term classTerm,
+                                     Function<VerbatimRecord, Optional<TypeMaterial>> interpret
+  ) {
+    processVerbatim(reader, classTerm, rec -> {
+      Optional<TypeMaterial> opt = interpret.apply(rec);
+      if (opt.isPresent()) {
+        TypeMaterial tm = opt.get();
+        Node n = store.names().nodeByID(tm.getNameId());
+        if (n != null) {
+          store.add(tm);
+          return true;
+        }
+        rec.addIssue(Issue.NAME_ID_INVALID);
+      }
+      return false;
+    });
+  }
+
   protected abstract void batchInsert() throws NormalizationFailedException;
   
   protected void postBatchInsert() throws NormalizationFailedException {

@@ -417,7 +417,7 @@ public class PgImportIT {
       assertFalse(t.isExtinct());
       assertTrue(t.getLifezones().isEmpty());
       assertNull(t.getRemarks());
-      assertNull(t.getWebpage());
+      assertNull(t.getLink());
       
       // test synonym
       Name sn = ndao.get(key(dataset.getKey(), "Rho-140"));
@@ -585,6 +585,18 @@ public class PgImportIT {
           assertFalse(t instanceof UnknownTerm);
         }
       }
+
+      // types
+      TypeMaterialMapper tmm = session.getMapper(TypeMaterialMapper.class);
+      List<TypeMaterial> types = tmm.listByName(DSID.key(dataset.getKey(), "1001c"));
+      assertEquals(2, types.size());
+      for (TypeMaterial tm : types) {
+        assertEquals("1001c", tm.getNameId());
+        assertEquals(dataset.getKey(), tm.getDatasetKey());
+        assertNull(tm.getSectorKey());
+        assertNotNull(tm.getCitation());
+      }
+
     }
   
     DatasetImport di = metrics();
@@ -594,8 +606,9 @@ public class PgImportIT {
     assertEquals(4, (int) metrics().getReferenceCount());
     assertEquals(1, (int) metrics().getVernacularCount());
     assertEquals(19, (int) metrics().getTaxonCount());
+    assertEquals(3, (int) metrics().getTypeMaterialCount());
     assertEquals(24, (int) metrics().getNameCount());
-    assertEquals(67, (int) metrics().getVerbatimCount());
+    assertEquals(70, (int) metrics().getVerbatimCount());
     
     //assertFalse(metrics().getIssuesCount().containsKey(Issue.PARENT_ID_INVALID));
     assertEquals(5, (int) metrics().getUsagesByStatusCount().get(TaxonomicStatus.SYNONYM));
@@ -606,7 +619,7 @@ public class PgImportIT {
     assertEquals(10, (int) metrics().getNamesByRankCount().get(Rank.SPECIES));
     assertEquals(3, (int) metrics().getNamesByRankCount().get(Rank.SUBSPECIES));
     assertEquals(9, (int) metrics().getDistributionsByGazetteerCount().get(Gazetteer.ISO));
-  
+    assertEquals(2, (int) metrics().getTypeMaterialByStatusCount().get(TypeStatus.HOLOTYPE));
   }
   
   /**

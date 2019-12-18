@@ -44,9 +44,6 @@ public enum ColdpTerm implements Term, AlternativeNames {
   publishedInPage,
   publishedInYear,
   original,
-  typeStatus,
-  typeMaterial,
-  typeReferenceId,
   code,
   status,
   //link,
@@ -58,13 +55,22 @@ public enum ColdpTerm implements Term, AlternativeNames {
   type,
   //publishedInID,
   //remarks,
-  
-  
+
+  TypeMaterial(true),
+  //ID,
+  //nameID,
+  //citation,
+  //status,
+  referenceID,
+  //link,
+  //remarks,
+
+
   Taxon(true),
   // ID,
   parentID,
   //nameID,
-  referenceID,
+  //referenceID,
   provisional,
   accordingTo,
   accordingToID,

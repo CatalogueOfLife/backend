@@ -48,6 +48,7 @@ public class ApiKryoFactory implements KryoFactory {
     kryo.register(Sector.class);
     kryo.register(Synonym.class);
     kryo.register(Taxon.class);
+    kryo.register(TypeMaterial.class);
     kryo.register(VerbatimRecord.class);
     kryo.register(VernacularName.class);
 

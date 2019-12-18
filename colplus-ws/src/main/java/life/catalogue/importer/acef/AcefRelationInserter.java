@@ -1,19 +1,19 @@
 package life.catalogue.importer.acef;
 
-import java.util.Optional;
-
+import life.catalogue.api.model.NameAccordingTo;
+import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.importer.RelationInserterBase;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
-import life.catalogue.api.model.NameAccordingTo;
-import life.catalogue.api.model.VerbatimRecord;
-import life.catalogue.api.vocab.Issue;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Optional;
 
 /**
  *
@@ -40,7 +40,6 @@ public class AcefRelationInserter extends RelationInserterBase {
         if (sp.name.getRank() != Rank.GENUS) {
           opt = inter.interpretName(u.getId(), v.get(AcefTerm.InfraSpeciesMarker), null, v.get(AcefTerm.InfraSpeciesAuthorString),
               sp.name.getGenus(), sp.name.getInfragenericEpithet(), sp.name.getSpecificEpithet(), v.get(AcefTerm.InfraSpeciesEpithet),
-              null, null,
               null, v.get(AcefTerm.GSDNameStatus), null, null, null, null, v);
         }
       }

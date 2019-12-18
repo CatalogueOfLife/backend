@@ -1,15 +1,15 @@
 package life.catalogue.db.mapper;
 
-import java.util.Collection;
-import java.util.List;
-import javax.annotation.Nullable;
-
-import org.apache.ibatis.annotations.Param;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.db.type2.StringCount;
+import org.apache.ibatis.annotations.Param;
 import org.gbif.dwc.terms.Term;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * The MyBatis mapper interface for DatasetImport.
@@ -41,34 +41,25 @@ public interface DatasetImportMapper {
   Integer countDistribution(@Param("key") int datasetKey);
   Integer countMedia(@Param("key") int datasetKey);
   Integer countName(@Param("key") int datasetKey);
-  
+  Integer countTypeMaterial(@Param("key") int datasetKey);
   Integer countReference(@Param("key") int datasetKey);
-  
   Integer countTaxon(@Param("key") int datasetKey);
   Integer countSynonym(@Param("key") int datasetKey);
-  
   Integer countVerbatim(@Param("key") int datasetKey);
-  
   Integer countVernacular(@Param("key") int datasetKey);
   
   List<StringCount> countDistributionsByGazetteer(@Param("key") int datasetKey);
-  
   List<StringCount> countIssues(@Param("key") int datasetKey);
   List<StringCount> countMediaByType(@Param("key") int datasetKey);
   List<StringCount> countNameRelationsByType(@Param("key") int datasetKey);
-  
   List<StringCount> countNamesByOrigin(@Param("key") int datasetKey);
   List<StringCount> countNamesByStatus(@Param("key") int datasetKey);
-  
   List<StringCount> countNamesByType(@Param("key") int datasetKey);
-  
   List<StringCount> countUsagesByStatus(@Param("key") int datasetKey);
   List<StringCount> countNamesByRank(@Param("key") int datasetKey);
+  List<StringCount> countTypeMaterialByStatus(@Param("key") int datasetKey);
   List<StringCount> countTaxaByRank(@Param("key") int datasetKey);
   List<StringCount> countVerbatimByType(@Param("key") int datasetKey);
   List<StringCount> countVerbatimTerms(@Param("key") int datasetKey, @Param("rowType") Term rowType);
-  
   List<StringCount> countVernacularsByLanguage(@Param("key") int datasetKey);
-  
-  
 }

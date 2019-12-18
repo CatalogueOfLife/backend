@@ -78,7 +78,7 @@ public class DwcInterpreter extends InterpreterBase {
     SafeParser<NomRelType> type = SafeParser.parse(NomRelTypeParser.PARSER, rec.get(ColDwcTerm.relationType));
     if (type.isPresent()) {
       rel.setType(RelType.from(type.get()));
-      rel.setNote(rec.get(ColDwcTerm.relationRemarks));
+      rel.setRemarks(rec.get(ColDwcTerm.relationRemarks));
       if (rec.hasTerm(ColDwcTerm.publishedIn)) {
         Reference ref = refFactory.fromDWC(rec.get(ColDwcTerm.publishedInID), rec.get(ColDwcTerm.publishedIn), null, rec);
         rel.setReferenceId(ref.getId());
@@ -181,7 +181,7 @@ public class DwcInterpreter extends InterpreterBase {
     Taxon tax = u.getTaxon();
     // this can be a synonym at this stage which the class does not accept
     tax.setStatus(status.val.isSynonym() ? TaxonomicStatus.PROVISIONALLY_ACCEPTED : status.val);
-    tax.setWebpage(uri(v, Issue.URL_INVALID, DcTerm.references));
+    tax.setLink(uri(v, Issue.URL_INVALID, DcTerm.references));
     tax.setExtinct(null);
     // t.setLifezones();
     tax.setRemarks(v.get(DwcTerm.taxonRemarks));
@@ -194,7 +194,6 @@ public class DwcInterpreter extends InterpreterBase {
         v.getFirst(GbifTerm.genericName, DwcTerm.genus), v.get(DwcTerm.subgenus),
         v.get(DwcTerm.specificEpithet), v.get(DwcTerm.infraspecificEpithet), null, null,
         v.get(DwcTerm.nomenclaturalCode), v.get(DwcTerm.nomenclaturalStatus),
-        v.get(DwcTerm.typeStatus), null,
         v.getRaw(DcTerm.references), v.get(DwcTerm.nomenclaturalStatus), v);
     
     // publishedIn

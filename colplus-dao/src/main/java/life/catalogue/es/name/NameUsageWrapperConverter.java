@@ -293,17 +293,18 @@ public class NameUsageWrapperConverter {
       addIfSet(fields, COMBINATION_EX_AUTHORS, name.getCombinationAuthorship().getExAuthors());
       addIfSet(fields, COMBINATION_YEAR, name.getCombinationAuthorship().getYear());
     }
+    addIfSet(fields, CODE, name.getCode());
     addIfSet(fields, CULTIVAR_EPITHET, name.getCultivarEpithet());
     addIfSet(fields, GENUS, name.getGenus());
     addIfSet(fields, INFRAGENERIC_EPITHET, name.getInfragenericEpithet());
     addIfSet(fields, INFRASPECIFIC_EPITHET, name.getInfraspecificEpithet());
+    addIfSet(fields, LINK, name.getLink());
     addIfSet(fields, NOM_STATUS, name.getNomStatus());
     addIfSet(fields, NOTHO, name.getNotho());
     addIfSet(fields, PUBLISHED_IN_ID, name.getPublishedInId());
     addIfSet(fields, PUBLISHED_IN_PAGE, name.getPublishedInPage());
     addIfSet(fields, REMARKS, name.getRemarks());
     addIfSet(fields, SANCTIONING_AUTHOR, name.getSanctioningAuthor());
-    addIfSet(fields, WEBPAGE, name.getWebpage());
     addIfSet(fields, SPECIFIC_EPITHET, name.getSpecificEpithet());
     addIfSet(fields, UNINOMIAL, name.getUninomial());
     if (name.isCandidatus()) {
