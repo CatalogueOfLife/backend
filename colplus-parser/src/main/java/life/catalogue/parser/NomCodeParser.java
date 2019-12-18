@@ -11,6 +11,7 @@ public class NomCodeParser extends EnumParser<NomCode> {
   public NomCodeParser() {
     super("nomcode.csv", NomCode.class);
     for (NomCode nc : NomCode.values()) {
+      add(nc.getAbbrev(), nc);
       add(nc.getAcronym(), nc);
       add(nc.getTitle(), nc);
     }

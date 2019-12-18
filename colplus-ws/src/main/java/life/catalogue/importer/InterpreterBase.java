@@ -53,6 +53,7 @@ public class InterpreterBase {
     if (dataset.hasSetting(DatasetSettings.DISTRIBUTION_GAZETTEER)) {
       distributionStandard = parse(GazetteerParser.PARSER, dataset.getSetting(DatasetSettings.DISTRIBUTION_GAZETTEER))
               .orElse(Gazetteer.TEXT);
+      LOG.info("Dataset wide distribution standard found in settings: {}", distributionStandard);
     } else {
       distributionStandard = null;
     }

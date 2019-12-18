@@ -359,6 +359,10 @@ public class Dataset extends DataEntity<Integer> {
     return settings.getOrDefault(key.name(), defaultValue);
   }
 
+  public void putSetting(DatasetSettings key, String value) {
+    settings.put(key.name(), value);
+  }
+
   public void putSetting(String key, String value) {
     settings.put(key, value);
   }
