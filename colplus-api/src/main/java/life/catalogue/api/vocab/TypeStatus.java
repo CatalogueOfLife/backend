@@ -16,7 +16,7 @@ import static org.gbif.nameparser.api.NomCode.*;
  *
  */
 public enum TypeStatus {
-  
+
   /**
    * An epitype is a specimen or illustration selected to serve as an interpretative type
    * when any kind of holotype, lectotype, etc. is demonstrably ambiguous
