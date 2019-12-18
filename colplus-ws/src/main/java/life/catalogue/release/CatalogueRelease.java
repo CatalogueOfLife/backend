@@ -145,12 +145,20 @@ public class CatalogueRelease implements Runnable {
       metrics();
       // ac-export
       export();
-      // ES index
-      index();
-      
+      try {
+        // ES index
+        index();
+      } catch (RuntimeException e) {
+        // allow indexing to fail - sth we can do afterwards again
+        LOG.error("Error indexing released & exported dataset {} into ES. Source catalogue={}", releaseKey, sourceDatasetKey, e);
+      }
+
     } catch (IOException e) {
       logger.log("Error releasing catalogue " + sourceDatasetKey + " into dataset " + releaseKey);
       LOG.error("Error releasing catalogue {} into dataset {}", sourceDatasetKey, releaseKey, e);
+      // cleanup partion which probably is not even be attached
+      Partitioner.delete(factory, releaseKey);
+
     } finally {
       releaseLock();
     }
