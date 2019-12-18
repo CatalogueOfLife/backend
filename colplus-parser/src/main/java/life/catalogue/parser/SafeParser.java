@@ -1,9 +1,9 @@
 package life.catalogue.parser;
 
-import java.util.Optional;
-
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.vocab.Issue;
+
+import java.util.Optional;
 
 /**
  * A parsing utility class wrapping a Parser<T> instance so that no UnparsableException is thrown.

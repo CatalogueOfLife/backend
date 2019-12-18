@@ -55,10 +55,28 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     this.processor = new NameUsageProcessor(factory);
   }
 
+  class Stats {
+    int usages;
+    int names;
+
+    int total(){
+      return usages+names;
+    }
+
+    void add(Stats other) {
+      usages += other.usages;
+      names += other.names;
+    }
+  }
+
   @Override
   public void indexDataset(int datasetKey) {
+    indexDatasetInternal(datasetKey);
+  }
+
+  private Stats indexDatasetInternal(int datasetKey) {
     NameUsageIndexer indexer = new NameUsageIndexer(client, index);
-    int tCount, bCount;
+    Stats stats = new Stats();
     try {
       createOrEmptyIndex(datasetKey);
       try (BatchConsumer<NameUsageWrapper> handler = new BatchConsumer<>(indexer, BATCH_SIZE)) {
@@ -66,7 +84,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
         processor.processDataset(datasetKey, handler);
       }
       EsUtil.refreshIndex(client, index);
-      tCount = indexer.documentsIndexed();
+      stats.usages = indexer.documentsIndexed();
       indexer.reset();
       try (SqlSession session = factory.openSession(true)) {
         LOG.info("Indexing bare names from dataset {}", datasetKey);
@@ -75,17 +93,33 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
         Iterables.partition(cursor, BATCH_SIZE).forEach(indexer);
       }
       EsUtil.refreshIndex(client, index);
-      bCount = indexer.documentsIndexed();
+      stats.names = indexer.documentsIndexed();
     } catch (IOException e) {
       throw new EsException(e);
     }
-    logDatasetTotals(datasetKey, tCount, bCount);
+    LOG.info("Successfully indexed dataset {}. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
+            datasetKey, index, stats.usages, stats.names, stats.total()
+    );
+    return stats;
+  }
+
+  @Override
+  public int deleteDataset(int datasetKey) {
+    try {
+      LOG.info("Removing dataset {} from index {}", datasetKey, index);
+      int cnt = EsUtil.deleteDataset(client, index, datasetKey);
+      LOG.info("Deleted all {} documents from dataset {} from index {}", cnt, datasetKey, index);
+      EsUtil.refreshIndex(client, index);
+      return cnt;
+    } catch (IOException e) {
+      throw new EsException(e);
+    }
   }
 
   @Override
   public void indexSector(Sector s) {
     NameUsageIndexer indexer = new NameUsageIndexer(client, index);
-    int tCount, bCount;
+    Stats stats = new Stats();
     try (SqlSession session = factory.openSession()) {
       deleteSector(s.getKey());
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
@@ -94,7 +128,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
         LOG.info("Indexing usages from sector {}", s.getKey());
         processor.processSector(s, handler);
       }
-      tCount = indexer.documentsIndexed();
+      stats.usages = indexer.documentsIndexed();
       indexer.reset();
 
       LOG.info("Indexing bare names from sector {}", s.getKey());
@@ -102,11 +136,13 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       Iterables.partition(cursor, BATCH_SIZE).forEach(indexer);
 
       EsUtil.refreshIndex(client, index);
-      bCount = indexer.documentsIndexed();
+      stats.names = indexer.documentsIndexed();
     } catch (IOException e) {
       throw new EsException(e);
     }
-    logSectorTotals(s.getKey(), tCount, bCount);
+    LOG.info("Successfully indexed sector {}. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
+            s.getKey(), index, stats.usages, stats.names, stats.total()
+    );
   }
 
   @Override
@@ -158,8 +194,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
   @Override
   public void indexAll() {
-    NameUsageIndexer indexer = new NameUsageIndexer(client, index);
-    int tCount = 0, bCount = 0;
+    Stats total = new Stats();
     try {
       EsUtil.deleteIndex(client, index);
       EsUtil.createIndex(client, index, NameUsageDocument.class, esConfig.nameUsage);
@@ -175,28 +210,13 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
       int counter = 1;
       for (Integer datasetKey : keys) {
-        LOG.info("Index {}/{} dataset {}", counter, keys.size(), datasetKey);
-        int tc, bc;
-        try (BatchConsumer<NameUsageWrapper> handler = new BatchConsumer<>(indexer, BATCH_SIZE)) {
-          LOG.info("Indexing usages from dataset {}", datasetKey);
-          processor.processDataset(datasetKey, handler);
-        }
-        tc = indexer.documentsIndexed();
-        indexer.reset();
-        try (SqlSession session = factory.openSession(true)) {
-          LOG.info("Indexing bare names for dataset {}", datasetKey);
-          NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
-          Cursor<NameUsageWrapper> cursor = mapper.processDatasetBareNames(datasetKey, null);
-          Iterables.partition(cursor, BATCH_SIZE).forEach(indexer);
-        }
-        EsUtil.refreshIndex(client, index);
-        bc = indexer.documentsIndexed();
-        indexer.reset();
-        tCount += tc;
-        bCount += bc;
-        logDatasetTotals(datasetKey, tc, bc);
+        LOG.info("Index {}/{} dataset {}", counter++, keys.size(), datasetKey);
+        total.add( indexDatasetInternal(datasetKey) );
       }
-      logTotals(keys.size(), tCount, bCount);
+
+      LOG.info("Successfully indexed {} datasets. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
+              counter, index, total.usages, total.names, total.total()
+      );
     } catch (IOException e) {
       throw new EsException(e);
     }
@@ -236,18 +256,4 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     }
   }
 
-  private void logDatasetTotals(int datasetKey, int tCount, int bCount) {
-    String fmt = "Successfully indexed dataset {}. Index: {}. Usages: {}. Bare names: {}. Total: {}.";
-    LOG.info(fmt, datasetKey, index, tCount, bCount, (tCount + bCount));
-  }
-
-  private void logSectorTotals(int sectorKey, int tCount, int bCount) {
-    String fmt = "Successfully indexed sector {}. Index: {}. Usages: {}. Bare names: {}. Total: {}.";
-    LOG.info(fmt, sectorKey, index, tCount, bCount, (tCount + bCount));
-  }
-
-  private void logTotals(int numDatasets, int tCount, int bCount) {
-    String fmt = "Successfully indexed {} datasets. Index: {}. Usages: {}. Bare names: {}. Total: {}.";
-    LOG.info(fmt, index, numDatasets, tCount, bCount, (tCount + bCount));
-  }
 }

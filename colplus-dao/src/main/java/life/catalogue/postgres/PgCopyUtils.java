@@ -1,26 +1,30 @@
 package life.catalogue.postgres;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.function.Function;
-
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import com.univocity.parsers.csv.CsvWriter;
 import com.univocity.parsers.csv.CsvWriterSettings;
+import life.catalogue.common.io.UTF8IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.postgresql.PGConnection;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 public class PgCopyUtils {
   private static final Logger LOG = LoggerFactory.getLogger(PgCopyUtils.class);
@@ -200,9 +204,8 @@ public class PgCopyUtils {
   public static void dump(PgConnection con, String sql, File out, String with) throws IOException, SQLException {
     con.setAutoCommit(false);
     
-    try (FileWriter writer = new FileWriter(out)) {
+    try (Writer writer = UTF8IOUtils.writerFromFile(out)) {
       CopyManager copy = con.getCopyAPI();
-      //System.out.println(sql);
       copy.copyOut("COPY (" + sql + ") TO STDOUT WITH "+with, writer);
     }
   }

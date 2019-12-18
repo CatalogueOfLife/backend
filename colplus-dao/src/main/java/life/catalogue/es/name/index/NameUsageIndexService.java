@@ -1,10 +1,10 @@
 package life.catalogue.es.name.index;
 
-import java.util.Collection;
-
 import life.catalogue.api.model.Sector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
 
 public interface NameUsageIndexService {
 
@@ -24,6 +24,12 @@ public interface NameUsageIndexService {
    * Indexes an entire dataset from postgres into ElasticSearch using the bulk API.
    */
   void indexDataset(int datasetKey);
+
+  /**
+   * Removes an entire dataset from ElasticSearch.
+   * @return number of deleted docs
+   */
+  int deleteDataset(int datasetKey);
 
   /**
    * Re-indexes all datasets from scratch
@@ -63,6 +69,12 @@ public interface NameUsageIndexService {
       @Override
       public void indexDataset(int datasetKey) {
         LOG.info("No Elastic Search configured, pass through dataset {}", datasetKey);
+      }
+
+      @Override
+      public int deleteDataset(int datasetKey) {
+        LOG.info("No Elastic Search configured, pass through deletion of dataset {}", datasetKey);
+        return 0;
       }
 
       @Override

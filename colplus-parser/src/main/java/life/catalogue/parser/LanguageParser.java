@@ -1,17 +1,17 @@
 package life.catalogue.parser;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
-
 import com.google.common.collect.Maps;
-import org.apache.commons.lang3.StringUtils;
 import life.catalogue.api.vocab.Language;
 import life.catalogue.common.io.Resources;
+import org.apache.commons.lang3.StringUtils;
 import org.gbif.utils.file.csv.CSVReader;
 import org.gbif.utils.file.csv.CSVReaderFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
 
 /**
  * Parser for languages that turns native or english names and iso 639 2 or 3 letter codes into 3 letter codes.
@@ -82,6 +82,8 @@ public class LanguageParser extends ParserBase<Language> {
     addMapping("language-native.tab", 0,  null, 1,2);
     // custom manually curated entries: ISO3	VALUE
     addMapping("language-custom.tab", 0,  1);
+    // WikiData SPARQL download: url	iso	ietf	native	len	lde	lfr	les	lru	lzh	lpt	lit
+    addMapping("query.tsv", 1,  null, 2,3,4,5,6,7,8,9,10,11);
   }
   
   /**
@@ -93,7 +95,12 @@ public class LanguageParser extends ParserBase<Language> {
     key = normalize(key);
     // unless forced keep the first mapping in case of clashes
     if (key != null && !StringUtils.isBlank(iso3) && (force || !mapping.containsKey(key))) {
-      this.mapping.put(key, iso3.trim().toLowerCase());
+      Language l = Language.byCode(iso3.trim().toLowerCase());
+      if (l == null) {
+        LOG.debug("Language code {} mapped from >>{}<< does not exist", iso3, key);
+      } else {
+        this.mapping.put(key, l.getCode());
+      }
     }
   }
   

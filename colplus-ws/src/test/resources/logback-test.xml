@@ -12,7 +12,7 @@
   </appender>
 
     <logger name="org.apache.http" level="INFO"/>
-    <logger name="org.col" level="INFO"/>
+    <logger name="life.catalogue" level="INFO"/>
     <logger name="life.catalogue.admin" level="DEBUG"/>
     <logger name="life.catalogue.csv" level="DEBUG"/>
     <logger name="life.catalogue.common.io" level="DEBUG"/>

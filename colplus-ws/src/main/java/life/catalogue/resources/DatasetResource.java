@@ -1,21 +1,5 @@
 package life.catalogue.resources;
 
-import java.awt.image.BufferedImage;
-import java.io.*;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
-import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetImport;
@@ -33,12 +17,29 @@ import life.catalogue.db.tree.NamesDiff;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.es.name.index.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.img.ImgConfig;
+import org.apache.commons.io.IOUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.security.RolesAllowed;
+import javax.validation.Valid;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 @Path("/dataset")
 @SuppressWarnings("static-method")
@@ -51,8 +52,12 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   private final DatasetImportDao diDao;
   private final DiffService diff;
   
-  public DatasetResource(SqlSessionFactory factory, ImageService imgService, DatasetImportDao diDao, WsServerConfig cfg, DownloadUtil downloader, DiffService diff) {
-    super(Dataset.class, new DatasetDao(factory, downloader, imgService, diDao, cfg.normalizer::scratchFile), factory);
+  public DatasetResource(SqlSessionFactory factory, ImageService imgService, DatasetImportDao diDao, WsServerConfig cfg,
+                         DownloadUtil downloader, DiffService diff, NameUsageIndexService indexService) {
+    super(Dataset.class,
+            new DatasetDao(factory, downloader, imgService, diDao, indexService, cfg.normalizer::scratchFile),
+            factory
+    );
     this.dao = (DatasetDao) super.dao;
     this.imgService = imgService;
     this.diDao = diDao;

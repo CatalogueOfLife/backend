@@ -52,6 +52,7 @@ public class EsUtil {
     LOG.trace("Creating index {}: {}", name, EsModule.writeDebug(indexDef));
     Request request = new Request("PUT", name);
     request.setJsonEntity(EsModule.write(indexDef));
+    LOG.warn("Creating new ES Index {}", name);
     executeRequest(client, request);
   }
 
@@ -109,6 +110,8 @@ public class EsUtil {
    * @throws IOException
    */
   public static void deleteIndex(RestClient client, String name) throws IOException {
+    LOG.warn("Deleting ES Index {}", name);
+    Request request = new Request("DELETE", name);
     Response response = null;
     try {
       response = client.performRequest(new Request("DELETE", name));
@@ -219,7 +222,7 @@ public class EsUtil {
    * @throws IOException
    */
   public static int deleteByQuery(RestClient client, String index, Query query) throws IOException {
-    Request request = new Request("POST", index + "/_delete_by_query/?timeout=12h");
+    Request request = new Request("POST", index + "/_delete_by_query/?timeout=6h&conflicts=proceed");
     EsSearchRequest esRequest = EsSearchRequest.emptyRequest()
         .select()
         .where(query)

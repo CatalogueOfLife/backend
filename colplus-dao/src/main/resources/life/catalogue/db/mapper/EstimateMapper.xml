@@ -103,6 +103,10 @@
     WHERE key = #{key}
   </delete>
 
+  <delete id="deleteByDataset" parameterType="map">
+    DELETE FROM estimate WHERE dataset_key = #{datasetKey}
+  </delete>
+
   <sql id="WHERE">
     <if test="req != null">
       <if test="req.broken">

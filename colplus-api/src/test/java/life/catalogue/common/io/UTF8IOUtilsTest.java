@@ -8,13 +8,13 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-public class Utf8IOUtilsTest {
+public class UTF8IOUtilsTest {
   
   @Test
   public void writerFromGzipFile() throws IOException {
     File f = File.createTempFile("coltest",".gz");
     
-    try(BufferedWriter writer = Utf8IOUtils.writerFromGzipFile(f)) {
+    try(BufferedWriter writer = UTF8IOUtils.writerFromGzipFile(f)) {
       String[] data = new String[] { "this", "is", "some",
           "data", "in", "a", "list" };
       for (String line : data) {
@@ -23,7 +23,7 @@ public class Utf8IOUtilsTest {
       }
     }
   
-    BufferedReader br = Utf8IOUtils.readerFromGzipFile(f);
+    BufferedReader br = UTF8IOUtils.readerFromGzipFile(f);
     
     String x = br.lines().collect(Collectors.joining("\n"));
     System.out.println(x);

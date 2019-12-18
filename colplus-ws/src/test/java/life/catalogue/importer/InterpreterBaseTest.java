@@ -1,13 +1,20 @@
 package life.catalogue.importer;
 
+import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.Distribution;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.vocab.Country;
+import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.importer.reference.ReferenceFactory;
 import life.catalogue.importer.reference.ReferenceStore;
-import life.catalogue.api.model.Dataset;
 import org.junit.Test;
 import org.mockito.Mock;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.BiConsumer;
 
 import static org.junit.Assert.*;
 
@@ -56,5 +63,35 @@ public class InterpreterBaseTest {
     assertNull(InterpreterBase.parseYear("january", issues));
     assertTrue(issues.hasIssue(Issue.UNPARSABLE_YEAR));
   }
-  
+
+  @Test
+  public void createDistributions() throws Exception {
+    assertDistributions(Gazetteer.ISO, "DE", "DE");
+    assertDistributions(Gazetteer.ISO, "DE,fr,es", "DE", "FR", "ES");
+    assertDistributions(Gazetteer.ISO, "az-tar; AZ; ", "AZ-TAR", "AZ");
+    // ignore unparsable regions
+    assertDistributions(Gazetteer.ISO, "Bolivia (Chuquisaca, Cochabamba, Santa Cruz, Tarija), Peru, Colombia (Amazonas, Antioquia, Boyac, Cauca, Choc, Cundinamarca, Huila, La Guajira, Magdalena, Meta, Nario, Putumayo, Risaralda, Santander, Valle), NE-Brazil (Pernambuco, Bahia, Alagoas), WC-Brazil (Goias, Distrito Federal, Mato Grosso do Sul), SE-Brazil (Minas Gerais, Espirito Santo, Sao Paulo, Rio de Janeiro), Ecuador, Galapagos, Mexico (Hidalgo, Michoacan, Oaxaca, Tamaulipas, Veracruz), Venezuela (Tachira), Argentina (Buenos Aires, Chaco, Chubut, Cordoba, Corrientes, Entre Rios, Formosa, Jujuy, Misiones,Rio Negro, Salta, Santa Fe, Tucuman), S-Brazil (Parana, Rio Grande do Sul, Santa Catarina), Paraguay (Caazapa, Central, Cordillera, Guaira, Paraguari), Uruguay (Artigas, Canelones, Cerro Largo, Colonia, Durazno, Flores Prov., Florida Prov., Lavalleja, Maldonado, Montevideo, Paysandu, Rio Negro, Rivera, Rocha, Salto, San Jose, Soriano, Tacuarembo, Treinta y Tres), Costa Rica (I)",
+            Country.BOLIVIA, Country.PERU, Country.COLOMBIA, Country.ECUADOR, Country.MEXICO,
+            Country.VENEZUELA, Country.ARGENTINA, Country.PARAGUAY, Country.URUGUAY, Country.COSTA_RICA);
+  }
+
+  private void assertDistributions(Gazetteer std, String loc, Country... expected) {
+    String[] exp = Arrays.stream(expected).map(Country::getIso2LetterCode).toArray(String[]::new);
+    assertDistributions(std, loc, exp);
+  }
+
+  private void assertDistributions(Gazetteer std, String loc, String... expected) {
+    List<Distribution> dis = InterpreterBase.createDistributions(std, loc, "present", new VerbatimRecord(), new BiConsumer<Distribution, VerbatimRecord>() {
+      @Override
+      public void accept(Distribution distribution, VerbatimRecord verbatimRecord) {
+        // dont do anything
+      }
+    });
+
+    int counter = 0;
+    for (Distribution d : dis) {
+      assertEquals(std, d.getGazetteer());
+      assertEquals(expected[counter++], d.getArea());
+    }
+  }
 }

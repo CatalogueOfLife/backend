@@ -359,15 +359,19 @@ public class Dataset extends DataEntity<Integer> {
     return settings.getOrDefault(key.name(), defaultValue);
   }
 
+  public void putSetting(DatasetSettings key, String value) {
+    settings.put(key.name(), value);
+  }
+
   public void putSetting(String key, String value) {
     settings.put(key, value);
   }
 
-  public boolean containsSetting(DatasetSettings key) {
+  public boolean hasSetting(DatasetSettings key) {
     return settings.containsKey(key.name());
   }
 
-  public boolean containsSetting(String key) {
+  public boolean hasSetting(String key) {
     return settings.containsKey(key);
   }
 

@@ -23,9 +23,15 @@ public interface NameUsageWrapperMapper {
    */
   NameUsageWrapper getWithoutClassification(@Param("datasetKey") int datasetKey,
                                             @Param("id") String taxonId);
-  
+
   /**
-   * Iterates over all bare names not linked to a synonym or taxon for a given dataset and processes them with the supplied handler. This
+   * Iterates over all usages for a given dataset.
+   * The returned wrapper does only include the usage and issues and no further information.
+   */
+  Cursor<NameUsageWrapper> processDatasetUsageOnly(@Param("datasetKey") int datasetKey,
+                                                   @Param("withIssueOnly") boolean withIssueOnly);
+  /**
+   * Iterates over all bare names not linked to a synonym or taxon for a given dataset. This
    * allows a single query to efficiently stream all its values without keeping them in memory.
    */
   Cursor<NameUsageWrapper> processDatasetBareNames(@Param("datasetKey") Integer datasetKey,

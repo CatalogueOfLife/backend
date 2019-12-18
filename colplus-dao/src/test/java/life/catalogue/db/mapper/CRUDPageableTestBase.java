@@ -1,8 +1,5 @@
 package life.catalogue.db.mapper;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Dataset;
@@ -17,8 +14,10 @@ import life.catalogue.db.DatasetPageable;
 import life.catalogue.db.PgSetupRule;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 /**
  *
@@ -43,6 +42,11 @@ abstract class CRUDPageableTestBase<T extends DatasetScopedEntity<String>, M ext
   @Test
   public void getEmpty() throws Exception {
     assertNull(mapper().get(DSID.key(datasetKey, "")));
+  }
+
+  @Test
+  public void deleteByDataset() throws Exception {
+    mapper().deleteByDataset(datasetKey);
   }
   
   @Test

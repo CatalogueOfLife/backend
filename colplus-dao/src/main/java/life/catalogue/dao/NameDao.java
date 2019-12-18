@@ -1,19 +1,18 @@
 package life.catalogue.dao;
 
-import java.util.List;
-
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.DSIDValue;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.NameRelation;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameRelationMapper;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.time.LocalDateTime;
+import java.util.List;
 
 public class NameDao extends DatasetEntityDao<String, Name, NameMapper> {
   
@@ -50,7 +49,16 @@ public class NameDao extends DatasetEntityDao<String, Name, NameMapper> {
     }
     return null;
   }
-  
+
+  public ResultPage<Name> listOrphans(int datasetKey, @Nullable LocalDateTime before, @Nullable Page page) {
+    Page p = page == null ? new Page() : page;
+    try (SqlSession session = factory.openSession()) {
+      NameMapper nm = session.getMapper(NameMapper.class);
+      List<Name> result = nm.listOrphans(datasetKey, before, p);
+      return new ResultPage<>(p, result, () -> page.getLimit()+1);
+    }
+  }
+
   /**
    * Lists all homotypic synonyms based on the same homotypic group key
    */

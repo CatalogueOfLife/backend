@@ -1,11 +1,5 @@
 package life.catalogue.parser;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.regex.Pattern;
-
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Enums;
 import com.google.common.base.Strings;
@@ -16,6 +10,13 @@ import life.catalogue.api.vocab.Gazetteer;
 import org.gbif.utils.file.csv.CSVReader;
 import org.gbif.utils.file.csv.CSVReaderFactory;
 
+import java.io.IOException;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * A parser that tries to extract complex area information (actual area id with gazatteer its based on )
  * from a simple location string.
@@ -23,6 +24,8 @@ import org.gbif.utils.file.csv.CSVReaderFactory;
 public class AreaParser implements Parser<AreaParser.Area> {
   public static final AreaParser PARSER = new AreaParser();
   private final Map<String, Gazetteer> gazetteerLookup;
+  // subregions can be of max 3 chars
+  private final Pattern ISO  = Pattern.compile("^([a-z]{2})(?:\\s*-\\s*([a-z0-9]{1,3}))?$", Pattern.CASE_INSENSITIVE);
   private final Pattern TDWG = Pattern.compile("^([1-9][0-9]?|[a-z]{3}(-[a-z]{2})?)$", Pattern.CASE_INSENSITIVE);
   private final Pattern FISHING = Pattern.compile("^[0-9]{1,2}(\\.([1-9]{1,2}|[a-z])){0,4}$", Pattern.CASE_INSENSITIVE);
 
@@ -89,13 +92,25 @@ public class AreaParser implements Parser<AreaParser.Area> {
         break;
 
       case ISO:
-        String[] isoParts = areaClean.split("-", 2);
-        Optional<Country> c = CountryParser.PARSER.parse(isoParts[0]);
-        areaClean = c.orElseThrow(() -> new UnparsableException(Country.class, area)).getIso2LetterCode();
-        if (isoParts.length > 1) {
-          areaClean = areaClean + "-" + isoParts[1].toUpperCase();
+        Matcher m = ISO.matcher(areaClean);
+        if (m.find()) {
+          Optional<Country> c = CountryParser.PARSER.parse(m.group(1));
+          if (c.isPresent()) {
+            areaClean = c.get().getIso2LetterCode();
+            if (m.group(2) != null) {
+              areaClean = areaClean + "-" + m.group(2).toUpperCase();
+            }
+            break;
+          }
+        } else {
+          // try to parse full country names
+          Optional<Country> c = CountryParser.PARSER.parse(areaClean);
+          if (c.isPresent()) {
+            areaClean = c.get().getIso2LetterCode();
+            break;
+          }
         }
-        break;
+        throw new UnparsableException(Country.class, area);
 
       case FAO:
         if (this.FISHING.matcher(areaClean).find()) {
@@ -149,6 +164,11 @@ public class AreaParser implements Parser<AreaParser.Area> {
     @Override
     public int hashCode() {
       return Objects.hash(area, standard);
+    }
+
+    @Override
+    public String toString() {
+      return standard + ":" + area;
     }
   }
 

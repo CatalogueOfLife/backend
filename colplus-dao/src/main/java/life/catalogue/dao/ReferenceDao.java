@@ -1,16 +1,17 @@
 package life.catalogue.dao;
 
-import java.util.List;
-import java.util.Objects;
-import javax.annotation.Nullable;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.ReferenceSearchRequest;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.db.mapper.ReferenceMapper;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+
+import javax.annotation.Nullable;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
 
 public class ReferenceDao extends DatasetEntityDao<String, Reference, ReferenceMapper> {
   
@@ -80,6 +81,15 @@ public class ReferenceDao extends DatasetEntityDao<String, Reference, ReferenceM
       ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
       List<Reference> result = mapper.search(datasetKey, req, page);
       return new ResultPage<>(page, result, () -> mapper.searchCount(datasetKey, req));
+    }
+  }
+
+  public ResultPage<Reference> listOrphans(int datasetKey, LocalDateTime before, Page page) {
+    Page p = page == null ? new Page() : page;
+    try (SqlSession session = factory.openSession()) {
+      ReferenceMapper nm = session.getMapper(ReferenceMapper.class);
+      List<Reference> result = nm.listOrphans(datasetKey, before, p);
+      return new ResultPage<>(p, result, () -> page.getLimit()+1);
     }
   }
 }

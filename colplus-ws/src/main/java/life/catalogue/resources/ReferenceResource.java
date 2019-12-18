@@ -1,23 +1,25 @@
 package life.catalogue.resources;
 
-import java.util.UUID;
+import io.dropwizard.auth.Auth;
+import io.dropwizard.jersey.jsr310.LocalDateTimeParam;
+import life.catalogue.api.model.*;
+import life.catalogue.api.model.coldp.ColdpReference;
+import life.catalogue.api.search.ReferenceSearchRequest;
+import life.catalogue.dao.ReferenceDao;
+import life.catalogue.db.mapper.ReferenceMapper;
+import life.catalogue.dw.auth.Roles;
+import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.importer.reference.ReferenceFactory;
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-
-import io.dropwizard.auth.Auth;
-import org.apache.ibatis.session.SqlSession;
-import life.catalogue.api.model.*;
-import life.catalogue.api.model.coldp.ColdpReference;
-import life.catalogue.api.search.ReferenceSearchRequest;
-import life.catalogue.dao.ReferenceDao;
-import life.catalogue.dw.auth.Roles;
-import life.catalogue.dw.jersey.MoreMediaTypes;
-import life.catalogue.importer.reference.ReferenceFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.UUID;
 
 @Path("/dataset/{datasetKey}/reference")
 @Produces(MediaType.APPLICATION_JSON)
@@ -67,5 +69,25 @@ public class ReferenceResource extends AbstractDatasetScopedResource<Reference> 
     }
     Reference ref = ReferenceFactory.fromCsl(datasetKey, csl);
     return dao.create(ref, user.getKey()).getId();
+  }
+
+  @GET
+  @Path("orphans")
+  public ResultPage<Reference> listOrphans(@PathParam("datasetKey") int datasetKey,
+                                           @QueryParam("before") LocalDateTimeParam before,
+                                           @Valid @BeanParam Page page) {
+    return dao.listOrphans(datasetKey, before==null ? null : before.get(), page);
+  }
+
+  @DELETE
+  @Path("orphans")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public int delete(@PathParam("datasetKey") int datasetKey,
+                    @QueryParam("before") LocalDateTimeParam before,
+                    @Auth ColUser user,
+                    @Context SqlSession session) {
+    int cnt = session.getMapper(ReferenceMapper.class).deleteOrphans(datasetKey, before==null ? null : before.get());
+    session.commit();
+    return cnt;
   }
 }

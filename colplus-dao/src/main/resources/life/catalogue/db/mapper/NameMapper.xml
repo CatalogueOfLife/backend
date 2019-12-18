@@ -261,20 +261,40 @@
         WHERE id = #{key.id} AND dataset_key=#{key.datasetKey}
     </delete>
 
-    <delete id="deleteOrphans" parameterType="map">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        DELETE FROM name_${partition} n
+    <sql id="orphanWhere">
         WHERE NOT EXISTS (
             SELECT NULL
             FROM name_usage_${partition} u
-            WHERE n.id = i.name_id AND n.dataset_key=#{datasetKey} AND u.dataset_key=#{datasetKey}
+            WHERE n.id = u.name_id
         )
+        <if test="before!=null">
+            AND n.modified &lt; #{before}
+        </if>
+    </sql>
+
+    <delete id="deleteOrphans" parameterType="map">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        DELETE FROM name_${partition} n
+        <include refid="orphanWhere"/>
     </delete>
+
+    <select id="listOrphans" parameterType="map" resultMap="nameResultMap">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        <include refid="orphanWhere"/>
+        <include refid="life.catalogue.db.Common.limit"/>
+    </select>
 
     <delete id="deleteBySector" parameterType="map">
         <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
         DELETE FROM name_${partition}
         WHERE sector_key=#{sectorKey} AND dataset_key=#{datasetKey}
+    </delete>
+
+    <delete id="deleteByDataset" parameterType="map">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        TRUNCATE name_${partition} CASCADE
     </delete>
 
     <select id="processDataset" parameterType="map" resultMap="nameResultMap" resultOrdered="true" fetchSize="2500" resultSetType="FORWARD_ONLY">

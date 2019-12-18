@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import life.catalogue.common.io.Utf8IOUtils;
+import life.catalogue.common.io.UTF8IOUtils;
 
 public class CSVUtils {
   
@@ -84,7 +84,7 @@ public class CSVUtils {
    * Reads an UTF8 CSV stream separated by commas and generates a stream or rows, each being a list of columns.
    */
   public static Stream<List<String>> parse(InputStream in) {
-    BufferedReader br = Utf8IOUtils.readerFromStream(in);
+    BufferedReader br = UTF8IOUtils.readerFromStream(in);
     return br.lines().map(CSVUtils::parseLine);
   }
   

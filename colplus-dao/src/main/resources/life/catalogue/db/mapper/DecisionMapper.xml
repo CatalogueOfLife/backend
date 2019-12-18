@@ -157,6 +157,10 @@
     WHERE key = #{key}
   </delete>
 
+  <delete id="deleteByDataset" parameterType="map">
+    DELETE FROM decision WHERE dataset_key = #{datasetKey}
+  </delete>
+
   <select id="processDataset" parameterType="map" resultMap="decisionResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT" />
     FROM decision ed

@@ -178,11 +178,54 @@
         WHERE id = #{key.id} AND dataset_key=#{key.datasetKey}
     </delete>
 
+    <delete id="deleteByDataset" parameterType="map">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        TRUNCATE reference_${partition} CASCADE
+    </delete>
+
     <delete id="deleteBySector" parameterType="map">
         <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
         DELETE FROM reference_${partition}
         WHERE sector_key=#{sectorKey}
     </delete>
+
+    <sql id="orphanWhere">
+        WHERE NOT EXISTS (
+            SELECT NULL FROM name_${partition} WHERE r.id=published_in_id or r.id=type_reference_id
+            UNION
+            SELECT NULL FROM name_rel_${partition} WHERE r.id = published_in_id
+            UNION
+            SELECT NULL FROM name_usage_${partition} WHERE reference_ids @> ARRAY[r.id]
+            UNION
+            SELECT NULL FROM vernacular_name_${partition} WHERE r.id = reference_id
+            UNION
+            SELECT NULL FROM media_${partition} WHERE r.id = reference_id
+            UNION
+            SELECT NULL FROM distribution_${partition} WHERE r.id = reference_id
+            UNION
+            SELECT NULL FROM distribution_${partition} WHERE r.id = reference_id
+            UNION
+            SELECT NULL FROM estimate WHERE dataset_key = #{datasetKey} AND r.id = reference_id
+            LIMIT 1
+        )
+        <if test="before!=null">
+            AND r.modified &lt; #{before}
+        </if>
+    </sql>
+
+    <delete id="deleteOrphans" parameterType="map">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        DELETE FROM reference_${partition} r
+        <include refid="orphanWhere"/>
+    </delete>
+
+    <select id="listOrphans" parameterType="map" resultMap="referenceResultMap">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        <include refid="orphanWhere"/>
+        <include refid="life.catalogue.db.Common.limit"/>
+    </select>
 
     <select id="processDataset" parameterType="map" resultMap="referenceResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
         <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>

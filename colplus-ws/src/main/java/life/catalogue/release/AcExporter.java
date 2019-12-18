@@ -6,8 +6,10 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.DatasetSearchRequest;
+import life.catalogue.api.vocab.Country;
+import life.catalogue.api.vocab.Language;
 import life.catalogue.common.io.CompressionUtil;
-import life.catalogue.common.io.Utf8IOUtils;
+import life.catalogue.common.io.UTF8IOUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.img.ImgConfig;
 import life.catalogue.postgres.PgCopyUtils;
@@ -128,7 +130,7 @@ public class AcExporter {
       data.put("d", d);
       
       Template temp = fmk.getTemplate("credits.ftl");
-      Writer out = Utf8IOUtils.writerFromFile(cf);
+      Writer out = UTF8IOUtils.writerFromFile(cf);
       temp.process(data, out);
     } catch (TemplateException e) {
       LOG.error("Failed to write credits", e);
@@ -169,18 +171,36 @@ public class AcExporter {
   }
   
   private static void setupTables(Connection c) throws SQLException, IOException {
-    String sqlTable = "CREATE TABLE __ranks (key rank PRIMARY KEY, marker TEXT)";
-    c.createStatement().execute(sqlTable);
-    PreparedStatement pst = c.prepareStatement("INSERT INTO __ranks (key, marker) values (?::rank, ?)");
-    for (Rank r : Rank.values()) {
-      // exclude infrasp., see https://github.com/Sp2000/colplus-backend/issues/478
-      if (r.isUncomparable()) continue;
-      pst.setString(1, r.name());
-      pst.setString(2, r.getMarker());
-      pst.execute();
+    try (Statement st = c.createStatement()) {
+      st.execute("CREATE TABLE __ranks (key rank PRIMARY KEY, marker TEXT)");
+      st.execute("CREATE TABLE __country (code text PRIMARY KEY, title TEXT)");
+      st.execute("CREATE TABLE __language (code text PRIMARY KEY, title TEXT)");
     }
-    c.commit();
-    pst.close();
+    try (PreparedStatement pstR = c.prepareStatement("INSERT INTO __ranks (key, marker) values (?::rank, ?)");
+         PreparedStatement pstC = c.prepareStatement("INSERT INTO __country (code, title) values (?, ?)");
+         PreparedStatement pstL = c.prepareStatement("INSERT INTO __language (code, title) values (?, ?)")
+    ) {
+      for (Rank r : Rank.values()) {
+        // exclude infrasp., see https://github.com/Sp2000/colplus-backend/issues/478
+        if (r.isUncomparable()) continue;
+        pstR.setString(1, r.name());
+        pstR.setString(2, r.getMarker());
+        pstR.execute();
+      }
+      for (Country cn : Country.values()) {
+        pstC.setString(1, cn.getIso2LetterCode());
+        pstC.setString(2, cn.getTitle());
+        pstC.execute();
+
+      }
+      for (Language l : Language.values()) {
+        // exclude infrasp., see https://github.com/Sp2000/colplus-backend/issues/478
+        pstL.setString(1, l.getCode());
+        pstL.setString(2, l.getTitle());
+        pstL.execute();
+      }
+      c.commit();
+    }
   }
   
   /**

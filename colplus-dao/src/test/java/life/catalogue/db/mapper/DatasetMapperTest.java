@@ -59,6 +59,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     d.putSetting("band", "Stooges");
     d.putSetting("firstAlbum", "1973");
     d.putSetting("homepage", "http://the.stooges.fun");
+    d.putSetting(DatasetSettings.DISTRIBUTION_GAZETTEER, "http://the.stooges.fun");
     return d;
   }
   
