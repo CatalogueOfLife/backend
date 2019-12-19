@@ -1,6 +1,49 @@
 package life.catalogue.es.name;
 
-import life.catalogue.api.model.*;
+import static life.catalogue.api.vocab.NameField.BASIONYM_AUTHORS;
+import static life.catalogue.api.vocab.NameField.BASIONYM_EX_AUTHORS;
+import static life.catalogue.api.vocab.NameField.BASIONYM_YEAR;
+import static life.catalogue.api.vocab.NameField.CANDIDATUS;
+import static life.catalogue.api.vocab.NameField.CODE;
+import static life.catalogue.api.vocab.NameField.COMBINATION_AUTHORS;
+import static life.catalogue.api.vocab.NameField.COMBINATION_EX_AUTHORS;
+import static life.catalogue.api.vocab.NameField.COMBINATION_YEAR;
+import static life.catalogue.api.vocab.NameField.CULTIVAR_EPITHET;
+import static life.catalogue.api.vocab.NameField.GENUS;
+import static life.catalogue.api.vocab.NameField.INFRAGENERIC_EPITHET;
+import static life.catalogue.api.vocab.NameField.INFRASPECIFIC_EPITHET;
+import static life.catalogue.api.vocab.NameField.LINK;
+import static life.catalogue.api.vocab.NameField.NOM_STATUS;
+import static life.catalogue.api.vocab.NameField.NOTHO;
+import static life.catalogue.api.vocab.NameField.PUBLISHED_IN_ID;
+import static life.catalogue.api.vocab.NameField.PUBLISHED_IN_PAGE;
+import static life.catalogue.api.vocab.NameField.REMARKS;
+import static life.catalogue.api.vocab.NameField.SANCTIONING_AUTHOR;
+import static life.catalogue.api.vocab.NameField.SPECIFIC_EPITHET;
+import static life.catalogue.api.vocab.NameField.UNINOMIAL;
+import static life.catalogue.common.collection.CollectionUtils.notEmpty;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
+import org.apache.commons.io.IOUtils;
+import life.catalogue.api.model.BareName;
+import life.catalogue.api.model.Name;
+import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.SimpleNameClassification;
+import life.catalogue.api.model.Synonym;
+import life.catalogue.api.model.Taxon;
+import life.catalogue.api.model.VernacularName;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.NameField;
 import life.catalogue.common.tax.SciNameNormalizer;
@@ -9,21 +52,6 @@ import life.catalogue.es.model.EsDecision;
 import life.catalogue.es.model.Monomial;
 import life.catalogue.es.model.NameStrings;
 import life.catalogue.es.model.NameUsageDocument;
-import org.apache.commons.io.IOUtils;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterInputStream;
-
-import static java.util.stream.Collectors.toList;
-import static life.catalogue.api.vocab.NameField.*;
-import static life.catalogue.common.collection.CollectionUtils.notEmpty;
 
 /**
  * Converts a NameUsageWrapper instance into a NameUsage document. Note that the <i>entire</i> NameUsageWrapper instance is serialized (and
@@ -34,7 +62,7 @@ public class NameUsageWrapperConverter {
   /**
    * Whether or not to zip the stringified NameUsageWrapper.
    */
-  public static final boolean ZIP_PAYLOAD = true;
+  public static final boolean ZIP_PAYLOAD = false;
 
   /**
    * Serializes, deflates and base64-encodes a NameUsageWrapper. NB you can't store raw byte arrays in Elasticsearch. You must base64-encode
@@ -176,6 +204,12 @@ public class NameUsageWrapperConverter {
     if (notEmpty(nuw.getVernacularNames())) {
       nuw.getVernacularNames().forEach(vn -> vn.setName(null));
     }
+    if (notEmpty(nuw.getDecisions())) {
+      nuw.getDecisions().stream().forEach(d -> {
+        d.setDatasetKey(null);
+        d.setMode(null);
+      });
+    }
   }
 
   /**
@@ -216,6 +250,12 @@ public class NameUsageWrapperConverter {
         nuw.getVernacularNames().get(i).setName(doc.getVernacularNames().get(i));
       }
     }
+    if (notEmpty(doc.getDecisions())) {
+      for (int i = 0; i < nuw.getDecisions().size(); ++i) {
+        nuw.getDecisions().get(i).setDatasetKey(doc.getDecisions().get(i).getCatalogueKey());
+        nuw.getDecisions().get(i).setMode(doc.getDecisions().get(i).getMode());
+      }
+    }
   }
 
   /**
@@ -230,13 +270,11 @@ public class NameUsageWrapperConverter {
     saveScientificName(nuw, doc);
     saveVernacularNames(nuw, doc);
     saveClassification(nuw, doc);
+    saveDecisions(nuw, doc);
     doc.setIssues(nuw.getIssues());
     Name name = nuw.getUsage().getName();
     doc.setAuthorship(name.authorshipComplete());
     doc.setDatasetKey(name.getDatasetKey());
-    if (nuw.getDecisions() != null) {
-      doc.setDecisions(nuw.getDecisions().stream().map(EsDecision::from).collect(toList()));
-    }
     doc.setSectorDatasetKey(nuw.getSectorDatasetKey());
     doc.setNameId(name.getId());
     doc.setNameIndexId(name.getNameIndexId());
@@ -266,18 +304,28 @@ public class NameUsageWrapperConverter {
     return doc;
   }
 
-  private static void saveScientificName(NameUsageWrapper from, NameUsageDocument to) {
-    to.setScientificName(from.getUsage().getName().getScientificName());
-    to.setNameStrings(new NameStrings(from.getUsage().getName()));
+  private static void saveScientificName(NameUsageWrapper nuw, NameUsageDocument doc) {
+    doc.setScientificName(nuw.getUsage().getName().getScientificName());
+    doc.setNameStrings(new NameStrings(nuw.getUsage().getName()));
   }
 
-  private static void saveVernacularNames(NameUsageWrapper from, NameUsageDocument to) {
-    if (notEmpty(from.getVernacularNames())) {
-      List<String> names = from.getVernacularNames()
+  private static void saveVernacularNames(NameUsageWrapper nuw, NameUsageDocument doc) {
+    if (notEmpty(nuw.getVernacularNames())) {
+      List<String> names = nuw.getVernacularNames()
           .stream()
           .map(VernacularName::getName)
           .collect(Collectors.toList());
-      to.setVernacularNames(names);
+      doc.setVernacularNames(names);
+    }
+  }
+
+  private static void saveDecisions(NameUsageWrapper nuw, NameUsageDocument doc) {
+    if (notEmpty(nuw.getDecisions())) {
+      List<EsDecision> decisions = nuw.getDecisions()
+          .stream()
+          .map(EsDecision::from)
+          .collect(Collectors.toList());
+      doc.setDecisions(decisions);
     }
   }
 

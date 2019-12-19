@@ -1,28 +1,5 @@
 package life.catalogue.es.name.search;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.NameUsage;
-import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.model.Taxon;
-import life.catalogue.api.search.NameUsageSearchParameter;
-import life.catalogue.api.search.NameUsageSearchRequest;
-import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.api.vocab.NomStatus;
-import life.catalogue.es.EsReadTestBase;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
 import static life.catalogue.api.search.NameUsageSearchParameter.NAME_ID;
 import static life.catalogue.api.search.NameUsageSearchParameter.NAME_INDEX_ID;
@@ -34,6 +11,29 @@ import static life.catalogue.api.search.NameUsageSearchParameter.TAXON_ID;
 import static life.catalogue.api.search.NameUsageSearchRequest.IS_NOT_NULL;
 import static life.catalogue.api.search.NameUsageSearchRequest.IS_NULL;
 import static org.junit.Assert.assertEquals;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import life.catalogue.api.model.EditorialDecision.Mode;
+import life.catalogue.api.model.Name;
+import life.catalogue.api.model.NameUsage;
+import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.Taxon;
+import life.catalogue.api.search.NameUsageSearchParameter;
+import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.search.SimpleDecision;
+import life.catalogue.api.vocab.NomStatus;
+import life.catalogue.es.EsReadTestBase;
 
 public class NameSearchTestAllParamsTest extends EsReadTestBase {
 
@@ -271,33 +271,34 @@ public class NameSearchTestAllParamsTest extends EsReadTestBase {
   }
 
   @Test
-  @Ignore
   public void testDecisionKey1() {
-    Integer key1 = 100;
-    Integer key2 = 101;
+     
     NameUsageWrapper nuw1 = minimalNameUsage();
-    //nuw1.setDecisionKey(key1);
+    SimpleDecision sd = new SimpleDecision();
+    sd.setDatasetKey(100);
+    sd.setMode(Mode.BLOCK);
+    nuw1.setDecisions(Arrays.asList(sd));
+    
     NameUsageWrapper nuw2 = minimalNameUsage();
-    //nuw2.setDecisionKey(key1);
+    sd = new SimpleDecision();
+    sd.setDatasetKey(100);
+    sd.setMode(Mode.REVIEWED);
+    nuw2.setDecisions(Arrays.asList(sd));
+    
     NameUsageWrapper nuw3 = minimalNameUsage();
-    //nuw3.setDecisionKey(key2);
+    sd = new SimpleDecision();
+    sd.setDatasetKey(101);
+    sd.setMode(Mode.REVIEWED);
+    nuw3.setDecisions(Arrays.asList(sd));   
+    
     NameUsageWrapper nuw4 = minimalNameUsage();
-    //nuw4.setDecisionKey(null);
+    nuw4.setDecisions(null);
 
     index(nuw1, nuw2, nuw3, nuw4);
 
     NameUsageSearchRequest query = new NameUsageSearchRequest();
-    //TODO:query.addFilter(DECISION_KEY, key1);
-
-    //TODO:nuw1.setDecisionKey(key1);
-    //TODO:nuw2.setDecisionKey(key1);
-    //TODO:nuw3.setDecisionKey(key2);
-    //TODO:nuw4.setDecisionKey(null);
-    List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2);
-
-    assertEquals(expected, search(query).getResult());
-  
-    //TODO:countdown(DECISION_KEY);
+    //qu
+    
 
   }
 

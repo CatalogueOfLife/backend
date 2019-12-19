@@ -1,5 +1,6 @@
 package life.catalogue.api.search;
 
+import static life.catalogue.api.util.VocabularyUtils.lookupEnum;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -9,17 +10,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MultivaluedMap;
-
+import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
-
-import org.apache.commons.lang3.StringUtils;
 import life.catalogue.api.util.VocabularyUtils;
-
-import static life.catalogue.api.util.VocabularyUtils.lookupEnum;
 
 public class NameUsageSearchRequest {
 
@@ -61,13 +57,6 @@ public class NameUsageSearchRequest {
   @QueryParam("reverse")
   private boolean reverse;
 
-  /*
-   * We separate catalogue key parameter from the other name search parameters because its function is very different from the other name
-   * search parameters. We do this as soon as possible (here in this class, while registering the filters and their values). This way the
-   * search code per se doesn't need to be bothered by it.
-   */
-  private Integer catalogKey;
-
   public NameUsageSearchRequest() {}
 
   /**
@@ -90,7 +79,6 @@ public class NameUsageSearchRequest {
       copy.content = EnumSet.noneOf(SearchContent.class);
       copy.content.addAll(content);
     }
-    copy.catalogKey = catalogKey;
     copy.q = q;
     copy.sortBy = sortBy;
     copy.highlight = highlight;
@@ -180,11 +168,7 @@ public class NameUsageSearchRequest {
   }
 
   private void addFilterValue(NameUsageSearchParameter param, Object value) {
-    if (param == NameUsageSearchParameter.CATALOGUE_KEY) {
-      catalogKey = (Integer) value;
-    } else {
-      getFilters().computeIfAbsent(param, k -> new ArrayList<>()).add(value);
-    }
+    getFilters().computeIfAbsent(param, k -> new ArrayList<>()).add(value);
   }
 
   @SuppressWarnings("unchecked")
@@ -283,16 +267,11 @@ public class NameUsageSearchRequest {
     this.reverse = reverse;
   }
 
-  public Integer getCatalogKey() {
-    return catalogKey;
-  }
-
   @JsonIgnore
   public boolean isEmpty() {
     return content == null
         && (facets == null || facets.isEmpty())
         && (filters == null || filters.isEmpty())
-        && catalogKey == null
         && q == null
         && sortBy == null
         && highlight == false
@@ -301,7 +280,7 @@ public class NameUsageSearchRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(catalogKey, content, facets, filters, highlight, q, reverse, sortBy);
+    return Objects.hash(content, facets, filters, highlight, q, reverse, sortBy);
   }
 
   @Override
@@ -313,7 +292,7 @@ public class NameUsageSearchRequest {
     if (getClass() != obj.getClass())
       return false;
     NameUsageSearchRequest other = (NameUsageSearchRequest) obj;
-    return Objects.equals(catalogKey, other.catalogKey) && Objects.equals(content, other.content) && Objects.equals(facets, other.facets)
+    return Objects.equals(content, other.content) && Objects.equals(facets, other.facets)
         && Objects.equals(filters, other.filters) && highlight == other.highlight && Objects.equals(q, other.q) && reverse == other.reverse
         && sortBy == other.sortBy;
   }

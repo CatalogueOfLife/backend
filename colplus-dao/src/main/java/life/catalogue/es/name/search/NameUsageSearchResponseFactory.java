@@ -44,11 +44,11 @@ import static life.catalogue.api.search.NameUsageSearchParameter.TYPE;
 /**
  * Converts the Elasticsearch response to a NameSearchResponse instance.
  */
-class NameSearchResultConverter {
+class NameUsageSearchResponseFactory {
 
   private final NameUsageEsResponse esResponse;
 
-  NameSearchResultConverter(NameUsageEsResponse esResponse) {
+  NameUsageSearchResponseFactory(NameUsageEsResponse esResponse) {
     this.esResponse = esResponse;
   }
 
@@ -59,14 +59,14 @@ class NameSearchResultConverter {
    * @return
    * @throws IOException
    */
-  NameUsageSearchResponse transferResponse(Page page) throws IOException {
+  NameUsageSearchResponse convertEsResponse(Page page) throws IOException {
     int total = esResponse.getHits().getTotalNumHits();
-    List<NameUsageWrapper> nameUsages = transferNameUsages();
-    Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets = transferFacets();
+    List<NameUsageWrapper> nameUsages = convertNameUsageDocuments();
+    Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets = generateFacets();
     return new NameUsageSearchResponse(page, total, nameUsages, facets);
   }
 
-  private List<NameUsageWrapper> transferNameUsages() throws IOException {
+  private List<NameUsageWrapper> convertNameUsageDocuments() throws IOException {
     List<SearchHit<NameUsageDocument>> hits = esResponse.getHits().getHits();
     List<NameUsageWrapper> nuws = new ArrayList<>(hits.size());
     for (SearchHit<NameUsageDocument> hit : hits) {
@@ -83,7 +83,7 @@ class NameSearchResultConverter {
     return nuws;
   }
 
-  private Map<NameUsageSearchParameter, Set<FacetValue<?>>> transferFacets() {
+  private Map<NameUsageSearchParameter, Set<FacetValue<?>>> generateFacets() {
     if (esResponse.getAggregations() == null) {
       return Collections.emptyMap();
     }

@@ -111,7 +111,6 @@ public class EsUtil {
    */
   public static void deleteIndex(RestClient client, String name) throws IOException {
     LOG.warn("Deleting ES Index {}", name);
-    Request request = new Request("DELETE", name);
     Response response = null;
     try {
       response = client.performRequest(new Request("DELETE", name));
@@ -147,8 +146,7 @@ public class EsUtil {
    * @throws IOException
    */
   public static boolean indexExists(RestClient client, String index) throws IOException {
-    Request request = new Request("HEAD", index);
-    Response response = client.performRequest(request);
+    Response response = client.performRequest(new Request("HEAD", index));
     return response.getStatusLine().getStatusCode() == 200;
   }
 
