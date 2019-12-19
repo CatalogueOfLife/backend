@@ -9,6 +9,7 @@ import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.Language;
 import life.catalogue.common.io.CompressionUtil;
+import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.UTF8IOUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.img.ImgConfig;
@@ -40,6 +41,7 @@ import java.util.regex.Pattern;
 public class AcExporter {
   private static final Logger LOG = LoggerFactory.getLogger(AcExporter.class);
   private static final String EXPORT_SQL = "/exporter/ac-export.sql";
+  private static final String CLEANUP_SQL = "exporter/ac-export-cleanup.sql";
   private static final String COPY_WITH = "CSV HEADER NULL '\\N' ENCODING 'UTF8' ";
   private static final Pattern COPY_START = Pattern.compile("^\\s*COPY\\s*\\(");
   private static final Pattern COPY_END   = Pattern.compile("^\\s*\\)\\s*TO\\s*'(.+)'");
@@ -106,9 +108,16 @@ public class AcExporter {
       return arch;
       
     } finally {
-      LOG.debug("Remove temp export directory {}", expDir.getAbsolutePath());
       logger.log("Clean up temp files");
+      LOG.debug("Remove temp export directory {}", expDir.getAbsolutePath());
       FileUtils.deleteQuietly(expDir);
+      LOG.debug("Remove temp tables & sequences from postgres");
+      logger.log("Clean up tables & sequences from postgres");
+      try (PgConnection c = cfg.db.connect()) {
+        c.setAutoCommit(false);
+        String sql = Resources.toString(CLEANUP_SQL);
+        executeSql(c, sql);
+      }
       logger.log("Export completed");
       this.logger = null;
     }

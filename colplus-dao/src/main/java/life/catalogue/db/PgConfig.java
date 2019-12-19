@@ -5,6 +5,7 @@ import com.google.common.base.Strings;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.ibatis.jdbc.ScriptRunner;
+import org.postgresql.jdbc.PgConnection;
 
 import javax.validation.constraints.Min;
 import java.sql.Connection;
@@ -106,15 +107,15 @@ public class PgConfig extends PgDbConfig {
   /**
    * @return a new simple postgres jdbc connection
    */
-  public Connection connect() throws SQLException {
+  public PgConnection connect() throws SQLException {
     return connect(this);
   }
   
   /**
    * @return a new simple postgres jdbc connection to the given db on this pg server
    */
-  public Connection connect(PgDbConfig db) throws SQLException {
-    Connection c = DriverManager.getConnection(jdbcUrl(db), Strings.emptyToNull(db.user), Strings.emptyToNull(db.password));
+  public PgConnection connect(PgDbConfig db) throws SQLException {
+    PgConnection c = DriverManager.getConnection(jdbcUrl(db), Strings.emptyToNull(db.user), Strings.emptyToNull(db.password)).unwrap(PgConnection.class);
     // enforce UTF8 connections, see https://github.com/Sp2000/colplus-backend/issues/577
     try (Statement st = c.createStatement()) {
       st.execute("SET client_encoding = 'UTF8'");
