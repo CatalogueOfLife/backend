@@ -41,6 +41,8 @@ es:
   ports: 9200
   environment: test
   nameUsage:
+    numShards: 1
+    numReplicas: 0
 auth:
   type: map
   users:
