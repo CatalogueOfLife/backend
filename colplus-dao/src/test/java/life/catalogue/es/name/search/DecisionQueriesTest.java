@@ -15,7 +15,7 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.es.EsReadTestBase;
 
-public class CatalogKeyTest extends EsReadTestBase {
+public class DecisionQueriesTest extends EsReadTestBase {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameSearchServiceTest.class);

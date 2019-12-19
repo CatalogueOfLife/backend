@@ -8,6 +8,7 @@ import life.catalogue.es.name.NameUsageIndexServiceIT;
 import life.catalogue.es.name.NameUsageResponseConverterTest;
 import life.catalogue.es.name.NameUsageWrapperConverterTest;
 import life.catalogue.es.name.index.ClassificationUpdaterTest;
+import life.catalogue.es.name.search.DecisionQueriesTest;
 import life.catalogue.es.name.search.FacetsTranslatorTest;
 import life.catalogue.es.name.search.NameSearchHighlighterTest;
 import life.catalogue.es.name.search.NameSearchServiceFacetTest;
@@ -30,6 +31,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses({
     ClassificationUpdaterTest.class,
     CollapsibleListTest.class,
+    DecisionQueriesTest.class,
     EsClientFactoryTest.class,
     EsNameUsageSerde.class,
     EsUtilTest.class,
