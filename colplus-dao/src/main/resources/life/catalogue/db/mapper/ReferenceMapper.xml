@@ -191,9 +191,11 @@
 
     <sql id="orphanWhere">
         WHERE NOT EXISTS (
-            SELECT NULL FROM name_${partition} WHERE r.id=published_in_id or r.id=type_reference_id
+            SELECT NULL FROM name_${partition} WHERE r.id=published_in_id
             UNION
             SELECT NULL FROM name_rel_${partition} WHERE r.id = published_in_id
+            UNION
+            SELECT NULL FROM type_material_${partition} WHERE r.id=reference_id
             UNION
             SELECT NULL FROM name_usage_${partition} WHERE reference_ids @> ARRAY[r.id]
             UNION

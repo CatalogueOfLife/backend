@@ -271,7 +271,7 @@ COPY (
 SELECT
   tk.key AS record_id,
   t.id AS name_code,
-  t.webpage AS web_site,
+  t.link AS web_site,
   -- use the genus classification for virus type names
   CASE
     WHEN n.type='VIRUS' THEN coalesce(c.genus, 'Not assigned')
