@@ -1,22 +1,22 @@
 package life.catalogue.dao;
 
+import com.ibm.icu.text.Transliterator;
+import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.EntityType;
+import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.Origin;
+import life.catalogue.db.mapper.*;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import com.ibm.icu.text.Transliterator;
-import life.catalogue.db.mapper.*;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.session.SqlSession;
-import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.EntityType;
-import life.catalogue.api.vocab.Issue;
-import life.catalogue.api.vocab.Origin;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class CatCopy {
   private static final Logger LOG = LoggerFactory.getLogger(CatCopy.class);
@@ -30,8 +30,7 @@ public class CatCopy {
     extMapper.put(EntityType.DESCRIPTION, DescriptionMapper.class);
     extMapper.put(EntityType.MEDIA, MediaMapper.class);
   }
-  
-  
+
   /**
    * Copies the given source taxon into the dataset and under the parent of targetParent.
    * The taxon and name source instance will be modified to represent the newly generated taxon and finally persisted.
@@ -75,6 +74,10 @@ public class CatCopy {
           e.setId(null);
           e.setDatasetKey(targetParent.getDatasetKey());
           e.applyUser(user);
+          if (e instanceof VerbatimEntity) {
+            // nullify verbatim keys until we create new verbatim records to keep issues
+            ((VerbatimEntity) e).setVerbatimKey(null);
+          }
           // check if the entity refers to a reference which we need to lookup / copy
           if (Referenced.class.isAssignableFrom(e.getClass())) {
             Referenced eRef = (Referenced) e;

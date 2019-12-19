@@ -37,8 +37,8 @@ client:
     verifyHostname: false
     trustSelfSignedCertificates: true
 es:
-  hosts: localhost
-  ports: 9200
+  hosts: ${es.hosts}
+  ports: ${es.ports}
   environment: test
   nameUsage:
     numShards: 1

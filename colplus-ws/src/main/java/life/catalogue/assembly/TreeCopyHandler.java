@@ -248,7 +248,6 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     if (n.getNomStatus() != null) {
       switch (n.getNomStatus()) {
         case CHRESONYM:
-        case MANUSCRIPT:
           return true;
       }
     }
