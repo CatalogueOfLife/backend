@@ -37,8 +37,9 @@ client:
     verifyHostname: false
     trustSelfSignedCertificates: true
 es:
-  hosts:
+  hosts: localhost
   ports: 9200
+  environment: test
   nameUsage:
 auth:
   type: map
