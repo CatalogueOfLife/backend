@@ -2,6 +2,8 @@ package life.catalogue.es;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import javax.validation.constraints.NotNull;
+
 public class EsConfig {
 
   /**
@@ -13,21 +15,25 @@ public class EsConfig {
    * Environment to prefix indices with to be able to share a single ES instance with multiple CoL+ installations. prod or
    * dev are sensible values.
    */
-  public String environment;
+  @NotNull
+  public String environment = "local";
 
   /**
    * Comma separated list of hosts with ES nodes
    */
-  public String hosts;
+  @NotNull
+  public String hosts = "localhost";
 
   /**
    * Comma separated list of ports matching the hosts list
    */
-  public String ports;
+  @NotNull
+  public String ports = "9200";
 
   /**
    * Configuration settings for the name usage index
    */
+  @NotNull
   public IndexConfig nameUsage;
 
   /**
@@ -46,14 +52,6 @@ public class EsConfig {
    * Defaults here to 15 minutes = 900.000ms
    */
   public int socketTimeout = 900000;
-
-  /**
-   * @return true if an embedded es server should be used
-   */
-  @JsonIgnore
-  public boolean embedded() {
-    return hosts == null || hosts.startsWith("/");
-  }
 
   /**
    * @return the index name prefixed with the configured environment

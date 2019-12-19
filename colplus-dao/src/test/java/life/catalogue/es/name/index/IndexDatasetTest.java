@@ -15,7 +15,7 @@ public class IndexDatasetTest extends EsReadWriteTestBase {
 
   @Test
   public void indexDataSet() throws IOException, EsException {
-    try (RestClient client = EsReadWriteTestBase.esSetupRule.getEsClient()) {
+    try (RestClient client = EsReadWriteTestBase.esSetupRule.getClient()) {
       EsConfig config = EsReadWriteTestBase.esSetupRule.getEsConfig();
       NameUsageIndexServiceEs svc = new NameUsageIndexServiceEs(client, config, PgSetupRule.getSqlSessionFactory());
       svc.indexDataset(1000);

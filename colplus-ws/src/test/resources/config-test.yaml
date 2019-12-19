@@ -37,9 +37,12 @@ client:
     verifyHostname: false
     trustSelfSignedCertificates: true
 es:
-  hosts:
-  ports: 9200
+  hosts: ${es.hosts}
+  ports: ${es.ports}
+  environment: test
   nameUsage:
+    numShards: 1
+    numReplicas: 0
 auth:
   type: map
   users:

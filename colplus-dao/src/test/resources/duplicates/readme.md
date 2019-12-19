@@ -6,6 +6,6 @@ colplus=# \copy verbatim_1000 to 'verbatim.csv' WITH (FORMAT CSV, HEADER, NULL '
 COPY 54
 colplus=# \copy name_usage_1000 to 'name_usage.csv' WITH (FORMAT CSV, HEADER, NULL '')
 COPY 54
-colplus=# \copy name_1000 (id,dataset_key,sector_key,verbatim_key,homotypic_name_id,name_index_id,scientific_name,authorship,rank,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,strain,candidatus,notho,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,published_in_id,published_in_page,code,nom_status,origin,type,webpage,fossil,remarks,created,created_by,modified,modified_by) to 'name.csv' WITH (FORMAT CSV, HEADER, NULL '')
+colplus=# \copy name_1000 (id,dataset_key,sector_key,verbatim_key,homotypic_name_id,name_index_id,scientific_name,authorship,rank,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,strain,candidatus,notho,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,published_in_id,published_in_page,code,nom_status,origin,type,link,fossil,remarks,created,created_by,modified,modified_by) to 'name.csv' WITH (FORMAT CSV, HEADER, NULL '')
 COPY 54
 ```

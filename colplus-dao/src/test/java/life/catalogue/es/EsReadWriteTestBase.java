@@ -49,9 +49,9 @@ public class EsReadWriteTestBase extends ExternalResource {
     super.before();
     try {
       LOG.debug("Dumping test index \"{}\"", EsSetupRule.TEST_INDEX);
-      EsUtil.deleteIndex(esSetupRule.getEsClient(), EsSetupRule.TEST_INDEX);
+      EsUtil.deleteIndex(esSetupRule.getClient(), EsSetupRule.TEST_INDEX);
       LOG.debug("Creating test index \"{}\"", EsSetupRule.TEST_INDEX);
-      EsUtil.createIndex(esSetupRule.getEsClient(),
+      EsUtil.createIndex(esSetupRule.getClient(),
           EsSetupRule.TEST_INDEX,
           NameUsageDocument.class,
           esSetupRule.getEsConfig().nameUsage);
@@ -67,14 +67,14 @@ public class EsReadWriteTestBase extends ExternalResource {
 
   protected NameUsageIndexServiceEs createIndexService() {
     return new NameUsageIndexServiceEs(
-        esSetupRule.getEsClient(),
+        esSetupRule.getClient(),
         esSetupRule.getEsConfig(),
         PgSetupRule.getSqlSessionFactory(),
         EsSetupRule.TEST_INDEX);
   }
 
   protected NameUsageSearchServiceEs createSearchService() {
-    return new NameUsageSearchServiceEs(EsSetupRule.TEST_INDEX, esSetupRule.getEsClient());
+    return new NameUsageSearchServiceEs(EsSetupRule.TEST_INDEX, esSetupRule.getClient());
   }
 
   /**
