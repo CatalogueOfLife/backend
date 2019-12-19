@@ -13,7 +13,6 @@ import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
-import life.catalogue.es.EsModule;
 import life.catalogue.es.EsReadTestBase;
 
 public class CatalogKeyTest extends EsReadTestBase {

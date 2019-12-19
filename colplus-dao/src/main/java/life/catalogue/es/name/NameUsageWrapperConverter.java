@@ -62,7 +62,7 @@ public class NameUsageWrapperConverter {
   /**
    * Whether or not to zip the stringified NameUsageWrapper.
    */
-  public static final boolean ZIP_PAYLOAD = false;
+  public static final boolean ZIP_PAYLOAD = true;
 
   /**
    * Serializes, deflates and base64-encodes a NameUsageWrapper. NB you can't store raw byte arrays in Elasticsearch. You must base64-encode

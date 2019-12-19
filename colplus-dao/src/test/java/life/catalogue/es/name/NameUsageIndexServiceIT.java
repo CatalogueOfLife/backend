@@ -1,11 +1,19 @@
 package life.catalogue.es.name;
 
+import static java.util.stream.Collectors.toList;
+import static life.catalogue.db.PgSetupRule.getSqlSessionFactory;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
+import org.gbif.nameparser.api.Rank;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.DSID;
@@ -13,6 +21,8 @@ import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.EditorialDecision.Mode;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.Taxon;
+import life.catalogue.api.search.NameUsageSearchParameter;
+import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.common.tax.AuthorshipNormalizer;
@@ -26,21 +36,12 @@ import life.catalogue.es.model.NameUsageDocument;
 import life.catalogue.es.name.index.NameUsageIndexService;
 import life.catalogue.es.query.TermQuery;
 import life.catalogue.es.query.TermsQuery;
-import org.gbif.nameparser.api.Rank;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static java.util.stream.Collectors.toList;
-import static life.catalogue.db.PgSetupRule.getSqlSessionFactory;
-import static org.junit.Assert.assertEquals;
 
 /*
- * Full round-trips into Postgres via DAOs, out of Postgres via the NameUsageWrapperMapper, into Elasticsearch via the
- * NameUsageIndexService and finally out of Elasticsearch via the NameUsageSearchService. We have to massage the
- * in-going out-going name usages slightly to allow them to be compared, but not much. (For example the recursive query
- * we execute in Postgres, and the resulting sort order, cannot be emulated with Elasticsearch.)
+ * Full round-trips into Postgres via DAOs, out of Postgres via the NameUsageWrapperMapper, into Elasticsearch via the NameUsageIndexService
+ * and finally out of Elasticsearch via the NameUsageSearchService. We have to massage the in-going out-going name usages slightly to allow
+ * them to be compared, but not much. (For example the recursive query we execute in Postgres, and the resulting sort order, cannot be
+ * emulated with Elasticsearch.)
  */
 // @Ignore
 public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
@@ -61,8 +62,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
   }
 
   @Test
-  @Ignore
-  public void createEditorialDecision() throws IOException {
+  public void createEditorialDecision() {
     // Insert 3 taxa into postgres
     NameUsageIndexService svc = createIndexService();
     List<Taxon> pgTaxa = createPgTaxa(3);
@@ -79,8 +79,12 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     decision.setModifiedBy(edited.getCreatedBy());
     // Save the decision to postgres: triggers sync() on the index service
     DecisionDao dao = new DecisionDao(getSqlSessionFactory(), svc);
-    int key = dao.create(decision, edited.getCreatedBy());
-    NameUsageSearchResponse res = query(new TermQuery("decisionKey", key));
+    dao.create(decision, 0);
+    
+    NameUsageSearchRequest request = new NameUsageSearchRequest();
+    request.addFilter(NameUsageSearchParameter.DECISION_MODE, Mode.UPDATE);
+    NameUsageSearchResponse res = search(request);
+    
     assertEquals(1, res.getResult().size());
     assertEquals(edited.getId(), res.getResult().get(0).getUsage().getId());
   }
@@ -111,12 +115,12 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     // Index the dataset containing the taxon
     NameUsageIndexService svc = createIndexService();
     svc.indexDataset(DATASET_KEY);
-  
+
     // make sure the decision is empty
     NameUsageSearchResponse res = query(new TermQuery("usageId", dsid.getId())); // Query ES for the usage
     assertEquals(1, res.getResult().size()); // Yes, it's there!
-//TODO: assertNull(res.getResult().get(0).getDecisionKey()); // and no decision key yet
-  
+    assertNull(res.getResult().get(0).getDecisions()); // and no decision key yet
+
     // Now create the decision
     is = getClass().getResourceAsStream("/elastic/Issue407_decision.json");
     EditorialDecision decision = ApiModule.MAPPER.readValue(is, EditorialDecision.class);
@@ -131,15 +135,14 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     res = query(new TermQuery("decisionKey", key)); // Query ES for the decision key
     assertEquals(1, res.getResult().size()); // Yes, it's there!
     assertEquals(taxon.getId(), res.getResult().get(0).getUsage().getId()); // And it belongs to the taxon we just inserted
-  
+
     res = query(new TermQuery("usageId", dsid.getId())); // Query ES for the usage
     assertEquals(1, res.getResult().size()); // Yes, it's there!
-//TODO: assertEquals(key, (int) res.getResult().get(0).getDecisionKey()); // make sure it has the decision key
+    assertEquals(key, (int) res.getResult().get(0).getDecisions().get(0).getKey()); // make sure it has the decision key
   }
 
   @Test
-  @Ignore
-  public void updateEditorialDecision() throws IOException {
+  public void updateEditorialDecision() {
     // Insert 3 taxa into postgresindexDatasetTaxaOnly
     NameUsageIndexService svc = createIndexService();
     List<Taxon> pgTaxa = createPgTaxa(3);
@@ -157,19 +160,25 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     // Save the decision to postgres: triggers sync() on the index service
     DecisionDao dao = new DecisionDao(getSqlSessionFactory(), svc);
     int key = dao.create(decision, edited.getCreatedBy());
-    NameUsageSearchResponse res = query(new TermQuery("decisionKey", key));
+    
+    NameUsageSearchRequest request = new NameUsageSearchRequest();
+    request.addFilter(NameUsageSearchParameter.DECISION_MODE, Mode.UPDATE);
+    NameUsageSearchResponse res = search(request);
+    
+    
     assertEquals(pgTaxa.get(0).getId(), res.getResult().get(0).getUsage().getId());
     decision.setKey(key);
     // Change subject of the decision so now 2 taxa should be deleted first and then re-indexed.
     decision.setSubject(SimpleName.of(pgTaxa.get(1)));
     dao.update(decision, edited.getCreatedBy());
-    res = query(new TermQuery("decisionKey", key));
+    
+    res = search(request);   
+    
     assertEquals(1, res.getResult().size()); // Still only 1 document with this decision key
     assertEquals(pgTaxa.get(1).getId(), res.getResult().get(0).getUsage().getId()); // But it's another document now
   }
 
   @Test
-  @Ignore
   public void deleteEditorialDecision() throws IOException {
     NameUsageIndexService svc = createIndexService();
     List<Taxon> pgTaxa = createPgTaxa(4);
@@ -187,11 +196,16 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     // Save the decision to postgres: triggers sync() on the index service
     DecisionDao dao = new DecisionDao(getSqlSessionFactory(), svc);
     int key = dao.create(decision, edited.getCreatedBy());
-    NameUsageSearchResponse res = query(new TermQuery("decisionKey", key));
+    
+    NameUsageSearchRequest request = new NameUsageSearchRequest();
+    request.addFilter(NameUsageSearchParameter.DECISION_MODE, Mode.UPDATE);
+    NameUsageSearchResponse res = search(request);
+    
+    
     assertEquals(pgTaxa.get(2).getId(), res.getResult().get(0).getUsage().getId());
     dao.delete(key, 0);
     res = query(new TermQuery("usageId", pgTaxa.get(2).getId()));
-//TODO: assertNull(res.getResult().get(0).getDecisionKey());
+    assertNull(res.getResult().get(0).getDecisions());
   }
 
   // Some JSON to send using the REST API
