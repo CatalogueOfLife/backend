@@ -41,8 +41,8 @@ public class NameSearchServiceTest extends EsReadTestBase {
 
   @BeforeClass
   public static void init() {
-    client = esSetupRule.getEsClient();
-    svc = new NameUsageSearchServiceEs(indexName, esSetupRule.getEsClient());
+    client = esSetupRule.getClient();
+    svc = new NameUsageSearchServiceEs(indexName, esSetupRule.getClient());
   }
 
   @Before

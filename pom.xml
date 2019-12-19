@@ -56,7 +56,6 @@
         <dropwizard.version>2.0.0</dropwizard.version>
         <dwc-api.version>1.23</dwc-api.version>
         <elasticsearch.version>6.5.1</elasticsearch.version>
-        <embedded-elasticsearch.version>2.8.0</embedded-elasticsearch.version>
         <fastutil.version>8.3.0</fastutil.version>
         <gbif-api.version>0.99</gbif-api.version>
         <graalvm.version>19.3.0</graalvm.version>
@@ -111,13 +110,14 @@
         <db.database>colplus</db.database>
         <db.user>postgres</db.user>
         <db.password>postgres</db.password>
+        <!-- default to a local instance -->
+        <es.hosts>localhost</es.hosts>
+        <es.ports>9200</es.ports>
 
         <gbif.api>https://api.gbif.org/v1/</gbif.api>
         <gbif.appkey>col.plus</gbif.appkey>
         <gbif.secret>secret</gbif.secret>
         <img.repo>${project.build.directory}/img-repo</img.repo>
-        <es.hosts>${project.build.directory}/es-colplus</es.hosts>
-        <es.ports></es.ports>
     </properties>
 
     <licenses>
@@ -622,12 +622,6 @@
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
                 <version>${mockito.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>pl.allegro.tech</groupId>
-                <artifactId>embedded-elasticsearch</artifactId>
-                <version>${embedded-elasticsearch.version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>

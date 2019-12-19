@@ -7,9 +7,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import life.catalogue.es.EsConfig;
-import life.catalogue.es.EsException;
-import life.catalogue.es.EsUtil;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Page;
@@ -46,7 +43,7 @@ public class EsReadTestBase {
   }
 
   protected RestClient getEsClient() {
-    return esSetupRule.getEsClient();
+    return esSetupRule.getClient();
   }
 
   // Useful for @Before methods

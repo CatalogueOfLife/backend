@@ -1,11 +1,12 @@
 package life.catalogue.es;
 
-import java.io.IOException;
-import java.util.HashMap;
-
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
 
 import static life.catalogue.es.EsUtil.executeRequest;
 import static life.catalogue.es.EsUtil.readFromResponse;
@@ -25,7 +26,7 @@ public class EsServerVersion {
     return instance;
   }
 
-  private final int majorVersion;
+  private final int[] version;
   private final String versionString;
 
   private EsServerVersion(RestClient client) throws IOException {
@@ -33,19 +34,40 @@ public class EsServerVersion {
     Response response = executeRequest(client, request);
     HashMap<String, String> data = readFromResponse(response, "version");
     versionString = data.get("number");
-    majorVersion = Integer.parseInt(versionString.substring(0, versionString.indexOf(".")));
+    version = Arrays.stream(versionString.split("\\.")).mapToInt(Integer::parseInt).toArray();
   }
 
   public boolean is(int majorVersion) {
-    return this.majorVersion == majorVersion;
+    return version[0] == majorVersion;
   }
 
-  public int getMajorVersion() {
-    return majorVersion;
+  public boolean is(int majorVersion, int minorVersion) {
+    return is(majorVersion) && version[1] == minorVersion;
+  }
+
+  public boolean is(int majorVersion, int minorVersion, int patchVersion) {
+    return is(majorVersion, minorVersion) && version[2] == patchVersion;
+  }
+
+  public boolean is(int[] version) {
+    int idx = 0;
+    for (int v : version) {
+      if (this.version.length <= idx || this.version[idx] != v) {
+        return false;
+      }
+      idx++;
+    }
+    return true;
+  }
+
+  /**
+   * @return semantic version as int array
+   */
+  public int[] getVersion() {
+    return version;
   }
 
   public String getVersionString() {
     return versionString;
   }
-
 }

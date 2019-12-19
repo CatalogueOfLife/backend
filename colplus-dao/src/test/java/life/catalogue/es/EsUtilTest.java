@@ -2,7 +2,6 @@ package life.catalogue.es;
 
 import java.io.IOException;
 
-import life.catalogue.es.EsUtil;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.es.model.NameUsageDocument;
 import life.catalogue.es.name.NameUsageWrapperConverter;
@@ -24,7 +23,7 @@ public class EsUtilTest extends EsReadTestBase {
 
   @BeforeClass
   public static void init() {
-    client = esSetupRule.getEsClient();
+    client = esSetupRule.getClient();
   }
 
   @Before
