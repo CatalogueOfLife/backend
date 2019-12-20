@@ -250,6 +250,14 @@ public class InterpreterBase {
     return parse(UriParser.PARSER, v.getFirstRaw(terms)).orNull(invalidIssue, v);
   }
 
+  protected Integer integer(VerbatimRecord v, Issue invalidIssue, Term... terms) {
+    return SafeParser.parse(IntegerParser.PARSER, v.getFirstRaw(terms)).orNull(invalidIssue, v);
+  }
+
+  protected Double decimal(VerbatimRecord v, Issue invalidIssue, Term... terms) {
+    return SafeParser.parse(DecimalParser.PARSER, v.getFirstRaw(terms)).orNull(invalidIssue, v);
+  }
+
   protected Boolean bool(VerbatimRecord v, Issue invalidIssue, Term... terms) {
     return parse(BooleanParser.PARSER, v.getFirst(terms)).orNull(invalidIssue, v);
   }

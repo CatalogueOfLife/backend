@@ -60,6 +60,14 @@ public enum ColdpTerm implements Term, AlternativeNames {
   //nameID,
   //citation,
   //status,
+  locality,
+  country,
+  latitude,
+  longitude,
+  altitude,
+  host,
+  date,
+  collector,
   referenceID,
   //link,
   //remarks,
@@ -133,7 +141,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   name,
   transliteration,
   //language,
-  country,
+  //country,
   sex
   //referenceID
   ;

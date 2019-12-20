@@ -171,6 +171,14 @@ public enum Issue {
   TYPE_STATUS_INVALID(TYPE_MATERIAL, Level.WARNING,
           "type status could not be interpreted"),
 
+  LAT_LON_INVALID(TYPE_MATERIAL, Level.WARNING,
+      "decimal coordinate could not be interpreted"),
+
+  ALTITUDE_INVALID(TYPE_MATERIAL, Level.WARNING,
+      "decimal coordinate could not be interpreted"),
+
+  COUNTRY_INVALID(TYPE_MATERIAL, Level.WARNING,
+      "decimal coordinate could not be interpreted"),
 
   //
   // TAXON ISSUES
