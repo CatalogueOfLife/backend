@@ -35,6 +35,13 @@ public class CatCopy {
     extMapper.put(EntityType.MEDIA, MediaMapper.class);
   }
 
+  public static <T extends NameUsageBase> DSID<String> copyUsage(final SqlSession session, final T t, final DSID<String> targetParent, int user,
+                                                                 Set<EntityType> include,
+                                                                 Function<Reference, String> lookupReference,
+                                                                 Function<String, String> lookupByIdReference) {
+    return copyUsage(session, session, t, targetParent, user, false, include, lookupReference, lookupByIdReference);
+  }
+
   /**
    * Copies the given source taxon into the dataset and under the parent of targetParent.
    * The taxon and name source instance will be modified to represent the newly generated taxon and finally persisted.
@@ -46,13 +53,13 @@ public class CatCopy {
    * @param createVerbatim if true also creates a verbatim record for the name with the verbatim name & authorship as values
    * @return the original source taxon id
    */
-  public static <T extends NameUsageBase> DSID<String> copyUsage(final SqlSession session, final T t, final DSID<String> targetParent, int user,
+  public static <T extends NameUsageBase> DSID<String> copyUsage(final SqlSession batchSession, final SqlSession session, final T t, final DSID<String> targetParent, int user,
                                                               boolean createVerbatim,
                                                               Set<EntityType> include,
                                                               Function<Reference, String> lookupReference,
                                                               Function<String, String> lookupByIdReference) {
     final DSID<String> orig = new DSIDValue<>(t);
-    copyName(session, createVerbatim, t, targetParent.getDatasetKey(), user, lookupReference);
+    copyName(batchSession, session, createVerbatim, t, targetParent.getDatasetKey(), user, lookupReference);
     
     setKeys(t, targetParent.getDatasetKey());
     t.applyUser(user, true);
@@ -67,15 +74,15 @@ public class CatCopy {
     );
     
     if (t instanceof Taxon) {
-      session.getMapper(TaxonMapper.class).create( (Taxon) t);
+      batchSession.getMapper(TaxonMapper.class).create( (Taxon) t);
     } else {
-      session.getMapper(SynonymMapper.class).create( (Synonym) t);
+      batchSession.getMapper(SynonymMapper.class).create( (Synonym) t);
     }
     
     // copy related entities
     for (EntityType type : include) {
       if (t.isTaxon() && extMapper.containsKey(type)) {
-        final TaxonExtensionMapper<DatasetScopedEntity<Integer>> mapper = (TaxonExtensionMapper<DatasetScopedEntity<Integer>>) session.getMapper(extMapper.get(type));
+        final TaxonExtensionMapper<DatasetScopedEntity<Integer>> mapper = (TaxonExtensionMapper<DatasetScopedEntity<Integer>>) batchSession.getMapper(extMapper.get(type));
         mapper.listByTaxon(orig).forEach(e -> {
           e.setId(null);
           e.setDatasetKey(targetParent.getDatasetKey());
@@ -106,13 +113,13 @@ public class CatCopy {
   /**
    * Copies the given nam instance, modifying the original and assigning a new id
    */
-  static void copyName(final SqlSession session, boolean createVerbatim, final NameUsageBase u, final int targetDatasetKey, int user,
+  static void copyName(final SqlSession batchSession, final SqlSession session, boolean createVerbatim, final NameUsageBase u, final int targetDatasetKey, int user,
                        Function<Reference, String> lookupReference) {
     Name n = u.getName();
     n.applyUser(user, true);
     n.setOrigin(Origin.SOURCE);
     if (n.getPublishedInId() != null) {
-      ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
+      ReferenceMapper rm = batchSession.getMapper(ReferenceMapper.class);
       Reference ref = rm.get(new DSIDValue(n.getDatasetKey(), n.getPublishedInId()));
       n.setPublishedInId(lookupReference.apply(ref));
     }
@@ -121,6 +128,7 @@ public class CatCopy {
       VerbatimRecordMapper vm = session.getMapper(VerbatimRecordMapper.class);
       VerbatimRecord vSrc = vm.get(DSID.vkey(n));
       VerbatimRecord v = new VerbatimRecord(vSrc);
+      v.setDatasetKey(targetDatasetKey);
       v.setType(ColdpTerm.Name);
       v.put(DwcTerm.datasetID, u.getDatasetKey().toString());
       v.put(ColdpTerm.ID, vSrc.getFirstRaw(ColdpTerm.ID, AcefTerm.ID, AcefTerm.AcceptedTaxonID, DwcTerm.taxonID, DwcaTerm.ID));
@@ -132,7 +140,7 @@ public class CatCopy {
     }
     setKeys(n, targetDatasetKey, u.getSectorKey());
     n.setVerbatimKey(vKey);
-    session.getMapper(NameMapper.class).create(n);
+    batchSession.getMapper(NameMapper.class).create(n);
   }
   
   private static NameUsageBase setKeys(NameUsageBase t, int datasetKey) {

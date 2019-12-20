@@ -21,7 +21,6 @@ import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
@@ -190,7 +189,10 @@ public class SectorSyncIT {
   }
   
   
-  
+  private void assertHasVerbatimName(NameUsage u) {
+    assertNotNull(u.getName().getVerbatimKey());
+  }
+
   @Test
   public void test1_5_6() throws Exception {
     print(Datasets.DRAFT_COL);
@@ -215,9 +217,11 @@ public class SectorSyncIT {
   
     Taxon vogelii = (Taxon) getByName(Datasets.DRAFT_COL, Rank.SUBSPECIES, "Astragalus vogelii subsp. vogelii");
     assertEquals(s1, (int) vogelii.getSectorKey());
+    assertHasVerbatimName(vogelii);
 
     Taxon sp = (Taxon) getByID(vogelii.getParentId());
     assertEquals(Origin.SOURCE, vogelii.getOrigin());
+    assertHasVerbatimName(sp);
 
     TaxonInfo ti = tdao.getTaxonInfo(sp);
 
@@ -252,7 +256,6 @@ public class SectorSyncIT {
    * https://github.com/Sp2000/colplus-backend/issues/493
    */
   @Test
-  @Ignore
   public void testDecisions() throws Exception {
     print(Datasets.DRAFT_COL);
     print(datasetKey(4, DataFormat.COLDP));

@@ -43,6 +43,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   private final SectorImport state;
   private final Map<String, EditorialDecision> decisions;
   private final SqlSession session;
+  private final SqlSession batchSession;
   private final ReferenceMapper rm;
   private final TaxonMapper tm;
   private final NameMapper nm;
@@ -61,11 +62,12 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     this.state = state;
     this.decisions = decisions;
     // we open up a separate batch session that we can write to so we do not disturb the open main cursor for processing with this handler
-    this.session = factory.openSession(ExecutorType.BATCH, false);
-    rm = session.getMapper(ReferenceMapper.class);
-    tm = session.getMapper(TaxonMapper.class);
-    nm = session.getMapper(NameMapper.class);
-    vm = session.getMapper(VerbatimRecordMapper.class);
+    batchSession = factory.openSession(ExecutorType.BATCH, false);
+    session = factory.openSession(true);
+    rm = batchSession.getMapper(ReferenceMapper.class);
+    tm = batchSession.getMapper(TaxonMapper.class);
+    nm = batchSession.getMapper(NameMapper.class);
+    vm = batchSession.getMapper(VerbatimRecordMapper.class);
     // load target taxon
     Taxon t = tm.get(sector.getTargetAsDSID());
     target = new Usage(t.getId(), t.getName().getRank(), t.getStatus());
@@ -222,7 +224,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     // copy usage with all associated information. This assigns a new id !!!
     DSID<String> orig;
     DSID<String> parentDID = new DSIDValue<>(catalogueKey, parent.id);
-    orig = CatCopy.copyUsage(session, u, parentDID, user.getKey(), true, COPY_DATA, this::lookupReference, this::lookupReference);
+    orig = CatCopy.copyUsage(batchSession, session, u, parentDID, user.getKey(), true, COPY_DATA, this::lookupReference, this::lookupReference);
     // remember old to new id mapping
     ids.put(orig.getId(), usage(u));
     // counter
@@ -235,6 +237,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     // commit in batches
     if ((sCounter + tCounter) % 1000 == 0) {
       session.commit();
+      batchSession.commit();
     }
   }
   
@@ -386,7 +389,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
         ref.setDatasetKey(catalogueKey);
         ref.setSectorKey(sector.getKey());
         ref.applyUser(user);
-        DSID<String> origID = ReferenceDao.copyReference(session, ref, catalogueKey, user.getKey());
+        DSID<String> origID = ReferenceDao.copyReference(batchSession, ref, catalogueKey, user.getKey());
         refIds.put(origID.getId(), ref.getId());
         return ref.getId();
         
@@ -406,5 +409,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   public void close() {
     session.commit();
     session.close();
+    batchSession.commit();
+    batchSession.close();
   }
 }
