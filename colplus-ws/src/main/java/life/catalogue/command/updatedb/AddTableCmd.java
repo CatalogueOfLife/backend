@@ -56,15 +56,16 @@ public class AddTableCmd extends ConfiguredCommand<WsServerConfig> {
   
   @Override
   protected void run(Bootstrap<WsServerConfig> bootstrap, Namespace namespace, WsServerConfig cfg) throws Exception {
+    String table = namespace.getString(ARG_TABLE);
     final int prompt = namespace.getInt(ARG_PROMPT);
     if (prompt > 0) {
-      System.out.format("Adding partition tables for {} in database %s on %s.\n", cfg.db.database, cfg.db.host);
+      System.out.format("Adding partition tables for %s in database %s on %s.\n", table, cfg.db.database, cfg.db.host);
       System.out.format("You have %s seconds to abort if you did not intend to do so !!!\n", prompt);
       TimeUnit.SECONDS.sleep(prompt);
     }
   
     this.cfg = cfg;
-    execute(namespace.getString(ARG_TABLE));
+    execute(table);
     System.out.println("Done !!!");
   }
   

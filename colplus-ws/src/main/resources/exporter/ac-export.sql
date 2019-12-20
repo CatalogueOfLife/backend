@@ -266,7 +266,6 @@ SELECT key AS record_id,
 
 
 -- scientific_names
--- TODO: unparsed non virus names, e.g hybrids: https://github.com/Sp2000/colplus-backend/issues/466
 COPY (
 SELECT
   tk.key AS record_id,
@@ -287,7 +286,12 @@ SELECT
   CASE WHEN n.rank > 'SPECIES'::rank THEN c.species_id ELSE NULL END AS infraspecies_parent_name_code,
   CASE WHEN n.notho='INFRASPECIFIC' THEN '×' ELSE '' END || n.infraspecific_epithet AS infraspecies,
   CASE WHEN n.rank > 'SPECIES'::rank THEN r.marker ELSE NULL END AS infraspecies_marker,  -- uses __ranks table created in AcExporter java code!
-  concat_ws(', ', n.authorship, n.remarks, n.appended_phrase) AS author,
+  CASE
+    WHEN n.type IN ('SCIENTIFIC','INFORMAL') THEN
+        coalesce(v.terms ->> 'col:authorship', concat_ws(', ', n.authorship, n.remarks, n.appended_phrase))
+    -- unparsable ones
+    ELSE NULL
+  END AS author,
   CASE WHEN t.is_synonym THEN t.parent_id ELSE t.id END AS accepted_name_code,
   t.remarks AS comment,
   t.according_to_date AS scrutiny_date,
@@ -311,6 +315,7 @@ SELECT
   0 AS has_modern
 FROM name_{{datasetKey}} n
     JOIN name_usage_{{datasetKey}} t ON n.id=t.name_id
+    LEFT JOIN verbatim_{{datasetKey}} v  ON v.id=n.verbatim_key
     LEFT JOIN __classification c  ON t.id=c.id
     LEFT JOIN __classification cs ON t.parent_id=cs.id
     LEFT JOIN __classification cf ON c.family_id=cf.id

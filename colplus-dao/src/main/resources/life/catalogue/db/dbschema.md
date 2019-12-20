@@ -15,7 +15,6 @@ and done it manually. So we can as well log changes here.
 alter type ENTITYTYPE add value 'TYPE_MATERIAL' after 'NAME_USAGE';
 alter type NAMEFIELD RENAME value 'WEBPAGE' to 'LINK';
 alter type NAMEFIELD add value 'CODE' after 'PUBLISHED_IN_PAGE';
-alter type ISSUE add value 'CODE' after 'PUBLISHED_IN_PAGE';
 
 alter type ISSUE add value 'COUNTRY_INVALID' after 'TYPE_STATUS_INVALID'; 
 alter type ISSUE add value 'ALTITUDE_INVALID' after 'TYPE_STATUS_INVALID'; 
