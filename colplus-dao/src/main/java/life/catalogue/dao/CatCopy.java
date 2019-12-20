@@ -1,6 +1,7 @@
 package life.catalogue.dao;
 
 import com.ibm.icu.text.Transliterator;
+import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Issue;
@@ -8,6 +9,9 @@ import life.catalogue.api.vocab.Origin;
 import life.catalogue.db.mapper.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
+import org.gbif.dwc.terms.AcefTerm;
+import org.gbif.dwc.terms.DwcTerm;
+import org.gbif.dwc.terms.DwcaTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,14 +43,16 @@ public class CatCopy {
    *
    * The sectorKey found on the main taxon will also be applied to associated name, reference and other copied entities.
    *
+   * @param createVerbatim if true also creates a verbatim record for the name with the verbatim name & authorship as values
    * @return the original source taxon id
    */
   public static <T extends NameUsageBase> DSID<String> copyUsage(final SqlSession session, final T t, final DSID<String> targetParent, int user,
+                                                              boolean createVerbatim,
                                                               Set<EntityType> include,
                                                               Function<Reference, String> lookupReference,
                                                               Function<String, String> lookupByIdReference) {
     final DSID<String> orig = new DSIDValue<>(t);
-    copyName(session, t, targetParent.getDatasetKey(), user, lookupReference);
+    copyName(session, createVerbatim, t, targetParent.getDatasetKey(), user, lookupReference);
     
     setKeys(t, targetParent.getDatasetKey());
     t.applyUser(user, true);
@@ -100,7 +106,7 @@ public class CatCopy {
   /**
    * Copies the given nam instance, modifying the original and assigning a new id
    */
-  static void copyName(final SqlSession session, final NameUsageBase u, final int targetDatasetKey, int user,
+  static void copyName(final SqlSession session, boolean createVerbatim, final NameUsageBase u, final int targetDatasetKey, int user,
                        Function<Reference, String> lookupReference) {
     Name n = u.getName();
     n.applyUser(user, true);
@@ -110,7 +116,22 @@ public class CatCopy {
       Reference ref = rm.get(new DSIDValue(n.getDatasetKey(), n.getPublishedInId()));
       n.setPublishedInId(lookupReference.apply(ref));
     }
+    Integer vKey = null;
+    if (createVerbatim && n.getVerbatimKey() != null) {
+      VerbatimRecordMapper vm = session.getMapper(VerbatimRecordMapper.class);
+      VerbatimRecord vSrc = vm.get(DSID.vkey(n));
+      VerbatimRecord v = new VerbatimRecord(vSrc);
+      v.setType(ColdpTerm.Name);
+      v.put(DwcTerm.datasetID, u.getDatasetKey().toString());
+      v.put(ColdpTerm.ID, vSrc.getFirstRaw(ColdpTerm.ID, AcefTerm.ID, AcefTerm.AcceptedTaxonID, DwcTerm.taxonID, DwcaTerm.ID));
+      v.put(ColdpTerm.scientificName, vSrc.getFirstRaw(ColdpTerm.scientificName, DwcTerm.scientificName));
+      v.put(ColdpTerm.authorship, vSrc.getFirstRaw(ColdpTerm.authorship, AcefTerm.InfraSpeciesAuthorString, AcefTerm.AuthorString, DwcTerm.scientificNameAuthorship));
+      v.put(ColdpTerm.rank, vSrc.getFirstRaw(ColdpTerm.rank, AcefTerm.InfraSpeciesMarker, DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank));
+      vm.create(v);
+      vKey=v.getId();
+    }
     setKeys(n, targetDatasetKey, u.getSectorKey());
+    n.setVerbatimKey(vKey);
     session.getMapper(NameMapper.class).create(n);
   }
   

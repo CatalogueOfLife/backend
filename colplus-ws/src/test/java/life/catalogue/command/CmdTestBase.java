@@ -1,11 +1,5 @@
 package life.catalogue.command;
 
-import java.io.File;
-import java.net.URL;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Optional;
-
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.io.Resources;
 import io.dropwizard.cli.Cli;
@@ -18,6 +12,12 @@ import life.catalogue.WsServerConfig;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.net.URL;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Optional;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -83,7 +83,8 @@ public abstract class CmdTestBase {
     final int N = args.length;
     args = Arrays.copyOf(args, N + 1);
     args[N] = cfg.getAbsolutePath();
-    
+
+    //System.exit(1);
     // make sure the cli run fine
     return cli.run(args);
   }

@@ -30,7 +30,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   }
   
   public static DSID<String> copyTaxon(SqlSession session, final Taxon t, final DSID<String> target, int user, Set<EntityType> include) {
-    return CatCopy.copyUsage(session, t, target, user, include, TaxonDao::devNull, TaxonDao::devNull);
+    return CatCopy.copyUsage(session, t, target, user, false, include, TaxonDao::devNull, TaxonDao::devNull);
   }
   
   public ResultPage<Taxon> listRoot(Integer datasetKey, Page page) {

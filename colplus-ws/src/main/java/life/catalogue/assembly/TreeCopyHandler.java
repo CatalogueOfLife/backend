@@ -13,6 +13,7 @@ import life.catalogue.dao.ReferenceDao;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.ReferenceMapper;
 import life.catalogue.db.mapper.TaxonMapper;
+import life.catalogue.db.mapper.VerbatimRecordMapper;
 import life.catalogue.parser.NameParser;
 import org.apache.ibatis.session.*;
 import org.gbif.nameparser.api.NameType;
@@ -45,6 +46,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   private final ReferenceMapper rm;
   private final TaxonMapper tm;
   private final NameMapper nm;
+  private final VerbatimRecordMapper vm;
   private int sCounter = 0;
   private int tCounter = 0;
   private int ignoredCounter = 0;
@@ -63,6 +65,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     rm = session.getMapper(ReferenceMapper.class);
     tm = session.getMapper(TaxonMapper.class);
     nm = session.getMapper(NameMapper.class);
+    vm = session.getMapper(VerbatimRecordMapper.class);
     // load target taxon
     Taxon t = tm.get(sector.getTargetAsDSID());
     target = new Usage(t.getId(), t.getName().getRank(), t.getStatus());
@@ -219,7 +222,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     // copy usage with all associated information. This assigns a new id !!!
     DSID<String> orig;
     DSID<String> parentDID = new DSIDValue<>(catalogueKey, parent.id);
-    orig = CatCopy.copyUsage(session, u, parentDID, user.getKey(), COPY_DATA, this::lookupReference, this::lookupReference);
+    orig = CatCopy.copyUsage(session, u, parentDID, user.getKey(), true, COPY_DATA, this::lookupReference, this::lookupReference);
     // remember old to new id mapping
     ids.put(orig.getId(), usage(u));
     // counter

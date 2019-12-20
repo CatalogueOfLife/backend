@@ -1,21 +1,21 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import life.catalogue.api.vocab.Issue;
+import org.apache.commons.text.StringEscapeUtils;
+import org.gbif.dwc.terms.Term;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.regex.Pattern;
-import javax.annotation.Nullable;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import org.apache.commons.text.StringEscapeUtils;
-import life.catalogue.api.vocab.Issue;
-import org.gbif.dwc.terms.Term;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -56,13 +56,22 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
   
   public VerbatimRecord() {
   }
-  
+
+  public VerbatimRecord(VerbatimRecord v) {
+    this(v.datasetKey, v.line, v.file, v.type);
+  }
+
   public VerbatimRecord(long line, String file, Term type) {
     this.line = line;
     this.file = file;
     this.type = type;
   }
-  
+
+  public VerbatimRecord(Integer datasetKey, long line, String file, Term type) {
+    this(line, file, type);
+    this.datasetKey = datasetKey;
+  }
+
   public Integer getId() {
     return id;
   }

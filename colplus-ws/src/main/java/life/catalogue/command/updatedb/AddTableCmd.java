@@ -10,7 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -82,15 +85,15 @@ public class AddTableCmd extends ConfiguredCommand<WsServerConfig> {
   }
 
   public static void execute(WsServerConfig cfg, String table) throws Exception {
+    final String pCreate = "CREATE TABLE %s (LIKE %s INCLUDING DEFAULTS INCLUDING CONSTRAINTS)";
+    final String pCreateIdx = "CREATE INDEX ON %s (%s)";
+    final String pCreateFk  = "ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (id)";
+    final String pAttach = "ALTER TABLE %s ATTACH PARTITION %s FOR VALUES IN ( %s )";
+
     LOG.info("Start adding partition tables for {}", table);
     try (Connection con = cfg.db.connect(cfg.db);
          Statement st = con.createStatement();
-         PreparedStatement pExists = con.prepareStatement("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_name = ?");
-         PreparedStatement pCreate = con.prepareStatement("CREATE TABLE ? (LIKE ? INCLUDING DEFAULTS INCLUDING CONSTRAINTS)");
-         PreparedStatement pCreateIdx = con.prepareStatement("CREATE INDEX ON ? (?)");
-         PreparedStatement pCreateFk  = con.prepareStatement("ALTER TABLE ? ADD CONSTRAINT ? FOREIGN KEY (?) REFERENCES ? (id)");
-         PreparedStatement pCreateFkC = con.prepareStatement("ALTER TABLE ? ADD CONSTRAINT ? FOREIGN KEY (?) REFERENCES ? (id) ON DELETE CASCADE");
-         PreparedStatement pAttach = con.prepareStatement("ALTER TABLE ? ATTACH PARTITION ? FOR VALUES IN ( ? )")
+         PreparedStatement pExists = con.prepareStatement("SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_name = ? ")
     ) {
       List<ForeignKey> fks = analyze(st, table);
 
@@ -101,29 +104,20 @@ public class AddTableCmd extends ConfiguredCommand<WsServerConfig> {
 
         } else {
           LOG.info("Create table {}", pTable);
-          pCreate.setString(1, pTable);
-          pCreate.setString(2, table);
-          pCreate.execute();
-
+          st.execute(String.format(pCreate, pTable, table));
           for (ForeignKey fk : fks) {
             // index
-            pCreateIdx.setString(1, pTable);
-            pCreateIdx.setString(2, fk.column);
-            pCreateIdx.execute();
+            st.execute(String.format(pCreateIdx, pTable, fk.column));
             // foreign key with/without cascade
-            PreparedStatement ps = fk.cascade ? pCreateFkC : pCreateFk;
-            ps.setString(1, pTable);
-            ps.setString(2, pTable+"_"+fk.column+"_fk"); // type_material_${key}_name_id_fk
-            ps.setString(3, fk.column);
-            ps.setString(4, fk.table+"_"+key);
-            ps.execute();
+            String sql = String.format(pCreateFk, pTable, pTable+"_"+fk.column+"_fk", fk.column, fk.table+"_"+key);
+            if (fk.cascade) {
+              sql = sql + " ON DELETE CASCADE";
+            }
+            st.execute(sql);
           }
 
           // attach
-          pAttach.setString(1, table);
-          pAttach.setString(2, pTable);
-          pAttach.setInt(3, key);
-          pAttach.execute();
+          st.execute(String.format(pAttach, table, pTable, key));
         }
       }
     }
