@@ -37,7 +37,7 @@ CREATE TABLE type_material (
   sector_key INTEGER,
   verbatim_key INTEGER,
   created_by INTEGER NOT NULL,
-  modified_byInitD INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   name_id TEXT NOT NULL,
