@@ -657,9 +657,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity 
    * @See NameFormatter.canonicalNameWithoutAuthorship()
    */
   public String canonicalNameWithoutAuthorship() {
-    return isParsed() ?
-        NameFormatter.buildName(toParsedName(this), true, true, false, true, true, true, false, true, true, false, false, true, true, false)
-        : scientificNameAuthorship();
+    return completeName(false, false, false);
   }
  
   /**
@@ -667,20 +665,28 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity 
    * @See NameFormatter.canonicalComplete()
    */
   public String canonicalNameWithAuthorship() {
-    return completeName(false);
+    return completeName(false, true, false);
   }
-  
+
   /**
-   * @return same as canonicalNameWithAuthorship but formatted with basic html tags
+   * Full name.
+   */
+  public String canonicalNameComplete() {
+    return completeName(false, true, true);
+  }
+
+  /**
+   * Full name.O
+   * @return same as canonicalNameComplete but formatted with basic html tags
    */
   @JsonProperty(value = "formattedName", access = JsonProperty.Access.READ_ONLY)
   public String canonicalNameCompleteHtml() {
-    return completeName(true);
+    return completeName(true, true, true);
   }
   
-  private String completeName(boolean html) {
+  private String completeName(boolean html, boolean authorship, boolean nomNote) {
     return isParsed() ?
-        NameFormatter.buildName(toParsedName(this), true, true, true, true, true, true, false, true, true, false, true, true, true, html)
+        NameFormatter.buildName(toParsedName(this), true, true, authorship, true, true, true, false, true, true, nomNote, true, true, true, html)
         : scientificNameAuthorship();
   }
   

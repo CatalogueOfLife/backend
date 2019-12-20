@@ -24,7 +24,6 @@ public interface DatasetPartitionMapper {
   List<String> SERIAL_TABLES = Lists.newArrayList(
       "verbatim",
       "name_rel",
-      "type_material",
       "description",
       "distribution",
       "media",

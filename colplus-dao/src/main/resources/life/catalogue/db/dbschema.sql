@@ -875,7 +875,7 @@ CREATE TABLE name_rel (
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE type_material (
-  id INTEGER NOT NULL,
+  id TEXT NOT NULL,
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   verbatim_key INTEGER,

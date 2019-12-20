@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import org.apache.commons.lang3.StringUtils;
+import org.gbif.nameparser.api.ParsedName;
 
 import javax.annotation.Nonnull;
 import java.net.URI;
@@ -43,7 +44,14 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   public void setVerbatimKey(Integer verbatimKey) {
     this.verbatimKey = verbatimKey;
   }
-  
+
+  @Override
+  public ParsedName toParsedName() {
+    ParsedName pn = Name.toParsedName(this.getName());
+    pn.setTaxonomicNote(accordingTo);
+    return pn;
+  }
+
   @Override
   public Name getName() {
     return name;

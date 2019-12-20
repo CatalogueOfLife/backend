@@ -3,11 +3,31 @@ package life.catalogue.api.model;
 import org.apache.commons.lang3.StringUtils;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import org.gbif.nameparser.api.ParsedName;
+import org.gbif.nameparser.util.NameFormatter;
 
 /**
  *
  */
 public interface NameUsage extends DSID<String>, VerbatimEntity {
+
+  default String getLabel() {
+    return completeName(false);
+  }
+
+  default String getLabelHtml() {
+    return completeName(true);
+  }
+
+  default ParsedName toParsedName() {
+    return Name.toParsedName(this.getName());
+  }
+
+  private String completeName(boolean html) {
+    return getName().isParsed() ?
+            NameFormatter.buildName(toParsedName(), true, true, true, true, true, true, false, true, true, true, true, true, true, html)
+            : getName().scientificNameAuthorship();
+  }
 
   Name getName();
   

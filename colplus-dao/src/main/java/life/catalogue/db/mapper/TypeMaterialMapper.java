@@ -10,7 +10,7 @@ import java.util.List;
 /**
  *
  */
-public interface TypeMaterialMapper extends CRUD<DSID<Integer>, TypeMaterial>, ProcessableDataset<TypeMaterial> {
+public interface TypeMaterialMapper extends CRUD<DSID<String>, TypeMaterial>, ProcessableDataset<TypeMaterial> {
 
 	List<TypeMaterial> listByName(@Param("key") DSID<String> key);
 

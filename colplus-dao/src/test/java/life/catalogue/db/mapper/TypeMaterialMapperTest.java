@@ -11,7 +11,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class TypeMaterialMapperTest extends CRUDTestBase<DSID<Integer>, TypeMaterial, TypeMaterialMapper> {
+public class TypeMaterialMapperTest extends CRUDTestBase<DSID<String>, TypeMaterial, TypeMaterialMapper> {
 
     public TypeMaterialMapperTest() {
         super(TypeMaterialMapper.class);

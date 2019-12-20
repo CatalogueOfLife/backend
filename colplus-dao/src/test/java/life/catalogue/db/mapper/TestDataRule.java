@@ -1,5 +1,26 @@
 package life.catalogue.db.mapper;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.zaxxer.hikari.pool.HikariProxyConnection;
+import life.catalogue.api.model.ColUser;
+import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.Origin;
+import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.common.tax.SciNameNormalizer;
+import life.catalogue.db.PgConfig;
+import life.catalogue.db.PgSetupRule;
+import life.catalogue.postgres.PgCopyUtils;
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.jdbc.ScriptRunner;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.gbif.nameparser.api.NameType;
+import org.junit.rules.ExternalResource;
+import org.postgresql.jdbc.PgConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
@@ -9,27 +30,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.zaxxer.hikari.pool.HikariProxyConnection;
-import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.jdbc.ScriptRunner;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import life.catalogue.api.model.ColUser;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.Origin;
-import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.common.tax.SciNameNormalizer;
-import life.catalogue.db.PgConfig;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.postgres.PgCopyUtils;
-import org.gbif.nameparser.api.NameType;
-import org.junit.rules.ExternalResource;
-import org.postgresql.jdbc.PgConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A junit test rule that truncates all CoL tables, potentially loads some test
@@ -80,7 +80,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     public final Integer key;
     public final Integer sciNameColumn;
     public final Integer taxStatusColumn;
-    final Set<Integer> datasetKeys;
+    public final Set<Integer> datasetKeys;
     
     TestData(Integer key, Integer sciNameColumn, Integer taxStatusColumn, Integer... datasetKeys) {
       this.key = key;

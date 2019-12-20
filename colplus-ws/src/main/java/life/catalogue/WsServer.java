@@ -16,6 +16,7 @@ import life.catalogue.api.vocab.ColDwcTerm;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.command.es.IndexCmd;
 import life.catalogue.command.initdb.InitDbCmd;
+import life.catalogue.command.updatedb.AddTableCmd;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.tax.AuthorshipNormalizer;
@@ -98,6 +99,7 @@ public class WsServer extends Application<WsServerConfig> {
     // add some cli commands not accessible via the admin interface
     bootstrap.addCommand(new InitDbCmd());
     bootstrap.addCommand(new IndexCmd());
+    bootstrap.addCommand(new AddTableCmd());
   }
 
   @Override
