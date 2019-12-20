@@ -167,7 +167,6 @@ public enum Issue {
   //
   // TYPE MATERIAL ISSUES
   //
-
   TYPE_STATUS_INVALID(TYPE_MATERIAL, Level.WARNING,
           "type status could not be interpreted"),
 
@@ -175,7 +174,7 @@ public enum Issue {
       "decimal coordinate could not be interpreted"),
 
   ALTITUDE_INVALID(TYPE_MATERIAL, Level.WARNING,
-      "decimal coordinate could not be interpreted"),
+      "altitude could not be interpreted. Should be a plain integer."),
 
   COUNTRY_INVALID(TYPE_MATERIAL, Level.WARNING,
       "decimal coordinate could not be interpreted"),

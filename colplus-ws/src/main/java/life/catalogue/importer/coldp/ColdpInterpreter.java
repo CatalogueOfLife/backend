@@ -145,8 +145,7 @@ public class ColdpInterpreter extends InterpreterBase {
     m.setCitation(rec.get(ColdpTerm.citation));
     m.setStatus(SafeParser.parse(TypeStatusParser.PARSER, rec.get(ColdpTerm.status)).orElse(TypeStatus.OTHER, Issue.TYPE_STATUS_INVALID, rec));
     m.setLocality(rec.get(ColdpTerm.locality));
-    //TODO:
-    //m.setCountry(rec.get(ColdpTerm.country));
+    m.setCountry(SafeParser.parse(CountryParser.PARSER, rec.get(ColdpTerm.country)).orNull(Issue.COUNTRY_INVALID, rec));
     m.setLatitude(decimal(rec, Issue.LAT_LON_INVALID, ColdpTerm.latitude));
     m.setLongitude(decimal(rec, Issue.LAT_LON_INVALID, ColdpTerm.longitude));
     m.setAltitude(integer(rec, Issue.ALTITUDE_INVALID, ColdpTerm.altitude));

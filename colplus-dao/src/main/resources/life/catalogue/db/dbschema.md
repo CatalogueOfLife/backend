@@ -15,6 +15,11 @@ and done it manually. So we can as well log changes here.
 alter type ENTITYTYPE add value 'TYPE_MATERIAL' after 'NAME_USAGE';
 alter type NAMEFIELD RENAME value 'WEBPAGE' to 'LINK';
 alter type NAMEFIELD add value 'CODE' after 'PUBLISHED_IN_PAGE';
+alter type ISSUE add value 'CODE' after 'PUBLISHED_IN_PAGE';
+
+alter type ISSUE add value 'COUNTRY_INVALID' after 'TYPE_STATUS_INVALID'; 
+alter type ISSUE add value 'ALTITUDE_INVALID' after 'TYPE_STATUS_INVALID'; 
+alter type ISSUE add value 'LAT_LON_INVALID' after 'TYPE_STATUS_INVALID';
 
 alter table dataset_import add column type_material_count INTEGER;
 alter table dataset_import add column type_material_by_status_count HSTORE;
@@ -28,7 +33,7 @@ alter table name_rel rename column note to remarks;
 alter table name_usage rename column webpage to link;
 
 CREATE TABLE type_material (
-  id INTEGER NOT NULL,
+  id TEXT NOT NULL,
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   verbatim_key INTEGER,
@@ -39,6 +44,14 @@ CREATE TABLE type_material (
   name_id TEXT NOT NULL,
   citation TEXT,
   status TYPESTATUS,
+  locality TEXT,
+  country TEXT,
+  latitude REAL,
+  longitude REAL,
+  altitude INTEGER,
+  host TEXT,
+  date TEXT,
+  collector TEXT,
   reference_id TEXT,
   link TEXT,
   remarks TEXT
