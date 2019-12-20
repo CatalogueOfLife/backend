@@ -11,6 +11,7 @@ import org.mapdb.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -41,11 +42,48 @@ public class ReferenceStore extends MapStore<Reference> {
             return false;
         }
         // update lookup index for title
-        String normedCit = StringUtils.digitOrAsciiLetters(r.getCitation());
-        if (normedCit != null) {
-            refIndexCitation.put(normedCit, r.getId());
-        }
+        updateCitationIndex(r);
         return true;
+    }
+
+    private String removeFromCitationIndex(Reference r){
+        if (r.getCitation() != null) {
+            String normedCit = StringUtils.digitOrAsciiLetters(r.getCitation());
+            if (normedCit != null) {
+                return refIndexCitation.remove(normedCit);
+            }
+        }
+        return null;
+    }
+
+    private void updateCitationIndex(Reference r){
+        if (r.getCitation() != null) {
+            String normedCit = StringUtils.digitOrAsciiLetters(r.getCitation());
+            if (normedCit != null) {
+                refIndexCitation.put(normedCit, r.getId());
+            }
+        }
+    }
+
+    @Override
+    public void update(Reference obj) {
+        if (contains(obj.getId())) {
+            String citationOld = get(obj.getId()).getCitation();
+            if (citationOld != null) {
+                refIndexCitation.remove(citationOld);
+            }
+        }
+        super.update(obj);
+        updateCitationIndex(obj);
+    }
+
+    @Override
+    public Reference delete(String key) {
+        Reference r = super.delete(key);
+        if (r != null) {
+            removeFromCitationIndex(r);
+        }
+        return r;
     }
 
     public Reference refByCitation(String citation) {

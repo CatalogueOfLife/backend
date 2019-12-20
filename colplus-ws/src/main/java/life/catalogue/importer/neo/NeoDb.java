@@ -966,9 +966,6 @@ public class NeoDb {
         )
     );
     LOG.info("Name/Usage ID generator updated with unique prefix {}", idGen.getPrefix());
-    // update tmp ids with unique and better prefixes
-    references.updateTmpIds();
-    typeMaterial.updateTmpIds();
   }
   
   public void reportDuplicates() {

@@ -1,7 +1,5 @@
 package life.catalogue.importer;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.lang.InterruptedRuntimeException;
@@ -44,7 +42,7 @@ public class PgImport implements Callable<Boolean> {
   private final SqlSessionFactory sessionFactory;
   private final AuthorshipNormalizer aNormalizer;
   private final Dataset dataset;
-  private final BiMap<Integer, Integer> verbatimKeys = HashBiMap.create();
+  private final Map<Integer, Integer> verbatimKeys = new HashMap<>();
   private final Set<String> proParteIds = new HashSet<>();
   private final AtomicInteger nCounter = new AtomicInteger(0);
   private final AtomicInteger tCounter = new AtomicInteger(0);
@@ -175,10 +173,31 @@ public class PgImport implements Callable<Boolean> {
     return ent;
   }
 
+  private <T extends Referenced> T updateReferenceKey(T obj){
+    if (obj.getReferenceId() != null) {
+      obj.setReferenceId(store.references().tmpIdUpdate(obj.getReferenceId()));
+    }
+    return obj;
+  }
+
+  private void updateReferenceKey(String refID, Consumer<String> setter){
+    if (refID != null) {
+      setter.accept(store.references().tmpIdUpdate(refID));
+    }
+  }
+
+  private void updateReferenceKey(List<String> refIDs){
+    if (refIDs != null) {
+      refIDs.replaceAll(r -> store.references().tmpIdUpdate(r));
+    }
+  }
+
   private void insertReferences() throws InterruptedException {
     try (final SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
       ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
       int counter = 0;
+      // update all tmp ids to nice ones
+      store.references().updateTmpIds();
       for (Reference r : store.references()) {
         r.setDatasetKey(dataset.getKey());
         updateVerbatimUserEntity(r);
@@ -207,6 +226,7 @@ public class PgImport implements Callable<Boolean> {
       store.names().all().forEach(n -> {
         n.name.setDatasetKey(dataset.getKey());
         updateVerbatimUserEntity(n.name);
+        updateReferenceKey(n.name.getPublishedInId(), n.name::setPublishedInId);
         // normalize authorship on insert - sth the DAO normally does but we use the mapper directly in batch mode
         n.name.setAuthorshipNormalized(aNormalizer.normalizeName(n.name));
         nameMapper.create(n.name);
@@ -235,6 +255,7 @@ public class PgImport implements Callable<Boolean> {
         try (Transaction tx = store.getNeo().beginTx()) {
           store.iterRelations(rt).stream().forEach(rel -> {
             NameRelation nr = store.toRelation(rel);
+            updateReferenceKey(nr.getPublishedInId(), nr::setPublishedInId);
             nameRelationMapper.create(updateUser(nr));
             if (counter.incrementAndGet() % batchSize == 0) {
               interruptIfCancelled();
@@ -252,8 +273,11 @@ public class PgImport implements Callable<Boolean> {
     try (final SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
       final TypeMaterialMapper tmm = session.getMapper(TypeMaterialMapper.class);
       LOG.debug("Inserting type material");
+      // update all tmp ids to nice ones
+      store.typeMaterial().updateTmpIds();
       for (TypeMaterial tm : store.typeMaterial()) {
         updateVerbatimUserEntity(tm);
+        updateReferenceKey(tm);
         tmm.create(tm);
         if (tmCounter.incrementAndGet() % batchSize == 0) {
           interruptIfCancelled();
@@ -290,11 +314,11 @@ public class PgImport implements Callable<Boolean> {
           NeoName nn = store.nameByUsage(n);
           updateVerbatimEntity(u);
           updateVerbatimEntity(nn);
-
           // update share props for taxon or synonym
           NameUsageBase nu = u.usage;
           nu.setName(nn.name);
           nu.setDatasetKey(dataset.getKey());
+          updateReferenceKey(nu.getReferenceIds());
           updateUser(nu);
           if (!parentIds.empty()) {
             // use parent postgres key from stack, but keep it there
@@ -330,6 +354,7 @@ public class PgImport implements Callable<Boolean> {
             // insert vernacular
             for (VernacularName vn : u.vernacularNames) {
               updateVerbatimUserEntity(vn);
+              updateReferenceKey(vn);
               vernacularMapper.create(vn, acc.getId());
               vCounter.incrementAndGet();
             }
@@ -337,6 +362,7 @@ public class PgImport implements Callable<Boolean> {
             // insert distributions
             for (Distribution d : u.distributions) {
               updateVerbatimUserEntity(d);
+              updateReferenceKey(d);
               distributionMapper.create(d, acc.getId());
               diCounter.incrementAndGet();
             }
@@ -344,6 +370,7 @@ public class PgImport implements Callable<Boolean> {
             // insert descriptions
             for (Description d : u.descriptions) {
               updateVerbatimUserEntity(d);
+              updateReferenceKey(d);
               descriptionMapper.create(d, acc.getId());
               deCounter.incrementAndGet();
             }
@@ -351,6 +378,7 @@ public class PgImport implements Callable<Boolean> {
             // insert media
             for (Media m : u.media) {
               updateVerbatimUserEntity(m);
+              updateReferenceKey(m);
               mediaMapper.create(m, acc.getId());
               mCounter.incrementAndGet();
             }

@@ -13,10 +13,7 @@ import org.mapdb.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 public class MapStore<T extends DatasetScopedEntity<String> & VerbatimEntity> implements Iterable<T>, AutoCloseable {
@@ -26,6 +23,8 @@ public class MapStore<T extends DatasetScopedEntity<String> & VerbatimEntity> im
     protected final IdGenerator idGen;
     // ID -> entity
     protected final Map<String, T> objects;
+    // tmp ids to newly generated id so that external tools know about this change
+    private final Map<String, String> tmp2ids = new HashMap<>();
     protected final BiConsumer<VerbatimEntity, Issue> addIssue;
     private final String prefPrefix;
     private final DB db;
@@ -91,6 +90,9 @@ public class MapStore<T extends DatasetScopedEntity<String> & VerbatimEntity> im
     /**
      * Switches the tmp ids created during inserts into real ones
      * generated using the preferred prefix - making sure we never clash with any source ids.
+     *
+     * It keeps the old-new ids in memory for later resolution via tmpIdUpdate(String).
+     * These are not persistent and will be gone when the store is closed !!!
      */
     public void updateTmpIds() {
         // generate a good prefix
@@ -99,17 +101,22 @@ public class MapStore<T extends DatasetScopedEntity<String> & VerbatimEntity> im
         int counter = 0;
         for (String key : objects.keySet()) {
             if (key.startsWith(TMP_PREFIX)) {
-                T obj = objects.remove(key);
-                obj.setId(idGen.next());
-                update(obj);
+                T obj = delete(key);
+                String id = idGen.next();
+                tmp2ids.put(obj.getId(), id);
+                obj.setId(id);
+                create(obj);
                 counter++;
             }
         }
         LOG.info("Updated {} tmp {} keys out of {} in total with new prefix >>{}<<", counter, entityClass.getSimpleName(), size(), idGen.getPrefix());
     }
 
-    public static void main(String[] args) {
-        System.out.println(TMP_PREFIX);
+    /**
+     * @return the final reference id if it was a temporary one, the given id otherwise
+     */
+    public String tmpIdUpdate(String id) {
+        return tmp2ids.getOrDefault(id, id);
     }
 
     @NotNull

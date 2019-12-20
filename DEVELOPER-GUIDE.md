@@ -74,12 +74,12 @@ TODO
  - listing new dependency updates: http://www.mojohaus.org/versions-maven-plugin/examples/display-dependency-updates.html
 
 ### Dropwizard
-[Dropwizard](http://www.dropwizard.io/1.1.4/docs/getting-started.html) is used both for 
+[Dropwizard](https://www.dropwizard.io/en/release-2.0.x/) is used both for 
 [terminal commands](http://www.dropwizard.io/1.1.4/docs/manual/core.html#commands) 
 and for the [JSON webservices](http://www.dropwizard.io/1.1.4/docs/manual/core.html#resources).
 
 ### MyBatis
-MyBatis is used as the persistence framework dealing with Postgres.
+MyBatis is used as the persistence framework dealing with Postgres 12.
 Understanding [MyBatis mappers](http://www.mybatis.org/mybatis-3/sqlmap-xml.html) is essential.
 
 ### Neo4j
@@ -92,7 +92,7 @@ and the [Cypher query language](https://neo4j.com/docs/developer-manual/current/
 
 ## Java Coding style
 We follow the [style guide & coding conventions by Twitter](https://github.com/twitter/commons/blob/master/src/java/com/twitter/common/styleguide.md), copied here for convenience and stability.
-All java source code should be written for **Java 8**.
+All java source code should be written for **Java 11**.
 
 ### Formatting
 
