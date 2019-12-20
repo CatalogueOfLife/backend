@@ -27,6 +27,18 @@ public class TypeMaterialMapperTest extends CRUDTestBase<DSID<String>, TypeMater
         return TestEntityGenerator.nullifyUserDate(obj);
     }
 
+    @Test
+    public void roundtrip2() throws Exception {
+        TypeMaterial u1 = createTestEntity(datasetKey);
+        mapper().create(u1);
+        commit();
+
+        removeDbCreatedProps(u1);
+        TypeMaterial u2 = removeDbCreatedProps(mapper().get(u1.getKey()));
+        printDiff(u1, u2);
+        assertEquals(u1, u2);
+    }
+
     @Override
     void updateTestObj(TypeMaterial obj) {
         obj.setStatus(TypeStatus.NEOTYPE);
@@ -45,7 +57,7 @@ public class TypeMaterialMapperTest extends CRUDTestBase<DSID<String>, TypeMater
 
         List<TypeMaterial> types2 = mapper().listByName(TestEntityGenerator.NAME1);
         TestEntityGenerator.nullifyDate(types2);
-        printDiff(types, types2);
+        //printDiff(types, types2);
         assertEquals(types, types2);
 
         // empty list, not null
