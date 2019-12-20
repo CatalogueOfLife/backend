@@ -146,8 +146,15 @@ public class ColdpInterpreter extends InterpreterBase {
     m.setStatus(SafeParser.parse(TypeStatusParser.PARSER, rec.get(ColdpTerm.status)).orElse(TypeStatus.OTHER, Issue.TYPE_STATUS_INVALID, rec));
     m.setLocality(rec.get(ColdpTerm.locality));
     m.setCountry(SafeParser.parse(CountryParser.PARSER, rec.get(ColdpTerm.country)).orNull(Issue.COUNTRY_INVALID, rec));
-    m.setLatitude(decimal(rec, Issue.LAT_LON_INVALID, ColdpTerm.latitude));
-    m.setLongitude(decimal(rec, Issue.LAT_LON_INVALID, ColdpTerm.longitude));
+    try {
+      Optional<CoordParser.LatLon> coord = CoordParser.PARSER.parse(rec.get(ColdpTerm.latitude), rec.get(ColdpTerm.longitude));
+      if (coord.isPresent()) {
+        m.setLatitude(coord.get().lat);
+        m.setLongitude(coord.get().lon);
+      }
+    } catch (UnparsableException e) {
+      rec.addIssue(Issue.LAT_LON_INVALID);
+    }
     m.setAltitude(integer(rec, Issue.ALTITUDE_INVALID, ColdpTerm.altitude));
     m.setHost(rec.get(ColdpTerm.host));
     m.setDate(rec.get(ColdpTerm.date));

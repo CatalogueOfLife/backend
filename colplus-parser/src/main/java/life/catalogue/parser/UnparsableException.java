@@ -21,9 +21,17 @@ public class UnparsableException extends Exception {
   }
   
   public UnparsableException(Class clazz, String value) {
-    super("Failed to parse >" + value + "< into " + clazz.getSimpleName());
+    super(msg(clazz, value));
   }
-  
+
+  public UnparsableException(Class clazz, String value, String message) {
+    super(msg(clazz, value) + ". " + message);
+  }
+
+  private static String msg(Class clazz, String value) {
+    return "Failed to parse >" + value + "< into " + clazz.getSimpleName();
+  }
+
   /**
    * Convenience constructor for unparsable names.
    */
