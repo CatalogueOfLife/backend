@@ -1,21 +1,17 @@
 package life.catalogue.es.name.search;
 
-import java.util.EnumSet;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-
-import life.catalogue.api.search.NameUsageSearchRequest;
-import life.catalogue.api.search.NameUsageSearchRequest.SearchContent;
-import life.catalogue.api.vocab.Issue;
-import life.catalogue.es.EsModule;
-import org.gbif.nameparser.api.Rank;
-import org.junit.Test;
-
 import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
 import static life.catalogue.api.search.NameUsageSearchParameter.ISSUE;
 import static life.catalogue.api.search.NameUsageSearchParameter.NAME_ID;
 import static life.catalogue.api.search.NameUsageSearchParameter.RANK;
 import static life.catalogue.api.search.NameUsageSearchParameter.STATUS;
+import java.util.EnumSet;
+import org.gbif.nameparser.api.Rank;
+import org.junit.Test;
+import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.api.search.NameUsageSearchRequest.SearchContent;
+import life.catalogue.api.vocab.Issue;
+import life.catalogue.es.EsModule;
 
 /*
  * No real tests here. Just to make sure we don't get exceptions & to peek at the results of specifying an aggregation
@@ -53,7 +49,7 @@ public class FacetsTranslatorTest {
 
     FacetsTranslator translator = new FacetsTranslator(request);
 
-    System.out.println(serialize(translator.translate()));
+    System.out.println(EsModule.writeDebug(translator.translate()));
 
   }
 
@@ -84,7 +80,7 @@ public class FacetsTranslatorTest {
 
     FacetsTranslator translator = new FacetsTranslator(request);
 
-    System.out.println(serialize(translator.translate()));
+    System.out.println(EsModule.writeDebug(translator.translate()));
 
   }
 
@@ -111,7 +107,7 @@ public class FacetsTranslatorTest {
 
     FacetsTranslator translator = new FacetsTranslator(request);
 
-    System.out.println(serialize(translator.translate()));
+    System.out.println(EsModule.writeDebug(translator.translate()));
 
   }
 
@@ -143,7 +139,7 @@ public class FacetsTranslatorTest {
 
     FacetsTranslator translator = new FacetsTranslator(request);
 
-    System.out.println(serialize(translator.translate()));
+    System.out.println(EsModule.writeDebug(translator.translate()));
 
   }
 
@@ -159,16 +155,9 @@ public class FacetsTranslatorTest {
 
     FacetsTranslator translator = new FacetsTranslator(request);
 
-    System.out.println(serialize(translator.translate()));
+    System.out.println(EsModule.writeDebug(translator.translate()));
 
   }
 
-  private static String serialize(Object obj) {
-    try {
-      return EsModule.writeDebug(obj);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
-  }
 
 }

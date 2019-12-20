@@ -35,7 +35,7 @@ public class RequestTranslatorTest {
 
     RequestTranslator t = new RequestTranslator(nsr, new Page());
 
-    System.out.println(EsModule.write(t.translate()));
+    System.out.println(EsModule.write(t.translateRequest()));
 
   }
 
@@ -58,7 +58,7 @@ public class RequestTranslatorTest {
 
     RequestTranslator t = new RequestTranslator(nsr, new Page());
 
-    System.out.println(EsModule.write(t.translate()));
+    System.out.println(EsModule.write(t.translateRequest()));
 
   }
 
@@ -79,7 +79,7 @@ public class RequestTranslatorTest {
 
     RequestTranslator t = new RequestTranslator(nsr, new Page());
 
-    System.out.println(EsModule.write(t.translate()));
+    System.out.println(EsModule.write(t.translateRequest()));
 
   }
 
@@ -98,7 +98,7 @@ public class RequestTranslatorTest {
 
     RequestTranslator t = new RequestTranslator(nsr, new Page());
 
-    System.out.println(EsModule.write(t.translate()));
+    System.out.println(EsModule.write(t.translateRequest()));
 
   }
 
@@ -117,7 +117,7 @@ public class RequestTranslatorTest {
 
     RequestTranslator t = new RequestTranslator(nsr, new Page());
 
-    System.out.println(EsModule.write(t.translate()));
+    System.out.println(EsModule.write(t.translateRequest()));
 
   }
 

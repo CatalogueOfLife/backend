@@ -39,7 +39,6 @@ class FilterTranslator {
     if (containsNotNullValue(param)) {
       queries.add(new IsNotNullQuery(field));
     }
-    // (Not very clever to have both, but OK)
     List<?> paramValues = getLiteralValues(param);
     if (paramValues.size() == 1) {
       queries.add(new TermQuery(field, paramValues.get(0)));

@@ -1,7 +1,7 @@
 package life.catalogue.es.name.search;
 
 import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.USAGE_ID;
+import static life.catalogue.api.search.NameUsageSearchParameter.*;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.es.query.BoolQuery;
@@ -23,7 +23,7 @@ class RequestTranslator {
       query = new BoolQuery()
           .filter(new TermQuery("usageId", usageId))
           .filter(new TermQuery("datasetKey", datasetKey));
-    } else if (request.hasFilters()) {
+    } else if (mustGenerateFilters(request)) {
       if (request.hasQ()) {
         query = new BoolQuery()
             .filter(new FiltersTranslator(request).translate())
@@ -47,7 +47,12 @@ class RequestTranslator {
     this.page = page;
   }
 
-  EsSearchRequest translate() {
+  /**
+   * Translates the NameUsageSearchRequest into a real Elasticsearch search request.
+   * 
+   * @return
+   */
+  EsSearchRequest translateRequest() {
     EsSearchRequest es = new EsSearchRequest();
     es.setFrom(page.getOffset());
     es.setSize(page.getLimit());
@@ -62,6 +67,10 @@ class RequestTranslator {
       es.setAggregations(ft.translate());
     }
     return es;
+  }
+
+  private static boolean mustGenerateFilters(NameUsageSearchRequest request) {
+    return request.getFilters().size() > 1 || (request.getFilters().size() == 1 && !request.getFilters().keySet().contains(CATALOGUE_KEY));
   }
 
 }

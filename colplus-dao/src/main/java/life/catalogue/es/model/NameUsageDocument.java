@@ -1,14 +1,14 @@
 package life.catalogue.es.model;
 
+import static life.catalogue.es.mapping.Analyzer.AUTO_COMPLETE;
+import static life.catalogue.es.mapping.Analyzer.IGNORE_CASE;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NameField;
 import life.catalogue.api.vocab.NomStatus;
@@ -19,19 +19,16 @@ import life.catalogue.es.mapping.MapToType;
 import life.catalogue.es.mapping.NotIndexed;
 import life.catalogue.es.mapping.NotMapped;
 
-import static life.catalogue.es.mapping.Analyzer.AUTO_COMPLETE;
-import static life.catalogue.es.mapping.Analyzer.IGNORE_CASE;
-
 /**
  * Class modeling the Elasticsearch document type used to store NameUsageWrapper instances.
  */
 public class NameUsageDocument {
 
   /*
-   * Elasticsearch's own id for the document. Note that this id is NOT part of the document and must therefore not be
-   * included in the document type mapping. It comes along as metadata with the search response, outside the JSON document
-   * itself. We artificially add it after deserialization of the JSON document. When indexing this field **must** be null.
-   * Since we use strict typing, Elasticsearch would complain if the field were present in the JSON document.
+   * Elasticsearch's own id for the document. Note that this id is NOT part of the document and must therefore not be included in the
+   * document type mapping. It comes along as metadata with the search response, outside the JSON document itself. We artificially add it
+   * after deserialization of the JSON document. When indexing this field **must** be null. Since we use strict typing, Elasticsearch would
+   * complain if the field were present in the JSON document.
    */
   @NotMapped
   private String documentId;
@@ -70,16 +67,18 @@ public class NameUsageDocument {
   private List<EsDecision> decisions;
 
   /*
-   * If this document represents a synonym this field contains the accepted name, otherwise it is null. Not indexed
-   * (searchable), but still placed outside the payload, so we can quickly access it in the name suggestion service.
+   * If this document represents a synonym this field contains the accepted name, otherwise it is null. Not indexed (searchable), but still
+   * placed outside the payload, so we can quickly access it in the name suggestion service.
    */
   @NotIndexed
   private String acceptedName;
+  
   /*
-   * Contains the (possibly zipped) serialization of the entire NameUsageWrapper object as we got it from postgres. This
-   * is stored as a (base64-encoded) binary field, which never is indexed (no need to mark it as such).
+   * Contains the (possibly zipped) serialization of the entire NameUsageWrapper object as we got it from postgres. This is stored as a
+   * (base64-encoded) binary field, which never is indexed (no need to mark it as such).
    */
   @MapToType(ESDataType.BINARY)
+  @NotIndexed // should not be necessary for binary datatype, but let's specify it anyway.
   private String payload;
 
   public String getDocumentId() {

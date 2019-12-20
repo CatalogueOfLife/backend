@@ -154,8 +154,12 @@ public class EsModule extends SimpleModule {
     nameUsageWriter.writeValue(out, nuw);
   }
 
-  public static String writeDebug(Object obj) throws JsonProcessingException {
-    return DEBUG_WRITER.writeValueAsString(obj);
+  public static String writeDebug(Object obj) {
+    try {
+      return DEBUG_WRITER.writeValueAsString(obj);
+    } catch (JsonProcessingException e) {
+      throw new EsException(e);
+    }
   }
 
   private static final ObjectWriter DEBUG_WRITER = configureMapper(new ObjectMapper(), false)
