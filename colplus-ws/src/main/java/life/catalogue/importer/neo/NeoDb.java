@@ -7,17 +7,14 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.io.UTF8IOUtils;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
-import life.catalogue.common.text.StringUtils;
 import life.catalogue.importer.IdGenerator;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.NodeBatchProcessor.BatchConsumer;
 import life.catalogue.importer.neo.model.*;
 import life.catalogue.importer.neo.printer.PrinterUtils;
 import life.catalogue.importer.neo.traverse.Traversals;
-import life.catalogue.importer.reference.ReferenceStore;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.gbif.dwc.terms.DwcTerm;
@@ -43,7 +40,9 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -62,34 +61,30 @@ import java.util.stream.Stream;
  * We use the Kryo library for a very performant binary
  * serialisation with the data keyed under the neo4j node value.
  */
-public class NeoDb implements ReferenceStore {
+public class NeoDb {
   private static final Logger LOG = LoggerFactory.getLogger(NeoDb.class);
 
   private final int datasetKey;
   private final int attempt;
   private final GraphDatabaseBuilder neoFactory;
   private final DB mapDb;
-  private final Atomic.Var<Dataset> dataset;
-  // ID -> REF
-  private final Map<String, Reference> references;
-  // Citation -> refID
-  private final Map<String, String> refIndexCitation;
-  // verbatimKey sequence and lookup
-  private final AtomicInteger verbatimSequence = new AtomicInteger(0);
-  private final Map<Integer, VerbatimRecord> verbatim;
-  private final AtomicInteger typeSequence = new AtomicInteger(0);
-  private final Map<Integer, TypeMaterial> typeMaterial;
-
   private final File neoDir;
   private final KryoPool pool;
   private BatchInserter inserter;
   public final int batchSize;
   public final int batchTimeout;
+
+  private final Atomic.Var<Dataset> dataset;
+  // verbatimKey sequence and lookup
+  private final AtomicInteger verbatimSequence = new AtomicInteger(0);
+  private final Map<Integer, VerbatimRecord> verbatim;
+  private final ReferenceStore references;
+  private final MapStore<TypeMaterial> typeMaterial;
   private final NeoNameStore names;
   private final NeoUsageStore usages;
 
-  private final String idGenPrefix = ".neodb.";
-  private IdGenerator idGen = new IdGenerator(idGenPrefix);
+  private final IdGenerator idGen = new IdGenerator("~");
+
   private GraphDatabaseService neo;
   private final AtomicInteger neoCounter = new AtomicInteger(0);
 
@@ -118,19 +113,9 @@ public class NeoDb implements ReferenceStore {
           .keySerializer(Serializer.INTEGER)
           .valueSerializer(new MapDbObjectSerializer(VerbatimRecord.class, pool, 128))
           .createOrOpen();
-      references = mapDb.hashMap("references")
-          .keySerializer(Serializer.STRING)
-          .valueSerializer(new MapDbObjectSerializer(Reference.class, pool, 128))
-          .createOrOpen();
-      typeMaterial= mapDb.hashMap("typeMaterial")
-              .keySerializer(Serializer.INTEGER)
-              .valueSerializer(new MapDbObjectSerializer(TypeMaterial.class, pool, 128))
-              .createOrOpen();
-      refIndexCitation = mapDb.hashMap("refIndexCitation")
-          .keySerializer(Serializer.STRING)
-          .valueSerializer(Serializer.STRING)
-          .createOrOpen();
-      
+      references = new ReferenceStore(mapDb, pool, this::addIssues);
+      typeMaterial = new MapStore<>(TypeMaterial.class, "tm", mapDb, pool, this::addIssues);
+
       openNeo();
       
       usages = new NeoUsageStore(mapDb, "usages", pool, idGen, this);
@@ -206,7 +191,15 @@ public class NeoDb implements ReferenceStore {
   public NeoCRUDStore<NeoUsage> usages() {
     return usages;
   }
-  
+
+  public ReferenceStore references() {
+    return references;
+  }
+
+  public MapStore<TypeMaterial> typeMaterial() {
+    return typeMaterial;
+  }
+
   public NeoUsage usageWithName(Node usageNode) {
     NeoUsage u = usages().objByNode(usageNode);
     if (u != null) {
@@ -215,10 +208,6 @@ public class NeoDb implements ReferenceStore {
       u.nameNode = nn.node;
     }
     return u;
-  }
-
-  public Collection<TypeMaterial> typeMaterial() {
-    return typeMaterial.values();
   }
 
   /**
@@ -496,13 +485,6 @@ public class NeoDb implements ReferenceStore {
     }
   }
 
-  public void add(TypeMaterial tm) {
-    if (tm.getNameId() == null) {
-      throw new IllegalArgumentException("nameID required");
-    }
-    typeMaterial.put(typeSequence.incrementAndGet(), tm);
-  }
-  
   /**
    * Creates a new name relation linking the 2 given name nodes.
    * The note and publishedInKey values are stored as relation propLabel
@@ -515,34 +497,6 @@ public class NeoDb implements ReferenceStore {
       Relationship r = n1.createRelationshipTo(n2, rel.getType());
       NeoDbUtils.addProperties(r, props);
     }
-  }
-  
-  /**
-   * Persists a Reference instance, creating a missing id de novo
-   */
-  public boolean create(Reference r) {
-    // create missing id
-    if (r.getId() == null) {
-      r.setId(idGen.next());
-    }
-    if (references.containsKey(r.getId())) {
-      LOG.warn("Duplicate referenceID {}", r.getId());
-      Reference prev = references.get(r.getId());
-      addIssues(prev, Issue.ID_NOT_UNIQUE);
-      addIssues(r, Issue.ID_NOT_UNIQUE);
-      return false;
-    }
-    // build default citation from csl
-    if (r.getCitation() == null && r.getCsl() != null) {
-      r.setCitation(CslUtil.buildCitation(r.getCsl()));
-    }
-    references.put(r.getId(), r);
-    // update lookup index for title
-    String normedCit = StringUtils.digitOrAsciiLetters(r.getCitation());
-    if (normedCit != null) {
-      refIndexCitation.put(normedCit, r.getId());
-    }
-    return true;
   }
   
   /**
@@ -587,38 +541,11 @@ public class NeoDb implements ReferenceStore {
       }
     }
   }
-  
-  
-  @Override
-  public Iterable<Reference> refList() {
-    return references.values();
-  }
-  
-  public Set<String> refIds() {
-    return references.keySet();
-  }
-  
+
   public Iterable<VerbatimRecord> verbatimList() {
     return verbatim.values();
   }
 
-  @Override
-  public Reference refById(String id) {
-    if (id != null) {
-      return references.getOrDefault(id, null);
-    }
-    return null;
-  }
-  
-  @Override
-  public Reference refByCitation(String citation) {
-    String normedCit = StringUtils.digitOrAsciiLetters(citation);
-    if (normedCit != null && refIndexCitation.containsKey(normedCit)) {
-      return references.get(refIndexCitation.get(normedCit));
-    }
-    return null;
-  }
-  
   public Dataset put(Dataset d) {
     // keep existing dataset key & settings
     Dataset old = dataset.get();
@@ -1030,18 +957,18 @@ public class NeoDb implements ReferenceStore {
     return new RankedUsage(u.node, nameNode, name.getScientificName(), name.authorshipComplete(), name.getRank());
   }
   
-  public void updateIdGeneratorPrefix() {
-    idGen.setPrefix(
+  public void updateIdGenerators() {
+    // just update prefix so new ids for implicit usages are good
+    idGen.setPrefix("x",
         Stream.concat(
-            refIds().stream(),
-            Stream.concat(
-                usages().allIds(),
-                names().allIds()
-            )
+            usages().allIds(),
+            names().allIds()
         )
     );
-    // TODO: update references, anything else should have source ids at this point
-    LOG.info("ID generator updated with unique prefix {}", idGen.getPrefix());
+    LOG.info("Name/Usage ID generator updated with unique prefix {}", idGen.getPrefix());
+    // update tmp ids with unique and better prefixes
+    references.updateTmpIds();
+    typeMaterial.updateTmpIds();
   }
   
   public void reportDuplicates() {

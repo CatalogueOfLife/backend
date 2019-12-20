@@ -61,7 +61,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
         assertTrue(v.getIssues().isEmpty());
       });
   
-      store.refList().forEach(r -> {
+      store.references().forEach(r -> {
         assertNotNull(r.getCitation());
         assertNotNull(r.getCsl().getTitle());
       });

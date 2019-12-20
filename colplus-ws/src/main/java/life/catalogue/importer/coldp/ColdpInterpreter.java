@@ -112,8 +112,11 @@ public class ColdpInterpreter extends InterpreterBase {
   
       NeoUsage u = NeoUsage.createSynonym(Origin.SOURCE, status);
       u.nameNode = n.node;
-      String id = v.get(ColdpTerm.taxonID) + "-" + v.getRaw(ColdpTerm.nameID);
-      u.setId(id);
+      if (v.hasTerm(ColdpTerm.ID)) {
+        u.setId(v.getRaw(ColdpTerm.ID));
+      } else {
+        u.setId(v.getRaw(ColdpTerm.taxonID) + "-" + v.getRaw(ColdpTerm.nameID));
+      }
       u.setVerbatimKey(v.getId());
   
       Synonym s = u.getSynonym();
@@ -137,6 +140,7 @@ public class ColdpInterpreter extends InterpreterBase {
 
   Optional<TypeMaterial> interpretTypeMaterial(VerbatimRecord rec) {
     TypeMaterial m = new TypeMaterial();
+    m.setId(rec.getRaw(ColdpTerm.ID));
     m.setNameId(rec.getRaw(ColdpTerm.nameID));
     m.setCitation(rec.get(ColdpTerm.citation));
     m.setStatus(SafeParser.parse(TypeStatusParser.PARSER, rec.get(ColdpTerm.status)).orElse(TypeStatus.OTHER, Issue.TYPE_STATUS_INVALID, rec));

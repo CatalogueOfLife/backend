@@ -7,8 +7,8 @@ import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.importer.neo.ReferenceStore;
 import life.catalogue.importer.reference.ReferenceFactory;
-import life.catalogue.importer.reference.ReferenceStore;
 import org.junit.Test;
 import org.mockito.Mock;
 

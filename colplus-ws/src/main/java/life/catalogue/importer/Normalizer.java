@@ -56,7 +56,7 @@ public class Normalizer implements Callable<Boolean> {
     this.sourceDir = sourceDir;
     this.store = store;
     this.dataset = store.getDataset();
-    refFactory = new ReferenceFactory(dataset.getKey(), store);
+    refFactory = new ReferenceFactory(dataset.getKey(), store.references());
     this.index = index;
     this.imgService = imgService;
   }
@@ -73,8 +73,8 @@ public class Normalizer implements Callable<Boolean> {
     try {
       // batch import verbatim records
       insertData();
-      // create new id generator being aware of existing ids
-      store.updateIdGeneratorPrefix();
+      // create new id generator being aware of existing ids we inserted up to now
+      store.updateIdGenerators();
       // insert normalizer db relations, create implicit nodes if needed and parse names
       checkIfCancelled();
       normalize();
@@ -202,8 +202,8 @@ public class Normalizer implements Callable<Boolean> {
               
             } else if (sp.name.getPublishedInId() != null && g.name.getPublishedInId() != null) {
               // compare publication years if existing
-              Reference spr = store.refById(sp.name.getPublishedInId());
-              Reference gr = store.refById(g.name.getPublishedInId());
+              Reference spr = store.references().get(sp.name.getPublishedInId());
+              Reference gr = store.references().get(g.name.getPublishedInId());
               if (spr.getYear() != null && gr.getYear() != null && spr.getYear() < gr.getYear()) {
                 store.addIssues(sp.name, Issue.PUBLISHED_BEFORE_GENUS);
               }
@@ -225,7 +225,7 @@ public class Normalizer implements Callable<Boolean> {
     // Issue.POTENTIAL_VARIANT;
     
     // verify reference truncation
-    for (Reference r : store.refList()) {
+    for (Reference r : store.references()) {
       if (NameValidator.hasUnmatchedBrackets(r.getCitation())) {
         store.addIssues(r, Issue.UNMATCHED_REFERENCE_BRACKETS);
       }

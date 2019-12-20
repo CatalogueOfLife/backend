@@ -4,6 +4,7 @@ import life.catalogue.api.model.CslName;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Reference;
 import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.importer.neo.ReferenceStore;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;

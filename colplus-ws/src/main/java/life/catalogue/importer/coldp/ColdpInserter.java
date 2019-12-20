@@ -62,7 +62,7 @@ public class ColdpInserter extends NeoInserter {
       // Links are added afterwards in other methods when a ACEF:ReferenceID field is processed by lookup to the neo store.
       insertEntities(reader, ColdpTerm.Reference,
           inter::interpretReference,
-          store::create
+          store.references()::create
       );
   
       // insert CSL-JSON references
@@ -160,7 +160,7 @@ public class ColdpInserter extends NeoInserter {
           csl.setId(id); // maybe superfluous but safe
           Reference ref = ReferenceFactory.fromCsl(datasetKey, csl);
           ref.setVerbatimKey(v.getId());
-          store.create(ref);
+          store.references().create(ref);
 
         } catch (RuntimeException e) {
           LOG.warn("Failed to convert CslDataConverter into Reference: {}", e.getMessage(), e);
@@ -201,7 +201,7 @@ public class ColdpInserter extends NeoInserter {
           }
           Reference ref = ReferenceFactory.fromCsl(datasetKey, csl);
           ref.setVerbatimKey(v.getId());
-          store.create(ref);
+          store.references().create(ref);
           
         } catch (JsonProcessingException | RuntimeException e) {
           LOG.warn("Failed to convert verbatim csl json {} into Reference: {}", v.getId(), e.getMessage(), e);

@@ -60,7 +60,7 @@ public class AcefInserter extends NeoInserter {
       // Links are added afterwards in other methods when a ACEF:ReferenceID field is processed by lookup to the neo store.
       insertEntities(reader, AcefTerm.Reference,
           inter::interpretReference,
-          store::create
+          store.references()::create
       );
       
       // species
@@ -204,7 +204,7 @@ public class AcefInserter extends NeoInserter {
     
     // lookup NeoTaxon and reference
     NeoUsage u = store.usages().objByID(taxonID);
-    Reference ref = store.refById(referenceID);
+    Reference ref = store.references().get(referenceID);
     Set<Issue> issues = EnumSet.noneOf(Issue.class);
     if (u != null && ref != null) {
       switch (refType) {

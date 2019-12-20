@@ -170,7 +170,7 @@ public class DwcInterpreter extends InterpreterBase {
         if (ref.getVerbatimKey() == null) {
           // create new reference with verbatim key, we've never seen this before!
           ref.setVerbatimKey(v.getId());
-          store.create(ref);
+          store.references().create(ref);
         }
         obj.setReferenceId(ref.getId());
       }
@@ -205,7 +205,7 @@ public class DwcInterpreter extends InterpreterBase {
           if (ref.getVerbatimKey() == null) {
             // create new reference with verbatim key, we've never seen this before!
             ref.setVerbatimKey(v.getId());
-            store.create(ref);
+            store.references().create(ref);
           }
           n.setPublishedInId(ref.getId());
           n.setPublishedInPage(ref.getPage());

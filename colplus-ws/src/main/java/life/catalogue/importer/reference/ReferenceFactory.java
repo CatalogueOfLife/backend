@@ -1,26 +1,27 @@
 package life.catalogue.importer.reference;
 
-import java.time.LocalDate;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.annotation.Nullable;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
-import org.apache.commons.lang3.CharSet;
-import org.apache.commons.lang3.StringUtils;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.importer.neo.NeoDb;
+import life.catalogue.importer.neo.ReferenceStore;
 import life.catalogue.parser.DateParser;
 import life.catalogue.parser.UnparsableException;
+import org.apache.commons.lang3.CharSet;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static life.catalogue.common.text.StringUtils.hasContent;
 
@@ -55,7 +56,7 @@ public class ReferenceFactory {
   private final ReferenceStore store;
   
   public ReferenceFactory(NeoDb db) {
-    this(db.getDataset().getKey(), db);
+    this(db.getDataset().getKey(), db.references());
   }
 
   public ReferenceFactory(Integer datasetKey, ReferenceStore store) {
@@ -69,7 +70,7 @@ public class ReferenceFactory {
   public Reference find(String id, String citation) {
     Reference r = null;
     if (!StringUtils.isBlank(id)) {
-      r = store.refById(id);
+      r = store.get(id);
     }
     if (r == null && !StringUtils.isBlank(citation)) {
       r = store.refByCitation(citation);

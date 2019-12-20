@@ -1,23 +1,23 @@
 package life.catalogue.importer.dwca;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Optional;
-
+import life.catalogue.api.model.Dataset;
+import life.catalogue.api.vocab.ColDwcTerm;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.NeoInserter;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.reference.ReferenceFactory;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.vocab.ColDwcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.DwcaTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
 
 /**
  *
@@ -86,7 +86,7 @@ public class DwcaInserter extends NeoInserter {
           inter::interpretReference,
           DwcaTerm.ID,
           (t, r) -> {
-            if (store.create(r)) {
+            if (store.references().create(r)) {
               t.usage.getReferenceIds().add(r.getId());
             } else {
           

@@ -49,7 +49,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
   public void testPublishedIn() throws Exception {
     normalize(0);
     
-    for (Reference r : store.refList()) {
+    for (Reference r : store.references()) {
       System.out.println(r);
     }
     
@@ -57,20 +57,20 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       NeoUsage trametes_modesta = usageByID("324805");
       assertFalse(trametes_modesta.isSynonym());
 
-      Reference pubIn = store.refById(trametes_modesta.usage.getName().getPublishedInId());
+      Reference pubIn = store.references().get(trametes_modesta.usage.getName().getPublishedInId());
       assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCitation());
       assertNotNull(pubIn.getId());
 
       NeoUsage Polystictus_substipitatus = usageByID("140283");
       assertTrue(Polystictus_substipitatus.isSynonym());
       assertTrue(Polystictus_substipitatus.getSynonym().getStatus().isSynonym());
-      pubIn = store.refById(Polystictus_substipitatus.usage.getName().getPublishedInId());
+      pubIn = store.references().get(Polystictus_substipitatus.usage.getName().getPublishedInId());
       assertEquals("Syll. fung. (Abellini) 21: 318 (1912)", pubIn.getCitation());
 
       NeoUsage Polyporus_modestus = usageByID("198666");
       assertTrue(Polyporus_modestus.isSynonym());
       assertTrue(Polyporus_modestus.getSynonym().getStatus().isSynonym());
-      pubIn = store.refById(Polyporus_modestus.usage.getName().getPublishedInId());
+      pubIn = store.references().get(Polyporus_modestus.usage.getName().getPublishedInId());
       assertEquals("Linnaea 5: 519 (1830)", pubIn.getCitation());
     }
   }

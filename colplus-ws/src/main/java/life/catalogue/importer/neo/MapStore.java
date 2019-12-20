@@ -1,0 +1,129 @@
+package life.catalogue.importer.neo;
+
+import com.esotericsoftware.kryo.pool.KryoPool;
+import life.catalogue.api.model.DatasetScopedEntity;
+import life.catalogue.api.model.VerbatimEntity;
+import life.catalogue.api.vocab.Issue;
+import life.catalogue.common.kryo.map.MapDbObjectSerializer;
+import life.catalogue.importer.IdGenerator;
+import org.jetbrains.annotations.NotNull;
+import org.mapdb.DB;
+import org.mapdb.HTreeMap;
+import org.mapdb.Serializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.BiConsumer;
+
+public class MapStore<T extends DatasetScopedEntity<String> & VerbatimEntity> implements Iterable<T>, AutoCloseable {
+    private static final Logger LOG = LoggerFactory.getLogger(MapStore.class);
+    private static final String TMP_PREFIX = "\u0007\u0126";
+    protected final Class<T> entityClass;
+    protected final IdGenerator idGen;
+    // ID -> entity
+    protected final Map<String, T> objects;
+    protected final BiConsumer<VerbatimEntity, Issue> addIssue;
+    private final String prefPrefix;
+    private final DB db;
+    private final KryoPool pool;
+
+    public MapStore(Class<T> entityClass, String prefPrefix, DB db, KryoPool pool, BiConsumer<VerbatimEntity, Issue> addIssue) {
+        this.db = db;
+        this.pool = pool;
+        this.prefPrefix = prefPrefix;
+        this.entityClass = entityClass;
+        this.addIssue = addIssue;
+        idGen = new IdGenerator(TMP_PREFIX);
+        objects = newMap();
+    }
+
+    private HTreeMap<String, T> newMap(){
+        return db.hashMap(entityClass.getSimpleName())
+                .keySerializer(Serializer.STRING)
+                .valueSerializer(new MapDbObjectSerializer(entityClass, pool, 128))
+                .createOrOpen();
+    }
+
+    public Collection<T> values() {
+        return objects.values();
+    }
+
+    public boolean create(T obj) {
+        // create missing id
+        if (obj.getId() == null) {
+            obj.setId(idGen.next());
+        }
+        if (objects.containsKey(obj.getId())) {
+            LOG.warn("Duplicate {} ID {}", entityClass.getSimpleName(), obj.getId());
+            T prev = objects.get(obj.getId());
+            addIssue.accept(prev, Issue.ID_NOT_UNIQUE);
+            addIssue.accept(obj, Issue.ID_NOT_UNIQUE);
+            return false;
+        }
+        objects.put(obj.getId(), obj);
+        return true;
+    }
+
+    public void update(T obj) {
+        objects.put(obj.getId(), obj);
+    }
+
+    public T delete(String key) {
+        return objects.remove(key);
+    }
+
+    public T get(String key) {
+        return objects.getOrDefault(key, null);
+    }
+
+    public boolean contains(String key) {
+        return objects.containsKey(key);
+    }
+
+    public Set<String> keys() {
+        return objects.keySet();
+    }
+
+    /**
+     * Switches the tmp ids created during inserts into real ones
+     * generated using the preferred prefix - making sure we never clash with any source ids.
+     */
+    public void updateTmpIds() {
+        // generate a good prefix
+        idGen.setPrefix(prefPrefix, objects.values().stream().map(DatasetScopedEntity::getId));
+
+        int counter = 0;
+        for (String key : objects.keySet()) {
+            if (key.startsWith(TMP_PREFIX)) {
+                T obj = objects.remove(key);
+                obj.setId(idGen.next());
+                update(obj);
+                counter++;
+            }
+        }
+        LOG.info("Updated {} tmp {} keys out of {} in total with new prefix >>{}<<", counter, entityClass.getSimpleName(), size(), idGen.getPrefix());
+    }
+
+    public static void main(String[] args) {
+        System.out.println(TMP_PREFIX);
+    }
+
+    @NotNull
+    @Override
+    public Iterator<T> iterator() {
+        return objects.values().iterator();
+    }
+
+    public int size() {
+        return objects.size();
+    }
+
+    @Override
+    public void close() throws Exception {
+        ((HTreeMap)objects).close();
+    }
+}

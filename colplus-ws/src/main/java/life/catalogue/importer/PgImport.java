@@ -179,7 +179,7 @@ public class PgImport implements Callable<Boolean> {
     try (final SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
       ReferenceMapper mapper = session.getMapper(ReferenceMapper.class);
       int counter = 0;
-      for (Reference r : store.refList()) {
+      for (Reference r : store.references()) {
         r.setDatasetKey(dataset.getKey());
         updateVerbatimUserEntity(r);
         updateUser(r);

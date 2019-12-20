@@ -216,7 +216,7 @@ public abstract class NeoInserter {
         TypeMaterial tm = opt.get();
         Node n = store.names().nodeByID(tm.getNameId());
         if (n != null) {
-          store.add(tm);
+          store.typeMaterial().create(tm);
           return true;
         }
         rec.addIssue(Issue.NAME_ID_INVALID);

@@ -1,26 +1,26 @@
 package life.catalogue.importer.neo;
 
-import java.io.IOException;
-
 import com.google.common.io.Files;
-import org.apache.commons.io.FileUtils;
+import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Reference;
+import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
-import life.catalogue.api.RandomUtils;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.VerbatimRecord;
-import life.catalogue.api.vocab.Origin;
+import org.apache.commons.io.FileUtils;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.junit.*;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Result;
 import org.neo4j.graphdb.Transaction;
+
+import java.io.IOException;
 
 import static org.junit.Assert.*;
 
@@ -236,11 +236,11 @@ public class NeoDbTest {
       // this citation has a nearly invisible cyrillic o that cannot be folded into ASCII
       Reference r = TestEntityGenerator.newReference();
       r.setCitation("Contribuciоnes al conocimiento de la flora del Gondwana Superior en la Argentina. XXXIII \"Ginkgoales\" de los Estratos de Potrerillos en la Precordillera de Mendoza.");
-      db.create(r);
+      db.references().create(r);
   
       r = TestEntityGenerator.newReference();
       r.setCitation("Mandarin:哦诶艾诶艾哦屁杰诶  Japanese:ｪｺｻｪ ｷｼｪｩｪ ｺｪｹ ｻｼ ｴｮｨｱ  Other: ወለi էዠለi   mබƖ tƕබƖ   ꀪꋬꊛ ꓄ꈚꋬꊛ");
-      db.create(r);
+      db.references().create(r);
 
       tx.success();
     }
