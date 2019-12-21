@@ -375,7 +375,7 @@ public class Dataset extends DataEntity<Integer> {
     return settings.containsKey(key);
   }
 
-  public Map<String, ?> getSettings() {
+  public Map<String, String> getSettings() {
     return settings;
   }
 

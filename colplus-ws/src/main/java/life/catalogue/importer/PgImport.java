@@ -95,27 +95,35 @@ public class PgImport implements Callable<Boolean> {
       LOG.info("Updating dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
       DatasetMapper mapper = session.getMapper(DatasetMapper.class);
       Dataset old = mapper.get(dataset.getKey());
-      copyIfNotNull(dataset::getAlias, old::setAlias);
-      copyIfNotNull(dataset::getAuthorsAndEditors, old::setAuthorsAndEditors);
-      copyIfNotNull(dataset::getCompleteness, old::setCompleteness);
-      copyIfNotNull(dataset::getConfidence, old::setConfidence);
-      copyIfNotNull(dataset::getContact, old::setContact);
-      copyIfNotNull(dataset::getDescription, old::setDescription);
-      copyIfNotNull(dataset::getGroup, old::setGroup);
-      copyIfNotNull(dataset::getLicense, old::setLicense);
-      copyIfNotNull(dataset::getOrganisations, old::setOrganisations);
-      copyIfNotNull(dataset::getReleased, old::setReleased);
-      copyIfNotNull(dataset::getTitle, old::setTitle);
-      copyIfNotNull(dataset::getType, old::setType);
-      copyIfNotNull(dataset::getVersion, old::setVersion);
-      copyIfNotNull(dataset::getWebsite, old::setWebsite);
-      
+      updateMetadata(old, dataset);
       mapper.update(old);
       session.commit();
     }
   }
+
+  /**
+   * Updates the given dataset d with the provided metadata update,
+   * retaining managed properties like keys and settings
+   */
+  public static Dataset updateMetadata(Dataset d, Dataset update) {
+    copyIfNotNull(update::getAlias, d::setAlias);
+    copyIfNotNull(update::getAuthorsAndEditors, d::setAuthorsAndEditors);
+    copyIfNotNull(update::getCompleteness, d::setCompleteness);
+    copyIfNotNull(update::getConfidence, d::setConfidence);
+    copyIfNotNull(update::getContact, d::setContact);
+    copyIfNotNull(update::getDescription, d::setDescription);
+    copyIfNotNull(update::getGroup, d::setGroup);
+    copyIfNotNull(update::getLicense, d::setLicense);
+    copyIfNotNull(update::getOrganisations, d::setOrganisations);
+    copyIfNotNull(update::getReleased, d::setReleased);
+    copyIfNotNull(update::getTitle, d::setTitle);
+    copyIfNotNull(update::getType, d::setType);
+    copyIfNotNull(update::getVersion, d::setVersion);
+    copyIfNotNull(update::getWebsite, d::setWebsite);
+    return d;
+  }
   
-  private <T> void copyIfNotNull(Supplier<T> getter, Consumer<T> setter) {
+  private static <T> void copyIfNotNull(Supplier<T> getter, Consumer<T> setter) {
     T val = getter.get();
     if (val != null) {
       setter.accept(val);

@@ -11,6 +11,7 @@ import life.catalogue.common.io.UTF8IOUtils;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
 import life.catalogue.importer.IdGenerator;
 import life.catalogue.importer.NormalizationFailedException;
+import life.catalogue.importer.PgImport;
 import life.catalogue.importer.neo.NodeBatchProcessor.BatchConsumer;
 import life.catalogue.importer.neo.model.*;
 import life.catalogue.importer.neo.printer.PrinterUtils;
@@ -179,7 +180,11 @@ public class NeoDb {
   public GraphDatabaseService getNeo() {
     return neo;
   }
-  
+
+  /**
+   * The dataset initially taken from the db, later on updated with metadata read from the archives.
+   * Dataset settings will be preserved when reading new metadata!
+   */
   public Dataset getDataset() {
     return dataset.get();
   }
@@ -550,8 +555,7 @@ public class NeoDb {
     // keep existing dataset key & settings
     Dataset old = dataset.get();
     if (old != null) {
-      d.setKey(old.getKey());
-      d.setCode(old.getCode());
+      d = PgImport.updateMetadata(old, d);
     }
     dataset.set(d);
     return d;
