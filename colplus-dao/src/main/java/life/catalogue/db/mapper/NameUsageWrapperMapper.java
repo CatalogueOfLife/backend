@@ -26,7 +26,7 @@ public interface NameUsageWrapperMapper {
 
   /**
    * Iterates over all usages for a given dataset.
-   * The returned wrapper does only include the usage and issues and no further information.
+   * The returned wrapper does only include the usage and issues related to name and usage, but no further information.
    */
   Cursor<NameUsageWrapper> processDatasetUsageOnly(@Param("datasetKey") int datasetKey,
                                                    @Param("withIssueOnly") boolean withIssueOnly);

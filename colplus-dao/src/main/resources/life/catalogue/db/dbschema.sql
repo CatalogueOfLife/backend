@@ -1028,10 +1028,17 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+CREATE OR REPLACE FUNCTION array_distinct(anyarray)
+RETURNS anyarray AS $$
+  SELECT ARRAY(SELECT DISTINCT unnest($1))
+$$ LANGUAGE sql;
+
+
 -- array_agg alternative that ignores null values
-CREATE OR REPLACE FUNCTION fn_array_agg_nonull (
+CREATE OR REPLACE FUNCTION array_agg_nonull (
     a anyarray
-    , b anyelement
+    , b anynonarray
 ) RETURNS ANYARRAY
 AS $$
 BEGIN
@@ -1042,11 +1049,31 @@ BEGIN
 END;
 $$ IMMUTABLE LANGUAGE 'plpgsql';
 
-CREATE AGGREGATE array_agg_nonull(ANYELEMENT) (
-    SFUNC = fn_array_agg_nonull,
+CREATE OR REPLACE FUNCTION array_agg_nonull (
+    a anyarray
+    , b anyarray
+) RETURNS ANYARRAY
+AS $$
+BEGIN
+    IF b IS NOT NULL THEN
+        a := array_cat(a, b);
+    END IF;
+    RETURN a;
+END;
+$$ IMMUTABLE LANGUAGE 'plpgsql';
+
+CREATE AGGREGATE array_agg_nonull(ANYNONARRAY) (
+    SFUNC = array_agg_nonull,
     STYPE = ANYARRAY,
     INITCOND = '{}'
 );
+
+CREATE AGGREGATE array_agg_nonull(ANYARRAY) (
+    SFUNC = array_agg_nonull,
+    STYPE = ANYARRAY,
+    INITCOND = '{}'
+);
+
 
 CREATE OR REPLACE FUNCTION array_reverse(anyarray) RETURNS anyarray AS $$
 SELECT ARRAY(
