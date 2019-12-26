@@ -61,6 +61,8 @@ public class AcExporter {
   private final WsServerConfig cfg;
   private final SqlSessionFactory factory;
   private life.catalogue.release.Logger logger;
+  // we only allow a single export to run at a time
+  private static boolean LOCK = false;
 
   public AcExporter(WsServerConfig cfg, SqlSessionFactory factory) {
     this.cfg = cfg;
@@ -72,8 +74,12 @@ public class AcExporter {
    */
   public File export(int catalogueKey, life.catalogue.release.Logger logger) throws IOException, SQLException, IllegalStateException {
     File expDir = new File(cfg.normalizer.scratchDir(catalogueKey), "exports");
-    LOG.info("Export catalogue {} to {}", catalogueKey, expDir.getAbsolutePath());
+    if (!aquireLock()) {
+      throw new IllegalStateException("There is a running export already");
+    }
+
     try {
+      LOG.info("Export catalogue {} to {}", catalogueKey, expDir.getAbsolutePath());
       logger.setLog(LOG);
       this.logger = logger;
       // create csv files
@@ -117,12 +123,26 @@ public class AcExporter {
         c.setAutoCommit(false);
         String sql = Resources.toString(CLEANUP_SQL);
         executeSql(c, sql);
+      } finally {
+        releaseLock();
       }
       logger.log("Export completed");
       this.logger = null;
     }
   }
-  
+
+  private static synchronized boolean aquireLock(){
+    if (!LOCK) {
+      LOCK = true;
+      return true;
+    }
+    return false;
+  }
+
+  private static synchronized void releaseLock(){
+    LOCK = false;
+  }
+
   private void exportCitations(int catalogueKey, File dir) throws IOException {
     logger.log("Export citations");
     File cf = new File(dir, "credits.ini");
