@@ -14,7 +14,6 @@ import life.catalogue.common.io.UTF8IOUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.img.ImgConfig;
 import life.catalogue.postgres.PgCopyUtils;
-import no.api.freemarker.java8.Java8ObjectWrapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -52,11 +51,12 @@ public class AcExporter {
     fmk.setClassForTemplateLoading(AcExporter.class, "/exporter");
     // see https://freemarker.apache.org/docs/pgui_quickstart_createconfiguration.html
     fmk.setDefaultEncoding("UTF-8");
+    fmk.setDateFormat("yyyy-MM-dd");
     fmk.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
     fmk.setLogTemplateExceptions(false);
     fmk.setWrapUncheckedExceptions(true);
-    // allow the use of java8 dates, see https://github.com/lazee/freemarker-java-8
-    fmk.setObjectWrapper(new Java8ObjectWrapper(freemarkerVersion));
+    // allow the use of java8 dates
+    fmk.setObjectWrapper(new LocalDateObjectWrapper(freemarkerVersion));
   }
   private final WsServerConfig cfg;
   private final SqlSessionFactory factory;

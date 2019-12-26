@@ -14,6 +14,7 @@ import org.junit.*;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -53,7 +54,9 @@ public class AcExporterTest {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       Dataset d = dm.get(Datasets.DRAFT_COL);
-      d.setCitation("Röskøv Y., Ower G., Orrell T., Nicolson D. (2019). Species 2000 & ITIS Catalogue of Life");
+      d.setAuthorsAndEditors(List.of("Röskøv Y.", "Ower G.", "Orrell T.", "Nicolson D."));
+      d.setOrganisations(List.of("Species 2000", "ITIS Catalogue of Life"));
+      d.setReleased(null);
       dm.update(d);
     }
     
@@ -75,6 +78,10 @@ public class AcExporterTest {
             "1048,1,Fír,\\N,eng,\\N,\\N,2,500,\\N,r2\n" +
             "1049,2,Weiß-Tanne,\\N,deu,\\N,\\N,3,500,\\N,r3\n" +
             "1050,2,European silver fir,\\N,eng,\\N,\\N,\\N,500,\\N,\\N", content.trim());
+
+    content = FileUtils.readFileToString(new File(check, "credits.ini"), StandardCharsets.UTF_8);
+    System.out.println(content);
+
   }
   
 }
