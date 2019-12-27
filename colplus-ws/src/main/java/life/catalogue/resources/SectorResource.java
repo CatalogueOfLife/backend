@@ -1,24 +1,15 @@
 package life.catalogue.resources;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.util.List;
-import java.util.stream.Stream;
-import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-
-import com.google.common.collect.ImmutableList;
 import io.dropwizard.auth.Auth;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.ColUser;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.ResultPage;
+import life.catalogue.api.model.Sector;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.SectorDao;
-import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.tree.DiffService;
 import life.catalogue.db.tree.NamesDiff;
@@ -27,6 +18,15 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.security.RolesAllowed;
+import javax.validation.Valid;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.stream.Stream;
 
 @Path("/sector")
 @Produces(MediaType.APPLICATION_JSON)
@@ -52,7 +52,22 @@ public class SectorResource extends AbstractDecisionResource<Sector> {
   public ResultPage<Sector> search(@Valid @BeanParam Page page, @BeanParam SectorSearchRequest req) {
     return dao.search(req, page);
   }
-  
+
+  @DELETE
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void deleteDatasetSectors(@QueryParam("datasetKey") int datasetKey,
+                                   @QueryParam("catalogueKey") @DefaultValue(Datasets.DRAFT_COL+"") int catalogueKey,
+                                   @Context SqlSession session, @Auth ColUser user) {
+    SectorMapper sm = session.getMapper(SectorMapper.class);
+    int counter = 0;
+    for (Sector s : sm.listByDataset(catalogueKey, datasetKey)) {
+      assembly.deleteSector(s.getKey(), user);
+      counter++;
+    }
+    LOG.info("Scheduled deletion of all {} sectors for dataset {} in catalogue {}", counter, datasetKey, catalogueKey);
+  }
+
+
   @DELETE
   @Override
   @Path("{key}")
@@ -60,35 +75,6 @@ public class SectorResource extends AbstractDecisionResource<Sector> {
   public void delete(@PathParam("key") Integer key, @Auth ColUser user) {
     // an asynchroneous sector deletion will be triggered which also removes catalogue data
     assembly.deleteSector(key, user);
-  }
-  
-  @DELETE
-  @Path("dataset/{key}")
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void deleteDatasetSectors(@PathParam("datasetKey") int datasetKey, @Context SqlSession session, @Auth ColUser user) {
-    SectorMapper sm = session.getMapper(SectorMapper.class);
-    int counter = 0;
-    for (Sector s : sm.listByDataset(Datasets.DRAFT_COL, datasetKey)) {
-      assembly.deleteSector(s.getKey(), user);
-      counter++;
-    }
-    LOG.info("Scheduled deletion of all {} draft sectors for dataset {}", counter, datasetKey);
-  }
-  
-  @GET
-  @Path("{key}/sync")
-  public ResultPage<SectorImport> list(@PathParam("key") int key,
-                                       @QueryParam("state") List<SectorImport.State> states,
-                                       @QueryParam("running") Boolean running,
-                                       @Valid @BeanParam Page page,
-                                       @Context SqlSession session) {
-    if (running != null) {
-      states = running ? SectorImport.runningStates() : SectorImport.finishedStates();
-    }
-    final List<SectorImport.State> immutableStates = ImmutableList.copyOf(states);
-    SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
-    List<SectorImport> imports = sim.list(key, Datasets.DRAFT_COL, null, states, page);
-    return new ResultPage<>(page, imports, () -> sim.count(key, Datasets.DRAFT_COL, null, immutableStates));
   }
   
   @GET

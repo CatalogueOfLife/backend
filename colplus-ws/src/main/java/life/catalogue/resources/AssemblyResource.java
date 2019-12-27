@@ -1,9 +1,9 @@
 package life.catalogue.resources;
 
+import com.google.common.collect.ImmutableList;
 import io.dropwizard.auth.Auth;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.Datasets;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.AssemblyState;
 import life.catalogue.common.concurrent.NamedThreadFactory;
@@ -65,7 +65,8 @@ public class AssemblyResource {
   
   @GET
   @Path("/sync")
-  public ResultPage<SectorImport> list(@QueryParam("sectorKey") Integer sectorKey,
+  public ResultPage<SectorImport> list(@PathParam("catKey") int catKey,
+                                       @QueryParam("sectorKey") Integer sectorKey,
                                        @QueryParam("datasetKey") Integer datasetKey,
                                        @QueryParam("state") List<SectorImport.State> states,
                                        @QueryParam("running") Boolean running,
@@ -74,11 +75,10 @@ public class AssemblyResource {
     if (running != null) {
       states = running ? SectorImport.runningStates() : SectorImport.finishedStates();
     }
+    final List<SectorImport.State> immutableStates = ImmutableList.copyOf(states);
     SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
-    return new ResultPage<>(page,
-        sim.count(sectorKey, Datasets.DRAFT_COL, datasetKey, states),
-        sim.list(sectorKey, Datasets.DRAFT_COL, datasetKey, states, page)
-    );
+    List<SectorImport> imports = sim.list(sectorKey, catKey, datasetKey, states, page);
+    return new ResultPage<>(page, imports, () -> sim.count(sectorKey, catKey, datasetKey, immutableStates));
   }
   
   @POST

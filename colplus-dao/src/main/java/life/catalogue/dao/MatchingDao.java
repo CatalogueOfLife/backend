@@ -1,12 +1,6 @@
 package life.catalogue.dao;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import javax.annotation.Nullable;
-
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Datasets;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import org.apache.commons.lang3.StringUtils;
@@ -14,6 +8,11 @@ import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class MatchingDao {
   private static final Logger LOG = LoggerFactory.getLogger(MatchingDao.class);
@@ -67,20 +66,26 @@ public class MatchingDao {
     return matches;
   }
 
-  public List<Taxon> matchSector(SimpleName name, int sector) {
+  /**
+   * Strictly matches a simple name to name usages from a given sector
+   */
+  public List<Taxon> matchSector(SimpleName name, Sector sector) {
     return matchSector(name.getName(), name.getAuthorship(), name.getRank(), sector);
   }
-  
-  public List<Taxon> matchSector(Name name, int sector) {
+
+  /**
+   * Strictly matches a name to name usages from a given sector
+   */
+  public List<Taxon> matchSector(Name name, Sector sector) {
     return matchSector(name.getScientificName(), name.getAuthorship(), name.getRank(), sector);
   }
 
-  private List<Taxon> matchSector(String name, @Nullable String authorship, @Nullable Rank rank, int sector) {
+  private List<Taxon> matchSector(String name, @Nullable String authorship, @Nullable Rank rank, Sector sector) {
     List<Taxon> matches = new ArrayList<>();
-    for (NameUsage u : uMapper.listByName(Datasets.DRAFT_COL, name, rank)) {
+    for (NameUsage u : uMapper.listByName(sector.getDatasetKey(), name, rank)) {
       if (u.isTaxon()) {
         Taxon t = (Taxon) u;
-        if (t.getSectorKey() != null && t.getSectorKey().equals(sector)
+        if (t.getSectorKey() != null && t.getSectorKey().equals(sector.getKey())
             && Objects.equals(StringUtils.trimToNull(authorship), StringUtils.trimToNull(u.getName().authorshipComplete()))) {
           matches.add(t);
         }

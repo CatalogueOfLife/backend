@@ -136,7 +136,7 @@ public class SectorSync extends SectorRunnable {
       
       processForeignChildren((tm, t) -> {
         Name parent = foreignChildrenParents.get(t.getId());
-        List<Taxon> matches = mdao.matchSector(parent, sector.getKey());
+        List<Taxon> matches = mdao.matchSector(parent, sector);
         if (matches.isEmpty()) {
           LOG.warn("{} with parent {} in sector {} cannot be rematched", t.getName(), parent, sector.getKey());
         } else {
@@ -169,7 +169,7 @@ public class SectorSync extends SectorRunnable {
       SectorMapper sm = session.getMapper(SectorMapper.class);
       MatchingDao mdao = new MatchingDao(session);
       for (Sector s : childSectors) {
-        List<Taxon> matches = mdao.matchSector(s.getTarget(), sector.getKey());
+        List<Taxon> matches = mdao.matchSector(s.getTarget(), sector);
         if (matches.size()==1) {
           s.getTarget().setId(matches.get(0).getId());
           

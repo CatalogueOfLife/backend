@@ -1,5 +1,20 @@
 package life.catalogue.db.tree;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
+import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.model.ImportAttempt;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.SectorImport;
+import life.catalogue.api.vocab.ImportState;
+import life.catalogue.common.io.InputStreamUtils;
+import life.catalogue.dao.NamesTreeDao;
+import life.catalogue.db.mapper.DatasetImportMapper;
+import life.catalogue.db.mapper.SectorImportMapper;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+
 import java.io.*;
 import java.util.HashSet;
 import java.util.List;
@@ -8,22 +23,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.ImportAttempt;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.SectorImport;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.ImportState;
-import life.catalogue.common.io.InputStreamUtils;
-import life.catalogue.dao.NamesTreeDao;
-import life.catalogue.db.mapper.DatasetImportMapper;
-import life.catalogue.db.mapper.SectorImportMapper;
 
 public class DiffService {
   private final SqlSessionFactory factory;
@@ -75,7 +74,7 @@ public class DiffService {
       public List<? extends ImportAttempt> get() {
         try (SqlSession session = factory.openSession(true)) {
           return session.getMapper(SectorImportMapper.class)
-              .list(sectorKey, Datasets.DRAFT_COL, null, Lists.newArrayList(SectorImport.State.FINISHED), new Page(0, 2));
+              .list(sectorKey, null, null, Lists.newArrayList(SectorImport.State.FINISHED), new Page(0, 2));
         }
       }
     });
