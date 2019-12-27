@@ -393,15 +393,3 @@ COPY (
 
 ) TO 'scientific_name_references.csv';
 
-
--- cleanup
-DROP TABLE __scrutinizer;
-DROP TABLE __ref_keys;
-DROP TABLE __tax_keys;
-DROP TABLE __classification;
-DROP TABLE __classification2;
-DROP TABLE __coverage;
-DROP TABLE __coverage2;
-DROP TABLE IF EXISTS __ranks;
-DROP SEQUENCE __record_id_seq;
-DROP SEQUENCE __unassigned_seq;

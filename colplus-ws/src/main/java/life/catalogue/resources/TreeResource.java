@@ -1,19 +1,7 @@
 package life.catalogue.resources;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-
 import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.auth.Auth;
-import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -21,9 +9,21 @@ import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.mapper.TreeMapper;
 import life.catalogue.dw.auth.Roles;
+import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.security.RolesAllowed;
+import javax.validation.Valid;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Path("/dataset/{datasetKey}/tree")
 @Produces(MediaType.APPLICATION_JSON)
@@ -87,7 +87,7 @@ public class TreeResource {
                                        @PathParam("id") String id,
                                        @QueryParam("catalogueKey") @DefaultValue(Datasets.DRAFT_COL+"") int catalogueKey,
                                        @QueryParam("insertPlaceholder") boolean insertPlaceholder,
-                                                 @Valid @BeanParam Page page, @Context SqlSession session) {
+                                       @Valid @BeanParam Page page, @Context SqlSession session) {
     TreeMapper trm = session.getMapper(TreeMapper.class);
     TaxonMapper tm = session.getMapper(TaxonMapper.class);
     Page p = page == null ? new Page(0, DEFAULT_PAGE_SIZE) : page;
@@ -106,7 +106,8 @@ public class TreeResource {
       // we *might* need a placeholder, check if there are more children of other ranks
       int allChildren = tm.countChildren(parent);
       if (allChildren > result.size()) {
-        TreeNode placeHolder = placeholder(result.get(0), allChildren-result.size());
+        TreeNode tnParent = trm.get(catalogueKey, parent);
+        TreeNode placeHolder = placeholder(tnParent, result.get(0), allChildren-result.size());
         result.add(placeHolder);
       }
     }
@@ -114,17 +115,17 @@ public class TreeResource {
   }
   
   private static TreeNode placeholder(TreeNode parent, Rank rank, int childCount){
-    return placeholder(parent, parent.getId(), rank, childCount);
+    return placeholder(parent.getDatasetKey(), parent.getSectorKey(), parent.getId(), rank, childCount);
   }
   
-  private static TreeNode placeholder(TreeNode sibling, int childCount){
-    return placeholder(sibling, sibling.getParentId(), sibling.getRank(), childCount);
+  private static TreeNode placeholder(TreeNode parent, TreeNode sibling, int childCount){
+    return placeholder(sibling.getDatasetKey(), parent.getSectorKey(), sibling.getParentId(), sibling.getRank(), childCount);
   }
   
-  private static TreeNode placeholder(TreeNode template, String parentID, Rank rank, int childCount){
+  private static TreeNode placeholder(Integer datasetKey, Integer sectorKey, String parentID, Rank rank, int childCount){
     TreeNode tn = new TreeNode();
-    tn.setDatasetKey(template.getDatasetKey());
-    tn.setSectorKey(template.getSectorKey());
+    tn.setDatasetKey(datasetKey);
+    tn.setSectorKey(sectorKey);
     tn.setId(parentID + INC_SEDIS + rank.name());
     tn.setRank(rank);
     tn.setName("Not assigned");
