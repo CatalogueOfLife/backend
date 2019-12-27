@@ -1,20 +1,11 @@
 package life.catalogue.resources;
 
-import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-
 import io.dropwizard.auth.Auth;
 import io.dropwizard.lifecycle.Managed;
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.ColUser;
 import life.catalogue.api.model.RequestScope;
-import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.io.DownloadUtil;
-import life.catalogue.dao.TaxonDao;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.es.name.index.NameUsageIndexService;
 import life.catalogue.gbifsync.GbifSync;
@@ -23,8 +14,14 @@ import life.catalogue.img.LogoUpdateJob;
 import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexImpl;
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.security.RolesAllowed;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 
 @Path("/admin")
 @Produces(MediaType.APPLICATION_JSON)
@@ -37,7 +34,6 @@ public class AdminResource {
   private final DownloadUtil downloader;
   private final WsServerConfig cfg;
   private final ImageService imgService;
-  private final TaxonDao tdao;
   private final NameUsageIndexService indexService;
   private final NameIndex ni;
   private Thread indexingThread;
@@ -48,13 +44,12 @@ public class AdminResource {
   
   
   public AdminResource(SqlSessionFactory factory, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
-                       NameUsageIndexService indexService, TaxonDao tdao, ContinuousImporter continuousImporter, GbifSync gbifSync) {
+                       NameUsageIndexService indexService, ContinuousImporter continuousImporter, GbifSync gbifSync) {
     this.factory = factory;
     this.imgService = imgService;
     this.ni = ni;
     this.cfg = cfg;
     this.downloader = downloader;
-    this.tdao = tdao;
     this.indexService = indexService;
     this.gbifSync = gbifSync;
     this.continuousImporter = continuousImporter;
@@ -117,16 +112,6 @@ public class AdminResource {
     logoThread.setDaemon(false);
     logoThread.start();
     return "Started Logo Updater";
-  }
-  
-  @POST
-  @Path("/sector-count-update")
-  public boolean updateAllSectorCounts() {
-    try (SqlSession session = factory.openSession()) {
-      tdao.updateAllSectorCounts(Datasets.DRAFT_COL, factory);
-      session.commit();
-      return true;
-    }
   }
   
   @POST

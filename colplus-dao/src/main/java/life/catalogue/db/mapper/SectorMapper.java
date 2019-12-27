@@ -8,6 +8,7 @@ import life.catalogue.db.Searchable;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public interface SectorMapper extends CRUD<Integer, Sector>, DatasetPageable<Sector>, ProcessableDataset<Sector>, Searchable<Sector, SectorSearchRequest> {
@@ -19,7 +20,7 @@ public interface SectorMapper extends CRUD<Integer, Sector>, DatasetPageable<Sec
   List<Sector> listByTarget(@Param("datasetKey") int datasetKey,
                             @Param("id") String id);
 
-  List<Sector> listByDataset(@Param("datasetKey") int datasetKey,
+  List<Sector> listByDataset(@Param("datasetKey") @Nullable Integer datasetKey,
                              @Param("subjectDatasetKey") int subjectDatasetKey);
   
   /**

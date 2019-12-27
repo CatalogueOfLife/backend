@@ -1,24 +1,23 @@
 package life.catalogue.assembly;
 
+import life.catalogue.api.model.ColUser;
+import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.SectorImport;
+import life.catalogue.dao.SectorDao;
+import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.SectorImportMapper;
+import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.es.name.index.NameUsageIndexService;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
-import life.catalogue.db.mapper.SectorImportMapper;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import life.catalogue.api.model.ColUser;
-import life.catalogue.api.model.Sector;
-import life.catalogue.api.model.SectorImport;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.dao.SectorDao;
-import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.es.name.index.NameUsageIndexService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Deletes a sector, all its data and recursively deletes also all included, nested sectors!
@@ -38,7 +37,7 @@ public class SectorDelete extends SectorRunnable {
     state.setState( SectorImport.State.DELETING);
     // do a recursive delete to make sure we have no more children
     for (Sector cs : childSectors) {
-      deleteSectorRecursively(cs.getKey());
+      deleteSectorRecursively(cs.getDatasetKey(), cs.getKey());
     }
     deleteSector(sectorKey);
     LOG.info("Deleted {} sectors in total", visitedSectors.size());
@@ -54,17 +53,17 @@ public class SectorDelete extends SectorRunnable {
     // nothing, sector is gone
   }
   
-  private void deleteSectorRecursively(final int sectorKey) {
+  private void deleteSectorRecursively(final int catalogueKey, final int sectorKey) {
     if (!visitedSectors.contains(sectorKey)) {
       Set<Integer> childSectors;
       try (SqlSession session = factory.openSession(true)) {
         SectorMapper sm = session.getMapper(SectorMapper.class);
-        childSectors = sm.listChildSectors(Datasets.DRAFT_COL, sectorKey).stream()
+        childSectors = sm.listChildSectors(catalogueKey, sectorKey).stream()
             .map(Sector::getKey)
             .collect(Collectors.toSet());
       }
       for (Integer sk : childSectors) {
-        deleteSectorRecursively(sk);
+        deleteSectorRecursively(catalogueKey, sk);
       }
   
       // ready for deletion.

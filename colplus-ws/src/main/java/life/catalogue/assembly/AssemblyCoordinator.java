@@ -5,7 +5,6 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import io.dropwizard.lifecycle.Managed;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.concurrent.ExecutorUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.NameMapper;
@@ -130,9 +129,9 @@ public class AssemblyCoordinator implements Managed {
     throw new IllegalArgumentException("Dataset empty. Cannot sync " + s);
   }
   
-  public void sync(RequestScope request, ColUser user) throws IllegalArgumentException {
+  public void sync(int catalogueKey, RequestScope request, ColUser user) throws IllegalArgumentException {
     if (request.getAll() != null && request.getAll()) {
-      syncAll(user);
+      syncAll(catalogueKey, user);
     } else {
       if (request.getSectorKey() != null) {
         syncSector(request.getSectorKey(), user);
@@ -142,7 +141,7 @@ public class AssemblyCoordinator implements Managed {
         final AtomicInteger cnt = new AtomicInteger();
         try (SqlSession session = factory.openSession(true)) {
           SectorMapper sm = session.getMapper(SectorMapper.class);
-          sm.processSectors(Datasets.DRAFT_COL, request.getDatasetKey()).forEach(s -> {
+          sm.processSectors(catalogueKey, request.getDatasetKey()).forEach(s -> {
             syncSector(s.getKey(), user);
             cnt.getAndIncrement();
           });
@@ -204,12 +203,12 @@ public class AssemblyCoordinator implements Managed {
     }
   }
   
-  private int syncAll(ColUser user) {
+  private int syncAll(int catalogueKey, ColUser user) {
     LOG.warn("Sync all sectors. Triggered by user {}", user);
     List<Sector> sectors;
     try (SqlSession session = factory.openSession(false)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
-      sectors = Iterables.asList(sm.processDataset(Datasets.DRAFT_COL));
+      sectors = Iterables.asList(sm.processDataset(catalogueKey));
     }
     sectors.sort(SECTOR_ORDER);
     int failed = 0;

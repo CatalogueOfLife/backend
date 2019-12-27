@@ -1,10 +1,10 @@
 package life.catalogue.api.search;
 
-import java.util.Objects;
-import javax.ws.rs.QueryParam;
-
 import life.catalogue.api.model.EditorialDecision;
 import org.gbif.nameparser.api.Rank;
+
+import javax.ws.rs.QueryParam;
+import java.util.Objects;
 
 public class DecisionSearchRequest {
   
@@ -35,12 +35,18 @@ public class DecisionSearchRequest {
     return req;
   }
 
+  public static DecisionSearchRequest byDataset(int subjectDatasetKey){
+    DecisionSearchRequest req = new DecisionSearchRequest();
+    req.subjectDatasetKey = subjectDatasetKey;
+    return req;
+  }
+
   public static DecisionSearchRequest byDataset(int datasetKey, int subjectDatasetKey){
     DecisionSearchRequest req = byCatalogue(datasetKey);
     req.subjectDatasetKey = subjectDatasetKey;
     return req;
   }
-  
+
   public String getId() {
     return id;
   }

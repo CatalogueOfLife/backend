@@ -1,22 +1,23 @@
 package life.catalogue.dao;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
-import life.catalogue.api.search.DecisionSearchRequest;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
+import com.google.common.base.Preconditions;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
+import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.db.mapper.EstimateMapper;
 import life.catalogue.db.mapper.SectorMapper;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 public class SubjectRematcher {
   private static final Logger LOG = LoggerFactory.getLogger(SubjectRematcher.class);
@@ -27,19 +28,22 @@ public class SubjectRematcher {
   private DecisionMapper dem;
   private EstimateMapper esm;
   private MatchingDao mdao;
-  private final int catalogueKey;
+  private final Integer catalogueKey;
   private final int userKey;
   
   private MatchCounter sectors   = new MatchCounter();
   private MatchCounter decisions = new MatchCounter();
   private MatchCounter estimates = new MatchCounter();
   private int datasets = 0;
-  
-  public SubjectRematcher(SqlSessionFactory factory, int catalogueKey, int userKey) {
+
+  public SubjectRematcher(SqlSessionFactory factory, int userKey) {
+    this(factory, null, userKey);
+  }
+
+  public SubjectRematcher(SqlSessionFactory factory, Integer catalogueKey, int userKey) {
     this.userKey = userKey;
     this.catalogueKey = catalogueKey;
     this.factory = factory;
-  
   }
   
   private void init(SqlSession session) {
@@ -89,7 +93,7 @@ public class SubjectRematcher {
   }
   
   private void matchAll(int catalogueKey) {
-    LOG.info("Rematch all sectors, decisions and estimates across all datasets");
+    LOG.info("Rematch all sectors, decisions and estimates across all datasets for catalogue {}", catalogueKey);
     Set<Integer> datasetKeys = new HashSet<>();
     Pager.sectors(catalogueKey, factory).forEach(s -> {
       datasetKeys.add(s.getSubjectDatasetKey());
@@ -123,7 +127,7 @@ public class SubjectRematcher {
         matchDataset(req.getDatasetKey());
   
       } else if (Boolean.TRUE.equals(req.getAll())) {
-        matchAll(catalogueKey);
+        matchAll(Preconditions.checkNotNull(catalogueKey, "No catalogue key given to match all subjects"));
       }
       session.commit();
     }
@@ -134,7 +138,7 @@ public class SubjectRematcher {
     LOG.info("Rematch all sector subjects in dataset {}", datasetKey);
     try(SqlSession session = factory.openSession(true)) {
       init(session);
-      for (Sector s : sm.listByDataset(catalogueKey, datasetKey)) {
+      for (Sector s : sm.listByDataset(null, datasetKey)) {
         matchSectorSubjectOnly(s);
       }
       matchDatasetDecision(datasetKey);
@@ -248,7 +252,7 @@ public class SubjectRematcher {
   
   private void matchDataset(final int datasetKey) {
     LOG.info("Rematch all sector subjects in dataset {}", datasetKey);
-    for (Sector s : sm.listByDataset(catalogueKey, datasetKey)) {
+    for (Sector s : sm.listByDataset(null, datasetKey)) {
       matchSector(s);
     }
     matchDatasetDecision(datasetKey);
@@ -257,7 +261,7 @@ public class SubjectRematcher {
   private void matchDatasetDecision(final int datasetKey) {
     LOG.info("Rematch all decision subjects in dataset {}", datasetKey);
     datasets++;
-    for (EditorialDecision d : Pager.decisions(factory, DecisionSearchRequest.byDataset(catalogueKey, datasetKey))) {
+    for (EditorialDecision d : Pager.decisions(factory, DecisionSearchRequest.byDataset(datasetKey))) {
       matchDecision(d);
     }
   }

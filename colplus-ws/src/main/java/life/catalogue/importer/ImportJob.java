@@ -1,26 +1,11 @@
 package life.catalogue.importer;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-
 import com.google.common.base.Preconditions;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.time.DurationFormatUtils;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.concurrent.StartNotifier;
 import life.catalogue.common.io.ChecksumUtils;
@@ -39,8 +24,21 @@ import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
 import life.catalogue.importer.proxy.DistributedArchiveService;
 import life.catalogue.matching.NameIndex;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * Asynchronous import job that orchestrates the entire import process including download,
@@ -224,7 +222,7 @@ public class ImportJob implements Runnable {
         indexService.indexDataset(datasetKey);
   
         LOG.info("Updating draft sectors and decisions for dataset {}", datasetKey);
-        new SubjectRematcher(factory, Datasets.DRAFT_COL, req.createdBy).matchDatasetSubjects(datasetKey);
+        new SubjectRematcher(factory, req.createdBy).matchDatasetSubjects(datasetKey);
   
         LOG.info("Dataset import {} completed in {}", datasetKey,
             DurationFormatUtils.formatDurationHMS(Duration.between(di.getStarted(), LocalDateTime.now()).toMillis()));

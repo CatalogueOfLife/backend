@@ -153,7 +153,9 @@
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
     WHERE subject_dataset_key = #{subjectDatasetKey}
+    <if test="datasetKey != null">
       AND dataset_key = #{datasetKey}
+    </if>
   </select>
 
   <delete id="deleteByDataset" parameterType="map">

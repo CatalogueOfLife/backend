@@ -1,5 +1,24 @@
 package life.catalogue.assembly;
 
+import com.google.common.base.Preconditions;
+import life.catalogue.api.model.*;
+import life.catalogue.api.search.DecisionSearchRequest;
+import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.common.util.LoggingUtils;
+import life.catalogue.dao.Pager;
+import life.catalogue.db.mapper.DecisionMapper;
+import life.catalogue.db.mapper.SectorImportMapper;
+import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.TaxonMapper;
+import life.catalogue.es.name.index.NameUsageIndexService;
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.ibatis.exceptions.PersistenceException;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -7,37 +26,10 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import com.google.common.base.Preconditions;
-
-import life.catalogue.api.search.DecisionSearchRequest;
-import life.catalogue.dao.Pager;
-import life.catalogue.db.mapper.SectorImportMapper;
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.ibatis.exceptions.PersistenceException;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import life.catalogue.api.model.ColUser;
-import life.catalogue.api.model.EditorialDecision;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.Sector;
-import life.catalogue.api.model.SectorImport;
-import life.catalogue.api.model.Taxon;
-import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.common.util.LoggingUtils;
-import life.catalogue.db.mapper.DecisionMapper;
-import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.db.mapper.TaxonMapper;
-import life.catalogue.es.name.index.NameUsageIndexService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 abstract class SectorRunnable implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorRunnable.class);
 
-  final int catalogueKey = Datasets.DRAFT_COL;
+  final int catalogueKey;
   protected final int datasetKey;
   protected final int sectorKey;
   protected Sector sector;
@@ -66,6 +58,7 @@ abstract class SectorRunnable implements Runnable {
     try (SqlSession session = factory.openSession(true)) {
       // check for existance and datasetKey - we will load the real thing for processing only when we get executed!
       sector = loadSector(false);
+      this.catalogueKey = sector.getDatasetKey();
       this.datasetKey = sector.getSubjectDatasetKey();
       // lookup next attempt
       List<SectorImport> imports = session.getMapper(SectorImportMapper.class).list(sectorKey, null, null,null, new Page(0,1));
@@ -131,7 +124,7 @@ abstract class SectorRunnable implements Runnable {
       if (s == null) {
         throw new IllegalArgumentException("Sector "+sectorKey+" does not exist");
       }
-      
+
       if (validate) {
         // assert that target actually exists. Subject might be bad - not needed for deletes!
         TaxonMapper tm = session.getMapper(TaxonMapper.class);
@@ -179,7 +172,7 @@ abstract class SectorRunnable implements Runnable {
   private void loadAttachedSectors() {
     try (SqlSession session = factory.openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
-      childSectors=sm.listChildSectors(Datasets.DRAFT_COL, sectorKey);
+      childSectors=sm.listChildSectors(catalogueKey, sectorKey);
     }
     LOG.info("Loaded {} sectors targeting taxa from sector {}", childSectors.size(), sectorKey);
   }

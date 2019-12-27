@@ -3,7 +3,6 @@ package life.catalogue.assembly;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -15,7 +14,9 @@ import life.catalogue.db.mapper.ReferenceMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.mapper.VerbatimRecordMapper;
 import life.catalogue.parser.NameParser;
-import org.apache.ibatis.session.*;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.ParsedName;
@@ -37,7 +38,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
       EntityType.REFERENCE
   );
   
-  private final int catalogueKey = Datasets.DRAFT_COL;
+  private final int catalogueKey;
   private final ColUser user;
   private final Sector sector;
   private final SectorImport state;
@@ -57,6 +58,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   private final Map<String, String> refIds = new HashMap<>();
   
   TreeCopyHandler(SqlSessionFactory factory, ColUser user, Sector sector, SectorImport state, Map<String, EditorialDecision> decisions) {
+    this.catalogueKey = sector.getDatasetKey();
     this.user = user;
     this.sector = sector;
     this.state = state;
@@ -155,7 +157,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
         }
   
         DatasetEntityDao.newKey(n);
-        n.setDatasetKey(Datasets.DRAFT_COL);
+        n.setDatasetKey(catalogueKey);
         n.setOrigin(Origin.IMPLICIT_NAME);
         n.applyUser(user);
         LOG.debug("Create implicit {} from {}: {}", r, origName.getScientificName(), n);
@@ -163,7 +165,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   
         Taxon t = new Taxon();
         DatasetEntityDao.newKey(t);
-        t.setDatasetKey(Datasets.DRAFT_COL);
+        t.setDatasetKey(catalogueKey);
         t.setName(n);
         t.setParentId(parent.id);
         t.setSectorKey(sector.getKey());

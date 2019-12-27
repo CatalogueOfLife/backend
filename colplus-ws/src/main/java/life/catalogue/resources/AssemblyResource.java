@@ -9,6 +9,7 @@ import life.catalogue.assembly.AssemblyState;
 import life.catalogue.common.concurrent.NamedThreadFactory;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.SubjectRematcher;
+import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.dw.auth.Roles;
@@ -40,18 +41,20 @@ public class AssemblyResource {
   private final AssemblyCoordinator assembly;
   private final AcExporter exporter;
   private final DatasetImportDao diDao;
+  private final TaxonDao tdao;
   private final NameUsageIndexService indexService;
   private CatalogueRelease release;
   private final SqlSessionFactory factory;
   private static final ThreadPoolExecutor RELEASE_EXEC = new ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS,
       new ArrayBlockingQueue(1), new NamedThreadFactory("col-release"), new ThreadPoolExecutor.DiscardPolicy());
   
-  public AssemblyResource(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, AssemblyCoordinator assembly, AcExporter exporter) {
+  public AssemblyResource(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, TaxonDao tdao, AssemblyCoordinator assembly, AcExporter exporter) {
     this.indexService = indexService;
     this.assembly = assembly;
     this.exporter = exporter;
     this.factory = factory;
     this.diDao = diDao;
+    this.tdao = tdao;
   }
   
   @GET
@@ -83,7 +86,7 @@ public class AssemblyResource {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void sync(@PathParam("catKey") int catKey, RequestScope request, @Auth ColUser user) {
     requireManagedNoLock(catKey);
-    assembly.sync(request, user);
+    assembly.sync(catKey, request, user);
   }
   
   @DELETE
@@ -163,8 +166,18 @@ public class AssemblyResource {
     matcher.match(req);
     return matcher;
   }
-  
-  
+
+  @POST
+  @Path("/sector-count-update")
+  public boolean updateAllSectorCounts(@PathParam("catKey") int catKey) {
+    requireManagedNoLock(catKey);
+    try (SqlSession session = factory.openSession()) {
+      tdao.updateAllSectorCounts(catKey, factory);
+      session.commit();
+      return true;
+    }
+  }
+
   private void requireManagedNoLock(int catKey) {
     requireManaged(catKey, false);
   }

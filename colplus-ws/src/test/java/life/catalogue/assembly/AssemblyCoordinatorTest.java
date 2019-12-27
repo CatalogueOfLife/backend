@@ -1,9 +1,6 @@
 package life.catalogue.assembly;
 
 import com.codahale.metrics.MetricRegistry;
-
-import life.catalogue.assembly.AssemblyCoordinator;
-import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.RequestScope;
@@ -18,6 +15,7 @@ import life.catalogue.db.mapper.DatasetMapperTest;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.TestDataRule;
 import life.catalogue.es.name.index.NameUsageIndexService;
+import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -65,7 +63,7 @@ public class AssemblyCoordinatorTest {
       sm.create(sector);
     }
 
-    coord.sync(RequestScope.sector(sector.getKey()), TestEntityGenerator.USER_EDITOR);
+    coord.sync(Datasets.DRAFT_COL, RequestScope.sector(sector.getKey()), TestEntityGenerator.USER_EDITOR);
   }
   
   @Test
@@ -88,7 +86,7 @@ public class AssemblyCoordinatorTest {
       sm.create(sector);
     }
     
-    coord.sync(RequestScope.all(), TestEntityGenerator.USER_EDITOR);
+    coord.sync(Datasets.DRAFT_COL, RequestScope.all(), TestEntityGenerator.USER_EDITOR);
   }
   
 }
