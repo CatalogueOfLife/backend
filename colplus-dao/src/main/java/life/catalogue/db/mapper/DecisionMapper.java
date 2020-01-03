@@ -11,6 +11,10 @@ import org.apache.ibatis.cursor.Cursor;
 public interface DecisionMapper extends CRUD<Integer, EditorialDecision>, DatasetPageable<EditorialDecision>,
     ProcessableDataset<EditorialDecision>, Searchable<EditorialDecision, DecisionSearchRequest> {
 
+  EditorialDecision getBySubject(@Param("datasetKey") int datasetKey,
+                      @Param("subjectDatasetKey") int subjectDatasetKey,
+                      @Param("id") String id);
+
   /**
    * Process all decisions for a given subject dataset and catalogue
    * @param datasetKey the catalogues datasetKey

@@ -141,12 +141,20 @@
     WHERE key = #{key}
   </select>
 
-  <insert id="create" parameterType="Sector" useGeneratedKeys="true" keyProperty="key">
+  <select id="getBySubject" resultMap="decisionResultMap">
+    SELECT <include refid="SELECT" />
+    FROM decision ed
+    WHERE ed.subject_dataset_key = #{subjectDatasetKey}
+      AND ed.dataset_key = #{datasetKey}
+      AND ed.subject_id = #{id}
+  </select>
+
+  <insert id="create" parameterType="EditorialDecision" useGeneratedKeys="true" keyProperty="key">
     INSERT INTO decision ( <include refid="COLS" />, created_by )
     VALUES ( <include refid="PROPS" />, #{createdBy} )
   </insert>
 
-  <update id="update" parameterType="Sector">
+  <update id="update" parameterType="EditorialDecision">
     UPDATE decision
     SET (<include refid="COLS" />) = (<include refid="PROPS" />)
     WHERE key = #{key}
@@ -167,4 +175,10 @@
     WHERE dataset_key=#{datasetKey}
   </select>
 
+  <select id="processDecisions" parameterType="map" resultMap="decisionResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="SELECT" />
+    FROM decision ed
+    WHERE subject_dataset_key = #{subjectDatasetKey}
+    AND dataset_key = #{datasetKey}
+  </select>
 </mapper>

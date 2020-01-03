@@ -1,5 +1,7 @@
 package life.catalogue.dao;
 
+import life.catalogue.api.model.EditorialDecision;
+import life.catalogue.db.mapper.DecisionMapper;
 import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.model.RematchRequest;
 import life.catalogue.api.model.Sector;
@@ -45,7 +47,17 @@ public class SubjectRematcherTest {
         new SimpleName(null, "Larus fuscus", Rank.SPECIES),
         new SimpleName(null, "Lepidoptera", Rank.ORDER)
     );
-  
+
+    int d1 = createDecision(datasetKey,
+        new SimpleName("xyz", "Larus fuscus", Rank.SPECIES)
+    );
+    int d2 = createDecision(datasetKey,
+        new SimpleName(null, "Larus fuscus", Rank.SPECIES)
+    );
+    int d3 = createDecision(datasetKey,
+        new SimpleName("null", "Larus", Rank.GENUS)
+    );
+
     SubjectRematcher rem = new SubjectRematcher(PgSetupRule.getSqlSessionFactory(), Datasets.DRAFT_COL, Users.TESTER);
     rem.matchDatasetSubjects(datasetKey);
   
@@ -53,6 +65,8 @@ public class SubjectRematcherTest {
     Sector s2b;
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
+      DecisionMapper dm = session.getMapper(DecisionMapper.class);
+
       s1b = sm.get(s1);
       assertEquals("root-1", s1b.getSubject().getId());
       assertNull(s1b.getTarget().getId());
@@ -60,6 +74,15 @@ public class SubjectRematcherTest {
       s2b = sm.get(s2);
       assertEquals("root-2", s2b.getSubject().getId());
       assertNull(s2b.getTarget().getId());
+
+      EditorialDecision d1b = dm.get(d1);
+      assertEquals("root-2", s2b.getSubject().getId());
+
+      EditorialDecision d2b = dm.get(d2);
+      assertNull(d2b.getSubject().getId());
+
+      EditorialDecision d3b = dm.get(d3);
+      assertNull(d3b.getSubject().getId());
     }
   
     rem.match(RematchRequest.all());
@@ -90,4 +113,18 @@ public class SubjectRematcherTest {
       return sector.getKey();
     }
   }
+
+  static int createDecision(int datasetKey, SimpleName src) {
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      EditorialDecision d = new EditorialDecision();
+      d.setMode(EditorialDecision.Mode.BLOCK);
+      d.setDatasetKey(Datasets.DRAFT_COL);
+      d.setSubjectDatasetKey(datasetKey);
+      d.setSubject(src);
+      d.applyUser(TestDataRule.TEST_USER);
+      session.getMapper(DecisionMapper.class).create(d);
+      return d.getKey();
+    }
+  }
+
 }

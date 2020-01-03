@@ -204,23 +204,37 @@ public class SubjectRematcher {
     return changed;
   }
 
+  private boolean checkDuplicate(EditorialDecision ed) {
+    if (ed.getSubject() != null && ed.getSubject().getId() != null) {
+      // see if we already have another decision with the same subject ID
+      EditorialDecision ed2 = dem.getBySubject(ed.getDatasetKey(), ed.getSubjectDatasetKey(), ed.getSubject().getId());
+      if (ed2 != null && !ed2.getKey().equals(ed.getKey())) {
+        LOG.warn("Decision {} seems to be a duplicate of {} for {} in catalogue {}. Keep decision {} broken", ed, ed2, ed.getSubject(), ed.getDatasetKey(), ed.getKey());
+      } else {
+        ed.getSubject().setId(null);
+      }
+    }
+    return false;
+  }
+
   private void matchDecision(EditorialDecision ed) {
     if (ed.getSubject() != null) {
+      final String idBefore = ed.getSubject().getId();
       NameUsage u = matchUniquely(ed, ed.getSubjectDatasetKey(), ed.getSubject());
-      String idBefore = ed.getSubject().getId();
       ed.getSubject().setId(u == null ? null : u.getId());
+      checkDuplicate(ed);
       if (updateCounter(decisions, idBefore, ed.getSubject().getId())) {
         dem.update(ed);
       }
     }
   }
-  
+
   private void matchEstimate(SpeciesEstimate est) {
     if (est.getTarget() != null) {
       NameUsage u = matchUniquely(est, est.getDatasetKey(), est.getTarget());
       String idBefore = est.getTarget().getId();
       est.getTarget().setId(u == null ? null : u.getId());
-      if (updateCounter(decisions, idBefore, est.getTarget().getId())) {
+      if (updateCounter(estimates, idBefore, est.getTarget().getId())) {
         esm.update(est);
       }
     }
@@ -257,11 +271,11 @@ public class SubjectRematcher {
     }
     matchDatasetDecision(datasetKey);
   }
-  
-  private void matchDatasetDecision(final int datasetKey) {
-    LOG.info("Rematch all decision subjects in dataset {}", datasetKey);
+
+  private void matchDatasetDecision(final int subjectDatasetKey) {
+    LOG.info("Rematch all decision subjects in dataset {}", subjectDatasetKey);
     datasets++;
-    for (EditorialDecision d : Pager.decisions(factory, DecisionSearchRequest.byDataset(datasetKey))) {
+    for (EditorialDecision d : Pager.decisions(factory, DecisionSearchRequest.byDataset(subjectDatasetKey))) {
       matchDecision(d);
     }
   }
