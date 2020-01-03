@@ -141,6 +141,7 @@ public class SubjectRematcher {
       for (Sector s : sm.listByDataset(null, datasetKey)) {
         matchSectorSubjectOnly(s);
       }
+      session.commit();
       matchDatasetDecision(datasetKey);
       session.commit();
     }
@@ -204,17 +205,15 @@ public class SubjectRematcher {
     return changed;
   }
 
-  private boolean checkDuplicate(EditorialDecision ed) {
+  private void clearDuplicate(EditorialDecision ed) {
     if (ed.getSubject() != null && ed.getSubject().getId() != null) {
       // see if we already have another decision with the same subject ID
       EditorialDecision ed2 = dem.getBySubject(ed.getDatasetKey(), ed.getSubjectDatasetKey(), ed.getSubject().getId());
       if (ed2 != null && !ed2.getKey().equals(ed.getKey())) {
         LOG.warn("Decision {} seems to be a duplicate of {} for {} in catalogue {}. Keep decision {} broken", ed, ed2, ed.getSubject(), ed.getDatasetKey(), ed.getKey());
-      } else {
         ed.getSubject().setId(null);
       }
     }
-    return false;
   }
 
   private void matchDecision(EditorialDecision ed) {
@@ -222,7 +221,7 @@ public class SubjectRematcher {
       final String idBefore = ed.getSubject().getId();
       NameUsage u = matchUniquely(ed, ed.getSubjectDatasetKey(), ed.getSubject());
       ed.getSubject().setId(u == null ? null : u.getId());
-      checkDuplicate(ed);
+      clearDuplicate(ed);
       if (updateCounter(decisions, idBefore, ed.getSubject().getId())) {
         dem.update(ed);
       }
