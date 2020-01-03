@@ -75,11 +75,12 @@ public class SubjectRematcherTest {
       assertEquals("root-2", s2b.getSubject().getId());
       assertNull(s2b.getTarget().getId());
 
+      // we order decisions in reverse order when searching, so last one gets matched
       EditorialDecision d1b = dm.get(d1);
-      assertEquals("root-2", s2b.getSubject().getId());
+      assertNull(d1b.getSubject().getId());
 
       EditorialDecision d2b = dm.get(d2);
-      assertNull(d2b.getSubject().getId());
+      assertEquals("root-2", d2b.getSubject().getId());
 
       EditorialDecision d3b = dm.get(d3);
       assertNull(d3b.getSubject().getId());
