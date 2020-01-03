@@ -55,7 +55,7 @@ public class SectorResource extends AbstractDecisionResource<Sector> {
 
   @DELETE
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void deleteDatasetSectors(@QueryParam("datasetKey") int datasetKey,
+  public void deleteByDataset(@QueryParam("datasetKey") int datasetKey,
                                    @QueryParam("catalogueKey") @DefaultValue(Datasets.DRAFT_COL+"") int catalogueKey,
                                    @Context SqlSession session, @Auth ColUser user) {
     SectorMapper sm = session.getMapper(SectorMapper.class);
@@ -66,7 +66,6 @@ public class SectorResource extends AbstractDecisionResource<Sector> {
     }
     LOG.info("Scheduled deletion of all {} sectors for dataset {} in catalogue {}", counter, datasetKey, catalogueKey);
   }
-
 
   @DELETE
   @Override
