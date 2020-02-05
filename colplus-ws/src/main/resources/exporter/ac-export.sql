@@ -40,7 +40,7 @@ SELECT DISTINCT ON (d.key)
  d.contact AS contact_person,
  d.group AS taxa,
  cov.coverage AS taxonomic_coverage,
- d.description AS abstract,
+ repl_ws(d.description) AS abstract,
  d.version AS version,
  coalesce(d.released, CURRENT_DATE) AS release_date,
  coalesce((i.taxa_by_rank_count -> 'SPECIES')::int, 0) AS SpeciesCount,
@@ -288,9 +288,7 @@ SELECT
   CASE WHEN n.rank > 'SPECIES'::rank THEN r.marker ELSE NULL END AS infraspecies_marker,  -- uses __ranks table created in AcExporter java code!
   CASE
     WHEN n.type IN ('SCIENTIFIC','INFORMAL') THEN
-        regexp_replace(
-            repl_ws(coalesce(v.terms ->> 'col:authorship', concat_ws(', ', n.authorship, n.remarks, n.appended_phrase)))
-        , '\\$', '');
+        repl_ws(coalesce(v.terms ->> 'col:authorship', concat_ws(', ', n.authorship, n.remarks, n.appended_phrase)))
     -- unparsable ones
     ELSE NULL
   END AS author,
