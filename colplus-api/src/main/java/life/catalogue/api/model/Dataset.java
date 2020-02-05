@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import life.catalogue.api.constraints.AbsoluteURI;
 import life.catalogue.api.constraints.NotBlank;
+import life.catalogue.api.constraints.ValidDataset;
 import life.catalogue.api.vocab.*;
 import org.gbif.nameparser.api.NomCode;
 
@@ -19,6 +20,7 @@ import java.util.*;
 /**
  * Metadata about a dataset or a subset of it if parentKey is given.
  */
+@ValidDataset
 public class Dataset extends DataEntity<Integer> {
   private Integer key;
   @NotNull
