@@ -1006,9 +1006,9 @@ $$
 LANGUAGE SQL
 IMMUTABLE;
 
--- replaces any number of carriage returns and new lines with a single space
-CREATE FUNCTION repl_nr(x text) RETURNS TEXT AS $$
-  SELECT regexp_replace(x, E'[\\n\\r]+', ' ', 'g' )
+-- replaces whitespace including tabs, carriage returns and new lines with a single space
+CREATE FUNCTION repl_ws(x text) RETURNS TEXT AS $$
+  SELECT regexp_replace(x, '\s', ' ', 'g' )
 $$
 LANGUAGE SQL
 IMMUTABLE;
