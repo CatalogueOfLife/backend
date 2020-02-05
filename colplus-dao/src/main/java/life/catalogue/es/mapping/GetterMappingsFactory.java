@@ -1,20 +1,19 @@
 package life.catalogue.es.mapping;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import static java.lang.Character.isUpperCase;
 import static java.lang.Character.toLowerCase;
 import static java.lang.reflect.Modifier.isPublic;
 import static java.lang.reflect.Modifier.isStatic;
 import static life.catalogue.es.mapping.ESDataType.NESTED;
+import static life.catalogue.es.mapping.MappingUtil.createSimpleField;
 import static life.catalogue.es.mapping.MappingUtil.isA;
 import static life.catalogue.es.mapping.MappingUtil.newAncestor;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Generates an Elasticsearch document type mapping from the getters of a {@link Class}.
@@ -47,7 +46,7 @@ class GetterMappingsFactory extends MappingsFactory {
         return createSubDocument(method, mapToType, newAncestor(ancestors, mapToType));
       }
     }
-    return MappingUtil.createSimpleField(method, esType);
+    return createSimpleField(method, esType);
   }
 
   private ComplexField createSubDocument(Method method, Class<?> mapToType, Set<Class<?>> ancestors) {

@@ -1,0 +1,86 @@
+{
+	"settings": {
+		"index": {
+			"refresh_interval": -1,
+			"max_result_window": 50000
+		},
+		"analysis": {
+			"analyzer": {
+				"ignore_case": {
+					"tokenizer": "keyword",
+					"filter": "lowercase"
+				},
+				"default_autocomplete_indextime": {
+					"tokenizer": "default_autocomplete_indextime_tokenizer",
+					"filter": [
+						"lowercase",
+						"asciifolding"
+					]
+				},
+				"default_autocomplete_querytime": {
+					"tokenizer": "lowercase",
+					"filter": [
+						"asciifolding"
+					]
+				},
+				"sciname_autocomplete_indextime": {
+					"char_filter": "sciname_char_filter",
+					"tokenizer": "sciname_autocomplete_indextime_tokenizer",
+					"filter": [
+						"lowercase",
+						"asciifolding"
+					]
+				},
+				"sciname_autocomplete_querytime": {
+					"char_filter": "sciname_char_filter",
+					"tokenizer": "sciname_autocomplete_querytime_tokenizer",
+					"filter": [
+						"lowercase",
+						"asciifolding"
+					]
+				}
+			},
+			"char_filter": {
+				"sciname_char_filter": {
+					"type": "mapping",
+					"mappings": [
+						"\\u0020( => \\u0020",
+						"( => ",
+						")\\u0020 => \\u0020",
+						") => ",
+						", => \\u0020",
+						"× => \\u0020"
+					]
+				}
+			},
+			"tokenizer": {
+				"default_autocomplete_indextime_tokenizer": {
+					"type": "edge_ngram",
+					"min_gram": 2,
+					"max_gram": 10,
+					"token_chars": [
+						"letter",
+						"digit"
+					]
+				},
+				"sciname_autocomplete_indextime_tokenizer": {
+					"type": "edge_ngram",
+					"min_gram": 2,
+					"max_gram": 10,
+					"token_chars": [
+						"letter",
+						"digit",
+						"punctuation",
+						"symbol"
+					]
+				},
+				"sciname_autocomplete_querytime_tokenizer": {
+					"type": "char_group",
+					"tokenize_on_chars": [
+						"whitespace"
+					]
+				}
+			}
+		}
+	}
+}

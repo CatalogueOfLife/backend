@@ -3,19 +3,21 @@ package life.catalogue.es.name.suggest;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.client.RestClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.api.search.NameUsageSuggestResponse;
 import life.catalogue.api.search.NameUsageSuggestion;
 import life.catalogue.es.EsException;
-import life.catalogue.es.name.NameUsageQueryService;
+import life.catalogue.es.EsUtil;
+import life.catalogue.es.mapping.Analyzer;
 import life.catalogue.es.name.NameUsageEsResponse;
+import life.catalogue.es.name.NameUsageQueryService;
 import life.catalogue.es.name.search.NameUsageSearchServiceEs;
 import life.catalogue.es.query.EsSearchRequest;
-import org.elasticsearch.client.RestClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class NameUsageSuggestionServiceEs extends NameUsageQueryService implements NameUsageSuggestionService {
 
@@ -28,7 +30,17 @@ public class NameUsageSuggestionServiceEs extends NameUsageQueryService implemen
 
   @Override
   public NameUsageSuggestResponse suggest(NameUsageSuggestRequest request) {
+    try {
+      return suggest(index, request);
+    } catch (IOException e) {
+      throw new EsException(e);
+    }
+  }
+
+  @VisibleForTesting
+  public NameUsageSuggestResponse suggest(String index, NameUsageSuggestRequest request) throws IOException {
     validateRequest(request);
+    request.setSearchTerms(EsUtil.getSearchTerms(client, index, Analyzer.SCINAME_AUTO_COMPLETE, request.getQ()));
     RequestTranslator translator = new RequestTranslator(request);
     EsSearchRequest query = translator.translate();
     NameUsageEsResponse esResponse;

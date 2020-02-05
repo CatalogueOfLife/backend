@@ -16,27 +16,23 @@ import life.catalogue.es.query.TermQuery;
 class RequestTranslator {
 
   static Query generateQuery(NameUsageSearchRequest request) {
-    Query query;
     String usageId = request.getFilterValue(USAGE_ID);
     if (usageId != null) {
       String datasetKey = request.getFilterValue(DATASET_KEY);
-      query = new BoolQuery()
+      return new BoolQuery()
           .filter(new TermQuery("usageId", usageId))
           .filter(new TermQuery("datasetKey", datasetKey));
     } else if (mustGenerateFilters(request)) {
       if (request.hasQ()) {
-        query = new BoolQuery()
+        return new BoolQuery()
             .filter(new FiltersTranslator(request).translate())
             .filter(new QTranslator(request).translate());
-      } else {
-        query = new FiltersTranslator(request).translate();
       }
+      return new FiltersTranslator(request).translate();
     } else if (request.hasQ()) {
-      query = new QTranslator(request).translate();
-    } else {
-      query = new MatchAllQuery();
+      return new QTranslator(request).translate();
     }
-    return query;
+    return new MatchAllQuery();
   }
 
   private final NameUsageSearchRequest request;

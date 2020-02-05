@@ -1,15 +1,15 @@
 package life.catalogue.es;
 
-import com.google.common.base.Joiner;
-import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.common.util.YamlUtils;
+import java.io.IOException;
+import java.util.Arrays;
 import org.apache.commons.lang3.ArrayUtils;
 import org.elasticsearch.client.RestClient;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
+import com.google.common.base.Joiner;
+import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.common.util.YamlUtils;
 
 /**
  * To be used as a ClassRule. Mainly installs/configures embedded Elasticsearch.
@@ -17,7 +17,7 @@ import java.io.IOException;
 public class EsSetupRule extends ExternalResource {
 
   // required version of elastic to work against - will be verified
-  private static final int[] ES_VERSION = new int[]{7, 4};
+  private static final int[] ES_VERSION = new int[] {7, 4};
 
   /**
    * Name of the index used by default for tests.
@@ -30,8 +30,21 @@ public class EsSetupRule extends ExternalResource {
 
   private static final Logger LOG = LoggerFactory.getLogger(EsSetupRule.class);
 
+  private final int[] esVersion;
+
   private EsConfig cfg;
   private RestClient client;
+
+  public EsSetupRule() {
+    String esVersion = System.getenv("COLPLUS_REQUIRED_ES_VERSION");
+    if (esVersion == null) {
+      esVersion = System.getProperty("COLPLUS_REQUIRED_ES_VERSION");
+      if (esVersion == null) {
+        esVersion = Joiner.on(".").join(ArrayUtils.toObject(ES_VERSION));
+      }
+    }
+    this.esVersion = Arrays.stream(esVersion.split("\\.")).mapToInt(Integer::parseInt).toArray();
+  }
 
   @Override
   protected void before() throws Throwable {
@@ -41,9 +54,9 @@ public class EsSetupRule extends ExternalResource {
     // connect and verify version
     client = new EsClientFactory(cfg).createClient();
     EsServerVersion v = EsServerVersion.getInstance(client);
-    if (!v.is(ES_VERSION)) {
+    if (!v.is(esVersion)) {
       throw new IllegalStateException("Elasticsearch is running the wrong version " + v.getVersionString() +
-              ". Expecting " + Joiner.on(".").join(ArrayUtils.toObject(ES_VERSION)));
+          ". Expecting " + Joiner.on(".").join(ArrayUtils.toObject(esVersion)));
     }
     LOG.info("Using Elasticsearch {} on {}:{}", v.getVersionString(), cfg.hosts, cfg.ports);
   }

@@ -8,6 +8,7 @@ public class AutoCompleteQuery extends AbstractMatchQuery {
     super(field, value);
   }
 
+  @Override
   protected String getField(String field) {
     return field + "." + MultiField.AUTO_COMPLETE.getName();
   }

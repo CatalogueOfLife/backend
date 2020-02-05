@@ -1,9 +1,7 @@
 package life.catalogue.api.search;
 
 import java.util.Objects;
-
 import javax.ws.rs.QueryParam;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class NameUsageSuggestRequest {
@@ -16,6 +14,8 @@ public class NameUsageSuggestRequest {
   private Boolean vernaculars;
   @QueryParam("limit")
   private Integer limit; // Desired number of suggestions
+
+  private String[] searchTerms;
 
   @JsonIgnore
   public boolean suggestVernaculars() {
@@ -52,6 +52,15 @@ public class NameUsageSuggestRequest {
 
   public void setLimit(Integer limit) {
     this.limit = limit;
+  }
+
+  @JsonIgnore
+  public String[] getSearchTerms() {
+    return searchTerms;
+  }
+
+  public void setSearchTerms(String[] searchTerms) {
+    this.searchTerms = searchTerms;
   }
 
   @Override

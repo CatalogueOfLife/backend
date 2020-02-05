@@ -57,6 +57,8 @@ public class NameUsageSearchRequest {
   @QueryParam("reverse")
   private boolean reverse;
 
+  private String[] searchTerms;
+
   public NameUsageSearchRequest() {}
 
   /**
@@ -265,6 +267,15 @@ public class NameUsageSearchRequest {
 
   public void setReverse(boolean reverse) {
     this.reverse = reverse;
+  }
+
+  @JsonIgnore
+  public String[] getSearchTerms() {
+    return searchTerms;
+  }
+
+  public void setSearchTerms(String[] searchTerms) {
+    this.searchTerms = searchTerms;
   }
 
   @JsonIgnore
