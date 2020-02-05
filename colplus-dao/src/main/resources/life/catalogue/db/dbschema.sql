@@ -1006,6 +1006,12 @@ $$
 LANGUAGE SQL
 IMMUTABLE;
 
+-- replaces any number of carriage returns and new lines with a single space
+CREATE FUNCTION repl_nr(x text) RETURNS TEXT AS $$
+  SELECT regexp_replace(x, E'[\\n\\r]+', ' ', 'g' )
+$$
+LANGUAGE SQL
+IMMUTABLE;
 
 -- tries to gracely convert text to ints, swallowing exceptions and using null instead
 CREATE OR REPLACE FUNCTION parseInt(v_value text) RETURNS INTEGER AS $$
