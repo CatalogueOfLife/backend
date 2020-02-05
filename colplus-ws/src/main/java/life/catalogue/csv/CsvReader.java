@@ -1,17 +1,5 @@
 package life.catalogue.csv;
 
-import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-import javax.annotation.Nullable;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
@@ -26,18 +14,33 @@ import com.univocity.parsers.common.ResultIterator;
 import com.univocity.parsers.common.TextParsingException;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
-import life.catalogue.config.NormalizerConfig;
-import life.catalogue.importer.MappingFlags;
-import life.catalogue.importer.NormalizationFailedException;
-import org.apache.commons.lang3.StringUtils;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.common.io.CharsetDetectingStream;
 import life.catalogue.common.io.PathUtils;
+import life.catalogue.config.NormalizerConfig;
+import life.catalogue.importer.MappingFlags;
+import life.catalogue.importer.NormalizationFailedException;
+import org.apache.commons.lang3.StringUtils;
 import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.StringReader;
+import java.nio.charset.Charset;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * A reader giving access to a set of delimited text files in a folder
@@ -494,6 +497,7 @@ public class CsvReader {
     private final Schema s;
     private final int maxIdx;
     private final String filename;
+    private int skipped;
     private String[] row;
     
     TermRecIterator(Schema schema) throws IOException {
@@ -531,10 +535,12 @@ public class CsvReader {
         // ignore this row, dont log
       } else if (row.length < maxIdx + 1) {
         if (log) {
+          skipped++;
           LOG.info("{} skip line {} with too few columns (found {}, expected {})", filename, iter.getContext().currentLine(), row.length, maxIdx + 1);
         }
       } else if (isAllNull(row)) {
         if (log) {
+          skipped++;
           LOG.debug("{} skip line {} with only empty columns", filename, iter.getContext().currentLine());
         }
       } else {
@@ -542,7 +548,11 @@ public class CsvReader {
       }
       return true;
     }
-    
+
+    public int getSkipped() {
+      return skipped;
+    }
+
     @Override
     public VerbatimRecord next() {
       VerbatimRecord tr = new VerbatimRecord(iter.getContext().currentLine() - 1, filename, s.rowType);
