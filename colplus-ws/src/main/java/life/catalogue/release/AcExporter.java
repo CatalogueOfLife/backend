@@ -41,7 +41,7 @@ public class AcExporter {
   private static final Logger LOG = LoggerFactory.getLogger(AcExporter.class);
   private static final String EXPORT_SQL = "/exporter/ac-export.sql";
   private static final String CLEANUP_SQL = "exporter/ac-export-cleanup.sql";
-  private static final String COPY_WITH = "CSV HEADER NULL '\\N' ENCODING 'UTF8' ";
+  private static final String COPY_WITH = "CSV HEADER NULL 'NULL' DELIMITER E'\\t' QUOTE E'\\f' ENCODING 'UTF8' ";
   private static final Pattern COPY_START = Pattern.compile("^\\s*COPY\\s*\\(");
   private static final Pattern COPY_END   = Pattern.compile("^\\s*\\)\\s*TO\\s*'(.+)'");
   private static final Pattern VAR_DATASET_KEY = Pattern.compile("\\{\\{datasetKey}}", Pattern.CASE_INSENSITIVE);

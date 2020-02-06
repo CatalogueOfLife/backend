@@ -1,17 +1,5 @@
 package life.catalogue.csv;
 
-import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-import javax.annotation.Nullable;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
@@ -26,18 +14,34 @@ import com.univocity.parsers.common.ResultIterator;
 import com.univocity.parsers.common.TextParsingException;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
+import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.util.VocabularyUtils;
+import life.catalogue.api.vocab.Issue;
+import life.catalogue.common.io.CharsetDetectingStream;
+import life.catalogue.common.io.PathUtils;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.importer.MappingFlags;
 import life.catalogue.importer.NormalizationFailedException;
 import org.apache.commons.lang3.StringUtils;
-import life.catalogue.api.model.VerbatimRecord;
-import life.catalogue.api.util.VocabularyUtils;
-import life.catalogue.common.io.CharsetDetectingStream;
-import life.catalogue.common.io.PathUtils;
 import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.StringReader;
+import java.nio.charset.Charset;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * A reader giving access to a set of delimited text files in a folder
@@ -494,6 +498,9 @@ public class CsvReader {
     private final Schema s;
     private final int maxIdx;
     private final String filename;
+    private long records;
+    private long skipped;
+    private boolean skippedLast;
     private String[] row;
     
     TermRecIterator(Schema schema) throws IOException {
@@ -515,14 +522,21 @@ public class CsvReader {
     }
     
     private void nextRow() {
+      skippedLast = false;
       if (iter.hasNext()) {
         while (iter.hasNext() && isEmpty(row = iter.next(), true));
         // if the last rows were empty we would getUsage the last non empty row again, clear it in that case!
         if (!iter.hasNext() && isEmpty(row, false)) {
           row = null;
+        } else {
+          records++;
         }
       } else {
         row = null;
+      }
+      // log stats at the end
+      if (row == null) {
+        LOG.info("Read {} records from file {}, skipping {} bad lines in total", records, filename, skipped);
       }
     }
     
@@ -531,10 +545,14 @@ public class CsvReader {
         // ignore this row, dont log
       } else if (row.length < maxIdx + 1) {
         if (log) {
+          skippedLast = true;
+          skipped++;
           LOG.info("{} skip line {} with too few columns (found {}, expected {})", filename, iter.getContext().currentLine(), row.length, maxIdx + 1);
         }
       } else if (isAllNull(row)) {
         if (log) {
+          skippedLast = true;
+          skipped++;
           LOG.debug("{} skip line {} with only empty columns", filename, iter.getContext().currentLine());
         }
       } else {
@@ -542,7 +560,7 @@ public class CsvReader {
       }
       return true;
     }
-    
+
     @Override
     public VerbatimRecord next() {
       VerbatimRecord tr = new VerbatimRecord(iter.getContext().currentLine() - 1, filename, s.rowType);
@@ -562,6 +580,9 @@ public class CsvReader {
             tr.put(f.term, val);
           }
         }
+      }
+      if (skippedLast) {
+        tr.addIssue(Issue.PREVIOUS_LINE_SKIPPED);
       }
       // load next non empty row
       nextRow();

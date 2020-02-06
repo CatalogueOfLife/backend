@@ -73,11 +73,11 @@ public class AcExporterTest {
     File cnf = new File(check, "common_names.csv");
     String content = FileUtils.readFileToString(cnf, StandardCharsets.UTF_8);
     System.out.println(content);
-    assertEquals("record_id,name_code,common_name,transliteration,language,country,area,reference_id,database_id,is_infraspecies,reference_code\n" +
-            "1047,1,Tännø,\\N,deu,\\N,\\N,1,500,\\N,r1\n" +
-            "1048,1,Fír,\\N,eng,\\N,\\N,2,500,\\N,r2\n" +
-            "1049,2,Weiß-Tanne,\\N,deu,\\N,\\N,3,500,\\N,r3\n" +
-            "1050,2,European silver fir,\\N,eng,\\N,\\N,\\N,500,\\N,\\N", content.trim());
+    assertEquals("record_id\tname_code\tcommon_name\ttransliteration\tlanguage\tcountry\tarea\treference_id\tdatabase_id\tis_infraspecies\treference_code\n" +
+            "1047\t1\tTännø\tNULL\tdeu\tNULL\tNULL\t1\t500\tNULL\tr1\n" +
+            "1048\t1\tFír\tNULL\teng\tNULL\tNULL\t2\t500\tNULL\tr2\n" +
+            "1049\t2\tWeiß-Tanne\tNULL\tdeu\tNULL\tNULL\t3\t500\tNULL\tr3\n" +
+            "1050\t2\tEuropean silver fir\tNULL\teng\tNULL\tNULL\tNULL\t500\tNULL\tNULL", content.trim());
 
     content = FileUtils.readFileToString(new File(check, "credits.ini"), StandardCharsets.UTF_8);
     System.out.println(content);

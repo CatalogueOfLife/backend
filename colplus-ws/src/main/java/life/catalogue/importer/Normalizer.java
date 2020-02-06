@@ -53,8 +53,8 @@ public class Normalizer implements Callable<Boolean> {
   private final ImageService imgService;
   private final NameIndex index;
   private MappingFlags meta;
-  
-  
+
+
   public Normalizer(NeoDb store, Path sourceDir, NameIndex index, ImageService imgService) {
     this.sourceDir = sourceDir;
     this.store = store;
@@ -63,7 +63,7 @@ public class Normalizer implements Callable<Boolean> {
     this.index = index;
     this.imgService = imgService;
   }
-  
+
   /**
    * Run the normalizer and close the store at the end.
    *
@@ -91,20 +91,20 @@ public class Normalizer implements Callable<Boolean> {
       checkIfCancelled();
       matchAndCount();
       LOG.info("Normalization succeeded");
-      
+
     } finally {
       store.close();
       LOG.info("Normalizer store shut down");
     }
     return true;
   }
-  
+
   private void checkIfCancelled() throws InterruptedException {
     if (Thread.currentThread().isInterrupted()) {
       throw new InterruptedException("Normalizer was interrupted");
     }
   }
-  
+
   /**
    * @return true if year1 is considered to be before year2 with at least 1 year difference
    */
@@ -113,12 +113,12 @@ public class Normalizer implements Callable<Boolean> {
       int y1 = Integer.parseInt(year1.trim());
       int y2 = Integer.parseInt(year2.trim());
       return y1 + 1 < y2;
-      
+
     } catch (IllegalArgumentException e) {
       return false;
     }
   }
-  
+
   /**
    * Mostly checks for required attributes so that subsequent postgres imports do not fail.
    */
@@ -126,25 +126,25 @@ public class Normalizer implements Callable<Boolean> {
     store.names().all().forEach(nn -> {
       Name n = nn.name;
       require(n, n.getId(), "name id");
-  
+
       // is it a source with verbatim data?
       require(n, n.getOrigin(), "name origin");
-  
+
       // check for required fields to avoid pg exceptions
       require(n, n.getScientificName(), "scientific name");
       require(n, n.getRank(), "rank");
       require(n, n.getType(), "name type");
-  
-  
+
+
       if (n.getVerbatimKey() != null){
         VerbatimRecord v = NameValidator.flagIssues(n, store.verbatimSupplier(n.getVerbatimKey()));
         if (v != null) {
           store.put(v);
         }
       }
-  
+
     });
-    
+
     store.usages().all().forEach(u -> {
       try {
         // taxon or synonym
@@ -152,37 +152,37 @@ public class Normalizer implements Callable<Boolean> {
           Synonym s = u.getSynonym();
           require(s, s.getId(), "id");
           require(s, s.getOrigin(), "origin");
-    
+
           // no vernaculars, distribution etc
           check(s, u.descriptions.isEmpty(), "no descriptions");
           check(s, u.distributions.isEmpty(), "no distributions");
           check(s, u.media.isEmpty(), "no media");
           check(s, u.vernacularNames.isEmpty(), "no vernacular names");
-          
+
         } else {
           Taxon t = u.getTaxon();
           require(t, t.getId(), "id");
           require(t, t.getOrigin(), "origin");
           require(t, t.getStatus(), "status");
-    
+
           // vernacular
           for (VernacularName v : u.vernacularNames) {
             require(v, v.getName(), "vernacular name");
           }
-    
+
           // distribution
           for (Distribution d : u.distributions) {
             require(d, d.getGazetteer(), "area standard");
             require(d, d.getArea(), "area");
           }
-    
+
         }
       } catch (NormalizationFailedException e) {
         LOG.error("{}: {}", e.getMessage(), u.getId());
         throw e;
       }
     });
-    
+
     // flag PARENT_NAME_MISMATCH & PUBLISHED_BEFORE_GENUS for accepted names
     store.process(Labels.TAXON, store.batchSize, new NodeBatchProcessor() {
       @Override
@@ -202,7 +202,7 @@ public class Normalizer implements Callable<Boolean> {
               if (isBefore(sp.name.getCombinationAuthorship().getYear(), g.name.getCombinationAuthorship().getYear())) {
                 store.addIssues(sp.name, Issue.PUBLISHED_BEFORE_GENUS);
               }
-              
+
             } else if (sp.name.getPublishedInId() != null && g.name.getPublishedInId() != null) {
               // compare publication years if existing
               Reference spr = store.references().get(sp.name.getPublishedInId());
@@ -214,19 +214,19 @@ public class Normalizer implements Callable<Boolean> {
           }
         }
       }
-      
+
       @Override
       public void commitBatch(int counter) {
         LOG.debug("{} taxa verified", counter);
       }
     });
-    
+
     // TODO: https://github.com/Sp2000/colplus-backend/issues/117
     // Issue.POTENTIAL_CHRESONYM;
-    
+
     // TODO: https://github.com/Sp2000/colplus-backend/issues/114
     // Issue.POTENTIAL_VARIANT;
-    
+
     // verify reference truncation
     for (Reference r : store.references()) {
       if (NameValidator.hasUnmatchedBrackets(r.getCitation())) {
@@ -234,7 +234,7 @@ public class Normalizer implements Callable<Boolean> {
       }
     }
   }
-  
+
   private void check(VerbatimEntity ent, boolean assertion, String msg) {
     if (!assertion) {
       // failed assertion
@@ -242,7 +242,7 @@ public class Normalizer implements Callable<Boolean> {
       throw new NormalizationFailedException.AssertionException(errMsg);
     }
   }
-  
+
   private <T> T require(VerbatimEntity ent, T obj, String fieldName) {
     if (obj == null) {
       // in such fatal cases log the verbatim record in question for later debugging
@@ -257,7 +257,7 @@ public class Normalizer implements Callable<Boolean> {
     }
     return obj;
   }
-  
+
   private void matchAndCount() {
     final Map<MatchType, AtomicInteger> counts = Maps.newHashMap();
     for (MatchType mt : MatchType.values()) {
@@ -288,31 +288,31 @@ public class Normalizer implements Callable<Boolean> {
     });
     LOG.info("Matched all {} names: {}", MapUtils.sumValues(counts), Joiner.on(',').withKeyValueSeparator("=").join(counts));
   }
-  
+
   private void normalize() {
     // cleanup synonym & parent relations
     cutSynonymCycles();
     relinkSynonymChains();
     preferSynonymOverParentRel();
-    
+
     // cleanup basionym rels
     cutBasionymChains();
-    
+
     // rectify taxonomic status
     rectifyTaxonomicStatus();
-  
+
     // process the denormalized classifications of accepted taxa
     applyDenormedClassification();
-  
+
     // move synonym data to accepted
     moveSynonymData();
-  
+
     // remove orphan synonyms
     removeOrphanSynonyms();
-  
+
     LOG.info("Normalization completed.");
   }
-  
+
   private void removeOrphanSynonyms() {
     final String query = "MATCH (s:SYNONYM) WHERE NOT (s)-[:SYNONYM_OF]->() RETURN s";
     try (Transaction tx = store.getNeo().beginTx()) {
@@ -330,7 +330,7 @@ public class Normalizer implements Callable<Boolean> {
       LOG.info("{} orphan synonyms removed", counter);
     }
   }
-  
+
   /**
    * Updates the taxonomic status according to rules defined in
    * https://github.com/Sp2000/colplus-backend/issues/93
@@ -354,7 +354,7 @@ public class Normalizer implements Callable<Boolean> {
             if (!misapplied) {
               store.addIssues(syn, Issue.TAXONOMIC_STATUS_DOUBTFUL);
             }
-            
+
           } else if (status == TaxonomicStatus.AMBIGUOUS_SYNONYM) {
             if (misapplied) {
               syn.setStatus(TaxonomicStatus.MISAPPLIED);
@@ -363,7 +363,7 @@ public class Normalizer implements Callable<Boolean> {
             } else if (!ambigous) {
               store.addIssues(syn, Issue.TAXONOMIC_STATUS_DOUBTFUL);
             }
-            
+
           } else if (status == TaxonomicStatus.SYNONYM) {
             if (misapplied) {
               syn.setStatus(TaxonomicStatus.MISAPPLIED);
@@ -379,7 +379,7 @@ public class Normalizer implements Callable<Boolean> {
       });
     }
   }
-  
+
   /**
    * Moves synonym data (descriptions, distributions, media, vernacular, bibliography) to its accepted taxon.
    * https://github.com/Sp2000/colplus-backend/issues/108
@@ -408,7 +408,7 @@ public class Normalizer implements Callable<Boolean> {
               store.usages().update(acc);
               hasAccepted.set(true);
             });
-  
+
             u.distributions.clear();
             u.descriptions.clear();
             u.media.clear();
@@ -427,7 +427,7 @@ public class Normalizer implements Callable<Boolean> {
     LOG.info("Moved associated data from {} synonyms to their accepted taxon", moved);
     LOG.info("Removed associated data from {} synonyms without accepted taxon", removed);
   }
-  
+
   /**
    * Sanitizes basionym relations, cutting chains of basionym relations
    * by preferring basionyms referred to more often.
@@ -438,7 +438,7 @@ public class Normalizer implements Callable<Boolean> {
         "RETURN b1, b2, r1, r2 " +
         "ORDER BY x.id " +
         "LIMIT 1";
-    
+
     int counter = 0;
     try (Transaction tx = store.getNeo().beginTx()) {
       Result result = store.getNeo().execute(query);
@@ -446,7 +446,7 @@ public class Normalizer implements Callable<Boolean> {
         Map<String, Object> row = result.next();
         Node b1 = (Node) row.get("b1");
         Node b2 = (Node) row.get("b2");
-        
+
         // pick the bad relation to delete.
         // count number of incoming basionym relations = combinations
         int d1 = b1.getDegree(RelType.HAS_BASIONYM, Direction.INCOMING);
@@ -461,21 +461,21 @@ public class Normalizer implements Callable<Boolean> {
           badRelAlias = "r2";
         }
         Relationship bad = (Relationship) row.get(badRelAlias);
-        
+
         // remove basionym relations
         addNameIssue(bad.getStartNode(), Issue.CHAINED_BASIONYM);
         addNameIssue(bad.getEndNode(), Issue.CHAINED_BASIONYM);
         LOG.debug("Delete rel {}-{}>{}", bad.getStartNodeId(), bad.getType().name(), bad.getEndNodeId());
         bad.delete();
         counter++;
-        
+
         result = store.getNeo().execute(query);
       }
       tx.success();
     }
     LOG.info("{} basionym chains resolved", counter);
   }
-  
+
   /**
    * Applies the classification given as denormalized higher taxa terms to accepted taxa
    * after the parent / accepted relations have been applied.
@@ -489,7 +489,7 @@ public class Normalizer implements Callable<Boolean> {
       LOG.info("No higher classification mapped");
       return;
     }
-    
+
     LOG.info("Start processing higher denormalized classification ...");
     store.process(Labels.TAXON, store.batchSize, new NodeBatchProcessor() {
       @Override
@@ -504,7 +504,7 @@ public class Normalizer implements Callable<Boolean> {
           }
         }
       }
-      
+
       @Override
       public void commitBatch(int counter) {
         LOG.debug("Higher classifications processed for {} taxa", counter);
@@ -534,7 +534,7 @@ public class Normalizer implements Callable<Boolean> {
     }
     return highest;
   }
-  
+
   /**
    * Applies the classification lc to the given RankedUsage taxon
    * @param taxon
@@ -564,7 +564,7 @@ public class Normalizer implements Callable<Boolean> {
       cl.setSection(null);
       cl.setSpecies(null);
     }
-    
+
     // now reconstruct the given classification as linked neo4j nodes
     // reusing existing nodes if possible, otherwise creating new ones
     // and at the very end apply that classification to the taxon.node
@@ -585,7 +585,7 @@ public class Normalizer implements Callable<Boolean> {
               // aligns!
               found = true;
             }
-            
+
           } else {
             // verify the parents for the next higher rank are the same
             // we dont want to apply a contradicting classification with the same name
@@ -601,7 +601,7 @@ public class Normalizer implements Callable<Boolean> {
               }
             }
           }
-          
+
           if (found) {
             parent = n;
             parentRank = hr;
@@ -626,7 +626,7 @@ public class Normalizer implements Callable<Boolean> {
     // finally apply lowest parent to initial node
     store.assignParent(parent, taxon.usageNode);
   }
-  
+
   private Set<Rank> mappedRanksInBetween(Node n, Node n2){
     return Traversals.parentsUntil(n, n2).stream()
         .map(NeoProperties::getRankedUsage)
@@ -634,7 +634,7 @@ public class Normalizer implements Callable<Boolean> {
         .filter(r -> meta.getDenormedRanksMapped().contains(r))
         .collect(Collectors.toSet());
   }
-  
+
   /**
    * @param n a Name node (not usage!)
    */
@@ -643,7 +643,7 @@ public class Normalizer implements Callable<Boolean> {
     name.name.setRank(r);
     store.names().update(name);
   }
-  
+
   /**
    * Sanitizes synonym relations and cuts cycles at lowest rank
    */
@@ -657,11 +657,11 @@ public class Normalizer implements Callable<Boolean> {
       ;
       while (result.hasNext()) {
         Relationship sr = (Relationship) result.next().get("sr");
-        
+
         Node n = sr.getStartNode();
         addUsageIssue(n, Issue.CHAINED_SYNONYM);
         sr.delete();
-        
+
         if (counter++ % 100 == 0) {
           LOG.debug("Synonym cycles cut so far: {}", counter);
         }
@@ -687,7 +687,7 @@ public class Normalizer implements Callable<Boolean> {
     store.createNameAndUsage(t);
     return t;
   }
-  
+
   /**
    * Sanitizes synonym relations relinking synonym of synonyms to make sure synonyms always point to a direct accepted taxon.
    */
@@ -712,8 +712,8 @@ public class Normalizer implements Callable<Boolean> {
       tx.success();
     }
     LOG.info("{} synonym chains to a taxon resolved", counter);
-  
-    
+
+
     LOG.debug("Remove synonym chains missing any accepted");
     final String query2 = "MATCH (s)-[srs:SYNONYM_OF*]->(s2:SYNONYM) WHERE NOT (s2)-[:SYNONYM_OF]->() " +
         "WITH srs UNWIND srs AS sr " +
@@ -731,8 +731,8 @@ public class Normalizer implements Callable<Boolean> {
     }
     LOG.info("{} synonym chains to a taxon resolved", counter);
   }
-  
-  
+
+
   /**
    * Sanitizes relations by preferring synonym relations over parent rels.
    * (Re)move parent relationship for synonyms, even if no synonym relation exists
@@ -785,16 +785,19 @@ public class Normalizer implements Callable<Boolean> {
             + "{} isParentOf relations deleted, {} isParentOf rels moved from synonym to accepted",
         childOfRelDeleted, parentOfRelDeleted, parentOfRelRelinked);
   }
-  
+
   private void addNameIssue(Node node, Issue issue) {
     store.addIssues(store.names().objByNode(node).name, issue);
   }
-  
+
   private void addUsageIssue(Node node, Issue issue) {
     store.addIssues(store.usages().objByNode(node).usage, issue);
   }
-  
+
   private void insertData() throws NormalizationFailedException {
+    if (dataset.getDataFormat() == null) {
+      throw new NormalizationFailedException("Data format not given");
+    }
     // closing the batch inserter opens the normalizer db again for regular access via the store
     try {
       NeoInserter inserter;
@@ -813,13 +816,13 @@ public class Normalizer implements Callable<Boolean> {
       }
       inserter.insertAll();
       meta = inserter.reader.getMappingFlags();
-      
+
       store.reportDuplicates();
       inserter.reportBadFks();
-  
+
     } catch (NotUniqueRuntimeException e) {
       throw new NormalizationFailedException(e.getProperty() + " values not unique: " + e.getKey(), e);
-      
+
     } catch (IOException e) {
       throw new NormalizationFailedException("IO error: " + e.getMessage(), e);
     }

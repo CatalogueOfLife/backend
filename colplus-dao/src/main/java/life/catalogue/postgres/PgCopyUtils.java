@@ -187,16 +187,16 @@ public class PgCopyUtils {
   }
   
   /**
-   * Uses pg copy to write a select statement to a CSV file with headers
+   * Uses pg copy to write a select statement to a TSV file with headers encoded in UTF8 using an empty string for NULL values
    * @param sql select statement
    * @param out file to write to
    */
   public static void dump(PgConnection con, String sql, File out) throws IOException, SQLException {
-    dump(con, sql, out, "CSV HEADER NULL ''");
+    dump(con, sql, out, "CSV HEADER NULL '' DELIMITER E'\t' QUOTE E'\f' ENCODING 'UTF8'");
   }
-  
+
   /**
-   * Uses pg copy to write a select statement to a text file.
+   * Uses pg copy to write a select statement to a UTF8 text file.
    * @param sql select statement
    * @param out file to write to
    * @param with with clause for the copy command. Example: CSV HEADER NULL ''

@@ -149,6 +149,7 @@ CREATE TYPE ISSUE AS ENUM (
   'ID_NOT_UNIQUE',
   'URL_INVALID',
   'PARTIAL_DATE',
+  'PREVIOUS_LINE_SKIPPED',
   'UNPARSABLE_NAME',
   'PARTIALLY_PARSABLE_NAME',
   'UNPARSABLE_AUTHORSHIP',
@@ -1006,6 +1007,12 @@ $$
 LANGUAGE SQL
 IMMUTABLE;
 
+-- replaces whitespace including tabs, carriage returns and new lines with a single space
+CREATE FUNCTION repl_ws(x text) RETURNS TEXT AS $$
+  SELECT regexp_replace(x, '\s', ' ', 'g' )
+$$
+LANGUAGE SQL
+IMMUTABLE;
 
 -- tries to gracely convert text to ints, swallowing exceptions and using null instead
 CREATE OR REPLACE FUNCTION parseInt(v_value text) RETURNS INTEGER AS $$
