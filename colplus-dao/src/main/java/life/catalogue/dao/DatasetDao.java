@@ -4,12 +4,10 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.DatasetSearchRequest;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.db.DatasetPageable;
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.DecisionMapper;
-import life.catalogue.db.mapper.EstimateMapper;
-import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.es.name.index.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
@@ -101,13 +99,23 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
   @Override
   protected void createAfter(Dataset obj, int user, DatasetMapper mapper, SqlSession session) {
     pullLogo(obj);
+    if (obj.getOrigin() == DatasetOrigin.MANAGED) {
+      recreatePartition(obj.getKey());
+    }
   }
   
   @Override
   protected void updateAfter(Dataset obj, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
     pullLogo(obj);
+    if (obj.getOrigin() == DatasetOrigin.MANAGED && !session.getMapper(DatasetPartitionMapper.class).exists(obj.getKey())) {
+      recreatePartition(obj.getKey());
+    }
   }
-  
+
+  private void recreatePartition(int datasetKey) {
+    Partitioner.partition(factory, datasetKey);
+    Partitioner.indexAndAttach(factory, datasetKey);
+  }
   private void pullLogo(Dataset d) {
     LogoUpdateJob.updateDatasetAsync(d, factory, downloader, scratchFileFunc, imgService);
   }
