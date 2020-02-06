@@ -1,9 +1,5 @@
 package life.catalogue.resources;
 
-import java.time.LocalDate;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.Response;
-
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
@@ -16,6 +12,11 @@ import life.catalogue.db.mapper.TestDataRule;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+
+import javax.ws.rs.ClientErrorException;
+import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.Response;
+import java.time.LocalDate;
 
 import static life.catalogue.api.TestEntityGenerator.nullifyUserDate;
 import static life.catalogue.dw.ApiUtils.*;
@@ -66,6 +67,17 @@ public class DatasetResourceTest extends ResourceTestBase {
     d.setContact("me");
     d.setReleased(LocalDate.now());
     d.setImportFrequency(Frequency.MONTHLY);
+    try {
+      editorCreds(base).post(json(d), Integer.class);
+      fail("Expected validation error");
+    } catch (ClientErrorException e) {
+      // expect a 422 validation error!
+      if (e.getResponse().getStatus() != 422) {
+        fail("Expected HTTP 422");
+      }
+    }
+    // add data format
+    d.setDataFormat(DataFormat.ACEF);
     Integer key = editorCreds(base).post(json(d), Integer.class);
     d.setKey(key);
     
@@ -95,8 +107,6 @@ public class DatasetResourceTest extends ResourceTestBase {
     Dataset d = base.path("2035").request().get(Dataset.class);
     assertNotNull(d.getDeleted());
   }
-  
-  
   
   @Test
   @Ignore
