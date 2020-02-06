@@ -120,7 +120,7 @@ public class EsUtilTest extends EsReadTestBase {
     String[] terms = EsUtil.getSearchTerms(client, indexName, Analyzer.AUTO_COMPLETE, "Rosy bee-eater");
     assertArrayEquals(new String[] {"rosy", "bee", "eater"}, terms);
     terms = EsUtil.getSearchTerms(client, indexName, Analyzer.SCINAME_AUTO_COMPLETE, "Rosy bee-eater");
-    assertArrayEquals(new String[] {"rosy", "bee-eater"}, terms);
+    assertArrayEquals(new String[] {"rosy", "beeeater"}, terms);
     terms = EsUtil.getSearchTerms(client, indexName, Analyzer.SCINAME_AUTO_COMPLETE, "Ro,sy bee,eater");
     assertArrayEquals(new String[] {"ro", "sy", "bee", "eater"}, terms);
     terms = EsUtil.getSearchTerms(client, indexName, Analyzer.SCINAME_AUTO_COMPLETE, "Acer nigrÜm × Açer saccharùm");

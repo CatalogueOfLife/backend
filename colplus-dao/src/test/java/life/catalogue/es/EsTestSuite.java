@@ -1,5 +1,8 @@
 package life.catalogue.es;
 
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 import life.catalogue.es.mapping.MappingFactoryTest;
 import life.catalogue.es.name.EsNameUsageSerde;
 import life.catalogue.es.name.Issue333;
@@ -12,10 +15,9 @@ import life.catalogue.es.name.search.DecisionQueriesTest;
 import life.catalogue.es.name.search.FacetsTranslatorTest;
 import life.catalogue.es.name.search.NameSearchHighlighterTest;
 import life.catalogue.es.name.search.NameSearchServiceFacetTest;
-import life.catalogue.es.name.search.NameSearchTestAllParamsTest;
 import life.catalogue.es.name.search.NameSearchServiceTest;
+import life.catalogue.es.name.search.NameSearchTestAllParamsTest;
 import life.catalogue.es.name.search.QSearchTests;
-import life.catalogue.es.name.search.RequestTranslatorTest;
 import life.catalogue.es.name.search.SortingTest;
 import life.catalogue.es.name.suggest.NameUsageSuggestionServiceTest;
 import life.catalogue.es.query.CollapsibleListTest;
@@ -23,9 +25,6 @@ import life.catalogue.es.query.PrefixQueryTest;
 import life.catalogue.es.query.QueryTest;
 import life.catalogue.es.query.RangeQueryTest;
 import life.catalogue.es.query.TermQueryTest;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
 @SuiteClasses({
@@ -53,7 +52,6 @@ import org.junit.runners.Suite.SuiteClasses;
     QSearchTests.class,
     QueryTest.class,
     RangeQueryTest.class,
-    RequestTranslatorTest.class,
     SortingTest.class,
     TermQueryTest.class
 })
