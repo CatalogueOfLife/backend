@@ -37,7 +37,10 @@ public enum Issue {
   
   PARTIAL_DATE(ANY, Level.WARNING,
       "Date string was provided a year, but month and/or day were absent"),
-  
+
+  PREVIOUS_LINE_SKIPPED(ANY, Level.WARNING,
+      "The CSV record before this one had to be ignored because it had no content or wrong number of columns. Often indicates a serious delimiter problem"),
+
   //
   // NAME ISSUES
   //

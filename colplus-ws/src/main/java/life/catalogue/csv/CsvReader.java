@@ -16,6 +16,7 @@ import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.util.VocabularyUtils;
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.io.CharsetDetectingStream;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.config.NormalizerConfig;
@@ -497,7 +498,9 @@ public class CsvReader {
     private final Schema s;
     private final int maxIdx;
     private final String filename;
-    private int skipped;
+    private long records;
+    private long skipped;
+    private boolean skippedLast;
     private String[] row;
     
     TermRecIterator(Schema schema) throws IOException {
@@ -519,14 +522,21 @@ public class CsvReader {
     }
     
     private void nextRow() {
+      skippedLast = false;
       if (iter.hasNext()) {
         while (iter.hasNext() && isEmpty(row = iter.next(), true));
         // if the last rows were empty we would getUsage the last non empty row again, clear it in that case!
         if (!iter.hasNext() && isEmpty(row, false)) {
           row = null;
+        } else {
+          records++;
         }
       } else {
         row = null;
+      }
+      // log stats at the end
+      if (row == null) {
+        LOG.info("Read {} records from file {}, skipping {} bad lines in total", records, filename, skipped);
       }
     }
     
@@ -535,11 +545,13 @@ public class CsvReader {
         // ignore this row, dont log
       } else if (row.length < maxIdx + 1) {
         if (log) {
+          skippedLast = true;
           skipped++;
           LOG.info("{} skip line {} with too few columns (found {}, expected {})", filename, iter.getContext().currentLine(), row.length, maxIdx + 1);
         }
       } else if (isAllNull(row)) {
         if (log) {
+          skippedLast = true;
           skipped++;
           LOG.debug("{} skip line {} with only empty columns", filename, iter.getContext().currentLine());
         }
@@ -547,10 +559,6 @@ public class CsvReader {
         return false;
       }
       return true;
-    }
-
-    public int getSkipped() {
-      return skipped;
     }
 
     @Override
@@ -572,6 +580,9 @@ public class CsvReader {
             tr.put(f.term, val);
           }
         }
+      }
+      if (skippedLast) {
+        tr.addIssue(Issue.PREVIOUS_LINE_SKIPPED);
       }
       // load next non empty row
       nextRow();
