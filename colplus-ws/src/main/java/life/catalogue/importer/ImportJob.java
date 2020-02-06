@@ -6,6 +6,7 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.DatasetSettings;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.concurrent.StartNotifier;
 import life.catalogue.common.io.ChecksumUtils;
@@ -220,10 +221,13 @@ public class ImportJob implements Runnable {
         LOG.info("Build search index for dataset {}", datasetKey);
         updateState(ImportState.INDEXING);
         indexService.indexDataset(datasetKey);
-  
-        LOG.info("Updating draft sectors and decisions for dataset {}", datasetKey);
-        new SubjectRematcher(factory, req.createdBy).matchDatasetSubjects(datasetKey);
-  
+
+        if (rematchDecisions()) {
+          updateState(ImportState.DECISION_MATCHING);
+          LOG.info("Updating sectors and decisions for dataset {}", datasetKey);
+          new SubjectRematcher(factory, req.createdBy).matchDatasetSubjects(datasetKey);
+        }
+
         LOG.info("Dataset import {} completed in {}", datasetKey,
             DurationFormatUtils.formatDurationHMS(Duration.between(di.getStarted(), LocalDateTime.now()).toMillis()));
         di.setFinished(LocalDateTime.now());
@@ -274,7 +278,12 @@ public class ImportJob implements Runnable {
       }
     }
   }
-  
+
+  private boolean rematchDecisions() {
+    return dataset.hasSetting(DatasetSettings.REMATCH_DECISIONS)
+        && Boolean.parseBoolean(dataset.getSetting(DatasetSettings.REMATCH_DECISIONS));
+  }
+
   /**
    * See https://github.com/Sp2000/colplus-backend/issues/78
    *

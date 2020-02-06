@@ -181,7 +181,10 @@ public class VocabResource {
           Object val = FieldUtils.readField(f, entry, true);
           if (val != null) {
             if (f.getType().isEnum()) {
-              sval = PermissiveEnumSerde.enumValueName((Enum)val);
+              sval = PermissiveEnumSerde.enumValueName((Enum) val);
+            } else if (val instanceof Class) {
+                Class<?> cl = (Class<?>) val;
+                sval = cl.getSimpleName();
             } else {
               sval = val.toString();
             }

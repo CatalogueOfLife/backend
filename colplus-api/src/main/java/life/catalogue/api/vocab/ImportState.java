@@ -34,7 +34,12 @@ public enum ImportState {
    * Indexing data into the Elastic Search index.
    */
   INDEXING(true),
-  
+
+  /**
+   * Rematching decisions, sectors and estiamtes
+   */
+  DECISION_MATCHING(true),
+
   /**
    * Indexing data into the Elastic Search index.
    */

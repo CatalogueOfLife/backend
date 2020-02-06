@@ -135,7 +135,7 @@ public class SubjectRematcher {
   }
   
   public void matchDatasetSubjects(final int datasetKey) {
-    LOG.info("Rematch all sector subjects in dataset {}", datasetKey);
+    LOG.info("Rematch all sector and decision subjects in dataset {}", datasetKey);
     try(SqlSession session = factory.openSession(true)) {
       init(session);
       for (Sector s : sm.listByDataset(null, datasetKey)) {
