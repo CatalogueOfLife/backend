@@ -2,6 +2,7 @@ package life.catalogue.es.model;
 
 import static life.catalogue.es.mapping.Analyzer.AUTO_COMPLETE;
 import static life.catalogue.es.mapping.Analyzer.IGNORE_CASE;
+import static life.catalogue.es.mapping.Analyzer.SCINAME_AUTO_COMPLETE;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -40,7 +41,7 @@ public class NameUsageDocument {
   private Integer sectorKey;
   @MapToType(ESDataType.KEYWORD)
   private Integer sectorDatasetKey;
-  @Analyzers({IGNORE_CASE, AUTO_COMPLETE})
+  @Analyzers({IGNORE_CASE, SCINAME_AUTO_COMPLETE})
   private String scientificName;
   private NameStrings nameStrings;
   @Analyzers({IGNORE_CASE, AUTO_COMPLETE})
@@ -72,7 +73,7 @@ public class NameUsageDocument {
    */
   @NotIndexed
   private String acceptedName;
-  
+
   /*
    * Contains the (possibly zipped) serialization of the entire NameUsageWrapper object as we got it from postgres. This is stored as a
    * (base64-encoded) binary field, which never is indexed (no need to mark it as such).

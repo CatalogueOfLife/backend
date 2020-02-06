@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
@@ -13,9 +14,9 @@ import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import life.catalogue.es.ddl.IndexDefinition;
-import life.catalogue.es.ddl.Settings;
-import life.catalogue.es.mapping.Mappings;
+import life.catalogue.es.mapping.Analyzer;
 import life.catalogue.es.mapping.MappingsFactory;
+import life.catalogue.es.mapping.MultiField;
 import life.catalogue.es.model.NameUsageDocument;
 import life.catalogue.es.query.BoolQuery;
 import life.catalogue.es.query.EsSearchRequest;
@@ -43,12 +44,10 @@ public class EsUtil {
    * @throws IOException
    */
   public static void createIndex(RestClient client, String name, Class<?> modelClass, IndexConfig config) throws IOException {
-    MappingsFactory factory = MappingsFactory.usingFields();
-    Mappings mappings = factory.getMapping(modelClass);
-    Settings settings = Settings.getDefaultSettings();
-    settings.getIndex().setNumberOfShards(config.numShards);
-    settings.getIndex().setNumberOfReplicas(config.numReplicas);
-    IndexDefinition indexDef = new IndexDefinition(settings, mappings);
+    IndexDefinition indexDef = IndexDefinition.loadDefaults();
+    indexDef.setMappings(MappingsFactory.usingFields().getMapping(modelClass));
+    indexDef.getSettings().getIndex().setNumberOfShards(config.numShards);
+    indexDef.getSettings().getIndex().setNumberOfReplicas(config.numReplicas);
     LOG.trace("Creating index {}: {}", name, EsModule.writeDebug(indexDef));
     Request request = new Request("PUT", name);
     request.setJsonEntity(EsModule.write(indexDef));
@@ -275,6 +274,36 @@ public class EsUtil {
     request.setJsonEntity(EsModule.write(obj));
     Response response = executeRequest(client, request);
     return readFromResponse(response, "_id");
+  }
+
+  /**
+   * Returns the tokens that Elasticsearch would extract from the provided search phrase give the provided analyzer.
+   * 
+   * @param client
+   * @param index
+   * @param analyzer
+   * @param searchPhrase
+   * @return
+   * @throws IOException
+   */
+  public static String[] getSearchTerms(RestClient client, String index, Analyzer analyzer, String searchPhrase) throws IOException {
+    Request request = new Request("POST", index + "/_analyze");
+    StringBuilder sb = new StringBuilder(100);
+    MultiField mf = analyzer.getMultiField();
+    String analyzerName = mf.getSearchAnalyzer();
+    if (analyzerName == null) {
+      analyzerName = mf.getAnalyzer();
+    }
+    sb.append("{\"analyzer\":\"")
+        .append(analyzerName)
+        .append("\",\"text\":\"")
+        .append(searchPhrase)
+        .append("\"}");
+    request.setJsonEntity(sb.toString());
+    Response response = executeRequest(client, request);
+    @SuppressWarnings("rawtypes")
+    List<HashMap> tokens = readFromResponse(response, "tokens");
+    return tokens.stream().map(map -> map.get("token")).toArray(String[]::new);
   }
 
   /**

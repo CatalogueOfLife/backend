@@ -21,10 +21,10 @@ class QTranslator {
   Query translate() {
     if (request.suggestVernaculars()) {
       return new BoolQuery()
-          .should(getScientificNameQuery(request.getQ()).withName(SN_QUERY_NAME))
+          .should(getScientificNameQuery(request.getQ(), request.getSearchTerms()).withName(SN_QUERY_NAME))
           .should(getVernacularNameQuery(request.getQ()).withName(VN_QUERY_NAME));
     }
-    return getScientificNameQuery(request.getQ()).withName(SN_QUERY_NAME);
+    return getScientificNameQuery(request.getQ(), request.getSearchTerms()).withName(SN_QUERY_NAME);
   }
 
 }

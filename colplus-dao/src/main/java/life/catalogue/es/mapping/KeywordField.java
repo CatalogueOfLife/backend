@@ -3,8 +3,10 @@ package life.catalogue.es.mapping;
 import java.util.LinkedHashMap;
 
 /**
- * A {@code KeywordField} is a {@link SimpleField} with Elasticsearch data type "keyword". String and enum fields in API model classes will
- * always be mapped to Elasticsearch fields of type "keyword", meaning they will always at least be indexed as-is.
+ * A {@code KeywordField} is a {@link SimpleField} with Elasticsearch data type "keyword". Stringy types in the domain model are always
+ * mapped to the keyword datatype, even if they must not actually be indexed in an as-is manner (using the {@link Analyzer#KEYWORD keyword
+ * analyzer}). Alternative ways of indexing a string field are expressed through Elasticserch's "multifield" feature. If a string field is
+ * not to be indexed as-is, its "index" property is set to "no" and it really just becomes a ghostly hook for attaching the multifields.
  */
 public class KeywordField extends SimpleField {
 

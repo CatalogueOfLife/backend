@@ -1,27 +1,22 @@
 package life.catalogue.es.ddl;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import life.catalogue.es.EsModule;
-import life.catalogue.es.EsUtil;
-
 /**
- * The "settings" object within an index definitions. Consists of an "analysis" object defining tokenizers and
- * analyzers, and an "index" object for tuning the index.
- *
+ * The "settings" object within an index definitions. Defines analyzers and basic index configuration.
  */
 public class Settings {
-
-  public static Settings getDefaultSettings() throws IOException {
-    InputStream is = EsUtil.class.getResourceAsStream("es-settings.json");
-    return EsModule.readDDLObject(is, Settings.class);
-  }
 
   private Analysis analysis;
   private Index index;
 
+  /**
+   * Returns the analyzers, tokenizers, etc to be used by the index
+   * 
+   * @return
+   */
   public Analysis getAnalysis() {
+    if (analysis == null) {
+      analysis = new Analysis();
+    }
     return analysis;
   }
 
@@ -29,7 +24,15 @@ public class Settings {
     this.analysis = analysis;
   }
 
+  /**
+   * Returns other index-configuration settings.
+   * 
+   * @return
+   */
   public Index getIndex() {
+    if (index == null) {
+      index = new Index();
+    }
     return index;
   }
 

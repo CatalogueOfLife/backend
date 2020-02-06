@@ -1,12 +1,21 @@
 package life.catalogue.es.ddl;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
+import life.catalogue.es.EsModule;
 import life.catalogue.es.mapping.Mappings;
 
 /**
- * The outer-most object for the Create Index API and Get Index API. It consists of an object configuring the index and the document type mapping.
+ * The outer-most object for the Create Index API and Get Index API. It consists of an object configuring the index and the document type
+ * mapping.
  */
 public class IndexDefinition {
+
+  public static IndexDefinition loadDefaults() throws IOException {
+    InputStream is = IndexDefinition.class.getResourceAsStream("es-settings.json");
+    return EsModule.readDDLObject(is, IndexDefinition.class);
+  }
 
   private Settings settings;
   private Mappings mappings;
@@ -14,12 +23,10 @@ public class IndexDefinition {
 
   public IndexDefinition() {}
 
-  public IndexDefinition(Settings settings, Mappings mappings) {
-    this.settings = settings;
-    this.mappings = mappings;
-  }
-
   public Settings getSettings() {
+    if (settings == null) {
+      settings = new Settings();
+    }
     return settings;
   }
 

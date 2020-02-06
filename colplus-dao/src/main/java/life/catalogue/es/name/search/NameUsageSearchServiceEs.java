@@ -1,6 +1,7 @@
 package life.catalogue.es.name.search;
 
 import java.io.IOException;
+import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,9 +10,12 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.es.EsException;
+import life.catalogue.es.mapping.Analyzer;
 import life.catalogue.es.name.NameUsageEsResponse;
 import life.catalogue.es.name.NameUsageQueryService;
 import life.catalogue.es.query.EsSearchRequest;
+import static life.catalogue.api.search.NameUsageSearchRequest.SearchContent.SCIENTIFIC_NAME;
+import static life.catalogue.es.EsUtil.getSearchTerms;
 
 public class NameUsageSearchServiceEs extends NameUsageQueryService implements NameUsageSearchService {
 
@@ -41,6 +45,9 @@ public class NameUsageSearchServiceEs extends NameUsageQueryService implements N
   public NameUsageSearchResponse search(String index, NameUsageSearchRequest request, Page page) throws IOException {
     RequestValidator validator = new RequestValidator(request);
     validator.validateRequest();
+    if (StringUtils.isNotBlank(request.getQ()) && request.getContent().contains(SCIENTIFIC_NAME)) {
+      request.setSearchTerms(getSearchTerms(client, index, Analyzer.SCINAME_AUTO_COMPLETE, request.getQ()));
+    }
     RequestTranslator translator = new RequestTranslator(request, page);
     EsSearchRequest esSearchRequest = translator.translateRequest();
     NameUsageSearchResponse response = search(index, esSearchRequest, page);

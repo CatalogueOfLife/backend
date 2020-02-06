@@ -1,43 +1,37 @@
 package life.catalogue.es.model;
 
 import java.util.Objects;
-
+import org.gbif.nameparser.api.Rank;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.es.mapping.Analyzers;
-import org.gbif.nameparser.api.Rank;
-
-import static life.catalogue.es.mapping.Analyzer.AUTO_COMPLETE;
 import static life.catalogue.es.mapping.Analyzer.KEYWORD;
+import static life.catalogue.es.mapping.Analyzer.SCINAME_AUTO_COMPLETE;
 import static life.catalogue.es.name.NameUsageWrapperConverter.normalizeStrongly;
 import static life.catalogue.es.name.NameUsageWrapperConverter.normalizeWeakly;
 
 /**
- * An object embedded within the name usage document solely aimed at optimizing searchability. The name strings within
- * this class do not contribute to the response returned to the client ({@link NameUsageSearchResponse}). They are meant to
- * match search phrases as best and as cheaply as possible. A {@code NameStrings} object is created from the
- * {@link Name} in the indexed documents on the one hand and from the search phrase on the other, and the matching the
- * search phrase against the documents is done via the {@code NameStrings} object. To ensure that the search phrase is
- * analyzed just like the names, the search phrase is first converted into a (pretty artificial) name, and it is this
- * name that gets converted again into a {@code NameStrings} object. Finally note that we must store the name components
+ * An object embedded within the name usage document solely aimed at optimizing searchability. The name strings within this class do not
+ * contribute to the response returned to the client ({@link NameUsageSearchResponse}). They are meant to match search phrases as best and
+ * as cheaply as possible. A {@code NameStrings} object is created from the {@link Name} in the indexed documents on the one hand and from
+ * the search phrase on the other, and the matching the search phrase against the documents is done via the {@code NameStrings} object. To
+ * ensure that the search phrase is analyzed just like the names, the search phrase is first converted into a (pretty artificial) name, and
+ * it is this name that gets converted again into a {@code NameStrings} object. Finally note that we must store the name components
  * separately in order to be able to make preefix queries against each of them separately.
  * 
  */
 public class NameStrings {
 
-  @Analyzers({KEYWORD, AUTO_COMPLETE})
+  @Analyzers({KEYWORD, SCINAME_AUTO_COMPLETE})
   private String genusOrMonomialWN;
   /*
-   * We store the 1st letter of the genus separately to allow for fast term queries for search phrases like "P. major" or
-   * "P major". Also note that the minimum ngram token size is 2, so we couldn't use an ngram search for this type of
-   * search phrases. We could of course fall back on a prefix search for the genus in these cases (like we do for all
-   * components of the search phrase if their length exceeds the **maximum** ngram token size), but these are not
-   * efficient.
+   * We store the 1st letter of the genus separately to allow for fast term queries for search phrases like "P. major" or "P major".
+   * Analyzer annotation not required b/c string fields are analyzed by default using the KEYWORD analyzer.
    */
   private String genusLetter;
-  @Analyzers({KEYWORD, AUTO_COMPLETE})
+  @Analyzers({KEYWORD, SCINAME_AUTO_COMPLETE})
   private String specificEpithetSN;
-  @Analyzers({KEYWORD, AUTO_COMPLETE})
+  @Analyzers({KEYWORD, SCINAME_AUTO_COMPLETE})
   private String infraspecificEpithetSN;
 
   /**

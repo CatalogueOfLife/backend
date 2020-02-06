@@ -26,9 +26,9 @@ class RequestTranslator {
         .filter(new RangeQuery<Integer>("rank").greaterOrEqual(SPECIES.ordinal()))
         .must(new QTranslator(request).translate());
     return new EsSearchRequest()
-        .select("usageId", "scientificName", "acceptedName", "vernacularNames", "rank", "nomCode")
+        /*.select("usageId", "scientificName", "acceptedName", "vernacularNames", "rank", "nomCode")*/
         .where(query)
-        .sortBy(SCORE) // required b/c default is _doc !
+        .sortBy(SCORE)
         .size(request.getLimit());
   }
 

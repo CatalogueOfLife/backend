@@ -25,7 +25,7 @@ class QTranslator {
   Query translate() {
     List<Query> queries = new ArrayList<Query>(request.getContent().size());
     if (request.getContent().contains(SCIENTIFIC_NAME)) {
-      queries.add(getScientificNameQuery(request.getQ()));
+      queries.add(getScientificNameQuery(request.getQ(), request.getSearchTerms()));
     }
     if (request.getContent().contains(VERNACULAR_NAME)) {
       queries.add(getVernacularNameQuery(request.getQ()));
