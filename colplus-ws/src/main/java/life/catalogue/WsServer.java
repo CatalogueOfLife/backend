@@ -227,7 +227,7 @@ public class WsServer extends Application<WsServerConfig> {
             gbifSync));
     env.jersey().register(new AssemblyResource(getSqlSessionFactory(), indexService, diDao, tdao, assembly, exporter));
     env.jersey().register(new DataPackageResource());
-    env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService, diDao, cfg, new DownloadUtil(httpClient), diff, indexService));
+    env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService, diDao, cfg, new DownloadUtil(httpClient), diff, indexService, exporter));
     env.jersey().register(new DecisionResource(getSqlSessionFactory(), indexService));
     env.jersey().register(new DocsResource(cfg));
     env.jersey().register(new DuplicateResource());

@@ -138,8 +138,9 @@ public class AssemblyResource {
 
     return key;
   }
-  
+
   @POST
+  @Deprecated
   @Path("/export")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public String export(@PathParam("catKey") int catKey, @Auth ColUser user) {

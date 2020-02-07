@@ -1,9 +1,5 @@
 package life.catalogue.db;
 
-import java.io.IOException;
-import java.sql.SQLException;
-
-import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
@@ -14,8 +10,12 @@ import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.mapper.TestDataRule;
+import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
+
+import java.io.IOException;
+import java.sql.SQLException;
 
 import static life.catalogue.api.vocab.Datasets.DRAFT_COL;
 
@@ -68,11 +68,11 @@ public class MybatisTestUtils {
     session.commit();
   }
   
-  public static void populateTestData(TestDataRule.TestData data) throws IOException, SQLException {
+  public static void populateTestData(TestDataRule.TestData data, boolean skipGlobalTables) throws IOException, SQLException {
     try (TestDataRule rule = new TestDataRule(data)) {
       rule.initSession();
       rule.partition();
-      rule.loadData(true);
+      rule.loadData(skipGlobalTables);
     }
   }
   

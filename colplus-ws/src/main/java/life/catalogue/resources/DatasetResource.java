@@ -1,10 +1,8 @@
 package life.catalogue.resources;
 
+import io.dropwizard.auth.Auth;
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DatasetImport;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.ResultPage;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.io.DownloadUtil;
@@ -21,6 +19,7 @@ import life.catalogue.es.name.index.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.img.ImgConfig;
+import life.catalogue.release.AcExporter;
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -51,9 +50,10 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   private final ImageService imgService;
   private final DatasetImportDao diDao;
   private final DiffService diff;
-  
+  private final AcExporter exporter;
+
   public DatasetResource(SqlSessionFactory factory, ImageService imgService, DatasetImportDao diDao, WsServerConfig cfg,
-                         DownloadUtil downloader, DiffService diff, NameUsageIndexService indexService) {
+                         DownloadUtil downloader, DiffService diff, NameUsageIndexService indexService, AcExporter exporter) {
     super(Dataset.class,
             new DatasetDao(factory, downloader, imgService, diDao, indexService, cfg.normalizer::scratchFile),
             factory
@@ -62,6 +62,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     this.imgService = imgService;
     this.diDao = diDao;
     this.diff = diff;
+    this.exporter = exporter;
   }
   
   @GET
@@ -74,7 +75,24 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   public List<Integer> listCatalogues(@Context SqlSession session) {
     return session.getMapper(SectorMapper.class).listTargetDatasetKeys();
   }
-  
+
+  @POST
+  @Path("{key}/export")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public String export(@PathParam("key") int key, @Auth ColUser user) {
+    life.catalogue.release.Logger logger = new life.catalogue.release.Logger(LOG);
+    try {
+      exporter.export(key, logger);
+    } catch (Throwable e) {
+      LOG.error("Error exporting dataset {}", key, e);
+      logger.log("\n\nERROR!");
+      if (e.getMessage() != null) {
+        logger.log(e.getMessage());
+      }
+    }
+    return logger.toString();
+  }
+
   @GET
   @Path("{key}/import")
   public List<DatasetImport> getImports(@PathParam("key") int key,

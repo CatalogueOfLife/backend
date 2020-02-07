@@ -1,11 +1,5 @@
 package life.catalogue.dao;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Stream;
-
-import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.BeanPrinter;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
@@ -18,9 +12,15 @@ import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.SynonymMapper;
 import life.catalogue.db.mapper.TestDataRule;
+import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Stream;
 
 import static life.catalogue.api.TestEntityGenerator.*;
 import static org.junit.Assert.*;
@@ -269,7 +269,7 @@ public class TaxonDaoTest extends DaoTestBase {
   @Test
   public void deleteRecursively() throws Exception {
     final DSIDValue key = DSID.key(TestDataRule.TestData.TREE.key, null);
-    MybatisTestUtils.populateTestData(TestDataRule.TestData.TREE);
+    MybatisTestUtils.populateTestData(TestDataRule.TestData.TREE, true);
   
     
     assertNotNull(tDao.get(key.id("t10")));

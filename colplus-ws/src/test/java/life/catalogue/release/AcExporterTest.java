@@ -3,8 +3,10 @@ package life.catalogue.release;
 import com.google.common.io.Files;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.io.CompressionUtil;
+import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.TestDataRule;
@@ -83,5 +85,36 @@ public class AcExporterTest {
     System.out.println(content);
 
   }
-  
+
+  @Test
+  public void exportNonManaged() throws Exception {
+    // run different test data rule
+    MybatisTestUtils.populateTestData(TestDataRule.TestData.APPLE, false);
+    final int key = TestDataRule.TestData.APPLE.key;
+
+    AcExporter exp = new AcExporter(cfg, PgSetupRule.getSqlSessionFactory());
+    // prepare metadata
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      Dataset d = dm.get(key);
+      d.setAuthorsAndEditors(List.of("Röskøv Y.", "Ower G.", "Orrell T.", "Nicolson D."));
+      d.setOrganisations(List.of("Species 2000", "ITIS Catalogue of Life"));
+      d.setReleased(null);
+      d.setOrigin(DatasetOrigin.UPLOADED);
+      dm.update(d);
+    }
+
+    Logger lg = new Logger();
+    arch = exp.export(key, lg);
+    System.out.println("LOGS:\n");
+    System.out.println(lg.toString());
+
+    // test decompressed archive
+    File check = new File(cfg.normalizer.scratchDir, "archiveCheck");
+    CompressionUtil.unzipFile(check, arch);
+
+    String credits = FileUtils.readFileToString(new File(check, "credits.ini"), StandardCharsets.UTF_8);
+    System.out.println(credits);
+
+  }
 }
