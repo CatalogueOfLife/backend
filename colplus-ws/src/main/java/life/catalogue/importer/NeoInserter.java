@@ -66,7 +66,7 @@ public abstract class NeoInserter {
 
   private void setChar(DatasetSettings key, Consumer<Character> setter) {
     if (store.getDataset().hasSetting(key)) {
-      String val = store.getDataset().getSetting(key);
+      String val = store.getDataset().getSettingString(key);
       if (!val.isEmpty()) {
         if (val.length() != 1) {
           LOG.warn("Setting {} must be a single character but got >>{}<< instead. Ignore setting", key, val);

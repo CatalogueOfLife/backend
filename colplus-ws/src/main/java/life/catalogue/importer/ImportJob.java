@@ -281,7 +281,7 @@ public class ImportJob implements Runnable {
 
   private boolean rematchDecisions() {
     return dataset.hasSetting(DatasetSettings.REMATCH_DECISIONS)
-        && Boolean.parseBoolean(dataset.getSetting(DatasetSettings.REMATCH_DECISIONS));
+        && dataset.getSettingBool(DatasetSettings.REMATCH_DECISIONS);
   }
 
   /**

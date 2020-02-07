@@ -353,6 +353,22 @@ public class Dataset extends DataEntity<Integer> {
     return settings.get(key);
   }
 
+  public String getSettingString(DatasetSettings key) {
+    return (String) settings.get(key);
+  }
+
+  public Boolean getSettingBool(DatasetSettings key) {
+    return (Boolean) settings.get(key);
+  }
+
+  public Integer getSettingInt(DatasetSettings key) {
+    return (Integer) settings.get(key);
+  }
+
+  public <T extends Enum> T getSettingEnum(DatasetSettings key) {
+    return (T) settings.get(key);
+  }
+
   public void putSetting(DatasetSettings key, Object value) {
     settings.put(key, value);
   }
