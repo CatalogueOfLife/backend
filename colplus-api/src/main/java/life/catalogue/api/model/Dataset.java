@@ -65,7 +65,7 @@ public class Dataset extends DataEntity<Integer> {
   private Set<Integer> contributesTo;
   private LocalDateTime imported;
   private LocalDateTime deleted;
-  private Map<String, String> settings = new HashMap<>();
+  private Map<DatasetSettings, Object> settings = new HashMap<>();
 
   public Integer getKey() {
     return key;
@@ -349,39 +349,23 @@ public class Dataset extends DataEntity<Integer> {
     this.completeness = completeness;
   }
 
-  public String getSetting(String key) {
-    return settings.getOrDefault(key, null);
+  public Object getSetting(DatasetSettings key) {
+    return settings.get(key);
   }
 
-  public String getSetting(DatasetSettings key) {
-    return settings.get(key.name());
-  }
-
-  public String getSetting(DatasetSettings key, String defaultValue) {
-    return settings.getOrDefault(key.name(), defaultValue);
-  }
-
-  public void putSetting(DatasetSettings key, String value) {
-    settings.put(key.name(), value);
-  }
-
-  public void putSetting(String key, String value) {
+  public void putSetting(DatasetSettings key, Object value) {
     settings.put(key, value);
   }
 
   public boolean hasSetting(DatasetSettings key) {
-    return settings.containsKey(key.name());
-  }
-
-  public boolean hasSetting(String key) {
     return settings.containsKey(key);
   }
 
-  public Map<String, String> getSettings() {
+  public Map<DatasetSettings, Object> getSettings() {
     return settings;
   }
 
-  public void setSettings(Map<String, String> settings) {
+  public void setSettings(Map<DatasetSettings, Object> settings) {
     this.settings = settings;
   }
 

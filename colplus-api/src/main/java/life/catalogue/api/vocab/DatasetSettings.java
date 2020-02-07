@@ -1,6 +1,9 @@
 package life.catalogue.api.vocab;
 
+import com.google.common.base.Preconditions;
 import org.gbif.nameparser.api.NomCode;
+
+import java.time.LocalDate;
 
 public enum DatasetSettings {
 
@@ -47,7 +50,16 @@ public enum DatasetSettings {
         return type.isEnum();
     }
 
+    /**
+     * Use String, Integer, Boolean, LocalDate or a custom col enumeration class
+     * @param type
+     */
     DatasetSettings(Class type) {
+        Preconditions.checkArgument(type.equals(String.class)
+            || type.equals(Integer.class)
+            || type.equals(Boolean.class)
+            || type.equals(LocalDate.class)
+            || type.isEnum(), "Unsupported type");
         this.type = type;
     }
 

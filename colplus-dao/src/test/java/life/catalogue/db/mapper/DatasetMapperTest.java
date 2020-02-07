@@ -56,10 +56,10 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     d.setCode(NomCode.ZOOLOGICAL);
     d.getOrganisations().add("my org");
     d.getOrganisations().add("your org");
-    d.putSetting("band", "Stooges");
-    d.putSetting("firstAlbum", "1973");
-    d.putSetting("homepage", "http://the.stooges.fun");
-    d.putSetting(DatasetSettings.DISTRIBUTION_GAZETTEER, "http://the.stooges.fun");
+    d.putSetting(DatasetSettings.REMATCH_DECISIONS, true);
+    d.putSetting(DatasetSettings.NOMENCLATURAL_CODE, NomCode.BOTANICAL);
+    d.putSetting(DatasetSettings.CSV_DELIMITER, "fun");
+    d.putSetting(DatasetSettings.DISTRIBUTION_GAZETTEER, Gazetteer.ISO);
     return d;
   }
   

@@ -102,7 +102,7 @@
       #{group},
       #{confidence},
       #{completeness},
-      #{settings, typeHandler=life.catalogue.db.type2.StringMapTypeHandler}::JSONB,
+      #{settings, typeHandler=life.catalogue.db.type2.SettingsTypeHandler}::JSONB,
       #{createdBy},
       #{modifiedBy}
     </sql>
@@ -155,7 +155,7 @@
         <result property="organisations" column="organisations" typeHandler="life.catalogue.db.type.StringArrayTypeHandler" />
         <result property="authorsAndEditors" column="authors_and_editors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler" />
         <result property="importFrequency" column="import_frequency" typeHandler="life.catalogue.db.type.FrequencyTypeHandler" />
-        <result property="settings" column="settings" typeHandler="life.catalogue.db.type2.StringMapTypeHandler" />
+        <result property="settings" column="settings" typeHandler="life.catalogue.db.type2.SettingsTypeHandler" />
     </resultMap>
 
     <select id="count" resultType="integer">

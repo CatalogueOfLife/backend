@@ -62,7 +62,7 @@ public class JsonAbstractHandler<T> extends BaseTypeHandler<T> {
   }
   
 
-  private T fromJson(String json) throws SQLException {
+  protected T fromJson(String json) throws SQLException {
     if (!Strings.isNullOrEmpty(json)) {
       try {
         return reader.readValue(json);
