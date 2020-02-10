@@ -6,12 +6,18 @@ import com.esotericsoftware.kryo.io.Output;
 import com.google.common.collect.Lists;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.*;
 import org.gbif.dwc.terms.*;
+import org.gbif.nameparser.api.NomCode;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
+import java.net.URI;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 
@@ -35,6 +41,29 @@ public class ApiKryoFactoryTest {
     r.setDatasetKey(77);
     r.setCsl(TestEntityGenerator.createCsl());
     assertSerde(r);
+  }
+
+  @Test
+  public void testDataset() throws Exception {
+    Dataset d = TestEntityGenerator.newDataset("Unmut");
+    d.setKey(1234);
+    d.setImportFrequency(Frequency.WEEKLY);
+    d.setReleased(LocalDate.now());
+    d.setDataFormat(DataFormat.ACEF);
+    d.setDataAccess(URI.create("http://nix.tv"));
+    d.setCode(NomCode.BOTANICAL);
+    d.setGbifKey(UUID.randomUUID());
+    d.setContributesTo(Set.of(12,13,14,15));
+    d.setAuthorsAndEditors(List.of("Karl", "Frank"));
+    d.setSettings(Map.of(
+        DatasetSettings.DISTRIBUTION_GAZETTEER, Gazetteer.ISO,
+        DatasetSettings.REMATCH_DECISIONS, true,
+        DatasetSettings.CSV_DELIMITER, "\t",
+        DatasetSettings.CSV_QUOTE, "\"",
+        DatasetSettings.CSV_QUOTE_ESCAPE, "\\",
+        DatasetSettings.NOMENCLATURAL_CODE, NomCode.BOTANICAL
+    ));
+    assertSerde(d);
   }
 
   @Test

@@ -8,6 +8,9 @@ import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.date.FuzzyDate;
+import life.catalogue.common.kryo.jdk.JdkImmutableListSerializer;
+import life.catalogue.common.kryo.jdk.JdkImmutableMapSerializer;
+import life.catalogue.common.kryo.jdk.JdkImmutableSetSerializer;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.*;
@@ -75,13 +78,20 @@ public class ApiKryoFactory implements KryoFactory {
     kryo.register(LinkedList.class);
     kryo.register(URI.class, new URISerializer());
     kryo.register(UUID.class, new UUIDSerializer());
+    // guave collections
     UnmodifiableCollectionsSerializer.registerSerializers( kryo );
+    // pre java9 immutable collections
     ImmutableListSerializer.registerSerializers(kryo);
-    
+    // java9 immutable collections
+    JdkImmutableListSerializer.registerSerializers(kryo);
+    JdkImmutableMapSerializer.registerSerializers(kryo);
+    JdkImmutableSetSerializer.registerSerializers(kryo);
+
     // enums
     kryo.register(Country.class);
     kryo.register(DataFormat.class);
     kryo.register(DatasetOrigin.class);
+    kryo.register(DatasetSettings.class);
     kryo.register(DatasetType.class);
     kryo.register(DistributionStatus.class);
     kryo.register(EnumMap.class, new EnumMapSerializer());
