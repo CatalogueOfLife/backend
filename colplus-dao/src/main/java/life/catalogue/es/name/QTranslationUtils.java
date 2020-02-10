@@ -57,6 +57,7 @@ public class QTranslationUtils {
    * versions of the epithets).
    */
   public static Query getScientificNameQuery(String q, String[] terms) {
+    if (terms == null) terms = new String[0];
     if (couldBeEpithets(terms)) {
       if (terms.length == 1 && terms[0].length() > 2) { // Let's wait a bit before engaging this one
         return matchAsMonomial(q, terms);
