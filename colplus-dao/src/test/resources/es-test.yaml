@@ -1,6 +1,6 @@
 hosts: ${es.hosts}
 ports: ${es.ports}
-environment: test
 nameUsage:
+  name: name_usage_test
   numShards: 1
   numReplicas: 0

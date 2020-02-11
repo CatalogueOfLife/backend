@@ -1,5 +1,18 @@
 package life.catalogue.es;
 
+import life.catalogue.es.ddl.IndexDefinition;
+import life.catalogue.es.mapping.Analyzer;
+import life.catalogue.es.mapping.MappingsFactory;
+import life.catalogue.es.mapping.MultiField;
+import life.catalogue.es.model.NameUsageDocument;
+import life.catalogue.es.query.*;
+import org.elasticsearch.client.Request;
+import org.elasticsearch.client.Response;
+import org.elasticsearch.client.ResponseException;
+import org.elasticsearch.client.RestClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -7,24 +20,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import org.elasticsearch.client.Request;
-import org.elasticsearch.client.Response;
-import org.elasticsearch.client.ResponseException;
-import org.elasticsearch.client.RestClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import life.catalogue.es.ddl.IndexDefinition;
-import life.catalogue.es.mapping.Analyzer;
-import life.catalogue.es.mapping.MappingsFactory;
-import life.catalogue.es.mapping.MultiField;
-import life.catalogue.es.model.NameUsageDocument;
-import life.catalogue.es.query.BoolQuery;
-import life.catalogue.es.query.EsSearchRequest;
-import life.catalogue.es.query.MatchAllQuery;
-import life.catalogue.es.query.Query;
-import life.catalogue.es.query.SortField;
-import life.catalogue.es.query.TermQuery;
-import life.catalogue.es.query.TermsQuery;
 
 /**
  * Utility class for interacting with Elasticsearch.
@@ -38,20 +33,19 @@ public class EsUtil {
    * Creates an index with the provided name and index configuration, with a document type mapping based on the provided model class.
    * 
    * @param client
-   * @param name
    * @param modelClass
    * @param config
    * @throws IOException
    */
-  public static void createIndex(RestClient client, String name, Class<?> modelClass, IndexConfig config) throws IOException {
+  public static void createIndex(RestClient client, Class<?> modelClass, IndexConfig config) throws IOException {
     IndexDefinition indexDef = IndexDefinition.loadDefaults();
     indexDef.setMappings(MappingsFactory.usingFields().getMapping(modelClass));
     indexDef.getSettings().getIndex().setNumberOfShards(config.numShards);
     indexDef.getSettings().getIndex().setNumberOfReplicas(config.numReplicas);
-    LOG.trace("Creating index {}: {}", name, EsModule.writeDebug(indexDef));
-    Request request = new Request("PUT", name);
+    LOG.trace("Creating index {}: {}", config.name, EsModule.writeDebug(indexDef));
+    Request request = new Request("PUT", config.name);
     request.setJsonEntity(EsModule.write(indexDef));
-    LOG.warn("Creating new ES Index {}", name);
+    LOG.warn("Creating new ES Index {}", config.name);
     executeRequest(client, request);
   }
 
@@ -105,14 +99,14 @@ public class EsUtil {
    * Deletes the index with the provided name. Will silently do nothing if the index did not exist.
    * 
    * @param client
-   * @param name
+   * @param index
    * @throws IOException
    */
-  public static void deleteIndex(RestClient client, String name) throws IOException {
-    LOG.warn("Deleting ES Index {}", name);
+  public static void deleteIndex(RestClient client, IndexConfig index) throws IOException {
+    LOG.warn("Deleting ES Index {}", index.name);
     Response response = null;
     try {
-      response = client.performRequest(new Request("DELETE", name));
+      response = client.performRequest(new Request("DELETE", index.name));
     } catch (ResponseException e) {
       if (e.getResponse().getStatusLine().getStatusCode() == 404) { // That's OK
         return;

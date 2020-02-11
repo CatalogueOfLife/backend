@@ -7,8 +7,6 @@ import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 
-import static life.catalogue.es.EsConfig.ES_INDEX_NAME_USAGE;
-
 /**
  * Contacts elastic search REST API to see if we are alive.
  */
@@ -26,7 +24,7 @@ public class EsHealthCheck extends HealthCheck {
   @Override
   protected Result check() {
     try {
-      String idxName = cfg.indexName(ES_INDEX_NAME_USAGE);
+      String idxName = cfg.nameUsage.name;
       Request req = new Request("HEAD", idxName);
       Response resp = client.performRequest(req);
   

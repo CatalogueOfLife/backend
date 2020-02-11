@@ -33,14 +33,14 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     // Index some test objects
     index(createTestObjects());
 
-    NameUsageIndexer indexer = new NameUsageIndexer(getEsClient(), indexName);
+    NameUsageIndexer indexer = new NameUsageIndexer(getEsClient(), indexName());
 
     // Modify the classification of the test objects and run the updater
     // Always create wrapper objects afresh b/c they will be pruned upon insert
     List<NameUsageWrapper> nameUsages = createTestObjects();
     nameUsages.forEach(nu -> nu.getClassification().forEach(sn -> sn.setName(sn.getName() + " (updated name)")));
     new ClassificationUpdater(indexer, DATASET_KEY).accept(nameUsages);
-    EsUtil.refreshIndex(getEsClient(), indexName);
+    EsUtil.refreshIndex(getEsClient(), indexName());
 
     // Always create wrapper objects afresh b/c they will be pruned upon insert
     List<NameUsageWrapper> expected = createTestObjects();

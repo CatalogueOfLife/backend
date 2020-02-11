@@ -1,21 +1,10 @@
 package life.catalogue.es;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Taxon;
-import life.catalogue.api.search.NameUsageSearchRequest;
-import life.catalogue.api.search.NameUsageSearchResponse;
-import life.catalogue.api.search.NameUsageSuggestRequest;
-import life.catalogue.api.search.NameUsageSuggestResponse;
-import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.search.*;
 import life.catalogue.es.model.NameUsageDocument;
 import life.catalogue.es.name.NameUsageWrapperConverter;
 import life.catalogue.es.name.search.NameUsageSearchServiceEs;
@@ -25,6 +14,13 @@ import life.catalogue.es.query.Query;
 import org.elasticsearch.client.RestClient;
 import org.junit.ClassRule;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -32,8 +28,6 @@ import static java.util.stream.Collectors.toList;
  * time accordingly.
  */
 public class EsReadTestBase {
-
-  public static final String indexName = "name_usage_test";
 
   @ClassRule
   public static EsSetupRule esSetupRule = new EsSetupRule();
@@ -49,16 +43,24 @@ public class EsReadTestBase {
   // Useful for @Before methods
   protected void destroyAndCreateIndex() {
     try {
-      EsUtil.deleteIndex(getEsClient(), indexName);
-      EsUtil.createIndex(getEsClient(), indexName, NameUsageDocument.class, getEsConfig().nameUsage);
+      EsUtil.deleteIndex(getEsClient(), esSetupRule.getEsConfig().nameUsage);
+      EsUtil.createIndex(getEsClient(), NameUsageDocument.class, getEsConfig().nameUsage);
     } catch (IOException e) {
       throw new EsException(e);
     }
   }
 
+  public IndexConfig index(){
+    return esSetupRule.getEsConfig().nameUsage;
+  }
+
+  public String indexName(){
+    return index().name;
+  }
+
   protected void truncate() {
     try {
-      EsUtil.truncate(getEsClient(), indexName);
+      EsUtil.truncate(getEsClient(), indexName());
     } catch (IOException e) {
       throw new EsException(e);
     }
@@ -67,9 +69,9 @@ public class EsReadTestBase {
   protected void indexRaw(Collection<NameUsageDocument> documents) {
     try {
       for (NameUsageDocument doc : documents) {
-        EsUtil.insert(getEsClient(), indexName, doc);
+        EsUtil.insert(getEsClient(), indexName(), doc);
       }
-      EsUtil.refreshIndex(getEsClient(), indexName);
+      EsUtil.refreshIndex(getEsClient(), indexName());
     } catch (IOException e) {
       throw new EsException(e);
     }
@@ -81,11 +83,11 @@ public class EsReadTestBase {
 
   protected List<NameUsageDocument> queryRaw(Query query) {
     EsSearchRequest esr = EsSearchRequest.emptyRequest().where(query);
-    return new NameUsageSearchServiceEs(indexName, getEsClient()).getDocuments(esr);
+    return new NameUsageSearchServiceEs(indexName(), getEsClient()).getDocuments(esr);
   }
 
   protected List<NameUsageDocument> queryRaw(EsSearchRequest rawRequest) {
-    return new NameUsageSearchServiceEs(indexName, getEsClient()).getDocuments(rawRequest);
+    return new NameUsageSearchServiceEs(indexName(), getEsClient()).getDocuments(rawRequest);
   }
 
   protected NameUsageDocument toDocument(NameUsageWrapper nameUsage) {
@@ -113,11 +115,11 @@ public class EsReadTestBase {
   }
 
   protected NameUsageSearchResponse search(NameUsageSearchRequest query) {
-    return new NameUsageSearchServiceEs(indexName, getEsClient()).search(query, new Page(0, 1000));
+    return new NameUsageSearchServiceEs(indexName(), getEsClient()).search(query, new Page(0, 1000));
   }
 
   protected NameUsageSuggestResponse suggest(NameUsageSuggestRequest query) {
-    return new NameUsageSuggestionServiceEs(indexName, getEsClient()).suggest(query);
+    return new NameUsageSuggestionServiceEs(indexName(), getEsClient()).suggest(query);
   }
 
   /**

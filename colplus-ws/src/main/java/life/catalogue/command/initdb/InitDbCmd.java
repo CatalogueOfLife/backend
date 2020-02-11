@@ -237,8 +237,8 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
     
     } else {
       try (RestClient esClient = new EsClientFactory(cfg.es).createClient()) {
-        LOG.info("Delete elastic search indices for {} on {}", cfg.es.environment, cfg.es.hosts);
-        EsUtil.deleteIndex(esClient, cfg.es.allIndices());
+        LOG.info("Delete elastic search index {} on {}", cfg.es.nameUsage.name, cfg.es.hosts);
+        EsUtil.deleteIndex(esClient, cfg.es.nameUsage);
 
         LOG.info("Build search index for draft catalogue");
         NameUsageIndexService indexService = new NameUsageIndexServiceEs(esClient, cfg.es, factory);

@@ -63,8 +63,6 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 import javax.ws.rs.client.Client;
 import java.io.IOException;
 
-import static life.catalogue.es.EsConfig.ES_INDEX_NAME_USAGE;
-
 public class WsServer extends Application<WsServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(WsServer.class);
 
@@ -162,8 +160,8 @@ public class WsServer extends Application<WsServerConfig> {
       env.lifecycle().manage(new ManagedEsClient(esClient));
       env.healthChecks().register("elastic", new EsHealthCheck(esClient, cfg.es));
       indexService = new NameUsageIndexServiceEs(esClient, cfg.es, getSqlSessionFactory());
-      searchService = new NameUsageSearchServiceEs(cfg.es.indexName(ES_INDEX_NAME_USAGE), esClient);
-      suggestService = new NameUsageSuggestionServiceEs(cfg.es.indexName(ES_INDEX_NAME_USAGE), esClient);
+      searchService = new NameUsageSearchServiceEs(cfg.es.nameUsage.name, esClient);
+      suggestService = new NameUsageSuggestionServiceEs(cfg.es.nameUsage.name, esClient);
     }
 
     // images

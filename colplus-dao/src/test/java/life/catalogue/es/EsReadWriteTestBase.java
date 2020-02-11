@@ -1,17 +1,5 @@
 package life.catalogue.es;
 
-import static java.util.stream.Collectors.toList;
-import java.io.IOException;
-import java.util.List;
-import java.util.stream.IntStream;
-import org.apache.ibatis.session.SqlSession;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.rules.ExternalResource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Page;
@@ -27,6 +15,20 @@ import life.catalogue.es.name.index.NameUsageIndexServiceEs;
 import life.catalogue.es.name.search.NameUsageSearchServiceEs;
 import life.catalogue.es.query.EsSearchRequest;
 import life.catalogue.es.query.Query;
+import org.apache.ibatis.session.SqlSession;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.rules.ExternalResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.stream.IntStream;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Base class for tests that want to read/write to both Postgres and Elasticsearch.
@@ -48,11 +50,10 @@ public class EsReadWriteTestBase extends ExternalResource {
   public void before() throws Throwable {
     super.before();
     try {
-      LOG.debug("Dumping test index \"{}\"", EsSetupRule.TEST_INDEX);
-      EsUtil.deleteIndex(esSetupRule.getClient(), EsSetupRule.TEST_INDEX);
-      LOG.debug("Creating test index \"{}\"", EsSetupRule.TEST_INDEX);
+      LOG.debug("Dumping test index \"{}\"", esSetupRule.getEsConfig().nameUsage);
+      EsUtil.deleteIndex(esSetupRule.getClient(), esSetupRule.getEsConfig().nameUsage);
+      LOG.debug("Creating test index \"{}\"", esSetupRule.getEsConfig().nameUsage);
       EsUtil.createIndex(esSetupRule.getClient(),
-          EsSetupRule.TEST_INDEX,
           NameUsageDocument.class,
           esSetupRule.getEsConfig().nameUsage);
     } catch (IOException e) {
@@ -62,19 +63,18 @@ public class EsReadWriteTestBase extends ExternalResource {
 
   @After
   public void after() {
-    LOG.debug("Test index \"{}\" kept around for inspection", EsSetupRule.TEST_INDEX);
+    LOG.debug("Test index \"{}\" kept around for inspection", esSetupRule.getEsConfig().nameUsage);
   }
 
   protected NameUsageIndexServiceEs createIndexService() {
     return new NameUsageIndexServiceEs(
         esSetupRule.getClient(),
         esSetupRule.getEsConfig(),
-        PgSetupRule.getSqlSessionFactory(),
-        EsSetupRule.TEST_INDEX);
+        PgSetupRule.getSqlSessionFactory());
   }
 
   protected NameUsageSearchServiceEs createSearchService() {
-    return new NameUsageSearchServiceEs(EsSetupRule.TEST_INDEX, esSetupRule.getClient());
+    return new NameUsageSearchServiceEs(esSetupRule.getEsConfig().nameUsage.name, esSetupRule.getClient());
   }
 
   /**
@@ -108,7 +108,7 @@ public class EsReadWriteTestBase extends ExternalResource {
    */
   protected NameUsageSearchResponse query(Query query) throws IOException {
     EsSearchRequest req = EsSearchRequest.emptyRequest().where(query).size(Page.MAX_LIMIT);
-    return createSearchService().search(EsSetupRule.TEST_INDEX, req, new Page(Page.MAX_LIMIT));
+    return createSearchService().search(esSetupRule.getEsConfig().nameUsage.name, req, new Page(Page.MAX_LIMIT));
   }
 
   /**

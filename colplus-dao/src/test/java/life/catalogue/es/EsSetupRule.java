@@ -1,15 +1,16 @@
 package life.catalogue.es;
 
-import java.io.IOException;
-import java.util.Arrays;
+import com.google.common.base.Joiner;
+import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.common.util.YamlUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.elasticsearch.client.RestClient;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.google.common.base.Joiner;
-import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.common.util.YamlUtils;
+
+import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * To be used as a ClassRule. Mainly installs/configures embedded Elasticsearch.
@@ -19,10 +20,6 @@ public class EsSetupRule extends ExternalResource {
   // required version of elastic to work against - will be verified
   private static final int[] ES_VERSION = new int[] {7, 4};
 
-  /**
-   * Name of the index used by default for tests.
-   */
-  public static final String TEST_INDEX = "name_usage_test";
   /**
    * Dataset key used by default for tests.
    */

@@ -1,26 +1,11 @@
 package life.catalogue.es.name.search;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Base64;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.UUID;
-import java.util.zip.DeflaterOutputStream;
-
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Taxon;
-import life.catalogue.api.search.FacetValue;
-import life.catalogue.api.search.NameUsageSearchParameter;
-import life.catalogue.api.search.NameUsageSearchRequest;
-import life.catalogue.api.search.NameUsageSearchResponse;
-import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.es.EsModule;
 import life.catalogue.es.EsReadTestBase;
@@ -30,6 +15,11 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.*;
+import java.util.zip.DeflaterOutputStream;
 
 import static org.junit.Assert.assertEquals;
 
@@ -41,7 +31,7 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
 
   @BeforeClass
   public static void init() {
-    svc = new NameUsageSearchServiceEs(indexName, esSetupRule.getClient());
+    svc = new NameUsageSearchServiceEs(esSetupRule.getEsConfig().nameUsage.name, esSetupRule.getClient());
   }
 
   @Before
@@ -132,7 +122,7 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
     doc.setRank(Rank.SPECIES);
     indexRaw(doc);
 
-    NameUsageSearchResponse result = svc.search(indexName, request, page);
+    NameUsageSearchResponse result = svc.search(indexName(), request, page);
 
     Map<NameUsageSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
     Set<FacetValue<?>> rankFacet = new TreeSet<>();
@@ -227,7 +217,7 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
     // CITATION_UNPARSED: 2 docs
     // CLASSIFICATION_NOT_APPLIED: 1 doc
 
-    NameUsageSearchResponse result = svc.search(indexName, request, page);
+    NameUsageSearchResponse result = svc.search(indexName(), request, page);
 
     Map<NameUsageSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
 
@@ -354,7 +344,7 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
     // PUB_ID1: 6 docs
     // PUB_ID2: 4 docs
 
-    NameUsageSearchResponse result = svc.search(indexName, request, page);
+    NameUsageSearchResponse result = svc.search(indexName(), request, page);
 
     Map<NameUsageSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
 
@@ -489,7 +479,7 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
     // PUB_ID1: 6 docs (SHOULD NOT BE AFFECTED BY FILTER !)
     // PUB_ID2: 4 docs
 
-    NameUsageSearchResponse result = svc.search(indexName, request, page);
+    NameUsageSearchResponse result = svc.search(indexName(), request, page);
 
     Map<NameUsageSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
 
@@ -560,7 +550,7 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
     pkFacet.add(FacetValue.forUuid(uuid2, 2));
     expected.put(NameUsageSearchParameter.PUBLISHER_KEY, pkFacet);
 
-    NameUsageSearchResponse result = svc.search(indexName, nsr, page);
+    NameUsageSearchResponse result = svc.search(indexName(), nsr, page);
 
     assertEquals(expected, result.getFacets());
 
@@ -613,7 +603,7 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
     skFacet.add(FacetValue.forInteger(key2, 2));
     expected.put(NameUsageSearchParameter.SECTOR_KEY, skFacet);
 
-    NameUsageSearchResponse result = svc.search(indexName, nsr, page);
+    NameUsageSearchResponse result = svc.search(indexName(), nsr, page);
 
     assertEquals(expected, result.getFacets());
 
@@ -663,7 +653,7 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
     datasetFacet.add(FacetValue.forInteger(key2, 2));
     expectedFacets.put(NameUsageSearchParameter.DATASET_KEY, datasetFacet);
 
-    NameUsageSearchResponse result = svc.search(indexName, request, page);
+    NameUsageSearchResponse result = svc.search(indexName(), request, page);
 
     assertEquals(expectedFacets, result.getFacets());
 

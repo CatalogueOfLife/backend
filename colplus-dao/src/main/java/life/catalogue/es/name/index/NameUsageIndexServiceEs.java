@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static life.catalogue.es.EsConfig.ES_INDEX_NAME_USAGE;
 
 public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
@@ -38,18 +37,12 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   private static final int BATCH_SIZE = 1000;
   private final RestClient client;
   private final EsConfig esConfig;
-  private final String index;
   private final SqlSessionFactory factory;
   private final NameUsageProcessor processor;
 
-  public NameUsageIndexServiceEs(RestClient client, EsConfig esConfig, SqlSessionFactory factory) {
-    this(client, esConfig, factory, esConfig.indexName(ES_INDEX_NAME_USAGE));
-  }
-
   @VisibleForTesting
-  public NameUsageIndexServiceEs(RestClient client, EsConfig esConfig, SqlSessionFactory factory, String index) {
+  public NameUsageIndexServiceEs(RestClient client, EsConfig esConfig, SqlSessionFactory factory) {
     this.client = client;
-    this.index = index;
     this.esConfig = esConfig;
     this.factory = factory;
     this.processor = new NameUsageProcessor(factory);
@@ -75,7 +68,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
 
   private Stats indexDatasetInternal(int datasetKey) {
-    NameUsageIndexer indexer = new NameUsageIndexer(client, index);
+    NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
     Stats stats = new Stats();
     try {
       createOrEmptyIndex(datasetKey);
@@ -83,7 +76,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
         LOG.info("Indexing usages from dataset {}", datasetKey);
         processor.processDataset(datasetKey, handler);
       }
-      EsUtil.refreshIndex(client, index);
+      EsUtil.refreshIndex(client, esConfig.nameUsage.name);
       stats.usages = indexer.documentsIndexed();
       indexer.reset();
       try (SqlSession session = factory.openSession(true)) {
@@ -92,13 +85,13 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
         Cursor<NameUsageWrapper> cursor = mapper.processDatasetBareNames(datasetKey, null);
         Iterables.partition(cursor, BATCH_SIZE).forEach(indexer);
       }
-      EsUtil.refreshIndex(client, index);
+      EsUtil.refreshIndex(client, esConfig.nameUsage.name);
       stats.names = indexer.documentsIndexed();
     } catch (IOException e) {
       throw new EsException(e);
     }
     LOG.info("Successfully indexed dataset {}. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
-            datasetKey, index, stats.usages, stats.names, stats.total()
+            datasetKey, esConfig.nameUsage.name, stats.usages, stats.names, stats.total()
     );
     return stats;
   }
@@ -106,10 +99,10 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   @Override
   public int deleteDataset(int datasetKey) {
     try {
-      LOG.info("Removing dataset {} from index {}", datasetKey, index);
-      int cnt = EsUtil.deleteDataset(client, index, datasetKey);
-      LOG.info("Deleted all {} documents from dataset {} from index {}", cnt, datasetKey, index);
-      EsUtil.refreshIndex(client, index);
+      LOG.info("Removing dataset {} from index {}", datasetKey, esConfig.nameUsage.name);
+      int cnt = EsUtil.deleteDataset(client, esConfig.nameUsage.name, datasetKey);
+      LOG.info("Deleted all {} documents from dataset {} from index {}", cnt, datasetKey, esConfig.nameUsage.name);
+      EsUtil.refreshIndex(client, esConfig.nameUsage.name);
       return cnt;
     } catch (IOException e) {
       throw new EsException(e);
@@ -118,7 +111,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
   @Override
   public void indexSector(Sector s) {
-    NameUsageIndexer indexer = new NameUsageIndexer(client, index);
+    NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
     Stats stats = new Stats();
     try (SqlSession session = factory.openSession()) {
       deleteSector(s.getKey());
@@ -135,22 +128,22 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       Cursor<NameUsageWrapper> cursor = mapper.processDatasetBareNames(s.getDatasetKey(), s.getKey());
       Iterables.partition(cursor, BATCH_SIZE).forEach(indexer);
 
-      EsUtil.refreshIndex(client, index);
+      EsUtil.refreshIndex(client, esConfig.nameUsage.name);
       stats.names = indexer.documentsIndexed();
     } catch (IOException e) {
       throw new EsException(e);
     }
     LOG.info("Successfully indexed sector {}. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
-            s.getKey(), index, stats.usages, stats.names, stats.total()
+            s.getKey(), esConfig.nameUsage.name, stats.usages, stats.names, stats.total()
     );
   }
 
   @Override
   public void deleteSector(int sectorKey) {
     try {
-      int cnt = EsUtil.deleteSector(client, index, sectorKey);
-      LOG.info("Deleted all {} documents from sector {} from index {}", cnt, sectorKey, index);
-      EsUtil.refreshIndex(client, index);
+      int cnt = EsUtil.deleteSector(client, esConfig.nameUsage.name, sectorKey);
+      LOG.info("Deleted all {} documents from sector {} from index {}", cnt, sectorKey, esConfig.nameUsage.name);
+      EsUtil.refreshIndex(client, esConfig.nameUsage.name);
     } catch (IOException e) {
       throw new EsException(e);
     }
@@ -162,9 +155,9 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       try {
         String first = taxonIds.iterator().next();
         LOG.info("Syncing {} taxa (first id: {}) from dataset {}", taxonIds.size(), first, datasetKey);
-        int deleted = EsUtil.deleteNameUsages(client, index, datasetKey, taxonIds);
+        int deleted = EsUtil.deleteNameUsages(client, esConfig.nameUsage.name, datasetKey, taxonIds);
         int inserted = indexNameUsages(datasetKey, taxonIds);
-        EsUtil.refreshIndex(client, index);
+        EsUtil.refreshIndex(client, esConfig.nameUsage.name);
         LOG.info("Finished syncing {} taxa (first id: {}) from dataset {}. Deleted: {}. Inserted: {}.",
             taxonIds.size(),
             first,
@@ -179,13 +172,13 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
   @Override
   public void updateClassification(int datasetKey, String rootTaxonId) {
-    NameUsageIndexer indexer = new NameUsageIndexer(client, index);
+    NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
     try (SqlSession session = factory.openSession()) {
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
       Cursor<SimpleNameClassification> cursor = mapper.processTree(datasetKey, null, rootTaxonId);
       ClassificationUpdater updater = new ClassificationUpdater(indexer, datasetKey);
       Iterables.partition(cursor, BATCH_SIZE).forEach(updater);
-      EsUtil.refreshIndex(client, index);
+      EsUtil.refreshIndex(client, esConfig.nameUsage.name);
     } catch (IOException e) {
       throw new EsException(e);
     }
@@ -196,8 +189,8 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   public void indexAll() {
     Stats total = new Stats();
     try {
-      EsUtil.deleteIndex(client, index);
-      EsUtil.createIndex(client, index, NameUsageDocument.class, esConfig.nameUsage);
+      EsUtil.deleteIndex(client, esConfig.nameUsage);
+      EsUtil.createIndex(client, NameUsageDocument.class, esConfig.nameUsage);
       List<Integer> keys;
       try (SqlSession session = factory.openSession(true)) {
         keys = session.getMapper(DatasetMapper.class).keys();
@@ -215,7 +208,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       }
 
       LOG.info("Successfully indexed {} datasets. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
-              counter, index, total.usages, total.names, total.total()
+              counter, esConfig.nameUsage.name, total.usages, total.names, total.total()
       );
     } catch (IOException e) {
       throw new EsException(e);
@@ -223,11 +216,11 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
 
   private void createOrEmptyIndex(int datasetKey) throws IOException {
-    if (EsUtil.indexExists(client, index)) {
-      EsUtil.deleteDataset(client, index, datasetKey);
-      EsUtil.refreshIndex(client, index);
+    if (EsUtil.indexExists(client, esConfig.nameUsage.name)) {
+      EsUtil.deleteDataset(client, esConfig.nameUsage.name, datasetKey);
+      EsUtil.refreshIndex(client, esConfig.nameUsage.name);
     } else {
-      EsUtil.createIndex(client, index, NameUsageDocument.class, esConfig.nameUsage);
+      EsUtil.createIndex(client, NameUsageDocument.class, esConfig.nameUsage);
     }
   }
 
@@ -235,7 +228,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
    * Indexes documents but does not refresh the index! Must be done by caller.
    */
   private int indexNameUsages(int datasetKey, Collection<String> usageIds) {
-    NameUsageIndexer indexer = new NameUsageIndexer(client, index);
+    NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
     try (SqlSession session = factory.openSession()) {
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
       List<NameUsageWrapper> usages = usageIds.stream()

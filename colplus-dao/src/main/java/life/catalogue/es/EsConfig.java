@@ -7,18 +7,6 @@ import javax.validation.constraints.NotNull;
 public class EsConfig {
 
   /**
-   * Name of the Elasticsearch index for name usages
-   */
-  public static final String ES_INDEX_NAME_USAGE = "nu";
-
-  /**
-   * Environment to prefix indices with to be able to share a single ES instance with multiple CoL+ installations. prod or
-   * dev are sensible values.
-   */
-  @NotNull
-  public String environment = "local";
-
-  /**
    * Comma separated list of hosts with ES nodes
    */
   @NotNull
@@ -52,20 +40,6 @@ public class EsConfig {
    * Defaults here to 15 minutes = 900.000ms
    */
   public int socketTimeout = 900000;
-
-  /**
-   * @return the index name prefixed with the configured environment
-   */
-  public String indexName(String name) {
-    return environment == null || environment.equals("<none>") ? name : environment + "-" + name;
-  }
-
-  /**
-   * An ES expression to match all index names of the configured environment
-   */
-  public String allIndices() {
-    return environment == null ? "*" : environment + "-*";
-  }
 
   @JsonIgnore
   public boolean isEmpty() {
