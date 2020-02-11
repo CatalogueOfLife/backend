@@ -29,9 +29,10 @@ client:
 es:
   hosts: ${es.hosts}
   ports: ${es.ports}
-  environment: local
   nameUsage:
-    modelClass: life.catalogue.es.model.EsNameUsage
+    name: local-nu
+    numShards: 1
+    numReplicas: 0
 auth:
   type: gbif
   api: "${gbif.api}"

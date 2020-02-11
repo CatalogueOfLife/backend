@@ -19,8 +19,6 @@ public class Issue541_SearchForUnparsedNames extends EsReadTestBase {
     destroyAndCreateIndex();
   }
 
-  String pattern = "[,×\\s]+";
-
   @Test
   public void test1() {
 

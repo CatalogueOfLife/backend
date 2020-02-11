@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 
 /**
  * Command to add new partition tables for a given master table.
- * When adding new partitioned tables to the db schema we need to create partition table
+ * When adding new partitioned tables to the db schema we need to create a partition table
  * for every existing dataset that has data.
  *
  * The command will look at the existing name partition tables to find the datasets with data.

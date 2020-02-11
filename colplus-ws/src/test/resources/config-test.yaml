@@ -39,8 +39,8 @@ client:
 es:
   hosts: ${es.hosts}
   ports: ${es.ports}
-  environment: test
   nameUsage:
+    name: test-nu
     numShards: 1
     numReplicas: 0
 auth:
