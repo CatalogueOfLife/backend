@@ -152,11 +152,12 @@ public class CatalogueRelease implements Runnable {
         // allow indexing to fail - sth we can do afterwards again
         LOG.error("Error indexing released & exported dataset {} into ES. Source catalogue={}", releaseKey, sourceDatasetKey, e);
       }
+      logger.log("Successfully finished releasing catalogue " + sourceDatasetKey);
 
-    } catch (IOException e) {
+    } catch (Exception e) {
       logger.log("Error releasing catalogue " + sourceDatasetKey + " into dataset " + releaseKey);
       LOG.error("Error releasing catalogue {} into dataset {}", sourceDatasetKey, releaseKey, e);
-      // cleanup partion which probably is not even be attached
+      // cleanup partion which probably is not even attached
       Partitioner.delete(factory, releaseKey);
 
     } finally {
