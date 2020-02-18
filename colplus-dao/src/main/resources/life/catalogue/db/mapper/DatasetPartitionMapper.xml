@@ -140,4 +140,10 @@
         )
     </select>
 
+    <select id="existingPartitions" resultType="integer">
+        SELECT replace((i.inhrelid::regclass)::text, 'name_', '')::int AS datasetkey
+        FROM   pg_inherits i
+        WHERE  i.inhparent = 'public.name'::regclass
+        ORDER BY datasetkey
+    </select>
 </mapper>

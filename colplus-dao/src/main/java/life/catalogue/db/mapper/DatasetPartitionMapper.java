@@ -96,4 +96,9 @@ public interface DatasetPartitionMapper {
    * @return true if partition tables exist
    */
   boolean exists(@Param("key") int key);
+
+  /**
+   * Lists all dataset keys for which there is an existing name partition table
+   */
+  List<Integer> existingPartitions();
 }

@@ -1,7 +1,9 @@
 package life.catalogue.common.collection;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 /**
  * Collection related methods. In order to prevent and pre-empt subtle logical errors, all "Venn-diagram methods" (like
@@ -36,6 +38,17 @@ public class CollectionUtils {
    */
   public static boolean notEmpty(Map<?, ?> m) {
     return m != null && !m.isEmpty();
+  }
+
+  /**
+   * Iterate over 2 collections in parallel
+   */
+  public static <T,U> void zip(Collection<T> ct, Collection<U> cu, BiConsumer<T,U> each) {
+    Iterator<T> it = ct.iterator();
+    Iterator<U> iu = cu.iterator();
+    while (it.hasNext() && iu.hasNext()) {
+      each.accept(it.next(), iu.next());
+    }
   }
 
   private CollectionUtils() {}

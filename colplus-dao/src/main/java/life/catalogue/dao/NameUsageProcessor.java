@@ -1,5 +1,6 @@
 package life.catalogue.dao;
 
+import com.google.common.collect.Iterables;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleNameClassification;
 import life.catalogue.api.search.NameUsageWrapper;
@@ -13,7 +14,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class NameUsageProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageProcessor.class);
@@ -67,10 +71,16 @@ public class NameUsageProcessor {
     try (SqlSession s = factory.openSession(true)) {
       final NameUsageWrapperMapper nuwm = s.getMapper(NameUsageWrapperMapper.class);
       Cursor<SimpleNameClassification> c = nuwm.processTree(datasetKey, sectorKey, id);
-      for (SimpleNameClassification cl : c) {
-        NameUsageWrapper obj = nuwm.getWithoutClassification(datasetKey, cl.getId());
-        obj.setClassification(cl.getClassification());
-        consumer.accept(obj);
+      for (List<SimpleNameClassification> cls : Iterables.partition(c, 50)) {
+        Map<String, NameUsageWrapper> objs = nuwm.getSomeWithoutClassification(datasetKey, cls.stream()
+            .map(SimpleNameClassification::getId)
+            .collect(Collectors.toList())).stream()
+            .collect(Collectors.toMap(o-> o.getUsage().getId(), Function.identity()));
+        for (SimpleNameClassification cl : cls) {
+          NameUsageWrapper obj = objs.get(cl.getId());
+          obj.setClassification(cl.getClassification());
+          consumer.accept(obj);
+        }
       }
     }
   }

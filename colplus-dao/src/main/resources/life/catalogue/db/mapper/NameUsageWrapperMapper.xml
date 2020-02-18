@@ -124,4 +124,10 @@
         WHERE u.id = #{id}
     </select>
 
+    <select id="getSomeWithoutClassification" parameterType="map" resultMap="usageResultMap">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        SELECT u.id AS uid, NULL AS classification, <include refid="taxonSelectFrom" />
+        WHERE u.id IN <foreach item="id" collection="ids" open="(" separator="," close=")">#{id}</foreach>
+    </select>
+
 </mapper>
