@@ -1,10 +1,10 @@
 package life.catalogue.common.concurrent;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -16,10 +16,11 @@ public class ExecutorUtils {
   public static final int MILLIS_TO_DIE = 12000;
   
   /**
-   * Shutdown executor with a 10s timeout.
+   * Shutdown executor and wait until all jobs are done no matter how long it takes.
+   * (actually waits for one month at most).
    */
   public static void shutdown(ExecutorService exec) {
-    shutdown(exec, 10, TimeUnit.SECONDS);
+    shutdown(exec, 31, TimeUnit.DAYS);
   }
   
   public static void shutdown(ExecutorService exec, int timeout, TimeUnit unit) {

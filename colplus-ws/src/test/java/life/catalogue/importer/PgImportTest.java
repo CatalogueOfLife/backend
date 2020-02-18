@@ -1,12 +1,5 @@
 package life.catalogue.importer;
 
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.google.common.collect.Lists;
 import life.catalogue.common.concurrent.ExecutorUtils;
 import life.catalogue.dao.Partitioner;
@@ -15,6 +8,10 @@ import life.catalogue.db.mapper.TestDataRule;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.util.List;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertTrue;
 
@@ -60,7 +57,7 @@ public class PgImportTest {
       exec.shutdown();
       
     } finally {
-      ExecutorUtils.shutdown(exec);
+      ExecutorUtils.shutdown(exec, 10, TimeUnit.SECONDS);
     }
   }
   

@@ -5,6 +5,8 @@ import com.google.common.collect.Iterables;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleNameClassification;
 import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.common.concurrent.ExecutorUtils;
+import life.catalogue.common.concurrent.NamedThreadFactory;
 import life.catalogue.common.func.BatchConsumer;
 import life.catalogue.dao.NameUsageProcessor;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -26,6 +28,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
@@ -64,14 +70,18 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
   @Override
   public void indexDataset(int datasetKey) {
-    indexDatasetInternal(datasetKey);
+    indexDatasetInternal(datasetKey, true);
   }
 
-  private Stats indexDatasetInternal(int datasetKey) {
+  private Stats indexDatasetInternal(int datasetKey, boolean clearIndex) {
     NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
     Stats stats = new Stats();
     try {
-      createOrEmptyIndex(datasetKey);
+      LOG.info("Start indexing dataset {}", datasetKey);
+      if (clearIndex) {
+        LOG.info("Remove dataset {} from index", datasetKey);
+        createOrEmptyIndex(datasetKey);
+      }
       try (BatchConsumer<NameUsageWrapper> handler = new BatchConsumer<>(indexer, BATCH_SIZE)) {
         LOG.info("Indexing usages from dataset {}", datasetKey);
         processor.processDataset(datasetKey, handler);
@@ -90,7 +100,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     } catch (IOException e) {
       throw new EsException(e);
     }
-    LOG.info("Successfully indexed dataset {}. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
+    LOG.info("Successfully indexed dataset {} into index {}. Usages: {}. Bare names: {}. Total: {}.",
             datasetKey, esConfig.nameUsage.name, stats.usages, stats.names, stats.total()
     );
     return stats;
@@ -187,7 +197,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
   @Override
   public void indexAll() {
-    Stats total = new Stats();
+    final Stats total = new Stats();
     try {
       EsUtil.deleteIndex(client, esConfig.nameUsage);
       EsUtil.createIndex(client, NameUsageDocument.class, esConfig.nameUsage);
@@ -201,13 +211,17 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
         LOG.info("Index {} datasets with data partitions out of all {} datasets", keys.size(), allDatasets);
       }
 
-      int counter = 1;
+      final AtomicInteger counter = new AtomicInteger(1);
+      ExecutorService exec = Executors.newFixedThreadPool(esConfig.indexingThreads, new NamedThreadFactory("ES-Indexer"));
       for (Integer datasetKey : keys) {
-        LOG.info("Index {}/{} dataset {}", counter++, keys.size(), datasetKey);
-        total.add( indexDatasetInternal(datasetKey) );
+        CompletableFuture.supplyAsync(() -> indexDatasetInternal(datasetKey, false), exec).thenAccept( st -> {
+          total.add(st);
+          LOG.info("Indexed {}/{} dataset {}. Total usages {}", counter.incrementAndGet(), keys.size(), datasetKey, total.usages);
+        });
       }
+      ExecutorUtils.shutdown(exec);
 
-      LOG.info("Successfully indexed {} datasets. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
+      LOG.info("Successfully indexed all {} datasets. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
               counter, esConfig.nameUsage.name, total.usages, total.names, total.total()
       );
     } catch (IOException e) {

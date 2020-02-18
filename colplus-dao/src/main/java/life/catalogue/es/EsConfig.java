@@ -2,6 +2,7 @@ package life.catalogue.es;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 public class EsConfig {
@@ -40,6 +41,12 @@ public class EsConfig {
    * Defaults here to 15 minutes = 900.000ms
    */
   public int socketTimeout = 900000;
+
+  /**
+   * Number of parallel threads to use when indexing all datasets
+   */
+  @Min(1)
+  public int indexingThreads = 4;
 
   @JsonIgnore
   public boolean isEmpty() {
