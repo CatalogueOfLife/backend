@@ -214,10 +214,15 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       final AtomicInteger counter = new AtomicInteger(1);
       ExecutorService exec = Executors.newFixedThreadPool(esConfig.indexingThreads, new NamedThreadFactory("ES-Indexer"));
       for (Integer datasetKey : keys) {
-        CompletableFuture.supplyAsync(() -> indexDatasetInternal(datasetKey, false), exec).thenAccept( st -> {
-          total.add(st);
-          LOG.info("Indexed {}/{} dataset {}. Total usages {}", counter.incrementAndGet(), keys.size(), datasetKey, total.usages);
-        });
+        CompletableFuture.supplyAsync(() -> indexDatasetInternal(datasetKey, false), exec)
+            .exceptionally(ex -> {
+              counter.incrementAndGet();
+              LOG.error("Error indexing dataset {}", datasetKey, ex.getCause());
+              return null;
+            }).thenAccept( st -> {
+              total.add(st);
+              LOG.info("Indexed {}/{} dataset {}. Total usages {}", counter.incrementAndGet(), keys.size(), datasetKey, total.usages);
+            });
       }
       ExecutorUtils.shutdown(exec);
 
