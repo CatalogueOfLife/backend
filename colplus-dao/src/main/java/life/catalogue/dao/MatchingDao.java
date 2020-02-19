@@ -1,6 +1,7 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
+import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import org.apache.commons.lang3.StringUtils;
@@ -35,33 +36,38 @@ public class MatchingDao {
    */
   public List<? extends NameUsage> matchDataset(SimpleName name, int datasetKey) {
     List<NameUsageBase> matches = new ArrayList<>();
-    // https://github.com/Sp2000/colplus-backend/issues/283
-    for (NameUsageBase t : uMapper.listByName(datasetKey, name.getName(), name.getRank())) {
-      // take authorship, code, status and parent as optional filters, i.e. if null accept any value
-      if (StringUtils.trimToNull(name.getAuthorship()) != null && !name.getAuthorship().equalsIgnoreCase(t.getName().authorshipComplete())) {
-        continue;
-      }
-      if (name.getStatus() != null && !Objects.equals(name.getStatus(), t.getStatus())) {
-        continue;
-      }
-      if (name.getCode() != null && !Objects.equals(name.getCode(), t.getName().getCode())) {
-        continue;
-      }
-      if (name.getParent() != null) {
-        // synonyms already have their parent name. For taxa we need to look that up
-        // https://github.com/Sp2000/colplus-backend/issues/349
-        Name parent;
-        if (t.isSynonym()) {
-          Synonym s = (Synonym) t;
-          parent = s.getAccepted().getName();
-        } else {
-          parent = nMapper.getByUsage(datasetKey, t.getParentId());
-        }
-        if (parent == null || !name.getParent().equalsIgnoreCase(parent.getScientificName())) {
+    // check if dataset has data partitions
+    if (session.getMapper(DatasetPartitionMapper.class).exists(datasetKey)){
+      // https://github.com/Sp2000/colplus-backend/issues/283
+      for (NameUsageBase t : uMapper.listByName(datasetKey, name.getName(), name.getRank())) {
+        // take authorship, code, status and parent as optional filters, i.e. if null accept any value
+        if (StringUtils.trimToNull(name.getAuthorship()) != null && !name.getAuthorship().equalsIgnoreCase(t.getName().authorshipComplete())) {
           continue;
         }
+        if (name.getStatus() != null && !Objects.equals(name.getStatus(), t.getStatus())) {
+          continue;
+        }
+        if (name.getCode() != null && !Objects.equals(name.getCode(), t.getName().getCode())) {
+          continue;
+        }
+        if (name.getParent() != null) {
+          // synonyms already have their parent name. For taxa we need to look that up
+          // https://github.com/Sp2000/colplus-backend/issues/349
+          Name parent;
+          if (t.isSynonym()) {
+            Synonym s = (Synonym) t;
+            parent = s.getAccepted().getName();
+          } else {
+            parent = nMapper.getByUsage(datasetKey, t.getParentId());
+          }
+          if (parent == null || !name.getParent().equalsIgnoreCase(parent.getScientificName())) {
+            continue;
+          }
+        }
+        matches.add(t);
       }
-      matches.add(t);
+    } else {
+      LOG.warn("Fail to match {} from dataset {} which has not data partition", name, datasetKey);
     }
     return matches;
   }

@@ -3,6 +3,7 @@ package life.catalogue.release;
 import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.Frequency;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.Partitioner;
@@ -67,6 +68,7 @@ public class CatalogueRelease implements Runnable {
       release.setKey(null);
       release.setAlias(null);
       release.setLocked(true);
+      release.setImportFrequency(Frequency.NEVER);
       release.setModifiedBy(userKey);
       release.setCreatedBy(userKey);
       release.setReleased(today);
