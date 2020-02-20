@@ -22,13 +22,10 @@ import static life.catalogue.es.name.NameUsageWrapperConverter.normalizeWeakly;
  */
 public class NameStrings {
 
+  private char sciNameLetter; // Used for alphabetical index
+  private char genusLetter; // Used for fast term queries with search phrases like "H sapiens"
   @Analyzers({KEYWORD, SCINAME_AUTO_COMPLETE})
   private String genusOrMonomialWN;
-  /*
-   * We store the 1st letter of the genus separately to allow for fast term queries for search phrases like "P. major" or "P major".
-   * Analyzer annotation not required b/c string fields are analyzed by default using the KEYWORD analyzer.
-   */
-  private String genusLetter;
   @Analyzers({KEYWORD, SCINAME_AUTO_COMPLETE})
   private String specificEpithetSN;
   @Analyzers({KEYWORD, SCINAME_AUTO_COMPLETE})
@@ -40,13 +37,16 @@ public class NameStrings {
    * @param name
    */
   public NameStrings(Name name) {
+    if (name.getScientificName() != null) {
+      sciNameLetter = Character.toUpperCase(name.getScientificName().charAt(0));
+    }
     if (name.getUninomial() != null) {
       genusOrMonomialWN = normalizeWeakly(name.getUninomial());
       if (name.getRank() == Rank.GENUS) {
-        genusLetter = String.valueOf(name.getUninomial().charAt(0)).toLowerCase();
+        genusLetter = Character.toLowerCase(name.getGenus().charAt(0));
       }
     } else if (name.getGenus() != null) {
-      genusLetter = String.valueOf(name.getGenus().charAt(0)).toLowerCase();
+      genusLetter = Character.toLowerCase(name.getGenus().charAt(0));
       genusOrMonomialWN = normalizeWeakly(name.getGenus());
     }
     if (name.getSpecificEpithet() != null) {
@@ -59,32 +59,24 @@ public class NameStrings {
 
   public NameStrings() {}
 
-  public String getGenusLetter() {
-    return genusLetter;
+  public char getSciNameLetter() {
+    return sciNameLetter;
   }
 
-  public void setGenusLetter(String genusLetter) {
+  public void setSciNameLetter(char sciNameLetter) {
+    this.sciNameLetter = sciNameLetter;
+  }
+
+  public void setGenusLetter(char genusLetter) {
     this.genusLetter = genusLetter;
-  }
-
-  public String getGenusOrMonomialWN() {
-    return genusOrMonomialWN;
   }
 
   public void setGenusOrMonomialWN(String genusWN) {
     this.genusOrMonomialWN = genusWN;
   }
 
-  public String getSpecificEpithetSN() {
-    return specificEpithetSN;
-  }
-
   public void setSpecificEpithetSN(String specificEpithetSN) {
     this.specificEpithetSN = specificEpithetSN;
-  }
-
-  public String getInfraspecificEpithetSN() {
-    return infraspecificEpithetSN;
   }
 
   public void setInfraspecificEpithetSN(String infraspecificEpithetSN) {

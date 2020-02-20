@@ -66,7 +66,7 @@ import life.catalogue.es.response.SearchHit;
  * <li>When querying name usage documents, we get them wrapped into an Elasticsearch response object. The name usage documents need a mapper
  * that maps (and writes) enums to integers. The Elasticsearch response object needs a mapper that maps enums to strings. That looks like a
  * conundrum. However, we are now talking about <i>reading</i> JSON, not writing it, and Jackson will just try everything to infer the
- * intended enum constant. So it doesn't really matter which mapper we use for deserialization. Close escape though.
+ * intended enum constant. So it doesn't really matter which mapper we use for deserialization. Narrow escape though.
  * </ol>
  * </p>
  */
