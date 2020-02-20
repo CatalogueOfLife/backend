@@ -32,7 +32,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-@Path("/assembly/{catKey}")
+@Path("/assembly")
 @Produces(MediaType.APPLICATION_JSON)
 public class AssemblyResource {
   
@@ -56,15 +56,22 @@ public class AssemblyResource {
     this.diDao = diDao;
     this.tdao = tdao;
   }
-  
+
   @GET
-  public AssemblyState state(@PathParam("catKey") int catKey) {
+  public AssemblyState globalState(@PathParam("catKey") int catKey) {
     requireManagedNoLock(catKey);
     return assembly.getState();
   }
+
+  @GET
+  @Path("/{catKey}")
+  public AssemblyState catState(@PathParam("catKey") int catKey) {
+    requireManagedNoLock(catKey);
+    return assembly.getState(catKey);
+  }
   
   @GET
-  @Path("/sync")
+  @Path("/{catKey}/sync")
   public ResultPage<SectorImport> list(@PathParam("catKey") int catKey,
                                        @QueryParam("sectorKey") Integer sectorKey,
                                        @QueryParam("datasetKey") Integer datasetKey,
@@ -82,7 +89,7 @@ public class AssemblyResource {
   }
   
   @POST
-  @Path("/sync")
+  @Path("/{catKey}/sync")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void sync(@PathParam("catKey") int catKey, RequestScope request, @Auth ColUser user) {
     requireManagedNoLock(catKey);
@@ -90,7 +97,7 @@ public class AssemblyResource {
   }
   
   @DELETE
-  @Path("/sync/{sectorKey}")
+  @Path("/{catKey}/sync/{sectorKey}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void deleteSync(@PathParam("catKey") int catKey, @PathParam("sectorKey") int sectorKey, @Auth ColUser user) {
     requireManagedNoLock(catKey);
@@ -98,7 +105,7 @@ public class AssemblyResource {
   }
   
   @GET
-  @Path("/sync/{sectorKey}/{attempt}")
+  @Path("/{catKey}/sync/{sectorKey}/{attempt}")
   public SectorImport getImportAttempt(@PathParam("catKey") int catKey,
                                        @PathParam("sectorKey") int sectorKey,
                                        @PathParam("attempt") int attempt,
@@ -108,7 +115,7 @@ public class AssemblyResource {
   }
   
   @GET
-  @Path("/release")
+  @Path("/{catKey}/release")
   public String releaseState(@PathParam("catKey") int catKey) {
     requireManagedNoLock(catKey);
     if (release == null) {
@@ -118,7 +125,7 @@ public class AssemblyResource {
   }
   
   @POST
-  @Path("/release")
+  @Path("/{catKey}/release")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public Integer release(@PathParam("catKey") int catKey, @Auth ColUser user) {
     requireManagedNoLock(catKey);
@@ -141,7 +148,7 @@ public class AssemblyResource {
 
   @POST
   @Deprecated
-  @Path("/export")
+  @Path("/{catKey}/export")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public String export(@PathParam("catKey") int catKey, @Auth ColUser user) {
     requireManaged(catKey, true);
@@ -160,7 +167,7 @@ public class AssemblyResource {
   }
   
   @POST
-  @Path("/rematch")
+  @Path("/{catKey}/rematch")
   public SubjectRematcher rematch(@PathParam("catKey") int catKey, RematchRequest req, @Auth ColUser user) {
     requireManagedNoLock(catKey);
     SubjectRematcher matcher = new SubjectRematcher(factory, catKey, user.getKey());
@@ -169,7 +176,7 @@ public class AssemblyResource {
   }
 
   @POST
-  @Path("/sector-count-update")
+  @Path("/{catKey}/sector-count-update")
   public boolean updateAllSectorCounts(@PathParam("catKey") int catKey) {
     requireManagedNoLock(catKey);
     try (SqlSession session = factory.openSession()) {

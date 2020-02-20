@@ -1,6 +1,5 @@
 package life.catalogue.assembly;
 
-import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import io.dropwizard.lifecycle.Managed;
@@ -27,6 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class AssemblyCoordinator implements Managed {
   static  final Comparator<Sector> SECTOR_ORDER = Comparator.comparing(Sector::getTarget, Comparator.nullsLast(SimpleName::compareTo));
@@ -40,9 +40,9 @@ public class AssemblyCoordinator implements Managed {
   private final DatasetImportDao diDao;
   private final Map<Integer, SectorFuture> syncs = Collections.synchronizedMap(new LinkedHashMap<Integer, SectorFuture>());
   private final Timer timer;
-  private final Counter counter;
-  private final Counter failed;
-  
+  private final Map<Integer, AtomicInteger> counter = new HashMap<>();
+  private final Map<Integer, AtomicInteger> failed = new HashMap<>();
+
   static class SectorFuture {
     public final int sectorKey;
     public final int datasetKey;
@@ -65,8 +65,6 @@ public class AssemblyCoordinator implements Managed {
     this.diDao = diDao;
     this.indexService = indexService;
     timer = registry.timer("life.catalogue.assembly.timer");
-    counter = registry.counter("life.catalogue.assembly.counter");
-    failed = registry.counter("life.catalogue.assembly.failed");
   }
   
   @Override
@@ -90,9 +88,24 @@ public class AssemblyCoordinator implements Managed {
   }
   
   public AssemblyState getState() {
-    return new AssemblyState(syncs.values(), (int) failed.getCount(), (int) counter.getCount());
+    return new AssemblyState(syncs.values(), total(failed), total(counter));
   }
-  
+
+  private static int total(Map<Integer, AtomicInteger> cnt) {
+    return cnt.values().stream().mapToInt(AtomicInteger::get).sum();
+  }
+
+  public AssemblyState getState(int datasetKey) {
+    List<SectorFuture> vals = syncs.values().stream()
+        .filter(sf -> sf.datasetKey == datasetKey)
+        .collect(Collectors.toList());
+    return new AssemblyState(vals, valOrZero(failed, datasetKey), valOrZero(counter, datasetKey));
+  }
+
+  private static int valOrZero(Map<Integer, AtomicInteger> map, Integer key){
+    return map.containsKey(key) ? map.get(key).get() : 0;
+  }
+
   /**
    * Check if any sector from a given dataset is currently syncing and return the sector key. Otherwise null
    */
@@ -183,7 +196,8 @@ public class AssemblyCoordinator implements Managed {
     Duration durQueued = Duration.between(sync.getCreated(), sync.getStarted());
     Duration durRun = Duration.between(sync.getStarted(), LocalDateTime.now());
     LOG.info("Sector Sync {} finished. {} min queued, {} min to execute", sync.getSectorKey(), durQueued.toMinutes(), durRun.toMinutes());
-    counter.inc();
+    counter.putIfAbsent(sync.catalogueKey, new AtomicInteger(0));
+    counter.get(sync.catalogueKey).incrementAndGet();
     timer.update(durRun.getSeconds(), TimeUnit.SECONDS);
   }
   
@@ -193,7 +207,8 @@ public class AssemblyCoordinator implements Managed {
   private void errorCallBack(SectorRunnable sync, Exception err) {
     syncs.remove(sync.getSectorKey());
     LOG.error("Sector Sync {} failed: {}", sync.getSectorKey(), err.getCause().getMessage(), err.getCause());
-    failed.inc();
+    failed.putIfAbsent(sync.catalogueKey, new AtomicInteger(0));
+    failed.get(sync.catalogueKey).incrementAndGet();
   }
   
   public synchronized void cancel(int sectorKey, ColUser user) {
