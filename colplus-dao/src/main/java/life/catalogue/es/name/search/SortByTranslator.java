@@ -18,9 +18,10 @@ class SortByTranslator {
   List<SortField> translate() {
     if (request.getSortBy() == SortBy.NAME) {
       return CollapsibleList.of(new SortField("scientificName", !request.isReverse()));
-    }
-    if (request.getSortBy() == SortBy.TAXONOMIC) {
+    } else if (request.getSortBy() == SortBy.TAXONOMIC) {
       return CollapsibleList.of(new SortField("rank", !request.isReverse()), new SortField("scientificName"));
+    } else if (request.getSortBy() == SortBy.INDEX_NAME_ID) {
+      return CollapsibleList.of(new SortField("nameIndexId", !request.isReverse()));
     }
     return CollapsibleList.of(request.isReverse() ? SortField.DOC_DESC : SortField.DOC);
   }

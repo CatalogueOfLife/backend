@@ -306,4 +306,56 @@ public class SortingTest extends EsReadTestBase {
     
   }
 
+
+  @Test
+  public void testSortByIndexNameId_01() {
+    NameUsageDocument docA = new NameUsageDocument();
+    docA.setNameIndexId("A");
+    NameUsageDocument docB = new NameUsageDocument();
+    docB.setNameIndexId("B");
+    NameUsageDocument docC = new NameUsageDocument();
+    docC.setNameIndexId("C");
+    NameUsageDocument docD = new NameUsageDocument();
+    docD.setNameIndexId("D");
+    NameUsageDocument docE = new NameUsageDocument();
+    docE.setNameIndexId("E");
+
+    indexRaw(docB, docA, docD, docE, docC);
+
+    List<NameUsageDocument> expected = Arrays.asList(docA, docB, docC, docD, docE);
+
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.setSortBy(SortBy.INDEX_NAME_ID);
+    EsSearchRequest esQuery = new RequestTranslator(query, new Page()).translateRequest();
+    List<NameUsageDocument> result = queryRaw(esQuery);
+    assertEquals(expected, result);
+  }
+
+
+  @Test
+  public void testSortByIndexNameIdDescending_01() {
+    NameUsageDocument docA = new NameUsageDocument();
+    docA.setNameIndexId("A");
+    NameUsageDocument docB = new NameUsageDocument();
+    docB.setNameIndexId("B");
+    NameUsageDocument docC = new NameUsageDocument();
+    docC.setNameIndexId("C");
+    NameUsageDocument docD = new NameUsageDocument();
+    docD.setNameIndexId("D");
+    NameUsageDocument docE = new NameUsageDocument();
+    docE.setNameIndexId("E");
+
+    indexRaw(docB, docA, docD, docE, docC);
+
+    List<NameUsageDocument> expected = Arrays.asList(docE, docD, docC, docB, docA);
+
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.setSortBy(SortBy.INDEX_NAME_ID);
+    query.setReverse(true);
+    EsSearchRequest esQuery = new RequestTranslator(query, new Page()).translateRequest();
+    List<NameUsageDocument> result = queryRaw(esQuery);
+    assertEquals(expected, result);
+  }
+
+
 }
