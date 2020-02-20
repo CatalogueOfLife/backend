@@ -7,6 +7,8 @@ import life.catalogue.db.mapper.ReferenceMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.time.LocalDateTime;
@@ -14,8 +16,8 @@ import java.util.List;
 import java.util.Objects;
 
 public class ReferenceDao extends DatasetEntityDao<String, Reference, ReferenceMapper> {
-  
-  
+  private static final Logger LOG = LoggerFactory.getLogger(ReferenceDao.class);
+
   public ReferenceDao(SqlSessionFactory factory) {
     super(false, factory, ReferenceMapper.class);
   }
@@ -90,6 +92,15 @@ public class ReferenceDao extends DatasetEntityDao<String, Reference, ReferenceM
       ReferenceMapper nm = session.getMapper(ReferenceMapper.class);
       List<Reference> result = nm.listOrphans(datasetKey, before, p);
       return new ResultPage<>(p, result, () -> page.getLimit()+1);
+    }
+  }
+
+  public int deleteOrphans(int datasetKey, @Nullable LocalDateTime before, ColUser user) {
+    try (SqlSession session = factory.openSession()) {
+      int cnt = session.getMapper(ReferenceMapper.class).deleteOrphans(datasetKey, before);
+      session.commit();
+      LOG.info("Remove {} orphan references from dataset {} by user {}", cnt, datasetKey, user);
+      return cnt;
     }
   }
 }

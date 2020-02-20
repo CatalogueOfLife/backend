@@ -59,6 +59,16 @@ public class NameDao extends DatasetEntityDao<String, Name, NameMapper> {
     }
   }
 
+  public int deleteOrphans(int datasetKey, @Nullable LocalDateTime before, ColUser user) {
+    try (SqlSession session = factory.openSession()) {
+      int cnt = session.getMapper(NameMapper.class).deleteOrphans(datasetKey, before);
+      session.commit();
+      LOG.info("Remove {} orphan names from dataset {} by user {}", cnt, datasetKey, user);
+      // also remove from ES
+      return cnt;
+    }
+  }
+
   /**
    * Lists all homotypic synonyms based on the same homotypic group key
    */

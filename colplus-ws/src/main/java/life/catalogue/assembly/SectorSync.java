@@ -196,7 +196,7 @@ public class SectorSync extends SectorRunnable {
         .map(ed -> ed.getSubject().getId())
         .collect(Collectors.toSet());
     try (SqlSession session = factory.openSession(false);
-         TreeCopyHandler treeHandler = new TreeCopyHandler(factory, user, sector, state, decisions)
+         TreeCopyHandler treeHandler = new TreeCopyHandler(decisions, factory, user, sector, state)
     ){
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
       LOG.info("Traverse taxon tree, blocking {} nodes", blockedIds.size());

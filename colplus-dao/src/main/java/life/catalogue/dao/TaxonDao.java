@@ -307,9 +307,9 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
 
       // cascading delete removes descendants and vernacular, distributions, descriptions, media
       // but NOT names, name_rels or refs
+      // If not wanted there are remove orphan methods for names and refs
       tm.delete(id);
-      // TODO: remove orphaned names and references ?
-  
+
       // remove delta from parents
       DSIDValue<String> key = DSID.copy(id);
       for (TaxonCountMap tc : parents) {
