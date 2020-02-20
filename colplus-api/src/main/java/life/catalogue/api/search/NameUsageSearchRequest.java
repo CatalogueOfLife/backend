@@ -24,7 +24,7 @@ public class NameUsageSearchRequest {
   }
 
   public static enum SortBy {
-    NATIVE, NAME, TAXONOMIC
+    NATIVE, NAME, TAXONOMIC, INDEX_NAME_ID
   }
 
   /**
