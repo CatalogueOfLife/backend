@@ -58,8 +58,7 @@ public class AssemblyResource {
   }
 
   @GET
-  public AssemblyState globalState(@PathParam("catKey") int catKey) {
-    requireManagedNoLock(catKey);
+  public AssemblyState globalState() {
     return assembly.getState();
   }
 
