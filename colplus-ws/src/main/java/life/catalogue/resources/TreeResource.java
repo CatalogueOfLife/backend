@@ -44,10 +44,11 @@ public class TreeResource {
   @GET
   public ResultPage<TreeNode> root(@PathParam("datasetKey") int datasetKey,
                                    @QueryParam("catalogueKey") @DefaultValue(Datasets.DRAFT_COL+"") int catalogueKey,
+                                   @QueryParam("type") TreeNode.Type type,
                                    @Valid @BeanParam Page page,
                                    @Context SqlSession session) {
     Page p = page == null ? new Page(0, DEFAULT_PAGE_SIZE) : page;
-    List<TreeNode> result = session.getMapper(TreeMapper.class).root(catalogueKey, datasetKey, p);
+    List<TreeNode> result = session.getMapper(TreeMapper.class).root(catalogueKey, type, datasetKey, p);
     return new ResultPage<>(p, result, () -> session.getMapper(TaxonMapper.class).countRoot(datasetKey));
   }
   
@@ -56,10 +57,11 @@ public class TreeResource {
   public List<TreeNode> parents(@PathParam("datasetKey") int datasetKey,
                                 @PathParam("id") String id,
                                 @QueryParam("catalogueKey") @DefaultValue(Datasets.DRAFT_COL+"") int catalogueKey,
+                                @QueryParam("type") TreeNode.Type type,
                                 @Context SqlSession session) {
     RankID parent = parseID(datasetKey, id);
     TreeMapper trm = session.getMapper(TreeMapper.class);
-    LinkedList<TreeNode> parents = new LinkedList<>(trm.parents(catalogueKey, parent));
+    LinkedList<TreeNode> parents = new LinkedList<>(trm.parents(catalogueKey, type, parent));
     if (parent.rank != null) {
       // this was a placeholder, check how many intermediates we need
       List<Rank> sedisRanks = trm.childrenRanks(parent, parent.rank);
@@ -87,13 +89,14 @@ public class TreeResource {
                                        @PathParam("id") String id,
                                        @QueryParam("catalogueKey") @DefaultValue(Datasets.DRAFT_COL+"") int catalogueKey,
                                        @QueryParam("insertPlaceholder") boolean insertPlaceholder,
+                                       @QueryParam("type") TreeNode.Type type,
                                        @Valid @BeanParam Page page, @Context SqlSession session) {
     TreeMapper trm = session.getMapper(TreeMapper.class);
     TaxonMapper tm = session.getMapper(TaxonMapper.class);
     Page p = page == null ? new Page(0, DEFAULT_PAGE_SIZE) : page;
   
     RankID parent = parseID(datasetKey, id);
-    List<TreeNode> result = trm.children(catalogueKey, parent, parent.rank, insertPlaceholder, p);;
+    List<TreeNode> result = trm.children(catalogueKey, type, parent, parent.rank, insertPlaceholder, p);;
 
     Supplier<Integer> countSupplier;
     if (insertPlaceholder && !result.isEmpty()) {
@@ -106,7 +109,7 @@ public class TreeResource {
       // we *might* need a placeholder, check if there are more children of other ranks
       int allChildren = tm.countChildren(parent);
       if (allChildren > result.size()) {
-        TreeNode tnParent = trm.get(catalogueKey, parent);
+        TreeNode tnParent = trm.get(catalogueKey, type, parent);
         TreeNode placeHolder = placeholder(tnParent, result.get(0), allChildren-result.size());
         result.add(placeHolder);
       }

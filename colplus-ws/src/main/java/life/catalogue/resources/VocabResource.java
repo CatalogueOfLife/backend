@@ -6,10 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.ClassPath;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
-import life.catalogue.api.model.ColUser;
-import life.catalogue.api.model.EditorialDecision;
-import life.catalogue.api.model.Sector;
-import life.catalogue.api.model.SectorImport;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.vocab.*;
 import life.catalogue.img.ImgConfig;
@@ -53,7 +50,8 @@ public class VocabResource {
           EditorialDecision.Mode.class,
           Sector.Mode.class,
           SectorImport.State.class,
-          NameUsageSearchParameter.class)) {
+          NameUsageSearchParameter.class,
+          TreeNode.Type.class)) {
         add(enums, clazz);
       }
       

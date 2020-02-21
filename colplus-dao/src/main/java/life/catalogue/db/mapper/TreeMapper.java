@@ -1,14 +1,13 @@
 package life.catalogue.db.mapper;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.apache.ibatis.annotations.Param;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.TreeNode;
+import org.apache.ibatis.annotations.Param;
 import org.gbif.nameparser.api.Rank;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  *
@@ -22,16 +21,20 @@ public interface TreeMapper {
    * @param key          The tree node key pointing to either a catalogue or source taxon
    */
   TreeNode get(@Param("catalogueKey") int catalogueKey,
+               @Param("type") TreeNode.Type type,
                @Param("key") DSID<String> key);
   
   List<TreeNode> root(@Param("catalogueKey") int catalogueKey,
+                      @Param("type") TreeNode.Type type,
                       @Param("datasetKey") int datasetKey,
                       @Param("page") Page page);
 
   List<TreeNode> parents(@Param("catalogueKey") int catalogueKey,
+                         @Param("type") TreeNode.Type type,
                          @Param("key") DSID<String> key);
   
   List<TreeNode> children(@Param("catalogueKey") int catalogueKey,
+                          @Param("type") TreeNode.Type type,
                           @Param("key") DSID<String> key,
                           @Nullable @Param("rank") Rank rank,
                           @Param("insertPlaceholder") boolean insertPlaceholder,
