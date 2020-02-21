@@ -208,7 +208,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.healthChecks().register("diff", new DiffHealthCheck(diff));
 
     // daos
-    TaxonDao tdao = new TaxonDao(getSqlSessionFactory());
+    TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), indexService);
     NameDao ndao = new NameDao(getSqlSessionFactory(), aNormalizer);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory());
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory());

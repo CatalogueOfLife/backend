@@ -1,12 +1,6 @@
 package life.catalogue.es.name.index;
 
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.List;
-import java.util.function.Consumer;
-
 import com.google.common.base.Charsets;
-
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.es.EsException;
 import life.catalogue.es.EsModule;
@@ -18,6 +12,11 @@ import org.elasticsearch.client.Request;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.List;
+import java.util.function.Consumer;
 
 class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
   
@@ -51,27 +50,6 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
       indexWithExtraStats(batch);
     } else {
       index(batch);
-    }
-  }
-
-  /**
-   * Indexes the provided raw documents. The documents are presumed to have their document ID nullified. Otherwise
-   * Elasticsearch will reject them because the document ID isn't part of the document itself (and we use strict typing,
-   * so no undeclared fields are allowed).
-   * 
-   * @param documents
-   */
-  void indexDocuments(List<NameUsageDocument> documents) {
-    buf.setLength(0);
-    try {
-      for (NameUsageDocument doc : documents) {
-        buf.append(indexHeader);
-        buf.append(EsModule.write(doc));
-        buf.append("\n");
-      }
-      sendBatch(documents.size());
-    } catch (IOException e) {
-      throw new EsException(e);
     }
   }
 

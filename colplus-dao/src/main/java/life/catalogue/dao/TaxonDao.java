@@ -4,10 +4,12 @@ import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import life.catalogue.api.model.*;
+import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.*;
+import life.catalogue.es.name.index.NameUsageIndexService;
 import life.catalogue.parser.NameParser;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -20,13 +22,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonDao.class);
-  
-  public TaxonDao(SqlSessionFactory factory) {
+  private final NameUsageIndexService indexService;
+
+  public TaxonDao(SqlSessionFactory factory, NameUsageIndexService indexService) {
     super(true, factory, TaxonMapper.class);
+    this.indexService = indexService;
   }
   
   public static DSID<String> copyTaxon(SqlSession session, final Taxon t, final DSID<String> target, int user, Set<EntityType> include) {
@@ -209,7 +214,9 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       session.getMapper(TaxonMapper.class).create(t);
       
       session.commit();
-      
+
+      // create taxon in ES
+      indexService.update(t.getDatasetKey(), List.of(t.getId()));
       return t;
     }
   }
@@ -233,30 +240,34 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   }
   
   @Override
-  protected void updateAfter(Taxon t, Taxon old, int user, TaxonMapper mapper, SqlSession session) {
+  protected void updateAfter(Taxon t, Taxon old, int user, TaxonMapper tm, SqlSession session) {
     // has parent, i.e. classification been changed ?
     if (!Objects.equals(old.getParentId(), t.getParentId())) {
-      parentChanged(mapper, t, old.getParentId(), t.getParentId());
-    }
-  }
-  
-  private static void parentChanged(TaxonMapper tm, final DSID<String> key, String oldParentId, String newParentId) {
-    // migrate entire DatasetSectors from old to new
-    Int2IntOpenHashMap delta = tm.getCounts(key).getCount();
-    if (delta != null && !delta.isEmpty()) {
-      DSID<String> parentKey =  DSID.key(key.getDatasetKey(), oldParentId);
-      // reusable catalogue key instance
-      final DSIDValue<String> catKey = DSID.key(key.getDatasetKey(), "");
-      // remove delta
-      for (TaxonCountMap tc : tm.classificationCounts(parentKey)) {
-        tm.updateDatasetSectorCount(catKey.id(tc.getId()), mergeMapCounts(tc.getCount(), delta, -1));
+      // migrate entire DatasetSectors from old to new
+      Int2IntOpenHashMap delta = tm.getCounts(t).getCount();
+      if (delta != null && !delta.isEmpty()) {
+        DSID<String> parentKey =  DSID.key(t.getDatasetKey(), old.getParentId());
+        // reusable catalogue key instance
+        final DSIDValue<String> catKey = DSID.key(t.getDatasetKey(), "");
+        // remove delta
+        for (TaxonCountMap tc : tm.classificationCounts(parentKey)) {
+          tm.updateDatasetSectorCount(catKey.id(tc.getId()), mergeMapCounts(tc.getCount(), delta, -1));
+        }
+        // add counts
+        parentKey.setId(t.getParentId());
+        for (TaxonCountMap tc : tm.classificationCounts(parentKey)) {
+          tm.updateDatasetSectorCount(catKey.id(tc.getId()), mergeMapCounts(tc.getCount(), delta, 1));
+        }
       }
-      // add counts
-      parentKey.setId(newParentId);
-      for (TaxonCountMap tc : tm.classificationCounts(parentKey)) {
-        tm.updateDatasetSectorCount(catKey.id(tc.getId()), mergeMapCounts(tc.getCount(), delta, 1));
-      }
+      // async update classification of all descendants.
+      CompletableFuture.runAsync(() -> indexService.updateClassification(t.getDatasetKey(), t.getId()))
+          .exceptionally(ex -> {
+            LOG.error("Failed to update classification for descendants of {}", t, ex);
+            return null;
+          });
     }
+    // update single taxon in ES
+    indexService.update(t.getDatasetKey(), List.of(t.getId()));
   }
   
   private static Int2IntOpenHashMap mergeMapCounts(Int2IntOpenHashMap m1, Int2IntOpenHashMap m2, int factor) {
@@ -288,7 +299,14 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   
   @Override
   protected void deleteAfter(DSID<String> did, Taxon old, int user, TaxonMapper mapper, SqlSession session) {
-    //TODO: update ES
+    // update ES. there is probably a bare name now to be indexed!
+    indexService.delete(did);
+    if (old != null) {
+      NameUsageWrapper bare = session.getMapper(NameUsageWrapperMapper.class).getBareName(did.getDatasetKey(), old.getName().getId());
+      if (bare != null) {
+        indexService.add(List.of(bare));
+      }
+    }
   }
   
   /**
@@ -326,7 +344,8 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       session.commit();
     }
     
-    //TODO: update ES
+    // update ES
+    indexService.deleteSubtree(id);
   }
   
   /**

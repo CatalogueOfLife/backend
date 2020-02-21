@@ -9,7 +9,6 @@ import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.tree.DiffService;
 import life.catalogue.db.tree.NamesDiff;
 import life.catalogue.db.tree.TextTreePrinter;
@@ -70,12 +69,6 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     return dao.search(req, page);
   }
   
-  @GET
-  @Path("catalogues")
-  public List<Integer> listCatalogues(@Context SqlSession session) {
-    return session.getMapper(SectorMapper.class).listTargetDatasetKeys();
-  }
-
   @POST
   @Path("{key}/export")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})

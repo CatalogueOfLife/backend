@@ -45,7 +45,7 @@ public class DecisionDao extends EntityDao<Integer, EditorialDecision, DecisionM
           obj.getDatasetKey(),
           obj.getSubjectDatasetKey()
       );
-      indexService.sync(obj.getSubjectDatasetKey(), Lists.newArrayList(obj.getSubject().getId()));
+      indexService.update(obj.getSubjectDatasetKey(), Lists.newArrayList(obj.getSubject().getId()));
     }
   }
 
@@ -68,7 +68,7 @@ public class DecisionDao extends EntityDao<Integer, EditorialDecision, DecisionM
     if (obj.getSubject().getId() != null) {
       ids.add(obj.getSubject().getId());
     }
-    indexService.sync(obj.getSubjectDatasetKey(), ids);
+    indexService.update(obj.getSubjectDatasetKey(), ids);
   }
 
   @Override
@@ -80,7 +80,7 @@ public class DecisionDao extends EntityDao<Integer, EditorialDecision, DecisionM
           old.getDatasetKey(),
           old.getSubjectDatasetKey()
       );
-      indexService.sync(old.getSubjectDatasetKey(), Lists.newArrayList(old.getSubject().getId()));
+      indexService.update(old.getSubjectDatasetKey(), Lists.newArrayList(old.getSubject().getId()));
     }
   }
 

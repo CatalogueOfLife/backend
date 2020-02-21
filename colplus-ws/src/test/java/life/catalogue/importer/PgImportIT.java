@@ -14,6 +14,7 @@ import life.catalogue.config.NormalizerConfig;
 import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.*;
+import life.catalogue.es.name.index.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
@@ -81,7 +82,7 @@ public class PgImportIT {
     }
   
     sdao = new SynonymDao(PgSetupRule.getSqlSessionFactory());
-    tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory());
+    tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
     ndao = new NameDao(PgSetupRule.getSqlSessionFactory(), aNormalizer);
     rdao = new ReferenceDao(PgSetupRule.getSqlSessionFactory());
   }

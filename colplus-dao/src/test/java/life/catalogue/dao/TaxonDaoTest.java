@@ -12,6 +12,7 @@ import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.SynonymMapper;
 import life.catalogue.db.mapper.TestDataRule;
+import life.catalogue.es.name.index.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -27,7 +28,7 @@ import static org.junit.Assert.*;
 
 public class TaxonDaoTest extends DaoTestBase {
   private static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
-  TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory());
+  TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
   NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), aNormalizer);
   static int user = TestEntityGenerator.USER_EDITOR.getKey();
   
