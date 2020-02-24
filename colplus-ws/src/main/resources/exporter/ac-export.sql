@@ -324,6 +324,46 @@ FROM name_{{datasetKey}} n
     LEFT JOIN __tax_keys tk ON t.id=tk.id
 WHERE n.rank >= 'SPECIES'::rank
 
+UNION
+-- empty genera, see https://github.com/Sp2000/colplus-backend/issues/637
+SELECT
+  tk.key AS record_id,
+  t.id AS name_code,
+  t.link AS web_site,
+  n.genus AS genus,
+  NULL AS subgenus,
+  NULL AS species,
+  NULL AS infraspecies_parent_name_code,
+  NULL AS infraspecies,
+  NULL AS infraspecies_marker,
+  NULL AS author,
+  CASE WHEN t.is_synonym THEN t.parent_id ELSE t.id END AS accepted_name_code,
+  t.remarks AS comment,
+  t.according_to_date AS scrutiny_date,
+  1 AS sp2000_status_id, -- 1=ACCEPTED
+  coalesce(c.dataset_key, 1500) - 1000 AS database_id,
+  sc.key AS specialist_id,
+  cf.key AS family_id,
+  NULL AS specialist_code,
+  c.family_id AS family_code,
+  1 AS is_accepted_name,
+  NULL AS GSDTaxonGUID,
+  NULL AS GSDNameGUID,
+  CASE WHEN t.extinct THEN 1 ELSE 0 END AS is_extinct,
+  0 AS has_preholocene,
+  0 AS has_modern
+FROM name_{{datasetKey}} n
+    JOIN name_usage_{{datasetKey}} t ON n.id=t.name_id
+    LEFT JOIN name_usage_{{datasetKey}} tc ON tc.parent_id=t.id AND NOT t.is_synonym
+    LEFT JOIN __classification c  ON t.id=c.id
+    LEFT JOIN __classification cf ON c.family_id=cf.id
+    LEFT JOIN __scrutinizer sc ON t.according_to=sc.name AND c.dataset_key=sc.dataset_key
+    LEFT JOIN __tax_keys tk ON t.id=tk.id
+
+WHERE n.rank = 'GENUS'::rank
+    AND NOT t.is_synonym
+    AND tc.id IS NULL
+
 ) TO 'scientific_names.csv';
 
 
