@@ -176,8 +176,9 @@ public class CatalogueRelease implements Runnable {
     interruptIfCancelled();
     logger.log("Build import metrics for catalogue " +  releaseKey);
     DatasetImport di = diDao.create(release);
-    di.setState(ImportState.FINISHED);
     diDao.updateMetrics(di);
+    di.setState(ImportState.FINISHED);
+    diDao.update(di);
     logger.log("Created new import metrics for dataset " + releaseKey + ", attempt " + di.getAttempt());
   }
   
