@@ -72,7 +72,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     // we open up a separate batch session that we can write to so we do not disturb the open main cursor for processing with this handler
     batchSession = factory.openSession(ExecutorType.BATCH, false);
     session = factory.openSession(true);
-    this.entities = sector.getEntities() == null || sector.getEntities().isEmpty() ? TreeCopyHandler.ALL_DATA : Set.copyOf(sector.getEntities());
+    this.entities = sector.getEntities() == null ? TreeCopyHandler.ALL_DATA : Set.copyOf(sector.getEntities());
     LOG.info("Copy taxon extensions: {}", Joiner.on(", ").join(entities));
     this.ranks = sector.getRanks() == null ? Set.of(Rank.values()) : Set.copyOf(sector.getRanks());
     if (sector.getRanks() != null && !sector.getRanks().isEmpty()) {

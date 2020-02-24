@@ -1,6 +1,5 @@
 package life.catalogue.db.type;
 
-import life.catalogue.db.type.BaseEnumSetTypeHandler;
 import life.catalogue.api.vocab.Issue;
 
 /**
@@ -10,7 +9,7 @@ import life.catalogue.api.vocab.Issue;
 public class IssueSetTypeHandler extends BaseEnumSetTypeHandler<Issue> {
   
   public IssueSetTypeHandler() {
-    super(Issue.class);
+    super(Issue.class, true);
   }
 
 }

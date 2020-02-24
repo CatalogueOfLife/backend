@@ -6,7 +6,7 @@ import life.catalogue.db.type.BaseEnumSetTypeHandler;
 public class EntitySetTypeHandler extends BaseEnumSetTypeHandler<EntityType> {
 
   public EntitySetTypeHandler() {
-    super(EntityType.class);
+    super(EntityType.class, false);
   }
 
 }
