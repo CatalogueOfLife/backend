@@ -682,6 +682,8 @@ CREATE TABLE sector (
   target_id TEXT,
   target_name TEXT,
   target_authorship TEXT,
+  ranks RANK[] DEFAULT '{}',
+  entities ENTITYTYPE[] DEFAULT '{}',
   note TEXT,
   UNIQUE (dataset_key, subject_dataset_key, subject_id)
 );
