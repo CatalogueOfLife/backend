@@ -74,11 +74,19 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     session = factory.openSession(true);
     this.entities = sector.getEntities() == null ? TreeCopyHandler.ALL_DATA : Set.copyOf(sector.getEntities());
     LOG.info("Copy taxon extensions: {}", Joiner.on(", ").join(entities));
-    this.ranks = sector.getRanks() == null ? Set.of(Rank.values()) : Set.copyOf(sector.getRanks());
-    if (sector.getRanks() != null && !sector.getRanks().isEmpty()) {
+    if (sector.getRanks() == null || sector.getRanks().isEmpty()) {
+      this.ranks = Set.of(Rank.values());
+    } else {
+      this.ranks = Set.copyOf(sector.getRanks());
       LOG.info("Filter only ranks {}", Joiner.on(", ").join(ranks));
     }
+    for (Rank r : IMPLICITS) {
+      if (!ranks.isEmpty() && ranks.contains(r)) {
+        implicitRanks.add(r);
+      }
+    }
     LOG.info("Create implicit taxa for ranks {}", Joiner.on(", ").join(implicitRanks));
+
     rm = batchSession.getMapper(ReferenceMapper.class);
     tm = batchSession.getMapper(TaxonMapper.class);
     nm = batchSession.getMapper(NameMapper.class);
@@ -86,12 +94,6 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     // load target taxon
     Taxon t = tm.get(sector.getTargetAsDSID());
     target = new Usage(t.getId(), t.getName().getRank(), t.getStatus());
-    for (Rank r : IMPLICITS) {
-      if (!ranks.isEmpty() && ranks.contains(r)) {
-        implicitRanks.add(r);
-      }
-    }
-    LOG.info("Create implicit taxa for ranks {}", Joiner.on(", ").join(implicitRanks));
   }
 
   private static class Usage {
