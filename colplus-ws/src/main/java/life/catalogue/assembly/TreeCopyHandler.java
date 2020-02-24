@@ -40,7 +40,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   );
   private static List<Rank> IMPLICITS = ImmutableList.of(Rank.GENUS,Rank.SUBGENUS, Rank.SPECIES);
 
-  private final Set<EntityType> copyData;
+  private final Set<EntityType> entities;
   private final Set<Rank> ranks;
   private final List<Rank> implicitRanks = new ArrayList<>();
 
@@ -72,10 +72,8 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     // we open up a separate batch session that we can write to so we do not disturb the open main cursor for processing with this handler
     batchSession = factory.openSession(ExecutorType.BATCH, false);
     session = factory.openSession(true);
-    this.copyData = sector.getEntities() == null ? TreeCopyHandler.ALL_DATA : Set.copyOf(sector.getEntities());
-    if (sector.getEntities() != null && !sector.getEntities().isEmpty()) {
-      LOG.info("Copy only taxon extensions {}", Joiner.on(", ").join(copyData));
-    }
+    this.entities = sector.getEntities() == null || sector.getEntities().isEmpty() ? TreeCopyHandler.ALL_DATA : Set.copyOf(sector.getEntities());
+    LOG.info("Copy taxon extensions: {}", Joiner.on(", ").join(entities));
     this.ranks = sector.getRanks() == null ? Set.of(Rank.values()) : Set.copyOf(sector.getRanks());
     if (sector.getRanks() != null && !sector.getRanks().isEmpty()) {
       LOG.info("Filter only ranks {}", Joiner.on(", ").join(ranks));
@@ -89,7 +87,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     Taxon t = tm.get(sector.getTargetAsDSID());
     target = new Usage(t.getId(), t.getName().getRank(), t.getStatus());
     for (Rank r : IMPLICITS) {
-      if (ranks.contains(r)) {
+      if (!ranks.isEmpty() && ranks.contains(r)) {
         implicitRanks.add(r);
       }
     }
@@ -245,7 +243,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     // copy usage with all associated information. This assigns a new id !!!
     DSID<String> orig;
     DSID<String> parentDID = new DSIDValue<>(catalogueKey, parent.id);
-    orig = CatCopy.copyUsage(batchSession, session, u, parentDID, user.getKey(), true, copyData, this::lookupReference, this::lookupReference);
+    orig = CatCopy.copyUsage(batchSession, session, u, parentDID, user.getKey(), true, entities, this::lookupReference, this::lookupReference);
     // remember old to new id mapping
     ids.put(orig.getId(), usage(u));
     // counter
@@ -264,7 +262,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   
   private boolean skipUsage(NameUsageBase u) {
     Name n = u.getName();
-    if (!ranks.contains(n.getRank())) {
+    if (!ranks.isEmpty() && !ranks.contains(n.getRank())) {
       return true;
     }
     switch (n.getType()) {
