@@ -1,9 +1,5 @@
 package life.catalogue.db.mapper;
 
-import java.net.URI;
-import java.time.LocalDateTime;
-import java.util.*;
-
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -17,6 +13,10 @@ import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
+
+import java.net.URI;
+import java.time.LocalDateTime;
+import java.util.*;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.*;
@@ -35,6 +35,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
   private static DatasetImport create(ImportState state) throws Exception {
     DatasetImport d = new DatasetImport();
     d.setDatasetKey(DATASET11.getKey());
+    d.setCreatedBy(Users.TESTER);
     d.setError("no error");
     d.setState(state);
     d.setStarted(LocalDateTime.now());

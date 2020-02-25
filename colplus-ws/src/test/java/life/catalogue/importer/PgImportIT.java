@@ -149,7 +149,7 @@ public class PgImportIT {
 
   DatasetImport metrics() {
     return new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo())
-        .generateMetrics(dataset.getKey());
+        .generateMetrics(dataset.getKey(), Users.TESTER);
   }
   
   

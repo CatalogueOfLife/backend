@@ -157,7 +157,7 @@ public class ImportJob implements Runnable {
     
     try {
       last = dao.getLast(dataset.getKey());
-      di = dao.create(dataset);
+      di = dao.create(dataset, req.createdBy);
       LoggingUtils.setDatasetMDC(datasetKey, getAttempt(), getClass());
       LOG.info("Start new import attempt {} for {} dataset {}: {}", di.getAttempt(), dataset.getOrigin(), datasetKey, dataset.getTitle());
   
@@ -223,7 +223,7 @@ public class ImportJob implements Runnable {
         indexService.indexDataset(datasetKey);
 
         if (rematchDecisions()) {
-          updateState(ImportState.DECISION_MATCHING);
+          updateState(ImportState.MATCHING);
           LOG.info("Updating sectors and decisions for dataset {}", datasetKey);
           new SubjectRematcher(factory, req.createdBy).matchDatasetSubjects(datasetKey);
         }

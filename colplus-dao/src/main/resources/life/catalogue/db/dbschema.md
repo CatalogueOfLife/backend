@@ -10,6 +10,29 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2020-02-25 import state changes 
+```
+alter type IMPORTSTATE RENAME VALUE 'DECISION_MATCHING' to 'MATCHING';
+alter type IMPORTSTATE ADD VALUE 'EXPORTING' after 'BUILDING_METRICS';
+
+alter table dataset_import add column created_by INTEGER NOT NULL DEFAULT 10;
+alter table dataset_import alter column created_by DROP DEFAULT;
+
+alter table sector_import add column created_by INTEGER NOT NULL DEFAULT 10;
+alter table sector_import alter column created_by DROP DEFAULT;
+```
+
+#### 2020-02-24 ranks & entities for sectors 
+```
+alter table sector add column ranks RANK[] DEFAULT '{}';
+alter table sector add column entities ENTITYTYPE[] DEFAULT NULL;
+```
+
+#### 2020-02-07 add matching state
+```
+alter type IMPORTSTATE ADD VALUE 'DECISION_MATCHING' after 'INDEXING';
+```
+
 #### add type material
 ```
 alter type ENTITYTYPE add value 'TYPE_MATERIAL' after 'NAME_USAGE';

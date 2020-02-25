@@ -1,5 +1,6 @@
 package life.catalogue.db.mapper;
 
+import life.catalogue.api.vocab.Users;
 import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Synonym;
@@ -62,7 +63,7 @@ public abstract class MapperTestBase<M> {
   protected void generateDatasetImport(int datasetKey) {
     commit();
     DatasetImportDao dao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    dao.createSuccess(datasetKey);
+    dao.createSuccess(datasetKey, Users.TESTER);
     commit();
   }
   

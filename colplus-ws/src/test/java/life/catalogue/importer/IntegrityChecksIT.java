@@ -1,16 +1,8 @@
 package life.catalogue.importer;
 
-import java.net.URL;
-import java.nio.file.Paths;
-
 import com.google.common.io.Files;
-import org.apache.commons.io.FileUtils;
-import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.DatasetType;
-import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.*;
 import life.catalogue.command.initdb.InitDbCmd;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.config.ImporterConfig;
@@ -19,14 +11,19 @@ import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.TestDataRule;
 import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.TestDataRule;
 import life.catalogue.db.mapper.VerbatimRecordMapper;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
 import life.catalogue.matching.NameIndexFactory;
+import org.apache.commons.io.FileUtils;
+import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
+
+import java.net.URL;
+import java.nio.file.Paths;
 
 import static org.junit.Assert.assertTrue;
 
@@ -105,7 +102,7 @@ public class IntegrityChecksIT {
   
   DatasetImport metrics() {
     return new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo())
-        .generateMetrics(dataset.getKey());
+        .generateMetrics(dataset.getKey(), Users.TESTER);
   }
   
   

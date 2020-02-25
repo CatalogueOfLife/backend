@@ -32,8 +32,9 @@ public class ImportMetrics<T extends Enum> implements ImportAttempt {
    * Time the import command finished
    */
   private LocalDateTime finished;
+  private Integer createdBy;
   private String error;
-  
+
   // metrics
   private Integer nameCount;
   private Integer taxonCount;
@@ -102,7 +103,15 @@ public class ImportMetrics<T extends Enum> implements ImportAttempt {
   public void setFinished(LocalDateTime finished) {
     this.finished = finished;
   }
-  
+
+  public Integer getCreatedBy() {
+    return createdBy;
+  }
+
+  public void setCreatedBy(Integer createdBy) {
+    this.createdBy = createdBy;
+  }
+
   @Override
   public String getError() {
     return error;
@@ -298,6 +307,7 @@ public class ImportMetrics<T extends Enum> implements ImportAttempt {
             Objects.equals(state, that.state) &&
             Objects.equals(started, that.started) &&
             Objects.equals(finished, that.finished) &&
+            Objects.equals(createdBy, that.createdBy) &&
             Objects.equals(error, that.error) &&
             Objects.equals(nameCount, that.nameCount) &&
             Objects.equals(taxonCount, that.taxonCount) &&
@@ -324,7 +334,7 @@ public class ImportMetrics<T extends Enum> implements ImportAttempt {
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, attempt, state, started, finished, error, nameCount, taxonCount, synonymCount, referenceCount, typeMaterialCount, descriptionCount, distributionCount, mediaCount, vernacularCount, namesByTypeCount, namesByStatusCount, namesByOriginCount, namesByRankCount, nameRelationsByTypeCount, typeMaterialByStatusCount, distributionsByGazetteerCount, vernacularsByLanguageCount, mediaByTypeCount, usagesByStatusCount, taxaByRankCount, issuesCount);
+    return Objects.hash(datasetKey, attempt, state, started, finished, createdBy, error, nameCount, taxonCount, synonymCount, referenceCount, typeMaterialCount, descriptionCount, distributionCount, mediaCount, vernacularCount, namesByTypeCount, namesByStatusCount, namesByOriginCount, namesByRankCount, nameRelationsByTypeCount, typeMaterialByStatusCount, distributionsByGazetteerCount, vernacularsByLanguageCount, mediaByTypeCount, usagesByStatusCount, taxaByRankCount, issuesCount);
   }
 
   @Override

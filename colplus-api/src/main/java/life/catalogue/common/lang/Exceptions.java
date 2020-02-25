@@ -27,4 +27,20 @@ public class Exceptions {
       throw new InterruptedRuntimeException(msg);
     }
   }
+
+  public static Throwable getRootCause(Throwable ex) {
+    if (ex.getCause() != null && !ex.getCause().equals(ex))
+      return getRootCause(ex.getCause());
+    return ex;
+  }
+
+  public static String getFirstMessage(Throwable ex) {
+    if (ex.getMessage() != null) {
+      return ex.getMessage();
+    }
+    if (ex.getCause() != null) {
+      return getFirstMessage(ex.getCause());
+    }
+    return null;
+  }
 }

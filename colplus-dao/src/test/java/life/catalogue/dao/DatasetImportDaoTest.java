@@ -25,7 +25,7 @@ public class DatasetImportDaoTest extends DaoTestBase {
   @Test
   public void generateDatasetImport() {
     
-    DatasetImport d = dao.generateMetrics(TestEntityGenerator.DATASET11.getKey());
+    DatasetImport d = dao.generateMetrics(TestEntityGenerator.DATASET11.getKey(), Users.TESTER);
   
     assertEquals((Integer) 0, d.getDescriptionCount());
     assertEquals((Integer) 0, d.getMediaCount());
