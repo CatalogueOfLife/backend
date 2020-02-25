@@ -6,16 +6,13 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.AssemblyState;
-import life.catalogue.common.concurrent.NamedThreadFactory;
-import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.SubjectRematcher;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.dw.auth.Roles;
-import life.catalogue.es.name.index.NameUsageIndexService;
 import life.catalogue.release.AcExporter;
-import life.catalogue.release.CatalogueRelease;
+import life.catalogue.release.ReleaseManager;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -27,10 +24,6 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 @Path("/assembly")
 @Produces(MediaType.APPLICATION_JSON)
@@ -40,21 +33,16 @@ public class AssemblyResource {
   private static final Logger LOG = LoggerFactory.getLogger(AssemblyResource.class);
   private final AssemblyCoordinator assembly;
   private final AcExporter exporter;
-  private final DatasetImportDao diDao;
   private final TaxonDao tdao;
-  private final NameUsageIndexService indexService;
-  private CatalogueRelease release;
   private final SqlSessionFactory factory;
-  private static final ThreadPoolExecutor RELEASE_EXEC = new ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS,
-      new ArrayBlockingQueue(1), new NamedThreadFactory("col-release"), new ThreadPoolExecutor.DiscardPolicy());
-  
-  public AssemblyResource(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, TaxonDao tdao, AssemblyCoordinator assembly, AcExporter exporter) {
-    this.indexService = indexService;
+  private final ReleaseManager releaseManager;
+
+  public AssemblyResource(SqlSessionFactory factory, TaxonDao tdao, AssemblyCoordinator assembly, AcExporter exporter, ReleaseManager releaseManager) {
     this.assembly = assembly;
     this.exporter = exporter;
     this.factory = factory;
-    this.diDao = diDao;
     this.tdao = tdao;
+    this.releaseManager = releaseManager;
   }
 
   @GET
@@ -113,36 +101,12 @@ public class AssemblyResource {
     return session.getMapper(SectorImportMapper.class).get(sectorKey, attempt);
   }
   
-  @GET
-  @Path("/{catKey}/release")
-  public String releaseState(@PathParam("catKey") int catKey) {
-    requireManagedNoLock(catKey);
-    if (release == null) {
-      return "idle";
-    }
-    return release.getState();
-  }
-  
   @POST
   @Path("/{catKey}/release")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public Integer release(@PathParam("catKey") int catKey, @Auth ColUser user) {
     requireManagedNoLock(catKey);
-  
-    if (release != null) {
-      throw new IllegalStateException("Release "+release.getSourceDatasetKey() + " to " + release.getReleaseKey() + " is already running");
-    }
-  
-    release = CatalogueRelease.release(factory, indexService, exporter, diDao, catKey, user.getKey());
-    final int key = release.getReleaseKey();
-  
-    CompletableFuture.runAsync(release, RELEASE_EXEC).thenApply(x -> {
-      // clear release reference when job is done
-      release = null;
-      return x;
-    });
-
-    return key;
+    return releaseManager.release(catKey, user);
   }
 
   @POST

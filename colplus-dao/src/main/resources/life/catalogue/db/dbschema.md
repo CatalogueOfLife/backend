@@ -14,6 +14,7 @@ and done it manually. So we can as well log changes here.
 ```
 alter type IMPORTSTATE RENAME VALUE 'DECISION_MATCHING' to 'MATCHING';
 alter type IMPORTSTATE ADD VALUE 'EXPORTING' after 'BUILDING_METRICS';
+alter type IMPORTSTATE ADD VALUE 'RELEASED' after 'FINISHED';
 
 alter table dataset_import add column created_by INTEGER NOT NULL DEFAULT 10;
 alter table dataset_import alter column created_by DROP DEFAULT;

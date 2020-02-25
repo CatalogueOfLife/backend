@@ -25,6 +25,7 @@ import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.es.name.index.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.NameIndex;
+import life.catalogue.release.ReleaseManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -61,6 +62,7 @@ public class ImportManager implements Managed {
   private final NameIndex index;
   private final AuthorshipNormalizer aNormalizer;
   private final NameUsageIndexService indexService;
+  private final ReleaseManager releaseManager;
   private final DatasetImportDao dao;
   private final ImageService imgService;
   private final Timer importTimer;
@@ -68,9 +70,10 @@ public class ImportManager implements Managed {
 
   public ImportManager(WsServerConfig cfg, MetricRegistry registry, CloseableHttpClient client,
       SqlSessionFactory factory, AuthorshipNormalizer aNormalizer, NameIndex index,
-      NameUsageIndexService indexService, ImageService imgService) {
+      NameUsageIndexService indexService, ImageService imgService, ReleaseManager releaseManager) {
     this.cfg = cfg;
     this.factory = factory;
+    this.releaseManager = releaseManager;
     this.downloader = new DownloadUtil(client, cfg.importer.githubToken, cfg.importer.githubTokenGeoff);
     this.index = index;
     this.aNormalizer = aNormalizer;
@@ -172,8 +175,11 @@ public class ImportManager implements Managed {
         .stream()
         .map(ImportManager::fromFuture)
         .filter(di -> di.getState().isRunning())
-        .sorted(DI_STARTED_COMPARATOR)
         .collect(Collectors.toList());
+
+    // include releasing job if existing and sort by creation date
+    releaseManager.getReleaseMetrics().ifPresent(running::add);
+    running.sort(DI_STARTED_COMPARATOR);
 
     // then add the priority queue from the executor, filtered for queued imports only keeping the queues priority order
     running.addAll(

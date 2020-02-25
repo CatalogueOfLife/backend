@@ -59,7 +59,12 @@ public enum ImportState {
    * Successfully completed the import.
    */
   FINISHED,
-  
+
+  /**
+   * Successfully completed the dataset release.
+   */
+  RELEASED,
+
   /**
    * Manually aborted import, e.g. system was shut down.
    */

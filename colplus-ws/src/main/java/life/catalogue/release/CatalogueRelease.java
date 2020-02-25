@@ -33,7 +33,6 @@ public class CatalogueRelease implements Runnable {
   private final int user;
   private final int sourceDatasetKey;
   private final int releaseKey;
-  private final Dataset release;
   private final DatasetImport metrics;
   @Deprecated
   private final life.catalogue.release.Logger logger = new life.catalogue.release.Logger(LOG);
@@ -46,7 +45,6 @@ public class CatalogueRelease implements Runnable {
     this.diDao = diDao;
     this.exporter = exporter;
     this.sourceDatasetKey = sourceDatasetKey;
-    this.release = release;
     metrics = diDao.create(release, userKey);
     releaseKey = release.getKey();
     this.user = userKey;
@@ -109,6 +107,10 @@ public class CatalogueRelease implements Runnable {
     return sourceDatasetKey;
   }
 
+  public DatasetImport getMetrics() {
+    return metrics;
+  }
+
   @Deprecated
   public String getState() {
     return logger.toString();
@@ -133,13 +135,10 @@ public class CatalogueRelease implements Runnable {
       .append(". Digital resource at www.catalogueoflife.org/col. Species 2000: Naturalis, Leiden, the Netherlands. ISSN 2405-8858.");
     return sb.toString();
   }
-  
-  /**
-   * @return The new released datasetKey
-   */
+
   @Override
   public void run() {
-    LoggingUtils.setDatasetMDC(sourceDatasetKey, getClass());
+    LoggingUtils.setDatasetMDC(releaseKey, getClass());
     try {
       logger.log("Release catalogue "+sourceDatasetKey+" to new dataset" + releaseKey);
       // prepare new tables
@@ -167,7 +166,7 @@ public class CatalogueRelease implements Runnable {
         // allow indexing to fail - sth we can do afterwards again
         LOG.error("Error indexing released & exported dataset {} into ES. Source catalogue={}", releaseKey, sourceDatasetKey, e);
       }
-      updateState(ImportState.FINISHED);
+      updateState(ImportState.RELEASED);
       logger.log("Successfully finished releasing catalogue " + sourceDatasetKey);
 
     } catch (Exception e) {
