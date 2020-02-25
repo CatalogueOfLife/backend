@@ -102,7 +102,7 @@ public class IntegrityChecksIT {
   
   DatasetImport metrics() {
     return new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo())
-        .generateMetrics(dataset.getKey(), Users.TESTER);
+        .generateMetrics(dataset.getKey(), Users.TESTER );
   }
   
   
