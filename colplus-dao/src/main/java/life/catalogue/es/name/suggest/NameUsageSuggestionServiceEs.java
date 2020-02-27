@@ -1,12 +1,5 @@
 package life.catalogue.es.name.suggest;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.client.RestClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.api.search.NameUsageSuggestResponse;
@@ -18,6 +11,14 @@ import life.catalogue.es.name.NameUsageEsResponse;
 import life.catalogue.es.name.NameUsageQueryService;
 import life.catalogue.es.name.search.NameUsageSearchServiceEs;
 import life.catalogue.es.query.EsSearchRequest;
+import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.client.RestClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class NameUsageSuggestionServiceEs extends NameUsageQueryService implements NameUsageSuggestionService {
 
@@ -64,10 +65,10 @@ public class NameUsageSuggestionServiceEs extends NameUsageQueryService implemen
 
   private static void validateRequest(NameUsageSuggestRequest request) {
     if (StringUtils.isBlank(request.getQ())) {
-      throw new EsException("Missing q parameter");
+      throw new IllegalArgumentException("Missing q parameter");
     }
     if (request.getDatasetKey() == null || request.getDatasetKey() < 1) {
-      throw new EsException("Missing/invalid datasetKey parameter");
+      throw new IllegalArgumentException("Missing/invalid datasetKey parameter");
     }
   }
 
