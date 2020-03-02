@@ -26,7 +26,7 @@ alter table sector_import alter column created_by DROP DEFAULT;
 #### 2020-02-24 ranks & entities for sectors 
 ```
 alter table sector add column ranks RANK[] DEFAULT '{}';
-alter table sector add column entities ENTITYTYPE[] DEFAULT NULL;
+alter table sector add column entities ENTITYTYPE[];
 ```
 
 #### 2020-02-07 add matching state

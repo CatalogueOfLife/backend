@@ -122,13 +122,9 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
                          @QueryParam("root") String rootID,
                          @QueryParam("rank") Set<Rank> ranks,
                          @Context SqlSession session) {
-    Integer attempt = session.getMapper(DatasetMapper.class).lastImportAttempt(key);
-    if (attempt == null) {
-      throw new NotFoundException();
-    }
-    
     StreamingOutput stream;
-    if (rootID == null && (ranks == null || ranks.isEmpty())) {
+    Integer attempt = session.getMapper(DatasetMapper.class).lastImportAttempt(key);
+    if (attempt != null && rootID == null && (ranks == null || ranks.isEmpty())) {
       // stream from pregenerated file
       stream = os -> {
         InputStream in = new FileInputStream(diDao.getTreeDao().treeFile(key, attempt));
