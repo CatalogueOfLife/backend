@@ -498,7 +498,13 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
     pubIdFacet.add(FacetValue.forString(PUB_ID1, 6));
     pubIdFacet.add(FacetValue.forString(PUB_ID2, 4));
     expected.put(NameUsageSearchParameter.PUBLISHED_IN_ID, pubIdFacet);
-
+    
+//    System.out.println("====================================================================");
+//    EsModule.writeDebug(System.out,expected);
+//    System.out.println("====================================================================");
+    EsModule.writeDebug(System.out,result.getFacets());
+//    System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+    
     assertEquals(expected, result.getFacets());
 
   }
@@ -665,7 +671,7 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
       if (NameUsageWrapperConverter.ZIP_PAYLOAD) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
         try (DeflaterOutputStream dos = new DeflaterOutputStream(baos)) {
-          EsModule.write(dummy,dos);
+          EsModule.write(dos,dummy);
         }
         return Base64.getEncoder().encodeToString(baos.toByteArray());
       }

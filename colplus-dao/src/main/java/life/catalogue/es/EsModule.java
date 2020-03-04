@@ -3,6 +3,7 @@ package life.catalogue.es;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -29,6 +30,7 @@ import life.catalogue.es.model.NameUsageDocument;
 import life.catalogue.es.name.NameUsageEsMultiResponse;
 import life.catalogue.es.name.NameUsageEsResponse;
 import life.catalogue.es.query.EsSearchRequest;
+import life.catalogue.es.response.EsFacet;
 import life.catalogue.es.response.SearchHit;
 
 /**
@@ -106,6 +108,12 @@ public class EsModule extends SimpleModule {
     return esObjectMapper.readValue(is, mapType);
   }
 
+  @SuppressWarnings("unchecked")
+  public static <T> T convertValue(Object object, Class<EsFacet> class1) {
+    // Any mapper will do
+    return (T) esObjectMapper.convertValue(object, class1);
+  }
+
   public static <T> T readDDLObject(InputStream is, Class<T> cls) throws IOException {
     return esObjectMapper.readValue(is, cls);
   }
@@ -150,7 +158,7 @@ public class EsModule extends SimpleModule {
     return nameUsageWriter.writeValueAsString(nuw);
   }
 
-  public static void write(NameUsageWrapper nuw, OutputStream out) throws IOException {
+  public static void write(OutputStream out, NameUsageWrapper nuw) throws IOException {
     nameUsageWriter.writeValue(out, nuw);
   }
 
@@ -159,6 +167,16 @@ public class EsModule extends SimpleModule {
       return DEBUG_WRITER.writeValueAsString(obj);
     } catch (JsonProcessingException e) {
       throw new EsException(e);
+    }
+  }
+
+  public static void writeDebug(OutputStream out, Object obj) {
+    // Jackson would close the outputstream when done; very undesirable, especially with System.out
+    String s = writeDebug(obj);
+    if (out instanceof PrintStream) {
+      ((PrintStream) out).println(s);
+    } else {
+      new PrintStream(out).println(s);
     }
   }
 

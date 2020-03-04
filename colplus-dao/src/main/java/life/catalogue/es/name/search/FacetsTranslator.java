@@ -1,7 +1,6 @@
 package life.catalogue.es.name.search;
 
 import java.util.Map;
-
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.es.name.NameUsageFieldLookup;
@@ -10,12 +9,9 @@ import life.catalogue.es.query.FacetAggregation;
 import life.catalogue.es.query.FilterAggregation;
 import life.catalogue.es.query.GlobalAggregation;
 import life.catalogue.es.query.Query;
-
 import static java.util.Collections.singletonMap;
-
 import static life.catalogue.es.name.NameUsageFacetLabels.getContextFilterLabel;
 import static life.catalogue.es.name.NameUsageFacetLabels.getContextLabel;
-import static life.catalogue.es.name.NameUsageFacetLabels.getFacetLabel;
 import static life.catalogue.es.name.search.RequestTranslator.generateQuery;
 
 /**
@@ -49,7 +45,7 @@ class FacetsTranslator {
       NameUsageSearchRequest temp = copy.copy();
       temp.removeFilter(facet);
       Aggregation agg = new FacetAggregation(field, generateQuery(temp));
-      ctxFilterAgg.addNestedAggregation(getFacetLabel(facet), agg);
+      ctxFilterAgg.addNestedAggregation(facet.getFacetLabel(), agg);
     }
     return singletonMap(getContextLabel(), context);
   }

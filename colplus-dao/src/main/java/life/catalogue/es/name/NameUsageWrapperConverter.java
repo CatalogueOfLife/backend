@@ -71,7 +71,7 @@ public class NameUsageWrapperConverter {
   public static String deflate(NameUsageWrapper nuw) throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
     try (DeflaterOutputStream dos = new DeflaterOutputStream(baos)) {
-      EsModule.write(nuw, dos);
+      EsModule.write(dos, nuw);
     }
     byte[] bytes = Base64.getEncoder().encode(baos.toByteArray());
     return new String(bytes, StandardCharsets.UTF_8);

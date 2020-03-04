@@ -85,21 +85,25 @@ public class NameStrings {
 
   @Override
   public int hashCode() {
-    return Objects.hash(genusLetter, genusOrMonomialWN, infraspecificEpithetSN, specificEpithetSN);
+    return Objects.hash(genusLetter, genusOrMonomialWN, infraspecificEpithetSN, sciNameLetter, specificEpithetSN);
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     NameStrings other = (NameStrings) obj;
-    return Objects.equals(genusLetter, other.genusLetter) && Objects.equals(genusOrMonomialWN, other.genusOrMonomialWN)
-        && Objects.equals(infraspecificEpithetSN, other.infraspecificEpithetSN)
+    return genusLetter == other.genusLetter && Objects.equals(genusOrMonomialWN, other.genusOrMonomialWN)
+        && Objects.equals(infraspecificEpithetSN, other.infraspecificEpithetSN) && sciNameLetter == other.sciNameLetter
         && Objects.equals(specificEpithetSN, other.specificEpithetSN);
   }
+
 
 }
