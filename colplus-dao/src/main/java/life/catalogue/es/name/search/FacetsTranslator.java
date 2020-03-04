@@ -9,9 +9,9 @@ import life.catalogue.es.query.FacetAggregation;
 import life.catalogue.es.query.FilterAggregation;
 import life.catalogue.es.query.GlobalAggregation;
 import life.catalogue.es.query.Query;
+import life.catalogue.es.response.Aggregations;
+import life.catalogue.es.response.ContextFilterWrapper;
 import static java.util.Collections.singletonMap;
-import static life.catalogue.es.name.NameUsageFacetLabels.getContextFilterLabel;
-import static life.catalogue.es.name.NameUsageFacetLabels.getContextLabel;
 import static life.catalogue.es.name.search.RequestTranslator.generateQuery;
 
 /**
@@ -37,7 +37,7 @@ class FacetsTranslator {
     copy.setQ(null);
     GlobalAggregation context = new GlobalAggregation();
     FilterAggregation ctxFilterAgg = new FilterAggregation(getContextFilter());
-    context.setNestedAggregations(singletonMap(getContextFilterLabel(), ctxFilterAgg));
+    context.setNestedAggregations(singletonMap(ContextFilterWrapper.LABEL, ctxFilterAgg));
     for (NameUsageSearchParameter facet : copy.getFacets()) {
       String field = NameUsageFieldLookup.INSTANCE.lookup(facet);
       // Temporarily remove the filter corresponding to the facet (if any), otherwise the values retrieved for the facet would collapse to
@@ -47,7 +47,7 @@ class FacetsTranslator {
       Aggregation agg = new FacetAggregation(field, generateQuery(temp));
       ctxFilterAgg.addNestedAggregation(facet.getFacetLabel(), agg);
     }
-    return singletonMap(getContextLabel(), context);
+    return singletonMap(Aggregations.LABEL, context);
   }
 
   private Query getContextFilter() {

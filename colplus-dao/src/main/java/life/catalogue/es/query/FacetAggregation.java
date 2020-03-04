@@ -1,6 +1,6 @@
 package life.catalogue.es.query;
 
-import static life.catalogue.es.name.NameUsageFacetLabels.getBucketsLabel;
+import life.catalogue.es.response.EsFacet;
 
 /*
  * N.B. This class does not correspond to any real Elasticsearch aggregation type. It's just a convenience subclass of FilterAggregation
@@ -10,7 +10,7 @@ public class FacetAggregation extends FilterAggregation {
 
   public FacetAggregation(String field, Query filter) {
     super(filter);
-    addNestedAggregation(getBucketsLabel(), new TermsAggregation(field));
+    addNestedAggregation(EsFacet.LABEL, new TermsAggregation(field));
   }
 
 }
