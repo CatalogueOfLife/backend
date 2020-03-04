@@ -4,10 +4,8 @@ import java.util.Objects;
 import javax.ws.rs.QueryParam;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class NameUsageSuggestRequest {
+public class NameUsageSuggestRequest extends NameUsageRequest {
 
-  @QueryParam("q")
-  private String q;
   @QueryParam("datasetKey")
   private Integer datasetKey;
   @QueryParam("vernaculars")
@@ -15,19 +13,9 @@ public class NameUsageSuggestRequest {
   @QueryParam("limit")
   private Integer limit; // Desired number of suggestions
 
-  private String[] searchTerms;
-
   @JsonIgnore
   public boolean suggestVernaculars() {
     return vernaculars != null && vernaculars.equals(Boolean.TRUE);
-  }
-
-  public String getQ() {
-    return q;
-  }
-
-  public void setQ(String q) {
-    this.q = q;
   }
 
   public Integer getDatasetKey() {
@@ -55,29 +43,31 @@ public class NameUsageSuggestRequest {
   }
 
   @JsonIgnore
-  public String[] getSearchTerms() {
-    return searchTerms;
-  }
-
-  public void setSearchTerms(String[] searchTerms) {
-    this.searchTerms = searchTerms;
+  public boolean isEmpty() {
+    return super.isEmpty() && datasetKey == null && vernaculars == null && limit == null;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, limit, q, vernaculars);
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + Objects.hash(datasetKey, limit, vernaculars);
+    return result;
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (!super.equals(obj)) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     NameUsageSuggestRequest other = (NameUsageSuggestRequest) obj;
-    return Objects.equals(datasetKey, other.datasetKey) && Objects.equals(limit, other.limit) && Objects.equals(q, other.q)
+    return Objects.equals(datasetKey, other.datasetKey) && Objects.equals(limit, other.limit)
         && Objects.equals(vernaculars, other.vernaculars);
   }
 

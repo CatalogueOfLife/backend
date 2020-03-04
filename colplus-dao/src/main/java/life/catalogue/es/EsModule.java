@@ -108,6 +108,22 @@ public class EsModule extends SimpleModule {
     return esObjectMapper.readValue(is, mapType);
   }
 
+  /**
+   * Escapes the provided string such that in can be embedded within a json document. Note that you should NOT surround the returned string
+   * with double quotes. That's already done by this method; just embed what you get.
+   * 
+   * @param s
+   * @return
+   */
+  public static String escape(String s) {
+    // Any mapper will do
+    try {
+      return esObjectMapper.writeValueAsString(s);
+    } catch (JsonProcessingException e) { // Won't happen
+      throw new IllegalArgumentException(e);
+    }
+  }
+
   @SuppressWarnings("unchecked")
   public static <T> T convertValue(Object object, Class<EsFacet> class1) {
     // Any mapper will do

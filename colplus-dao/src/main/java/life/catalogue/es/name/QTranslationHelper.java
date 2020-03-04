@@ -2,6 +2,7 @@ package life.catalogue.es.name;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import life.catalogue.api.search.NameUsageRequest;
 import life.catalogue.es.mapping.MultiField;
 import life.catalogue.es.query.AutoCompleteQuery;
 import life.catalogue.es.query.BoolQuery;
@@ -18,10 +19,10 @@ import static life.catalogue.es.query.AbstractMatchQuery.Operator.AND;
 /**
  * Generates the queries for the suggest service and the search service. See also {@link MultiField} for consideration about how & why.
  */
-public class QTranslationUtils {
+public class QTranslationHelper {
 
   @SuppressWarnings("unused")
-  private static final Logger LOG = LoggerFactory.getLogger(QTranslationUtils.class);
+  private static final Logger LOG = LoggerFactory.getLogger(QTranslationHelper.class);
 
   private static final int MAX_NGRAM_SIZE = 10; // see es-settings.json
 
@@ -30,7 +31,11 @@ public class QTranslationUtils {
   private static final String FLD_SPECIES = "nameStrings.specificEpithetSN";
   private static final String FLD_SUBSPECIES = "nameStrings.infraspecificEpithetSN";
 
-  private QTranslationUtils() {}
+  private final NameUsageRequest request;
+
+  public QTranslationHelper(NameUsageRequest request) {
+    this.request = request;
+  }
 
   /*
    * Note about the boost values. Elasticsearch's scoring mechanism is opaque, but, given a max ngram size of 10 and given a search term of
@@ -39,13 +44,15 @@ public class QTranslationUtils {
    * the effects of TD/IF-scoring are impossible to estimate unless you also know your data really well.
    */
 
-  public static Query getVernacularNameQuery(String q) {
+  public Query getVernacularNameQuery() {
+    String q = request.getQ();
     return new DisMaxQuery()
         .subquery(new CaseInsensitivePrefixQuery("vernacularNames", q).withBoost(0.1 * q.length()))
         .subquery(new AutoCompleteQuery("vernacularNames", q).withOperator(AND).withBoost(3.5));
   }
 
-  public static Query getAuthorshipQuery(String q) {
+  public Query getAuthorshipQuery() {
+    String q = request.getQ();
     return new DisMaxQuery()
         .subquery(new CaseInsensitivePrefixQuery("authorship", q).withBoost(0.1 * q.length()))
         .subquery(new AutoCompleteQuery("authorship", q).withOperator(AND).withBoost(3.5));
@@ -56,21 +63,22 @@ public class QTranslationUtils {
    * two or three words, we also try to interpret and match it as a monomial, binomial c.q. trinomial (i.e. we match against normalized
    * versions of the epithets).
    */
-  public static Query getScientificNameQuery(String q, String[] terms) {
-    if (terms == null) terms = new String[0];
-    if (couldBeEpithets(terms)) {
+  public Query getScientificNameQuery() {
+    String[] terms = request.getSearchTerms();
+    if (couldBeEpithets()) {
       if (terms.length == 1 && terms[0].length() > 2) { // Let's wait a bit before engaging this one
-        return matchAsMonomial(q, terms);
+        return matchAsMonomial();
       } else if (terms.length == 2) {
-        return matchAsBinomial(q, terms);
+        return matchAsBinomial();
       } else if (terms.length == 3) {
-        return matchAsTrinomial(q, terms);
+        return matchAsTrinomial();
       }
     }
-    return matchScientificName(q, terms).withBoost(1.5); // Bump above vernacular names
+    return matchScientificName().withBoost(1.5); // Bump above vernacular names
   }
 
-  private static Query matchAsMonomial(String q, String[] terms) {
+  private Query matchAsMonomial() {
+    String[] terms = request.getSearchTerms();
     String termWN = normalizeWeakly(terms[0]);
     String termSN = normalizeStrongly(terms[0]);
     /*
@@ -78,7 +86,7 @@ public class QTranslationUtils {
      * "MV-L51 ICTV"
      */
     return new DisMaxQuery()
-        .subquery(matchScientificName(q, terms).withBoost(4.0))
+        .subquery(matchScientificName().withBoost(4.0))
         .subquery(new BoolQuery() // Prefer subspecies over species and species over genera
             .should(matchAsEpithet(FLD_SUBSPECIES, termSN).withBoost(1.2))
             .should(matchAsEpithet(FLD_SPECIES, termSN).withBoost(1.1))
@@ -86,13 +94,14 @@ public class QTranslationUtils {
             .withBoost(4.0));
   }
 
-  private static Query matchAsBinomial(String q, String[] terms) {
+  private Query matchAsBinomial() {
+    String[] terms = request.getSearchTerms();
     String term0WN = normalizeWeakly(terms[0]);
     String term0SN = normalizeStrongly(terms[0]);
     String term1WN = normalizeWeakly(terms[1]);
     String term1SN = normalizeStrongly(terms[1]);
     return new DisMaxQuery()
-        .subquery(matchScientificName(q, terms).withBoost(2.0))
+        .subquery(matchScientificName().withBoost(2.0))
         .subquery(new BoolQuery()
             .must(matchAsGenericEpithet(term0WN))
             .must(matchAsEpithet(FLD_SUBSPECIES, term1SN))
@@ -115,12 +124,13 @@ public class QTranslationUtils {
             .withBoost(1.0));
   }
 
-  private static Query matchAsTrinomial(String q, String[] terms) {
+  private Query matchAsTrinomial() {
+    String[] terms = request.getSearchTerms();
     String term0WN = normalizeWeakly(terms[0]);
     String term1SN = normalizeStrongly(terms[1]);
     String term2SN = normalizeStrongly(terms[2]);
     return new DisMaxQuery()
-        .subquery(matchScientificName(q, terms).withBoost(2.0))
+        .subquery(matchScientificName().withBoost(2.0))
         .subquery(new BoolQuery()
             .must(matchAsGenericEpithet(term0WN))
             .must(matchAsEpithet(FLD_SPECIES, term1SN))
@@ -142,7 +152,9 @@ public class QTranslationUtils {
     return matchAsEpithet(FLD_GENUS, term);
   }
 
-  private static Query matchScientificName(String q, String[] terms) {
+  private Query matchScientificName() {
+    String q = request.getQ();
+    String[] terms = request.getSearchTerms();
     if (terms.length == 1) { // q == terms[0]
       if (terms[0].length() > MAX_NGRAM_SIZE) {
         return new CaseInsensitivePrefixQuery(FLD_SCINAME, q).withBoost(0.1 * q.length());
@@ -158,7 +170,8 @@ public class QTranslationUtils {
     return new SciNameAutoCompleteQuery(field, term).withOperator(AND).withBoost(3.5);
   }
 
-  private static boolean couldBeEpithets(String[] terms) {
+  private boolean couldBeEpithets() {
+    String[] terms = request.getSearchTerms();
     if (terms.length == 1) {
       // Then one or two characters is not enough to assume the user is typing the abbreviated form of a generic epithet
       return couldBeEpithet(terms[0]);

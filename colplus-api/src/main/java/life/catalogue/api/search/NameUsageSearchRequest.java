@@ -1,11 +1,9 @@
 package life.catalogue.api.search;
 
-import static life.catalogue.api.util.VocabularyUtils.lookupEnum;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -16,8 +14,9 @@ import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import life.catalogue.api.util.VocabularyUtils;
+import static life.catalogue.api.util.VocabularyUtils.lookupEnum;
 
-public class NameUsageSearchRequest {
+public class NameUsageSearchRequest extends NameUsageRequest {
 
   public static enum SearchContent {
     SCIENTIFIC_NAME, AUTHORSHIP, VERNACULAR_NAME
@@ -45,9 +44,6 @@ public class NameUsageSearchRequest {
   @QueryParam("content")
   private Set<SearchContent> content;
 
-  @QueryParam("q")
-  private String q;
-
   @QueryParam("sortBy")
   private SortBy sortBy;
 
@@ -57,7 +53,8 @@ public class NameUsageSearchRequest {
   @QueryParam("reverse")
   private boolean reverse;
 
-  private String[] searchTerms;
+  @QueryParam("wholeWords")
+  private Boolean matchWholeWords = Boolean.TRUE;
 
   public NameUsageSearchRequest() {}
 
@@ -93,15 +90,17 @@ public class NameUsageSearchRequest {
    * cases it is the ordinal that will be registered as the query filter.
    */
   public void addFilters(MultivaluedMap<String, String> params) {
-    Set<String> nonFilters = new HashSet<String>(Arrays.asList(
-        "offset",
-        "limit",
-        "facet",
+    Set<String> nonFilters = Set.of(
         "content",
-        "q",
-        "sortBy",
+        "facet",
+        "fuzzy",
         "highlight",
-        "reverse"));
+        "limit",
+        "offset",
+        "q",
+        "reverse",
+        "sortBy",
+        "wholeWords");
     params.entrySet().stream().filter(e -> !nonFilters.contains(e.getKey())).forEach(e -> {
       NameUsageSearchParameter p = lookupEnum(e.getKey(), NameUsageSearchParameter.class); // Allow IllegalArgumentException
       addFilter(p, e.getValue());
@@ -186,10 +185,6 @@ public class NameUsageSearchRequest {
     return null;
   }
 
-  public boolean hasQ() {
-    return StringUtils.isNotBlank(q);
-  }
-
   public boolean hasFilters() {
     return filters != null && !filters.isEmpty();
   }
@@ -237,14 +232,6 @@ public class NameUsageSearchRequest {
     }
   }
 
-  public String getQ() {
-    return q;
-  }
-
-  public void setQ(String q) {
-    this.q = q;
-  }
-
   public SortBy getSortBy() {
     return sortBy;
   }
@@ -270,47 +257,44 @@ public class NameUsageSearchRequest {
   }
 
   @JsonIgnore
-  public String[] getSearchTerms() {
-    return searchTerms;
-  }
-
-  public void setSearchTerms(String[] searchTerms) {
-    this.searchTerms = searchTerms;
-  }
-
-  @JsonIgnore
   public boolean isEmpty() {
-    return content == null
+    return super.isEmpty() &&
+        (content == null || content.isEmpty())
         && (facets == null || facets.isEmpty())
         && (filters == null || filters.isEmpty())
-        && q == null
         && sortBy == null
         && highlight == false
         && reverse == false;
   }
 
+  private static IllegalArgumentException illegalValueForParameter(NameUsageSearchParameter param, String value) {
+    String err = String.format("Illegal value for parameter %s: %s", param, value);
+    return new IllegalArgumentException(err);
+  }
+
   @Override
   public int hashCode() {
-    return Objects.hash(content, facets, filters, highlight, q, reverse, sortBy);
+    final int prime = 31;
+    int result = super.hashCode();
+    result = prime * result + Objects.hash(content, facets, filters, highlight, matchWholeWords, reverse, sortBy);
+    return result;
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (!super.equals(obj)) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     NameUsageSearchRequest other = (NameUsageSearchRequest) obj;
-    return Objects.equals(content, other.content) && Objects.equals(facets, other.facets)
-        && Objects.equals(filters, other.filters) && highlight == other.highlight && Objects.equals(q, other.q) && reverse == other.reverse
+    return Objects.equals(content, other.content) && Objects.equals(facets, other.facets) && Objects.equals(filters, other.filters)
+        && highlight == other.highlight && Objects.equals(matchWholeWords, other.matchWholeWords) && reverse == other.reverse
         && sortBy == other.sortBy;
-  }
-
-  private static IllegalArgumentException illegalValueForParameter(NameUsageSearchParameter param, String value) {
-    String err = String.format("Illegal value for parameter %s: %s", param, value);
-    return new IllegalArgumentException(err);
   }
 
 }
