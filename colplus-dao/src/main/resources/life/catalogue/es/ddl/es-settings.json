@@ -2,7 +2,7 @@
 	"settings": {
 		"index": {
 			"refresh_interval": -1,
-			"max_result_window": 50000
+			"max_result_window": 2000000
 		},
 		"analysis": {
 			"analyzer": {
