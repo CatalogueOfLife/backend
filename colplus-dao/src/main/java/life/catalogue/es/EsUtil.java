@@ -1,10 +1,13 @@
 package life.catalogue.es;
 
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.es.ddl.IndexDefinition;
 import life.catalogue.es.mapping.Analyzer;
 import life.catalogue.es.mapping.MappingsFactory;
 import life.catalogue.es.mapping.MultiField;
 import life.catalogue.es.model.NameUsageDocument;
+import life.catalogue.es.name.NameUsageFieldLookup;
 import life.catalogue.es.query.*;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
@@ -158,15 +161,22 @@ public class EsUtil {
 
   /**
    * Removes the sector corresponding to the provided key. You must still refresh the index for the changes to become visible.
-   * 
-   * @param client
-   * @param index
-   * @param sectorKey
-   * @return
    * @throws IOException
    */
   public static int deleteSector(RestClient client, String index, int sectorKey) throws IOException {
     return deleteByQuery(client, index, new TermQuery("sectorKey", sectorKey));
+  }
+
+  /**
+   * Deletes a taxonomic subtree from a single dataset.
+   * It deletes all usage documents for a given datasetKey that share the given root taxonID in their classification.
+   * @throws IOException
+   */
+  public static int deleteSubtree(RestClient client, String index, DSID<String> root) throws IOException {
+    BoolQuery query = new BoolQuery()
+        .filter(new TermQuery("datasetKey", root.getDatasetKey()))
+        .filter(new TermQuery(NameUsageFieldLookup.INSTANCE.lookup(NameUsageSearchParameter.TAXON_ID), root.getId()));
+    return deleteByQuery(client, index, query);
   }
 
   /**

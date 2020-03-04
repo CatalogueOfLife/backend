@@ -1,26 +1,14 @@
 package life.catalogue.importer;
 
-import java.net.URI;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.io.Files;
-
-import life.catalogue.importer.ImportManager;
-import life.catalogue.importer.ImportRequest;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.ibatis.session.SqlSession;
+import io.dropwizard.client.HttpClientBuilder;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
-import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.DatasetType;
-import life.catalogue.api.vocab.ImportState;
-import life.catalogue.api.vocab.Users;
+import life.catalogue.api.vocab.*;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TreeRepoRule;
@@ -29,28 +17,31 @@ import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.TestDataRule;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.release.ReleaseManager;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.NomCode;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.dropwizard.client.HttpClientBuilder;
-
-import static org.junit.Assert.assertFalse;
+import java.net.URI;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 /**
  * This test needs access to github !!!
  * It downloads the test coldp archive file sitting in the test resources from github!!!
  */
 @Ignore
+@RunWith(MockitoJUnitRunner.class)
 public class ImportManagerLiveTest {
   private static final Logger LOG = LoggerFactory.getLogger(ImportManagerLiveTest.class);
   static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
@@ -58,7 +49,9 @@ public class ImportManagerLiveTest {
   ImportManager importManager;
   CloseableHttpClient hc;
   DatasetImportDao diDao;
-  
+  @Mock
+  ReleaseManager releaseManager;
+
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
   
@@ -93,7 +86,7 @@ public class ImportManagerLiveTest {
     
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), aNormalizer,
-        NameIndexFactory.passThru(), null, new ImageServiceFS(cfg.img));
+        NameIndexFactory.passThru(), null, new ImageServiceFS(cfg.img), releaseManager);
     importManager.start();
   
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());

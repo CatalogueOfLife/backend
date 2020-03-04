@@ -36,14 +36,19 @@ public enum ImportState {
   INDEXING(true),
 
   /**
-   * Rematching decisions, sectors and estiamtes
+   * Rematching ids, decisions, sectors and/or estimates
    */
-  DECISION_MATCHING(true),
+  MATCHING(true),
 
   /**
    * Indexing data into the Elastic Search index.
    */
   BUILDING_METRICS(true),
+
+  /**
+   * Exporting data to archives.
+   */
+  EXPORTING(true),
 
   /**
    * Sources have not been changed since last import. Imported stopped.
@@ -54,7 +59,12 @@ public enum ImportState {
    * Successfully completed the import.
    */
   FINISHED,
-  
+
+  /**
+   * Successfully completed the dataset release.
+   */
+  RELEASED,
+
   /**
    * Manually aborted import, e.g. system was shut down.
    */

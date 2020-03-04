@@ -67,6 +67,7 @@ abstract class SectorRunnable implements Runnable {
       state.setDatasetKey(datasetKey);
       state.setType(getClass().getSimpleName());
       state.setState(SectorImport.State.WAITING);
+      state.setCreatedBy(user.getKey());
     }
     this.indexService = indexService;
     this.successCallback = successCallback;

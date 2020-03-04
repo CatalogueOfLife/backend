@@ -1,45 +1,19 @@
 package life.catalogue.importer;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Future;
-import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
-
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
+import io.dropwizard.lifecycle.Managed;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.ColUser;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DatasetImport;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.ResultPage;
+import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.util.PagingUtil;
-import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.ImportState;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.common.concurrent.PBQThreadPoolExecutor;
 import life.catalogue.common.concurrent.StartNotifier;
@@ -51,11 +25,25 @@ import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.es.name.index.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.NameIndex;
+import life.catalogue.release.ReleaseManager;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.utils.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.dropwizard.lifecycle.Managed;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 /**
  * Manages import task scheduling, removing and listing
@@ -74,6 +62,7 @@ public class ImportManager implements Managed {
   private final NameIndex index;
   private final AuthorshipNormalizer aNormalizer;
   private final NameUsageIndexService indexService;
+  private final ReleaseManager releaseManager;
   private final DatasetImportDao dao;
   private final ImageService imgService;
   private final Timer importTimer;
@@ -81,9 +70,10 @@ public class ImportManager implements Managed {
 
   public ImportManager(WsServerConfig cfg, MetricRegistry registry, CloseableHttpClient client,
       SqlSessionFactory factory, AuthorshipNormalizer aNormalizer, NameIndex index,
-      NameUsageIndexService indexService, ImageService imgService) {
+      NameUsageIndexService indexService, ImageService imgService, ReleaseManager releaseManager) {
     this.cfg = cfg;
     this.factory = factory;
+    this.releaseManager = releaseManager;
     this.downloader = new DownloadUtil(client, cfg.importer.githubToken, cfg.importer.githubTokenGeoff);
     this.index = index;
     this.aNormalizer = aNormalizer;
@@ -185,8 +175,11 @@ public class ImportManager implements Managed {
         .stream()
         .map(ImportManager::fromFuture)
         .filter(di -> di.getState().isRunning())
-        .sorted(DI_STARTED_COMPARATOR)
         .collect(Collectors.toList());
+
+    // include releasing job if existing and sort by creation date
+    releaseManager.getReleaseMetrics().ifPresent(running::add);
+    running.sort(DI_STARTED_COMPARATOR);
 
     // then add the priority queue from the executor, filtered for queued imports only keeping the queues priority order
     running.addAll(
@@ -414,14 +407,14 @@ public class ImportManager implements Managed {
         new ThreadPoolExecutor.AbortPolicy());
 
     // read hanging imports in db, truncate if half inserted and add as new requests to the queue
-    cancelAndReschedule(ImportState.DOWNLOADING, false);
-    cancelAndReschedule(ImportState.PROCESSING, false);
-    cancelAndReschedule(ImportState.INSERTING, true);
+    for (ImportState state : ImportState.runningStates()) {
+      if (state == ImportState.WAITING) continue;
+      cancelAndReschedule(state, state != ImportState.DOWNLOADING && state != ImportState.PROCESSING);
+    }
   }
 
   private void cancelAndReschedule(ImportState state, boolean truncate) {
     int counter = 0;
-    DatasetImportDao dao = new DatasetImportDao(factory, cfg.metricsRepo);
     Iterator<DatasetImport> iter = PagingUtil.pageAll(p -> dao.list(null, Lists.newArrayList(state), p));
     while (iter.hasNext()) {
       DatasetImport di = iter.next();
@@ -436,7 +429,7 @@ public class ImportManager implements Managed {
       }
       // add back to queue
       try {
-        submit(new ImportRequest(di.getDatasetKey(), Users.IMPORTER, true, false));
+        submit(new ImportRequest(di.getDatasetKey(), di.getCreatedBy(), true, false));
         counter++;
       } catch (IllegalArgumentException e) {
         // swallow

@@ -1,5 +1,6 @@
 package life.catalogue.assembly;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import life.catalogue.api.model.*;
@@ -31,13 +32,18 @@ import static life.catalogue.api.util.ObjectUtils.coalesce;
 
 public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(TreeCopyHandler.class);
-  private static Set<EntityType> COPY_DATA = ImmutableSet.of(
+  private static final Set<EntityType> ALL_DATA = ImmutableSet.of(
       EntityType.REFERENCE,
       EntityType.VERNACULAR,
       EntityType.DISTRIBUTION,
       EntityType.REFERENCE
   );
-  
+  private static List<Rank> IMPLICITS = ImmutableList.of(Rank.GENUS,Rank.SUBGENUS, Rank.SPECIES);
+
+  private final Set<EntityType> entities;
+  private final Set<Rank> ranks;
+  private final List<Rank> implicitRanks = new ArrayList<>();
+
   private final int catalogueKey;
   private final ColUser user;
   private final Sector sector;
@@ -57,7 +63,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   private final Map<String, Usage> ids = new HashMap<>();
   private final Map<String, String> refIds = new HashMap<>();
   
-  TreeCopyHandler(SqlSessionFactory factory, ColUser user, Sector sector, SectorImport state, Map<String, EditorialDecision> decisions) {
+  TreeCopyHandler(Map<String, EditorialDecision> decisions, SqlSessionFactory factory, ColUser user, Sector sector, SectorImport state) {
     this.catalogueKey = sector.getDatasetKey();
     this.user = user;
     this.sector = sector;
@@ -66,6 +72,21 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     // we open up a separate batch session that we can write to so we do not disturb the open main cursor for processing with this handler
     batchSession = factory.openSession(ExecutorType.BATCH, false);
     session = factory.openSession(true);
+    this.entities = sector.getEntities() == null ? TreeCopyHandler.ALL_DATA : Set.copyOf(sector.getEntities());
+    LOG.info("Copy taxon extensions: {}", Joiner.on(", ").join(entities));
+    if (sector.getRanks() == null || sector.getRanks().isEmpty()) {
+      this.ranks = Set.of(Rank.values());
+    } else {
+      this.ranks = Set.copyOf(sector.getRanks());
+      LOG.info("Filter only ranks {}", Joiner.on(", ").join(ranks));
+    }
+    for (Rank r : IMPLICITS) {
+      if (!ranks.isEmpty() && ranks.contains(r)) {
+        implicitRanks.add(r);
+      }
+    }
+    LOG.info("Create implicit taxa for ranks {}", Joiner.on(", ").join(implicitRanks));
+
     rm = batchSession.getMapper(ReferenceMapper.class);
     tm = batchSession.getMapper(TaxonMapper.class);
     nm = batchSession.getMapper(NameMapper.class);
@@ -115,15 +136,13 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     return new Usage(u.getId(), u.getName().getRank(), u.getStatus());
   }
 
-  private static List<Rank> IMPLICITS = ImmutableList.of(Rank.GENUS,Rank.SUBGENUS, Rank.SPECIES);
-  
   private Usage createImplicit(Usage parent, Taxon taxon) {
     List<Rank> neededRanks = new ArrayList<>();
     
     // figure out if we need to create any implicit taxon
     Name origName = taxon.getName();
     if (origName.isParsed() && !origName.isIndetermined()) {
-      for (Rank r : IMPLICITS) {
+      for (Rank r : implicitRanks) {
         if (parent.rank.higherThan(r) && r.higherThan(origName.getRank())) {
           neededRanks.add(r);
         }
@@ -197,7 +216,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     if (skipUsage(u)) {
       state.setIgnoredUsageCount(++ignoredCounter);
       // skip this taxon, but include children
-      LOG.debug("Ignore {} [{}] type={}; status={}", u.getName().scientificNameAuthorship(), u.getId(), u.getName().getType(), u.getName().getNomStatus());
+      LOG.debug("Ignore {} {} [{}] type={}; status={}", u.getName().getRank(), u.getName().scientificNameAuthorship(), u.getId(), u.getName().getType(), u.getName().getNomStatus());
       // use taxons parent also as the parentID for this so children link one level up
       ids.put(u.getId(), ids.get(u.getParentId()));
       return;
@@ -226,7 +245,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     // copy usage with all associated information. This assigns a new id !!!
     DSID<String> orig;
     DSID<String> parentDID = new DSIDValue<>(catalogueKey, parent.id);
-    orig = CatCopy.copyUsage(batchSession, session, u, parentDID, user.getKey(), true, COPY_DATA, this::lookupReference, this::lookupReference);
+    orig = CatCopy.copyUsage(batchSession, session, u, parentDID, user.getKey(), true, entities, this::lookupReference, this::lookupReference);
     // remember old to new id mapping
     ids.put(orig.getId(), usage(u));
     // counter
@@ -245,7 +264,9 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   
   private boolean skipUsage(NameUsageBase u) {
     Name n = u.getName();
-    
+    if (!ranks.isEmpty() && !ranks.contains(n.getRank())) {
+      return true;
+    }
     switch (n.getType()) {
       case PLACEHOLDER:
       case NO_NAME:

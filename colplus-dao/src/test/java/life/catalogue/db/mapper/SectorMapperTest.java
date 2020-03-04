@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.SectorSearchRequest;
+import life.catalogue.api.vocab.EntityType;
 import org.apache.ibatis.exceptions.PersistenceException;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
@@ -9,7 +10,10 @@ import life.catalogue.api.model.Sector;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.db.MybatisTestUtils;
 import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
+
+import java.util.Set;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.*;
@@ -105,6 +109,8 @@ public class SectorMapperTest extends CRUDTestBase<Integer, Sector, SectorMapper
     d.setCode(NomCode.ZOOLOGICAL);
     d.setSubject(TestEntityGenerator.newSimpleName());
     d.setTarget(TestEntityGenerator.newSimpleNameWithoutStatusParent());
+    d.setRanks(Set.copyOf(Rank.LINNEAN_RANKS));
+    d.setEntities(Set.of(EntityType.NAME, EntityType.NAME_USAGE, EntityType.NAME_RELATION));
     d.setNote(RandomUtils.randomUnicodeString(1024));
     d.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());
     d.setModifiedBy(TestEntityGenerator.USER_EDITOR.getKey());

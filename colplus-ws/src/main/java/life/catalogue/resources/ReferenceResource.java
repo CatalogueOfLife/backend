@@ -6,7 +6,6 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.model.coldp.ColdpReference;
 import life.catalogue.api.search.ReferenceSearchRequest;
 import life.catalogue.dao.ReferenceDao;
-import life.catalogue.db.mapper.ReferenceMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.importer.reference.ReferenceFactory;
@@ -86,8 +85,6 @@ public class ReferenceResource extends AbstractDatasetScopedResource<Reference> 
                     @QueryParam("before") LocalDateTimeParam before,
                     @Auth ColUser user,
                     @Context SqlSession session) {
-    int cnt = session.getMapper(ReferenceMapper.class).deleteOrphans(datasetKey, before==null ? null : before.get());
-    session.commit();
-    return cnt;
+    return dao.deleteOrphans(datasetKey, before==null ? null : before.get(), user);
   }
 }

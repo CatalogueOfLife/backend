@@ -2,6 +2,7 @@ package life.catalogue.es.name.index;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterables;
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleNameClassification;
 import life.catalogue.api.search.NameUsageWrapper;
@@ -160,16 +161,40 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
 
   @Override
-  public void sync(int datasetKey, Collection<String> taxonIds) {
-    if (!taxonIds.isEmpty()) {
+  public void deleteSubtree(DSID<String> root) {
+    try {
+      int cnt = EsUtil.deleteSubtree(client, esConfig.nameUsage.name, root);
+      LOG.info("Deleted {} documents for entire subtree of root taxon {} from index {}", cnt, root, esConfig.nameUsage.name);
+      EsUtil.refreshIndex(client, esConfig.nameUsage.name);
+    } catch (IOException e) {
+      throw new EsException(e);
+    }
+  }
+
+  @Override
+  public void delete(DSID<String> usageId) {
+    if (usageId != null) {
       try {
-        String first = taxonIds.iterator().next();
-        LOG.info("Syncing {} taxa (first id: {}) from dataset {}", taxonIds.size(), first, datasetKey);
-        int deleted = EsUtil.deleteNameUsages(client, esConfig.nameUsage.name, datasetKey, taxonIds);
-        int inserted = indexNameUsages(datasetKey, taxonIds);
+        LOG.debug("Delete usage {} from dataset {}", usageId.getId(), usageId.getDatasetKey());
+        EsUtil.deleteNameUsages(client, esConfig.nameUsage.name, usageId.getDatasetKey(), List.of(usageId.getId()));
+        EsUtil.refreshIndex(client, esConfig.nameUsage.name);
+      } catch (IOException e) {
+        throw new EsException(e);
+      }
+    }
+  }
+
+  @Override
+  public void update(int datasetKey, Collection<String> usageIds) {
+    if (!usageIds.isEmpty()) {
+      try {
+        String first = usageIds.iterator().next();
+        LOG.info("Syncing {} taxa  from dataset {}. First id: {}", usageIds.size(), datasetKey, first);
+        int deleted = EsUtil.deleteNameUsages(client, esConfig.nameUsage.name, datasetKey, usageIds);
+        int inserted = indexNameUsages(datasetKey, usageIds);
         EsUtil.refreshIndex(client, esConfig.nameUsage.name);
         LOG.info("Finished syncing {} taxa (first id: {}) from dataset {}. Deleted: {}. Inserted: {}.",
-            taxonIds.size(),
+            usageIds.size(),
             first,
             datasetKey,
             deleted,
@@ -178,6 +203,19 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
         throw new EsException(e);
       }
     }
+  }
+
+  @Override
+  public int add(List<NameUsageWrapper> usages) {
+    if (!usages.isEmpty()) {
+      NameUsageWrapper first = usages.iterator().next();
+      LOG.info("Adding {} usages. First: {}", usages.size(), first.getUsage());
+
+      NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
+      indexer.accept(usages);
+      return indexer.documentsIndexed();
+    }
+    return 0;
   }
 
   @Override

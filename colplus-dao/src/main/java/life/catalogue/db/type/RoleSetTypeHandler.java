@@ -1,6 +1,5 @@
 package life.catalogue.db.type;
 
-import life.catalogue.db.type.BaseEnumSetTypeHandler;
 import life.catalogue.api.model.ColUser;
 
 /**
@@ -10,6 +9,6 @@ import life.catalogue.api.model.ColUser;
 public class RoleSetTypeHandler extends BaseEnumSetTypeHandler<ColUser.Role> {
   
   public RoleSetTypeHandler() {
-    super(ColUser.Role.class);
+    super(ColUser.Role.class, true);
   }
 }

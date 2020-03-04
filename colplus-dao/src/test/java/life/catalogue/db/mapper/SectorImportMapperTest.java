@@ -1,15 +1,16 @@
 package life.catalogue.db.mapper;
 
-import java.time.LocalDateTime;
-
 import com.google.common.collect.Lists;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
+import life.catalogue.api.vocab.Users;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.time.LocalDateTime;
 
 import static life.catalogue.api.TestEntityGenerator.*;
 import static life.catalogue.api.vocab.Datasets.DRAFT_COL;
@@ -52,6 +53,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     SectorImport d = new SectorImport();
     d.setType(getClass().getSimpleName());
     d.setSectorKey(s.getKey());
+    d.setCreatedBy(Users.TESTER);
     d.setAttempt(attempts++);
     d.setError("no error");
     d.addWarning("warning 1");

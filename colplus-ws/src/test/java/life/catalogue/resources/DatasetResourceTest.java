@@ -16,6 +16,7 @@ import org.junit.Test;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
+import java.net.URI;
 import java.time.LocalDate;
 
 import static life.catalogue.api.TestEntityGenerator.nullifyUserDate;
@@ -63,15 +64,16 @@ public class DatasetResourceTest extends ResourceTestBase {
     Dataset d = new Dataset();
     d.setTitle("s3s3derftg");
     d.setType(DatasetType.OTHER);
-    d.setOrigin(DatasetOrigin.UPLOADED);
+    d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setContact("me");
     d.setReleased(LocalDate.now());
     d.setImportFrequency(Frequency.MONTHLY);
+    d.setDataAccess(URI.create("http://gbif.org"));
     try {
       editorCreds(base).post(json(d), Integer.class);
       fail("Expected validation error");
     } catch (ClientErrorException e) {
-      // expect a 422 validation error!
+      // expect a 422 validation error, we need a data format!
       if (e.getResponse().getStatus() != 422) {
         fail("Expected HTTP 422");
       }

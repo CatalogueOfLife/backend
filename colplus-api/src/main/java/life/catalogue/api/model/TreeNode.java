@@ -1,19 +1,24 @@
 package life.catalogue.api.model;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import life.catalogue.api.vocab.EstimateType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.Rank;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * A drastic simplification of a taxon with just the minimum information used to render in a tree.
  * Adds various additional infos to support the assembly tree.
  */
 public class TreeNode implements DSID<String> {
+
+  public static enum Type {
+    CATALOGUE,
+    SOURCE
+  }
 
   private Integer datasetKey;
   private String id;

@@ -73,10 +73,7 @@ public class NameResource extends AbstractDatasetScopedResource<Name> {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public int delete(@PathParam("datasetKey") int datasetKey,
                     @QueryParam("before") LocalDateTimeParam before,
-                    @Auth ColUser user,
-                    @Context SqlSession session) {
-    int cnt = session.getMapper(NameMapper.class).deleteOrphans(datasetKey, before==null ? null : before.get());
-    session.commit();
-    return cnt;
+                    @Auth ColUser user) {
+    return dao.deleteOrphans(datasetKey, before==null ? null : before.get(), user);
   }
 }

@@ -65,17 +65,20 @@ public class DatasetImportDao {
   /**
    * Create a new downloading dataset import with the next attempt
    */
-  public DatasetImport create(Dataset d) {
+  public DatasetImport create(Dataset d, int user) {
     // build new import
     DatasetImport di = new DatasetImport();
     di.setDatasetKey(d.getKey());
+    di.setCreatedBy(user);
     di.setStarted(LocalDateTime.now());
+    di.setDownloadUri(null);
     if (d.getOrigin() == DatasetOrigin.EXTERNAL) {
       di.setState(ImportState.DOWNLOADING);
       di.setDownloadUri(d.getDataAccess());
+    } else if (d.getOrigin() == DatasetOrigin.MANAGED) {
+      di.setState(ImportState.WAITING);
     } else {
       di.setState(ImportState.PROCESSING);
-      di.setDownloadUri(null);
     }
     
     try (SqlSession session = factory.openSession(true)) {
@@ -88,9 +91,10 @@ public class DatasetImportDao {
   /**
    * Generates new metrics and persists them as a new successful import record.
    */
-  public DatasetImport createSuccess(int datasetKey) {
+  public DatasetImport createSuccess(int datasetKey, int user) {
     DatasetImport di = new DatasetImport();
     di.setDatasetKey(datasetKey);
+    di.setCreatedBy(user);
     di.setState(ImportState.FINISHED);
     di.setDownloadUri(null);
     di.setStarted(LocalDateTime.now());
@@ -129,9 +133,10 @@ public class DatasetImportDao {
   /**
    * Generates new metrics, but does not persist them as an import record.
    */
-  public DatasetImport generateMetrics(int datasetKey) {
+  public DatasetImport generateMetrics(int datasetKey, int user) {
     DatasetImport di = new DatasetImport();
     di.setDatasetKey(datasetKey);
+    di.setCreatedBy(user);
     try (SqlSession session = factory.openSession(true)) {
       DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
       updateMetrics(mapper, di);

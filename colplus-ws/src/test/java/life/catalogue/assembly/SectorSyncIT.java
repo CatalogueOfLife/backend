@@ -73,7 +73,7 @@ public class SectorSyncIT {
     // reset draft
     dataRule.truncateDraft();
     dataRule.loadData(true);
-    tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory());
+    tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
   }
   
   

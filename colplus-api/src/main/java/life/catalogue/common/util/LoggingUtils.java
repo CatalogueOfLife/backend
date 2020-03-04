@@ -10,11 +10,15 @@ public class LoggingUtils {
   public static final String MDC_KEY_ATTEMPT = "attempt";
   
   public static void setDatasetMDC(int datasetKey, int attempt, Class<?> source) {
-    MDC.put(MDC_KEY_TASK, source.getSimpleName());
-    MDC.put(MDC_KEY_DATASET, String.valueOf(datasetKey));
+    setDatasetMDC(datasetKey, source);
     MDC.put(MDC_KEY_ATTEMPT, String.valueOf(attempt));
   }
-  
+
+  public static void setDatasetMDC(int datasetKey, Class<?> source) {
+    MDC.put(MDC_KEY_TASK, source.getSimpleName());
+    MDC.put(MDC_KEY_DATASET, String.valueOf(datasetKey));
+  }
+
   public static void setSectorMDC(int sectorKey, int attempt, Class<?> source) {
     MDC.put(MDC_KEY_TASK, source.getSimpleName());
     MDC.put(MDC_KEY_SECTOR, String.valueOf(sectorKey));

@@ -45,6 +45,7 @@ import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.parser.NameParser;
 import life.catalogue.release.AcExporter;
+import life.catalogue.release.ReleaseManager;
 import life.catalogue.resources.*;
 import life.catalogue.resources.parser.NameParserResource;
 import life.catalogue.resources.parser.ParserResource;
@@ -174,6 +175,12 @@ public class WsServer extends Application<WsServerConfig> {
 
     final DatasetImportDao diDao = new DatasetImportDao(getSqlSessionFactory(), cfg.metricsRepo);
 
+    // exporter
+    AcExporter exporter = new AcExporter(cfg, getSqlSessionFactory());
+
+    // release
+    final ReleaseManager releaseManager = new ReleaseManager(exporter, diDao, indexService, getSqlSessionFactory());
+
     // async importer
     final ImportManager importManager = new ImportManager(cfg,
         env.metrics(),
@@ -182,7 +189,8 @@ public class WsServer extends Application<WsServerConfig> {
         aNormalizer,
         ni,
         indexService,
-        imgService);
+        imgService,
+        releaseManager);
     env.lifecycle().manage(importManager);
     env.jersey().register(new ImporterResource(importManager, diDao));
     ContinuousImporter cImporter = new ContinuousImporter(cfg.importer, importManager, getSqlSessionFactory());
@@ -191,9 +199,6 @@ public class WsServer extends Application<WsServerConfig> {
     // gbif sync
     GbifSync gbifSync = new GbifSync(cfg.gbif, getSqlSessionFactory(), jerseyClient);
     env.lifecycle().manage(gbifSync);
-
-    // exporter
-    AcExporter exporter = new AcExporter(cfg, getSqlSessionFactory());
 
     // assembly
     AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), diDao, indexService, env.metrics());
@@ -208,7 +213,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.healthChecks().register("diff", new DiffHealthCheck(diff));
 
     // daos
-    TaxonDao tdao = new TaxonDao(getSqlSessionFactory());
+    TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), indexService);
     NameDao ndao = new NameDao(getSqlSessionFactory(), aNormalizer);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory());
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory());
@@ -223,7 +228,7 @@ public class WsServer extends Application<WsServerConfig> {
             indexService,
             cImporter,
             gbifSync));
-    env.jersey().register(new AssemblyResource(getSqlSessionFactory(), indexService, diDao, tdao, assembly, exporter));
+    env.jersey().register(new AssemblyResource(getSqlSessionFactory(), tdao, assembly, exporter, releaseManager));
     env.jersey().register(new DataPackageResource());
     env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService, diDao, cfg, new DownloadUtil(httpClient), diff, indexService, exporter));
     env.jersey().register(new DecisionResource(getSqlSessionFactory(), indexService));

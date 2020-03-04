@@ -5,6 +5,7 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.Frequency;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.db.DatasetPageable;
 import life.catalogue.db.mapper.*;
@@ -97,13 +98,35 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
   }
 
   @Override
+  public Integer create(Dataset obj, int user) {
+    return super.create(resetOriginProps(obj), user);
+  }
+
+  private static Dataset resetOriginProps(Dataset d) {
+    // null properties not matching its origin
+    switch (d.getOrigin()) {
+      case MANAGED:
+        d.setDataFormat(null);
+      case UPLOADED:
+        d.setDataAccess(null);
+        d.setImportFrequency(Frequency.NEVER);
+    }
+    return d;
+  }
+
+  @Override
   protected void createAfter(Dataset obj, int user, DatasetMapper mapper, SqlSession session) {
     pullLogo(obj);
     if (obj.getOrigin() == DatasetOrigin.MANAGED) {
       recreatePartition(obj.getKey());
     }
   }
-  
+
+  @Override
+  protected void updateBefore(Dataset obj, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
+    super.updateBefore(resetOriginProps(obj), old, user, mapper, session);
+  }
+
   @Override
   protected void updateAfter(Dataset obj, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
     pullLogo(obj);
@@ -119,5 +142,5 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
   private void pullLogo(Dataset d) {
     LogoUpdateJob.updateDatasetAsync(d, factory, downloader, scratchFileFunc, imgService);
   }
-  
+
 }

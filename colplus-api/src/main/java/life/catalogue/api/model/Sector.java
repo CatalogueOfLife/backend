@@ -1,9 +1,12 @@
 package life.catalogue.api.model;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import life.catalogue.api.vocab.EntityType;
 import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
+
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * A taxonomic sector definition within a dataset that is used to assemble the Catalogue of Life.
@@ -24,6 +27,8 @@ public class Sector extends DataEntity<Integer> implements DatasetScoped {
   private SimpleName subject;
   private Mode mode = Sector.Mode.ATTACH;
   private NomCode code;
+  private Set<Rank> ranks;
+  private Set<EntityType> entities;
   private String note;
   
   public static enum Mode {
@@ -125,7 +130,23 @@ public class Sector extends DataEntity<Integer> implements DatasetScoped {
   public void setTarget(SimpleName target) {
     this.target = target;
   }
-  
+
+  public Set<Rank> getRanks() {
+    return ranks;
+  }
+
+  public void setRanks(Set<Rank> ranks) {
+    this.ranks = ranks;
+  }
+
+  public Set<EntityType> getEntities() {
+    return entities;
+  }
+
+  public void setEntities(Set<EntityType> entities) {
+    this.entities = entities;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -139,14 +160,16 @@ public class Sector extends DataEntity<Integer> implements DatasetScoped {
         Objects.equals(subject, sector.subject) &&
         mode == sector.mode &&
         code == sector.code &&
+        Objects.equals(ranks, sector.ranks) &&
+        Objects.equals(entities, sector.entities) &&
         Objects.equals(note, sector.note);
   }
-  
+
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, datasetKey, target, subjectDatasetKey, subject, mode, code, note);
+    return Objects.hash(super.hashCode(), key, datasetKey, target, subjectDatasetKey, subject, mode, code, ranks, entities, note);
   }
-  
+
   @Override
   public String toString() {
     return "Sector{" + getKey() +

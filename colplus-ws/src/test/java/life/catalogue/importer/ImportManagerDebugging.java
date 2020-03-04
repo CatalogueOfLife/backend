@@ -1,14 +1,8 @@
 package life.catalogue.importer;
 
-import java.net.URI;
-
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.io.Files;
 import io.dropwizard.client.HttpClientBuilder;
-import life.catalogue.importer.ImportManager;
-import life.catalogue.importer.ImportRequest;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.ibatis.session.SqlSession;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Dataset;
@@ -23,16 +17,25 @@ import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.name.index.NameUsageIndexService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.matching.NameIndexFactory;
-import org.elasticsearch.client.RestClient;
+import life.catalogue.release.ReleaseManager;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
+import java.net.URI;
 
 @Ignore("manual import debugging")
+@RunWith(MockitoJUnitRunner.class)
 public class ImportManagerDebugging {
   static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
 
   ImportManager importManager;
   CloseableHttpClient hc;
-  RestClient esClient;
+  @Mock
+  ReleaseManager releaseManager;
   
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -66,7 +69,7 @@ public class ImportManagerDebugging {
     
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), aNormalizer,
-        NameIndexFactory.passThru(), NameUsageIndexService.passThru(), new ImageServiceFS(cfg.img));
+        NameIndexFactory.passThru(), NameUsageIndexService.passThru(), new ImageServiceFS(cfg.img), releaseManager);
     importManager.start();
   }
   
@@ -74,7 +77,6 @@ public class ImportManagerDebugging {
   public void shutdown() throws Exception {
     importManager.stop();
     hc.close();
-    esClient.close();
   }
   
   /**

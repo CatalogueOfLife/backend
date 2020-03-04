@@ -65,6 +65,18 @@
         LEFT JOIN decision ed ON ed.subject_dataset_key=#{datasetKey} AND ed.subject_id=u.id
     </sql>
 
+    <sql id="bareNameSelectFrom">
+        v.issues,
+        <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
+            <property name="alias" value="n"/>
+            <property name="prefix" value="n_"/>
+        </include>
+        FROM name_${partition} n
+            LEFT JOIN name_usage_${partition}  u ON n.id = u.name_id
+            LEFT JOIN verbatim_${partition} v ON v.id= n.verbatim_key
+        WHERE u.id IS NULL
+    </sql>
+
 
     <select id="processTree" parameterType="map" resultMap="classificationResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
         <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
@@ -98,24 +110,22 @@
 
     <select id="processDatasetBareNames" parameterType="map" resultMap="bareNameResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
         <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        SELECT v.issues,
-        <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
-            <property name="alias" value="n"/>
-            <property name="prefix" value="n_"/>
-        </include>
-        FROM name_${partition} n
-            LEFT JOIN name_usage_${partition}  u ON n.id = u.name_id
-            LEFT JOIN verbatim_${partition} v ON v.id= n.verbatim_key
-        WHERE u.id IS NULL
+        SELECT <include refid="bareNameSelectFrom"/>
         <if test="sectorKey != null">
-        	AND n.sector_key = #{sectorKey}
-   	    </if>
+            AND n.sector_key = #{sectorKey}
+        </if>
     </select>
 
     <select id="get" parameterType="map" resultMap="taxonGetClassificationResultMap">
         <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
         SELECT u.id AS uid, <include refid="taxonSelectFrom" />
         WHERE u.id = #{id}
+    </select>
+
+    <select id="getBareName" parameterType="map" resultMap="bareNameResultMap">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        SELECT <include refid="bareNameSelectFrom"/>
+        AND n.id = #{id}
     </select>
 
     <select id="getWithoutClassification" parameterType="map" resultMap="usageResultMap">

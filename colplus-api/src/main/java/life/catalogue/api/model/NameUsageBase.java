@@ -176,4 +176,9 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   public int hashCode() {
     return Objects.hash(super.hashCode(), sectorKey, verbatimKey, name, status, origin, parentId, accordingTo, link, remarks, referenceIds);
   }
+
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + "{" + name.canonicalNameComplete() + " [" + getId() + "]}";
+  }
 }

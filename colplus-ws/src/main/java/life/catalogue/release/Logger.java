@@ -3,6 +3,7 @@ package life.catalogue.release;
 import com.google.common.base.Preconditions;
 import org.slf4j.LoggerFactory;
 
+@Deprecated
 public class Logger {
   private org.slf4j.Logger log;
   private final StringBuffer sb = new StringBuffer();

@@ -7,6 +7,7 @@ import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
@@ -38,7 +39,7 @@ public class AssemblyCoordinatorTest {
   @Before
   public void init() {
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    diDao.createSuccess(Datasets.DRAFT_COL);
+    diDao.createSuccess(Datasets.DRAFT_COL, Users.TESTER);
   
     coord = new AssemblyCoordinator(PgSetupRule.getSqlSessionFactory(), diDao, NameUsageIndexService.passThru(), new MetricRegistry());
   }

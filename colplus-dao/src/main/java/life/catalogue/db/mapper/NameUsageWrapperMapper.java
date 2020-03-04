@@ -16,9 +16,14 @@ import java.util.List;
  */
 public interface NameUsageWrapperMapper {
   
-  NameUsageWrapper get(@Param("datasetKey") int datasetKey,
-                       @Param("id") String taxonId);
-  
+  NameUsageWrapper get(@Param("datasetKey") int datasetKey, @Param("id") String taxonId);
+
+  /**
+   * Get bare name by its name id. If a usage with the name exists no bare name can be retrieved!
+   * @return a wrapped bare name selected by its name id or null
+   */
+  NameUsageWrapper getBareName(@Param("datasetKey") int datasetKey, @Param("id") String nameId);
+
   /**
    * @return the full wrapper object but without the recursive classification property
    */

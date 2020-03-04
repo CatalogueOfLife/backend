@@ -5,6 +5,8 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Frequency;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.common.lang.Exceptions;
+import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.Partitioner;
 import life.catalogue.db.CRUD;
@@ -31,7 +33,8 @@ public class CatalogueRelease implements Runnable {
   private final int user;
   private final int sourceDatasetKey;
   private final int releaseKey;
-  private final Dataset release;
+  private final DatasetImport metrics;
+  @Deprecated
   private final life.catalogue.release.Logger logger = new life.catalogue.release.Logger(LOG);
   // we only allow a single release to run at a time
   private static boolean LOCK = false;
@@ -42,7 +45,7 @@ public class CatalogueRelease implements Runnable {
     this.diDao = diDao;
     this.exporter = exporter;
     this.sourceDatasetKey = sourceDatasetKey;
-    this.release = release;
+    metrics = diDao.create(release, userKey);
     releaseKey = release.getKey();
     this.user = userKey;
   }
@@ -103,7 +106,12 @@ public class CatalogueRelease implements Runnable {
   public int getSourceDatasetKey() {
     return sourceDatasetKey;
   }
-  
+
+  public DatasetImport getMetrics() {
+    return metrics;
+  }
+
+  @Deprecated
   public String getState() {
     return logger.toString();
   }
@@ -127,68 +135,77 @@ public class CatalogueRelease implements Runnable {
       .append(". Digital resource at www.catalogueoflife.org/col. Species 2000: Naturalis, Leiden, the Netherlands. ISSN 2405-8858.");
     return sb.toString();
   }
-  
-  /**
-   * @return The new released datasetKey
-   */
+
   @Override
   public void run() {
+    LoggingUtils.setDatasetMDC(releaseKey, getClass());
     try {
       logger.log("Release catalogue "+sourceDatasetKey+" to new dataset" + releaseKey);
       // prepare new tables
+      updateState(ImportState.PROCESSING);
       Partitioner.partition(factory, releaseKey);
       // map ids
+      updateState(ImportState.MATCHING);
       mapIds();
       // copy data
+      updateState(ImportState.INSERTING);
       copyData();
       // build indices and attach partition
       Partitioner.indexAndAttach(factory, releaseKey);
       // create metrics
+      updateState(ImportState.BUILDING_METRICS);
       metrics();
       // ac-export
+      updateState(ImportState.EXPORTING);
       export();
       try {
         // ES index
+        updateState(ImportState.INDEXING);
         index();
       } catch (RuntimeException e) {
         // allow indexing to fail - sth we can do afterwards again
         LOG.error("Error indexing released & exported dataset {} into ES. Source catalogue={}", releaseKey, sourceDatasetKey, e);
       }
+      updateState(ImportState.RELEASED);
       logger.log("Successfully finished releasing catalogue " + sourceDatasetKey);
 
     } catch (Exception e) {
-      logger.log("Error releasing catalogue " + sourceDatasetKey + " into dataset " + releaseKey);
+
+      metrics.setError(Exceptions.getFirstMessage(e));
+      updateState(ImportState.FAILED);
       LOG.error("Error releasing catalogue {} into dataset {}", sourceDatasetKey, releaseKey, e);
       // cleanup partion which probably is not even attached
       Partitioner.delete(factory, releaseKey);
 
     } finally {
       releaseLock();
+      LoggingUtils.removeDatasetMDC();
     }
   }
-  
+
+  private void updateState(ImportState state) {
+    interruptIfCancelled();
+    metrics.setState(state);
+    diDao.update(metrics);
+  }
+
   private void index() {
     logger.log("Build search index for catalogue " + releaseKey);
     indexService.indexDataset(releaseKey);
   }
   
   private void metrics() {
-    interruptIfCancelled();
     logger.log("Build import metrics for catalogue " +  releaseKey);
-    DatasetImport di = diDao.create(release);
-    di.setState(ImportState.FINISHED);
-    diDao.updateMetrics(di);
-    logger.log("Created new import metrics for dataset " + releaseKey + ", attempt " + di.getAttempt());
+    diDao.updateMetrics(metrics);
+    diDao.update(metrics);
   }
   
   private void mapIds() {
-    interruptIfCancelled();
     logger.log("Map IDs");
     //TODO: match & generate ids
   }
   
   private void copyData() {
-    interruptIfCancelled();
     copyTable(SectorMapper.class, Sector.class, this::updateEntity);
     copyTable(ReferenceMapper.class, Reference.class, this::updateDatasetID);
     copyTable(NameMapper.class, Name.class, this::updateDatasetID);
@@ -253,7 +270,6 @@ public class CatalogueRelease implements Runnable {
   }
   
   public void export() throws IOException {
-    interruptIfCancelled();
     try {
       exporter.export(releaseKey, logger);
     } catch (Throwable e) {

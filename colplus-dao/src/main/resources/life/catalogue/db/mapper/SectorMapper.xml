@@ -22,6 +22,8 @@
     ${alias}target_code AS ${prefix}target_code,
     ${alias}mode AS ${prefix}mode,
     ${alias}code AS ${prefix}code,
+    ${alias}ranks AS ${prefix}ranks,
+    ${alias}entities AS ${prefix}entities,
     ${alias}note AS ${prefix}note,
     ${alias}modified AS ${prefix}modified,
     ${alias}modified_by AS ${prefix}modified_by,
@@ -53,6 +55,8 @@
     target_code,
     mode,
     code,
+    ranks,
+    entities,
     note,
     modified,
     modified_by
@@ -75,6 +79,8 @@
     #{target.code}::NOMCODE,
     #{mode}::SECTOR_MODE,
     #{code}::NOMCODE,
+    #{ranks, typeHandler=life.catalogue.db.type2.RankSetTypeHandler},
+    #{entities, typeHandler=life.catalogue.db.type2.EntitySetTypeHandler},
     #{note},
     now(),
     #{modifiedBy}
@@ -124,6 +130,8 @@
   <!-- A mapping to Distribution, mostly auto mapped -->
   <resultMap id="sectorResultMap" type="Sector" autoMapping="true">
     <id property="key" column="key" />
+    <result property="ranks" column="ranks" typeHandler="life.catalogue.db.type2.RankSetTypeHandler" />
+    <result property="entities" column="entities" typeHandler="life.catalogue.db.type2.EntitySetTypeHandler" />
     <association property="subject" javaType="SimpleName" autoMapping="true" columnPrefix="subject_" />
     <association property="target" javaType="SimpleName" autoMapping="true" columnPrefix="target_" />
   </resultMap>

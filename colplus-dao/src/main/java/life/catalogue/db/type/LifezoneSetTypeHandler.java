@@ -1,6 +1,5 @@
 package life.catalogue.db.type;
 
-import life.catalogue.db.type.BaseEnumSetTypeHandler;
 import life.catalogue.api.vocab.Lifezone;
 
 /**
@@ -10,6 +9,6 @@ import life.catalogue.api.vocab.Lifezone;
 public class LifezoneSetTypeHandler extends BaseEnumSetTypeHandler<Lifezone> {
   
   public LifezoneSetTypeHandler() {
-    super(Lifezone.class);
+    super(Lifezone.class, true);
   }
 }

@@ -135,10 +135,12 @@ CREATE TYPE IMPORTSTATE AS ENUM (
   'PROCESSING',
   'INSERTING',
   'INDEXING',
-  'DECISION_MATCHING',
+  'MATCHING',
   'BUILDING_METRICS',
+  'EXPORTING',
   'UNCHANGED',
   'FINISHED',
+  'RELEASED',
   'CANCELED',
   'FAILED'
 );
@@ -629,6 +631,7 @@ CREATE TABLE dataset_import (
   started TIMESTAMP WITHOUT TIME ZONE,
   finished TIMESTAMP WITHOUT TIME ZONE,
   download TIMESTAMP WITHOUT TIME ZONE,
+  created_by INTEGER NOT NULL,
   verbatim_count INTEGER,
   name_count INTEGER,
   type_material_count INTEGER,
@@ -682,6 +685,8 @@ CREATE TABLE sector (
   target_id TEXT,
   target_name TEXT,
   target_authorship TEXT,
+  ranks RANK[] DEFAULT '{}',
+  entities ENTITYTYPE[] DEFAULT NULL,
   note TEXT,
   UNIQUE (dataset_key, subject_dataset_key, subject_id)
 );
@@ -691,6 +696,7 @@ CREATE TABLE sector_import (
   attempt INTEGER NOT NULL,
   started TIMESTAMP WITHOUT TIME ZONE,
   finished TIMESTAMP WITHOUT TIME ZONE,
+  created_by INTEGER NOT NULL,
   state SECTORIMPORT_STATE NOT NULL,
   name_count INTEGER,
   taxon_count INTEGER,

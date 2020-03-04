@@ -168,7 +168,7 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
       }
   
       LOG.info("Update dataset sector counts");
-      new TaxonDao(factory).updateAllSectorCounts(Datasets.DRAFT_COL, factory);
+      new TaxonDao(factory, NameUsageIndexService.passThru()).updateAllSectorCounts(Datasets.DRAFT_COL, factory);
       
       updateSearchIndex(cfg, factory);
     }

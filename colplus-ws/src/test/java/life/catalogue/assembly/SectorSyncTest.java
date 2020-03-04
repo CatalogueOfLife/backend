@@ -1,27 +1,17 @@
 package life.catalogue.assembly;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import life.catalogue.assembly.SectorSync;
-import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.mapper.DatasetPartitionMapper;
-import life.catalogue.db.mapper.DistributionMapper;
-import life.catalogue.db.mapper.NameMapper;
-import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.db.mapper.SynonymMapper;
-import life.catalogue.db.mapper.TaxonMapper;
-import life.catalogue.db.mapper.TestDataRule;
-import life.catalogue.db.mapper.VernacularNameMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.es.name.index.NameUsageIndexService;
+import org.apache.ibatis.session.SqlSession;
 import org.gbif.common.shaded.com.google.common.collect.Lists;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -29,6 +19,9 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.assertEquals;
@@ -95,7 +88,7 @@ public class SectorSyncTest {
     }
   
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    diDao.createSuccess(Datasets.DRAFT_COL);
+    diDao.createSuccess(Datasets.DRAFT_COL, Users.TESTER);
   }
   
   @Test
@@ -109,7 +102,7 @@ public class SectorSyncTest {
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
     ss.run();
   
-    diDao.createSuccess(Datasets.DRAFT_COL);
+    diDao.createSuccess(Datasets.DRAFT_COL, Users.TESTER);
   
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       final NameMapper nm = session.getMapper(NameMapper.class);

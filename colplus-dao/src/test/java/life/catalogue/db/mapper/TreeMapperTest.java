@@ -1,13 +1,13 @@
 package life.catalogue.db.mapper;
 
-import java.util.List;
-
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.db.MybatisTestUtils;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
+
+import java.util.List;
 
 import static life.catalogue.api.vocab.Datasets.DRAFT_COL;
 import static org.junit.Assert.*;
@@ -22,7 +22,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
   
   @Test
   public void get() {
-    TreeNode tn = mapper().get(Datasets.DRAFT_COL, DSID.key(dataset11, "root-1"));
+    TreeNode tn = mapper().get(Datasets.DRAFT_COL, TreeNode.Type.SOURCE, DSID.key(dataset11, "root-1"));
     assertEquals(dataset11, (int) tn.getDatasetKey());
     assertNotNull(tn.getId());
     assertNull(tn.getParentId());
@@ -32,24 +32,24 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
   
     MybatisTestUtils.populateDraftTree(session());
 
-    tn = mapper().get(Datasets.DRAFT_COL, DSID.draftID("t4"));
+    tn = mapper().get(Datasets.DRAFT_COL, TreeNode.Type.CATALOGUE, DSID.draftID("t4"));
     assertNotNull(tn.getDatasetSectors());
     assertEquals(1, (int) tn.getDatasetSectors().get(11));
   
-    tn = mapper().get(Datasets.DRAFT_COL, DSID.draftID("t3"));
+    tn = mapper().get(Datasets.DRAFT_COL, TreeNode.Type.CATALOGUE, DSID.draftID("t3"));
     assertEquals(2, (int) tn.getDatasetSectors().get(11));
   
-    tn = mapper().get(Datasets.DRAFT_COL, DSID.draftID("t2"));
+    tn = mapper().get(Datasets.DRAFT_COL, TreeNode.Type.CATALOGUE, DSID.draftID("t2"));
     assertEquals(2, (int) tn.getDatasetSectors().get(11));
   
-    tn = mapper().get(Datasets.DRAFT_COL, DSID.draftID("t1"));
+    tn = mapper().get(Datasets.DRAFT_COL, null, DSID.draftID("t1"));
     assertEquals(2, (int) tn.getDatasetSectors().get(11));
   }
   
   @Test
   public void root() {
-    assertEquals(2, valid(mapper().root(Datasets.DRAFT_COL, dataset11, new Page())).size());
-    TreeNode tn = mapper().root(Datasets.DRAFT_COL, dataset11, new Page()).get(0);
+    assertEquals(2, valid(mapper().root(Datasets.DRAFT_COL, TreeNode.Type.SOURCE, dataset11, new Page())).size());
+    TreeNode tn = mapper().root(Datasets.DRAFT_COL, TreeNode.Type.SOURCE, dataset11, new Page()).get(0);
     assertEquals(dataset11, (int) tn.getDatasetKey());
     assertNotNull(tn.getId());
     assertNull(tn.getParentId());
@@ -59,12 +59,12 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
   
   @Test
   public void parents() {
-    assertEquals(1, valid(mapper().parents(Datasets.DRAFT_COL, DSID.key(dataset11, "root-1"))).size());
+    assertEquals(1, valid(mapper().parents(Datasets.DRAFT_COL, TreeNode.Type.SOURCE, DSID.key(dataset11, "root-1"))).size());
   }
   
   @Test
   public void children() {
-    assertEquals(0, valid(mapper().children(Datasets.DRAFT_COL, DSID.key(dataset11, "root-1"), null, false, new Page())).size());
+    assertEquals(0, valid(mapper().children(Datasets.DRAFT_COL, TreeNode.Type.SOURCE, DSID.key(dataset11, "root-1"), null, false, new Page())).size());
   }
   
   @Test
@@ -88,18 +88,18 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     sm.create(s2);
     commit();
     
-    List<TreeNode> nodes = mapper().children(Datasets.DRAFT_COL, DSID.draftID("t1"), null,false, new Page());
+    List<TreeNode> nodes = mapper().children(Datasets.DRAFT_COL, TreeNode.Type.CATALOGUE, DSID.draftID("t1"), null,false, new Page());
     assertEquals(1, nodes.size());
     noSectorKeys(nodes);
   
-    nodes = mapper().children(Datasets.DRAFT_COL, DSID.draftID("t2"), null,false, new Page());
+    nodes = mapper().children(Datasets.DRAFT_COL, TreeNode.Type.CATALOGUE, DSID.draftID("t2"), null,false, new Page());
     assertEquals(1, nodes.size());
     noSectorKeys(nodes);
     
-    nodes = mapper().children(Datasets.DRAFT_COL, DSID.draftID("t3"), null,false, new Page());
+    nodes = mapper().children(Datasets.DRAFT_COL, TreeNode.Type.CATALOGUE, DSID.draftID("t3"), null,false, new Page());
     assertEquals(2, nodes.size());
     
-    nodes = mapper().parents(Datasets.DRAFT_COL, DSID.draftID("t4"));
+    nodes = mapper().parents(Datasets.DRAFT_COL, TreeNode.Type.CATALOGUE, DSID.draftID("t4"));
     assertEquals(4, nodes.size());
     valid(nodes);
   }
@@ -135,12 +135,12 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     dm.create(d2);
 
     
-    List<TreeNode> nodes = mapper().children(Datasets.DRAFT_COL, DSID.key(dataset11, "t1"), null,false, new Page());
+    List<TreeNode> nodes = mapper().children(Datasets.DRAFT_COL, TreeNode.Type.SOURCE, DSID.key(dataset11, "t1"), null,false, new Page());
     assertEquals(1, nodes.size());
     assertEquals(s.getKey(), nodes.get(0).getSectorKey());
     equals(d1, nodes.get(0).getDecision());
     
-    nodes = mapper().parents(Datasets.DRAFT_COL, DSID.key(dataset11, "t4"));
+    nodes = mapper().parents(Datasets.DRAFT_COL, TreeNode.Type.SOURCE, DSID.key(dataset11, "t4"));
     assertEquals(4, nodes.size());
   
     assertNull(nodes.get(0).getSectorKey());
@@ -152,7 +152,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     equals(d2, nodes.get(1).getDecision());
     equals(d1, nodes.get(2).getDecision());
   
-    nodes = mapper().children(Datasets.DRAFT_COL, DSID.key(dataset11, "t2"), null,false, new Page());
+    nodes = mapper().children(Datasets.DRAFT_COL, TreeNode.Type.SOURCE, DSID.key(dataset11, "t2"), null,false, new Page());
     noSectors(noSectorKeys(nodes));
   }
   
@@ -181,7 +181,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     SpeciesEstimate s3 = newEstimate("t2");
     em.create(s3);
 
-    List<TreeNode> nodes = mapper().root(Datasets.DRAFT_COL, DRAFT_COL, new Page());
+    List<TreeNode> nodes = mapper().root(Datasets.DRAFT_COL, TreeNode.Type.CATALOGUE, DRAFT_COL, new Page());
     assertEquals(1, nodes.size());
     assertEquals(2, nodes.get(0).getEstimates().size());
     for (SpeciesEstimate s : nodes.get(0).getEstimates()) {

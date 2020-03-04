@@ -299,7 +299,7 @@ public class TaxonMapperTest extends CRUDPageableTestBase<Taxon, TaxonMapper> {
   }
   
   private TreeNode getTreeNode(String id) {
-    return session().getMapper(TreeMapper.class).get(Datasets.DRAFT_COL, DSID.draftID(id));
+    return session().getMapper(TreeMapper.class).get(Datasets.DRAFT_COL, TreeNode.Type.CATALOGUE, DSID.draftID(id));
     
   }
   

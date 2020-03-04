@@ -9,7 +9,6 @@ import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.tree.DiffService;
 import life.catalogue.db.tree.NamesDiff;
 import life.catalogue.db.tree.TextTreePrinter;
@@ -70,12 +69,6 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     return dao.search(req, page);
   }
   
-  @GET
-  @Path("catalogues")
-  public List<Integer> listCatalogues(@Context SqlSession session) {
-    return session.getMapper(SectorMapper.class).listTargetDatasetKeys();
-  }
-
   @POST
   @Path("{key}/export")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
@@ -129,13 +122,9 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
                          @QueryParam("root") String rootID,
                          @QueryParam("rank") Set<Rank> ranks,
                          @Context SqlSession session) {
-    Integer attempt = session.getMapper(DatasetMapper.class).lastImportAttempt(key);
-    if (attempt == null) {
-      throw new NotFoundException();
-    }
-    
     StreamingOutput stream;
-    if (rootID == null && (ranks == null || ranks.isEmpty())) {
+    Integer attempt = session.getMapper(DatasetMapper.class).lastImportAttempt(key);
+    if (attempt != null && rootID == null && (ranks == null || ranks.isEmpty())) {
       // stream from pregenerated file
       stream = os -> {
         InputStream in = new FileInputStream(diDao.getTreeDao().treeFile(key, attempt));
