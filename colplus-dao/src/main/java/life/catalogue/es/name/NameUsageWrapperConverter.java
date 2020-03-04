@@ -183,6 +183,8 @@ public class NameUsageWrapperConverter {
     name.setDatasetKey(null);
     name.setId(null);
     name.setScientificName(null);
+    name.setSpecificEpithet(null);
+    name.setInfraspecificEpithet(null);
     name.setNameIndexId(null);
     name.setNomStatus(null);
     name.setPublishedInId(null);
@@ -227,6 +229,8 @@ public class NameUsageWrapperConverter {
     name.setDatasetKey(doc.getDatasetKey());
     name.setId(doc.getNameId());
     name.setScientificName(doc.getScientificName());
+    name.setSpecificEpithet(doc.getNameStrings().getSpecificEpithet());
+    name.setInfraspecificEpithet(doc.getNameStrings().getInfraspecificEpithet());
     name.setNameIndexId(doc.getNameIndexId());
     name.setNomStatus(doc.getNomStatus());
     name.setPublishedInId(doc.getPublishedInId());

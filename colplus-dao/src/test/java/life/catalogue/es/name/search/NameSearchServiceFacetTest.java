@@ -1,26 +1,35 @@
 package life.catalogue.es.name.search;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Base64;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.UUID;
+import java.util.zip.DeflaterOutputStream;
+import org.gbif.nameparser.api.Rank;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Taxon;
-import life.catalogue.api.search.*;
+import life.catalogue.api.search.FacetValue;
+import life.catalogue.api.search.NameUsageSearchParameter;
+import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.api.search.NameUsageSearchResponse;
+import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.es.EsModule;
 import life.catalogue.es.EsReadTestBase;
+import life.catalogue.es.model.NameStrings;
 import life.catalogue.es.model.NameUsageDocument;
 import life.catalogue.es.name.NameUsageWrapperConverter;
-import org.gbif.nameparser.api.Rank;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.*;
-import java.util.zip.DeflaterOutputStream;
-
 import static org.junit.Assert.assertEquals;
 
 public class NameSearchServiceFacetTest extends EsReadTestBase {
@@ -683,6 +692,7 @@ public class NameSearchServiceFacetTest extends EsReadTestBase {
 
   private static NameUsageDocument newDocument() {
     NameUsageDocument doc = new NameUsageDocument();
+    doc.setNameStrings(new NameStrings());
     doc.setPayload(dummyPayload);
     return doc;
   }
