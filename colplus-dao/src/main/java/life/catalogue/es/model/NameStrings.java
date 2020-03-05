@@ -1,7 +1,6 @@
 package life.catalogue.es.model;
 
 import java.util.Objects;
-import org.gbif.nameparser.api.Rank;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.es.mapping.Analyzers;
@@ -49,9 +48,6 @@ public class NameStrings {
     if (name.getUninomial() != null) {
       genusOrMonomial = name.getUninomial();
       genusOrMonomialWN = normalizeWeakly(name.getUninomial());
-      if (name.getRank() == Rank.GENUS) {
-        genusLetter = Character.toLowerCase(name.getGenus().charAt(0));
-      }
     } else if (name.getGenus() != null) {
       genusLetter = Character.toLowerCase(name.getGenus().charAt(0));
       genusOrMonomial = name.getGenus();
