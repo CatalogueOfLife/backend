@@ -167,6 +167,7 @@ public class CatalogueRelease implements Runnable {
         LOG.error("Error indexing released & exported dataset {} into ES. Source catalogue={}", releaseKey, sourceDatasetKey, e);
       }
       updateState(ImportState.RELEASED);
+
       logger.log("Successfully finished releasing catalogue " + sourceDatasetKey);
 
     } catch (Exception e) {
@@ -198,6 +199,7 @@ public class CatalogueRelease implements Runnable {
     logger.log("Build import metrics for catalogue " +  releaseKey);
     diDao.updateMetrics(metrics);
     diDao.update(metrics);
+    diDao.updateDatasetLastAttempt(metrics);
   }
   
   private void mapIds() {
