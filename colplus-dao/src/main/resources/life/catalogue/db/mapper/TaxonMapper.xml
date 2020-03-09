@@ -64,11 +64,8 @@
 
 
     <select id="count" resultType="integer">
-        <include refid="life.catalogue.db.Common.count">
-            <property name="table" value="name_usage"/>
-            <property name="column" value="taxon_count"/>
-            <property name="where" value="not is_synonym"/>
-        </include>
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        SELECT count(*) FROM name_usage_${partition} WHERE NOT is_synonym
     </select>
 
     <select id="countChildren" resultType="integer">

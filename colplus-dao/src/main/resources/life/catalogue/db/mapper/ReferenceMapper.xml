@@ -82,10 +82,8 @@
     </resultMap>
 
     <select id="count" resultType="integer">
-        <include refid="life.catalogue.db.Common.count">
-            <property name="table" value="reference"/>
-            <property name="column" value="reference_count"/>
-        </include>
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        SELECT count(*) FROM reference_${partition}
     </select>
 
     <select id="list" resultMap="referenceResultMap">

@@ -1,13 +1,13 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.vocab.Users;
-import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Synonym;
 import life.catalogue.api.model.Taxon;
+import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
+import org.apache.ibatis.session.SqlSession;
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
@@ -66,7 +66,7 @@ public abstract class MapperTestBase<M> {
     dao.createSuccess(datasetKey, Users.TESTER);
     commit();
   }
-  
+
   void insertName(Name n) {
     mapper(NameMapper.class).create(n);
   }

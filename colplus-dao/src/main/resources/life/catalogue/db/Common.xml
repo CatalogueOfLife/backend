@@ -31,26 +31,5 @@
         LIMIT 1
     </sql>
 
-    <!-- selects the last successful import, i.e. the one that imported data -->
-    <sql id="countFromFinishedDatasetImport">
-        SELECT coalesce((SELECT ${column} <include refid="life.catalogue.db.Common.fromFinishedDatasetImport"/>), 0)
-    </sql>
-
-    <!--
-    Expects parameters: datasetKey, table, column
-    Optionally a where parameter
-    -->
-    <sql id="count">
-        <bind name="partition" value="@life.catalogue.dao.Partitioner@partition(datasetKey)"/>
-        <if test="datasetKey &lt; 10 or _parameter.containsKey('where')">
-            SELECT count(*) FROM ${table}_${partition} WHERE dataset_key = #{datasetKey}
-            <if test="_parameter.containsKey('where') != null">
-                AND ${where}
-            </if>
-        </if>
-        <if test="datasetKey &gt;= 10 and not _parameter.containsKey('where')">
-            <include refid="life.catalogue.db.Common.countFromFinishedDatasetImport" />
-        </if>
-    </sql>
 </mapper>
 

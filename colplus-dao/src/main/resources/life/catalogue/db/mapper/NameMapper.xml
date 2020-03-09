@@ -158,11 +158,8 @@
     </resultMap>
 
     <select id="count" resultType="integer">
-        <include refid="life.catalogue.db.Common.count">
-            <property name="table" value="name"/>
-            <property name="column" value="name_count"/>
-            <property name="where" value="true"/>
-        </include>
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        SELECT count(*) FROM name_${partition}
     </select>
 
     <select id="hasData" resultType="boolean">

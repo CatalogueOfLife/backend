@@ -16,7 +16,6 @@ import org.gbif.nameparser.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.IDN;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -88,7 +87,7 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
   }
 
   public void addOverride(NameAccordingTo nat){
-    Name n = nat.getName();
+    //TODO: !!!
   }
 
   /**
@@ -260,11 +259,4 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
     }
   }
 
-  public static void main(String[] args) {
-    System.out.println(IDN.toASCII("Bücher"));
-    System.out.println(IDN.toASCII("музей-мартьянова.рф"));
-    System.out.println(IDN.toASCII("https://музей-мартьянова.рф/ьянова/hello.php"));
-    System.out.println(IDN.toASCII("http://dep_bio.pnzgu.ru/Gerbariy_im_I_I_Sprygina"));
-
-  }
 }

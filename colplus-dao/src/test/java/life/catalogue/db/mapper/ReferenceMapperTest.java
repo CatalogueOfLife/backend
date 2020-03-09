@@ -112,6 +112,7 @@ public class ReferenceMapperTest extends CRUDPageableTestBase<Reference, Referen
     in.add(REF1);
     in.add(REF1b);
     in.add(REF2);
+
     List<Reference> out = mapper().list(DATASET11.getKey(), new Page());
     assertEquals(8, out.size());
 
@@ -126,6 +127,12 @@ public class ReferenceMapperTest extends CRUDPageableTestBase<Reference, Referen
     assertEquals(in.get(6), out.get(6));
     assertEquals(in.get(7), out.get(7));
     assertEquals(in, out);
+
+    // test draft, the sql is different
+    out = mapper().list(Datasets.DRAFT_COL, new Page());
+    int cnt = mapper().count(Datasets.DRAFT_COL);
+    cnt = mapper().count(DATASET11.getKey());
+
   }
   
   @Test
