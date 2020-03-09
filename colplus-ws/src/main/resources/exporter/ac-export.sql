@@ -11,12 +11,12 @@ DROP SEQUENCE IF EXISTS __unassigned_seq;
 
 CREATE TABLE __coverage AS
     -- ATTACH MODE
-    SELECT s.subject_dataset_key, subject_rank AS rank, subject_name AS name, array_to_string(classification(3, target_id, true), ' - ') AS classification
+    SELECT s.subject_dataset_key, subject_rank AS rank, subject_name AS name, array_to_string(array_remove(classification(3, target_id, true), 'Biota'), ' - ') AS classification
     FROM sector s JOIN name_usage_{{datasetKey}} t ON s.target_id=t.id
     WHERE s.mode='ATTACH' AND s.dataset_key={{datasetKey}}
   UNION ALL
     -- MERGE MODE
-    SELECT s.subject_dataset_key, target_rank AS rank, target_name AS name, array_to_string(classification(3, target_id, false), ' - ') AS classification
+    SELECT s.subject_dataset_key, target_rank AS rank, target_name AS name, array_to_string(array_remove(classification(3, target_id, true), 'Biota'), ' - ') AS classification
     FROM sector s JOIN name_usage_{{datasetKey}} t ON s.target_id=t.id
     WHERE s.mode='UNION' AND s.dataset_key={{datasetKey}};
 
