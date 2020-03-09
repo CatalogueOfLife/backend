@@ -28,7 +28,7 @@ public class DatasetImport extends ImportMetrics<ImportState> {
   
   /**
    * MD5 Hash of raw archive file.
-   * Present only if downloaded.
+   * Present only if downloaded or uploaded.
    */
   private String md5;
   

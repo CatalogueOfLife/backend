@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -167,6 +168,7 @@ public class ImportJob implements Runnable {
         // we have a yaml descriptor for distributed archives, download files individually
         if (dataset.getOrigin() == DatasetOrigin.UPLOADED) {
           dataset.setDataFormat(distributedArchiveService.uploaded(source));
+          di.setDownloadUri(URI.create(source.getName()));
         } else if (dataset.getOrigin() == DatasetOrigin.EXTERNAL) {
           dataset.setDataFormat(distributedArchiveService.download(di.getDownloadUri(), source));
         }

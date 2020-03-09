@@ -72,6 +72,8 @@ public class DatasetImportDao {
     di.setCreatedBy(user);
     di.setStarted(LocalDateTime.now());
     di.setDownloadUri(null);
+    di.setOrigin(d.getOrigin());
+    di.setFormat(d.getDataFormat());
     if (d.getOrigin() == DatasetOrigin.EXTERNAL) {
       di.setState(ImportState.DOWNLOADING);
       di.setDownloadUri(d.getDataAccess());
