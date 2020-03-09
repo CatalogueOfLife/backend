@@ -12,6 +12,12 @@ import static life.catalogue.api.search.NameUsageSearchRequest.SearchContent.VER
 
 class QTranslator {
 
+  /**
+   * The extra boost to give to scientific name matches (versus vernacular name or authorship matches), reflecting the fact that, all being
+   * equal, we'd like to see them higher up in the list of matches.
+   */
+  public static final Double SCINAME_EXTRA_BOOST = 10.0;
+
   private final NameUsageSearchRequest request;
 
   QTranslator(NameUsageSearchRequest request) {
@@ -22,7 +28,7 @@ class QTranslator {
     QMatcher qMatcher = QMatcher.getInstance(request);
     List<Query> queries = new ArrayList<Query>(request.getContent().size());
     if (request.getContent().contains(SCIENTIFIC_NAME)) {
-      queries.add(qMatcher.getScientificNameQuery());
+      queries.add(qMatcher.getScientificNameQuery().withBoost(SCINAME_EXTRA_BOOST));
     }
     if (request.getContent().contains(VERNACULAR_NAME)) {
       queries.add(qMatcher.getVernacularNameQuery());

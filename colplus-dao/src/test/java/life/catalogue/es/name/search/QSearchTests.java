@@ -30,10 +30,10 @@ public class QSearchTests extends EsReadTestBase {
   @Test
   public void test1() {
 
-    // ==> The query
-    NameUsageSearchRequest request = new NameUsageSearchRequest();
-    request.setQ("Parus maj");
-    request.setContent(EnumSet.of(SearchContent.SCIENTIFIC_NAME));
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.setQ("Parus maj");
+    query.setContent(EnumSet.of(SearchContent.SCIENTIFIC_NAME));
+    query.setWholeWordMatchingEnabled(false);
 
     Name name = new Name();
     name.setGenus("Parus");
@@ -44,7 +44,7 @@ public class QSearchTests extends EsReadTestBase {
     NameUsageWrapper w0 = new NameUsageWrapper(t);
     index(w0);
 
-    NameUsageSearchResponse response = search(request);
+    NameUsageSearchResponse response = search(query);
 
     assertEquals(1, response.getResult().size());
   }
@@ -52,10 +52,10 @@ public class QSearchTests extends EsReadTestBase {
   @Test
   public void test2() {
 
-    // ==> The query
-    NameUsageSearchRequest request = new NameUsageSearchRequest();
-    request.setQ("PARUS MAJ");
-    request.setContent(EnumSet.of(SearchContent.SCIENTIFIC_NAME));
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.setQ("PARUS MAJ");
+    query.setContent(EnumSet.of(SearchContent.SCIENTIFIC_NAME));
+    query.setWholeWordMatchingEnabled(false);
 
     Name name = new Name();
     name.setGenus("Parus");
@@ -66,7 +66,7 @@ public class QSearchTests extends EsReadTestBase {
     NameUsageWrapper w0 = new NameUsageWrapper(t);
     index(w0);
 
-    NameUsageSearchResponse response = search(request);
+    NameUsageSearchResponse response = search(query);
 
     assertEquals(1, response.getResult().size());
   }

@@ -1,11 +1,9 @@
 package life.catalogue.es.name;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import life.catalogue.api.search.NameUsageRequest;
 import life.catalogue.es.mapping.MultiField;
 import life.catalogue.es.query.AutoCompleteQuery;
-import life.catalogue.es.query.CaseInsensitivePrefixQuery;
+import life.catalogue.es.query.CaseInsensitiveQuery;
 import life.catalogue.es.query.DisMaxQuery;
 import life.catalogue.es.query.Query;
 import static life.catalogue.es.query.AbstractMatchQuery.Operator.AND;
@@ -15,12 +13,11 @@ import static life.catalogue.es.query.AbstractMatchQuery.Operator.AND;
  */
 public abstract class QMatcher {
 
-  @SuppressWarnings("unused")
-  private static final Logger LOG = LoggerFactory.getLogger(QMatcher.class);
-
   static final int MAX_NGRAM_SIZE = 10; // see es-settings.json
 
   static final String FLD_SCINAME = "scientificName";
+  static final String FLD_AUTHOR = "authorship";
+  static final String FLD_VERNACULAR = "vernacularNames";
   static final String FLD_GENUS = "nameStrings.genusOrMonomialWN";
   static final String FLD_GENUS_LETTER = "nameStrings.genusLetter";
   static final String FLD_SPECIES = "nameStrings.specificEpithetSN";
@@ -54,15 +51,16 @@ public abstract class QMatcher {
   public Query getVernacularNameQuery() {
     String q = request.getQ();
     return new DisMaxQuery()
-        .subquery(new CaseInsensitivePrefixQuery("vernacularNames", q).withBoost(0.1 * q.length()))
-        .subquery(new AutoCompleteQuery("vernacularNames", q).withOperator(AND).withBoost(3.5));
+        .subquery(new CaseInsensitiveQuery(FLD_VERNACULAR, q).withBoost(100.0))
+        .subquery(new AutoCompleteQuery(FLD_VERNACULAR, q).withOperator(AND));
+
   }
 
   public Query getAuthorshipQuery() {
     String q = request.getQ();
     return new DisMaxQuery()
-        .subquery(new CaseInsensitivePrefixQuery("authorship", q).withBoost(0.1 * q.length()))
-        .subquery(new AutoCompleteQuery("authorship", q).withOperator(AND).withBoost(3.5));
+        .subquery(new CaseInsensitiveQuery(FLD_AUTHOR, q).withBoost(100.0))
+        .subquery(new AutoCompleteQuery(FLD_AUTHOR, q).withOperator(AND));
   }
 
   public abstract Query getScientificNameQuery();

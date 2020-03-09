@@ -6,7 +6,6 @@ public class SciNameAutoCompleteQuery extends AbstractMatchQuery {
 
   public SciNameAutoCompleteQuery(String field, String value) {
     super(field, value);
-    withOperator(Operator.AND);
   }
 
   @Override

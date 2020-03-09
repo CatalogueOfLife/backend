@@ -93,9 +93,9 @@ abstract class FuzzyQMatcher extends QMatcher {
 
   private Query matchAsGenericEpithet(String term) {
     if (term.length() == 1) {
-      return new TermQuery("nameStrings.genusLetter", term.charAt(0)).withBoost(0.2); // Nice but not great
+      return new TermQuery(FLD_GENUS_LETTER, term.charAt(0)).withBoost(0.2); // Nice but not great
     } else if (term.length() == 2 && term.charAt(1) == '.') {
-      return new TermQuery("nameStrings.genusLetter", term.charAt(0)).withBoost(0.4); // More ominous
+      return new TermQuery(FLD_GENUS_LETTER, term.charAt(0)).withBoost(0.4); // More ominous
     }
     return matchAsEpithet(FLD_GENUS, term);
   }

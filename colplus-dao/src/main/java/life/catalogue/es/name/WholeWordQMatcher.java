@@ -13,7 +13,7 @@ class WholeWordQMatcher extends QMatcher {
 
   static DisMaxQuery baseQuery(NameUsageRequest request) {
     return new DisMaxQuery()
-        // Make exact matches (even on small scientific names like genus "Ara") always prevail
+        // Make sure exact matches (even on small scientific names like genus "Ara") always prevail
         .subquery(new SciNameCaseInsensitiveQuery(FLD_SCINAME, request.getQ()).withBoost(100.0))
         .subquery(new SciNameWholeWordsQuery(FLD_SCINAME, request.getQ()));
   }
