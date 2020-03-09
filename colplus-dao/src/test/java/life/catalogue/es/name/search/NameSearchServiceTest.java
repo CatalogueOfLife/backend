@@ -1,14 +1,11 @@
 package life.catalogue.es.name.search;
 
-import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.*;
-import life.catalogue.api.search.NameUsageSearchParameter;
-import life.catalogue.api.search.NameUsageSearchRequest;
-import life.catalogue.api.search.NameUsageSearchResponse;
-import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.api.vocab.Issue;
-import life.catalogue.es.EsReadTestBase;
-import life.catalogue.es.name.NameUsageWrapperConverter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.elasticsearch.client.RestClient;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -16,16 +13,23 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.BareName;
+import life.catalogue.api.model.Name;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.ResultPage;
+import life.catalogue.api.model.VernacularName;
+import life.catalogue.api.search.NameUsageSearchParameter;
+import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.api.search.NameUsageSearchResponse;
+import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.vocab.Issue;
+import life.catalogue.es.EsModule;
+import life.catalogue.es.EsReadTestBase;
+import life.catalogue.es.name.NameUsageWrapperConverter;
+import static org.junit.Assert.assertEquals;
 import static life.catalogue.es.EsUtil.insert;
 import static life.catalogue.es.EsUtil.refreshIndex;
-import static org.junit.Assert.assertEquals;
 
 public class NameSearchServiceTest extends EsReadTestBase {
 
@@ -467,19 +471,31 @@ public class NameSearchServiceTest extends EsReadTestBase {
 
   @Test
   public void testNameFieldsQuery3() throws IOException {
-    NameUsageWrapperConverter converter = new NameUsageWrapperConverter();
 
     // Find all documents where the uninomial field is not empty
-    NameUsageSearchRequest nsr = new NameUsageSearchRequest();
-    nsr.setHighlight(false);
-    nsr.addFilter(NameUsageSearchParameter.FIELD, "uninomial", "remarks", "specific_epithet");
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.setHighlight(false);
+    query.addFilter(NameUsageSearchParameter.FIELD, "uninomial", "remarks", "specific_epithet");
+    
+    index(testNameFieldsQuery3_data());
 
+    refreshIndex(client, indexName());
+
+    List<NameUsageWrapper> expected = new ArrayList<>(testNameFieldsQuery3_data());
+    expected.remove(3);
+
+    ResultPage<NameUsageWrapper> result = svc.search(indexName(), query, new Page());
+    assertEquals(expected, result.getResult());
+
+  }
+
+  private static List<NameUsageWrapper> testNameFieldsQuery3_data() {
     // Match
     Name n = new Name();
     n.setUninomial("laridae");
     BareName bn = new BareName(n);
     NameUsageWrapper nuw1 = new NameUsageWrapper(bn);
-    insert(client, indexName(), converter.toDocument(nuw1));
+    nuw1.setId("11111");
 
     // Match
     n = new Name();
@@ -487,7 +503,7 @@ public class NameSearchServiceTest extends EsReadTestBase {
     n.setGenus("parus");
     bn = new BareName(n);
     NameUsageWrapper nuw2 = new NameUsageWrapper(bn);
-    insert(client, indexName(), converter.toDocument(nuw2));
+    nuw2.setId("22222");
 
     // Match
     n = new Name();
@@ -497,7 +513,7 @@ public class NameSearchServiceTest extends EsReadTestBase {
     n.setRemarks("A bird");
     bn = new BareName(n);
     NameUsageWrapper nuw3 = new NameUsageWrapper(bn);
-    insert(client, indexName(), converter.toDocument(nuw3));
+    nuw3.setId("33333");
 
     // No Match
     n = new Name();
@@ -505,7 +521,7 @@ public class NameSearchServiceTest extends EsReadTestBase {
     n.setGenus("parus");
     bn = new BareName(n);
     NameUsageWrapper nuw4 = new NameUsageWrapper(bn);
-    insert(client, indexName(), converter.toDocument(nuw4));
+    nuw4.setId("44444");
 
     // Match
     n = new Name();
@@ -514,15 +530,9 @@ public class NameSearchServiceTest extends EsReadTestBase {
     n.setRemarks("A bird");
     bn = new BareName(n);
     NameUsageWrapper nuw5 = new NameUsageWrapper(bn);
-    insert(client, indexName(), converter.toDocument(nuw5));
+    nuw5.setId("55555");
 
-    refreshIndex(client, indexName());
-
-    List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw3, nuw5);
-
-    ResultPage<NameUsageWrapper> result = svc.search(indexName(), nsr, new Page());
-
-    assertEquals(expected, result.getResult());
+    return List.of(nuw1, nuw2, nuw3, nuw4, nuw5);
 
   }
 
@@ -541,10 +551,10 @@ public class NameSearchServiceTest extends EsReadTestBase {
   private List<NameUsageWrapper> testWithBigQ_data() {
 
     List<NameUsageWrapper> usages = createNameUsages(4);
-    
+
     // Match on scientific name
     usages.get(0).getUsage().getName().setSpecificEpithet("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-    
+
     // Match on vernacular name
     VernacularName vn = new VernacularName();
     vn.setName("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
@@ -555,7 +565,7 @@ public class NameSearchServiceTest extends EsReadTestBase {
 
     // No match (missing 'A')
     usages.get(3).getUsage().getName().setSpecificEpithet("BCDEFGHIJKLMNOPQRSTUVW");
-    
+
     return usages;
 
   }

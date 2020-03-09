@@ -1,19 +1,15 @@
 package life.catalogue.es.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.LinkedHashMap;
 
 /**
- * The data structure within the ES response within which we will find the facets. This is a rather free-style object
- * within the Elasticsearch response (likely just a hash map on the Elasticsearch side), so it's up to subclasses to
- * provide more detail. It is intended, though, to contain {@link EsFacet} objects.
+ * The data structure within the ES response within which we will find the facets. This is a pretty free-style object in the Elasticsearch
+ * response, so it's up to subclasses to provide more detail.
  */
-public class Aggregation {
+public class Aggregation extends LinkedHashMap<String, Object> {
 
-  @JsonProperty("doc_count")
-  protected int docCount;
-
-  public Aggregation() {
-    super();
+  public int getDocCount() {
+    return (Integer) get("doc_count");
   }
 
 }

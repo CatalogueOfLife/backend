@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
-
+import java.util.stream.Collectors;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.FacetValue;
 import life.catalogue.api.search.NameUsageSearchParameter;
@@ -23,23 +23,6 @@ import life.catalogue.es.name.NameUsageWrapperConverter;
 import life.catalogue.es.response.Bucket;
 import life.catalogue.es.response.EsFacet;
 import life.catalogue.es.response.SearchHit;
-
-import static life.catalogue.api.search.NameUsageSearchParameter.CATALOGUE_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.DECISION_MODE;
-import static life.catalogue.api.search.NameUsageSearchParameter.FIELD;
-import static life.catalogue.api.search.NameUsageSearchParameter.ISSUE;
-import static life.catalogue.api.search.NameUsageSearchParameter.NAME_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.NAME_INDEX_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.NOM_STATUS;
-import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHED_IN_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHER_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.RANK;
-import static life.catalogue.api.search.NameUsageSearchParameter.SECTOR_DATASET_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.SECTOR_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.STATUS;
-import static life.catalogue.api.search.NameUsageSearchParameter.TAXON_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.TYPE;
 
 /**
  * Converts the Elasticsearch response to a NameSearchResponse instance.
@@ -87,41 +70,30 @@ class NameUsageSearchResponseFactory {
     if (esResponse.getAggregations() == null) {
       return Collections.emptyMap();
     }
-    NameUsageAggregation esFacets = esResponse.getAggregations().getContextFilter().getFacetsContainer();
-    Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets = new EnumMap<>(NameUsageSearchParameter.class);
-    addIfPresent(facets, DATASET_KEY, esFacets.getDatasetKey());
-    addIfPresent(facets, CATALOGUE_KEY, esFacets.getCatalogueKey());
-    addIfPresent(facets, DECISION_MODE, esFacets.getDecisionMode());
-    addIfPresent(facets, FIELD, esFacets.getField());
-    addIfPresent(facets, ISSUE, esFacets.getIssue());
-    addIfPresent(facets, NAME_ID, esFacets.getNameId());
-    addIfPresent(facets, NAME_INDEX_ID, esFacets.getNameIndexId());
-    addIfPresent(facets, NOM_STATUS, esFacets.getNomStatus());
-    addIfPresent(facets, PUBLISHED_IN_ID, esFacets.getPublishedInId());
-    addIfPresent(facets, PUBLISHER_KEY, esFacets.getPublisherKey());
-    addIfPresent(facets, RANK, esFacets.getRank());
-    addIfPresent(facets, SECTOR_KEY, esFacets.getSectorKey());
-    addIfPresent(facets, SECTOR_DATASET_KEY, esFacets.getSectorDatasetKey());
-    addIfPresent(facets, STATUS, esFacets.getStatus());
-    addIfPresent(facets, TAXON_ID, esFacets.getTaxonId());
-    addIfPresent(facets, TYPE, esFacets.getType());
-    return facets;
+    NameUsageAggregation agg = esResponse.getAggregations().getContextFilter().getFacetsContainer();
+    Map<NameUsageSearchParameter, Set<FacetValue<?>>> result = new EnumMap<>(NameUsageSearchParameter.class);
+    for (String key : agg.keySet()) {
+      NameUsageSearchParameter param;
+      try {
+        param = NameUsageSearchParameter.fromFacet(key);
+      } catch (IllegalArgumentException e) { // stuff like "doc_count"
+        continue;
+      }
+      EsFacet esFacet = agg.getFacet(param);
+      result.put(param, convert(param, esFacet));
+    }
+    return result;
   }
 
-  private static void addIfPresent(Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets, NameUsageSearchParameter param,
-      EsFacet esFacet) {
-    if (esFacet != null) {
-      if (param.type() == String.class) {
-        facets.put(param, createStringBuckets(esFacet));
-      } else if (param.type() == Integer.class) {
-        facets.put(param, createIntBuckets(esFacet));
-      } else if (param.type() == UUID.class) {
-        facets.put(param, createUuidBuckets(esFacet));
-      } else if (param.type().isEnum()) {
-        facets.put(param, createEnumBuckets(esFacet, param));
-      } else {
-        throw new IllegalArgumentException("Unexpected parameter type: " + param.type());
-      }
+  private static Set<FacetValue<?>> convert(NameUsageSearchParameter param, EsFacet esFacet) {
+    if (param.type() == Integer.class) {
+      return createIntBuckets(esFacet);
+    } else if (param.type() == UUID.class) {
+      return createUuidBuckets(esFacet);
+    } else if (param.type().isEnum()) {
+      return createEnumBuckets(esFacet, param);
+    } else {
+      return createStringBuckets(esFacet);
     }
   }
 

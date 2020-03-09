@@ -17,4 +17,12 @@ public class Misc {
     assertTrue(ss.length > 1);
   }
 
+  @Test
+  public void testEscapeJson() {
+    String value = "Hello, \"World\"";
+    String json = "{\"message\": " + EsModule.escape(value) + "}";
+    System.out.println(json);
+    assertEquals("{\"message\": \"Hello, \\\"World\\\"\"}", json);
+  }
+
 }

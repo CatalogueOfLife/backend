@@ -9,6 +9,6 @@ public class QTranslationUtilsTest {
 
   @Test
   public void getScientificNameQuery() {
-    Query x = QTranslationUtils.getScientificNameQuery("Abies", null);
+    
   }
 }

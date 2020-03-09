@@ -16,6 +16,9 @@ import com.google.common.base.Strings;
  * Utils class adding specific string methods to existing guava {@link Strings} and commons {@link org.apache.commons.lang3.StringUtils}.
  */
 public class StringUtils {
+
+  public static String[] EMPTY_STRING_ARRAY = new String[0];
+  
   private static Pattern MARKER = Pattern.compile("\\p{M}");
   private static final Pattern OCT = Pattern.compile("^[0-7]+$");
   private static final Pattern HEX = Pattern.compile("^[0-9abcdefABCDEF]+$");
@@ -23,11 +26,11 @@ public class StringUtils {
   private static final CharMatcher NON_DIGITLETTER = CharMatcher.javaLetterOrDigit().negate();
 
   private StringUtils() {}
-  
+
   /**
    * @return true if at least one of the strings is non empty
    */
-  public static  boolean hasContent(String... strings) {
+  public static boolean hasContent(String... strings) {
     for (String s : strings) {
       if (!org.apache.commons.lang3.StringUtils.isEmpty(s)) {
         return true;
@@ -35,7 +38,7 @@ public class StringUtils {
     }
     return false;
   }
-  
+
   /**
    * Concatenates the given parts with a space, skipping any null or empty strings
    */
@@ -143,7 +146,7 @@ public class StringUtils {
     }
     return sb.toString();
   }
-  
+
   /**
    * Increase a given string by 1, i.e. increase the last char in that string by one. If its a z or Z the char before is increased instead
    * and a new char a is appended. Only true letters are increased, but spaces, punctuation or numbers remain unchanged. Null values stay
@@ -205,21 +208,21 @@ public class StringUtils {
     }
     return String.valueOf(chars);
   }
-  
+
   /**
-   * Splits a string at the last occurrence of the given delimiter.
-   * If delimiter exists an array with 2 strings is returned.
-   * If not, null is returned.
+   * Splits a string at the last occurrence of the given delimiter. If delimiter exists an array with 2 strings is returned. If not, null is
+   * returned.
+   * 
    * @return null or an array with the 2 split strings excluding the delimiter
    */
   public static String[] splitRight(String s, char delimiter) {
     int i = s.lastIndexOf(delimiter);
     if (i > 0) {
-      return new String[]{s.substring(0, i), s.substring(i+1)};
+      return new String[] {s.substring(0, i), s.substring(i + 1)};
     }
     return null;
   }
-  
+
   public boolean allEmpty(String... strings) {
     for (String s : strings) {
       if (!org.apache.commons.lang3.StringUtils.isEmpty(s)) {
@@ -355,7 +358,7 @@ public class StringUtils {
    * Returns an uppercase ASCII string for the given input. Replaces all non digit or letter characters with a single space, including
    * invisible control characters, underscore, dashes and punctuation and converts that to upper case and trims and normalizes whitespace;
    *
-   * @param x any input string used for parsing a single value
+   * @param x any input string used for parsing a single valuejsonEscape
    * @return the cleaned, normalized string
    */
   public static String digitOrAsciiLetters(String x) {

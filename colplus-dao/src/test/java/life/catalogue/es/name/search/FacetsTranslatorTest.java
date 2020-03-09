@@ -12,6 +12,7 @@ import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchRequest.SearchContent;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.es.EsModule;
+import life.catalogue.es.name.NameUsageFieldLookup;
 
 /*
  * No real tests here. Just to make sure we don't get exceptions & to peek at the results of specifying an aggregation
@@ -145,7 +146,7 @@ public class FacetsTranslatorTest {
 
   @Test
   public void test5() {
-
+    
     NameUsageSearchRequest request = new NameUsageSearchRequest();
 
     request.addFacet(ISSUE);

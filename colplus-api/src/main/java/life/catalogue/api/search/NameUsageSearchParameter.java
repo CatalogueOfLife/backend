@@ -1,35 +1,32 @@
 package life.catalogue.api.search;
 
+import java.util.UUID;
+import org.apache.commons.lang3.StringUtils;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NameField;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
-
-import java.util.UUID;
 
 public enum NameUsageSearchParameter {
 
   USAGE_ID(String.class),
 
   DATASET_KEY(Integer.class),
-  
+
   /**
-   * This takes the datasetKey of the managed catalogue to filter decisions by, not usages.
-   * It will prune the list of decisions to just the ones matching the datasetKey.
-   * I.e. the list only contains a single decision at max if one catalogue is given
-   * so the UI can quickly determine if a decision exists at all for a given usage
-   * and does not have to ignore decisions from other catalogues.
+   * This takes the datasetKey of the managed catalogue to filter decisions by, not usages. It will prune the list of decisions to just the
+   * ones matching the datasetKey. I.e. the list only contains a single decision at max if one catalogue is given so the UI can quickly
+   * determine if a decision exists at all for a given usage and does not have to ignore decisions from other catalogues.
    */
   CATALOGUE_KEY(Integer.class),
-  
+
   /**
-   * Allows to filter usages based on the existence of a decision with the matching MODE.
-   * NOT_NULL or NULL can be used here to filter usages to just the ones
-   * with or without any decision (from the requested DECISION_DATASET_KEY if given)
+   * Allows to filter usages based on the existence of a decision with the matching MODE. NOT_NULL or NULL can be used here to filter usages
+   * to just the ones with or without any decision (from the requested DECISION_DATASET_KEY if given)
    */
   DECISION_MODE(EditorialDecision.Mode.class),
 
@@ -70,14 +67,14 @@ public enum NameUsageSearchParameter {
   PUBLISHED_IN_ID(String.class),
 
   /**
-   * The sector key attached to a taxon. Synonyms inherit the key by their accepted taxon, but do not expose the key on
-   * the Synonym instance itself.
+   * The sector key attached to a taxon. Synonyms inherit the key by their accepted taxon, but do not expose the key on the Synonym instance
+   * itself.
    */
   SECTOR_KEY(Integer.class),
 
   /**
-   * The dataset key of the corresponding sector attached to a taxon.
-   * Synonyms inherit the key by their accepted taxon, but do not expose the key on the Synonym instance itself.
+   * The dataset key of the corresponding sector attached to a taxon. Synonyms inherit the key by their accepted taxon, but do not expose
+   * the key on the Synonym instance itself.
    */
   SECTOR_DATASET_KEY(Integer.class),
 
@@ -87,8 +84,8 @@ public enum NameUsageSearchParameter {
   STATUS(TaxonomicStatus.class),
 
   /**
-   * A taxonID that searches on the entire classification of a Taxon or its Synonyms. E.g. searching by the taxonID for
-   * Coleoptera should return all name usages within that beetle order, including synonyms.
+   * A taxonID that searches on the entire classification of a Taxon or its Synonyms. E.g. searching by the taxonID for Coleoptera should
+   * return all name usages within that beetle order, including synonyms.
    */
   TAXON_ID(String.class),
 
@@ -99,16 +96,40 @@ public enum NameUsageSearchParameter {
 
   FOSSIL(Boolean.class),
 
-  RECENT(Boolean.class);
+  RECENT(Boolean.class),
+
+  ALPHAINDEX(Character.class);
+
+  private static final String FACET_LABEL_SUFFIX = "_FACET";
+
+  /**
+   * Returns the NameUsageSearchParameter corresponding to the label used to identify the facet for the parameter within an Elasticsearch
+   * response.
+   * 
+   * @param label
+   * @return
+   */
+  public static NameUsageSearchParameter fromFacet(String label) {
+    return NameUsageSearchParameter.valueOf(NameUsageSearchParameter.class, StringUtils.substringBefore(label, FACET_LABEL_SUFFIX));
+  }
 
   private final Class<?> type;
 
-  NameUsageSearchParameter(Class<?> type) {
+  private NameUsageSearchParameter(Class<?> type) {
     this.type = type;
   }
 
   public Class<?> type() {
     return type;
+  }
+
+  /**
+   * Returns the label that we want Elasticsearch to use when creating a facet (bucket) for this parameter.
+   * 
+   * @return
+   */
+  public String getFacetLabel() {
+    return name() + FACET_LABEL_SUFFIX;
   }
 
 }

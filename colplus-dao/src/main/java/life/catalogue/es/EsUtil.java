@@ -9,6 +9,7 @@ import life.catalogue.es.mapping.MultiField;
 import life.catalogue.es.model.NameUsageDocument;
 import life.catalogue.es.name.NameUsageFieldLookup;
 import life.catalogue.es.query.*;
+import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
@@ -23,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+
+import static life.catalogue.common.text.StringUtils.EMPTY_STRING_ARRAY;
 
 /**
  * Utility class for interacting with Elasticsearch.
@@ -161,6 +164,7 @@ public class EsUtil {
 
   /**
    * Removes the sector corresponding to the provided key. You must still refresh the index for the changes to become visible.
+   * 
    * @throws IOException
    */
   public static int deleteSector(RestClient client, String index, int sectorKey) throws IOException {
@@ -168,8 +172,9 @@ public class EsUtil {
   }
 
   /**
-   * Deletes a taxonomic subtree from a single dataset.
-   * It deletes all usage documents for a given datasetKey that share the given root taxonID in their classification.
+   * Deletes a taxonomic subtree from a single dataset. It deletes all usage documents for a given datasetKey that share the given root
+   * taxonID in their classification.
+   * 
    * @throws IOException
    */
   public static int deleteSubtree(RestClient client, String index, DSID<String> root) throws IOException {
@@ -291,6 +296,9 @@ public class EsUtil {
    * @throws IOException
    */
   public static String[] getSearchTerms(RestClient client, String index, Analyzer analyzer, String searchPhrase) throws IOException {
+    if (StringUtils.isBlank(searchPhrase)) {
+      return EMPTY_STRING_ARRAY;
+    }
     Request request = new Request("POST", index + "/_analyze");
     StringBuilder sb = new StringBuilder(100);
     MultiField mf = analyzer.getMultiField();
@@ -298,15 +306,18 @@ public class EsUtil {
     if (analyzerName == null) {
       analyzerName = mf.getAnalyzer();
     }
-    sb.append("{\"analyzer\":\"")
-        .append(analyzerName)
-        .append("\",\"text\":\"")
-        .append(searchPhrase)
-        .append("\"}");
+    sb.append("{\"analyzer\":")
+        .append(EsModule.escape(analyzerName))
+        .append(",\"text\":")
+        .append(EsModule.escape(searchPhrase))
+        .append("}");
     request.setJsonEntity(sb.toString());
     Response response = executeRequest(client, request);
     @SuppressWarnings("rawtypes")
     List<HashMap> tokens = readFromResponse(response, "tokens");
+    if (tokens == null || tokens.isEmpty()) {
+      return EMPTY_STRING_ARRAY;
+    }
     return tokens.stream().map(map -> map.get("token")).toArray(String[]::new);
   }
 

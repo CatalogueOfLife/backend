@@ -1,9 +1,13 @@
 package life.catalogue.es.name;
 
 import java.util.EnumMap;
-
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import life.catalogue.api.search.NameUsageSearchParameter;
-
 import static life.catalogue.api.search.NameUsageSearchParameter.CATALOGUE_KEY;
 import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
 import static life.catalogue.api.search.NameUsageSearchParameter.DECISION_MODE;
@@ -23,14 +27,16 @@ import static life.catalogue.api.search.NameUsageSearchParameter.SECTOR_KEY;
 import static life.catalogue.api.search.NameUsageSearchParameter.STATUS;
 import static life.catalogue.api.search.NameUsageSearchParameter.TAXON_ID;
 import static life.catalogue.api.search.NameUsageSearchParameter.TYPE;
-import static life.catalogue.api.search.NameUsageSearchParameter.USAGE_ID;
+import static life.catalogue.api.search.NameUsageSearchParameter.*;
 
 /**
- * Maps a name search parameter the corresponding Elasticsearch field(s). In principle a name search parameter may be
- * mapped to multiple Elasticsearch fields, in which case the parameter's value is searched in all of these fields. In
- * practice, though, we currently don't have multiply-mapped name search parameters.
+ * Maps a name search parameter the corresponding Elasticsearch field(s). In principle a name search parameter may be mapped to multiple
+ * Elasticsearch fields, in which case the parameter's value is searched in all of these fields. In practice, though, we currently don't
+ * have multiply-mapped name search parameters.
  */
 public class NameUsageFieldLookup extends EnumMap<NameUsageSearchParameter, String[]> {
+
+  private static final Logger LOG = LoggerFactory.getLogger(NameUsageFieldLookup.class);
 
   public static final NameUsageFieldLookup INSTANCE = new NameUsageFieldLookup();
 
@@ -56,9 +62,15 @@ public class NameUsageFieldLookup extends EnumMap<NameUsageSearchParameter, Stri
     putSingle(TAXON_ID, "classificationIds");
     putSingle(CATALOGUE_KEY, "decisions.catalogueKey");
     putSingle(DECISION_MODE, "decisions.mode");
+    putSingle(ALPHAINDEX, "nameStrings.sciNameLetter");
 
     if (size() != NameUsageSearchParameter.values().length) {
-      throw new IllegalStateException("Not all name search parameters mapped to document fields");
+      Set<NameUsageSearchParameter> all = new HashSet<>(List.of(NameUsageSearchParameter.values()));
+      all.removeAll(keySet());
+      String missing = all.stream().map(Enum::toString).collect(Collectors.joining(","));
+      String msg = "Not all name search parameters mapped to document fields: " + missing;
+      LOG.error(msg);
+      throw new IllegalStateException(msg);
     }
   }
 

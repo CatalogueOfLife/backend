@@ -3,6 +3,7 @@ package life.catalogue.es;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -29,6 +30,7 @@ import life.catalogue.es.model.NameUsageDocument;
 import life.catalogue.es.name.NameUsageEsMultiResponse;
 import life.catalogue.es.name.NameUsageEsResponse;
 import life.catalogue.es.query.EsSearchRequest;
+import life.catalogue.es.response.EsFacet;
 import life.catalogue.es.response.SearchHit;
 
 /**
@@ -66,7 +68,7 @@ import life.catalogue.es.response.SearchHit;
  * <li>When querying name usage documents, we get them wrapped into an Elasticsearch response object. The name usage documents need a mapper
  * that maps (and writes) enums to integers. The Elasticsearch response object needs a mapper that maps enums to strings. That looks like a
  * conundrum. However, we are now talking about <i>reading</i> JSON, not writing it, and Jackson will just try everything to infer the
- * intended enum constant. So it doesn't really matter which mapper we use for deserialization. Close escape though.
+ * intended enum constant. So it doesn't really matter which mapper we use for deserialization. Narrow escape though.
  * </ol>
  * </p>
  */
@@ -104,6 +106,28 @@ public class EsModule extends SimpleModule {
   public static Map<String, Object> readIntoMap(InputStream is) throws IOException {
     // Any mapper will do
     return esObjectMapper.readValue(is, mapType);
+  }
+
+  /**
+   * Escapes the provided string such that in can be embedded within a json document. Note that you should NOT surround the returned string
+   * with double quotes. That's already done by this method; just embed what you get.
+   * 
+   * @param s
+   * @return
+   */
+  public static String escape(String s) {
+    // Any mapper will do
+    try {
+      return esObjectMapper.writeValueAsString(s);
+    } catch (JsonProcessingException e) { // Won't happen
+      throw new IllegalArgumentException(e);
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <T> T convertValue(Object object, Class<EsFacet> class1) {
+    // Any mapper will do
+    return (T) esObjectMapper.convertValue(object, class1);
   }
 
   public static <T> T readDDLObject(InputStream is, Class<T> cls) throws IOException {
@@ -150,7 +174,7 @@ public class EsModule extends SimpleModule {
     return nameUsageWriter.writeValueAsString(nuw);
   }
 
-  public static void write(NameUsageWrapper nuw, OutputStream out) throws IOException {
+  public static void write(OutputStream out, NameUsageWrapper nuw) throws IOException {
     nameUsageWriter.writeValue(out, nuw);
   }
 
@@ -159,6 +183,16 @@ public class EsModule extends SimpleModule {
       return DEBUG_WRITER.writeValueAsString(obj);
     } catch (JsonProcessingException e) {
       throw new EsException(e);
+    }
+  }
+
+  public static void writeDebug(OutputStream out, Object obj) {
+    // Jackson would close the outputstream when done; very undesirable, especially with System.out
+    String s = writeDebug(obj);
+    if (out instanceof PrintStream) {
+      ((PrintStream) out).println(s);
+    } else {
+      new PrintStream(out).println(s);
     }
   }
 
