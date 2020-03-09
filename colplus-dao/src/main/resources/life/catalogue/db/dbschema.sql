@@ -1099,7 +1099,7 @@ $$ LANGUAGE 'sql' STRICT IMMUTABLE;
 
 
 -- return all parent names as an array
-CREATE OR REPLACE FUNCTION classification(v_dataset_key INTEGER, v_id TEXT, v_inc_self BOOLEAN) RETURNS TEXT[] AS $$
+CREATE OR REPLACE FUNCTION classification(v_dataset_key INTEGER, v_id TEXT, v_inc_self BOOLEAN default false) RETURNS TEXT[] AS $$
 	declare seql TEXT;
 	declare parents TEXT[];
 BEGIN
@@ -1124,7 +1124,7 @@ $$ LANGUAGE plpgsql;
 
 
 -- return all parent name usages as a simple_name array
-CREATE OR REPLACE FUNCTION classification_sn(v_dataset_key INTEGER, v_id TEXT, v_inc_self BOOLEAN) RETURNS simple_name[] AS $$
+CREATE OR REPLACE FUNCTION classification_sn(v_dataset_key INTEGER, v_id TEXT, v_inc_self BOOLEAN default false) RETURNS simple_name[] AS $$
 	declare seql TEXT;
 	declare parents simple_name[];
 BEGIN
@@ -1180,4 +1180,10 @@ CREATE VIEW table_size AS (
               WHERE relkind = 'r' AND nspname='public'
       ) a
     ) a
+);
+
+
+CREATE VIEW v_name_usage AS (
+  SELECT u.dataset_key, u.id, n.id AS nid, u.parent_id, u.status, n.rank, n.scientific_name, n.authorship
+  FROM name_usage u JOIN name n ON n.id=u.name_id AND u.dataset_key=n.dataset_key
 );
