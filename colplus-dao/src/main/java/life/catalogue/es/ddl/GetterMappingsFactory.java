@@ -1,13 +1,13 @@
-package life.catalogue.es.mapping;
+package life.catalogue.es.ddl;
 
 import static java.lang.Character.isUpperCase;
 import static java.lang.Character.toLowerCase;
 import static java.lang.reflect.Modifier.isPublic;
 import static java.lang.reflect.Modifier.isStatic;
-import static life.catalogue.es.mapping.ESDataType.NESTED;
-import static life.catalogue.es.mapping.MappingUtil.createSimpleField;
-import static life.catalogue.es.mapping.MappingUtil.isA;
-import static life.catalogue.es.mapping.MappingUtil.newAncestor;
+import static life.catalogue.es.ddl.ESDataType.NESTED;
+import static life.catalogue.es.ddl.MappingUtil.createSimpleField;
+import static life.catalogue.es.ddl.MappingUtil.isA;
+import static life.catalogue.es.ddl.MappingUtil.newAncestor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;

@@ -1,4 +1,4 @@
-package life.catalogue.es.mapping;
+package life.catalogue.es.ddl;
 
 /**
  * Symbolic constants for the Elasticsearch analyzers defined within the CoL document store (see es-settings.json in src/main/resources).

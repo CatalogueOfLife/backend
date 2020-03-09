@@ -6,7 +6,7 @@ package life.catalogue.es.ddl;
 public class Settings {
 
   private Analysis analysis;
-  private Index index;
+  private IndexConfig index;
 
   /**
    * Returns the analyzers, tokenizers, etc to be used by the index
@@ -29,14 +29,14 @@ public class Settings {
    * 
    * @return
    */
-  public Index getIndex() {
+  public IndexConfig getIndex() {
     if (index == null) {
-      index = new Index();
+      index = new IndexConfig();
     }
     return index;
   }
 
-  public void setIndex(Index index) {
+  public void setIndex(IndexConfig index) {
     this.index = index;
   }
 

@@ -1,4 +1,4 @@
-package life.catalogue.es.mapping;
+package life.catalogue.es.ddl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

@@ -1,7 +1,7 @@
 package life.catalogue.es.query;
 
 import java.util.Map;
-import life.catalogue.es.mapping.MultiField;
+import life.catalogue.es.ddl.MultiField;
 import static java.util.Collections.singletonMap;
 
 public class TermQuery extends ConstraintQuery<TermConstraint> {

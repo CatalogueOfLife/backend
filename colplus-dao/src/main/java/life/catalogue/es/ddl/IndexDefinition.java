@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import life.catalogue.es.EsModule;
-import life.catalogue.es.mapping.Mappings;
 
 /**
  * The outer-most object for the Create Index API and Get Index API. It consists of an object configuring the index and the document type

@@ -3,9 +3,9 @@ package life.catalogue.es.model;
 import java.util.Objects;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.search.NameUsageSearchResponse;
-import life.catalogue.es.mapping.Analyzers;
-import static life.catalogue.es.mapping.Analyzer.SCINAME_AUTO_COMPLETE;
-import static life.catalogue.es.mapping.Analyzer.SCINAME_IGNORE_CASE;
+import life.catalogue.es.ddl.Analyzers;
+import static life.catalogue.es.ddl.Analyzer.SCINAME_AUTO_COMPLETE;
+import static life.catalogue.es.ddl.Analyzer.SCINAME_IGNORE_CASE;
 import static life.catalogue.es.name.NameUsageWrapperConverter.normalizeStrongly;
 import static life.catalogue.es.name.NameUsageWrapperConverter.normalizeWeakly;
 

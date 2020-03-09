@@ -1,7 +1,7 @@
 package life.catalogue.es.name;
 
 import life.catalogue.api.search.NameUsageRequest;
-import life.catalogue.es.mapping.MultiField;
+import life.catalogue.es.ddl.MultiField;
 import life.catalogue.es.query.AutoCompleteQuery;
 import life.catalogue.es.query.CaseInsensitiveQuery;
 import life.catalogue.es.query.DisMaxQuery;

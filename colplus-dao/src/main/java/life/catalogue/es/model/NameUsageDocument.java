@@ -11,16 +11,16 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NameField;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.es.mapping.Analyzers;
-import life.catalogue.es.mapping.ESDataType;
-import life.catalogue.es.mapping.MapToType;
-import life.catalogue.es.mapping.NotIndexed;
-import life.catalogue.es.mapping.NotMapped;
-import static life.catalogue.es.mapping.Analyzer.AUTO_COMPLETE;
-import static life.catalogue.es.mapping.Analyzer.IGNORE_CASE;
-import static life.catalogue.es.mapping.Analyzer.SCINAME_AUTO_COMPLETE;
-import static life.catalogue.es.mapping.Analyzer.SCINAME_IGNORE_CASE;
-import static life.catalogue.es.mapping.Analyzer.SCINAME_WHOLE_WORDS;
+import life.catalogue.es.ddl.Analyzers;
+import life.catalogue.es.ddl.ESDataType;
+import life.catalogue.es.ddl.MapToType;
+import life.catalogue.es.ddl.NotIndexed;
+import life.catalogue.es.ddl.NotMapped;
+import static life.catalogue.es.ddl.Analyzer.AUTO_COMPLETE;
+import static life.catalogue.es.ddl.Analyzer.IGNORE_CASE;
+import static life.catalogue.es.ddl.Analyzer.SCINAME_AUTO_COMPLETE;
+import static life.catalogue.es.ddl.Analyzer.SCINAME_IGNORE_CASE;
+import static life.catalogue.es.ddl.Analyzer.SCINAME_WHOLE_WORDS;
 
 /**
  * Class modeling the Elasticsearch document type used to store NameUsageWrapper instances.

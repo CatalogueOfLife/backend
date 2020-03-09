@@ -1,6 +1,6 @@
 package life.catalogue.es.query;
 
-import life.catalogue.es.mapping.MultiField;
+import life.catalogue.es.ddl.MultiField;
 
 public class SciNameWholeWordsQuery extends AbstractMatchQuery {
 

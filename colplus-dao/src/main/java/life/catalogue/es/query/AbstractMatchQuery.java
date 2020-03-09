@@ -2,7 +2,7 @@ package life.catalogue.es.query;
 
 import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonValue;
-import life.catalogue.es.mapping.MultiField;
+import life.catalogue.es.ddl.MultiField;
 import static java.util.Collections.singletonMap;
 
 /**

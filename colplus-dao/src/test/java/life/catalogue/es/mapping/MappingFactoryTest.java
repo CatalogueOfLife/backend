@@ -3,8 +3,8 @@ package life.catalogue.es.mapping;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import life.catalogue.es.EsModule;
-import life.catalogue.es.mapping.Mappings;
-import life.catalogue.es.mapping.MappingsFactory;
+import life.catalogue.es.ddl.Mappings;
+import life.catalogue.es.ddl.MappingsFactory;
 import life.catalogue.es.model.NameUsageDocument;
 import org.junit.Test;
 

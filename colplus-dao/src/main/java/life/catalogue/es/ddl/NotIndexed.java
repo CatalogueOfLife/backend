@@ -1,4 +1,4 @@
-package life.catalogue.es.mapping;
+package life.catalogue.es.ddl;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
