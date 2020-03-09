@@ -1,13 +1,15 @@
 package life.catalogue.api.model;
 
+import com.google.common.collect.Maps;
+import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.ImportState;
+import org.gbif.dwc.terms.Term;
+
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
-
-import com.google.common.collect.Maps;
-import life.catalogue.api.vocab.ImportState;
-import org.gbif.dwc.terms.Term;
 
 /**
  * Metrics and import details about a single dataset import event.
@@ -16,7 +18,9 @@ public class DatasetImport extends ImportMetrics<ImportState> {
   
   
   private URI downloadUri;
-  
+  private DatasetOrigin origin;
+  private DataFormat format;
+
   /**
    * Last modification date of the downloaded file
    */
@@ -44,7 +48,23 @@ public class DatasetImport extends ImportMetrics<ImportState> {
   public void setDownloadUri(URI downloadUri) {
     this.downloadUri = downloadUri;
   }
-  
+
+  public DatasetOrigin getOrigin() {
+    return origin;
+  }
+
+  public void setOrigin(DatasetOrigin origin) {
+    this.origin = origin;
+  }
+
+  public DataFormat getFormat() {
+    return format;
+  }
+
+  public void setFormat(DataFormat format) {
+    this.format = format;
+  }
+
   public LocalDateTime getDownload() {
     return download;
   }
@@ -84,7 +104,7 @@ public class DatasetImport extends ImportMetrics<ImportState> {
   public void setVerbatimByTermCount(Map<Term, Map<Term, Integer>> verbatimByTermCount) {
     this.verbatimByTermCount = verbatimByTermCount;
   }
-  
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -92,18 +112,20 @@ public class DatasetImport extends ImportMetrics<ImportState> {
     if (!super.equals(o)) return false;
     DatasetImport that = (DatasetImport) o;
     return Objects.equals(downloadUri, that.downloadUri) &&
+        origin == that.origin &&
+        format == that.format &&
         Objects.equals(download, that.download) &&
         Objects.equals(md5, that.md5) &&
         Objects.equals(verbatimCount, that.verbatimCount) &&
         Objects.equals(verbatimByTypeCount, that.verbatimByTypeCount) &&
         Objects.equals(verbatimByTermCount, that.verbatimByTermCount);
   }
-  
+
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), downloadUri, download, md5, verbatimCount, verbatimByTypeCount, verbatimByTermCount);
+    return Objects.hash(super.hashCode(), downloadUri, origin, format, download, md5, verbatimCount, verbatimByTypeCount, verbatimByTermCount);
   }
-  
+
   @Override
   public String attempt() {
     return getDatasetKey() + " - " + getAttempt();

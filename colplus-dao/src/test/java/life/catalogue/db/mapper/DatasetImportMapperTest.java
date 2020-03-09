@@ -38,6 +38,8 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     d.setCreatedBy(Users.TESTER);
     d.setError("no error");
     d.setState(state);
+    d.setFormat(DataFormat.COLDP);
+    d.setOrigin(DatasetOrigin.UPLOADED);
     d.setStarted(LocalDateTime.now());
     d.setFinished(LocalDateTime.now());
     d.setDownloadUri(URI.create("http://rs.gbif.org/datasets/nub.zip"));

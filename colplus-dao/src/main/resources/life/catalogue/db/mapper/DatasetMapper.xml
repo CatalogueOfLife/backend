@@ -93,7 +93,7 @@
       #{logo},
       #{dataFormat}::DATAFORMAT,
       #{dataAccess},
-      #{origin}::datasetorigin,
+      #{origin}::DATASETORIGIN,
       #{locked},
       #{importFrequency, typeHandler=life.catalogue.db.type.FrequencyTypeHandler},
       #{code}::NOMCODE,

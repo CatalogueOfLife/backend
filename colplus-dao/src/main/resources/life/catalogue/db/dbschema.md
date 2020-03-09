@@ -10,50 +10,58 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2020-03-09 dataest_import 
+```
+ALTER TABLE dataset_import add column format DATAFORMAT;
+ALTER TABLE dataset_import add column origin DATASETORIGIN;
+UPDATE dataset_import i SET origin=d.origin, format=d.data_format FROM dataset d WHERE d.key=i.dataset_key;
+ALTER TABLE dataset_import ALTER column origin SET NOT NULL;
+```
+
 #### 2020-02-25 import state changes 
 ```
-alter type IMPORTSTATE RENAME VALUE 'DECISION_MATCHING' to 'MATCHING';
-alter type IMPORTSTATE ADD VALUE 'EXPORTING' after 'BUILDING_METRICS';
-alter type IMPORTSTATE ADD VALUE 'RELEASED' after 'FINISHED';
+ALTER TYPE IMPORTSTATE RENAME VALUE 'DECISION_MATCHING' to 'MATCHING';
+ALTER TYPE IMPORTSTATE ADD VALUE 'EXPORTING' after 'BUILDING_METRICS';
+ALTER TYPE IMPORTSTATE ADD VALUE 'RELEASED' after 'FINISHED';
 
-alter table dataset_import add column created_by INTEGER NOT NULL DEFAULT 10;
-alter table dataset_import alter column created_by DROP DEFAULT;
+ALTER TABLE dataset_import add column created_by INTEGER NOT NULL DEFAULT 10;
+ALTER TABLE dataset_import alter column created_by DROP DEFAULT;
 
-alter table sector_import add column created_by INTEGER NOT NULL DEFAULT 10;
-alter table sector_import alter column created_by DROP DEFAULT;
+ALTER TABLE sector_import add column created_by INTEGER NOT NULL DEFAULT 10;
+ALTER TABLE sector_import alter column created_by DROP DEFAULT;
 ```
 
 #### 2020-02-24 ranks & entities for sectors 
 ```
-alter table sector add column ranks RANK[] DEFAULT '{}';
-alter table sector add column entities ENTITYTYPE[];
+ALTER TABLE sector add column ranks RANK[] DEFAULT '{}';
+ALTER TABLE sector add column entities ENTITYTYPE[];
 ```
 
 #### 2020-02-07 add matching state
 ```
-alter type IMPORTSTATE ADD VALUE 'DECISION_MATCHING' after 'INDEXING';
+ALTER TYPE IMPORTSTATE ADD VALUE 'DECISION_MATCHING' after 'INDEXING';
 ```
 
 #### add type material
 ```
-alter type ENTITYTYPE add value 'TYPE_MATERIAL' after 'NAME_USAGE';
-alter type NAMEFIELD RENAME value 'WEBPAGE' to 'LINK';
-alter type NAMEFIELD add value 'CODE' after 'PUBLISHED_IN_PAGE';
+ALTER TYPE ENTITYTYPE add value 'TYPE_MATERIAL' after 'NAME_USAGE';
+ALTER TYPE NAMEFIELD RENAME value 'WEBPAGE' to 'LINK';
+ALTER TYPE NAMEFIELD add value 'CODE' after 'PUBLISHED_IN_PAGE';
 
-alter type ISSUE add value 'COUNTRY_INVALID' after 'TYPE_STATUS_INVALID'; 
-alter type ISSUE add value 'ALTITUDE_INVALID' after 'TYPE_STATUS_INVALID'; 
-alter type ISSUE add value 'LAT_LON_INVALID' after 'TYPE_STATUS_INVALID';
+ALTER TYPE ISSUE add value 'COUNTRY_INVALID' after 'TYPE_STATUS_INVALID'; 
+ALTER TYPE ISSUE add value 'ALTITUDE_INVALID' after 'TYPE_STATUS_INVALID'; 
+ALTER TYPE ISSUE add value 'LAT_LON_INVALID' after 'TYPE_STATUS_INVALID';
 
-alter table dataset_import add column type_material_count INTEGER;
-alter table dataset_import add column type_material_by_status_count HSTORE;
+ALTER TABLE dataset_import add column type_material_count INTEGER;
+ALTER TABLE dataset_import add column type_material_by_status_count HSTORE;
 
-alter table name drop column type_status;
-alter table name drop column type_material;
-alter table name drop column type_reference_id;
-alter table name rename column webpage to link;
+ALTER TABLE name drop column type_status;
+ALTER TABLE name drop column type_material;
+ALTER TABLE name drop column type_reference_id;
+ALTER TABLE name rename column webpage to link;
 
-alter table name_rel rename column note to remarks;
-alter table name_usage rename column webpage to link;
+ALTER TABLE name_rel rename column note to remarks;
+ALTER TABLE name_usage rename column webpage to link;
 
 CREATE TABLE type_material (
   id TEXT NOT NULL,

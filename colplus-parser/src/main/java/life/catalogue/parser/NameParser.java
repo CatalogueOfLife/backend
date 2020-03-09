@@ -1,23 +1,25 @@
 package life.catalogue.parser;
 
-import java.util.Map;
-import java.util.Optional;
-
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
-import org.apache.commons.lang3.StringUtils;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameAccordingTo;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
+import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.NameParserGBIF;
 import org.gbif.nameparser.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.IDN;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Wrapper around the GBIF Name parser to deal with col Name and API.
@@ -41,7 +43,9 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
       .put(Warnings.BLACKLISTED_EPITHET, Issue.BLACKLISTED_EPITHET)
       .put(Warnings.NOMENCLATURAL_REFERENCE, Issue.CONTAINS_REFERENCE)
       .build();
-  
+  private static final Map<String, NameAccordingTo> OVERRIDES_SCINAME = new HashMap<>();
+  private static final Map<String, ParsedName> OVERRIDES_AUTHORSHIP = new HashMap<>();
+
   private Timer timer;
   
   /**
@@ -66,6 +70,13 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
    */
   public Optional<ParsedName> parseAuthorship(String authorship) {
     if (Strings.isNullOrEmpty(authorship)) return Optional.of(new ParsedName());
+
+    // manual configs
+    if (OVERRIDES_AUTHORSHIP.containsKey(authorship)) {
+      LOG.debug("Manual override found for authorship {}", authorship);
+      return Optional.of(OVERRIDES_AUTHORSHIP.get(authorship));
+    }
+
     try {
       ParsedName pn = PARSER_INTERNAL.parse("Abies alba " + authorship, Rank.SPECIES, null);
       if (pn.getState() == ParsedName.State.COMPLETE) {
@@ -75,7 +86,11 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
     }
     return Optional.empty();
   }
-  
+
+  public void addOverride(NameAccordingTo nat){
+    Name n = nat.getName();
+  }
+
   /**
    * Populates the parsed authorship of a given name instance by parsing a single authorship string.
    * Only parses the authorship if the name itself is already parsed.
@@ -133,8 +148,16 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
     if (StringUtils.isBlank(n.getScientificName())) {
       return Optional.empty();
     }
-    
     NameAccordingTo nat;
+    // manual configs
+    if (OVERRIDES_SCINAME.containsKey(n.getScientificName())) {
+      nat = OVERRIDES_SCINAME.get(n.getScientificName());
+      if (n.getRank() == null || nat.getName().getRank() == n.getRank()) {
+        LOG.debug("Manual override found for {} {}", n.getRank(), n.getScientificName());
+        return Optional.of(nat);
+      }
+    }
+
     Timer.Context ctx = timer == null ? null : timer.time();
     try {
       nat = fromParsedName(n, PARSER_INTERNAL.parse(n.getScientificName(), n.getRank(), n.getCode()), issues);
@@ -235,5 +258,13 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
     if (PARSER_INTERNAL != null) {
       PARSER_INTERNAL.close();
     }
+  }
+
+  public static void main(String[] args) {
+    System.out.println(IDN.toASCII("Bücher"));
+    System.out.println(IDN.toASCII("музей-мартьянова.рф"));
+    System.out.println(IDN.toASCII("https://музей-мартьянова.рф/ьянова/hello.php"));
+    System.out.println(IDN.toASCII("http://dep_bio.pnzgu.ru/Gerbariy_im_I_I_Sprygina"));
+
   }
 }
