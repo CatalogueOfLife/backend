@@ -26,6 +26,16 @@ public enum Analyzer {
   AUTO_COMPLETE(MultiField.AUTO_COMPLETE),
 
   /**
+   * An analyzer that allows for case-insensitive searches while preserving whitespace in the search string.
+   */
+  SCINAME_IGNORE_CASE(MultiField.SCINAME_IGNORE_CASE),
+  
+  /**
+   * Afull-text analyzer for scientific names.
+   */
+  SCINAME_WHOLE_WORDS(MultiField.SCINAME_WHOLE_WORDS),
+
+  /**
    * An edge ngram analyzer used for auto-complete functionality for scientific names. See {@link MultiField} for more info regarding the
    * two types of autocomplete analyzers.
    */

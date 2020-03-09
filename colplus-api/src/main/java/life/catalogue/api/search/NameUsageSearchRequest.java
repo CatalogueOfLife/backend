@@ -54,14 +54,14 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   private boolean reverse;
 
   @QueryParam("wholeWords")
-  private Boolean matchWholeWords = Boolean.TRUE;
+  private boolean wholeWordMatchingEnabled = true;
 
   public NameUsageSearchRequest() {}
 
   /**
    * Creates a shallow copy of this NameSearchRequest. The filters map is copied using EnumMap's copy constructor. Therefore you should not
-   * manipulate the filter values (which are lists) as they are copied by reference. You can, however, add/remove filters, facets and search
-   * content.
+   * manipulate the filter values (which are lists) as they are copied by reference. You can, however, simply replace the list with another
+   * list, and you can also add/remove facets and search content without affecting the original request.
    */
   public NameUsageSearchRequest copy() {
     NameUsageSearchRequest copy = new NameUsageSearchRequest();
@@ -81,6 +81,8 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     copy.q = q;
     copy.sortBy = sortBy;
     copy.highlight = highlight;
+    copy.reverse = reverse;
+    copy.wholeWordMatchingEnabled = wholeWordMatchingEnabled;
     return copy;
   }
 
@@ -151,6 +153,18 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     } else {
       throw new IllegalArgumentException("Unexpected parameter type: " + param.type());
     }
+  }
+
+  @JsonIgnore
+  public boolean isEmpty() {
+    return super.isEmpty() &&
+        (content == null || content.isEmpty())
+        && (facets == null || facets.isEmpty())
+        && (filters == null || filters.isEmpty())
+        && sortBy == null
+        && !highlight
+        && !reverse
+        && !wholeWordMatchingEnabled;
   }
 
   public void addFilter(NameUsageSearchParameter param, Integer value) {
@@ -256,15 +270,15 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     this.reverse = reverse;
   }
 
-  @JsonIgnore
-  public boolean isEmpty() {
-    return super.isEmpty() &&
-        (content == null || content.isEmpty())
-        && (facets == null || facets.isEmpty())
-        && (filters == null || filters.isEmpty())
-        && sortBy == null
-        && highlight == false
-        && reverse == false;
+  /**
+   * Whether or not to match on whole words only. Defaults to <code>true</code>.
+   */
+  public boolean isWholeWordMatchingEnabled() {
+    return wholeWordMatchingEnabled;
+  }
+
+  public void setWholeWordMatchingEnabled(boolean wholeWordMatchingEnabled) {
+    this.wholeWordMatchingEnabled = wholeWordMatchingEnabled;
   }
 
   private static IllegalArgumentException illegalValueForParameter(NameUsageSearchParameter param, String value) {
@@ -276,7 +290,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result = prime * result + Objects.hash(content, facets, filters, highlight, matchWholeWords, reverse, sortBy);
+    result = prime * result + Objects.hash(content, facets, filters, highlight, reverse, sortBy, wholeWordMatchingEnabled);
     return result;
   }
 
@@ -293,8 +307,8 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     }
     NameUsageSearchRequest other = (NameUsageSearchRequest) obj;
     return Objects.equals(content, other.content) && Objects.equals(facets, other.facets) && Objects.equals(filters, other.filters)
-        && highlight == other.highlight && Objects.equals(matchWholeWords, other.matchWholeWords) && reverse == other.reverse
-        && sortBy == other.sortBy;
+        && highlight == other.highlight && reverse == other.reverse && sortBy == other.sortBy
+        && wholeWordMatchingEnabled == other.wholeWordMatchingEnabled;
   }
 
 }

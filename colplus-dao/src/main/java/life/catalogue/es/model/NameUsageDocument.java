@@ -1,8 +1,5 @@
 package life.catalogue.es.model;
 
-import static life.catalogue.es.mapping.Analyzer.AUTO_COMPLETE;
-import static life.catalogue.es.mapping.Analyzer.IGNORE_CASE;
-import static life.catalogue.es.mapping.Analyzer.SCINAME_AUTO_COMPLETE;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -19,18 +16,17 @@ import life.catalogue.es.mapping.ESDataType;
 import life.catalogue.es.mapping.MapToType;
 import life.catalogue.es.mapping.NotIndexed;
 import life.catalogue.es.mapping.NotMapped;
+import static life.catalogue.es.mapping.Analyzer.AUTO_COMPLETE;
+import static life.catalogue.es.mapping.Analyzer.IGNORE_CASE;
+import static life.catalogue.es.mapping.Analyzer.SCINAME_AUTO_COMPLETE;
+import static life.catalogue.es.mapping.Analyzer.SCINAME_IGNORE_CASE;
+import static life.catalogue.es.mapping.Analyzer.SCINAME_WHOLE_WORDS;
 
 /**
  * Class modeling the Elasticsearch document type used to store NameUsageWrapper instances.
  */
 public class NameUsageDocument {
 
-  /*
-   * Elasticsearch's own id for the document. Note that this id is NOT part of the document and must therefore not be included in the
-   * document type mapping. It comes along as metadata with the search response, outside the JSON document itself. We artificially add it
-   * after deserialization of the JSON document. When indexing this field **must** be null. Since we use strict typing, Elasticsearch would
-   * complain if the field were present in the JSON document.
-   */
   @NotMapped
   private String documentId;
 
@@ -41,7 +37,7 @@ public class NameUsageDocument {
   private Integer sectorKey;
   @MapToType(ESDataType.KEYWORD)
   private Integer sectorDatasetKey;
-  @Analyzers({IGNORE_CASE, SCINAME_AUTO_COMPLETE})
+  @Analyzers({SCINAME_IGNORE_CASE, SCINAME_WHOLE_WORDS, SCINAME_AUTO_COMPLETE})
   private String scientificName;
   private NameStrings nameStrings;
   @Analyzers({IGNORE_CASE, AUTO_COMPLETE})
@@ -67,21 +63,18 @@ public class NameUsageDocument {
   private List<Monomial> classification;
   private List<EsDecision> decisions;
 
-  /*
-   * If this document represents a synonym this field contains the accepted name, otherwise it is null. Not indexed (searchable), but still
-   * placed outside the payload, so we can quickly access it in the name suggestion service.
-   */
   @NotIndexed
   private String acceptedName;
 
-  /*
-   * Contains the (possibly zipped) serialization of the entire NameUsageWrapper object as we got it from postgres. This is stored as a
-   * (base64-encoded) binary field, which never is indexed (no need to mark it as such).
-   */
   @MapToType(ESDataType.BINARY)
-  @NotIndexed // should not be necessary for binary datatype, but let's specify it anyway.
   private String payload;
 
+  /**
+   * Elasticsearch's own id for the document. Note that this id is NOT part of the document and must therefore not be included in the
+   * document type mapping. It comes along as metadata with the search response, outside the JSON document itself. We artificially add it
+   * after deserialization of the JSON document. When indexing this field **must** be null. Since we use strict typing, Elasticsearch would
+   * complain if the field were present in the JSON document.
+   */
   public String getDocumentId() {
     return documentId;
   }
@@ -274,6 +267,10 @@ public class NameUsageDocument {
     this.recent = recent;
   }
 
+  /**
+   * If this document represents a synonym this field contains the accepted name, otherwise it is null. Not indexed (searchable), but still
+   * placed outside the payload, so we can quickly access it in the name suggestion service.
+   */
   public String getAcceptedName() {
     return acceptedName;
   }
@@ -282,6 +279,10 @@ public class NameUsageDocument {
     this.acceptedName = acceptedName;
   }
 
+  /**
+   * Contains the (possibly zipped) serialization of the entire NameUsageWrapper object as we got it from postgres. This is stored as a
+   * (base64-encoded) binary field, which never is indexed (no need to annotate it as such).
+   */
   public String getPayload() {
     return payload;
   }
@@ -300,43 +301,22 @@ public class NameUsageDocument {
 
   @Override
   public int hashCode() {
-    return Objects.hash(acceptedName,
-        authorship,
-        classification,
-        classificationIds,
-        datasetKey,
-        decisions,
-        documentId,
-        fossil,
-        issues,
-        nameFields,
-        nameId,
-        nameIndexId,
-        nameStrings,
-        nomCode,
-        nomStatus,
-        payload,
-        publishedInId,
-        publisherKey,
-        rank,
-        recent,
-        scientificName,
-        sectorDatasetKey,
-        sectorKey,
-        status,
-        type,
-        usageId,
-        vernacularNames);
+    return Objects.hash(acceptedName, authorship, classification, classificationIds, datasetKey, decisions, documentId, fossil, issues,
+        nameFields, nameId, nameIndexId, nameStrings, nomCode, nomStatus, payload, publishedInId, publisherKey, rank, recent,
+        scientificName, sectorDatasetKey, sectorKey, status, type, usageId, vernacularNames);
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     NameUsageDocument other = (NameUsageDocument) obj;
     return Objects.equals(acceptedName, other.acceptedName) && Objects.equals(authorship, other.authorship)
         && Objects.equals(classification, other.classification) && Objects.equals(classificationIds, other.classificationIds)

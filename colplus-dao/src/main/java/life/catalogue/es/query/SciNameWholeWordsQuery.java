@@ -2,16 +2,16 @@ package life.catalogue.es.query;
 
 import life.catalogue.es.mapping.MultiField;
 
-public class AutoCompleteQuery extends AbstractMatchQuery {
+public class SciNameWholeWordsQuery extends AbstractMatchQuery {
 
-  public AutoCompleteQuery(String field, String value) {
+  public SciNameWholeWordsQuery(String field, String value) {
     super(field, value);
     withOperator(Operator.AND);
   }
 
   @Override
   protected MultiField getMultiField() {
-    return MultiField.AUTO_COMPLETE;
+    return MultiField.SCINAME_WHOLE_WORDS;
   }
 
 }

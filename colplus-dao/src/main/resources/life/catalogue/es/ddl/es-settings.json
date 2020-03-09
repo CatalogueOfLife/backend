@@ -8,32 +8,43 @@
 			"analyzer": {
 				"ignore_case": {
 					"tokenizer": "keyword",
-					"filter": "lowercase"
-				},
-				"default_autocomplete_indextime": {
-					"tokenizer": "default_autocomplete_indextime_tokenizer",
 					"filter": [
 						"lowercase",
 						"asciifolding"
 					]
 				},
-				"default_autocomplete_querytime": {
+				"autocomplete_indextime": {
+					"tokenizer": "autocomplete_indextime",
+					"filter": [
+						"lowercase",
+						"asciifolding"
+					]
+				},
+				"autocomplete_querytime": {
 					"tokenizer": "lowercase",
 					"filter": [
 						"asciifolding"
 					]
 				},
-				"sciname_autocomplete_indextime": {
+				"sciname_ignore_case": {
 					"char_filter": "sciname_char_filter",
-					"tokenizer": "sciname_autocomplete_indextime_tokenizer",
+					"tokenizer": "keyword",
 					"filter": [
 						"lowercase",
 						"asciifolding"
 					]
 				},
-				"sciname_autocomplete_querytime": {
+				"sciname_whole_words": {
 					"char_filter": "sciname_char_filter",
-					"tokenizer": "sciname_autocomplete_querytime_tokenizer",
+					"tokenizer": "whitespace",
+					"filter": [
+						"lowercase",
+						"asciifolding"
+					]
+				},
+				"sciname_autocomplete_indextime": {
+					"char_filter": "sciname_char_filter",
+					"tokenizer": "sciname_autocomplete_indextime",
 					"filter": [
 						"lowercase",
 						"asciifolding"
@@ -57,7 +68,7 @@
 				}
 			},
 			"tokenizer": {
-				"default_autocomplete_indextime_tokenizer": {
+				"autocomplete_indextime": {
 					"type": "edge_ngram",
 					"min_gram": 2,
 					"max_gram": 10,
@@ -66,7 +77,7 @@
 						"digit"
 					]
 				},
-				"sciname_autocomplete_indextime_tokenizer": {
+				"sciname_autocomplete_indextime": {
 					"type": "edge_ngram",
 					"min_gram": 2,
 					"max_gram": 10,
@@ -75,12 +86,6 @@
 						"digit",
 						"punctuation",
 						"symbol"
-					]
-				},
-				"sciname_autocomplete_querytime_tokenizer": {
-					"type": "char_group",
-					"tokenize_on_chars": [
-						"whitespace"
 					]
 				}
 			}

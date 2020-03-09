@@ -6,11 +6,12 @@ public class SciNameAutoCompleteQuery extends AbstractMatchQuery {
 
   public SciNameAutoCompleteQuery(String field, String value) {
     super(field, value);
+    withOperator(Operator.AND);
   }
 
   @Override
-  protected String getField(String field) {
-    return field + "." + MultiField.SCINAME_AUTO_COMPLETE.getName();
+  protected MultiField getMultiField() {
+    return MultiField.SCINAME_AUTO_COMPLETE;
   }
 
 }
