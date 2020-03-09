@@ -6,6 +6,7 @@ import life.catalogue.api.search.NameUsageSuggestResponse;
 import life.catalogue.api.search.NameUsageSuggestion;
 import life.catalogue.es.EsException;
 import life.catalogue.es.EsUtil;
+import life.catalogue.es.NameUsageSuggestionService;
 import life.catalogue.es.ddl.Analyzer;
 import life.catalogue.es.name.NameUsageEsResponse;
 import life.catalogue.es.name.NameUsageQueryService;

@@ -8,7 +8,7 @@ import life.catalogue.common.concurrent.ExecutorUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.es.name.index.NameUsageIndexService;
+import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.importer.ImportManager;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;

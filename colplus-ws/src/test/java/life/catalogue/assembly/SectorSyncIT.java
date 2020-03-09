@@ -12,7 +12,7 @@ import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.*;
 import life.catalogue.db.tree.TextTreePrinter;
-import life.catalogue.es.name.index.NameUsageIndexService;
+import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.importer.PgImportRule;
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;

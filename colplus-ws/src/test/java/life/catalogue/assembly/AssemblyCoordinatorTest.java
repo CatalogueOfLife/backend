@@ -15,7 +15,7 @@ import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetMapperTest;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.TestDataRule;
-import life.catalogue.es.name.index.NameUsageIndexService;
+import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;

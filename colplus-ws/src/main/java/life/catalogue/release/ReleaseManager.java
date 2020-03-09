@@ -4,7 +4,7 @@ import life.catalogue.api.model.ColUser;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.common.concurrent.NamedThreadFactory;
 import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.es.name.index.NameUsageIndexService;
+import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

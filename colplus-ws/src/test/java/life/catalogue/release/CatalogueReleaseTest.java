@@ -10,7 +10,7 @@ import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.TestDataRule;
-import life.catalogue.es.name.index.NameUsageIndexService;
+import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
 import org.junit.ClassRule;

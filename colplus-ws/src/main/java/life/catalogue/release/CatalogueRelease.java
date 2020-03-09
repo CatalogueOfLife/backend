@@ -11,7 +11,7 @@ import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.Partitioner;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.mapper.*;
-import life.catalogue.es.name.index.NameUsageIndexService;
+import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;

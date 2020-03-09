@@ -7,7 +7,7 @@ import life.catalogue.api.model.ColUser;
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.dw.auth.Roles;
-import life.catalogue.es.name.index.NameUsageIndexService;
+import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.gbifsync.GbifSync;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;

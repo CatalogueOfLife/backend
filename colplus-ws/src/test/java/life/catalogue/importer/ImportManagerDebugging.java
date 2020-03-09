@@ -14,7 +14,7 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.es.name.index.NameUsageIndexService;
+import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.release.ReleaseManager;

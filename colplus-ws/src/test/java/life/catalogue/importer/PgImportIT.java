@@ -14,7 +14,7 @@ import life.catalogue.config.NormalizerConfig;
 import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.*;
-import life.catalogue.es.name.index.NameUsageIndexService;
+import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;

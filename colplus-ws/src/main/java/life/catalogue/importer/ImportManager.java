@@ -22,7 +22,7 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
-import life.catalogue.es.name.index.NameUsageIndexService;
+import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.release.ReleaseManager;

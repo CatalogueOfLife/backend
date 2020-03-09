@@ -9,7 +9,7 @@ import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.*;
-import life.catalogue.es.name.index.NameUsageIndexService;
+import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.parser.NameParser;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;

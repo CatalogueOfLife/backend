@@ -9,6 +9,7 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.es.EsException;
+import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.es.ddl.Analyzer;
 import life.catalogue.es.name.NameUsageEsResponse;
 import life.catalogue.es.name.NameUsageQueryService;
