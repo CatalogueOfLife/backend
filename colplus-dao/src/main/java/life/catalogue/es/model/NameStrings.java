@@ -3,9 +3,9 @@ package life.catalogue.es.model;
 import java.util.Objects;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.search.NameUsageSearchResponse;
-import life.catalogue.es.mapping.Analyzers;
-import static life.catalogue.es.mapping.Analyzer.KEYWORD;
-import static life.catalogue.es.mapping.Analyzer.SCINAME_AUTO_COMPLETE;
+import life.catalogue.es.ddl.Analyzers;
+import static life.catalogue.es.ddl.Analyzer.SCINAME_AUTO_COMPLETE;
+import static life.catalogue.es.ddl.Analyzer.SCINAME_IGNORE_CASE;
 import static life.catalogue.es.name.NameUsageWrapperConverter.normalizeStrongly;
 import static life.catalogue.es.name.NameUsageWrapperConverter.normalizeWeakly;
 
@@ -23,17 +23,11 @@ public class NameStrings {
 
   private char sciNameLetter; // Used for alphabetical index
   private char genusLetter; // Used for fast term queries with search phrases like "H sapiens"
-  @Analyzers({KEYWORD, SCINAME_AUTO_COMPLETE})
-  private String genusOrMonomial;
-  @Analyzers({KEYWORD, SCINAME_AUTO_COMPLETE})
+  @Analyzers({SCINAME_IGNORE_CASE, SCINAME_AUTO_COMPLETE})
   private String genusOrMonomialWN;
-  @Analyzers({KEYWORD, SCINAME_AUTO_COMPLETE})
-  private String specificEpithet;
-  @Analyzers({KEYWORD, SCINAME_AUTO_COMPLETE})
+  @Analyzers({SCINAME_IGNORE_CASE, SCINAME_AUTO_COMPLETE})
   private String specificEpithetSN;
-  @Analyzers({KEYWORD, SCINAME_AUTO_COMPLETE})
-  private String infraspecificEpithet;
-  @Analyzers({KEYWORD, SCINAME_AUTO_COMPLETE})
+  @Analyzers({SCINAME_IGNORE_CASE, SCINAME_AUTO_COMPLETE})
   private String infraspecificEpithetSN;
 
   /**
@@ -43,29 +37,23 @@ public class NameStrings {
    */
   public NameStrings(Name name) {
     if (name.getScientificName() != null) {
-      sciNameLetter = Character.toUpperCase(name.getScientificName().charAt(0));
+      sciNameLetter = Character.toLowerCase(name.getScientificName().charAt(0));
     }
-    if (name.getUninomial() != null) {
-      genusOrMonomial = name.getUninomial();
-      genusOrMonomialWN = normalizeWeakly(name.getUninomial());
-    } else if (name.getGenus() != null) {
+    if (name.getGenus() != null) {
       genusLetter = Character.toLowerCase(name.getGenus().charAt(0));
-      genusOrMonomial = name.getGenus();
       genusOrMonomialWN = normalizeWeakly(name.getGenus());
+    } else if (name.getUninomial() != null) {
+      genusOrMonomialWN = normalizeWeakly(name.getUninomial());
     }
     if (name.getSpecificEpithet() != null) {
-      specificEpithet = name.getSpecificEpithet();
       specificEpithetSN = normalizeStrongly(name.getSpecificEpithet());
     }
     if (name.getInfraspecificEpithet() != null) {
-      infraspecificEpithet = name.getInfraspecificEpithet();
       infraspecificEpithetSN = normalizeStrongly(name.getInfraspecificEpithet());
     }
   }
 
-  public NameStrings() {
-    
-  }
+  public NameStrings() {}
 
   public char getSciNameLetter() {
     return sciNameLetter;
@@ -75,24 +63,12 @@ public class NameStrings {
     return genusLetter;
   }
 
-  public String getGenusOrMonomial() {
-    return genusOrMonomial;
-  }
-
   public String getGenusOrMonomialWN() {
     return genusOrMonomialWN;
   }
 
-  public String getSpecificEpithet() {
-    return specificEpithet;
-  }
-
   public String getSpecificEpithetSN() {
     return specificEpithetSN;
-  }
-
-  public String getInfraspecificEpithet() {
-    return infraspecificEpithet;
   }
 
   public String getInfraspecificEpithetSN() {
@@ -107,24 +83,12 @@ public class NameStrings {
     this.genusLetter = genusLetter;
   }
 
-  public void setGenusOrMonomial(String genusOrMonomial) {
-    this.genusOrMonomial = genusOrMonomial;
-  }
-
   public void setGenusOrMonomialWN(String genusOrMonomialWN) {
     this.genusOrMonomialWN = genusOrMonomialWN;
   }
 
-  public void setSpecificEpithet(String specificEpithet) {
-    this.specificEpithet = specificEpithet;
-  }
-
   public void setSpecificEpithetSN(String specificEpithetSN) {
     this.specificEpithetSN = specificEpithetSN;
-  }
-
-  public void setInfraspecificEpithet(String infraspecificEpithet) {
-    this.infraspecificEpithet = infraspecificEpithet;
   }
 
   public void setInfraspecificEpithetSN(String infraspecificEpithetSN) {
@@ -133,23 +97,24 @@ public class NameStrings {
 
   @Override
   public int hashCode() {
-    return Objects.hash(genusLetter, genusOrMonomial, genusOrMonomialWN, infraspecificEpithet, infraspecificEpithetSN, sciNameLetter,
-        specificEpithet, specificEpithetSN);
+    return Objects.hash(genusLetter, genusOrMonomialWN, infraspecificEpithetSN, sciNameLetter, specificEpithetSN);
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
-    if (obj == null)
+    }
+    if (obj == null) {
       return false;
-    if (getClass() != obj.getClass())
+    }
+    if (getClass() != obj.getClass()) {
       return false;
+    }
     NameStrings other = (NameStrings) obj;
-    return genusLetter == other.genusLetter && Objects.equals(genusOrMonomial, other.genusOrMonomial)
-        && Objects.equals(genusOrMonomialWN, other.genusOrMonomialWN) && Objects.equals(infraspecificEpithet, other.infraspecificEpithet)
+    return genusLetter == other.genusLetter && Objects.equals(genusOrMonomialWN, other.genusOrMonomialWN)
         && Objects.equals(infraspecificEpithetSN, other.infraspecificEpithetSN) && sciNameLetter == other.sciNameLetter
-        && Objects.equals(specificEpithet, other.specificEpithet) && Objects.equals(specificEpithetSN, other.specificEpithetSN);
+        && Objects.equals(specificEpithetSN, other.specificEpithetSN);
   }
 
 }

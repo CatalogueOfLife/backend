@@ -12,8 +12,8 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.*;
 import life.catalogue.es.InvalidQueryException;
-import life.catalogue.es.name.search.NameUsageSearchService;
-import life.catalogue.es.name.suggest.NameUsageSuggestionService;
+import life.catalogue.es.NameUsageSearchService;
+import life.catalogue.es.NameUsageSuggestionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

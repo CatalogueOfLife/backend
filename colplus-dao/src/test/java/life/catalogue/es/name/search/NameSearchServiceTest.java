@@ -24,7 +24,6 @@ import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.Issue;
-import life.catalogue.es.EsModule;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.name.NameUsageWrapperConverter;
 import static org.junit.Assert.assertEquals;
@@ -576,6 +575,7 @@ public class NameSearchServiceTest extends EsReadTestBase {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setHighlight(false);
     query.setQ("Smithi");
+    query.setWholeWordMatchingEnabled(false);
     index(testWithSmthii_data());
     // Expect all to come back
     NameUsageSearchResponse result = search(query);
@@ -584,12 +584,13 @@ public class NameSearchServiceTest extends EsReadTestBase {
 
   @Test
   public void testWithSmthii__2() {
-    NameUsageSearchRequest nsr = new NameUsageSearchRequest();
-    nsr.setHighlight(false);
-    nsr.setQ("Smithii");
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.setHighlight(false);
+    query.setQ("Smithii");
+    query.setWholeWordMatchingEnabled(false);
     index(testWithSmthii_data());
     // Expect all to come back
-    NameUsageSearchResponse result = search(nsr);
+    NameUsageSearchResponse result = search(query);
     assertEquals(testWithSmthii_data(), result.getResult());
   }
 

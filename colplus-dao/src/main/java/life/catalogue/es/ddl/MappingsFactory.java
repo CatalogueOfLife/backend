@@ -1,18 +1,16 @@
-package life.catalogue.es.mapping;
+package life.catalogue.es.ddl;
 
 import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Set;
 
 import life.catalogue.es.EsModule;
-import life.catalogue.es.mapping.FieldMappingsFactory;
-import life.catalogue.es.mapping.GetterMappingsFactory;
-
+import life.catalogue.es.ddl.FieldMappingsFactory;
+import life.catalogue.es.ddl.GetterMappingsFactory;
 import static java.util.Collections.emptySet;
-
-import static life.catalogue.es.mapping.MappingUtil.getClassForTypeArgument;
-import static life.catalogue.es.mapping.MappingUtil.isA;
-import static life.catalogue.es.mapping.MappingUtil.newAncestor;
+import static life.catalogue.es.ddl.MappingUtil.getClassForTypeArgument;
+import static life.catalogue.es.ddl.MappingUtil.isA;
+import static life.catalogue.es.ddl.MappingUtil.newAncestor;
 
 public abstract class MappingsFactory {
 

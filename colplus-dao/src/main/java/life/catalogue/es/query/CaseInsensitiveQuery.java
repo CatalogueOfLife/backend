@@ -1,6 +1,6 @@
 package life.catalogue.es.query;
 
-import life.catalogue.es.mapping.MultiField;
+import life.catalogue.es.ddl.MultiField;
 
 public class CaseInsensitiveQuery extends TermQuery {
 
@@ -8,8 +8,9 @@ public class CaseInsensitiveQuery extends TermQuery {
     super(field, value);
   }
 
-  protected String getField(String field) {
-    return field + "." + MultiField.IGNORE_CASE.getName();
+  @Override
+  protected MultiField getMultiField() {
+    return MultiField.IGNORE_CASE;
   }
 
 }

@@ -1,7 +1,7 @@
 package life.catalogue.es;
 
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.es.mapping.Analyzer;
+import life.catalogue.es.ddl.Analyzer;
 import life.catalogue.es.model.NameUsageDocument;
 import life.catalogue.es.name.NameUsageWrapperConverter;
 import org.elasticsearch.client.RestClient;

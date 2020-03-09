@@ -18,7 +18,7 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.SubjectRematcher;
-import life.catalogue.es.name.index.NameUsageIndexService;
+import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
 import life.catalogue.importer.neo.NeoDb;

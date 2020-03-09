@@ -1,4 +1,4 @@
-package life.catalogue.es.name.suggest;
+package life.catalogue.es;
 
 import java.util.Collections;
 

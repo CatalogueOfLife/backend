@@ -2,10 +2,10 @@ package life.catalogue.es;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.search.NameUsageSearchParameter;
+import life.catalogue.es.ddl.Analyzer;
 import life.catalogue.es.ddl.IndexDefinition;
-import life.catalogue.es.mapping.Analyzer;
-import life.catalogue.es.mapping.MappingsFactory;
-import life.catalogue.es.mapping.MultiField;
+import life.catalogue.es.ddl.MappingsFactory;
+import life.catalogue.es.ddl.MultiField;
 import life.catalogue.es.model.NameUsageDocument;
 import life.catalogue.es.name.NameUsageFieldLookup;
 import life.catalogue.es.query.*;

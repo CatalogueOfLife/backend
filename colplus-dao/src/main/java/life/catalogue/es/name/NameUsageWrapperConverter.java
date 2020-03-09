@@ -105,8 +105,7 @@ public class NameUsageWrapperConverter {
   }
 
   /**
-   * Provides a weakly normalized version of the provided string (typically a scientific name). Whatever normalization method we choose, we
-   * must make sure it is used both at index time (here) and at query time (QTranslator). Hence this public static method.
+   * Provides a weakly normalized version of the provided string. Used to index generic epithets. See {@link NameStrings}.
    */
   public static String normalizeWeakly(String s) {
     if (s == null) {
@@ -116,9 +115,7 @@ public class NameUsageWrapperConverter {
   }
 
   /**
-   * Provides a strongly normalized version of the provided string (typically a scientific name). For strong normalization it is even more
-   * important that this method is used both at index time and at query time, because the order in which the string is lowercased and
-   * normalized matters! Subtle bugs will arise if the order is different at index time and at query time.
+   * Provides a strongly normalized version of the provided string. Used to index specific epithets and infraspecific epithets.
    */
   public static String normalizeStrongly(String s) {
     if (s == null) {
@@ -183,8 +180,6 @@ public class NameUsageWrapperConverter {
     name.setDatasetKey(null);
     name.setId(null);
     name.setScientificName(null);
-    name.setSpecificEpithet(null);
-    name.setInfraspecificEpithet(null);
     name.setNameIndexId(null);
     name.setNomStatus(null);
     name.setPublishedInId(null);
@@ -229,8 +224,6 @@ public class NameUsageWrapperConverter {
     name.setDatasetKey(doc.getDatasetKey());
     name.setId(doc.getNameId());
     name.setScientificName(doc.getScientificName());
-    name.setSpecificEpithet(doc.getNameStrings().getSpecificEpithet());
-    name.setInfraspecificEpithet(doc.getNameStrings().getInfraspecificEpithet());
     name.setNameIndexId(doc.getNameIndexId());
     name.setNomStatus(doc.getNomStatus());
     name.setPublishedInId(doc.getPublishedInId());

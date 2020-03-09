@@ -9,7 +9,7 @@ import life.catalogue.api.vocab.Frequency;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.db.DatasetPageable;
 import life.catalogue.db.mapper.*;
-import life.catalogue.es.name.index.NameUsageIndexService;
+import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
 import org.apache.commons.lang3.StringUtils;

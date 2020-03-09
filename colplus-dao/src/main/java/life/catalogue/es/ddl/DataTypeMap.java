@@ -1,4 +1,4 @@
-package life.catalogue.es.mapping;
+package life.catalogue.es.ddl;
 
 import java.net.URI;
 import java.net.URL;
@@ -9,16 +9,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-
-import static life.catalogue.es.mapping.ESDataType.BOOLEAN;
-import static life.catalogue.es.mapping.ESDataType.BYTE;
-import static life.catalogue.es.mapping.ESDataType.DATE;
-import static life.catalogue.es.mapping.ESDataType.DOUBLE;
-import static life.catalogue.es.mapping.ESDataType.FLOAT;
-import static life.catalogue.es.mapping.ESDataType.INTEGER;
-import static life.catalogue.es.mapping.ESDataType.KEYWORD;
-import static life.catalogue.es.mapping.ESDataType.LONG;
-import static life.catalogue.es.mapping.ESDataType.SHORT;
+import static life.catalogue.es.ddl.ESDataType.BOOLEAN;
+import static life.catalogue.es.ddl.ESDataType.BYTE;
+import static life.catalogue.es.ddl.ESDataType.DATE;
+import static life.catalogue.es.ddl.ESDataType.DOUBLE;
+import static life.catalogue.es.ddl.ESDataType.FLOAT;
+import static life.catalogue.es.ddl.ESDataType.INTEGER;
+import static life.catalogue.es.ddl.ESDataType.KEYWORD;
+import static life.catalogue.es.ddl.ESDataType.LONG;
+import static life.catalogue.es.ddl.ESDataType.SHORT;
 
 /**
  * Maps Java types to Elasticsearch types and vice versa.

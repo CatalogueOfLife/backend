@@ -1,9 +1,8 @@
 package life.catalogue.es.query;
 
 import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonValue;
-
+import life.catalogue.es.ddl.MultiField;
 import static java.util.Collections.singletonMap;
 
 /**
@@ -18,6 +17,7 @@ public abstract class AbstractMatchQuery extends ConstraintQuery<MatchConstraint
    */
   public static enum Operator {
     AND, OR;
+
     @JsonValue
     public String toString() {
       return name();
@@ -27,7 +27,10 @@ public abstract class AbstractMatchQuery extends ConstraintQuery<MatchConstraint
   private final Map<String, MatchConstraint> match;
 
   public AbstractMatchQuery(String field, String value) {
-    match = singletonMap(getField(field), new MatchConstraint(value));
+    if (getMultiField() != null) {
+      field += "." + getMultiField().getName();
+    }
+    match = singletonMap(field, new MatchConstraint(value));
   }
 
   public AbstractMatchQuery withOperator(AbstractMatchQuery.Operator operator) {
@@ -36,10 +39,10 @@ public abstract class AbstractMatchQuery extends ConstraintQuery<MatchConstraint
   }
 
   @Override
-  MatchConstraint getConstraint() {
+  protected MatchConstraint getConstraint() {
     return match.values().iterator().next();
   }
 
-  abstract String getField(String field);
+  protected abstract MultiField getMultiField();
 
 }

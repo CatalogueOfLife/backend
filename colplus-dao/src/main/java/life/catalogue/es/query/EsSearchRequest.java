@@ -7,14 +7,14 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-
+import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.es.EsException;
 import life.catalogue.es.EsModule;
 
 /**
  * Class modeling a complete Elasticsearch search request. Serializing it to JSON produces a syntactically valid
  * Elasticsearch query (e.g. which you could execute in Kibana). Instances of this class are produced by a
- * NameSearchRequestTranslator using a NameSearchRequest object as input.
+ * NameSearchRequestTranslator using a {@link NameUsageSearchRequest} object as input.
  */
 public class EsSearchRequest {
 

@@ -11,12 +11,23 @@ public abstract class NameUsageRequest {
   @QueryParam("q")
   protected String q;
   @QueryParam("fuzzy")
-  protected Boolean fuzzyMatching = Boolean.TRUE;
+  protected boolean fuzzyMatchingEnabled = true;
   protected String[] searchTerms;
+
+  public abstract boolean isWholeWordMatchingEnabled();
 
   @JsonIgnore
   public boolean isEmpty() {
-    return q == null && fuzzyMatching == null;
+    return q == null && !fuzzyMatchingEnabled;
+  }
+
+  @JsonIgnore // These are derived & set after the request comes in
+  public String[] getSearchTerms() {
+    return searchTerms;
+  }
+
+  public void setSearchTerms(String[] searchTerms) {
+    this.searchTerms = searchTerms;
   }
 
   public boolean hasQ() {
@@ -27,25 +38,16 @@ public abstract class NameUsageRequest {
     return q;
   }
 
-  public Boolean getFuzzyMatching() {
-    return fuzzyMatching;
-  }
-
   public void setQ(String q) {
     this.q = q;
   }
 
-  public void setFuzzyMatching(Boolean fuzzyMatching) {
-    this.fuzzyMatching = fuzzyMatching;
+  public boolean isFuzzyMatchingEnabled() {
+    return fuzzyMatchingEnabled;
   }
 
-  @JsonIgnore
-  public String[] getSearchTerms() {
-    return searchTerms;
-  }
-
-  public void setSearchTerms(String[] searchTerms) {
-    this.searchTerms = searchTerms;
+  public void setFuzzyMatchingEnabled(boolean fuzzyMatchingEnabled) {
+    this.fuzzyMatchingEnabled = fuzzyMatchingEnabled;
   }
 
   @Override
@@ -53,7 +55,7 @@ public abstract class NameUsageRequest {
     final int prime = 31;
     int result = 1;
     result = prime * result + Arrays.hashCode(searchTerms);
-    result = prime * result + Objects.hash(fuzzyMatching, q);
+    result = prime * result + Objects.hash(fuzzyMatchingEnabled, q);
     return result;
   }
 
@@ -69,7 +71,7 @@ public abstract class NameUsageRequest {
       return false;
     }
     NameUsageRequest other = (NameUsageRequest) obj;
-    return Objects.equals(fuzzyMatching, other.fuzzyMatching) && Objects.equals(q, other.q)
+    return fuzzyMatchingEnabled == other.fuzzyMatchingEnabled && Objects.equals(q, other.q)
         && Arrays.equals(searchTerms, other.searchTerms);
   }
 

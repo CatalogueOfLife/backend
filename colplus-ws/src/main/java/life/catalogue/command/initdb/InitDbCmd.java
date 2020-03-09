@@ -17,7 +17,7 @@ import life.catalogue.db.PgConfig;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.EsUtil;
-import life.catalogue.es.name.index.NameUsageIndexService;
+import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.name.index.NameUsageIndexServiceEs;
 import life.catalogue.matching.DatasetMatcher;
 import life.catalogue.matching.NameIndex;

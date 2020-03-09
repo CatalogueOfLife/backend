@@ -1,4 +1,4 @@
-package life.catalogue.es.mapping;
+package life.catalogue.es.ddl;
 
 /**
  * A {@code SimpleField} is a field with a simple data type. In other words it is not an object containing other fields.

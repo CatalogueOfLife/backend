@@ -1,4 +1,4 @@
-package life.catalogue.es.mapping;
+package life.catalogue.es.ddl;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -9,9 +9,9 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import static java.lang.reflect.Modifier.isStatic;
-import static life.catalogue.es.mapping.ESDataType.NESTED;
-import static life.catalogue.es.mapping.MappingUtil.createSimpleField;
-import static life.catalogue.es.mapping.MappingUtil.isA;
+import static life.catalogue.es.ddl.ESDataType.NESTED;
+import static life.catalogue.es.ddl.MappingUtil.createSimpleField;
+import static life.catalogue.es.ddl.MappingUtil.isA;
 
 /**
  * Generates an Elasticsearch document type mapping from the fields {@link Class}.

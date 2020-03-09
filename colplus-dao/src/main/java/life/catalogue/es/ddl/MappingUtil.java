@@ -1,11 +1,11 @@
-package life.catalogue.es.mapping;
+package life.catalogue.es.ddl;
 
-import static life.catalogue.es.mapping.ESDataType.KEYWORD;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import static life.catalogue.es.ddl.ESDataType.KEYWORD;
 
 class MappingUtil {
 

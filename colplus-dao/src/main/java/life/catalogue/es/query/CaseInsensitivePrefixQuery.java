@@ -1,6 +1,6 @@
 package life.catalogue.es.query;
 
-import life.catalogue.es.mapping.MultiField;
+import life.catalogue.es.ddl.MultiField;
 
 /**
  * Case-insentive variant of the {@code PrefixQuery}. Note that since this class extends {@code PrefixQuery}, it will

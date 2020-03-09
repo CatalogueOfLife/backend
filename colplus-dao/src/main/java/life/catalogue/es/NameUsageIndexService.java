@@ -1,4 +1,4 @@
-package life.catalogue.es.name.index;
+package life.catalogue.es;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;

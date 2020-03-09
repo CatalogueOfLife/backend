@@ -1,6 +1,6 @@
 package life.catalogue.es.query;
 
-import life.catalogue.es.mapping.MultiField;
+import life.catalogue.es.ddl.MultiField;
 
 public class AutoCompleteQuery extends AbstractMatchQuery {
 
@@ -9,8 +9,8 @@ public class AutoCompleteQuery extends AbstractMatchQuery {
   }
 
   @Override
-  protected String getField(String field) {
-    return field + "." + MultiField.AUTO_COMPLETE.getName();
+  protected MultiField getMultiField() {
+    return MultiField.AUTO_COMPLETE;
   }
 
 }

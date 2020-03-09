@@ -6,7 +6,7 @@ import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.MatchingDao;
 import life.catalogue.dao.NamesTreeDao;
 import life.catalogue.db.mapper.*;
-import life.catalogue.es.name.index.NameUsageIndexService;
+import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;

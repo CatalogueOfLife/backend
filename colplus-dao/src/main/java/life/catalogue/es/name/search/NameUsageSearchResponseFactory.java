@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.FacetValue;
 import life.catalogue.api.search.NameUsageSearchParameter;

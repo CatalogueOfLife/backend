@@ -1,4 +1,4 @@
-package life.catalogue.es.mapping;
+package life.catalogue.es.ddl;
 
 /**
  * A {@code DateField} is a {@link SimpleField} with Elasticsearch data type {@link ESDataType#DATE date}.

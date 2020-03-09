@@ -12,7 +12,7 @@ import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.SynonymMapper;
 import life.catalogue.db.mapper.TestDataRule;
-import life.catalogue.es.name.index.NameUsageIndexService;
+import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;

@@ -1,4 +1,4 @@
-package life.catalogue.es.name.search;
+package life.catalogue.es;
 
 import java.util.Collections;
 

@@ -16,6 +16,7 @@ import life.catalogue.db.mapper.NameUsageWrapperMapper;
 import life.catalogue.es.EsConfig;
 import life.catalogue.es.EsException;
 import life.catalogue.es.EsUtil;
+import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.model.NameUsageDocument;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;

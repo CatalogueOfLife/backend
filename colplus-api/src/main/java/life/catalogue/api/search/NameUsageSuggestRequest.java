@@ -13,6 +13,11 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
   @QueryParam("limit")
   private Integer limit; // Desired number of suggestions
 
+  @Override
+  public boolean isWholeWordMatchingEnabled() {
+    return false; // defies the purpose of auto-complete
+  }
+
   @JsonIgnore
   public boolean suggestVernaculars() {
     return vernaculars != null && vernaculars.equals(Boolean.TRUE);
