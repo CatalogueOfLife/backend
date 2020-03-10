@@ -38,7 +38,7 @@ public class AcefRelationInserter extends RelationInserterBase {
       if (p != null) {
         NeoName sp = store.nameByUsage(p);
         if (sp.name.getRank() != Rank.GENUS) {
-          opt = inter.interpretName(u.getId(), v.get(AcefTerm.InfraSpeciesMarker), null, v.get(AcefTerm.InfraSpeciesAuthorString),
+          opt = inter.interpretName(true, u.getId(), v.get(AcefTerm.InfraSpeciesMarker), null, v.get(AcefTerm.InfraSpeciesAuthorString),
               sp.name.getGenus(), sp.name.getInfragenericEpithet(), sp.name.getSpecificEpithet(), v.get(AcefTerm.InfraSpeciesEpithet),
               null,null, null, v.get(AcefTerm.GSDNameStatus), null, null, v);
         }

@@ -222,7 +222,7 @@ public class AcefInterpreter extends InterpreterBase {
       opt = Optional.of(nat);
       
     } else {
-      opt = interpretName(v.get(idTerm), rank, null, authorship,
+      opt = interpretName(true, v.get(idTerm), rank, null, authorship,
           v.get(AcefTerm.Genus), v.get(AcefTerm.SubGenusName), v.get(AcefTerm.SpeciesEpithet), v.get(AcefTerm.InfraSpeciesEpithet),
           null, null,
           null, v.get(AcefTerm.GSDNameStatus), null,null, v);

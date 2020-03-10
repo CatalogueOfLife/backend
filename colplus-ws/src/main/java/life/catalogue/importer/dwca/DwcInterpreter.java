@@ -188,7 +188,7 @@ public class DwcInterpreter extends InterpreterBase {
   }
   
   private Optional<NameAccordingTo> interpretName(VerbatimRecord v) {
-    Optional<NameAccordingTo> opt = interpretName(v.getFirstRaw(DwcTerm.taxonID, DwcaTerm.ID),
+    Optional<NameAccordingTo> opt = interpretName(false, v.getFirstRaw(DwcTerm.taxonID, DwcaTerm.ID),
         v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), v.get(DwcTerm.scientificName),
         v.get(DwcTerm.scientificNameAuthorship),
         v.getFirst(GbifTerm.genericName, DwcTerm.genus), v.get(DwcTerm.subgenus),

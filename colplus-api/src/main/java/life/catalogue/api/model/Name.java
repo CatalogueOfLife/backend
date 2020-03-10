@@ -24,7 +24,7 @@ import static org.gbif.nameparser.util.NameFormatter.HYBRID_MARKER;
 /**
  *
  */
-public class Name extends DatasetScopedEntity<String> implements VerbatimEntity {
+public class Name extends DatasetScopedEntity<String> implements VerbatimEntity, LinneanName {
   
 
   private Integer sectorKey;

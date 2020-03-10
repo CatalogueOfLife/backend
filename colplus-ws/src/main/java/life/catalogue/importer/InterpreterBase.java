@@ -13,6 +13,7 @@ import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.util.RankUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -289,12 +290,14 @@ public class InterpreterBase {
     }
   }
 
-  public Optional<NameAccordingTo> interpretName(final String id, final String vrank, final String sciname, final String authorship,
+  public Optional<NameAccordingTo> interpretName(final boolean preferAtoms, final String id, final String vrank, final String sciname, final String authorship,
                                                  final String genus, final String infraGenus, final String species, final String infraspecies,
                                                  final String cultivar,final String phrase,
                                                  String nomCode, String nomStatus,
                                                  String link, String remarks, VerbatimRecord v) {
+    // this can be wrong in some cases, e.g. in DwC records often scientificName and just a genus is given
     final boolean isAtomized = ObjectUtils.anyNotNull(genus, infraGenus, species, infraspecies);
+    final boolean useAtoms   = isAtomized && (preferAtoms || sciname == null);
 
     // parse rank & code as they improve name parsing
     Rank rank = SafeParser.parse(RankParser.PARSER, vrank).orElse(Rank.UNRANKED, Issue.RANK_INVALID, v);
@@ -304,7 +307,7 @@ public class InterpreterBase {
 
     // we can get the scientific name in various ways.
     // we prefer already atomized names as we want to trust humans more than machines
-    if (isAtomized) {
+    if (useAtoms) {
       nat = new NameAccordingTo();
       Name atom = new Name();
       nat.setName(atom);
@@ -322,6 +325,10 @@ public class InterpreterBase {
       if (!atom.isBinomial() && rank.isGenusOrSuprageneric() && atom.getGenus() != null && atom.getInfragenericEpithet() == null) {
         atom.setUninomial(atom.getGenus());
         atom.setGenus(null);
+      }
+
+      if (rank.otherOrUnranked()) {
+        atom.setRank(RankUtils.inferRank(atom));
       }
 
       // parse the reconstructed name without authorship to detect name type and potential problems
@@ -429,4 +436,5 @@ public class InterpreterBase {
     }
     return null;
   }
+
 }
