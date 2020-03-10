@@ -1,9 +1,6 @@
 package life.catalogue.importer;
 
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.Distribution;
-import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.Issue;
@@ -14,6 +11,7 @@ import org.mockito.Mock;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import static org.junit.Assert.*;
@@ -24,7 +22,21 @@ public class InterpreterBaseTest {
   ReferenceStore refStore;
   IssueContainer issues = new VerbatimRecord();
   InterpreterBase inter = new InterpreterBase(new Dataset(), new ReferenceFactory(1, refStore), null);
-  
+
+  @Test
+  public void interpretName() throws Exception {
+    InterpreterBase ib = new InterpreterBase(new Dataset(), null, null);
+    VerbatimRecord v = new VerbatimRecord();
+    Optional<NameAccordingTo> nat = ib.interpretName("1", "species", "Picea arlba", "Mill. and Desbrochers de Loges, 1881", "Abies", null, "alba", null, null, "s.l.", null, null, null, null, v);
+    Name n = nat.get().getName();
+    assertEquals("Abies alba s.l.", n.getScientificName());
+    assertEquals("Abies", n.getGenus());
+    assertEquals("alba", n.getSpecificEpithet());
+    assertEquals("Mill. & Desbrochers de Loges, 1881", n.getAuthorship());
+    assertEquals(List.of("Mill.", "Desbrochers de Loges"), n.getCombinationAuthorship().getAuthors());
+    assertEquals("1881", n.getCombinationAuthorship().getYear());
+  }
+
   @Test
   public void yearParser() throws Exception {
     assertEquals((Integer) 1678, InterpreterBase.parseYear("1678", issues));

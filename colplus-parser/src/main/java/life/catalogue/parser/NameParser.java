@@ -16,12 +16,11 @@ import org.gbif.nameparser.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 /**
- * Wrapper around the GBIF Name parser to deal with col Name and API.
+ * Wrapper around the GBIF Name parser to deal with the col Name class and API.
  */
 public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
   private static Logger LOG = LoggerFactory.getLogger(NameParser.class);
@@ -42,8 +41,6 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
       .put(Warnings.BLACKLISTED_EPITHET, Issue.BLACKLISTED_EPITHET)
       .put(Warnings.NOMENCLATURAL_REFERENCE, Issue.CONTAINS_REFERENCE)
       .build();
-  private static final Map<String, NameAccordingTo> OVERRIDES_SCINAME = new HashMap<>();
-  private static final Map<String, ParsedName> OVERRIDES_AUTHORSHIP = new HashMap<>();
 
   private Timer timer;
   
@@ -67,27 +64,16 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
   /**
    * @return a name instance with just the parsed authorship, i.e. combination & original year & author list
    */
-  public Optional<ParsedName> parseAuthorship(String authorship) {
+  public Optional<ParsedAuthorship> parseAuthorship(String authorship) {
     if (Strings.isNullOrEmpty(authorship)) return Optional.of(new ParsedName());
-
-    // manual configs
-    if (OVERRIDES_AUTHORSHIP.containsKey(authorship)) {
-      LOG.debug("Manual override found for authorship {}", authorship);
-      return Optional.of(OVERRIDES_AUTHORSHIP.get(authorship));
-    }
-
     try {
-      ParsedName pn = PARSER_INTERNAL.parse("Abies alba " + authorship, Rank.SPECIES, null);
-      if (pn.getState() == ParsedName.State.COMPLETE) {
-        return Optional.of(pn);
+      ParsedAuthorship pa = PARSER_INTERNAL.parseAuthorship(authorship);
+      if (pa.getState() == ParsedName.State.COMPLETE) {
+        return Optional.of(pa);
       }
     } catch (UnparsableNameException e) {
     }
     return Optional.empty();
-  }
-
-  public void addOverride(NameAccordingTo nat){
-    //TODO: !!!
   }
 
   /**
@@ -97,7 +83,7 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
   public void parseAuthorshipIntoName(NameAccordingTo nat, String authorship, IssueContainer v){
     // try to add an authorship if not yet there
     if (nat.getName().isParsed() && !Strings.isNullOrEmpty(authorship)) {
-      ParsedName pnAuthorship = parseAuthorship(authorship).orElseGet(() -> {
+      ParsedAuthorship pnAuthorship = parseAuthorship(authorship).orElseGet(() -> {
         LOG.info("Unparsable authorship {}", authorship);
         v.addIssue(Issue.UNPARSABLE_AUTHORSHIP);
         // add the full, unparsed authorship in this case to not lose it
@@ -148,15 +134,6 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
       return Optional.empty();
     }
     NameAccordingTo nat;
-    // manual configs
-    if (OVERRIDES_SCINAME.containsKey(n.getScientificName())) {
-      nat = OVERRIDES_SCINAME.get(n.getScientificName());
-      if (n.getRank() == null || nat.getName().getRank() == n.getRank()) {
-        LOG.debug("Manual override found for {} {}", n.getRank(), n.getScientificName());
-        return Optional.of(nat);
-      }
-    }
-
     Timer.Context ctx = timer == null ? null : timer.time();
     try {
       nat = fromParsedName(n, PARSER_INTERNAL.parse(n.getScientificName(), n.getRank(), n.getCode()), issues);

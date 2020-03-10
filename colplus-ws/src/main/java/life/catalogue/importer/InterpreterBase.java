@@ -1,6 +1,5 @@
 package life.catalogue.importer;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
@@ -289,100 +288,81 @@ public class InterpreterBase {
       n.setType(NameType.SCIENTIFIC);
     }
   }
-  
+
   public Optional<NameAccordingTo> interpretName(final String id, final String vrank, final String sciname, final String authorship,
                                                  final String genus, final String infraGenus, final String species, final String infraspecies,
                                                  final String cultivar,final String phrase,
                                                  String nomCode, String nomStatus,
                                                  String link, String remarks, VerbatimRecord v) {
     final boolean isAtomized = ObjectUtils.anyNotNull(genus, infraGenus, species, infraspecies);
-    Name atom = new Name();
-    atom.setGenus(genus);
-    atom.setInfragenericEpithet(infraGenus);
-    atom.setSpecificEpithet(lowercaseEpithet(species, v));
-    atom.setInfraspecificEpithet(lowercaseEpithet(infraspecies, v));
-    atom.setCultivarEpithet(cultivar);
-    atom.setAppendedPhrase(phrase);
 
     // parse rank & code as they improve name parsing
     Rank rank = SafeParser.parse(RankParser.PARSER, vrank).orElse(Rank.UNRANKED, Issue.RANK_INVALID, v);
-    atom.setRank(rank);
     final NomCode code = SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse(dataset.getCode(), Issue.NOMENCLATURAL_CODE_INVALID, v);
-    atom.setCode(code);
-    setDefaultNameType(atom);
-  
-    // populate uninomial instead of genus?
-    if (!atom.isBinomial() && rank.isGenusOrSuprageneric() && atom.getGenus() != null && atom.getInfragenericEpithet() == null) {
-      atom.setUninomial(atom.getGenus());
-      atom.setGenus(null);
-    }
-  
+
     NameAccordingTo nat;
-  
-    // we can getUsage the scientific name in various ways.
-    // we parse all names from the scientificName + optional authorship
-    // or use the atomized parts which we also use to validate the parsing result.
-    if (sciname != null) {
+
+    // we can get the scientific name in various ways.
+    // we prefer already atomized names as we want to trust humans more than machines
+    if (isAtomized) {
+      nat = new NameAccordingTo();
+      Name atom = new Name();
+      nat.setName(atom);
+
+      atom.setGenus(genus);
+      atom.setInfragenericEpithet(infraGenus);
+      atom.setSpecificEpithet(lowercaseEpithet(species, v));
+      atom.setInfraspecificEpithet(lowercaseEpithet(infraspecies, v));
+      atom.setCultivarEpithet(cultivar);
+      atom.setAppendedPhrase(phrase);
+      atom.setRank(rank);
+      atom.setCode(code);
+      setDefaultNameType(atom);
+      // populate uninomial instead of genus?
+      if (!atom.isBinomial() && rank.isGenusOrSuprageneric() && atom.getGenus() != null && atom.getInfragenericEpithet() == null) {
+        atom.setUninomial(atom.getGenus());
+        atom.setGenus(null);
+      }
+
+      // parse the reconstructed name without authorship to detect name type and potential problems
+      Optional<NameAccordingTo> natFromAtom = NameParser.PARSER.parse(atom.canonicalNameComplete(), rank, code, v);
+      if (natFromAtom.isPresent()) {
+        final Name pn = natFromAtom.get().getName();
+
+        // check name type if its parsable - otherwise we should not use name atoms
+        if (!pn.getType().isParsable()) {
+          LOG.info("Atomized name {} appears to be of type {}. Use scientific name only", atom.canonicalNameComplete(), pn.getType());
+          nat.setName(pn);
+        } else if (pn.isParsed()) {
+          // if parsed compare with original atoms
+          if (
+              !Objects.equals(atom.getUninomial(), pn.getUninomial()) ||
+                  !Objects.equals(atom.getGenus(), pn.getGenus()) ||
+                  !Objects.equals(atom.getInfragenericEpithet(), pn.getInfragenericEpithet()) ||
+                  !Objects.equals(atom.getSpecificEpithet(), pn.getSpecificEpithet()) ||
+                  !Objects.equals(atom.getInfraspecificEpithet(), pn.getInfraspecificEpithet())
+          ) {
+            LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", pn.canonicalNameComplete(), atom.canonicalNameComplete());
+            v.addIssue(Issue.PARSED_NAME_DIFFERS);
+          }
+        }
+      } else {
+        // only really happens for blank strings
+        LOG.info("No name given for {}", id);
+        return Optional.empty();
+      }
+
+    } else if (sciname != null) {
       nat = NameParser.PARSER.parse(sciname, rank, code, v).get();
-      
-    } else if (!isAtomized) {
+
+    } else {
       LOG.info("No name given for {}", id);
       return Optional.empty();
-      
-    } else {
-      // parse the reconstructed name without authorship
-      // cant use the atomized name just like that cause we would miss name type detection (virus,
-      // hybrid, placeholder, garbage)
-      Optional<NameAccordingTo> natFromAtom = NameParser.PARSER.parse(atom.canonicalNameWithAuthorship(), rank, code, v);
-      if (!natFromAtom.isPresent()) {
-        LOG.warn("Failed to parse {} {} ({}) from given atoms. Use name atoms directly: {}/{}/{}/{}", rank, atom.canonicalNameWithAuthorship(), id,
-            atom.getGenus(), atom.getInfragenericEpithet(), atom.getSpecificEpithet(), atom.getInfraspecificEpithet()
-        );
-        v.addIssue(Issue.PARSED_NAME_DIFFERS);
-        nat = new NameAccordingTo();
-        nat.setName(atom);
-      } else {
-        nat = natFromAtom.get();
-        // if parsed compare with original atoms
-        if (nat.getName().isParsed()) {
-          if (
-              !Objects.equals(atom.getUninomial(), nat.getName().getUninomial()) ||
-              !Objects.equals(atom.getGenus(), nat.getName().getGenus()) ||
-              !Objects.equals(atom.getInfragenericEpithet(), nat.getName().getInfragenericEpithet()) ||
-              !Objects.equals(atom.getSpecificEpithet(), nat.getName().getSpecificEpithet()) ||
-              !Objects.equals(atom.getInfraspecificEpithet(), nat.getName().getInfraspecificEpithet())
-            ) {
-            LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", nat.getName().canonicalNameWithAuthorship(), atom.canonicalNameWithAuthorship());
-            v.addIssue(Issue.PARSED_NAME_DIFFERS);
-            
-            // use original name atoms if they do not contain a space
-            if (hasNoSpace(atom.getGenus())
-                && hasNoSpace(atom.getInfragenericEpithet())
-                && hasNoSpace(atom.getSpecificEpithet())
-                && hasNoSpace(atom.getInfraspecificEpithet())) {
-              nat.getName().setUninomial(atom.getUninomial());
-              nat.getName().setGenus(atom.getGenus());
-              nat.getName().setInfragenericEpithet(atom.getInfragenericEpithet());
-              nat.getName().setSpecificEpithet(atom.getSpecificEpithet());
-              nat.getName().setInfraspecificEpithet(atom.getInfraspecificEpithet());
-              // we have a parsed name, so its not virus or hybrid, but parsing could have detected something weird
-              if (NameType.SCIENTIFIC != nat.getName().getType()) {
-                LOG.info("Use type=scientific for {} even though parsed name of type {}", nat.getName().canonicalNameWithAuthorship(), nat.getName().getType());
-                nat.getName().setType(NameType.SCIENTIFIC);
-              }
-            }
-          }
-        } else if (!Strings.isNullOrEmpty(authorship)) {
-          // append authorship to unparsed scientificName
-          String fullname = nat.getName().getScientificName().trim() + " " + authorship.trim();
-          nat.getName().setScientificName(fullname);
-        }
-      }
     }
-    
+
     // try to add an authorship if not yet there
     NameParser.PARSER.parseAuthorshipIntoName(nat, authorship, v);
-    
+
     // common basics
     nat.getName().setId(id);
     nat.getName().setVerbatimKey(v.getId());
@@ -398,19 +378,19 @@ public class InterpreterBase {
     // we add only to already parsed remarks
     nat.getName().addRemark(remarks);
     nat.getName().addRemark(nomStatus);
-    
+
     // assign best rank
     if (rank.notOtherOrUnranked() || nat.getName().getRank() == null) {
       // TODO: check ACEF ranks...
       nat.getName().setRank(rank);
     }
-    
+
     // finally update the scientificName with the canonical form if we can
     nat.getName().updateNameCache();
-    
+
     return Optional.of(nat);
   }
-  
+
   protected void setLifezones(Taxon t, VerbatimRecord v, Term lifezone) {
     String raw = v.get(lifezone);
     if (raw != null) {

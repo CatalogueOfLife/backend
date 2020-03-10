@@ -1,9 +1,5 @@
 package life.catalogue.importer;
 
-import java.util.Set;
-import java.util.function.Supplier;
-import java.util.regex.Pattern;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
@@ -15,6 +11,10 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Set;
+import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -90,7 +90,7 @@ public class NameValidator {
   }
   
   /**
-   * Validates consistency of name propLabel adding issues to the name if found.
+   * Validates consistency of name properties adding issues to the name if found.
    * This method checks if the given rank matches
    * populated propLabel and available propLabel make sense together.
    * @return a non null VerbatimRecord if any issue have been added

@@ -18,10 +18,7 @@ import life.catalogue.parser.NameParser;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.ParsedName;
-import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -334,16 +331,16 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
           } else if (n2.getAuthorship() != null) {
             // no full name, just changing authorship
             n.setAuthorship(n2.getAuthorship());
-            ParsedName pn = NameParser.PARSER.parseAuthorship(n2.getAuthorship()).orElseGet(() -> {
+            ParsedAuthorship an = NameParser.PARSER.parseAuthorship(n2.getAuthorship()).orElseGet(() -> {
               LOG.warn("Unparsable decision authorship {}", n2.getAuthorship());
               // add the full, unparsed authorship in this case to not lose it
               ParsedName pn2 = new ParsedName();
               pn2.getCombinationAuthorship().getAuthors().add(n2.getAuthorship());
               return pn2;
             });
-            n.setCombinationAuthorship(pn.getCombinationAuthorship());
-            n.setSanctioningAuthor(pn.getSanctioningAuthor());
-            n.setBasionymAuthorship(pn.getBasionymAuthorship());
+            n.setCombinationAuthorship(an.getCombinationAuthorship());
+            n.setSanctioningAuthor(an.getSanctioningAuthor());
+            n.setBasionymAuthorship(an.getBasionymAuthorship());
           }
           // any other changes
           if (n2.getCode() != null) {

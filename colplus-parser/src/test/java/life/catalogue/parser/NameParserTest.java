@@ -1,18 +1,16 @@
 package life.catalogue.parser;
 
-import java.util.Optional;
-import java.util.Set;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameAccordingTo;
 import life.catalogue.api.vocab.NomStatus;
-import life.catalogue.parser.NameParser;
-import life.catalogue.parser.UnparsableException;
 import org.gbif.nameparser.api.*;
 import org.junit.Test;
+
+import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -241,13 +239,13 @@ public class NameParserTest {
   
   
   static void assertAuthorship(String authorship, String year, String... authors) throws UnparsableException {
-    ParsedName pn = parser.parseAuthorship(authorship).get();
+    ParsedAuthorship pa = parser.parseAuthorship(authorship).get();
     Authorship a = new Authorship();
     a.setYear(year);
     for (String x : authors) {
       a.getAuthors().add(x);
     }
-    assertEquals(a, pn.getCombinationAuthorship());
+    assertEquals(a, pa.getCombinationAuthorship());
   }
   
   static NameAssertion assertName(String rawName, String sciname) throws UnparsableException {
