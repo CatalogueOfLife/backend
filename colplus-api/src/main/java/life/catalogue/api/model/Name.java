@@ -232,7 +232,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     pn.setCode(n.getCode());
     pn.setCandidatus(pn.isCandidatus());
     pn.setNotho(n.getNotho());
-    pn.setNomenclaturalNotes(n.getRemarks());
+    pn.setNomenclaturalNote(n.getRemarks());
     pn.setType(n.getType());
     return pn;
   }

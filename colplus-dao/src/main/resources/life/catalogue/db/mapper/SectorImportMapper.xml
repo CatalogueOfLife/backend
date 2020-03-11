@@ -10,7 +10,9 @@
         si.sector_key,
         si.attempt,
         si.warnings,
-        <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsCols"/>
+        <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsCols">
+            <property name="alias" value="si."/>
+        </include>
     </sql>
 
     <sql id="COLS">
@@ -19,7 +21,9 @@
         sector_key,
         attempt,
         warnings,
-        <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsCols"/>
+        <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsCols">
+            <property name="alias" value=""/>
+        </include>
     </sql>
 
     <sql id="PROPS">

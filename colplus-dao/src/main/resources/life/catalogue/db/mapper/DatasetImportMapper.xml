@@ -8,7 +8,9 @@
       dataset_key,
       attempt,
       state,
-      <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsCols"/>,
+      <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsCols">
+          <property name="alias" value=""/>
+      </include>,
       md5,
       download_uri,
       download,
@@ -20,32 +22,34 @@
     </sql>
 
     <sql id="metricsCols">
-      error,
-      started,
-      finished,
-      created_by,
-      name_count,
-      taxon_count,
-      synonym_count,
-      reference_count,
-      vernacular_count,
-      distribution_count,
-      issues_count,
-      names_by_rank_count,
-      taxa_by_rank_count,
-      names_by_type_count,
-      vernaculars_by_language_count,
-      distributions_by_gazetteer_count,
-      names_by_origin_count,
-      usages_by_status_count,
-      names_by_status_count,
-      name_relations_by_type_count
+      ${alias}error,
+      ${alias}started,
+      ${alias}finished,
+      ${alias}created_by,
+      ${alias}name_count,
+      ${alias}taxon_count,
+      ${alias}synonym_count,
+      ${alias}reference_count,
+      ${alias}vernacular_count,
+      ${alias}distribution_count,
+      ${alias}issues_count,
+      ${alias}names_by_rank_count,
+      ${alias}taxa_by_rank_count,
+      ${alias}names_by_type_count,
+      ${alias}vernaculars_by_language_count,
+      ${alias}distributions_by_gazetteer_count,
+      ${alias}names_by_origin_count,
+      ${alias}usages_by_status_count,
+      ${alias}names_by_status_count,
+      ${alias}name_relations_by_type_count
     </sql>
 
     <sql id="COLS">
       dataset_key,
       state,
-      <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsCols"/>,
+      <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsCols">
+          <property name="alias" value=""/>
+      </include>,
       md5,
       download_uri,
       download,
@@ -94,16 +98,16 @@
     </sql>
 
     <sql id="FROM">
-      dataset_import
+      dataset_import di
     </sql>
 
     <sql id="WHERE">
         <where>
             <if test="key != null">
-                dataset_key = #{key}
+                di.dataset_key = #{key}
             </if>
             <if test="states != null &amp;&amp; !states.isEmpty()">
-                AND state IN
+                AND di.state IN
                 <foreach item="state" index="idx" collection="states" open="(" separator="," close=")">
                     #{state}::IMPORTSTATE
                 </foreach>
@@ -130,7 +134,7 @@
     <select id="get" resultMap="datasetImportResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE dataset_key=#{key} AND attempt=#{attempt}
+        WHERE di.dataset_key=#{key} AND di.attempt=#{attempt}
     </select>
 
     <select id="count" resultType="integer">
@@ -143,7 +147,7 @@
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         <include refid="WHERE" />
-        ORDER BY started DESC, attempt DESC, dataset_key
+        ORDER BY di.started DESC, di.attempt DESC, di.dataset_key
         <include refid="life.catalogue.db.Common.limit" />
     </select>
 

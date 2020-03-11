@@ -12,6 +12,7 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.NameParserGBIF;
+import org.gbif.nameparser.ParserConfigs;
 import org.gbif.nameparser.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +43,10 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
       .put(Warnings.NOMENCLATURAL_REFERENCE, Issue.CONTAINS_REFERENCE)
       .build();
 
+  public static ParserConfigs configs() {
+    return PARSER_INTERNAL.getConfigs();
+  }
+
   private Timer timer;
   
   /**
@@ -52,7 +57,7 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
   public void register(MetricRegistry registry) {
     timer = registry.timer("life.catalogue.parser.name");
   }
-  
+
   /**
    * @deprecated use parse(name, rank, code, issues) instead!
    */
@@ -103,7 +108,7 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
       nat.getName().setSanctioningAuthor(pnAuthorship.getSanctioningAuthor());
       nat.getName().setBasionymAuthorship(pnAuthorship.getBasionymAuthorship());
       // propagate notes and unparsed bits found in authorship
-      nat.getName().addRemark(pnAuthorship.getNomenclaturalNotes());
+      nat.getName().addRemark(pnAuthorship.getNomenclaturalNote());
       if (pnAuthorship.getUnparsed() != null) {
         nat.getName().setAppendedPhrase(pnAuthorship.getUnparsed());
       }
@@ -170,7 +175,11 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
       return Optional.of(ObjectUtils.coalesce(e.getType(), NameType.SCIENTIFIC));
     }
   }
-  
+
+  public static NameAccordingTo fromParsedName(ParsedName pn) {
+    return fromParsedName(new Name(), pn, IssueContainer.VOID);
+  }
+
   /**
    * Uses an existing name instance to populate from a ParsedName instance
    */
@@ -220,7 +229,7 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
     }
     //TODO: try to convert nom notes to enumeration. Only add to remarks for now
     // can be sth like: nom.illeg., in Döring et all  reference
-    n.setRemarks(pn.getNomenclaturalNotes());
+    n.setRemarks(pn.getNomenclaturalNote());
     
     NameAccordingTo nat = new NameAccordingTo();
     nat.setName(n);
