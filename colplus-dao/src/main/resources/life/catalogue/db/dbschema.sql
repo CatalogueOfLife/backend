@@ -1027,6 +1027,9 @@ ALTER TABLE parser_config DROP COLUMN scientific_name;
 ALTER TABLE parser_config DROP COLUMN scientific_name_normalized;
 ALTER TABLE parser_config DROP COLUMN authorship;
 ALTER TABLE parser_config DROP COLUMN authorship_normalized;
+ALTER TABLE parser_config RENAME COLUMN remarks TO nomenclatural_note;
+ALTER TABLE parser_config ADD COLUMN taxonomic_note TEXT;
+ALTER TABLE parser_config ADD PRIMARY KEY (id);
 
 
 -- FUNCTIONS

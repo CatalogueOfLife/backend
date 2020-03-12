@@ -11,7 +11,7 @@ public interface ParserConfigMapper {
 
   ParserConfig get(@Param("id") String id);
 
-  void create(@Param("obj") ParserConfig obj);
+  void create(ParserConfig obj);
 
   int delete(@Param("id") String id);
 
