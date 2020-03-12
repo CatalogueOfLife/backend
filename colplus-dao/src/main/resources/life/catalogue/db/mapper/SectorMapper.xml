@@ -93,17 +93,12 @@
   <sql id="WHERE">
     <if test="req != null">
       <if test="req.broken">
-          LEFT JOIN name_usage t ON
-        <if test="req.target">
-          t.id=s.target_id AND t.dataset_key=s.dataset_key
-        </if>
-        <if test="!req.target">
-          t.id=s.subject_id AND t.dataset_key=s.subject_dataset_key
-        </if>
+        LEFT JOIN name_usage tt ON tt.id=s.target_id AND tt.dataset_key=s.dataset_key
+        LEFT JOIN name_usage ts ON ts.id=s.subject_id AND ts.dataset_key=s.subject_dataset_key
       </if>
       <where>
         <if test="req.broken">
-          t.id IS NULL
+          (tt.id IS NULL OR ts.id IS NULL)
         </if>
         <if test="req.id != null">
           AND s.subject_id = #{req.id}

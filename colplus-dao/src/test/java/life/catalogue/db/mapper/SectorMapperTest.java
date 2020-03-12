@@ -62,27 +62,13 @@ public class SectorMapperTest extends CRUDTestBase<Integer, Sector, SectorMapper
     assertEquals(2, mapper().listByDataset(targetDatasetKey,subjectDatasetKey).size());
     assertEquals(0, mapper().listByDataset(targetDatasetKey,-432).size());
   }
-  
-  @Test
-  public void brokenSubjects() {
-    add2Sectors();
 
-    SectorSearchRequest req = SectorSearchRequest.byDataset(targetDatasetKey,subjectDatasetKey);
-    req.setBroken(true);
-    req.setTarget(false);
-    assertEquals(1, mapper().search(req, new Page()).size());
-    
-    req.setSubjectDatasetKey(543432);
-    assertEquals(0, mapper().search(req, new Page()).size());
-  }
-  
   @Test
-  public void brokenTargets() {
+  public void broken() {
     add2Sectors();
   
     SectorSearchRequest req = SectorSearchRequest.byDataset(targetDatasetKey,subjectDatasetKey);
     req.setBroken(true);
-    req.setTarget(true);
     assertEquals(1, mapper().search(req, new Page()).size());
   
     req.setSubjectDatasetKey(543432);

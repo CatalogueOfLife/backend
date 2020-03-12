@@ -36,10 +36,6 @@ public class SectorSearchRequest {
   @QueryParam("broken")
   private boolean broken = false;
   
-  @QueryParam("target")
-  private boolean target = false;
-  
-  
   public static SectorSearchRequest byCatalogue(int datasetKey){
     SectorSearchRequest req = new SectorSearchRequest();
     req.datasetKey = datasetKey;
@@ -83,15 +79,7 @@ public class SectorSearchRequest {
   public void setMode(Sector.Mode mode) {
     this.mode = mode;
   }
-  
-  public boolean isTarget() {
-    return target;
-  }
-  
-  public void setTarget(boolean target) {
-    this.target = target;
-  }
-  
+
   public Rank getRank() {
     return rank;
   }
@@ -122,7 +110,6 @@ public class SectorSearchRequest {
     if (o == null || getClass() != o.getClass()) return false;
     SectorSearchRequest that = (SectorSearchRequest) o;
     return broken == that.broken &&
-        target == that.target &&
         Objects.equals(id, that.id) &&
         Objects.equals(datasetKey, that.datasetKey) &&
         Objects.equals(subjectDatasetKey, that.subjectDatasetKey) &&
@@ -133,6 +120,6 @@ public class SectorSearchRequest {
   
   @Override
   public int hashCode() {
-    return Objects.hash(id, datasetKey, subjectDatasetKey, rank, mode, userKey, broken, target);
+    return Objects.hash(id, datasetKey, subjectDatasetKey, rank, mode, userKey, broken);
   }
 }
