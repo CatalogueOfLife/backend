@@ -60,20 +60,30 @@
 
     <sql id="FROM">parser_config n</sql>
 
+    <sql id="WHERE">
+        <if test="req != null">
+            <if test="req.q != null">
+                WHERE id ~* #{req.q}
+            </if>
+        </if>
+    </sql>
+
      <!-- A mapping to Name, mostly auto mapped -->
     <resultMap id="parserConfigResultMap" type="ParserConfig" autoMapping="true" extends="life.catalogue.db.mapper.NameMapper.nameResultMap">
         <id property="id" column="id" />
         <id property="remarks" column="nomenclatural_note" />
     </resultMap>
 
-    <select id="count" resultType="integer">
+    <select id="countSearch" resultType="integer">
         SELECT count(*)
         FROM <include refid="FROM" />
+        <include refid="WHERE" />
     </select>
 
     <select id="search" resultMap="parserConfigResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
+        <include refid="WHERE" />
         ORDER BY id
         <include refid="life.catalogue.db.Common.limit" />
     </select>

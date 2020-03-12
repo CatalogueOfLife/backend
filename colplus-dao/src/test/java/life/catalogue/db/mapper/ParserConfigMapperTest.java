@@ -1,7 +1,9 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ParserConfig;
+import life.catalogue.api.search.QuerySearchRequest;
 import life.catalogue.api.vocab.Users;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
@@ -63,5 +65,25 @@ public class ParserConfigMapperTest extends MapperTestBase<ParserConfigMapper> {
 
     assertEquals(pc1, removeDbCreatedProps(mapper().get(pc1.getId())));
     assertEquals(pc2, removeDbCreatedProps(mapper().get(pc2.getId())));
+  }
+
+  @Test
+  public void search() throws Exception {
+    mapper().create(create("Abies alba", "Mill."));
+    mapper().create(create("Polygala vulgaris", "L."));
+    mapper().create(create("Sebastes marinus", "(Linnaeus, 1758)"));
+    mapper().create(create("Pollachius virens", "(Linnaeus, 1758)"));
+    mapper().create(create("Sebastes marinus", null));
+    commit();
+
+    assertSearchHits("alba", 1);
+    assertSearchHits("dertfvghb", 0);
+    assertSearchHits("poll", 1);
+    assertSearchHits("la", 2);
+    assertSearchHits("1758", 2);
+  }
+
+  private void assertSearchHits(String q, int hits){
+    assertEquals(hits, mapper().search(new QuerySearchRequest(q), new Page()).size());
   }
 }

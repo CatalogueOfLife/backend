@@ -3,6 +3,7 @@ package life.catalogue.resources.parser;
 import com.google.common.collect.Lists;
 import io.dropwizard.auth.Auth;
 import life.catalogue.api.model.*;
+import life.catalogue.api.search.QuerySearchRequest;
 import life.catalogue.dao.ParserConfigDao;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.parser.NameParser;
@@ -146,8 +147,8 @@ public class NameParserResource {
 
   @GET
   @Path("/parser/name/config")
-  public ResultPage<ParserConfig> search(@QueryParam("q") String query, @Valid @BeanParam Page page) {
-    return dao.search(query, page);
+  public ResultPage<ParserConfig> search(@BeanParam QuerySearchRequest request, @Valid @BeanParam Page page) {
+    return dao.search(request, page);
   }
 
   @POST

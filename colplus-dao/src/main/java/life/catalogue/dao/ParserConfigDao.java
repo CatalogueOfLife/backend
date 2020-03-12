@@ -3,6 +3,7 @@ package life.catalogue.dao;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import life.catalogue.api.model.*;
+import life.catalogue.api.search.QuerySearchRequest;
 import life.catalogue.db.mapper.ParserConfigMapper;
 import life.catalogue.parser.NameParser;
 import org.apache.ibatis.session.SqlSession;
@@ -53,11 +54,11 @@ public class ParserConfigDao {
     }
   }
 
-  public ResultPage<ParserConfig> search(String query, @Nullable Page page) {
+  public ResultPage<ParserConfig> search(QuerySearchRequest request, @Nullable Page page) {
     try (SqlSession session = factory.openSession(true)) {
       ParserConfigMapper pcm = session.getMapper(ParserConfigMapper.class);
-      List<ParserConfig> result = pcm.search(query, page);
-      return new ResultPage<>(page, result, () -> pcm.count(query));
+      List<ParserConfig> result = pcm.search(request, page);
+      return new ResultPage<>(page, result, () -> pcm.countSearch(request));
     }
   }
 
