@@ -190,6 +190,7 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
   private static NameAccordingTo natFromParsedName(Name n, ParsedName pn, IssueContainer issues) {
     updateNamefromParsedName(n, pn, issues);
     NameAccordingTo nat = new NameAccordingTo();
+    nat.setName(n);
     nat.setAccordingTo(pn.getTaxonomicNote());
     return nat;
   }
