@@ -1,24 +1,7 @@
 package life.catalogue.es.name.search;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.stream.Collectors;
-import org.elasticsearch.client.RestClient;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.BareName;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.ResultPage;
-import life.catalogue.api.model.VernacularName;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
@@ -26,9 +9,24 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.name.NameUsageWrapperConverter;
-import static org.junit.Assert.assertEquals;
+import org.elasticsearch.client.RestClient;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static life.catalogue.es.EsUtil.insert;
 import static life.catalogue.es.EsUtil.refreshIndex;
+import static org.junit.Assert.assertEquals;
 
 public class NameSearchServiceTest extends EsReadTestBase {
 
@@ -575,7 +573,7 @@ public class NameSearchServiceTest extends EsReadTestBase {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setHighlight(false);
     query.setQ("Smithi");
-    query.setWholeWordMatchingEnabled(false);
+    query.setPrefixMatching(true);
     index(testWithSmthii_data());
     // Expect all to come back
     NameUsageSearchResponse result = search(query);
@@ -587,7 +585,7 @@ public class NameSearchServiceTest extends EsReadTestBase {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setHighlight(false);
     query.setQ("Smithii");
-    query.setWholeWordMatchingEnabled(false);
+    query.setPrefixMatching(true);
     index(testWithSmthii_data());
     // Expect all to come back
     NameUsageSearchResponse result = search(query);

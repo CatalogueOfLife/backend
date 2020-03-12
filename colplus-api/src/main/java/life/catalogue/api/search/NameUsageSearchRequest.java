@@ -1,19 +1,14 @@
 package life.catalogue.api.search;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MultivaluedMap;
-import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import life.catalogue.api.util.VocabularyUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MultivaluedMap;
+import java.util.*;
+
 import static life.catalogue.api.util.VocabularyUtils.lookupEnum;
 
 public class NameUsageSearchRequest extends NameUsageRequest {
@@ -53,8 +48,8 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   @QueryParam("reverse")
   private boolean reverse;
 
-  @QueryParam("wholeWords")
-  private boolean wholeWordMatchingEnabled = true;
+  @QueryParam("prefix")
+  private boolean prefixMatching;
 
   public NameUsageSearchRequest() {}
 
@@ -82,7 +77,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     copy.sortBy = sortBy;
     copy.highlight = highlight;
     copy.reverse = reverse;
-    copy.wholeWordMatchingEnabled = wholeWordMatchingEnabled;
+    copy.prefixMatching = prefixMatching;
     return copy;
   }
 
@@ -164,7 +159,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
         && sortBy == null
         && !highlight
         && !reverse
-        && !wholeWordMatchingEnabled;
+        && !prefixMatching;
   }
 
   public void addFilter(NameUsageSearchParameter param, Integer value) {
@@ -270,15 +265,12 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     this.reverse = reverse;
   }
 
-  /**
-   * Whether or not to match on whole words only. Defaults to <code>true</code>.
-   */
-  public boolean isWholeWordMatchingEnabled() {
-    return wholeWordMatchingEnabled;
+  public boolean isPrefixMatching() {
+    return prefixMatching;
   }
 
-  public void setWholeWordMatchingEnabled(boolean wholeWordMatchingEnabled) {
-    this.wholeWordMatchingEnabled = wholeWordMatchingEnabled;
+  public void setPrefixMatching(boolean prefixMatching) {
+    this.prefixMatching = prefixMatching;
   }
 
   private static IllegalArgumentException illegalValueForParameter(NameUsageSearchParameter param, String value) {
@@ -290,7 +282,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result = prime * result + Objects.hash(content, facets, filters, highlight, reverse, sortBy, wholeWordMatchingEnabled);
+    result = prime * result + Objects.hash(content, facets, filters, highlight, reverse, sortBy, prefixMatching);
     return result;
   }
 
@@ -308,7 +300,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     NameUsageSearchRequest other = (NameUsageSearchRequest) obj;
     return Objects.equals(content, other.content) && Objects.equals(facets, other.facets) && Objects.equals(filters, other.filters)
         && highlight == other.highlight && reverse == other.reverse && sortBy == other.sortBy
-        && wholeWordMatchingEnabled == other.wholeWordMatchingEnabled;
+        && prefixMatching == other.prefixMatching;
   }
 
 }

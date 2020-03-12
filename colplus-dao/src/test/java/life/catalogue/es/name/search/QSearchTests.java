@@ -1,8 +1,5 @@
 package life.catalogue.es.name.search;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.VernacularName;
@@ -13,6 +10,9 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.es.EsReadTestBase;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.EnumSet;
 
 import static org.junit.Assert.assertEquals;
 
@@ -33,7 +33,7 @@ public class QSearchTests extends EsReadTestBase {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setQ("Parus maj");
     query.setContent(EnumSet.of(SearchContent.SCIENTIFIC_NAME));
-    query.setWholeWordMatchingEnabled(false);
+    query.setPrefixMatching(true);
 
     Name name = new Name();
     name.setGenus("Parus");
@@ -55,7 +55,7 @@ public class QSearchTests extends EsReadTestBase {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setQ("PARUS MAJ");
     query.setContent(EnumSet.of(SearchContent.SCIENTIFIC_NAME));
-    query.setWholeWordMatchingEnabled(false);
+    query.setPrefixMatching(true);
 
     Name name = new Name();
     name.setGenus("Parus");

@@ -25,14 +25,14 @@ public abstract class QMatcher {
 
   public static QMatcher getInstance(NameUsageRequest request) {
     if (request.isFuzzyMatchingEnabled()) {
-      if (request.isWholeWordMatchingEnabled()) {
-        return new FuzzyWholeWordQMatcher(request);
+      if (request.isPrefixMatching()) {
+        return new FuzzyPartialQMatcher(request);
       }
-      return new FuzzyPartialQMatcher(request);
-    } else if (request.isWholeWordMatchingEnabled()) {
-      return new WholeWordQMatcher(request);
+      return new FuzzyWholeWordQMatcher(request);
+    } else if (request.isPrefixMatching()) {
+      return new PartialQMatcher(request);
     }
-    return new PartialQMatcher(request);
+    return new WholeWordQMatcher(request);
   }
 
   final NameUsageRequest request;
