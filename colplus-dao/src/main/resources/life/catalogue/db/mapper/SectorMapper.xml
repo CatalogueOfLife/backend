@@ -117,6 +117,13 @@
         <if test="req.rank != null">
           AND s.subject_rank = #{req.rank}::RANK
         </if>
+        <if test="req.name != null">
+          AND (s.subject_name = #{req.name} OR s.target_name = #{req.name})
+        </if>
+        <if test="req.lastSync != null">
+          <!-- TODO: what to compare with? see https://github.com/Sp2000/colplus-backend/issues/652#issuecomment-598269866 -->
+          AND #{req.lastSync} > #{req.lastSync}
+        </if>
         <if test="req.mode != null">
           AND s.mode = #{req.mode}::SECTOR_MODE
         </if>

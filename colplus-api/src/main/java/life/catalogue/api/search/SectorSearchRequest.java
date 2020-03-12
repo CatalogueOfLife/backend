@@ -1,10 +1,11 @@
 package life.catalogue.api.search;
 
-import java.util.Objects;
-import javax.ws.rs.QueryParam;
-
 import life.catalogue.api.model.Sector;
 import org.gbif.nameparser.api.Rank;
+
+import javax.ws.rs.QueryParam;
+import java.time.LocalDate;
+import java.util.Objects;
 
 public class SectorSearchRequest {
   
@@ -19,7 +20,13 @@ public class SectorSearchRequest {
   
   @QueryParam("rank")
   private Rank rank;
-  
+
+  @QueryParam("name")
+  private String name;
+
+  @QueryParam("lastSync")
+  private LocalDate lastSync;
+
   @QueryParam("mode")
   private Sector.Mode mode;
 
