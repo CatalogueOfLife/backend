@@ -136,6 +136,8 @@ public class WsServer extends Application<WsServerConfig> {
     auth.getIdentityService().setClient(httpClient);
 
     // name parser
+    ParserConfigDao dao = new ParserConfigDao(getSqlSessionFactory());
+    dao.loadParserConfigs();
     NameParser.PARSER.register(env.metrics());
     env.healthChecks().register("name-parser", new NameParserHealthCheck());
     env.lifecycle().manage(new ManagedCloseable(NameParser.PARSER));
@@ -248,7 +250,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.jersey().register(new VerbatimResource());
     env.jersey().register(new VocabResource());
     // parsers
-    env.jersey().register(new NameParserResource());
+    env.jersey().register(new NameParserResource(getSqlSessionFactory()));
     env.jersey().register(new ParserResource<>());
   }
   

@@ -1009,6 +1009,26 @@ CREATE TABLE media (
 ) PARTITION BY LIST (dataset_key);
 
 
+CREATE TABLE parser_config (LIKE name INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+ALTER TABLE parser_config DROP COLUMN dataset_key;
+ALTER TABLE parser_config DROP COLUMN sector_key;
+ALTER TABLE parser_config DROP COLUMN verbatim_key;
+ALTER TABLE parser_config DROP COLUMN name_index_match_type;
+ALTER TABLE parser_config DROP COLUMN nom_status;
+ALTER TABLE parser_config DROP COLUMN origin;
+ALTER TABLE parser_config DROP COLUMN modified_by;
+ALTER TABLE parser_config DROP COLUMN modified;
+ALTER TABLE parser_config DROP COLUMN homotypic_name_id;
+ALTER TABLE parser_config DROP COLUMN name_index_id;
+ALTER TABLE parser_config DROP COLUMN published_in_id;
+ALTER TABLE parser_config DROP COLUMN published_in_page;
+ALTER TABLE parser_config DROP COLUMN link;
+ALTER TABLE parser_config DROP COLUMN scientific_name;
+ALTER TABLE parser_config DROP COLUMN scientific_name_normalized;
+ALTER TABLE parser_config DROP COLUMN authorship;
+ALTER TABLE parser_config DROP COLUMN authorship_normalized;
+
+
 -- FUNCTIONS
 CREATE FUNCTION plaziGbifKey() RETURNS UUID AS $$
   SELECT '7ce8aef0-9e92-11dc-8738-b8a03c50a862'::uuid

@@ -276,7 +276,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   }
   
   /**
-   * @return a normalized version of the scientific name useful for matching
+   * @return a normalized version of the scientific name useful for matching. Only used on db level
    */
   @JsonIgnore
   public String getScientificNameNormalized() {

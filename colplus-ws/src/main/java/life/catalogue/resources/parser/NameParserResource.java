@@ -1,15 +1,20 @@
 package life.catalogue.resources.parser;
 
 import com.google.common.collect.Lists;
-import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.NameAccordingTo;
+import io.dropwizard.auth.Auth;
+import life.catalogue.api.model.*;
+import life.catalogue.dao.ParserConfigDao;
+import life.catalogue.dw.auth.Roles;
 import life.catalogue.parser.NameParser;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.security.RolesAllowed;
+import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.BufferedReader;
@@ -29,7 +34,12 @@ public class NameParserResource {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameParserResource.class);
   private static final NameParser parser = NameParser.PARSER;
-  
+  private final ParserConfigDao dao;
+
+  public NameParserResource(SqlSessionFactory factory) {
+    dao = new ParserConfigDao(factory);
+  }
+
   public class CRName {
     private NomCode code;
     private Rank rank;
@@ -133,5 +143,33 @@ public class NameParserResource {
         .map(Optional::get)
         .collect(Collectors.toList());
   }
-  
+
+  @GET
+  @Path("/parser/name/config")
+  public ResultPage<ParserConfig> search(@QueryParam("q") String query, @Valid @BeanParam Page page) {
+    return dao.search(query, page);
+  }
+
+  @POST
+  @RolesAllowed({Roles.ADMIN})
+  @Path("/parser/name/config")
+  @Consumes(MediaType.APPLICATION_JSON)
+  public String createConfig(@Valid ParserConfig obj, @Auth ColUser user) {
+    dao.putName(obj, user.getKey());
+    return obj.getId();
+  }
+
+  @GET
+  @Path("/parser/name/config/{id}")
+  public ParserConfig getConfig(@PathParam("id") String id) {
+    return dao.get(id);
+  }
+
+  @DELETE
+  @Path("/parser/name/config/{id}")
+  @RolesAllowed({Roles.ADMIN})
+  public void deleteConfig(@PathParam("id") String id, @Auth ColUser user) {
+    dao.deleteName(id, user.getKey());
+  }
+
 }

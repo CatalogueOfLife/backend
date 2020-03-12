@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameAccordingTo;
+import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
@@ -141,7 +142,7 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
     NameAccordingTo nat;
     Timer.Context ctx = timer == null ? null : timer.time();
     try {
-      nat = fromParsedName(n, PARSER_INTERNAL.parse(n.getScientificName(), n.getRank(), n.getCode()), issues);
+      nat = natFromParsedName(n, PARSER_INTERNAL.parse(n.getScientificName(), n.getRank(), n.getCode()), issues);
       nat.getName().updateNameCache();
       
     } catch (UnparsableNameException e) {
@@ -176,14 +177,27 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
     }
   }
 
-  public static NameAccordingTo fromParsedName(ParsedName pn) {
-    return fromParsedName(new Name(), pn, IssueContainer.VOID);
+  public static ParserConfig cfgFromParsedName(ParsedName pn) {
+    ParserConfig pc = new ParserConfig();
+    updateNamefromParsedName(pc, pn, IssueContainer.VOID);
+    pc.setTaxonomicNote(pn.getTaxonomicNote());
+    return pc;
   }
 
   /**
    * Uses an existing name instance to populate from a ParsedName instance
    */
-  private static NameAccordingTo fromParsedName(Name n, ParsedName pn, IssueContainer issues) {
+  private static NameAccordingTo natFromParsedName(Name n, ParsedName pn, IssueContainer issues) {
+    updateNamefromParsedName(n, pn, issues);
+    NameAccordingTo nat = new NameAccordingTo();
+    nat.setAccordingTo(pn.getTaxonomicNote());
+    return nat;
+  }
+
+  /**
+   * Uses an existing name instance and populates it from a ParsedName instance
+   */
+  private static void updateNamefromParsedName(Name n, ParsedName pn, IssueContainer issues) {
     n.setUninomial(pn.getUninomial());
     n.setGenus(pn.getGenus());
     n.setInfragenericEpithet(pn.getInfragenericEpithet());
@@ -230,12 +244,6 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
     //TODO: try to convert nom notes to enumeration. Only add to remarks for now
     // can be sth like: nom.illeg., in Döring et all  reference
     n.setRemarks(pn.getNomenclaturalNote());
-    
-    NameAccordingTo nat = new NameAccordingTo();
-    nat.setName(n);
-    nat.setAccordingTo(pn.getTaxonomicNote());
-    
-    return nat;
   }
   
   @Override
