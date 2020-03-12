@@ -17,7 +17,7 @@ import static life.catalogue.api.vocab.Datasets.DRAFT_COL;
 import static org.junit.Assert.assertEquals;
 
 public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
-  int attempts = 1;
+  static int attempts = 1;
   
   Sector s;
   Sector s2;
@@ -49,9 +49,9 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     mapper(SectorMapper.class).create(s2);
   }
   
-  private SectorImport create(SectorImport.State state, Sector s) throws Exception {
+  public static SectorImport create(SectorImport.State state, Sector s) {
     SectorImport d = new SectorImport();
-    d.setType(getClass().getSimpleName());
+    d.setType("SectorImportTest");
     d.setSectorKey(s.getKey());
     d.setCreatedBy(Users.TESTER);
     d.setAttempt(attempts++);

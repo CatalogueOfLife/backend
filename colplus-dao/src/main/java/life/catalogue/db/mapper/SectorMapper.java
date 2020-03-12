@@ -41,5 +41,12 @@ public interface SectorMapper extends CRUD<Integer, Sector>, DatasetPageable<Sec
    * Returns a list of unique dataset keys from all catalogues that have at least one sector.
    */
   List<Integer> listTargetDatasetKeys();
-  
+
+  /**
+   * Updates the last sync attempt column of the given sector
+   * @param key
+   * @param attempt
+   */
+  int updateLastSync(@Param("key") int key, @Param("attempt") int attempt);
+
 }

@@ -87,7 +87,7 @@
   </sql>
 
   <sql id="FROM">
-    sector s
+    sector s LEFT JOIN sector_import si ON si.sector_key=s.key AND s.last_sync_attempt=si.attempt
   </sql>
 
   <sql id="WHERE">
@@ -116,8 +116,7 @@
           AND (s.subject_name = #{req.name} OR s.target_name = #{req.name})
         </if>
         <if test="req.lastSync != null">
-          <!-- TODO: what to compare with? see https://github.com/Sp2000/colplus-backend/issues/652#issuecomment-598269866 -->
-          AND #{req.lastSync} > #{req.lastSync}
+          AND (si.finished IS NULL OR si.finished &lt; #{req.lastSync})
         </if>
         <if test="req.mode != null">
           AND s.mode = #{req.mode}::SECTOR_MODE
@@ -236,4 +235,9 @@
     WHERE dataset_key=#{datasetKey}
   </select>
 
+  <update id="updateLastSync" parameterType="integer">
+    UPDATE sector
+    SET last_sync_attempt = #{attempt}
+    WHERE key = #{key}
+  </update>
 </mapper>

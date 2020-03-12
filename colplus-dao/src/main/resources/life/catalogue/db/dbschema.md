@@ -10,7 +10,7 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-#### 2020-03-12 parser_config 
+#### 2020-03-12 parser_config & sectors
 ```
 CREATE TABLE parser_config (LIKE name INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
 ALTER TABLE parser_config DROP COLUMN dataset_key;
@@ -33,6 +33,8 @@ ALTER TABLE parser_config DROP COLUMN authorship_normalized;
 ALTER TABLE parser_config RENAME COLUMN remarks TO nomenclatural_note;
 ALTER TABLE parser_config ADD COLUMN taxonomic_note TEXT;
 ALTER TABLE parser_config ADD PRIMARY KEY (id);
+
+ALTER TABLE sector RENAME COLUMN last_data_import_attempt TO last_sync_attempt;
 ```
 
 #### 2020-03-09 dataest_import 

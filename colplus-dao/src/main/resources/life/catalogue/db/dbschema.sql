@@ -675,7 +675,7 @@ CREATE TABLE sector (
   target_code NOMCODE,
   mode SECTOR_MODE NOT NULL,
   code NOMCODE,
-  last_data_import_attempt INTEGER,
+  last_sync_attempt INTEGER,
   created_by INTEGER NOT NULL,
   modified_by INTEGER NOT NULL,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),

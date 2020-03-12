@@ -1,18 +1,22 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.Page;
-import life.catalogue.api.search.SectorSearchRequest;
-import life.catalogue.api.vocab.EntityType;
-import org.apache.ibatis.exceptions.PersistenceException;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.SectorImport;
+import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.EntityType;
+import life.catalogue.api.vocab.Users;
 import life.catalogue.db.MybatisTestUtils;
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
@@ -22,7 +26,9 @@ public class SectorMapperTest extends CRUDTestBase<Integer, Sector, SectorMapper
   
   private static final int targetDatasetKey = Datasets.DRAFT_COL;
   private static final int subjectDatasetKey = DATASET11.getKey();
-  
+  private Sector s1;
+  private Sector s2;
+
   public SectorMapperTest() {
     super(SectorMapper.class);
   }
@@ -30,17 +36,28 @@ public class SectorMapperTest extends CRUDTestBase<Integer, Sector, SectorMapper
   private void add2Sectors() {
     // create a few draft taxa to attach sectors to
     MybatisTestUtils.populateDraftTree(session());
-    
-    Sector s1 = createTestEntity(targetDatasetKey);
+
+    s1 = createTestEntity(targetDatasetKey);
     s1.getSubject().setId(TestEntityGenerator.TAXON1.getId());
     s1.getTarget().setId("t4");
     mapper().create(s1);
-  
-    Sector s2 = createTestEntity(targetDatasetKey);
+
+    s2 = createTestEntity(targetDatasetKey);
     mapper().create(s2);
     commit();
   }
-  
+
+  private void addImport(Sector s, SectorImport.State state, LocalDateTime finished) {
+    SectorImport si = SectorImportMapperTest.create(state, s);
+    si.setFinished(finished);
+    si.setCreatedBy(Users.TESTER);
+    mapper(SectorImportMapper.class).create(si);
+
+    if (state == SectorImport.State.FINISHED) {
+      mapper().updateLastSync(s.getKey(), si.getAttempt());
+    }
+  }
+
   @Test
   public void getBySubject() {
     add2Sectors();
@@ -72,6 +89,36 @@ public class SectorMapperTest extends CRUDTestBase<Integer, Sector, SectorMapper
     assertEquals(1, mapper().search(req, new Page()).size());
   
     req.setSubjectDatasetKey(543432);
+    assertEquals(0, mapper().search(req, new Page()).size());
+  }
+
+  @Test
+  public void search() {
+    add2Sectors();
+
+
+    addImport(s1, SectorImport.State.FINISHED, LocalDateTime.of(2019, 12, 24, 12, 0, 0));
+    addImport(s1, SectorImport.State.FINISHED, LocalDateTime.of(2020, 1, 10, 12, 0, 0));
+    addImport(s1, SectorImport.State.FAILED, LocalDateTime.of(2020, 2, 11, 12, 0, 0));
+
+    addImport(s2, SectorImport.State.FAILED, LocalDateTime.of(2018, 1, 10, 12, 0, 0));
+    addImport(s2, SectorImport.State.FINISHED, LocalDateTime.of(2020, 1, 21, 12, 0, 0));
+    commit();
+
+    SectorSearchRequest req = SectorSearchRequest.byCatalogue(targetDatasetKey);
+    req.setLastSync(LocalDate.of(2020, 1, 1));
+    assertEquals(0, mapper().search(req, new Page()).size());
+
+    req.setLastSync(LocalDate.of(2020, 1, 15));
+    assertEquals(1, mapper().search(req, new Page()).size());
+
+    req.setLastSync(LocalDate.of(2020, 2, 1));
+    assertEquals(2, mapper().search(req, new Page()).size());
+
+    req.setLastSync(LocalDate.of(2022, 3, 1));
+    assertEquals(2, mapper().search(req, new Page()).size());
+
+    req.setLastSync(LocalDate.of(2019, 1, 1));
     assertEquals(0, mapper().search(req, new Page()).size());
   }
   

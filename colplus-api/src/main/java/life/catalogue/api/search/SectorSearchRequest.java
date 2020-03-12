@@ -103,7 +103,23 @@ public class SectorSearchRequest {
   public void setBroken(boolean broken) {
     this.broken = broken;
   }
-  
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public LocalDate getLastSync() {
+    return lastSync;
+  }
+
+  public void setLastSync(LocalDate lastSync) {
+    this.lastSync = lastSync;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -114,12 +130,14 @@ public class SectorSearchRequest {
         Objects.equals(datasetKey, that.datasetKey) &&
         Objects.equals(subjectDatasetKey, that.subjectDatasetKey) &&
         rank == that.rank &&
+        Objects.equals(name, that.name) &&
+        Objects.equals(lastSync, that.lastSync) &&
         mode == that.mode &&
         Objects.equals(userKey, that.userKey);
   }
-  
+
   @Override
   public int hashCode() {
-    return Objects.hash(id, datasetKey, subjectDatasetKey, rank, mode, userKey, broken);
+    return Objects.hash(id, datasetKey, subjectDatasetKey, rank, name, lastSync, mode, userKey, broken);
   }
 }
