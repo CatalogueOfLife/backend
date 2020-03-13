@@ -1,0 +1,35 @@
+digraph G {
+  node [shape=plaintext]
+
+  n0  [label="FAMILY\nAgaricaceae", fontcolor=darkgreen]
+  n1  [label="USAGE;TAXON"]
+  n1 -> n3
+  n1 -> n0
+  n2  [label="GENUS\nLepiota", fontcolor=darkgreen]
+  n3  [label="USAGE;TAXON"]
+  n3 -> n7
+  n3 -> n5
+  n3 -> n2
+  n4  [label="SPECIES\nLepiota seminuda", fontcolor=darkgreen]
+  n5  [label="USAGE;TAXON"]
+  n5 -> n4
+  n6  [label="SPECIES\nLepiota nuda", fontcolor=darkgreen]
+  n7  [label="USAGE;TAXON"]
+  n7 -> n6
+  n8  [label="KINGDOM\nFungi", fontcolor=darkgreen]
+  n9  [label="USAGE;TAXON;ROOT"]
+  n9 -> n11
+  n9 -> n8
+  n10  [label="PHYLUM\nBasidiomycota", fontcolor=darkgreen]
+  n11  [label="USAGE;TAXON"]
+  n11 -> n13
+  n11 -> n10
+  n12  [label="CLASS\nAgaricomycetes", fontcolor=darkgreen]
+  n13  [label="USAGE;TAXON"]
+  n13 -> n15
+  n13 -> n12
+  n14  [label="ORDER\nAgaricales", fontcolor=darkgreen]
+  n15  [label="USAGE;TAXON"]
+  n15 -> n1
+  n15 -> n14
+}

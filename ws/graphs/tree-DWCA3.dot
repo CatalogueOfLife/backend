@@ -1,0 +1,23 @@
+digraph G {
+  node [shape=plaintext]
+
+  n0  [label="KINGDOM\nAnimalia", fontcolor=darkgreen]
+  n1  [label="USAGE;TAXON;ROOT"]
+  n1 -> n3
+  n1 -> n0
+  n2  [label="PHYLUM\nArthropoda", fontcolor=darkgreen]
+  n3  [label="USAGE;TAXON"]
+  n3 -> n5
+  n3 -> n2
+  n4  [label="CLASS\nInsecta", fontcolor=darkgreen]
+  n5  [label="USAGE;TAXON"]
+  n5 -> n7
+  n5 -> n4
+  n6  [label="ORDER\nColeoptera", fontcolor=darkgreen]
+  n7  [label="USAGE;TAXON"]
+  n7 -> n6
+  n8  [label="SPECIES\nLeptura nigrella Adams, 1909", fontcolor=darkgreen]
+  n10  [label="SPECIES\nLeptura nigrella Chagnon, 1917", fontcolor=darkgreen]
+  n12  [label="SPECIES\nLeptura nigrella Craighead, 1923", fontcolor=darkgreen]
+  n14  [label="SPECIES\nPygoleptura nigrella", fontcolor=darkgreen]
+}

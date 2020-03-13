@@ -1,0 +1,36 @@
+digraph G {
+  node [shape=plaintext]
+
+  n0  [label="KINGDOM\nPlantae", fontcolor=darkgreen]
+  n1  [label="USAGE;TAXON;ROOT"]
+  n1 -> n3
+  n1 -> n0
+  n2  [label="FAMILY\nPoaceae", fontcolor=darkgreen]
+  n3  [label="USAGE;TAXON"]
+  n3 -> n5
+  n3 -> n2
+  n4  [label="GENUS\nPoa L.", fontcolor=darkgreen]
+  n5  [label="USAGE;TAXON"]
+  n5 -> n7
+  n5 -> n4
+  n6  [label="SPECIES\nPoa annua L.", fontcolor=darkgreen]
+  n7  [label="USAGE;TAXON"]
+  n7 -> n6
+  n8  [label="SPECIES\nOchlopoa annua (L.) H.Scholz", fontcolor=darkgreen]
+  n9  [label="USAGE;SYNONYM", fontcolor=blue]
+  n9 -> n7  [color=blue, fontcolor=blue, label="acc"]
+  n9 -> n8
+  n10  [label="SPECIES\nAira pumila Pursh", fontcolor=darkgreen]
+  n11  [label="USAGE;SYNONYM", fontcolor=blue]
+  n11 -> n7  [color=blue, fontcolor=blue, label="acc"]
+  n11 -> n10
+  n12  [label="FORM\nPoa annua f. reptans (Hausskn.) T.Koyama", fontcolor=darkgreen]
+  n12 -> n14  [color=darkgreen, fontcolor=darkgreen, label="bas"]
+  n13  [label="USAGE;SYNONYM", fontcolor=blue]
+  n13 -> n7  [color=blue, fontcolor=blue, label="acc"]
+  n13 -> n12
+  n14  [label="VARIETY\nPoa annua var. reptans Hausskn.", fontcolor=darkgreen]
+  n15  [label="USAGE;SYNONYM", fontcolor=blue]
+  n15 -> n7  [color=blue, fontcolor=blue, label="acc"]
+  n15 -> n14
+}

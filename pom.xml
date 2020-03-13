@@ -5,8 +5,8 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>life.catalogue</groupId>
-    <artifactId>colplus-motherpom</artifactId>
+    <groupId>org.catalogueoflife</groupId>
+    <artifactId>motherpom</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -14,9 +14,9 @@
     <url>http://github.org/Sp2000/${project.artifactId}</url>
 
     <scm>
-        <connection>scm:git:git@github.com:Sp2000/colplus-backend.git</connection>
-        <url>https://github.com/Sp2000/colplus-backend</url>
-        <developerConnection>scm:git:git@github.com:Sp2000/colplus-backend.git</developerConnection>
+        <connection>scm:git:git@github.com:CatalogueOfLife/backend.git</connection>
+        <url>https://github.com/CatalogueOfLife/backend</url>
+        <developerConnection>scm:git:git@github.com:CatalogueOfLife/backend.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 
@@ -135,7 +135,7 @@
 
     <issueManagement>
         <system>github</system>
-        <url>https://github.com/Sp2000/colplus-backend/issues</url>
+        <url>https://github.com/CatalogueOfLife/backend/issues</url>
     </issueManagement>
 
     <repositories>
@@ -153,10 +153,10 @@
     </repositories>
 
     <modules>
-        <module>colplus-api</module>
-        <module>colplus-dao</module>
-        <module>colplus-parser</module>
-        <module>colplus-ws</module>
+        <module>api</module>
+        <module>dao</module>
+        <module>parser</module>
+        <module>ws</module>
     </modules>
 
     <distributionManagement>
@@ -174,43 +174,43 @@
         <dependencies>
             <!-- Colplus -->
             <dependency>
-                <groupId>life.catalogue</groupId>
-                <artifactId>colplus-api</artifactId>
+                <groupId>org.catalogueoflife</groupId>
+                <artifactId>api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>life.catalogue</groupId>
-                <artifactId>colplus-api</artifactId>
-                <version>${project.version}</version>
-                <classifier>tests</classifier>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>life.catalogue</groupId>
-                <artifactId>colplus-dw</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>life.catalogue</groupId>
-                <artifactId>colplus-dw-testing</artifactId>
-                <version>${project.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>life.catalogue</groupId>
-                <artifactId>colplus-dao</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>life.catalogue</groupId>
-                <artifactId>colplus-dao</artifactId>
+                <groupId>org.catalogueoflife</groupId>
+                <artifactId>api</artifactId>
                 <version>${project.version}</version>
                 <classifier>tests</classifier>
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>life.catalogue</groupId>
-                <artifactId>colplus-parser</artifactId>
+                <groupId>org.catalogueoflife</groupId>
+                <artifactId>dw</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.catalogueoflife</groupId>
+                <artifactId>dw-testing</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.catalogueoflife</groupId>
+                <artifactId>dao</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.catalogueoflife</groupId>
+                <artifactId>dao</artifactId>
+                <version>${project.version}</version>
+                <classifier>tests</classifier>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.catalogueoflife</groupId>
+                <artifactId>parser</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

@@ -1,0 +1,206 @@
+digraph G {
+  node [shape=plaintext]
+
+  n0  [label="ORDER\nMegalithistida", fontcolor=darkgreen]
+  n2  [label="FAMILY\nTubiferidae Cossmann, 1895", fontcolor=darkgreen]
+  n4  [label="GENUS\nAcanthophora Hulst, 1896", fontcolor=darkgreen]
+  n5  [label="USAGE;SYNONYM", fontcolor=blue]
+  n5 -> n37  [color=blue, fontcolor=blue, label="acc"]
+  n5 -> n4
+  n6  [label="GENUS\nAcanthophora J.V.F.Lamouroux, 1813", fontcolor=darkgreen]
+  n7  [label="USAGE;TAXON"]
+  n7 -> n6
+  n8  [label="GENUS\nAcanthophora Borgmeier, 1922", fontcolor=darkgreen]
+  n9  [label="USAGE;SYNONYM", fontcolor=blue]
+  n9 -> n39  [color=blue, fontcolor=blue, label="acc"]
+  n9 -> n8
+  n10  [label="GENUS\nAcanthophora Merrill, 1918", fontcolor=darkgreen]
+  n11  [label="USAGE;TAXON"]
+  n11 -> n10
+  n12  [label="GENUS\nAcanthophora Sollas, 1873", fontcolor=darkgreen]
+  n13  [label="USAGE;TAXON"]
+  n13 -> n12
+  n14  [label="GENUS\nTulostoma Persoon, 1794", fontcolor=darkgreen]
+  n15  [label="USAGE;TAXON"]
+  n15 -> n14
+  n16  [label="GENUS\nTulostoma Nevill, 1885", fontcolor=darkgreen]
+  n17  [label="USAGE;SYNONYM", fontcolor=blue]
+  n17 -> n41  [color=blue, fontcolor=blue, label="acc"]
+  n17 -> n16
+  n18  [label="GENUS\nAmphibia Berthold, 1827", fontcolor=darkgreen]
+  n19  [label="USAGE;TAXON"]
+  n19 -> n18
+  n20  [label="GENUS\nAmphibia Stackhouse, 1809", fontcolor=darkgreen]
+  n21  [label="USAGE;TAXON"]
+  n21 -> n20
+  n22  [label="GENUS\nAmphibia Perroud & Montrouzier, 1864", fontcolor=darkgreen]
+  n23  [label="USAGE;TAXON"]
+  n23 -> n22
+  n24  [label="GENUS\nAmphibia hybrid × formula Perroud & Montrouzier, 1864", fontcolor=darkgreen]
+  n25  [label="USAGE;TAXON"]
+  n25 -> n24
+  n26  [label="SPECIES\nVirus name 13 Ictv", fontcolor=darkgreen]
+  n27  [label="USAGE;TAXON"]
+  n27 -> n26
+  n28  [label="GENUS\nMarkusgenus Döring", fontcolor=darkgreen]
+  n29  [label="USAGE;TAXON"]
+  n29 -> n28
+  n30  [label="UNRANKED\nMarkusgenus Hannover", fontcolor=darkgreen]
+  n31  [label="USAGE;TAXON"]
+  n31 -> n30
+  n32  [label="UNRANKED\nMarkusgenus London", fontcolor=darkgreen]
+  n33  [label="USAGE;TAXON"]
+  n33 -> n32
+  n34  [label="UNRANKED\nChaetognatha Felder, 1874", fontcolor=darkgreen]
+  n35  [label="USAGE;TAXON"]
+  n35 -> n34
+  n36  [label="UNRANKED\nAcanthotoca", fontcolor=darkgreen]
+  n37  [label="USAGE;TAXON"]
+  n37 -> n36
+  n38  [label="UNRANKED\nAcanthophorides", fontcolor=darkgreen]
+  n39  [label="USAGE;TAXON"]
+  n39 -> n38
+  n40  [label="UNRANKED\nTulotoma", fontcolor=darkgreen]
+  n41  [label="USAGE;TAXON"]
+  n41 -> n40
+  n42  [label="KINGDOM\nPlantae", fontcolor=darkgreen]
+  n43  [label="USAGE;TAXON;ROOT"]
+  n43 -> n29
+  n43 -> n53
+  n43 -> n45
+  n43 -> n42
+  n44  [label="PHYLUM\nRhodophyta", fontcolor=darkgreen]
+  n45  [label="USAGE;TAXON"]
+  n45 -> n47
+  n45 -> n44
+  n46  [label="CLASS\nRhodophyceae", fontcolor=darkgreen]
+  n47  [label="USAGE;TAXON"]
+  n47 -> n49
+  n47 -> n46
+  n48  [label="ORDER\nCeramiales", fontcolor=darkgreen]
+  n49  [label="USAGE;TAXON"]
+  n49 -> n51
+  n49 -> n48
+  n50  [label="FAMILY\nRhodomelaceae", fontcolor=darkgreen]
+  n51  [label="USAGE;TAXON"]
+  n51 -> n21
+  n51 -> n7
+  n51 -> n50
+  n52  [label="PHYLUM\nMagnoliophyta", fontcolor=darkgreen]
+  n53  [label="USAGE;TAXON"]
+  n53 -> n55
+  n53 -> n52
+  n54  [label="CLASS\nMagnoliopsida", fontcolor=darkgreen]
+  n55  [label="USAGE;TAXON"]
+  n55 -> n54
+  n55 -> n57
+  n56  [label="ORDER\nApiales", fontcolor=darkgreen]
+  n57  [label="USAGE;TAXON"]
+  n57 -> n59
+  n57 -> n56
+  n58  [label="FAMILY\nAraliaceae", fontcolor=darkgreen]
+  n59  [label="USAGE;TAXON"]
+  n59 -> n58
+  n59 -> n11
+  n60  [label="KINGDOM\nAnimalia", fontcolor=darkgreen]
+  n61  [label="USAGE;TAXON;ROOT"]
+  n61 -> n91
+  n61 -> n81
+  n61 -> n79
+  n61 -> n63
+  n61 -> n60
+  n62  [label="PHYLUM\nPorifera", fontcolor=darkgreen]
+  n63  [label="USAGE;TAXON"]
+  n63 -> n62
+  n63 -> n65
+  n64  [label="CLASS\nDemospongea", fontcolor=darkgreen]
+  n65  [label="USAGE;TAXON"]
+  n65 -> n67
+  n65 -> n64
+  n66  [label="ORDER\nAstrophorida", fontcolor=darkgreen]
+  n67  [label="USAGE;TAXON"]
+  n67 -> n66
+  n67 -> n13
+  n68  [label="KINGDOM\nFungi", fontcolor=darkgreen]
+  n69  [label="USAGE;TAXON;ROOT"]
+  n69 -> n71
+  n69 -> n68
+  n70  [label="PHYLUM\nBasidiomycota", fontcolor=darkgreen]
+  n71  [label="USAGE;TAXON"]
+  n71 -> n70
+  n71 -> n73
+  n72  [label="CLASS\nAgaricomycetes", fontcolor=darkgreen]
+  n73  [label="USAGE;TAXON"]
+  n73 -> n75
+  n73 -> n72
+  n74  [label="ORDER\nAgaricales", fontcolor=darkgreen]
+  n75  [label="USAGE;TAXON"]
+  n75 -> n74
+  n75 -> n77
+  n76  [label="FAMILY\nAgaricaceae", fontcolor=darkgreen]
+  n77  [label="USAGE;TAXON"]
+  n77 -> n15
+  n77 -> n76
+  n78  [label="PHYLUM\nMollusca", fontcolor=darkgreen]
+  n79  [label="USAGE;TAXON"]
+  n79 -> n101
+  n79 -> n78
+  n79 -> n19
+  n80  [label="PHYLUM\nArthropoda", fontcolor=darkgreen]
+  n81  [label="USAGE;TAXON"]
+  n81 -> n31
+  n81 -> n80
+  n81 -> n83
+  n82  [label="CLASS\nInsecta", fontcolor=darkgreen]
+  n83  [label="USAGE;TAXON"]
+  n83 -> n97
+  n83 -> n93
+  n83 -> n82
+  n83 -> n85
+  n84  [label="ORDER\nColeoptera", fontcolor=darkgreen]
+  n85  [label="USAGE;TAXON"]
+  n85 -> n87
+  n85 -> n84
+  n86  [label="FAMILY\nCarabidae", fontcolor=darkgreen]
+  n87  [label="USAGE;TAXON"]
+  n87 -> n25
+  n87 -> n23
+  n87 -> n86
+  n88  [label="KINGDOM\nVirus", fontcolor=darkgreen]
+  n89  [label="USAGE;TAXON;ROOT"]
+  n89 -> n88
+  n89 -> n27
+  n90  [label="PHYLUM\nChordata", fontcolor=darkgreen]
+  n91  [label="USAGE;TAXON"]
+  n91 -> n33
+  n91 -> n90
+  n92  [label="ORDER\nLepidoptera", fontcolor=darkgreen]
+  n93  [label="USAGE;TAXON"]
+  n93 -> n92
+  n93 -> n95
+  n93 -> n35
+  n94  [label="FAMILY\nGeometridae", fontcolor=darkgreen]
+  n95  [label="USAGE;TAXON"]
+  n95 -> n37
+  n95 -> n94
+  n96  [label="ORDER\nDiptera", fontcolor=darkgreen]
+  n97  [label="USAGE;TAXON"]
+  n97 -> n99
+  n97 -> n96
+  n98  [label="FAMILY\nPhoridae", fontcolor=darkgreen]
+  n99  [label="USAGE;TAXON"]
+  n99 -> n98
+  n99 -> n39
+  n100  [label="CLASS\nGastropoda", fontcolor=darkgreen]
+  n101  [label="USAGE;TAXON"]
+  n101 -> n103
+  n101 -> n100
+  n102  [label="ORDER\nMesogastropoda", fontcolor=darkgreen]
+  n103  [label="USAGE;TAXON"]
+  n103 -> n105
+  n103 -> n102
+  n104  [label="FAMILY\nViviparidae", fontcolor=darkgreen]
+  n105  [label="USAGE;TAXON"]
+  n105 -> n104
+  n105 -> n41
+}

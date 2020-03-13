@@ -1,0 +1,65 @@
+digraph G {
+  node [shape=plaintext]
+
+  n0  [label="KINGDOM\nPlantae", fontcolor=darkgreen]
+  n1  [label="USAGE;TAXON;ROOT"]
+  n1 -> n3
+  n1 -> n0
+  n2  [label="FAMILY\nCompositae Giseke", fontcolor=darkgreen]
+  n3  [label="USAGE;TAXON"]
+  n3 -> n7
+  n3 -> n2
+  n4  [label="FAMILY\nAsteraceae", fontcolor=darkgreen]
+  n5  [label="USAGE;SYNONYM", fontcolor=blue]
+  n5 -> n3  [color=blue, fontcolor=blue, label="acc"]
+  n5 -> n4
+  n6  [label="GENUS\nCalendula L.", fontcolor=darkgreen]
+  n7  [label="USAGE;TAXON"]
+  n7 -> n27
+  n7 -> n15
+  n7 -> n11
+  n7 -> n6
+  n8  [label="GENUS\nCladendula Döring", fontcolor=darkgreen]
+  n9  [label="USAGE;SYNONYM", fontcolor=blue]
+  n9 -> n7  [color=blue, fontcolor=blue, label="acc"]
+  n9 -> n8
+  n10  [label="SPECIES\nCalendula arvensis (Vaill.) L.", fontcolor=darkgreen]
+  n11  [label="USAGE;TAXON"]
+  n11 -> n10
+  n12  [label="SPECIES\nCalendula eckerleinii Ohle", fontcolor=darkgreen]
+  n13  [label="USAGE;SYNONYM", fontcolor=blue]
+  n13 -> n21  [color=blue, fontcolor=blue, label="acc"]
+  n13 -> n11  [color=blue, fontcolor=blue, label="acc"]
+  n13 -> n17  [color=blue, fontcolor=blue, label="acc"]
+  n13 -> n12
+  n14  [label="SPECIES\nCalendula incana Willd.", fontcolor=darkgreen]
+  n15  [label="USAGE;TAXON"]
+  n15 -> n23
+  n15 -> n25
+  n15 -> n19
+  n15 -> n21
+  n15 -> n17
+  n15 -> n14
+  n16  [label="SUBSPECIES\nCalendula incana subsp. incana", fontcolor=darkgreen]
+  n17  [label="USAGE;TAXON"]
+  n17 -> n16
+  n18  [label="SUBSPECIES\nCalendula incana subsp. algarbiensis (Boiss.) Ohle", fontcolor=darkgreen]
+  n19  [label="USAGE;TAXON"]
+  n19 -> n18
+  n20  [label="SUBSPECIES\nCalendula incana subsp. maderensis (DC.) Ohle", fontcolor=darkgreen]
+  n21  [label="USAGE;TAXON"]
+  n21 -> n20
+  n22  [label="SUBSPECIES\nCalendula incana subsp. maritima (Guss.) Ohle", fontcolor=darkgreen]
+  n23  [label="USAGE;TAXON"]
+  n23 -> n22
+  n24  [label="SUBSPECIES\nCalendula incana subsp. microphylla (Willk.) Ohle", fontcolor=darkgreen]
+  n25  [label="USAGE;TAXON"]
+  n25 -> n24
+  n26  [label="SPECIES\nCalendula lanzae Maire", fontcolor=darkgreen]
+  n27  [label="USAGE;TAXON"]
+  n27 -> n26
+  n28  [label="SPECIES\nCalendula maroccana (Ball) B.D.Jacks.", fontcolor=darkgreen]
+  n29  [label="USAGE;SYNONYM", fontcolor=blue]
+  n29 -> n19  [color=blue, fontcolor=blue, label="acc"]
+  n29 -> n28
+}

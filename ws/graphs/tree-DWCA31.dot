@@ -1,0 +1,66 @@
+digraph G {
+  node [shape=plaintext]
+
+  n0  [label="KINGDOM\nPlantae", fontcolor=darkgreen]
+  n1  [label="USAGE;TAXON;ROOT"]
+  n1 -> n3
+  n1 -> n0
+  n2  [label="ORDER\nAsterales", fontcolor=darkgreen]
+  n3  [label="USAGE;TAXON"]
+  n3 -> n7
+  n3 -> n5
+  n3 -> n2
+  n4  [label="FAMILY\nAsteraceae", fontcolor=darkgreen]
+  n5  [label="USAGE;TAXON"]
+  n5 -> n11
+  n5 -> n9
+  n5 -> n4
+  n6  [label="PHYLUM\nAsterophyta", fontcolor=darkgreen]
+  n7  [label="USAGE;TAXON"]
+  n7 -> n6
+  n8  [label="GENUS\nAster", fontcolor=darkgreen]
+  n9  [label="USAGE;TAXON"]
+  n9 -> n15
+  n9 -> n17
+  n9 -> n8
+  n10  [label="SUBGENUS\nsubgen. Euaster", fontcolor=darkgreen]
+  n11  [label="USAGE;TAXON"]
+  n11 -> n13
+  n11 -> n10
+  n12  [label="GENUS\nGossypium", fontcolor=darkgreen]
+  n13  [label="USAGE;TAXON"]
+  n13 -> n12
+  n14  [label="SPECIES\nGossypium tomentosum Nutt. ex Seem.", fontcolor=darkgreen]
+  n15  [label="USAGE;TAXON"]
+  n15 -> n14
+  n16  [label="SPECIES\nAster tomentosum DC.", fontcolor=darkgreen]
+  n17  [label="USAGE;TAXON"]
+  n17 -> n19
+  n17 -> n16
+  n18  [label="SUBSPECIES\nAster tomentosum alpina DC.", fontcolor=darkgreen]
+  n19  [label="USAGE;TAXON"]
+  n19 -> n21
+  n19 -> n18
+  n20  [label="VARIETY\nEuaster tomentosum var. kaukasia DC.", fontcolor=darkgreen]
+  n21  [label="USAGE;TAXON"]
+  n21 -> n20
+  n22  [label="KINGDOM\nAnimalia", fontcolor=darkgreen]
+  n23  [label="USAGE;TAXON;ROOT"]
+  n23 -> n25
+  n23 -> n22
+  n24  [label="FAMILY\nPedicularidae", fontcolor=darkgreen]
+  n25  [label="USAGE;TAXON"]
+  n25 -> n27
+  n25 -> n24
+  n26  [label="GENUS\nPedicularis Tsoong, 1903", fontcolor=darkgreen]
+  n27  [label="USAGE;TAXON"]
+  n27 -> n29
+  n27 -> n31
+  n27 -> n26
+  n28  [label="SPECIES\nPedicularis inconspicua P.C.Tsoong, 1903", fontcolor=darkgreen]
+  n29  [label="USAGE;TAXON"]
+  n29 -> n28
+  n30  [label="SPECIES\nPedicularis conspicua P.C.Tsoong, 1901", fontcolor=darkgreen]
+  n31  [label="USAGE;TAXON"]
+  n31 -> n30
+}

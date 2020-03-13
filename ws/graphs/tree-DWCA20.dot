@@ -1,0 +1,113 @@
+digraph G {
+  node [shape=plaintext]
+
+  n0  [label="SPECIES\nArthonia cembrina Anzi", fontcolor=darkgreen]
+  n1  [label="USAGE;SYNONYM", fontcolor=blue]
+  n1 -> n11  [color=blue, fontcolor=blue, label="acc"]
+  n1 -> n0
+  n2  [label="SPECIES\nCercospora fici Heald & F.A.Wolf", fontcolor=darkgreen]
+  n3  [label="USAGE;SYNONYM", fontcolor=blue]
+  n3 -> n5  [color=blue, fontcolor=blue, label="acc"]
+  n3 -> n2
+  n4  [label="SPECIES\nPseudocercospora fici (Heald & F.A.Wolf) X.J.Liu & Y.L.Guo", fontcolor=darkgreen]
+  n4 -> n2  [color=darkgreen, fontcolor=darkgreen, label="bas"]
+  n5  [label="USAGE;TAXON"]
+  n5 -> n4
+  n6  [label="SPECIES\nSeptoria coffeae Wakef.", fontcolor=darkgreen]
+  n7  [label="USAGE;TAXON"]
+  n7 -> n6
+  n8  [label="SPECIES\nSphaerella minuta Auersw.", fontcolor=darkgreen]
+  n9  [label="USAGE;TAXON"]
+  n9 -> n8
+  n10  [label="SPECIES\nArthopyrenia punctiformis (Schrank) A.Massal.", fontcolor=darkgreen]
+  n10 -> n14  [color=darkgreen, fontcolor=darkgreen, label="bas"]
+  n11  [label="USAGE;TAXON"]
+  n11 -> n10
+  n12  [label="SPECIES\nBlitridium symphoricarpi Ellis & Everh.", fontcolor=darkgreen]
+  n13  [label="USAGE;TAXON"]
+  n13 -> n12
+  n14  [label="SPECIES\nLichen punctiformis Schrank", fontcolor=darkgreen]
+  n15  [label="USAGE;SYNONYM", fontcolor=blue]
+  n15 -> n11  [color=blue, fontcolor=blue, label="acc"]
+  n15 -> n14
+  n16  [label="GENUS\nChaetosphaeria Tul. & C.Tul.", fontcolor=darkgreen]
+  n17  [label="USAGE;TAXON"]
+  n17 -> n16
+  n18  [label="KINGDOM\nFungi", fontcolor=darkgreen]
+  n19  [label="USAGE;TAXON;ROOT"]
+  n19 -> n21
+  n19 -> n18
+  n20  [label="PHYLUM\nAscomycota", fontcolor=darkgreen]
+  n21  [label="USAGE;TAXON"]
+  n21 -> n49
+  n21 -> n41
+  n21 -> n23
+  n21 -> n20
+  n22  [label="CLASS\nDothideomycetes", fontcolor=darkgreen]
+  n23  [label="USAGE;TAXON"]
+  n23 -> n35
+  n23 -> n25
+  n23 -> n22
+  n24  [label="ORDER\nCapnodiales", fontcolor=darkgreen]
+  n25  [label="USAGE;TAXON"]
+  n25 -> n27
+  n25 -> n24
+  n26  [label="FAMILY\nMycosphaerellaceae", fontcolor=darkgreen]
+  n27  [label="USAGE;TAXON"]
+  n27 -> n33
+  n27 -> n31
+  n27 -> n29
+  n27 -> n26
+  n28  [label="GENUS\nPseudocercospora", fontcolor=darkgreen]
+  n29  [label="USAGE;TAXON"]
+  n29 -> n5
+  n29 -> n28
+  n30  [label="GENUS\nSeptoria", fontcolor=darkgreen]
+  n31  [label="USAGE;TAXON"]
+  n31 -> n7
+  n31 -> n30
+  n32  [label="GENUS\nSphaerella", fontcolor=darkgreen]
+  n33  [label="USAGE;TAXON"]
+  n33 -> n9
+  n33 -> n32
+  n34  [label="ORDER\nPleosporales", fontcolor=darkgreen]
+  n35  [label="USAGE;TAXON"]
+  n35 -> n34
+  n35 -> n37
+  n36  [label="FAMILY\nArthopyreniaceae", fontcolor=darkgreen]
+  n37  [label="USAGE;TAXON"]
+  n37 -> n39
+  n37 -> n36
+  n38  [label="GENUS\nArthopyrenia", fontcolor=darkgreen]
+  n39  [label="USAGE;TAXON"]
+  n39 -> n38
+  n39 -> n11
+  n40  [label="CLASS\nIncertae sedis", fontcolor=darkgreen]
+  n41  [label="USAGE;TAXON"]
+  n41 -> n43
+  n41 -> n40
+  n42  [label="ORDER\nTriblidiales", fontcolor=darkgreen]
+  n43  [label="USAGE;TAXON"]
+  n43 -> n45
+  n43 -> n42
+  n44  [label="FAMILY\nTriblidiaceae", fontcolor=darkgreen]
+  n45  [label="USAGE;TAXON"]
+  n45 -> n47
+  n45 -> n44
+  n46  [label="GENUS\nBlitridium", fontcolor=darkgreen]
+  n47  [label="USAGE;TAXON"]
+  n47 -> n46
+  n47 -> n13
+  n48  [label="CLASS\nSordariomycetes", fontcolor=darkgreen]
+  n49  [label="USAGE;TAXON"]
+  n49 -> n48
+  n49 -> n51
+  n50  [label="ORDER\nChaetosphaeriales", fontcolor=darkgreen]
+  n51  [label="USAGE;TAXON"]
+  n51 -> n53
+  n51 -> n50
+  n52  [label="FAMILY\nChaetosphaeriaceae", fontcolor=darkgreen]
+  n53  [label="USAGE;TAXON"]
+  n53 -> n52
+  n53 -> n17
+}
