@@ -35,6 +35,12 @@ ALTER TABLE parser_config ADD COLUMN taxonomic_note TEXT;
 ALTER TABLE parser_config ADD PRIMARY KEY (id);
 
 ALTER TABLE sector RENAME COLUMN last_data_import_attempt TO last_sync_attempt;
+WITH finished AS (
+    SELECT sector_key, max(attempt) AS maxa FROM sector_import WHERE state='FINISHED' GROUP BY sector_key
+)
+UPDATE sector SET last_sync_attempt=f.maxa FROM finished f WHERE key=f.sector_key;
+DROP index sector_target_id_idx;
+CREATE index ON sector (dataset_key, target_id);
 ```
 
 #### 2020-03-09 dataest_import 

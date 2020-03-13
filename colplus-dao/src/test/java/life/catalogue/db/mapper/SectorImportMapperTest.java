@@ -24,6 +24,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
 
   @Before
   public void prepare() {
+    attempts = 1;
     s = new Sector();
     s.setDatasetKey(DRAFT_COL);
     s.setSubjectDatasetKey(DATASET11.getKey());
