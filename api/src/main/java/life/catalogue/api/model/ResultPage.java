@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -31,7 +32,11 @@ public class ResultPage<T> extends Page implements Iterable<T> {
     this.total = result.size() == page.getLimit() ? count.get() : page.getOffset() + result.size();
     this.result = result;
   }
-  
+
+  public static <T>  ResultPage<T> empty(){
+    return new ResultPage<T>(new Page(0,10), 0, Collections.emptyList());
+  }
+
   @Nullable
   public int getTotal() {
     return total;

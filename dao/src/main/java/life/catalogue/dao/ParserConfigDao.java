@@ -59,6 +59,9 @@ public class ParserConfigDao {
       ParserConfigMapper pcm = session.getMapper(ParserConfigMapper.class);
       List<ParserConfig> result = pcm.search(request, page);
       return new ResultPage<>(page, result, () -> pcm.countSearch(request));
+    } catch (Exception e) {
+      LOG.error("Error searching parser configs", e);
+      return ResultPage.empty();
     }
   }
 

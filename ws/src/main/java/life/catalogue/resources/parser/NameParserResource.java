@@ -30,7 +30,6 @@ import java.util.stream.Stream;
 
 @Path("/parser/name")
 @Produces(MediaType.APPLICATION_JSON)
-@Consumes(MediaType.APPLICATION_JSON)
 public class NameParserResource {
   
   @SuppressWarnings("unused")
@@ -150,6 +149,18 @@ public class NameParserResource {
   @Path("config")
   public ResultPage<ParserConfig> searchConfig(@BeanParam QuerySearchRequest request, @Valid @BeanParam Page page) {
     return dao.search(request, page);
+  }
+
+  @GET
+  @Path("configg")
+  public ResultPage<ParserConfig> searchConfig2() {
+    return ResultPage.empty();
+  }
+
+  @GET
+  @Path("configgg")
+  public String searchConfig3() {
+    return "Hello Corona";
   }
 
   @POST
