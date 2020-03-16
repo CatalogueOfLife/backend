@@ -8,6 +8,8 @@ import life.catalogue.api.constraints.NotBlank;
 import life.catalogue.api.constraints.ValidDataset;
 import life.catalogue.api.vocab.*;
 import org.gbif.nameparser.api.NomCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -22,6 +24,8 @@ import java.util.*;
  */
 @ValidDataset
 public class Dataset extends DataEntity<Integer> {
+  private static final Logger LOG = LoggerFactory.getLogger(Dataset.class);
+
   private Integer key;
   @NotNull
   private DatasetType type;
@@ -358,15 +362,30 @@ public class Dataset extends DataEntity<Integer> {
   }
 
   public Boolean getSettingBool(DatasetSettings key) {
-    return (Boolean) settings.get(key);
+    try {
+      return (Boolean) settings.get(key);
+    } catch (Exception e) {
+      LOG.warn("Failed to convert setting {}={} to boolean", key, settings.get(key), e);
+      return null;
+    }
   }
 
   public Integer getSettingInt(DatasetSettings key) {
-    return (Integer) settings.get(key);
+    try {
+      return (Integer) settings.get(key);
+    } catch (Exception e) {
+      LOG.warn("Failed to convert setting {}={} to integer", key, settings.get(key), e);
+      return null;
+    }
   }
 
   public <T extends Enum> T getSettingEnum(DatasetSettings key) {
-    return (T) settings.get(key);
+    try {
+      return (T) settings.get(key);
+    } catch (Exception e) {
+      LOG.warn("Failed to convert setting {}={} to enum", key, settings.get(key), e);
+      return null;
+    }
   }
 
   public void putSetting(DatasetSettings key, Object value) {

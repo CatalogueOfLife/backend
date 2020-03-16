@@ -56,7 +56,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     d.setCode(NomCode.ZOOLOGICAL);
     d.getOrganisations().add("my org");
     d.getOrganisations().add("your org");
-    d.putSetting(DatasetSettings.REMATCH_DECISIONS, true);
+    d.putSetting(DatasetSettings.REMATCH_DECISIONS, false);
     d.putSetting(DatasetSettings.NOMENCLATURAL_CODE, NomCode.BOTANICAL);
     d.putSetting(DatasetSettings.CSV_DELIMITER, "fun");
     d.putSetting(DatasetSettings.DISTRIBUTION_GAZETTEER, Gazetteer.ISO);

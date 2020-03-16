@@ -5,10 +5,7 @@ import java.net.URI;
 import com.google.common.collect.ImmutableSet;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.DatasetType;
-import life.catalogue.api.vocab.Frequency;
-import life.catalogue.api.vocab.License;
+import life.catalogue.api.vocab.*;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNull;
@@ -43,6 +40,7 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.getOrganisations().add("bla");
     d.setContact("foo");
     d.setNotes("cuzdsghazugbe67wqt6c g cuzdsghazugbe67wqt6c g  nhjs");
+    d.getSettings().put(DatasetSettings.REMATCH_DECISIONS, false);
     return d;
   }
   
