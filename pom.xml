@@ -156,7 +156,7 @@
         <module>api</module>
         <module>dao</module>
         <module>parser</module>
-        <module>ws</module>
+        <module>webservice</module>
     </modules>
 
     <distributionManagement>

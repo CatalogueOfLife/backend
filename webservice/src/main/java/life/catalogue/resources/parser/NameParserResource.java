@@ -151,18 +151,6 @@ public class NameParserResource {
     return dao.search(request, page);
   }
 
-  @GET
-  @Path("configg")
-  public ResultPage<ParserConfig> searchConfig2() {
-    return ResultPage.empty();
-  }
-
-  @GET
-  @Path("configgg")
-  public String searchConfig3() {
-    return "Hello Corona";
-  }
-
   @POST
   @RolesAllowed({Roles.ADMIN})
   @Path("config")
