@@ -250,23 +250,25 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
         LOG.info("Index {} datasets with data partitions out of all {} datasets", keys.size(), allDatasets);
       }
 
+      final AtomicInteger failed = new AtomicInteger(1);
       final AtomicInteger counter = new AtomicInteger(1);
       ExecutorService exec = Executors.newFixedThreadPool(esConfig.indexingThreads, new NamedThreadFactory("ES-Indexer"));
       for (Integer datasetKey : keys) {
         CompletableFuture.supplyAsync(() -> indexDatasetInternal(datasetKey, false), exec)
             .exceptionally(ex -> {
-              counter.incrementAndGet();
+              failed.incrementAndGet();
               LOG.error("Error indexing dataset {}", datasetKey, ex.getCause());
               return null;
             }).thenAccept( st -> {
               total.add(st);
-              LOG.info("Indexed {}/{} dataset {}. Total usages {}", counter.incrementAndGet(), keys.size(), datasetKey, total.usages);
+              counter.incrementAndGet();
+              LOG.info("Indexed {}/{} dataset {}. Failed datasets {}. Total usages {}", counter.get()+failed.get(), keys.size(), datasetKey, failed.get(), total.usages);
             });
       }
       ExecutorUtils.shutdown(exec);
 
-      LOG.info("Successfully indexed all {} datasets. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
-              counter, esConfig.nameUsage.name, total.usages, total.names, total.total()
+      LOG.info("Finished indexing all {} datasets incl. {} failures. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
+              counter.get() + failed.get(), failed, esConfig.nameUsage.name, total.usages, total.names, total.total()
       );
     } catch (IOException e) {
       throw new EsException(e);

@@ -37,6 +37,7 @@ public class AcExporterTest {
     cfg.db = PgSetupRule.getCfg();
     cfg.downloadDir = Files.createTempDir();
     cfg.normalizer.scratchDir  = Files.createTempDir();
+    cfg.img.repo = cfg.normalizer.scratchDir.toPath();
   }
   
   @After
