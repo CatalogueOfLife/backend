@@ -122,10 +122,12 @@ class NameUsageSearchResponseFactory {
 
   private static <U extends Enum<U>> Set<FacetValue<?>> createEnumBuckets(EsFacet esFacet, NameUsageSearchParameter param) {
     @SuppressWarnings("unchecked")
-    Class<U> enumClass = (Class<U>) param.type();
     TreeSet<FacetValue<?>> facet = new TreeSet<>();
-    for (Bucket b : esFacet.getBucketsContainer().getBuckets()) {
-      facet.add(FacetValue.forEnum(enumClass, b.getKey(), b.getDocCount()));
+    if (esFacet.getBucketsContainer() != null && esFacet.getBucketsContainer().getBuckets() != null) {
+      Class<U> enumClass = (Class<U>) param.type();
+      for (Bucket b : esFacet.getBucketsContainer().getBuckets()) {
+        facet.add(FacetValue.forEnum(enumClass, b.getKey(), b.getDocCount()));
+      }
     }
     return facet;
   }

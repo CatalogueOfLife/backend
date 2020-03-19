@@ -105,10 +105,10 @@ public class SubjectRematcher {
       matchDecision(d);
     });
     
-    LOG.info("Rematch all estimates for draft catalogue");
     Pager.estimates(catalogueKey, factory).forEach(this::matchEstimate);
 
     datasets = datasetKeys.size();
+    LOG.info("Rematched catalogue {}", catalogueKey);
   }
   
   public void match(RematchRequest req) {

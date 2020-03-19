@@ -203,6 +203,7 @@
   <select id="list" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
+    WHERE dataset_key=#{datasetKey}
     ORDER BY target_rank, key
     <include refid="life.catalogue.db.Common.limit" />
   </select>

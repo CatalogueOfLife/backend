@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import life.catalogue.config.GbifConfig;
+import life.catalogue.dao.Pager;
 import life.catalogue.gbifsync.DatasetPager;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.logging.LoggingFeature;
@@ -21,8 +22,9 @@ import org.junit.Test;
  */
 @Ignore("GBIF service needs to be mocked - this uses live services")
 public class DatasetPagerTest {
+
   @Test
-  public void next() throws Exception {
+  public void datasetPager() throws Exception {
     final JacksonJsonProvider jacksonJsonProvider = new JacksonJaxbJsonProvider()
         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     ClientConfig cfg = new ClientConfig(jacksonJsonProvider);
