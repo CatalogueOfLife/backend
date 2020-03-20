@@ -147,7 +147,7 @@ public class PgImportRule extends ExternalResource {
     dataset.setModifiedBy(IMPORT_USER.getKey());
     dataset.setDataFormat(tr.format);
     dataset.setType(tr.type);
-    dataset.setOrigin(DatasetOrigin.UPLOADED);
+    dataset.setOrigin(DatasetOrigin.MANAGED);
     dataset.setCode(tr.code);
     dataset.setTitle("Test Dataset " + source.toString());
 
@@ -162,7 +162,7 @@ public class PgImportRule extends ExternalResource {
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
       store.put(dataset);
-      Normalizer norm = new Normalizer(store, source, NameIndexFactory.passThru(), ImageService.passThru());
+      Normalizer norm = new Normalizer(tr.format, store, source, NameIndexFactory.passThru(), ImageService.passThru());
       norm.call();
       
       // import into postgres

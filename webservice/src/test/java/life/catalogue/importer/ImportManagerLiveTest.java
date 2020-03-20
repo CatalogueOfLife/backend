@@ -162,7 +162,7 @@ public class ImportManagerLiveTest {
 
     importManager.submit(new ImportRequest(d2.getKey(), Users.IMPORTER));
     importManager.submit(new ImportRequest(d3.getKey(), Users.IMPORTER));
-    importManager.submit(new ImportRequest(d4.getKey(), Users.IMPORTER, false, true));
+    importManager.submit(new ImportRequest(d4.getKey(), Users.IMPORTER, false, true, false));
     importManager.hasRunning();
     Thread.sleep(50);
     imports = diDao.list(new Page());

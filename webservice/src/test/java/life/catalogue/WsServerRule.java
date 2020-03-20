@@ -8,7 +8,7 @@ import com.google.common.collect.Lists;
 import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import org.apache.ibatis.session.SqlSessionFactory;
-import life.catalogue.common.io.PortUtil;
+import life.catalogue.common.io.PortUtils;
 import life.catalogue.common.util.YamlUtils;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.PgSetupRule;
@@ -65,8 +65,8 @@ public class WsServerRule extends DropwizardAppRule<WsServerConfig> {
 
     // select free DW port
     try {
-      int dwPort = PortUtil.findFreePort();
-      int dwPortAdmin = PortUtil.findFreePort();
+      int dwPort = PortUtils.findFreePort();
+      int dwPortAdmin = PortUtils.findFreePort();
       LOG.info("Configure DW ports application={}, admin={}", dwPort, dwPortAdmin);
       overrides.add(ConfigOverride.config("server.applicationConnectors[0].port", String.valueOf(dwPort)));
       overrides.add(ConfigOverride.config("server.adminConnectors[0].port", String.valueOf(dwPortAdmin)));

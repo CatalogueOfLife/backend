@@ -3,7 +3,7 @@ package life.catalogue.common.io;
 import java.io.IOException;
 import java.net.ServerSocket;
 
-public class PortUtil {
+public class PortUtils {
   
   public static int findFreePort() throws IOException {
     try (ServerSocket socket = new ServerSocket(0)) {

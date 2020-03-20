@@ -44,15 +44,15 @@ public class DistributedArchiveService {
     this.client = hc;
   }
   
-  public DataFormat download(URI url, File archiveFile) throws IOException {
+  public ArchiveDescriptor download(URI url, File archiveFile) throws IOException {
     return download(read(url.toURL().openStream()), archiveFile);
   }
   
-  public DataFormat uploaded(File archiveFile) throws IOException {
+  public ArchiveDescriptor uploaded(File archiveFile) throws IOException {
     return download(read(new FileInputStream(archiveFile)), archiveFile);
   }
-  
-  private ArchiveDescriptor read(InputStream is) throws IOException {
+
+  public static ArchiveDescriptor read(InputStream is) throws IllegalArgumentException {
     try {
       return DESCRIPTOR_READER.readValue(is);
     } catch (IOException e) {
@@ -67,7 +67,8 @@ public class DistributedArchiveService {
    * @param archiveFile file to zip into
    * @return true format of the data files
    */
-  private DataFormat download(ArchiveDescriptor ad, File archiveFile) throws IOException {
+  private ArchiveDescriptor download(ArchiveDescriptor ad, File archiveFile) throws IOException {
+    LOG.info("Proxy archive descriptor found with {} {} files", ad.files.size(), ad.format);
     try (FileOutputStream fos = new FileOutputStream(archiveFile);
          ZipOutputStream zipOut = new ZipOutputStream(fos)
     ) {
@@ -88,7 +89,7 @@ public class DistributedArchiveService {
       LOG.error("Error creating proxied {} archive at {}", ad.format, archiveFile, e);
       throw e;
     }
-    return ad.format;
+    return ad;
   }
   
   static class ReplacedHeaderStream extends InputStream {

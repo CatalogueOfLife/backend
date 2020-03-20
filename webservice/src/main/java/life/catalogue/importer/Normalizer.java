@@ -1,12 +1,10 @@
 package life.catalogue.importer;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Issue;
-import life.catalogue.api.vocab.MatchType;
-import life.catalogue.api.vocab.Origin;
-import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.vocab.*;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.collection.MapUtils;
 import life.catalogue.common.tax.MisappliedNameMatcher;
@@ -46,7 +44,7 @@ import java.util.stream.Collectors;
  */
 public class Normalizer implements Callable<Boolean> {
   private static final Logger LOG = LoggerFactory.getLogger(Normalizer.class);
-  private final Dataset dataset;
+  private final DataFormat format;
   private final Path sourceDir;
   private final NeoDb store;
   private final ReferenceFactory refFactory;
@@ -55,11 +53,11 @@ public class Normalizer implements Callable<Boolean> {
   private MappingFlags meta;
 
 
-  public Normalizer(NeoDb store, Path sourceDir, NameIndex index, ImageService imgService) {
+  public Normalizer(DataFormat format, NeoDb store, Path sourceDir, NameIndex index, ImageService imgService) {
+    this.format = Preconditions.checkNotNull(format, "Data format not given");
     this.sourceDir = sourceDir;
     this.store = store;
-    this.dataset = store.getDataset();
-    refFactory = new ReferenceFactory(dataset.getKey(), store.references());
+    refFactory = new ReferenceFactory(store.getDataset().getKey(), store.references());
     this.index = index;
     this.imgService = imgService;
   }
@@ -795,13 +793,10 @@ public class Normalizer implements Callable<Boolean> {
   }
 
   private void insertData() throws NormalizationFailedException {
-    if (dataset.getDataFormat() == null) {
-      throw new NormalizationFailedException("Data format not given");
-    }
     // closing the batch inserter opens the normalizer db again for regular access via the store
     try {
       NeoInserter inserter;
-      switch (dataset.getDataFormat()) {
+      switch (format) {
         case COLDP:
           inserter = new ColdpInserter(store, sourceDir, refFactory, imgService);
           break;
@@ -812,7 +807,7 @@ public class Normalizer implements Callable<Boolean> {
           inserter = new AcefInserter(store, sourceDir, refFactory, imgService);
           break;
         default:
-          throw new NormalizationFailedException("Unsupported data format " + dataset.getDataFormat());
+          throw new NormalizationFailedException("Unsupported data format " + format);
       }
       inserter.insertAll();
       meta = inserter.reader.getMappingFlags();

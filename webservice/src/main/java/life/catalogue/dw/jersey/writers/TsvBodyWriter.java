@@ -1,7 +1,7 @@
 package life.catalogue.dw.jersey.writers;
 
 import com.google.common.base.Throwables;
-import life.catalogue.common.io.UTF8IOUtils;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 
 import javax.ws.rs.Produces;
@@ -28,7 +28,7 @@ public class TsvBodyWriter implements MessageBodyWriter<Stream<Object[]>> {
   
   @Override
   public void writeTo(Stream<Object[]> rows, Class<?> type, Type type1, Annotation[] antns, MediaType mt, MultivaluedMap<String, Object> mm, OutputStream out) throws IOException, WebApplicationException {
-    BufferedWriter br = UTF8IOUtils.writerFromStream(out);
+    BufferedWriter br = UTF8IoUtils.writerFromStream(out);
     try {
       rows.forEach(row -> {
         try {

@@ -88,7 +88,7 @@ public class SectorSyncTest {
     }
   
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    diDao.createSuccess(Datasets.DRAFT_COL, Users.TESTER);
+    MapperTestBase.createSuccess(Datasets.DRAFT_COL, Users.TESTER, diDao);
   }
   
   @Test
@@ -101,9 +101,9 @@ public class SectorSyncTest {
     SectorSync ss = new SectorSync(sector.getKey(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
     ss.run();
-  
-    diDao.createSuccess(Datasets.DRAFT_COL, Users.TESTER);
-  
+
+    MapperTestBase.createSuccess(Datasets.DRAFT_COL, Users.TESTER, diDao);
+
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       final NameMapper nm = session.getMapper(NameMapper.class);
       assertEquals(24, nm.count(Datasets.DRAFT_COL));

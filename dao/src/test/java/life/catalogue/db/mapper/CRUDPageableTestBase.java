@@ -33,7 +33,7 @@ abstract class CRUDPageableTestBase<T extends DatasetScopedEntity<String>, M ext
     Dataset d = new Dataset();
     d.setTitle("New dataset");
     d.setType(DatasetType.TAXONOMIC);
-    d.setOrigin(DatasetOrigin.UPLOADED);
+    d.setOrigin(DatasetOrigin.MANAGED);
     d.applyUser(Users.TESTER);
     mapper(DatasetMapper.class).create(d);
     return d.getKey();

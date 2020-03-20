@@ -15,13 +15,13 @@ public class ImportRequestTest {
   
   @Test
   public void compareTo() throws Exception {
-    ImportRequest r1 = new ImportRequest(1, Users.IMPORTER, false, false);
+    ImportRequest r1 = new ImportRequest(1, Users.IMPORTER, false, false, false);
     TimeUnit.MILLISECONDS.sleep(10);
-    ImportRequest r2 = new ImportRequest(2, Users.IMPORTER, false, true);
+    ImportRequest r2 = new ImportRequest(2, Users.IMPORTER, false, true, false);
     TimeUnit.MILLISECONDS.sleep(10);
-    ImportRequest r3 = new ImportRequest(3, Users.IMPORTER, true, false);
+    ImportRequest r3 = new ImportRequest(3, Users.IMPORTER, true, false, false);
     TimeUnit.MILLISECONDS.sleep(10);
-    ImportRequest r4 = new ImportRequest(4, Users.IMPORTER, false, true);
+    ImportRequest r4 = new ImportRequest(4, Users.IMPORTER, false, true, false);
   
     PriorityBlockingQueue<ImportRequest> queue = new PriorityBlockingQueue<>();
     queue.add(r1);

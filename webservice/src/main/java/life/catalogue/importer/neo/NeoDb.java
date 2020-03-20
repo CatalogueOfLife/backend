@@ -7,7 +7,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.common.io.UTF8IOUtils;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
 import life.catalogue.importer.IdGenerator;
 import life.catalogue.importer.NormalizationFailedException;
@@ -731,7 +731,7 @@ public class NeoDb {
    */
   public void dump(File file) {
     try {
-      Writer writer = UTF8IOUtils.writerFromFile(file);
+      Writer writer = UTF8IoUtils.writerFromFile(file);
       PrinterUtils.dumpDotFile(neo, writer);
       writer.close();
       System.out.println("Wrote graph to " + file.getAbsolutePath());

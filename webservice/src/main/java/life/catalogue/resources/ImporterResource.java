@@ -66,7 +66,7 @@ public class ImporterResource {
   @Consumes({MoreMediaTypes.APP_GZIP, MoreMediaTypes.APP_ZIP, MediaType.APPLICATION_OCTET_STREAM})
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public ImportRequest uploadArchive(@PathParam("key") int datasetKey, @Auth ColUser user, InputStream archive) throws IOException {
-    return importManager.submit(datasetKey, archive, user);
+    return importManager.upload(datasetKey, archive, user);
   }
 
   @POST
@@ -76,7 +76,7 @@ public class ImporterResource {
       MoreMediaTypes.TEXT_WILDCARD})
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public ImportRequest uploadCsv(@PathParam("key") int datasetKey, @Auth ColUser user, InputStream archive) throws IOException {
-    return importManager.submit(datasetKey, archive, user);
+    return importManager.upload(datasetKey, archive, user);
   }
   
   @DELETE

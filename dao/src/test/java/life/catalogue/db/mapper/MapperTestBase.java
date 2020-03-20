@@ -1,8 +1,10 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.Synonym;
-import life.catalogue.api.model.Taxon;
+import com.google.common.base.Preconditions;
+import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TreeRepoRule;
@@ -13,6 +15,9 @@ import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
 import org.junit.ClassRule;
 import org.junit.Rule;
+
+import java.io.File;
+import java.time.LocalDateTime;
 
 /**
  * A reusable base class for all mybatis mapper tests that takes care of postgres & mybatis.
@@ -62,8 +67,7 @@ public abstract class MapperTestBase<M> {
   
   protected void generateDatasetImport(int datasetKey) {
     commit();
-    DatasetImportDao dao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    dao.createSuccess(datasetKey, Users.TESTER);
+    createSuccess(datasetKey, Users.TESTER);
     commit();
   }
 
@@ -80,7 +84,39 @@ public abstract class MapperTestBase<M> {
     mapper(NameMapper.class).create(s.getName());
     mapper(SynonymMapper.class).create(s);
   }
-  
+
+  public DatasetImport createSuccess(int datasetKey, int user) {
+    DatasetImportDao did = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
+    return createSuccess(datasetKey, user, did);
+  }
+
+  /**
+   * Generates new metrics and persists them as a new successful import record.
+   */
+  public static DatasetImport createSuccess(int datasetKey, int user, DatasetImportDao did) {
+    DatasetImport di = did.generateMetrics(datasetKey, user);
+    di.setDatasetKey(datasetKey);
+    di.setCreatedBy(user);
+    di.setState(ImportState.FINISHED);
+
+    di.setStarted(LocalDateTime.now());
+    di.setDownload(LocalDateTime.now());
+    di.setFinished(LocalDateTime.now());
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      DatasetImportMapper dim = session.getMapper(DatasetImportMapper.class);
+
+      Dataset d = Preconditions.checkNotNull(dm.get(datasetKey), "Dataset "+datasetKey+" does not exist");
+      di.setDownloadUri(d.getDataAccess());
+      di.setOrigin(d.getOrigin());
+      di.setFormat(d.getDataFormat());
+      dim.create(di);
+    }
+    // also update dataset with attempt
+    did.updateDatasetLastAttempt(di);
+    return di;
+  }
+
   protected void printDiff(Object o1, Object o2) {
     Javers javers = JaversBuilder.javers().build();
     Diff diff = javers.compare(o1, o2);

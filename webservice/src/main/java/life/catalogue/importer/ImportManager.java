@@ -256,13 +256,10 @@ public class ImportManager implements Managed {
    * 
    *         dataset does not exist or is not of matching origin
    */
-  public ImportRequest submit(final int datasetKey, final InputStream content, ColUser user) throws IOException {
+  public ImportRequest upload(final int datasetKey, final InputStream content, ColUser user) throws IOException {
     Dataset d = validDataset(datasetKey);
-    if (d.getOrigin() != DatasetOrigin.UPLOADED) {
-      throw new IllegalArgumentException("Dataset " + datasetKey + " is not of origin uploaded");
-    }
     uploadArchive(d, content);
-    return submitValidDataset(new ImportRequest(datasetKey, user.getKey(), true, true));
+    return submitValidDataset(new ImportRequest(datasetKey, user.getKey(), true, true, true));
   }
 
   /**
@@ -308,10 +305,12 @@ public class ImportManager implements Managed {
         throw NotFoundException.keyNotFound(Dataset.class, datasetKey);
       } else if (d.hasDeletedDate()) {
         throw new IllegalArgumentException("Dataset " + datasetKey + " is deleted and cannot be imported");
-      } else if (d.getOrigin() == DatasetOrigin.MANAGED) {
-        throw new IllegalArgumentException("Dataset " + datasetKey + " is managed and cannot be imported");
+      } else if (d.getOrigin() == DatasetOrigin.RELEASED) {
+        throw new IllegalArgumentException("Dataset " + datasetKey + " is released and cannot be imported");
       } else if (d.getKey() == Datasets.NAME_INDEX) {
         throw new IllegalArgumentException("Dataset " + datasetKey + " is the names index and cannot be imported");
+      } else if (d.getKey() == Datasets.DRAFT_COL) {
+        throw new IllegalArgumentException("Dataset " + datasetKey + " is the CoL working draft and cannot be imported");
       }
       return d;
     }
@@ -341,21 +340,13 @@ public class ImportManager implements Managed {
    * Uploads an input stream to a tmp file and if no errors moves it to the archive source path.
    */
   private void uploadArchive(Dataset d, InputStream content) throws NotFoundException, IOException {
-    try (SqlSession session = factory.openSession(true)) {
-      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+    Path tmp = Files.createTempFile(cfg.normalizer.scratchDir.toPath(), "upload-", "");
+    LOG.info("Upload data for dataset {} to tmp file {}", d.getKey(), tmp);
+    Files.copy(content, tmp, StandardCopyOption.REPLACE_EXISTING);
 
-      Path tmp = Files.createTempFile(cfg.normalizer.scratchDir.toPath(), "upload-", "");
-      LOG.info("Upload data for dataset {} to tmp file {}", d.getKey(), tmp);
-      Files.copy(content, tmp, StandardCopyOption.REPLACE_EXISTING);
-
-      Path source = cfg.normalizer.source(d.getKey()).toPath();
-      LOG.debug("Move uploaded data for dataset {} to source repo at {}", d.getKey(), source);
-      Files.move(tmp, source, StandardCopyOption.REPLACE_EXISTING);
-
-      // finally update dataset metadata
-      d.setReleased(LocalDate.now());
-      dm.update(d);
-    }
+    Path source = cfg.normalizer.source(d.getKey()).toPath();
+    LOG.debug("Move uploaded data for dataset {} to source repo at {}", d.getKey(), source);
+    Files.move(tmp, source, StandardCopyOption.REPLACE_EXISTING);
   }
 
   /**
@@ -429,7 +420,7 @@ public class ImportManager implements Managed {
       }
       // add back to queue
       try {
-        submit(new ImportRequest(di.getDatasetKey(), di.getCreatedBy(), true, false));
+        submit(new ImportRequest(di.getDatasetKey(), di.getCreatedBy(), true, false, di.isUpload()));
         counter++;
       } catch (IllegalArgumentException e) {
         // swallow

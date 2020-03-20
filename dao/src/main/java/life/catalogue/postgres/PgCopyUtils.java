@@ -6,7 +6,7 @@ import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import com.univocity.parsers.csv.CsvWriter;
 import com.univocity.parsers.csv.CsvWriterSettings;
-import life.catalogue.common.io.UTF8IOUtils;
+import life.catalogue.common.io.UTF8IoUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.postgresql.PGConnection;
 import org.postgresql.copy.CopyManager;
@@ -204,7 +204,7 @@ public class PgCopyUtils {
   public static void dump(PgConnection con, String sql, File out, String with) throws IOException, SQLException {
     con.setAutoCommit(false);
     
-    try (Writer writer = UTF8IOUtils.writerFromFile(out)) {
+    try (Writer writer = UTF8IoUtils.writerFromFile(out)) {
       CopyManager copy = con.getCopyAPI();
       copy.copyOut("COPY (" + sql + ") TO STDOUT WITH "+with, writer);
     }

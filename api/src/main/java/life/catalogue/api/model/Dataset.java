@@ -27,6 +27,7 @@ public class Dataset extends DataEntity<Integer> {
   private static final Logger LOG = LoggerFactory.getLogger(Dataset.class);
 
   private Integer key;
+  private Integer sourceKey;
   @NotNull
   private DatasetType type;
   @NotNull
@@ -86,7 +87,15 @@ public class Dataset extends DataEntity<Integer> {
   public void setKey(Integer key) {
     this.key = key;
   }
-  
+
+  public Integer getSourceKey() {
+    return sourceKey;
+  }
+
+  public void setSourceKey(Integer sourceKey) {
+    this.sourceKey = sourceKey;
+  }
+
   public String getTitle() {
     return title;
   }
@@ -412,6 +421,7 @@ public class Dataset extends DataEntity<Integer> {
     Dataset dataset = (Dataset) o;
     return
         Objects.equals(key, dataset.key) &&
+        Objects.equals(sourceKey, dataset.sourceKey) &&
         type == dataset.type &&
         Objects.equals(title, dataset.title) &&
         Objects.equals(alias, dataset.alias) &&
@@ -447,7 +457,7 @@ public class Dataset extends DataEntity<Integer> {
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, type, title, alias, gbifKey, gbifPublisherKey, description, organisations,
+    return Objects.hash(super.hashCode(), key, sourceKey, type, title, alias, gbifKey, gbifPublisherKey, description, organisations,
             contact, authorsAndEditors, license, version, released, citation, geographicScope, website, group, logo,
             dataFormat, dataAccess, origin, locked, importFrequency, code, size, confidence, completeness, notes,
             contributesTo, imported, deleted, settings);

@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class ImportRequest implements Comparable<ImportRequest> {
   public final int datasetKey;
+  public final boolean upload;
   public final boolean priority;
   public final boolean force;
   public Integer createdBy;
@@ -23,15 +24,16 @@ public class ImportRequest implements Comparable<ImportRequest> {
                        @JsonProperty("force") boolean force,
                        @JsonProperty("priority") boolean priority
   ) {
-   this(datasetKey, null, force, priority);
+   this(datasetKey, null, force, priority, false);
   }
 
   public ImportRequest(int datasetKey, int createdBy) {
-    this(datasetKey, createdBy, false, false);
+    this(datasetKey, createdBy, false, false, false);
   }
   
-  public ImportRequest(int datasetKey, Integer createdBy, boolean force, boolean priority) {
+  public ImportRequest(int datasetKey, Integer createdBy, boolean force, boolean priority, boolean upload) {
     this.datasetKey = datasetKey;
+    this.upload = upload;
     this.createdBy = createdBy;
     this.force = force;
     this.priority = priority;

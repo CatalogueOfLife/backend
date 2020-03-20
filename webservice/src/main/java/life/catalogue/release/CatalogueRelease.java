@@ -45,7 +45,7 @@ public class CatalogueRelease implements Runnable {
     this.diDao = diDao;
     this.exporter = exporter;
     this.sourceDatasetKey = sourceDatasetKey;
-    metrics = diDao.create(release, userKey);
+    metrics = diDao.createWaiting(release, userKey);
     releaseKey = release.getKey();
     this.user = userKey;
   }
@@ -69,6 +69,8 @@ public class CatalogueRelease implements Runnable {
       
       LocalDate today = LocalDate.now();
       release.setKey(null);
+      release.setSourceKey(catalogueKey);
+      release.setOrigin(DatasetOrigin.RELEASED);
       release.setAlias(null);
       release.setLocked(true);
       release.setImportFrequency(Frequency.NEVER);
