@@ -406,10 +406,10 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     // by origin
     query = new DatasetSearchRequest();
     query.setOrigin(DatasetOrigin.MANAGED);
-    assertEquals(2, mapper().search(query, new Page()).size());
+    assertEquals(3, mapper().search(query, new Page()).size());
   
     query.setOrigin(DatasetOrigin.EXTERNAL);
-    assertEquals(6, mapper().search(query, new Page()).size());
+    assertEquals(5, mapper().search(query, new Page()).size());
   }
 
   private int createSearchableDataset(String title, String author, String organisation, String description) {
