@@ -1,17 +1,20 @@
 package life.catalogue.es.nu.suggest;
 
 import java.util.List;
-
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.api.search.NameUsageSuggestion;
 import life.catalogue.es.EsNameUsage;
+import life.catalogue.es.UpwardConverter;
 import life.catalogue.es.response.SearchHit;
 
-class SuggestionFactory {
+/**
+ * Converts an ES SearchHit instance into a NameUsageSuggestion object.
+ */
+class SearchHitConverter implements UpwardConverter<SearchHit<EsNameUsage>, NameUsageSuggestion> {
 
   private final VernacularNameMatcher matcher;
 
-  SuggestionFactory(NameUsageSuggestRequest request) {
+  SearchHitConverter(NameUsageSuggestRequest request) {
     if (request.suggestVernaculars()) {
       this.matcher = new VernacularNameMatcher(request);
     } else {

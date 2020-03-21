@@ -7,13 +7,19 @@ import org.apache.commons.lang3.StringUtils;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.SimpleDecision;
+import life.catalogue.es.UpwardConverter;
 
-class ResponseProcessor {
+/**
+ * The last "converter" that the data pass through on the way upward before becoming a full-blown API object. Doesn't create a new type of
+ * object but enhances it.
+ *
+ */
+class NameUsageSearchResponsePostProcessor implements UpwardConverter<NameUsageSearchResponse, NameUsageSearchResponse> {
 
   private NameUsageSearchRequest request;
   private NameUsageSearchResponse response;
 
-  ResponseProcessor(NameUsageSearchRequest request, NameUsageSearchResponse response) {
+  NameUsageSearchResponsePostProcessor(NameUsageSearchRequest request, NameUsageSearchResponse response) {
     this.request = request;
     this.response = response;
   }

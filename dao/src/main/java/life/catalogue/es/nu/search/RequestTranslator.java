@@ -4,6 +4,7 @@ import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
 import static life.catalogue.api.search.NameUsageSearchParameter.*;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.es.DownwardConverter;
 import life.catalogue.es.query.BoolQuery;
 import life.catalogue.es.query.EsSearchRequest;
 import life.catalogue.es.query.MatchAllQuery;
@@ -11,9 +12,10 @@ import life.catalogue.es.query.Query;
 import life.catalogue.es.query.TermQuery;
 
 /**
- * Translates a {@link NameUsageSearchRequest} into a native Elasticsearch search request.
+ * Translates a {@link NameUsageSearchRequest} into a native Elasticsearch search request. Mostly manages the other translators in this
+ * package.
  */
-class RequestTranslator {
+class RequestTranslator implements DownwardConverter<NameUsageSearchRequest, EsSearchRequest> {
 
   static Query generateQuery(NameUsageSearchRequest request) {
     String usageId = request.getFilterValue(USAGE_ID);

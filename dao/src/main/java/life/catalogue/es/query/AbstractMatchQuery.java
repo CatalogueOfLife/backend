@@ -43,6 +43,12 @@ public abstract class AbstractMatchQuery extends ConstraintQuery<MatchConstraint
     return match.values().iterator().next();
   }
 
+  /**
+   * Returns the "multifield" field underneath the main field that specifies the index to be accessed (e.g. the full-text index, the edge
+   * ngram index, etc.). Note that the straight as-is keyword index for term queries is always accessed via the main field.
+   * 
+   * @return
+   */
   protected abstract MultiField getMultiField();
 
 }

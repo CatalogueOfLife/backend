@@ -52,7 +52,7 @@ public class NameUsageSuggestionServiceEs extends NameUsageQueryService implemen
       throw new EsException(e);
     }
     List<NameUsageSuggestion> suggestions = new ArrayList<>();
-    SuggestionFactory factory = new SuggestionFactory(request);
+    SearchHitConverter factory = new SearchHitConverter(request);
     esResponse.getHits().getHits().forEach(hit -> {
       if (hit.matchedQuery(QTranslator.SN_QUERY_NAME)) {
         suggestions.add(factory.createSuggestion(hit, false));

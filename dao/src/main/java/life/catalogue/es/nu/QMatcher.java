@@ -2,7 +2,7 @@ package life.catalogue.es.nu;
 
 import life.catalogue.api.search.NameUsageRequest;
 import life.catalogue.es.ddl.MultiField;
-import life.catalogue.es.query.AutoCompleteQuery;
+import life.catalogue.es.query.EdgeNgramQuery;
 import life.catalogue.es.query.CaseInsensitiveQuery;
 import life.catalogue.es.query.DisMaxQuery;
 import life.catalogue.es.query.Query;
@@ -25,14 +25,14 @@ public abstract class QMatcher {
 
   public static QMatcher getInstance(NameUsageRequest request) {
     if (request.isFuzzyMatchingEnabled()) {
-      if (!request.isPrefixMatchingEnabled()) {
-        return new FuzzyWholeWordQMatcher(request);
+      if (request.isPrefixMatchingEnabled()) {
+        return new FuzzyPrefixQMatcher(request);
       }
+      return new FuzzyWholeWordQMatcher(request);
+    } else if (request.isPrefixMatchingEnabled()) {
       return new PrefixQMatcher(request);
-    } else if (!request.isPrefixMatchingEnabled()) {
-      return new WholeWordQMatcher(request);
     }
-    return new PartialQMatcher(request);
+    return new WholeWordQMatcher(request);
   }
 
   final NameUsageRequest request;
@@ -52,7 +52,7 @@ public abstract class QMatcher {
     String q = request.getQ();
     return new DisMaxQuery()
         .subquery(new CaseInsensitiveQuery(FLD_VERNACULAR, q).withBoost(100.0))
-        .subquery(new AutoCompleteQuery(FLD_VERNACULAR, q).withOperator(AND));
+        .subquery(new EdgeNgramQuery(FLD_VERNACULAR, q).withOperator(AND));
 
   }
 
@@ -60,7 +60,7 @@ public abstract class QMatcher {
     String q = request.getQ();
     return new DisMaxQuery()
         .subquery(new CaseInsensitiveQuery(FLD_AUTHOR, q).withBoost(100.0))
-        .subquery(new AutoCompleteQuery(FLD_AUTHOR, q).withOperator(AND));
+        .subquery(new EdgeNgramQuery(FLD_AUTHOR, q).withOperator(AND));
   }
 
   public abstract Query getScientificNameQuery();

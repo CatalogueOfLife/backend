@@ -7,13 +7,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import life.catalogue.es.EsModule;
 import life.catalogue.es.EsNameUsage;
+import life.catalogue.es.UpwardConverter;
 import life.catalogue.es.response.EsMultiResponse;
 import life.catalogue.es.response.EsResponse;
 
 /**
- * Extracts an {@link EsNameSearchResponse} or an {@link NameUsageEsMultiResponse} from the raw HTTP response.
+ * Extracts an {@link EsNameSearchResponse} or an {@link NameUsageEsMultiResponse} from the raw HTTP response. The
+ * {@link EsNameSearchResponse} is then passed on the {@link EsNameUsageConverter}.
  */
-public class HttpResponseConverter {
+public class HttpResponseConverter implements UpwardConverter<Response, EsResponse<EsNameUsage>> {
 
   private static final Logger LOG = LoggerFactory.getLogger(HttpResponseConverter.class);
 

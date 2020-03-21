@@ -3,15 +3,16 @@ package life.catalogue.es.nu;
 import java.util.List;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.es.EsNameUsage;
+import life.catalogue.es.UpwardConverter;
 import life.catalogue.es.response.EsResponse;
 import life.catalogue.es.response.SearchHit;
 import static java.util.stream.Collectors.toList;
 
 /**
- * Converts the raw Elasticsearch response into a list of {@link EsNameUsage} instances, which typically will
- * converted again into API-level {@link NameUsageWrapper} instances.
+ * Converts the raw Elasticsearch response into a list of {@link EsNameUsage} instances, which typically will converted again into API-level
+ * {@link NameUsageWrapper} instances.
  */
-public class EsNameUsageConverter {
+public class EsNameUsageConverter implements UpwardConverter<EsResponse<EsNameUsage>, List<EsNameUsage>> {
 
   protected final EsResponse<EsNameUsage> esResponse;
 
@@ -20,8 +21,8 @@ public class EsNameUsageConverter {
   }
 
   /**
-   * Returns the raw Elasticsearch documents with the payload still zipped (if zipping is enabled). Useful and fast if
-   * you're only interested in the indexed fields.
+   * Returns the raw Elasticsearch documents with the payload still zipped (if zipping is enabled). Useful and fast if you're only
+   * interested in the indexed fields.
    * 
    * @return
    */

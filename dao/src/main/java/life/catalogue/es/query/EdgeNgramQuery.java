@@ -2,9 +2,9 @@ package life.catalogue.es.query;
 
 import life.catalogue.es.ddl.MultiField;
 
-public class AutoCompleteQuery extends AbstractMatchQuery {
+public class EdgeNgramQuery extends AbstractMatchQuery {
 
-  public AutoCompleteQuery(String field, String value) {
+  public EdgeNgramQuery(String field, String value) {
     super(field, value);
   }
 

@@ -16,7 +16,7 @@ import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.es.EsModule;
 import life.catalogue.es.EsNameUsage;
-import life.catalogue.es.EsUtil;
+import life.catalogue.es.UpwardConverter;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
 import life.catalogue.es.response.Bucket;
 import life.catalogue.es.response.EsFacet;
@@ -27,11 +27,11 @@ import life.catalogue.es.response.SearchHit;
 /**
  * Converts the Elasticsearch response to a NameSearchResponse instance.
  */
-class NameUsageSearchResponseFactory {
+class NameUsageSearchResponseConverter implements UpwardConverter<EsResponse<EsNameUsage>, NameUsageSearchResponse> {
 
   private final EsResponse<EsNameUsage> esResponse;
 
-  NameUsageSearchResponseFactory(EsResponse<EsNameUsage> esResponse) {
+  NameUsageSearchResponseConverter(EsResponse<EsNameUsage> esResponse) {
     this.esResponse = esResponse;
   }
 

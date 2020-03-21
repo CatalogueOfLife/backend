@@ -1,27 +1,5 @@
 package life.catalogue.es.nu;
 
-import static life.catalogue.api.vocab.NameField.BASIONYM_AUTHORS;
-import static life.catalogue.api.vocab.NameField.BASIONYM_EX_AUTHORS;
-import static life.catalogue.api.vocab.NameField.BASIONYM_YEAR;
-import static life.catalogue.api.vocab.NameField.CANDIDATUS;
-import static life.catalogue.api.vocab.NameField.CODE;
-import static life.catalogue.api.vocab.NameField.COMBINATION_AUTHORS;
-import static life.catalogue.api.vocab.NameField.COMBINATION_EX_AUTHORS;
-import static life.catalogue.api.vocab.NameField.COMBINATION_YEAR;
-import static life.catalogue.api.vocab.NameField.CULTIVAR_EPITHET;
-import static life.catalogue.api.vocab.NameField.GENUS;
-import static life.catalogue.api.vocab.NameField.INFRAGENERIC_EPITHET;
-import static life.catalogue.api.vocab.NameField.INFRASPECIFIC_EPITHET;
-import static life.catalogue.api.vocab.NameField.LINK;
-import static life.catalogue.api.vocab.NameField.NOM_STATUS;
-import static life.catalogue.api.vocab.NameField.NOTHO;
-import static life.catalogue.api.vocab.NameField.PUBLISHED_IN_ID;
-import static life.catalogue.api.vocab.NameField.PUBLISHED_IN_PAGE;
-import static life.catalogue.api.vocab.NameField.REMARKS;
-import static life.catalogue.api.vocab.NameField.SANCTIONING_AUTHOR;
-import static life.catalogue.api.vocab.NameField.SPECIFIC_EPITHET;
-import static life.catalogue.api.vocab.NameField.UNINOMIAL;
-import static life.catalogue.common.collection.CollectionUtils.notEmpty;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -47,18 +25,41 @@ import life.catalogue.api.model.VernacularName;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.NameField;
 import life.catalogue.common.tax.SciNameNormalizer;
+import life.catalogue.es.DownwardConverter;
 import life.catalogue.es.EsDecision;
 import life.catalogue.es.EsModule;
 import life.catalogue.es.EsMonomial;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.NameStrings;
+import static life.catalogue.api.vocab.NameField.BASIONYM_AUTHORS;
+import static life.catalogue.api.vocab.NameField.BASIONYM_EX_AUTHORS;
+import static life.catalogue.api.vocab.NameField.BASIONYM_YEAR;
+import static life.catalogue.api.vocab.NameField.CANDIDATUS;
+import static life.catalogue.api.vocab.NameField.CODE;
+import static life.catalogue.api.vocab.NameField.COMBINATION_AUTHORS;
+import static life.catalogue.api.vocab.NameField.COMBINATION_EX_AUTHORS;
+import static life.catalogue.api.vocab.NameField.COMBINATION_YEAR;
+import static life.catalogue.api.vocab.NameField.CULTIVAR_EPITHET;
+import static life.catalogue.api.vocab.NameField.GENUS;
+import static life.catalogue.api.vocab.NameField.INFRAGENERIC_EPITHET;
+import static life.catalogue.api.vocab.NameField.INFRASPECIFIC_EPITHET;
+import static life.catalogue.api.vocab.NameField.LINK;
+import static life.catalogue.api.vocab.NameField.NOM_STATUS;
+import static life.catalogue.api.vocab.NameField.NOTHO;
+import static life.catalogue.api.vocab.NameField.PUBLISHED_IN_ID;
+import static life.catalogue.api.vocab.NameField.PUBLISHED_IN_PAGE;
+import static life.catalogue.api.vocab.NameField.REMARKS;
+import static life.catalogue.api.vocab.NameField.SANCTIONING_AUTHOR;
+import static life.catalogue.api.vocab.NameField.SPECIFIC_EPITHET;
+import static life.catalogue.api.vocab.NameField.UNINOMIAL;
+import static life.catalogue.common.collection.CollectionUtils.notEmpty;
 
 /**
  * Converts {@link NameUsageWrapper} instances into a {@link EsNameUsage} instances (which model the documents entering Elasticsearch. Note
  * that the <i>entire</i> NameUsageWrapper instance is serialized (and possibly zipped) and placed into the payload field of the NameUsage
  * document.
  */
-public class NameUsageWrapperConverter {
+public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWrapper, EsNameUsage> {
 
   /**
    * Whether or not to zip the stringified NameUsageWrapper.
@@ -147,6 +148,7 @@ public class NameUsageWrapperConverter {
 
   /**
    * Copies the provided classification into the provided document.
+   * 
    * @param document
    * @param classification
    */

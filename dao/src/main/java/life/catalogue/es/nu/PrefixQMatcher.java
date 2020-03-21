@@ -1,26 +1,24 @@
 package life.catalogue.es.nu;
 
 import life.catalogue.api.search.NameUsageRequest;
-import life.catalogue.es.query.PrefixQuery;
+import life.catalogue.es.query.DisMaxQuery;
 import life.catalogue.es.query.Query;
 import life.catalogue.es.query.SciNameAutoCompleteQuery;
-import static life.catalogue.es.query.AbstractMatchQuery.Operator.AND;
+import life.catalogue.es.query.SciNameCaseInsensitiveQuery;
 
 /**
- * Executes an autocomplete-type query against the scientific name field as well as the normalized versions of the scientific name's
- * epithets.
+ * Executes autocomplete-type queries against the scientific name field.
  */
-class PrefixQMatcher extends FuzzyQMatcher {
+class PrefixQMatcher extends QMatcher {
 
   PrefixQMatcher(NameUsageRequest request) {
     super(request);
   }
 
-  Query matchAsEpithet(String field, String term) {
-    if (term.length() > MAX_NGRAM_SIZE) {
-      return new PrefixQuery(field, term).withBoost(0.1 * term.length());
-    }
-    return new SciNameAutoCompleteQuery(field, term).withOperator(AND).withBoost(3.5);
+  public Query getScientificNameQuery() {
+    return new DisMaxQuery()
+        .subquery(new SciNameCaseInsensitiveQuery(FLD_SCINAME, request.getQ()).withBoost(100.0))
+        .subquery(new SciNameAutoCompleteQuery(FLD_SCINAME, request.getQ()));
   }
 
 }
