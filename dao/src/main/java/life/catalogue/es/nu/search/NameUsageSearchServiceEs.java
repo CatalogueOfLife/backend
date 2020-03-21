@@ -46,14 +46,14 @@ public class NameUsageSearchServiceEs extends NameUsageQueryService implements N
     RequestTranslator translator = new RequestTranslator(request, page);
     EsSearchRequest esSearchRequest = translator.translateRequest();
     NameUsageSearchResponse response = search(index, esSearchRequest, page);
-    NameUsageSearchResponsePostProcessor processor = new NameUsageSearchResponsePostProcessor(request, response);
+    ResponsePostProcessor processor = new ResponsePostProcessor(request, response);
     return processor.processResponse();
   }
 
   @VisibleForTesting
   public NameUsageSearchResponse search(String index, EsSearchRequest esSearchRequest, Page page) throws IOException {
     EsResponse<EsNameUsage> esResponse = executeSearchRequest(index, esSearchRequest);
-    NameUsageSearchResponseConverter converter = new NameUsageSearchResponseConverter(esResponse);
+    ResponseConverter converter = new ResponseConverter(esResponse);
     return converter.convertEsResponse(page);
   }
 

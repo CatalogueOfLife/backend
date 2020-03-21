@@ -27,11 +27,11 @@ import life.catalogue.es.response.SearchHit;
 /**
  * Converts the Elasticsearch response to a NameSearchResponse instance.
  */
-class NameUsageSearchResponseConverter implements UpwardConverter<EsResponse<EsNameUsage>, NameUsageSearchResponse> {
+class ResponseConverter implements UpwardConverter<EsResponse<EsNameUsage>, NameUsageSearchResponse> {
 
   private final EsResponse<EsNameUsage> esResponse;
 
-  NameUsageSearchResponseConverter(EsResponse<EsNameUsage> esResponse) {
+  ResponseConverter(EsResponse<EsNameUsage> esResponse) {
     this.esResponse = esResponse;
   }
 
@@ -118,24 +118,30 @@ class NameUsageSearchResponseConverter implements UpwardConverter<EsResponse<EsN
 
   private static Set<FacetValue<?>> createStringBuckets(EsFacet esFacet) {
     TreeSet<FacetValue<?>> facet = new TreeSet<>();
-    for (Bucket b : esFacet.getFacetValues().getBuckets()) {
-      facet.add(FacetValue.forString(b.getKey(), b.getDocCount()));
+    if (esFacet.getFacetValues() != null && esFacet.getFacetValues().getBuckets() != null) {
+      for (Bucket b : esFacet.getFacetValues().getBuckets()) {
+        facet.add(FacetValue.forString(b.getKey(), b.getDocCount()));
+      }
     }
     return facet;
   }
 
   private static Set<FacetValue<?>> createIntBuckets(EsFacet esFacet) {
     TreeSet<FacetValue<?>> facet = new TreeSet<>();
-    for (Bucket b : esFacet.getFacetValues().getBuckets()) {
-      facet.add(FacetValue.forInteger(b.getKey(), b.getDocCount()));
+    if (esFacet.getFacetValues() != null && esFacet.getFacetValues().getBuckets() != null) {
+      for (Bucket b : esFacet.getFacetValues().getBuckets()) {
+        facet.add(FacetValue.forInteger(b.getKey(), b.getDocCount()));
+      }
     }
     return facet;
   }
 
   private static Set<FacetValue<?>> createUuidBuckets(EsFacet esFacet) {
     TreeSet<FacetValue<?>> facet = new TreeSet<>();
-    for (Bucket b : esFacet.getFacetValues().getBuckets()) {
-      facet.add(FacetValue.forUuid(b.getKey(), b.getDocCount()));
+    if (esFacet.getFacetValues() != null && esFacet.getFacetValues().getBuckets() != null) {
+      for (Bucket b : esFacet.getFacetValues().getBuckets()) {
+        facet.add(FacetValue.forUuid(b.getKey(), b.getDocCount()));
+      }
     }
     return facet;
   }
@@ -144,8 +150,10 @@ class NameUsageSearchResponseConverter implements UpwardConverter<EsResponse<EsN
     @SuppressWarnings("unchecked")
     Class<U> enumClass = (Class<U>) param.type();
     TreeSet<FacetValue<?>> facet = new TreeSet<>();
-    for (Bucket b : esFacet.getFacetValues().getBuckets()) {
-      facet.add(FacetValue.forEnum(enumClass, b.getKey(), b.getDocCount()));
+    if (esFacet.getFacetValues() != null && esFacet.getFacetValues().getBuckets() != null) {
+      for (Bucket b : esFacet.getFacetValues().getBuckets()) {
+        facet.add(FacetValue.forEnum(enumClass, b.getKey(), b.getDocCount()));
+      }
     }
     return facet;
   }

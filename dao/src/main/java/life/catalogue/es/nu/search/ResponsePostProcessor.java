@@ -14,12 +14,12 @@ import life.catalogue.es.UpwardConverter;
  * object but enhances it.
  *
  */
-class NameUsageSearchResponsePostProcessor implements UpwardConverter<NameUsageSearchResponse, NameUsageSearchResponse> {
+class ResponsePostProcessor implements UpwardConverter<NameUsageSearchResponse, NameUsageSearchResponse> {
 
   private NameUsageSearchRequest request;
   private NameUsageSearchResponse response;
 
-  NameUsageSearchResponsePostProcessor(NameUsageSearchRequest request, NameUsageSearchResponse response) {
+  ResponsePostProcessor(NameUsageSearchRequest request, NameUsageSearchResponse response) {
     this.request = request;
     this.response = response;
   }
