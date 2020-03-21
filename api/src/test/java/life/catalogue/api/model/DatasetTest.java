@@ -23,9 +23,10 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
   public Dataset genTestValue() throws Exception {
     Dataset d = new Dataset();
     d.setKey(12345);
+    d.setSourceKey(12345);
     d.setTitle("gfdscdscw");
     d.setDescription("gefzw fuewh gczew fw hfueh j ijdfeiw jfie eö.. few . few .");
-    d.setOrigin(DatasetOrigin.UPLOADED);
+    d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setType(DatasetType.TAXONOMIC);
     d.setImportFrequency(Frequency.MONTHLY);
     d.setDataAccess(URI.create("www.gbif.org"));
@@ -43,7 +44,7 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.getSettings().put(DatasetSettings.REMATCH_DECISIONS, false);
     return d;
   }
-  
+
   @Test
   public void testContributesTo() throws Exception {
     Dataset d = genTestValue();

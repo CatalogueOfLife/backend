@@ -135,7 +135,7 @@ abstract class NormalizerITBase {
       d.setDataFormat(format);
       d.setCode(code);
       store.put(d);
-      Normalizer norm = new Normalizer(store, arch, nameIndexSupplier.get(), ImageService.passThru());
+      Normalizer norm = new Normalizer(format, store, arch, nameIndexSupplier.get(), ImageService.passThru());
       norm.call();
     
       // reopen

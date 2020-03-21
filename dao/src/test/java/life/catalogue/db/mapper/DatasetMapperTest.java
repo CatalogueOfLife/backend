@@ -37,7 +37,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     Dataset d = new Dataset();
     d.applyUser(Users.DB_INIT);
     d.setType(DatasetType.TAXONOMIC);
-    d.setOrigin(DatasetOrigin.UPLOADED);
+    d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setGbifKey(UUID.randomUUID());
     d.setTitle(RandomUtils.randomLatinString(80));
     d.setDescription(RandomUtils.randomLatinString(500));
@@ -76,6 +76,22 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   
     //printDiff(d1, d2);
     assertEquals(d1, d2);
+  }
+
+  @Test
+  public void immutableOrigin() throws Exception {
+    Dataset d1 = create();
+    mapper().create(d1);
+    DatasetOrigin o = d1.getOrigin();
+    assertEquals(DatasetOrigin.EXTERNAL, o);
+
+    d1.setOrigin(DatasetOrigin.MANAGED);
+    mapper().update(d1);
+
+    commit();
+
+    Dataset d2 = mapper().get(d1.getKey());
+    assertEquals(DatasetOrigin.EXTERNAL, d2.getOrigin());
   }
   
   @Test
@@ -390,10 +406,10 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     // by origin
     query = new DatasetSearchRequest();
     query.setOrigin(DatasetOrigin.MANAGED);
-    assertEquals(2, mapper().search(query, new Page()).size());
+    assertEquals(3, mapper().search(query, new Page()).size());
   
     query.setOrigin(DatasetOrigin.EXTERNAL);
-    assertEquals(2, mapper().search(query, new Page()).size());
+    assertEquals(5, mapper().search(query, new Page()).size());
   }
 
   private int createSearchableDataset(String title, String author, String organisation, String description) {
@@ -405,7 +421,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     ds.getOrganisations().add(organisation);
     ds.setDescription(description);
     ds.setType(DatasetType.TAXONOMIC);
-    ds.setOrigin(DatasetOrigin.UPLOADED);
+    ds.setOrigin(DatasetOrigin.EXTERNAL);
     mapper().create(TestEntityGenerator.setUserDate(ds));
     return ds.getKey();
   }

@@ -100,7 +100,7 @@ public class AcExporterTest {
       d.setAuthorsAndEditors(List.of("Röskøv Y.", "Ower G.", "Orrell T.", "Nicolson D."));
       d.setOrganisations(List.of("Species 2000", "ITIS Catalogue of Life"));
       d.setReleased(null);
-      d.setOrigin(DatasetOrigin.UPLOADED);
+      d.setOrigin(DatasetOrigin.MANAGED);
       dm.update(d);
     }
 

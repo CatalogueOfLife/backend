@@ -106,8 +106,8 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
     // null properties not matching its origin
     switch (d.getOrigin()) {
       case MANAGED:
+      case RELEASED:
         d.setDataFormat(null);
-      case UPLOADED:
         d.setDataAccess(null);
         d.setImportFrequency(Frequency.NEVER);
     }

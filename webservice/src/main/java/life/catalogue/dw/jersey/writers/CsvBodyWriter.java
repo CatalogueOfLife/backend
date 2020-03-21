@@ -3,7 +3,7 @@ package life.catalogue.dw.jersey.writers;
 import com.google.common.base.Throwables;
 import com.univocity.parsers.csv.CsvWriter;
 import com.univocity.parsers.csv.CsvWriterSettings;
-import life.catalogue.common.io.UTF8IOUtils;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 
 import javax.ws.rs.Produces;
@@ -30,7 +30,7 @@ public class CsvBodyWriter implements MessageBodyWriter<Stream<Object[]>> {
   
   @Override
   public void writeTo(Stream<Object[]> rows, Class<?> type, Type type1, Annotation[] antns, MediaType mt, MultivaluedMap<String, Object> mm, OutputStream out) throws IOException, WebApplicationException {
-    CsvWriter csv = new CsvWriter(UTF8IOUtils.writerFromStream(out), SETTINGS);
+    CsvWriter csv = new CsvWriter(UTF8IoUtils.writerFromStream(out), SETTINGS);
     try {
       rows.forEach(row -> {
         try {

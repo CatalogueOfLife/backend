@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.common.io.UriUtils;
 import org.gbif.dwc.terms.Term;
 
 import java.net.URI;
@@ -15,8 +16,12 @@ import java.util.Objects;
  * Metrics and import details about a single dataset import event.
  */
 public class DatasetImport extends ImportMetrics<ImportState> {
-  
-  
+
+
+  /**
+   * The URI the data was downloaded from before its been imported.
+   * In case of uploads this is NULL!
+   */
   private URI downloadUri;
   private DatasetOrigin origin;
   private DataFormat format;
@@ -55,6 +60,10 @@ public class DatasetImport extends ImportMetrics<ImportState> {
 
   public void setOrigin(DatasetOrigin origin) {
     this.origin = origin;
+  }
+
+  public boolean isUpload() {
+    return downloadUri == null && origin != DatasetOrigin.RELEASED;
   }
 
   public DataFormat getFormat() {

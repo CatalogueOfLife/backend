@@ -7,7 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-public class UTF8IOUtils {
+public class UTF8IoUtils {
   
   public static BufferedWriter writerFromGzipFile(File f) throws IOException {
     Files.createParentDirs(f);

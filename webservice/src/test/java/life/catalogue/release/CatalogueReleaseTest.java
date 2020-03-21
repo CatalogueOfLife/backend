@@ -48,9 +48,6 @@ public class CatalogueReleaseTest {
     try (SqlSession s = PgSetupRule.getSqlSessionFactory().openSession()) {
       DatasetMapper dm = s.getMapper(DatasetMapper.class);
       d = dm.get(TestDataRule.TestData.APPLE.key);
-      d.setOrigin(DatasetOrigin.MANAGED);
-      dm.update(d);
-      s.commit();
     }
   }
   

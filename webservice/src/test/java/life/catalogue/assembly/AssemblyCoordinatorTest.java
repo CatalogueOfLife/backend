@@ -11,10 +11,7 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.DatasetMapperTest;
-import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.db.mapper.TestDataRule;
+import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.Rank;
@@ -39,8 +36,7 @@ public class AssemblyCoordinatorTest {
   @Before
   public void init() {
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    diDao.createSuccess(Datasets.DRAFT_COL, Users.TESTER);
-  
+    MapperTestBase.createSuccess(Datasets.DRAFT_COL, Users.TESTER, diDao);
     coord = new AssemblyCoordinator(PgSetupRule.getSqlSessionFactory(), diDao, NameUsageIndexService.passThru(), new MetricRegistry());
   }
   

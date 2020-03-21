@@ -5,7 +5,7 @@
 --   commented out ids are ignored from ACEF dumps because we have a superior coldp archive already
 --------------------------
 
--- origin:  EXTERNAL, UPLOADED, MANAGED
+-- origin:  EXTERNAL, MANAGED, RELEASED
 -- type:  NOMENCLATURAL, TAXONOMIC, ARTICLE, PERSONAL, OTU, THEMATIC, OTHER
 -- code:  BACTERIAL, BOTANICAL, CULTIVARS, VIRUS, ZOOLOGICAL
 -- data_format:  DWCA, ACEF, TCS, COLDP
@@ -422,13 +422,13 @@ ALTER SEQUENCE dataset_key_seq RESTART WITH 1700;
 
 -- for enums we use the int ordinal, i.e. array index starting with 0:
 -- origin:  http://api.col.plus/vocab/datasetorigin
---          0=EXTERNAL, 1=UPLOADED, 2=MANAGED
+--          EXTERNAL, MANAGED, RELEASED
 -- type:  http://api.col.plus/vocab/datasettype
---          0=nomenclatural, 1=taxonomic, 2=article, 3=personal, 4=otu, 5=catalogue, 6=thematic, 7=other
+--          NOMENCLATURAL, TAXONOMIC, ARTICLE, PERSONAL, OTU, CATALOGUE, THEMATIC, OTHER
 -- code:  http://api.col.plus/vocab/nomCode
---          0=bacterial, 1=botanical, 2=cultivars, 3=virus, 4=zoological
+--          BACTERIAL, BOTANICAL, CULTIVARS, VIRUS, ZOOLOGICAL
 -- data_format:  http://api.col.plus/vocab/dataformat
---          0=dwca, 1=acef, 2=tcs, 3=coldp, 4=proxy
+--          DWCA, ACEF, TCS, COLDP, PROXY
 INSERT INTO dataset (origin, type, code, title, import_frequency, created_by, modified_by, data_format, data_access) VALUES
 ('EXTERNAL', 'OTHER', 'BOTANICAL',  'ColDP Example',           7, 0, 0, 'COLDP', 'https://github.com/Sp2000/coldp/archive/master.zip'),
 ('EXTERNAL', 'OTHER', 'ZOOLOGICAL', 'Testing Data ACEF',       7, 0, 0, 'ACEF', 'https://github.com/Sp2000/data-testing/archive/master.zip'),

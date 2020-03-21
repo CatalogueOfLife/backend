@@ -149,7 +149,7 @@ public class NormalizerTreeIT {
       
       store.put(d);
       
-      Normalizer norm = new Normalizer(store, source, NameIndexFactory.passThru(), ImageService.passThru());
+      Normalizer norm = new Normalizer(format, store, source, NameIndexFactory.passThru(), ImageService.passThru());
       norm.call();
       // reopen the neo db
       store = NeoDbFactory.open(datasetKey, 1, cfg);

@@ -10,7 +10,7 @@ import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.Language;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.Resources;
-import life.catalogue.common.io.UTF8IOUtils;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.img.ImgConfig;
 import life.catalogue.postgres.PgCopyUtils;
@@ -159,7 +159,7 @@ public class AcExporter {
       data.put("d", d);
       
       Template temp = fmk.getTemplate("credits.ftl");
-      Writer out = UTF8IOUtils.writerFromFile(cf);
+      Writer out = UTF8IoUtils.writerFromFile(cf);
       temp.process(data, out);
     } catch (TemplateException e) {
       LOG.error("Failed to write credits", e);

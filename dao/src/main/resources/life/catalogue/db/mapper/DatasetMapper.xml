@@ -6,6 +6,7 @@
 
     <sql id="SELECT">
       d.key,
+      d.source_key,
       d.type,
       d.title,
       d.gbif_key,
@@ -44,6 +45,7 @@
     </sql>
 
     <sql id="COLS">
+      source_key,
       type,
       title,
       gbif_key,
@@ -61,7 +63,6 @@
       logo,
       data_format,
       data_access,
-      origin,
       locked,
       import_frequency,
       code,
@@ -76,6 +77,7 @@
     </sql>
 
     <sql id="PROPS">
+      #{sourceKey},
       #{type}::datasettype,
       #{title},
       #{gbifKey},
@@ -93,7 +95,6 @@
       #{logo},
       #{dataFormat}::DATAFORMAT,
       #{dataAccess},
-      #{origin}::DATASETORIGIN,
       #{locked},
       #{importFrequency, typeHandler=life.catalogue.db.type.FrequencyTypeHandler},
       #{code}::NOMCODE,
@@ -234,6 +235,7 @@
         FROM dataset d
           LEFT JOIN dataset_import di ON di.dataset_key=d.key
         WHERE d.deleted IS NULL
+          AND d.origin = 'EXTERNAL'
           AND d.import_frequency >= 0
           AND di.attempt IS NULL
         ORDER BY d.key ASC
@@ -247,6 +249,7 @@
             FROM dataset d
               LEFT JOIN dataset_import di ON di.dataset_key=d.key
             WHERE d.deleted IS NULL
+                AND d.origin = 'EXTERNAL'
                 AND di.finished IS NOT NULL
                 AND d.import_frequency > 0
         ORDER BY d.key, di.attempt DESC
@@ -281,13 +284,13 @@
     </select>
 
     <insert id="create" parameterType="Dataset" useGeneratedKeys="true" keyProperty="key">
-      INSERT INTO dataset (<include refid="COLS" />, created, modified)
-             VALUES (<include refid="PROPS" />, now(), now())
+      INSERT INTO dataset (<include refid="COLS" />, origin, created, modified)
+             VALUES (<include refid="PROPS" />, #{origin}::DATASETORIGIN, now(), now())
     </insert>
 
     <insert id="createArchive" parameterType="map">
-        INSERT INTO dataset_archive (key, catalogue_key, <include refid="COLS" />, created, modified)
-        SELECT key, #{catalogueKey}, <include refid="COLS" />, created, modified
+        INSERT INTO dataset_archive (key, catalogue_key, <include refid="COLS" />, origin, created, modified)
+        SELECT key, #{catalogueKey}, <include refid="COLS" />, origin, created, modified
         FROM dataset d
         WHERE d.key = #{key}
     </insert>

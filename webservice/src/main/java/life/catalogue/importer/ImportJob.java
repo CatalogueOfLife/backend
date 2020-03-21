@@ -23,6 +23,7 @@ import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
+import life.catalogue.importer.proxy.ArchiveDescriptor;
 import life.catalogue.importer.proxy.DistributedArchiveService;
 import life.catalogue.matching.NameIndex;
 import org.apache.commons.io.FileUtils;
@@ -54,6 +55,7 @@ public class ImportJob implements Runnable {
   private final int datasetKey;
   private final ImportRequest req;
   private final Dataset dataset;
+  private DataFormat format;
   private DatasetImport di;
   private DatasetImport last;
   private final WsServerConfig cfg;
@@ -99,14 +101,11 @@ public class ImportJob implements Runnable {
   }
   
   private void validate() {
-    if (dataset.getOrigin() == DatasetOrigin.MANAGED) {
-      throw new IllegalArgumentException("Dataset " + datasetKey + " is managed and cannot be imported");
+    if (dataset.getOrigin() == DatasetOrigin.RELEASED) {
+      throw new IllegalArgumentException("Dataset " + datasetKey + " is released and cannot be imported");
       
-    } else if (dataset.getOrigin() == DatasetOrigin.EXTERNAL && dataset.getDataAccess() == null) {
+    } else if (!req.upload && dataset.getOrigin() == DatasetOrigin.EXTERNAL && dataset.getDataAccess() == null) {
       throw new IllegalArgumentException("Dataset " + datasetKey + " is external but lacks a data access URL");
-      
-    } else if (dataset.getOrigin() == DatasetOrigin.UPLOADED && !cfg.normalizer.source(datasetKey).exists()) {
-      throw new IllegalArgumentException("Dataset " + datasetKey + " is lacking an uploaded archive");
     }
   }
   
@@ -151,60 +150,83 @@ public class ImportJob implements Runnable {
   private void checkIfCancelled() {
     Exceptions.interruptIfCancelled("Import " + di.attempt() + " was cancelled");
   }
-  
+
+  /**
+   * Prepares the source files so we can run the normalizer.
+   * This includes downloading, proxy downloads, modified checks and checks for uploads detecting the actual format
+   * @return true if sourceDir should be imported
+   */
+  private boolean prepareSourceData(Path sourceDir) throws IOException {
+    last = dao.getLast(dataset.getKey());
+    di = dao.createWaiting(dataset, req.createdBy);
+
+    File source = cfg.normalizer.source(datasetKey);
+    source.getParentFile().mkdirs();
+    if (req.upload) {
+      // if data was uploaded we need to find out the format.
+      // We do this after decompression, but we need to check if we have a proxy descriptor so we can download the real files first
+      if (DataFormatDetector.isProxyDescriptor(source)) {
+        updateState(ImportState.DOWNLOADING);
+        ArchiveDescriptor proxy = distributedArchiveService.uploaded(source);
+        format = proxy.format;
+      }
+
+    } else if (DatasetOrigin.EXTERNAL == dataset.getOrigin()){
+      di.setDownloadUri(dataset.getDataAccess());
+      updateState(ImportState.DOWNLOADING);
+      if (format == DataFormat.PROXY) {
+        ArchiveDescriptor proxy = distributedArchiveService.download(dataset.getDataAccess(), source);
+        format = proxy.format;
+      } else {
+        // download archive directly
+        LOG.info("Downloading source for dataset {} from {} to {}", datasetKey, dataset.getDataAccess(), source);
+        downloader.downloadIfModified(di.getDownloadUri(), source);
+      }
+
+    } else {
+      // no point to import a managed or released dataset without an upload
+      throw new IllegalStateException("Dataset " + datasetKey + " is not external and there are no uploads to be imported");
+    }
+
+    boolean isModified = lastMD5IsDifferent(source);
+    di.setDownload(downloader.lastModified(source));
+    dao.update(di);
+
+    checkIfCancelled();
+    // decompress and import?
+    if (isModified || req.force) {
+      if (!isModified) {
+        LOG.info("Force reimport of unchanged archive {}", datasetKey);
+      }
+      LOG.info("Extracting files from archive {}", datasetKey);
+      CompressionUtil.decompressFile(sourceDir.toFile(), source);
+
+      // detect data format if not set from proxy yet
+      if (format == null) {
+        format = DataFormatDetector.detectFormat(sourceDir);
+        LOG.info("Detected data format {} for dataset {}", format, dataset.getKey());
+      }
+      return true;
+    }
+    return false;
+  }
+
   private void importDataset() {
+    LoggingUtils.setDatasetMDC(datasetKey, getAttempt(), getClass());
+    LOG.info("Start new import attempt {} for {} dataset {}: {}", di.getAttempt(), dataset.getOrigin(), datasetKey, dataset.getTitle());
+
     final Path sourceDir = cfg.normalizer.sourceDir(datasetKey).toPath();
     NeoDb store = null;
-    
+
     try {
-      last = dao.getLast(dataset.getKey());
-      di = dao.create(dataset, req.createdBy);
-      LoggingUtils.setDatasetMDC(datasetKey, getAttempt(), getClass());
-      LOG.info("Start new import attempt {} for {} dataset {}: {}", di.getAttempt(), dataset.getOrigin(), datasetKey, dataset.getTitle());
-  
-      boolean isModified;
-      File source = cfg.normalizer.source(datasetKey);
-      if (dataset.getDataFormat() == DataFormat.PROXY) {
-        // we have a yaml descriptor for distributed archives, download files individually
-        if (dataset.getOrigin() == DatasetOrigin.UPLOADED) {
-          dataset.setDataFormat(distributedArchiveService.uploaded(source));
-          di.setDownloadUri(URI.create(source.getName()));
-        } else if (dataset.getOrigin() == DatasetOrigin.EXTERNAL) {
-          dataset.setDataFormat(distributedArchiveService.download(di.getDownloadUri(), source));
-        }
-        isModified = lastMD5IsDifferent(source);
-        
-      } else if (dataset.getOrigin() == DatasetOrigin.UPLOADED) {
-        // did we import that very archive before already?
-        isModified = lastMD5IsDifferent(source);
-        
-      } else if (dataset.getOrigin() == DatasetOrigin.EXTERNAL) {
-        // first download archive
-        source.getParentFile().mkdirs();
-        LOG.info("Downloading sources for dataset {} from {} to {}", datasetKey, di.getDownloadUri(), source);
-        isModified = downloader.downloadIfModified(di.getDownloadUri(), source) && lastMD5IsDifferent(source);
-  
-      } else {
-        // we catch this in constructor already and should never reach here
-        throw new IllegalStateException("Dataset " + datasetKey + " is managed and cannot be imported");
-      }
-      
+      final boolean doImport = prepareSourceData(sourceDir);
       checkIfCancelled();
-      if (isModified || req.force) {
-        if (!isModified) {
-          LOG.info("Force reimport of unchanged archive {}", datasetKey);
-        }
-        di.setDownload(downloader.lastModified(source));
-        checkIfCancelled();
-        
-        LOG.info("Extracting files from archive {}", datasetKey);
-        CompressionUtil.decompressFile(sourceDir.toFile(), source);
-        
+      if (doImport) {
         LOG.info("Normalizing {}", datasetKey);
         updateState(ImportState.PROCESSING);
         store = NeoDbFactory.create(datasetKey, getAttempt(), cfg.normalizer);
         store.put(dataset);
-        new Normalizer(store, sourceDir, index, imgService).call();
+        new Normalizer(format, store, sourceDir, index, imgService).call();
   
         LOG.info("Fetching logo for {}", datasetKey);
         LogoUpdateJob.updateDatasetAsync(dataset, factory, downloader, cfg.normalizer::scratchFile, imgService);
@@ -238,7 +260,6 @@ public class ImportJob implements Runnable {
   
       } else {
         LOG.info("Dataset {} sources unchanged. Stop import", datasetKey);
-        di.setDownload(downloader.lastModified(source));
         di.setFinished(LocalDateTime.now());
         di.setError(null);
         updateState(ImportState.UNCHANGED);

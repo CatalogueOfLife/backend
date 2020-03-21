@@ -21,13 +21,12 @@ public class DatasetOriginValidator implements ConstraintValidator<ValidDataset,
       // origin required
       return false;
     }
-    if (d.getOrigin() != DatasetOrigin.MANAGED) {
-      // require data format for all but managed datasets
-      if (d.getDataFormat() == null) return false;
-    }
     if (d.getOrigin() == DatasetOrigin.EXTERNAL) {
-      // also require data access for external datasets
-      return d.getDataAccess() != null;
+      // require data access & format for external datasets
+      return d.getDataAccess() != null && d.getDataFormat() != null;
+
+    } else if (d.getOrigin() == DatasetOrigin.RELEASED) {
+      return d.getSourceKey() != null;
     }
     return true;
   }

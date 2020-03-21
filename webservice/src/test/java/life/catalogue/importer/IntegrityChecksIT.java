@@ -54,7 +54,7 @@ public class IntegrityChecksIT {
     cfg.scratchDir = Files.createTempDir();
     dataset = new Dataset();
     dataset.setType(DatasetType.OTHER);
-    dataset.setOrigin(DatasetOrigin.UPLOADED);
+    dataset.setOrigin(DatasetOrigin.MANAGED);
     dataset.setCreatedBy(TestDataRule.TEST_USER.getKey());
     dataset.setModifiedBy(TestDataRule.TEST_USER.getKey());
 
@@ -87,7 +87,7 @@ public class IntegrityChecksIT {
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
       store.put(dataset);
-      Normalizer norm = new Normalizer(store, Paths.get(url.toURI()), NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer), ImageService.passThru());
+      Normalizer norm = new Normalizer(dataset.getDataFormat(), store, Paths.get(url.toURI()), NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer), ImageService.passThru());
       norm.call();
       
       // import into postgres

@@ -2,7 +2,7 @@ package life.catalogue.dao;
 
 import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.Sector;
-import life.catalogue.common.io.UTF8IOUtils;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.tree.TextTreePrinter;
@@ -34,7 +34,7 @@ public class NamesTreeDao {
   }
   
   public static Set<String> readNames(File nf) throws IOException{
-    try (BufferedReader br = UTF8IOUtils.readerFromFile(nf)) {
+    try (BufferedReader br = UTF8IoUtils.readerFromFile(nf)) {
       return br.lines().collect(Collectors.toSet());
     }
   }
@@ -75,7 +75,7 @@ public class NamesTreeDao {
     NamesWriter(File f) {
       this.f=f;
       try {
-        w = UTF8IOUtils.writerFromGzipFile(f);
+        w = UTF8IoUtils.writerFromGzipFile(f);
         
       } catch (IOException e) {
         LOG.error("Failed to write to {}", f.getAbsolutePath());
@@ -117,7 +117,7 @@ public class NamesTreeDao {
   }
   
   public int updateDatasetTree(int datasetKey, int attempt) throws IOException {
-    try (Writer writer = UTF8IOUtils.writerFromGzipFile(treeFile(datasetKey, attempt))) {
+    try (Writer writer = UTF8IoUtils.writerFromGzipFile(treeFile(datasetKey, attempt))) {
       int count = TextTreePrinter.dataset(datasetKey, factory, writer).print();
       LOG.info("Written text tree with {} lines for dataset {}-{}", count, datasetKey, attempt);
       return count;
@@ -125,7 +125,7 @@ public class NamesTreeDao {
   }
   
   public int updateSectorTree(int sectorKey, int attempt) throws IOException {
-    try (Writer writer = UTF8IOUtils.writerFromGzipFile(sectorTreeFile(sectorKey, attempt));
+    try (Writer writer = UTF8IoUtils.writerFromGzipFile(sectorTreeFile(sectorKey, attempt));
          SqlSession session = factory.openSession(true)
     ){
       Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
@@ -153,7 +153,7 @@ public class NamesTreeDao {
 
   private static Stream<String> streamFile(File f) {
     try {
-      BufferedReader br = UTF8IOUtils.readerFromGzipFile(f);
+      BufferedReader br = UTF8IoUtils.readerFromGzipFile(f);
       return br.lines();
     } catch (IOException e) {
       LOG.warn("Failed to stream file {}", f.getAbsolutePath());
