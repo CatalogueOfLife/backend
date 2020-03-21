@@ -1,9 +1,8 @@
 package life.catalogue.es.query;
 
 import java.util.List;
-
+import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
-import life.catalogue.es.model.NameUsageDocument;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,20 +21,20 @@ public class RangeQueryTest extends EsReadTestBase {
 
   @Test
   public void test1() {
-    NameUsageDocument doc1 = new NameUsageDocument();
+    EsNameUsage doc1 = new EsNameUsage();
     doc1.setRank(KINGDOM);
-    NameUsageDocument doc2 = new NameUsageDocument();
+    EsNameUsage doc2 = new EsNameUsage();
     doc2.setRank(PHYLUM);
-    NameUsageDocument doc3 = new NameUsageDocument();
+    EsNameUsage doc3 = new EsNameUsage();
     doc3.setRank(PHYLUM);
-    NameUsageDocument doc4 = new NameUsageDocument();
+    EsNameUsage doc4 = new EsNameUsage();
     doc4.setRank(SPECIES);
-    NameUsageDocument doc5 = new NameUsageDocument();
+    EsNameUsage doc5 = new EsNameUsage();
     doc5.setRank(SUBSPECIES);
-    NameUsageDocument doc6 = new NameUsageDocument();
+    EsNameUsage doc6 = new EsNameUsage();
     doc6.setRank(SUBSPECIES);
     indexRaw(doc1, doc2, doc3, doc4, doc5, doc6);
-    List<NameUsageDocument> result = queryRaw(new RangeQuery<Integer>("rank").greaterOrEqual(SPECIES.ordinal()));
+    List<EsNameUsage> result = queryRaw(new RangeQuery<Integer>("rank").greaterOrEqual(SPECIES.ordinal()));
     assertEquals(3, result.size());
     result = queryRaw(new RangeQuery<Integer>("rank").greaterThan(SPECIES.ordinal()));
     assertEquals(2, result.size());

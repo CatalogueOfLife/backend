@@ -1,9 +1,8 @@
 package life.catalogue.es.query;
 
 import java.util.List;
-
+import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
-import life.catalogue.es.model.NameUsageDocument;
 import life.catalogue.es.query.CaseInsensitivePrefixQuery;
 import life.catalogue.es.query.PrefixQuery;
 import life.catalogue.es.query.Query;
@@ -21,49 +20,49 @@ public class PrefixQueryTest extends EsReadTestBase {
 
   @Test
   public void test1() {
-    NameUsageDocument doc = new NameUsageDocument();
+    EsNameUsage doc = new EsNameUsage();
     String s = "  tHiS  iS  a  LoNg  string  with  spaces";
     // This field is indexed using the IGNORE_CASE analyzer.
     doc.setAuthorship(s);
     indexRaw(doc);
     Query query = new CaseInsensitivePrefixQuery("authorship", s.substring(0, 8));
-    List<NameUsageDocument> result = queryRaw(query);
+    List<EsNameUsage> result = queryRaw(query);
     assertEquals(1, result.size());
   }
 
   @Test
   public void test1a() {
-    NameUsageDocument doc = new NameUsageDocument();
+    EsNameUsage doc = new EsNameUsage();
     String s = "  tHiS  iS  a  LoNg  string  with  spaces";
     // This field is indexed using the IGNORE_CASE analyzer.
     doc.setAuthorship(s);
     indexRaw(doc);
     Query query = new BoolQuery().must(new CaseInsensitivePrefixQuery("authorship", s.substring(0, 8)));
-    List<NameUsageDocument> result = queryRaw(query);
+    List<EsNameUsage> result = queryRaw(query);
     assertEquals(1, result.size());
   }
 
   @Test
   public void test2() {
-    NameUsageDocument doc = new NameUsageDocument();
+    EsNameUsage doc = new EsNameUsage();
     String s = "  tHiS  iS  a  LoNg  string  with  spaces";
     // This field is indexed as-is.
     doc.setUsageId(s);
     indexRaw(doc);
     Query query = new PrefixQuery("usageId", s);
-    List<NameUsageDocument> result = queryRaw(query);
+    List<EsNameUsage> result = queryRaw(query);
     assertEquals(1, result.size());
   }
 
   @Test
   public void test3() {
-    NameUsageDocument doc = new NameUsageDocument();
+    EsNameUsage doc = new EsNameUsage();
     String s = "  tHiS  iS  a  LoNg  string  with  spaces";
     // This field is indexed as-is.
     doc.setUsageId(s);
     indexRaw(doc);
     Query query = new PrefixQuery("usageId", s.substring(0, 10));
-    List<NameUsageDocument> result = queryRaw(query);
+    List<EsNameUsage> result = queryRaw(query);
     assertEquals(1, result.size());
   }
 

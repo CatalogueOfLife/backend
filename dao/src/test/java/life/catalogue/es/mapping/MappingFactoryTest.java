@@ -3,9 +3,9 @@ package life.catalogue.es.mapping;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import life.catalogue.es.EsModule;
+import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.ddl.Mappings;
 import life.catalogue.es.ddl.MappingsFactory;
-import life.catalogue.es.model.NameUsageDocument;
 import org.junit.Test;
 
 /**
@@ -34,7 +34,7 @@ public class MappingFactoryTest {
   public void getMapping2a() throws JsonProcessingException {
     MappingsFactory mf = MappingsFactory.usingGetters();
     mf.setMapEnumToInt(true);
-    Mappings mapping = mf.getMapping(NameUsageDocument.class);
+    Mappings mapping = mf.getMapping(EsNameUsage.class);
     System.out.println(EsModule.writeDebug(mapping));
   }
 

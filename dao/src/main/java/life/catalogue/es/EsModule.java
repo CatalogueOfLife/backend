@@ -26,11 +26,10 @@ import life.catalogue.api.model.Synonym;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.es.ddl.IndexDefinition;
-import life.catalogue.es.model.NameUsageDocument;
-import life.catalogue.es.name.NameUsageEsMultiResponse;
-import life.catalogue.es.name.NameUsageEsResponse;
 import life.catalogue.es.query.EsSearchRequest;
 import life.catalogue.es.response.EsFacet;
+import life.catalogue.es.response.EsMultiResponse;
+import life.catalogue.es.response.EsResponse;
 import life.catalogue.es.response.SearchHit;
 
 /**
@@ -39,7 +38,7 @@ import life.catalogue.es.response.SearchHit;
  * <ol>
  * <li>In order to create an index (DDL-like actions), we need to <b>write</b> document type mappings and larger structures like
  * {@link IndexDefinition} objects.
- * <li>In order to index data, we need to write name usage documents (modelled by the {@link NameUsageDocument} class).
+ * <li>In order to index data, we need to write name usage documents (modelled by the {@link EsNameUsage} class).
  * <li>The {@code NameUsageDocument} class is a dressed-down and flattened version of the {@link NameUsageWrapper}, but it has a field
  * containing the serialized version of the entire {@code  NameUsageWrapper} object. So in order to index data we also need to <b>write</b>
  * {@code  NameUsageWrapper} objects.
@@ -85,11 +84,12 @@ public class EsModule extends SimpleModule {
   private static final ObjectWriter ddlWriter = esObjectMapper.writerFor(IndexDefinition.class);
   private static final ObjectWriter queryWriter = esObjectMapper.writerFor(EsSearchRequest.class);
 
-  private static final ObjectReader responseReader = contentMapper.readerFor(NameUsageEsResponse.class);
-  private static final ObjectReader multiResponseReader = contentMapper.readerFor(NameUsageEsMultiResponse.class);
+  private static final ObjectReader responseReader = contentMapper.readerFor(new TypeReference<EsResponse<EsNameUsage>>() {});
+  private static final ObjectReader multiResponseReader =
+      contentMapper.readerFor(new TypeReference<EsMultiResponse<EsNameUsage, EsResponse<EsNameUsage>>>() {});
 
-  private static final ObjectReader documentReader = contentMapper.readerFor(NameUsageDocument.class);
-  private static final ObjectWriter documentWriter = contentMapper.writerFor(NameUsageDocument.class);
+  private static final ObjectReader documentReader = contentMapper.readerFor(EsNameUsage.class);
+  private static final ObjectWriter documentWriter = contentMapper.writerFor(EsNameUsage.class);
 
   private static final ObjectReader nameUsageReader = contentMapper.readerFor(NameUsageWrapper.class);
   private static final ObjectWriter nameUsageWriter = contentMapper.writerFor(NameUsageWrapper.class);
@@ -134,19 +134,19 @@ public class EsModule extends SimpleModule {
     return esObjectMapper.readValue(is, cls);
   }
 
-  public static NameUsageEsResponse readEsResponse(InputStream is) throws IOException {
+  public static EsResponse<EsNameUsage> readEsResponse(InputStream is) throws IOException {
     return responseReader.readValue(is);
   }
 
-  public static NameUsageEsMultiResponse readEsMultiResponse(InputStream is) throws IOException {
+  public static EsMultiResponse<EsNameUsage, EsResponse<EsNameUsage>> readEsMultiResponse(InputStream is) throws IOException {
     return multiResponseReader.readValue(is);
   }
 
-  public static NameUsageDocument readDocument(InputStream is) throws IOException {
+  public static EsNameUsage readDocument(InputStream is) throws IOException {
     return documentReader.readValue(is);
   }
 
-  public static NameUsageDocument readDocument(String json) throws IOException {
+  public static EsNameUsage readDocument(String json) throws IOException {
     return documentReader.readValue(json);
   }
 
@@ -166,7 +166,7 @@ public class EsModule extends SimpleModule {
     return queryWriter.writeValueAsString(query);
   }
 
-  public static String write(NameUsageDocument document) throws JsonProcessingException {
+  public static String write(EsNameUsage document) throws JsonProcessingException {
     return documentWriter.writeValueAsString(document);
   }
 

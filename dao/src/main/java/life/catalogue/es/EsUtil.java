@@ -6,8 +6,7 @@ import life.catalogue.es.ddl.Analyzer;
 import life.catalogue.es.ddl.IndexDefinition;
 import life.catalogue.es.ddl.MappingsFactory;
 import life.catalogue.es.ddl.MultiField;
-import life.catalogue.es.model.NameUsageDocument;
-import life.catalogue.es.name.NameUsageFieldLookup;
+import life.catalogue.es.nu.NameUsageFieldLookup;
 import life.catalogue.es.query.*;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.client.Request;
@@ -278,7 +277,7 @@ public class EsUtil {
    * @return
    * @throws IOException
    */
-  public static String insert(RestClient client, String index, NameUsageDocument obj) throws IOException {
+  public static String insert(RestClient client, String index, EsNameUsage obj) throws IOException {
     Request request = new Request("POST", index + "/_doc");
     request.setJsonEntity(EsModule.write(obj));
     Response response = executeRequest(client, request);

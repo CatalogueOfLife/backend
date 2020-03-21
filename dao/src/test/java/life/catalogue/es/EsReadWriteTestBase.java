@@ -10,9 +10,8 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.mapper.TestDataRule;
-import life.catalogue.es.model.NameUsageDocument;
-import life.catalogue.es.name.index.NameUsageIndexServiceEs;
-import life.catalogue.es.name.search.NameUsageSearchServiceEs;
+import life.catalogue.es.nu.NameUsageIndexServiceEs;
+import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
 import life.catalogue.es.query.EsSearchRequest;
 import life.catalogue.es.query.Query;
 import org.apache.ibatis.session.SqlSession;
@@ -54,7 +53,7 @@ public class EsReadWriteTestBase extends ExternalResource {
       EsUtil.deleteIndex(esSetupRule.getClient(), esSetupRule.getEsConfig().nameUsage);
       LOG.debug("Creating test index \"{}\"", esSetupRule.getEsConfig().nameUsage);
       EsUtil.createIndex(esSetupRule.getClient(),
-          NameUsageDocument.class,
+          EsNameUsage.class,
           esSetupRule.getEsConfig().nameUsage);
     } catch (IOException e) {
       throw new RuntimeException(e);

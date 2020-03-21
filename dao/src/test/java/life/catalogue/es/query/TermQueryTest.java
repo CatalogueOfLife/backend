@@ -1,9 +1,8 @@
 package life.catalogue.es.query;
 
 import java.util.List;
-
+import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
-import life.catalogue.es.model.NameUsageDocument;
 import life.catalogue.es.query.TermQuery;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,20 +18,20 @@ public class TermQueryTest extends EsReadTestBase {
 
   @Test
   public void test1() {
-    NameUsageDocument doc1 = new NameUsageDocument();
+    EsNameUsage doc1 = new EsNameUsage();
     doc1.setDatasetKey(1);
-    NameUsageDocument doc2 = new NameUsageDocument();
+    EsNameUsage doc2 = new EsNameUsage();
     doc2.setDatasetKey(2);
-    NameUsageDocument doc3 = new NameUsageDocument();
+    EsNameUsage doc3 = new EsNameUsage();
     doc3.setDatasetKey(3);
-    NameUsageDocument doc4 = new NameUsageDocument();
+    EsNameUsage doc4 = new EsNameUsage();
     doc4.setDatasetKey(3);
-    NameUsageDocument doc5 = new NameUsageDocument();
+    EsNameUsage doc5 = new EsNameUsage();
     doc5.setDatasetKey(3);
-    NameUsageDocument doc6 = new NameUsageDocument();
+    EsNameUsage doc6 = new EsNameUsage();
     doc6.setDatasetKey(6);
     indexRaw(doc1, doc2, doc3, doc4, doc5, doc6);
-    List<NameUsageDocument> result = queryRaw(new TermQuery("datasetKey", 3));
+    List<EsNameUsage> result = queryRaw(new TermQuery("datasetKey", 3));
     assertEquals(3, result.size());
   }
 

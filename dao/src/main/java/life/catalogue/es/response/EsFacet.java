@@ -1,6 +1,7 @@
 package life.catalogue.es.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import life.catalogue.es.nu.search.FacetsTranslator;
 
 /**
  * The data structure within the ES search response representing a single facet (or GROUP BY field in SQL speak). It
@@ -8,23 +9,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class EsFacet {
 
-  /**
-   * The name that we will use to identify this object within the Elasticsearch response object.
-   */
-  public static final String LABEL = "BUCKETS";
-
   @JsonProperty("doc_count")
   private int docCount;
 
-  @JsonProperty(LABEL)
-  private BucketsContainer bucketsContainer;
+  @JsonProperty(FacetsTranslator.FACET_AGG_LABEL)
+  private FacetValuesContainer container;
 
   public int getDocCount() {
     return docCount;
   }
 
-  public BucketsContainer getBucketsContainer() {
-    return bucketsContainer;
+  public FacetValuesContainer getFacetValues() {
+    return container;
   }
 
 }

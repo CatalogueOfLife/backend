@@ -2,8 +2,7 @@ package life.catalogue.es;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.es.ddl.Analyzer;
-import life.catalogue.es.model.NameUsageDocument;
-import life.catalogue.es.name.NameUsageWrapperConverter;
+import life.catalogue.es.nu.NameUsageWrapperConverter;
 import org.elasticsearch.client.RestClient;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -31,17 +30,17 @@ public class EsUtilTest extends EsReadTestBase {
 
   @Test
   public void testInsert() throws IOException {
-    String id = insert(client, indexName(), new NameUsageDocument());
+    String id = insert(client, indexName(), new EsNameUsage());
     System.out.println("Generated id: " + id);
     assertNotNull(id);
   }
 
   @Test
   public void testCount() throws IOException {
-    insert(client, indexName(), new NameUsageDocument());
-    insert(client, indexName(), new NameUsageDocument());
-    insert(client, indexName(), new NameUsageDocument());
-    insert(client, indexName(), new NameUsageDocument());
+    insert(client, indexName(), new EsNameUsage());
+    insert(client, indexName(), new EsNameUsage());
+    insert(client, indexName(), new EsNameUsage());
+    insert(client, indexName(), new EsNameUsage());
     refreshIndex(client, indexName());
     assertEquals(4, EsUtil.count(client, indexName()));
   }
@@ -50,7 +49,7 @@ public class EsUtilTest extends EsReadTestBase {
   public void deleteDataset() throws IOException {
     // Insert 3 documents (overwriting dataset key to known values)
     NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
-    NameUsageDocument doc = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
+    EsNameUsage doc = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
     doc.setDatasetKey(1);
     insert(client, indexName(), doc);
     doc = transfer.toDocument(TestEntityGenerator.newNameUsageSynonymWrapper());
@@ -80,7 +79,7 @@ public class EsUtilTest extends EsReadTestBase {
   public void testDeleteSector() throws IOException {
     // Insert 3 documents (overwriting sector key to known values)
     NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
-    NameUsageDocument doc = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
+    EsNameUsage doc = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
     doc.setSectorKey(1);
     insert(client, indexName(), doc);
     doc = transfer.toDocument(TestEntityGenerator.newNameUsageSynonymWrapper());

@@ -1,12 +1,15 @@
 package life.catalogue.api.search;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.ws.rs.QueryParam;
 import java.util.Arrays;
 import java.util.Objects;
+import javax.ws.rs.QueryParam;
+import org.apache.commons.lang3.StringUtils;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
+/**
+ * Base class for {@link NameUsageSearchRequest} and {@link NameUsageSuggestRequest}.
+ * 
+ */
 public abstract class NameUsageRequest {
 
   @QueryParam("q")
@@ -15,7 +18,7 @@ public abstract class NameUsageRequest {
   protected boolean fuzzyMatchingEnabled = true;
   protected String[] searchTerms;
 
-  public abstract boolean isPrefixMatching();
+  public abstract boolean isPrefixMatchingEnabled();
 
   @JsonIgnore
   public boolean isEmpty() {
