@@ -1,5 +1,7 @@
 package life.catalogue.es.response;
 
+import java.util.Map;
+
 /**
  * Models the response coming back from an Elasticsearch query.
  * 
@@ -7,16 +9,16 @@ package life.catalogue.es.response;
  * @param <U> The type of object used as a facets container
  * 
  */
-public class EsResponse<T, U extends Aggregation> {
+public class EsResponse<T> {
 
   private SearchHits<T> hits;
-  private Aggregations<U> aggregations;
+  private Map<String, Object> aggregations;
 
   public SearchHits<T> getHits() {
     return hits;
   }
 
-  public Aggregations<U> getAggregations() {
+  public Map<String, Object> getAggregations() {
     return aggregations;
   }
 

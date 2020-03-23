@@ -1,9 +1,8 @@
 package life.catalogue.api.search;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import javax.ws.rs.QueryParam;
 import java.util.Objects;
+import javax.ws.rs.QueryParam;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class NameUsageSuggestRequest extends NameUsageRequest {
 
@@ -15,8 +14,8 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
   private Integer limit; // Desired number of suggestions
 
   @Override
-  public boolean isPrefixMatching() {
-    return true; // defies the purpose of auto-complete
+  public boolean isPrefixMatchingEnabled() {
+    return true; // false defies the purpose of auto-complete
   }
 
   @JsonIgnore

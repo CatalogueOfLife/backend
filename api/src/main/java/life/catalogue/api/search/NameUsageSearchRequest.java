@@ -1,14 +1,19 @@
 package life.catalogue.api.search;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MultivaluedMap;
+import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import life.catalogue.api.util.VocabularyUtils;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MultivaluedMap;
-import java.util.*;
-
 import static life.catalogue.api.util.VocabularyUtils.lookupEnum;
 
 public class NameUsageSearchRequest extends NameUsageRequest {
@@ -49,7 +54,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   private boolean reverse;
 
   @QueryParam("prefix")
-  private boolean prefixMatching;
+  private boolean prefixMatchingEnabled;
 
   public NameUsageSearchRequest() {}
 
@@ -77,7 +82,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     copy.sortBy = sortBy;
     copy.highlight = highlight;
     copy.reverse = reverse;
-    copy.prefixMatching = prefixMatching;
+    copy.prefixMatchingEnabled = prefixMatchingEnabled;
     return copy;
   }
 
@@ -159,7 +164,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
         && sortBy == null
         && !highlight
         && !reverse
-        && !prefixMatching;
+        && !prefixMatchingEnabled;
   }
 
   public void addFilter(NameUsageSearchParameter param, Integer value) {
@@ -265,12 +270,15 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     this.reverse = reverse;
   }
 
-  public boolean isPrefixMatching() {
-    return prefixMatching;
+  /**
+   * Whether or not to match on whole words only.
+   */
+  public boolean isPrefixMatchingEnabled() {
+    return prefixMatchingEnabled;
   }
 
-  public void setPrefixMatching(boolean prefixMatching) {
-    this.prefixMatching = prefixMatching;
+  public void setPrefixMatchingEnabled(boolean prefix) {
+    this.prefixMatchingEnabled = prefix;
   }
 
   private static IllegalArgumentException illegalValueForParameter(NameUsageSearchParameter param, String value) {
@@ -282,7 +290,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result = prime * result + Objects.hash(content, facets, filters, highlight, reverse, sortBy, prefixMatching);
+    result = prime * result + Objects.hash(content, facets, filters, highlight, reverse, sortBy, prefixMatchingEnabled);
     return result;
   }
 
@@ -300,7 +308,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     NameUsageSearchRequest other = (NameUsageSearchRequest) obj;
     return Objects.equals(content, other.content) && Objects.equals(facets, other.facets) && Objects.equals(filters, other.filters)
         && highlight == other.highlight && reverse == other.reverse && sortBy == other.sortBy
-        && prefixMatching == other.prefixMatching;
+        && prefixMatchingEnabled == other.prefixMatchingEnabled;
   }
 
 }

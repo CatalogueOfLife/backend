@@ -46,7 +46,7 @@ public class QueryTest {
   public void testBool() throws JsonProcessingException {
     EsSearchRequest esr = new EsSearchRequest();
     BoolQuery bq = new BoolQuery().must(new IsNullQuery("genus"))
-        .must(new AutoCompleteQuery("area", "Amsterdam"))
+        .must(new EdgeNgramQuery("area", "Amsterdam"))
         .mustNot(new TermQuery("date", LocalDate.now()));
     esr.setQuery(bq);
     System.out.println(EsModule.writeDebug(esr));

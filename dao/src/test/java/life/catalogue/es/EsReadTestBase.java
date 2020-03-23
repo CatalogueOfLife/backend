@@ -5,10 +5,9 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.*;
-import life.catalogue.es.model.NameUsageDocument;
-import life.catalogue.es.name.NameUsageWrapperConverter;
-import life.catalogue.es.name.search.NameUsageSearchServiceEs;
-import life.catalogue.es.name.suggest.NameUsageSuggestionServiceEs;
+import life.catalogue.es.nu.NameUsageWrapperConverter;
+import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
+import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
 import life.catalogue.es.query.EsSearchRequest;
 import life.catalogue.es.query.Query;
 import org.elasticsearch.client.RestClient;
@@ -44,7 +43,7 @@ public class EsReadTestBase {
   protected void destroyAndCreateIndex() {
     try {
       EsUtil.deleteIndex(getEsClient(), esSetupRule.getEsConfig().nameUsage);
-      EsUtil.createIndex(getEsClient(), NameUsageDocument.class, getEsConfig().nameUsage);
+      EsUtil.createIndex(getEsClient(), EsNameUsage.class, getEsConfig().nameUsage);
     } catch (IOException e) {
       throw new EsException(e);
     }
@@ -66,9 +65,9 @@ public class EsReadTestBase {
     }
   }
 
-  protected void indexRaw(Collection<NameUsageDocument> documents) {
+  protected void indexRaw(Collection<EsNameUsage> documents) {
     try {
-      for (NameUsageDocument doc : documents) {
+      for (EsNameUsage doc : documents) {
         EsUtil.insert(getEsClient(), indexName(), doc);
       }
       EsUtil.refreshIndex(getEsClient(), indexName());
@@ -77,20 +76,20 @@ public class EsReadTestBase {
     }
   }
 
-  protected void indexRaw(NameUsageDocument... documents) {
+  protected void indexRaw(EsNameUsage... documents) {
     indexRaw(Arrays.asList(documents));
   }
 
-  protected List<NameUsageDocument> queryRaw(Query query) {
+  protected List<EsNameUsage> queryRaw(Query query) {
     EsSearchRequest esr = EsSearchRequest.emptyRequest().where(query);
     return new NameUsageSearchServiceEs(indexName(), getEsClient()).getDocuments(esr);
   }
 
-  protected List<NameUsageDocument> queryRaw(EsSearchRequest rawRequest) {
+  protected List<EsNameUsage> queryRaw(EsSearchRequest rawRequest) {
     return new NameUsageSearchServiceEs(indexName(), getEsClient()).getDocuments(rawRequest);
   }
 
-  protected NameUsageDocument toDocument(NameUsageWrapper nameUsage) {
+  protected EsNameUsage toDocument(NameUsageWrapper nameUsage) {
     try {
       return new NameUsageWrapperConverter().toDocument(nameUsage);
     } catch (IOException e) {
@@ -98,7 +97,7 @@ public class EsReadTestBase {
     }
   }
 
-  protected List<NameUsageDocument> toDocuments(Collection<NameUsageWrapper> nameUsages) {
+  protected List<EsNameUsage> toDocuments(Collection<NameUsageWrapper> nameUsages) {
     return nameUsages.stream().map(this::toDocument).collect(Collectors.toList());
   }
 

@@ -1,7 +1,6 @@
 package life.catalogue.api.search;
 
 import java.util.UUID;
-import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -100,19 +99,6 @@ public enum NameUsageSearchParameter {
 
   ALPHAINDEX(Character.class);
 
-  private static final String FACET_LABEL_SUFFIX = "_FACET";
-
-  /**
-   * Returns the NameUsageSearchParameter corresponding to the label used to identify the facet for the parameter within an Elasticsearch
-   * response.
-   * 
-   * @param label
-   * @return
-   */
-  public static NameUsageSearchParameter fromFacet(String label) {
-    return NameUsageSearchParameter.valueOf(NameUsageSearchParameter.class, StringUtils.substringBefore(label, FACET_LABEL_SUFFIX));
-  }
-
   private final Class<?> type;
 
   private NameUsageSearchParameter(Class<?> type) {
@@ -121,15 +107,6 @@ public enum NameUsageSearchParameter {
 
   public Class<?> type() {
     return type;
-  }
-
-  /**
-   * Returns the label that we want Elasticsearch to use when creating a facet (bucket) for this parameter.
-   * 
-   * @return
-   */
-  public String getFacetLabel() {
-    return name() + FACET_LABEL_SUFFIX;
   }
 
 }

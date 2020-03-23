@@ -1,5 +1,10 @@
 package life.catalogue.command.es;
 
+import java.util.List;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.elasticsearch.client.RestClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.zaxxer.hikari.HikariDataSource;
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
@@ -7,15 +12,9 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.es.name.index.NameUsageIndexServiceEs;
+import life.catalogue.es.nu.NameUsageIndexServiceEs;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.elasticsearch.client.RestClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 public class IndexCmd extends ConfiguredCommand<WsServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(IndexCmd.class);

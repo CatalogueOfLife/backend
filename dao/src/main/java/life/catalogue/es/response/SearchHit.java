@@ -4,6 +4,11 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * Represents a single search hit.
+ *
+ * @param <T> The Java type modeling to the index being searched.
+ */
 public class SearchHit<T> {
 
   @JsonProperty("_id")
