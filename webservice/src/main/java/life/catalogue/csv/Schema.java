@@ -53,14 +53,14 @@ public class Schema {
   
   public Field field(Term term) {
     for (Field f : columns) {
-      if (f.term == term) return f;
+      if (f.term != null && f.term.equals(term)) return f;
     }
     return null;
   }
   
   public boolean hasTerm(Term term) {
     for (Field f : columns) {
-      if (f.term == term) return true;
+      if (f.term != null && f.term.equals(term)) return true;
     }
     return false;
   }

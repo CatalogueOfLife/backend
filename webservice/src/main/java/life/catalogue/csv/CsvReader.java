@@ -208,11 +208,19 @@ public class CsvReader {
   }
   
   private static Optional<Term> findTerm(String termPrefix, String name, boolean isClassTerm) {
+    String qualName = name;
     if (termPrefix != null && !name.contains(":")) {
-      name = termPrefix + ":" + name;
+      qualName = termPrefix + ":" + name;
     }
     try {
-      return Optional.of(VocabularyUtils.findTerm(name, isClassTerm));
+      Term t = VocabularyUtils.findTerm(qualName, isClassTerm);
+      if (t instanceof UnknownTerm) {
+        // avoid that the prefix is being used as part of the unknown URI
+        t = UnknownTerm.build(name, isClassTerm);
+        TermFactory.instance().registerTerm(t);
+        return Optional.of(t);
+      }
+      return Optional.of(t);
     } catch (IllegalArgumentException e) {
       return Optional.empty();
     }

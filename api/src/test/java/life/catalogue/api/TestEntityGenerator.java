@@ -548,6 +548,7 @@ public class TestEntityGenerator {
     }
     rec.put(UnknownTerm.build("http://col.plus/terms/punk"),
         RandomUtils.randomLatinString(500 + RND.nextInt(2000)));
+    rec.put(UnknownTerm.build("Col_name"), RandomUtils.randomSpecies());
     rec.addIssue(Issue.ACCEPTED_NAME_MISSING);
     rec.addIssue(Issue.NAME_VARIANT);
     return rec;

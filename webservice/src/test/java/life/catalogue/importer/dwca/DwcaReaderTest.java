@@ -1,5 +1,6 @@
 package life.catalogue.importer.dwca;
 
+import java.net.URI;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -15,7 +16,8 @@ import static org.junit.Assert.*;
  *
  */
 public class DwcaReaderTest {
-  
+  public static final Term TERM_CoL_name = new UnknownTerm(URI.create("http://unknown.org/CoL_name"), false);
+
   @Test
   public void metaIF() throws Exception {
     DwcaReader reader = DwcaReader.from(PathUtils.classPathTestRes("dwca/0"));
@@ -57,7 +59,22 @@ public class DwcaReaderTest {
     });
     assertEquals(21, counter.get());
   }
-  
+
+  /**
+   * EEA redlist file with unknown term columns
+   */
+  @Test
+  public void dwca37() throws Exception {
+    DwcaReader reader = DwcaReader.from(PathUtils.classPathTestRes("dwca/37"));
+
+    assertEquals(1, reader.size());
+    assertEquals(DwcTerm.Taxon, reader.coreRowType());
+    assertEquals(13, reader.coreSchema().size());
+    assertTrue(reader.coreSchema().hasTerm(TERM_CoL_name));
+    assertTrue(reader.coreSchema().hasTerm(DwcTerm.scientificName));
+    assertTrue(reader.coreSchema().hasTerm(DwcTerm.taxonRank));
+  }
+
   @Test
   public void dwca6() throws Exception {
     DwcaReader reader = DwcaReader.from(PathUtils.classPathTestRes("dwca/6"));

@@ -15,6 +15,7 @@ and done it manually. So we can as well log changes here.
 ALTER TABLE dataset ADD COLUMN source_key INTEGER REFERENCES dataset;
 
 ALTER TABLE dataset ALTER COLUMN origin TYPE text;
+ALTER TABLE dataset_archive ALTER COLUMN origin TYPE text;
 ALTER TABLE dataset_import ALTER COLUMN origin TYPE text;
 DROP TYPE DATASETORIGIN;
 CREATE TYPE DATASETORIGIN AS ENUM (
@@ -26,9 +27,14 @@ UPDATE dataset SET origin='EXTERNAL' WHERE origin='UPLOADED' AND data_access IS 
 UPDATE dataset SET origin='MANAGED' WHERE origin='UPLOADED';
 UPDATE dataset SET origin='RELEASED' WHERE origin='MANAGED' AND locked;
 UPDATE dataset SET source_key=3 WHERE origin='RELEASED';
+UPDATE dataset_archive SET origin='EXTERNAL' WHERE origin='UPLOADED' AND data_access IS NOT NULL;
+UPDATE dataset_archive SET origin='MANAGED' WHERE origin='UPLOADED';
+UPDATE dataset_archive SET origin='RELEASED' WHERE origin='MANAGED' AND locked;
+UPDATE dataset_archive SET source_key=3 WHERE origin='RELEASED';
 UPDATE dataset_import SET origin='EXTERNAL' WHERE origin='UPLOADED' AND data_access IS NOT NULL;
 UPDATE dataset_import SET origin='MANAGED' WHERE origin='UPLOADED';
 ALTER TABLE dataset ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
+ALTER TABLE dataset_archive ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
 ALTER TABLE dataset_import ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
 ```
 

@@ -1,29 +1,49 @@
-package life.catalogue.importer.acef;
-
-import java.io.IOException;
-import java.nio.file.Path;
+package life.catalogue.importer.dwca;
 
 import com.google.common.collect.Lists;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.InserterBaseTest;
 import life.catalogue.importer.NeoInserter;
+import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.reference.ReferenceFactory;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.neo4j.graphdb.Transaction;
+
+import java.io.IOException;
+import java.nio.file.Path;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
-public class AcefInserterTest extends InserterBaseTest {
+public class DwcaInserterTest extends InserterBaseTest {
   
   @Override
   public NeoInserter newInserter(Path resource) throws IOException  {
-    return new AcefInserter(store, resource, new ReferenceFactory(store), ImageService.passThru());
+    return new DwcaInserter(store, resource, new ReferenceFactory(store), ImageService.passThru());
+  }
+  /**
+   * EEA redlist file with unknown term columns
+   */
+  @Test
+  public void dwca37() throws Exception {
+    NeoInserter ins = setup("/dwca/37");
+    ins.insertAll();
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoUsage u = store.usages().objByID("319088");
+      assertNotNull(u.getVerbatimKey());
+      VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
+      v.hasTerm(DwcaReaderTest.TERM_CoL_name);
+    }
   }
 
   @Test
+  @Ignore
   public void readMetadata() throws Exception {
     NeoInserter ins = setup("/acef/0");
     Dataset d = ins.readMetadata().get();
@@ -50,13 +70,5 @@ public class AcefInserterTest extends InserterBaseTest {
     assertNull(d.getCitation());
     assertNull(d.getCode());
   }
-  
-  @Test
-  public void readMetadataBadType() throws Exception {
-    NeoInserter ins = setup("/acef/16");
-    Dataset d = ins.readMetadata().get();
-    
-    assertNull(d.getType());
-  }
-  
+
 }
