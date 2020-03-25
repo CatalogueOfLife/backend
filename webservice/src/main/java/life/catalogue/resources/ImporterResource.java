@@ -9,16 +9,14 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 import io.dropwizard.auth.Auth;
-import life.catalogue.api.model.ColUser;
-import life.catalogue.api.model.DatasetImport;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.ResultPage;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.importer.ImportRequest;
+import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +52,15 @@ public class ImporterResource {
     request.createdBy = user.getKey();
     return importManager.submit(request);
   }
-  
+
+  @POST
+  @RolesAllowed({Roles.ADMIN})
+  @Path("/restart")
+  public void restart(@Auth ColUser user) {
+    LOG.warn("Restarting importer by {}", user);
+    importManager.restart();
+  }
+
   @GET
   @Path("{key}")
   public DatasetImport get(@PathParam("key") int datasetKey){

@@ -18,6 +18,7 @@ import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.common.concurrent.PBQThreadPoolExecutor;
 import life.catalogue.common.concurrent.StartNotifier;
 import life.catalogue.common.io.DownloadUtil;
+import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -328,12 +329,12 @@ public class ImportManager implements Managed {
   }
 
   /**
-   * We use old school callbacks here as you cannot easily cancel CopletableFutures.
+   * We use old school callbacks here as you cannot easily cancel CompletableFutures.
    */
   private void errorCallBack(ImportRequest req, Exception err) {
-    LOG.error("Dataset import {} failed: {}", req.datasetKey, err.getCause().getMessage(), err.getCause());
-    failed.inc();
     futures.remove(req.datasetKey);
+    failed.inc();
+    LOG.error("Dataset import {} failed: {}", req.datasetKey, Exceptions.getFirstMessage(err), err.getCause());
   }
 
   /**
@@ -385,7 +386,7 @@ public class ImportManager implements Managed {
   }
 
   @Override
-  public void start() throws Exception {
+  public void start() {
     LOG.info("Starting import manager with {} import threads and a queue of {} max.",
         cfg.importer.threads,
         cfg.importer.maxQueue);
@@ -430,7 +431,7 @@ public class ImportManager implements Managed {
   }
 
   @Override
-  public void stop() throws Exception {
+  public void stop() {
     // orderly shutdown running imports
     for (Future f : futures.values()) {
       f.cancel(true);
@@ -439,4 +440,9 @@ public class ImportManager implements Managed {
     exec.stop();
   }
 
+  public void restart() {
+    LOG.info("Restarting dataset importer");
+    stop();
+    start();
+  }
 }

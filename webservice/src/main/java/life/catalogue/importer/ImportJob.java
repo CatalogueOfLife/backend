@@ -158,7 +158,6 @@ public class ImportJob implements Runnable {
    */
   private boolean prepareSourceData(Path sourceDir) throws IOException {
     last = dao.getLast(dataset.getKey());
-    di = dao.createWaiting(dataset, req.createdBy);
 
     File source = cfg.normalizer.source(datasetKey);
     source.getParentFile().mkdirs();
@@ -212,6 +211,7 @@ public class ImportJob implements Runnable {
   }
 
   private void importDataset() {
+    di = dao.createWaiting(dataset, req.createdBy);
     LoggingUtils.setDatasetMDC(datasetKey, getAttempt(), getClass());
     LOG.info("Start new import attempt {} for {} dataset {}: {}", di.getAttempt(), dataset.getOrigin(), datasetKey, dataset.getTitle());
 
