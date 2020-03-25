@@ -93,7 +93,7 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   public File downloadDir = new File("/tmp");
   
   @NotNull
-  public String raml = "https://sp2000.github.io/colplus/api/api.html";
+  public String raml = "https://catalogueoflife.github.io/general/api/api.html";
   
   
   @Override

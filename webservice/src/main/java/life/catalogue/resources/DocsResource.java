@@ -8,6 +8,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import life.catalogue.WsServerConfig;
+import life.catalogue.dw.jersey.Redirect;
 
 /**
  *
@@ -25,7 +26,7 @@ public class DocsResource {
   
   @GET
   public Response docs() {
-    return Response.status(Response.Status.MOVED_PERMANENTLY).location(raml).build();
+    return Redirect.temporary(raml);
   }
   
   @GET

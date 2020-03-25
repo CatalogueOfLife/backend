@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 /**
  * Immutable ISO 639 3 letter language class to be used as singletons.
+ * Uses data from https://iso639-3.sil.org/code_tables/download_tables
  */
 public class Language implements Comparable<Language> {
   
