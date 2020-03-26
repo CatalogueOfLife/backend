@@ -3,10 +3,9 @@ package life.catalogue.resources;
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Streams;
-import life.catalogue.api.model.NameUsageBase;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.ResultPage;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
+import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.NameUsageWrapperMapper;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.es.InvalidQueryException;
@@ -21,14 +20,15 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
+import java.util.List;
 import java.util.stream.Stream;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Path("/dataset/{datasetKey}/nameusage")
-public class NameUsageDatasetSearchResource {
+public class NameUsageResource {
 
   @SuppressWarnings("unused")
-  private static final Logger LOG = LoggerFactory.getLogger(NameUsageDatasetSearchResource.class);
+  private static final Logger LOG = LoggerFactory.getLogger(NameUsageResource.class);
   private static final Joiner COMMA_CAT = Joiner.on(';').skipNulls();
   private static final Object[][] NAME_HEADER = new Object[1][];
   static {
@@ -37,9 +37,22 @@ public class NameUsageDatasetSearchResource {
   private final NameUsageSearchService searchService;
   private final NameUsageSuggestionService suggestService;
 
-  public NameUsageDatasetSearchResource(NameUsageSearchService search, NameUsageSuggestionService suggest) {
+  public NameUsageResource(NameUsageSearchService search, NameUsageSuggestionService suggest) {
     this.searchService = search;
     this.suggestService = suggest;
+  }
+
+  @GET
+  public List<NameUsageBase> list(@PathParam("datasetKey") int datasetKey,
+                                  @QueryParam("nidx") List<String> namesIndexIds,
+                                  @Context SqlSession session) {
+    if (namesIndexIds != null && !namesIndexIds.isEmpty()) {
+      NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
+      return mapper.listByNameIndexID(datasetKey, namesIndexIds);
+
+    } else {
+      throw new IllegalArgumentException("Names Index query parameter nidx required");
+    }
   }
 
   @GET

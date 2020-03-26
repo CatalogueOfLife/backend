@@ -24,7 +24,9 @@ public interface NameUsageMapper {
   List<NameUsageBase> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
   
   List<NameUsageBase> listByNameID(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
-  
+
+  List<NameUsageBase> listByNameIndexID(@Param("datasetKey") int datasetKey, @Param("nameIdxIds") List<String> nameIdxIds);
+
   List<NameUsageBase> listByName(@Param("datasetKey") int datasetKey,
                          @Param("name") String sciname,
                          @Nullable @Param("rank") Rank rank);

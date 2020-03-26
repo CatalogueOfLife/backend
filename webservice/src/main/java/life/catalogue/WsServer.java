@@ -79,7 +79,7 @@ import life.catalogue.resources.EstimateResource;
 import life.catalogue.resources.ImporterResource;
 import life.catalogue.resources.MatchingResource;
 import life.catalogue.resources.NameResource;
-import life.catalogue.resources.NameUsageDatasetSearchResource;
+import life.catalogue.resources.NameUsageResource;
 import life.catalogue.resources.NameUsageSearchResource;
 import life.catalogue.resources.ReferenceResource;
 import life.catalogue.resources.SectorResource;
@@ -270,7 +270,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.jersey().register(new EstimateResource(getSqlSessionFactory()));
     env.jersey().register(new MatchingResource(ni));
     env.jersey().register(new NameResource(ndao));
-    env.jersey().register(new NameUsageDatasetSearchResource(searchService, suggestService));
+    env.jersey().register(new NameUsageResource(searchService, suggestService));
     env.jersey().register(new NameUsageSearchResource(searchService, suggestService));
     env.jersey().register(new ReferenceResource(rdao));
     env.jersey().register(new SectorResource(getSqlSessionFactory(), diDao, diff, assembly));

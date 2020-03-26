@@ -113,6 +113,14 @@
         ORDER BY u.id
     </select>
 
+    <select id="listByNameIndexID" resultMap="usageResultMap">
+        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE u.name_index_id IN (<foreach collection="nameIdxIds" item="nidx" separator=",">#{nidx}</foreach>)
+        ORDER BY u.id
+    </select>
+
     <select id="listByName" resultMap="usageResultMap">
         <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
         SELECT <include refid="SELECT" />

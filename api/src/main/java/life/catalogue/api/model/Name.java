@@ -40,13 +40,13 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   /**
    * Id from the names index grouping all distinct scientific names
    */
-  @JsonIgnore
+  //@JsonIgnore
   private String nameIndexId;
   
   /**
    * Match type that resulted in the nameIndexId.
    */
-  @JsonIgnore
+  //@JsonIgnore
   private MatchType nameIndexMatchType;
   
   /**
