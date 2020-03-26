@@ -104,12 +104,14 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
 
   private static Dataset resetOriginProps(Dataset d) {
     // null properties not matching its origin
-    switch (d.getOrigin()) {
-      case MANAGED:
-      case RELEASED:
-        d.setDataFormat(null);
-        d.setDataAccess(null);
-        d.setImportFrequency(Frequency.NEVER);
+    if (d.getOrigin() != null) {
+      switch (d.getOrigin()) {
+        case MANAGED:
+        case RELEASED:
+          d.setDataFormat(null);
+          d.setDataAccess(null);
+          d.setImportFrequency(Frequency.NEVER);
+      }
     }
     return d;
   }
