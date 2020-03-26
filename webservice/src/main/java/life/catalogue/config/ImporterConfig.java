@@ -57,5 +57,12 @@ public class ImporterConfig {
    * Keep the default of zero for production environments!
    */
   public int wait = 0;
-  
+
+  /**
+   * Makes sure all configured directories do actually exist and create them if missing
+   * @return true if at least one dir was newly created
+   */
+  public boolean mkdirs() {
+    return false;
+  }
 }

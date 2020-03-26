@@ -239,7 +239,7 @@
     <update id="updateMatch" parameterType="map" keyProperty="id">
         <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
         UPDATE name_${partition}
-        SET (name_index_id, modified) = (#{nameIndexID}, now())
+        SET (name_index_id, name_index_match_type, modified) = (#{nameIndexID}, #{matchType}::MATCHTYPE, now())
         WHERE id = #{id} AND dataset_key=#{datasetKey}
     </update>
 

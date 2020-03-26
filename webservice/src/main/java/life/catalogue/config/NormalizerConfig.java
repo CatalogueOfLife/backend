@@ -99,7 +99,15 @@ public class NormalizerConfig {
         .setConfig(GraphDatabaseSettings.pagecache_memory, mappedMemory + "M");
     return builder;
   }
-  
+
+  /**
+   * Makes sure all configured directories do actually exist and create them if missing
+   * @return true if at least one dir was newly created
+   */
+  public boolean mkdirs() {
+    boolean created = archiveDir.mkdirs();
+    return scratchDir.mkdirs() || created;
+  }
 }
 
 

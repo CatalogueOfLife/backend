@@ -3,6 +3,7 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
+import life.catalogue.api.vocab.MatchType;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.DatasetPageable;
 import org.apache.ibatis.annotations.Param;
@@ -57,7 +58,10 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, ProcessableDataset
    * @param id
    * @param nameIndexID
    */
-  void updateMatch(@Param("datasetKey") int datasetKey, @Param("id") String id, @Param("nameIndexID") String nameIndexID);
+  void updateMatch(@Param("datasetKey") int datasetKey, @Param("id") String id,
+                   @Param("nameIndexID") String nameIndexID,
+                   @Param("matchType") MatchType matchType
+  );
   
   int deleteBySector(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   

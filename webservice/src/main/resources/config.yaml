@@ -34,10 +34,17 @@ es:
     numShards: 1
     numReplicas: 0
 auth:
-  type: gbif
-  api: "${gbif.api}"
-  appkey: ${gbif.appkey}
-  secret: "${gbif.secret}"
+  type: map
+  users:
+    - username: user
+      password: test
+      role: user
+    - username: editor
+      password: test
+      role: editor
+    - username: admin
+      password: test
+      role: admin
 jwtKey: 3254e6rftgbzg6tz73254e6rftgbzg6tz73254e6rftgbzg6tz7
 img:
   repo: ${img.repo}

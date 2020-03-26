@@ -112,7 +112,19 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
       version = null;
     }
   }
-  
+
+  /**
+   * Makes sure all configured directories do actually exist and create them if missing
+   * @return true if at least one dir was newly created
+   */
+  public boolean mkdirs() {
+    boolean created = downloadDir.mkdirs();
+    created = metricsRepo.mkdirs() || created;
+    created = normalizer.mkdirs() || created;
+    created = importer.mkdirs() || created;
+    return created;
+  }
+
   public String versionString() {
     if (version != null) {
       return version.getProperty("git.commit.id.abbrev") + "  " + version.getProperty("git.commit.time");

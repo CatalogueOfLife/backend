@@ -2,6 +2,7 @@ package life.catalogue.matching;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.MatchType;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.VerbatimRecordMapper;
 import org.apache.ibatis.session.ExecutorType;
@@ -71,8 +72,12 @@ public class DatasetMatcher {
       NameMatch m = ni.match(n, allowInserts, false);
       
       if (!Objects.equals(oldId, m.hasMatch() ? m.getName().getId() : null)) {
-        nm.updateMatch(datasetKey, n.getId(), m.hasMatch() ? m.getName().getId() : null);
-        
+        if (m.hasMatch()) {
+          nm.updateMatch(datasetKey, n.getId(), m.getName().getId(), m.getType());
+        } else {
+          nm.updateMatch(datasetKey, n.getId(), null, null);
+        }
+
         if (updateIssues) {
           IssueContainer v = n.getVerbatimKey() != null ? vm.getIssues(key.id(n.getVerbatimKey())) : null;
           if (v != null) {

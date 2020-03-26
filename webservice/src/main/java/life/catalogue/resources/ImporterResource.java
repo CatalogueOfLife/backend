@@ -6,8 +6,11 @@ import java.util.List;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
+import com.google.common.base.Strings;
 import io.dropwizard.auth.Auth;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
@@ -16,7 +19,6 @@ import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.importer.ImportRequest;
-import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,9 +58,9 @@ public class ImporterResource {
   @POST
   @RolesAllowed({Roles.ADMIN})
   @Path("/restart")
-  public void restart(@Auth ColUser user) {
+  public boolean restart(@Auth ColUser user) {
     LOG.warn("Restarting importer by {}", user);
-    importManager.restart();
+    return importManager.restart();
   }
 
   @GET
@@ -71,8 +73,8 @@ public class ImporterResource {
   @Path("{key}")
   @Consumes({MoreMediaTypes.APP_GZIP, MoreMediaTypes.APP_ZIP, MediaType.APPLICATION_OCTET_STREAM})
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public ImportRequest uploadArchive(@PathParam("key") int datasetKey, @Auth ColUser user, InputStream archive) throws IOException {
-    return importManager.upload(datasetKey, archive, user);
+  public ImportRequest uploadArchive(@PathParam("key") int datasetKey, @Auth ColUser user, @Context HttpHeaders headers, InputStream archive) throws IOException {
+    return importManager.upload(datasetKey, archive, false, null, user);
   }
 
   @POST
@@ -81,8 +83,9 @@ public class ImporterResource {
       MoreMediaTypes.TEXT_YAML, MoreMediaTypes.APP_YAML,
       MoreMediaTypes.TEXT_WILDCARD})
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public ImportRequest uploadCsv(@PathParam("key") int datasetKey, @Auth ColUser user, InputStream archive) throws IOException {
-    return importManager.upload(datasetKey, archive, user);
+  public ImportRequest uploadCsv(@PathParam("key") int datasetKey, @Auth ColUser user, @Context HttpHeaders headers, InputStream archive) throws IOException {
+    System.out.println(headers.getMediaType());
+    return importManager.upload(datasetKey, archive, true, contentType2Suffix(headers), user);
   }
   
   @DELETE
@@ -91,5 +94,28 @@ public class ImporterResource {
   public void cancel(@PathParam("key") int datasetKey, @Auth ColUser user) {
     importManager.cancel(datasetKey, user.getKey());
   }
-  
+
+  private static String contentType2Suffix(HttpHeaders h) {
+    if (h != null && h.getRequestHeaders() != null) {
+      String ctype = h.getRequestHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
+      switch (Strings.nullToEmpty(ctype)) {
+        case MoreMediaTypes.TEXT_CSV:
+          return "csv";
+        case MoreMediaTypes.TEXT_TSV:
+          return "tsv";
+        case MoreMediaTypes.TEXT_YAML:
+        case MoreMediaTypes.APP_YAML:
+          return "yaml";
+        case MediaType.TEXT_PLAIN:
+        case MoreMediaTypes.TEXT_WILDCARD:
+          return "text";
+        case MoreMediaTypes.APP_GZIP:
+          return "gzip";
+        case MoreMediaTypes.APP_ZIP:
+        case MediaType.APPLICATION_OCTET_STREAM:
+          return "zip";
+      }
+    }
+    return null;
+  }
 }

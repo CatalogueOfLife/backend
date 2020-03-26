@@ -144,6 +144,9 @@ public class WsServer extends Application<WsServerConfig> {
 
   @Override
   public void run(WsServerConfig cfg, Environment env) throws Exception {
+    if (cfg.mkdirs()) {
+      LOG.info("Created config repository directories");
+    }
     clearTmp(cfg);
     
     // http client pool is managed via DW lifecycle already

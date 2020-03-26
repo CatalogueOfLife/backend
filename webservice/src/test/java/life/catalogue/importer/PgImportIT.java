@@ -147,6 +147,16 @@ public class PgImportIT {
     normalizeAndImport(folder.toPath());
   }
 
+  void verifyNamesIndexIds(int datasetKey){
+    try(SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()){
+      NameMapper nm = session.getMapper(NameMapper.class);
+      for (Name n : nm.processDataset(datasetKey)) {
+        assertNotNull(n.getNameIndexId());
+        assertNotNull(n.getNameIndexMatchType());
+      }
+    }
+  }
+
   DatasetImport metrics() {
     return new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo())
         .generateMetrics(dataset.getKey(), Users.TESTER);
@@ -163,11 +173,13 @@ public class PgImportIT {
     assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCitation());
     assertEquals("r4", pubIn.getId());
   }
-  
+
   @Test
   public void testDwca1() throws Exception {
     normalizeAndImport(DWCA, 1);
-    
+
+    verifyNamesIndexIds(dataset.getKey());
+
     // check basionym
     Name n1006 = ndao.get(key(dataset.getKey(), "1006"));
     assertEquals("Leontodon taraxacoides", n1006.getScientificName());

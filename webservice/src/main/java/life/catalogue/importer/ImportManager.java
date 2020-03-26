@@ -4,6 +4,7 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import io.dropwizard.lifecycle.Managed;
 import life.catalogue.WsServerConfig;
@@ -17,6 +18,7 @@ import life.catalogue.api.vocab.ImportState;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.common.concurrent.PBQThreadPoolExecutor;
 import life.catalogue.common.concurrent.StartNotifier;
+import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.tax.AuthorshipNormalizer;
@@ -34,6 +36,7 @@ import org.gbif.nameparser.utils.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -257,9 +260,9 @@ public class ImportManager implements Managed {
    * 
    *         dataset does not exist or is not of matching origin
    */
-  public ImportRequest upload(final int datasetKey, final InputStream content, ColUser user) throws IOException {
+  public ImportRequest upload(final int datasetKey, final InputStream content, boolean zip, @Nullable String suffix, ColUser user) throws IOException {
     Dataset d = validDataset(datasetKey);
-    uploadArchive(d, content);
+    uploadArchive(d, content, zip, suffix);
     return submitValidDataset(new ImportRequest(datasetKey, user.getKey(), true, true, true));
   }
 
@@ -340,14 +343,24 @@ public class ImportManager implements Managed {
   /**
    * Uploads an input stream to a tmp file and if no errors moves it to the archive source path.
    */
-  private void uploadArchive(Dataset d, InputStream content) throws NotFoundException, IOException {
-    Path tmp = Files.createTempFile(cfg.normalizer.scratchDir.toPath(), "upload-", "");
+  private void uploadArchive(Dataset d, InputStream content, boolean zip, String suffix) throws NotFoundException, IOException {
+    cfg.normalizer.scratchDir.mkdirs();
+    Path tmp = Files.createTempFile(cfg.normalizer.scratchDir.toPath(), "upload-", Strings.nullToEmpty("."+suffix));
     LOG.info("Upload data for dataset {} to tmp file {}", d.getKey(), tmp);
     Files.copy(content, tmp, StandardCopyOption.REPLACE_EXISTING);
 
     Path source = cfg.normalizer.source(d.getKey()).toPath();
-    LOG.debug("Move uploaded data for dataset {} to source repo at {}", d.getKey(), source);
-    Files.move(tmp, source, StandardCopyOption.REPLACE_EXISTING);
+    Files.createDirectories(source.getParent());
+    if (zip) {
+      if (Files.exists(source)) {
+        Files.delete(source);
+      }
+      LOG.debug("Zip uploaded file {} for dataset {} to source repo at {}", tmp, d.getKey(), source);
+      CompressionUtil.zipFile(tmp.toFile(), source.toFile());
+    } else {
+      LOG.debug("Move uploaded data for dataset {} to source repo at {}", d.getKey(), source);
+      Files.move(tmp, source, StandardCopyOption.REPLACE_EXISTING);
+    }
   }
 
   /**
@@ -440,9 +453,16 @@ public class ImportManager implements Managed {
     exec.stop();
   }
 
-  public void restart() {
+  public boolean restart() {
     LOG.info("Restarting dataset importer");
-    stop();
-    start();
+    try {
+      stop();
+      start();
+      return true;
+
+    } catch (Exception e) {
+      LOG.error("Failed to restart importer", e);
+      return false;
+    }
   }
 }

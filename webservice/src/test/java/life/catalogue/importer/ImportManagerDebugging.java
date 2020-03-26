@@ -14,6 +14,7 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.TestDataRule;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.matching.NameIndexFactory;
@@ -27,7 +28,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import java.net.URI;
 
-@Ignore("manual import debugging")
+//@Ignore("manual import debugging")
 @RunWith(MockitoJUnitRunner.class)
 public class ImportManagerDebugging {
   static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
@@ -39,7 +40,10 @@ public class ImportManagerDebugging {
   
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
-  
+
+  @Rule
+  public TestDataRule testDataRule = TestDataRule.empty();
+
   @Rule
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
   
@@ -69,7 +73,7 @@ public class ImportManagerDebugging {
     
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), aNormalizer,
-        NameIndexFactory.passThru(), NameUsageIndexService.passThru(), new ImageServiceFS(cfg.img), releaseManager);
+        NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer), NameUsageIndexService.passThru(), new ImageServiceFS(cfg.img), releaseManager);
     importManager.start();
   }
   
@@ -95,10 +99,8 @@ public class ImportManagerDebugging {
   }
   
   @Test
-  public void debugImport() throws Exception {
+  public void debugTaxonworks() throws Exception {
     Dataset d = create(DataFormat.COLDP, "https://sfg.taxonworks.org/downloads/15/download_file", "TW Test");
-    // do it again as key 1 is problematic
-    d = create(DataFormat.COLDP, "https://sfg.taxonworks.org/downloads/15/download_file", "TW Test");
     System.out.println("Submitting " + d);
     importManager.submit(new ImportRequest(d.getKey(), Users.IMPORTER));
     Thread.sleep(1000);
@@ -107,7 +109,19 @@ public class ImportManagerDebugging {
     }
     System.out.println("Done");
   }
-  
+
+  @Test
+  public void debugDsmz() throws Exception {
+    Dataset d = create(DataFormat.DWCA, "http://rs.gbif.org/datasets/dsmz.zip", "DSMZ");
+    System.out.println("Submitting " + d);
+    importManager.submit(new ImportRequest(d.getKey(), Users.IMPORTER));
+    Thread.sleep(1000);
+    while (importManager.hasRunning()) {
+      Thread.sleep(1000);
+    }
+    System.out.println("Done");
+  }
+
   private Dataset create(DataFormat format, String url, String title) {
     Dataset d = new Dataset();
     d.setType(DatasetType.OTHER);
