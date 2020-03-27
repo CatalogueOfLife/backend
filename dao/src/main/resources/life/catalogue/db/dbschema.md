@@ -13,6 +13,7 @@ and done it manually. So we can as well log changes here.
 #### 2020-03-20 dataset origin
 ```
 ALTER TABLE dataset ADD COLUMN source_key INTEGER REFERENCES dataset;
+ALTER TABLE dataset_archive ADD COLUMN source_key INTEGER REFERENCES dataset;
 
 ALTER TABLE dataset ALTER COLUMN origin TYPE text;
 ALTER TABLE dataset_archive ALTER COLUMN origin TYPE text;
@@ -31,7 +32,7 @@ UPDATE dataset_archive SET origin='EXTERNAL' WHERE origin='UPLOADED' AND data_ac
 UPDATE dataset_archive SET origin='MANAGED' WHERE origin='UPLOADED';
 UPDATE dataset_archive SET origin='RELEASED' WHERE origin='MANAGED' AND locked;
 UPDATE dataset_archive SET source_key=3 WHERE origin='RELEASED';
-UPDATE dataset_import SET origin='EXTERNAL' WHERE origin='UPLOADED' AND data_access IS NOT NULL;
+UPDATE dataset_import SET origin='EXTERNAL' WHERE origin='UPLOADED' AND download_uri IS NOT NULL;
 UPDATE dataset_import SET origin='MANAGED' WHERE origin='UPLOADED';
 ALTER TABLE dataset ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;
 ALTER TABLE dataset_archive ALTER COLUMN origin TYPE DATASETORIGIN USING origin::DATASETORIGIN;

@@ -55,7 +55,7 @@
         <commons-io.version>2.6</commons-io.version>
         <dropwizard.version>2.0.2</dropwizard.version>
         <dwc-api.version>1.23</dwc-api.version>
-        <elasticsearch.version>6.5.1</elasticsearch.version>
+        <elasticsearch.version>7.4.2</elasticsearch.version>
         <fastutil.version>8.3.0</fastutil.version>
         <gbif-api.version>0.99</gbif-api.version>
         <graalvm.version>19.3.0</graalvm.version>
