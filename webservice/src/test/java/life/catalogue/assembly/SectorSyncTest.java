@@ -136,7 +136,7 @@ public class SectorSyncTest {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       final SectorMapper sm = session.getMapper(SectorMapper.class);
       // sync unassigned genera (unassigned family) in order Carnivora
-      sector.setMinChildRank(Rank.FAMILY);
+      sector.setPlaceholderRank(Rank.FAMILY);
       sector.getSubject().setId("t4");
       sm.update(sector);
     }

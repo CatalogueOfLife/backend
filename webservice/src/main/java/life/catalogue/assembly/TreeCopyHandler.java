@@ -222,7 +222,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     Usage parent;
     // treat root node according to sector mode
     if (!ids.containsKey(u.getParentId())) {
-      if (sector.getMode() == Sector.Mode.UNION && sector.getMinChildRank() == null) {
+      if (sector.getMode() == Sector.Mode.UNION && sector.getPlaceholderRank() == null) {
         // in classic union mode the root node itself is not copied
         // but all child taxa should be linked to the sector target, so remember that ID mapping:
         // if a minChildRank is given we are in virtual union mode which can trigger the same copy handler several times.

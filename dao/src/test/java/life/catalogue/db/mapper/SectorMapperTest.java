@@ -142,6 +142,7 @@ public class SectorMapperTest extends CRUDTestBase<Integer, Sector, SectorMapper
     d.setCode(NomCode.ZOOLOGICAL);
     d.setSubject(TestEntityGenerator.newSimpleName());
     d.setTarget(TestEntityGenerator.newSimpleNameWithoutStatusParent());
+    d.setPlaceholderRank(Rank.FAMILY);
     d.setRanks(Set.copyOf(Rank.LINNEAN_RANKS));
     d.setEntities(Set.of(EntityType.NAME, EntityType.NAME_USAGE, EntityType.NAME_RELATION));
     d.setNote(RandomUtils.randomUnicodeString(1024));

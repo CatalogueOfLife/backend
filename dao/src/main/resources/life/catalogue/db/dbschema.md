@@ -12,7 +12,7 @@ and done it manually. So we can as well log changes here.
    
 #### 2020-03-27 sector virtual minRank
 ```
-ALTER TABLE sector ADD COLUMN min_child_rank RANK;
+ALTER TABLE sector ADD COLUMN placeholder_rank RANK;
 ```
 
 #### 2020-03-20 dataset origin

@@ -27,7 +27,7 @@ public class Sector extends DataEntity<Integer> implements DatasetScoped {
   private SimpleName subject;
   private Mode mode = Sector.Mode.ATTACH;
   private NomCode code;
-  private Rank minChildRank;
+  private Rank placeholderRank;
   private Set<Rank> ranks;
   private Set<EntityType> entities;
   private String note;
@@ -132,12 +132,12 @@ public class Sector extends DataEntity<Integer> implements DatasetScoped {
     this.target = target;
   }
 
-  public Rank getMinChildRank() {
-    return minChildRank;
+  public Rank getPlaceholderRank() {
+    return placeholderRank;
   }
 
-  public void setMinChildRank(Rank minChildRank) {
-    this.minChildRank = minChildRank;
+  public void setPlaceholderRank(Rank placeholderRank) {
+    this.placeholderRank = placeholderRank;
   }
 
   public Set<Rank> getRanks() {
@@ -169,7 +169,7 @@ public class Sector extends DataEntity<Integer> implements DatasetScoped {
         Objects.equals(subject, sector.subject) &&
         mode == sector.mode &&
         code == sector.code &&
-        Objects.equals(minChildRank, sector.minChildRank) &&
+        Objects.equals(placeholderRank, sector.placeholderRank) &&
         Objects.equals(ranks, sector.ranks) &&
         Objects.equals(entities, sector.entities) &&
         Objects.equals(note, sector.note);
@@ -177,7 +177,7 @@ public class Sector extends DataEntity<Integer> implements DatasetScoped {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, datasetKey, target, subjectDatasetKey, subject, mode, code, minChildRank, ranks, entities, note);
+    return Objects.hash(super.hashCode(), key, datasetKey, target, subjectDatasetKey, subject, mode, code, placeholderRank, ranks, entities, note);
   }
 
   @Override
