@@ -27,6 +27,7 @@ public class Sector extends DataEntity<Integer> implements DatasetScoped {
   private SimpleName subject;
   private Mode mode = Sector.Mode.ATTACH;
   private NomCode code;
+  private Rank minChildRank;
   private Set<Rank> ranks;
   private Set<EntityType> entities;
   private String note;
@@ -42,7 +43,7 @@ public class Sector extends DataEntity<Integer> implements DatasetScoped {
      * Does not check for duplicates and create the same name twice if configured to.
      */
     UNION,
-  
+
     /**
      * Merge all descendants of subject under the target taxon, but exclude the subject taxon itself.
      * This operation will only create new names and try to avoid the creation of duplicates automatically.
@@ -131,6 +132,14 @@ public class Sector extends DataEntity<Integer> implements DatasetScoped {
     this.target = target;
   }
 
+  public Rank getMinChildRank() {
+    return minChildRank;
+  }
+
+  public void setMinChildRank(Rank minChildRank) {
+    this.minChildRank = minChildRank;
+  }
+
   public Set<Rank> getRanks() {
     return ranks;
   }
@@ -160,6 +169,7 @@ public class Sector extends DataEntity<Integer> implements DatasetScoped {
         Objects.equals(subject, sector.subject) &&
         mode == sector.mode &&
         code == sector.code &&
+        Objects.equals(minChildRank, sector.minChildRank) &&
         Objects.equals(ranks, sector.ranks) &&
         Objects.equals(entities, sector.entities) &&
         Objects.equals(note, sector.note);
@@ -167,7 +177,7 @@ public class Sector extends DataEntity<Integer> implements DatasetScoped {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, datasetKey, target, subjectDatasetKey, subject, mode, code, ranks, entities, note);
+    return Objects.hash(super.hashCode(), key, datasetKey, target, subjectDatasetKey, subject, mode, code, minChildRank, ranks, entities, note);
   }
 
   @Override

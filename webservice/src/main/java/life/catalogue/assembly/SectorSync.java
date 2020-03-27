@@ -5,6 +5,7 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.MatchingDao;
 import life.catalogue.dao.NamesTreeDao;
+import life.catalogue.dao.Pager;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.ExecutorType;
@@ -199,9 +200,22 @@ public class SectorSync extends SectorRunnable {
          TreeCopyHandler treeHandler = new TreeCopyHandler(decisions, factory, user, sector, state)
     ){
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
-      LOG.info("Traverse taxon tree, blocking {} nodes", blockedIds.size());
-      um.processTree(datasetKey, null, sector.getSubject().getId(), blockedIds, null, true,false)
+      if (sector.getMinChildRank() == null) {
+        LOG.info("Traverse taxon tree at {}. Blocking {} nodes", sector.getSubject().getId(), blockedIds.size());
+        um.processTree(datasetKey, null, sector.getSubject().getId(), blockedIds, null, true,false)
+                .forEach(treeHandler);
+      } else {
+        LOG.info("Traverse taxon tree at {}, ignoring immediate children above rank {}. Blocking {} nodes", sector.getSubject().getId(), sector.getMinChildRank(), blockedIds.size());
+        // we have a minimum rank configured for direct children of the root
+        // usually this is for dealing with virtual placeholder groups
+        // see https://github.com/CatalogueOfLife/clearinghouse-ui/issues/518
+        for (Taxon child : Pager.children(DSID.key(datasetKey, sector.getSubject().getId()), factory)){
+          if (child.getName().getRank().higherOrEqualsTo(sector.getMinChildRank())) continue;
+          LOG.info("Traverse child {}", child);
+          um.processTree(datasetKey, null, child.getId(), blockedIds, null, true,false)
               .forEach(treeHandler);
+        }
+      }
     }
   }
   

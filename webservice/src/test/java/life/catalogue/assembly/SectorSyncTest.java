@@ -131,6 +131,20 @@ public class SectorSyncTest {
       }
       assertEquals(7, distributions.size());
     }
+
+    // try now with a "virtual" sector source
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      final SectorMapper sm = session.getMapper(SectorMapper.class);
+      // sync unassigned genera (unassigned family) in order Carnivora
+      sector.setMinChildRank(Rank.FAMILY);
+      sector.getSubject().setId("t4");
+      sm.update(sector);
+    }
+
+    ss = new SectorSync(sector.getKey(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao,
+        SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
+    ss.run();
+
   }
   
   /**

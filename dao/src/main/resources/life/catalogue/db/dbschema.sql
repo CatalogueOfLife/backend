@@ -688,6 +688,7 @@ CREATE TABLE sector (
   target_id TEXT,
   target_name TEXT,
   target_authorship TEXT,
+  min_child_rank RANK,
   ranks RANK[] DEFAULT '{}',
   entities ENTITYTYPE[] DEFAULT NULL,
   note TEXT,

@@ -6,16 +6,13 @@ import java.util.function.Function;
 
 import com.google.common.base.Preconditions;
 import life.catalogue.api.search.DecisionSearchRequest;
+import life.catalogue.db.mapper.*;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.db.DatasetPageable;
 import life.catalogue.db.GlobalPageable;
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.DecisionMapper;
-import life.catalogue.db.mapper.EstimateMapper;
-import life.catalogue.db.mapper.SectorMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +46,16 @@ public class Pager<T> implements Iterable<T> {
   public static Iterable<Dataset> datasets(final SqlSessionFactory factory) {
     return pager(DEFAULT_PAGE_SIZE, DatasetMapper.class, factory);
   }
-  
+
+  public static Iterable<Taxon> children(final DSID<String> id, final SqlSessionFactory factory) {
+    return new Pager<>(DEFAULT_PAGE_SIZE, page -> {
+      try (SqlSession session = factory.openSession()) {
+        return session.getMapper(TaxonMapper.class).children(id, page);
+      }
+    });
+  }
+
+
   private static <M> Iterable<M> pager(int pageSize, Class<? extends GlobalPageable<M>> mapperClass, final SqlSessionFactory factory) {
     PageablePager<M> pp = new PageablePager(mapperClass, factory);
     return new Pager<M>(pageSize, pp::nextPage);
