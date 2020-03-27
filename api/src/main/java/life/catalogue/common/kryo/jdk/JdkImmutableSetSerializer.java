@@ -21,7 +21,7 @@ public final class JdkImmutableSetSerializer extends Serializer<Set<Object>> {
   }
 
   @Override
-  public Set<Object> read(Kryo kryo, Input input, Class<Set<Object>> type) {
+  public Set<Object> read(Kryo kryo, Input input, Class<? extends Set<Object>> type) {
     final int size = input.readInt(true);
     final Object[] list = new Object[size];
     for (int i = 0; i < size; ++i) {

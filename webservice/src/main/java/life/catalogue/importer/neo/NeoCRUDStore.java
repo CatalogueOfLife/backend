@@ -3,7 +3,8 @@ package life.catalogue.importer.neo;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import com.esotericsoftware.kryo.pool.KryoPool;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.util.Pool;
 import com.google.common.base.Preconditions;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.VerbatimEntity;
@@ -30,7 +31,7 @@ public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
   private final String objName;
   protected final NeoDb neoDb;
 
-  NeoCRUDStore( DB mapDb, String mapDbName, Class<T> clazz, KryoPool pool, NeoDb neoDb, IdGenerator idGen) {
+  NeoCRUDStore(DB mapDb, String mapDbName, Class<T> clazz, Pool<Kryo> pool, NeoDb neoDb, IdGenerator idGen) {
     this.neoDb = neoDb;
     objName = clazz.getSimpleName();
     objects = mapDb.hashMap(mapDbName)

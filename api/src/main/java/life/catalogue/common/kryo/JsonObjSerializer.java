@@ -32,11 +32,11 @@ public class JsonObjSerializer extends Serializer<ObjectNode> {
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
-    chunked.endChunks();
+    chunked.endChunk();
   }
 
   @Override
-  public ObjectNode read(final Kryo kryo, final Input input, final Class<ObjectNode> uuidClass) {
+  public ObjectNode read(final Kryo kryo, final Input input, final Class<? extends ObjectNode> uuidClass) {
     InputChunked chunked = new InputChunked(input, 256);
     try {
       return (ObjectNode) MAPPER.readTree(chunked);

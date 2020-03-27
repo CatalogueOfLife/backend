@@ -1,6 +1,7 @@
 package life.catalogue.importer.neo;
 
-import com.esotericsoftware.kryo.pool.KryoPool;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.util.Pool;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.UnmodifiableIterator;
 import life.catalogue.api.model.*;
@@ -70,7 +71,7 @@ public class NeoDb {
   private final GraphDatabaseBuilder neoFactory;
   private final DB mapDb;
   private final File neoDir;
-  private final KryoPool pool;
+  private final Pool<Kryo> pool;
   private BatchInserter inserter;
   public final int batchSize;
   public final int batchTimeout;
@@ -105,9 +106,7 @@ public class NeoDb {
     this.batchTimeout = batchTimeout;
     
     try {
-      pool = new KryoPool.Builder(new NeoKryoFactory())
-          .softReferences()
-          .build();
+      pool = new NeoKryoPool(8);
       dataset = (Atomic.Var<Dataset>) mapDb.atomicVar("dataset", new MapDbObjectSerializer(Dataset.class, pool, 256))
           .createOrOpen();
       verbatim = mapDb.hashMap("verbatim")

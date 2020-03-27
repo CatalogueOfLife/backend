@@ -1,6 +1,7 @@
 package life.catalogue.importer.neo;
 
-import com.esotericsoftware.kryo.pool.KryoPool;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.util.Pool;
 import life.catalogue.api.model.Reference;
 import life.catalogue.api.model.VerbatimEntity;
 import life.catalogue.api.vocab.Issue;
@@ -21,7 +22,7 @@ public class ReferenceStore extends MapStore<Reference> {
     // Citation -> refID
     private final Map<String, String> refIndexCitation;
 
-    public ReferenceStore(DB db, KryoPool pool, BiConsumer<VerbatimEntity, Issue> addIssue) {
+    public ReferenceStore(DB db, Pool<Kryo> pool, BiConsumer<VerbatimEntity, Issue> addIssue) {
         super(Reference.class, "r", db, pool, addIssue);
         refIndexCitation = db.hashMap("refIndexCitation")
                 .keySerializer(Serializer.STRING)

@@ -1,6 +1,7 @@
 package life.catalogue.common.kryo;
 
-import com.esotericsoftware.kryo.pool.KryoPool;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.util.Pool;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Reference;
 import life.catalogue.common.io.TempFile;
@@ -17,9 +18,7 @@ public class KryoCollectionStoreTest {
   @Test
   public void storeReferences() throws Exception {
 
-    KryoPool pool = new KryoPool.Builder(new ApiKryoFactory())
-        .softReferences()
-        .build();
+    Pool<Kryo> pool = new ApiKryoPool(4);
 
     try (TempFile tf = new TempFile("kryo-", ".bin");
          KryoCollectionStore<Page> store = new KryoCollectionStore(Page.class, tf.file, pool)) {

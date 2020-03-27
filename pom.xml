@@ -46,6 +46,7 @@
             versions for many things including: commons-lang3, guava, jersey, commons-text, servlet api, httpclient,
             liquibase, freemarker, jetty, jackson, metrics, etc. -->
         <antlr.version>4.7.2</antlr.version>
+        <asm.version></asm.version>
         <assertj.version>3.11.1</assertj.version>
         <!-- 2.0.0j11 is a modified 2.0.0 release using GraalVM 2.3.0 with ASM 7.x hosted at GBIF -->
         <citeproc.version>2.0.0j11</citeproc.version>
@@ -53,7 +54,7 @@
         <commons-collections4.version>4.3</commons-collections4.version>
         <commons-compress.version>1.19</commons-compress.version>
         <commons-io.version>2.6</commons-io.version>
-        <dropwizard.version>2.0.3</dropwizard.version>
+        <dropwizard.version>2.0.2</dropwizard.version>
         <dwc-api.version>1.23</dwc-api.version>
         <elasticsearch.version>7.4.2</elasticsearch.version>
         <fastutil.version>8.3.0</fastutil.version>
@@ -70,8 +71,9 @@
         <jbibtex.version>1.0.17</jbibtex.version>
         <jjwt.version>0.10.7</jjwt.version>
         <junit.version>4.12</junit.version>
-        <kryo-serializers.version>0.42</kryo-serializers.version>
-        <kryo.version>4.0.2</kryo.version>
+        <kryo-serializers.version>0.45</kryo-serializers.version>
+        <kryo.version>5.0.0-RC5</kryo.version>
+        <kryo-reflectasm.version>1.11.9</kryo-reflectasm.version>
         <logstash-logback.version>6.2</logstash-logback.version>
         <mapdb.version>3.0.5</mapdb.version>
         <mockito.version>3.1.0</mockito.version>
@@ -183,17 +185,6 @@
                 <artifactId>api</artifactId>
                 <version>${project.version}</version>
                 <classifier>tests</classifier>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.catalogueoflife</groupId>
-                <artifactId>dw</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.catalogueoflife</groupId>
-                <artifactId>dw-testing</artifactId>
-                <version>${project.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -473,7 +464,7 @@
             <dependency>
                 <groupId>com.esotericsoftware</groupId>
                 <artifactId>reflectasm</artifactId>
-                <version>1.11.9</version>
+                <version>${kryo-reflectasm.version}</version>
                 <type>bundle</type>
             </dependency>
 

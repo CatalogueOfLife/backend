@@ -4,11 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-import com.esotericsoftware.kryo.pool.KryoPool;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.util.Pool;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import life.catalogue.api.model.VerbatimRecord;
-import life.catalogue.common.kryo.ApiKryoFactory;
+import life.catalogue.common.kryo.ApiKryoPool;
 import org.gbif.dwc.terms.DwcTerm;
 import org.junit.After;
 import org.junit.Before;
@@ -19,7 +20,7 @@ import org.mapdb.Serializer;
 
 public class MapDbObjectSerializerTest {
   File dbf;
-  KryoPool pool;
+  Pool<Kryo> pool;
   
   @Before
   public void init() throws IOException {
@@ -29,9 +30,7 @@ public class MapDbObjectSerializerTest {
       dbf.getParentFile().mkdirs();
     }
   
-    pool = new KryoPool.Builder(new ApiKryoFactory())
-        .softReferences()
-        .build();
+    pool = new ApiKryoPool(8);
   }
   
   @After

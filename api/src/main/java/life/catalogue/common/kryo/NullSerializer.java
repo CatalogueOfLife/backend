@@ -16,7 +16,7 @@ public class NullSerializer<T> extends Serializer<T> {
   }
 
   @Override
-  public T read(final Kryo kryo, final Input input, final Class<T> theClass) {
+  public T read(final Kryo kryo, final Input input, final Class<? extends T> theClass) {
     return null;
   }
 }

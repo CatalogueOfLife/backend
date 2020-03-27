@@ -46,7 +46,7 @@ public class EnumMapSerializer extends Serializer<EnumMap<? extends Enum<?>, ?>>
 
   @SuppressWarnings({"unchecked", "rawtypes"})
   private EnumMap<? extends Enum<?>, ?> create(final Kryo kryo, final Input input,
-                                               final Class<EnumMap<? extends Enum<?>, ?>> type) {
+                                               final Class<? extends EnumMap<? extends Enum<?>, ?>> type) {
     final Class<? extends Enum<?>> keyType = kryo.readClass(input).getType();
     return new EnumMap(keyType);
   }
@@ -54,7 +54,7 @@ public class EnumMapSerializer extends Serializer<EnumMap<? extends Enum<?>, ?>>
   @Override
   @SuppressWarnings({"rawtypes", "unchecked"})
   public EnumMap<? extends Enum<?>, ?> read(final Kryo kryo, final Input input,
-                                            final Class<EnumMap<? extends Enum<?>, ?>> type) {
+                                            final Class<? extends EnumMap<? extends Enum<?>, ?>> type) {
     kryo.reference(FAKE_REFERENCE);
     final EnumMap<? extends Enum<?>, ?> result = create(kryo, input, type);
     final Class<Enum<?>> keyType = getKeyType(result);

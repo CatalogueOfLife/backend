@@ -21,7 +21,7 @@ public class TermSerializer extends Serializer<Term> {
   }
 
   @Override
-  public Term read(Kryo kryo, Input input, Class<Term> aClass) {
+  public Term read(Kryo kryo, Input input, Class<? extends Term> aClass) {
     return TF.findTerm(input.readString());
   }
 }

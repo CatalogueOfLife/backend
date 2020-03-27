@@ -5,9 +5,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.pool.KryoPool;
+import com.esotericsoftware.kryo.util.Pool;
 import life.catalogue.api.model.Name;
-import life.catalogue.common.kryo.ApiKryoFactory;
+import life.catalogue.common.kryo.ApiKryoPool;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
 import org.mapdb.DB;
 import org.mapdb.DBException;
@@ -23,7 +23,7 @@ public class NameIndexMapDBStore implements NameIndexStore {
   private static final Logger LOG = LoggerFactory.getLogger(NameIndexMapDBStore.class);
   
   private final DB db;
-  private final KryoPool pool;
+  private final Pool<Kryo> pool;
   private final Map<String, NameList> names;
   
   static class NameList extends ArrayList<Name> {
@@ -40,7 +40,12 @@ public class NameIndexMapDBStore implements NameIndexStore {
     }
   }
   
-  static class NameIndexKryoFactory extends ApiKryoFactory {
+  static class NameIndexKryoPool extends ApiKryoPool {
+
+    public NameIndexKryoPool(int maximumCapacity) {
+      super(maximumCapacity);
+    }
+
     @Override
     public Kryo create() {
       Kryo kryo = super.create();
@@ -51,9 +56,7 @@ public class NameIndexMapDBStore implements NameIndexStore {
   
   public NameIndexMapDBStore(DBMaker.Maker dbMaker) throws DBException.DataCorruption {
       this.db = dbMaker.make();
-      pool = new KryoPool.Builder(new NameIndexKryoFactory())
-          .softReferences()
-          .build();
+      pool = new NameIndexKryoPool(4);
       names = db.hashMap("names")
           .keySerializer(Serializer.STRING_ASCII)
           .valueSerializer(new MapDbObjectSerializer<>(NameList.class, pool, 128))

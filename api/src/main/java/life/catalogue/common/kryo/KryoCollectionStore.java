@@ -6,9 +6,9 @@ import java.util.Iterator;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.InputChunked;
 import com.esotericsoftware.kryo.io.OutputChunked;
-import com.esotericsoftware.kryo.io.UnsafeInput;
-import com.esotericsoftware.kryo.io.UnsafeOutput;
-import com.esotericsoftware.kryo.pool.KryoPool;
+import com.esotericsoftware.kryo.unsafe.UnsafeInput;
+import com.esotericsoftware.kryo.unsafe.UnsafeOutput;
+import com.esotericsoftware.kryo.util.Pool;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -21,10 +21,10 @@ public class KryoCollectionStore<T> implements AutoCloseable, Iterable<T> {
   private OutputStream outputStream;
   private OutputChunked output;
   private boolean dirty = false;
-  private final KryoPool pool;
+  private final Pool<Kryo> pool;
   private final Class<T> clazz;
 
-  public KryoCollectionStore(Class<T> clazz, File store, KryoPool pool) throws FileNotFoundException {
+  public KryoCollectionStore(Class<T> clazz, File store, Pool<Kryo> pool) throws FileNotFoundException {
     this.clazz = clazz;
     this.store = store;
     outputStream = new UnsafeOutput(new FileOutputStream(store));
@@ -33,13 +33,13 @@ public class KryoCollectionStore<T> implements AutoCloseable, Iterable<T> {
   }
 
   public void add(T obj) {
-    Kryo kryo = pool.borrow();
+    Kryo kryo = pool.obtain();
     try {
       dirty = true;
       kryo.writeObject(output, obj);
-      output.endChunks();
+      output.endChunk();
     } finally {
-      pool.release(kryo);
+      pool.free(kryo);
     }
   }
 
@@ -76,16 +76,16 @@ public class KryoCollectionStore<T> implements AutoCloseable, Iterable<T> {
 
     @Override
     public T next() {
-      Kryo kryo = pool.borrow();
+      Kryo kryo = pool.obtain();
       try {
         // Read data from first set of chunks...
         System.out.println();
         T obj = kryo.readObject(input, clazz);
-        input.nextChunks();
+        input.nextChunk();
         return obj;
 
       } finally {
-        pool.release(kryo);
+        pool.free(kryo);
       }
     }
 

@@ -19,7 +19,7 @@ public final class JdkImmutableMapSerializer extends Serializer<Map<Object, Obje
   }
 
   @Override
-  public Map<Object, Object> read(Kryo kryo, Input input, Class<Map<Object, Object>> type) {
+  public Map<Object, Object> read(Kryo kryo, Input input, Class<? extends Map<Object, Object>> type) {
     final Map map = kryo.readObject(input, HashMap.class);
     return Map.<Object, Object>copyOf(map);
   }

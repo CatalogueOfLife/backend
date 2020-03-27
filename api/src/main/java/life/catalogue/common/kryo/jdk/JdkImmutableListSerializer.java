@@ -21,7 +21,7 @@ public final class JdkImmutableListSerializer extends Serializer<List<Object>> {
   }
 
   @Override
-  public List<Object> read(Kryo kryo, Input input, Class<List<Object>> type) {
+  public List<Object> read(Kryo kryo, Input input, Class<? extends List<Object>> type) {
     final int size = input.readInt(true);
     final Object[] list = new Object[size];
     for (int i = 0; i < size; ++i) {

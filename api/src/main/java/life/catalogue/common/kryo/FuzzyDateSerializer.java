@@ -18,7 +18,7 @@ public class FuzzyDateSerializer extends Serializer<FuzzyDate> {
   }
 
   @Override
-  public FuzzyDate read(final Kryo kryo, final Input input, final Class<FuzzyDate> clazz) {
+  public FuzzyDate read(final Kryo kryo, final Input input, final Class<? extends FuzzyDate> clazz) {
     return FuzzyDate.fromInt(input.readInt(true));
   }
 }

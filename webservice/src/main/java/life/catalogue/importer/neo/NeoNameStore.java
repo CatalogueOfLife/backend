@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.esotericsoftware.kryo.pool.KryoPool;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.util.Pool;
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.ArrayUtils;
 import life.catalogue.importer.IdGenerator;
@@ -20,7 +21,7 @@ public class NeoNameStore extends NeoCRUDStore<NeoName> {
   // scientificName to nodeId
   private final Map<String, long[]> names;
   
-  public NeoNameStore(DB mapDb, String mapDbName, KryoPool pool, IdGenerator idGen, NeoDb neoDb) {
+  public NeoNameStore(DB mapDb, String mapDbName, Pool<Kryo> pool, IdGenerator idGen, NeoDb neoDb) {
     super(mapDb, mapDbName, NeoName.class, pool, neoDb, idGen);
     names = mapDb.hashMap(mapDbName+"-names")
         .keySerializer(Serializer.STRING)

@@ -1,6 +1,7 @@
 package life.catalogue.importer.neo;
 
-import com.esotericsoftware.kryo.pool.KryoPool;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.util.Pool;
 import life.catalogue.api.model.DatasetScopedEntity;
 import life.catalogue.api.model.VerbatimEntity;
 import life.catalogue.api.vocab.Issue;
@@ -28,9 +29,9 @@ public class MapStore<T extends DatasetScopedEntity<String> & VerbatimEntity> im
     protected final BiConsumer<VerbatimEntity, Issue> addIssue;
     private final String prefPrefix;
     private final DB db;
-    private final KryoPool pool;
+    private final Pool<Kryo> pool;
 
-    public MapStore(Class<T> entityClass, String prefPrefix, DB db, KryoPool pool, BiConsumer<VerbatimEntity, Issue> addIssue) {
+    public MapStore(Class<T> entityClass, String prefPrefix, DB db, Pool<Kryo> pool, BiConsumer<VerbatimEntity, Issue> addIssue) {
         this.db = db;
         this.pool = pool;
         this.prefPrefix = prefPrefix;

@@ -6,7 +6,7 @@ import java.io.IOException;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.kryo.pool.KryoPool;
+import com.esotericsoftware.kryo.util.Pool;
 import org.apache.commons.lang3.NotImplementedException;
 import org.mapdb.DataIO;
 import org.mapdb.DataInput2;
@@ -19,11 +19,11 @@ import org.mapdb.serializer.GroupSerializerObjectArray;
  * @param <T> the class to serialize
  */
 public class MapDbObjectSerializer<T> extends GroupSerializerObjectArray<T> {
-  private final KryoPool pool;
+  private final Pool<Kryo> pool;
   private final int bufferSize;
   private final Class<T> clazz;
   
-  public MapDbObjectSerializer(Class<T> clazz, KryoPool pool, int bufferSize) {
+  public MapDbObjectSerializer(Class<T> clazz, Pool<Kryo> pool, int bufferSize) {
     this.pool = pool;
     this.clazz = clazz;
     this.bufferSize = bufferSize;
@@ -31,7 +31,7 @@ public class MapDbObjectSerializer<T> extends GroupSerializerObjectArray<T> {
   
   @Override
   public void serialize(DataOutput2 out, T value) throws IOException {
-    Kryo kryo = pool.borrow();
+    Kryo kryo = pool.obtain();
     try {
       ByteArrayOutputStream buffer = new ByteArrayOutputStream(bufferSize);
       Output output = new Output(buffer, bufferSize);
@@ -41,21 +41,21 @@ public class MapDbObjectSerializer<T> extends GroupSerializerObjectArray<T> {
       DataIO.packInt(out, bytes.length);
       out.write(bytes);
     } finally {
-      pool.release(kryo);
+      pool.free(kryo);
     }
   }
   
   @Override
   public T deserialize(DataInput2 in, int available) throws IOException {
     if (available == 0) return null;
-    Kryo kryo = pool.borrow();
+    Kryo kryo = pool.obtain();
     try {
       int size = DataIO.unpackInt(in);
       byte[] ret = new byte[size];
       in.readFully(ret);
       return kryo.readObject(new Input(ret), clazz);
     } finally {
-      pool.release(kryo);
+      pool.free(kryo);
     }
   }
   

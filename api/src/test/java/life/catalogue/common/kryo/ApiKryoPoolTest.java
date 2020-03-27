@@ -1,58 +1,38 @@
-package life.catalogue.importer.neo.kryo;
-
-import java.io.ByteArrayOutputStream;
-import java.util.List;
+package life.catalogue.common.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.google.common.collect.Lists;
-import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.importer.neo.NeoKryoFactory;
-import life.catalogue.importer.neo.model.NeoName;
-import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.*;
 import org.gbif.dwc.terms.*;
-import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.api.NomCode;
 import org.junit.Test;
+
+import java.io.ByteArrayOutputStream;
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 
 /**
  *
  */
-public class NeoKryoFactoryTest {
-  Kryo kryo = new NeoKryoFactory().create();
+public class ApiKryoPoolTest {
+  Kryo kryo = new ApiKryoPool(1).create();
   
   @Test
-  public void testNeoTaxon() throws Exception {
-    NeoUsage t = new NeoUsage();
-  
-    Taxon taxon = new Taxon();
-    taxon.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
-    taxon.setName(new Name());
-    taxon.getName().setScientificName("Abies alba");
-    taxon.getName().setCombinationAuthorship(TestEntityGenerator.createAuthorship());
-    taxon.getName().setBasionymAuthorship(TestEntityGenerator.createAuthorship());
-    taxon.getName().setRank(Rank.SPECIES);
-    t.usage = taxon;
-    assertSerde(t);
+  public void testName() throws Exception {
+    Name n = TestEntityGenerator.newName("1234567");
+    assertSerde(n);
   }
   
-  @Test
-  public void testNeoName() throws Exception {
-    NeoName nn = new NeoName();
-    
-    nn.name = new Name();
-    nn.name.setScientificName("Abies alba");
-    nn.name.setCombinationAuthorship(TestEntityGenerator.createAuthorship());
-    nn.name.setBasionymAuthorship(TestEntityGenerator.createAuthorship());
-    nn.name.setRank(Rank.SPECIES);
-    assertSerde(nn);
-  }
-
   @Test
   public void testReference() throws Exception {
     Reference r = new Reference();
@@ -62,7 +42,39 @@ public class NeoKryoFactoryTest {
     r.setCsl(TestEntityGenerator.createCsl());
     assertSerde(r);
   }
-  
+
+  @Test
+  public void testDataset() throws Exception {
+    Dataset d = TestEntityGenerator.newDataset("Unmut");
+    d.setKey(1234);
+    d.setImportFrequency(Frequency.WEEKLY);
+    d.setReleased(LocalDate.now());
+    d.setDataFormat(DataFormat.ACEF);
+    d.setDataAccess(URI.create("http://nix.tv"));
+    d.setCode(NomCode.BOTANICAL);
+    d.setGbifKey(UUID.randomUUID());
+    d.setContributesTo(Set.of(12,13,14,15));
+    d.setAuthorsAndEditors(List.of("Karl", "Frank"));
+    d.setSettings(Map.of(
+        DatasetSettings.DISTRIBUTION_GAZETTEER, Gazetteer.ISO,
+        DatasetSettings.REMATCH_DECISIONS, true,
+        DatasetSettings.CSV_DELIMITER, "\t",
+        DatasetSettings.CSV_QUOTE, "\"",
+        DatasetSettings.CSV_QUOTE_ESCAPE, "\\",
+        DatasetSettings.NOMENCLATURAL_CODE, NomCode.BOTANICAL
+    ));
+    assertSerde(d);
+  }
+
+  @Test
+  public void testUsages() throws Exception {
+    Taxon t = TestEntityGenerator.newTaxon("bla bla");
+    assertSerde(t);
+
+    Synonym s = TestEntityGenerator.newSynonym(t);
+    assertSerde(s);
+  }
+
   @Test
   public void testVerbatim() throws Exception {
     List<Term> terms = Lists.newArrayList(
@@ -74,32 +86,34 @@ public class NeoKryoFactoryTest {
         UnknownTerm.build("http://gbif.org/abcdefg")
     );
     assertSerde(terms);
-    
+
     VerbatimRecord rec = TestEntityGenerator.createVerbatim();
     for (Issue issue : Issue.values()) {
       rec.addIssue(issue);
     }
     assertSerde(rec);
   }
-  
+
   @Test
   public void testEmptyModels() throws Exception {
-    assertSerde(new NeoUsage());
+    assertSerde(new Taxon());
+    assertSerde(new Name());
     assertSerde(new Reference());
+    assertSerde(new Dataset());
     assertSerde(new DatasetImport());
   }
-  
+
   private void assertSerde(Object obj) {
     ByteArrayOutputStream buffer = new ByteArrayOutputStream(128);
     Output output = new Output(buffer);
     kryo.writeObject(output, obj);
     output.close();
     byte[] bytes = buffer.toByteArray();
-    
+
     final Input input = new Input(bytes);
     Object obj2 = kryo.readObject(input, obj.getClass());
-    
+
     assertEquals(obj, obj2);
   }
-  
+
 }

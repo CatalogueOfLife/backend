@@ -1,7 +1,7 @@
 package life.catalogue.common.kryo;
 
 import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.pool.KryoFactory;
+import com.esotericsoftware.kryo.util.Pool;
 import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer;
 import de.javakaffee.kryoserializers.guava.ImmutableListSerializer;
 import life.catalogue.api.datapackage.ColdpTerm;
@@ -26,8 +26,12 @@ import java.util.*;
  * We use Kryo for extremely fast byte serialization of temporary objects.
  * It is used to serialize various information in kvp stores during checklist indexing and nub builds.
  */
-public class ApiKryoFactory implements KryoFactory {
-  
+public class ApiKryoPool extends Pool<Kryo> {
+
+  public ApiKryoPool(int maximumCapacity) {
+    super(true, true, maximumCapacity);
+  }
+
   @Override
   public Kryo create() {
     Kryo kryo = new Kryo();
