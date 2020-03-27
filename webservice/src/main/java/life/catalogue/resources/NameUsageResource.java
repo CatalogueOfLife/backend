@@ -43,16 +43,11 @@ public class NameUsageResource {
   }
 
   @GET
-  public List<NameUsageBase> list(@PathParam("datasetKey") int datasetKey,
-                                  @QueryParam("nidx") List<String> namesIndexIds,
-                                  @Context SqlSession session) {
-    if (namesIndexIds != null && !namesIndexIds.isEmpty()) {
-      NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
-      return mapper.listByNameIndexID(datasetKey, namesIndexIds);
-
-    } else {
-      throw new IllegalArgumentException("Names Index query parameter nidx required");
-    }
+  public ResultPage<NameUsageBase> list(@PathParam("datasetKey") int datasetKey, @Valid Page page, @Context SqlSession session) {
+    Page p = page == null ? new Page() : page;
+    NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
+    List<NameUsageBase> result = mapper.list(datasetKey, p);
+    return new ResultPage<>(p, result, () -> mapper.count(datasetKey));
   }
 
   @GET
