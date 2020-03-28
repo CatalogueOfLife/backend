@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.SectorSearchRequest;
@@ -12,6 +14,7 @@ import life.catalogue.db.mapper.TaxonMapper;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,14 +43,16 @@ public class SectorDao extends EntityDao<Integer, Sector, SectorMapper> {
   
       final DSID<String> did = s.getTargetAsDSID();
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
-  
+
+      // check if source is a virtual node
+      parsePlaceholderRank(s);
       // reload full source and target
       Taxon subject = tm.get(s.getSubjectAsDSID());
       if (subject == null) {
         throw new IllegalArgumentException("subject ID " + s.getSubject().getId() + " not existing in dataset " + s.getSubjectDatasetKey());
       }
       s.setSubject(subject.toSimpleName());
-  
+
       Taxon target  = tm.get(s.getTargetAsDSID());
       if (target == null) {
         throw new IllegalArgumentException("target ID " + s.getTarget().getId() + " not existing in catalogue " + s.getDatasetKey());
@@ -58,7 +63,8 @@ public class SectorDao extends EntityDao<Integer, Sector, SectorMapper> {
       // creates sector key
       mapper.create(s);
       final Integer secKey = s.getKey();
-  
+
+      // for the UI to quickly render something we create a few direct children in the target !!!
       List<Taxon> toCopy = new ArrayList<>();
       // create direct children in catalogue
       if (Sector.Mode.ATTACH == s.getMode()) {
@@ -81,7 +87,23 @@ public class SectorDao extends EntityDao<Integer, Sector, SectorMapper> {
     }
     
   }
-  
+
+  @Override
+  protected void updateBefore(Sector s, Sector old, int user, SectorMapper mapper, SqlSession session) {
+    parsePlaceholderRank(s);
+    super.updateBefore(s, old, user, mapper, session);
+  }
+
+  private static boolean parsePlaceholderRank(Sector s){
+    RankID subjId = RankID.parseID(s.getSubjectDatasetKey(), s.getSubject().getId());
+    if (subjId.rank != null) {
+      s.setPlaceholderRank(subjId.rank);
+      s.getSubject().setId(subjId.getId());
+      return true;
+    }
+    return false;
+  }
+
   @Override
   protected void updateAfter(Sector obj, Sector old, int user, SectorMapper mapper, SqlSession session) {
     if (old.getTarget() == null || obj.getTarget() == null || !Objects.equals(old.getTarget().getId(), obj.getTarget().getId())) {
@@ -101,4 +123,5 @@ public class SectorDao extends EntityDao<Integer, Sector, SectorMapper> {
       tm.incDatasetSectorCount(s.getTargetAsDSID(), s.getSubjectDatasetKey(), delta);
     }
   }
+
 }

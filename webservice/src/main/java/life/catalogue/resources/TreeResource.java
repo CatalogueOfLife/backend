@@ -30,9 +30,7 @@ import java.util.regex.Pattern;
 @SuppressWarnings("static-method")
 public class TreeResource {
   private static final int DEFAULT_PAGE_SIZE = 100;
-  private static final String INC_SEDIS = "--incertae-sedis--";
-  private static final Pattern ID_PATTERN = Pattern.compile("^(.+)"+INC_SEDIS+"([A-Z_]+)$");
-  
+
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(TreeResource.class);
   private final TaxonDao dao;
@@ -59,7 +57,7 @@ public class TreeResource {
                                 @QueryParam("catalogueKey") @DefaultValue(Datasets.DRAFT_COL+"") int catalogueKey,
                                 @QueryParam("type") TreeNode.Type type,
                                 @Context SqlSession session) {
-    RankID parent = parseID(datasetKey, id);
+    RankID parent = RankID.parseID(datasetKey, id);
     TreeMapper trm = session.getMapper(TreeMapper.class);
     LinkedList<TreeNode> parents = new LinkedList<>(trm.parents(catalogueKey, type, parent));
     if (parent.rank != null) {
@@ -95,7 +93,7 @@ public class TreeResource {
     TaxonMapper tm = session.getMapper(TaxonMapper.class);
     Page p = page == null ? new Page(0, DEFAULT_PAGE_SIZE) : page;
   
-    RankID parent = parseID(datasetKey, id);
+    RankID parent = RankID.parseID(datasetKey, id);
     List<TreeNode> result = trm.children(catalogueKey, type, parent, parent.rank, insertPlaceholder, p);;
 
     Supplier<Integer> countSupplier;
@@ -129,34 +127,12 @@ public class TreeResource {
     TreeNode tn = new TreeNode();
     tn.setDatasetKey(datasetKey);
     tn.setSectorKey(sectorKey);
-    tn.setId(parentID + INC_SEDIS + rank.name());
+    tn.setId(RankID.buildID(parentID, rank));
     tn.setRank(rank);
     tn.setName("Not assigned");
     tn.setChildCount(childCount);
     tn.setStatus(TaxonomicStatus.ACCEPTED);
     return tn;
-  }
-  
-  static class RankID extends DSIDValue<String> {
-    Rank rank;
-  
-    public RankID(int datasetKey, String id, Rank rank) {
-      super(datasetKey, id);
-      this.rank = rank;
-    }
-  }
-  
-  @VisibleForTesting
-  protected static RankID parseID(int datasetKey, String id){
-    Matcher m = ID_PATTERN.matcher(id);
-    if (m.find()) {
-      try {
-        return new RankID(datasetKey, m.group(1), Rank.valueOf(m.group(2)));
-      } catch (IllegalArgumentException e) {
-        LOG.warn("Bad incertae sedis ID " + id);
-      }
-    }
-    return new RankID(datasetKey, id, null);
   }
   
 }

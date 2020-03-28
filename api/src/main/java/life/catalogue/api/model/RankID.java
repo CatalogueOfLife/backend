@@ -1,0 +1,41 @@
+package life.catalogue.api.model;
+
+import org.gbif.nameparser.api.Rank;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class RankID extends DSIDValue<String> {
+  private static final Logger LOG = LoggerFactory.getLogger(RankID.class);
+  private static final String INC_SEDIS = "--incertae-sedis--";
+  private static final Pattern ID_PATTERN = Pattern.compile("^(.+)"+INC_SEDIS+"([A-Z_]+)$");
+
+  public static RankID parseID(DSID<String> id){
+    return parseID(id.getDatasetKey(), id.getId());
+  }
+
+  public static RankID parseID(int datasetKey, String id){
+    Matcher m = ID_PATTERN.matcher(id);
+    if (m.find()) {
+      try {
+        return new RankID(datasetKey, m.group(1), Rank.valueOf(m.group(2)));
+      } catch (IllegalArgumentException e) {
+        LOG.warn("Bad incertae sedis ID " + id);
+      }
+    }
+    return new RankID(datasetKey, id, null);
+  }
+
+  public static String buildID(String parentID, Rank rank) {
+    return parentID + INC_SEDIS + rank.name();
+  }
+
+  public Rank rank;
+
+  public RankID(int datasetKey, String id, Rank rank) {
+    super(datasetKey, id);
+    this.rank = rank;
+  }
+}
