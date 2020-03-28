@@ -47,14 +47,6 @@ public class Pager<T> implements Iterable<T> {
     return pager(DEFAULT_PAGE_SIZE, DatasetMapper.class, factory);
   }
 
-  public static Iterable<Taxon> children(final DSID<String> id, final SqlSessionFactory factory) {
-    return new Pager<>(DEFAULT_PAGE_SIZE, page -> {
-      try (SqlSession session = factory.openSession()) {
-        return session.getMapper(TaxonMapper.class).children(id, page);
-      }
-    });
-  }
-
 
   private static <M> Iterable<M> pager(int pageSize, Class<? extends GlobalPageable<M>> mapperClass, final SqlSessionFactory factory) {
     PageablePager<M> pp = new PageablePager(mapperClass, factory);

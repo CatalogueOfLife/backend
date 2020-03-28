@@ -132,6 +132,13 @@
         ORDER BY u.id
     </select>
 
+    <select id="children" resultMap="usageResultMap">
+        <include refid="life.catalogue.db.Common.partitionByKey"/>
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE u.parent_id = #{key.id}
+    </select>
+
     <update id="updateParentId" parameterType="map">
         <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
         UPDATE name_usage_${partition}

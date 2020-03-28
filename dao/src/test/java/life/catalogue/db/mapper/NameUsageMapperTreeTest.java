@@ -51,15 +51,19 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
     CollectIdHandler<NameUsageBase> h = new CollectIdHandler<>();
     mapper().processTree(DATASET11.getKey(), null,null, null, null, true,false)
             .forEach(h);
-    List<String> bfs = ImmutableList.of("t1","t2","t3","t4","t5","t6","t10","t20","t30","t12","t13","t23","t24","t25",
-        "t31","t32","t33","t34", "s11", "s21", "s22", "t15", "t16", "s14");
+    List<String> bfs = ImmutableList.of("t1","t2","t3","t4","t5","t6","t30",
+        "t10","t20", "t31","t32","t33","t34", "t12","t13","t23","t24","t25",
+        "s11", "s21", "s22", "t15", "t16", "s14");
     assertEquals(bfs, h.list);
   
     h = new CollectIdHandler<>();
     mapper().processTree(DATASET11.getKey(), null,null, null, null, true, true)
             .forEach(h);
-    List<String> dfs = ImmutableList.of("t1","t2","t3","t4","t5","t20","s21","s22","t23","t24","t25",
-        "t30","t31","t32","t33","t34","t6","t10","s11","t12","t13","s14","t15","t16");
+    List<String> dfs = ImmutableList.of("t1","t2","t3","t4","t5",
+        "t20","s21","s22","t23","t24","t25",
+        "t6","t10","s11","t12","t13","s14","t15","t16",
+        "t30","t31","t32","t33","t34"
+    );
     assertEquals(dfs, h.list);
   }
   

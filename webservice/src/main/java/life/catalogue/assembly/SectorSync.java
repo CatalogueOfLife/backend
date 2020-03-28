@@ -205,17 +205,24 @@ public class SectorSync extends SectorRunnable {
       if (sector.getMode() == Sector.Mode.ATTACH) {
         um.processTree(datasetKey, null, sector.getSubject().getId(), blockedIds, null, true,false)
             .forEach(treeHandler);
+
       } else if (sector.getMode() == Sector.Mode.UNION) {
         LOG.info("Traverse taxon tree at {}, ignoring immediate children above rank {}. Blocking {} nodes", sector.getSubject().getId(), sector.getPlaceholderRank(), blockedIds.size());
-        // in UNION mode do not attach the subkect itself, just its children
-        for (Taxon child : Pager.children(DSID.key(datasetKey, sector.getSubject().getId()), factory)){
-          // if we have a placeholder rank configured ignore children of that rank or higher
-          // see https://github.com/CatalogueOfLife/clearinghouse-ui/issues/518
-          if (sector.getPlaceholderRank() != null && child.getName().getRank().higherOrEqualsTo(sector.getPlaceholderRank())) continue;
+        // in UNION mode do not attach the subject itself, just its children
+        // if we have a placeholder rank configured ignore children of that rank or higher
+        // see https://github.com/CatalogueOfLife/clearinghouse-ui/issues/518
+        for (NameUsageBase child : um.children(DSID.key(datasetKey, sector.getSubject().getId()), sector.getPlaceholderRank())){
+          if (child.isSynonym()) {
+            if (!blockedIds.contains(child.getId())) {
+              LOG.info("Add synonym child {}", child);
+              treeHandler.accept(child);
+            }
+          } else {
+            LOG.info("Traverse child {}", child);
+            um.processTree(datasetKey, null, child.getId(), blockedIds, null, true,false)
+                .forEach(treeHandler);
+          }
           treeHandler.reset();
-          LOG.info("Traverse child {}", child);
-          um.processTree(datasetKey, null, child.getId(), blockedIds, null, true,false)
-              .forEach(treeHandler);
         }
       } else {
         throw new NotImplementedException("Only attach and union sectors are implemented");

@@ -1,8 +1,6 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.NameUsageBase;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.*;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
 import org.gbif.nameparser.api.Rank;
@@ -30,7 +28,14 @@ public interface NameUsageMapper {
   List<NameUsageBase> listByName(@Param("datasetKey") int datasetKey,
                          @Param("name") String sciname,
                          @Nullable @Param("rank") Rank rank);
-  
+
+  /**
+   * Lists all children (taxon & synonym) of a given parent
+   * @param key the parent to list the direct children from
+   * @param rank optional rank cutoff filter to only include children with a rank lower than the one given
+   */
+  List<NameUsageBase> children(@Param("key") DSID<String> key, @Nullable @Param("rank") Rank rank);
+
   /**
    * Move all children including synonyms of a given taxon to a new parent.
    * @param datasetKey
