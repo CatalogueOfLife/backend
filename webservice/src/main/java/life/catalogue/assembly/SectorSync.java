@@ -8,6 +8,7 @@ import life.catalogue.dao.NamesTreeDao;
 import life.catalogue.dao.Pager;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -200,21 +201,24 @@ public class SectorSync extends SectorRunnable {
          TreeCopyHandler treeHandler = new TreeCopyHandler(decisions, factory, user, sector, state)
     ){
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
-      if (sector.getPlaceholderRank() == null) {
-        LOG.info("Traverse taxon tree at {}. Blocking {} nodes", sector.getSubject().getId(), blockedIds.size());
+      LOG.info("{} taxon tree {} to {}. Blocking {} nodes", sector.getMode(), sector.getSubject(), sector.getTarget(), blockedIds.size());
+      if (sector.getMode() == Sector.Mode.ATTACH) {
         um.processTree(datasetKey, null, sector.getSubject().getId(), blockedIds, null, true,false)
-                .forEach(treeHandler);
-      } else {
+            .forEach(treeHandler);
+      } else if (sector.getMode() == Sector.Mode.UNION) {
         LOG.info("Traverse taxon tree at {}, ignoring immediate children above rank {}. Blocking {} nodes", sector.getSubject().getId(), sector.getPlaceholderRank(), blockedIds.size());
-        // we have a minimum rank configured for direct children of the root
-        // usually this is for dealing with virtual placeholder groups
-        // see https://github.com/CatalogueOfLife/clearinghouse-ui/issues/518
+        // in UNION mode do not attach the subkect itself, just its children
         for (Taxon child : Pager.children(DSID.key(datasetKey, sector.getSubject().getId()), factory)){
-          if (child.getName().getRank().higherOrEqualsTo(sector.getPlaceholderRank())) continue;
+          // if we have a placeholder rank configured ignore children of that rank or higher
+          // see https://github.com/CatalogueOfLife/clearinghouse-ui/issues/518
+          if (sector.getPlaceholderRank() != null && child.getName().getRank().higherOrEqualsTo(sector.getPlaceholderRank())) continue;
+          treeHandler.reset();
           LOG.info("Traverse child {}", child);
           um.processTree(datasetKey, null, child.getId(), blockedIds, null, true,false)
               .forEach(treeHandler);
         }
+      } else {
+        throw new NotImplementedException("Only attach and union sectors are implemented");
       }
     }
   }

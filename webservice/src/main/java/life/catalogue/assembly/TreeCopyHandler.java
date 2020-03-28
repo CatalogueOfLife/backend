@@ -93,6 +93,10 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     target = new Usage(t.getId(), t.getName().getRank(), t.getStatus());
   }
 
+  public void reset() {
+    ids.clear();
+  }
+
   private static class Usage {
     String id;
     Rank rank;
@@ -219,28 +223,13 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
       return;
     }
     
-    Usage parent;
-    // treat root node according to sector mode
-    if (!ids.containsKey(u.getParentId())) {
-      if (sector.getMode() == Sector.Mode.UNION && sector.getPlaceholderRank() == null) {
-        // in classic union mode the root node itself is not copied
-        // but all child taxa should be linked to the sector target, so remember that ID mapping:
-        // if a minChildRank is given we are in virtual union mode which can trigger the same copy handler several times.
-        ids.put(u.getId(), target);
-        return;
-      }
-      // we want to attach the root node under the sector target
-      parent = target;
-
-    } else {
-      // all non root nodes have newly created parents
-      parent = ids.get(u.getParentId());
-      if (u.isTaxon() && u.getName().getRank().isSpeciesOrBelow()) {
-        // make sure we have a genus for species and a species for infraspecific taxa
-        parent = createImplicit(parent, (Taxon) u);
-      }
+    // all non root nodes have newly created parents
+    Usage parent = ids.getOrDefault(u.getParentId(), target);
+    if (u.isTaxon() && u.getName().getRank().isSpeciesOrBelow()) {
+      // make sure we have a genus for species and a species for infraspecific taxa
+      parent = createImplicit(parent, (Taxon) u);
     }
-    
+
     // copy usage with all associated information. This assigns a new id !!!
     DSID<String> orig;
     DSID<String> parentDID = new DSIDValue<>(catalogueKey, parent.id);
