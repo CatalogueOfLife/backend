@@ -219,7 +219,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
       // skip this taxon, but include children
       LOG.debug("Ignore {} {} [{}] type={}; status={}", u.getName().getRank(), u.getName().scientificNameAuthorship(), u.getId(), u.getName().getType(), u.getName().getNomStatus());
       // use taxons parent also as the parentID for this so children link one level up
-      ids.put(u.getId(), ids.get(u.getParentId()));
+      ids.put(u.getId(), ids.getOrDefault(u.getParentId(), target));
       return;
     }
     

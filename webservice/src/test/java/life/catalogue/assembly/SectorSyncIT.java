@@ -144,7 +144,7 @@ public class SectorSyncIT {
     }
   }
     
-  void syncAll() throws IOException {
+  void syncAll() {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       for (Sector s : session.getMapper(SectorMapper.class).list(Datasets.DRAFT_COL, null)) {
         sync(s);
