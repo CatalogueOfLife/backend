@@ -84,7 +84,6 @@ public class ImporterResource {
       MoreMediaTypes.TEXT_WILDCARD})
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public ImportRequest uploadCsv(@PathParam("key") int datasetKey, @Auth ColUser user, @Context HttpHeaders headers, InputStream archive) throws IOException {
-    System.out.println(headers.getMediaType());
     return importManager.upload(datasetKey, archive, true, contentType2Suffix(headers), user);
   }
   
@@ -97,23 +96,29 @@ public class ImporterResource {
 
   private static String contentType2Suffix(HttpHeaders h) {
     if (h != null && h.getRequestHeaders() != null) {
-      String ctype = h.getRequestHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
-      switch (Strings.nullToEmpty(ctype)) {
+      String ctype = Strings.nullToEmpty(h.getRequestHeaders().getFirst(HttpHeaders.CONTENT_TYPE)).toLowerCase();
+      switch (ctype) {
         case MoreMediaTypes.TEXT_CSV:
+        case MoreMediaTypes.TEXT_COMMA_SEP:
           return "csv";
         case MoreMediaTypes.TEXT_TSV:
+        case MoreMediaTypes.TEXT_TAB_SEP:
           return "tsv";
         case MoreMediaTypes.TEXT_YAML:
         case MoreMediaTypes.APP_YAML:
           return "yaml";
         case MediaType.TEXT_PLAIN:
         case MoreMediaTypes.TEXT_WILDCARD:
-          return "text";
+          return "txt";
         case MoreMediaTypes.APP_GZIP:
           return "gzip";
         case MoreMediaTypes.APP_ZIP:
         case MediaType.APPLICATION_OCTET_STREAM:
           return "zip";
+      }
+      // text wildcard
+      if (ctype.startsWith("text/")){
+        return "txt";
       }
     }
     return null;
