@@ -60,8 +60,8 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     int usages;
     int names;
 
-    int total(){
-      return usages+names;
+    int total() {
+      return usages + names;
     }
 
     void add(Stats other) {
@@ -103,8 +103,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       throw new EsException(e);
     }
     LOG.info("Successfully indexed dataset {} into index {}. Usages: {}. Bare names: {}. Total: {}.",
-            datasetKey, esConfig.nameUsage.name, stats.usages, stats.names, stats.total()
-    );
+        datasetKey, esConfig.nameUsage.name, stats.usages, stats.names, stats.total());
     return stats;
   }
 
@@ -146,8 +145,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       throw new EsException(e);
     }
     LOG.info("Successfully indexed sector {}. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
-            s.getKey(), esConfig.nameUsage.name, stats.usages, stats.names, stats.total()
-    );
+        s.getKey(), esConfig.nameUsage.name, stats.usages, stats.names, stats.total());
   }
 
   @Override
@@ -211,7 +209,6 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     if (!usages.isEmpty()) {
       NameUsageWrapper first = usages.iterator().next();
       LOG.info("Adding {} usages. First: {}", usages.size(), first.getUsage());
-
       NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
       indexer.accept(usages);
       return indexer.documentsIndexed();
@@ -258,7 +255,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
               counter.incrementAndGet();
               LOG.error("Error indexing dataset {}", datasetKey, ex.getCause());
               return null;
-            }).thenAccept( st -> {
+            }).thenAccept(st -> {
               total.add(st);
               LOG.info("Indexed {}/{} dataset {}. Total usages {}", counter.incrementAndGet(), keys.size(), datasetKey, total.usages);
             });
@@ -266,8 +263,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       ExecutorUtils.shutdown(exec);
 
       LOG.info("Successfully indexed all {} datasets. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
-              counter, esConfig.nameUsage.name, total.usages, total.names, total.total()
-      );
+          counter, esConfig.nameUsage.name, total.usages, total.names, total.total());
     } catch (IOException e) {
       throw new EsException(e);
     }
