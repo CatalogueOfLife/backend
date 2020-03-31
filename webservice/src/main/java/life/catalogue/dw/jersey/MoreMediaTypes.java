@@ -18,6 +18,8 @@ public class MoreMediaTypes {
   public final static String TEXT_YAML   = "text/yaml";
   public final static String TEXT_CSV   = "text/csv";
   public final static String TEXT_TSV   = "text/tsv";
+  public final static String TEXT_COMMA_SEP   = "text/comma-separated-values";
+  public final static String TEXT_TAB_SEP   = "text/tab-separated-values";
   public final static String TEXT_WILDCARD   = "text/*";
   
   private MoreMediaTypes() {

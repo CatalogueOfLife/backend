@@ -156,7 +156,7 @@ public class ImportJob implements Runnable {
    * This includes downloading, proxy downloads, modified checks and checks for uploads detecting the actual format
    * @return true if sourceDir should be imported
    */
-  private boolean prepareSourceData(Path sourceDir) throws IOException {
+  private boolean prepareSourceData(Path sourceDir) throws IOException, IllegalArgumentException {
     last = dao.getLast(dataset.getKey());
 
     File source = cfg.normalizer.source(datasetKey);

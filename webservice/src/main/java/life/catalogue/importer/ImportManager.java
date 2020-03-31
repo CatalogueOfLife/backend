@@ -255,6 +255,7 @@ public class ImportManager implements Managed {
   /**
    * Uploads a new dataset and submits a forced, high priority import request.
    *
+   * @param zip if true zips up the data
    * @throws IllegalArgumentException if dataset was scheduled for importing already, queue was full or is currently being
    *         synced in the assembly
    * 

@@ -102,6 +102,8 @@ abstract class FuzzyQMatcher extends QMatcher {
 
   private boolean couldBeEpithets() {
     String[] terms = request.getSearchTerms();
+    if (terms == null) return false;
+
     if (terms.length > 3) {
       // could still all be epithets but we don't know how to deal with them any longer
       return false;

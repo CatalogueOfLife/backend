@@ -10,6 +10,7 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
@@ -26,9 +27,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.net.URI;
 
-//@Ignore("manual import debugging")
+@Ignore("manual import debugging")
 @RunWith(MockitoJUnitRunner.class)
 public class ImportManagerDebugging {
   static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
@@ -101,7 +105,6 @@ public class ImportManagerDebugging {
   @Test
   public void debugTaxonworks() throws Exception {
     Dataset d = create(DataFormat.COLDP, "https://sfg.taxonworks.org/downloads/15/download_file", "TW Test");
-    System.out.println("Submitting " + d);
     importManager.submit(new ImportRequest(d.getKey(), Users.IMPORTER));
     Thread.sleep(1000);
     while (importManager.hasRunning()) {
@@ -113,8 +116,20 @@ public class ImportManagerDebugging {
   @Test
   public void debugDsmz() throws Exception {
     Dataset d = create(DataFormat.DWCA, "http://rs.gbif.org/datasets/dsmz.zip", "DSMZ");
-    System.out.println("Submitting " + d);
     importManager.submit(new ImportRequest(d.getKey(), Users.IMPORTER));
+    Thread.sleep(1000);
+    while (importManager.hasRunning()) {
+      Thread.sleep(1000);
+    }
+    System.out.println("Done");
+  }
+
+  @Test
+  public void debugUpload() throws Exception {
+    Dataset d = create(DataFormat.DWCA, null,"Upload test");
+    InputStream data = new FileInputStream(new File("/Users/markus/Desktop/testUnassigned.txt"));
+    importManager.upload(d.getKey(), data, true, "tsv", TestEntityGenerator.USER_ADMIN);
+
     Thread.sleep(1000);
     while (importManager.hasRunning()) {
       Thread.sleep(1000);
@@ -128,7 +143,9 @@ public class ImportManagerDebugging {
     d.setTitle(title);
     d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setDataFormat(format);
-    d.setDataAccess(URI.create(url));
+    if (url != null) {
+      d.setDataAccess(URI.create(url));
+    }
     TestEntityGenerator.setUser(d);
     
     try (SqlSession s = PgSetupRule.getSqlSessionFactory().openSession()) {

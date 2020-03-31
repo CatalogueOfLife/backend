@@ -60,7 +60,15 @@ public class DistributedArchiveService {
       throw new IllegalArgumentException("Failed to read proxy archive descriptor: "+e.getMessage());
     }
   }
-  
+
+  public static boolean isReadable(InputStream is) throws IllegalArgumentException {
+    try {
+      return DESCRIPTOR_READER.readValue(is) != null;
+    } catch (IOException e) {
+    }
+    return false;
+  }
+
   /**
    * Takes descriptor and downloads each file into a zipped archive
    * @param ad descriptor

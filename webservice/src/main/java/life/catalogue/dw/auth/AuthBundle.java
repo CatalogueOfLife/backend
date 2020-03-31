@@ -9,6 +9,8 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.ColUser;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
+import javax.ws.rs.container.ContainerRequestFilter;
+
 public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
   
   private JwtCodec jwtCodec;
@@ -20,10 +22,11 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
     
     jwtCodec = new JwtCodec(cfg.jwtKey);
     idService = new IdentityService(cfg.auth.createAuthenticationProvider(), true);
-    
-    environment.jersey().register(new AuthDynamicFeature(new AuthFilter(idService, jwtCodec)));
+
+    ContainerRequestFilter authFilter = new AuthFilter(idService, jwtCodec);
     // WARNING!!! Never check in the LocalAuthFilter. It is meant purely for local testing !!!
-    //environment.jersey().register(new AuthDynamicFeature(new LocalAuthFilter()));
+    //authFilter = new LocalAuthFilter();
+    environment.jersey().register(new AuthDynamicFeature(authFilter));
     environment.jersey().register(new AuthValueFactoryProvider.Binder<>(ColUser.class));
   }
   

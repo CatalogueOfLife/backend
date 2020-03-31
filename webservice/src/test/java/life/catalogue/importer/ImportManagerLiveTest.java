@@ -40,7 +40,7 @@ import static org.junit.Assert.assertFalse;
  * This test needs access to github !!!
  * It downloads the test coldp archive file sitting in the test resources from github!!!
  */
-@Ignore
+//@Ignore
 @RunWith(MockitoJUnitRunner.class)
 public class ImportManagerLiveTest {
   private static final Logger LOG = LoggerFactory.getLogger(ImportManagerLiveTest.class);

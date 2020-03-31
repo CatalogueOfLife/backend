@@ -19,10 +19,6 @@ import java.util.List;
 import java.util.function.Function;
 
 public class DataFormatDetector {
-  private static final List<String> ACEF_FILES = List.of();
-  private static final List<String> COLDP_FILES = List.of();
-  private static final List<String> DWCA_FILES = List.of("meta.xml");
-
 
   public static DataFormat detectFormat(Path folder) {
     if (!Files.isDirectory(folder)) {
@@ -54,8 +50,8 @@ public class DataFormatDetector {
 
   public static boolean isProxyDescriptor(File source) {
     try {
-      return DistributedArchiveService.read(new FileInputStream(source)) != null;
-    } catch (Exception e) {
+      return DistributedArchiveService.isReadable(new FileInputStream(source));
+    } catch (IOException e) {
       return false;
     }
   }

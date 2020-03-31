@@ -18,7 +18,15 @@ public class ImportRequest implements Comparable<ImportRequest> {
   public Integer createdBy;
   public final LocalDateTime created = LocalDateTime.now();
   public LocalDateTime started;
-  
+
+  public static ImportRequest upload(int datasetKey, int createdBy){
+    return new ImportRequest(datasetKey, createdBy, true, true, true);
+  }
+
+  public static ImportRequest trigger(int datasetKey, int createdBy){
+    return new ImportRequest(datasetKey, createdBy, false, false, false);
+  }
+
   @JsonCreator
   public ImportRequest(@JsonProperty("datasetKey") int datasetKey,
                        @JsonProperty("force") boolean force,
