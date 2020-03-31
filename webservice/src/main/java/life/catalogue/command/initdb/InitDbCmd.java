@@ -161,9 +161,6 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
         LOG.info("Add known manually curated sectors");
         exec(PgConfig.SECTORS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SECTORS_FILE));
       
-        LOG.info("Add known decisions");
-        exec(PgConfig.DECISIONS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.DECISIONS_FILE));
-      
         loadDraftHierarchy(con, factory, cfg);
       
       } catch (Exception e) {
