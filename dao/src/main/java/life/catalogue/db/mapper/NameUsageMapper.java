@@ -3,6 +3,7 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.*;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
+import org.checkerframework.checker.units.qual.K;
 import org.gbif.nameparser.api.Rank;
 
 import javax.annotation.Nullable;
@@ -16,7 +17,9 @@ import java.util.Set;
  * Mapper sql should be reusing sql fragments from the 3 concrete implementations as much as possible avoiding duplication.
  */
 public interface NameUsageMapper {
-  
+
+  NameUsageBase get(@Param("key") DSID<String> key);
+
   int count(@Param("datasetKey") int datasetKey);
   
   List<NameUsageBase> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);

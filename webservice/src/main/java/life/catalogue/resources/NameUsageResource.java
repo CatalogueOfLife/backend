@@ -3,6 +3,7 @@ package life.catalogue.resources;
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Streams;
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
 import life.catalogue.db.mapper.NameUsageMapper;
@@ -69,6 +70,19 @@ public class NameUsageResource {
                   COMMA_CAT.join(nu.getIssues())
             })
     );
+  }
+
+  @GET
+  @Path("{id}")
+  public NameUsageWrapper getByID(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id) {
+    NameUsageSearchRequest req = new NameUsageSearchRequest();
+    req.addFilter(NameUsageSearchParameter.DATASET_KEY, datasetKey);
+    req.addFilter(NameUsageSearchParameter.USAGE_ID, id);
+    ResultPage<NameUsageWrapper> results = searchService.search(req, new Page());
+    if (results.size()==1) {
+      return results.getResult().get(0);
+    }
+    throw NotFoundException.idNotFound(NameUsage.class, datasetKey, id);
   }
 
   @GET
