@@ -297,7 +297,15 @@ public class SubjectRematcher {
     if (matches.isEmpty()) {
       LOG.warn("{} {} cannot be rematched to dataset {} - lost {}", d.getClass().getSimpleName(), d.getKey(), datasetKey, sn);
     } else if (matches.size() > 1) {
-      LOG.warn("{} {} cannot be rematched to dataset {} - multiple names like {}", d.getClass().getSimpleName(), d.getKey(), datasetKey, sn);
+      // keep the existing id if it still matches!
+      if (sn.getId() != null) {
+        for (NameUsage nu : matches){
+          if (nu.getId().equals(sn.getId())) {
+            LOG.info("{} {} matches multiple usages from dataset {} - existing usage ID {} still matching", d.getClass().getSimpleName(), d.getKey(), datasetKey, sn);
+          }
+        }
+      }
+      LOG.warn("{} {} cannot be uniquely rematched to dataset {} - multiple names like {}", d.getClass().getSimpleName(), d.getKey(), datasetKey, sn);
     } else {
       return matches.get(0);
     }
