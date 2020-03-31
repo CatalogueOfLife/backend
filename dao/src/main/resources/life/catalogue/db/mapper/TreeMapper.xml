@@ -92,9 +92,8 @@
             )
         </if>
         SELECT <include refid="SELECT" />
-        FROM <if test="insertPlaceholder">first, </if>
-            <include refid="FROM" />
-            <if test="insertPlaceholder">AND (s.placeholder_rank IS NULL OR s.placeholder_rank=first.rank)</if>
+        FROM <include refid="FROM" />
+            <if test="insertPlaceholder">, first</if>
         WHERE t.parent_id = #{key.id} AND NOT t.is_synonym
             <if test="insertPlaceholder">AND first.rank=n.rank</if>
         ORDER BY n.rank, n.scientific_name
