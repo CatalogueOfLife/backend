@@ -64,7 +64,6 @@
         <bind name="datasetKey" value="key.datasetKey"/>
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        JOIN_SECTOR
         WHERE t.id = #{key.id}
     </select>
 
