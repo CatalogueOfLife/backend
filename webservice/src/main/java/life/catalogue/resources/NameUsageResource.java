@@ -86,6 +86,14 @@ public class NameUsageResource {
     return searchService.search(query, page);
   }
 
+  @POST
+  @Path("search")
+  public ResultPage<NameUsageWrapper> searchPOST(@PathParam("datasetKey") int datasetKey,
+                                                 @Valid NameUsageSearchResource.SearchRequestBody req,
+                                                 @Context UriInfo uri) throws InvalidQueryException {
+    return searchDataset(datasetKey, req.request, req.page, uri);
+  }
+
   @GET
   @Timed
   @Path("suggest")

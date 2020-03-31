@@ -1,15 +1,14 @@
 package life.catalogue.api.search;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.beans.ConstructorProperties;
+import java.util.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MultivaluedMap;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
@@ -36,7 +35,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
    */
   public static final String IS_NULL = "_NULL";
 
-  private EnumMap<NameUsageSearchParameter, List<Object>> filters;
+  private EnumMap<NameUsageSearchParameter, @Size(max = 1000) List<Object>> filters;
 
   @QueryParam("facet")
   private Set<NameUsageSearchParameter> facets;
@@ -57,6 +56,23 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   private boolean prefixMatchingEnabled;
 
   public NameUsageSearchRequest() {}
+
+  @JsonCreator
+  public NameUsageSearchRequest(@JsonProperty("filter") Map<NameUsageSearchParameter, @Size(max = 1000) List<Object>> filters,
+                                @JsonProperty("facet") Set<NameUsageSearchParameter> facets,
+                                @JsonProperty("content") Set<SearchContent> content,
+                                @JsonProperty("sortBy") SortBy sortBy,
+                                @JsonProperty("highlight") boolean highlight,
+                                @JsonProperty("reverse") boolean reverse,
+                                @JsonProperty("prefix") boolean prefix) {
+    this.filters = filters == null ? new EnumMap<>(NameUsageSearchParameter.class) : new EnumMap<>(filters);
+    this.facets = facets;
+    this.content = content;
+    this.sortBy = sortBy;
+    this.highlight = highlight;
+    this.reverse = reverse;
+    this.prefixMatchingEnabled = prefix;
+  }
 
   /**
    * Creates a shallow copy of this NameSearchRequest. The filters map is copied using EnumMap's copy constructor. Therefore you should not

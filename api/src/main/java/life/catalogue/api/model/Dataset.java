@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import life.catalogue.api.constraints.AbsoluteURI;
-import life.catalogue.api.constraints.NotBlank;
 import life.catalogue.api.constraints.ValidDataset;
 import life.catalogue.api.vocab.*;
 import org.gbif.nameparser.api.NomCode;
@@ -13,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.time.LocalDate;
