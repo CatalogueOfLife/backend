@@ -6,6 +6,8 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import life.catalogue.api.model.*;
 import org.elasticsearch.client.RestClient;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -14,11 +16,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.BareName;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.ResultPage;
-import life.catalogue.api.model.VernacularName;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
@@ -26,18 +23,19 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
-import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
+
 import static org.junit.Assert.assertEquals;
 import static life.catalogue.es.EsUtil.insert;
 import static life.catalogue.es.EsUtil.refreshIndex;
 
-public class NameSearchServiceTest extends EsReadTestBase {
+public class NameUsageSearchServiceTest extends EsReadTestBase {
 
   @SuppressWarnings("unused")
-  private static final Logger LOG = LoggerFactory.getLogger(NameSearchServiceTest.class);
+  private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchServiceTest.class);
 
   private static RestClient client;
   private static NameUsageSearchServiceEs svc;
+  private static NameUsageWrapperConverter CONVERTER = new NameUsageWrapperConverter();
 
   @BeforeClass
   public static void init() {
@@ -368,6 +366,50 @@ public class NameSearchServiceTest extends EsReadTestBase {
 
     assertEquals(2, result.getResult().size());
   }
+
+  /**
+   * @return id of the new taxon
+   */
+  private String insertRndTaxon(int datasetKey) throws IOException {
+    Taxon t = TestEntityGenerator.newTaxon();
+    // taxon id will be pruned by indexing code
+    final String id = t.getId();
+    t.setDatasetKey(datasetKey);
+    t.getName().setDatasetKey(datasetKey);
+    NameUsageWrapper nuw = new NameUsageWrapper(t);
+    insert(client, indexName(), CONVERTER.toDocument(nuw));
+    return id;
+  }
+
+  /**
+   * Tests for mulitple usage ID queries
+   */
+  @Test
+  public void testUsageIDSearch() throws IOException {
+    final int datasetKey = 1000;
+    List<String> ids = new ArrayList<>();
+    ids.add(insertRndTaxon(datasetKey));
+    ids.add(insertRndTaxon(datasetKey));
+    ids.add(insertRndTaxon(datasetKey));
+    ids.add(insertRndTaxon(datasetKey));
+    ids.add(insertRndTaxon(datasetKey));
+    ids.add(insertRndTaxon(datasetKey));
+    refreshIndex(client, indexName());
+
+    NameUsageSearchRequest nsr = new NameUsageSearchRequest();
+
+    nsr.addFilter(NameUsageSearchParameter.DATASET_KEY, datasetKey);
+    nsr.addFilter(NameUsageSearchParameter.USAGE_ID, ids.get(0));
+    ResultPage<NameUsageWrapper> result = svc.search(indexName(), nsr, new Page());
+    assertEquals(1, result.getResult().size());
+    assertEquals(ids.get(0), result.getResult().get(0).getUsage().getId());
+    assertEquals(datasetKey, (int) result.getResult().get(0).getUsage().getDatasetKey());
+
+    nsr.addFilter(NameUsageSearchParameter.USAGE_ID, ids.get(2));
+    nsr.addFilter(NameUsageSearchParameter.USAGE_ID, ids.get(4));
+    result = svc.search(indexName(), nsr, new Page());
+    assertEquals(3, result.getResult().size());
+ }
 
   @Test
   public void testNameFieldsQuery1() throws IOException {

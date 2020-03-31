@@ -33,7 +33,7 @@ import life.catalogue.es.nu.NameUsageWrapperConverter;
 import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
 import static org.junit.Assert.assertEquals;
 
-public class NameSearchServiceFacetTest extends EsReadTestBase {
+public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
   private static final String dummyPayload = getDummyPayload();
 

@@ -18,7 +18,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class NameSearchHighlighterTest {
+public class NameUsageSearchHighlighterTest {
 
   private static NameUsageWrapper malusSylvestris() {
     Name n = new Name();

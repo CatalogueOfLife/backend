@@ -14,7 +14,9 @@ and done it manually. So we can as well log changes here.
 #### 2020-03-31 original_subject_id
 ```
 ALTER TABLE sector ADD COLUMN original_subject_id TEXT;
+UPDATE sector SET original_subject_id = subject_id;
 ALTER TABLE decision ADD COLUMN original_subject_id TEXT;
+UPDATE decision SET original_subject_id = subject_id;
 ```
 
 #### 2020-03-27 sector virtual minRank

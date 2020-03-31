@@ -35,9 +35,9 @@ import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.es.EsReadTestBase;
 
-public class NameSearchTestAllParamsTest extends EsReadTestBase {
+public class NameUsageSearchTestAllParamsTest extends EsReadTestBase {
 
-  private static final Logger LOG = LoggerFactory.getLogger(NameSearchTestAllParamsTest.class);
+  private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchTestAllParamsTest.class);
   private static EnumSet<NameUsageSearchParameter> tested = EnumSet.noneOf(NameUsageSearchParameter.class);
 
   @Before
