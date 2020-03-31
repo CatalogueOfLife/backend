@@ -188,8 +188,8 @@
   </select>
 
   <insert id="create" parameterType="Sector" useGeneratedKeys="true" keyProperty="key">
-    INSERT INTO sector ( <include refid="COLS" />, created_by )
-    VALUES ( <include refid="PROPS" />, #{createdBy} )
+    INSERT INTO sector ( <include refid="COLS" />, original_subject_id, created_by )
+    VALUES ( <include refid="PROPS" />, #{subject.id}, #{createdBy} )
   </insert>
 
   <update id="update" parameterType="Sector">

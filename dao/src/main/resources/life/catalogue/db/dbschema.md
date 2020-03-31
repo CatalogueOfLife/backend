@@ -10,6 +10,13 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
    
+
+#### 2020-03-31 original_subject_id
+```
+ALTER TABLE sector ADD COLUMN original_subject_id TEXT;
+ALTER TABLE decision ADD COLUMN original_subject_id TEXT;
+```
+
 #### 2020-03-27 sector virtual minRank
 ```
 ALTER TABLE sector ADD COLUMN placeholder_rank RANK;
