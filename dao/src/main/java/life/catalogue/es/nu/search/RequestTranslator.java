@@ -20,10 +20,13 @@ class RequestTranslator implements DownwardConverter<NameUsageSearchRequest, EsS
   static Query generateQuery(NameUsageSearchRequest request) {
     String usageId = request.getFilterValue(USAGE_ID);
     if (usageId != null) {
-      String datasetKey = request.getFilterValue(DATASET_KEY);
-      return new BoolQuery()
-          .filter(new TermQuery("usageId", usageId))
-          .filter(new TermQuery("datasetKey", datasetKey));
+      TermQuery idQuery = new TermQuery("usageId", usageId);
+      if (request.hasFilter(DATASET_KEY)) {
+        return new BoolQuery()
+            .filter(idQuery)
+            .filter(new TermQuery("datasetKey", request.getFilterValue(DATASET_KEY)));
+      }
+      return idQuery;
     } else if (mustGenerateFilters(request)) {
       if (request.hasQ()) {
         return new BoolQuery()
