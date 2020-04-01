@@ -138,6 +138,10 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     List<TreeNode> nodes = mapper().children(Datasets.DRAFT_COL, TreeNode.Type.SOURCE, DSID.key(dataset11, "t1"), null,false, new Page());
     assertEquals(1, nodes.size());
     assertEquals(s.getKey(), nodes.get(0).getSectorKey());
+
+    DecisionMapperTest.removeCreatedProps(d1);
+    DecisionMapperTest.removeCreatedProps(nodes.get(0).getDecision());
+    printDiff(d1, nodes.get(0).getDecision());
     equals(d1, nodes.get(0).getDecision());
     
     nodes = mapper().parents(Datasets.DRAFT_COL, TreeNode.Type.SOURCE, DSID.key(dataset11, "t4"));
@@ -154,6 +158,10 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
   
     nodes = mapper().children(Datasets.DRAFT_COL, TreeNode.Type.SOURCE, DSID.key(dataset11, "t2"), null,false, new Page());
     noSectors(noSectorKeys(nodes));
+  }
+
+  private static void equals(EditorialDecision d1, EditorialDecision d2){
+    assertEquals(DecisionMapperTest.removeCreatedProps(d1), DecisionMapperTest.removeCreatedProps(d2));
   }
   
   SpeciesEstimate newEstimate(String id){

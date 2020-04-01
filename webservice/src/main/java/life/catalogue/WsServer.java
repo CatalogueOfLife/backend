@@ -177,9 +177,6 @@ public class WsServer extends Application<WsServerConfig> {
     CslUtil.register(env.metrics());
     env.healthChecks().register("csl-utils", new CslUtilsHealthCheck());
 
-    // authorship lookup & norm
-    AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
-
     // ES
     NameUsageIndexService indexService;
     NameUsageSearchService searchService;
@@ -202,7 +199,7 @@ public class WsServer extends Application<WsServerConfig> {
     final ImageService imgService = new ImageServiceFS(cfg.img);
 
     // name index
-    ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, getSqlSessionFactory(), aNormalizer);
+    ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE);
     env.lifecycle().manage(new ManagedCloseable(ni));
     env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));
 
@@ -219,7 +216,6 @@ public class WsServer extends Application<WsServerConfig> {
         env.metrics(),
         httpClient,
         getSqlSessionFactory(),
-        aNormalizer,
         ni,
         indexService,
         imgService,
@@ -246,8 +242,8 @@ public class WsServer extends Application<WsServerConfig> {
     env.healthChecks().register("diff", new DiffHealthCheck(diff));
 
     // daos
-    TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), indexService);
-    NameDao ndao = new NameDao(getSqlSessionFactory(), aNormalizer);
+    NameDao ndao = new NameDao(getSqlSessionFactory());
+    TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, indexService);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory());
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory());
 

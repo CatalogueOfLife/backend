@@ -31,8 +31,7 @@ import static org.junit.Assert.assertTrue;
  * Checks for unit test ColDP archives under resources/integrity-checks/
  */
 public class IntegrityChecksIT {
-  static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
-  
+
   private NeoDb store;
   private NormalizerConfig cfg;
   private ImporterConfig icfg = new ImporterConfig();
@@ -87,12 +86,12 @@ public class IntegrityChecksIT {
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
       store.put(dataset);
-      Normalizer norm = new Normalizer(dataset.getDataFormat(), store, Paths.get(url.toURI()), NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer), ImageService.passThru());
+      Normalizer norm = new Normalizer(dataset.getDataFormat(), store, Paths.get(url.toURI()), NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE), ImageService.passThru());
       norm.call();
       
       // import into postgres
       store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
-      PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), aNormalizer, icfg);
+      PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), icfg);
       importer.call();
       
     } catch (Exception e) {

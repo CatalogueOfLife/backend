@@ -20,7 +20,6 @@ import static org.junit.Assert.*;
  * The index need postgres unfortunately...
  */
 public class NormalizerFullIT extends NormalizerITBase {
-  static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -33,7 +32,7 @@ public class NormalizerFullIT extends NormalizerITBase {
   }
   
   static NameIndex newIndex() {
-    return NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer);
+    return NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE);
   }
   
   @Test

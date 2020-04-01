@@ -38,7 +38,7 @@ abstract class CRUDPageableTestBase<T extends DatasetScopedEntity<String>, M ext
     mapper(DatasetMapper.class).create(d);
     return d.getKey();
   }
-  
+
   @Test
   public void getEmpty() throws Exception {
     assertNull(mapper().get(DSID.key(datasetKey, "")));

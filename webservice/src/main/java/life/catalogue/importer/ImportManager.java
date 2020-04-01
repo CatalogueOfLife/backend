@@ -64,7 +64,6 @@ public class ImportManager implements Managed {
   private final DownloadUtil downloader;
   private final SqlSessionFactory factory;
   private final NameIndex index;
-  private final AuthorshipNormalizer aNormalizer;
   private final NameUsageIndexService indexService;
   private final ReleaseManager releaseManager;
   private final DatasetImportDao dao;
@@ -73,14 +72,13 @@ public class ImportManager implements Managed {
   private final Counter failed;
 
   public ImportManager(WsServerConfig cfg, MetricRegistry registry, CloseableHttpClient client,
-      SqlSessionFactory factory, AuthorshipNormalizer aNormalizer, NameIndex index,
+      SqlSessionFactory factory, NameIndex index,
       NameUsageIndexService indexService, ImageService imgService, ReleaseManager releaseManager) {
     this.cfg = cfg;
     this.factory = factory;
     this.releaseManager = releaseManager;
     this.downloader = new DownloadUtil(client, cfg.importer.githubToken, cfg.importer.githubTokenGeoff);
     this.index = index;
-    this.aNormalizer = aNormalizer;
     this.imgService = imgService;
     this.indexService = indexService;
     this.dao = new DatasetImportDao(factory, cfg.metricsRepo);
@@ -383,7 +381,6 @@ public class ImportManager implements Managed {
           cfg,
           downloader,
           factory,
-          aNormalizer,
           index,
           indexService,
           imgService,

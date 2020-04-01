@@ -10,14 +10,17 @@ public class IsEmptyFilter {
   
   @Override
   public boolean equals(Object obj) {
-    if (obj instanceof IsEmpty) {
-      IsEmpty empt = (IsEmpty) obj;
-      return empt.isEmpty();
-      
-    } else if (obj instanceof Authorship) {
-      Authorship a = (Authorship) obj;
-      return a.isEmpty();
+    if (obj != null) {
+      if (obj instanceof IsEmpty) {
+        IsEmpty empt = (IsEmpty) obj;
+        return empt.isEmpty();
+
+      } else if (obj instanceof Authorship) {
+        Authorship a = (Authorship) obj;
+        return a.isEmpty();
+      }
+      return false;
     }
-    return false;
+    return true;
   }
 }

@@ -26,6 +26,14 @@ abstract class CRUDTestBase<K, V extends DataEntity<K>, M extends CRUD<K, V>> ex
     objs.forEach(this::removeDbCreatedProps);
   }
 
+  void removeDbCreatedProps(V... objs) {
+    if (objs != null) {
+      for (V obj : objs) {
+        removeDbCreatedProps(obj);
+      }
+    }
+  }
+
   @Test
   public void roundtrip() throws Exception {
     V u1 = createTestEntity(datasetKey);

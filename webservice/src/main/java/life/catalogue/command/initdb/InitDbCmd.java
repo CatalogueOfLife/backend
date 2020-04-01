@@ -5,6 +5,8 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+
+import life.catalogue.dao.NameDao;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
@@ -169,7 +171,8 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
       }
   
       LOG.info("Update dataset sector counts");
-      new TaxonDao(factory, NameUsageIndexService.passThru()).updateAllSectorCounts(Datasets.DRAFT_COL, factory);
+      NameDao nd = new NameDao(factory);
+      new TaxonDao(factory, nd, NameUsageIndexService.passThru()).updateAllSectorCounts(Datasets.DRAFT_COL, factory);
       
       updateSearchIndex(cfg, factory);
     }
@@ -225,8 +228,7 @@ public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
   
     LOG.info("Match draft CoL to names index");
     // we create a new names index de novo to write new hierarchy names into the names index dataset
-    AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
-    try (NameIndex ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, factory, aNormalizer)) {
+    try (NameIndex ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, factory, AuthorshipNormalizer.INSTANCE)) {
       DatasetMatcher matcher = new DatasetMatcher(factory, ni, false);
       matcher.match(Datasets.DRAFT_COL, true);
     }

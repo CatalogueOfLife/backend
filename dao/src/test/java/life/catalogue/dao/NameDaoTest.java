@@ -9,9 +9,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class NameDaoTest extends DaoTestBase {
-  static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
-  
-  NameDao dao = new NameDao(PgSetupRule.getSqlSessionFactory(), aNormalizer);
+
+  NameDao dao = new NameDao(PgSetupRule.getSqlSessionFactory());
   
   @Test
   public void authorshipNormalization() throws Exception {

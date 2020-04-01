@@ -27,7 +27,7 @@ import java.util.Set;
 import static org.junit.Assert.*;
 
 public class NameIndexImplTest {
-  static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
+  static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.INSTANCE;
 
   NameIndex ni;
   
@@ -202,7 +202,6 @@ public class NameIndexImplTest {
     Name n = NameParser.PARSER.parse(name, rank, code, IssueContainer.VOID).get().getName();
     n.setRank(rank);
     n.setCode(code);
-    n.setAuthorshipNormalized(Lists.newArrayList("serialisation", "test", "only"));
     return TestEntityGenerator.setUserDate(n);
   }
   

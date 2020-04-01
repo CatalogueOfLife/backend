@@ -9,6 +9,7 @@ import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.*;
+import life.catalogue.db.tree.NamesDiff;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.parser.NameParser;
 import org.apache.commons.lang3.StringUtils;
@@ -28,10 +29,12 @@ import java.util.function.Consumer;
 public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonDao.class);
   private final NameUsageIndexService indexService;
+  private final NameDao nameDao;
 
-  public TaxonDao(SqlSessionFactory factory, NameUsageIndexService indexService) {
+  public TaxonDao(SqlSessionFactory factory, NameDao nameDao, NameUsageIndexService indexService) {
     super(true, factory, TaxonMapper.class);
     this.indexService = indexService;
+    this.nameDao = nameDao;
   }
   
   public static DSID<String> copyTaxon(SqlSession session, final Taxon t, final DSID<String> target, int user, Set<EntityType> include) {
@@ -188,7 +191,6 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     try (SqlSession session = factory.openSession(false)) {
       final int datasetKey = t.getDatasetKey();
       Name n = t.getName();
-      NameMapper nm = session.getMapper(NameMapper.class);
       if (n.getId() == null) {
         if (!n.isParsed() && StringUtils.isBlank(n.getScientificName())) {
           throw new IllegalArgumentException("Existing nameId, scientificName or atomized name field required");
@@ -200,9 +202,9 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
         n.setDatasetKey(datasetKey);
         // does the name need parsing?
         parseName(n);
-        nm.create(n);
+        nameDao.create(n, user);
       } else {
-        Name nExisting = nm.get(DSID.key(datasetKey, n.getId()));
+        Name nExisting = nameDao.get(DSID.key(datasetKey, n.getId()));
         if (nExisting == null) {
           throw new IllegalArgumentException("No name exists with ID " + n.getId() + " in dataset " + datasetKey);
         }

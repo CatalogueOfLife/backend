@@ -11,7 +11,7 @@ import static life.catalogue.common.tax.AuthorshipNormalizer.Author;
 import static org.junit.Assert.*;
 
   public class AuthorshipNormalizerTest {
-    AuthorshipNormalizer comp = AuthorshipNormalizer.createWithAuthormap();
+    AuthorshipNormalizer comp = AuthorshipNormalizer.INSTANCE;
     
     @Test
     public void testNormalize() throws Exception {

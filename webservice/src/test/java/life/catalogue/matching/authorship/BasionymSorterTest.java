@@ -22,7 +22,7 @@ import static org.junit.Assert.*;
  */
 public class BasionymSorterTest {
   
-  private final BasionymSorter sorter = new BasionymSorter(new AuthorComparator(AuthorshipNormalizer.createWithAuthormap()));
+  private final BasionymSorter sorter = new BasionymSorter(new AuthorComparator(AuthorshipNormalizer.INSTANCE));
 
   private static Name parse(String x) {
     return NameParser.PARSER.parse(x, null, null, IssueContainer.VOID).get().getName();

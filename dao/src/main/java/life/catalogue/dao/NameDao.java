@@ -18,22 +18,9 @@ public class NameDao extends DatasetEntityDao<String, Name, NameMapper> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameDao.class);
-  private final AuthorshipNormalizer normalizer;
-  
-  public NameDao(SqlSessionFactory factory, AuthorshipNormalizer normalizer) {
+
+  public NameDao(SqlSessionFactory factory) {
     super(false, factory, NameMapper.class);
-    this.normalizer = normalizer;
-  }
-  
-  @Override
-  public DSID<String> create(Name obj, int user) {
-    obj.setAuthorshipNormalized(normalizer.normalizeName(obj));
-    return super.create(obj, user);
-  }
-  
-  @Override
-  protected void updateBefore(Name obj, Name old, int user, NameMapper mapper, SqlSession session) {
-    obj.setAuthorshipNormalized(normalizer.normalizeName(obj));
   }
   
   public Name getBasionym(DSID<String> did) {

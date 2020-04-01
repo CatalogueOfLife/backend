@@ -55,14 +55,14 @@ public class RandomUtils {
   public static Authorship randomAuthorship() {
     Authorship auth = new Authorship();
     while (rnd.nextBoolean()) {
-      auth.getAuthors().add(randomAuthor());
+      auth.addAuthor(randomAuthor());
     }
     if (rnd.nextBoolean()) {
       auth.setYear(randomSpeciesYear());
     }
     
     while (rnd.nextInt(10) == 1) {
-      auth.getExAuthors().add(randomAuthor());
+      auth.addExAuthor(randomAuthor());
     }
     return auth;
   }

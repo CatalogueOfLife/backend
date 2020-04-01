@@ -44,8 +44,7 @@ import static org.junit.Assert.assertFalse;
 @RunWith(MockitoJUnitRunner.class)
 public class ImportManagerLiveTest {
   private static final Logger LOG = LoggerFactory.getLogger(ImportManagerLiveTest.class);
-  static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
-  
+
   ImportManager importManager;
   CloseableHttpClient hc;
   DatasetImportDao diDao;
@@ -85,7 +84,7 @@ public class ImportManagerLiveTest {
     final WsServerConfig cfg = provideConfig();
     
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
-    importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), aNormalizer,
+    importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
         NameIndexFactory.passThru(), null, new ImageServiceFS(cfg.img), releaseManager);
     importManager.start();
   

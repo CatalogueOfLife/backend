@@ -23,7 +23,7 @@ public class AuthorBucketerTest {
 
   public static Map<String, Set<String>> clusterNames(Iterator<String> authors) {
     Map<String, Set<String>> buckets = Maps.newHashMap();
-    AuthorComparator comp = new AuthorComparator(AuthorshipNormalizer.createWithAuthormap());
+    AuthorComparator comp = new AuthorComparator(AuthorshipNormalizer.INSTANCE);
 
     while (authors.hasNext()) {
       String author = authors.next();

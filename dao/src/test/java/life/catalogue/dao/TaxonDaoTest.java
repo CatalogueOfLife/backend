@@ -27,9 +27,8 @@ import static life.catalogue.api.TestEntityGenerator.*;
 import static org.junit.Assert.*;
 
 public class TaxonDaoTest extends DaoTestBase {
-  private static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
-  TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
-  NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), aNormalizer);
+  NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory());
+  TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
   static int user = TestEntityGenerator.USER_EDITOR.getKey();
   
   @Test

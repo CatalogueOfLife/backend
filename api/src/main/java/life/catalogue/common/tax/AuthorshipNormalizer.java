@@ -28,20 +28,21 @@ import static life.catalogue.common.text.StringUtils.foldToAscii;
  */
 public class AuthorshipNormalizer {
   private static final Logger LOG = LoggerFactory.getLogger(AuthorshipNormalizer.class);
-  
+
   private static final Pattern FIL = Pattern.compile("([A-Z][a-z]*)[\\. ]\\s*f(:?il)?\\.?\\b");
   private static final Pattern TRANSLITERATIONS = Pattern.compile("([auo])e", Pattern.CASE_INSENSITIVE);
   private static final Pattern AUTHOR = Pattern.compile("^((?:[a-z]\\s)*).*?([a-z]+)( filius)?$");
   private static final String AUTHOR_MAP_FILENAME = "authorship/authormap.txt";
   private static final Pattern PUNCTUATION = Pattern.compile("[\\p{Punct}&&[^,]]+");
   private final Map<String, String> authorMap;
-  
-  
+
+  public static final AuthorshipNormalizer INSTANCE = createWithAuthormap();
+
   public static AuthorshipNormalizer createWithoutAuthormap() {
     return new AuthorshipNormalizer(Maps.<String, String>newHashMap());
   }
   
-  public static AuthorshipNormalizer createWithAuthormap() {
+  private static AuthorshipNormalizer createWithAuthormap() {
     Map<String, String> map = new HashMap<>();
     Resources.tabRows(AUTHOR_MAP_FILENAME).forEach(row -> {
       map.put(row[0], row[2]);
@@ -103,7 +104,7 @@ public class AuthorshipNormalizer {
     if (n.hasAuthorship()) {
       // only compare basionym if existing, ignore ex and year
       Authorship authors;
-      if (!n.getBasionymAuthorship().getAuthors().isEmpty()) {
+      if (n.hasBasionymAuthorship()) {
         authors = n.getBasionymAuthorship();
       } else {
         authors = n.getCombinationAuthorship();

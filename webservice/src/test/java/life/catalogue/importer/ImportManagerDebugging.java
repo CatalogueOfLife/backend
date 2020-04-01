@@ -35,7 +35,7 @@ import java.net.URI;
 @Ignore("manual import debugging")
 @RunWith(MockitoJUnitRunner.class)
 public class ImportManagerDebugging {
-  static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
+  static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.INSTANCE;
 
   ImportManager importManager;
   CloseableHttpClient hc;
@@ -76,7 +76,7 @@ public class ImportManagerDebugging {
     //new InitDbCmd().execute(cfg);
     
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
-    importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), aNormalizer,
+    importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
         NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer), NameUsageIndexService.passThru(), new ImageServiceFS(cfg.img), releaseManager);
     importManager.start();
   }

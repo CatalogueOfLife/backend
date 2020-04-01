@@ -45,8 +45,6 @@ import static org.junit.Assert.*;
 public class ImportManagerTest {
   private static final Logger LOG = LoggerFactory.getLogger(ImportManagerTest.class);
 
-  static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
-
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
 
@@ -96,8 +94,7 @@ public class ImportManagerTest {
     MetricRegistry metrics = new MetricRegistry();
     final WsServerConfig cfg = provideConfig();
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
-    manager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), aNormalizer,
-        NameIndexFactory.passThru(), null, imgService, releaseManager);
+    manager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), null, imgService, releaseManager);
     manager.start();
   }
 
