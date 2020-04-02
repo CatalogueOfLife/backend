@@ -80,6 +80,12 @@
         WHERE u.parent_id=#{key.id} AND NOT u.is_synonym and n.rank=#{rank}::rank
     </select>
 
+    <select id="countChildrenBelowRank" resultType="integer">
+        <include refid="life.catalogue.db.Common.partitionByKey"/>
+        SELECT count(*) FROM name_usage_${partition} u JOIN name_${partition} n ON n.id=u.name_id
+        WHERE u.parent_id=#{key.id} AND NOT u.is_synonym and n.rank > #{rank}::rank
+    </select>
+
     <select id="countRoot" resultType="integer">
         <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
         SELECT count(*)
