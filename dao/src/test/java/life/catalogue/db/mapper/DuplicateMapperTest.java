@@ -23,6 +23,9 @@ import life.catalogue.postgres.AuthorshipNormFunc;
 import life.catalogue.postgres.PgCopyUtils;
 import org.gbif.nameparser.api.Rank;
 import org.javers.common.collections.Lists;
+import org.javers.core.Javers;
+import org.javers.core.JaversBuilder;
+import org.javers.core.diff.Diff;
 import org.junit.*;
 import org.postgresql.jdbc.PgConnection;
 
@@ -102,9 +105,16 @@ public class DuplicateMapperTest {
     EditorialDecision d = res.get(0).getDecision();
     assertNotNull(d);
     assertNotNull(d.getKey());
-    assertEquals(TestEntityGenerator.nullifyDate(d), d1);
+    printDiff(DecisionMapperTest.removeCreatedProps(d), d1);
+    assertEquals(DecisionMapperTest.removeCreatedProps(d), d1);
   }
-  
+
+  void printDiff(Object o1, Object o2) {
+    Javers javers = JaversBuilder.javers().build();
+    Diff diff = javers.compare(o1, o2);
+    System.out.println(diff);
+  }
+
   @Test
   public void usagesByIds() {
     List<Duplicate.UsageDecision> res = mapper.usagesByIds(datasetKey, Lists.immutableListOf("55", "46"));

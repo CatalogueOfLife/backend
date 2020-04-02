@@ -95,9 +95,6 @@ public class DecisionMapperTest extends CRUDTestBase<Integer, EditorialDecision,
 
   public static EditorialDecision removeCreatedProps(EditorialDecision d) {
     d.setOriginalSubjectId(null);
-    if (d.getLifezones() != null && d.getLifezones().isEmpty()) {
-      d.setLifezones(null);
-    }
     if (d.getName() != null) {
       // we store the name as JSON and thereby lose its name index id
       NameMapperTest.removeCreatedProps(d.getName());
