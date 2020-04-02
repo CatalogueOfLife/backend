@@ -21,6 +21,7 @@ public class EditorialDecision extends DataEntity<Integer> implements DatasetSco
   private Integer key;
   private Integer datasetKey; // the catalogues datasetKey
   private SimpleName subject;
+  private String originalSubjectId;
   private Integer subjectDatasetKey; // the datasetKey the subject belongs to, not the catalogue!
   private Mode mode;
   private Name name;
@@ -84,7 +85,15 @@ public class EditorialDecision extends DataEntity<Integer> implements DatasetSco
   public void setSubject(SimpleName subject) {
     this.subject = subject;
   }
-  
+
+  public String getOriginalSubjectId() {
+    return originalSubjectId;
+  }
+
+  public void setOriginalSubjectId(String originalSubjectId) {
+    this.originalSubjectId = originalSubjectId;
+  }
+
   public Integer getSubjectDatasetKey() {
     return subjectDatasetKey;
   }
@@ -177,20 +186,26 @@ public class EditorialDecision extends DataEntity<Integer> implements DatasetSco
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     EditorialDecision that = (EditorialDecision) o;
-    return mode == that.mode &&
+    return Objects.equals(key, that.key) &&
+        Objects.equals(datasetKey, that.datasetKey) &&
+        Objects.equals(subject, that.subject) &&
+        Objects.equals(originalSubjectId, that.originalSubjectId) &&
+        Objects.equals(subjectDatasetKey, that.subjectDatasetKey) &&
+        mode == that.mode &&
         Objects.equals(name, that.name) &&
         status == that.status &&
         Objects.equals(extinct, that.extinct) &&
         Objects.equals(temporalRangeStart, that.temporalRangeStart) &&
         Objects.equals(temporalRangeEnd, that.temporalRangeEnd) &&
-        Objects.equals(lifezones, that.lifezones);
+        Objects.equals(lifezones, that.lifezones) &&
+        Objects.equals(note, that.note);
   }
-  
+
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), mode, name, status, extinct, temporalRangeStart, temporalRangeEnd, lifezones);
+    return Objects.hash(super.hashCode(), key, datasetKey, subject, originalSubjectId, subjectDatasetKey, mode, name, status, extinct, temporalRangeStart, temporalRangeEnd, lifezones, note);
   }
-  
+
   @Override
   public String toString() {
     return "Decision{" + getKey() + " " + mode + " on " + subject + '}';

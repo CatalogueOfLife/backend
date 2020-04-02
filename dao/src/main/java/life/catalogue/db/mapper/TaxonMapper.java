@@ -41,7 +41,9 @@ public interface TaxonMapper extends CRUD<DSID<String>, Taxon>, ProcessableDatas
   int countChildren(@Param("key") DSID<String> key);
   
   int countChildrenWithRank(@Param("key") DSID<String> key, @Param("rank") Rank rank);
-  
+
+  int countChildrenBelowRank(@Param("key") DSID<String> key, @Param("rank") Rank rank);
+
   List<Taxon> children(@Param("key") DSID<String> key, @Param("page") Page page);
   
   /**

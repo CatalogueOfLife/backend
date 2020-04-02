@@ -94,8 +94,7 @@ public class DecisionMapperTest extends CRUDTestBase<Integer, EditorialDecision,
   }
 
   public static EditorialDecision removeCreatedProps(EditorialDecision d) {
-    d.setCreated(null);
-    d.setModified(null);
+    d.setOriginalSubjectId(null);
     if (d.getLifezones() != null && d.getLifezones().isEmpty()) {
       d.setLifezones(null);
     }

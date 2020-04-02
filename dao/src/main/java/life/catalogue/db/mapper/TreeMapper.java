@@ -21,11 +21,11 @@ public interface TreeMapper {
    * @param key          The tree node key pointing to either a catalogue or source taxon
    */
   TreeNode get(@Param("catalogueKey") int catalogueKey,
-               @Param("type") TreeNode.Type type,
+               @Nullable @Param("type") TreeNode.Type type,
                @Param("key") DSID<String> key);
   
   List<TreeNode> root(@Param("catalogueKey") int catalogueKey,
-                      @Param("type") TreeNode.Type type,
+                      @Nullable @Param("type") TreeNode.Type type,
                       @Param("datasetKey") int datasetKey,
                       @Param("page") Page page);
 
@@ -34,16 +34,21 @@ public interface TreeMapper {
                          @Param("key") DSID<String> key);
   
   List<TreeNode> children(@Param("catalogueKey") int catalogueKey,
-                          @Param("type") TreeNode.Type type,
+                          @Nullable @Param("type") TreeNode.Type type,
                           @Param("key") DSID<String> key,
                           @Nullable @Param("rank") Rank rank,
-                          @Param("insertPlaceholder") boolean insertPlaceholder,
                           @Param("page") Page page);
-  
+
+  List<TreeNode> childrenWithPlaceholder(@Param("catalogueKey") int catalogueKey,
+                                         @Nullable @Param("type") TreeNode.Type type,
+                                         @Param("key") DSID<String> key,
+                                         @Nullable @Param("rank") Rank rank,
+                                         @Param("page") Page page);
+
   /**
    * Retuns the list of unique ranks of all children of the given parentID
-   * which are above the optional rank given.
-   * @param rank optional minimum rank to exclude
+   * which are above or equal the optional rank given.
+   * @param rank optional minimum rank to consider
    * @return
    */
   List<Rank> childrenRanks(@Param("key") DSID<String> key,

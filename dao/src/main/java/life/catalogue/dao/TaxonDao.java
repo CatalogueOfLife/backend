@@ -293,7 +293,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     // if this taxon had a sector we need to adjust parental counts
     // we keep the sector as a broken sector around
     SectorMapper sm = session.getMapper(SectorMapper.class);
-    for (Sector s : sm.listByTarget(did.getDatasetKey(), did.getId())) {
+    for (Sector s : sm.listByTarget(did)) {
       tMapper.incDatasetSectorCount(s.getTargetAsDSID(), s.getSubjectDatasetKey(), -1);
     }
     // deleting the taxon now should cascade deletes to synonyms, vernaculars, etc but keep the name record!

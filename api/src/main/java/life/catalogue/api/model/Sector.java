@@ -25,6 +25,7 @@ public class Sector extends DataEntity<Integer> implements DatasetScoped {
   private SimpleName target;
   private Integer subjectDatasetKey; // the datasetKey the subject belongs to, not the catalogue!
   private SimpleName subject;
+  private String originalSubjectId;
   private Mode mode = Sector.Mode.ATTACH;
   private NomCode code;
   private Rank placeholderRank;
@@ -86,7 +87,15 @@ public class Sector extends DataEntity<Integer> implements DatasetScoped {
   public void setSubject(SimpleName subject) {
     this.subject = subject;
   }
-  
+
+  public String getOriginalSubjectId() {
+    return originalSubjectId;
+  }
+
+  public void setOriginalSubjectId(String originalSubjectId) {
+    this.originalSubjectId = originalSubjectId;
+  }
+
   @JsonIgnore
   public DSID<String> getSubjectAsDSID() {
     return subject == null ? null : DSID.key(subjectDatasetKey, subject.getId());
@@ -167,9 +176,10 @@ public class Sector extends DataEntity<Integer> implements DatasetScoped {
         Objects.equals(target, sector.target) &&
         Objects.equals(subjectDatasetKey, sector.subjectDatasetKey) &&
         Objects.equals(subject, sector.subject) &&
+        Objects.equals(originalSubjectId, sector.originalSubjectId) &&
         mode == sector.mode &&
         code == sector.code &&
-        Objects.equals(placeholderRank, sector.placeholderRank) &&
+        placeholderRank == sector.placeholderRank &&
         Objects.equals(ranks, sector.ranks) &&
         Objects.equals(entities, sector.entities) &&
         Objects.equals(note, sector.note);
@@ -177,7 +187,7 @@ public class Sector extends DataEntity<Integer> implements DatasetScoped {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, datasetKey, target, subjectDatasetKey, subject, mode, code, placeholderRank, ranks, entities, note);
+    return Objects.hash(super.hashCode(), key, datasetKey, target, subjectDatasetKey, subject, originalSubjectId, mode, code, placeholderRank, ranks, entities, note);
   }
 
   @Override

@@ -1,5 +1,6 @@
 package life.catalogue.db.mapper;
 
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.db.CRUD;
@@ -14,11 +15,9 @@ import java.util.List;
 public interface SectorMapper extends CRUD<Integer, Sector>, DatasetPageable<Sector>, ProcessableDataset<Sector>, Searchable<Sector, SectorSearchRequest> {
   
   Sector getBySubject(@Param("datasetKey") int datasetKey,
-                      @Param("subjectDatasetKey") int subjectDatasetKey,
-                      @Param("id") String id);
+                      @Param("key") DSID<String> key);
   
-  List<Sector> listByTarget(@Param("datasetKey") int datasetKey,
-                            @Param("id") String id);
+  List<Sector> listByTarget(@Param("key") DSID<String> key);
 
   List<Sector> listByDataset(@Param("datasetKey") @Nullable Integer datasetKey,
                              @Param("subjectDatasetKey") int subjectDatasetKey);

@@ -8,6 +8,7 @@
     ${alias}key AS ${prefix}key,
     ${alias}dataset_key AS ${prefix}dataset_key,
     ${alias}subject_dataset_key AS ${prefix}subject_dataset_key,
+    ${alias}original_subject_id AS ${prefix}original_subject_id,
     ${alias}subject_id AS ${prefix}subject_id,
     ${alias}subject_name AS ${prefix}subject_name,
     ${alias}subject_authorship AS ${prefix}subject_authorship,

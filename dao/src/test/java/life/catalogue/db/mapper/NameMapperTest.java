@@ -49,18 +49,7 @@ public class NameMapperTest extends CRUDPageableTestBase<Name, NameMapper> {
   }
 
   public static Name removeCreatedProps(Name n) {
-    TestEntityGenerator.nullifyDate(n);
     n.setHomotypicNameId(null);
-    //if (!n.hasBasionymAuthorship()) {
-    //  n.setBasionymAuthorship(null);
-    //} else {
-    //  removeCreatedProps(n.getBasionymAuthorship());
-    //}
-    //if (!n.hasCombinationAuthorship()) {
-    //  n.setCombinationAuthorship(null);
-    //} else {
-    //  removeCreatedProps(n.getCombinationAuthorship());
-    //}
     return n;
   }
 

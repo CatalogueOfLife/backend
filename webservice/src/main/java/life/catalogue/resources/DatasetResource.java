@@ -73,6 +73,10 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @Path("{key}/export")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public String export(@PathParam("key") int key, @Auth ColUser user) {
+    return exportAC(key, user);
+  }
+
+  private String exportAC(int key, ColUser user) {
     life.catalogue.release.Logger logger = new life.catalogue.release.Logger(LOG);
     try {
       exporter.export(key, logger);

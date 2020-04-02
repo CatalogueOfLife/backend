@@ -26,7 +26,8 @@ public class TreeResourceTest extends ResourceTestBase {
     ResultPage<TreeNode> root = base.path("/11/tree").request().get(RESP_TYPE);
     assertEquals(2, root.size());
     // make sure we get the html markup
-    assertEquals("<i>Larus</i> <i>fuscus</i>", root.getResult().get(0).getName());
+    assertEquals("Larus fuscus", root.getResult().get(0).getName());
+    assertEquals("<i>Larus</i> <i>fuscus</i>", root.getResult().get(0).getFormattedName());
   }
   
 }
