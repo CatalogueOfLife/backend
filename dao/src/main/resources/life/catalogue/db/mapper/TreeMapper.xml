@@ -97,7 +97,7 @@
         <include refid="life.catalogue.db.Common.partitionByKey"/>
         <bind name="datasetKey" value="key.datasetKey"/>
         WITH first AS (
-            SELECT t.id, n.rank
+            SELECT n.rank
             FROM <include refid="FROM_USAGE" />
             WHERE t.parent_id = #{key.id} AND NOT is_synonym
             <if test="rank!=null">

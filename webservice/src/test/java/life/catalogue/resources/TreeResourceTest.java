@@ -56,7 +56,10 @@ public class TreeResourceTest extends ResourceTestBase {
   
   @Test
   public void get() {
-    ResultPage<TreeNodeProps> root = base.path("/11/tree").request().get(RESP_TYPE);
+    ResultPage<TreeNodeProps> root = base.path("/11/tree")
+        .queryParam("insertPlaceholder", true)
+        .queryParam("type", TreeNode.Type.SOURCE.name())
+        .request().get(RESP_TYPE);
     assertEquals(2, root.size());
     // make sure we get the html markup
     assertEquals("Larus fuscus", root.getResult().get(0).getName());

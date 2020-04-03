@@ -83,9 +83,16 @@ public class ParserConfigDao {
     ParsedName pn = Name.toParsedName(obj);
     pn.setTaxonomicNote(obj.getTaxonomicNote());
     NameParser.configs().setName(concat(obj.getScientificName(), obj.getAuthorship()), pn);
-    // also use the authorship alone!
+    // configure name without authorship and authorship standalone if we have that
     if (obj.getAuthorship() != null && obj.hasAuthorship()) {
       NameParser.configs().setAuthorship(obj.getAuthorship(), pn);
+
+      ParsedName pnNoAuthor = new ParsedName();
+      pnNoAuthor.copy(pn);
+      pnNoAuthor.setCombinationAuthorship(null);
+      pnNoAuthor.setBasionymAuthorship(null);
+      pnNoAuthor.setSanctioningAuthor(null);
+      NameParser.configs().setName(obj.getScientificName(), pnNoAuthor);
     }
   }
 
