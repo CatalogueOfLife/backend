@@ -109,9 +109,10 @@ public class ParserConfigDao {
     // update parser
     ParserConfig cfg = new ParserConfig();
     cfg.setId(id);
-    ParsedName pn = NameParser.configs().deleteName(concat(cfg.getScientificName(), cfg.getAuthorship()));
-    // also remove the authorship if exists!
+    NameParser.configs().deleteName(concat(cfg.getScientificName(), cfg.getAuthorship()));
+    // also remove the authorship and canonical name if it exists!
     if (cfg.getAuthorship() != null) {
+      NameParser.configs().deleteName(cfg.getScientificName());
       NameParser.configs().deleteAuthorship(cfg.getAuthorship());
     }
   }
