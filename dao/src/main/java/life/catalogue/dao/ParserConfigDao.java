@@ -80,6 +80,7 @@ public class ParserConfigDao {
   }
 
   private void addToParser(ParserConfig obj){
+    LOG.info("Create parser config {}", obj.getId());
     ParsedName pn = Name.toParsedName(obj);
     pn.setTaxonomicNote(obj.getTaxonomicNote());
     NameParser.configs().setName(concat(obj.getScientificName(), obj.getAuthorship()), pn);
@@ -99,6 +100,7 @@ public class ParserConfigDao {
   public void deleteName(String id, int user) {
     Preconditions.checkNotNull(id, "ID required");
     Preconditions.checkArgument(id.contains("|"), "ID must concatenate name and authorship with a pipe symbol");
+    LOG.info("Remove parser config {}", id);
     // persists first
     try (SqlSession session = factory.openSession(true)) {
       ParserConfigMapper pcm = session.getMapper(ParserConfigMapper.class);
