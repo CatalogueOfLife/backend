@@ -98,11 +98,11 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     
     List<TreeNode> nodes = mapper().children(Datasets.DRAFT_COL, TreeNode.Type.CATALOGUE, DSID.draftID("t1"), null, new Page());
     assertEquals(1, nodes.size());
-    noSectorKeys(nodes);
+    noSectors(nodes);
   
     nodes = mapper().children(Datasets.DRAFT_COL, TreeNode.Type.CATALOGUE, DSID.draftID("t2"), null, new Page());
     assertEquals(1, nodes.size());
-    noSectorKeys(nodes);
+    noSectors(nodes);
     
     nodes = mapper().children(Datasets.DRAFT_COL, TreeNode.Type.CATALOGUE, DSID.draftID("t3"), null, new Page());
     assertEquals(2, nodes.size());
@@ -165,7 +165,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     equals(d1, nodes.get(2).getDecision());
   
     nodes = mapper().children(Datasets.DRAFT_COL, TreeNode.Type.SOURCE, DSID.key(dataset11, "t2"), null, new Page());
-    noSectors(noSectorKeys(nodes));
+    noSectors(noSectors(nodes));
   }
 
   private static void equals(EditorialDecision d1, EditorialDecision d2){
@@ -210,14 +210,6 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
    */
   private static <T extends UserManaged> void equals(T o1, T o2) {
     assertEquals(TestEntityGenerator.nullifyDate(o1), TestEntityGenerator.nullifyDate(o2));
-  }
-  
-  private static List<TreeNode> noSectorKeys(List<TreeNode> nodes) {
-    valid(nodes);
-    for (TreeNode n : nodes) {
-      assertNull(n.getSectorKey());
-    }
-    return nodes;
   }
   
   private static List<TreeNode> noSectors(List<TreeNode> nodes) {

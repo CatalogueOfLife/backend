@@ -10,7 +10,7 @@ import life.catalogue.api.vocab.MatchType;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.NameMapper;
-import life.catalogue.db.mapper.TestDataRule;
+import life.catalogue.db.TestDataRule;
 import life.catalogue.importer.IdGenerator;
 import life.catalogue.parser.NameParser;
 import org.apache.ibatis.session.SqlSession;

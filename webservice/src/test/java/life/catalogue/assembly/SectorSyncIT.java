@@ -1,14 +1,13 @@
 package life.catalogue.assembly;
 
 import com.google.common.base.Charsets;
-import com.google.gson.internal.$Gson$Preconditions;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Origin;
-import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.*;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.es.NameUsageIndexService;

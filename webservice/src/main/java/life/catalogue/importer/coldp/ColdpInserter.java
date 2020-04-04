@@ -12,7 +12,7 @@ import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.csl.CslDataConverter;
 import life.catalogue.img.ImageService;
-import life.catalogue.importer.NeoInserter;
+import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
@@ -36,7 +36,7 @@ import java.util.Optional;
 /**
  *
  */
-public class ColdpInserter extends NeoInserter {
+public class ColdpInserter extends NeoCsvInserter {
 
   private static final Logger LOG = LoggerFactory.getLogger(ColdpInserter.class);
   private static final String BIBTEX_NS = "http://bibtex.org/";
@@ -45,8 +45,8 @@ public class ColdpInserter extends NeoInserter {
   
   private ColdpInterpreter inter;
 
-  public ColdpInserter(NeoDb store, Path folder, ReferenceFactory refFactory, ImageService imgService) throws IOException {
-    super(folder, ColdpReader.from(folder), store, refFactory, imgService);
+  public ColdpInserter(NeoDb store, Path folder, ReferenceFactory refFactory) throws IOException {
+    super(folder, ColdpReader.from(folder), store, refFactory);
   }
   
   /**

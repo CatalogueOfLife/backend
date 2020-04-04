@@ -124,6 +124,7 @@ public class ApiKryoPool extends Pool<Kryo> {
     // term enums
     TermFactory.instance().registerTermEnum(ColdpTerm.class);
     TermFactory.instance().registerTermEnum(ColDwcTerm.class);
+    TermFactory.instance().registerTermEnum(TxtTreeTerm.class);
     for (Class cl : TermFactory.instance().listRegisteredTermEnums()) {
       kryo.register(cl);
     }

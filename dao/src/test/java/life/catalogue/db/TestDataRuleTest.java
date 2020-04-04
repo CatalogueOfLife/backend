@@ -1,16 +1,13 @@
-package life.catalogue.db.mapper;
+package life.catalogue.db;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import life.catalogue.db.PgSetupRule;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import static org.junit.Assert.*;
 
 @RunWith(Parameterized.class)
 public class TestDataRuleTest {

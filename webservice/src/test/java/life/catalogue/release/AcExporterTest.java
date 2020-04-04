@@ -9,7 +9,7 @@ import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.TestDataRule;
+import life.catalogue.db.TestDataRule;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;

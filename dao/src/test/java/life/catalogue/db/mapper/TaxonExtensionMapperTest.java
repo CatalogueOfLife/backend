@@ -4,6 +4,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DatasetScopedEntity;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.TaxonExtension;
+import life.catalogue.db.TestDataRule;
 import org.junit.Test;
 
 import java.util.ArrayList;

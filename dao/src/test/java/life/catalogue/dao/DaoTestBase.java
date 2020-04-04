@@ -5,7 +5,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DSIDValue;
 import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.mapper.TestDataRule;
+import life.catalogue.db.TestDataRule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;

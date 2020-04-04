@@ -12,7 +12,7 @@ import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMapper;
-import life.catalogue.db.mapper.TestDataRule;
+import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.VerbatimRecordMapper;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.neo.NeoDb;

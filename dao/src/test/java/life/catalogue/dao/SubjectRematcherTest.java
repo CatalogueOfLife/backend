@@ -11,7 +11,7 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.db.mapper.TestDataRule;
+import life.catalogue.db.TestDataRule;
 import org.gbif.nameparser.api.Rank;
 import org.junit.ClassRule;
 import org.junit.Rule;

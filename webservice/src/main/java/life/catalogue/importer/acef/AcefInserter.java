@@ -8,7 +8,7 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.img.ImageService;
-import life.catalogue.importer.NeoInserter;
+import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
@@ -36,15 +36,15 @@ import static com.google.common.base.Strings.emptyToNull;
 /**
  *
  */
-public class AcefInserter extends NeoInserter {
+public class AcefInserter extends NeoCsvInserter {
   private static final Map<String, List<String>> proParteAccIds = new HashMap<>();
   private static final Logger LOG = LoggerFactory.getLogger(AcefInserter.class);
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').trimResults().omitEmptyStrings();
   
   private AcefInterpreter inter;
   
-  public AcefInserter(NeoDb store, Path folder, ReferenceFactory refFactory, ImageService imgService) throws IOException {
-    super(folder, AcefReader.from(folder), store, refFactory, imgService);
+  public AcefInserter(NeoDb store, Path folder, ReferenceFactory refFactory) throws IOException {
+    super(folder, AcefReader.from(folder), store, refFactory);
   }
   
   /**

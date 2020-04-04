@@ -5,7 +5,9 @@ import com.google.common.collect.Sets;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameAccordingTo;
+import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.vocab.NomStatus;
+import org.gbif.nameparser.ParserConfigs;
 import org.gbif.nameparser.api.*;
 import org.junit.Test;
 
@@ -26,7 +28,36 @@ public class NameParserTest {
     assertAuthorship("L.f", null, "L.f");
     assertAuthorship("DC.", null, "DC.");
   }
-  
+
+  @Test
+  public void parseVirusConfig() throws Exception {
+    // no configs yet
+    assertName("Aspilota vector Belokobylskij, 2007", "Aspilota vector Belokobylskij, 2007", NameType.VIRUS)
+        .nothingElse();
+
+    // add parser config
+    ParserConfig cfg = new ParserConfig();
+    cfg.updateID("Aspilota vector",  "Belokobylskij, 2007");
+    cfg.setGenus("Aspilota");
+    cfg.setSpecificEpithet("vector");
+    cfg.setCombinationAuthorship(Authorship.yearAuthors("2007", "Belokobylskij"));
+    cfg.setType(NameType.SCIENTIFIC);
+    cfg.setRank(Rank.SPECIES);
+    addToParser(cfg);
+
+    assertName("Aspilota vector Belokobylskij, 2007", "Aspilota vector")
+        .species("Aspilota", "vector")
+        .combAuthors("2007", "Belokobylskij")
+        .type(NameType.SCIENTIFIC)
+        .nothingElse();
+  }
+
+  private static void addToParser(ParserConfig obj){
+    ParsedName pn = Name.toParsedName(obj);
+    pn.setTaxonomicNote(obj.getTaxonomicNote());
+    NameParser.configs().setName(obj.getScientificName() + " " + obj.getAuthorship(), pn);
+  }
+
   @Test
   public void parseManuscript() throws Exception {
     assertName("Acranthera virescens (Ridl.) ined.", "Acranthera virescens")

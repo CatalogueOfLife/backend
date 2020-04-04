@@ -1,4 +1,4 @@
-package life.catalogue.db.mapper;
+package life.catalogue.db;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -8,8 +8,8 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.tax.SciNameNormalizer;
-import life.catalogue.db.PgConfig;
-import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.mapper.DatasetPartitionMapper;
+import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.postgres.PgCopyUtils;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;

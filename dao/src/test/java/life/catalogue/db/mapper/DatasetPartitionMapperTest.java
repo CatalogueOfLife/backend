@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.TestDataRule;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;

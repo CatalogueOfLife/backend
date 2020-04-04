@@ -7,6 +7,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DSIDValue;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.TaxonCountMap;
+import life.catalogue.db.TestDataRule;
 import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;

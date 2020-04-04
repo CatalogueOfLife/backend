@@ -1,10 +1,7 @@
 package life.catalogue.dao;
 
 import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.mapper.MapperTestBase;
-import life.catalogue.db.mapper.TestDataRule;
-import org.checkerframework.checker.units.qual.A;
-import org.gbif.api.util.iterables.DatasetPager;
+import life.catalogue.db.TestDataRule;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;

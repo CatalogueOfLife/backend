@@ -9,6 +9,7 @@ import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.collection.MapUtils;
 import life.catalogue.common.tax.MisappliedNameMatcher;
 import life.catalogue.img.ImageService;
+import life.catalogue.img.ImageServiceFS;
 import life.catalogue.importer.acef.AcefInserter;
 import life.catalogue.importer.coldp.ColdpInserter;
 import life.catalogue.importer.dwca.DwcaInserter;
@@ -18,6 +19,7 @@ import life.catalogue.importer.neo.NotUniqueRuntimeException;
 import life.catalogue.importer.neo.model.*;
 import life.catalogue.importer.neo.traverse.Traversals;
 import life.catalogue.importer.reference.ReferenceFactory;
+import life.catalogue.importer.txttree.TxtTreeInserter;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.parser.NameParser;
 import org.gbif.nameparser.api.NameType;
@@ -29,11 +31,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -46,6 +46,7 @@ public class Normalizer implements Callable<Boolean> {
   private static final Logger LOG = LoggerFactory.getLogger(Normalizer.class);
   private final DataFormat format;
   private final Path sourceDir;
+  private final int datasetKey;
   private final NeoDb store;
   private final ReferenceFactory refFactory;
   private final ImageService imgService;
@@ -57,7 +58,8 @@ public class Normalizer implements Callable<Boolean> {
     this.format = Preconditions.checkNotNull(format, "Data format not given");
     this.sourceDir = sourceDir;
     this.store = store;
-    refFactory = new ReferenceFactory(store.getDataset().getKey(), store.references());
+    this.datasetKey = store.getDataset().getKey();
+    refFactory = new ReferenceFactory(datasetKey, store.references());
     this.index = index;
     this.imgService = imgService;
   }
@@ -798,22 +800,36 @@ public class Normalizer implements Callable<Boolean> {
       NeoInserter inserter;
       switch (format) {
         case COLDP:
-          inserter = new ColdpInserter(store, sourceDir, refFactory, imgService);
+          inserter = new ColdpInserter(store, sourceDir, refFactory);
           break;
         case DWCA:
-          inserter = new DwcaInserter(store, sourceDir, refFactory, imgService);
+          inserter = new DwcaInserter(store, sourceDir, refFactory);
           break;
         case ACEF:
-          inserter = new AcefInserter(store, sourceDir, refFactory, imgService);
+          inserter = new AcefInserter(store, sourceDir, refFactory);
+          break;
+        case TEXT_TREE:
+          inserter = new TxtTreeInserter(store, sourceDir);
           break;
         default:
           throw new NormalizationFailedException("Unsupported data format " + format);
       }
+      // metadata, the key will be preserved by the store
+      Optional<Dataset> d = inserter.readMetadata();
+      d.ifPresent(store::put);
+      // data
       inserter.insertAll();
-      meta = inserter.reader.getMappingFlags();
-
+      meta = inserter.getMappingFlags();
       store.reportDuplicates();
       inserter.reportBadFks();
+      // lookout for local logo file
+      inserter.logo().ifPresent(l -> {
+        try {
+          imgService.putDatasetLogo(datasetKey, ImageServiceFS.read(Files.newInputStream(l)));
+        } catch (IOException e) {
+          LOG.warn("Failed to read local logo file {}", l);
+        }
+      });
 
     } catch (NotUniqueRuntimeException e) {
       throw new NormalizationFailedException(e.getProperty() + " values not unique: " + e.getKey(), e);

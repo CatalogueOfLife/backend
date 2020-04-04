@@ -5,6 +5,8 @@ import life.catalogue.api.vocab.EstimateType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.Rank;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -17,7 +19,18 @@ public abstract class TreeNode implements DSID<String> {
 
   public static enum Type {
     CATALOGUE,
-    SOURCE
+    SOURCE;
+
+  }
+
+  /**
+   * @return all tree types incl null
+   */
+  public static List<TreeNode.Type> types(){
+    List<TreeNode.Type> types = new ArrayList<>();
+    types.add(null);
+    types.addAll(Arrays.asList(TreeNode.Type.values()));
+    return types;
   }
 
   private Integer datasetKey;
@@ -198,5 +211,10 @@ public abstract class TreeNode implements DSID<String> {
   @Override
   public int hashCode() {
     return Objects.hash(datasetKey, id, parentId, rank, status, childCount, estimates, sectorKey, decision, datasetSectors);
+  }
+
+  @Override
+  public String toString() {
+    return rank + " " + getName() + " " + getAuthorship() + " [" + id +"]";
   }
 }

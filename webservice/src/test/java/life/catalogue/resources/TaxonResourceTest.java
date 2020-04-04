@@ -7,7 +7,7 @@ import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.TreeNode;
 import life.catalogue.api.vocab.Origin;
-import life.catalogue.db.mapper.TestDataRule;
+import life.catalogue.db.TestDataRule;
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;

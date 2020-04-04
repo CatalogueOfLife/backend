@@ -2,6 +2,8 @@ package life.catalogue;
 
 import java.io.IOException;
 import javax.ws.rs.client.Client;
+
+import life.catalogue.dao.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
@@ -33,12 +35,6 @@ import life.catalogue.command.updatedb.AddTableCmd;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.tax.AuthorshipNormalizer;
-import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.NameDao;
-import life.catalogue.dao.ParserConfigDao;
-import life.catalogue.dao.ReferenceDao;
-import life.catalogue.dao.SynonymDao;
-import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.tree.DiffService;
 import life.catalogue.dw.ManagedCloseable;
 import life.catalogue.dw.auth.AuthBundle;
@@ -246,6 +242,7 @@ public class WsServer extends Application<WsServerConfig> {
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, indexService);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory());
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory());
+    TreeDao trDao = new TreeDao(getSqlSessionFactory());
 
     // resources
     env.jersey()
@@ -272,7 +269,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.jersey().register(new SectorResource(getSqlSessionFactory(), diDao, diff, assembly));
     env.jersey().register(new SynonymResource(sdao));
     env.jersey().register(new TaxonResource(tdao));
-    env.jersey().register(new TreeResource(tdao));
+    env.jersey().register(new TreeResource(tdao, trDao));
     env.jersey().register(new UserResource(auth.getJwtCodec()));
     env.jersey().register(new VerbatimResource());
     env.jersey().register(new VocabResource());

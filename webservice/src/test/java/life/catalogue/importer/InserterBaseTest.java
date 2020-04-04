@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import com.google.common.io.Files;
+import life.catalogue.common.io.Resources;
 import org.apache.commons.io.FileUtils;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.config.NormalizerConfig;
@@ -42,7 +43,7 @@ public abstract class InserterBaseTest {
       d = new Dataset();
       d.setKey(1);
       store.put(d);
-      
+
       URL url = getClass().getResource(resource);
       Path path = Paths.get(url.toURI());
   
