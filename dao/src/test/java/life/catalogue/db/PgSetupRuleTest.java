@@ -74,6 +74,7 @@ public class PgSetupRuleTest {
     enums.remove(Country.class);
     enums.remove(ColDwcTerm.class);
     enums.remove(CSLRefType.class);
+    enums.remove(TxtTreeTerm.class);
     enums.remove(Frequency.class);
     enums.remove(GeoTimeType.class);
     enums.remove(DatasetSettings.class);
