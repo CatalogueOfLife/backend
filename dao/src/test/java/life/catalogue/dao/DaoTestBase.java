@@ -44,8 +44,8 @@ public abstract class DaoTestBase {
     session.close();
   }
 
-  protected SqlSessionFactory factory() {
-    return pgSetupRule.getSqlSessionFactory();
+  protected static SqlSessionFactory factory() {
+    return PgSetupRule.getSqlSessionFactory();
   }
   
   protected SqlSession session() {

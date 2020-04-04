@@ -53,7 +53,7 @@ public class PgSetupRule extends ExternalResource {
   
   @Override
   protected void before() throws Throwable {
-    LOG.info("run PgSetupRule wipe={}", wipe);
+    System.out.println("run PgSetupRule wipe=" + wipe);
     super.before();
     try {
       cfg = YamlUtils.read(PgConfig.class, "/pg-test.yaml");

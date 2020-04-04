@@ -12,10 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.function.Supplier;
 
 public class TreeDao {
@@ -36,7 +33,7 @@ public class TreeDao {
   /**
    * @return classification starting with the given start id
    */
-  public List<TreeNode> classification(DSID<String> id, int catalogueKey, boolean placeholder, TreeNode.Type type) {
+  public List<TreeNode> classification(DSID<String> id, int projectKey, boolean placeholder, TreeNode.Type type) {
     RankID key = RankID.parseID(id);
     try (SqlSession session = factory.openSession()){
       TreeMapper trm = session.getMapper(TreeMapper.class);
@@ -46,21 +43,53 @@ public class TreeDao {
       if (key.rank != null) {
         placeholder = true;
         pRank = key.rank;
-        TreeNode parentNode = trm.get(catalogueKey, type, key);
-        parents.add(placeholder(parentNode, key.rank, 1));
+        TreeNode parentNode = trm.get(projectKey, type, key);
+        parents.add(placeholder(parentNode, key.rank));
         parents.addAll(parentPlaceholder(trm, parentNode, pRank));
-        //parents.add(parentNode);
         pRank = parentNode.getRank();
       }
-      for (TreeNode tn : trm.classification(catalogueKey, type, key)) {
+      for (TreeNode tn : trm.classification(projectKey, type, key)) {
         if (placeholder) {
           parents.addAll(parentPlaceholder(trm, tn, pRank));
         }
         parents.add(tn);
         pRank = tn.getRank();
       }
+      addPlaceholderSectors(projectKey, parents, type, session);
       return parents;
     }
+  }
+
+  private void addPlaceholderSectors(int projectKey, List<TreeNode> nodes, TreeNode.Type type, SqlSession session) {
+    SectorMapper sm = session.getMapper(SectorMapper.class);
+    Map<String, Sector> sectors = new HashMap<>();
+    if (type == TreeNode.Type.SOURCE) {
+      for (TreeNode n : nodes) {
+        RankID key = RankID.parseID(n);
+        // only check placeholders
+        if (key.rank == null) continue;
+        // load sector only once if id is the same
+        if (!sectors.containsKey(key.getId())) {
+          sectors.put(key.getId(), sm.getBySubject(projectKey, key));
+        }
+        if (sectors.get(key.getId()) != null) {
+          Sector s = sectors.get(key.getId());
+          if (s.getPlaceholderRank() == key.rank) {
+            n.setSectorKey(s.getKey());
+          }
+        }
+      }
+
+    } else if (type == TreeNode.Type.CATALOGUE) {
+
+    }
+  }
+
+  private static Sector getUnassignedSector(SectorMapper sm, int projectKey, DSID<String> id, TreeNode.Type type) {
+    if (type == TreeNode.Type.SOURCE) {
+      return sm.getBySubject(projectKey, id);
+    }
+    return null;
   }
 
   private static List<TreeNode> parentPlaceholder(TreeMapper trm, TreeNode tn, @Nullable Rank exclRank){
@@ -72,21 +101,21 @@ public class TreeDao {
       // we dont want no placeholder for the lowest rank
       ranks.remove(0);
       for (Rank r : ranks) {
-        nodes.add(placeholder(tn, r, 1));
+        nodes.add(placeholder(tn, r));
       }
     }
     return nodes;
   }
 
-  public ResultPage<TreeNode> children(DSID<String> id, int catalogueKey, boolean placeholder, TreeNode.Type type, Page page) {
+  public ResultPage<TreeNode> children(DSID<String> id, int projectKey, boolean placeholder, TreeNode.Type type, Page page) {
     try (SqlSession session = factory.openSession()){
       TreeMapper trm = session.getMapper(TreeMapper.class);
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
 
       RankID parent = RankID.parseID(id);
       List<TreeNode> result = placeholder ?
-        trm.childrenWithPlaceholder(catalogueKey, type, parent, parent.rank, page) :
-        trm.children(catalogueKey, type, parent, parent.rank, page);
+        trm.childrenWithPlaceholder(projectKey, type, parent, parent.rank, page) :
+        trm.children(projectKey, type, parent, parent.rank, page);
 
       Supplier<Integer> countSupplier;
       if (placeholder && !result.isEmpty()) {
@@ -101,12 +130,12 @@ public class TreeDao {
         TreeNode firstResult = result.get(0);
         int lowerChildren = tm.countChildrenBelowRank(parent, firstResult.getRank());
         if (lowerChildren > 0) {
-          TreeNode tnParent = trm.get(catalogueKey, type, parent);
+          TreeNode tnParent = trm.get(projectKey, type, parent);
           TreeNode placeHolder = placeholder(tnParent, firstResult, lowerChildren);
           // does a placeholder sector exist with a matching placeholder rank?
           if (type == TreeNode.Type.SOURCE) {
             SectorMapper sm = session.getMapper(SectorMapper.class);
-            Sector s = sm.getBySubject(catalogueKey, parent);
+            Sector s = sm.getBySubject(projectKey, parent);
             if (s != null && s.getPlaceholderRank() == placeHolder.getRank()) {
               placeHolder.setSectorKey(s.getKey());
             }
@@ -114,12 +143,13 @@ public class TreeDao {
           result.add(placeHolder);
         }
       }
+      addPlaceholderSectors(projectKey, result, type, session);
       return new ResultPage<>(page, result, countSupplier);
     }
   }
 
-  private static TreeNode placeholder(TreeNode parent, Rank rank, int childCount){
-    return placeholder(parent.getDatasetKey(), parent.getSectorKey(), parent.getId(), rank, childCount);
+  private static TreeNode placeholder(TreeNode parent, Rank rank){
+    return placeholder(parent.getDatasetKey(), parent.getSectorKey(), parent.getId(), rank, 1);
   }
 
   private static TreeNode placeholder(TreeNode parent, TreeNode sibling, int childCount){

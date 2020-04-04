@@ -1,43 +1,53 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.Users;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.TxtTreeDataRule;
+import life.catalogue.db.mapper.SectorMapperTest;
 import org.gbif.nameparser.api.Rank;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class TreeDaoTest extends DaoTestBase {
+public class TreeDaoTest {
   static final int catKey = 10;
   static final int TRILOBITA = 100;
   static final int MAMMALIA = 101;
 
   static final Page PAGE = new Page(0, 100);
 
+  // sets up pg server first, then loads the trees.
   @ClassRule
-  public static TxtTreeDataRule treeRule = new TxtTreeDataRule(Map.of(
-    catKey, TxtTreeDataRule.TreeData.ANIMALIA,
-    TRILOBITA, TxtTreeDataRule.TreeData.TRILOBITA,
-    MAMMALIA, TxtTreeDataRule.TreeData.MAMMALIA
-  ));
+  public static RuleChain chain= RuleChain
+      .outerRule(new PgSetupRule())
+      .around(new TxtTreeDataRule(Map.of(
+        catKey, TxtTreeDataRule.TreeData.ANIMALIA,
+        TRILOBITA, TxtTreeDataRule.TreeData.TRILOBITA,
+        MAMMALIA, TxtTreeDataRule.TreeData.MAMMALIA
+        ))
+      );
 
   @BeforeClass
   public static void initSector() {
     System.out.println("Setup sectors & decisions");
-  }
-
-  public TreeDaoTest() {
-    super(TestDataRule.empty());
+    SectorDao sdao = new SectorDao(PgSetupRule.getSqlSessionFactory());
+    // sector subject "Trilobita unassigned family"
+    createSector(sdao, DSID.key(TRILOBITA, RankID.buildID("1", Rank.FAMILY)), DSID.key(catKey,"9"));
+    // sector subject "Agnostoidea superfamily"
+    createSector(sdao, DSID.key(TRILOBITA,"3"), DSID.key(catKey,"9"));
   }
 
   TreeDao dao = new TreeDao(PgSetupRule.getSqlSessionFactory());
+
 
   @Test
   public void root() {
@@ -69,20 +79,25 @@ public class TreeDaoTest extends DaoTestBase {
     for (TreeNode.Type type : TreeNode.types()) {
       List<TreeNode> parents = valid(dao.classification(DSID.key(TRILOBITA, "61"), catKey, true, type));
       assertEquals(5, parents.size());
-      assertNode(parents.get(0), Rank.SPECIES, "Amechilus palaora");
+      assertNode(assertNoSector(parents.get(0)), Rank.SPECIES, "Amechilus palaora");
       assertEquals(Rank.GENUS, parents.get(1).getRank());
       assertPlaceholder(parents.get(2), Rank.FAMILY);
-      assertPlaceholder(parents.get(3), Rank.ORDER);
-      assertNode(parents.get(4), Rank.CLASS, "Trilobita");
+      if (type == TreeNode.Type.SOURCE) {
+        assertSector(parents.get(2));
+      } else {
+        assertNoSector(parents.get(2));
+      }
+      assertPlaceholder(assertNoSector(parents.get(3)), Rank.ORDER);
+      assertNode(assertNoSector(parents.get(4)), Rank.CLASS, "Trilobita");
     }
 
     // test calling a placeholder id
     List<TreeNode> parents = valid(dao.classification(DSID.key(TRILOBITA, RankID.buildID("2", Rank.FAMILY)), catKey, true, null));
     assertEquals(4, parents.size());
-    assertPlaceholder(parents.get(0), Rank.FAMILY);
-    assertPlaceholder(parents.get(1), Rank.SUPERFAMILY);
-    assertEquals(Rank.ORDER, parents.get(2).getRank());
-    assertNode(parents.get(3), Rank.CLASS, "Trilobita");
+    assertPlaceholder(assertNoSector(parents.get(0)), Rank.FAMILY);
+    assertPlaceholder(assertNoSector(parents.get(1)), Rank.SUPERFAMILY);
+    assertEquals(Rank.ORDER, assertNoSector(parents.get(2)).getRank());
+    assertNode(assertNoSector(parents.get(3)), Rank.CLASS, "Trilobita");
   }
 
   @Test
@@ -107,6 +122,16 @@ public class TreeDaoTest extends DaoTestBase {
     assertFalse(n instanceof TreeNode.PlaceholderNode);
     assertEquals(rank, n.getRank());
     assertEquals(name, n.getName());
+  }
+
+  private static TreeNode assertSector(TreeNode node) {
+    assertNotNull(node.getSectorKey());
+    return node;
+  }
+
+  private static TreeNode assertNoSector(TreeNode node) {
+    assertNull(node.getSectorKey());
+    return node;
   }
 
   private static ResultPage<TreeNode> noSectors(ResultPage<TreeNode> nodes) {
@@ -136,9 +161,16 @@ public class TreeDaoTest extends DaoTestBase {
     return nodes;
   }
 
-  static SimpleName nameref(String id) {
-    SimpleName nr = new SimpleName();
-    nr.setId(id);
-    return nr;
+  private static Sector createSector(SectorDao dao, DSID<String> subject, DSID<String> target){
+    Sector s = SectorMapperTest.create();
+
+    s.setSubjectDatasetKey(subject.getDatasetKey());
+    s.getSubject().setId(subject.getId());
+
+    s.setDatasetKey(target.getDatasetKey());
+    s.getTarget().setId(target.getId());
+
+    dao.create(s, Users.TESTER);
+    return s;
   }
 }

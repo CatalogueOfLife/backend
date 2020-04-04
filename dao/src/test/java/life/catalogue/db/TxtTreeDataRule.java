@@ -3,6 +3,7 @@ package life.catalogue.db;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.zaxxer.hikari.pool.HikariProxyConnection;
+import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.txtree.Tree;
 import life.catalogue.api.txtree.TreeNode;
@@ -83,6 +84,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
 
   @Override
   protected void before() throws Throwable {
+    System.out.println("Load text trees");
     super.before();
     initSession();
     for (Map.Entry<Integer, TreeData> x : datasets.entrySet()) {
@@ -91,8 +93,20 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
       LOG.info("Loading dataset {} from tree {}", datasetKey, tree);
       // create required partitions to load data
       PgSetupRule.partition(datasetKey);
+      createDataset(datasetKey);
       loadTree(datasetKey, tree);
       updateSequences(datasetKey);
+    }
+  }
+
+  private void createDataset(int datasetKey) {
+    DatasetMapper dm = session.getMapper(DatasetMapper.class);
+    Dataset d = dm.get(datasetKey);
+    if (d == null) {
+      d = TestEntityGenerator.newDataset("Tree " + datasetKey);
+      d.setKey(datasetKey);
+      d.applyUser(Users.TESTER);
+      dm.createWithKey(d);
     }
   }
 

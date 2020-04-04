@@ -13,7 +13,10 @@ import java.util.List;
 import java.util.UUID;
 
 public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Dataset> {
-  
+
+  // for tests only !!!
+  void createWithKey(Dataset d);
+
   /**
    * Copies a given dataset key into the archive with the given catalogueKey
    * @param key
