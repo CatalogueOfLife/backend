@@ -33,7 +33,10 @@ public class TreeDao {
     }
   }
 
-  public List<TreeNode> parents(DSID<String> id, int catalogueKey, boolean placeholder, TreeNode.Type type) {
+  /**
+   * @return classification starting with the given start id
+   */
+  public List<TreeNode> classification(DSID<String> id, int catalogueKey, boolean placeholder, TreeNode.Type type) {
     RankID key = RankID.parseID(id);
     try (SqlSession session = factory.openSession()){
       TreeMapper trm = session.getMapper(TreeMapper.class);
@@ -44,10 +47,12 @@ public class TreeDao {
         placeholder = true;
         pRank = key.rank;
         TreeNode parentNode = trm.get(catalogueKey, type, key);
+        parents.add(placeholder(parentNode, key.rank, 1));
         parents.addAll(parentPlaceholder(trm, parentNode, pRank));
-        parents.add(parentNode);
+        //parents.add(parentNode);
+        pRank = parentNode.getRank();
       }
-      for (TreeNode tn : trm.parents(catalogueKey, type, key)) {
+      for (TreeNode tn : trm.classification(catalogueKey, type, key)) {
         if (placeholder) {
           parents.addAll(parentPlaceholder(trm, tn, pRank));
         }

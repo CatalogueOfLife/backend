@@ -58,7 +58,7 @@ public class TreeDaoTest extends DaoTestBase {
   public void parents() {
     for (boolean placeholder : List.of(false, true)) {
       for (TreeNode.Type type : TreeNode.types()) {
-        List<TreeNode> parents = valid(dao.parents(DSID.key(TRILOBITA, "10"), catKey, placeholder, type));
+        List<TreeNode> parents = valid(dao.classification(DSID.key(TRILOBITA, "10"), catKey, placeholder, type));
         assertEquals(6, parents.size());
         assertEquals(Rank.SPECIES, parents.get(0).getRank());
         assertEquals(Rank.GENUS, parents.get(1).getRank());
@@ -67,28 +67,46 @@ public class TreeDaoTest extends DaoTestBase {
 
     // expect placeholders
     for (TreeNode.Type type : TreeNode.types()) {
-      List<TreeNode> parents = valid(dao.parents(DSID.key(TRILOBITA, "61"), catKey, true, type));
+      List<TreeNode> parents = valid(dao.classification(DSID.key(TRILOBITA, "61"), catKey, true, type));
       assertEquals(5, parents.size());
-      assertEquals("Amechilus palaora", parents.get(0).getName());
-      assertEquals(Rank.SPECIES, parents.get(0).getRank());
+      assertNode(parents.get(0), Rank.SPECIES, "Amechilus palaora");
       assertEquals(Rank.GENUS, parents.get(1).getRank());
       assertPlaceholder(parents.get(2), Rank.FAMILY);
       assertPlaceholder(parents.get(3), Rank.ORDER);
-      assertEquals(Rank.CLASS, parents.get(4).getRank());
-      assertEquals("Trilobita", parents.get(4).getName());
+      assertNode(parents.get(4), Rank.CLASS, "Trilobita");
     }
 
     // test calling a placeholder id
-    List<TreeNode> parents = valid(dao.parents(DSID.key(TRILOBITA, RankID.buildID("2", Rank.FAMILY)), catKey, true, null));
+    List<TreeNode> parents = valid(dao.classification(DSID.key(TRILOBITA, RankID.buildID("2", Rank.FAMILY)), catKey, true, null));
+    assertEquals(4, parents.size());
+    assertPlaceholder(parents.get(0), Rank.FAMILY);
+    assertPlaceholder(parents.get(1), Rank.SUPERFAMILY);
+    assertEquals(Rank.ORDER, parents.get(2).getRank());
+    assertNode(parents.get(3), Rank.CLASS, "Trilobita");
   }
 
   @Test
   public void children() {
+    ResultPage<TreeNode> children = valid(dao.children(DSID.key(TRILOBITA, RankID.buildID("1", Rank.ORDER)), catKey, true, null, PAGE));
+    assertEquals(2, children.size());
+    assertNode(children.getResult().get(0), Rank.FAMILY, "Scutelluidae");
+    assertPlaceholder(children.getResult().get(1), Rank.FAMILY);
+
+    children = valid(dao.children(children.getResult().get(1), catKey, true, null, PAGE));
+    assertEquals(2, children.size());
+    assertNode(children.getResult().get(0), Rank.GENUS, "Amechilus");
+    assertNode(children.getResult().get(1), Rank.GENUS, "Deltacare");
   }
 
   private static void assertPlaceholder(TreeNode n, Rank rank) {
     assertTrue(n instanceof TreeNode.PlaceholderNode);
     assertEquals(rank, n.getRank());
+  }
+
+  private static void assertNode(TreeNode n, Rank rank, String name) {
+    assertFalse(n instanceof TreeNode.PlaceholderNode);
+    assertEquals(rank, n.getRank());
+    assertEquals(name, n.getName());
   }
 
   private static ResultPage<TreeNode> noSectors(ResultPage<TreeNode> nodes) {

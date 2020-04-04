@@ -1,10 +1,6 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.db.MybatisTestUtils;
-import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.TxtTreeDataRule;
 import org.gbif.nameparser.api.Rank;
@@ -12,12 +8,9 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static life.catalogue.api.vocab.Datasets.DRAFT_COL;
 import static org.junit.Assert.*;
 
 public class TreeMapper2Test extends MapperTestBase<TreeMapper> {
@@ -62,7 +55,7 @@ public class TreeMapper2Test extends MapperTestBase<TreeMapper> {
   public void parents() {
     TreeMapper tm = mapper(TreeMapper.class);
     for (TreeNode.Type type : TreeNode.types()) {
-      List<TreeNode> parents = valid(tm.parents(catKey, type, DSID.key(TRILOBITA, "10")));
+      List<TreeNode> parents = valid(tm.classification(catKey, type, DSID.key(TRILOBITA, "10")));
       assertEquals(6, parents.size());
       assertEquals(Rank.SPECIES, parents.get(0).getRank());
       assertEquals(Rank.GENUS, parents.get(1).getRank());

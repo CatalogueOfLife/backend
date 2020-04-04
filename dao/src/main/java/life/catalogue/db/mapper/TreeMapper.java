@@ -29,9 +29,9 @@ public interface TreeMapper {
                       @Param("datasetKey") int datasetKey,
                       @Param("page") Page page);
 
-  List<TreeNode> parents(@Param("catalogueKey") int catalogueKey,
-                         @Param("type") TreeNode.Type type,
-                         @Param("key") DSID<String> key);
+  List<TreeNode> classification(@Param("catalogueKey") int catalogueKey,
+                                @Param("type") TreeNode.Type type,
+                                @Param("key") DSID<String> key);
   
   List<TreeNode> children(@Param("catalogueKey") int catalogueKey,
                           @Nullable @Param("type") TreeNode.Type type,

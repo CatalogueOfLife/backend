@@ -3,29 +3,17 @@ package life.catalogue.resources;
 import io.dropwizard.auth.Auth;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.dao.TreeDao;
-import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.db.mapper.TaxonMapper;
-import life.catalogue.db.mapper.TreeMapper;
 import life.catalogue.dw.auth.Roles;
-import org.apache.ibatis.session.SqlSession;
-import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Supplier;
 
 @Path("/dataset/{datasetKey}/tree")
 @Produces(MediaType.APPLICATION_JSON)
@@ -57,12 +45,12 @@ public class TreeResource {
   
   @GET
   @Path("{id}")
-  public List<TreeNode> parents(@PathParam("datasetKey") int datasetKey,
+  public List<TreeNode> classification(@PathParam("datasetKey") int datasetKey,
                                 @PathParam("id") String id,
                                 @QueryParam("catalogueKey") @DefaultValue(Datasets.DRAFT_COL+"") int catalogueKey,
                                 @QueryParam("insertPlaceholder") boolean placeholder,
                                 @QueryParam("type") TreeNode.Type type) {
-    return tree.parents(DSID.key(datasetKey, id), catalogueKey, placeholder, type);
+    return tree.classification(DSID.key(datasetKey, id), catalogueKey, placeholder, type);
   }
 
   @DELETE

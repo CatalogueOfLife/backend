@@ -113,7 +113,7 @@
         <include refid="life.catalogue.db.Common.limit" />
     </select>
 
-    <select id="parents" resultMap="treeResultMap">
+    <select id="classification" resultMap="treeResultMap">
         <include refid="life.catalogue.db.Common.partitionByKey"/>
         <bind name="datasetKey" value="key.datasetKey"/>
         WITH RECURSIVE x AS(
