@@ -2,7 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.*;
 import life.catalogue.db.TestDataRule;
-import life.catalogue.db.TxtTreeDataRule;
+import life.catalogue.db.tree.TxtTreeDataRule;
 import org.gbif.nameparser.api.Rank;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;

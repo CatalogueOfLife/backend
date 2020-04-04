@@ -55,12 +55,12 @@ public class TreeDao {
         parents.add(tn);
         pRank = tn.getRank();
       }
-      addPlaceholderSectors(projectKey, parents, type, session);
+      addPlaceholderSectors(projectKey, parents, type, true, session);
       return parents;
     }
   }
 
-  private void addPlaceholderSectors(int projectKey, List<TreeNode> nodes, TreeNode.Type type, SqlSession session) {
+  private void addPlaceholderSectors(int projectKey, List<TreeNode> nodes, TreeNode.Type type, boolean isClassification, SqlSession session) {
     SectorMapper sm = session.getMapper(SectorMapper.class);
     Map<String, Sector> sectors = new HashMap<>();
     if (type == TreeNode.Type.SOURCE) {
@@ -81,15 +81,33 @@ public class TreeDao {
       }
 
     } else if (type == TreeNode.Type.CATALOGUE) {
+      if (isClassification) {
+        // ordered from lowest rank to highest
+        // a sectorKey directly below placeholders could apply upwards
+        boolean first = true;
+        List<TreeNode> placeholders = new ArrayList<>();
+        for (TreeNode n : nodes) {
+          // if we start with placeholders we need to check for any existing target sector outside the list pointing to the lowest real node
+          if (first) {
+            if (n.isPlaceholder()) {
+              placeholders.add(n);
+            } else {
+              first = false;
+              checkPlaceholderTargetSector(placeholders, sectors);
+              placeholders.clear();
+            }
+          } else {
 
+          }
+        }
+      } else {
+        // e.g. children
+      }
     }
   }
 
-  private static Sector getUnassignedSector(SectorMapper sm, int projectKey, DSID<String> id, TreeNode.Type type) {
-    if (type == TreeNode.Type.SOURCE) {
-      return sm.getBySubject(projectKey, id);
-    }
-    return null;
+  private void checkPlaceholderTargetSector(List<TreeNode> nodes, Map<String, Sector> sectors){
+
   }
 
   private static List<TreeNode> parentPlaceholder(TreeMapper trm, TreeNode tn, @Nullable Rank exclRank){
@@ -143,7 +161,7 @@ public class TreeDao {
           result.add(placeHolder);
         }
       }
-      addPlaceholderSectors(projectKey, result, type, session);
+      addPlaceholderSectors(projectKey, result, type, false, session);
       return new ResultPage<>(page, result, countSupplier);
     }
   }

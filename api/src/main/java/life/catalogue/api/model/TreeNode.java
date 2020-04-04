@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import life.catalogue.api.vocab.EstimateType;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -190,7 +191,12 @@ public abstract class TreeNode implements DSID<String> {
   public void setDatasetSectors(Int2IntOpenHashMap datasetSectors) {
     this.datasetSectors = datasetSectors;
   }
-  
+
+  @JsonIgnore
+  public boolean isPlaceholder() {
+    return this instanceof PlaceholderNode;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

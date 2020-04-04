@@ -144,6 +144,9 @@
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE u.parent_id = #{key.id}
+        <if test="rank != null">
+          AND n.rank > #{rank}::rank
+        </if>
     </select>
 
     <update id="updateParentId" parameterType="map">

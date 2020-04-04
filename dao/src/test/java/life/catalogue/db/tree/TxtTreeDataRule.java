@@ -1,37 +1,25 @@
-package life.catalogue.db;
+package life.catalogue.db.tree;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.zaxxer.hikari.pool.HikariProxyConnection;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.txtree.Tree;
 import life.catalogue.api.txtree.TreeNode;
-import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.common.tax.SciNameNormalizer;
+import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.*;
 import life.catalogue.parser.NameParser;
-import life.catalogue.postgres.PgCopyUtils;
 import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.gbif.nameparser.api.NameType;
 import org.junit.rules.ExternalResource;
-import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -68,18 +56,6 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
   public TxtTreeDataRule(Map<Integer, TreeData> treeData) {
     this.datasets = treeData;
     sqlSessionFactorySupplier = PgSetupRule::getSqlSessionFactory;
-  }
-
-  public <T> T getMapper(Class<T> mapperClazz) {
-    return session.getMapper(mapperClazz);
-  }
-
-  public void commit() {
-    session.commit();
-  }
-
-  public SqlSession getSqlSession() {
-    return session;
   }
 
   @Override

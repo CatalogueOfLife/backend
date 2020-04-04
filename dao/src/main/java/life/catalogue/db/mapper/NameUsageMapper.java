@@ -96,6 +96,18 @@ public interface NameUsageMapper {
                    @Param("exclusions") @Nullable Set<String> exclusions,
                    @Param("lowestRank") @Nullable Rank lowestRank,
                    @Param("includeSynonyms") boolean includeSynonyms);
-  
-  
+
+  /**
+   *
+   * @param start the start usage to traverse the subtree
+   * @param sectorKey the sectorKey to update usages with
+   * @param inclStart if true updates the start usage
+   * @param nullOnly if true only updates usages without a sectorKey and stops traversing the tree when a usage has already a sector
+   * @return
+   */
+  int updateSectorKeyInSubtree(@Param("root") DSID<String> start,
+                               @Param("sectorKey") @Nullable Integer sectorKey,
+                               @Param("inclStart") boolean inclStart,
+                               @Param("nullOnly") boolean nullOnly);
+
 }

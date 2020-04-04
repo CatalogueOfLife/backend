@@ -44,7 +44,7 @@ public class SectorDao extends EntityDao<Integer, Sector, SectorMapper> {
       final DSID<String> did = s.getTargetAsDSID();
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
 
-      // check if source is a virtual node
+      // check if source is a placeholder node
       parsePlaceholderRank(s);
       // reload full source and target
       Taxon subject = tm.get(s.getSubjectAsDSID());
@@ -71,7 +71,7 @@ public class SectorDao extends EntityDao<Integer, Sector, SectorMapper> {
         // one taxon in ATTACH mode
         toCopy.add(subject);
       } else {
-        // several taxa in MERGE mode
+        // several taxa in UNION/MERGE mode
         toCopy = tm.children(s.getSubjectAsDSID(), new Page());
       }
   
@@ -94,7 +94,7 @@ public class SectorDao extends EntityDao<Integer, Sector, SectorMapper> {
     super.updateBefore(s, old, user, mapper, session);
   }
 
-  private static boolean parsePlaceholderRank(Sector s){
+  public static boolean parsePlaceholderRank(Sector s){
     RankID subjId = RankID.parseID(s.getSubjectDatasetKey(), s.getSubject().getId());
     if (subjId.rank != null) {
       s.setPlaceholderRank(subjId.rank);
