@@ -2,6 +2,10 @@ package life.catalogue.importer.proxy;
 
 import java.io.*;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -10,6 +14,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import life.catalogue.api.txtree.Tree;
+import life.catalogue.common.io.PathUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -61,13 +67,28 @@ public class DistributedArchiveService {
     }
   }
 
-  public static boolean isReadable(InputStream is) throws IllegalArgumentException {
+  public static boolean isReadable(InputStream is) {
     try {
       return DESCRIPTOR_READER.readValue(is) != null;
-    } catch (IOException e) {
+    } catch (Exception e) {
     }
     return false;
   }
+
+  public static Optional<Path> isReadable(Path folder) {
+    try {
+      for (Path f : PathUtils.listFiles(folder, Set.of("yaml", "yml", "archive"))) {
+        if (isReadable(Files.newInputStream(f))) {
+          LOG.info("Found readable proxy descriptor {}", f);
+          return Optional.of(f);
+        }
+      }
+    } catch (Exception e) {
+      LOG.warn("Error trying to find readable yaml proxy descriptor in folder {}", folder, e);
+    }
+    return Optional.empty();
+  }
+
 
   /**
    * Takes descriptor and downloads each file into a zipped archive

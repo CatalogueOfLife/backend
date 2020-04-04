@@ -61,17 +61,27 @@ public class TxtTreeInserter implements NeoInserter {
     datasetKey = store.getDataset().getKey();
     this.store = store;
     this.folder = folder;
-    for (Path f : PathUtils.listFiles(folder, Set.of("tree", "txt", "text", "archive"))) {
-      if (Tree.verify(Files.newInputStream(f))) {
-        LOG.info("Found tree file {}", f);
+    findReadable(folder).ifPresent(f -> {
         treeFile = f;
         treeFileName = PathUtils.getFilename(f);
-        break;
-      }
-    }
+    });
     if (treeFile == null) {
       throw new NormalizationFailedException.SourceInvalidException("No valid tree data file found in " + folder);
     }
+  }
+
+  public static Optional<Path> findReadable(Path folder) {
+    try {
+      for (Path f : PathUtils.listFiles(folder, Set.of("tree", "txt", "text", "archive"))) {
+        if (Tree.verify(Files.newInputStream(f))) {
+          LOG.info("Found readable tree file {}", f);
+          return Optional.of(f);
+        }
+      }
+    } catch (Exception e) {
+      LOG.warn("Error trying to find readable text tree in folder {}", folder, e);
+    }
+    return Optional.empty();
   }
 
   private void addVerbatim(TreeLine tl){
