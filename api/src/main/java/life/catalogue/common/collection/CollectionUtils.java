@@ -1,8 +1,6 @@
 package life.catalogue.common.collection;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 /**
@@ -49,6 +47,17 @@ public class CollectionUtils {
     while (it.hasNext() && iu.hasNext()) {
       each.accept(it.next(), iu.next());
     }
+  }
+
+  /**
+   * Creates a list from an array of values that can include null values.
+   */
+  public static  <T> List<T> list(T... args) {
+    List<T> list = new ArrayList<>();
+    for (T arg : args) {
+      list.add(arg);
+    }
+    return list;
   }
 
   private CollectionUtils() {}

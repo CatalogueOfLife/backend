@@ -3,11 +3,17 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.Origin;
+import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.vocab.Users;
+import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.db.MybatisTestUtils;
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.UUID;
 
 import static life.catalogue.api.vocab.Datasets.DRAFT_COL;
 import static org.junit.Assert.*;
@@ -15,7 +21,9 @@ import static org.junit.Assert.*;
 public class TreeMapperTest extends MapperTestBase<TreeMapper> {
   
   private final int dataset11 = TestEntityGenerator.DATASET11.getKey();
-  
+  private final DSID<String> sp1 = TestEntityGenerator.TAXON1;
+  private final DSID<String> sp2 = TestEntityGenerator.TAXON2;
+
   public TreeMapperTest() {
     super(TreeMapper.class);
   }
@@ -74,7 +82,58 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     assertEquals(0, valid(mapper().children(Datasets.DRAFT_COL, TreeNode.Type.SOURCE, DSID.key(dataset11, "root-1"), null, new Page())).size());
     assertEquals(0, valid(mapper().childrenWithPlaceholder(Datasets.DRAFT_COL, TreeNode.Type.SOURCE, DSID.key(dataset11, "root-1"), null, new Page())).size());
   }
-  
+
+  @Test
+  public void childrenSectorsAndRank() {
+    // add some test usages
+    addUsage(sp1, Rank.SUBSPECIES, null);
+    addUsage(sp1, Rank.SUBSPECIES, null);
+    addUsage(sp1, Rank.SUBSPECIES, null);
+
+    addUsage(sp2, Rank.SUBSPECIES, null);
+    addUsage(sp2, Rank.SUBSPECIES, null);
+    addUsage(sp2, Rank.VARIETY, 1);
+    addUsage(sp2, Rank.VARIETY, 1);
+    addUsage(sp2, Rank.FORM, 2);
+
+    assertEquals(List.of(Rank.SUBSPECIES), mapper().childrenRanks(sp1, null));
+    assertEquals(List.of(Rank.SUBSPECIES), mapper().childrenRanks(sp1, Rank.SUBSPECIES));
+    assertEquals(List.of(Rank.SUBSPECIES), mapper().childrenRanks(sp1, Rank.VARIETY));
+    assertEquals(List.of(), mapper().childrenRanks(sp1, Rank.SPECIES));
+
+    assertEquals(List.of(Rank.SUBSPECIES, Rank.VARIETY, Rank.FORM), mapper().childrenRanks(sp2, null));
+    assertEquals(List.of(Rank.SUBSPECIES, Rank.VARIETY), mapper().childrenRanks(sp2, Rank.VARIETY));
+    assertEquals(List.of(Rank.SUBSPECIES, Rank.VARIETY, Rank.FORM), mapper().childrenRanks(sp2, Rank.CHEMOFORM));
+    assertEquals(List.of(Rank.SUBSPECIES), mapper().childrenRanks(sp2, Rank.SUBSPECIES));
+    assertEquals(List.of(), mapper().childrenRanks(sp2, Rank.GENUS));
+
+    assertEquals(CollectionUtils.list((Integer)null), mapper().childrenSectors(sp1));
+    assertEquals(CollectionUtils.list(1, 2, null), mapper().childrenSectors(sp2));
+  }
+
+  private void addUsage(DSID<String> parent, Rank rank, Integer sectorKey) {
+    Name n = new Name();
+    n.setId(UUID.randomUUID().toString());
+    n.setDatasetKey(parent.getDatasetKey());
+    n.setRank(rank);
+    n.setScientificName("Test name");
+    n.setType(NameType.SCIENTIFIC);
+    n.setOrigin(Origin.OTHER);
+    n.applyUser(Users.TESTER);
+    mapper(NameMapper.class).create(n);
+
+    Taxon t = new Taxon();
+    t.setName(n);
+    t.setId(n.getId());
+    t.setDatasetKey(n.getDatasetKey());
+    t.setOrigin(n.getOrigin());
+    t.setStatus(TaxonomicStatus.ACCEPTED);
+    t.applyUser(Users.TESTER);
+    t.setParentId(parent.getId());
+    t.setSectorKey(sectorKey);
+    mapper(TaxonMapper.class).create(t);
+  }
+
   @Test
   public void draftWithSector() {
     MybatisTestUtils.populateDraftTree(session());

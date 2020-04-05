@@ -39,35 +39,41 @@ public class TreeDao {
       TreeMapper trm = session.getMapper(TreeMapper.class);
 
       Rank pRank = null;
-      LinkedList<TreeNode> parents = new LinkedList<>();
+      LinkedList<TreeNode> classification = new LinkedList<>();
       if (key.rank != null) {
         placeholder = true;
         pRank = key.rank;
         TreeNode parentNode = trm.get(projectKey, type, key);
-        parents.add(placeholder(parentNode, key.rank));
-        parents.addAll(parentPlaceholder(trm, parentNode, pRank));
+        classification.add(placeholder(parentNode, key.rank));
+        classification.addAll(parentPlaceholder(trm, parentNode, pRank));
         pRank = parentNode.getRank();
       }
       for (TreeNode tn : trm.classification(projectKey, type, key)) {
         if (placeholder) {
-          parents.addAll(parentPlaceholder(trm, tn, pRank));
+          classification.addAll(parentPlaceholder(trm, tn, pRank));
         }
-        parents.add(tn);
+        classification.add(tn);
         pRank = tn.getRank();
       }
-      addPlaceholderSectors(projectKey, parents, type, true, session);
-      return parents;
+      addPlaceholderSectors(projectKey, classification, type, true, session);
+      return classification;
     }
   }
 
   private void addPlaceholderSectors(int projectKey, List<TreeNode> nodes, TreeNode.Type type, boolean isClassification, SqlSession session) {
+    // no sectors for no type
+    if (type == null) return;
+
     SectorMapper sm = session.getMapper(SectorMapper.class);
-    Map<String, Sector> sectors = new HashMap<>();
-    if (type == TreeNode.Type.SOURCE) {
-      for (TreeNode n : nodes) {
-        RankID key = RankID.parseID(n);
-        // only check placeholders
-        if (key.rank == null) continue;
+    TreeMapper tm = session.getMapper(TreeMapper.class);
+    final Map<String, Sector> sectors = new HashMap<>(); // for Type.SOURCE
+    final Map<String, Integer> sectorKey = new HashMap<>(); // for Type.CATALOGUE, key on real id - placeholder of different ranks often share the same real id
+    for (TreeNode n : nodes) {
+      RankID key = RankID.parseID(n);
+      // only check placeholders that have no sector yet
+      if (key.rank == null || n.getSectorKey()!=null) continue;
+
+      if (type == TreeNode.Type.SOURCE) {
         // load sector only once if id is the same
         if (!sectors.containsKey(key.getId())) {
           sectors.put(key.getId(), sm.getBySubject(projectKey, key));
@@ -78,37 +84,25 @@ public class TreeDao {
             n.setSectorKey(s.getKey());
           }
         }
-      }
-
-    } else if (type == TreeNode.Type.CATALOGUE) {
-      if (isClassification) {
-        // ordered from lowest rank to highest
-        // a sectorKey directly below placeholders could apply upwards
-        boolean first = true;
-        List<TreeNode> placeholders = new ArrayList<>();
-        for (TreeNode n : nodes) {
-          // if we start with placeholders we need to check for any existing target sector outside the list pointing to the lowest real node
-          if (first) {
-            if (n.isPlaceholder()) {
-              placeholders.add(n);
-            } else {
-              first = false;
-              checkPlaceholderTargetSector(placeholders, sectors);
-              placeholders.clear();
-            }
+      } else if (type == TreeNode.Type.CATALOGUE) {
+        // look at all sectors of children - if they are all the same the placeholder also belongs to them
+        Integer secKey = null;
+        if (sectorKey.containsKey(key.getId())) {
+          secKey = sectorKey.get(key.getId());
+        } else {
+          List<Integer> secKeys = tm.childrenSectors(n);
+          if (secKeys.size() == 1) {
+            secKey = secKeys.get(0);
+            sectorKey.put(key.getId(), secKey);
           } else {
-
+            sectorKey.put(key.getId(), null);
           }
         }
-      } else {
-        // e.g. children
+        n.setSectorKey(secKey);
       }
     }
   }
 
-  private void checkPlaceholderTargetSector(List<TreeNode> nodes, Map<String, Sector> sectors){
-
-  }
 
   private static List<TreeNode> parentPlaceholder(TreeMapper trm, TreeNode tn, @Nullable Rank exclRank){
     List<TreeNode> nodes = new ArrayList<>();

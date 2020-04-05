@@ -133,9 +133,16 @@
         <include refid="life.catalogue.db.Common.partitionByKey"/>
         SELECT DISTINCT n.rank
         FROM <include refid="FROM_USAGE"/>
-        WHERE t.parent_id = #{key.id}
+        WHERE t.parent_id = #{key.id} AND NOT t.is_synonym
         <if test="rank != null"> AND n.rank &lt;= #{rank}::rank</if>
         ORDER BY n.rank
     </select>
+
+  <select id="childrenSectors" resultType="Integer">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    SELECT DISTINCT sector_key
+    FROM name_usage_${partition}
+    WHERE parent_id = #{key.id}
+  </select>
 
 </mapper>
