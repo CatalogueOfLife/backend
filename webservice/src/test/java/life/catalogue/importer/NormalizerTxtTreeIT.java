@@ -9,6 +9,7 @@ import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.dao.ParserConfigDao;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.importer.neo.model.NeoUsage;
+import life.catalogue.importer.neo.model.RankedUsage;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
@@ -38,9 +39,14 @@ public class NormalizerTxtTreeIT extends NormalizerITBase {
       assertTrue(s.isSynonym());
       assertEquals("Pardina", s.usage.getName().canonicalNameWithAuthorship());
   
-      NeoUsage t = usageByID(s.usage.getParentId());
+      NeoUsage t = usageByID("12");
       assertFalse(t.isSynonym());
       assertEquals("Lynx", t.usage.getName().canonicalNameWithAuthorship());
+
+      List<RankedUsage> accs = store.accepted(s.node);
+      assertEquals(1, accs.size());
+      assertEquals(t.node, accs.get(0).usageNode);
+      assertEquals(t.usage.getName().canonicalNameWithAuthorship(), accs.get(0).name);
     }
   }
 
