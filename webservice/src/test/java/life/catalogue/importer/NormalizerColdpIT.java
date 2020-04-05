@@ -1,11 +1,17 @@
 package life.catalogue.importer;
 
 import life.catalogue.api.model.NameRelation;
+import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomRelType;
+import life.catalogue.dao.ParserConfigDao;
 import life.catalogue.importer.neo.model.NeoUsage;
+import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 
@@ -108,6 +114,27 @@ public class NormalizerColdpIT extends NormalizerITBase {
       t = usageByID("11");
       assertFalse(t.isSynonym());
       assertBasionym(t, "12");
+    }
+  }
+
+  @Test
+  public void aspilota() throws Exception {
+    // before we run this we configure the name parser to do better
+    // then we check that it really worked and no issues get attached
+    ParserConfigDao.addToParser(NormalizerTxtTreeIT.aspilotaCfg());
+
+    normalize(5);
+    store.dump();
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoUsage u = usageByID("1");
+      assertFalse(u.isSynonym());
+      assertEquals("Aspilota vector Belokobylskij, 2007", u.usage.getName().canonicalNameWithAuthorship());
+      assertEquals(NameType.SCIENTIFIC, u.usage.getName().getType());
+      assertEquals("Aspilota", u.usage.getName().getGenus());
+      assertEquals("vector", u.usage.getName().getSpecificEpithet());
+
+      VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
+      assertTrue(v.getIssues().isEmpty());
     }
   }
 }

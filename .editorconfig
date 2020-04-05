@@ -13,3 +13,7 @@ tab_width = 2
 [*.tree]
 indent_style = space
 indent_size = 2
+
+[*.tsv]
+indent_style = tab
+tab_width = 8

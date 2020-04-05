@@ -1,0 +1,8 @@
+Insecta [class]
+  Hymenoptera [order]
+    Ichneumonoidea [superfamily]
+      Braconidae [family]
+        Aspilota [genus]
+          Aspilota acricornis Fischer, 1973 [species]
+          Aspilota acutistigma Fischer, 1969 [species]
+          Aspilota vector Belokobylskij, 2007 [species]  # this normally parses as a virus name but it isnt

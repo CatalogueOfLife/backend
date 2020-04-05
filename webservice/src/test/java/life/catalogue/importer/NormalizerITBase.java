@@ -106,7 +106,7 @@ abstract class NormalizerITBase {
    *
    */
   public void normalize(int datasetKey, @Nullable NomCode code) throws Exception {
-    String resourceDir = "/" + format.name().toLowerCase() + "/" + datasetKey;
+    String resourceDir = "/" + format.name().toLowerCase().replaceAll("_", "-") + "/" + datasetKey;
     URL url = getClass().getResource(resourceDir);
     if (code == null) {
       code = readDatasetCode(resourceDir).orElse(null);

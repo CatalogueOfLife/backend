@@ -4,10 +4,12 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.QuerySearchRequest;
+import life.catalogue.api.vocab.Origin;
 import life.catalogue.db.mapper.ParserConfigMapper;
 import life.catalogue.parser.NameParser;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.ParsedName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,9 +81,16 @@ public class ParserConfigDao {
     addToParser(obj);
   }
 
-  private void addToParser(ParserConfig obj){
+  public static void addToParser(ParserConfig obj){
     LOG.info("Create parser config {}", obj.getId());
+    // defaults
+    obj.setOrigin(Origin.USER);
+    if (obj.getType() == null) {
+      obj.setType(NameType.SCIENTIFIC);
+    }
+
     ParsedName pn = Name.toParsedName(obj);
+    pn.setState(ParsedName.State.COMPLETE); // if we leave state None we get unparsed issues when parsing this name
     pn.setTaxonomicNote(obj.getTaxonomicNote());
     NameParser.configs().setName(concat(obj.getScientificName(), obj.getAuthorship()), pn);
     // configure name without authorship and authorship standalone if we have that
