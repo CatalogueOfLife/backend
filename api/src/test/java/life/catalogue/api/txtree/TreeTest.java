@@ -1,6 +1,6 @@
 package life.catalogue.api.txtree;
-
 import life.catalogue.common.io.Resources;
+
 import org.apache.commons.io.IOUtils;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
