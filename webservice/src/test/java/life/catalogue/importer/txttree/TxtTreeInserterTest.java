@@ -24,7 +24,7 @@ public class TxtTreeInserterTest extends InserterBaseTest {
 
   @Test
   public void test2() throws Exception {
-    NeoInserter ins = setup("/txtree/2");
+    NeoInserter ins = setup("/text-tree/2");
     ins.insertAll();
 
     try (Transaction tx = store.getNeo().beginTx()) {
