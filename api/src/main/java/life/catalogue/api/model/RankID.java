@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 public class RankID extends DSIDValue<String> {
   private static final Logger LOG = LoggerFactory.getLogger(RankID.class);
   private static final String INC_SEDIS = "--incertae-sedis--";
-  private static final Pattern ID_PATTERN = Pattern.compile("^(.+)"+INC_SEDIS+"([A-Z_]+)$");
+  private static final Pattern ID_PATTERN = Pattern.compile("^(.+)"+INC_SEDIS+"([A-Z_]+)$", Pattern.CASE_INSENSITIVE);
 
   public static RankID parseID(DSID<String> id){
     return parseID(id.getDatasetKey(), id.getId());
@@ -20,7 +20,7 @@ public class RankID extends DSIDValue<String> {
     Matcher m = ID_PATTERN.matcher(id);
     if (m.find()) {
       try {
-        return new RankID(datasetKey, m.group(1), Rank.valueOf(m.group(2)));
+        return new RankID(datasetKey, m.group(1), Rank.valueOf(m.group(2).toUpperCase()));
       } catch (IllegalArgumentException e) {
         LOG.warn("Bad incertae sedis ID " + id);
       }
