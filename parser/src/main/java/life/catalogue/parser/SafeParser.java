@@ -49,13 +49,6 @@ public class SafeParser<T> {
   }
   
   /**
-   * Returns the optional value.
-   */
-  public Optional<T> getOptional() {
-    return result;
-  }
-  
-  /**
    * Returns a value and throws if it is not present.
    * Make sure it is present before calling this!
    */

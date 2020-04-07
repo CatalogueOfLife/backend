@@ -37,16 +37,11 @@ public class SafeParserTest {
   static List<Parser<Integer>> INT_PARSERS = List.of(new FailingParser(), new NullParser(), new EmptyParser(), new OneParser());
 
   @Test
-  public void parse() {
+  public void orElse() {
     for (Parser<Integer> p : INT_PARSERS) {
       SafeParser sp = SafeParser.parse(p, "something");
-      Optional<Integer> opt = sp.getOptional();
-      assertNotNull(opt);
       assertNotNull(sp.orElse(1));
     }
   }
 
-  @Test
-  public void getOptional() {
-  }
 }
