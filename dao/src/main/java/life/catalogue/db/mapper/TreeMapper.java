@@ -55,9 +55,13 @@ public interface TreeMapper {
                            @Nullable @Param("rank") Rank rank);
 
   /**
-   * Retuns the list of unique sectors of all children of the given parentID.
+   * Retuns the list of unique sectors of all children of the given parentID
+   * which are below the optional rank given.
    * Null values are also included if at least one child has no sectorKey
+   *
+   * @param rank optional rank threshold
    */
-  List<Integer> childrenSectors(@Param("key") DSID<String> key);
+  List<Integer> childrenSectors(@Param("key") DSID<String> key,
+                                @Nullable @Param("rank") Rank rank);
 
 }

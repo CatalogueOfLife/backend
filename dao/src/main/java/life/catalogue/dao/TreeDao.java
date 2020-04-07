@@ -68,7 +68,6 @@ public class TreeDao {
     SectorMapper sm = session.getMapper(SectorMapper.class);
     TreeMapper tm = session.getMapper(TreeMapper.class);
     final Map<String, Sector> sectors = new HashMap<>(); // for Type.SOURCE
-    final Map<String, Integer> sectorKey = new HashMap<>(); // for Type.CATALOGUE, key on real id - placeholder of different ranks often share the same real id
     for (TreeNode n : nodes) {
       RankID key = RankID.parseID(n);
       // only check placeholders that have no sector yet
@@ -87,19 +86,10 @@ public class TreeDao {
         }
       } else if (type == TreeNode.Type.CATALOGUE) {
         // look at all sectors of children - if they are all the same the placeholder also belongs to them
-        Integer secKey = null;
-        if (sectorKey.containsKey(key.getId())) {
-          secKey = sectorKey.get(key.getId());
-        } else {
-          List<Integer> secKeys = tm.childrenSectors(n);
-          if (secKeys.size() == 1) {
-            secKey = secKeys.get(0);
-            sectorKey.put(key.getId(), secKey);
-          } else {
-            sectorKey.put(key.getId(), null);
-          }
+        List<Integer> secKeys = tm.childrenSectors(key, key.rank);
+        if (secKeys.size() == 1) {
+          n.setSectorKey(secKeys.get(0));
         }
-        n.setSectorKey(secKey);
       }
     }
   }

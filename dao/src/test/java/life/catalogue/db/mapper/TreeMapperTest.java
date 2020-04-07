@@ -107,8 +107,9 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     assertEquals(List.of(Rank.SUBSPECIES), mapper().childrenRanks(sp2, Rank.SUBSPECIES));
     assertEquals(List.of(), mapper().childrenRanks(sp2, Rank.GENUS));
 
-    assertEquals(CollectionUtils.list((Integer)null), mapper().childrenSectors(sp1));
-    assertEquals(CollectionUtils.list(1, 2, null), mapper().childrenSectors(sp2));
+    assertEquals(CollectionUtils.list((Integer)null), mapper().childrenSectors(sp1, null));
+    assertEquals(CollectionUtils.list(1, 2, null), mapper().childrenSectors(sp2, null));
+    assertEquals(CollectionUtils.list(1, 2, null), mapper().childrenSectors(sp2, Rank.ORDER));
   }
 
   private void addUsage(DSID<String> parent, Rank rank, Integer sectorKey) {

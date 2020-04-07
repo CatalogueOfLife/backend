@@ -27,14 +27,14 @@ public class TreeDaoTest {
   static final Page PAGE = new Page(0, 100);
 
   private static final SectorDataRule sectorRule = new SectorDataRule(List.of(
-    // sector subject "Trilobita unassigned family"
+    // #0 sector subject "Trilobita unassigned family"
     SectorDataRule.create(Sector.Mode.UNION, DSID.key(TRILOBITA, RankID.buildID("1", Rank.FAMILY)), DSID.key(catKey,"9")),
-    // sector subject "Agnostoidea superfamily"
+    // #1 sector subject "Agnostoidea superfamily"
     SectorDataRule.create(Sector.Mode.ATTACH, DSID.key(TRILOBITA,"3"), DSID.key(catKey,"9")),
-    // sector subject "Agnostida placeholder superfamily"
+    // #2 sector subject "Agnostida placeholder superfamily"
     SectorDataRule.create(Sector.Mode.UNION, DSID.key(TRILOBITA,RankID.buildID("2", Rank.SUPERFAMILY)), DSID.key(catKey,"9")),
 
-    // sector subject "Agnostida placeholder superfamily"
+    // #3 sector subject Mammalia union into Mammalia of catalogue
     SectorDataRule.create(Sector.Mode.UNION, DSID.key(MAMMALIA,"2"), DSID.key(catKey,"18"))
   ));
 
@@ -166,6 +166,19 @@ public class TreeDaoTest {
 
     assertPlaceholder(children.getResult().get(1), Rank.SUPERFAMILY);
     assertNoSector(children.getResult().get(1));
+
+    // mammalia with 2 placeholders below that should show up with sectorKeys
+    children = valid(dao.children(DSID.key(catKey, "18"), catKey, true, TreeNode.Type.CATALOGUE, PAGE));
+    assertEquals(3, children.size());
+
+    assertNode(children.getResult().get(0), Rank.ORDER, "Carnivora");
+    assertNoSector(children.getResult().get(0));
+
+    assertNode(children.getResult().get(1), Rank.ORDER, "Carnivora");
+    assertSector(children.getResult().get(1), sectorRule.sectorKey(3));
+
+    assertPlaceholder(children.getResult().get(2), Rank.ORDER);
+    assertSector(children.getResult().get(2), sectorRule.sectorKey(3));
   }
 
   private static void assertPlaceholder(TreeNode n, Rank rank) {
@@ -180,7 +193,7 @@ public class TreeDaoTest {
   }
 
   private static TreeNode assertSector(TreeNode node, int sectorKey) {
-    assertEquals(sectorKey, (int) node.getSectorKey());
+    assertEquals( (Integer) sectorKey, node.getSectorKey());
     return node;
   }
 

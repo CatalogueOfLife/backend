@@ -1,12 +1,11 @@
 package life.catalogue.db.tree;
 
+import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.txtree.Tree;
 import life.catalogue.api.txtree.TreeNode;
-import life.catalogue.api.vocab.Origin;
-import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.api.vocab.Users;
+import life.catalogue.api.vocab.*;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.*;
@@ -15,6 +14,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -51,14 +52,14 @@ public class SectorDataRule extends ExternalResource implements AutoCloseable {
   }
 
   public static Sector create(Sector.Mode mode, DSID<String> subject, DSID<String> target){
-    Sector s = SectorMapperTest.create();
+    Sector s = new Sector();
     s.setMode(mode);
 
     s.setSubjectDatasetKey(subject.getDatasetKey());
-    s.getSubject().setId(subject.getId());
+    s.setSubject(SimpleName.of(subject));
 
     s.setDatasetKey(target.getDatasetKey());
-    s.getTarget().setId(target.getId());
+    s.setTarget(SimpleName.of(target));
 
     return s;
   }
