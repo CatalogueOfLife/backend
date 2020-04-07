@@ -124,6 +124,9 @@
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE u.parent_id = #{key.id} AND NOT u.is_synonym
+        <if test="rank != null">
+          AND n.rank > #{rank}::rank
+        </if>
         ORDER BY n.rank, n.scientific_name
         <include refid="life.catalogue.db.Common.limit" />
     </select>

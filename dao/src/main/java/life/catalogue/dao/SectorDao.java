@@ -72,7 +72,7 @@ public class SectorDao extends EntityDao<Integer, Sector, SectorMapper> {
         toCopy.add(subject);
       } else {
         // several taxa in UNION/MERGE mode
-        toCopy = tm.children(s.getSubjectAsDSID(), new Page());
+        toCopy = tm.children(s.getSubjectAsDSID(), s.getPlaceholderRank(), new Page(0, 5));
       }
   
       for (Taxon t : toCopy) {

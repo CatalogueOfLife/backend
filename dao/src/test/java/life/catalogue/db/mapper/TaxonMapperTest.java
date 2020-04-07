@@ -215,7 +215,7 @@ public class TaxonMapperTest extends CRUDPageableTestBase<Taxon, TaxonMapper> {
     
     commit();
     
-    List<Taxon> res = mapper().children(parent, new Page(0, 5));
+    List<Taxon> res = mapper().children(parent, null, new Page(0, 5));
     
     assertEquals("01", 4, res.size());
     assertEquals(c2.getId(), res.get(0).getId()); // Family YYY

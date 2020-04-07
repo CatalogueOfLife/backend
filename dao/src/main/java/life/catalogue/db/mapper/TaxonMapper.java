@@ -9,6 +9,8 @@ import life.catalogue.db.CRUD;
 import life.catalogue.db.DatasetPageable;
 import org.gbif.nameparser.api.Rank;
 
+import javax.annotation.Nullable;
+
 /**
  * Mapper dealing only with accepted name usages, i.e. Taxon instances.
  */
@@ -44,8 +46,13 @@ public interface TaxonMapper extends CRUD<DSID<String>, Taxon>, ProcessableDatas
 
   int countChildrenBelowRank(@Param("key") DSID<String> key, @Param("rank") Rank rank);
 
-  List<Taxon> children(@Param("key") DSID<String> key, @Param("page") Page page);
-  
+  /**
+   * Lists all accepted children (taxon) of a given parent
+   * @param key the parent to list the direct children from
+   * @param rank optional rank cutoff filter to only include children with a rank lower than the one given
+   */
+  List<Taxon> children(@Param("key") DSID<String> key, @Nullable @Param("rank") Rank rank, @Param("page") Page page);
+
   /**
    * @param datasetKey the catalogue being assembled
    * @param sectorKey sector that foreign children should point into
