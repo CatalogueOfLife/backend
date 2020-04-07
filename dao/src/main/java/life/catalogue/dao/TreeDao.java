@@ -55,12 +55,12 @@ public class TreeDao {
         classification.add(tn);
         pRank = tn.getRank();
       }
-      addPlaceholderSectors(projectKey, classification, type, true, session);
+      addPlaceholderSectors(projectKey, classification, type, session);
       return classification;
     }
   }
 
-  private void addPlaceholderSectors(int projectKey, List<TreeNode> nodes, TreeNode.Type type, boolean isClassification, SqlSession session) {
+  private void addPlaceholderSectors(int projectKey, List<TreeNode> nodes, TreeNode.Type type, SqlSession session) {
     // no sectors for no type
     if (type == null) return;
 
@@ -71,7 +71,7 @@ public class TreeDao {
     for (TreeNode n : nodes) {
       RankID key = RankID.parseID(n);
       // only check placeholders that have no sector yet
-      if (key.rank == null || n.getSectorKey()!=null) continue;
+      if (key.rank == null || n.getSectorKey() != null) continue;
 
       if (type == TreeNode.Type.SOURCE) {
         // load sector only once if id is the same
@@ -136,7 +136,7 @@ public class TreeDao {
         countSupplier =  () -> tm.countChildren(parent);
       }
 
-      if (placeholder && !result.isEmpty() && result.size() < page.getLimit()) {
+      if (placeholder && !result.isEmpty() && result.size() <= page.getLimit()) {
         // we *might* need a placeholder, check if there are more children of other ranks
         // look for the current rank of the result set
         TreeNode firstResult = result.get(0);
@@ -155,7 +155,7 @@ public class TreeDao {
           result.add(placeHolder);
         }
       }
-      addPlaceholderSectors(projectKey, result, type, false, session);
+      addPlaceholderSectors(projectKey, result, type, session);
       return new ResultPage<>(page, result, countSupplier);
     }
   }

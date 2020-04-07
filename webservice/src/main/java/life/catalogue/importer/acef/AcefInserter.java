@@ -306,8 +306,11 @@ public class AcefInserter extends NeoCsvInserter {
     }
   
     public LocalDate getDate(Term term) {
-      Optional<FuzzyDate> opt = SafeParser.parse(DateParser.PARSER, v.get(term)).getOptional();
-      return opt.map(FuzzyDate::toLocalDate).orElse(null);
+      FuzzyDate fuzzy = SafeParser.parse(DateParser.PARSER, v.get(term)).orNull();
+      if (fuzzy != null) {
+        return fuzzy.toLocalDate();
+      }
+      return null;
     }
   }
   
