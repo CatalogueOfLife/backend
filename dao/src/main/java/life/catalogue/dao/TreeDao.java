@@ -41,15 +41,16 @@ public class TreeDao {
       Rank pRank = null;
       LinkedList<TreeNode> classification = new LinkedList<>();
       if (key.rank != null) {
-        placeholder = true;
-        pRank = key.rank;
         TreeNode parentNode = trm.get(projectKey, type, key);
         classification.add(placeholder(parentNode, key.rank));
-        classification.addAll(parentPlaceholder(trm, parentNode, pRank));
+        classification.addAll(parentPlaceholder(trm, parentNode, key.rank));
         pRank = parentNode.getRank();
       }
+      boolean first = true;
       for (TreeNode tn : trm.classification(projectKey, type, key)) {
-        if (placeholder) {
+        if (first) {
+          first = false;
+        } else if (placeholder) {
           classification.addAll(parentPlaceholder(trm, tn, pRank));
         }
         classification.add(tn);

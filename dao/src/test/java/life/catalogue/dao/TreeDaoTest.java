@@ -32,7 +32,10 @@ public class TreeDaoTest {
     // sector subject "Agnostoidea superfamily"
     SectorDataRule.create(Sector.Mode.ATTACH, DSID.key(TRILOBITA,"3"), DSID.key(catKey,"9")),
     // sector subject "Agnostida placeholder superfamily"
-    SectorDataRule.create(Sector.Mode.UNION, DSID.key(TRILOBITA,RankID.buildID("2", Rank.SUPERFAMILY)), DSID.key(catKey,"9"))
+    SectorDataRule.create(Sector.Mode.UNION, DSID.key(TRILOBITA,RankID.buildID("2", Rank.SUPERFAMILY)), DSID.key(catKey,"9")),
+
+    // sector subject "Agnostida placeholder superfamily"
+    SectorDataRule.create(Sector.Mode.UNION, DSID.key(MAMMALIA,"2"), DSID.key(catKey,"18"))
   ));
 
   // sets up pg server first, then loads the trees.
@@ -106,7 +109,18 @@ public class TreeDaoTest {
       assertNode(assertNoSector(classification.get(3)), Rank.CLASS, "Trilobita");
     }
 
-    // browse the project catalogue
+
+    // browse the PROJECT CATALOGUE
+
+    // mammalia with 2 placeholders below that should not show up
+    for (TreeNode.Type type : TreeNode.types()) {
+      List<TreeNode> classification = valid(dao.classification(DSID.key(catKey, "18"), catKey, true, type));
+      assertEquals(3, classification.size());
+      assertNode(assertNoSector(classification.get(0)), Rank.CLASS, "Mammalia");
+      assertNode(assertNoSector(classification.get(1)), Rank.PHYLUM, "Chordata");
+      assertNode(assertNoSector(classification.get(2)), Rank.KINGDOM, "Animalia");
+    }
+
     // start with genus Amechilus in placeholder sector
     List<TreeNode> classification = valid(dao.classification(DSID.key(catKey, "100:60"), catKey, true, TreeNode.Type.CATALOGUE));
     assertEquals(6, classification.size());
