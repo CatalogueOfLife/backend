@@ -18,7 +18,7 @@ import life.catalogue.es.EsReadTestBase;
 public class DecisionQueriesTest extends EsReadTestBase {
 
   @SuppressWarnings("unused")
-  private static final Logger LOG = LoggerFactory.getLogger(NameSearchServiceTest.class);
+  private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchServiceTest.class);
 
   @Before
   public void before() {

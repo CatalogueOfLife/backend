@@ -1,6 +1,5 @@
 package life.catalogue.importer;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,12 +17,10 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.common.io.Resources;
-import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.TestDataRule;
+import life.catalogue.db.TestDataRule;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.release.ReleaseManager;
@@ -44,8 +41,6 @@ import static org.junit.Assert.*;
 @RunWith(MockitoJUnitRunner.class)
 public class ImportManagerTest {
   private static final Logger LOG = LoggerFactory.getLogger(ImportManagerTest.class);
-
-  static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -96,8 +91,7 @@ public class ImportManagerTest {
     MetricRegistry metrics = new MetricRegistry();
     final WsServerConfig cfg = provideConfig();
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
-    manager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), aNormalizer,
-        NameIndexFactory.passThru(), null, imgService, releaseManager);
+    manager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), null, imgService, releaseManager);
     manager.start();
   }
 
@@ -119,6 +113,21 @@ public class ImportManagerTest {
       // expected, its the draft
     }
     manager.upload(datasetKey, data, true, "taxa.txt", TestEntityGenerator.USER_ADMIN);
+    TimeUnit.SECONDS.sleep(2);
+    assertTrue(manager.hasRunning());
+  }
+
+  @Test
+  public void uploadXls() throws Exception {
+    InputStream data = Resources.stream("xls/Pterophoroidea.xlsx");
+    assertFalse(manager.hasRunning());
+    try {
+      manager.uploadXls(Datasets.DRAFT_COL, data, TestEntityGenerator.USER_ADMIN);
+      fail("Cannot upload to col draft");
+    } catch (IllegalArgumentException e) {
+      // expected, its the draft
+    }
+    manager.uploadXls(datasetKey, data, TestEntityGenerator.USER_ADMIN);
     TimeUnit.SECONDS.sleep(2);
     assertTrue(manager.hasRunning());
   }

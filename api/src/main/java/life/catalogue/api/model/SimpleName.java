@@ -31,6 +31,18 @@ public class SimpleName implements Comparable<SimpleName> {
     return sn;
   }
 
+  public static SimpleName of(String id) {
+    return new SimpleName(id, null, null, null);
+  }
+
+  public static SimpleName of(DSID<String> key) {
+    return new SimpleName(key.getId(), null, null, null);
+  }
+
+  public static SimpleName of(String id, String name, String authorship, Rank rank) {
+    return new SimpleName(id, name, authorship, rank);
+  }
+
   private String id;
 
   @NotNull

@@ -149,7 +149,7 @@ public class NameValidator {
     }
     
     // verify ranks
-    if (rank.notOtherOrUnranked()) {
+    if (rank != null && rank.notOtherOrUnranked()) {
       if (rank.isGenusOrSuprageneric()) {
         if (n.getGenus() != null || n.getUninomial() == null) {
           LOG.info("Missing genus or uninomial for {}", n.toStringComplete());

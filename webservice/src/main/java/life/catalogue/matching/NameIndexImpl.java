@@ -60,7 +60,7 @@ public class NameIndexImpl implements NameIndex {
       this.authComp = new AuthorComparator(normalizer);
       this.datasetKey = datasetKey;
       this.sqlFactory = Preconditions.checkNotNull(sqlFactory);
-      dao = new NameDao(sqlFactory, normalizer);
+      dao = new NameDao(sqlFactory);
       int storeSize = store.count();
       if (storeSize == 0) {
         loadFromPg();

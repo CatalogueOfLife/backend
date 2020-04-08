@@ -32,7 +32,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   
   @Test
   public void list() throws Exception {
-    NameDao nameDao = new NameDao(PgSetupRule.getSqlSessionFactory(), AuthorshipNormalizer.createWithoutAuthormap());
+    NameDao nameDao = new NameDao(PgSetupRule.getSqlSessionFactory());
   
     List<Taxon> taxa = new ArrayList<>();
     taxa.add(TestEntityGenerator.newTaxon("t1"));

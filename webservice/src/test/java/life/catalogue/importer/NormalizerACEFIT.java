@@ -7,12 +7,14 @@ import java.util.Set;
 import com.google.common.collect.Sets;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.dao.ParserConfigDao;
 import life.catalogue.importer.neo.model.Labels;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RankedUsage;
 import life.catalogue.importer.neo.traverse.Traversals;
 import org.gbif.dwc.terms.AcefTerm;
+import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -393,7 +395,29 @@ public class NormalizerACEFIT extends NormalizerITBase {
       assertProParte(syn, "Hedysarum truncatum", "Hedysarum turczaninovii");
     }
   }
-  
+
+  @Test
+  public void aspilota() throws Exception {
+    // before we run this we configure the name parser to do better
+    // then we check that it really worked and no issues get attached
+    ParserConfigDao.addToParser(NormalizerTxtTreeIT.aspilotaCfg());
+
+    normalize(22);
+    store.dump();
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoUsage u = usageByID("1");
+      assertFalse(u.isSynonym());
+      assertEquals("Aspilota vector Belokobylskij, 2007", u.usage.getName().canonicalNameWithAuthorship());
+      assertEquals(NameType.SCIENTIFIC, u.usage.getName().getType());
+      assertEquals("Aspilota", u.usage.getName().getGenus());
+      assertEquals("vector", u.usage.getName().getSpecificEpithet());
+
+      VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
+      assertEquals(1, v.getIssues().size());
+      assertTrue(v.getIssues().contains(Issue.NAME_MATCH_NONE));
+    }
+  }
+
   private void assertProParte(NeoUsage syn, String... acceptedNames) {
     Set<String> expected = Sets.newHashSet(acceptedNames);
     List<RankedUsage> accepted = store.accepted(syn.node);

@@ -151,6 +151,11 @@ public class Pager<T> implements Iterable<T> {
         if (!iter.hasNext()) {
           if (hasMore) {
             loadPage();
+            // we cannot trust hasMore, make sure we really got more
+            // https://github.com/CatalogueOfLife/backend/issues/679
+            if (!iter.hasNext()) {
+              return null;
+            }
           } else {
             // no more records to load, stop!
             return null;

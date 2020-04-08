@@ -27,7 +27,6 @@ import static org.junit.Assert.assertFalse;
  */
 public class TaxonMapperTest extends CRUDPageableTestBase<Taxon, TaxonMapper> {
   
-  private static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
   private static int userKey = TestEntityGenerator.USER_EDITOR.getKey();
   private Sector sector;
   
@@ -67,7 +66,7 @@ public class TaxonMapperTest extends CRUDPageableTestBase<Taxon, TaxonMapper> {
   
   @Override
   Taxon removeDbCreatedProps(Taxon obj) {
-    obj.getName().setHomotypicNameId(null);
+    NameMapperTest.removeCreatedProps(obj.getName());
     return TestEntityGenerator.nullifyUserDate(obj);
   }
   
@@ -172,7 +171,7 @@ public class TaxonMapperTest extends CRUDPageableTestBase<Taxon, TaxonMapper> {
     Taxon parent = TestEntityGenerator.newTaxon("parent-1");
     mapper().create(parent);
   
-    NameDao nameDao = new NameDao(PgSetupRule.getSqlSessionFactory(), aNormalizer);
+    NameDao nameDao = new NameDao(PgSetupRule.getSqlSessionFactory());
     
     Name n1 = TestEntityGenerator.newName("XXX");
     n1.setScientificName("XXX");
@@ -216,7 +215,7 @@ public class TaxonMapperTest extends CRUDPageableTestBase<Taxon, TaxonMapper> {
     
     commit();
     
-    List<Taxon> res = mapper().children(parent, new Page(0, 5));
+    List<Taxon> res = mapper().children(parent, null, new Page(0, 5));
     
     assertEquals("01", 4, res.size());
     assertEquals(c2.getId(), res.get(0).getId()); // Family YYY

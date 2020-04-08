@@ -1,6 +1,7 @@
 package life.catalogue.api.jackson;
 
 import java.io.IOException;
+import java.util.Set;
 
 import life.catalogue.api.model.DSIDValue;
 import life.catalogue.api.model.EditorialDecision;
@@ -30,8 +31,7 @@ public class ApiModuleTest {
     EditorialDecision ed = new EditorialDecision();
     ed.setDatasetKey(4321);
     ed.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
-    ed.getLifezones().add(Lifezone.MARINE);
-    ed.getLifezones().add(Lifezone.FRESHWATER);
+    ed.setLifezones(Set.of(Lifezone.MARINE, Lifezone.FRESHWATER));
     ed.setMode(EditorialDecision.Mode.UPDATE);
     
     String json = ApiModule.MAPPER.writeValueAsString(ed);

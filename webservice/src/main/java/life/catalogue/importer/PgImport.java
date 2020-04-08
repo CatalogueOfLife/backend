@@ -40,7 +40,6 @@ public class PgImport implements Callable<Boolean> {
   private final NeoDb store;
   private final int batchSize;
   private final SqlSessionFactory sessionFactory;
-  private final AuthorshipNormalizer aNormalizer;
   private final Dataset dataset;
   private final Map<Integer, Integer> verbatimKeys = new HashMap<>();
   private final Set<String> proParteIds = new HashSet<>();
@@ -54,11 +53,9 @@ public class PgImport implements Callable<Boolean> {
   private final AtomicInteger vCounter = new AtomicInteger(0);
   private final AtomicInteger tmCounter = new AtomicInteger(0);
 
-  public PgImport(int datasetKey, NeoDb store, SqlSessionFactory sessionFactory, AuthorshipNormalizer aNormalizer,
-                  ImporterConfig cfg) {
+  public PgImport(int datasetKey, NeoDb store, SqlSessionFactory sessionFactory, ImporterConfig cfg) {
     this.dataset = store.getDataset();
     this.dataset.setKey(datasetKey);
-    this.aNormalizer = aNormalizer;
     this.store = store;
     this.batchSize = cfg.batchSize;
     this.sessionFactory = sessionFactory;
@@ -235,8 +232,6 @@ public class PgImport implements Callable<Boolean> {
         n.name.setDatasetKey(dataset.getKey());
         updateVerbatimUserEntity(n.name);
         updateReferenceKey(n.name.getPublishedInId(), n.name::setPublishedInId);
-        // normalize authorship on insert - sth the DAO normally does but we use the mapper directly in batch mode
-        n.name.setAuthorshipNormalized(aNormalizer.normalizeName(n.name));
         nameMapper.create(n.name);
         if (nCounter.incrementAndGet() % batchSize == 0) {
           interruptIfCancelled();

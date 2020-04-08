@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
-import life.catalogue.db.mapper.TestDataRule;
+import life.catalogue.db.TestDataRule;
 import org.gbif.utils.file.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;

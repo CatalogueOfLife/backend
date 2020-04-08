@@ -4,6 +4,7 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import io.dropwizard.lifecycle.Managed;
@@ -22,6 +23,7 @@ import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.tax.AuthorshipNormalizer;
+import life.catalogue.csv.ExcelCsvExtractor;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
@@ -37,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -64,7 +67,6 @@ public class ImportManager implements Managed {
   private final DownloadUtil downloader;
   private final SqlSessionFactory factory;
   private final NameIndex index;
-  private final AuthorshipNormalizer aNormalizer;
   private final NameUsageIndexService indexService;
   private final ReleaseManager releaseManager;
   private final DatasetImportDao dao;
@@ -73,14 +75,13 @@ public class ImportManager implements Managed {
   private final Counter failed;
 
   public ImportManager(WsServerConfig cfg, MetricRegistry registry, CloseableHttpClient client,
-      SqlSessionFactory factory, AuthorshipNormalizer aNormalizer, NameIndex index,
+      SqlSessionFactory factory, NameIndex index,
       NameUsageIndexService indexService, ImageService imgService, ReleaseManager releaseManager) {
     this.cfg = cfg;
     this.factory = factory;
     this.releaseManager = releaseManager;
     this.downloader = new DownloadUtil(client, cfg.importer.githubToken, cfg.importer.githubTokenGeoff);
     this.index = index;
-    this.aNormalizer = aNormalizer;
     this.imgService = imgService;
     this.indexService = indexService;
     this.dao = new DatasetImportDao(factory, cfg.metricsRepo);
@@ -267,6 +268,26 @@ public class ImportManager implements Managed {
     return submitValidDataset(new ImportRequest(datasetKey, user.getKey(), true, true, true));
   }
 
+  public ImportRequest uploadXls(final int datasetKey, final InputStream content, ColUser user) throws IOException {
+    Preconditions.checkNotNull(content, "No content given");
+    Dataset d = validDataset(datasetKey);
+    // extract CSV files
+    File tmpDir = cfg.normalizer.scratchFile(datasetKey, "xls");
+    tmpDir.mkdirs();
+
+    LOG.info("Extracting spreadsheet data for dataset {} to {}", d.getKey(), tmpDir);
+    List<File> files = ExcelCsvExtractor.extract(content, tmpDir);
+    LOG.info("Extracted {} files from spreadsheet data for dataset {}", files.size(), d.getKey());
+    // zip up as single source file for importer
+    Path source = cfg.normalizer.source(d.getKey()).toPath();
+    Files.createDirectories(source.getParent());
+    if (Files.exists(source)) {
+      Files.delete(source);
+    }
+    CompressionUtil.zipDir(tmpDir, source.toFile());
+    return submitValidDataset(new ImportRequest(datasetKey, user.getKey(), true, true, true));
+  }
+
   /**
    * @throws IllegalArgumentException if dataset was scheduled for importing already, queue was full or is currently being
    *         synced in the assembly or dataset does not exist or is of origin managed
@@ -383,7 +404,6 @@ public class ImportManager implements Managed {
           cfg,
           downloader,
           factory,
-          aNormalizer,
           index,
           indexService,
           imgService,

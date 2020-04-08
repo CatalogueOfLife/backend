@@ -3,6 +3,7 @@ package life.catalogue.resources;
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Streams;
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
 import life.catalogue.db.mapper.NameUsageMapper;
@@ -72,6 +73,19 @@ public class NameUsageResource {
   }
 
   @GET
+  @Path("{id}")
+  public NameUsageWrapper getByID(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id) {
+    NameUsageSearchRequest req = new NameUsageSearchRequest();
+    req.addFilter(NameUsageSearchParameter.DATASET_KEY, datasetKey);
+    req.addFilter(NameUsageSearchParameter.USAGE_ID, id);
+    ResultPage<NameUsageWrapper> results = searchService.search(req, new Page());
+    if (results.size()==1) {
+      return results.getResult().get(0);
+    }
+    throw NotFoundException.idNotFound(NameUsage.class, datasetKey, id);
+  }
+
+  @GET
   @Timed
   @Path("search")
   public ResultPage<NameUsageWrapper> searchDataset(@PathParam("datasetKey") int datasetKey,
@@ -84,6 +98,14 @@ public class NameUsageResource {
     }
     query.addFilter(NameUsageSearchParameter.DATASET_KEY, datasetKey);
     return searchService.search(query, page);
+  }
+
+  @POST
+  @Path("search")
+  public ResultPage<NameUsageWrapper> searchPOST(@PathParam("datasetKey") int datasetKey,
+                                                 @Valid NameUsageSearchResource.SearchRequestBody req,
+                                                 @Context UriInfo uri) throws InvalidQueryException {
+    return searchDataset(datasetKey, req.request, req.page, uri);
   }
 
   @GET

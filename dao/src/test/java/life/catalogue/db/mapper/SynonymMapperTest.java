@@ -23,7 +23,6 @@ import static org.junit.Assert.*;
  */
 public class SynonymMapperTest extends CRUDPageableTestBase<Synonym, SynonymMapper> {
   
-  private static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
   private NameDao nameDao;
   private SynonymMapper synonymMapper;
   private TaxonMapper taxonMapper;
@@ -39,7 +38,7 @@ public class SynonymMapperTest extends CRUDPageableTestBase<Synonym, SynonymMapp
   
   @Before
   public void initMappers() {
-    nameDao = new NameDao(PgSetupRule.getSqlSessionFactory(), aNormalizer);
+    nameDao = new NameDao(PgSetupRule.getSqlSessionFactory());
     synonymMapper = testDataRule.getMapper(SynonymMapper.class);
     taxonMapper = testDataRule.getMapper(TaxonMapper.class);
     // prepare taxon to hook extensions to
@@ -65,7 +64,7 @@ public class SynonymMapperTest extends CRUDPageableTestBase<Synonym, SynonymMapp
   Synonym removeDbCreatedProps(Synonym obj) {
     TestEntityGenerator.nullifyUserDate(obj);
     obj.setAccepted(null);
-    obj.getName().setHomotypicNameId(null);
+    NameMapperTest.removeCreatedProps(obj.getName());
     return obj;
   }
   
@@ -96,8 +95,7 @@ public class SynonymMapperTest extends CRUDPageableTestBase<Synonym, SynonymMapp
     
     // remove child count for comparison
     s2.setAccepted(null);
-    TestEntityGenerator.nullifyUserDate(s1);
-    TestEntityGenerator.nullifyUserDate(s2);
+    removeDbCreatedProps(s1, s2);
     //printDiff(s1, s2);
     assertEquals(s1, s2);
   }

@@ -5,6 +5,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.Datasets;
+import org.gbif.nameparser.api.Authorship;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -34,7 +35,6 @@ public class NameMapperTest extends CRUDPageableTestBase<Name, NameMapper> {
   static Name create(final String id, final Name basionym) throws Exception {
     Name n = TestEntityGenerator.newName(id);
     n.setHomotypicNameId(basionym.getId());
-    n.setAuthorshipNormalized(Lists.newArrayList("linne", "walther"));
     return n;
   }
   
@@ -45,11 +45,25 @@ public class NameMapperTest extends CRUDPageableTestBase<Name, NameMapper> {
   
   @Override
   Name removeDbCreatedProps(Name n) {
-    TestEntityGenerator.nullifyDate(n);
+    return removeCreatedProps(n);
+  }
+
+  public static Name removeCreatedProps(Name n) {
     n.setHomotypicNameId(null);
     return n;
   }
-  
+
+  private static void removeCreatedProps(Authorship a) {
+    if (a != null) {
+      if (a.getAuthors() != null && a.getAuthors().isEmpty()) {
+        a.setAuthors(null);
+      }
+      if (a.getExAuthors() != null && a.getExAuthors().isEmpty()) {
+        a.setExAuthors(null);
+      }
+    }
+  }
+
   @Override
   void updateTestObj(Name n) {
     n.setAuthorship("Berta & Tomate");
@@ -62,8 +76,10 @@ public class NameMapperTest extends CRUDPageableTestBase<Name, NameMapper> {
     assertNotNull(n1.getId());
     commit();
     
+    n1 = removeDbCreatedProps(n1);
     Name n1b = removeDbCreatedProps(nameMapper.get(n1.getKey()));
-    assertEquals(removeDbCreatedProps(n1), n1b);
+    printDiff(n1, n1b);
+    assertEquals(n1, n1b);
     
     // with explicit homotypic group
     Name n2 = TestEntityGenerator.newName("sk2");

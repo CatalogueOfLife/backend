@@ -8,7 +8,7 @@ import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
 import life.catalogue.common.io.Resources;
 import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.mapper.TestDataRule;
+import life.catalogue.db.TestDataRule;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;

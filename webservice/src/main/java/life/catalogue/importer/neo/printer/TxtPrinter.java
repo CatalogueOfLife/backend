@@ -3,6 +3,7 @@ package life.catalogue.importer.neo.printer;
 import java.io.IOException;
 import java.io.Writer;
 
+import life.catalogue.api.txtree.Tree;
 import life.catalogue.importer.neo.model.RankedUsage;
 import life.catalogue.importer.neo.model.RelType;
 import org.neo4j.graphdb.Direction;
@@ -31,9 +32,7 @@ import org.parboiled.common.StringUtils;
  * </pre>
  */
 public class TxtPrinter extends BasePrinter {
-  public static final String SYNONYM_SYMBOL = "*";
-  public static final String BASIONYM_SYMBOL = "$";
-  
+
   private static final int indentation = 2;
   private int level = 0;
   private final Writer writer;
@@ -59,14 +58,14 @@ public class TxtPrinter extends BasePrinter {
       //writer.write(String.valueOf(n.getId()));
       writer.write(StringUtils.repeat(' ', level * indentation));
       if (u.isSynonym()) {
-        writer.write(SYNONYM_SYMBOL);
+        writer.write(Tree.SYNONYM_SYMBOL);
         if (u.usageNode.getDegree(RelType.SYNONYM_OF, Direction.OUTGOING) > 1) {
           // flag pro parte synonyms with an extra asterisk
-          writer.write(SYNONYM_SYMBOL);
+          writer.write(Tree.SYNONYM_SYMBOL);
         }
       }
       if (u.nameNode.hasRelationship(RelType.HAS_BASIONYM, Direction.INCOMING)) {
-        writer.write(BASIONYM_SYMBOL);
+        writer.write(Tree.BASIONYM_SYMBOL);
       }
       writer.write(u.name);
       if (!org.apache.commons.lang3.StringUtils.isBlank(u.author)) {

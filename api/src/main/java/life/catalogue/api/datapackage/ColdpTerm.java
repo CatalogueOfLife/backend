@@ -266,7 +266,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
       ).build();
   
   private static final String PREFIX = "col";
-  private static final String NS = "http://rs.col.plus/terms/";
+  private static final String NS = "http://catalogueoflife.org/terms/";
   private static final URI NS_URI = URI.create(NS);
   
   private final boolean isClass;

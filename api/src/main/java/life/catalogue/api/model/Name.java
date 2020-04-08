@@ -9,6 +9,7 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.Origin;
+import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.*;
@@ -60,16 +61,9 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   private String authorship;
 
   /**
-   * Normalized authorship - only internal and not meant for API use!
-   */
-  @JsonIgnore
-  private List<String> authorshipNormalized;
-  
-  /**
    * Rank of the name from enumeration
    */
-  @Nonnull
-  private Rank rank = Rank.UNRANKED;
+  private Rank rank;
   
   /**
    * Represents the monomial for genus, families or names at higher ranks which do not have further
@@ -297,15 +291,15 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   public String getAuthorship() {
     return authorship;
   }
-  
+
+  /**
+   * Normalized authorship - only internal and not meant for API use!
+   */
+  @JsonIgnore
   public List<String> getAuthorshipNormalized() {
-    return authorshipNormalized;
+    return AuthorshipNormalizer.INSTANCE.normalizeName(this);
   }
-  
-  public void setAuthorshipNormalized(List<String> authorshipNormalized) {
-    this.authorshipNormalized = authorshipNormalized;
-  }
-  
+
   /**
    * WARN: avoid setting the cached complete authorship for parsed names directly.
    * Use updateNameCache() instead!
@@ -380,7 +374,12 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   public void setLink(URI link) {
     this.link = link;
   }
-  
+
+  @JsonIgnore
+  public boolean hasCombinationAuthorship() {
+    return combinationAuthorship != null && !combinationAuthorship.isEmpty();
+  }
+
   public Authorship getCombinationAuthorship() {
     return combinationAuthorship;
   }
@@ -388,7 +387,12 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   public void setCombinationAuthorship(Authorship combinationAuthorship) {
     this.combinationAuthorship = combinationAuthorship;
   }
-  
+
+  @JsonIgnore
+  public boolean hasBasionymAuthorship() {
+    return basionymAuthorship != null && !basionymAuthorship.isEmpty();
+  }
+
   public Authorship getBasionymAuthorship() {
     return basionymAuthorship;
   }
@@ -504,7 +508,8 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   public void setAppendedPhrase(String appendedPhrase) {
     this.appendedPhrase = appendedPhrase;
   }
-  
+
+  @JsonInclude(value = JsonInclude.Include.NON_DEFAULT)
   public boolean isCandidatus() {
     return candidatus;
   }
@@ -570,7 +575,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
    */
   @JsonIgnore
   public boolean hasAuthorship() {
-    return combinationAuthorship.exists() || basionymAuthorship.exists();
+    return hasCombinationAuthorship() || hasBasionymAuthorship();
   }
   
   @JsonIgnore
@@ -750,7 +755,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, homotypicNameId, nameIndexId, nameIndexMatchType, scientificName, authorship, authorshipNormalized, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, appendedPhrase, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, publishedInYear, origin, type, link, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, homotypicNameId, nameIndexId, nameIndexMatchType, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, appendedPhrase, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, publishedInYear, origin, type, link, remarks);
   }
   
   @Override

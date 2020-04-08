@@ -48,7 +48,7 @@ CREATE TYPE CONTINENT AS ENUM (
 CREATE TYPE DATAFORMAT AS ENUM (
   'DWCA',
   'ACEF',
-  'TCS',
+  'TEXT_TREE',
   'COLDP',
   'PROXY'
 );
@@ -681,6 +681,7 @@ CREATE TABLE sector (
   modified_by INTEGER NOT NULL,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  original_subject_id TEXT,
   subject_id TEXT,
   subject_name TEXT,
   subject_authorship TEXT,
@@ -744,6 +745,7 @@ CREATE TABLE decision (
   modified_by INTEGER NOT NULL,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  original_subject_id TEXT,
   subject_id TEXT,
   subject_name TEXT,
   subject_authorship TEXT,

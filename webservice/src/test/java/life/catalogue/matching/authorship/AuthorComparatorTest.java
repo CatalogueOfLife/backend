@@ -14,7 +14,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class AuthorComparatorTest {
-  AuthorComparator comp = new AuthorComparator(AuthorshipNormalizer.createWithAuthormap());
+  AuthorComparator comp = new AuthorComparator(AuthorshipNormalizer.INSTANCE);
   
   public static Authorship parse(String x) {
     return NameParser.PARSER.parseAuthorship(x).get().getCombinationAuthorship();

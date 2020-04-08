@@ -5,11 +5,9 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Origin;
-import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.NamesTreeDao;
-import life.catalogue.dao.TaxonDao;
-import life.catalogue.dao.TreeRepoRule;
+import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.*;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.es.NameUsageIndexService;
@@ -73,7 +71,8 @@ public class SectorSyncIT {
     // reset draft
     dataRule.truncateDraft();
     dataRule.loadData(true);
-    tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
+    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory());
+    tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
   }
   
   

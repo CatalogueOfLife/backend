@@ -46,9 +46,7 @@ public class PgImportRule extends ExternalResource {
     IMPORT_USER.setEmail("tim.test@mailinator.com");
     IMPORT_USER.getRoles().add(ColUser.Role.ADMIN);
   }
-  
-  private static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
-  
+
   private NeoDb store;
   private NormalizerConfig cfg;
   private ImporterConfig icfg = new ImporterConfig();
@@ -167,7 +165,7 @@ public class PgImportRule extends ExternalResource {
       
       // import into postgres
       store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
-      PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), aNormalizer, icfg);
+      PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), icfg);
       importer.call();
       
     } catch (Exception e) {

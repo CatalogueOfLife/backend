@@ -4,11 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.DirectoryNotEmptyException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Set;
 
 import com.google.common.io.Resources;
 import org.apache.commons.io.FilenameUtils;
@@ -30,7 +29,17 @@ public class PathUtils {
   public static String getFilename(Path p) {
     return FilenameUtils.getName(p.toString());
   }
-  
+
+  public static Iterable<Path> listFiles(Path folder, final Set<String> allowedSuffices) throws IOException {
+    if (folder == null || !Files.isDirectory(folder)) return Collections.emptyList();
+    return Files.newDirectoryStream(folder, new DirectoryStream.Filter<Path>() {
+      @Override
+      public boolean accept(Path p) throws IOException {
+        return Files.isRegularFile(p) && (allowedSuffices == null || allowedSuffices.contains(getFileExtension(p)));
+      }
+    });
+  }
+
   public static void removeFileAndParentsIfEmpty(Path p) throws IOException {
     if (p == null) return;
     

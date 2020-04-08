@@ -1,7 +1,7 @@
 package life.catalogue.dao;
 
 import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.mapper.TestDataRule;
+import life.catalogue.db.TestDataRule;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;

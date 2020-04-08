@@ -5,7 +5,7 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.mapper.TestDataRule;
+import life.catalogue.db.TestDataRule;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 import org.junit.ClassRule;
@@ -20,7 +20,6 @@ import static org.junit.Assert.*;
  * The index need postgres unfortunately...
  */
 public class NormalizerFullIT extends NormalizerITBase {
-  static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -33,7 +32,7 @@ public class NormalizerFullIT extends NormalizerITBase {
   }
   
   static NameIndex newIndex() {
-    return NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer);
+    return NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE);
   }
   
   @Test

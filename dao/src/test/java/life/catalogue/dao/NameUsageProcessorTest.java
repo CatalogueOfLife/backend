@@ -12,7 +12,7 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.db.mapper.TestDataRule;
+import life.catalogue.db.TestDataRule;
 import org.junit.Assert;
 import org.junit.Test;
 

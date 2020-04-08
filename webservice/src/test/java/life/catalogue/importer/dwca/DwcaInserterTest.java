@@ -24,7 +24,7 @@ public class DwcaInserterTest extends InserterBaseTest {
   
   @Override
   public NeoInserter newInserter(Path resource) throws IOException  {
-    return new DwcaInserter(store, resource, new ReferenceFactory(store), ImageService.passThru());
+    return new DwcaInserter(store, resource, new ReferenceFactory(store));
   }
   /**
    * EEA redlist file with unknown term columns

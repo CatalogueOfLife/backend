@@ -62,14 +62,12 @@ public abstract class DataEntity<K> implements UserManaged {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     DataEntity that = (DataEntity) o;
-    return Objects.equals(created, that.created) &&
-            Objects.equals(createdBy, that.createdBy) &&
-            Objects.equals(modified, that.modified) &&
-            Objects.equals(modifiedBy, that.modifiedBy);
+    return Objects.equals(createdBy, that.createdBy) &&
+           Objects.equals(modifiedBy, that.modifiedBy);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(created, createdBy, modified, modifiedBy);
+    return Objects.hash(createdBy, modifiedBy);
   }
 }

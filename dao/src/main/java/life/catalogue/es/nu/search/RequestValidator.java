@@ -15,9 +15,6 @@ class RequestValidator {
   void validateRequest() {
     NameUsageSearchRequest copy = request.copy();
     if (copy.hasFilter(USAGE_ID)) {
-      if (copy.getFilterValues(USAGE_ID).size() > 1) {
-        throw invalidSearchRequest("Usage ID must not be specified multiple times");
-      }
       if (!copy.hasFilter(DATASET_KEY)) {
         throw invalidSearchRequest("When specifying a usage ID, the dataset key must also be specified");
       }

@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -154,9 +155,14 @@ public class NameParserResource {
   @POST
   @RolesAllowed({Roles.ADMIN})
   @Path("config")
-  public String createConfig(@Valid ParserConfig obj, @Auth ColUser user) {
-    dao.putName(obj, user.getKey());
-    return obj.getId();
+  public List<String> createConfigs(@Valid List<ParserConfig> configs, @Auth ColUser user) {
+    List<String> ids = new ArrayList<>(configs.size());
+    for (ParserConfig pc : configs) {
+      if (pc == null) continue;
+      dao.putName(pc, user.getKey());
+      ids.add(pc.getId());
+    }
+    return ids;
   }
 
   @GET

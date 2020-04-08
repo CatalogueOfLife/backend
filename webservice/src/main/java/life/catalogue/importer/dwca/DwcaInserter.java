@@ -3,7 +3,7 @@ package life.catalogue.importer.dwca;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.ColDwcTerm;
 import life.catalogue.img.ImageService;
-import life.catalogue.importer.NeoInserter;
+import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
@@ -22,12 +22,12 @@ import java.util.Optional;
 /**
  *
  */
-public class DwcaInserter extends NeoInserter {
+public class DwcaInserter extends NeoCsvInserter {
   private static final Logger LOG = LoggerFactory.getLogger(DwcaInserter.class);
   private DwcInterpreter inter;
   
-  public DwcaInserter(NeoDb store, Path folder, ReferenceFactory refFactory, ImageService imgService) throws IOException {
-    super(folder, DwcaReader.from(folder), store, refFactory, imgService);
+  public DwcaInserter(NeoDb store, Path folder, ReferenceFactory refFactory) throws IOException {
+    super(folder, DwcaReader.from(folder), store, refFactory);
   }
   
   /**

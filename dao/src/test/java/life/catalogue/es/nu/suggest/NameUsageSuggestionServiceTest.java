@@ -85,7 +85,6 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
     NameUsageSuggestResponse response = suggest(query);
 
     assertTrue(containsUsageIds(response, doc1, doc2, doc3));
-
   }
 
   @Test // Relevance goes from infraspecific epithet -> specific epithet -> genus

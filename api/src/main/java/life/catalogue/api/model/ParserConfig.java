@@ -8,18 +8,21 @@ import java.util.regex.Pattern;
 
 public class ParserConfig extends Name {
   private static String[] EMPTY = new String[2];
-  private static Pattern Splitter = Pattern.compile("^(.+)\\|(.+)$");
+  private static Pattern Splitter = Pattern.compile("^(.+)\\|(.*)$");
   private String taxonomicNote;
 
   private static String[] parseID(String id) {
     if (id != null) {
       Matcher m = Splitter.matcher(id);
+      String[] parts = new String[2];
       if (m.find()) {
-        String[] parts = new String[2];
         parts[0] = m.group(1);
         parts[1] = m.group(2);
-        return parts;
+      } else {
+        parts[0] = id;
+        parts[1] = null;
       }
+      return parts;
     }
     return EMPTY;
   }

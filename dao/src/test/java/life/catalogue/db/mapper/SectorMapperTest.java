@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
@@ -61,16 +62,16 @@ public class SectorMapperTest extends CRUDTestBase<Integer, Sector, SectorMapper
   @Test
   public void getBySubject() {
     add2Sectors();
-    assertNotNull(mapper().getBySubject(targetDatasetKey, subjectDatasetKey, TestEntityGenerator.TAXON1.getId()));
-    assertNull(mapper().getBySubject(targetDatasetKey, subjectDatasetKey +1, TestEntityGenerator.TAXON1.getId()));
-    assertNull(mapper().getBySubject(targetDatasetKey, subjectDatasetKey, TestEntityGenerator.TAXON1.getId()+"dfrtgzh"));
+    assertNotNull(mapper().getBySubject(targetDatasetKey, DSID.key(subjectDatasetKey, TestEntityGenerator.TAXON1.getId())));
+    assertNull(mapper().getBySubject(targetDatasetKey, DSID.key(subjectDatasetKey +1, TestEntityGenerator.TAXON1.getId())));
+    assertNull(mapper().getBySubject(targetDatasetKey, DSID.key(subjectDatasetKey, TestEntityGenerator.TAXON1.getId()+"dfrtgzh")));
   }
   
   @Test
   public void listByTarget() {
     add2Sectors();
-    assertEquals(1, mapper().listByTarget(targetDatasetKey,"t4").size());
-    assertEquals(0, mapper().listByTarget(targetDatasetKey,"t32134").size());
+    assertEquals(1, mapper().listByTarget(DSID.key(targetDatasetKey,"t4")).size());
+    assertEquals(0, mapper().listByTarget(DSID.key(targetDatasetKey,"t32134")).size());
   }
 
   @Test
@@ -154,8 +155,7 @@ public class SectorMapperTest extends CRUDTestBase<Integer, Sector, SectorMapper
   @Override
   Sector removeDbCreatedProps(Sector s) {
     // remove newly set property
-    s.setCreated(null);
-    s.setModified(null);
+    s.setOriginalSubjectId(null);
     return s;
   }
   

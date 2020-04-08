@@ -56,6 +56,7 @@ import java.util.stream.StreamSupport;
 public class CsvReader {
   private static final Logger LOG = LoggerFactory.getLogger(CsvReader.class);
   protected static final CsvParserSettings CSV = new CsvParserSettings();
+  public static final String LOGO_FILENAME = "logo.png";
   private static Term UNKNOWN_TERM = TermFactory.instance().findTerm("void", false);
   static {
     CSV.detectFormatAutomatically();
@@ -405,21 +406,11 @@ public class CsvReader {
   }
   
   protected static Iterable<Path> listDataFiles(Path folder) throws IOException {
-    return listFiles(folder, SUFFICES);
+    return PathUtils.listFiles(folder, SUFFICES);
   }
   
   protected static Iterable<Path> listFiles(Path folder) throws IOException {
-    return listFiles(folder, null);
-  }
-  
-  private static Iterable<Path> listFiles(Path folder, final Set<String> allowedSuffices) throws IOException {
-    if (folder == null || !Files.isDirectory(folder)) return Collections.emptyList();
-    return Files.newDirectoryStream(folder, new DirectoryStream.Filter<Path>() {
-      @Override
-      public boolean accept(Path p) throws IOException {
-        return Files.isRegularFile(p) && (allowedSuffices == null || allowedSuffices.contains(PathUtils.getFileExtension(p)));
-      }
-    });
+    return PathUtils.listFiles(folder, null);
   }
   
   protected void detectMappedClassification(Term rowType, Map<Term, Rank> terms) {
@@ -431,14 +422,14 @@ public class CsvReader {
       }
     });
   }
-  
+
   public Optional<Path> logo() {
     List<Path> sources = Lists.newArrayList(folder);
     if (subfolder != null) {
       sources.add(folder.resolve(subfolder));
     }
     for (Path p : sources) {
-      Path logo = p.resolve("logo.png");
+      Path logo = p.resolve(LOGO_FILENAME);
       if (Files.exists(logo)) return Optional.of(logo);
     }
     return Optional.empty();

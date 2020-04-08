@@ -39,6 +39,7 @@ public class ParserConfigMapperTest extends MapperTestBase<ParserConfigMapper> {
   }
 
   private static ParserConfig removeDbCreatedProps(ParserConfig pc) {
+    NameMapperTest.removeCreatedProps(pc);
     TestEntityGenerator.nullifyDate(pc);
     return pc;
   }
@@ -50,7 +51,7 @@ public class ParserConfigMapperTest extends MapperTestBase<ParserConfigMapper> {
     commit();
 
     ParserConfig pc2 = removeDbCreatedProps(mapper().get(pc1.getId()));
-    //printDiff(u1, u2);
+    //printDiff(pc1, pc2);
     assertEquals(pc1, pc2);
 
     mapper().delete(pc1.getId());

@@ -17,9 +17,9 @@ public enum DataFormat {
   ACEF,
   
   /**
-   * TDWG Taxonomic Concept Schema
+   * Indented text trees for very simple but readable classifications
    */
-  TCS,
+  TEXT_TREE,
   
   /**
    * COL Data Package

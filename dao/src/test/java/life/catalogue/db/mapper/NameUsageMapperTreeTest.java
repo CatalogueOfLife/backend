@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.NameUsageBase;
+import life.catalogue.db.TestDataRule;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -97,6 +97,13 @@
         SELECT count(*) FROM name_usage_${partition}
     </select>
 
+    <select id="get" resultMap="usageResultMap">
+        <include refid="life.catalogue.db.Common.partitionByKey"/>
+        SELECT <include refid="SELECT" />
+        FROM <include refid="FROM" />
+        WHERE u.id = #{key.id}
+    </select>
+
     <select id="list" resultMap="usageResultMap">
         <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
         SELECT <include refid="SELECT" />
@@ -137,6 +144,9 @@
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE u.parent_id = #{key.id}
+        <if test="rank != null">
+          AND n.rank > #{rank}::rank
+        </if>
     </select>
 
     <update id="updateParentId" parameterType="map">

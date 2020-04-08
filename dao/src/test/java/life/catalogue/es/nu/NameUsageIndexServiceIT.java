@@ -108,10 +108,10 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     Taxon taxon = (Taxon) nuw.getUsage();
 
     // Insert that taxon into Postgres
-    NameDao ndao = new NameDao(getSqlSessionFactory(), new AuthorshipNormalizer(Collections.emptyMap()));
+    NameDao ndao = new NameDao(getSqlSessionFactory());
     DSID<String> dsid = ndao.create(taxon.getName(), USER_ID);
     LOG.info(">>>>>>> Name inserted into database. ID: {}\n", dsid.getId());
-    TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), NameUsageIndexService.passThru());
+    TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, NameUsageIndexService.passThru());
     dsid = tdao.create(taxon, USER_ID);
     LOG.info(">>>>>>> Taxon inserted into database. ID: {}\n", EsModule.writeDebug(taxon));
 

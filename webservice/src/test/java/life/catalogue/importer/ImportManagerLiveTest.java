@@ -9,12 +9,11 @@ import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.vocab.*;
-import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.TestDataRule;
+import life.catalogue.db.TestDataRule;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.release.ReleaseManager;
@@ -44,8 +43,7 @@ import static org.junit.Assert.assertFalse;
 @RunWith(MockitoJUnitRunner.class)
 public class ImportManagerLiveTest {
   private static final Logger LOG = LoggerFactory.getLogger(ImportManagerLiveTest.class);
-  static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
-  
+
   ImportManager importManager;
   CloseableHttpClient hc;
   DatasetImportDao diDao;
@@ -85,7 +83,7 @@ public class ImportManagerLiveTest {
     final WsServerConfig cfg = provideConfig();
     
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
-    importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), aNormalizer,
+    importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
         NameIndexFactory.passThru(), null, new ImageServiceFS(cfg.img), releaseManager);
     importManager.start();
   

@@ -1,6 +1,7 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.DataEntity;
 import life.catalogue.api.model.DatasetScoped;
 import life.catalogue.api.model.EditorialDecision;
@@ -8,14 +9,17 @@ import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Lifezone;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.common.io.Resources;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class DecisionMapperTest extends CRUDTestBase<Integer, EditorialDecision, DecisionMapper> {
   
@@ -77,8 +81,7 @@ public class DecisionMapperTest extends CRUDTestBase<Integer, EditorialDecision,
     d.setName(TestEntityGenerator.newName());
     d.setStatus(TaxonomicStatus.AMBIGUOUS_SYNONYM);
     d.setExtinct(true);
-    d.getLifezones().add(Lifezone.MARINE);
-    d.getLifezones().add(Lifezone.BRACKISH);
+    d.setLifezones(Set.of(Lifezone.MARINE, Lifezone.BRACKISH));
     d.setNote("I cannot remember why I did this.");
     d.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());
     d.setModifiedBy(d.getCreatedBy());
@@ -86,16 +89,35 @@ public class DecisionMapperTest extends CRUDTestBase<Integer, EditorialDecision,
   }
   
   @Override
-  EditorialDecision removeDbCreatedProps(EditorialDecision obj) {
-    obj.setCreated(null);
-    obj.setModified(null);
-    if (obj.getName() != null) {
-      // we store the name as JSON and thereby lose its name index id
-      obj.getName().setNameIndexId(null);
-    }
-    return obj;
+  EditorialDecision removeDbCreatedProps(EditorialDecision d) {
+    return removeCreatedProps(d);
   }
-  
+
+  public static EditorialDecision removeCreatedProps(EditorialDecision d) {
+    d.setOriginalSubjectId(null);
+    if (d.getName() != null) {
+      // we store the name as JSON and thereby lose its name index id
+      NameMapperTest.removeCreatedProps(d.getName());
+    }
+    return d;
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/674
+   */
+  @Test
+  public void updateNameType() throws Exception {
+    EditorialDecision d = ApiModule.MAPPER.readValue(Resources.stream("json/decision1.json"), EditorialDecision.class);
+    assertNull(d.getName().getRank());
+    assertFalse(d.getName().isCandidatus());
+    d.applyUser(TestEntityGenerator.USER_USER);
+    mapper().create(d);
+
+    EditorialDecision d2 = mapper().get(d.getKey());
+
+    assertEquals(removeDbCreatedProps(d2), removeDbCreatedProps(d));
+  }
+
   @Test
   public void process(){
     // processing

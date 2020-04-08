@@ -9,7 +9,6 @@ import life.catalogue.api.vocab.Origin;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.TaxonMapper;
-import life.catalogue.db.mapper.TestDataRule;
 import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;

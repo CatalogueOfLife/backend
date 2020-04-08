@@ -20,7 +20,7 @@ public class AcefInserterTest extends InserterBaseTest {
   
   @Override
   public NeoInserter newInserter(Path resource) throws IOException  {
-    return new AcefInserter(store, resource, new ReferenceFactory(store), ImageService.passThru());
+    return new AcefInserter(store, resource, new ReferenceFactory(store));
   }
 
   @Test

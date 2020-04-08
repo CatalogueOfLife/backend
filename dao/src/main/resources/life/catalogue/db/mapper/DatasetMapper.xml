@@ -288,6 +288,11 @@
              VALUES (<include refid="PROPS" />, #{origin}::DATASETORIGIN, now(), now())
     </insert>
 
+    <insert id="createWithKey" parameterType="Dataset" useGeneratedKeys="false">
+      INSERT INTO dataset (key, <include refid="COLS" />, origin, created, modified)
+      VALUES (#{key}, <include refid="PROPS" />, #{origin}::DATASETORIGIN, now(), now())
+    </insert>
+
     <insert id="createArchive" parameterType="map">
         INSERT INTO dataset_archive (key, catalogue_key, <include refid="COLS" />, origin, created, modified)
         SELECT key, #{catalogueKey}, <include refid="COLS" />, origin, created, modified

@@ -1,47 +1,46 @@
-package life.catalogue.importer.txttree;
-
-import java.io.StringWriter;
+package life.catalogue.api.txtree;
+import life.catalogue.common.io.Resources;
 
 import org.apache.commons.io.IOUtils;
 import org.gbif.nameparser.api.Rank;
-import org.gbif.utils.file.FileUtils;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import java.io.StringWriter;
+
+import static org.junit.Assert.*;
 
 
 public class TreeTest {
-  
+
   @Test
   public void testRead() throws Exception {
-    Tree tree = Tree.read("trees/test.txt");
-    
+    Tree tree = Tree.read(Resources.stream("txtree/test.txt"));
+
     tree.print(System.out);
-    
+
     StringWriter buffer = new StringWriter();
     tree.print(buffer);
-    assertEquals(buffer.toString().trim(), IOUtils.toString(FileUtils.classpathStream("trees/test.txt"), "UTF8").trim());
-    
-    
+    assertEquals(buffer.toString().trim(), IOUtils.toString(Resources.stream("txtree/test.txt"), "UTF8").trim());
+
+
     System.out.println("Tree traversal");
     for (TreeNode n : tree) {
       assertNotNull(n.name);
       assertEquals(Rank.UNRANKED, n.rank);
     }
   }
-  
+
   @Test
   public void testRead2() throws Exception {
-    Tree tree = Tree.read("trees/test2.txt");
-    
+    Tree tree = Tree.read(Resources.stream("txtree/test2.txt"));
+
     tree.print(System.out);
-    
+
     StringWriter buffer = new StringWriter();
     tree.print(buffer);
-    assertEquals(IOUtils.toString(FileUtils.classpathStream("trees/test2.txt"), "UTF8").trim(), buffer.toString().trim());
-    
-    
+    assertEquals(IOUtils.toString(Resources.stream("txtree/test2-no-comments.txt"), "UTF8").trim(), buffer.toString().trim());
+
+
     System.out.println("Tree traversal");
     for (TreeNode n : tree) {
       System.out.println(n.name);
@@ -49,5 +48,5 @@ public class TreeTest {
       assertNotNull(n.rank);
     }
   }
-  
+
 }

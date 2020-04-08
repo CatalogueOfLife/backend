@@ -105,6 +105,6 @@ public class ColdpInserterTest extends InserterBaseTest {
   
   @Override
   public NeoInserter newInserter(Path resource) throws IOException {
-    return new ColdpInserter(store, resource, new ReferenceFactory(store), ImageService.passThru());
+    return new ColdpInserter(store, resource, new ReferenceFactory(store));
   }
 }

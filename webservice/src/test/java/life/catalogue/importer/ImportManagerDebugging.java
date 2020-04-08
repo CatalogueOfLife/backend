@@ -10,12 +10,11 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.TestDataRule;
+import life.catalogue.db.TestDataRule;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.matching.NameIndexFactory;
@@ -35,7 +34,7 @@ import java.net.URI;
 @Ignore("manual import debugging")
 @RunWith(MockitoJUnitRunner.class)
 public class ImportManagerDebugging {
-  static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.createWithAuthormap();
+  static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.INSTANCE;
 
   ImportManager importManager;
   CloseableHttpClient hc;
@@ -76,7 +75,7 @@ public class ImportManagerDebugging {
     //new InitDbCmd().execute(cfg);
     
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
-    importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), aNormalizer,
+    importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
         NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer), NameUsageIndexService.passThru(), new ImageServiceFS(cfg.img), releaseManager);
     importManager.start();
   }

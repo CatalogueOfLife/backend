@@ -204,6 +204,10 @@ public class NeoDb {
     return typeMaterial;
   }
 
+  public NeoUsage usageWithName(String usageID) {
+    return usageWithName(usages().nodeByID(usageID));
+  }
+
   public NeoUsage usageWithName(Node usageNode) {
     NeoUsage u = usages().objByNode(usageNode);
     if (u != null) {

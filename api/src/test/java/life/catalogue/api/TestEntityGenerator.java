@@ -20,7 +20,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * utility class to metrics new test instances to be used in tests.
  */
 public class TestEntityGenerator {
-  private final static AuthorshipNormalizer ANORMALIZER = AuthorshipNormalizer.createWithAuthormap();
   private final static Random RND = new Random();
   private final static RandomInstance random = new RandomInstance();
   private static final Splitter SPACE_SPLITTER = Splitter.on(" ").trimResults();
@@ -404,7 +403,6 @@ public class TestEntityGenerator {
     n.setCode(NomCode.BOTANICAL);
     n.setNomStatus(NomStatus.ACCEPTABLE);
     n.updateNameCache();
-    n.setAuthorshipNormalized(ANORMALIZER.normalizeName(n));
     n.addRemark("my first note");
     n.addRemark("my second note");
     return n;
@@ -516,11 +514,10 @@ public class TestEntityGenerator {
   }
 
   public static Authorship createAuthorship() {
-    Authorship a = new Authorship();
-    while (a.getAuthors().size() < 2 || RND.nextBoolean()) {
-      a.getAuthors().add(RandomUtils.randomAuthor());
+    Authorship a = Authorship.yearAuthors(RandomUtils.randomSpeciesYear(), RandomUtils.randomAuthor());
+    while (RND.nextBoolean()) {
+      a.addAuthor(RandomUtils.randomAuthor());
     }
-    a.setYear(RandomUtils.randomSpeciesYear());
     return a;
   }
 

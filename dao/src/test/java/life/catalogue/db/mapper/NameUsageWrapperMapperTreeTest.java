@@ -8,6 +8,7 @@ import life.catalogue.api.model.SimpleNameClassification;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.Datasets;
+import life.catalogue.db.TestDataRule;
 import org.apache.ibatis.cursor.Cursor;
 import org.junit.Assert;
 import org.junit.Test;

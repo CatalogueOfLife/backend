@@ -1,10 +1,13 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import life.catalogue.api.vocab.EstimateType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.Rank;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -13,17 +16,27 @@ import java.util.stream.Collectors;
  * A drastic simplification of a taxon with just the minimum information used to render in a tree.
  * Adds various additional infos to support the assembly tree.
  */
-public class TreeNode implements DSID<String> {
+public abstract class TreeNode implements DSID<String> {
 
   public static enum Type {
     CATALOGUE,
-    SOURCE
+    SOURCE;
+
+  }
+
+  /**
+   * @return all tree types incl null
+   */
+  public static List<TreeNode.Type> types(){
+    List<TreeNode.Type> types = new ArrayList<>();
+    types.add(null);
+    types.addAll(Arrays.asList(TreeNode.Type.values()));
+    return types;
   }
 
   private Integer datasetKey;
   private String id;
   private String parentId;
-  private String name;
   private Rank rank;
   private TaxonomicStatus status;
   private int childCount;
@@ -42,10 +55,39 @@ public class TreeNode implements DSID<String> {
   
     @Override
     public String getName() {
-      return _name == null ? super.name :_name.canonicalNameCompleteHtml();
+      return _name.getScientificName();
+    }
+
+    @Override
+    public String getAuthorship() {
+      return _name.getAuthorship();
+    }
+
+    @Override
+    public String getFormattedName() {
+      return _name.canonicalNameCompleteHtml();
     }
   }
-  
+
+  public static class PlaceholderNode extends TreeNode {
+    private static String NAME = "Not assigned";
+
+    @Override
+    public String getAuthorship() {
+      return null;
+    }
+
+    @Override
+    public String getFormattedName() {
+      return NAME;
+    }
+
+    @Override
+    public String getName() {
+      return NAME;
+    }
+  }
+
   @Override
   public Integer getDatasetKey() {
     return datasetKey;
@@ -73,15 +115,13 @@ public class TreeNode implements DSID<String> {
   public void setParentId(String parentId) {
     this.parentId = parentId;
   }
-  
-  public String getName() {
-    return name;
-  }
-  
-  public void setName(String name) {
-    this.name = name;
-  }
-  
+
+  public abstract String getAuthorship();
+
+  public abstract String getFormattedName();
+
+  public abstract String getName();
+
   public Rank getRank() {
     return rank;
   }
@@ -151,7 +191,12 @@ public class TreeNode implements DSID<String> {
   public void setDatasetSectors(Int2IntOpenHashMap datasetSectors) {
     this.datasetSectors = datasetSectors;
   }
-  
+
+  @JsonIgnore
+  public boolean isPlaceholder() {
+    return this instanceof PlaceholderNode;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -161,7 +206,6 @@ public class TreeNode implements DSID<String> {
         Objects.equals(datasetKey, treeNode.datasetKey) &&
         Objects.equals(id, treeNode.id) &&
         Objects.equals(parentId, treeNode.parentId) &&
-        Objects.equals(name, treeNode.name) &&
         rank == treeNode.rank &&
         status == treeNode.status &&
         Objects.equals(estimates, treeNode.estimates) &&
@@ -172,6 +216,11 @@ public class TreeNode implements DSID<String> {
   
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, id, parentId, name, rank, status, childCount, estimates, sectorKey, decision, datasetSectors);
+    return Objects.hash(datasetKey, id, parentId, rank, status, childCount, estimates, sectorKey, decision, datasetSectors);
+  }
+
+  @Override
+  public String toString() {
+    return rank + " " + getName() + " " + getAuthorship() + " [" + id +"]";
   }
 }

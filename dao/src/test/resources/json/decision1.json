@@ -1,0 +1,17 @@
+{
+  "name": {
+    "type": "scientific"
+  },
+  "lifezones": [],
+  "mode": "update",
+  "subjectDatasetKey": 11,
+  "datasetKey": 3,
+  "subject": {
+    "id": "293533",
+    "name": "Neoaemula vector Mackinnon, Hiller, Long & Marshall, 2008",
+    "rank": "species",
+    "status": "accepted",
+    "parent": "Brachiopoda",
+    "code": "zoological"
+  }
+}

@@ -8,6 +8,7 @@
     ${alias}key AS ${prefix}key,
     ${alias}dataset_key AS ${prefix}dataset_key,
     ${alias}subject_dataset_key AS ${prefix}subject_dataset_key,
+    ${alias}original_subject_id AS ${prefix}original_subject_id,
     ${alias}subject_id AS ${prefix}subject_id,
     ${alias}subject_name AS ${prefix}subject_name,
     ${alias}subject_authorship AS ${prefix}subject_authorship,
@@ -149,16 +150,16 @@
   <select id="getBySubject" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE subject_dataset_key = #{subjectDatasetKey}
+    WHERE subject_dataset_key = #{key.datasetKey}
       AND dataset_key = #{datasetKey}
-      AND subject_id = #{id}
+      AND subject_id = #{key.id}
   </select>
 
   <select id="listByTarget" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE target_id = #{id}
-      AND dataset_key = #{datasetKey}
+    WHERE target_id = #{key.id}
+      AND dataset_key = #{key.datasetKey}
   </select>
 
   <select id="listByDataset" resultMap="sectorResultMap">
@@ -188,8 +189,8 @@
   </select>
 
   <insert id="create" parameterType="Sector" useGeneratedKeys="true" keyProperty="key">
-    INSERT INTO sector ( <include refid="COLS" />, created_by )
-    VALUES ( <include refid="PROPS" />, #{createdBy} )
+    INSERT INTO sector ( <include refid="COLS" />, original_subject_id, created_by )
+    VALUES ( <include refid="PROPS" />, #{subject.id}, #{createdBy} )
   </insert>
 
   <update id="update" parameterType="Sector">

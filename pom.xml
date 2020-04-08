@@ -78,12 +78,14 @@
         <mapdb.version>3.0.5</mapdb.version>
         <mockito.version>3.1.0</mockito.version>
         <mybatis.version>3.5.2</mybatis.version>
-        <name-parser.version>3.4.2-SNAPSHOT</name-parser.version>
+        <name-parser.version>3.5.1-SNAPSHOT</name-parser.version>
         <neo4j-algorithms.version>3.4.0.0</neo4j-algorithms.version>
         <neo4j.version>3.4.17</neo4j.version>
+        <poi.version>4.1.2</poi.version>
         <postgresql.version>42.2.8</postgresql.version>
         <pgjdbc-ng.version>0.8.3</pgjdbc-ng.version>
         <stax2.version>4.2</stax2.version>
+        <text-tree.version>1.0.0</text-tree.version>
         <tika.version>1.22</tika.version>
         <twelvemonkeys.version>3.4.2</twelvemonkeys.version>
         <validation-api.version>2.0.0.Final</validation-api.version>
@@ -379,7 +381,6 @@
                 <artifactId>name-parser</artifactId>
                 <version>${name-parser.version}</version>
             </dependency>
-
             <!-- mybatis / DB -->
             <dependency>
                 <groupId>org.postgresql</groupId>
@@ -529,6 +530,11 @@
                 <groupId>org.apache.tika</groupId>
                 <artifactId>tika-core</artifactId>
                 <version>${tika.version}</version>
+            </dependency>
+            <dependency>
+              <groupId>org.apache.poi</groupId>
+              <artifactId>poi-ooxml</artifactId>
+              <version>${poi.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.imgscalr</groupId>
@@ -843,10 +849,6 @@
                             <!-- include test suites -->
                             <include>**/*TestSuite.java</include>
                         </includes>
-                        <excludes>
-                            <!-- exlude all mapper tests which are jointly executed by the MapperTestSuite instead -->
-                            <!-- DISABLE FOR NOW <exclude>**/*MapperTest.java</exclude> -->
-                        </excludes>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -886,14 +888,6 @@
             <plugin>
                 <artifactId>maven-source-plugin</artifactId>
                 <version>${maven-source-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <!-- run integration tests (*IT) during verify -->
             <plugin>

@@ -4,6 +4,7 @@ import java.util.Map;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
+import life.catalogue.api.model.DSID;
 
 public class NotFoundException extends RuntimeException {
   
@@ -26,7 +27,11 @@ public class NotFoundException extends RuntimeException {
   public static NotFoundException keyNotFound(Class<?> entity, Object key) {
     return new NotFoundException(entity, ImmutableMap.of("key", key));
   }
-  
+
+  public static NotFoundException idNotFound(Class<?> entity, DSID<String> key) {
+    return new NotFoundException(entity, ImmutableMap.of("datasetKey", key.getDatasetKey(), "id", key.getId()));
+  }
+
   public static NotFoundException idNotFound(Class<?> entity, int datasetKey, String id) {
     return new NotFoundException(entity, ImmutableMap.of("datasetKey", datasetKey, "id", id));
   }

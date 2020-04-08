@@ -4,10 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
-import org.gbif.nameparser.api.NamePart;
-import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.api.*;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -71,12 +68,8 @@ public class NameTest extends SerdeTestBase<Name> {
     assertEquals("Abies × alba ssp.", n.canonicalNameWithAuthorship());
     
     n.setInfraspecificEpithet("alpina");
-    n.getCombinationAuthorship().setYear("1999");
-    n.getCombinationAuthorship().getAuthors().add("L.");
-    n.getCombinationAuthorship().getAuthors().add("DC.");
-    n.getBasionymAuthorship().setYear("1899");
-    n.getBasionymAuthorship().getAuthors().add("Lin.");
-    n.getBasionymAuthorship().getAuthors().add("Deca.");
+    n.setCombinationAuthorship(Authorship.yearAuthors("1999", "L.","DC."));
+    n.setBasionymAuthorship(Authorship.yearAuthors("1899","Lin.","Deca."));
     assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999", n.canonicalNameWithAuthorship());
     
     n.setRemarks("nom.illeg.");

@@ -9,7 +9,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.common.io.Resources;
 import life.catalogue.dao.DaoTestBase;
 import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.db.mapper.TestDataRule;
+import life.catalogue.db.TestDataRule;
 import org.junit.Assert;
 import org.junit.Test;
 

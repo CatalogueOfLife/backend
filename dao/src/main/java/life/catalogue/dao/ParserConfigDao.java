@@ -4,10 +4,12 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.QuerySearchRequest;
+import life.catalogue.api.vocab.Origin;
 import life.catalogue.db.mapper.ParserConfigMapper;
 import life.catalogue.parser.NameParser;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.ParsedName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,19 +81,35 @@ public class ParserConfigDao {
     addToParser(obj);
   }
 
-  private void addToParser(ParserConfig obj){
+  public static void addToParser(ParserConfig obj){
+    LOG.info("Create parser config {}", obj.getId());
+    // defaults
+    obj.setOrigin(Origin.USER);
+    if (obj.getType() == null) {
+      obj.setType(NameType.SCIENTIFIC);
+    }
+
     ParsedName pn = Name.toParsedName(obj);
+    pn.setState(ParsedName.State.COMPLETE); // if we leave state None we get unparsed issues when parsing this name
     pn.setTaxonomicNote(obj.getTaxonomicNote());
     NameParser.configs().setName(concat(obj.getScientificName(), obj.getAuthorship()), pn);
-    // also use the authorship alone!
+    // configure name without authorship and authorship standalone if we have that
     if (obj.getAuthorship() != null && obj.hasAuthorship()) {
       NameParser.configs().setAuthorship(obj.getAuthorship(), pn);
+
+      ParsedName pnNoAuthor = new ParsedName();
+      pnNoAuthor.copy(pn);
+      pnNoAuthor.setCombinationAuthorship(null);
+      pnNoAuthor.setBasionymAuthorship(null);
+      pnNoAuthor.setSanctioningAuthor(null);
+      NameParser.configs().setName(obj.getScientificName(), pnNoAuthor);
     }
   }
 
   public void deleteName(String id, int user) {
     Preconditions.checkNotNull(id, "ID required");
     Preconditions.checkArgument(id.contains("|"), "ID must concatenate name and authorship with a pipe symbol");
+    LOG.info("Remove parser config {}", id);
     // persists first
     try (SqlSession session = factory.openSession(true)) {
       ParserConfigMapper pcm = session.getMapper(ParserConfigMapper.class);
@@ -100,9 +118,10 @@ public class ParserConfigDao {
     // update parser
     ParserConfig cfg = new ParserConfig();
     cfg.setId(id);
-    ParsedName pn = NameParser.configs().deleteName(concat(cfg.getScientificName(), cfg.getAuthorship()));
-    // also remove the authorship if exists!
+    NameParser.configs().deleteName(concat(cfg.getScientificName(), cfg.getAuthorship()));
+    // also remove the authorship and canonical name if it exists!
     if (cfg.getAuthorship() != null) {
+      NameParser.configs().deleteName(cfg.getScientificName());
       NameParser.configs().deleteAuthorship(cfg.getAuthorship());
     }
   }
