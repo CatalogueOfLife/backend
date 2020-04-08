@@ -118,6 +118,21 @@ public class ImportManagerTest {
   }
 
   @Test
+  public void uploadXls() throws Exception {
+    InputStream data = Resources.stream("xls/Pterophoroidea.xlsx");
+    assertFalse(manager.hasRunning());
+    try {
+      manager.uploadXls(Datasets.DRAFT_COL, data, TestEntityGenerator.USER_ADMIN);
+      fail("Cannot upload to col draft");
+    } catch (IllegalArgumentException e) {
+      // expected, its the draft
+    }
+    manager.uploadXls(datasetKey, data, TestEntityGenerator.USER_ADMIN);
+    TimeUnit.SECONDS.sleep(2);
+    assertTrue(manager.hasRunning());
+  }
+
+  @Test
   public void limit() throws Exception {
     List<Integer> list = new ArrayList<>(Arrays.asList(new Integer[]{1,2,3,45,5,6}));
   

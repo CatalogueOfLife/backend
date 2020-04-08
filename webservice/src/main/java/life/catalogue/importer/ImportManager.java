@@ -4,6 +4,7 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import io.dropwizard.lifecycle.Managed;
@@ -268,9 +269,12 @@ public class ImportManager implements Managed {
   }
 
   public ImportRequest uploadXls(final int datasetKey, final InputStream content, ColUser user) throws IOException {
+    Preconditions.checkNotNull(content, "No content given");
     Dataset d = validDataset(datasetKey);
     // extract CSV files
-    File tmpDir = cfg.normalizer.scratchDir(datasetKey);
+    File tmpDir = cfg.normalizer.scratchFile(datasetKey, "xls");
+    tmpDir.mkdirs();
+
     LOG.info("Extracting spreadsheet data for dataset {} to {}", d.getKey(), tmpDir);
     List<File> files = ExcelCsvExtractor.extract(content, tmpDir);
     LOG.info("Extracted {} files from spreadsheet data for dataset {}", files.size(), d.getKey());
