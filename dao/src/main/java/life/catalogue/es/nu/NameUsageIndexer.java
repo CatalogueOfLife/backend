@@ -77,11 +77,11 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
 
   private void index(List<NameUsageWrapper> batch) {
     buf.setLength(0);
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
+    NameUsageWrapperConverter converter = new NameUsageWrapperConverter();
     try {
       for (NameUsageWrapper nuw : batch) {
         buf.append(indexHeader);
-        buf.append(EsModule.write(transfer.toDocument(nuw)));
+        buf.append(EsModule.write(converter.toDocument(nuw)));
         buf.append("\n");
       }
       sendBatch(batch.size());
@@ -93,13 +93,13 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
   private void indexWithExtraStats(List<NameUsageWrapper> batch) {
     buf.setLength(0);
     int docSize = 0;
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
+    NameUsageWrapperConverter converter = new NameUsageWrapperConverter();
     DecimalFormat df = new DecimalFormat("0.0");
     try {
       String json;
       for (NameUsageWrapper nuw : batch) {
         buf.append(indexHeader);
-        buf.append(json = EsModule.write(transfer.toDocument(nuw)));
+        buf.append(json = EsModule.write(converter.toDocument(nuw)));
         docSize += json.getBytes(Charsets.UTF_8).length;
         buf.append("\n");
       }
@@ -114,7 +114,7 @@ class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
     }
   }
 
-  private void sendBatch(int batchSize) throws IOException {
+  private void sendBatch(int batchSize) {
     Request request = new Request("POST", "/_bulk/?timeout=3h");
     request.setJsonEntity(buf.toString());
     EsUtil.executeRequest(client, request);

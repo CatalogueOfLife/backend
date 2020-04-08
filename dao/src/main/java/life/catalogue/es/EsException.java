@@ -1,5 +1,9 @@
 package life.catalogue.es;
 
+/**
+ * Generic runtime exception indicating that an error originated from somewhere inside the es package.
+ *
+ */
 public class EsException extends RuntimeException {
   
   public EsException(String arg0, Throwable arg1) {

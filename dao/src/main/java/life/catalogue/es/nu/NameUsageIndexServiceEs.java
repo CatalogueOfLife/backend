@@ -1,5 +1,21 @@
 package life.catalogue.es.nu;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import org.apache.ibatis.cursor.Cursor;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.elasticsearch.client.RestClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterables;
 import life.catalogue.api.model.DSID;
@@ -18,24 +34,6 @@ import life.catalogue.es.EsException;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsUtil;
 import life.catalogue.es.NameUsageIndexService;
-import org.apache.ibatis.cursor.Cursor;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.elasticsearch.client.RestClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
@@ -109,15 +107,11 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
   @Override
   public int deleteDataset(int datasetKey) {
-    try {
-      LOG.info("Removing dataset {} from index {}", datasetKey, esConfig.nameUsage.name);
-      int cnt = EsUtil.deleteDataset(client, esConfig.nameUsage.name, datasetKey);
-      LOG.info("Deleted all {} documents from dataset {} from index {}", cnt, datasetKey, esConfig.nameUsage.name);
-      EsUtil.refreshIndex(client, esConfig.nameUsage.name);
-      return cnt;
-    } catch (IOException e) {
-      throw new EsException(e);
-    }
+    LOG.info("Removing dataset {} from index {}", datasetKey, esConfig.nameUsage.name);
+    int cnt = EsUtil.deleteDataset(client, esConfig.nameUsage.name, datasetKey);
+    LOG.info("Deleted all {} documents from dataset {} from index {}", cnt, datasetKey, esConfig.nameUsage.name);
+    EsUtil.refreshIndex(client, esConfig.nameUsage.name);
+    return cnt;
   }
 
   @Override
@@ -141,8 +135,6 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
       EsUtil.refreshIndex(client, esConfig.nameUsage.name);
       stats.names = indexer.documentsIndexed();
-    } catch (IOException e) {
-      throw new EsException(e);
     }
     LOG.info("Successfully indexed sector {}. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
         s.getKey(), esConfig.nameUsage.name, stats.usages, stats.names, stats.total());
@@ -150,57 +142,41 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
   @Override
   public void deleteSector(int sectorKey) {
-    try {
-      int cnt = EsUtil.deleteSector(client, esConfig.nameUsage.name, sectorKey);
-      LOG.info("Deleted all {} documents from sector {} from index {}", cnt, sectorKey, esConfig.nameUsage.name);
-      EsUtil.refreshIndex(client, esConfig.nameUsage.name);
-    } catch (IOException e) {
-      throw new EsException(e);
-    }
+    int cnt = EsUtil.deleteSector(client, esConfig.nameUsage.name, sectorKey);
+    LOG.info("Deleted all {} documents from sector {} from index {}", cnt, sectorKey, esConfig.nameUsage.name);
+    EsUtil.refreshIndex(client, esConfig.nameUsage.name);
   }
 
   @Override
   public void deleteSubtree(DSID<String> root) {
-    try {
-      int cnt = EsUtil.deleteSubtree(client, esConfig.nameUsage.name, root);
-      LOG.info("Deleted {} documents for entire subtree of root taxon {} from index {}", cnt, root, esConfig.nameUsage.name);
-      EsUtil.refreshIndex(client, esConfig.nameUsage.name);
-    } catch (IOException e) {
-      throw new EsException(e);
-    }
+    int cnt = EsUtil.deleteSubtree(client, esConfig.nameUsage.name, root);
+    LOG.info("Deleted {} documents for entire subtree of root taxon {} from index {}", cnt, root, esConfig.nameUsage.name);
+    EsUtil.refreshIndex(client, esConfig.nameUsage.name);
   }
 
   @Override
   public void delete(DSID<String> usageId) {
     if (usageId != null) {
-      try {
-        LOG.debug("Delete usage {} from dataset {}", usageId.getId(), usageId.getDatasetKey());
-        EsUtil.deleteNameUsages(client, esConfig.nameUsage.name, usageId.getDatasetKey(), List.of(usageId.getId()));
-        EsUtil.refreshIndex(client, esConfig.nameUsage.name);
-      } catch (IOException e) {
-        throw new EsException(e);
-      }
+      LOG.debug("Delete usage {} from dataset {}", usageId.getId(), usageId.getDatasetKey());
+      EsUtil.deleteNameUsages(client, esConfig.nameUsage.name, usageId.getDatasetKey(), List.of(usageId.getId()));
+      EsUtil.refreshIndex(client, esConfig.nameUsage.name);
     }
   }
 
   @Override
   public void update(int datasetKey, Collection<String> usageIds) {
     if (!usageIds.isEmpty()) {
-      try {
-        String first = usageIds.iterator().next();
-        LOG.info("Syncing {} taxa  from dataset {}. First id: {}", usageIds.size(), datasetKey, first);
-        int deleted = EsUtil.deleteNameUsages(client, esConfig.nameUsage.name, datasetKey, usageIds);
-        int inserted = indexNameUsages(datasetKey, usageIds);
-        EsUtil.refreshIndex(client, esConfig.nameUsage.name);
-        LOG.info("Finished syncing {} taxa (first id: {}) from dataset {}. Deleted: {}. Inserted: {}.",
-            usageIds.size(),
-            first,
-            datasetKey,
-            deleted,
-            inserted);
-      } catch (IOException e) {
-        throw new EsException(e);
-      }
+      String first = usageIds.iterator().next();
+      LOG.info("Syncing {} taxa  from dataset {}. First id: {}", usageIds.size(), datasetKey, first);
+      int deleted = EsUtil.deleteNameUsages(client, esConfig.nameUsage.name, datasetKey, usageIds);
+      int inserted = indexNameUsages(datasetKey, usageIds);
+      EsUtil.refreshIndex(client, esConfig.nameUsage.name);
+      LOG.info("Finished syncing {} taxa (first id: {}) from dataset {}. Deleted: {}. Inserted: {}.",
+          usageIds.size(),
+          first,
+          datasetKey,
+          deleted,
+          inserted);
     }
   }
 
@@ -225,8 +201,6 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       ClassificationUpdater updater = new ClassificationUpdater(indexer, datasetKey);
       Iterables.partition(cursor, BATCH_SIZE).forEach(updater);
       EsUtil.refreshIndex(client, esConfig.nameUsage.name);
-    } catch (IOException e) {
-      throw new EsException(e);
     }
     LOG.info("Successfully updated {} name usages", indexer.documentsIndexed());
   }
