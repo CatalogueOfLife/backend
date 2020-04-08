@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ public class ParserResource<T> {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(ParserResource.class);
+  private final List<String> parserNames = new ArrayList<>();
   private final Map<String, Parser<?>> parsers = new HashMap<>();
 
   public ParserResource() {
@@ -50,6 +52,9 @@ public class ParserResource<T> {
     parsers.put("textformat", TextFormatParser.PARSER);
     parsers.put("typestatus", TypeStatusParser.PARSER);
     parsers.put("uri", UriParser.PARSER);
+
+    parserNames.addAll(parsers.keySet());
+    parserNames.add("name"); // lives in its own resource
   }
 
   public static class ParseResult<T> {
@@ -63,7 +68,12 @@ public class ParserResource<T> {
       this.parsable = parsed.isParsable();
     }
   }
-  
+
+  @GET
+  public List<String> list() {
+    return parserNames;
+  }
+
   /**
    * Parsing names as GET "q" query parameters.
    */
