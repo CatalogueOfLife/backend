@@ -81,6 +81,7 @@
         <name-parser.version>3.5.1-SNAPSHOT</name-parser.version>
         <neo4j-algorithms.version>3.4.0.0</neo4j-algorithms.version>
         <neo4j.version>3.4.17</neo4j.version>
+        <poi.version>4.1.2</poi.version>
         <postgresql.version>42.2.8</postgresql.version>
         <pgjdbc-ng.version>0.8.3</pgjdbc-ng.version>
         <stax2.version>4.2</stax2.version>
@@ -529,6 +530,11 @@
                 <groupId>org.apache.tika</groupId>
                 <artifactId>tika-core</artifactId>
                 <version>${tika.version}</version>
+            </dependency>
+            <dependency>
+              <groupId>org.apache.poi</groupId>
+              <artifactId>poi-ooxml</artifactId>
+              <version>${poi.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.imgscalr</groupId>

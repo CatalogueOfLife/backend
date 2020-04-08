@@ -22,6 +22,7 @@ import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.tax.AuthorshipNormalizer;
+import life.catalogue.csv.ExcelCsvExtractor;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
@@ -37,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -262,6 +264,23 @@ public class ImportManager implements Managed {
   public ImportRequest upload(final int datasetKey, final InputStream content, boolean zip, @Nullable String suffix, ColUser user) throws IOException {
     Dataset d = validDataset(datasetKey);
     uploadArchive(d, content, zip, suffix);
+    return submitValidDataset(new ImportRequest(datasetKey, user.getKey(), true, true, true));
+  }
+
+  public ImportRequest uploadXls(final int datasetKey, final InputStream content, ColUser user) throws IOException {
+    Dataset d = validDataset(datasetKey);
+    // extract CSV files
+    File tmpDir = cfg.normalizer.scratchDir(datasetKey);
+    LOG.info("Extracting spreadsheet data for dataset {} to {}", d.getKey(), tmpDir);
+    List<File> files = ExcelCsvExtractor.extract(content, tmpDir);
+    LOG.info("Extracted {} files from spreadsheet data for dataset {}", files.size(), d.getKey());
+    // zip up as single source file for importer
+    Path source = cfg.normalizer.source(d.getKey()).toPath();
+    Files.createDirectories(source.getParent());
+    if (Files.exists(source)) {
+      Files.delete(source);
+    }
+    CompressionUtil.zipDir(tmpDir, source.toFile());
     return submitValidDataset(new ImportRequest(datasetKey, user.getKey(), true, true, true));
   }
 

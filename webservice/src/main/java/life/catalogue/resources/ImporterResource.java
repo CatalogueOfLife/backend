@@ -86,6 +86,14 @@ public class ImporterResource {
   public ImportRequest uploadCsv(@PathParam("key") int datasetKey, @Auth ColUser user, @Context HttpHeaders headers, InputStream archive) throws IOException {
     return importManager.upload(datasetKey, archive, true, contentType2Suffix(headers), user);
   }
+
+  @POST
+  @Path("{key}")
+  @Consumes({MoreMediaTypes.APP_XLS, MoreMediaTypes.APP_XLSX})
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public ImportRequest uploadXls(@PathParam("key") int datasetKey, @Auth ColUser user, InputStream spreadsheet) throws IOException {
+    return importManager.uploadXls(datasetKey, spreadsheet ,user);
+  }
   
   @DELETE
   @Path("{key}")
