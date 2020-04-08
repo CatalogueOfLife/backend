@@ -15,6 +15,7 @@ import org.elasticsearch.client.ResponseListener;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.google.common.base.Preconditions;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.es.ddl.Analyzer;
@@ -242,27 +243,35 @@ public class EsUtil {
     esRequest.setQuery(query);
     request.setJsonEntity(esRequest.toString());
     // Returns immediately because wait_for_completion=false
-    Response response = executeRequest(client, request);
+    Response response;
+    while (true) {
+      try {
+        response = executeRequest(client, request);
+        break;
+      } catch (TooManyRequestsException e) {
+        sleep(1000 * 60 * 5);
+      }
+    }
     String taskId = readFromResponse(response, "task");
+    request = new Request("GET", "_tasks/" + taskId);
     for (int i = 0; i < attempts; i++) {
-      // After every attempt we double the wait time b/c apparently ES is very busy.
-      sleep(1 << (i + 5));
-      request = new Request("GET", "_tasks/" + taskId);
+      // After every attempt we double the wait time (starting with 32 msecs)
+      sleep(32 << i);
       response = executeRequest(client, request);
       Map<String, Object> content = readResponse(response);
       if ((Boolean) content.get("completed")) {
         executeAndForget(client, new Request("DELETE", ".tasks/_doc/" + taskId));
         content = (Map<String, Object>) content.get("response");
         List<?> failures = (List<?>) content.get("failures");
-        if (failures.isEmpty()) {
+        if (failures == null || failures.isEmpty()) {
           return (Integer) content.get("deleted");
         }
         throw new EsRequestException("Error executing delete_by_query request. Failures: %s. Query: %s",
-            EsModule.writeDebug(failures), EsModule.writeDebug(query));
+            EsModule.writeDebug(failures),
+            EsModule.writeDebug(query));
       }
     }
-    throw new EsRequestException("delete_by_query request failed to complete within %d attempts. Query: %s",
-        attempts, EsModule.writeDebug(query));
+    throw new EsRequestException("delete_by_query request failed to complete");
   }
 
   /**
@@ -274,23 +283,7 @@ public class EsUtil {
    * @throws IOException
    */
   public static void refreshIndex(RestClient client, String name) {
-    int attempts = 20;
-    for (int i = 1; i <= attempts; i++) {
-      if (LOG.isTraceEnabled()) LOG.trace("Refreshing index {} (attempt {})", name, i);
-      Request request = new Request("POST", name + "/_refresh");
-      try {
-        Response response = executeRequest(client, request);
-        if (response.getStatusLine().getStatusCode() == 200) {
-          if (LOG.isTraceEnabled()) LOG.trace("Index {} refreshed", name);
-          return;
-        }
-      } catch (EsRequestException e) {
-        if (i == attempts) {
-          throw e;
-        }
-      }
-      sleep(1000 * 30);
-    }
+    executeWithRetry(client, new Request("POST", name + "/_refresh"));
   }
 
   /**
@@ -359,7 +352,7 @@ public class EsUtil {
   }
 
   /**
-   * Executes the provided HTTP request and returns the HTTP response
+   * Executes the provided request and returns the response.
    * 
    * @param client
    * @param request
@@ -370,12 +363,70 @@ public class EsUtil {
     try {
       response = client.performRequest(request);
     } catch (Exception e) {
-      throw new EsRequestException(e);
+      if (e.getClass() != ResponseException.class) {
+        throw new EsRequestException(e);
+      }
+      response = ((ResponseException) e).getResponse();
     }
-    if (response.getStatusLine().getStatusCode() >= 400) {
-      throw new EsRequestException(response);
+    if (response.getStatusLine().getStatusCode() < 400) {
+      return response;
+    } else if (response.getStatusLine().getStatusCode() == 400) {
+      // That really just is a bug in our code
+      throw new EsException(getErrorMessage(response));
+    } else if (response.getStatusLine().getStatusCode() == 429) {
+      throw new TooManyRequestsException();
     }
-    return response;
+    throw new EsRequestException(response);
+  }
+
+  /**
+   * Executes the provided request at most 20 times, waiting 10 minutes in between, until it returns an error-free response.
+   * 
+   * @param client
+   * @param request
+   * @return
+   */
+  public static Response executeWithRetry(RestClient client, Request request) {
+    return executeWithRetry(client, request, 20, 1000 * 60 * 10);
+  }
+
+  /**
+   * Executes the provided request and returns the response. If the request fails because of an exception or because of an HTTP status code
+   * greater than 399, the request is executed again. This might be less taxing for the Elasticsearch (client and/or server) than specifying
+   * a long timeout for the request itself. So the idea is the specify a relative short timeout and let this method retry the specified
+   * number of attempts until the response comes back error-free.
+   * 
+   * @param client
+   * @param request
+   * @param attempts
+   * @param waitMillis
+   * @return
+   */
+  public static Response executeWithRetry(RestClient client, Request request, int attempts, int waitMillis) {
+    for (int i = 1; i <= attempts; ++i) {
+      try {
+        while (true) {
+          try {
+            return executeRequest(client, request);
+          } catch (TooManyRequestsException e) {
+            sleep(1000 * 60 * 5);
+          }
+        }
+      } catch (EsRequestException e) {
+        if (i == attempts) {
+          throw e;
+        }
+      }
+      if (LOG.isTraceEnabled()) {
+        LOG.trace("{} {} - attempt {} failed. Will attempt again after {} milliseconds",
+            request.getMethod(),
+            request.getEndpoint(),
+            i,
+            waitMillis);
+      }
+      sleep(waitMillis);
+    }
+    throw new AssertionError("Should not get here");
   }
 
   /**
@@ -401,6 +452,21 @@ public class EsUtil {
    */
   public static boolean acknowlegded(Response response) {
     return readFromResponse(response, "acknowlegded");
+  }
+
+  /**
+   * Returns the returns error message within the response body of an error response.
+   * 
+   * @param response
+   * @return
+   */
+  public static String getErrorMessage(Response response) {
+    Preconditions.checkArgument(response.getStatusLine().getStatusCode() >= 400, "not an error response");
+    if (response.getEntity() == null) {
+      return "No reason provided";
+    }
+    Map<String, Object> error = readFromResponse(response, "error");
+    return error.get("reason").toString();
   }
 
   @SuppressWarnings("unchecked")

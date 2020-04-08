@@ -9,7 +9,6 @@ public class Misc {
 
   @Test // Apparently String.split does a trim-right, but not a trim-left
   public void testSplit() {
-    System.out.println("X: " + (1 << 30));
     String s = "ABCD     ";
     String[] ss = s.split("\\W");
     assertEquals(1, ss.length);

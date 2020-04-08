@@ -1,8 +1,5 @@
 package life.catalogue.es;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import org.apache.commons.io.IOUtils;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
 import org.slf4j.Logger;
@@ -17,19 +14,32 @@ public class EsRequestException extends EsException {
   private static final Logger LOG = LoggerFactory.getLogger(EsUtil.class);
   private static final String BASE_MESSAGE = "Elasticsearch request failure.";
 
+  private final Response response;
+
   public EsRequestException(String msg, Object... msgArgs) {
     super(BASE_MESSAGE + ' ' + String.format(msg, msgArgs));
+    this.response = null;
   }
 
   public EsRequestException(Response response) {
     super(generateErrorMessage(response));
     LOG.error(getMessage());
+    this.response = response;
   }
 
   public EsRequestException(Throwable t) {
     super(generateErrorMessage(t));
     initCause(t);
     LOG.error(getMessage());
+    if (t.getClass() == ResponseException.class) {
+      this.response = ((ResponseException) t).getResponse();
+    } else {
+      this.response = null;
+    }
+  }
+
+  public Response getResponse() {
+    return response;
   }
 
   private static String generateErrorMessage(Throwable t) {
@@ -51,14 +61,10 @@ public class EsRequestException extends EsException {
   private static String generateErrorMessage(Response response) {
     StringBuilder sb = new StringBuilder(100);
     sb.append(BASE_MESSAGE).append(' ')
-        .append(response.getStatusLine().getReasonPhrase())
-        .append(". ");
+        .append(response.getStatusLine().getStatusCode()).append(' ')
+        .append(response.getStatusLine().getReasonPhrase()).append('.');
     if (response.getEntity() != null) {
-      try {
-        sb.append(IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8));
-      } catch (UnsupportedOperationException | IOException e) {
-        throw new EsException(e);
-      }
+      sb.append(' ').append(EsUtil.getErrorMessage(response));
     }
     return sb.toString();
   }
