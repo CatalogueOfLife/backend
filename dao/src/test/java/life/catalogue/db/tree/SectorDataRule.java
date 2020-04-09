@@ -29,7 +29,10 @@ import java.util.function.Supplier;
 
 /**
  * A junit test rule that creates sectors and fakes a sector sync
- * by copying over all usages and setting the sectorKey.
+ * by copying over all name usages and setting the sectorKey.
+ * It is much quicker than a regular sync, but ignores decisions and does not copy references, vernacular names, etc.
+ *
+ * The rule was designed to run as a junit {@link org.junit.Rule} before every test or test class if you only need to test reads.
  */
 public class SectorDataRule extends ExternalResource implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorDataRule.class);
@@ -46,11 +49,18 @@ public class SectorDataRule extends ExternalResource implements AutoCloseable {
   private Sector sector;
   private String parentID;
 
+  /**
+   * @param sectors list of sectors to create and sync
+   */
   public SectorDataRule(List<Sector> sectors) {
     this.sectors = sectors;
     sqlSessionFactorySupplier = PgSetupRule::getSqlSessionFactory;
   }
 
+  /**
+   * Utility method to build sectors to be passed into the constructor.
+   * The sectors are not persisted.
+   */
   public static Sector create(Sector.Mode mode, DSID<String> subject, DSID<String> target){
     Sector s = new Sector();
     s.setMode(mode);

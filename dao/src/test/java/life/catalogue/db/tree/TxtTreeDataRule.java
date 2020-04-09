@@ -25,7 +25,7 @@ import java.util.function.Supplier;
 /**
  * A junit test rule that loads test data from a text tree file into a given dataset.
  * <p>
- * The rule was designed to run as a junit {@link org.junit.Rule} before every test.
+ * The rule was designed to run as a junit {@link org.junit.Rule} before every test or test class if you only need to test reads.
  * <p>
  * Unless an explicit factory is given, this rule requires a connected postgres server with mybatis via the {@link PgSetupRule}.
  * Make sure its setup!
