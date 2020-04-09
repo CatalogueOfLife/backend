@@ -1,5 +1,6 @@
 package life.catalogue.resources;
 
+import life.catalogue.api.model.ColUser;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
@@ -9,6 +10,8 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Frequency;
 import life.catalogue.db.TestDataRule;
+import life.catalogue.db.mapper.UserMapper;
+import org.apache.ibatis.session.SqlSession;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,7 +23,7 @@ import java.net.URI;
 import java.time.LocalDate;
 
 import static life.catalogue.api.TestEntityGenerator.nullifyUserDate;
-import static life.catalogue.dw.ApiUtils.*;
+import static life.catalogue.ApiUtils.*;
 import static org.junit.Assert.*;
 
 public class DatasetResourceTest extends ResourceTestBase {
@@ -104,8 +107,14 @@ public class DatasetResourceTest extends ResourceTestBase {
   @Test
   public void delete() {
     Response resp = editorCreds(base.path("2035")).delete();
+    // no permission!
+    assertEquals(403, resp.getStatus());
+
+    addUserPermissions("editor", 2035);
+
+    resp = editorCreds(base.path("2035")).delete();
     assertEquals(204, resp.getStatus());
-  
+
     Dataset d = base.path("2035").request().get(Dataset.class);
     assertNotNull(d.getDeleted());
   }

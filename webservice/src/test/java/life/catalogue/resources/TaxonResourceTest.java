@@ -15,8 +15,8 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
-import static life.catalogue.dw.ApiUtils.editorCreds;
-import static life.catalogue.dw.ApiUtils.json;
+import static life.catalogue.ApiUtils.editorCreds;
+import static life.catalogue.ApiUtils.json;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 

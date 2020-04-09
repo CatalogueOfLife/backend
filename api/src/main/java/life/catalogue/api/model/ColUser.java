@@ -41,6 +41,16 @@ public class ColUser implements Principal {
     roles.remove(role);
   }
 
+  /**
+   * Copies properties that are not managed in the GBIF registry to this instance.
+   * @param src source user to copy from
+   */
+  public void copyNonGbifData(ColUser src) {
+    key = src.key;
+    datasets = src.datasets;
+    settings = src.settings;
+  }
+
   @Override
   @JsonIgnore
   public String getName() {

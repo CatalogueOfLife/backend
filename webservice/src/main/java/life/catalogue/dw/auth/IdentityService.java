@@ -80,8 +80,9 @@ public class IdentityService {
         // try to find existing user in Col db, otherwise create new one otherwise
         ColUser existing = mapper.getByUsername(user.getUsername());
         if (existing != null) {
-          user.setKey(existing.getKey());
-          mapper.update(user);
+          LOG.info("Update CoL user {} {} with latest GBIF information", user.getUsername(), user.getKey());
+          user.copyNonGbifData(existing);
+          mapper.update(existing);
         } else {
           LOG.info("Creating new CoL user {} {}", user.getUsername(), user.getKey());
           mapper.create(user);

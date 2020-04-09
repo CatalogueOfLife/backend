@@ -1,4 +1,4 @@
-package life.catalogue.dw;
+package life.catalogue;
 
 import java.util.Collection;
 import javax.ws.rs.client.Entity;

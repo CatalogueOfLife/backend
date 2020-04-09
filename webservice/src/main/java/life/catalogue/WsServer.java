@@ -3,6 +3,7 @@ package life.catalogue;
 import java.io.IOException;
 import javax.ws.rs.client.Client;
 
+import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.dao.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.client.config.CookieSpecs;
@@ -136,6 +137,11 @@ public class WsServer extends Application<WsServerConfig> {
    */
   public SqlSessionFactory getSqlSessionFactory() {
     return mybatis.getSqlSessionFactory();
+  }
+
+  @VisibleForTesting
+  public AuthBundle getAuthBundle() {
+    return auth;
   }
 
   @Override

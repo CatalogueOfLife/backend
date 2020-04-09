@@ -7,6 +7,10 @@ import java.util.List;
 import com.google.common.collect.Lists;
 import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.junit.DropwizardAppRule;
+import life.catalogue.api.model.ColUser;
+import life.catalogue.db.mapper.UserMapper;
+import life.catalogue.dw.auth.AuthBundle;
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.common.io.PortUtils;
 import life.catalogue.common.util.YamlUtils;
@@ -80,7 +84,35 @@ public class WsServerRule extends DropwizardAppRule<WsServerConfig> {
   public SqlSessionFactory getSqlSessionFactory() {
     return ((WsServer) getTestSupport().getApplication()).getSqlSessionFactory();
   }
-  
+
+  public AuthBundle getAuthBundle() {
+    return ((WsServer) getTestSupport().getApplication()).getAuthBundle();
+  }
+
+  /**
+   * Useful to change user permissions in tests. Direct db access alone does not change cached users.
+   */
+  public void updateUser(ColUser user) {
+    try (SqlSession session = getSqlSessionFactory().openSession(false)) {
+      session.getMapper(UserMapper.class).update(user);
+      session.commit();
+    }
+    getAuthBundle().updateUser(user);
+  }
+
+  public void addUserPermissions(String username, int... datasetKey) {
+    try (SqlSession session = getSqlSessionFactory().openSession(false)) {
+      UserMapper um = session.getMapper(UserMapper.class);
+      ColUser user = um.getByUsername(username);
+      for (int key : datasetKey) {
+        user.addDataset(key);
+      }
+      um.update(user);
+      session.commit();
+      getAuthBundle().updateUser(user);
+    }
+  }
+
   @Override
   protected JerseyClientBuilder clientBuilder() {
     JerseyClientBuilder builder = super.clientBuilder();
