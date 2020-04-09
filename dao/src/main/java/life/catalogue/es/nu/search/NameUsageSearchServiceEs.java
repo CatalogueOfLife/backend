@@ -15,7 +15,6 @@ import life.catalogue.es.ddl.Analyzer;
 import life.catalogue.es.nu.NameUsageQueryService;
 import life.catalogue.es.query.EsSearchRequest;
 import life.catalogue.es.response.EsResponse;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static life.catalogue.api.search.NameUsageSearchRequest.SearchContent.SCIENTIFIC_NAME;
 import static life.catalogue.es.EsUtil.getSearchTerms;
 
@@ -40,7 +39,7 @@ public class NameUsageSearchServiceEs extends NameUsageQueryService implements N
   public NameUsageSearchResponse search(String index, NameUsageSearchRequest request, Page page) throws IOException {
     RequestValidator validator = new RequestValidator(request);
     validator.validateRequest();
-    if (isNotBlank(request.getQ()) && request.getContent().contains(SCIENTIFIC_NAME)) {
+    if (request.hasQ() && request.getContent().contains(SCIENTIFIC_NAME)) {
       request.setSearchTerms(getSearchTerms(client, index, Analyzer.SCINAME_WHOLE_WORDS, request.getQ()));
     }
     RequestTranslator translator = new RequestTranslator(request, page);

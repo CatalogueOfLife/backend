@@ -1,30 +1,31 @@
 package life.catalogue.es;
 
-import life.catalogue.api.RandomUtils;
-import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.Taxon;
-import life.catalogue.api.search.*;
-import life.catalogue.es.nu.NameUsageWrapperConverter;
-import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
-import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
-import life.catalogue.es.query.EsSearchRequest;
-import life.catalogue.es.query.Query;
-import org.elasticsearch.client.RestClient;
-import org.junit.ClassRule;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
+import org.elasticsearch.client.RestClient;
+import org.junit.ClassRule;
+import life.catalogue.api.RandomUtils;
+import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.Taxon;
+import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.api.search.NameUsageSearchResponse;
+import life.catalogue.api.search.NameUsageSuggestRequest;
+import life.catalogue.api.search.NameUsageSuggestResponse;
+import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.es.nu.NameUsageWrapperConverter;
+import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
+import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
+import life.catalogue.es.query.EsSearchRequest;
+import life.catalogue.es.query.Query;
 import static java.util.stream.Collectors.toList;
 
 /**
- * Base class for tests that only read from ES. Does not provide postgres functionality and saves setup/initialization
- * time accordingly.
+ * Base class for tests that only read from ES. Does not provide postgres functionality and saves setup/initialization time accordingly.
  */
 public class EsReadTestBase {
 
@@ -49,20 +50,16 @@ public class EsReadTestBase {
     }
   }
 
-  public IndexConfig index(){
+  public IndexConfig index() {
     return esSetupRule.getEsConfig().nameUsage;
   }
 
-  public String indexName(){
+  public String indexName() {
     return index().name;
   }
 
   protected void truncate() {
-    try {
-      EsUtil.truncate(getEsClient(), indexName());
-    } catch (IOException e) {
-      throw new EsException(e);
-    }
+    EsUtil.truncate(getEsClient(), indexName());
   }
 
   protected void indexRaw(Collection<EsNameUsage> documents) {
@@ -122,8 +119,7 @@ public class EsReadTestBase {
   }
 
   /**
-   * Creates the requested number of name usages with all fields required to allow them to be indexed without NPEs and
-   * other errors.
+   * Creates the requested number of name usages with all fields required to allow them to be indexed without NPEs and other errors.
    * 
    * @param howmany
    * @return

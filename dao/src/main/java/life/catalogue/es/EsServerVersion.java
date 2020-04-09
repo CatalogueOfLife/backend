@@ -1,13 +1,10 @@
 package life.catalogue.es;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-
 import static life.catalogue.es.EsUtil.executeRequest;
 import static life.catalogue.es.EsUtil.readFromResponse;
 
@@ -17,11 +14,7 @@ public class EsServerVersion {
 
   public static EsServerVersion getInstance(RestClient client) {
     if (instance == null) {
-      try {
-        instance = new EsServerVersion(client);
-      } catch (IOException e) {
-        throw new EsException(e);
-      }
+      instance = new EsServerVersion(client);
     }
     return instance;
   }
@@ -29,7 +22,7 @@ public class EsServerVersion {
   private final int[] version;
   private final String versionString;
 
-  private EsServerVersion(RestClient client) throws IOException {
+  private EsServerVersion(RestClient client) {
     Request request = new Request("GET", "/");
     Response response = executeRequest(client, request);
     HashMap<String, String> data = readFromResponse(response, "version");
