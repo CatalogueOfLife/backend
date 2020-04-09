@@ -13,6 +13,7 @@ and done it manually. So we can as well log changes here.
 #### 2020-04-09 user datasets
 ```
 ALTER TABLE coluser ADD COLUMN datasets INT[];
+ALTER TABLE dataset ADD COLUMN private BOOLEAN DEFAULT FALSE;
 ```
 
 #### 2020-04-04 text tree

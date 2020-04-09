@@ -1,4 +1,4 @@
-package life.catalogue.dw;
+package life.catalogue.dw.auth;
 
 import java.io.IOException;
 import javax.ws.rs.client.ClientRequestContext;

@@ -1,6 +1,7 @@
 package life.catalogue.dw.auth;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.Optional;
@@ -14,6 +15,7 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriInfo;
 
 import com.google.common.io.BaseEncoding;
 import io.jsonwebtoken.Claims;
@@ -93,7 +95,7 @@ public class AuthFilter implements ContainerRequestFilter {
       
       @Override
       public boolean isUserInRole(String role) {
-        Integer datasetKey = requestedDataset();
+        Integer datasetKey = requestedDataset(req.getUriInfo());
         return user.hasRole(role, datasetKey);
       }
       
@@ -106,23 +108,26 @@ public class AuthFilter implements ContainerRequestFilter {
       public String getAuthenticationScheme() {
         return scheme;
       }
-
-      private Integer requestedDataset(){
-        String path = req.getUriInfo().getPath();
-        Matcher m = DATASET_PATTERN.matcher(path);
-        if (m.find()) {
-          return Integer.parseInt(m.group(1));
-        }
-        return null;
-      }
     });
 
   }
-  
+
+  static Integer requestedDataset(UriInfo uri){
+    return requestedDataset(uri.getAbsolutePath());
+  }
+
+  static Integer requestedDataset(URI absoluteUri){
+    Matcher m = DATASET_PATTERN.matcher(absoluteUri.toString());
+    if (m.find()) {
+      return Integer.parseInt(m.group(1));
+    }
+    return null;
+  }
+
   private static void unauthorized() {
     throw unauthorized("Failed to authenticate via Basic or Bearer JWT");
   }
-  
+
   private static WebApplicationException unauthorized(String msg) {
     Response resp = JsonExceptionMapperBase.jsonErrorResponseBuilder(Response.Status.UNAUTHORIZED, msg)
         .header(HttpHeaders.WWW_AUTHENTICATE, String.format(CHALLENGE_FORMAT, "Basic", REALM))
@@ -131,7 +136,7 @@ public class AuthFilter implements ContainerRequestFilter {
         .build();
     return new WebApplicationException(resp);
   }
-  
+
   /**
    * @param token BASE64 encoded Basic credentials
    */

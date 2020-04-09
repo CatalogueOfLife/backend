@@ -12,7 +12,7 @@ import life.catalogue.common.io.PortUtils;
 import life.catalogue.common.util.YamlUtils;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.PgSetupRule;
-import life.catalogue.dw.BasicAuthClientFilter;
+import life.catalogue.dw.auth.BasicAuthClientFilter;
 import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

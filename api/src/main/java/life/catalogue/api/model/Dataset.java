@@ -33,6 +33,7 @@ public class Dataset extends DataEntity<Integer> {
   @NotNull
   private DatasetOrigin origin;
   private boolean locked = false;
+  private boolean privat = false;
   @NotNull
   @NotBlank
   private String title;
@@ -254,7 +255,16 @@ public class Dataset extends DataEntity<Integer> {
   public boolean isLocked() {
     return locked;
   }
-  
+
+  @JsonProperty("private")
+  public boolean isPrivat() {
+    return privat;
+  }
+
+  public void setPrivat(boolean privat) {
+    this.privat = privat;
+  }
+
   public void setLocked(boolean locked) {
     this.locked = locked;
   }
@@ -443,6 +453,7 @@ public class Dataset extends DataEntity<Integer> {
         Objects.equals(dataAccess, dataset.dataAccess) &&
         origin == dataset.origin &&
         locked == dataset.locked &&
+        privat == dataset.privat &&
         importFrequency == dataset.importFrequency &&
         code == dataset.code &&
         Objects.equals(size, dataset.size) &&
@@ -459,7 +470,7 @@ public class Dataset extends DataEntity<Integer> {
   public int hashCode() {
     return Objects.hash(super.hashCode(), key, sourceKey, type, title, alias, gbifKey, gbifPublisherKey, description, organisations,
             contact, authorsAndEditors, license, version, released, citation, geographicScope, website, group, logo,
-            dataFormat, dataAccess, origin, locked, importFrequency, code, size, confidence, completeness, notes,
+            dataFormat, dataAccess, origin, locked, privat, importFrequency, code, size, confidence, completeness, notes,
             contributesTo, imported, deleted, settings);
   }
   

@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -37,6 +38,7 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
   private final DatasetImportDao diDao;
   private final NameUsageIndexService indexService;
   private final Consumer<ColUser> userChangedNotifier;
+  private final Consumer<Map<Integer, Boolean>> datasetChangedNotifier;
 
   /**
    * @param scratchFileFunc function to generate a scrach dir for logo updates
@@ -48,7 +50,8 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
                     DatasetImportDao diDao,
                     NameUsageIndexService indexService,
                     BiFunction<Integer, String, File> scratchFileFunc,
-                    Consumer<ColUser> userChangedNotifier) {
+                    Consumer<ColUser> userChangedNotifier,
+                    Consumer<Map<Integer, Boolean>> datasetChangedNotifier) {
     super(false, factory, DatasetMapper.class);
     this.downloader = downloader;
     this.imgService = imgService;
@@ -56,6 +59,7 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
     this.diDao = diDao;
     this.indexService = indexService;
     this.userChangedNotifier = userChangedNotifier;
+    this.datasetChangedNotifier = datasetChangedNotifier;
   }
   
   public ResultPage<Dataset> list(Page page) {
@@ -104,6 +108,8 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
               LOG.error("Failed to delete ES docs for dataset {}", key, e.getCause());
               return 0;
             });
+    // not a private dataset anymore - its gone!
+    datasetChangedNotifier.accept(Map.of(key, false));
   }
 
   @Override
@@ -137,6 +143,7 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
     u.addDataset(obj.getKey());
     um.update(u);
     userChangedNotifier.accept(u);
+    notifyPrivacyChange(obj);
     session.commit();
   }
 
@@ -151,6 +158,11 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
     if (obj.getOrigin() == DatasetOrigin.MANAGED && !session.getMapper(DatasetPartitionMapper.class).exists(obj.getKey())) {
       recreatePartition(obj.getKey());
     }
+    notifyPrivacyChange(obj);
+  }
+
+  private void notifyPrivacyChange(Dataset obj) {
+    datasetChangedNotifier.accept(Map.of(obj.getKey(), obj.isPrivat()));
   }
 
   private void recreatePartition(int datasetKey) {

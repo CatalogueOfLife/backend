@@ -79,6 +79,28 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   }
 
   @Test
+  public void isPrivateAndExists() throws Exception {
+    Dataset d1 = create();
+    mapper().create(d1);
+    commit();
+
+    assertTrue(mapper().exists(d1.getKey()));
+    assertFalse(mapper().exists(-3456));
+
+    assertFalse(d1.isPrivat());
+    assertFalse(mapper().isPrivate(d1.getKey()));
+    assertFalse(mapper().isPrivate(-528));
+
+    d1.setPrivat(true);
+    mapper().update(d1);
+    commit();
+
+    assertTrue(d1.isPrivat());
+    assertTrue(mapper().isPrivate(d1.getKey()));
+    assertFalse(mapper().isPrivate(-528));
+  }
+
+  @Test
   public void immutableOrigin() throws Exception {
     Dataset d1 = create();
     mapper().create(d1);

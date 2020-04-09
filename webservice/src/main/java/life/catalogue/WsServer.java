@@ -158,9 +158,9 @@ public class WsServer extends Application<WsServerConfig> {
   
     jerseyClient = builder.build(getName());
 
-    // finally provide the SqlSessionFactory & http client
-    auth.getIdentityService().setSqlSessionFactory(mybatis.getSqlSessionFactory());
-    auth.getIdentityService().setClient(httpClient);
+    // finally provide the SqlSessionFactory & http client to the auth bundle
+    auth.setSqlSessionFactory(mybatis.getSqlSessionFactory());
+    auth.setClient(httpClient);
 
     // name parser
     ParserConfigDao dao = new ParserConfigDao(getSqlSessionFactory());
@@ -244,8 +244,8 @@ public class WsServer extends Application<WsServerConfig> {
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory());
     TreeDao trDao = new TreeDao(getSqlSessionFactory());
     DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), new DownloadUtil(httpClient), imgService, diDao, indexService, cfg.normalizer::scratchFile,
-      // update user cache in identity service when the user datasets change
-      auth.getIdentityService()::cache);
+      // update user and dataset in auth bundle when datasets change
+      auth::updateUser, auth::updateDatasetPrivacy);
 
     // resources
     env.jersey()

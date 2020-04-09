@@ -59,9 +59,14 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   List<Dataset> listToBeImported(int limit);
 
   /**
-   * @return dataset key if dataset exists and is not deleted, null otherwise
+   * @return true if dataset exists and is not deleted
    */
-  Integer exists(@Param("key") int key);
+  boolean exists(@Param("key") int key);
+
+  /**
+   * @return true if dataset key exists and belongs to a private dataset
+   */
+  boolean isPrivate(@Param("key") int key);
 
   Dataset getByGBIF(@Param("key") UUID key);
   

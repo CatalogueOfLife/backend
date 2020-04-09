@@ -26,6 +26,7 @@
       d.data_access,
       d.origin,
       d.locked,
+      d.private,
       d.import_frequency,
       d.code,
       d.notes,
@@ -64,6 +65,7 @@
       data_format,
       data_access,
       locked,
+      private,
       import_frequency,
       code,
       notes,
@@ -96,6 +98,7 @@
       #{dataFormat}::DATAFORMAT,
       #{dataAccess},
       #{locked},
+      #{privat},
       #{importFrequency, typeHandler=life.catalogue.db.type.FrequencyTypeHandler},
       #{code}::NOMCODE,
       #{notes},
@@ -152,6 +155,7 @@
     <!--  A mapping to Name, mostly auto mapped -->
     <resultMap id="datasetResultMap" type="Dataset" autoMapping="true">
         <id property="key" column="key" />
+        <result property="privat" column="private"/>
         <result property="contributesTo" column="contributes_to" typeHandler="life.catalogue.db.type2.IntegerSetTypeHandler" />
         <result property="organisations" column="organisations" typeHandler="life.catalogue.db.type.StringArrayTypeHandler" />
         <result property="authorsAndEditors" column="authors_and_editors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler" />
@@ -259,10 +263,18 @@
         LIMIT #{limit}
     </select>
 
-    <select id="exists" resultType="integer">
-        SELECT key
-        FROM dataset
-        WHERE key = #{key} AND deleted IS NULL
+    <select id="exists" resultType="boolean">
+      SELECT EXISTS (
+        SELECT 1 FROM dataset WHERE key = #{key} AND deleted IS NULL
+      )
+    </select>
+
+    <select id="isPrivate" resultType="boolean">
+      SELECT EXISTS (
+        SELECT 1 FROM dataset WHERE key = #{key} AND deleted IS NULL
+      ) AND (
+        SELECT private FROM dataset WHERE key = #{key}
+      )
     </select>
 
     <select id="get" resultMap="datasetResultMap">
