@@ -10,6 +10,10 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
    
+#### 2020-04-09 user datasets
+```
+ALTER TABLE coluser ADD COLUMN datasets INT[];
+```
 
 #### 2020-04-04 text tree
 ```

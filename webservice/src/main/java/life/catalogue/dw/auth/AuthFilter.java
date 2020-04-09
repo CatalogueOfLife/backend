@@ -36,6 +36,7 @@ public class AuthFilter implements ContainerRequestFilter {
   private static final String CHALLENGE_FORMAT = "%s realm=\"%s\"";
   
   private static final Pattern AUTH_PATTERN = Pattern.compile("^(Basic|Bearer)\\s+(.+)$");
+  private static final Pattern DATASET_PATTERN = Pattern.compile("/dataset/([0-9]+)");
   private final IdentityService idService;
   private final JwtCodec jwt;
   
@@ -49,14 +50,17 @@ public class AuthFilter implements ContainerRequestFilter {
    * Tries to read the Bearer token from the authorization header if present
    */
   @Override
-  public void filter(ContainerRequestContext requestContext) throws IOException {
-    final String auth = requestContext.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+  public void filter(ContainerRequestContext req) throws IOException {
+    final String auth = req.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
     String scheme = null;
     Optional<ColUser> user = Optional.empty();
     if (auth != null) {
       Matcher m = AUTH_PATTERN.matcher(auth.trim());
       if (m.find()) {
         if (m.group(1).equals(BASIC)) {
+          if (!isSecure(req)) {
+            throw unauthorized("Basic authentication requires SSL");
+          }
           user = doBasic(m.group(2));
           scheme = BASIC;
         } else {
@@ -66,17 +70,20 @@ public class AuthFilter implements ContainerRequestFilter {
       }
     }
     if (user.isPresent()) {
-      setSecurityContext(user.get(), scheme, requestContext);
+      setSecurityContext(user.get(), scheme, req);
     } else {
       unauthorized();
     }
   }
-  
-  private void setSecurityContext(final ColUser user, final String scheme, final ContainerRequestContext requestContext) {
-    final SecurityContext securityContext = requestContext.getSecurityContext();
-    final boolean secure = securityContext != null && securityContext.isSecure();
-    
-    requestContext.setSecurityContext(new SecurityContext() {
+
+  private static boolean isSecure(ContainerRequestContext req){
+    SecurityContext securityContext = req.getSecurityContext();
+    return securityContext != null && securityContext.isSecure();
+  }
+
+  private void setSecurityContext(final ColUser user, final String scheme, final ContainerRequestContext req) {
+    final boolean secure = isSecure(req);
+    req.setSecurityContext(new SecurityContext() {
       @Override
       public Principal getUserPrincipal() {
         return user;
@@ -84,7 +91,8 @@ public class AuthFilter implements ContainerRequestFilter {
       
       @Override
       public boolean isUserInRole(String role) {
-        return user.hasRole(role);
+        Integer datasetKey = requestedDataset();
+        return user.hasRole(role, datasetKey);
       }
       
       @Override
@@ -96,7 +104,17 @@ public class AuthFilter implements ContainerRequestFilter {
       public String getAuthenticationScheme() {
         return scheme;
       }
+
+      private Integer requestedDataset(){
+        String path = req.getUriInfo().getPath();
+        Matcher m = DATASET_PATTERN.matcher(path);
+        if (m.find()) {
+          return Integer.parseInt(m.group(1));
+        }
+        return null;
+      }
     });
+
   }
   
   private static void unauthorized() {

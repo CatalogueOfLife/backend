@@ -270,7 +270,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.jersey().register(new SynonymResource(sdao));
     env.jersey().register(new TaxonResource(tdao));
     env.jersey().register(new TreeResource(tdao, trDao));
-    env.jersey().register(new UserResource(auth.getJwtCodec()));
+    env.jersey().register(new UserResource(auth.getJwtCodec(), auth.getIdentityService()));
     env.jersey().register(new VerbatimResource());
     env.jersey().register(new VocabResource());
     // parsers

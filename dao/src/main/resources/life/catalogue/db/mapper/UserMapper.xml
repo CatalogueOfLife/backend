@@ -5,18 +5,23 @@
 <mapper namespace="life.catalogue.db.mapper.UserMapper">
 
     <sql id="SELECT">
+      <include refid="SELECT_PUBLIC"/>,
+      email,
+      roles,
+      settings,
+      datasets,
+      last_login,
+      created,
+      deleted
+    </sql>
+
+    <sql id="SELECT_PUBLIC">
       key,
       username,
       firstname,
       lastname,
-      email,
       orcid,
-      country,
-      roles,
-      settings,
-      last_login,
-      created,
-      deleted
+      country
     </sql>
 
     <sql id="COLS">
@@ -28,6 +33,7 @@
       country,
       roles,
       settings,
+      datasets,
       last_login,
       deleted
     </sql>
@@ -41,6 +47,7 @@
       #{country},
       #{roles, typeHandler=life.catalogue.db.type.RoleSetTypeHandler},
       #{settings, typeHandler=life.catalogue.db.type2.HstoreMapTypeHandler}::hstore,
+      #{datasets, typeHandler=life.catalogue.db.type2.IntSetTypeHandler},
       #{lastLogin},
       #{deleted}
     </sql>
@@ -53,6 +60,7 @@
         <id property="key" column="key" />
         <result property="roles" column="roles" typeHandler="life.catalogue.db.type.RoleSetTypeHandler"/>
         <result property="settings" column="settings" typeHandler="life.catalogue.db.type2.HstoreMapTypeHandler"/>
+        <result property="datasets" column="datasets" typeHandler="life.catalogue.db.type2.IntSetTypeHandler"/>
     </resultMap>
 
 
@@ -62,11 +70,23 @@
         WHERE key = #{key}
     </select>
 
+    <select id="getPublic" resultMap="userResultMap">
+      SELECT <include refid="SELECT_PUBLIC" />
+      FROM <include refid="FROM" />
+      WHERE key = #{key}
+    </select>
+
     <select id="getByUsername" resultMap="userResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
         WHERE username = #{username}
     </select>
+
+  <select id="datasetEditors" resultMap="userResultMap">
+    SELECT <include refid="SELECT_PUBLIC" />
+    FROM <include refid="FROM" />
+    WHERE deleted IS NULL AND datasets @> ARRAY[#{datasetKey}::int]
+  </select>
 
     <insert id="create" parameterType="ColUser" useGeneratedKeys="true" keyProperty="key">
       INSERT INTO coluser (<include refid="COLS" />)

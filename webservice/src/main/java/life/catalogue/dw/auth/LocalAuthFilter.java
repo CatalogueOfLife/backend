@@ -50,7 +50,7 @@ public class LocalAuthFilter implements ContainerRequestFilter {
       
       @Override
       public boolean isUserInRole(String role) {
-        return USER.hasRole(role);
+        return USER.hasRole(role, null);
       }
       
       @Override

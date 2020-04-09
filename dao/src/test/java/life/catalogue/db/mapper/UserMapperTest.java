@@ -1,10 +1,16 @@
 package life.catalogue.db.mapper;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.ints.IntSets;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.model.ColUser;
+import org.apache.ibatis.annotations.Param;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -20,10 +26,32 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
   public void getNull() throws Exception {
     assertNull(mapper().get(-34567));
   }
-  
+
+  @Test
+  public void datasetEditors() throws Exception {
+    final int dkAll = 1000;
+    final int dkEven = 1001;
+    List<Integer> userKeys = new ArrayList<>();
+    for (int x = 1; x<=10; x++) {
+      ColUser u = createTestEntity();
+      u.setDeleted(null);
+      u.addDataset(dkAll);
+      if (x % 2 == 0) {
+        u.addDataset(dkEven);
+      }
+      mapper().create(u);
+      userKeys.add(u.getKey());
+    }
+    commit();
+
+    assertEquals(10, mapper().datasetEditors(dkAll).size());
+    assertEquals(5, mapper().datasetEditors(dkEven).size());
+  }
+
   @Test
   public void roundtrip() throws Exception {
     ColUser u1 = createTestEntity();
+    u1.getDatasets().addAll(List.of(1,2,3));
     mapper().create(u1);
     commit();
     

@@ -9,6 +9,7 @@ import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.db.tree.DiffService;
 import life.catalogue.db.tree.NamesDiff;
 import life.catalogue.db.tree.TextTreePrinter;
@@ -193,5 +194,11 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     imgService.putDatasetLogo(key, null);
     return Response.ok().build();
   }
-  
+
+  @GET
+  @Path("{key}/user")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public List<ColUser> editors(@PathParam("key") int key, @Auth ColUser user, @Context SqlSession session) {
+    return session.getMapper(UserMapper.class).datasetEditors(key);
+  }
 }

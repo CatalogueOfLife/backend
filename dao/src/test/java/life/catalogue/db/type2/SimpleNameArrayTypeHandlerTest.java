@@ -28,7 +28,8 @@ public class SimpleNameArrayTypeHandlerTest {
         "(\"id\"\"123\"\"\",GENUS,\"Bern'd, (1973)\")",
         "(,,Bernd)"
       });
-      List<SimpleName> names = SimpleNameArrayTypeHandler.toList(array);
+      SimpleNameArrayTypeHandler snh = new SimpleNameArrayTypeHandler();
+      List<SimpleName> names = snh.toObj(array);
       assertSN(names.get(0), "k6", Rank.KINGDOM, "Plantae");
       assertSN(names.get(1), "fhsdfgh,; h2", Rank.PHYLUM, "Tracheophyta, 1677");
       assertSN(names.get(2), "id\"123\"", Rank.GENUS, "Bern'd, (1973)");

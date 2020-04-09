@@ -60,7 +60,7 @@ public class IdentityService {
     }
   }
   
-  private ColUser cache(ColUser user) {
+  public ColUser cache(ColUser user) {
     if (cache != null) {
       cache.put(user.getUsername(), user);
     }

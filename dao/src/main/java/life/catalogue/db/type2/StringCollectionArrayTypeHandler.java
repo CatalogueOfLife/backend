@@ -23,37 +23,22 @@ import org.apache.ibatis.type.JdbcType;
 /**
  * String array handler that avoids nulls and uses empty arrays instead.
  */
-public class StringCollectionArrayTypeHandler extends BaseTypeHandler<Collection<String>> {
-  
-  @Override
-  public void setNonNullParameter(PreparedStatement ps, int i, Collection<String> parameter, JdbcType jdbcType) throws SQLException {
-    Array array = ps.getConnection().createArrayOf("text", parameter.toArray());
-    ps.setArray(i, array);
+public class StringCollectionArrayTypeHandler extends AbstractArrayTypeHandler<Collection<String>> {
+
+  public StringCollectionArrayTypeHandler() {
+    super("text", Collections.emptyList());
   }
-  
+
+
   @Override
-  public void setParameter(PreparedStatement ps, int i, Collection<String> parameter, JdbcType jdbcType) throws SQLException {
-    setNonNullParameter(ps, i, parameter == null ? Collections.emptyList() : parameter, jdbcType);
+  public Object[] toArray(Collection<String> obj) throws SQLException {
+    return obj.toArray();
   }
-  
+
   @Override
-  public Collection<String> getNullableResult(ResultSet rs, String columnName) throws SQLException {
-    return toCollection(rs.getArray(columnName));
-  }
-  
-  @Override
-  public Collection<String> getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
-    return toCollection(rs.getArray(columnIndex));
-  }
-  
-  @Override
-  public Collection<String> getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
-    return toCollection(cs.getArray(columnIndex));
-  }
-  
-  private Collection<String> toCollection(Array pgArray) throws SQLException {
+  public Collection<String> toObj(Array pgArray) throws SQLException {
     if (pgArray == null) return Lists.newArrayList();
-    
+
     String[] strings = (String[]) pgArray.getArray();
     return Lists.newArrayList(strings);
   }

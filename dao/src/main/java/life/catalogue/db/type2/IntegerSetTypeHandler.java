@@ -14,6 +14,7 @@ package life.catalogue.db.type2;
 
 import java.sql.Array;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,15 +23,21 @@ import com.google.common.collect.Sets;
 /**
  * Stores integer sets as non null arrays in postgres, avoiding nulls and uses empty sets instead.
  */
-public class IntegerSetTypeHandler extends AbstractSetTypeHandler<Integer> {
+public class IntegerSetTypeHandler extends AbstractArrayTypeHandler<Set<Integer>> {
   
   public IntegerSetTypeHandler() {
-    super("integer");
+    super("integer", Collections.emptySet());
   }
-  
-  Set<Integer> toSet(Array pgArray) throws SQLException {
+
+  @Override
+  public Object[] toArray(Set<Integer> obj) throws SQLException {
+    return obj.toArray();
+  }
+
+  @Override
+  public Set<Integer> toObj(Array pgArray) throws SQLException {
     if (pgArray == null) return new HashSet<>();
-  
+
     Integer[] strings = (Integer[]) pgArray.getArray();
     return Sets.newHashSet(strings);
   }

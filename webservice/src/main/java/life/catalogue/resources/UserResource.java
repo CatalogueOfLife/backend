@@ -1,7 +1,10 @@
 package life.catalogue.resources;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -9,6 +12,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
 import io.dropwizard.auth.Auth;
+import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.model.Dataset;
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.dw.auth.IdentityService;
+import life.catalogue.dw.auth.Roles;
 import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.model.ColUser;
 import life.catalogue.db.mapper.UserMapper;
@@ -25,9 +33,11 @@ public class UserResource {
   private static final Logger LOG = LoggerFactory.getLogger(UserResource.class);
   
   private final JwtCodec jwt;
-  
-  public UserResource(JwtCodec jwt) {
+  private final IdentityService idService;
+
+  public UserResource(JwtCodec jwt, IdentityService idService) {
     this.jwt = jwt;
+    this.idService = idService;
   }
 
   @GET
@@ -79,5 +89,67 @@ public class UserResource {
       session.getMapper(UserMapper.class).update(user);
       session.commit();
     }
+  }
+
+  @GET
+  @Path("/me/dataset")
+  @PermitAll
+  public List<Dataset> datasets(@Auth ColUser user, @Context SqlSession session) {
+    return listDatasetsByUser(session, user);
+  }
+
+  @GET
+  @Path("/{key}/dataset")
+  @RolesAllowed({Roles.ADMIN})
+  public List<Dataset> datasetsByUser(@PathParam("key") Integer key, @Context SqlSession session) {
+    return listDatasetsByUser(session, getUser(session, key));
+  }
+
+  @POST
+  @Path("/{key}/dataset")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void addDatasetKey(@PathParam("key") int key, @Auth ColUser editor, int datasetKey, @Context SqlSession session) {
+    if (!editor.isAuthorized(datasetKey)) {
+      throw new WebApplicationException(Response.Status.FORBIDDEN);
+    }
+    ColUser user = getUser(session, key);
+    user.addDataset(datasetKey);
+    updateUser(session, user);
+  }
+
+  @DELETE
+  @Path("/{key}/dataset/{datasetKey}")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void removeDatasetKey(@PathParam("key") int key, @PathParam("datasetKey") int datasetKey, @Auth ColUser editor, @Context SqlSession session) {
+    ColUser user = getUser(session, key);
+    user.removeDataset(datasetKey);
+    updateUser(session, user);
+  }
+
+  private List<Dataset> listDatasetsByUser(SqlSession session, ColUser user){
+    List<Dataset> datasets = new ArrayList<>();
+    DatasetMapper dm = session.getMapper(DatasetMapper.class);
+    for (int datasetKey : user.getDatasets()) {
+      Dataset d = dm.get(datasetKey);
+      if (d != null) {
+        datasets.add(d);
+      }
+    }
+    return datasets;
+  }
+
+  private void updateUser(SqlSession session, ColUser user){
+    session.getMapper(UserMapper.class).update(user);;
+    session.commit();
+    idService.cache(user);
+  }
+
+  private static ColUser getUser(SqlSession session, int key) throws NotFoundException {
+    UserMapper um = session.getMapper(UserMapper.class);
+    ColUser user = um.get(key);
+    if (user == null) {
+      throw NotFoundException.keyNotFound(ColUser.class, key);
+    }
+    return user;
   }
 }

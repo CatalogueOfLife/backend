@@ -557,6 +557,7 @@ CREATE TABLE coluser (
   orcid TEXT,
   country TEXT,
   roles COLUSER_ROLE[],
+  datasets INT[],
   settings HSTORE
 );
 

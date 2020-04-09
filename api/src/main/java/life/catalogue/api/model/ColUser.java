@@ -7,6 +7,8 @@ import javax.annotation.Nonnull;
 import javax.security.auth.Subject;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.vocab.Country;
 
 public class ColUser implements Principal {
@@ -26,6 +28,7 @@ public class ColUser implements Principal {
   private Country country;
   private Set<Role> roles = EnumSet.noneOf(Role.class);
   private Map<String, String> settings = new HashMap<>();
+  private IntSet datasets = new IntOpenHashSet();
   private LocalDateTime lastLogin;
   private LocalDateTime created;
   private LocalDateTime deleted;
@@ -45,21 +48,37 @@ public class ColUser implements Principal {
     return false;
   }
   
-  public boolean hasRole(String role) {
+  public boolean hasRole(String role, Integer datasetKey) {
     try {
       Role r = Role.valueOf(role.trim().toUpperCase());
-      return hasRole(r);
+      return hasRole(r, datasetKey);
       
     } catch (IllegalArgumentException e) {
       // swallow, we dont know this role so the user doesnt have it.
     }
     return false;
   }
-  
-  public boolean hasRole(Role role) {
-    return roles.contains(role);
+
+  /**
+   * Checks if a user has the given role and evaluates for the {@link Role#EDITOR} role also the given datasetKey
+   */
+  public boolean hasRole(Role role, Integer datasetKey) {
+    // the editor role is scoped by datasetKey, see https://github.com/CatalogueOfLife/backend/issues/580
+    return roles.contains(role) && (role != Role.EDITOR || (datasetKey != null && isEditor(datasetKey)));
   }
-  
+
+  /**
+   * @return true if the user is an {@link Role#ADMIN} or {@link Role#EDITOR} with the given datasetKey listed in datasets
+   */
+  public boolean isAuthorized(Integer datasetKey) {
+    if (datasetKey == null) return true;
+    return roles.contains(Role.ADMIN) || isEditor(datasetKey);
+  }
+
+  public boolean isEditor(int datasetKey) {
+    return roles.contains(Role.EDITOR) && datasets.contains(datasetKey);
+  }
+
   public Integer getKey() {
     return key;
   }
@@ -131,7 +150,23 @@ public class ColUser implements Principal {
   public void setSettings(Map<String, String> settings) {
     this.settings = settings;
   }
-  
+
+  public IntSet getDatasets() {
+    return datasets;
+  }
+
+  public void setDatasets(IntSet datasets) {
+    this.datasets = datasets;
+  }
+
+  public void addDataset(int datasetKey) {
+    datasets.add(datasetKey);
+  }
+
+  public void removeDataset(int datasetKey) {
+    datasets.remove(datasetKey);
+  }
+
   public LocalDateTime getDeleted() {
     return deleted;
   }
@@ -170,6 +205,7 @@ public class ColUser implements Principal {
         country == user.country &&
         Objects.equals(roles, user.roles) &&
         Objects.equals(settings, user.settings) &&
+        Objects.equals(datasets, user.datasets) &&
         Objects.equals(lastLogin, user.lastLogin) &&
         Objects.equals(created, user.created) &&
         Objects.equals(deleted, user.deleted);
@@ -178,7 +214,7 @@ public class ColUser implements Principal {
   @Override
   public int hashCode() {
     
-    return Objects.hash(key, username, firstname, lastname, email, orcid, country, roles, settings, lastLogin, created, deleted);
+    return Objects.hash(key, username, firstname, lastname, email, orcid, country, roles, settings, datasets, lastLogin, created, deleted);
   }
   
   @Override
