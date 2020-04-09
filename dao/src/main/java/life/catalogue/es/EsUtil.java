@@ -242,10 +242,11 @@ public class EsUtil {
         .sortBy(SortField.DOC);
     esRequest.setQuery(query);
     request.setJsonEntity(esRequest.toString());
-    // Returns immediately because wait_for_completion=false
     Response response;
     while (true) {
       try {
+        // Execute and return immediately (wait_for_completion=false)
+        // Response will contain a task ID rather than the result
         response = executeRequest(client, request);
         break;
       } catch (TooManyRequestsException e) {
@@ -415,14 +416,10 @@ public class EsUtil {
       } catch (EsRequestException e) {
         if (i == attempts) {
           throw e;
+        } else if (LOG.isTraceEnabled()) {
+          LOG.trace("{}. Attempt {} failed. Will attempt again after {} milliseconds",
+              e.getMessage(), i, waitMillis);
         }
-      }
-      if (LOG.isTraceEnabled()) {
-        LOG.trace("{} {} - attempt {} failed. Will attempt again after {} milliseconds",
-            request.getMethod(),
-            request.getEndpoint(),
-            i,
-            waitMillis);
       }
       sleep(waitMillis);
     }

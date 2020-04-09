@@ -2,8 +2,6 @@ package life.catalogue.es.nu.search;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.es.InvalidQueryException;
@@ -14,7 +12,7 @@ import life.catalogue.es.query.IsNullQuery;
 import life.catalogue.es.query.Query;
 import life.catalogue.es.query.TermQuery;
 import life.catalogue.es.query.TermsQuery;
-
+import static java.util.stream.Collectors.toList;
 import static life.catalogue.api.search.NameUsageSearchRequest.IS_NOT_NULL;
 import static life.catalogue.api.search.NameUsageSearchRequest.IS_NULL;
 
@@ -54,10 +52,7 @@ class FilterTranslator {
   }
 
   private List<?> getLiteralValues(NameUsageSearchParameter param) throws InvalidQueryException {
-    return request.getFilterValues(param)
-        .stream()
-        .filter(this::isLiteral)
-        .collect(Collectors.toList());
+    return request.getFilterValues(param).stream().filter(this::isLiteral).collect(toList());
   }
 
   private boolean isLiteral(Object o) {

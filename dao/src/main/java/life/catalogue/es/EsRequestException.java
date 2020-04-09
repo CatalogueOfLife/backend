@@ -1,5 +1,6 @@
 package life.catalogue.es;
 
+import java.util.Objects;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseException;
 import org.slf4j.Logger;
@@ -38,6 +39,12 @@ public class EsRequestException extends EsException {
     }
   }
 
+  /**
+   * Returns the <code>Response</code> object if this exception was constructed with it, or with a <code>ResponseException</code>; null
+   * otherwise.
+   * 
+   * @return
+   */
   public Response getResponse() {
     return response;
   }
@@ -48,11 +55,11 @@ public class EsRequestException extends EsException {
     }
     StringBuilder sb = new StringBuilder(100);
     sb.append(BASE_MESSAGE).append(' ').append(t.getMessage());
-    if (t.getCause() != null) {
-      /*
-       * See documentation for RestClient.performRequest. Just in case the throwable is a rather non-descript wrapper around the real cause,
-       * we also append the cause to the error message.
-       */
+    /*
+     * See documentation for RestClient.performRequest. Just in case the throwable is a non-descript wrapper around the real cause, we also
+     * append the cause to the error message.
+     */
+    if (t.getCause() != null && !Objects.equals(t.getMessage(), t.getCause().getMessage())) {
       sb.append(". Caused by: ").append(t.getCause());
     }
     return sb.toString();

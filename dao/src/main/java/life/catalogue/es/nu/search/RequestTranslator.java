@@ -1,7 +1,5 @@
 package life.catalogue.es.nu.search;
 
-import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.*;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.es.DownwardConverter;
@@ -9,7 +7,9 @@ import life.catalogue.es.query.BoolQuery;
 import life.catalogue.es.query.EsSearchRequest;
 import life.catalogue.es.query.MatchAllQuery;
 import life.catalogue.es.query.Query;
-import life.catalogue.es.query.TermQuery;
+import static life.catalogue.api.search.NameUsageSearchParameter.CATALOGUE_KEY;
+import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
+import static life.catalogue.api.search.NameUsageSearchParameter.USAGE_ID;
 
 /**
  * Translates a {@link NameUsageSearchRequest} into a native Elasticsearch search request. Mostly manages the other translators in this
@@ -19,13 +19,9 @@ class RequestTranslator implements DownwardConverter<NameUsageSearchRequest, EsS
 
   static Query generateQuery(NameUsageSearchRequest request) {
     if (request.hasFilter(USAGE_ID)) {
-      // usage id request must have datasetKey, see request validator
-      BoolQuery q = new BoolQuery()
-          .minimumShouldMatch(1)
-          .filter(new TermQuery("datasetKey", request.getFilterValue(DATASET_KEY)));
-      request.getFilterValues(USAGE_ID).forEach(id -> q.should(new TermQuery("usageId", id)));
-      return q;
-
+      return new BoolQuery()
+        .filter(new FilterTranslator(request).translate(DATASET_KEY))
+        .filter(new FilterTranslator(request).translate(USAGE_ID));
     } else if (mustGenerateFilters(request)) {
       if (request.hasQ()) {
         return new BoolQuery()
