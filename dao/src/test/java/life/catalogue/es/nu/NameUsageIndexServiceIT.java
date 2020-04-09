@@ -1,5 +1,14 @@
 package life.catalogue.es.nu;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Comparator;
+import java.util.List;
+import org.gbif.nameparser.api.Rank;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.DSID;
@@ -11,7 +20,6 @@ import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.DecisionDao;
 import life.catalogue.dao.NameDao;
 import life.catalogue.dao.TaxonDao;
@@ -20,25 +28,12 @@ import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadWriteTestBase;
 import life.catalogue.es.EsSetupRule;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.es.nu.NameUsageWrapperConverter;
 import life.catalogue.es.query.TermQuery;
 import life.catalogue.es.query.TermsQuery;
-import org.gbif.nameparser.api.Rank;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
 import static java.util.stream.Collectors.toList;
-import static life.catalogue.db.PgSetupRule.getSqlSessionFactory;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static life.catalogue.db.PgSetupRule.getSqlSessionFactory;
 
 /*
  * Full round-trips into Postgres via DAOs, out of Postgres via the NameUsageWrapperMapper, into Elasticsearch via the NameUsageIndexService
@@ -46,7 +41,7 @@ import static org.junit.Assert.assertNull;
  * them to be compared, but not much. (For example the recursive query we execute in Postgres, and the resulting sort order, cannot be
  * emulated with Elasticsearch.)
  */
-@Ignore
+//@Ignore
 public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageIndexServiceIT.class);
@@ -212,7 +207,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
   }
 
   // Some JSON to send using the REST API
-  void printDecision() throws JsonProcessingException {
+  void printDecision() {
     SimpleName sn = new SimpleName("s1", "Larus Fuscus", Rank.SPECIES);
     EditorialDecision decision = new EditorialDecision();
     decision.setSubject(sn);
