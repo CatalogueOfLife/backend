@@ -36,7 +36,11 @@ public class ColUser implements Principal {
   public void addRole(Role role) {
     roles.add(role);
   }
-  
+
+  public void removeRole(Role role) {
+    roles.remove(role);
+  }
+
   @Override
   @JsonIgnore
   public String getName() {
@@ -64,7 +68,9 @@ public class ColUser implements Principal {
    */
   public boolean hasRole(Role role, Integer datasetKey) {
     // the editor role is scoped by datasetKey, see https://github.com/CatalogueOfLife/backend/issues/580
-    return roles.contains(role) && (role != Role.EDITOR || (datasetKey != null && isEditor(datasetKey)));
+    return roles.contains(role) &&
+      (role != Role.EDITOR || datasetKey == null || isEditor(datasetKey)
+    );
   }
 
   /**

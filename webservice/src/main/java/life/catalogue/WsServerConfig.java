@@ -50,6 +50,11 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   @NotNull
   public String jwtKey = "bhc564c76VT-d/722mc";
 
+  /**
+   * Require a secure SSL connection when basic authentication is used.
+   */
+  public boolean requireSSL = false;
+
   @Valid
   @NotNull
   public GbifConfig gbif = new GbifConfig();

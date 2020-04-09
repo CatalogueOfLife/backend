@@ -23,7 +23,7 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
     jwtCodec = new JwtCodec(cfg.jwtKey);
     idService = new IdentityService(cfg.auth.createAuthenticationProvider(), true);
 
-    ContainerRequestFilter authFilter = new AuthFilter(idService, jwtCodec);
+    ContainerRequestFilter authFilter = new AuthFilter(idService, jwtCodec, cfg.requireSSL);
     // WARNING!!! Never check in the LocalAuthFilter. It is meant purely for local testing !!!
     //authFilter = new LocalAuthFilter();
     environment.jersey().register(new AuthDynamicFeature(authFilter));

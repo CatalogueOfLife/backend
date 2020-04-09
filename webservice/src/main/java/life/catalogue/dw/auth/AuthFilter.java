@@ -39,11 +39,13 @@ public class AuthFilter implements ContainerRequestFilter {
   private static final Pattern DATASET_PATTERN = Pattern.compile("/dataset/([0-9]+)");
   private final IdentityService idService;
   private final JwtCodec jwt;
+  private final boolean requireSecure;
+
   
-  
-  public AuthFilter(IdentityService idService, JwtCodec jwt) {
+  public AuthFilter(IdentityService idService, JwtCodec jwt, boolean requireSecure) {
     this.idService = idService;
     this.jwt = jwt;
+    this.requireSecure = requireSecure;
   }
   
   /**
@@ -58,7 +60,7 @@ public class AuthFilter implements ContainerRequestFilter {
       Matcher m = AUTH_PATTERN.matcher(auth.trim());
       if (m.find()) {
         if (m.group(1).equals(BASIC)) {
-          if (!isSecure(req)) {
+          if (requireSecure && !isSecure(req)) {
             throw unauthorized("Basic authentication requires SSL");
           }
           user = doBasic(m.group(2));

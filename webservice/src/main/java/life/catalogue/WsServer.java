@@ -243,6 +243,9 @@ public class WsServer extends Application<WsServerConfig> {
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory());
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory());
     TreeDao trDao = new TreeDao(getSqlSessionFactory());
+    DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), new DownloadUtil(httpClient), imgService, diDao, indexService, cfg.normalizer::scratchFile,
+      // update user cache in identity service when the user datasets change
+      auth.getIdentityService()::cache);
 
     // resources
     env.jersey()
@@ -256,7 +259,7 @@ public class WsServer extends Application<WsServerConfig> {
             gbifSync));
     env.jersey().register(new AssemblyResource(getSqlSessionFactory(), tdao, assembly, exporter, releaseManager));
     env.jersey().register(new DataPackageResource());
-    env.jersey().register(new DatasetResource(getSqlSessionFactory(), imgService, diDao, cfg, new DownloadUtil(httpClient), diff, indexService, exporter));
+    env.jersey().register(new DatasetResource(getSqlSessionFactory(), ddao, imgService, diDao, diff, exporter));
     env.jersey().register(new DecisionResource(getSqlSessionFactory(), indexService));
     env.jersey().register(new DocsResource(cfg));
     env.jersey().register(new DuplicateResource());

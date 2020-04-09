@@ -1,5 +1,6 @@
 package life.catalogue.dao;
 
+import life.catalogue.api.model.ColUser;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
@@ -23,6 +24,7 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
   
@@ -34,19 +36,26 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
   private final BiFunction<Integer, String, File> scratchFileFunc;
   private final DatasetImportDao diDao;
   private final NameUsageIndexService indexService;
-  
+  private final Consumer<ColUser> userChangedNotifier;
+
+  /**
+   * @param scratchFileFunc function to generate a scrach dir for logo updates
+   * @param userChangedNotifier notification hook when a user has changed, e.g. a new dataset key was added
+   */
   public DatasetDao(SqlSessionFactory factory,
                     DownloadUtil downloader,
                     ImageService imgService,
                     DatasetImportDao diDao,
                     NameUsageIndexService indexService,
-                    BiFunction<Integer, String, File> scratchFileFunc) {
+                    BiFunction<Integer, String, File> scratchFileFunc,
+                    Consumer<ColUser> userChangedNotifier) {
     super(false, factory, DatasetMapper.class);
     this.downloader = downloader;
     this.imgService = imgService;
     this.scratchFileFunc = scratchFileFunc;
     this.diDao = diDao;
     this.indexService = indexService;
+    this.userChangedNotifier = userChangedNotifier;
   }
   
   public ResultPage<Dataset> list(Page page) {
@@ -122,6 +131,13 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
     if (obj.getOrigin() == DatasetOrigin.MANAGED) {
       recreatePartition(obj.getKey());
     }
+    // update user permissions
+    UserMapper um = session.getMapper(UserMapper.class);
+    ColUser u = um.get(user);
+    u.addDataset(obj.getKey());
+    um.update(u);
+    userChangedNotifier.accept(u);
+    session.commit();
   }
 
   @Override

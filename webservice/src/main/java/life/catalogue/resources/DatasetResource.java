@@ -52,13 +52,9 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   private final DiffService diff;
   private final AcExporter exporter;
 
-  public DatasetResource(SqlSessionFactory factory, ImageService imgService, DatasetImportDao diDao, WsServerConfig cfg,
-                         DownloadUtil downloader, DiffService diff, NameUsageIndexService indexService, AcExporter exporter) {
-    super(Dataset.class,
-            new DatasetDao(factory, downloader, imgService, diDao, indexService, cfg.normalizer::scratchFile),
-            factory
-    );
-    this.dao = (DatasetDao) super.dao;
+  public DatasetResource(SqlSessionFactory factory, DatasetDao dao, ImageService imgService, DatasetImportDao diDao, DiffService diff, AcExporter exporter) {
+    super(Dataset.class, dao, factory);
+    this.dao = dao;
     this.imgService = imgService;
     this.diDao = diDao;
     this.diff = diff;
