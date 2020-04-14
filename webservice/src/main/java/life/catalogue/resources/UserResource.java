@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
+import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -14,6 +15,7 @@ import javax.ws.rs.core.SecurityContext;
 import io.dropwizard.auth.Auth;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.Page;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.auth.IdentityService;
 import life.catalogue.dw.auth.Roles;
@@ -54,9 +56,13 @@ public class UserResource {
     return u;
   }
 
+  private static Page defaultPage(Page page){
+    return page == null ? new Page(0, 10) : page;
+  }
+
   @GET
-  public List<User> search(@QueryParam("q") String q, @Context SqlSession session) {
-    List<User> user = session.getMapper(UserMapper.class).search(q);
+  public List<User> search(@QueryParam("q") String q, @Context SqlSession session, @Valid @BeanParam Page page) {
+    List<User> user = session.getMapper(UserMapper.class).search(q, defaultPage(page));
     user.forEach(UserResource::obfuscate);
     return user;
   }

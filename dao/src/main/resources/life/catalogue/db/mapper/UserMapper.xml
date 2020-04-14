@@ -89,7 +89,7 @@
       OR firstname ILIKE '%${q}%'
       OR lastname ILIKE '%${q}%'
     ORDER BY username
-    LIMIT 50
+    <include refid="life.catalogue.db.Common.limit" />
   </select>
 
   <select id="datasetEditors" resultMap="userResultMap">

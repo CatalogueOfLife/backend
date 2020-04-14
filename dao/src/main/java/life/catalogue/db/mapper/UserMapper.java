@@ -1,5 +1,6 @@
 package life.catalogue.db.mapper;
 
+import life.catalogue.api.model.Page;
 import org.apache.ibatis.annotations.Param;
 import life.catalogue.api.model.User;
 import life.catalogue.db.GlobalPageable;
@@ -21,7 +22,7 @@ public interface UserMapper extends GlobalPageable<User> {
    * @param query string for a like search
    * @return public user infos for the first 50 matches
    */
-  List<User> search(@Param("q") String query);
+  List<User> search(@Param("q") String query, @Param("page") Page page);
 
   void create(User obj);
 
