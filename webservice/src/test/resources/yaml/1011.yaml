@@ -1,0 +1,125 @@
+format: ACEF
+files:
+  - name: AcceptedSpecies.csv
+    url: https://raw.githubusercontent.com/CatalogueOfLife/backend/master/webservice/src/test/resources/acef/1011/AcceptedSpecies.csv
+    encoding: UTF-8
+    delimiter: ","
+    quotation: "\""
+    header:
+      - acef:AcceptedTaxonID
+      - acef:Kingdom
+      - acef:Phylum
+      - acef:Class
+      - acef:Order
+      - acef:Superfamily
+      - acef:Family
+      - acef:Genus
+      - acef:SubGenusName
+      - acef:SpeciesEpithet
+      - acef:AuthorString
+      - acef:GSDNameStatus
+      - acef:Sp2000NameStatus
+      - acef:IsExtinct
+      - acef:HasPreHolocene
+      - acef:HasModern
+      - acef:LifeZone
+      - acef:AdditionalData
+      - acef:LTSSpecialist
+      - acef:LTSDate
+      - acef:SpeciesURL
+      - acef:GSDTaxonGUID
+      - acef:GSDNameGUID
+  - name: AcceptedInfraSpecificTaxa.csv
+    url: https://raw.githubusercontent.com/CatalogueOfLife/backend/master/webservice/src/test/resources/acef/1011/AcceptedInfraSpecificTaxa.csv
+    encoding: UTF-8
+    delimiter: ","
+    quotation: "\""
+    header:
+      - acef:AcceptedTaxonID
+      - acef:ParentSpeciesID
+      - acef:InfraSpeciesEpithet
+      - acef:InfraSpeciesAuthorString
+      - acef:InfraSpeciesMarker
+      - acef:GSDNameStatus
+      - acef:Sp2000NameStatus
+      - acef:IsExtinct
+      - acef:HasPreHolocene
+      - acef:HasModern
+      - acef:LifeZone
+      - acef:AdditionalData
+      - acef:LTSSpecialist
+      - acef:LTSDate
+      - acef:InfraSpeciesURL
+      - acef:GSDTaxonGUID
+      - acef:GSDNameGUID
+  - name: Synonyms.csv
+    url: https://raw.githubusercontent.com/CatalogueOfLife/backend/master/webservice/src/test/resources/acef/1011/Synonyms.csv
+    encoding: UTF-8
+    delimiter: ","
+    quotation: "\""
+    header:
+      - acef:ID
+      - acef:AcceptedTaxonID
+      - acef:Genus
+      - acef:SubGenusName
+      - acef:SpeciesEpithet
+      - acef:AuthorString
+      - acef:InfraSpeciesEpithet
+      - acef:InfraSpeciesMarker
+      - acef:InfraSpeciesAuthorString
+      - acef:GSDNameStatus
+      - acef:Sp2000NameStatus
+      - acef:GSDNameGUID
+  - name: NameReferencesLinks.csv
+    url: https://raw.githubusercontent.com/CatalogueOfLife/backend/master/webservice/src/test/resources/acef/1011/NameReferencesLinks.csv
+    encoding: UTF-8
+    delimiter: ","
+    quotation: "\""
+    header:
+      - acef:ID
+      - acef:ReferenceType
+      - acef:ReferenceID
+  - name: SourceDatabase.csv
+    url: https://raw.githubusercontent.com/CatalogueOfLife/backend/master/webservice/src/test/resources/acef/1011/SourceDatabase.csv
+    encoding: UTF-8
+    delimiter: ","
+    quotation: "\""
+    header:
+      - acef:DatabaseFullName
+      - acef:DatabaseShortName
+      - acef:DatabaseVersion
+      - acef:ReleaseDate
+      - acef:AuthorsEditors
+      - acef:TaxonomicCoverage
+      - acef:GroupNameInEnglish
+      - acef:Abstract
+      - acef:Organisation
+      - acef:HomeURL
+      - acef:Coverage
+      - acef:Completeness
+      - acef:Confidence
+      - acef:LogoFileName
+      - acef:ContactPerson
+  - name: Distribution.csv
+    url: https://raw.githubusercontent.com/CatalogueOfLife/backend/master/webservice/src/test/resources/acef/1011/Distribution.csv
+    encoding: UTF-8
+    delimiter: ","
+    quotation: "\""
+    header:
+      - acef:AcceptedTaxonID
+      - acef:DistributionElement
+      - acef:StandardInUse
+      - acef:DistributionStatus
+  - name: CommonNames.csv
+    url: https://raw.githubusercontent.com/CatalogueOfLife/backend/master/webservice/src/test/resources/acef/1011/CommonNames.csv
+    encoding: UTF-8
+    delimiter: ","
+    quotation: "\""
+    header:
+      - acef:AcceptedTaxonID
+      - acef:CommonName
+      - acef:TransliteratedName
+      - acef:Country
+      - acef:Area
+      - acef:Language
+      - acef:ReferenceID
