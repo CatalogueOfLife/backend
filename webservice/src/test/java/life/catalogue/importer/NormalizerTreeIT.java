@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
+import life.catalogue.api.vocab.DatasetSettings;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -145,7 +146,7 @@ public class NormalizerTreeIT {
       d.setKey(datasetKey);
       d.setDataFormat(format);
       // check if dataset.yaml file exists for extended dataset properties
-      NormalizerITBase.readDatasetCode(resourceDir).ifPresent(d::setCode);
+      NormalizerITBase.readDatasetCode(resourceDir).ifPresent(code -> d.putSetting(DatasetSettings.NOMENCLATURAL_CODE, code));
       
       store.put(d);
       

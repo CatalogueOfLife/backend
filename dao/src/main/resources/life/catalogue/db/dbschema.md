@@ -9,7 +9,15 @@ We could have used Liquibase, but we would not have trusted the automatic update
 and done it manually. So we can as well log changes here.
 
 ### PROD changes
-   
+
+#### 2020-04-14 remove nomcode
+```
+UPDATE dataset SET settings = coalesce(settings, '{}'::jsonb) || jsonb_build_object('NOMENCLATURAL_CODE', code) WHERE code IS NOT NULL;
+ALTER TABLE dataset DROP COLUMN code;
+UPDATE dataset_archive SET settings = coalesce(settings, '{}'::jsonb) || jsonb_build_object('NOMENCLATURAL_CODE', code) WHERE code IS NOT NULL;
+ALTER TABLE dataset_archive DROP COLUMN code;
+```
+
 #### 2020-04-09 user datasets
 ```
 ALTER TABLE coluser ADD COLUMN datasets INT[];

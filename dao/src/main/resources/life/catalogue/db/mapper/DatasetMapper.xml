@@ -28,7 +28,6 @@
       d.locked,
       d.private,
       d.import_frequency,
-      d.code,
       d.notes,
       d.alias,
       d."group",
@@ -67,7 +66,6 @@
       locked,
       private,
       import_frequency,
-      code,
       notes,
       alias,
       "group",
@@ -100,7 +98,6 @@
       #{locked},
       #{privat},
       #{importFrequency, typeHandler=life.catalogue.db.type.FrequencyTypeHandler},
-      #{code}::NOMCODE,
       #{notes},
       #{alias},
       #{group},
@@ -126,7 +123,7 @@
                 )
             </if>
             <if test="req.code != null">
-                AND code=#{req.code}::NOMCODE
+                AND settings @> jsonb_build_object('NOMENCLATURAL_CODE', #{req.code})
             </if>
             <if test="req.type != null">
                 AND type=#{req.type}::DATASETTYPE

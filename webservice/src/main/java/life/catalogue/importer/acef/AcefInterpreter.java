@@ -2,6 +2,7 @@ package life.catalogue.importer.acef;
 
 import com.google.common.base.Strings;
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.DatasetSettings;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -207,7 +208,7 @@ public class AcefInterpreter extends InterpreterBase {
       );
       opt = Optional.of(nat);
 
-    } else if (dataset.getCode() == NomCode.VIRUS) {
+    } else if (dataset.getSettingEnum(DatasetSettings.NOMENCLATURAL_CODE) == NomCode.VIRUS) {
       // we shortcut building the ACEF virus name here as we don't want the genus classification to end up in the full name
       NameAccordingTo nat = new NameAccordingTo();
       nat.setName(new Name());

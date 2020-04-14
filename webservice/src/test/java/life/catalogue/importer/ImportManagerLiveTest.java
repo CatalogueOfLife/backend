@@ -103,7 +103,7 @@ public class ImportManagerLiveTest {
     d.setType(DatasetType.TAXONOMIC);
     d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setTitle("Moss Bug Base");
-    d.setCode(NomCode.BACTERIAL);
+    d.putSetting(DatasetSettings.NOMENCLATURAL_CODE, NomCode.BACTERIAL);
     d.setDataFormat(DataFormat.DWCA);
     d.setDataAccess(URI.create("http://rs.gbif.org/datasets/dsmz.zip"));
     d.setCreatedBy(TestDataRule.TEST_USER.getKey());

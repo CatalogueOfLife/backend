@@ -6,8 +6,10 @@ import com.google.common.collect.ImmutableSet;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
 import life.catalogue.api.vocab.*;
+import org.gbif.nameparser.api.NomCode;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 /**
@@ -74,6 +76,16 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     assertNull(d.getDataAccess());
     assertNull(d.getLogo());
     assertNull(d.getLicense());
+  }
+
+  @Test
+  public void testSettings() throws Exception {
+    Dataset d = new Dataset();
+
+    assertNull(d.getSettingEnum(DatasetSettings.NOMENCLATURAL_CODE));
+
+    d.putSetting(DatasetSettings.NOMENCLATURAL_CODE, NomCode.BOTANICAL);
+    assertEquals(NomCode.BOTANICAL, d.getSettingEnum(DatasetSettings.NOMENCLATURAL_CODE));
   }
 
   @Override

@@ -7,6 +7,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Reference;
 import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.api.vocab.DatasetSettings;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.img.ImageService;
@@ -41,8 +42,8 @@ public class ColdpInserterTest extends InserterBaseTest {
     assertEquals("https://www.fishbase.org", d.getWebsite().toString());
     assertEquals("https://www.fishbase.de/images/gifs/fblogo_new.gif", d.getLogo().toString());
     assertEquals("Froese R. & Pauly D. (eds) (2018). FishBase (version 06/2018).", d.getCitation());
-  
-    assertEquals(NomCode.BOTANICAL, d.getCode());
+
+    assertEquals(NomCode.BOTANICAL, d.getSettingEnum(DatasetSettings.NOMENCLATURAL_CODE));
     assertEquals((Integer)4, d.getConfidence());
     assertEquals((Integer)32, d.getCompleteness());
     assertEquals("my personal,\n" +

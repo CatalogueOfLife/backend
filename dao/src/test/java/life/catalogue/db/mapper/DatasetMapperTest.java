@@ -53,11 +53,10 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     d.setVersion("v123");
     d.setWebsite(URI.create("https://www.gbif.org/dataset/" + d.getGbifKey()));
     d.setNotes("my notes");
-    d.setCode(NomCode.ZOOLOGICAL);
     d.getOrganisations().add("my org");
     d.getOrganisations().add("your org");
     d.putSetting(DatasetSettings.REMATCH_DECISIONS, false);
-    d.putSetting(DatasetSettings.NOMENCLATURAL_CODE, NomCode.BOTANICAL);
+    d.putSetting(DatasetSettings.NOMENCLATURAL_CODE, NomCode.ZOOLOGICAL);
     d.putSetting(DatasetSettings.CSV_DELIMITER, "fun");
     d.putSetting(DatasetSettings.DISTRIBUTION_GAZETTEER, Gazetteer.ISO);
     return d;
@@ -432,6 +431,11 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   
     query.setOrigin(DatasetOrigin.EXTERNAL);
     assertEquals(5, mapper().search(query, new Page()).size());
+
+    // by code
+    query = new DatasetSearchRequest();
+    query.setCode(NomCode.CULTIVARS);
+    assertEquals(0, mapper().search(query, new Page()).size());
   }
 
   private int createSearchableDataset(String title, String author, String organisation, String description) {

@@ -32,6 +32,11 @@ public enum DatasetSettings {
      */
     DISTRIBUTION_GAZETTEER(Gazetteer.class),
 
+    /**
+     * The nomenclatural code followed in the dataset.
+     * It will be used mostly as a hint to format names accordingly.
+     * If the dataset contains mixed data from multiple codes keep this field null.
+     */
     NOMENCLATURAL_CODE(NomCode.class),
 
     /**

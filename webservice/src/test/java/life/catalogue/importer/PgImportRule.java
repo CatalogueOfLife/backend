@@ -7,6 +7,7 @@ import java.util.*;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.Files;
+import life.catalogue.api.vocab.DatasetSettings;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.model.ColUser;
@@ -146,7 +147,7 @@ public class PgImportRule extends ExternalResource {
     dataset.setDataFormat(tr.format);
     dataset.setType(tr.type);
     dataset.setOrigin(DatasetOrigin.MANAGED);
-    dataset.setCode(tr.code);
+    dataset.putSetting(DatasetSettings.NOMENCLATURAL_CODE, tr.code);
     dataset.setTitle("Test Dataset " + source.toString());
 
     // insert trusted dataset

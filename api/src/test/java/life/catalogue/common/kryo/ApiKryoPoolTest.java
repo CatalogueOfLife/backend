@@ -51,7 +51,6 @@ public class ApiKryoPoolTest {
     d.setReleased(LocalDate.now());
     d.setDataFormat(DataFormat.ACEF);
     d.setDataAccess(URI.create("http://nix.tv"));
-    d.setCode(NomCode.BOTANICAL);
     d.setGbifKey(UUID.randomUUID());
     d.setContributesTo(Set.of(12,13,14,15));
     d.setAuthorsAndEditors(List.of("Karl", "Frank"));

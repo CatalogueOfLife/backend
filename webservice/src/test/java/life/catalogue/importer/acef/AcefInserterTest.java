@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import com.google.common.collect.Lists;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.api.vocab.DatasetSettings;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.InserterBaseTest;
@@ -48,7 +49,7 @@ public class AcefInserterTest extends InserterBaseTest {
     assertNull(d.getLicense());
     assertEquals("http://ILDIS.gif", d.getLogo().toString());
     assertNull(d.getCitation());
-    assertNull(d.getCode());
+    assertNull(d.getSettingEnum(DatasetSettings.NOMENCLATURAL_CODE));
   }
   
   @Test

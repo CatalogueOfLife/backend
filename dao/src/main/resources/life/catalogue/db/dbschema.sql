@@ -575,7 +575,6 @@ CREATE TABLE dataset (
   completeness INTEGER CHECK (completeness >= 0 AND completeness <= 100),
   origin DATASETORIGIN NOT NULL,
   import_frequency INTEGER NOT NULL DEFAULT 7,
-  code NOMCODE,
   last_data_import_attempt INTEGER,
   created_by INTEGER NOT NULL,
   modified_by INTEGER NOT NULL,

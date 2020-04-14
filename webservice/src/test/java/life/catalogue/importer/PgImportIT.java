@@ -677,7 +677,7 @@ public class PgImportIT {
   public void testExternalManually() throws Exception {
     // comment out if name matching is needed
     dataset.setContributesTo(null);
-    dataset.setCode(NomCode.ZOOLOGICAL);
+    dataset.putSetting(DatasetSettings.NOMENCLATURAL_CODE, NomCode.ZOOLOGICAL);
     dataset.setType(DatasetType.TAXONOMIC);
   
     normalizeAndImport(URI.create("https://github.com/Sp2000/coldp/archive/master.zip"), COLDP);

@@ -58,7 +58,6 @@ public class Dataset extends DataEntity<Integer> {
   @AbsoluteURI
   private URI dataAccess;
   private Frequency importFrequency;
-  private NomCode code;
   private Integer size;
   @Max(5)
   @Min(1)
@@ -127,21 +126,6 @@ public class Dataset extends DataEntity<Integer> {
   
   public void setDescription(String description) {
     this.description = description;
-  }
-  
-  /**
-   * The nomenclatural code followed in this dataset.
-   * It will be used mostly as a hint to format names accordingly.
-   * If the dataset contains mixed data from multiple codes keep this field null.
-   *
-   * @return the nomenclatural code applying to all data in this dataset or null
-   */
-  public NomCode getCode() {
-    return code;
-  }
-  
-  public void setCode(NomCode code) {
-    this.code = code;
   }
   
   public List<String> getAuthorsAndEditors() {
@@ -412,6 +396,9 @@ public class Dataset extends DataEntity<Integer> {
   }
 
   public void putSetting(DatasetSettings key, Object value) {
+    if (!key.getType().isInstance(value)){
+      throw new IllegalArgumentException("value not of expected type " + key.getType());
+    }
     settings.put(key, value);
   }
 
@@ -459,7 +446,6 @@ public class Dataset extends DataEntity<Integer> {
         locked == dataset.locked &&
         privat == dataset.privat &&
         importFrequency == dataset.importFrequency &&
-        code == dataset.code &&
         Objects.equals(size, dataset.size) &&
         Objects.equals(confidence, dataset.confidence) &&
         Objects.equals(completeness, dataset.completeness) &&
@@ -474,7 +460,7 @@ public class Dataset extends DataEntity<Integer> {
   public int hashCode() {
     return Objects.hash(super.hashCode(), key, sourceKey, type, title, alias, gbifKey, gbifPublisherKey, description, organisations,
             contact, authorsAndEditors, license, version, released, citation, geographicScope, website, group, logo,
-            dataFormat, dataAccess, origin, locked, privat, importFrequency, code, size, confidence, completeness, notes,
+            dataFormat, dataAccess, origin, locked, privat, importFrequency, size, confidence, completeness, notes,
             contributesTo, imported, deleted, settings);
   }
   

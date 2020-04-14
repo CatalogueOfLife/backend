@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.io.Files;
+import life.catalogue.api.vocab.DatasetSettings;
 import org.apache.commons.io.FileUtils;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.img.ImageService;
@@ -89,7 +90,7 @@ abstract class NormalizerITBase {
       try {
         Optional<Dataset> meta = MetadataParser.readMetadata(metaUrl.openStream());
         if (meta.isPresent()) {
-          NomCode code = meta.get().getCode();
+          NomCode code = meta.get().getSettingEnum(DatasetSettings.NOMENCLATURAL_CODE);
           System.out.println("Use code " + code);
           return Optional.of(code);
         }
@@ -99,7 +100,7 @@ abstract class NormalizerITBase {
     }
     return Optional.empty();
   }
-  
+
   /**
    * Normalizes an archive from the test resources
    * and checks its printed txt tree against the expected tree
@@ -133,7 +134,7 @@ abstract class NormalizerITBase {
       Dataset d = new Dataset();
       d.setKey(1);
       d.setDataFormat(format);
-      d.setCode(code);
+      d.putSetting(DatasetSettings.NOMENCLATURAL_CODE, code);
       store.put(d);
       Normalizer norm = new Normalizer(format, store, arch, nameIndexSupplier.get(), ImageService.passThru());
       norm.call();
