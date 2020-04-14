@@ -11,10 +11,9 @@ import life.catalogue.WsServerConfigTest;
 import life.catalogue.common.io.Resources;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore("manual tests depending on proxied external sources")
+//@Ignore("manual tests depending on proxied external sources")
 public class DistributedArchiveServiceTest {
   
   static CloseableHttpClient client;
@@ -37,7 +36,7 @@ public class DistributedArchiveServiceTest {
   
   @Test
   public void uploaded() throws Exception {
-    File f = Resources.tmpCopy("yaml/archive.yaml");
+    File f = Resources.tmpCopy("proxy/1011.yaml");
     System.out.println(f.getAbsolutePath());
     das.uploaded(f);
     f.delete();
@@ -47,7 +46,8 @@ public class DistributedArchiveServiceTest {
   public void download() throws Exception {
     File zip = File.createTempFile("colDA-", ".zip");
     System.out.println(zip.getAbsolutePath());
-    das.download(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/registry/1054.yaml"), zip);
+    //das.download(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/registry/1054.yaml"), zip);
+    das.download(URI.create("https://github.com/CatalogueOfLife/backend/blob/master/webservice/src/test/resources/proxy/1011.yaml"), zip);
     zip.delete();
   }
 }

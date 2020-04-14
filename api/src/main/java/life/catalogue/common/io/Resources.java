@@ -1,6 +1,8 @@
 package life.catalogue.common.io;
 
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -21,7 +23,15 @@ public class Resources {
   public static InputStream stream(String resourceName) {
     return ClassLoader.getSystemResourceAsStream(resourceName);
   }
-  
+
+  public static URI uri(String resourceName) {
+    try {
+      return ClassLoader.getSystemResource(resourceName).toURI();
+    } catch (URISyntaxException e) {
+      throw new IllegalArgumentException(e);
+    }
+  }
+
   public static boolean exists(String resourceName) {
     URL url = ClassLoader.getSystemResource(resourceName);
     return url != null;

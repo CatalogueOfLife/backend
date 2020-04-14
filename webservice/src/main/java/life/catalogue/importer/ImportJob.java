@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
@@ -121,7 +122,7 @@ public class ImportJob implements Runnable {
       
     } catch (Exception e) {
       errorCallback.accept(req, e);
-    
+
     } finally {
       LoggingUtils.removeDatasetMDC();
     }
@@ -171,7 +172,7 @@ public class ImportJob implements Runnable {
     } else if (DatasetOrigin.EXTERNAL == dataset.getOrigin()){
       di.setDownloadUri(dataset.getDataAccess());
       updateState(ImportState.DOWNLOADING);
-      if (format == DataFormat.PROXY) {
+      if (dataset.getDataFormat() == DataFormat.PROXY) {
         ArchiveDescriptor proxy = distributedArchiveService.download(dataset.getDataAccess(), source);
         format = proxy.format;
       } else {
@@ -208,7 +209,7 @@ public class ImportJob implements Runnable {
     return false;
   }
 
-  private void importDataset() {
+  private void importDataset() throws Exception {
     di = dao.createWaiting(dataset, req.createdBy);
     LoggingUtils.setDatasetMDC(datasetKey, getAttempt(), getClass());
     LOG.info("Start new import attempt {} for {} dataset {}: {}", di.getAttempt(), dataset.getOrigin(), datasetKey, dataset.getTitle());
@@ -283,6 +284,7 @@ public class ImportJob implements Runnable {
       // failed import
       LOG.error("Dataset {} import failed. {}. Log to db", datasetKey, e.getMessage(), e);
       dao.updateImportFailure(di, e);
+      throw e;
       
     } finally {
       // close neo store if open

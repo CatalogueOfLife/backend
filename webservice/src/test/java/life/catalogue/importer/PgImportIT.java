@@ -161,8 +161,8 @@ public class PgImportIT {
     return new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo())
         .generateMetrics(dataset.getKey(), Users.TESTER);
   }
-  
-  
+
+
   @Test
   public void testPublishedIn() throws Exception {
     normalizeAndImport(DWCA, 0);
