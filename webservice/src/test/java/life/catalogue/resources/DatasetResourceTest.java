@@ -1,6 +1,5 @@
 package life.catalogue.resources;
 
-import life.catalogue.api.model.ColUser;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
@@ -10,8 +9,6 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Frequency;
 import life.catalogue.db.TestDataRule;
-import life.catalogue.db.mapper.UserMapper;
-import org.apache.ibatis.session.SqlSession;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;

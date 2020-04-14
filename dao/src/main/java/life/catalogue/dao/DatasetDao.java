@@ -1,6 +1,6 @@
 package life.catalogue.dao;
 
-import life.catalogue.api.model.ColUser;
+import life.catalogue.api.model.User;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
@@ -37,7 +37,7 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
   private final BiFunction<Integer, String, File> scratchFileFunc;
   private final DatasetImportDao diDao;
   private final NameUsageIndexService indexService;
-  private final Consumer<ColUser> userChangedNotifier;
+  private final Consumer<User> userChangedNotifier;
   private final Consumer<Map<Integer, Boolean>> datasetChangedNotifier;
 
   /**
@@ -50,7 +50,7 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
                     DatasetImportDao diDao,
                     NameUsageIndexService indexService,
                     BiFunction<Integer, String, File> scratchFileFunc,
-                    Consumer<ColUser> userChangedNotifier,
+                    Consumer<User> userChangedNotifier,
                     Consumer<Map<Integer, Boolean>> datasetChangedNotifier) {
     super(false, factory, DatasetMapper.class);
     this.downloader = downloader;
@@ -139,7 +139,7 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
     }
     // update user permissions
     UserMapper um = session.getMapper(UserMapper.class);
-    ColUser u = um.get(user);
+    User u = um.get(user);
     u.addDataset(obj.getKey());
     um.update(u);
     userChangedNotifier.accept(u);

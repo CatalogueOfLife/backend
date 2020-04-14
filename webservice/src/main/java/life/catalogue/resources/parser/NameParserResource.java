@@ -155,7 +155,7 @@ public class NameParserResource {
   @POST
   @RolesAllowed({Roles.ADMIN})
   @Path("config")
-  public List<String> createConfigs(@Valid List<ParserConfig> configs, @Auth ColUser user) {
+  public List<String> createConfigs(@Valid List<ParserConfig> configs, @Auth User user) {
     List<String> ids = new ArrayList<>(configs.size());
     for (ParserConfig pc : configs) {
       if (pc == null) continue;
@@ -174,7 +174,7 @@ public class NameParserResource {
   @DELETE
   @Path("config/{id}")
   @RolesAllowed({Roles.ADMIN})
-  public void deleteConfig(@PathParam("id") String id, @Auth ColUser user) {
+  public void deleteConfig(@PathParam("id") String id, @Auth User user) {
     dao.deleteName(id, user.getKey());
   }
 

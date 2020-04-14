@@ -8,7 +8,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.SecurityContext;
 
-import life.catalogue.api.model.ColUser;
+import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Users;
 
 /**
@@ -19,7 +19,7 @@ import life.catalogue.api.vocab.Users;
 @Priority(Priorities.AUTHENTICATION)
 public class LocalAuthFilter implements ContainerRequestFilter {
   
-  private final ColUser USER = new ColUser();
+  private final User USER = new User();
   
   
   public LocalAuthFilter() {
@@ -27,7 +27,7 @@ public class LocalAuthFilter implements ContainerRequestFilter {
     USER.setUsername("tester");
     USER.setFirstname("Tim");
     USER.setLastname("Tester");
-    for (ColUser.Role r : ColUser.Role.values()) {
+    for (User.Role r : User.Role.values()) {
       USER.addRole(r);
     }
     USER.setEmail("tim.tester@mailinator.com");

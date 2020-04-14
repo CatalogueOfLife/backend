@@ -1,6 +1,6 @@
 package life.catalogue.assembly;
 
-import life.catalogue.api.model.ColUser;
+import life.catalogue.api.model.User;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
 import life.catalogue.dao.SectorDao;
@@ -28,7 +28,7 @@ public class SectorDelete extends SectorRunnable {
   
   public SectorDelete(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService,
                       Consumer<SectorRunnable> successCallback,
-                      BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) throws IllegalArgumentException {
+                      BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     super(sectorKey, false, factory, indexService, successCallback, errorCallback, user);
   }
   

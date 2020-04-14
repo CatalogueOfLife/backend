@@ -10,12 +10,11 @@ import com.google.common.io.Files;
 import life.catalogue.api.vocab.DatasetSettings;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
-import life.catalogue.api.model.ColUser;
+import life.catalogue.api.model.User;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
-import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.db.PgSetupRule;
@@ -39,13 +38,13 @@ import org.slf4j.LoggerFactory;
 public class PgImportRule extends ExternalResource {
   private static final Logger LOG = LoggerFactory.getLogger(PgImportRule.class);
   
-  static final ColUser IMPORT_USER = new ColUser();
+  static final User IMPORT_USER = new User();
   static {
     IMPORT_USER.setUsername("importator");
     IMPORT_USER.setFirstname("Tim");
     IMPORT_USER.setLastname("Tester");
     IMPORT_USER.setEmail("tim.test@mailinator.com");
-    IMPORT_USER.getRoles().add(ColUser.Role.ADMIN);
+    IMPORT_USER.getRoles().add(User.Role.ADMIN);
   }
 
   private NeoDb store;

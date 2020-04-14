@@ -53,10 +53,10 @@
     </sql>
 
     <sql id="FROM">
-        coluser
+        "user"
     </sql>
 
-    <resultMap id="userResultMap" type="ColUser" autoMapping="true">
+    <resultMap id="userResultMap" type="User" autoMapping="true">
         <id property="key" column="key" />
         <result property="roles" column="roles" typeHandler="life.catalogue.db.type.RoleSetTypeHandler"/>
         <result property="settings" column="settings" typeHandler="life.catalogue.db.type2.HstoreMapTypeHandler"/>
@@ -88,19 +88,19 @@
     WHERE deleted IS NULL AND datasets @> ARRAY[#{datasetKey}::int]
   </select>
 
-    <insert id="create" parameterType="ColUser" useGeneratedKeys="true" keyProperty="key">
-      INSERT INTO coluser (<include refid="COLS" />)
+    <insert id="create" parameterType="User" useGeneratedKeys="true" keyProperty="key">
+      INSERT INTO "user" (<include refid="COLS" />)
              VALUES (<include refid="PROPS" />)
     </insert>
 
-    <update id="update" parameterType="ColUser">
-        UPDATE coluser
+    <update id="update" parameterType="User">
+        UPDATE "user"
         SET (<include refid="COLS" />) = (<include refid="PROPS" />)
         WHERE key = #{key}
     </update>
 
     <delete id="delete" parameterType="map">
-        DELETE FROM coluser
+        DELETE FROM "user"
         WHERE key = #{key}
     </delete>
 

@@ -29,12 +29,6 @@ CREATE TYPE AREASTANDARD AS ENUM (
   'TEXT'
 );
 
-CREATE TYPE COLUSER_ROLE AS ENUM (
-  'USER',
-  'EDITOR',
-  'ADMIN'
-);
-
 CREATE TYPE CONTINENT AS ENUM (
   'AFRICA',
   'ANTARCTICA',
@@ -539,13 +533,18 @@ CREATE TYPE TYPESTATUS AS ENUM (
   'OTHER'
 );
 
+CREATE TYPE USER_ROLE AS ENUM (
+  'EDITOR',
+  'ADMIN'
+);
+
 
 
 -- a simple compound type corresponding to the basics of SimpleName. Often used for building classifications as arrays
 CREATE TYPE simple_name AS (id text, rank rank, name text);
 
 
-CREATE TABLE coluser (
+CREATE TABLE "user" (
   key serial PRIMARY KEY,
   last_login TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
@@ -556,7 +555,7 @@ CREATE TABLE coluser (
   email TEXT,
   orcid TEXT,
   country TEXT,
-  roles COLUSER_ROLE[],
+  roles USER_ROLE[],
   datasets INT[],
   settings HSTORE
 );

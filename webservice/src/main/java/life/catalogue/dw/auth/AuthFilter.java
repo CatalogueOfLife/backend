@@ -21,7 +21,7 @@ import com.google.common.io.BaseEncoding;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
-import life.catalogue.api.model.ColUser;
+import life.catalogue.api.model.User;
 import life.catalogue.dw.jersey.exception.JsonExceptionMapperBase;
 
 /**
@@ -57,7 +57,7 @@ public class AuthFilter implements ContainerRequestFilter {
   public void filter(ContainerRequestContext req) throws IOException {
     final String auth = req.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
     String scheme = null;
-    Optional<ColUser> user = Optional.empty();
+    Optional<User> user = Optional.empty();
     if (auth != null) {
       Matcher m = AUTH_PATTERN.matcher(auth.trim());
       if (m.find()) {
@@ -85,7 +85,7 @@ public class AuthFilter implements ContainerRequestFilter {
     return securityContext != null && securityContext.isSecure();
   }
 
-  private void setSecurityContext(final ColUser user, final String scheme, final ContainerRequestContext req) {
+  private void setSecurityContext(final User user, final String scheme, final ContainerRequestContext req) {
     final boolean secure = isSecure(req);
     req.setSecurityContext(new SecurityContext() {
       @Override
@@ -140,7 +140,7 @@ public class AuthFilter implements ContainerRequestFilter {
   /**
    * @param token BASE64 encoded Basic credentials
    */
-  private Optional<ColUser> doBasic(String token) {
+  private Optional<User> doBasic(String token) {
     try {
       String cred = new String(BaseEncoding.base64().decode(token), StandardCharsets.UTF_8);
       String[] parts = cred.split(":", 2  );
@@ -154,7 +154,7 @@ public class AuthFilter implements ContainerRequestFilter {
   /**
    * @param token BASE64 encoded JWT token
    */
-  private Optional<ColUser> doJWT(String token) {
+  private Optional<User> doJWT(String token) {
     try {
       Jws<Claims> jws = jwt.parse(token);
       return Optional.of(jws.getBody().getSubject())

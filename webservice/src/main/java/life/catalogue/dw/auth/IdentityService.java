@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import life.catalogue.api.model.ColUser;
+import life.catalogue.api.model.User;
 import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.dw.auth.gbif.GBIFAuthentication;
 import org.slf4j.Logger;
@@ -23,7 +23,7 @@ public class IdentityService {
   private static final Logger LOG = LoggerFactory.getLogger(IdentityService.class);
   
   private SqlSessionFactory sqlSessionFactory;
-  private ConcurrentHashMap<String, ColUser> cache;
+  private ConcurrentHashMap<String, User> cache;
   private final AuthenticationProvider authProvider;
   
   public IdentityService(AuthenticationProvider authProvider, boolean useCache) {
@@ -46,39 +46,38 @@ public class IdentityService {
     }
   }
   
-  public ColUser get(String username) {
+  public User get(String username) {
     if (cache != null && cache.containsKey(username)) {
       return cache.get(username);
     }
     // try to load from DB - if its not there the user has never logged in before and sth is wrong
     try (SqlSession session = sqlSessionFactory.openSession()) {
-      ColUser user = session.getMapper(UserMapper.class).getByUsername(username);
+      User user = session.getMapper(UserMapper.class).getByUsername(username);
       if (user == null) {
-        throw new IllegalArgumentException("ColUser " + username + " does not exist");
+        throw new IllegalArgumentException("User " + username + " does not exist");
       }
       return cache(user);
     }
   }
   
-  public ColUser cache(ColUser user) {
+  public User cache(User user) {
     if (cache != null) {
       cache.put(user.getUsername(), user);
     }
     return user;
   }
   
-  public Optional<ColUser> authenticate(String username, String password) {
-    Optional<ColUser> optUser = authProvider.authenticate(username, password);
+  public Optional<User> authenticate(String username, String password) {
+    Optional<User> optUser = authProvider.authenticate(username, password);
     if (optUser.isPresent()) {
-      ColUser user = optUser.get();
-      user.getRoles().add(ColUser.Role.USER);
+      User user = optUser.get();
       user.setLastLogin(LocalDateTime.now());
   
-      // insert/update coluser in postgres with updated login date
+      // insert/update user in postgres with updated login date
       try (SqlSession session = sqlSessionFactory.openSession(true)) {
         UserMapper mapper = session.getMapper(UserMapper.class);
         // try to find existing user in Col db, otherwise create new one otherwise
-        ColUser existing = mapper.getByUsername(user.getUsername());
+        User existing = mapper.getByUsername(user.getUsername());
         if (existing != null) {
           LOG.info("Update CoL user {} {} with latest GBIF information", user.getUsername(), user.getKey());
           user.copyNonGbifData(existing);

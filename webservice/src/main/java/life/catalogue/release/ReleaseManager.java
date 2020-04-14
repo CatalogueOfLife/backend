@@ -1,6 +1,6 @@
 package life.catalogue.release;
 
-import life.catalogue.api.model.ColUser;
+import life.catalogue.api.model.User;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.common.concurrent.NamedThreadFactory;
 import life.catalogue.dao.DatasetImportDao;
@@ -34,7 +34,7 @@ public class ReleaseManager {
     this.factory = factory;
   }
 
-  public Integer release(int catKey, ColUser user) {
+  public Integer release(int catKey, User user) {
     if (release != null) {
       throw new IllegalStateException("Release "+release.getSourceDatasetKey() + " to " + release.getReleaseKey() + " is already running");
     }

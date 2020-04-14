@@ -142,7 +142,7 @@ public class AssemblyCoordinator implements Managed {
     throw new IllegalArgumentException("Dataset empty. Cannot sync " + s);
   }
   
-  public void sync(int catalogueKey, RequestScope request, ColUser user) throws IllegalArgumentException {
+  public void sync(int catalogueKey, RequestScope request, User user) throws IllegalArgumentException {
     if (request.getAll() != null && request.getAll()) {
       syncAll(catalogueKey, user);
     } else {
@@ -165,12 +165,12 @@ public class AssemblyCoordinator implements Managed {
     }
   }
   
-  private synchronized void syncSector(int sectorKey, ColUser user) throws IllegalArgumentException {
+  private synchronized void syncSector(int sectorKey, User user) throws IllegalArgumentException {
     SectorSync ss = new SectorSync(sectorKey, factory, indexService, diDao, this::successCallBack, this::errorCallBack, user);
     queueJob(ss);
   }
 
-  public void deleteSector(int sectorKey, ColUser user) throws IllegalArgumentException {
+  public void deleteSector(int sectorKey, User user) throws IllegalArgumentException {
     SectorDelete sd = new SectorDelete(sectorKey, factory, indexService, this::successCallBack, this::errorCallBack, user);
     queueJob(sd);
   }
@@ -211,14 +211,14 @@ public class AssemblyCoordinator implements Managed {
     failed.get(sync.catalogueKey).incrementAndGet();
   }
   
-  public synchronized void cancel(int sectorKey, ColUser user) {
+  public synchronized void cancel(int sectorKey, User user) {
     if (syncs.containsKey(sectorKey)) {
       LOG.info("Sync of sector {} cancelled by user {}", sectorKey, user);
       syncs.remove(sectorKey).future.cancel(true);
     }
   }
   
-  private int syncAll(int catalogueKey, ColUser user) {
+  private int syncAll(int catalogueKey, User user) {
     LOG.warn("Sync all sectors. Triggered by user {}", user);
     List<Sector> sectors;
     try (SqlSession session = factory.openSession(false)) {

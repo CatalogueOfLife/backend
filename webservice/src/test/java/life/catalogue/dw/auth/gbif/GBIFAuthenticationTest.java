@@ -3,7 +3,7 @@ package life.catalogue.dw.auth.gbif;
 import java.io.IOException;
 
 import org.apache.http.impl.client.HttpClients;
-import life.catalogue.api.model.ColUser;
+import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.util.YamlUtils;
@@ -28,7 +28,7 @@ public class GBIFAuthenticationTest {
   
   @Test
   public void fromJson() throws IOException {
-    ColUser u = gbif.fromJson(Resources.stream("gbif-user.json"));
+    User u = gbif.fromJson(Resources.stream("gbif-user.json"));
     Assert.assertEquals("manga@mailinator.com", u.getEmail());
     Assert.assertEquals("Mänga", u.getLastname());
     Assert.assertEquals("0000-1234-5678-0011", u.getOrcid());
@@ -45,7 +45,7 @@ public class GBIFAuthenticationTest {
   @Test
   @Ignore("GBIF service needs to be mocked - this uses live services")
   public void getUser() {
-    ColUser u = gbif.getFullGbifUser("colplus");
+    User u = gbif.getFullGbifUser("colplus");
     Assert.assertNotNull(u);
   }
 }

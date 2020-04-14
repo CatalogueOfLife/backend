@@ -3,7 +3,7 @@ package life.catalogue.db;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.zaxxer.hikari.pool.HikariProxyConnection;
-import life.catalogue.api.model.ColUser;
+import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -44,14 +44,14 @@ import java.util.function.Supplier;
  */
 public class TestDataRule extends ExternalResource implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(TestDataRule.class);
-  public static final ColUser TEST_USER = new ColUser();
+  public static final User TEST_USER = new User();
 
   static {
     TEST_USER.setUsername("test");
     TEST_USER.setFirstname("Tim");
     TEST_USER.setLastname("Tester");
     TEST_USER.setEmail("tim.test@mailinator.com");
-    TEST_USER.getRoles().add(ColUser.Role.ADMIN);
+    TEST_USER.getRoles().add(User.Role.ADMIN);
   }
 
   final private TestData testData;
@@ -207,7 +207,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   private void truncate() throws SQLException {
     System.out.println("Truncate tables");
     try (java.sql.Statement st = session.getConnection().createStatement()) {
-      st.execute("TRUNCATE coluser CASCADE");
+      st.execute("TRUNCATE \"user\" CASCADE");
       st.execute("TRUNCATE dataset CASCADE");
       st.execute("TRUNCATE sector CASCADE");
       st.execute("TRUNCATE estimate CASCADE");

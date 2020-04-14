@@ -6,9 +6,7 @@ import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.model.ColUser;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.dw.auth.gbif.GBIFAuthentication;
+import life.catalogue.api.model.User;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
@@ -34,7 +32,7 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
     // WARNING!!! Never check in the LocalAuthFilter. It is meant purely for local testing !!!
     //authFilter = new LocalAuthFilter();
     environment.jersey().register(new AuthDynamicFeature(authFilter));
-    environment.jersey().register(new AuthValueFactoryProvider.Binder<>(ColUser.class));
+    environment.jersey().register(new AuthValueFactoryProvider.Binder<>(User.class));
     environment.jersey().register(privateFilter);
   }
   
@@ -63,7 +61,7 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
     this.idService.setClient(http);
   }
 
-  public void updateUser(ColUser user){
+  public void updateUser(User user){
     if (user != null) {
       idService.cache(user);
     }

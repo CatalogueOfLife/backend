@@ -7,7 +7,7 @@ import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.http.impl.client.CloseableHttpClient;
-import life.catalogue.api.model.ColUser;
+import life.catalogue.api.model.User;
 import life.catalogue.dw.auth.AuthenticationProvider;
 import life.catalogue.dw.auth.AuthenticationProviderFactory;
 import org.slf4j.Logger;
@@ -24,7 +24,7 @@ public class MapAuthenticationFactory implements AuthenticationProviderFactory {
     public String username;
     @NotNull
     public String password;
-    public ColUser.Role role;
+    public User.Role role;
   }
 
   @Valid
@@ -49,14 +49,13 @@ public class MapAuthenticationFactory implements AuthenticationProviderFactory {
     }
   
     @Override
-    public Optional<ColUser> authenticate(String username, String password) {
+    public Optional<User> authenticate(String username, String password) {
       if (username != null && password != null && users.containsKey(username)) {
         Cred c = users.get(username);
         if (c.password.equals(password)) {
-          ColUser u = new ColUser();
+          User u = new User();
           u.setUsername(c.username);
           u.setLastname(c.username);
-          u.getRoles().add(ColUser.Role.USER);
           if (c.role != null) {
             u.getRoles().add(c.role);
           }

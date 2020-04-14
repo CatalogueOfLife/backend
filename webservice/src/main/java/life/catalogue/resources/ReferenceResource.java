@@ -49,7 +49,7 @@ public class ReferenceResource extends AbstractDatasetScopedResource<Reference> 
   @POST
   @Consumes(MoreMediaTypes.APP_JSON_COLDP)
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public String createColdp(@PathParam("datasetKey") int datasetKey, @Valid ColdpReference obj, @Auth ColUser user) {
+  public String createColdp(@PathParam("datasetKey") int datasetKey, @Valid ColdpReference obj, @Auth User user) {
     final String id = UUID.randomUUID().toString();
     Reference ref = ReferenceFactory.fromColDP(datasetKey, id, obj.getCitation(), obj.getAuthor(), obj.getYear(), obj.getTitle(),
         obj.getSource(), obj.getDetails(), obj.getDoi(), obj.getLink(), obj.getRemarks(), IssueContainer.DevNullLogging.dataset(datasetKey));
@@ -62,7 +62,7 @@ public class ReferenceResource extends AbstractDatasetScopedResource<Reference> 
   @POST
   @Consumes(MoreMediaTypes.APP_JSON_CSL)
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public String createCsl(@PathParam("datasetKey") int datasetKey, @Valid CslData csl, @Auth ColUser user) {
+  public String createCsl(@PathParam("datasetKey") int datasetKey, @Valid CslData csl, @Auth User user) {
     if (csl.getId() == null) {
       csl.setId(UUID.randomUUID().toString());
     }
@@ -83,7 +83,7 @@ public class ReferenceResource extends AbstractDatasetScopedResource<Reference> 
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public int delete(@PathParam("datasetKey") int datasetKey,
                     @QueryParam("before") LocalDateTimeParam before,
-                    @Auth ColUser user,
+                    @Auth User user,
                     @Context SqlSession session) {
     return dao.deleteOrphans(datasetKey, before==null ? null : before.get(), user);
   }

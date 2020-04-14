@@ -1,14 +1,14 @@
 package life.catalogue.db.type;
 
-import life.catalogue.api.model.ColUser;
+import life.catalogue.api.model.User;
 
 /**
- * A TypeHandler that converts between enum ColUser.Role constants and their ordinal
+ * A TypeHandler that converts between enum User.Role constants and their ordinal
  * values.
  */
-public class RoleSetTypeHandler extends BaseEnumSetTypeHandler<ColUser.Role> {
+public class RoleSetTypeHandler extends BaseEnumSetTypeHandler<User.Role> {
   
   public RoleSetTypeHandler() {
-    super(ColUser.Role.class, true);
+    super(User.Role.class, true);
   }
 }

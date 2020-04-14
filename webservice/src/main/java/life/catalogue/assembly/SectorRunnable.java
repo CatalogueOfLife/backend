@@ -6,7 +6,6 @@ import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.dao.Pager;
-import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.TaxonMapper;
@@ -45,12 +44,12 @@ abstract class SectorRunnable implements Runnable {
   private final Consumer<SectorRunnable> successCallback;
   private final BiConsumer<SectorRunnable, Exception> errorCallback;
   private final LocalDateTime created = LocalDateTime.now();
-  final ColUser user;
+  final User user;
   final SectorImport state = new SectorImport();
   
   SectorRunnable(int sectorKey, boolean validateSector, SqlSessionFactory factory, NameUsageIndexService indexService,
                       Consumer<SectorRunnable> successCallback,
-                      BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) throws IllegalArgumentException {
+                      BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     this.user = Preconditions.checkNotNull(user);
     this.validateSector = validateSector;
     this.factory = factory;

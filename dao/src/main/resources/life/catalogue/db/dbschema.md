@@ -10,12 +10,24 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-#### 2020-04-14 remove nomcode
+#### 2020-04-14 remove nomcode and user role
 ```
 UPDATE dataset SET settings = coalesce(settings, '{}'::jsonb) || jsonb_build_object('NOMENCLATURAL_CODE', code) WHERE code IS NOT NULL;
 ALTER TABLE dataset DROP COLUMN code;
 UPDATE dataset_archive SET settings = coalesce(settings, '{}'::jsonb) || jsonb_build_object('NOMENCLATURAL_CODE', code) WHERE code IS NOT NULL;
 ALTER TABLE dataset_archive DROP COLUMN code;
+
+ALTER TYPE COLUSER_ROLE RENAME to USER_ROLE;
+ALTER TABLE coluser RENAME to "user";
+ALTER sequence coluser_key_seq RENAME TO user_key_seq;
+UPDATE "user" SET roles = array_remove(roles, 'USER');  
+ALTER TABLE "user" ALTER COLUMN roles TYPE text[];
+DROP TYPE USER_ROLE;
+CREATE TYPE USER_ROLE AS ENUM (
+  'EDITOR',
+  'ADMIN'
+);
+ALTER TABLE "user" ALTER COLUMN roles TYPE USER_ROLE[] USING roles::user_role[];
 ```
 
 #### 2020-04-09 user datasets

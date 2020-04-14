@@ -4,7 +4,7 @@ import javax.ws.rs.client.WebTarget;
 
 import io.dropwizard.testing.ResourceHelpers;
 import life.catalogue.WsServerRule;
-import life.catalogue.api.model.ColUser;
+import life.catalogue.api.model.User;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.ClassRule;
 
@@ -32,7 +32,7 @@ public class ResourceTestBase {
     RULE.addUserPermissions(username, datasetKey);
   }
 
-  public void updateUser(ColUser user) {
+  public void updateUser(User user) {
     RULE.updateUser(user);
   }
  

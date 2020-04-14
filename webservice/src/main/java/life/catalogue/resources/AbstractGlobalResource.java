@@ -8,7 +8,7 @@ import javax.ws.rs.core.MediaType;
 import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.ColUser;
+import life.catalogue.api.model.User;
 import life.catalogue.api.model.DataEntity;
 import life.catalogue.dao.EntityDao;
 import life.catalogue.dw.auth.Roles;
@@ -38,7 +38,7 @@ public abstract class AbstractGlobalResource<T extends DataEntity<Integer>> {
    */
   @POST
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public Integer create(@Valid T obj, @Auth ColUser user) {
+  public Integer create(@Valid T obj, @Auth User user) {
     obj.applyUser(user);
     return dao.create(obj, user.getKey());
   }
@@ -56,7 +56,7 @@ public abstract class AbstractGlobalResource<T extends DataEntity<Integer>> {
   @PUT
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void update(@PathParam("key") Integer key, T obj, @Auth ColUser user) {
+  public void update(@PathParam("key") Integer key, T obj, @Auth User user) {
     obj.setKey(key);
     obj.applyUser(user);
     int i = dao.update(obj, user.getKey());
@@ -68,7 +68,7 @@ public abstract class AbstractGlobalResource<T extends DataEntity<Integer>> {
   @DELETE
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void delete(@PathParam("key") Integer key, @Auth ColUser user) {
+  public void delete(@PathParam("key") Integer key, @Auth User user) {
     int i = dao.delete(key, user.getKey());
     if (i == 0) {
       throw NotFoundException.keyNotFound(objClass, key);

@@ -1,38 +1,21 @@
 package life.catalogue.dw.auth;
 
-import com.google.common.io.BaseEncoding;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.JwtException;
 import it.unimi.dsi.fastutil.ints.Int2BooleanMap;
 import it.unimi.dsi.fastutil.ints.Int2BooleanMaps;
 import it.unimi.dsi.fastutil.ints.Int2BooleanOpenHashMap;
-import life.catalogue.api.model.ColUser;
-import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.User;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.dw.jersey.exception.JsonExceptionMapperBase;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 import javax.annotation.Priority;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.Priorities;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.ext.Provider;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.Principal;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.IntPredicate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Avoids unpriveleged access to private datasets.
@@ -67,8 +50,8 @@ public class PrivateFilter implements ContainerRequestFilter {
       if (priv) {
         // check if users has permissions
         SecurityContext secCtxt = req.getSecurityContext();
-        if (secCtxt != null && secCtxt.getUserPrincipal() != null && secCtxt.getUserPrincipal() instanceof ColUser) {
-          ColUser user = (ColUser) secCtxt.getUserPrincipal();
+        if (secCtxt != null && secCtxt.getUserPrincipal() != null && secCtxt.getUserPrincipal() instanceof User) {
+          User user = (User) secCtxt.getUserPrincipal();
           if (user.isAuthorized(datasetKey)) {
             return;
           }

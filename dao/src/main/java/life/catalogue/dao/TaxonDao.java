@@ -9,7 +9,6 @@ import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.*;
-import life.catalogue.db.tree.NamesDiff;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.parser.NameParser;
 import org.apache.commons.lang3.StringUtils;
@@ -314,7 +313,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   /**
    * Does a cascading delete and also deletes all sectors included
    */
-  public void deleteRecursively(DSID<String> id, ColUser user) {
+  public void deleteRecursively(DSID<String> id, User user) {
     try (SqlSession session = factory.openSession(false)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
       SectorMapper sm = session.getMapper(SectorMapper.class);

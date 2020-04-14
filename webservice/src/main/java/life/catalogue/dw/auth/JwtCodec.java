@@ -9,7 +9,7 @@ import javax.crypto.SecretKey;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import life.catalogue.api.model.ColUser;
+import life.catalogue.api.model.User;
 import life.catalogue.common.date.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +29,7 @@ public class JwtCodec {
         .setSigningKey(key);
   }
   
-  public String generate(ColUser user) throws JwtException {
+  public String generate(User user) throws JwtException {
     LocalDateTime now = LocalDateTime.now();
     LOG.info("Generating new token for {} {}", user.getUsername(), user.getKey());
     JwtBuilder builder = Jwts.builder()

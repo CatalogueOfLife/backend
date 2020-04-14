@@ -24,13 +24,13 @@ public interface UserManaged {
   
   /**
    * The user who has last modified the entity. Also set on creation!
-   * @return ColUser key
+   * @return User key
    */
   Integer getModifiedBy();
   
   void setModifiedBy(Integer modifiedBy);
   
-  default void applyUser(ColUser user) {
+  default void applyUser(User user) {
     applyUser(user.getKey());
   }
   

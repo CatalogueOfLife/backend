@@ -7,7 +7,6 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
-import life.catalogue.common.tax.AuthorshipNormalizer;
 import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.*;
 
@@ -25,9 +24,9 @@ public class TestEntityGenerator {
   private static final Splitter SPACE_SPLITTER = Splitter.on(" ").trimResults();
   public static final AtomicInteger ID_GEN = new AtomicInteger(10000);
 
-  public final static ColUser USER_USER = new ColUser();
-  public final static ColUser USER_EDITOR = new ColUser();
-  public final static ColUser USER_ADMIN = new ColUser();
+  public final static User USER_USER = new User();
+  public final static User USER_EDITOR = new User();
+  public final static User USER_ADMIN = new User();
 
   /**
    * Corresponds exactly to dataset record inserted via apple.sql or tree.sql with key=11
@@ -91,22 +90,20 @@ public class TestEntityGenerator {
     USER_ADMIN.setFirstname("Stan");
     USER_ADMIN.setLastname("Sterling");
     USER_ADMIN.setEmail("stan@mailinator.com");
-    USER_ADMIN.getRoles().add(ColUser.Role.ADMIN);
+    USER_ADMIN.getRoles().add(User.Role.ADMIN);
 
     USER_EDITOR.setKey(92);
     USER_EDITOR.setUsername("editor");
     USER_EDITOR.setFirstname("Yuri");
     USER_EDITOR.setLastname("Roskov");
     USER_EDITOR.setEmail("yuri@mailinator.com");
-    USER_EDITOR.getRoles().add(ColUser.Role.USER);
-    USER_EDITOR.getRoles().add(ColUser.Role.EDITOR);
+    USER_EDITOR.getRoles().add(User.Role.EDITOR);
 
     USER_USER.setKey(93);
     USER_USER.setUsername("'user'");
     USER_USER.setFirstname("Frank");
     USER_USER.setLastname("Müller");
     USER_USER.setEmail("frank@mailinator.com");
-    USER_USER.getRoles().add(ColUser.Role.USER);
 
     DATASET11.setKey(11);
     DATASET12.setKey(12);

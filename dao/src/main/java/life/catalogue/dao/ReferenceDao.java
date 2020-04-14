@@ -95,7 +95,7 @@ public class ReferenceDao extends DatasetEntityDao<String, Reference, ReferenceM
     }
   }
 
-  public int deleteOrphans(int datasetKey, @Nullable LocalDateTime before, ColUser user) {
+  public int deleteOrphans(int datasetKey, @Nullable LocalDateTime before, User user) {
     try (SqlSession session = factory.openSession()) {
       int cnt = session.getMapper(ReferenceMapper.class).deleteOrphans(datasetKey, before);
       session.commit();

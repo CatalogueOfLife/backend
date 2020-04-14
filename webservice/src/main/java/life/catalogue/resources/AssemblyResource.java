@@ -78,7 +78,7 @@ public class AssemblyResource {
   @POST
   @Path("/{catKey}/sync")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void sync(@PathParam("catKey") int catKey, RequestScope request, @Auth ColUser user) {
+  public void sync(@PathParam("catKey") int catKey, RequestScope request, @Auth User user) {
     requireManagedNoLock(catKey);
     assembly.sync(catKey, request, user);
   }
@@ -86,7 +86,7 @@ public class AssemblyResource {
   @DELETE
   @Path("/{catKey}/sync/{sectorKey}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void deleteSync(@PathParam("catKey") int catKey, @PathParam("sectorKey") int sectorKey, @Auth ColUser user) {
+  public void deleteSync(@PathParam("catKey") int catKey, @PathParam("sectorKey") int sectorKey, @Auth User user) {
     requireManagedNoLock(catKey);
     assembly.cancel(sectorKey, user);
   }
@@ -104,7 +104,7 @@ public class AssemblyResource {
   @POST
   @Path("/{catKey}/release")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public Integer release(@PathParam("catKey") int catKey, @Auth ColUser user) {
+  public Integer release(@PathParam("catKey") int catKey, @Auth User user) {
     requireManagedNoLock(catKey);
     return releaseManager.release(catKey, user);
   }
@@ -113,7 +113,7 @@ public class AssemblyResource {
   @Deprecated
   @Path("/{catKey}/export")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public String export(@PathParam("catKey") int catKey, @Auth ColUser user) {
+  public String export(@PathParam("catKey") int catKey, @Auth User user) {
     requireManaged(catKey, true);
   
     life.catalogue.release.Logger logger = new life.catalogue.release.Logger(LOG);
@@ -131,7 +131,7 @@ public class AssemblyResource {
   
   @POST
   @Path("/{catKey}/rematch")
-  public SubjectRematcher rematch(@PathParam("catKey") int catKey, RematchRequest req, @Auth ColUser user) {
+  public SubjectRematcher rematch(@PathParam("catKey") int catKey, RematchRequest req, @Auth User user) {
     requireManagedNoLock(catKey);
     SubjectRematcher matcher = new SubjectRematcher(factory, catKey, user.getKey());
     matcher.match(req);

@@ -7,7 +7,7 @@ import javax.ws.rs.core.MediaType;
 
 import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSessionFactory;
-import life.catalogue.api.model.ColUser;
+import life.catalogue.api.model.User;
 import life.catalogue.api.model.DataEntity;
 import life.catalogue.api.model.DatasetScoped;
 import life.catalogue.api.vocab.Datasets;
@@ -35,7 +35,7 @@ public abstract class AbstractDecisionResource<T extends DataEntity<Integer> & D
   
   @POST
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public Integer create(@Valid T obj, @Auth ColUser user) {
+  public Integer create(@Valid T obj, @Auth User user) {
     setDraftIfMissing(obj);
     return super.create(obj, user);
   }
@@ -43,7 +43,7 @@ public abstract class AbstractDecisionResource<T extends DataEntity<Integer> & D
   @PUT
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void update(@PathParam("key") Integer key, T obj, @Auth ColUser user) {
+  public void update(@PathParam("key") Integer key, T obj, @Auth User user) {
     setDraftIfMissing(obj);
     super.update(key, obj, user);
   }

@@ -3,7 +3,7 @@ package life.catalogue.resources;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.lifecycle.Managed;
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.model.ColUser;
+import life.catalogue.api.model.User;
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.dw.auth.Roles;
@@ -116,7 +116,7 @@ public class AdminResource {
   
   @POST
   @Path("/reindex")
-  public void reindex(RequestScope req, @Auth ColUser user) {
+  public void reindex(RequestScope req, @Auth User user) {
     if (indexingThread != null) {
       throw new IllegalStateException("Indexing is already running");
     }
@@ -133,13 +133,13 @@ public class AdminResource {
   
   @POST
   @Path("/rematch")
-  public void rematch(RequestScope req, @Auth ColUser user) {
+  public void rematch(RequestScope req, @Auth User user) {
     throw new NotImplementedException("Rematching names is not implemented yet");
   }
   
   @POST
   @Path("/loadNamesIndexSinceStart")
-  public void loadNidxSince(@Auth ColUser user) {
+  public void loadNidxSince(@Auth User user) {
     ((NameIndexImpl) ni).loadFromPgSinceStart();
   }
   
@@ -164,9 +164,9 @@ public class AdminResource {
 
   class IndexJob implements Runnable {
     private final RequestScope req;
-    private final ColUser user;
+    private final User user;
   
-    IndexJob(RequestScope req, ColUser user) {
+    IndexJob(RequestScope req, User user) {
       this.req = req;
       this.user = user;
     }

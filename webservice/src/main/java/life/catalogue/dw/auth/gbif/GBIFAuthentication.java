@@ -17,7 +17,7 @@ import com.google.common.io.BaseEncoding;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import life.catalogue.api.model.ColUser;
+import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.dw.auth.AuthenticationProvider;
 import org.slf4j.Logger;
@@ -73,11 +73,11 @@ public class GBIFAuthentication implements AuthenticationProvider {
   }
   
   @Override
-  public Optional<ColUser> authenticate(String username, String password) {
+  public Optional<User> authenticate(String username, String password) {
     String usernameStrict = authenticateGBIF(username, password);
     if (usernameStrict != null) {
       // GBIF authentication does not provide us with the full user, we need to look it up again
-      ColUser user = getFullGbifUser(usernameStrict);
+      User user = getFullGbifUser(usernameStrict);
       return Optional.ofNullable(user);
     } else {
       LOG.debug("GBIF authentication failed for user {}", username);
@@ -123,7 +123,7 @@ public class GBIFAuthentication implements AuthenticationProvider {
   }
   
   @VisibleForTesting
-  ColUser getFullGbifUser(String username) {
+  User getFullGbifUser(String username) {
     HttpGet get = new HttpGet(userUri.resolve(username));
     gbifAuth.signRequest(get);
     try (CloseableHttpResponse resp = http.execute(get)) {
@@ -138,16 +138,16 @@ public class GBIFAuthentication implements AuthenticationProvider {
   }
   
   @VisibleForTesting
-  static ColUser fromJson(InputStream json) throws IOException {
+  static User fromJson(InputStream json) throws IOException {
     GUser gbif = OM.readValue(json, GUser.class);
-    ColUser user = new ColUser();
+    User user = new User();
     user.setUsername(gbif.userName);
     user.setFirstname(gbif.firstName);
     user.setLastname(gbif.lastName);
     user.setEmail(gbif.email);
     if (gbif.roles != null) {
       for (String r : gbif.roles) {
-        ColUser.Role role = colRole(r);
+        User.Role role = colRole(r);
         if (role != null) user.addRole(role);
       }
     }
@@ -160,10 +160,9 @@ public class GBIFAuthentication implements AuthenticationProvider {
     return user;
   }
   
-  private static ColUser.Role colRole(String gbif) {
-    if ("col_admin".equalsIgnoreCase(gbif)) return ColUser.Role.ADMIN;
-    if ("col_editor".equalsIgnoreCase(gbif)) return ColUser.Role.EDITOR;
-    if ("user".equalsIgnoreCase(gbif)) return ColUser.Role.USER;
+  private static User.Role colRole(String gbif) {
+    if ("col_admin".equalsIgnoreCase(gbif)) return User.Role.ADMIN;
+    if ("col_editor".equalsIgnoreCase(gbif)) return User.Role.EDITOR;
     return null;
   }
   

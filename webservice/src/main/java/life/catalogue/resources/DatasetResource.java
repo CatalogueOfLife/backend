@@ -1,11 +1,9 @@
 package life.catalogue.resources;
 
 import io.dropwizard.auth.Auth;
-import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.ImportState;
-import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -15,7 +13,6 @@ import life.catalogue.db.tree.NamesDiff;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
-import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.img.ImgConfig;
@@ -69,11 +66,11 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @POST
   @Path("{key}/export")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public String export(@PathParam("key") int key, @Auth ColUser user) {
+  public String export(@PathParam("key") int key, @Auth User user) {
     return exportAC(key, user);
   }
 
-  private String exportAC(int key, ColUser user) {
+  private String exportAC(int key, User user) {
     life.catalogue.release.Logger logger = new life.catalogue.release.Logger(LOG);
     try {
       exporter.export(key, logger);
@@ -194,7 +191,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @GET
   @Path("{key}/user")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public List<ColUser> editors(@PathParam("key") int key, @Auth ColUser user, @Context SqlSession session) {
+  public List<User> editors(@PathParam("key") int key, @Auth User user, @Context SqlSession session) {
     return session.getMapper(UserMapper.class).datasetEditors(key);
   }
 }

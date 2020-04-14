@@ -50,7 +50,7 @@ public class ImporterResource {
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public ImportRequest schedule(@Auth ColUser user, @Valid ImportRequest request) {
+  public ImportRequest schedule(@Auth User user, @Valid ImportRequest request) {
     request.createdBy = user.getKey();
     return importManager.submit(request);
   }
@@ -58,7 +58,7 @@ public class ImporterResource {
   @POST
   @RolesAllowed({Roles.ADMIN})
   @Path("/restart")
-  public boolean restart(@Auth ColUser user) {
+  public boolean restart(@Auth User user) {
     LOG.warn("Restarting importer by {}", user);
     return importManager.restart();
   }
@@ -73,7 +73,7 @@ public class ImporterResource {
   @Path("{key}")
   @Consumes({MoreMediaTypes.APP_GZIP, MoreMediaTypes.APP_ZIP, MediaType.APPLICATION_OCTET_STREAM})
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public ImportRequest uploadArchive(@PathParam("key") int datasetKey, @Auth ColUser user, @Context HttpHeaders headers, InputStream archive) throws IOException {
+  public ImportRequest uploadArchive(@PathParam("key") int datasetKey, @Auth User user, @Context HttpHeaders headers, InputStream archive) throws IOException {
     return importManager.upload(datasetKey, archive, false, null, user);
   }
 
@@ -83,7 +83,7 @@ public class ImporterResource {
       MoreMediaTypes.TEXT_YAML, MoreMediaTypes.APP_YAML,
       MoreMediaTypes.TEXT_WILDCARD})
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public ImportRequest uploadCsv(@PathParam("key") int datasetKey, @Auth ColUser user, @Context HttpHeaders headers, InputStream archive) throws IOException {
+  public ImportRequest uploadCsv(@PathParam("key") int datasetKey, @Auth User user, @Context HttpHeaders headers, InputStream archive) throws IOException {
     return importManager.upload(datasetKey, archive, true, contentType2Suffix(headers), user);
   }
 
@@ -91,14 +91,14 @@ public class ImporterResource {
   @Path("{key}")
   @Consumes({MoreMediaTypes.APP_XLS, MoreMediaTypes.APP_XLSX})
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public ImportRequest uploadXls(@PathParam("key") int datasetKey, @Auth ColUser user, InputStream spreadsheet) throws IOException {
+  public ImportRequest uploadXls(@PathParam("key") int datasetKey, @Auth User user, InputStream spreadsheet) throws IOException {
     return importManager.uploadXls(datasetKey, spreadsheet ,user);
   }
   
   @DELETE
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void cancel(@PathParam("key") int datasetKey, @Auth ColUser user) {
+  public void cancel(@PathParam("key") int datasetKey, @Auth User user) {
     importManager.cancel(datasetKey, user.getKey());
   }
 

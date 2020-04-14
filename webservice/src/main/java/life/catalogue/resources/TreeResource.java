@@ -58,7 +58,7 @@ public class TreeResource {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void deleteRecursively(@PathParam("datasetKey") int datasetKey,
                                 @PathParam("id") String id,
-                                @Auth ColUser user) {
+                                @Auth User user) {
     dao.deleteRecursively(DSID.key(datasetKey, id), user);
   }
   

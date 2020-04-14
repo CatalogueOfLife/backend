@@ -1,7 +1,7 @@
 package life.catalogue.resources;
 
 import io.dropwizard.auth.Auth;
-import life.catalogue.api.model.ColUser;
+import life.catalogue.api.model.User;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.Sector;
@@ -57,7 +57,7 @@ public class SectorResource extends AbstractDecisionResource<Sector> {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void deleteByDataset(@QueryParam("datasetKey") int datasetKey,
                                    @QueryParam("catalogueKey") @DefaultValue(Datasets.DRAFT_COL+"") int catalogueKey,
-                                   @Context SqlSession session, @Auth ColUser user) {
+                                   @Context SqlSession session, @Auth User user) {
     SectorMapper sm = session.getMapper(SectorMapper.class);
     int counter = 0;
     for (Sector s : sm.listByDataset(catalogueKey, datasetKey)) {
@@ -71,7 +71,7 @@ public class SectorResource extends AbstractDecisionResource<Sector> {
   @Override
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void delete(@PathParam("key") Integer key, @Auth ColUser user) {
+  public void delete(@PathParam("key") Integer key, @Auth User user) {
     // an asynchroneous sector deletion will be triggered which also removes catalogue data
     assembly.deleteSector(key, user);
   }

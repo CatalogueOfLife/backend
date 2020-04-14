@@ -22,7 +22,6 @@ import life.catalogue.common.concurrent.StartNotifier;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.lang.Exceptions;
-import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.csv.ExcelCsvExtractor;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -46,7 +45,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
@@ -262,13 +260,13 @@ public class ImportManager implements Managed {
    * 
    *         dataset does not exist or is not of matching origin
    */
-  public ImportRequest upload(final int datasetKey, final InputStream content, boolean zip, @Nullable String suffix, ColUser user) throws IOException {
+  public ImportRequest upload(final int datasetKey, final InputStream content, boolean zip, @Nullable String suffix, User user) throws IOException {
     Dataset d = validDataset(datasetKey);
     uploadArchive(d, content, zip, suffix);
     return submitValidDataset(new ImportRequest(datasetKey, user.getKey(), true, true, true));
   }
 
-  public ImportRequest uploadXls(final int datasetKey, final InputStream content, ColUser user) throws IOException {
+  public ImportRequest uploadXls(final int datasetKey, final InputStream content, User user) throws IOException {
     Preconditions.checkNotNull(content, "No content given");
     Dataset d = validDataset(datasetKey);
     // extract CSV files

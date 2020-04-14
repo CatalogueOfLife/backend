@@ -11,9 +11,9 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.vocab.Country;
 
-public class ColUser implements Principal {
+public class User implements Principal {
+
   public enum Role {
-    USER,
     EDITOR,
     ADMIN
   }
@@ -45,8 +45,9 @@ public class ColUser implements Principal {
    * Copies properties that are not managed in the GBIF registry to this instance.
    * @param src source user to copy from
    */
-  public void copyNonGbifData(ColUser src) {
+  public void copyNonGbifData(User src) {
     key = src.key;
+    roles = src.roles;
     datasets = src.datasets;
     settings = src.settings;
   }
@@ -177,10 +178,14 @@ public class ColUser implements Principal {
 
   public void addDataset(int datasetKey) {
     datasets.add(datasetKey);
+    roles.add(Role.EDITOR);
   }
 
   public void removeDataset(int datasetKey) {
     datasets.remove(datasetKey);
+    if (datasets.isEmpty()) {
+      roles.remove(Role.EDITOR);
+    }
   }
 
   public LocalDateTime getDeleted() {
@@ -211,7 +216,7 @@ public class ColUser implements Principal {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    ColUser user = (ColUser) o;
+    User user = (User) o;
     return Objects.equals(key, user.key) &&
         Objects.equals(username, user.username) &&
         Objects.equals(firstname, user.firstname) &&

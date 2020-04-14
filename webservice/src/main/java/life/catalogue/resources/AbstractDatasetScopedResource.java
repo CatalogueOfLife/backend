@@ -43,7 +43,7 @@ public abstract class AbstractDatasetScopedResource<T extends DatasetScopedEntit
    */
   @POST
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public String create(@PathParam("datasetKey") int datasetKey, @Valid T obj, @Auth ColUser user) {
+  public String create(@PathParam("datasetKey") int datasetKey, @Valid T obj, @Auth User user) {
     obj.setDatasetKey(datasetKey);
     dao.create(obj, user.getKey());
     return obj.getId();
@@ -65,7 +65,7 @@ public abstract class AbstractDatasetScopedResource<T extends DatasetScopedEntit
   @PUT
   @Path("{id}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void update(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Valid T obj, @Auth ColUser user) {
+  public void update(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Valid T obj, @Auth User user) {
     obj.setDatasetKey(datasetKey);
     obj.setId(id);
     int i = dao.update(obj, user.getKey());
@@ -77,7 +77,7 @@ public abstract class AbstractDatasetScopedResource<T extends DatasetScopedEntit
   @DELETE
   @Path("{id}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void delete(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Auth ColUser user) {
+  public void delete(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Auth User user) {
     int i = dao.delete(new DSIDValue(datasetKey, id), user.getKey());
     if (i == 0) {
       throw NotFoundException.idNotFound(objClass, datasetKey, id);

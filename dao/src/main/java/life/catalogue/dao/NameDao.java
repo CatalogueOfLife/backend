@@ -2,7 +2,6 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.NomRelType;
-import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameRelationMapper;
 import org.apache.ibatis.session.SqlSession;
@@ -46,7 +45,7 @@ public class NameDao extends DatasetEntityDao<String, Name, NameMapper> {
     }
   }
 
-  public int deleteOrphans(int datasetKey, @Nullable LocalDateTime before, ColUser user) {
+  public int deleteOrphans(int datasetKey, @Nullable LocalDateTime before, User user) {
     try (SqlSession session = factory.openSession()) {
       int cnt = session.getMapper(NameMapper.class).deleteOrphans(datasetKey, before);
       session.commit();

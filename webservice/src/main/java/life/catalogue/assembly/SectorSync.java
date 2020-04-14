@@ -5,7 +5,6 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.MatchingDao;
 import life.catalogue.dao.NamesTreeDao;
-import life.catalogue.dao.Pager;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import org.apache.commons.lang3.NotImplementedException;
@@ -34,7 +33,7 @@ public class SectorSync extends SectorRunnable {
   
   public SectorSync(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao,
                     Consumer<SectorRunnable> successCallback,
-                    BiConsumer<SectorRunnable, Exception> errorCallback, ColUser user) throws IllegalArgumentException {
+                    BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     super(sectorKey, true, factory, indexService, successCallback, errorCallback, user);
     treeDao = diDao.getTreeDao();
   }

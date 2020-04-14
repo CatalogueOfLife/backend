@@ -3,36 +3,27 @@ package life.catalogue.api.model;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static life.catalogue.api.model.ColUser.Role.*;
+import static life.catalogue.api.model.User.Role.*;
 
-public class ColUserTest {
+public class UserTest {
 
   @Test
   public void hasRole() {
-    ColUser u = new ColUser();
-    for (ColUser.Role r : ColUser.Role.values()) {
+    User u = new User();
+    for (User.Role r : User.Role.values()) {
       assertFalse(u.hasRole(r, null));
       assertFalse(u.hasRole(r.name(), 1));
       assertFalse(u.hasRole(r, 1));
     }
-    u.addRole(USER);
-    for (ColUser.Role r : ColUser.Role.values()) {
-      if (r == USER) {
-        assertTrue(u.hasRole(r, null));
-        assertTrue(u.hasRole(r.name(), 1));
-        assertTrue(u.hasRole(r, 1));
-      } else {
-        assertFalse(u.hasRole(r, null));
-        assertFalse(u.hasRole(r.name(), 1));
-        assertFalse(u.hasRole(r, 1));
-      }
+
+    for (User.Role r : User.Role.values()) {
+      assertFalse(u.hasRole(r, null));
+      assertFalse(u.hasRole(r.name(), 1));
+      assertFalse(u.hasRole(r, 1));
     }
 
 
     u.addRole(EDITOR);
-    assertTrue(u.hasRole(USER, null));
-    assertTrue(u.hasRole(USER.name(), 1));
-    assertTrue(u.hasRole(USER, 1));
 
     assertTrue(u.hasRole(EDITOR, null));
     assertTrue(u.hasRole(EDITOR.name(), null));
@@ -44,10 +35,6 @@ public class ColUserTest {
 
 
     u.addDataset(1);
-    assertTrue(u.hasRole(USER, null));
-    assertTrue(u.hasRole(USER.name(), 1));
-    assertTrue(u.hasRole(USER, 1));
-
     assertTrue(u.hasRole(EDITOR, null));
     assertTrue(u.hasRole(EDITOR.name(), null));
     assertTrue(u.hasRole(EDITOR, 1));
@@ -70,20 +57,17 @@ public class ColUserTest {
 
   @Test
   public void isAuthorized() {
-    ColUser u = new ColUser();
+    User u = new User();
     assertFalse(u.isAuthorized(1));
 
     u.addDataset(1);
-    assertFalse(u.isAuthorized(1));
-
-    u.addRole(USER);
-    assertFalse(u.isAuthorized(1));
+    assertTrue(u.isAuthorized(1));
 
     u.addRole(ADMIN);
     assertTrue(u.isAuthorized(1));
 
     u.removeRole(ADMIN);
-    assertFalse(u.isAuthorized(1));
+    assertTrue(u.isAuthorized(1));
 
     u.addRole(EDITOR);
     assertTrue(u.isAuthorized(1));
@@ -95,14 +79,14 @@ public class ColUserTest {
 
   @Test
   public void isEditor() {
-    ColUser u = new ColUser();
+    User u = new User();
     assertFalse(u.isEditor(1));
 
     u.addDataset(1);
-    assertFalse(u.isEditor(1));
+    assertTrue(u.isEditor(1));
 
     u.addRole(ADMIN);
-    assertFalse(u.isEditor(1));
+    assertTrue(u.isEditor(1));
 
     u.addRole(EDITOR);
     assertTrue(u.isEditor(1));

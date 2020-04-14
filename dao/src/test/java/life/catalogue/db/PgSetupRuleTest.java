@@ -2,7 +2,7 @@ package life.catalogue.db;
 
 import com.google.common.base.Joiner;
 import com.google.common.reflect.ClassPath;
-import life.catalogue.api.model.ColUser;
+import life.catalogue.api.model.User;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
@@ -69,7 +69,7 @@ public class PgSetupRuleTest {
     enums.add(Sector.Mode.class);
     enums.add(SectorImport.State.class);
     enums.add(EditorialDecision.Mode.class);
-    enums.add(ColUser.Role.class);
+    enums.add(User.Role.class);
     // not needed for persistency
     enums.remove(Country.class);
     enums.remove(ColDwcTerm.class);

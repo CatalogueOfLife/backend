@@ -45,7 +45,7 @@ public class VocabResource {
       }
       
       for (Class<?> clazz : ImmutableList.of(
-          ColUser.Role.class,
+          User.Role.class,
           ImgConfig.Scale.class,
           EditorialDecision.Mode.class,
           Sector.Mode.class,

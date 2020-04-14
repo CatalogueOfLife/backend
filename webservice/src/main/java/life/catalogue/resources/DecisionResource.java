@@ -2,7 +2,7 @@ package life.catalogue.resources;
 
 import com.google.common.base.Preconditions;
 import io.dropwizard.auth.Auth;
-import life.catalogue.api.model.ColUser;
+import life.catalogue.api.model.User;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
@@ -45,7 +45,7 @@ public class DecisionResource extends AbstractDecisionResource<EditorialDecision
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void deleteByDataset(@QueryParam("datasetKey") Integer datasetKey,
                               @QueryParam("catalogueKey") Integer catalogueKey,
-                              @Context SqlSession session, @Auth ColUser user) {
+                              @Context SqlSession session, @Auth User user) {
     Preconditions.checkNotNull(catalogueKey, "catalogueKey parameter is required");
     Preconditions.checkNotNull(datasetKey, "datasetKey parameter is required");
     DecisionMapper mapper = session.getMapper(DecisionMapper.class);

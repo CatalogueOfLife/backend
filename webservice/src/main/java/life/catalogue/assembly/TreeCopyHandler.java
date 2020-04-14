@@ -42,7 +42,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   private final List<Rank> implicitRanks = new ArrayList<>();
 
   private final int catalogueKey;
-  private final ColUser user;
+  private final User user;
   private final Sector sector;
   private final SectorImport state;
   private final Map<String, EditorialDecision> decisions;
@@ -60,7 +60,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   private final Map<String, Usage> ids = new HashMap<>();
   private final Map<String, String> refIds = new HashMap<>();
   
-  TreeCopyHandler(Map<String, EditorialDecision> decisions, SqlSessionFactory factory, ColUser user, Sector sector, SectorImport state) {
+  TreeCopyHandler(Map<String, EditorialDecision> decisions, SqlSessionFactory factory, User user, Sector sector, SectorImport state) {
     this.catalogueKey = sector.getDatasetKey();
     this.user = user;
     this.sector = sector;
