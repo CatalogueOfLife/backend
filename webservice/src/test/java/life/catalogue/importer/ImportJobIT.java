@@ -16,6 +16,7 @@ import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.release.ReleaseManager;
@@ -25,6 +26,8 @@ import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.neo4j.kernel.impl.api.index.IndexingService;
+import org.neo4j.kernel.impl.api.index.IndexingServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -115,7 +118,7 @@ public class ImportJobIT {
 
     ImportRequest req = new ImportRequest(d.getKey(), Users.TESTER, false, false, false);
     job = new ImportJob(req, d, cfg, new DownloadUtil(hc), PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(),
-      null, new ImageServiceFS(cfg.img), this::start, this::success, this::error);
+      NameUsageIndexService.passThru(), new ImageServiceFS(cfg.img), this::start, this::success, this::error);
 
   }
 
