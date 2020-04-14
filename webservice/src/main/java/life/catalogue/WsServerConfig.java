@@ -73,6 +73,7 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   
   @Valid
   @NotNull
+  // https://www.dropwizard.io/en/latest/manual/configuration.html#man-configuration-clients-http
   public JerseyClientConfiguration client = new JerseyClientConfiguration();
   
   @Valid

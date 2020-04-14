@@ -284,7 +284,11 @@ public class Dataset extends DataEntity<Integer> {
   public void setNotes(String notes) {
     this.notes = notes;
   }
-  
+
+  public boolean hasData() {
+    return size != null && size > 0;
+  }
+
   public Integer getSize() {
     return size;
   }

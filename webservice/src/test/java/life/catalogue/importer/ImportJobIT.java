@@ -3,6 +3,7 @@ package life.catalogue.importer;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.io.Files;
 import io.dropwizard.client.HttpClientBuilder;
+import io.dropwizard.util.Duration;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DataFormat;
@@ -70,6 +71,10 @@ public class ImportJobIT {
     cfg.db.user = "postgres";
     cfg.db.password = "postgres";
     cfg.es = null;
+    // http
+    cfg.client.setTimeout(Duration.minutes(1));
+    cfg.client.setConnectionTimeout(Duration.minutes(1));
+    cfg.client.setConnectionRequestTimeout(Duration.minutes(1));
     return cfg;
   }
 

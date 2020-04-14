@@ -46,8 +46,7 @@ public class DistributedArchiveServiceTest {
   public void download() throws Exception {
     File zip = File.createTempFile("colDA-", ".zip");
     System.out.println(zip.getAbsolutePath());
-    //das.download(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/registry/1054.yaml"), zip);
-    das.download(URI.create("https://github.com/CatalogueOfLife/backend/blob/master/webservice/src/test/resources/proxy/1011.yaml"), zip);
+    das.download(URI.create("https://raw.githubusercontent.com/CatalogueOfLife/backend/master/webservice/src/test/resources/proxy/1011.yaml"), zip);
     zip.delete();
   }
 }
