@@ -40,21 +40,33 @@ public class UserResource {
     this.idService = idService;
   }
 
+  /**
+   * obfuscate email and personal things
+   */
+  private static User obfuscate(User u) {
+    u.setEmail(null);
+    u.setSettings(null);
+    u.setOrcid(null);
+    u.setLastLogin(null);
+    u.setCreated(null);
+    u.setDeleted(null);
+    u.setRoles(null);
+    return u;
+  }
+
+  @GET
+  public List<User> search(@QueryParam("q") String q, @Context SqlSession session) {
+    List<User> user = session.getMapper(UserMapper.class).search(q);
+    user.forEach(UserResource::obfuscate);
+    return user;
+  }
+
   @GET
   @Path("/{key}")
   public User get(@PathParam("key") Integer key, @Context SqlSession session) {
     User u = session.getMapper(UserMapper.class).get(key);
     // obfuscate email and personal things
-    if (u != null) {
-      u.setEmail(null);
-      u.setSettings(null);
-      u.setOrcid(null);
-      u.setLastLogin(null);
-      u.setCreated(null);
-      u.setDeleted(null);
-      u.setRoles(null);
-    }
-    return u;
+    return obfuscate(u);
   }
 
   @GET

@@ -24,6 +24,32 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
   }
 
   @Test
+  public void search() throws Exception {
+    final String john = "John";
+    List<Integer> userKeys = new ArrayList<>();
+    for (int x = 1; x<=20; x++) {
+      User u = createTestEntity();
+      u.setUsername("user"+x);
+      u.setDeleted(null);
+      if (x % 2 == 0) {
+        u.setFirstname(john);
+      }
+      mapper().create(u);
+      userKeys.add(u.getKey());
+    }
+    commit();
+
+    assertEquals(0, mapper().search("Peter").size());
+    assertEquals(10, mapper().search(john).size());
+    assertEquals(1, mapper().search("13").size());
+    assertEquals(1, mapper().search("user13").size());
+    assertEquals(20, mapper().search("user").size());
+    assertEquals(11, mapper().search("user1").size());
+    assertEquals(2, mapper().search("user2").size());
+    assertEquals(27, mapper().search("").size());
+  }
+
+  @Test
   public void datasetEditors() throws Exception {
     final int dkAll = 1000;
     final int dkEven = 1001;

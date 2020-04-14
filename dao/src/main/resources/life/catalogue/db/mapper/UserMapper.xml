@@ -82,6 +82,16 @@
         WHERE username = #{username}
     </select>
 
+  <select id="search" resultMap="userResultMap">
+    SELECT <include refid="SELECT_PUBLIC" />
+    FROM <include refid="FROM" />
+    WHERE username ILIKE '%${q}%'
+      OR firstname ILIKE '%${q}%'
+      OR lastname ILIKE '%${q}%'
+    ORDER BY username
+    LIMIT 50
+  </select>
+
   <select id="datasetEditors" resultMap="userResultMap">
     SELECT <include refid="SELECT_PUBLIC" />
     FROM <include refid="FROM" />
