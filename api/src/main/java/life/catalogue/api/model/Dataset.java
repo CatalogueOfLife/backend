@@ -395,6 +395,7 @@ public class Dataset extends DataEntity<Integer> {
     if (!key.getType().isInstance(value)){
       throw new IllegalArgumentException("value not of expected type " + key.getType());
     }
+
     settings.put(key, value);
   }
 

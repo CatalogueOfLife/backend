@@ -127,7 +127,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     decision.getSubject().setId(taxon.getId());
 
     DecisionDao ddao = new DecisionDao(getSqlSessionFactory(), svc);
-    int key = ddao.create(decision, USER_ID);
+    int key = ddao.create(decision, USER_ID).getId();
     LOG.info(">>>>>>> Decision inserted into database: {}\n", EsModule.writeDebug(decision));
 
     res = query(new TermQuery("decisionKey", key)); // Query ES for the decision key
@@ -157,7 +157,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     decision.setModifiedBy(edited.getCreatedBy());
     // Save the decision to postgres: triggers sync() on the index service
     DecisionDao dao = new DecisionDao(getSqlSessionFactory(), svc);
-    int key = dao.create(decision, edited.getCreatedBy());
+    int key = dao.create(decision, edited.getCreatedBy()).getId();
     
     NameUsageSearchRequest request = new NameUsageSearchRequest();
     request.addFilter(NameUsageSearchParameter.DECISION_MODE, Mode.UPDATE);
@@ -165,7 +165,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     
     
     assertEquals(pgTaxa.get(0).getId(), res.getResult().get(0).getUsage().getId());
-    decision.setKey(key);
+    decision.setId(key);
     // Change subject of the decision so now 2 taxa should be deleted first and then re-indexed.
     decision.setSubject(SimpleName.of(pgTaxa.get(1)));
     dao.update(decision, edited.getCreatedBy());
@@ -193,7 +193,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     decision.setModifiedBy(edited.getCreatedBy());
     // Save the decision to postgres: triggers sync() on the index service
     DecisionDao dao = new DecisionDao(getSqlSessionFactory(), svc);
-    int key = dao.create(decision, edited.getCreatedBy());
+    DSID<Integer> key = dao.create(decision, edited.getCreatedBy());
     
     NameUsageSearchRequest request = new NameUsageSearchRequest();
     request.addFilter(NameUsageSearchParameter.DECISION_MODE, Mode.UPDATE);

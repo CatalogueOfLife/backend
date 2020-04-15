@@ -78,7 +78,7 @@ public class SectorDataRule extends ExternalResource implements AutoCloseable {
    * @return the actual sectorKey for the supplied sector identified by the list index (starts with 0) of the constructor args.
    */
   public int sectorKey(int listIndex){
-    return sectors.get(listIndex).getKey();
+    return sectors.get(listIndex).getId();
   }
 
   @Override
@@ -125,7 +125,7 @@ public class SectorDataRule extends ExternalResource implements AutoCloseable {
     Name n = u.getName();
     n.setDatasetKey(sector.getDatasetKey());
     n.setVerbatimKey(null);
-    n.setSectorKey(sector.getKey());
+    n.setSectorKey(sector.getId());
     n.setId(scopedSubjectID(n.getId()));
     n.setHomotypicNameId(null);
     n.setPublishedInId(null);
@@ -134,7 +134,7 @@ public class SectorDataRule extends ExternalResource implements AutoCloseable {
 
     u.setDatasetKey(sector.getDatasetKey());
     u.setVerbatimKey(null);
-    u.setSectorKey(sector.getKey());
+    u.setSectorKey(sector.getId());
     u.setId(scopedSubjectID(u.getId()));
     if (parentID != null) {
       // this is the root usage, use the provided id

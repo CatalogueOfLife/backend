@@ -22,8 +22,8 @@ import static org.junit.Assert.*;
 /**
  *
  */
-abstract class CRUDPageableTestBase<T extends DatasetScopedEntity<String>, M extends CRUD<DSID<String>, T> & DatasetPageable<T>>
-    extends CRUDTestBase<DSID<String>, T, M> {
+abstract class CRUDPageableTestBase<K, T extends DatasetScopedEntity<K>, M extends CRUD<DSID<K>, T> & DatasetPageable<T>>
+    extends CRUDTestBase<DSID<K>, T, M> {
   
   public CRUDPageableTestBase(Class<M> mapperClazz) {
     super(mapperClazz);
@@ -37,11 +37,6 @@ abstract class CRUDPageableTestBase<T extends DatasetScopedEntity<String>, M ext
     d.applyUser(Users.TESTER);
     mapper(DatasetMapper.class).create(d);
     return d.getKey();
-  }
-
-  @Test
-  public void getEmpty() throws Exception {
-    assertNull(mapper().get(DSID.key(datasetKey, "")));
   }
 
   @Test
@@ -92,10 +87,6 @@ abstract class CRUDPageableTestBase<T extends DatasetScopedEntity<String>, M ext
     assertEquals(in.get(3), out.get(1));
   }
   
-  private T createTestEntityIncId(int datasetKey) {
-    T ent = createTestEntity(datasetKey);
-    ent.setId(String.valueOf(TestEntityGenerator.ID_GEN.incrementAndGet()));
-    return ent;
-  }
-  
+  abstract T createTestEntityIncId(int datasetKey);
+
 }

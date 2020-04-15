@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import life.catalogue.api.RandomUtils;
+import life.catalogue.api.model.Page;
 import life.catalogue.api.model.User;
 import org.junit.Test;
 
@@ -39,14 +40,15 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
     }
     commit();
 
-    assertEquals(0, mapper().search("Peter").size());
-    assertEquals(10, mapper().search(john).size());
-    assertEquals(1, mapper().search("13").size());
-    assertEquals(1, mapper().search("user13").size());
-    assertEquals(20, mapper().search("user").size());
-    assertEquals(11, mapper().search("user1").size());
-    assertEquals(2, mapper().search("user2").size());
-    assertEquals(27, mapper().search("").size());
+    Page page = new Page(0, 100);
+    assertEquals(0, mapper().search("Peter", page).size());
+    assertEquals(10, mapper().search(john, page).size());
+    assertEquals(1, mapper().search("13", page).size());
+    assertEquals(1, mapper().search("user13", page).size());
+    assertEquals(20, mapper().search("user", page).size());
+    assertEquals(11, mapper().search("user1", page).size());
+    assertEquals(2, mapper().search("user2", page).size());
+    assertEquals(27, mapper().search("", page).size());
   }
 
   @Test

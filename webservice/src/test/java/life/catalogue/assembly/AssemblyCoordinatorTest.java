@@ -61,7 +61,7 @@ public class AssemblyCoordinatorTest {
       sm.create(sector);
     }
 
-    coord.sync(Datasets.DRAFT_COL, RequestScope.sector(sector.getKey()), TestEntityGenerator.USER_EDITOR);
+    coord.sync(Datasets.DRAFT_COL, RequestScope.sector(sector.getId()), TestEntityGenerator.USER_EDITOR);
   }
   
   @Test

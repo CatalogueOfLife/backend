@@ -23,7 +23,7 @@ import java.util.UUID;
 @Path("/dataset/{datasetKey}/reference")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class ReferenceResource extends AbstractDatasetScopedResource<Reference> {
+public class ReferenceResource extends AbstractDatasetScopedResource<String, Reference> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(ReferenceResource.class);

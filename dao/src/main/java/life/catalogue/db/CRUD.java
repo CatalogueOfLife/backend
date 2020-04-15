@@ -3,7 +3,7 @@ package life.catalogue.db;
 import org.apache.ibatis.annotations.Param;
 import life.catalogue.api.model.DataEntity;
 
-public interface CRUD<K, V extends DataEntity<K>> {
+public interface CRUD<K, V extends DataEntity<?>> {
 
   void create(V obj);
 

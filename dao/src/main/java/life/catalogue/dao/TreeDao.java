@@ -81,7 +81,7 @@ public class TreeDao {
         if (sectors.get(key.getId()) != null) {
           Sector s = sectors.get(key.getId());
           if (s.getPlaceholderRank() == key.rank) {
-            n.setSectorKey(s.getKey());
+            n.setSectorKey(s.getId());
           }
         }
       } else if (type == TreeNode.Type.CATALOGUE) {
@@ -140,7 +140,7 @@ public class TreeDao {
             SectorMapper sm = session.getMapper(SectorMapper.class);
             Sector s = sm.getBySubject(projectKey, parent);
             if (s != null && s.getPlaceholderRank() == placeHolder.getRank()) {
-              placeHolder.setSectorKey(s.getKey());
+              placeHolder.setSectorKey(s.getId());
             }
           }
           result.add(placeHolder);

@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.*;
 
-public class DecisionMapperTest extends CRUDTestBase<Integer, EditorialDecision, DecisionMapper> {
+public class DecisionMapperTest extends BaseDecisionMapperTest<EditorialDecision, DecisionSearchRequest, DecisionMapper> {
   
   public DecisionMapperTest() {
     super(DecisionMapper.class);

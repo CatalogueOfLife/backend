@@ -21,7 +21,7 @@ import static org.junit.Assert.*;
 /**
  *
  */
-public class SynonymMapperTest extends CRUDPageableTestBase<Synonym, SynonymMapper> {
+public class SynonymMapperTest extends CRUDDatasetScopedStringTestBase<Synonym, SynonymMapper> {
   
   private NameDao nameDao;
   private SynonymMapper synonymMapper;

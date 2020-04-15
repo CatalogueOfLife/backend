@@ -93,7 +93,7 @@ public class NameUsageProcessorTest extends DaoTestBase {
     try (Connection con = PgSetupRule.getSqlSessionFactory().openSession().getConnection();
         Statement st = con.createStatement();
     ) {
-      st.execute("UPDATE name_usage_" + DRAFT_COL + " SET sector_key="+s.getKey()+" WHERE id NOT IN ('t1', 't2') ");
+      st.execute("UPDATE name_usage_" + DRAFT_COL + " SET sector_key="+s.getId()+" WHERE id NOT IN ('t1', 't2') ");
       con.commit();
     }
     

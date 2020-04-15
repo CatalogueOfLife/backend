@@ -63,7 +63,7 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
     s.applyUser(TestEntityGenerator.USER_USER);
     sm.create(s);
 
-    t.setSectorKey(s.getKey());
+    t.setSectorKey(s.getId());
     tm.update(t);
 
     commit();
@@ -73,7 +73,7 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
     assertNotNull(w.getUsage());
     Taxon wt = (Taxon) w.getUsage();
     assertNotNull(wt.getName());
-    assertEquals(s.getKey(), wt.getSectorKey());
+    assertEquals(s.getId(), wt.getSectorKey());
     assertEquals(TAXON2.getDatasetKey(), w.getSectorDatasetKey());
     assertEquals(d.getGbifPublisherKey(), w.getPublisherKey());
 
@@ -82,7 +82,7 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
     assertNotNull(w.getUsage());
     wt = (Taxon) w.getUsage();
     assertNotNull(wt.getName());
-    assertEquals(s.getKey(), wt.getSectorKey());
+    assertEquals(s.getId(), wt.getSectorKey());
     assertEquals(TAXON2.getDatasetKey(), w.getSectorDatasetKey());
     assertEquals(d.getGbifPublisherKey(), w.getPublisherKey());
   }

@@ -17,14 +17,14 @@
         <if test="type == null">
             NULL AS dataset_sectors,
             NULL AS sector_key,
-            NULL AS est_key,
-            NULL AS ed_key
+            NULL AS est_id,
+            NULL AS ed_id
         </if>
         <if test="type != null">
             t.dataset_sectors,
             <if test="type == @life.catalogue.api.model.TreeNode$Type@SOURCE">
-                s.key AS sector_key,
-                NULL AS est_key,
+                s.id AS sector_key,
+                NULL AS est_id,
                 <include refid="life.catalogue.db.mapper.DecisionMapper.SelectVar">
                     <property name="alias" value="ed."/>
                     <property name="prefix" value="ed_"/>
@@ -32,7 +32,7 @@
             </if>
             <if test="type == @life.catalogue.api.model.TreeNode$Type@CATALOGUE">
                 t.sector_key AS sector_key,
-                NULL AS ed_key,
+                NULL AS ed_id,
                 <include refid="life.catalogue.db.mapper.EstimateMapper.SelectVar">
                     <property name="alias" value="est."/>
                     <property name="prefix" value="est_"/>
@@ -62,8 +62,8 @@
         <id property="id" column="id" />
         <result property="datasetSectors" column="dataset_sectors" />
         <association property="_name" javaType="Name" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap" />
-        <association property="decision" javaType="EditorialDecision" resultMap="life.catalogue.db.mapper.DecisionMapper.decisionResultMap" columnPrefix="ed_" notNullColumn="key"/>
-        <collection property="estimates" ofType="SpeciesEstimate" resultMap="life.catalogue.db.mapper.EstimateMapper.estimateResultMap" columnPrefix="est_" notNullColumn="key"/>
+        <association property="decision" javaType="EditorialDecision" resultMap="life.catalogue.db.mapper.DecisionMapper.decisionResultMap" columnPrefix="ed_" notNullColumn="id"/>
+        <collection property="estimates" ofType="SpeciesEstimate" resultMap="life.catalogue.db.mapper.EstimateMapper.estimateResultMap" columnPrefix="est_" notNullColumn="id"/>
     </resultMap>
 
     <select id="get" resultMap="treeResultMap">

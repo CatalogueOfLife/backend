@@ -53,7 +53,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
   public static SectorImport create(SectorImport.State state, Sector s) {
     SectorImport d = new SectorImport();
     d.setType("SectorImportTest");
-    d.setSectorKey(s.getKey());
+    d.setSectorKey(s.getId());
     d.setCreatedBy(Users.TESTER);
     d.setAttempt(attempts++);
     d.setError("no error");
@@ -105,13 +105,13 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     assertEquals(2, mapper().list(null, null,null, Lists.newArrayList(SectorImport.State.COPYING, SectorImport.State.PREPARING), new Page()).size());
     assertEquals(0, mapper().list(null, 100,null, Lists.newArrayList(SectorImport.State.COPYING, SectorImport.State.PREPARING), new Page()).size());
 
-    assertEquals(5, mapper().count(s.getKey(), null, null, null));
-    assertEquals(5, mapper().count(s.getKey(), null, s.getSubjectDatasetKey(), null));
-    assertEquals(5, mapper().count(s.getKey(), DRAFT_COL, s.getSubjectDatasetKey(), null));
-    assertEquals(0, mapper().count(s2.getKey(), DRAFT_COL, s.getSubjectDatasetKey(), null));
+    assertEquals(5, mapper().count(s.getId(), null, null, null));
+    assertEquals(5, mapper().count(s.getId(), null, s.getSubjectDatasetKey(), null));
+    assertEquals(5, mapper().count(s.getId(), DRAFT_COL, s.getSubjectDatasetKey(), null));
+    assertEquals(0, mapper().count(s2.getId(), DRAFT_COL, s.getSubjectDatasetKey(), null));
     assertEquals(5, mapper().count(null, DRAFT_COL, s.getSubjectDatasetKey(), null));
     assertEquals(2, mapper().count(null, DRAFT_COL, s2.getSubjectDatasetKey(), null));
-    assertEquals(2, mapper().count(s2.getKey(), DRAFT_COL, null, null));
+    assertEquals(2, mapper().count(s2.getId(), DRAFT_COL, null, null));
     
     assertEquals(0, mapper().count(99999, null, null, null));
     assertEquals(0, mapper().count(99999, null, 789, null));

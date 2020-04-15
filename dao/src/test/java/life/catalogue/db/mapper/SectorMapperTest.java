@@ -23,7 +23,7 @@ import java.util.Set;
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.*;
 
-public class SectorMapperTest extends CRUDTestBase<Integer, Sector, SectorMapper> {
+public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearchRequest, SectorMapper> {
   
   private static final int targetDatasetKey = Datasets.DRAFT_COL;
   private static final int subjectDatasetKey = DATASET11.getKey();
@@ -55,7 +55,7 @@ public class SectorMapperTest extends CRUDTestBase<Integer, Sector, SectorMapper
     mapper(SectorImportMapper.class).create(si);
 
     if (state == SectorImport.State.FINISHED) {
-      mapper().updateLastSync(s.getKey(), si.getAttempt());
+      mapper().updateLastSync(s.getId(), si.getAttempt());
     }
   }
 

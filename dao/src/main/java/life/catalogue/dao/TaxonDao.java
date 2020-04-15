@@ -340,7 +340,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       for (int skey : delta.keySet()) {
         LOG.debug("Delete sector {} and its imports by user {}", skey, user);
         sim.delete(skey);
-        sm.delete(skey);
+        sm.delete(DSID.idOnly(skey));
       }
       session.commit();
     }

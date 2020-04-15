@@ -26,7 +26,15 @@ public interface DSID<K> extends DatasetScoped {
   static <K> DSIDValue<K> key(int datasetKey, K id) {
     return new DSIDValue<K>(datasetKey, id);
   }
-  
+
+  /**
+   * Creates a DSID with a fixed datasetKey of -1 that should not mean anything.
+   * Can be used for globally unique ids like we use in decisions.
+   */
+  static <K> DSIDValue<K> idOnly(K id) {
+    return new DSIDValue<K>(-1, id);
+  }
+
   static <K> DSIDValue<K> draftID(K id) {
     return new DSIDValue<K>(DRAFT_COL, id);
   }

@@ -666,7 +666,7 @@ CREATE TABLE dataset_import (
 );
 
 CREATE TABLE sector (
-  key serial PRIMARY KEY,
+  id serial PRIMARY KEY,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   subject_dataset_key INTEGER NOT NULL REFERENCES dataset,
   subject_rank RANK,
@@ -731,7 +731,7 @@ CREATE TABLE sector_import (
 );
 
 CREATE TABLE decision (
-  key serial PRIMARY KEY,
+  id serial PRIMARY KEY,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   subject_dataset_key INTEGER NOT NULL REFERENCES dataset,
   subject_rank rank,
@@ -758,7 +758,7 @@ CREATE TABLE decision (
 );
 
 CREATE TABLE estimate (
-  key serial PRIMARY KEY,
+  id serial PRIMARY KEY,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   target_rank RANK,
   target_code NOMCODE,

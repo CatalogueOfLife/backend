@@ -25,7 +25,7 @@ import static org.junit.Assert.assertFalse;
 /**
  *
  */
-public class TaxonMapperTest extends CRUDPageableTestBase<Taxon, TaxonMapper> {
+public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, TaxonMapper> {
   
   private static int userKey = TestEntityGenerator.USER_EDITOR.getKey();
   private Sector sector;
@@ -59,7 +59,7 @@ public class TaxonMapperTest extends CRUDPageableTestBase<Taxon, TaxonMapper> {
     insertName(n);
     Taxon t = TestEntityGenerator.newTaxon(n);
     // manually set the child count which is populated on read only
-    t.setSectorKey(sector.getKey());
+    t.setSectorKey(sector.getId());
     t.setDatasetKey(dkey);
     return t;
   }
@@ -301,5 +301,5 @@ public class TaxonMapperTest extends CRUDPageableTestBase<Taxon, TaxonMapper> {
     return session().getMapper(TreeMapper.class).get(Datasets.DRAFT_COL, TreeNode.Type.CATALOGUE, DSID.draftID(id));
     
   }
-  
+
 }

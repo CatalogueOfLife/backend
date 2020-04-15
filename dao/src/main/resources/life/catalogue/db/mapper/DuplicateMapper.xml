@@ -12,7 +12,7 @@
     <resultMap id="usageDecisionResultMap" type="UsageDecision" autoMapping="true">
         <id column="u.id"/>
         <association property="usage" resultMap="life.catalogue.db.mapper.NameUsageMapper.usageResultMap" />
-        <association property="decision" resultMap="life.catalogue.db.mapper.DecisionMapper.decisionResultMap" columnPrefix="ed_" notNullColumn="key"/>
+        <association property="decision" resultMap="life.catalogue.db.mapper.DecisionMapper.decisionResultMap" columnPrefix="ed_" notNullColumn="id"/>
         <collection property="classification" ofType="SimpleName" column="{key.id=id,key.datasetKey=dataset_key}" autoMapping="true"
                     select="life.catalogue.db.mapper.TaxonMapper.classificationSimple"/>
     </resultMap>
@@ -165,7 +165,7 @@
             AND array_agg(u.sector_key) @> array[${sectorKey}]
         </if>
         <if test="withDecision != null">
-            AND count(DISTINCT ed.key)
+            AND count(DISTINCT ed.id)
                 <if test="withDecision">&gt; 0</if>
                 <if test="!withDecision">= 0</if>
         </if>

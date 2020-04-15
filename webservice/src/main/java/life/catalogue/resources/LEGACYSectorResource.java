@@ -1,10 +1,10 @@
 package life.catalogue.resources;
 
 import io.dropwizard.auth.Auth;
-import life.catalogue.api.model.User;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.User;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.assembly.AssemblyCoordinator;
@@ -16,7 +16,6 @@ import life.catalogue.db.tree.NamesDiff;
 import life.catalogue.dw.auth.Roles;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.checkerframework.checker.units.qual.K;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,17 +31,17 @@ import java.util.stream.Stream;
 @Path("/sector")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class SectorResource extends AbstractDatasetScopedResource<Integer, Sector> {
-  
+public class LEGACYSectorResource extends LEGACYAbstractDecisionResource<Sector> {
+
   @SuppressWarnings("unused")
-  private static final Logger LOG = LoggerFactory.getLogger(SectorResource.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LEGACYSectorResource.class);
   private final DatasetImportDao diDao;
   private final DiffService diff;
   private final AssemblyCoordinator assembly;
   private final SectorDao dao;
-  
-  public SectorResource(SectorDao dao, DatasetImportDao diDao, DiffService diffService, AssemblyCoordinator assembly) {
-    super(Sector.class, dao);
+
+  public LEGACYSectorResource(SqlSessionFactory factory, SectorDao dao, DatasetImportDao diDao, DiffService diffService, AssemblyCoordinator assembly) {
+    super(Sector.class, dao, factory);
     this.diDao = diDao;
     this.diff = diffService;
     this.assembly = assembly;
@@ -70,38 +69,38 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
 
   @DELETE
   @Override
-  @Path("{id}")
+  @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void delete(@PathParam("datasetKey") int datasetKey, @PathParam("id") Integer key, @Auth User user) {
+  public void delete(@PathParam("key") Integer key, @Auth User user) {
     // an asynchroneous sector deletion will be triggered which also removes catalogue data
     assembly.deleteSector(key, user);
   }
   
   @GET
-  @Path("{id}/import/{attempt}/tree")
-  public Stream<String> getImportAttemptTree(@PathParam("id") int key,
+  @Path("{key}/import/{attempt}/tree")
+  public Stream<String> getImportAttemptTree(@PathParam("key") int key,
                                              @PathParam("attempt") int attempt) throws IOException {
     return diDao.getTreeDao().getSectorTree(key, attempt);
   }
   
   @GET
-  @Path("{id}/import/{attempt}/names")
-  public Stream<String> getImportAttemptNames(@PathParam("id") int key,
+  @Path("{key}/import/{attempt}/names")
+  public Stream<String> getImportAttemptNames(@PathParam("key") int key,
                                               @PathParam("attempt") int attempt) {
     return diDao.getTreeDao().getSectorNames(key, attempt);
   }
   
   @GET
-  @Path("{id}/treediff")
-  public Reader diffTree(@PathParam("id") int sectorKey,
+  @Path("{key}/treediff")
+  public Reader diffTree(@PathParam("key") int sectorKey,
                          @QueryParam("attempts") String attempts,
                          @Context SqlSession session) throws IOException {
     return diff.sectorTreeDiff(sectorKey, attempts);
   }
   
   @GET
-  @Path("{id}/namesdiff")
-  public NamesDiff diffNames(@PathParam("id") int sectorKey,
+  @Path("{key}/namesdiff")
+  public NamesDiff diffNames(@PathParam("key") int sectorKey,
                              @QueryParam("attempts") String attempts,
                              @Context SqlSession session) throws IOException {
     return diff.sectorNamesDiff(sectorKey, attempts);

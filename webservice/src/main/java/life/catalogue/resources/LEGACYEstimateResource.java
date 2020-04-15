@@ -1,12 +1,5 @@
 package life.catalogue.resources;
 
-import javax.validation.Valid;
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.SpeciesEstimate;
@@ -16,18 +9,25 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.Valid;
+import javax.ws.rs.BeanParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
 @Path("/estimate")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class EstimateResource extends AbstractDatasetScopedResource<Integer, SpeciesEstimate> {
-  
+public class LEGACYEstimateResource extends LEGACYAbstractDecisionResource<SpeciesEstimate> {
+
   private final EstimateDao dao;
-  
+
   @SuppressWarnings("unused")
-  private static final Logger LOG = LoggerFactory.getLogger(EstimateResource.class);
-  
-  public EstimateResource(EstimateDao dao) {
-    super(SpeciesEstimate.class, dao);
+  private static final Logger LOG = LoggerFactory.getLogger(LEGACYEstimateResource.class);
+
+  public LEGACYEstimateResource(SqlSessionFactory factory, EstimateDao dao) {
+    super(SpeciesEstimate.class, dao, factory);
     this.dao = dao;
   }
   

@@ -119,7 +119,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
     Stats stats = new Stats();
     try (SqlSession session = factory.openSession()) {
-      deleteSector(s.getKey());
+      deleteSector(s.getId());
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
 
       try (BatchConsumer<NameUsageWrapper> handler = new BatchConsumer<>(indexer, BATCH_SIZE)) {
@@ -130,7 +130,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       indexer.reset();
 
       LOG.info("Indexing bare names from sector {}", s.getKey());
-      Cursor<NameUsageWrapper> cursor = mapper.processDatasetBareNames(s.getDatasetKey(), s.getKey());
+      Cursor<NameUsageWrapper> cursor = mapper.processDatasetBareNames(s.getDatasetKey(), s.getId());
       Iterables.partition(cursor, BATCH_SIZE).forEach(indexer);
 
       EsUtil.refreshIndex(client, esConfig.nameUsage.name);

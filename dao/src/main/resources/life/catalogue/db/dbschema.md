@@ -10,6 +10,13 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2020-04-15 dataset scope for decision, estimate & sector 
+```
+ALTER TABLE decision RENAME COLUMN key TO id;
+ALTER TABLE estimate RENAME COLUMN key TO id;
+ALTER TABLE sector RENAME COLUMN key TO id;
+```
+
 #### 2020-04-14 remove nomcode and user role
 ```
 UPDATE dataset SET settings = coalesce(settings, '{}'::jsonb) || jsonb_build_object('NOMENCLATURAL_CODE', code) WHERE code IS NOT NULL;

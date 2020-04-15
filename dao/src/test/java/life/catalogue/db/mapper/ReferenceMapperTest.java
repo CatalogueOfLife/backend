@@ -20,7 +20,7 @@ import static org.junit.Assert.*;
 /**
  *
  */
-public class ReferenceMapperTest extends CRUDPageableTestBase<Reference, ReferenceMapper> {
+public class ReferenceMapperTest extends CRUDDatasetScopedStringTestBase<Reference, ReferenceMapper> {
   
   public ReferenceMapperTest() {
     super(ReferenceMapper.class);

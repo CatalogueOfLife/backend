@@ -1,6 +1,7 @@
 package life.catalogue.dao;
 
 import com.google.common.annotations.VisibleForTesting;
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.mapper.NameMapper;
@@ -59,7 +60,7 @@ public class NamesTreeDao {
     ){
       SectorMapper sm = session.getMapper(SectorMapper.class);
       NameMapper nm = session.getMapper(NameMapper.class);
-      Sector s = sm.get(sectorKey);
+      Sector s = sm.get(DSID.idOnly(sectorKey));
       nm.processIndexIds(s.getSubjectDatasetKey(), sectorKey).forEach(idConsumer);
       count = idConsumer.counter;
       LOG.info("Written {} index names for sector {}-{}", count, sectorKey, attempt);
@@ -128,7 +129,7 @@ public class NamesTreeDao {
     try (Writer writer = UTF8IoUtils.writerFromGzipFile(sectorTreeFile(sectorKey, attempt));
          SqlSession session = factory.openSession(true)
     ){
-      Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
+      Sector s = session.getMapper(SectorMapper.class).get(DSID.idOnly(sectorKey));
       int count = TextTreePrinter.sector(s.getSubjectDatasetKey(), sectorKey, factory, writer).print();
       LOG.info("Written text tree with {} lines for sector {}-{}", count, sectorKey, attempt);
       return count;

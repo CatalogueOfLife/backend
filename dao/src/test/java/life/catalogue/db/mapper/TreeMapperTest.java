@@ -205,7 +205,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     
     List<TreeNode> nodes = mapper().children(Datasets.DRAFT_COL, TreeNode.Type.SOURCE, DSID.key(dataset11, "t1"), null, new Page());
     assertEquals(1, nodes.size());
-    assertEquals(s.getKey(), nodes.get(0).getSectorKey());
+    assertEquals(s.getId(), nodes.get(0).getSectorKey());
 
     DecisionMapperTest.removeCreatedProps(d1);
     DecisionMapperTest.removeCreatedProps(nodes.get(0).getDecision());
@@ -217,7 +217,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
   
     assertNull(nodes.get(0).getSectorKey());
     assertNull(nodes.get(1).getSectorKey());
-    assertEquals(s.getKey(), nodes.get(2).getSectorKey());
+    assertEquals(s.getId(), nodes.get(2).getSectorKey());
     assertNull(nodes.get(3).getSectorKey());
   
     assertNull(nodes.get(0).getDecision());

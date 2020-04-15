@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.collect.Lists;
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
@@ -15,7 +16,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DecisionDao extends EntityDao<Integer, EditorialDecision, DecisionMapper> {
+public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, DecisionMapper> {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DecisionDao.class);
@@ -72,7 +73,7 @@ public class DecisionDao extends EntityDao<Integer, EditorialDecision, DecisionM
   }
 
   @Override
-  protected void deleteAfter(Integer key, EditorialDecision old, int user, DecisionMapper mapper, SqlSession session) {
+  protected void deleteAfter(DSID<Integer> key, EditorialDecision old, int user, DecisionMapper mapper, SqlSession session) {
     if (old != null && old.getSubject().getId() != null) {
       LOG.info("Starting ES sync on DELETE for {}: {} from dataset {} in catalogue {}",
           old.getMode(),

@@ -155,7 +155,7 @@ public class AssemblyCoordinator implements Managed {
         try (SqlSession session = factory.openSession(true)) {
           SectorMapper sm = session.getMapper(SectorMapper.class);
           sm.processSectors(catalogueKey, request.getDatasetKey()).forEach(s -> {
-            syncSector(s.getKey(), user);
+            syncSector(s.getId(), user);
             cnt.getAndIncrement();
           });
         }
@@ -229,7 +229,7 @@ public class AssemblyCoordinator implements Managed {
     int failed = 0;
     for (Sector s : sectors) {
       try {
-        syncSector(s.getKey(), user);
+        syncSector(s.getId(), user);
       } catch (RuntimeException e) {
         LOG.error("Fail to sync {}: {}", s, e.getMessage());
         failed++;

@@ -1,8 +1,11 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Reference;
 import life.catalogue.api.model.SpeciesEstimate;
+import life.catalogue.api.search.DecisionSearchRequest;
+import life.catalogue.api.search.EstimateSearchRequest;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.EstimateType;
 import life.catalogue.db.PgSetupRule;
@@ -12,7 +15,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class EstimateMapperTest extends CRUDTestBase<Integer, SpeciesEstimate, EstimateMapper> {
+public class EstimateMapperTest extends BaseDecisionMapperTest<SpeciesEstimate, EstimateSearchRequest, EstimateMapper> {
   Reference ref;
   
   public EstimateMapperTest() {

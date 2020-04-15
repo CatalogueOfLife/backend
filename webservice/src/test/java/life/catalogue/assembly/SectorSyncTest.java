@@ -99,7 +99,7 @@ public class SectorSyncTest {
       assertEquals(1, nm.count(Datasets.DRAFT_COL));
     }
 
-    SectorSync ss = new SectorSync(sector.getKey(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao,
+    SectorSync ss = new SectorSync(sector.getId(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
     ss.run();
 
@@ -142,7 +142,7 @@ public class SectorSyncTest {
       sm.update(sector);
     }
 
-    ss = new SectorSync(sector.getKey(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao,
+    ss = new SectorSync(sector.getId(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
     ss.run();
 

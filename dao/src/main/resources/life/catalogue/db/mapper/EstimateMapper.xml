@@ -5,7 +5,7 @@
 <mapper namespace="life.catalogue.db.mapper.EstimateMapper">
 
   <sql id="SelectVar">
-    ${alias}key AS ${prefix}key,
+    ${alias}id AS ${prefix}id,
     ${alias}dataset_key AS ${prefix}dataset_key,
     ${alias}target_id AS ${prefix}target_id,
     ${alias}target_name AS ${prefix}target_name,
@@ -63,50 +63,6 @@
     estimate est
   </sql>
 
-  <resultMap id="estimateResultMap" type="SpeciesEstimate" autoMapping="true">
-    <id property="key" column="key" />
-    <association property="target" javaType="SimpleName" autoMapping="true" columnPrefix="target_" />
-  </resultMap>
-
-  <select id="list" resultMap="estimateResultMap">
-    SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
-    ORDER BY est.key
-    <include refid="life.catalogue.db.Common.limit" />
-  </select>
-
-  <select id="get" resultMap="estimateResultMap">
-    SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
-    WHERE key = #{key}
-  </select>
-
-  <select id="getById" resultMap="estimateResultMap">
-    SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
-    WHERE target_id = #{id}
-  </select>
-
-  <insert id="create" parameterType="SpeciesEstimate" useGeneratedKeys="true" keyProperty="key">
-    INSERT INTO estimate ( <include refid="COLS" />, created_by )
-    VALUES ( <include refid="PROPS" />, #{createdBy} )
-  </insert>
-
-  <update id="update" parameterType="SpeciesEstimate">
-    UPDATE estimate
-    SET (<include refid="COLS" />) = (<include refid="PROPS" />)
-    WHERE key = #{key}
-  </update>
-
-  <delete id="delete" parameterType="map">
-    DELETE FROM estimate
-    WHERE key = #{key}
-  </delete>
-
-  <delete id="deleteByDataset" parameterType="map">
-    DELETE FROM estimate WHERE dataset_key = #{datasetKey}
-  </delete>
-
   <sql id="WHERE">
     <if test="req != null">
       <if test="req.broken">
@@ -137,6 +93,52 @@
       </where>
     </if>
   </sql>
+
+
+  <resultMap id="estimateResultMap" type="SpeciesEstimate" autoMapping="true">
+    <id property="id" column="id" />
+    <association property="target" javaType="SimpleName" autoMapping="true" columnPrefix="target_" />
+  </resultMap>
+
+
+  <select id="list" resultMap="estimateResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    ORDER BY est.id
+    <include refid="life.catalogue.db.Common.limit" />
+  </select>
+
+  <select id="get" resultMap="estimateResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    WHERE id = #{key.id}
+  </select>
+
+  <insert id="create" parameterType="SpeciesEstimate" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO estimate ( <include refid="COLS" />, created_by )
+    VALUES ( <include refid="PROPS" />, #{createdBy} )
+  </insert>
+
+  <update id="update" parameterType="SpeciesEstimate">
+    UPDATE estimate
+    SET (<include refid="COLS" />) = (<include refid="PROPS" />)
+    WHERE id = #{id}
+  </update>
+
+  <delete id="delete" parameterType="map">
+    DELETE FROM estimate
+    WHERE id = #{key.id}
+  </delete>
+
+  <delete id="deleteByDataset" parameterType="map">
+    DELETE FROM estimate WHERE dataset_key = #{datasetKey}
+  </delete>
+
+  <select id="count" resultType="integer">
+    SELECT count(*)
+    FROM <include refid="FROM" />
+    WHERE dataset_key=#{datasetKey}
+  </select>
 
   <select id="search" resultMap="estimateResultMap">
     SELECT <include refid="SELECT" />

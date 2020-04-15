@@ -12,7 +12,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EstimateDao extends EntityDao<Integer, SpeciesEstimate, EstimateMapper> {
+public class EstimateDao extends DatasetEntityDao<Integer, SpeciesEstimate, EstimateMapper> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(EstimateDao.class);

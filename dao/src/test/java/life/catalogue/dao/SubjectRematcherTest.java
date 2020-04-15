@@ -111,7 +111,7 @@ public class SubjectRematcherTest {
       sector.setTarget(target);
       sector.applyUser(TestDataRule.TEST_USER);
       session.getMapper(SectorMapper.class).create(sector);
-      return sector.getKey();
+      return sector.getId();
     }
   }
 
@@ -124,7 +124,7 @@ public class SubjectRematcherTest {
       d.setSubject(src);
       d.applyUser(TestDataRule.TEST_USER);
       session.getMapper(DecisionMapper.class).create(d);
-      return d.getKey();
+      return d.getId();
     }
   }
 

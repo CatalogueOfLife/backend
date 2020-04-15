@@ -5,6 +5,7 @@ import javax.ws.rs.client.Client;
 
 import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.dao.*;
+import life.catalogue.resources.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
@@ -65,27 +66,6 @@ import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.parser.NameParser;
 import life.catalogue.release.AcExporter;
 import life.catalogue.release.ReleaseManager;
-import life.catalogue.resources.AdminResource;
-import life.catalogue.resources.AssemblyResource;
-import life.catalogue.resources.DataPackageResource;
-import life.catalogue.resources.DatasetResource;
-import life.catalogue.resources.DecisionResource;
-import life.catalogue.resources.DocsResource;
-import life.catalogue.resources.DuplicateResource;
-import life.catalogue.resources.EstimateResource;
-import life.catalogue.resources.ImporterResource;
-import life.catalogue.resources.MatchingResource;
-import life.catalogue.resources.NameResource;
-import life.catalogue.resources.NameUsageResource;
-import life.catalogue.resources.NameUsageSearchResource;
-import life.catalogue.resources.ReferenceResource;
-import life.catalogue.resources.SectorResource;
-import life.catalogue.resources.SynonymResource;
-import life.catalogue.resources.TaxonResource;
-import life.catalogue.resources.TreeResource;
-import life.catalogue.resources.UserResource;
-import life.catalogue.resources.VerbatimResource;
-import life.catalogue.resources.VocabResource;
 import life.catalogue.resources.parser.NameParserResource;
 import life.catalogue.resources.parser.ParserResource;
 
@@ -252,6 +232,9 @@ public class WsServer extends Application<WsServerConfig> {
     DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), new DownloadUtil(httpClient), imgService, diDao, indexService, cfg.normalizer::scratchFile,
       // update user and dataset in auth bundle when datasets change
       auth::updateUser, auth::updateDatasetPrivacy);
+    DecisionDao decdao = new DecisionDao(getSqlSessionFactory(), indexService);
+    EstimateDao edao = new EstimateDao(getSqlSessionFactory());
+    SectorDao secdao = new SectorDao(getSqlSessionFactory());
 
     // resources
     env.jersey()
@@ -266,22 +249,25 @@ public class WsServer extends Application<WsServerConfig> {
     env.jersey().register(new AssemblyResource(getSqlSessionFactory(), tdao, assembly, exporter, releaseManager));
     env.jersey().register(new DataPackageResource());
     env.jersey().register(new DatasetResource(getSqlSessionFactory(), ddao, imgService, diDao, diff, exporter));
-    env.jersey().register(new DecisionResource(getSqlSessionFactory(), indexService));
+    env.jersey().register(new DecisionResource(decdao));
     env.jersey().register(new DocsResource(cfg));
     env.jersey().register(new DuplicateResource());
-    env.jersey().register(new EstimateResource(getSqlSessionFactory()));
+    env.jersey().register(new EstimateResource(edao));
     env.jersey().register(new MatchingResource(ni));
     env.jersey().register(new NameResource(ndao));
     env.jersey().register(new NameUsageResource(searchService, suggestService));
     env.jersey().register(new NameUsageSearchResource(searchService, suggestService));
     env.jersey().register(new ReferenceResource(rdao));
-    env.jersey().register(new SectorResource(getSqlSessionFactory(), diDao, diff, assembly));
+    env.jersey().register(new SectorResource(secdao, diDao, diff, assembly));
     env.jersey().register(new SynonymResource(sdao));
     env.jersey().register(new TaxonResource(tdao));
     env.jersey().register(new TreeResource(tdao, trDao));
     env.jersey().register(new UserResource(auth.getJwtCodec(), auth.getIdentityService()));
     env.jersey().register(new VerbatimResource());
     env.jersey().register(new VocabResource());
+    env.jersey().register(new LEGACYDecisionResource(getSqlSessionFactory(), decdao));
+    env.jersey().register(new LEGACYEstimateResource(getSqlSessionFactory(), edao));
+    env.jersey().register(new LEGACYSectorResource(getSqlSessionFactory(), secdao, diDao, diff, assembly));
     // parsers
     env.jersey().register(new NameParserResource(getSqlSessionFactory()));
     env.jersey().register(new ParserResource<>());

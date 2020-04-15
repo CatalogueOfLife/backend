@@ -58,13 +58,13 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
     Set<Integer> keys = new HashSet<>();
     for (SimpleDecision sd : tax.getDecisions()) {
       keys.add(sd.getKey());
-      if (sd.getKey().equals(ed1.getKey())) {
+      if (sd.getKey().equals(ed1.getId())) {
         assertEquals(ed1.asSimpleDecision(), sd);
         
-      } else if (sd.getKey().equals(ed2.getKey())) {
+      } else if (sd.getKey().equals(ed2.getId())) {
         fail("broken decision");
   
-      } else if (sd.getKey().equals(ed3.getKey())) {
+      } else if (sd.getKey().equals(ed3.getId())) {
         assertEquals(ed3.asSimpleDecision(), sd);
 
       } else {

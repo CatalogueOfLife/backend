@@ -2,10 +2,10 @@ package life.catalogue.resources;
 
 import com.google.common.base.Preconditions;
 import io.dropwizard.auth.Auth;
-import life.catalogue.api.model.User;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
+import life.catalogue.api.model.User;
 import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.dao.DecisionDao;
 import life.catalogue.db.mapper.DecisionMapper;
@@ -22,18 +22,18 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
-@Path("/dataset/{datasetKey}/decision")
+@Path("/decision")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class DecisionResource extends AbstractDatasetScopedResource<Integer, EditorialDecision> {
-  
+public class LEGACYDecisionResource extends LEGACYAbstractDecisionResource<EditorialDecision> {
+
   @SuppressWarnings("unused")
-  private static final Logger LOG = LoggerFactory.getLogger(DecisionResource.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LEGACYDecisionResource.class);
   private final DecisionDao dao;
-  
-  public DecisionResource(DecisionDao ddao) {
-    super(EditorialDecision.class, ddao);
-    this.dao = ddao;
+
+  public LEGACYDecisionResource(SqlSessionFactory factory, DecisionDao dao) {
+    super(EditorialDecision.class, dao, factory);
+    this.dao = dao;
   }
   
   @GET

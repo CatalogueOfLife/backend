@@ -18,15 +18,15 @@ import org.slf4j.LoggerFactory;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public abstract class AbstractDatasetScopedResource<T extends DatasetScopedEntity<String>> {
+public abstract class AbstractDatasetScopedResource<K, T extends DatasetScopedEntity<K>> {
 
   private final Class<T> objClass;
-  protected final DatasetEntityDao<String, T, ?> dao;
+  protected final DatasetEntityDao<K, T, ?> dao;
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(AbstractDatasetScopedResource.class);
 
-  public AbstractDatasetScopedResource(Class<T> objClass, DatasetEntityDao<String, T, ?> dao) {
+  public AbstractDatasetScopedResource(Class<T> objClass, DatasetEntityDao<K, T, ?> dao) {
     this.objClass = objClass;
     this.dao = dao;
   }
@@ -43,7 +43,7 @@ public abstract class AbstractDatasetScopedResource<T extends DatasetScopedEntit
    */
   @POST
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public String create(@PathParam("datasetKey") int datasetKey, @Valid T obj, @Auth User user) {
+  public K create(@PathParam("datasetKey") int datasetKey, @Valid T obj, @Auth User user) {
     obj.setDatasetKey(datasetKey);
     dao.create(obj, user.getKey());
     return obj.getId();
@@ -54,10 +54,11 @@ public abstract class AbstractDatasetScopedResource<T extends DatasetScopedEntit
    */
   @GET
   @Path("{id}")
-  public T get(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id) {
-    T obj = dao.get(new DSIDValue<>(datasetKey, id));
+  public T get(@PathParam("datasetKey") int datasetKey, @PathParam("id") K id) {
+    DSIDValue<K> key = new DSIDValue<>(datasetKey, id);
+    T obj = dao.get(key);
     if (obj == null) {
-      throw NotFoundException.idNotFound(objClass, datasetKey, id);
+      throw NotFoundException.idNotFound(objClass, key);
     }
     return obj;
   }
@@ -65,22 +66,23 @@ public abstract class AbstractDatasetScopedResource<T extends DatasetScopedEntit
   @PUT
   @Path("{id}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void update(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Valid T obj, @Auth User user) {
+  public void update(@PathParam("datasetKey") int datasetKey, @PathParam("id") K id, @Valid T obj, @Auth User user) {
     obj.setDatasetKey(datasetKey);
     obj.setId(id);
     int i = dao.update(obj, user.getKey());
     if (i == 0) {
-      throw NotFoundException.idNotFound(objClass, datasetKey, id);
+      throw NotFoundException.idNotFound(objClass, new DSIDValue<>(datasetKey, id));
     }
   }
 
   @DELETE
   @Path("{id}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void delete(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Auth User user) {
-    int i = dao.delete(new DSIDValue(datasetKey, id), user.getKey());
+  public void delete(@PathParam("datasetKey") int datasetKey, @PathParam("id") K id, @Auth User user) {
+    DSIDValue<K> key = new DSIDValue<>(datasetKey, id);
+    int i = dao.delete(key, user.getKey());
     if (i == 0) {
-      throw NotFoundException.idNotFound(objClass, datasetKey, id);
+      throw NotFoundException.idNotFound(objClass, key);
     }
   }
   

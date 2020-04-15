@@ -5,7 +5,7 @@
 <mapper namespace="life.catalogue.db.mapper.SectorMapper">
 
   <sql id="SelectVar">
-    ${alias}key AS ${prefix}key,
+    ${alias}id AS ${prefix}id,
     ${alias}dataset_key AS ${prefix}dataset_key,
     ${alias}subject_dataset_key AS ${prefix}subject_dataset_key,
     ${alias}original_subject_id AS ${prefix}original_subject_id,
@@ -91,7 +91,7 @@
   </sql>
 
   <sql id="FROM">
-    sector s LEFT JOIN sector_import si ON si.sector_key=s.key AND s.last_sync_attempt=si.attempt
+    sector s LEFT JOIN sector_import si ON si.sector_key=s.id AND s.last_sync_attempt=si.attempt
   </sql>
 
   <sql id="WHERE">
@@ -132,19 +132,19 @@
     </if>
   </sql>
 
-  <!-- A mapping to Distribution, mostly auto mapped -->
   <resultMap id="sectorResultMap" type="Sector" autoMapping="true">
-    <id property="key" column="key" />
+    <id property="id" column="id" />
     <result property="ranks" column="ranks" typeHandler="life.catalogue.db.type2.RankSetTypeHandler" />
     <result property="entities" column="entities" typeHandler="life.catalogue.db.type2.EntitySetTypeHandler" />
     <association property="subject" javaType="SimpleName" autoMapping="true" columnPrefix="subject_" />
     <association property="target" javaType="SimpleName" autoMapping="true" columnPrefix="target_" />
   </resultMap>
 
+
   <select id="get" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-    WHERE key = #{key}
+    WHERE id = #{key.id}
   </select>
 
   <select id="getBySubject" resultMap="sectorResultMap">
@@ -188,7 +188,7 @@
     FROM <include refid="FROM" />
   </select>
 
-  <insert id="create" parameterType="Sector" useGeneratedKeys="true" keyProperty="key">
+  <insert id="create" parameterType="Sector" useGeneratedKeys="true" keyProperty="id">
     INSERT INTO sector ( <include refid="COLS" />, original_subject_id, created_by )
     VALUES ( <include refid="PROPS" />, #{subject.id}, #{createdBy} )
   </insert>
@@ -196,19 +196,19 @@
   <update id="update" parameterType="Sector">
     UPDATE sector
     SET (<include refid="COLS" />) = (<include refid="PROPS" />)
-    WHERE key = #{key}
+    WHERE id = #{id}
   </update>
 
   <delete id="delete" parameterType="map">
     DELETE FROM sector
-    WHERE key = #{key}
+    WHERE id = #{key.id}
   </delete>
 
   <select id="list" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
     WHERE dataset_key=#{datasetKey}
-    ORDER BY target_rank, key
+    ORDER BY target_rank, id
     <include refid="life.catalogue.db.Common.limit" />
   </select>
 
@@ -217,7 +217,13 @@
     FROM <include refid="FROM" />
       JOIN name_usage_${targetDatasetKey} t ON t.id=s.target_id
     WHERE t.sector_key=#{key}
-    ORDER BY key
+    ORDER BY id
+  </select>
+
+  <select id="count" resultType="integer">
+    SELECT count(*)
+    FROM <include refid="FROM" />
+    WHERE dataset_key=#{datasetKey}
   </select>
 
   <select id="countSearch" resultType="integer">
@@ -230,7 +236,7 @@
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
     <include refid="WHERE"/>
-    ORDER BY key desc
+    ORDER BY id desc
     <include refid="life.catalogue.db.Common.limit" />
   </select>
 
@@ -243,6 +249,6 @@
   <update id="updateLastSync" parameterType="integer">
     UPDATE sector
     SET last_sync_attempt = #{attempt}
-    WHERE key = #{key}
+    WHERE id = #{key}
   </update>
 </mapper>

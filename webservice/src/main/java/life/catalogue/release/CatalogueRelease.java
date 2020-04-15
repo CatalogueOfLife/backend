@@ -268,7 +268,7 @@ public class CatalogueRelease implements Runnable {
     obj.setDatasetKey(releaseKey);
     obj.setVerbatimKey(null);
   }
-  private <T extends DataEntity<Integer> & DatasetScoped> void updateEntity(T obj) {
+  private <T extends DatasetScopedEntity<Integer>> void updateEntity(T obj) {
     obj.setKey(null);
     obj.setDatasetKey(releaseKey);
   }

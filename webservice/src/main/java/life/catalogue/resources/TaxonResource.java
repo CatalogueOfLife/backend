@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 @Path("/dataset/{datasetKey}/taxon")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class TaxonResource extends AbstractDatasetScopedResource<Taxon> {
+public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon> {
   private static String ROOT_PARAM = "root";
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(TaxonResource.class);

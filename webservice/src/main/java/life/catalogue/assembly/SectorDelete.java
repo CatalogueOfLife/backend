@@ -37,7 +37,7 @@ public class SectorDelete extends SectorRunnable {
     state.setState( SectorImport.State.DELETING);
     // do a recursive delete to make sure we have no more children
     for (Sector cs : childSectors) {
-      deleteSectorRecursively(cs.getDatasetKey(), cs.getKey());
+      deleteSectorRecursively(cs.getDatasetKey(), cs.getId());
     }
     deleteSector(sectorKey);
     LOG.info("Deleted {} sectors in total", visitedSectors.size());
@@ -59,7 +59,7 @@ public class SectorDelete extends SectorRunnable {
       try (SqlSession session = factory.openSession(true)) {
         SectorMapper sm = session.getMapper(SectorMapper.class);
         childSectors = sm.listChildSectors(catalogueKey, sectorKey).stream()
-            .map(Sector::getKey)
+            .map(Sector::getId)
             .collect(Collectors.toSet());
       }
       for (Integer sk : childSectors) {

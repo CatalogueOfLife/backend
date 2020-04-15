@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 @Path("/dataset/{datasetKey}/synonym")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class SynonymResource extends AbstractDatasetScopedResource<Synonym> {
+public class SynonymResource extends AbstractDatasetScopedResource<String, Synonym> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SynonymResource.class);

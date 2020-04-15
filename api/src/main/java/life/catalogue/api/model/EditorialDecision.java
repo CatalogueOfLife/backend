@@ -17,9 +17,7 @@ import life.catalogue.api.vocab.TaxonomicStatus;
  * If blocked all further configured changes are ignored.
  * Otherwise all non null values from status or name should be applied to the underlying subject.
  */
-public class EditorialDecision extends DataEntity<Integer> implements DatasetScoped {
-  private Integer key;
-  private Integer datasetKey; // the catalogues datasetKey
+public class EditorialDecision extends DatasetScopedEntity<Integer> {
   private SimpleName subject;
   private String originalSubjectId;
   private Integer subjectDatasetKey; // the datasetKey the subject belongs to, not the catalogue!
@@ -57,27 +55,7 @@ public class EditorialDecision extends DataEntity<Integer> implements DatasetSco
      */
     UPDATE_RECURSIVE
   }
-  
-  @Override
-  public Integer getKey() {
-    return key;
-  }
-  
-  @Override
-  public void setKey(Integer key) {
-    this.key = key;
-  }
-  
-  @Override
-  public Integer getDatasetKey() {
-    return datasetKey;
-  }
-  
-  @Override
-  public void setDatasetKey(Integer datasetKey) {
-    this.datasetKey = datasetKey;
-  }
-  
+
   public SimpleName getSubject() {
     return subject;
   }
@@ -174,8 +152,8 @@ public class EditorialDecision extends DataEntity<Integer> implements DatasetSco
   @JsonIgnore
   public SimpleDecision asSimpleDecision() {
     SimpleDecision sd = new SimpleDecision();
-    sd.setKey(key);
-    sd.setDatasetKey(datasetKey);
+    sd.setKey(getId());
+    sd.setDatasetKey(getDatasetKey());
     sd.setMode(mode);
     return sd;
   }
@@ -186,9 +164,7 @@ public class EditorialDecision extends DataEntity<Integer> implements DatasetSco
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     EditorialDecision that = (EditorialDecision) o;
-    return Objects.equals(key, that.key) &&
-        Objects.equals(datasetKey, that.datasetKey) &&
-        Objects.equals(subject, that.subject) &&
+    return Objects.equals(subject, that.subject) &&
         Objects.equals(originalSubjectId, that.originalSubjectId) &&
         Objects.equals(subjectDatasetKey, that.subjectDatasetKey) &&
         mode == that.mode &&
@@ -203,11 +179,11 @@ public class EditorialDecision extends DataEntity<Integer> implements DatasetSco
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, datasetKey, subject, originalSubjectId, subjectDatasetKey, mode, name, status, extinct, temporalRangeStart, temporalRangeEnd, lifezones, note);
+    return Objects.hash(super.hashCode(), subject, originalSubjectId, subjectDatasetKey, mode, name, status, extinct, temporalRangeStart, temporalRangeEnd, lifezones, note);
   }
 
   @Override
   public String toString() {
-    return "Decision{" + getKey() + " " + mode + " on " + subject + '}';
+    return "Decision{" + getId() + " " + mode + " on " + subject + '}';
   }
 }

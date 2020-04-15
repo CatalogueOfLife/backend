@@ -55,7 +55,7 @@ public class SectorSync extends SectorRunnable {
   private void metrics() {
     try (SqlSession session = factory.openSession(true)) {
       SectorImportMapper mapper = session.getMapper(SectorImportMapper.class);
-      final int key = sector.getKey();
+      final int key = sector.getId();
       state.setDescriptionCount(mapper.countDescription(catalogueKey, key));
       state.setDistributionCount(mapper.countDistribution(catalogueKey, key));
       state.setMediaCount(mapper.countMedia(catalogueKey, key));
@@ -79,8 +79,8 @@ public class SectorSync extends SectorRunnable {
       state.setVernacularsByLanguageCount(countMap(mapper.countVernacularsByLanguage(catalogueKey, key)));
 
       try {
-        treeDao.updateSectorTree(sector.getKey(), state.getAttempt());
-        treeDao.updateSectorNames(sector.getKey(), state.getAttempt());
+        treeDao.updateSectorTree(sector.getId(), state.getAttempt());
+        treeDao.updateSectorNames(sector.getId(), state.getAttempt());
       } catch (IOException e) {
         LOG.error("Failed to print sector {} of catalogue {}", sector.getKey(), catalogueKey, e);
       }
@@ -233,15 +233,15 @@ public class SectorSync extends SectorRunnable {
     int count;
     try (SqlSession session = factory.openSession(true)) {
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
-      count = um.deleteBySector(catalogueKey, sector.getKey());
+      count = um.deleteBySector(catalogueKey, sector.getId());
       LOG.info("Deleted {} existing taxa with their synonyms and related information from sector {}", count, sector.getKey());
   
       NameMapper nm = session.getMapper(NameMapper.class);
-      count = nm.deleteBySector(catalogueKey, sector.getKey());
+      count = nm.deleteBySector(catalogueKey, sector.getId());
       LOG.info("Deleted {} names from sector {}", count, sector.getKey());
   
       ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
-      count = rm.deleteBySector(catalogueKey, sector.getKey());
+      count = rm.deleteBySector(catalogueKey, sector.getId());
       LOG.info("Deleted {} references from sector {}", count, sector.getKey());
     }
   }

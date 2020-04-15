@@ -3,18 +3,15 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.search.SectorSearchRequest;
-import life.catalogue.db.CRUD;
-import life.catalogue.db.DatasetPageable;
-import life.catalogue.db.Searchable;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
-public interface SectorMapper extends CRUD<Integer, Sector>, DatasetPageable<Sector>, ProcessableDataset<Sector>, Searchable<Sector, SectorSearchRequest> {
-  
-  Sector getBySubject(@Param("datasetKey") int datasetKey,
+public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchRequest> {
+
+    Sector getBySubject(@Param("datasetKey") int datasetKey,
                       @Param("key") DSID<String> key);
   
   List<Sector> listByTarget(@Param("key") DSID<String> key);

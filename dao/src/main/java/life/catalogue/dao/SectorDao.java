@@ -18,7 +18,7 @@ import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SectorDao extends EntityDao<Integer, Sector, SectorMapper> {
+public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorDao.class);
   
@@ -36,7 +36,7 @@ public class SectorDao extends EntityDao<Integer, Sector, SectorMapper> {
   }
   
   @Override
-  public Integer create(Sector s, int user) {
+  public DSID<Integer> create(Sector s, int user) {
     s.applyUser(user);
     try (SqlSession session = factory.openSession(ExecutorType.SIMPLE, false)) {
       SectorMapper mapper = session.getMapper(SectorMapper.class);
@@ -62,7 +62,6 @@ public class SectorDao extends EntityDao<Integer, Sector, SectorMapper> {
       
       // creates sector key
       mapper.create(s);
-      final Integer secKey = s.getKey();
 
       // for the UI to quickly render something we create a few direct children in the target !!!
       List<Taxon> toCopy = new ArrayList<>();
@@ -76,14 +75,14 @@ public class SectorDao extends EntityDao<Integer, Sector, SectorMapper> {
       }
   
       for (Taxon t : toCopy) {
-        t.setSectorKey(secKey);
+        t.setSectorKey(s.getId());
         TaxonDao.copyTaxon(session, t, did, user, Collections.emptySet());
       }
   
       incSectorCounts(session, s, 1);
   
       session.commit();
-      return secKey;
+      return s.getKey();
     }
     
   }
@@ -113,7 +112,7 @@ public class SectorDao extends EntityDao<Integer, Sector, SectorMapper> {
   }
   
   @Override
-  protected void deleteAfter(Integer key, Sector old, int user, SectorMapper mapper, SqlSession session) {
+  protected void deleteAfter(DSID<Integer> key, Sector old, int user, SectorMapper mapper, SqlSession session) {
     incSectorCounts(session, old, -1);
   }
   

@@ -148,8 +148,8 @@ public class SubjectRematcher {
     log();
   }
   
-  private static <T extends DataEntity<Integer>> T getNotNull(CRUD<Integer, T> mapper, int key) throws NotFoundException {
-    T obj = mapper.get(key);
+  private static <T extends DatasetScopedEntity<Integer>> T getNotNull(CRUD<DSID<Integer>, T> mapper, int key) throws NotFoundException {
+    T obj = mapper.get(DSID.idOnly(key));
     if (obj == null) {
       throw new NotFoundException("Key " + key + " does not exist");
     }
@@ -292,7 +292,7 @@ public class SubjectRematcher {
     }
   }
   
-  private NameUsage matchUniquely(DataEntity<Integer> d, int datasetKey, SimpleName sn){
+  private NameUsage matchUniquely(DatasetScopedEntity<Integer> d, int datasetKey, SimpleName sn){
     List<? extends NameUsage> matches = mdao.matchDataset(sn, datasetKey);
     if (matches.isEmpty()) {
       LOG.warn("{} {} cannot be rematched to dataset {} - lost {}", d.getClass().getSimpleName(), d.getKey(), datasetKey, sn);

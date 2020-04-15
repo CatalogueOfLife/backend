@@ -21,7 +21,7 @@ import java.util.List;
 
 @Path("/dataset/{datasetKey}/name")
 @Produces(MediaType.APPLICATION_JSON)
-public class NameResource extends AbstractDatasetScopedResource<Name> {
+public class NameResource extends AbstractDatasetScopedResource<String, Name> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameResource.class);
 

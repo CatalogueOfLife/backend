@@ -19,9 +19,7 @@ import java.util.Set;
  *
  * A sector can be really small and the subject even be a species, but usually it is some higher taxon.
  */
-public class Sector extends DataEntity<Integer> implements DatasetScoped {
-  private Integer key;
-  private Integer datasetKey; // the catalogues datasetKey
+public class Sector extends DatasetScopedEntity<Integer> {
   private SimpleName target;
   private Integer subjectDatasetKey; // the datasetKey the subject belongs to, not the catalogue!
   private SimpleName subject;
@@ -50,26 +48,6 @@ public class Sector extends DataEntity<Integer> implements DatasetScoped {
      * This operation will only create new names and try to avoid the creation of duplicates automatically.
      */
     MERGE
-  }
-  
-  @Override
-  public Integer getKey() {
-    return key;
-  }
-  
-  @Override
-  public void setKey(Integer key) {
-    this.key = key;
-  }
-  
-  @Override
-  public Integer getDatasetKey() {
-    return datasetKey;
-  }
-  
-  @Override
-  public void setDatasetKey(Integer datasetKey) {
-    this.datasetKey = datasetKey;
   }
   
   public Integer getSubjectDatasetKey() {
@@ -103,7 +81,7 @@ public class Sector extends DataEntity<Integer> implements DatasetScoped {
   
   @JsonIgnore
   public DSID<String> getTargetAsDSID() {
-    return target == null ? null : DSID.key(datasetKey, target.getId());
+    return target == null ? null : DSID.key(getDatasetKey(), target.getId());
   }
   
   public String getNote() {
@@ -171,9 +149,7 @@ public class Sector extends DataEntity<Integer> implements DatasetScoped {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     Sector sector = (Sector) o;
-    return Objects.equals(key, sector.key) &&
-        Objects.equals(datasetKey, sector.datasetKey) &&
-        Objects.equals(target, sector.target) &&
+    return Objects.equals(target, sector.target) &&
         Objects.equals(subjectDatasetKey, sector.subjectDatasetKey) &&
         Objects.equals(subject, sector.subject) &&
         Objects.equals(originalSubjectId, sector.originalSubjectId) &&
@@ -187,12 +163,12 @@ public class Sector extends DataEntity<Integer> implements DatasetScoped {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, datasetKey, target, subjectDatasetKey, subject, originalSubjectId, mode, code, placeholderRank, ranks, entities, note);
+    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, mode, code, placeholderRank, ranks, entities, note);
   }
 
   @Override
   public String toString() {
-    return "Sector{" + getKey() +
+    return "Sector{" + getId() +
         ", datasetKey=" + getDatasetKey() +
         ", mode=" + mode +
         ", code=" + code +

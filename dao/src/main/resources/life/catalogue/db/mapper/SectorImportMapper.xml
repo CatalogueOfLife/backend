@@ -38,7 +38,7 @@
     <sql id="FROM">
       sector_import si
         <if test="subjectDatasetKey != null or datasetKey != null">
-            JOIN sector s ON s.key=si.sector_key
+            JOIN sector s ON s.id=si.sector_key
         </if>
     </sql>
 

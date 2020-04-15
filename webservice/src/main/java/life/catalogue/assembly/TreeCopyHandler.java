@@ -167,7 +167,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
         }
         n.setRank(r);
         n.setType(NameType.SCIENTIFIC);
-        n.setSectorKey(sector.getKey());
+        n.setSectorKey(sector.getId());
         n.updateNameCache();
         RanKnName rnn = new RanKnName(r, n.getScientificName());
         // did we create that implicit name before?
@@ -188,7 +188,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
         t.setDatasetKey(catalogueKey);
         t.setName(n);
         t.setParentId(parent.id);
-        t.setSectorKey(sector.getKey());
+        t.setSectorKey(sector.getId());
         t.setOrigin(Origin.IMPLICIT_NAME);
         t.setStatus(TaxonomicStatus.ACCEPTED);
         t.applyUser(user);
@@ -204,8 +204,8 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
 
   @Override
   public void accept(NameUsageBase u) {
-    u.setSectorKey(sector.getKey());
-    u.getName().setSectorKey(sector.getKey());
+    u.setSectorKey(sector.getId());
+    u.getName().setSectorKey(sector.getId());
     // before we apply a specific decision
     if (sector.getCode() != null) {
       u.getName().setCode(sector.getCode());
@@ -393,11 +393,11 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
         return refIds.get(ref.getId());
       }
       // sth new?
-      List<Reference> matches = rm.find(catalogueKey, sector.getKey(), ref.getCitation());
+      List<Reference> matches = rm.find(catalogueKey, sector.getId(), ref.getCitation());
       if (matches.isEmpty()) {
         // insert new ref
         ref.setDatasetKey(catalogueKey);
-        ref.setSectorKey(sector.getKey());
+        ref.setSectorKey(sector.getId());
         ref.applyUser(user);
         DSID<String> origID = ReferenceDao.copyReference(batchSession, ref, catalogueKey, user.getKey());
         refIds.put(origID.getId(), ref.getId());

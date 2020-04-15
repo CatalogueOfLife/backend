@@ -4,4 +4,4 @@
 -- see also sector.csv in draft for exported sectors
 --
 
-ALTER SEQUENCE sector_key_seq RESTART WITH 20000;
+ALTER SEQUENCE sector_id_seq RESTART WITH 20000;

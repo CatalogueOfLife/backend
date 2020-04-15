@@ -63,7 +63,7 @@ public class NameUsageProcessor {
       return;
     }
     LOG.info("Process sector{} of dataset {} with target {}", s.getKey(), s.getDatasetKey(), s.getTarget());
-    processTree(s.getDatasetKey(), s.getKey(), s.getTarget().getId(), consumer);
+    processTree(s.getDatasetKey(), s.getId(), s.getTarget().getId(), consumer);
   }
   
   private void processTree(int datasetKey, @Nullable Integer sectorKey, String id, Consumer<NameUsageWrapper> consumer) {

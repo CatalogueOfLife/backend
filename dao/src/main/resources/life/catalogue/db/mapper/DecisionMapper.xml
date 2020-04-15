@@ -5,7 +5,7 @@
 <mapper namespace="life.catalogue.db.mapper.DecisionMapper">
 
   <sql id="SelectVar">
-    ${alias}key AS ${prefix}key,
+    ${alias}id AS ${prefix}id,
     ${alias}dataset_key AS ${prefix}dataset_key,
     ${alias}subject_dataset_key AS ${prefix}subject_dataset_key,
     ${alias}original_subject_id AS ${prefix}original_subject_id,
@@ -81,20 +81,6 @@
     #{lifezones, typeHandler=life.catalogue.db.type.LifezoneSetTypeHandler}
   </sql>
 
-  <resultMap id="decisionResultMap" type="EditorialDecision" autoMapping="true">
-    <id property="key" column="key" />
-    <result property="name" column="name" typeHandler="life.catalogue.db.type2.JsonNameHandler" />
-    <result property="lifezones" column="lifezones" typeHandler="life.catalogue.db.type.LifezoneSetTypeHandler" />
-    <association property="subject" javaType="SimpleName" autoMapping="true" columnPrefix="subject_" />
-  </resultMap>
-
-  <select id="list" resultMap="decisionResultMap">
-    SELECT <include refid="SELECT" />
-    FROM decision ed
-    ORDER BY ed.key
-    <include refid="life.catalogue.db.Common.limit" />
-  </select>
-
   <sql id="WHERE">
     <if test="req != null">
       <if test="req.broken">
@@ -123,23 +109,47 @@
     </if>
   </sql>
 
+
+  <resultMap id="decisionResultMap" type="EditorialDecision" autoMapping="true">
+    <id property="id" column="id" />
+    <result property="name" column="name" typeHandler="life.catalogue.db.type2.JsonNameHandler" />
+    <result property="lifezones" column="lifezones" typeHandler="life.catalogue.db.type.LifezoneSetTypeHandler" />
+    <association property="subject" javaType="SimpleName" autoMapping="true" columnPrefix="subject_" />
+  </resultMap>
+
+
+  <select id="list" resultMap="decisionResultMap">
+    SELECT <include refid="SELECT" />
+    FROM decision ed
+    WHERE ed.dataset_key = #{datasetKey}
+    ORDER BY ed.id
+    <include refid="life.catalogue.db.Common.limit" />
+  </select>
+
+  <select id="count" resultType="integer">
+    SELECT count(*)
+    FROM decision ed
+    WHERE ed.dataset_key = #{datasetKey}
+  </select>
+
   <select id="countSearch" resultType="integer">
-  SELECT count(*) FROM decision ed
-  <include refid="WHERE"/>
-</select>
+    SELECT count(*)
+    FROM decision ed
+    <include refid="WHERE"/>
+  </select>
 
   <select id="search" resultMap="decisionResultMap">
     SELECT <include refid="SELECT" />
     FROM decision ed
     <include refid="WHERE"/>
-    ORDER BY ed.key desc
+    ORDER BY ed.id desc
     <include refid="life.catalogue.db.Common.limit" />
   </select>
 
   <select id="get" resultMap="decisionResultMap">
     SELECT <include refid="SELECT" />
     FROM decision ed
-    WHERE key = #{key}
+    WHERE id = #{key.id}
   </select>
 
   <select id="getBySubject" resultMap="decisionResultMap">
@@ -150,7 +160,7 @@
       AND ed.subject_id = #{id}
   </select>
 
-  <insert id="create" parameterType="EditorialDecision" useGeneratedKeys="true" keyProperty="key">
+  <insert id="create" parameterType="EditorialDecision" useGeneratedKeys="true" keyProperty="id">
     INSERT INTO decision ( <include refid="COLS" />, original_subject_id, created_by )
     VALUES ( <include refid="PROPS" />, #{subject.id}, #{createdBy} )
   </insert>
@@ -158,12 +168,12 @@
   <update id="update" parameterType="EditorialDecision">
     UPDATE decision
     SET (<include refid="COLS" />) = (<include refid="PROPS" />)
-    WHERE key = #{key}
+    WHERE id = #{id}
   </update>
 
   <delete id="delete" parameterType="map">
     DELETE FROM decision
-    WHERE key = #{key}
+    WHERE id = #{key.id}
   </delete>
 
   <delete id="deleteByDataset" parameterType="map">
