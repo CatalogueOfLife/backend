@@ -36,10 +36,11 @@ import org.apache.commons.lang3.StringUtils;
  */
 @Priority(Priorities.AUTHENTICATION)
 public class AuthFilter implements ContainerRequestFilter {
-  
-  private static final String REALM = "COL";
-  private static final String BASIC = "Basic";
+
+  private static final String REALM  = "COL";
+  private static final String BASIC  = "Basic";
   private static final String BEARER = "Bearer";
+  private static final String TOKEN_PARAM = "token";
   private static final String CHALLENGE_FORMAT = "%s realm=\"%s\"";
   
   private static final Pattern AUTH_PATTERN = Pattern.compile("^(Basic|Bearer)\\s+(.+)$");
@@ -79,7 +80,12 @@ public class AuthFilter implements ContainerRequestFilter {
           scheme = BEARER;
         }
       }
+    } else if (req.getUriInfo().getQueryParameters().containsKey(TOKEN_PARAM)) {
+      String jwt = req.getUriInfo().getQueryParameters().getFirst(TOKEN_PARAM);
+      user = doJWT(jwt);
+      scheme = BEARER;
     }
+
     if (user.isPresent()) {
       setSecurityContext(user.get(), scheme, req);
     } else {

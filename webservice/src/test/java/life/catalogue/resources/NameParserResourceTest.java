@@ -41,7 +41,7 @@ public class NameParserResourceTest extends ResourceTestBase {
     abies.updateNameCache();
     
     assertEquals(1, resp.size());
-    printDiff(abies, resp.get(0).getName());
+    //printDiff(abies, resp.get(0).getName());
     assertEquals(abies, resp.get(0).getName());
   }
 }
