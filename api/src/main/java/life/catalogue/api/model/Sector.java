@@ -1,6 +1,7 @@
 package life.catalogue.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.api.vocab.EntityType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -49,7 +50,15 @@ public class Sector extends DatasetScopedEntity<Integer> {
      */
     MERGE
   }
-  
+
+  /**
+   * @return the id in the old legacy property "key"
+   */
+  @JsonProperty("key")
+  public Integer getKeyLEGACAY(){
+    return getId();
+  }
+
   public Integer getSubjectDatasetKey() {
     return subjectDatasetKey;
   }

@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.Lifezone;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -54,6 +55,14 @@ public class EditorialDecision extends DatasetScopedEntity<Integer> {
      * If configured, Name updates will be ignored!!!
      */
     UPDATE_RECURSIVE
+  }
+
+  /**
+   * @return the id in the old legacy property "key"
+   */
+  @JsonProperty("key")
+  public Integer getKeyLEGACAY(){
+    return getId();
   }
 
   public SimpleName getSubject() {
