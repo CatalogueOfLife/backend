@@ -1,10 +1,8 @@
 package life.catalogue.resources;
 
 import io.dropwizard.auth.Auth;
-import life.catalogue.api.model.User;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.ResultPage;
-import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.*;
+import life.catalogue.api.search.EstimateSearchRequest;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.assembly.AssemblyCoordinator;
@@ -29,10 +27,10 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.stream.Stream;
 
-@Path("/sector")
+@Path("/dataset/{datasetKey}/sector")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class SectorResource extends AbstractDatasetScopedResource<Integer, Sector> {
+public class SectorResource extends AbstractDatasetScopedResource<Integer, Sector, SectorSearchRequest> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorResource.class);
@@ -48,17 +46,18 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
     this.assembly = assembly;
     this.dao = dao;
   }
-  
-  @GET
-  public ResultPage<Sector> search(@Valid @BeanParam Page page, @BeanParam SectorSearchRequest req) {
+
+  @Override
+  ResultPage<Sector> searchImpl(int datasetKey, SectorSearchRequest req, Page page) {
+    req.setDatasetKey(datasetKey);
     return dao.search(req, page);
   }
 
   @DELETE
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void deleteByDataset(@QueryParam("datasetKey") int datasetKey,
-                                   @QueryParam("catalogueKey") @DefaultValue(Datasets.DRAFT_COL+"") int catalogueKey,
-                                   @Context SqlSession session, @Auth User user) {
+                              @PathParam("datasetKey") int catalogueKey,
+                              @Context SqlSession session, @Auth User user) {
     SectorMapper sm = session.getMapper(SectorMapper.class);
     int counter = 0;
     for (Sector s : sm.listByDataset(catalogueKey, datasetKey)) {

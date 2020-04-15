@@ -11,7 +11,6 @@ public class DecisionSearchRequest {
   @QueryParam("id")
   private String id;
 
-  @QueryParam("datasetKey")
   private Integer datasetKey;
   
   @QueryParam("subjectDatasetKey")

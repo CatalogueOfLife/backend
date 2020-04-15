@@ -23,7 +23,7 @@ import java.util.UUID;
 @Path("/dataset/{datasetKey}/reference")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class ReferenceResource extends AbstractDatasetScopedResource<String, Reference> {
+public class ReferenceResource extends AbstractDatasetScopedResource<String, Reference, ReferenceSearchRequest> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(ReferenceResource.class);
@@ -33,16 +33,12 @@ public class ReferenceResource extends AbstractDatasetScopedResource<String, Ref
     super(Reference.class, dao);
     this.dao = dao;
   }
-  
-  @GET
-  @Path("search")
-  public ResultPage<Reference> search(@PathParam("datasetKey") int datasetKey,
-                                      @BeanParam ReferenceSearchRequest req,
-                                      @Valid @BeanParam Page page,
-                                      @Context SqlSession session) {
-    return dao.search(datasetKey, req, page);
+
+  @Override
+  ResultPage<Reference> searchImpl(int datasetKey, ReferenceSearchRequest request, Page page) {
+    return dao.search(datasetKey, request, page);
   }
-  
+
   /**
    * @return the primary key of the object. Together with the CreatedResponseFilter will return a 201 location
    */

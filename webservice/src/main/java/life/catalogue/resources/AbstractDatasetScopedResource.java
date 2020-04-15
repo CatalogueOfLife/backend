@@ -3,9 +3,7 @@ package life.catalogue.resources;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
 
 import io.dropwizard.auth.Auth;
 import life.catalogue.api.exception.NotFoundException;
@@ -15,10 +13,13 @@ import life.catalogue.dw.auth.Roles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("static-method")
+/**
+ *
+ */
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@SuppressWarnings("static-method")
-public abstract class AbstractDatasetScopedResource<K, T extends DatasetScopedEntity<K>> {
+public abstract class AbstractDatasetScopedResource<K, T extends DatasetScopedEntity<K>, R> {
 
   private final Class<T> objClass;
   protected final DatasetEntityDao<K, T, ?> dao;
@@ -32,9 +33,17 @@ public abstract class AbstractDatasetScopedResource<K, T extends DatasetScopedEn
   }
   
   @GET
-  public ResultPage<T> list(@PathParam("datasetKey") int datasetKey,
-                            @Valid @BeanParam Page page,
-                            @Context UriInfo uri) {
+  public ResultPage<T> search(@PathParam("datasetKey") int datasetKey,
+                            @BeanParam R request,
+                            @Valid @BeanParam Page page) {
+    return searchImpl(datasetKey, request ,page);
+  }
+
+  /**
+   * Default search is simply a paging through all by datasetKey.
+   * Override to provide real searches
+   */
+  ResultPage<T> searchImpl(int datasetKey, R request, Page page) {
     return dao.list(datasetKey, page);
   }
   

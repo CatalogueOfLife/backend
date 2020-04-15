@@ -25,7 +25,7 @@ import javax.ws.rs.core.MediaType;
 @Path("/dataset/{datasetKey}/decision")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class DecisionResource extends AbstractDatasetScopedResource<Integer, EditorialDecision> {
+public class DecisionResource extends AbstractDatasetScopedResource<Integer, EditorialDecision, DecisionSearchRequest> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DecisionResource.class);
@@ -35,18 +35,18 @@ public class DecisionResource extends AbstractDatasetScopedResource<Integer, Edi
     super(EditorialDecision.class, ddao);
     this.dao = ddao;
   }
-  
-  @GET
-  public ResultPage<EditorialDecision> search(@Valid @BeanParam Page page, @BeanParam DecisionSearchRequest req) {
+
+  @Override
+  ResultPage<EditorialDecision> searchImpl(int datasetKey, DecisionSearchRequest req, Page page) {
+    req.setDatasetKey(datasetKey);
     return dao.search(req, page);
   }
 
   @DELETE
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void deleteByDataset(@QueryParam("datasetKey") Integer datasetKey,
-                              @QueryParam("catalogueKey") Integer catalogueKey,
+  public void deleteByDataset(@PathParam("datasetKey") int catalogueKey,
+                              @QueryParam("datasetKey") Integer datasetKey,
                               @Context SqlSession session, @Auth User user) {
-    Preconditions.checkNotNull(catalogueKey, "catalogueKey parameter is required");
     Preconditions.checkNotNull(datasetKey, "datasetKey parameter is required");
     DecisionMapper mapper = session.getMapper(DecisionMapper.class);
     int counter = 0;

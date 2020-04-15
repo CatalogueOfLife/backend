@@ -12,7 +12,6 @@ public class SectorSearchRequest {
   @QueryParam("id")
   private String id;
 
-  @QueryParam("datasetKey")
   private Integer datasetKey;
   
   @QueryParam("subjectDatasetKey")

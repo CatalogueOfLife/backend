@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 @Path("/dataset/{datasetKey}/taxon")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon> {
+public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, TaxonResource.TaxonSearchRequest> {
   private static String ROOT_PARAM = "root";
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(TaxonResource.class);
@@ -29,16 +29,17 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon> 
     super(Taxon.class, dao);
     this.dao = dao;
   }
-  
-  @Override
-  public ResultPage<Taxon> list(int datasetKey, @Valid Page page, UriInfo uri) {
-    boolean root = false;
-    if (uri.getQueryParameters().containsKey(ROOT_PARAM)) {
-      root = Boolean.parseBoolean(uri.getQueryParameters().getFirst(ROOT_PARAM));
-    }
-    return root ? dao.listRoot(datasetKey, page) : dao.list(datasetKey, page);
+
+  public static class TaxonSearchRequest {
+    @QueryParam("root")
+    boolean root;
   }
-  
+
+  @Override
+  ResultPage<Taxon> searchImpl(int datasetKey, TaxonSearchRequest req, Page page) {
+    return req.root ? dao.listRoot(datasetKey, page) : dao.list(datasetKey, page);
+  }
+
   @GET
   @Path("{id}/children")
   public ResultPage<Taxon> children(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Valid @BeanParam Page page) {

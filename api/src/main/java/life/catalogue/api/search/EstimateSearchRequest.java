@@ -10,7 +10,6 @@ public class EstimateSearchRequest {
   @QueryParam("id")
   private String id;
 
-  @QueryParam("datasetKey")
   private Integer datasetKey;
   
   @QueryParam("rank")
