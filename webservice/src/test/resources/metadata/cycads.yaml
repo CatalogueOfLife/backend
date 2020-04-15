@@ -41,3 +41,6 @@ completeness: 100
 
 confidence: 5
 
+# settings
+code: botanical
+gazetteer: iso

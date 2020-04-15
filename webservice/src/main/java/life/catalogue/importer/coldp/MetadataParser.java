@@ -17,10 +17,13 @@ import com.google.common.collect.ImmutableList;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.api.vocab.DatasetSettings;
+import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.License;
 import life.catalogue.importer.jackson.EnumParserSerde;
 import life.catalogue.parser.LicenseParser;
 import org.gbif.dwc.terms.TermFactory;
+import org.gbif.nameparser.api.NomCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +37,7 @@ public class MetadataParser {
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .registerModule(new JavaTimeModule())
         .registerModule(new ColdpYamlModule());
-    DATASET_READER = OM.readerFor(Dataset.class);
+    DATASET_READER = OM.readerFor(ColdpDataset.class);
     
     TermFactory.instance().registerTerm(ColdpInserter.BIBTEX_CLASS_TERM);
     TermFactory.instance().registerTerm(ColdpInserter.CSLJSON_CLASS_TERM);
@@ -53,7 +56,17 @@ public class MetadataParser {
       super.setupModule(ctxt);
     }
   }
-  
+
+  static class ColdpDataset extends Dataset {
+    public void setCode(NomCode code){
+      putSetting(DatasetSettings.NOMENCLATURAL_CODE, code);
+    }
+    public void setGazetteer(Gazetteer gazetteer){
+      putSetting(DatasetSettings.DISTRIBUTION_GAZETTEER, gazetteer);
+    }
+
+  }
+
   /**
    * Reads the dataset metadata.yaml or metadata.yml from a given folder
    */

@@ -490,4 +490,3 @@ INSERT INTO dataset (gbif_key, type, created_by, modified_by, origin, settings, 
 
 UPDATE dataset SET import_frequency = 7
 WHERE key >= 2000;
-jsonb_build_object('NOMENCLATURAL_CODE','' )

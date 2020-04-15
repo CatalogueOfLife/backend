@@ -7,8 +7,11 @@ import java.util.List;
 import java.util.Optional;
 
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.vocab.DatasetSettings;
+import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.io.Resources;
+import org.gbif.nameparser.api.NomCode;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -32,7 +35,9 @@ public class MetadataParserTest {
     assertEquals("Calonje M., Stanberg L. & Stevenson, D. (eds) (2019). The World List of Cycads, online edition (version 02/2019).", d.getCitation());
     assertEquals(100, (int) d.getCompleteness());
     assertEquals(5, (int) d.getConfidence());
-    
+    assertEquals(NomCode.BOTANICAL, d.getSettingEnum(DatasetSettings.NOMENCLATURAL_CODE));
+    assertEquals(Gazetteer.ISO, d.getSettingEnum(DatasetSettings.DISTRIBUTION_GAZETTEER));
+
     List<String> orgs = Arrays.asList("IUCN / SSC Cycad Specialist Group, Montgomery Botanical Center, Coral Gables, FL, USA",
         "New York Botanical Garden, Bronx NY, USA",
         "Royal Botanic Gardens, Sydney, New South Wales, Australia");
