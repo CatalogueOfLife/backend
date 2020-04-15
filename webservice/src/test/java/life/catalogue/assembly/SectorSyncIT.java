@@ -308,16 +308,16 @@ public class SectorSyncIT {
       
       // update sector with now existing Theridiidae key
       NameUsageBase ther = getByName(Datasets.DRAFT_COL, Rank.FAMILY, "Theridiidae");
+      assertNotNull(ther);
       s = sm.get(s2);
       s.getTarget().setId(ther.getId());
       sm.update(s);
-  
-      NameUsageBase u = getByName(Datasets.DRAFT_COL, Rank.FAMILY, "Theridiidae");
-      assertNotNull(u);
+
       sync(s);
-  
-      u = getByName(Datasets.DRAFT_COL, Rank.SPECIES, "Dectus mascha");
+
+      NameUsageBase u = getByName(Datasets.DRAFT_COL, Rank.SPECIES, "Dectus mascha");
       assertNotNull(u);
+      assertEquals((int)u.getSectorKey(), s2);
       assertTree("cat6_11.txt");
       
       // make sure that we can resync and still get the same results with the nested sector

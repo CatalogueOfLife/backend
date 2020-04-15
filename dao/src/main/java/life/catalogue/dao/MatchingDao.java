@@ -91,7 +91,7 @@ public class MatchingDao {
     for (NameUsage u : uMapper.listByName(sector.getDatasetKey(), name, rank)) {
       if (u.isTaxon()) {
         Taxon t = (Taxon) u;
-        if (t.getSectorKey() != null && t.getSectorKey().equals(sector.getKey())
+        if (t.getSectorKey() != null && t.getSectorKey().equals(sector.getId())
             && Objects.equals(StringUtils.trimToNull(authorship), StringUtils.trimToNull(u.getName().authorshipComplete()))) {
           matches.add(t);
         }

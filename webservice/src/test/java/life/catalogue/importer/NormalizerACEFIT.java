@@ -14,7 +14,6 @@ import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RankedUsage;
 import life.catalogue.importer.neo.traverse.Traversals;
 import org.gbif.dwc.terms.AcefTerm;
-import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;

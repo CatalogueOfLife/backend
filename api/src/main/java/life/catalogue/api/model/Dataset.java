@@ -392,11 +392,13 @@ public class Dataset extends DataEntity<Integer> {
   }
 
   public void putSetting(DatasetSettings key, Object value) {
-    if (!key.getType().isInstance(value)){
+    if (value == null) {
+      settings.remove(key);
+    } else if (!key.getType().isInstance(value)){
       throw new IllegalArgumentException("value not of expected type " + key.getType());
+    } else {
+      settings.put(key, value);
     }
-
-    settings.put(key, value);
   }
 
   public boolean hasSetting(DatasetSettings key) {
