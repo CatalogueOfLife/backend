@@ -6,6 +6,9 @@ import io.dropwizard.testing.ResourceHelpers;
 import life.catalogue.WsServerRule;
 import life.catalogue.api.model.User;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.javers.core.Javers;
+import org.javers.core.JaversBuilder;
+import org.javers.core.diff.Diff;
 import org.junit.ClassRule;
 
 public class ResourceTestBase {
@@ -18,6 +21,7 @@ public class ResourceTestBase {
     this.path = path;
     baseURL = String.format("http://localhost:%d"+path, RULE.getLocalPort());
     base = RULE.client().target(baseURL);
+
   }
   
   @ClassRule
@@ -32,8 +36,10 @@ public class ResourceTestBase {
     RULE.addUserPermissions(username, datasetKey);
   }
 
-  public void updateUser(User user) {
-    RULE.updateUser(user);
+  protected void printDiff(Object o1, Object o2) {
+    Javers javers = JaversBuilder.javers().build();
+    Diff diff = javers.compare(o1, o2);
+    System.out.println(diff);
   }
- 
+
 }

@@ -26,7 +26,8 @@ normalizer:
   archiveDir: /tmp/colplus/archives
 client:
   timeout: 10000ms
-  connectionTimeout: 5000ms
+  connectionTimeout: 10000ms
+  connectionRequestTimeout: 10000ms
   timeToLive: 1h
   cookiesEnabled: false
   maxConnections: 64

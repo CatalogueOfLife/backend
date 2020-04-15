@@ -4,18 +4,18 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Priority;
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.*;
 
 import com.google.common.io.BaseEncoding;
 import io.jsonwebtoken.Claims;
@@ -23,9 +23,14 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import life.catalogue.api.model.User;
 import life.catalogue.dw.jersey.exception.JsonExceptionMapperBase;
+import org.apache.commons.lang3.StringUtils;
 
 /**
- * Authenticates an CoL user via Basic or from an encoded Bearer JWT token.
+ * Authenticates an CoL user via Basic or from an encoded Bearer JWT token
+ * and populates the security context. OPTIONS preflight requests and GET to the API root are excluded.
+ *
+ * Otherwisew if no authentication is given or it failed a 401 will be send.
+ *
  * See https://tools.ietf.org/html/rfc6750
  * and https://jwt.io/introduction/
  */
@@ -55,6 +60,8 @@ public class AuthFilter implements ContainerRequestFilter {
    */
   @Override
   public void filter(ContainerRequestContext req) throws IOException {
+    if (exclude(req)) return;
+
     final String auth = req.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
     String scheme = null;
     Optional<User> user = Optional.empty();
@@ -78,6 +85,11 @@ public class AuthFilter implements ContainerRequestFilter {
     } else {
       unauthorized();
     }
+  }
+
+  private static boolean exclude(ContainerRequestContext req){
+    return req.getMethod().equals(HttpMethod.OPTIONS)
+      || StringUtils.isBlank(req.getUriInfo().getPath());
   }
 
   private static boolean isSecure(ContainerRequestContext req){

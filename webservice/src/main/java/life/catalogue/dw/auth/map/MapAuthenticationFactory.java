@@ -25,6 +25,7 @@ public class MapAuthenticationFactory implements AuthenticationProviderFactory {
     @NotNull
     public String password;
     public User.Role role;
+    public List<Integer> datasets;
   }
 
   @Valid
@@ -58,6 +59,9 @@ public class MapAuthenticationFactory implements AuthenticationProviderFactory {
           u.setLastname(c.username);
           if (c.role != null) {
             u.getRoles().add(c.role);
+          }
+          if (c.datasets != null) {
+            c.datasets.forEach(u::addDataset);
           }
           return Optional.of(u);
         }

@@ -15,8 +15,7 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
-import static life.catalogue.ApiUtils.editorCreds;
-import static life.catalogue.ApiUtils.json;
+import static life.catalogue.ApiUtils.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -35,7 +34,7 @@ public class TaxonResourceTest extends ResourceTestBase {
   
   @Test
   public void get() {
-    Taxon t = base.path("root-1").request().get(Taxon.class);
+    Taxon t = userCreds(base.path("root-1")).get(Taxon.class);
     assertNotNull(t);
     assertEquals("root-1", t.getId());
   }
@@ -49,7 +48,7 @@ public class TaxonResourceTest extends ResourceTestBase {
     
     t.setId( editorCreds(base).post(json(t), String.class) );
   
-    Taxon t2 = base.path(t.getId()).request().get(Taxon.class);
+    Taxon t2 = userCreds(base.path(t.getId())).get(Taxon.class);
     assertNotNull(t2);
     assertEquals(t.getId(), t2.getId());
     

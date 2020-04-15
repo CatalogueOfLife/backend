@@ -14,6 +14,10 @@ import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 import javax.ws.rs.container.ContainerRequestFilter;
 import java.util.Map;
 
+/**
+ * Wires up authentication against the GBIF registry and authorization based on CoL user roles.
+ * Apart from the base root of the API ALL requests including OPTION and GET will have to provide authentication!
+ */
 public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
   
   private JwtCodec jwtCodec;
@@ -31,7 +35,7 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
     ContainerRequestFilter authFilter = new AuthFilter(idService, jwtCodec, cfg.requireSSL);
     // WARNING!!! Never check in the LocalAuthFilter. It is meant purely for local testing !!!
     //authFilter = new LocalAuthFilter();
-    environment.jersey().register(new AuthDynamicFeature(authFilter));
+    environment.jersey().register(authFilter);
     environment.jersey().register(new AuthValueFactoryProvider.Binder<>(User.class));
     environment.jersey().register(privateFilter);
   }

@@ -89,17 +89,6 @@ public class WsServerRule extends DropwizardAppRule<WsServerConfig> {
     return ((WsServer) getTestSupport().getApplication()).getAuthBundle();
   }
 
-  /**
-   * Useful to change user permissions in tests. Direct db access alone does not change cached users.
-   */
-  public void updateUser(User user) {
-    try (SqlSession session = getSqlSessionFactory().openSession(false)) {
-      session.getMapper(UserMapper.class).update(user);
-      session.commit();
-    }
-    getAuthBundle().updateUser(user);
-  }
-
   public void addUserPermissions(String username, int... datasetKey) {
     try (SqlSession session = getSqlSessionFactory().openSession(false)) {
       UserMapper um = session.getMapper(UserMapper.class);

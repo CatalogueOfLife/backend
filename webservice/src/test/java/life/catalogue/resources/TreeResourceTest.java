@@ -8,6 +8,7 @@ import life.catalogue.db.TestDataRule;
 import org.junit.Rule;
 import org.junit.Test;
 
+import static life.catalogue.ApiUtils.userCreds;
 import static org.junit.Assert.assertEquals;
 
 public class TreeResourceTest extends ResourceTestBase {
@@ -56,10 +57,10 @@ public class TreeResourceTest extends ResourceTestBase {
   
   @Test
   public void get() {
-    ResultPage<TreeNodeProps> root = base.path("/11/tree")
+    ResultPage<TreeNodeProps> root = userCreds(base.path("/11/tree")
         .queryParam("insertPlaceholder", true)
         .queryParam("type", TreeNode.Type.SOURCE.name())
-        .request().get(RESP_TYPE);
+    ).get(RESP_TYPE);
     assertEquals(2, root.size());
     // make sure we get the html markup
     assertEquals("Larus fuscus", root.getResult().get(0).getName());

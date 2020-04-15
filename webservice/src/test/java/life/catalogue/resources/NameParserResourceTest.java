@@ -13,24 +13,23 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import static life.catalogue.ApiUtils.userCreds;
 import static org.junit.Assert.assertEquals;
 
-public class NameParserResourceTest {
-  
-  @ClassRule
-  public static final WsServerRule RULE = new WsServerRule(ResourceHelpers.resourceFilePath("config-test.yaml"));
-  
+public class NameParserResourceTest extends ResourceTestBase {
+
   GenericType<List<NameAccordingTo>> PARSER_TYPE = new GenericType<List<NameAccordingTo>>() {
   };
-  
+
+  public NameParserResourceTest() {
+    super("/parser/name");
+  }
+
   @Test
   public void parseGet() {
-    List<NameAccordingTo> resp = RULE.client().target(
-        String.format("http://localhost:%d/parser/name", RULE.getLocalPort()))
-        .queryParam("name", "Abies alba Mill.")
-        .queryParam("code", "botanical")
-        .request()
-        .get(PARSER_TYPE);
+    List<NameAccordingTo> resp = userCreds(base.queryParam("name", "Abies alba Mill.")
+                                               .queryParam("code", "botanical")
+    ).get(PARSER_TYPE);
     
     Name abies = new Name();
     abies.setGenus("Abies");
@@ -42,6 +41,7 @@ public class NameParserResourceTest {
     abies.updateNameCache();
     
     assertEquals(1, resp.size());
+    printDiff(abies, resp.get(0).getName());
     assertEquals(abies, resp.get(0).getName());
   }
 }

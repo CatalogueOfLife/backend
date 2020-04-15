@@ -10,20 +10,20 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import static life.catalogue.ApiUtils.userCreds;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class MatchingResourceTest {
-  
-  @ClassRule
-  public static final WsServerRule RULE = new WsServerRule(ResourceHelpers.resourceFilePath("config-test.yaml"));
-  
+public class MatchingResourceTest extends ResourceTestBase {
+
+  public MatchingResourceTest() {
+    super("/name/matching");
+  }
+
   @Test
   public void match() {
-    NameMatch match = RULE.client().target(
-        String.format("http://localhost:%d/name/matching", RULE.getLocalPort()))
-        .queryParam("q", "Abies alba Mill.")
-        .request().get(NameMatch.class);
+    NameMatch match = userCreds(base.queryParam("q", "Abies alba Mill."))
+      .get(NameMatch.class);
     
     Name abies = new Name();
     abies.setGenus("Abies");
