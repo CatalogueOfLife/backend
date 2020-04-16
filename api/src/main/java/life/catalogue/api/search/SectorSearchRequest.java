@@ -16,7 +16,10 @@ public class SectorSearchRequest {
   private String targetId;
 
   private Integer datasetKey;
-  
+
+  @QueryParam("subjectId")
+  private String subjectId;
+
   @QueryParam("subjectDatasetKey")
   private Integer subjectDatasetKey;
   
@@ -67,6 +70,14 @@ public class SectorSearchRequest {
 
   public void setTargetId(String targetId) {
     this.targetId = targetId;
+  }
+
+  public String getSubjectId() {
+    return subjectId;
+  }
+
+  public void setSubjectId(String subjectId) {
+    this.subjectId = subjectId;
   }
 
   public Integer getDatasetKey() {
@@ -151,6 +162,7 @@ public class SectorSearchRequest {
       Objects.equals(id, that.id) &&
       Objects.equals(targetId, that.targetId) &&
       Objects.equals(datasetKey, that.datasetKey) &&
+      Objects.equals(subjectId, that.subjectId) &&
       Objects.equals(subjectDatasetKey, that.subjectDatasetKey) &&
       rank == that.rank &&
       Objects.equals(name, that.name) &&
@@ -161,6 +173,6 @@ public class SectorSearchRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, targetId, datasetKey, subjectDatasetKey, rank, name, lastSync, mode, userKey, subject, broken);
+    return Objects.hash(id, targetId, datasetKey, subjectId, subjectDatasetKey, rank, name, lastSync, mode, userKey, subject, broken);
   }
 }

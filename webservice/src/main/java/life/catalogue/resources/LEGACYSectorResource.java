@@ -47,7 +47,7 @@ public class LEGACYSectorResource extends LEGACYAbstractDecisionResource<Sector>
     this.assembly = assembly;
     this.dao = dao;
   }
-  
+
   @GET
   public ResultPage<Sector> search(@Valid @BeanParam Page page, @BeanParam SectorSearchRequest req) {
     return dao.search(req, page);

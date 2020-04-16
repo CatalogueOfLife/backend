@@ -105,7 +105,10 @@
           (tt.id IS NULL OR ts.id IS NULL)
         </if>
         <if test="req.id != null">
-          AND s.subject_id = #{req.id}
+          AND s.id = #{req.id}
+        </if>
+        <if test="req.subjectId != null">
+          AND s.subject_id = #{req.subjectId}
         </if>
         <if test="req.targetId != null">
           AND s.target_id = #{req.targetId}
