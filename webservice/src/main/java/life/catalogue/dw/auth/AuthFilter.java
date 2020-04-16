@@ -19,6 +19,7 @@ import javax.ws.rs.core.*;
 
 import com.google.common.io.BaseEncoding;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import life.catalogue.api.model.User;
@@ -177,7 +178,10 @@ public class AuthFilter implements ContainerRequestFilter {
       Jws<Claims> jws = jwt.parse(token);
       return Optional.of(jws.getBody().getSubject())
           .map(idService::get);
-      
+
+    } catch (ExpiredJwtException ex) {
+      throw unauthorized("Expired JWT token: " + ex.getClaims().getExpiration());
+
     } catch (JwtException | IllegalArgumentException ex) {
       StringBuilder sb = new StringBuilder("Invalid JWT token");
       if (ex.getMessage() != null) {

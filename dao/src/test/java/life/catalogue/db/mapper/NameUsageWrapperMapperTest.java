@@ -39,7 +39,6 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
     Assert.assertEquals(1, counter.get());
   }
 
-
   @Test
   public void testGetComplete() throws Exception {
     DatasetMapper dm = mapper(DatasetMapper.class);

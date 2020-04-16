@@ -9,7 +9,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.EditorialDecision;
@@ -136,7 +135,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
 
     res = query(new TermQuery("usageId", dsid.getId())); // Query ES for the usage
     assertEquals(1, res.getResult().size()); // Yes, it's there!
-    assertEquals(key, (int) res.getResult().get(0).getDecisions().get(0).getKey()); // make sure it has the decision key
+    assertEquals(key, (int) res.getResult().get(0).getDecisions().get(0).getId()); // make sure it has the decision key
   }
 
   @Test

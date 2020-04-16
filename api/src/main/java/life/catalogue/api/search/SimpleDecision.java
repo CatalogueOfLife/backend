@@ -5,16 +5,16 @@ import java.util.Objects;
 import life.catalogue.api.model.EditorialDecision;
 
 public class SimpleDecision {
-  private Integer key;
+  private Integer id;
   private Integer datasetKey;
   private EditorialDecision.Mode mode;
   
-  public Integer getKey() {
-    return key;
+  public Integer getId() {
+    return id;
   }
   
-  public void setKey(Integer key) {
-    this.key = key;
+  public void setId(Integer id) {
+    this.id = id;
   }
   
   public Integer getDatasetKey() {
@@ -38,13 +38,13 @@ public class SimpleDecision {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     SimpleDecision that = (SimpleDecision) o;
-    return Objects.equals(key, that.key) &&
+    return Objects.equals(id, that.id) &&
         Objects.equals(datasetKey, that.datasetKey) &&
         mode == that.mode;
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(key, datasetKey, mode);
+    return Objects.hash(id, datasetKey, mode);
   }
 }

@@ -9,6 +9,7 @@ import javax.crypto.SecretKey;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import life.catalogue.api.model.User;
 import life.catalogue.common.date.DateUtils;
 import org.slf4j.Logger;
@@ -16,8 +17,8 @@ import org.slf4j.LoggerFactory;
 
 public class JwtCodec {
   private static final Logger LOG = LoggerFactory.getLogger(JwtCodec.class);
-  private static final int EXPIRE_IN_DAYS = 7;
-  private static final String ISSUER = "col.plus";
+  private static final int EXPIRE_IN_HOURS = 24;
+  private static final String ISSUER = "CoL";
   private final SecretKey key;
   private final JwtParser parser;
   
@@ -37,12 +38,12 @@ public class JwtCodec {
         .setIssuer(ISSUER)
         .setIssuedAt(DateUtils.toDate(now))
         .setSubject(user.getUsername())
-        .setExpiration(DateUtils.toDate(now.plus(EXPIRE_IN_DAYS, ChronoUnit.DAYS)))
+        .setExpiration(DateUtils.toDate(now.plus(EXPIRE_IN_HOURS, ChronoUnit.HOURS)))
         .signWith(key);
     return builder.compact();
   }
   
-  public Jws<Claims> parse(String token) throws JwtException {
+  public Jws<Claims> parse(String token) throws ExpiredJwtException, UnsupportedJwtException, MalformedJwtException, SignatureException, IllegalArgumentException {
     return parser.parseClaimsJws(token);
   }
   

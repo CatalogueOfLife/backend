@@ -161,7 +161,7 @@ public class EditorialDecision extends DatasetScopedEntity<Integer> {
   @JsonIgnore
   public SimpleDecision asSimpleDecision() {
     SimpleDecision sd = new SimpleDecision();
-    sd.setKey(getId());
+    sd.setId(getId());
     sd.setDatasetKey(getDatasetKey());
     sd.setMode(mode);
     return sd;

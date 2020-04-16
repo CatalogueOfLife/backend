@@ -204,7 +204,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
       nuw.getVernacularNames().forEach(vn -> vn.setName(null));
     }
     if (notEmpty(nuw.getDecisions())) {
-      nuw.getDecisions().stream().forEach(d -> {
+      nuw.getDecisions().forEach(d -> {
         d.setDatasetKey(null);
         d.setMode(null);
       });

@@ -29,23 +29,23 @@ public class DecisionQueriesTest extends EsReadTestBase {
   public void test1() {
 
     SimpleDecision sd1 = new SimpleDecision();
-    sd1.setKey(100);
+    sd1.setId(100);
     sd1.setDatasetKey(1);
 
     SimpleDecision sd2a = new SimpleDecision();
-    sd2a.setKey(101);
+    sd2a.setId(101);
     sd2a.setDatasetKey(2);
 
     SimpleDecision sd2b = new SimpleDecision();
-    sd2b.setKey(102);
+    sd2b.setId(102);
     sd2b.setDatasetKey(2);
 
     SimpleDecision sd2c = new SimpleDecision();
-    sd2c.setKey(103);
+    sd2c.setId(103);
     sd2c.setDatasetKey(2);
 
     SimpleDecision sd3 = new SimpleDecision();
-    sd3.setKey(104);
+    sd3.setId(104);
     sd3.setDatasetKey(3);
 
     List<NameUsageWrapper> nuws = createNameUsages(2);
@@ -100,27 +100,27 @@ public class DecisionQueriesTest extends EsReadTestBase {
   @Test
   public void test3() {
     SimpleDecision sd1 = new SimpleDecision();
-    sd1.setKey(100);
+    sd1.setId(100);
     sd1.setDatasetKey(1);
     sd1.setMode(Mode.UPDATE);
 
     SimpleDecision sd2a = new SimpleDecision();
-    sd2a.setKey(101);
+    sd2a.setId(101);
     sd2a.setDatasetKey(2);
     sd2a.setMode(Mode.BLOCK);
 
     SimpleDecision sd2b = new SimpleDecision();
-    sd2b.setKey(102);
+    sd2b.setId(102);
     sd2b.setDatasetKey(2);
     sd2b.setMode(Mode.REVIEWED);
 
     SimpleDecision sd2c = new SimpleDecision();
-    sd2c.setKey(103);
+    sd2c.setId(103);
     sd2c.setDatasetKey(2);
     sd2c.setMode(Mode.UPDATE);
 
     SimpleDecision sd3 = new SimpleDecision();
-    sd3.setKey(104);
+    sd3.setId(104);
     sd3.setDatasetKey(3);
     sd3.setMode(Mode.UPDATE);
 
@@ -149,27 +149,27 @@ public class DecisionQueriesTest extends EsReadTestBase {
   public void test4() {
     
     SimpleDecision sd1 = new SimpleDecision();
-    sd1.setKey(100);
+    sd1.setId(100);
     sd1.setDatasetKey(1);
     sd1.setMode(Mode.UPDATE);
 
     SimpleDecision sd2a = new SimpleDecision();
-    sd2a.setKey(101);
+    sd2a.setId(101);
     sd2a.setDatasetKey(2);
     sd2a.setMode(Mode.BLOCK);
 
     SimpleDecision sd2b = new SimpleDecision();
-    sd2b.setKey(102);
+    sd2b.setId(102);
     sd2b.setDatasetKey(2);
     sd2b.setMode(Mode.REVIEWED);
 
     SimpleDecision sd2c = new SimpleDecision();
-    sd2c.setKey(103);
+    sd2c.setId(103);
     sd2c.setDatasetKey(2);
     sd2c.setMode(Mode.UPDATE);
 
     SimpleDecision sd3 = new SimpleDecision();
-    sd3.setKey(104);
+    sd3.setId(104);
     sd3.setDatasetKey(3);
     sd3.setMode(Mode.UPDATE);
 
@@ -198,27 +198,27 @@ public class DecisionQueriesTest extends EsReadTestBase {
   public void test5() {
     
     SimpleDecision sd1 = new SimpleDecision();
-    sd1.setKey(100);
+    sd1.setId(100);
     sd1.setDatasetKey(1);
     sd1.setMode(Mode.UPDATE);
 
     SimpleDecision sd2a = new SimpleDecision();
-    sd2a.setKey(101);
+    sd2a.setId(101);
     sd2a.setDatasetKey(2);
     sd2a.setMode(Mode.BLOCK);
 
     SimpleDecision sd2b = new SimpleDecision();
-    sd2b.setKey(102);
+    sd2b.setId(102);
     sd2b.setDatasetKey(2);
     sd2b.setMode(Mode.REVIEWED);
 
     SimpleDecision sd2c = new SimpleDecision();
-    sd2c.setKey(103);
+    sd2c.setId(103);
     sd2c.setDatasetKey(2);
     sd2c.setMode(Mode.UPDATE);
 
     SimpleDecision sd3 = new SimpleDecision();
-    sd3.setKey(104);
+    sd3.setId(104);
     sd3.setDatasetKey(3);
     sd3.setMode(Mode.UPDATE);
 
