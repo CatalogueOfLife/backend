@@ -294,6 +294,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     mapper().delete(d5);
     createSector(Datasets.DRAFT_COL, d3);
     createSector(Datasets.DRAFT_COL, d4);
+    createSector(d4, d3);
     commit();
 
     DatasetSearchRequest query = new DatasetSearchRequest();
@@ -385,8 +386,9 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   
     query.setQ(null);
     assertEquals(2, mapper().search(query, new Page()).size());
-  
-  
+
+    query.setContributesTo(d4);
+    assertEquals(1, mapper().search(query, new Page()).size());
   
     // non existing catalogue
     query.setContributesTo(99);
@@ -394,7 +396,18 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
 
     query.setContributesTo(Datasets.DRAFT_COL);
     assertEquals(2, mapper().search(query, new Page()).size());
-    
+
+    // by source dataset
+    query = new DatasetSearchRequest();
+    query.setSourceDatasetKey(d3);
+    assertEquals(2, mapper().search(query, new Page()).size());
+
+    query.setSourceDatasetKey(d4);
+    assertEquals(1, mapper().search(query, new Page()).size());
+
+    query.setSourceDatasetKey(99); // non existing
+    assertEquals(0, mapper().search(query, new Page()).size());
+
     // partial search
     // https://github.com/Sp2000/colplus-backend/issues/353
     query = DatasetSearchRequest.byQuery("wor");

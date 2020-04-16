@@ -49,7 +49,11 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
 
   @Override
   ResultPage<Sector> searchImpl(int datasetKey, SectorSearchRequest req, Page page) {
-    req.setDatasetKey(datasetKey);
+    if (req.isSubject()) {
+      req.setSubjectDatasetKey(datasetKey);
+    } else {
+      req.setDatasetKey(datasetKey);
+    }
     return dao.search(req, page);
   }
 

@@ -31,7 +31,10 @@ public class DatasetSearchRequest {
   
   @QueryParam("contributesTo")
   private Integer contributesTo;
-  
+
+  @QueryParam("sourceDatasetKey")
+  private Integer sourceDatasetKey;
+
   @QueryParam("format")
   private DataFormat format;
   
@@ -98,7 +101,15 @@ public class DatasetSearchRequest {
   public void setContributesTo(Integer contributesTo) {
     this.contributesTo = contributesTo;
   }
-  
+
+  public Integer getSourceDatasetKey() {
+    return sourceDatasetKey;
+  }
+
+  public void setSourceDatasetKey(Integer sourceDatasetKey) {
+    this.sourceDatasetKey = sourceDatasetKey;
+  }
+
   public DataFormat getFormat() {
     return format;
   }
@@ -162,28 +173,29 @@ public class DatasetSearchRequest {
   public void setReverse(boolean reverse) {
     this.reverse = reverse;
   }
-  
-  
+
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     DatasetSearchRequest that = (DatasetSearchRequest) o;
     return reverse == that.reverse &&
-        Objects.equals(q, that.q) &&
-        code == that.code &&
-        Objects.equals(contributesTo, that.contributesTo) &&
-        format == that.format &&
-        origin == that.origin &&
-        type == that.type &&
-        Objects.equals(modified, that.modified) &&
-        Objects.equals(created, that.created) &&
-        Objects.equals(released, that.released) &&
-        sortBy == that.sortBy;
+      Objects.equals(q, that.q) &&
+      code == that.code &&
+      Objects.equals(contributesTo, that.contributesTo) &&
+      Objects.equals(sourceDatasetKey, that.sourceDatasetKey) &&
+      format == that.format &&
+      origin == that.origin &&
+      type == that.type &&
+      Objects.equals(modified, that.modified) &&
+      Objects.equals(created, that.created) &&
+      Objects.equals(released, that.released) &&
+      sortBy == that.sortBy;
   }
-  
+
   @Override
   public int hashCode() {
-    return Objects.hash(q, code, contributesTo, format, origin, type, modified, created, released, sortBy, reverse);
+    return Objects.hash(q, code, contributesTo, sourceDatasetKey, format, origin, type, modified, created, released, sortBy, reverse);
   }
 }

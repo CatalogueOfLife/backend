@@ -38,6 +38,11 @@ public class DecisionResource extends AbstractDatasetScopedResource<Integer, Edi
 
   @Override
   ResultPage<EditorialDecision> searchImpl(int datasetKey, DecisionSearchRequest req, Page page) {
+    if (req.isSubject()) {
+      req.setSubjectDatasetKey(datasetKey);
+    } else {
+      req.setDatasetKey(datasetKey);
+    }
     req.setDatasetKey(datasetKey);
     return dao.search(req, page);
   }

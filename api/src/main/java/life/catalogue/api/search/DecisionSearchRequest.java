@@ -24,7 +24,10 @@ public class DecisionSearchRequest {
 
   @QueryParam("userKey")
   private Integer userKey;
-  
+
+  @QueryParam("subject")
+  private boolean subject = false;
+
   @QueryParam("broken")
   private boolean broken = false;
   
@@ -93,7 +96,15 @@ public class DecisionSearchRequest {
   public void setUserKey(Integer userKey) {
     this.userKey = userKey;
   }
-  
+
+  public boolean isSubject() {
+    return subject;
+  }
+
+  public void setSubject(boolean subject) {
+    this.subject = subject;
+  }
+
   public boolean isBroken() {
     return broken;
   }
@@ -101,23 +112,24 @@ public class DecisionSearchRequest {
   public void setBroken(boolean broken) {
     this.broken = broken;
   }
-  
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     DecisionSearchRequest that = (DecisionSearchRequest) o;
-    return broken == that.broken &&
-        Objects.equals(id, that.id) &&
-        Objects.equals(datasetKey, that.datasetKey) &&
-        Objects.equals(subjectDatasetKey, that.subjectDatasetKey) &&
-        rank == that.rank &&
-        mode == that.mode &&
-        Objects.equals(userKey, that.userKey);
+    return subject == that.subject &&
+      broken == that.broken &&
+      Objects.equals(id, that.id) &&
+      Objects.equals(datasetKey, that.datasetKey) &&
+      Objects.equals(subjectDatasetKey, that.subjectDatasetKey) &&
+      rank == that.rank &&
+      mode == that.mode &&
+      Objects.equals(userKey, that.userKey);
   }
-  
+
   @Override
   public int hashCode() {
-    return Objects.hash(id, datasetKey, subjectDatasetKey, rank, mode, userKey, broken);
+    return Objects.hash(id, datasetKey, subjectDatasetKey, rank, mode, userKey, subject, broken);
   }
 }

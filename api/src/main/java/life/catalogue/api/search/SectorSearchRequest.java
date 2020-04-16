@@ -12,6 +12,9 @@ public class SectorSearchRequest {
   @QueryParam("id")
   private String id;
 
+  @QueryParam("targetId")
+  private String targetId;
+
   private Integer datasetKey;
   
   @QueryParam("subjectDatasetKey")
@@ -31,7 +34,10 @@ public class SectorSearchRequest {
 
   @QueryParam("userKey")
   private Integer userKey;
-  
+
+  @QueryParam("subject")
+  private boolean subject = false;
+
   @QueryParam("broken")
   private boolean broken = false;
   
@@ -54,7 +60,15 @@ public class SectorSearchRequest {
   public void setId(String id) {
     this.id = id;
   }
-  
+
+  public String getTargetId() {
+    return targetId;
+  }
+
+  public void setTargetId(String targetId) {
+    this.targetId = targetId;
+  }
+
   public Integer getDatasetKey() {
     return datasetKey;
   }
@@ -94,7 +108,15 @@ public class SectorSearchRequest {
   public void setUserKey(Integer userKey) {
     this.userKey = userKey;
   }
-  
+
+  public boolean isSubject() {
+    return subject;
+  }
+
+  public void setSubject(boolean subject) {
+    this.subject = subject;
+  }
+
   public boolean isBroken() {
     return broken;
   }
@@ -124,19 +146,21 @@ public class SectorSearchRequest {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     SectorSearchRequest that = (SectorSearchRequest) o;
-    return broken == that.broken &&
-        Objects.equals(id, that.id) &&
-        Objects.equals(datasetKey, that.datasetKey) &&
-        Objects.equals(subjectDatasetKey, that.subjectDatasetKey) &&
-        rank == that.rank &&
-        Objects.equals(name, that.name) &&
-        Objects.equals(lastSync, that.lastSync) &&
-        mode == that.mode &&
-        Objects.equals(userKey, that.userKey);
+    return subject == that.subject &&
+      broken == that.broken &&
+      Objects.equals(id, that.id) &&
+      Objects.equals(targetId, that.targetId) &&
+      Objects.equals(datasetKey, that.datasetKey) &&
+      Objects.equals(subjectDatasetKey, that.subjectDatasetKey) &&
+      rank == that.rank &&
+      Objects.equals(name, that.name) &&
+      Objects.equals(lastSync, that.lastSync) &&
+      mode == that.mode &&
+      Objects.equals(userKey, that.userKey);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, datasetKey, subjectDatasetKey, rank, name, lastSync, mode, userKey, broken);
+    return Objects.hash(id, targetId, datasetKey, subjectDatasetKey, rank, name, lastSync, mode, userKey, subject, broken);
   }
 }

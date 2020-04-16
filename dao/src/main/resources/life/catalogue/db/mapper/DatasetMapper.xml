@@ -134,6 +134,9 @@
             <if test="req.contributesTo != null">
                 AND exists(select 1 from sector s WHERE dataset_key=#{req.contributesTo} AND s.subject_dataset_key=d.key)
             </if>
+            <if test="req.sourceDatasetKey != null">
+              AND exists(select 1 from sector s WHERE subject_dataset_key=#{req.sourceDatasetKey} AND s.dataset_key=d.key)
+            </if>
             <if test="req.format != null">
                 AND d.data_format=#{req.format}::DATAFORMAT
             </if>

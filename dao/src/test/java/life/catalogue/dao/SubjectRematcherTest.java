@@ -1,11 +1,10 @@
 package life.catalogue.dao;
 
-import life.catalogue.api.model.EditorialDecision;
+import life.catalogue.api.model.*;
 import life.catalogue.db.mapper.DecisionMapper;
+import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.TaxonMapper;
 import org.apache.ibatis.session.SqlSession;
-import life.catalogue.api.model.RematchRequest;
-import life.catalogue.api.model.Sector;
-import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.db.MybatisTestUtils;
@@ -26,6 +25,18 @@ public class SubjectRematcherTest {
   
   @Rule
   public final TestDataRule importRule = TestDataRule.apple();
+
+  private void createBiota(){
+    Taxon t = new Taxon();
+    Name n = new Name();
+    t.setName(n);
+    n.setScientificName("Biota");
+    n.setRank(Rank.DOMAIN);
+
+    NameMapper nm = importRule.getSqlSession().getMapper(NameMapper.class);
+    TaxonMapper tm = importRule.getSqlSession().getMapper(TaxonMapper.class);
+    tm.create(t);
+  }
 
   @Test
   public void matchDataset() {
