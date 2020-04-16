@@ -10,7 +10,7 @@ import java.util.Objects;
 public class SectorSearchRequest {
   
   @QueryParam("id")
-  private String id;
+  private Integer id;
 
   @QueryParam("targetId")
   private String targetId;
@@ -56,11 +56,11 @@ public class SectorSearchRequest {
     return req;
   }
   
-  public String getId() {
+  public Integer getId() {
     return id;
   }
   
-  public void setId(String id) {
+  public void setId(Integer id) {
     this.id = id;
   }
 
