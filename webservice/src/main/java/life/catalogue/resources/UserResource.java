@@ -1,8 +1,6 @@
 package life.catalogue.resources;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
@@ -12,10 +10,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
+import com.google.common.base.Objects;
 import io.dropwizard.auth.Auth;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.auth.IdentityService;
 import life.catalogue.dw.auth.Roles;
@@ -143,6 +143,20 @@ public class UserResource {
     User user = getUser(session, key);
     // this also removes the editor role if its the only dataset privilege
     user.removeDataset(datasetKey);
+    updateUser(session, user);
+  }
+
+  @PUT
+  @Path("/{key}/role")
+  @RolesAllowed({Roles.ADMIN})
+  public void changeRole(@PathParam("key") int key, @Auth User admin, List<User.Role> roles, @Context SqlSession session) {
+    User user = getUser(session, key);
+    Set<User.Role> roleSet = new HashSet<User.Role>(ObjectUtils.coalesce(roles, Collections.EMPTY_SET));
+    user.setRoles(roleSet);
+    // if we remove the editor role the user lost access to all datasets!
+    if (!roles.contains(User.Role.EDITOR) && user.getDatasets() != null) {
+      user.getDatasets().clear();
+    }
     updateUser(session, user);
   }
 
