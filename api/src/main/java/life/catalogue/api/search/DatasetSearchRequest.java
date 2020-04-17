@@ -32,6 +32,12 @@ public class DatasetSearchRequest {
   @QueryParam("contributesTo")
   private Integer contributesTo;
 
+  @QueryParam("editor")
+  private Integer editor;
+
+  @QueryParam("modifiedBy")
+  private Integer modifiedBy;
+
   @QueryParam("sourceDatasetKey")
   private Integer sourceDatasetKey;
 
@@ -100,6 +106,22 @@ public class DatasetSearchRequest {
   
   public void setContributesTo(Integer contributesTo) {
     this.contributesTo = contributesTo;
+  }
+
+  public Integer getEditor() {
+    return editor;
+  }
+
+  public void setEditor(Integer editor) {
+    this.editor = editor;
+  }
+
+  public Integer getModifiedBy() {
+    return modifiedBy;
+  }
+
+  public void setModifiedBy(Integer modifiedBy) {
+    this.modifiedBy = modifiedBy;
   }
 
   public Integer getSourceDatasetKey() {
@@ -184,6 +206,8 @@ public class DatasetSearchRequest {
       Objects.equals(q, that.q) &&
       code == that.code &&
       Objects.equals(contributesTo, that.contributesTo) &&
+      Objects.equals(editor, that.editor) &&
+      Objects.equals(modifiedBy, that.modifiedBy) &&
       Objects.equals(sourceDatasetKey, that.sourceDatasetKey) &&
       format == that.format &&
       origin == that.origin &&
@@ -196,6 +220,6 @@ public class DatasetSearchRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(q, code, contributesTo, sourceDatasetKey, format, origin, type, modified, created, released, sortBy, reverse);
+    return Objects.hash(q, code, contributesTo, editor, modifiedBy, sourceDatasetKey, format, origin, type, modified, created, released, sortBy, reverse);
   }
 }

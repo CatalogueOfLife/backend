@@ -59,6 +59,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     d.putSetting(DatasetSettings.NOMENCLATURAL_CODE, NomCode.ZOOLOGICAL);
     d.putSetting(DatasetSettings.CSV_DELIMITER, "fun");
     d.putSetting(DatasetSettings.DISTRIBUTION_GAZETTEER, Gazetteer.ISO);
+    d.getEditors().add(Users.TESTER);
     return d;
   }
   
@@ -83,6 +84,10 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     mapper().create(d1);
     commit();
 
+    final DatasetSearchRequest req = new DatasetSearchRequest();
+    List<Dataset> resp = mapper().search(req, null, new Page());
+    assertEquals(4, resp.size());
+
     assertTrue(mapper().exists(d1.getKey()));
     assertFalse(mapper().exists(-3456));
 
@@ -91,12 +96,21 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     assertFalse(mapper().isPrivate(-528));
 
     d1.setPrivat(true);
+    d1.addEditor(Users.TESTER);
     mapper().update(d1);
     commit();
 
     assertTrue(d1.isPrivat());
     assertTrue(mapper().isPrivate(d1.getKey()));
     assertFalse(mapper().isPrivate(-528));
+
+    resp = mapper().search(req, null, new Page());
+    assertEquals(3, resp.size());
+    resp = mapper().search(req, Users.DB_INIT, new Page());
+    assertEquals(3, resp.size());
+    resp = mapper().search(req, Users.TESTER, new Page());
+    assertEquals(4, resp.size());
+
   }
 
   @Test
@@ -122,9 +136,11 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     commit();
   
     mapper().createArchive(d1.getKey(), Datasets.DRAFT_COL);
-    // reload to also get the creation/modified dates
+    // reload to also get the creation/modified dates,
     d1 = mapper().get(d1.getKey());
-    
+    // but remove the editors as we dont keep them in archives
+    d1.getEditors().clear();
+
     Dataset d2 = mapper().getArchive(d1.getKey(), Datasets.DRAFT_COL);
     
     //printDiff(d1, d2);
@@ -155,16 +171,16 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
 
   @Test
   public void count() throws Exception {
-    assertEquals(3, mapper().count(null));
+    assertEquals(3, mapper().count(null, null));
 
     mapper().create(create());
     mapper().create(create());
     // even thogh not committed we are in the same session so we see the new
     // datasets already
-    assertEquals(5, mapper().count(null));
+    assertEquals(5, mapper().count(null, null));
 
     commit();
-    assertEquals(5, mapper().count(null));
+    assertEquals(5, mapper().count(null, null));
   }
 
   @Test
@@ -262,7 +278,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     createSearchableDataset("WORMS", "markus", "WORMS", "The Worms dataset");
     createSearchableDataset("FOO", "markus", "BAR", null);
     commit();
-    int count = mapper().count(DatasetSearchRequest.byQuery("worms"));
+    int count = mapper().count(DatasetSearchRequest.byQuery("worms"), null);
     assertEquals("01", 3, count);
   }
   
@@ -299,24 +315,24 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
 
     DatasetSearchRequest query = new DatasetSearchRequest();
     query.setCreated(LocalDate.parse("2031-12-31"));
-    assertTrue(mapper().search(query, new Page()).isEmpty());
+    assertTrue(mapper().search(query, null, new Page()).isEmpty());
 
     // apple.sql contains one dataset from 2017
     query.setCreated(LocalDate.parse("2018-02-01"));
-    assertEquals(6, mapper().search(query, new Page()).size());
+    assertEquals(6, mapper().search(query, null, new Page()).size());
 
     query.setCreated(LocalDate.parse("2016-02-01"));
-    assertEquals(7, mapper().search(query, new Page()).size());
+    assertEquals(7, mapper().search(query, null, new Page()).size());
 
     query.setReleased(LocalDate.parse("2007-11-21"));
     query.setModified(LocalDate.parse("2031-12-31"));
-    assertEquals(0, mapper().search(query, new Page()).size());
+    assertEquals(0, mapper().search(query, null, new Page()).size());
 
     // check different orderings
     query = DatasetSearchRequest.byQuery("worms");
     for (DatasetSearchRequest.SortBy by : DatasetSearchRequest.SortBy.values()) {
       query.setSortBy(by);
-      List<Dataset> datasets = mapper().search(query, new Page());
+      List<Dataset> datasets = mapper().search(query, null, new Page());
       assertEquals(3, datasets.size());
       datasets.forEach(c -> Assert.assertNotEquals("FOO", c.getTitle()));
       switch (by) {
@@ -350,7 +366,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     query.setReverse(true);
     for (DatasetSearchRequest.SortBy by : DatasetSearchRequest.SortBy.values()) {
       query.setSortBy(by);
-      List<Dataset> datasets = mapper().search(query, new Page());
+      List<Dataset> datasets = mapper().search(query, null, new Page());
       assertEquals(3, datasets.size());
       switch (by) {
         case CREATED:
@@ -382,36 +398,36 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   
     query = DatasetSearchRequest.byQuery("worms");
     query.setContributesTo(Datasets.DRAFT_COL);
-    assertEquals(1, mapper().search(query, new Page()).size());
+    assertEquals(1, mapper().search(query, null, new Page()).size());
   
     query.setQ(null);
-    assertEquals(2, mapper().search(query, new Page()).size());
+    assertEquals(2, mapper().search(query, null, new Page()).size());
 
     query.setContributesTo(d4);
-    assertEquals(1, mapper().search(query, new Page()).size());
+    assertEquals(1, mapper().search(query, null, new Page()).size());
   
     // non existing catalogue
     query.setContributesTo(99);
-    assertEquals(0, mapper().search(query, new Page()).size());
+    assertEquals(0, mapper().search(query, null, new Page()).size());
 
     query.setContributesTo(Datasets.DRAFT_COL);
-    assertEquals(2, mapper().search(query, new Page()).size());
+    assertEquals(2, mapper().search(query, null, new Page()).size());
 
     // by source dataset
     query = new DatasetSearchRequest();
     query.setSourceDatasetKey(d3);
-    assertEquals(2, mapper().search(query, new Page()).size());
+    assertEquals(2, mapper().search(query, null, new Page()).size());
 
     query.setSourceDatasetKey(d4);
-    assertEquals(1, mapper().search(query, new Page()).size());
+    assertEquals(1, mapper().search(query, null, new Page()).size());
 
     query.setSourceDatasetKey(99); // non existing
-    assertEquals(0, mapper().search(query, new Page()).size());
+    assertEquals(0, mapper().search(query, null, new Page()).size());
 
     // partial search
     // https://github.com/Sp2000/colplus-backend/issues/353
     query = DatasetSearchRequest.byQuery("wor");
-    List<Dataset> res = mapper().search(query, new Page());
+    List<Dataset> res = mapper().search(query, null, new Page());
     assertEquals(1, res.size());
   
     // create another catalogue to test non draft sectors
@@ -426,29 +442,29 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     // old query should still be the same
     query = DatasetSearchRequest.byQuery("worms");
     query.setContributesTo(Datasets.DRAFT_COL);
-    assertEquals(1, mapper().search(query, new Page()).size());
+    assertEquals(1, mapper().search(query, null, new Page()).size());
   
     query = new DatasetSearchRequest();
     query.setContributesTo(Datasets.DRAFT_COL);
-    assertEquals(2, mapper().search(query, new Page()).size());
+    assertEquals(2, mapper().search(query, null, new Page()).size());
   
     query = new DatasetSearchRequest();
     query.setContributesTo(cat.getKey());
     // d5 was deleted!
-    assertEquals(1, mapper().search(query, new Page()).size());
+    assertEquals(1, mapper().search(query, null, new Page()).size());
     
     // by origin
     query = new DatasetSearchRequest();
     query.setOrigin(DatasetOrigin.MANAGED);
-    assertEquals(3, mapper().search(query, new Page()).size());
+    assertEquals(3, mapper().search(query, null, new Page()).size());
   
     query.setOrigin(DatasetOrigin.EXTERNAL);
-    assertEquals(5, mapper().search(query, new Page()).size());
+    assertEquals(5, mapper().search(query, null, new Page()).size());
 
     // by code
     query = new DatasetSearchRequest();
     query.setCode(NomCode.CULTIVARS);
-    assertEquals(0, mapper().search(query, new Page()).size());
+    assertEquals(0, mapper().search(query, null, new Page()).size());
   }
 
   private int createSearchableDataset(String title, String author, String organisation, String description) {

@@ -4,12 +4,15 @@ import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.*;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.security.auth.Subject;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Country;
+import life.catalogue.common.collection.CollectionUtils;
 
 public class User implements Principal {
 
@@ -17,7 +20,14 @@ public class User implements Principal {
     EDITOR,
     ADMIN
   }
-  
+
+  /**
+   * Returns the user key or null if no user was given
+   */
+  public static Integer userkey(@Nullable User user){
+    return user == null ? null : user.getKey();
+  }
+
   private Integer key;
   @Nonnull
   private String username;
@@ -32,7 +42,7 @@ public class User implements Principal {
   private LocalDateTime lastLogin;
   private LocalDateTime created;
   private LocalDateTime deleted;
-  
+
   public void addRole(Role role) {
     roles.add(role);
   }
@@ -173,7 +183,10 @@ public class User implements Principal {
   }
 
   public void setDatasets(IntSet datasets) {
-    this.datasets = datasets;
+    this.datasets = datasets == null ? new IntOpenHashSet() : datasets;
+    if (CollectionUtils.notEmpty(datasets)) {
+      roles.add(Role.EDITOR);
+    }
   }
 
   public void addDataset(int datasetKey) {

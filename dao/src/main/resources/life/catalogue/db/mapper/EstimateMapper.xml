@@ -78,8 +78,8 @@
         <if test="req.datasetKey != null">
           AND est.dataset_key = #{req.datasetKey}
         </if>
-        <if test="req.userKey != null">
-          AND est.modified_by = #{req.userKey}
+        <if test="req.modifiedBy != null">
+          AND est.modified_by = #{req.modifiedBy}
         </if>
         <if test="req.rank != null">
           AND est.target_rank = #{req.rank}::RANK
@@ -146,6 +146,13 @@
     <include refid="WHERE"/>
     ORDER BY est.target_rank, est.target_name
     <include refid="life.catalogue.db.Common.limit" />
+  </select>
+
+  <select id="processSearch" resultMap="estimateResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    <include refid="WHERE"/>
+    ORDER BY est.target_rank, est.target_name
   </select>
 
   <select id="countSearch" resultType="int">

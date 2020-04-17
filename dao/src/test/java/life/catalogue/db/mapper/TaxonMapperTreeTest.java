@@ -6,7 +6,7 @@ import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DSIDValue;
 import life.catalogue.api.model.Taxon;
-import life.catalogue.api.model.TaxonCountMap;
+import life.catalogue.api.model.TaxonSectorCountMap;
 import life.catalogue.db.TestDataRule;
 import org.junit.Test;
 
@@ -27,9 +27,9 @@ public class TaxonMapperTreeTest extends MapperTestBase<TaxonMapper> {
   @Test
   public void classificationCounts() throws Exception {
     DSIDValue<String> key = DSID.key(DATASET11.getKey(), "t20");
-    List<TaxonCountMap> x = mapper().classificationCounts(key);
+    List<TaxonSectorCountMap> x = mapper().classificationCounts(key);
     assertEquals(6, x.size());
-    for (TaxonCountMap c : x) {
+    for (TaxonSectorCountMap c : x) {
       assertNotNull(c.getId());
       assertNotNull(c.getCount());
       assertTrue(c.getCount().isEmpty());
@@ -44,7 +44,7 @@ public class TaxonMapperTreeTest extends MapperTestBase<TaxonMapper> {
     mapper().updateDatasetSectorCount(key.id("t3"), cnt);
     x = mapper().classificationCounts(key.id("t20"));
     assertEquals(6, x.size());
-    for (TaxonCountMap c : x) {
+    for (TaxonSectorCountMap c : x) {
       assertNotNull(c.getId());
       assertNotNull(c.getCount());
     }

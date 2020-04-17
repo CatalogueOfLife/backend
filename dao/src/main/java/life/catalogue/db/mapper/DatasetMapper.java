@@ -26,17 +26,22 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   
   Dataset getArchive(@Param("key") int key, @Param("catalogueKey") int catalogueKey);
 
-  int count(@Param("req") DatasetSearchRequest request);
+  int count(@Param("req") DatasetSearchRequest request, @Param("userKey") Integer userKey);
   
   /**
-   * Iterates over all datasets of a given dataset and processes them with the supplied handler.
+   * Iterates over all datasets and processes them with the supplied handler.
+   * Includes private datasets.
+   *
    * @param filter optional SQL where clause (without WHERE)
    * @param catalogueKey optional filter returning only datasets being constituents of the given catalogueKey
    */
   Cursor<Dataset> process(@Nullable @Param("filter") String filter,
                           @Nullable @Param("catalogueKey") Integer catalogueKey);
 
-  List<Dataset> search(@Param("req") DatasetSearchRequest request, @Param("page") Page page);
+  /**
+   * @param userKey optional user key so that private datasets for that user will be included in the results
+   */
+  List<Dataset> search(@Param("req") DatasetSearchRequest request, @Param("userKey") Integer userKey, @Param("page") Page page);
   
   /**
    * @return list of all dataset keys which have not been deleted
@@ -45,6 +50,7 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
 
   /**
    * list datasets which have not been imported before, ordered by date created.
+   * Includes private datasets.
    *
    * @param limit maximum of datasets to return
    */
@@ -52,7 +58,8 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
 
   /**
    * list datasets which have already been imported before, but need a refresh. The dataset.importFrequency is respected for rescheduling an
-   * already imported dataset
+   * already imported dataset.
+   * Includes private datasets.
    *
    * @param limit maximum of datasets to return
    */

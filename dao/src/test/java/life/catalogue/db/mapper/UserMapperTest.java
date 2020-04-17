@@ -5,9 +5,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import life.catalogue.api.RandomUtils;
+import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.User;
+import life.catalogue.api.vocab.Users;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -53,23 +57,34 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
 
   @Test
   public void datasetEditors() throws Exception {
-    final int dkAll = 1000;
-    final int dkEven = 1001;
-    List<Integer> userKeys = new ArrayList<>();
+    DatasetMapper dm = mapper(DatasetMapper.class);
+
+    List<Integer> all = new ArrayList<>();
+    List<Integer> even = new ArrayList<>();
     for (int x = 1; x<=10; x++) {
       User u = createTestEntity();
       u.setDeleted(null);
-      u.addDataset(dkAll);
-      if (x % 2 == 0) {
-        u.addDataset(dkEven);
-      }
       mapper().create(u);
-      userKeys.add(u.getKey());
+      all.add(u.getKey());
+      if (x % 2 == 0) {
+        even.add(u.getKey());
+      }
     }
+
+    Dataset d1 = TestEntityGenerator.newDataset("all");
+    d1.applyUser(Users.TESTER);
+    d1.setEditors(new IntOpenHashSet(all));
+    dm.create(d1);
+
+    Dataset d2 = TestEntityGenerator.newDataset("even");
+    d2.applyUser(Users.TESTER);
+    d2.setEditors(new IntOpenHashSet(even));
+    dm.create(d2);
+
     commit();
 
-    assertEquals(10, mapper().datasetEditors(dkAll).size());
-    assertEquals(5, mapper().datasetEditors(dkEven).size());
+    assertEquals(10, mapper().datasetEditors(d1.getKey()).size());
+    assertEquals(5, mapper().datasetEditors(d2.getKey()).size());
   }
 
   @Test
@@ -122,6 +137,7 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
   User removeDbCreatedProps(User obj) {
     obj.setLastLogin(null);
     obj.setCreated(null);
+    obj.getDatasets().clear();
     return obj;
   }
   

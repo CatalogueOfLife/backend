@@ -10,6 +10,13 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2020-04-17 move editors to dataset, not user 
+```
+ALTER TABLE dataset ADD COLUMN editors INT[];
+UPDATE dataset SET editors = (SELECT array_agg(u.key) FROM "user" u WHERE u.datasets @> array[key]) 
+ALTER TABLE "user" DROP COLUMN datasets;
+```
+
 #### 2020-04-15 dataset scope for decision, estimate & sector 
 ```
 ALTER TABLE decision RENAME COLUMN key TO id;

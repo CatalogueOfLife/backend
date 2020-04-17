@@ -6,22 +6,22 @@
 
     <sql id="SELECT">
       <include refid="SELECT_PUBLIC"/>,
-      email,
-      roles,
-      settings,
-      datasets,
-      last_login,
-      created,
-      deleted
+      u.email,
+      u.roles,
+      u.settings,
+      (SELECT array_agg(d.key) FROM dataset d WHERE d.editors @> ARRAY[u.key]) AS datasets,
+      u.last_login,
+      u.created,
+      u.deleted
     </sql>
 
     <sql id="SELECT_PUBLIC">
-      key,
-      username,
-      firstname,
-      lastname,
-      orcid,
-      country
+      u.key,
+      u.username,
+      u.firstname,
+      u.lastname,
+      u.orcid,
+      u.country
     </sql>
 
     <sql id="COLS">
@@ -33,7 +33,6 @@
       country,
       roles,
       settings,
-      datasets,
       last_login,
       deleted
     </sql>
@@ -47,13 +46,12 @@
       #{country},
       #{roles, typeHandler=life.catalogue.db.type.RoleSetTypeHandler},
       #{settings, typeHandler=life.catalogue.db.type2.HstoreMapTypeHandler}::hstore,
-      #{datasets, typeHandler=life.catalogue.db.type2.IntSetTypeHandler},
       #{lastLogin},
       #{deleted}
     </sql>
 
     <sql id="FROM">
-        "user"
+        "user" u
     </sql>
 
     <resultMap id="userResultMap" type="User" autoMapping="true">
@@ -67,35 +65,36 @@
     <select id="get" resultMap="userResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE key = #{key}
+        WHERE u.key = #{key}
     </select>
 
     <select id="getPublic" resultMap="userResultMap">
       SELECT <include refid="SELECT_PUBLIC" />
       FROM <include refid="FROM" />
-      WHERE key = #{key}
+      WHERE u.key = #{key}
     </select>
 
     <select id="getByUsername" resultMap="userResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE username = #{username}
+        WHERE u.username = #{username}
     </select>
 
   <select id="search" resultMap="userResultMap">
     SELECT <include refid="SELECT_PUBLIC" />
     FROM <include refid="FROM" />
-    WHERE username ILIKE '%${q}%'
-      OR firstname ILIKE '%${q}%'
-      OR lastname ILIKE '%${q}%'
-    ORDER BY username
+    WHERE u.username ILIKE '%${q}%'
+      OR u.firstname ILIKE '%${q}%'
+      OR u.lastname ILIKE '%${q}%'
+    ORDER BY u.username
     <include refid="life.catalogue.db.Common.limit" />
   </select>
 
   <select id="datasetEditors" resultMap="userResultMap">
     SELECT <include refid="SELECT_PUBLIC" />
-    FROM <include refid="FROM" />
-    WHERE deleted IS NULL AND datasets @> ARRAY[#{datasetKey}::int]
+    FROM dataset d
+      JOIN "user" u ON d.editors @> ARRAY[u.key]
+    WHERE d.key = #{datasetKey}
   </select>
 
     <insert id="create" parameterType="User" useGeneratedKeys="true" keyProperty="key">

@@ -22,15 +22,20 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
   /**
    * List all sectors which have a targetID within the given sector.
    */
-  List<Sector> listChildSectors(@Param("targetDatasetKey") int targetDatasetKey,
+  List<Sector> listChildSectors(@Param("datasetKey") int datasetKey,
                                 @Param("key") int sectorKey);
-  
+
+  /**
+   * List all sector keys which have a targetID within the given subtree starting with ad including the given key.
+   */
+  List<Integer> listDescendantSectorKeys(@Param("key") DSID<String> key);
+
   /**
    * Process all sectors for a given subject dataset and target catalogue
-   * @param targetDatasetKey the targets datasetKey
+   * @param datasetKey the targets datasetKey
    * @param subjectDatasetKey the subjects datasetKey
    */
-  Cursor<Sector> processSectors(@Param("targetDatasetKey") int targetDatasetKey,
+  Cursor<Sector> processSectors(@Param("datasetKey") int datasetKey,
                         @Param("subjectDatasetKey") int subjectDatasetKey);
   
   /**

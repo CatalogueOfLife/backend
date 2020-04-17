@@ -95,17 +95,18 @@ public class SubjectRematcher {
   private void matchAll(int catalogueKey) {
     LOG.info("Rematch all sectors, decisions and estimates across all datasets for catalogue {}", catalogueKey);
     Set<Integer> datasetKeys = new HashSet<>();
-    Pager.sectors(catalogueKey, factory).forEach(s -> {
+
+    sm.processDataset(catalogueKey).forEach(s -> {
       datasetKeys.add(s.getSubjectDatasetKey());
       matchSector(s);
     });
-  
-    Pager.decisions(catalogueKey, factory).forEach(d -> {
+
+    dem.processDataset(catalogueKey).forEach(d -> {
       datasetKeys.add(d.getSubjectDatasetKey());
       matchDecision(d);
     });
-    
-    Pager.estimates(catalogueKey, factory).forEach(this::matchEstimate);
+
+    esm.processDataset(catalogueKey).forEach(this::matchEstimate);
 
     datasets = datasetKeys.size();
     LOG.info("Rematched catalogue {}", catalogueKey);
@@ -274,9 +275,7 @@ public class SubjectRematcher {
   private void matchDatasetDecision(final int subjectDatasetKey) {
     LOG.info("Rematch all decision subjects in dataset {}", subjectDatasetKey);
     datasets++;
-    for (EditorialDecision d : Pager.decisions(factory, DecisionSearchRequest.byDataset(subjectDatasetKey))) {
-      matchDecision(d);
-    }
+    dem.processSearch(DecisionSearchRequest.byDataset(subjectDatasetKey)).forEach(this::matchDecision);
   }
   
   private void log() {

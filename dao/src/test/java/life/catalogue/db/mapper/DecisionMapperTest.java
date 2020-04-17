@@ -12,7 +12,6 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.io.Resources;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -54,10 +53,10 @@ public class DecisionMapperTest extends BaseDecisionMapperTest<EditorialDecision
     assertEquals(1, mapper().search(req,null).size());
   
     req = DecisionSearchRequest.byCatalogue(catalogeKey);
-    req.setUserKey(d1.getCreatedBy());
+    req.setModifiedBy(d1.getCreatedBy());
     assertEquals(2, mapper().search(req,null).size());
   
-    req.setUserKey(999);
+    req.setModifiedBy(999);
     assertEquals(0, mapper().search(req,null).size());
   }
   

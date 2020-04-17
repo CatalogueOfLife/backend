@@ -5,46 +5,56 @@
 <mapper namespace="life.catalogue.db.mapper.DatasetMapper">
 
     <sql id="SELECT">
-      d.key,
-      d.source_key,
-      d.type,
-      d.title,
-      d.gbif_key,
-      d.gbif_publisher_key,
-      d.description,
-      d.organisations,
-      d.contact,
-      d.authors_and_editors,
-      d.license,
-      d.version,
-      d.released,
-      d.citation,
-      d.geographic_scope,
-      d.website,
-      d.logo,
-      d.data_format,
-      d.data_access,
-      d.origin,
-      d.locked,
-      d.private,
-      d.import_frequency,
-      d.notes,
-      d.alias,
-      d."group",
-      d.confidence,
-      d.completeness,
-      d.settings,
-      d.created,
-      d.created_by,
-      d.modified,
-      d.modified_by,
-      d.deleted,
-      di.finished AS imported,
-      di.verbatim_count AS size,
-      (select array_agg(distinct s.dataset_key) from sector s where s.subject_dataset_key=d.key) AS contributes_to
+      <include refid="SELECT_ARCHIVE"/>,
+      d.editors
     </sql>
 
+    <sql id="SELECT_ARCHIVE">
+    d.key,
+    d.source_key,
+    d.type,
+    d.title,
+    d.gbif_key,
+    d.gbif_publisher_key,
+    d.description,
+    d.organisations,
+    d.contact,
+    d.authors_and_editors,
+    d.license,
+    d.version,
+    d.released,
+    d.citation,
+    d.geographic_scope,
+    d.website,
+    d.logo,
+    d.data_format,
+    d.data_access,
+    d.origin,
+    d.locked,
+    d.private,
+    d.import_frequency,
+    d.notes,
+    d.alias,
+    d."group",
+    d.confidence,
+    d.completeness,
+    d.settings,
+    d.created,
+    d.created_by,
+    d.modified,
+    d.modified_by,
+    d.deleted,
+    di.finished AS imported,
+    di.verbatim_count AS size,
+    (select array_agg(distinct s.dataset_key) from sector s where s.subject_dataset_key=d.key) AS contributes_to
+  </sql>
+
     <sql id="COLS">
+      <include refid="COLS_ARCHIVE"/>,
+      editors
+    </sql>
+
+    <sql id="COLS_ARCHIVE">
       source_key,
       type,
       title,
@@ -77,6 +87,11 @@
     </sql>
 
     <sql id="PROPS">
+      <include refid="PROPS_ARCHIVE"/>,
+      #{editors, typeHandler=life.catalogue.db.type2.IntSetTypeHandler}
+    </sql>
+
+    <sql id="PROPS_ARCHIVE">
       #{sourceKey},
       #{type}::datasettype,
       #{title},
@@ -114,6 +129,7 @@
 
     <sql id="SEARCH_WHERE">
         deleted IS NULL AND key != 1
+        AND (NOT private<if test="userKey != null"> OR editors @> ARRAY[#{userKey}::int]</if>)
         <if test="req != null">
             <if test="req.q != null">
                 AND (
@@ -140,6 +156,9 @@
             <if test="req.format != null">
                 AND d.data_format=#{req.format}::DATAFORMAT
             </if>
+            <if test="req.modifiedBy != null">
+              AND d.modified_by = #{req.modifiedBy}
+            </if>
             <if test="req.modified != null">
                 AND di.finished > #{req.modified}
             </if>
@@ -161,6 +180,7 @@
         <result property="authorsAndEditors" column="authors_and_editors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler" />
         <result property="importFrequency" column="import_frequency" typeHandler="life.catalogue.db.type.FrequencyTypeHandler" />
         <result property="settings" column="settings" typeHandler="life.catalogue.db.type2.SettingsTypeHandler" />
+        <result property="editors" column="editors" typeHandler="life.catalogue.db.type2.IntSetTypeHandler"/>
     </resultMap>
 
     <select id="count" resultType="integer">
@@ -229,7 +249,7 @@
     <select id="list" resultMap="datasetResultMap">
         SELECT <include refid="SELECT" />
         FROM <include refid="FROM" />
-        WHERE deleted IS NULL
+        WHERE deleted IS NULL AND NOT private
         ORDER BY key
         <include refid="life.catalogue.db.Common.limit"/>
     </select>
@@ -284,7 +304,7 @@
     </select>
 
     <select id="getArchive" resultMap="datasetResultMap">
-        SELECT <include refid="SELECT" />
+        SELECT <include refid="SELECT_ARCHIVE" />
         FROM dataset_archive d LEFT JOIN dataset_import di ON d.last_data_import_attempt=di.attempt AND d.key=di.dataset_key
         WHERE key = #{key} AND catalogue_key = #{catalogueKey}
     </select>
@@ -306,8 +326,8 @@
     </insert>
 
     <insert id="createArchive" parameterType="map">
-        INSERT INTO dataset_archive (key, catalogue_key, <include refid="COLS" />, origin, created, modified)
-        SELECT key, #{catalogueKey}, <include refid="COLS" />, origin, created, modified
+        INSERT INTO dataset_archive (key, catalogue_key, <include refid="COLS_ARCHIVE" />, origin, created, modified)
+        SELECT key, #{catalogueKey}, <include refid="COLS_ARCHIVE" />, origin, created, modified
         FROM dataset d
         WHERE d.key = #{key}
     </insert>

@@ -131,8 +131,8 @@
         <if test="req.mode != null">
           AND s.mode = #{req.mode}::SECTOR_MODE
         </if>
-        <if test="req.userKey != null">
-          AND s.modified_by = #{req.userKey}
+        <if test="req.modifiedBy != null">
+          AND s.modified_by = #{req.modifiedBy}
         </if>
       </where>
     </if>
@@ -185,7 +185,7 @@
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
     WHERE subject_dataset_key = #{subjectDatasetKey}
-      AND dataset_key = #{targetDatasetKey}
+      AND dataset_key = #{datasetKey}
     ORDER BY target_rank
   </select>
 
@@ -221,10 +221,26 @@
   <select id="listChildSectors" resultMap="sectorResultMap">
     SELECT <include refid="SELECT" />
     FROM <include refid="FROM" />
-      JOIN name_usage_${targetDatasetKey} t ON t.id=s.target_id
-    WHERE t.sector_key=#{key}
+      JOIN name_usage_${datasetKey} t ON t.id=s.target_id
+    WHERE t.sector_key=#{key} AND s.dataset_key=#{datasetKey}
     ORDER BY id
   </select>
+
+  <select id="listDescendantSectorKeys" resultType="Integer">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    WITH RECURSIVE x AS (
+      SELECT t.id, s.id AS sid
+      FROM name_usage_${partition} t LEFT JOIN sector s ON t.id=s.target_id AND s.dataset_key=#{key.datasetKey}
+      WHERE t.id=#{key.id}
+    UNION
+      SELECT id, s.id
+      FROM name_usage_${partition} t LEFT JOIN sector s ON t.id=s.target_id AND s.dataset_key=#{key.datasetKey}
+        JOIN x ON x.id = t.parent_id
+      WHERE NOT t.is_synonym
+    )
+    SELECT DISTINCT sid FROM x WHERE sid IS NOT NULL
+  </select>
+
 
   <select id="count" resultType="integer">
     SELECT count(*)
@@ -244,6 +260,13 @@
     <include refid="WHERE"/>
     ORDER BY id desc
     <include refid="life.catalogue.db.Common.limit" />
+  </select>
+
+  <select id="processSearch" resultMap="sectorResultMap">
+    SELECT <include refid="SELECT" />
+    FROM <include refid="FROM" />
+    <include refid="WHERE"/>
+    ORDER BY id desc
   </select>
 
   <select id="processDataset" parameterType="map" resultMap="sectorResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">

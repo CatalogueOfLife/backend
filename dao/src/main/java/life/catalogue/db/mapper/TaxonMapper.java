@@ -33,12 +33,12 @@ public interface TaxonMapper extends CRUD<DSID<String>, Taxon>, ProcessableDatas
    */
   List<SimpleName> classificationSimple(@Param("key") DSID<String> key);
   
-  List<TaxonCountMap> classificationCounts(@Param("key") DSID<String> key);
+  List<TaxonSectorCountMap> classificationCounts(@Param("key") DSID<String> key);
   
   /**
    * @return the sector count map for a given taxon
    */
-  TaxonCountMap getCounts(@Param("key") DSID<String> key);
+  TaxonSectorCountMap getCounts(@Param("key") DSID<String> key);
   
   int countChildren(@Param("key") DSID<String> key);
   

@@ -22,8 +22,8 @@ public class DecisionSearchRequest {
   @QueryParam("mode")
   private EditorialDecision.Mode mode;
 
-  @QueryParam("userKey")
-  private Integer userKey;
+  @QueryParam("modifiedBy")
+  private Integer modifiedBy;
 
   @QueryParam("subject")
   private boolean subject = false;
@@ -89,12 +89,12 @@ public class DecisionSearchRequest {
     this.rank = rank;
   }
   
-  public Integer getUserKey() {
-    return userKey;
+  public Integer getModifiedBy() {
+    return modifiedBy;
   }
   
-  public void setUserKey(Integer userKey) {
-    this.userKey = userKey;
+  public void setModifiedBy(Integer modifiedBy) {
+    this.modifiedBy = modifiedBy;
   }
 
   public boolean isSubject() {
@@ -125,11 +125,11 @@ public class DecisionSearchRequest {
       Objects.equals(subjectDatasetKey, that.subjectDatasetKey) &&
       rank == that.rank &&
       mode == that.mode &&
-      Objects.equals(userKey, that.userKey);
+      Objects.equals(modifiedBy, that.modifiedBy);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, datasetKey, subjectDatasetKey, rank, mode, userKey, subject, broken);
+    return Objects.hash(id, datasetKey, subjectDatasetKey, rank, mode, modifiedBy, subject, broken);
   }
 }

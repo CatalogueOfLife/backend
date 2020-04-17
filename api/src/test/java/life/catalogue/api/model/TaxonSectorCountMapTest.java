@@ -3,15 +3,15 @@ package life.catalogue.api.model;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import life.catalogue.api.jackson.SerdeTestBase;
 
-public class TaxonCountMapTest extends SerdeTestBase<TaxonCountMap> {
+public class TaxonSectorCountMapTest extends SerdeTestBase<TaxonSectorCountMap> {
   
-  public TaxonCountMapTest() {
-    super(TaxonCountMap.class);
+  public TaxonSectorCountMapTest() {
+    super(TaxonSectorCountMap.class);
   }
   
   @Override
-  public TaxonCountMap genTestValue() throws Exception {
-    TaxonCountMap tcm = new TaxonCountMap();
+  public TaxonSectorCountMap genTestValue() throws Exception {
+    TaxonSectorCountMap tcm = new TaxonSectorCountMap();
     tcm.setId("456");
     tcm.setCount(new Int2IntOpenHashMap());
     tcm.getCount().put(124,6534);

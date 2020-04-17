@@ -88,6 +88,12 @@
         <include refid="life.catalogue.db.Common.limit" />
     </select>
 
+    <select id="processSearch" resultMap="parserConfigResultMap">
+      SELECT <include refid="SELECT" />
+      FROM <include refid="FROM" />
+      <include refid="WHERE" />
+      ORDER BY id
+    </select>
 
     <select id="get" resultMap="parserConfigResultMap">
         SELECT <include refid="SELECT" />

@@ -35,8 +35,8 @@ public class SectorSearchRequest {
   @QueryParam("mode")
   private Sector.Mode mode;
 
-  @QueryParam("userKey")
-  private Integer userKey;
+  @QueryParam("modifiedBy")
+  private Integer modifiedBy;
 
   @QueryParam("subject")
   private boolean subject = false;
@@ -112,12 +112,12 @@ public class SectorSearchRequest {
     this.rank = rank;
   }
   
-  public Integer getUserKey() {
-    return userKey;
+  public Integer getModifiedBy() {
+    return modifiedBy;
   }
   
-  public void setUserKey(Integer userKey) {
-    this.userKey = userKey;
+  public void setModifiedBy(Integer modifiedBy) {
+    this.modifiedBy = modifiedBy;
   }
 
   public boolean isSubject() {
@@ -168,11 +168,11 @@ public class SectorSearchRequest {
       Objects.equals(name, that.name) &&
       Objects.equals(lastSync, that.lastSync) &&
       mode == that.mode &&
-      Objects.equals(userKey, that.userKey);
+      Objects.equals(modifiedBy, that.modifiedBy);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, targetId, datasetKey, subjectId, subjectDatasetKey, rank, name, lastSync, mode, userKey, subject, broken);
+    return Objects.hash(id, targetId, datasetKey, subjectId, subjectDatasetKey, rank, name, lastSync, mode, modifiedBy, subject, broken);
   }
 }

@@ -102,8 +102,8 @@
         <if test="req.rank != null">
           AND ed.subject_rank = #{req.rank}::RANK
         </if>
-        <if test="req.userKey != null">
-          AND ed.modified_by = #{req.userKey}
+        <if test="req.modifiedBy != null">
+          AND ed.modified_by = #{req.modifiedBy}
         </if>
       </where>
     </if>
@@ -144,6 +144,13 @@
     <include refid="WHERE"/>
     ORDER BY ed.id desc
     <include refid="life.catalogue.db.Common.limit" />
+  </select>
+
+  <select id="processSearch" resultMap="decisionResultMap">
+    SELECT <include refid="SELECT" />
+    FROM decision ed
+    <include refid="WHERE"/>
+    ORDER BY ed.id desc
   </select>
 
   <select id="get" resultMap="decisionResultMap">

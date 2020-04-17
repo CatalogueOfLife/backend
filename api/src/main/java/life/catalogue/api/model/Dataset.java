@@ -3,6 +3,8 @@ package life.catalogue.api.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.constraints.AbsoluteURI;
 import life.catalogue.api.constraints.ValidDataset;
 import life.catalogue.api.vocab.*;
@@ -71,6 +73,7 @@ public class Dataset extends DataEntity<Integer> {
   private LocalDateTime imported;
   private LocalDateTime deleted;
   private Map<DatasetSettings, Object> settings = new HashMap<>();
+  private IntSet editors = new IntOpenHashSet();
 
   public Integer getKey() {
     return key;
@@ -413,6 +416,22 @@ public class Dataset extends DataEntity<Integer> {
     this.settings = settings;
   }
 
+  public IntSet getEditors() {
+    return editors;
+  }
+
+  public void setEditors(IntSet editors) {
+    this.editors = editors == null ? new IntOpenHashSet() : editors;
+  }
+
+  public void addEditor(int userKey) {
+    editors.add(userKey);
+  }
+
+  public void removeEditor(int userKey) {
+    editors.remove(userKey);
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -452,7 +471,8 @@ public class Dataset extends DataEntity<Integer> {
         Objects.equals(contributesTo, dataset.contributesTo) &&
         Objects.equals(imported, dataset.imported) &&
         Objects.equals(deleted, dataset.deleted) &&
-        Objects.equals(settings, dataset.settings);
+        Objects.equals(settings, dataset.settings) &&
+        Objects.equals(editors, dataset.editors);
   }
   
   @Override
@@ -460,7 +480,7 @@ public class Dataset extends DataEntity<Integer> {
     return Objects.hash(super.hashCode(), key, sourceKey, type, title, alias, gbifKey, gbifPublisherKey, description, organisations,
             contact, authorsAndEditors, license, version, released, citation, geographicScope, website, group, logo,
             dataFormat, dataAccess, origin, locked, privat, importFrequency, size, confidence, completeness, notes,
-            contributesTo, imported, deleted, settings);
+            contributesTo, imported, deleted, settings, editors);
   }
   
   @Override

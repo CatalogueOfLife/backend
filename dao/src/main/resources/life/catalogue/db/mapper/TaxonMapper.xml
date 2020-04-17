@@ -57,7 +57,7 @@
         <association property="name" javaType="Name" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
     </resultMap>
 
-    <resultMap id="taxonCountResultMap" type="TaxonCountMap" autoMapping="false">
+    <resultMap id="taxonCountResultMap" type="TaxonSectorCountMap" autoMapping="false">
         <id property="id" column="id" />
         <result property="count" column="dataset_sectors" />
     </resultMap>

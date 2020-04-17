@@ -66,7 +66,7 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
     return super.list(DatasetMapper.class, page);
   }
   
-  public ResultPage<Dataset> search(@Nullable DatasetSearchRequest nullableRequest, @Nullable Page page) {
+  public ResultPage<Dataset> search(@Nullable DatasetSearchRequest nullableRequest, @Nullable Integer userKey, @Nullable Page page) {
     page = page == null ? new Page() : page;
     final DatasetSearchRequest req = nullableRequest == null || nullableRequest.isEmpty() ? new DatasetSearchRequest() : nullableRequest;
     if (req.getSortBy() == null) {
@@ -82,8 +82,8 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
     
     try (SqlSession session = factory.openSession()){
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      List<Dataset> result = dm.search(req, page);
-      return new ResultPage<>(page, result, () -> dm.count(req));
+      List<Dataset> result = dm.search(req, userKey, page);
+      return new ResultPage<>(page, result, () -> dm.count(req, userKey));
     }
   }
   

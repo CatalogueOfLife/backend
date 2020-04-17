@@ -36,6 +36,7 @@ import java.io.*;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
+import static life.catalogue.api.model.User.userkey;
 
 @Path("/dataset")
 @SuppressWarnings("static-method")
@@ -59,8 +60,8 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   }
   
   @GET
-  public ResultPage<Dataset> search(@Valid @BeanParam Page page, @BeanParam DatasetSearchRequest req) {
-    return dao.search(req, page);
+  public ResultPage<Dataset> search(@Valid @BeanParam Page page, @BeanParam DatasetSearchRequest req, @Auth User user) {
+    return dao.search(req, userkey(user), page);
   }
   
   @POST
@@ -189,7 +190,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   }
 
   @GET
-  @Path("{key}/user")
+  @Path("{key}/editor")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public List<User> editors(@PathParam("key") int key, @Auth User user, @Context SqlSession session) {
     return session.getMapper(UserMapper.class).datasetEditors(key);

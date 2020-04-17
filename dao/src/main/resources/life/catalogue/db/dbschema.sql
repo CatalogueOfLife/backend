@@ -556,7 +556,6 @@ CREATE TABLE "user" (
   orcid TEXT,
   country TEXT,
   roles USER_ROLE[],
-  datasets INT[],
   settings HSTORE
 );
 
@@ -597,11 +596,13 @@ CREATE TABLE dataset (
   "group" TEXT,
   notes text,
   settings JSONB,
+  editors INT[],
   doc tsvector
 );
 
 CREATE TABLE dataset_archive (LIKE dataset);
 ALTER TABLE dataset_archive DROP COLUMN doc;
+ALTER TABLE dataset_archive DROP COLUMN editors;
 ALTER TABLE dataset_archive ADD COLUMN catalogue_key INTEGER NOT NULL REFERENCES dataset;
 
 CREATE INDEX ON dataset USING gin (f_unaccent(title) gin_trgm_ops);

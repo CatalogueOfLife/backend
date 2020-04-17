@@ -251,12 +251,12 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
         // reusable catalogue key instance
         final DSIDValue<String> catKey = DSID.key(t.getDatasetKey(), "");
         // remove delta
-        for (TaxonCountMap tc : tm.classificationCounts(parentKey)) {
+        for (TaxonSectorCountMap tc : tm.classificationCounts(parentKey)) {
           tm.updateDatasetSectorCount(catKey.id(tc.getId()), mergeMapCounts(tc.getCount(), delta, -1));
         }
         // add counts
         parentKey.setId(t.getParentId());
-        for (TaxonCountMap tc : tm.classificationCounts(parentKey)) {
+        for (TaxonSectorCountMap tc : tm.classificationCounts(parentKey)) {
           tm.updateDatasetSectorCount(catKey.id(tc.getId()), mergeMapCounts(tc.getCount(), delta, 1));
         }
       }
@@ -319,28 +319,35 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       SectorMapper sm = session.getMapper(SectorMapper.class);
       SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
   
-      // remember sectors and counts so we can delete them at the end
-      Int2IntOpenHashMap delta = tm.getCounts(id).getCount();
-      LOG.debug("Delete taxon {} and its {} nested sectors from dataset {} by user {}", id, delta.size(), id.getDatasetKey(), user);
-      List<TaxonCountMap> parents = tm.classificationCounts(id);
+      // remember sector count map so we can update parents at the end
+      TaxonSectorCountMap delta = tm.getCounts(id);
+      LOG.info("Recursively delete taxon {} and its {} nested sectors from dataset {} by user {}", id, delta.size(), id.getDatasetKey(), user);
+
+      List<Integer> sectorKeys = sm.listDescendantSectorKeys(id);
+      if (sectorKeys.size() != delta.size()) {
+        LOG.info("Recursive delete of {} detected {} included sectors, but {} are declared in the taxons sector count map", id, sectorKeys.size(), delta.size());
+      }
+      List<TaxonSectorCountMap> parents = tm.classificationCounts(id);
 
       // cascading delete removes descendants and vernacular, distributions, descriptions, media
       // but NOT names, name_rels or refs
+      // TODO: remove name if not used anywhere
       // If not wanted there are remove orphan methods for names and refs
       tm.delete(id);
 
       // remove delta from parents
       DSIDValue<String> key = DSID.copy(id);
-      for (TaxonCountMap tc : parents) {
+      for (TaxonSectorCountMap tc : parents) {
         if (!tc.getId().equals(id.getId())) {
-          tm.updateDatasetSectorCount(key.id(tc.getId()), mergeMapCounts(tc.getCount(), delta, -1));
+          tm.updateDatasetSectorCount(key.id(tc.getId()), mergeMapCounts(tc.getCount(), delta.getCount(), -1));
         }
       }
-      
-      for (int skey : delta.keySet()) {
-        LOG.debug("Delete sector {} and its imports by user {}", skey, user);
+
+      // remove included sectors
+      for (int skey : sectorKeys) {
+        LOG.info("Delete sector {} from project {} and its imports by user {}", skey, id.getDatasetKey(), user);
         sim.delete(skey);
-        sm.delete(DSID.idOnly(skey));
+        sm.delete(DSID.key(id.getDatasetKey(), skey));
       }
       session.commit();
     }

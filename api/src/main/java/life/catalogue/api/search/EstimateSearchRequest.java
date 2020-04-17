@@ -21,9 +21,9 @@ public class EstimateSearchRequest {
   @QueryParam("max")
   private Integer max;
 
-  @QueryParam("userKey")
-  private Integer userKey;
-  
+  @QueryParam("modifiedBy")
+  private Integer modifiedBy;
+
   @QueryParam("broken")
   private boolean broken = false;
   
@@ -73,12 +73,12 @@ public class EstimateSearchRequest {
     this.max = max;
   }
   
-  public Integer getUserKey() {
-    return userKey;
+  public Integer getModifiedBy() {
+    return modifiedBy;
   }
   
-  public void setUserKey(Integer userKey) {
-    this.userKey = userKey;
+  public void setModifiedBy(Integer modifiedBy) {
+    this.modifiedBy = modifiedBy;
   }
   
   public boolean isBroken() {
@@ -100,11 +100,11 @@ public class EstimateSearchRequest {
         rank == that.rank &&
         Objects.equals(min, that.min) &&
         Objects.equals(max, that.max) &&
-        Objects.equals(userKey, that.userKey);
+        Objects.equals(modifiedBy, that.modifiedBy);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(id, datasetKey, rank, min, max, userKey, broken);
+    return Objects.hash(id, datasetKey, rank, min, max, modifiedBy, broken);
   }
 }

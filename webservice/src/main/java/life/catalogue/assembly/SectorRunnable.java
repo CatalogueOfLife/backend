@@ -5,7 +5,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.util.LoggingUtils;
-import life.catalogue.dao.Pager;
+import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.TaxonMapper;
@@ -153,9 +153,9 @@ abstract class SectorRunnable implements Runnable {
   
   private void loadDecisions() {
     try (SqlSession session = factory.openSession(true)) {
-      for (EditorialDecision ed : Pager.decisions(factory, DecisionSearchRequest.byDataset(catalogueKey, datasetKey))) {
+      session.getMapper(DecisionMapper.class).processSearch(DecisionSearchRequest.byDataset(catalogueKey, datasetKey)).forEach(ed -> {
         decisions.put(ed.getSubject().getId(), ed);
-      }
+      });
     }
     LOG.info("Loaded {} editorial decisions for sector {}", decisions.size(), sectorKey);
   }
