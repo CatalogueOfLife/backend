@@ -177,7 +177,7 @@ public class AcExporter {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       DatasetSearchRequest req = new DatasetSearchRequest();
       req.setContributesTo(catalogueKey);
-      List<Dataset> resp = dm.search(req, new Page(0,1000));
+      List<Dataset> resp = dm.search(req, null, new Page(0,1000));
       logger.log("Found " +resp.size()+ " source datasets of catalogue " + catalogueKey);
       for (Dataset d : resp) {
         Path p = cfg.img.datasetLogo(d.getKey(), ImgConfig.Scale.MEDIUM);
