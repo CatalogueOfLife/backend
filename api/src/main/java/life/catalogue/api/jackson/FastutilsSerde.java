@@ -15,16 +15,18 @@ import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.ser.ContainerSerializer;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.vocab.Country;
 
 public class FastutilsSerde {
   
   /**
-   * Jackson {@link JsonSerializer} for {@link Country}.
+   * Jackson {@link JsonSerializer} for fastutils Int2IntMap and IntSet.
    */
-  public static class Serializer extends ContainerSerializer<Int2IntMap> {
+  public static class MapSerializer extends ContainerSerializer<Int2IntMap> {
   
-    public Serializer() {
+    public MapSerializer() {
       super(Int2IntMap.class);
     }
   
@@ -59,9 +61,9 @@ public class FastutilsSerde {
     }
   }
   
-  public static class Deserializer extends StdDeserializer<Int2IntMap> {
+  public static class MapDeserializer extends StdDeserializer<Int2IntMap> {
   
-    protected Deserializer() {
+    protected MapDeserializer() {
       super(Int2IntMap.class);
     }
   
@@ -88,5 +90,65 @@ public class FastutilsSerde {
     }
   }
 
-  
+  public static class SetSerializer extends ContainerSerializer<IntSet> {
+
+    public SetSerializer() {
+      super(IntSet.class);
+    }
+
+    @Override
+    public JavaType getContentType() {
+      return null;
+    }
+
+    @Override
+    public JsonSerializer<?> getContentSerializer() {
+      // We are not delegating
+      return null;
+    }
+
+    @Override
+    public boolean hasSingleElement(IntSet value) {
+      return false;
+    }
+
+    @Override
+    protected ContainerSerializer<?> _withValueTypeSerializer(TypeSerializer vts) {
+      return null;
+    }
+
+    @Override
+    public void serialize(IntSet value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+      gen.writeStartArray();
+      for (int x : value) {
+        gen.writeNumber(x);
+      }
+      gen.writeEndArray();
+    }
+  }
+
+  public static class SetDeserializer extends StdDeserializer<IntSet> {
+
+    protected SetDeserializer() {
+      super(IntSet.class);
+    }
+
+    @Override
+    public IntSet deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+      IntSet set = new IntOpenHashSet();
+      // we are still at array start, get next value
+      p.nextToken();
+      while (p.getCurrentToken() != null && p.getCurrentToken() != JsonToken.END_ARRAY) {
+        try {
+          int value = p.getIntValue();
+          set.add(value);
+        } catch (NumberFormatException e) {
+          // skip this entry
+        }
+        p.nextToken();
+      }
+      return set;
+    }
+  }
+
 }

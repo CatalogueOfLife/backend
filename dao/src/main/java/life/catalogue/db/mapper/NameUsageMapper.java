@@ -20,6 +20,8 @@ public interface NameUsageMapper {
 
   NameUsageBase get(@Param("key") DSID<String> key);
 
+  int delete(@Param("key") DSID<String> key);
+
   int count(@Param("datasetKey") int datasetKey);
   
   List<NameUsageBase> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
@@ -52,7 +54,16 @@ public interface NameUsageMapper {
                      @Param("userKey") int userKey);
   
   int deleteBySector(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
-  
+
+  /**
+   * Does a recursive delete to remove an entire subtree including synonyms and cascading to all associated data.
+   * The method does not remove name records, but returns a list of all name ids so they can be removed if needed.
+   *
+   * @param key root node of the subtree to delete
+   * @return list of all name ids associated with the deleted taxa
+   */
+  List<String> deleteSubtree(@Param("key") DSID<String> key);
+
   /**
    * Iterates over all accepted descendants in a tree in breadth-first order for a given start taxon
    * and processes them with the supplied handler. If the start taxon is null all root taxa are used.
@@ -79,11 +90,11 @@ public interface NameUsageMapper {
   /**
    * Depth first only implementation using a much lighter object then above.
    *
-   * Iterates over all accepted descendants in a tree in depth-first order for a given start taxon
-   * and processes them with the supplied handler. If the start taxon is null all root taxa are used.
+   * Iterates over all descendants in a tree in depth-first order for a given start taxon.
+   * If the start taxon is null all root taxa are used.
    *
    * An optional exclusion filter can be used to prevent traversal of subtrees.
-   * Synonyms are also traversed if includeSynonyms is true.*
+   * Synonyms are also traversed if includeSynonyms is true.
    *
    * @param sectorKey optional sector key to limit the traversal to
    * @param startID taxon id to start the traversal. Will be included in the result. If null start with all root taxa
@@ -96,5 +107,13 @@ public interface NameUsageMapper {
                    @Param("exclusions") @Nullable Set<String> exclusions,
                    @Param("lowestRank") @Nullable Rank lowestRank,
                    @Param("includeSynonyms") boolean includeSynonyms);
+
+  /**
+   * Very lightweight (sub)tree traversal that only returns the usage and name id of any descendant of the start usage.
+   * Iterates over all descendants including synonyms in a tree in depth-first order for a given start taxon
+   *
+   * @param key taxon to start the traversal. Will be included in the result. If null start with all root taxa
+   */
+  Cursor<UsageNameID> processTreeIds(@Param("key") DSID<String> key);
 
 }

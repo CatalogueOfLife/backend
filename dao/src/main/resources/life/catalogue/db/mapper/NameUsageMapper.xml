@@ -92,6 +92,12 @@
         <id property="id" column="id" />
     </resultMap>
 
+    <resultMap id="idResultMap" type="UsageNameID" autoMapping="false">
+      <id property="usageId" column="id" />
+      <result property="nameId" column="nid" />
+    </resultMap>
+
+
     <select id="count" resultType="integer">
         <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
         SELECT count(*) FROM name_usage_${partition}
@@ -160,6 +166,23 @@
         <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
         DELETE FROM name_usage_${partition} WHERE sector_key = #{sectorKey}
     </delete>
+
+  <select id="deleteSubtree" parameterType="map" resultType="String">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    WITH RECURSIVE tree AS (
+      SELECT id, name_id AS nid
+      FROM name_usage_${partition}
+      WHERE id=#{key.id}
+    UNION
+      SELECT c.id, c.name_id
+      FROM name_usage_${partition} c JOIN tree ON tree.id = c.parent_id
+    )
+    DELETE
+      FROM name_usage_${partition} u
+      USING tree t
+      WHERE u.id = t.id
+      RETURNING t.nid;
+  </select>
 
     <sql id="WHERE_START">
         <choose>
@@ -237,5 +260,24 @@
         SELECT id, scientific_name AS name, authorship, rank, code, status, parent_id AS parent
         FROM x ORDER BY x.path
     </select>
+
+  <select id="processTreeIds" parameterType="map" resultMap="idResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    WITH RECURSIVE tree AS (
+      SELECT id, name_id AS nid
+      FROM name_usage_${partition}
+      WHERE id=#{key.id}
+    UNION
+      SELECT c.id, c.name_id
+      FROM name_usage_${partition} c JOIN tree ON tree.id = c.parent_id
+    )
+    SELECT * FROM tree;
+  </select>
+
+  <delete id="delete" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    DELETE FROM name_usage_${partition}
+    WHERE id = #{key.id}
+  </delete>
 
 </mapper>

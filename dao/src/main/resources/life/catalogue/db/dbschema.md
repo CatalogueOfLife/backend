@@ -10,6 +10,14 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2020-04-17 remove cascading delete from taxon.parent_id
+```
+ALTER TABLE name_usage DROP CONSTRAINT name_usage_100_parent_id_fk, 
+ADD CONSTRAINT name_usage_KEY_parent_id_fk FOREIGN KEY (parent_id) REFERENCES name_usage(id);
+```
+Afterwards it is required to run the `AddTableCmd -t type_material` using the cli tools
+in order to create partitions for all existing datasets. 
+
 #### 2020-04-17 move editors to dataset, not user 
 ```
 ALTER TABLE dataset ADD COLUMN editors INT[];

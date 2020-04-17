@@ -53,8 +53,6 @@ public class EnumSetSerializer extends Serializer<EnumSet<? extends Enum<?>>> {
     for (final Enum item : set) {
       output.writeInt(item.ordinal(), true);
     }
-
-    if (Log.TRACE) Log.trace("kryo", "Wrote EnumSet: " + set);
   }
 
   private Class<? extends Enum<?>> getElementType(final EnumSet<? extends Enum<?>> set) {

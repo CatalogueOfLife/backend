@@ -29,11 +29,6 @@ public class TreeMapper2Test extends MapperTestBase<TreeMapper> {
     super(TreeMapper.class, TestDataRule.empty());
   }
 
-  @BeforeClass
-  public static void initSector() {
-    System.out.println("Setup sectors & decisions");
-  }
-
   @Test
   public void root() {
     TreeMapper tm = mapper(TreeMapper.class);

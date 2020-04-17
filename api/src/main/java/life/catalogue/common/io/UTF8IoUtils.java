@@ -1,6 +1,7 @@
 package life.catalogue.common.io;
 
 import com.google.common.io.Files;
+import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -34,4 +35,13 @@ public class UTF8IoUtils {
   public static BufferedReader readerFromStream(InputStream stream) {
     return new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
   }
+
+  public static String readString(File f) throws IOException {
+    return readString(new FileInputStream(f));
+  }
+
+  public static String readString(InputStream stream) throws IOException {
+    return IOUtils.toString(stream, StandardCharsets.UTF_8);
+  }
+
 }

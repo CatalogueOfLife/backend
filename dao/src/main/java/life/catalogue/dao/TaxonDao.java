@@ -311,14 +311,18 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   }
   
   /**
-   * Does a cascading delete and also deletes all sectors included
+   * Does a recursive delete to remove an entire subtree.
+   * Name usage, name and all associated infos are removed.
+   * It also deletes all sectors targeting any taxon in the subtree.
    */
   public void deleteRecursively(DSID<String> id, User user) {
     try (SqlSession session = factory.openSession(false)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
+      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+      NameMapper nm = session.getMapper(NameMapper.class);
       SectorMapper sm = session.getMapper(SectorMapper.class);
       SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
-  
+
       // remember sector count map so we can update parents at the end
       TaxonSectorCountMap delta = tm.getCounts(id);
       LOG.info("Recursively delete taxon {} and its {} nested sectors from dataset {} by user {}", id, delta.size(), id.getDatasetKey(), user);
@@ -329,14 +333,21 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       }
       List<TaxonSectorCountMap> parents = tm.classificationCounts(id);
 
-      // cascading delete removes descendants and vernacular, distributions, descriptions, media
-      // but NOT names, name_rels or refs
-      // TODO: remove name if not used anywhere
-      // If not wanted there are remove orphan methods for names and refs
-      tm.delete(id);
+      // we remove usages, names and associated infos.
+      // but NOT name_rels or refs
+      int counter = 0;
+      DSID<String> key = DSID.copy(id);
+      for (UsageNameID unid : num.processTreeIds(id)) {
+        // cascading delete removes vernacular, distributions, descriptions, media
+        num.delete(key.id(unid.usageId));
+        nm.delete(key.id(unid.nameId));
+        if (counter++ % 1000 == 0) {
+          session.commit();
+        }
+      }
 
       // remove delta from parents
-      DSIDValue<String> key = DSID.copy(id);
+      key = DSID.copy(id);
       for (TaxonSectorCountMap tc : parents) {
         if (!tc.getId().equals(id.getId())) {
           tm.updateDatasetSectorCount(key.id(tc.getId()), mergeMapCounts(tc.getCount(), delta.getCount(), -1));

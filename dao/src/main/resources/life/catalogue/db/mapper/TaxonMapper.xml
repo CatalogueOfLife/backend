@@ -219,7 +219,7 @@
     <delete id="delete" parameterType="map">
         <include refid="life.catalogue.db.Common.partitionByKey"/>
         DELETE FROM name_usage_${partition}
-        WHERE id = #{key.id}
+        WHERE id = #{key.id} AND NOT is_synonym
     </delete>
 
     <delete id="deleteByDataset" parameterType="map">

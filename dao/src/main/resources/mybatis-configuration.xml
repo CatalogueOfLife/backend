@@ -19,6 +19,7 @@
         <package name="life.catalogue.api.search" />
         <package name="org.gbif.nameparser.api" />
         <package name="life.catalogue.db.type2" />
+        <package name="life.catalogue.db.mapper" />
     </typeAliases>
     <mappers>
         <mapper class="life.catalogue.db.Common" />

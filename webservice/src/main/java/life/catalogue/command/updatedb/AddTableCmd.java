@@ -1,9 +1,9 @@
 package life.catalogue.command.updatedb;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
 import life.catalogue.WsServerConfig;
+import life.catalogue.command.AbstractPromptCmd;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import org.slf4j.Logger;
@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,13 +25,10 @@ import java.util.regex.Pattern;
  * The command will look at the existing name partition tables to find the datasets with data.
  * The master table must exist already and be defined to be partitioned by column dataset_key !!!
  */
-public class AddTableCmd extends ConfiguredCommand<WsServerConfig> {
+public class AddTableCmd extends AbstractPromptCmd {
   private static final Logger LOG = LoggerFactory.getLogger(AddTableCmd.class);
-  private static final String ARG_PROMPT = "prompt";
   private static final String ARG_TABLE = "table";
 
-  private WsServerConfig cfg;
-  
   public AddTableCmd() {
     super("addTable", "Adds new partition tables to the database schema");
   }
@@ -41,30 +37,21 @@ public class AddTableCmd extends ConfiguredCommand<WsServerConfig> {
   public void configure(Subparser subparser) {
     super.configure(subparser);
     // Adds import options
-    subparser.addArgument("--"+ARG_PROMPT)
-        .setDefault(10)
-        .dest(ARG_PROMPT)
-        .type(Integer.class)
-        .required(false)
-        .help("Waiting time in seconds for a user prompt to abort db update. Use zero for no prompt");
     subparser.addArgument("--"+ARG_TABLE, "-t")
-            .dest(ARG_TABLE)
-            .type(String.class)
-            .required(true)
-            .help("Name of the partitioned table to attach the created partitions to");
+        .dest(ARG_TABLE)
+        .type(String.class)
+        .required(true)
+        .help("Name of the partitioned table to attach the created partitions to");
   }
-  
+
   @Override
-  protected void run(Bootstrap<WsServerConfig> bootstrap, Namespace namespace, WsServerConfig cfg) throws Exception {
+  public String describeCmd(Namespace namespace, WsServerConfig cfg) {
+    return String.format("Adding partition tables for %s in database %s on %s.", namespace.getString(ARG_TABLE), cfg.db.database, cfg.db.host);
+  }
+
+  @Override
+  public void execute(Bootstrap<WsServerConfig> bootstrap, Namespace namespace, WsServerConfig cfg) throws Exception {
     String table = namespace.getString(ARG_TABLE);
-    final int prompt = namespace.getInt(ARG_PROMPT);
-    if (prompt > 0) {
-      System.out.format("Adding partition tables for %s in database %s on %s.\n", table, cfg.db.database, cfg.db.host);
-      System.out.format("You have %s seconds to abort if you did not intend to do so !!!\n", prompt);
-      TimeUnit.SECONDS.sleep(prompt);
-    }
-  
-    this.cfg = cfg;
     execute(table);
     System.out.println("Done !!!");
   }
@@ -98,7 +85,7 @@ public class AddTableCmd extends ConfiguredCommand<WsServerConfig> {
     ) {
       List<ForeignKey> fks = analyze(st, table);
 
-      for (int key : keys(st)) {
+      for (int key : datasetKeys(con)) {
         final String pTable = table+"_"+key;
         if (exists(pExists, pTable)) {
           LOG.info("{} already exists", pTable);
@@ -133,23 +120,27 @@ public class AddTableCmd extends ConfiguredCommand<WsServerConfig> {
     return exists;
   }
 
-  @VisibleForTesting
-  protected static Set<Integer> keys(Statement st) throws SQLException {
-    Set<Integer> keys = new HashSet<>();
-    st.execute("select table_name from information_schema.tables where table_schema='public' and table_name ~* '^name_\\d+'");
-    ResultSet rs = st.getResultSet();
+  /**
+   * @return list of all dataset keys for which a name data partition exists.
+   */
+  public static Set<Integer> datasetKeys(Connection con) throws SQLException {
+    try (Statement st = con.createStatement()) {
+      Set<Integer> keys = new HashSet<>();
+      st.execute("select table_name from information_schema.tables where table_schema='public' and table_name ~* '^name_\\d+'");
+      ResultSet rs = st.getResultSet();
 
-    Pattern TABLE = Pattern.compile("name_(\\d+)$");
-    while (rs.next()) {
-      String tbl = rs.getString(1);
-      Matcher m = TABLE.matcher(tbl);
-      if (m.find()) {
-        keys.add( Integer.parseInt(m.group(1)) );
+      Pattern TABLE = Pattern.compile("name_(\\d+)$");
+      while (rs.next()) {
+        String tbl = rs.getString(1);
+        Matcher m = TABLE.matcher(tbl);
+        if (m.find()) {
+          keys.add( Integer.parseInt(m.group(1)) );
+        }
       }
+      rs.close();
+      LOG.info("Found {} existing name partition tables", keys.size());
+      return keys;
     }
-    rs.close();
-    LOG.info("Found {} existing name partition tables", keys.size());
-    return keys;
   }
 
   /**

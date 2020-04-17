@@ -10,8 +10,15 @@ public interface DSID<K> extends DatasetScoped {
   K getId();
   
   void setId(K id);
-  
-  
+
+  /**
+   * Builder style for fluent tests but reusing the same instance
+   */
+  default DSID<K> id(K id) {
+    setId(id);
+    return this;
+  }
+
   /**
    * @return a dataset scoped id using the verbatimKey of the supplied src
    */

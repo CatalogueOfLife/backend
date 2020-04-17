@@ -24,10 +24,8 @@ public class AddTableCmd2Test {
 
     @Test
     public void keys() throws Exception {
-        try (Connection con = pgSetupRule.connect();
-             Statement st = con.createStatement()
-        ) {
-            Set<Integer> keys = AddTableCmd.keys(st);
+        try (Connection con = pgSetupRule.connect()) {
+            Set<Integer> keys = AddTableCmd.datasetKeys(con);
             Set<Integer> expected = TestDataRule.TestData.APPLE.datasetKeys;
             assertEquals(expected, keys);
         }

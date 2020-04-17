@@ -39,14 +39,6 @@ public class DSIDValue<T> implements DSID<T> {
   public void setId(T id) {
     this.id = id;
   }
-  
-  /**
-   * Builder style for fluent tests but reusing the same instance
-   */
-  public DSIDValue<T> id(T id) {
-    this.id = id;
-    return this;
-  }
 
   @Override
   public boolean equals(Object o) {

@@ -6,6 +6,7 @@ import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+import life.catalogue.command.AbstractPromptCmd;
 import life.catalogue.dao.NameDao;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.io.Resources;
@@ -51,43 +52,20 @@ import net.sourceforge.argparse4j.inf.Subparser;
 /**
  * Command to initialise a new database schema.
  */
-public class InitDbCmd extends ConfiguredCommand<WsServerConfig> {
+public class InitDbCmd extends AbstractPromptCmd {
   private static final Logger LOG = LoggerFactory.getLogger(InitDbCmd.class);
-  private static final String ARG_PROMPT = "prompt";
 
-  private WsServerConfig cfg;
-  
   public InitDbCmd() {
     super("initdb", "Initialises a new database schema");
   }
   
   @Override
-  public void configure(Subparser subparser) {
-    super.configure(subparser);
-    // Adds import options
-    subparser.addArgument("--"+ARG_PROMPT)
-        .setDefault(10)
-        .dest(ARG_PROMPT)
-        .type(Integer.class)
-        .required(false)
-        .help("Waiting time in seconds for a user prompt to abort db initialisation. Use zero for no prompt");
+  public String describeCmd(Namespace namespace, WsServerConfig cfg) {
+    return String.format("Initialising database %s on %s.\n", cfg.db.database, cfg.db.host);
   }
-  
+
   @Override
-  protected void run(Bootstrap<WsServerConfig> bootstrap, Namespace namespace, WsServerConfig cfg) throws Exception {
-    final int prompt = namespace.getInt(ARG_PROMPT);
-    if (prompt > 0) {
-      System.out.format("Initialising database %s on %s.\n", cfg.db.database, cfg.db.host);
-      System.out.format("You have %s seconds to abort if you did not intend to do so !!!\n", prompt);
-      TimeUnit.SECONDS.sleep(prompt);
-    }
-  
-    this.cfg = cfg;
-    execute();
-    System.out.println("Done !!!");
-  }
-  
-  private void execute() throws Exception {
+  public void execute(Bootstrap<WsServerConfig> bootstrap, Namespace namespace, WsServerConfig cfg) throws Exception {
     execute(cfg);
   }
   
