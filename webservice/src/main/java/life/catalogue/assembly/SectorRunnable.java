@@ -4,11 +4,9 @@ import com.google.common.base.Preconditions;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.util.LoggingUtils;
-import life.catalogue.db.mapper.DecisionMapper;
-import life.catalogue.db.mapper.SectorImportMapper;
-import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.db.mapper.TaxonMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -54,11 +52,16 @@ abstract class SectorRunnable implements Runnable {
     this.validateSector = validateSector;
     this.factory = factory;
     this.sectorKey = sectorKey;
+    // check for existance and datasetKey - we will load the real thing for processing only when we get executed!
+    sector = loadSector(false);
+    this.catalogueKey = sector.getDatasetKey();
+    this.datasetKey = sector.getSubjectDatasetKey();
     try (SqlSession session = factory.openSession(true)) {
-      // check for existance and datasetKey - we will load the real thing for processing only when we get executed!
-      sector = loadSector(false);
-      this.catalogueKey = sector.getDatasetKey();
-      this.datasetKey = sector.getSubjectDatasetKey();
+      // make sure the catalogue is MANAGED and not RELEASED!
+      Dataset d = session.getMapper(DatasetMapper.class).get(datasetKey);
+      if (d.getOrigin() != DatasetOrigin.MANAGED) {
+        throw new IllegalArgumentException("Cannot run a " + getClass().getSimpleName() + " against a " + d.getOrigin() + " dataset");
+      }
       // lookup next attempt
       List<SectorImport> imports = session.getMapper(SectorImportMapper.class).list(sectorKey, null, null,null, new Page(0,1));
       state.setAttempt(imports == null || imports.isEmpty() ? 1 : imports.get(0).getAttempt() + 1);

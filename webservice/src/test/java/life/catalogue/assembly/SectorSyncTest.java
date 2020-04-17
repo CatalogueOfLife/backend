@@ -2,10 +2,7 @@ package life.catalogue.assembly;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.Origin;
-import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.api.vocab.Users;
+import life.catalogue.api.vocab.*;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
@@ -91,7 +88,32 @@ public class SectorSyncTest {
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     MapperTestBase.createSuccess(Datasets.DRAFT_COL, Users.TESTER, diDao);
   }
-  
+
+  @Test(expected = IllegalArgumentException.class)
+  public void failNotManaged() throws Exception {
+    Sector s = new Sector();
+    s.setSubjectDatasetKey(datasetKey);
+    s.setSubject(sector.getSubject());
+    s.setTarget(sector.getTarget());
+    s.applyUser(TestEntityGenerator.USER_EDITOR);
+
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      Dataset d = TestEntityGenerator.newDataset("grr");
+      d.setOrigin(DatasetOrigin.RELEASED);
+      d.setSourceKey(Datasets.DRAFT_COL);
+      d.applyUser(Users.TESTER);
+      session.getMapper(DatasetMapper.class).create(d);
+
+      s.setDatasetKey(d.getKey());
+      session.getMapper(SectorMapper.class).create(s);
+    }
+
+    // this should fail
+    SectorSync ss = new SectorSync(s.getId(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao,
+      SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
+
+  }
+
   @Test
   public void sync() throws Exception {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
