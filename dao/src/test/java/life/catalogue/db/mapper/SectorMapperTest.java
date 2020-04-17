@@ -19,6 +19,7 @@ import org.junit.Test;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.UUID;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.*;
@@ -134,15 +135,24 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
   Sector createTestEntity(int dkey) {
     return create();
   }
-  
+
   public static Sector create() {
+    return create(DSID.draftID(UUID.randomUUID().toString()), DSID.key(subjectDatasetKey, UUID.randomUUID().toString()));
+  }
+
+  public static Sector create(DSID<String> target, DSID<String> subject) {
     Sector d = new Sector();
-    d.setDatasetKey(Datasets.DRAFT_COL);
-    d.setSubjectDatasetKey(subjectDatasetKey);
+
+    d.setDatasetKey(target.getDatasetKey());
+    d.setTarget(TestEntityGenerator.newSimpleNameWithoutStatusParent());
+    d.getTarget().setId(target.getId());
+
+    d.setSubjectDatasetKey(subject.getDatasetKey());
+    d.setSubject(TestEntityGenerator.newSimpleName());
+    d.getSubject().setId(subject.getId());
+
     d.setMode(Sector.Mode.ATTACH);
     d.setCode(NomCode.ZOOLOGICAL);
-    d.setSubject(TestEntityGenerator.newSimpleName());
-    d.setTarget(TestEntityGenerator.newSimpleNameWithoutStatusParent());
     d.setPlaceholderRank(Rank.FAMILY);
     d.setRanks(Set.copyOf(Rank.LINNEAN_RANKS));
     d.setEntities(Set.of(EntityType.NAME, EntityType.NAME_USAGE, EntityType.NAME_RELATION));

@@ -233,7 +233,7 @@
       FROM name_usage_${partition} t LEFT JOIN sector s ON t.id=s.target_id AND s.dataset_key=#{key.datasetKey}
       WHERE t.id=#{key.id}
     UNION
-      SELECT id, s.id
+      SELECT t.id, s.id
       FROM name_usage_${partition} t LEFT JOIN sector s ON t.id=s.target_id AND s.dataset_key=#{key.datasetKey}
         JOIN x ON x.id = t.parent_id
       WHERE NOT t.is_synonym

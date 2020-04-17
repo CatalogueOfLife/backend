@@ -9,6 +9,8 @@ import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.SectorMapperTest;
 import life.catalogue.db.mapper.SynonymMapper;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.es.NameUsageIndexService;
@@ -267,14 +269,30 @@ public class TaxonDaoTest extends DaoTestBase {
   
   @Test
   public void deleteRecursively() throws Exception {
-    final DSIDValue key = DSID.key(TestDataRule.TestData.TREE.key, null);
+    final DSIDValue<String> key = DSID.key(TestDataRule.TestData.TREE.key, null);
     MybatisTestUtils.populateTestData(TestDataRule.TestData.TREE, true);
   
-    
+    // create some sectors in the subtree to make sure they also get removed
+    SectorMapper sm = mapper(SectorMapper.class);
+    Sector s1 = SectorMapperTest.create(key.id("t2"), DSID.key(TestDataRule.TestData.TREE.datasetKeys.iterator().next(), "x"));
+    sm.create(s1);
+    Sector s2 = SectorMapperTest.create(key.id("t4"), DSID.key(TestDataRule.TestData.TREE.datasetKeys.iterator().next(), "xy"));
+    sm.create(s2);
+    Sector s3 = SectorMapperTest.create(key.id("t10"), DSID.key(TestDataRule.TestData.TREE.datasetKeys.iterator().next(), "xyz"));
+    sm.create(s3);
+
+    commit();
+
     assertNotNull(tDao.get(key.id("t10")));
+    assertNotNull(sm.get(s1.getId()));
+    assertNotNull(sm.get(s2.getId()));
+    assertNotNull(sm.get(s3.getId()));
     tDao.deleteRecursively(key.id("t4"), USER_EDITOR);
   
-    assertNull(tDao.get(key));
+    assertNull(tDao.get(key.id("t4")));
     assertNull(tDao.get(key.id("t10")));
+    assertNotNull(sm.get(s1.getId()));
+    assertNull(sm.get(s2.getId()));
+    assertNull(sm.get(s3.getId()));
   }
 }
