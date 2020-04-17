@@ -14,6 +14,8 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import life.catalogue.api.jackson.FastutilsSerde;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DataFormat;
@@ -47,11 +49,13 @@ public class MetadataParser {
       super("ColdpYaml");
       EnumParserSerde<License> lserde = new EnumParserSerde<License>(LicenseParser.PARSER);
       addDeserializer(License.class, lserde.new Deserializer());
+      addDeserializer(IntSet.class, new FastutilsSerde.SetDeserializer());
     }
     
     @Override
     public void setupModule(SetupContext ctxt) {
       // default enum serde
+      ctxt.addDeserializers(new PermissiveEnumSerde.PermissiveEnumDeserializers());
       ctxt.addDeserializers(new PermissiveEnumSerde.PermissiveEnumDeserializers());
       super.setupModule(ctxt);
     }

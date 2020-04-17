@@ -62,8 +62,8 @@ public class FastutilsSerde {
   }
   
   public static class MapDeserializer extends StdDeserializer<Int2IntMap> {
-  
-    protected MapDeserializer() {
+
+    public MapDeserializer() {
       super(Int2IntMap.class);
     }
   
@@ -129,7 +129,7 @@ public class FastutilsSerde {
 
   public static class SetDeserializer extends StdDeserializer<IntSet> {
 
-    protected SetDeserializer() {
+    public SetDeserializer() {
       super(IntSet.class);
     }
 
