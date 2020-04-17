@@ -6,6 +6,7 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.model.TreeNode;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.UsageNameID;
 import life.catalogue.db.type.UuidTypeHandler;
 import life.catalogue.db.type2.StringCount;
 import org.apache.ibatis.binding.MapperRegistry;
@@ -106,9 +107,12 @@ public class MybatisFactory {
   private static void registerTypeAliases(TypeAliasRegistry registry) {
     // register all aliases from the api packages
     registry.registerAliases(Name.class.getPackage().getName());
+    // name parser API
     registry.registerAliases(ParsedName.class.getPackage().getName());
+    // search package
     registry.registerAliases(NameUsageWrapper.class.getPackage().getName());
     registry.registerAlias(StringCount.class);
+    registry.registerAlias(UsageNameID.class);
     registry.registerAlias("TreeNodeMybatis", TreeNode.TreeNodeMybatis.class);
     registry.registerAlias("UsageDecision", Duplicate.UsageDecision.class);
     registry.registerAlias("DuplicateMybatis", Duplicate.Mybatis.class);
