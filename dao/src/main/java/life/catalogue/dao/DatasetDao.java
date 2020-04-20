@@ -2,7 +2,6 @@ package life.catalogue.dao;
 
 import com.google.common.eventbus.EventBus;
 import life.catalogue.api.event.DatasetChanged;
-import life.catalogue.api.model.User;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
@@ -24,12 +23,10 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 
-public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
+public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetDao.class);
@@ -143,6 +140,10 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
 
   @Override
   protected void updateBefore(Dataset obj, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
+    // make sure to never remove the creator from editors
+    if (obj.getCreatedBy() != null) {
+      obj.addEditor(obj.getCreatedBy());
+    }
     super.updateBefore(resetOriginProps(obj), old, user, mapper, session);
   }
 

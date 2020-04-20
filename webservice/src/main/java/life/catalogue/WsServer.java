@@ -241,6 +241,7 @@ public class WsServer extends Application<WsServerConfig> {
     DecisionDao decdao = new DecisionDao(getSqlSessionFactory(), indexService);
     EstimateDao edao = new EstimateDao(getSqlSessionFactory());
     SectorDao secdao = new SectorDao(getSqlSessionFactory());
+    UserDao udao = new UserDao(getSqlSessionFactory(), bus);
 
     // resources
     env.jersey()
@@ -268,7 +269,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.jersey().register(new SynonymResource(sdao));
     env.jersey().register(new TaxonResource(tdao));
     env.jersey().register(new TreeResource(tdao, trDao));
-    env.jersey().register(new UserResource(auth.getJwtCodec(), auth.getIdentityService()));
+    env.jersey().register(new UserResource(auth.getJwtCodec(), auth.getIdentityService(), udao));
     env.jersey().register(new VerbatimResource());
     env.jersey().register(new VocabResource());
     env.jersey().register(new LEGACYDecisionResource(getSqlSessionFactory(), decdao));

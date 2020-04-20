@@ -8,13 +8,15 @@ import javax.annotation.Nullable;
 import javax.security.auth.Subject;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.annotations.VisibleForTesting;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.common.collection.CollectionUtils;
+import org.checkerframework.checker.units.qual.K;
 
-public class User implements Principal {
+public class User implements Entity<Integer>, Principal {
 
   public enum Role {
     EDITOR,
@@ -102,7 +104,8 @@ public class User implements Principal {
     return roles.contains(Role.ADMIN) || isEditor(datasetKey);
   }
 
-  public boolean isEditor(int datasetKey) {
+  @VisibleForTesting
+  boolean isEditor(int datasetKey) {
     return roles.contains(Role.EDITOR) && datasets.contains(datasetKey);
   }
 

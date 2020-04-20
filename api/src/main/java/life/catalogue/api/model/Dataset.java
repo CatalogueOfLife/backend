@@ -429,6 +429,9 @@ public class Dataset extends DataEntity<Integer> {
   }
 
   public void removeEditor(int userKey) {
+    if (getCreatedBy() != null && userKey == (int) getCreatedBy()) {
+      throw new IllegalArgumentException("Original dataset creator cannot be removed from editors");
+    }
     editors.remove(userKey);
   }
 

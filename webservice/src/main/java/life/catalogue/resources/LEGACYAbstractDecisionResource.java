@@ -10,10 +10,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.dao.DatasetEntityDao;
 import org.apache.ibatis.session.SqlSessionFactory;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.dao.EntityDao;
 import life.catalogue.dw.auth.Roles;
-import org.checkerframework.checker.units.qual.K;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

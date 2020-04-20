@@ -1,6 +1,7 @@
 package life.catalogue.resources;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
@@ -15,7 +16,9 @@ import io.dropwizard.auth.Auth;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
+import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.dao.UserDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.auth.IdentityService;
 import life.catalogue.dw.auth.Roles;
@@ -36,10 +39,12 @@ public class UserResource {
   
   private final JwtCodec jwt;
   private final IdentityService idService;
+  private final UserDao dao;
 
-  public UserResource(JwtCodec jwt, IdentityService idService) {
+  public UserResource(JwtCodec jwt, IdentityService idService, UserDao dao) {
     this.jwt = jwt;
     this.idService = idService;
+    this.dao = dao;
   }
 
   /**
@@ -56,23 +61,19 @@ public class UserResource {
     return u;
   }
 
-  private static Page defaultPage(Page page){
-    return page == null ? new Page(0, 10) : page;
-  }
-
   @GET
-  public List<User> search(@QueryParam("q") String q, @Context SqlSession session, @Valid @BeanParam Page page) {
-    List<User> user = session.getMapper(UserMapper.class).search(q, defaultPage(page));
+  public ResultPage<User> search(@QueryParam("q") String q, @Valid @BeanParam Page page) {
+    ResultPage<User> user = dao.search(q, page);
     user.forEach(UserResource::obfuscate);
     return user;
   }
 
   @GET
   @Path("/{key}")
-  public User get(@PathParam("key") Integer key, @Context SqlSession session) {
-    User u = session.getMapper(UserMapper.class).get(key);
+  public User get(@PathParam("key") Integer key) {
+    User user = getUser(key);
     // obfuscate email and personal things
-    return obfuscate(u);
+    return obfuscate(user);
   }
 
   @GET
@@ -101,86 +102,29 @@ public class UserResource {
   @PUT
   @Path("/settings")
   @PermitAll
-  public void updateSettings(Map<String, String> settings, @Auth User user, @Context SqlSession session) {
-    if (user != null && settings != null) {
-      user.setSettings(settings);
-      session.getMapper(UserMapper.class).update(user);
-      session.commit();
-    }
+  public void updateSettings(Map<String, String> settings, @Auth User user) {
+    dao.updateSettings(settings, user);
   }
 
   @GET
   @Path("/me/dataset")
   @PermitAll
   public List<Dataset> datasets(@Auth User user, @Context SqlSession session) {
-    return listDatasetsByUser(session, user);
-  }
-
-  @GET
-  @Path("/{key}/dataset")
-  @RolesAllowed({Roles.ADMIN})
-  public List<Dataset> datasetsByUser(@PathParam("key") Integer key, @Context SqlSession session) {
-    return listDatasetsByUser(session, getUser(session, key));
-  }
-
-  @POST
-  @Path("/{key}/dataset")
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void addEditor(@PathParam("key") int key, @Auth User editor, int datasetKey, @Context SqlSession session) {
-    if (!editor.isAuthorized(datasetKey)) {
-      throw new WebApplicationException(Response.Status.FORBIDDEN);
-    }
-    User user = getUser(session, key);
-    // this also adds an editor role if not there yet
-    user.addDataset(datasetKey);
-    updateUser(session, user);
-  }
-
-  @DELETE
-  @Path("/{key}/dataset/{datasetKey}")
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void removeEditor(@PathParam("key") int key, @PathParam("datasetKey") int datasetKey, @Auth User editor, @Context SqlSession session) {
-    User user = getUser(session, key);
-    // this also removes the editor role if its the only dataset privilege
-    user.removeDataset(datasetKey);
-    updateUser(session, user);
+    final DatasetMapper dm = session.getMapper(DatasetMapper.class);
+    return user.getDatasets().stream()
+      .map(dm::get)
+      .collect(Collectors.toList());
   }
 
   @PUT
   @Path("/{key}/role")
   @RolesAllowed({Roles.ADMIN})
   public void changeRole(@PathParam("key") int key, @Auth User admin, List<User.Role> roles, @Context SqlSession session) {
-    User user = getUser(session, key);
-    Set<User.Role> roleSet = new HashSet<User.Role>(ObjectUtils.coalesce(roles, Collections.EMPTY_SET));
-    user.setRoles(roleSet);
-    // if we remove the editor role the user lost access to all datasets!
-    if (!roles.contains(User.Role.EDITOR) && user.getDatasets() != null) {
-      user.getDatasets().clear();
-    }
-    updateUser(session, user);
+    dao.changeRole(key, admin, roles);
   }
 
-  private List<Dataset> listDatasetsByUser(SqlSession session, User user){
-    List<Dataset> datasets = new ArrayList<>();
-    DatasetMapper dm = session.getMapper(DatasetMapper.class);
-    for (int datasetKey : user.getDatasets()) {
-      Dataset d = dm.get(datasetKey);
-      if (d != null) {
-        datasets.add(d);
-      }
-    }
-    return datasets;
-  }
-
-  private void updateUser(SqlSession session, User user){
-    session.getMapper(UserMapper.class).update(user);;
-    session.commit();
-    idService.cache(user);
-  }
-
-  private static User getUser(SqlSession session, int key) throws NotFoundException {
-    UserMapper um = session.getMapper(UserMapper.class);
-    User user = um.get(key);
+  private User getUser(int key) throws NotFoundException {
+    User user = dao.get(key);
     if (user == null) {
       throw NotFoundException.keyNotFound(User.class, key);
     }

@@ -195,4 +195,29 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   public List<User> editors(@PathParam("key") int key, @Auth User user, @Context SqlSession session) {
     return session.getMapper(UserMapper.class).datasetEditors(key);
   }
+
+  @POST
+  @Path("/{key}/editor")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void addEditor(@PathParam("key") int key, int editorKey, @Auth User user, @Context SqlSession session) {
+    if (!user.isAuthorized(key)) {
+      throw new WebApplicationException(Response.Status.FORBIDDEN);
+    }
+    Dataset d = get(key);
+    d.addEditor(editorKey);
+    dao.update(d, user.getKey());
+  }
+
+  @DELETE
+  @Path("/{key}/editor/{editorKey}")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void removeEditor(@PathParam("key") int key, @PathParam("editorKey") int editorKey, @Auth User user, @Context SqlSession session) {
+    if (!user.isAuthorized(key)) {
+      throw new WebApplicationException(Response.Status.FORBIDDEN);
+    }
+    Dataset d = get(key);
+    d.removeEditor(editorKey);
+    dao.update(d, user.getKey());
+  }
+
 }

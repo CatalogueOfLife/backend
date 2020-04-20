@@ -10,8 +10,8 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-#### 2020-04-17 remove cascading delete from taxon.parent_id
 
+#### 2020-04-17 remove cascading delete from taxon.parent_id
 It is required to run the `execSql --sql` command using the following sql template
 in order to update all existing name_usage partitions: 
 ```
@@ -22,7 +22,7 @@ ADD CONSTRAINT name_usage_{KEY}_parent_id_fk FOREIGN KEY (parent_id) REFERENCES 
 #### 2020-04-17 move editors to dataset, not user 
 ```
 ALTER TABLE dataset ADD COLUMN editors INT[];
-UPDATE dataset SET editors = (SELECT array_agg(u.key) FROM "user" u WHERE u.datasets @> array[key]) 
+UPDATE dataset SET editors = (SELECT array_agg(u.key) FROM "user" u WHERE u.datasets @> array[key] OR created_by=u.key) 
 ALTER TABLE "user" DROP COLUMN datasets;
 ```
 

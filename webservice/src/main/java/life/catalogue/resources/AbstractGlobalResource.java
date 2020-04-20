@@ -10,7 +10,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.User;
 import life.catalogue.api.model.DataEntity;
-import life.catalogue.dao.EntityDao;
+import life.catalogue.dao.DataEntityDao;
 import life.catalogue.dw.auth.Roles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,13 +21,13 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractGlobalResource<T extends DataEntity<Integer>> {
   
   protected final Class<T> objClass;
-  protected final EntityDao<Integer, T, ?> dao;
+  protected final DataEntityDao<Integer, T, ?> dao;
   protected final SqlSessionFactory factory;
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(AbstractGlobalResource.class);
 
-  public AbstractGlobalResource(Class<T> objClass, EntityDao<Integer, T, ?> dao, SqlSessionFactory factory) {
+  public AbstractGlobalResource(Class<T> objClass, DataEntityDao<Integer, T, ?> dao, SqlSessionFactory factory) {
     this.objClass = objClass;
     this.dao = dao;
     this.factory = factory;

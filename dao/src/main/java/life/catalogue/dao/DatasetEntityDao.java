@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
  * that allows to hook post actions for create, update and delete
  * with access to the old version of the object.
  */
-public class DatasetEntityDao<K, T extends DatasetScopedEntity<K>, M extends CRUD<DSID<K>, T> & DatasetPageable<T>> extends EntityDao<DSID<K>, T, M> {
+public class DatasetEntityDao<K, T extends DatasetScopedEntity<K>, M extends CRUD<DSID<K>, T> & DatasetPageable<T>> extends DataEntityDao<DSID<K>, T, M> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetEntityDao.class);
