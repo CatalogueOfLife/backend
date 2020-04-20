@@ -41,6 +41,7 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
     environment.jersey().register(new AuthDynamicFeature(authFilter));
     environment.jersey().register(new AuthValueFactoryProvider.Binder<>(User.class));
     environment.jersey().register(privateFilter);
+
   }
   
   @Override

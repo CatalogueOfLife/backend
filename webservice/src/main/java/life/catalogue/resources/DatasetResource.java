@@ -24,6 +24,7 @@ import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
@@ -34,6 +35,7 @@ import javax.ws.rs.core.StreamingOutput;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import static life.catalogue.api.model.User.userkey;
@@ -60,7 +62,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   }
   
   @GET
-  public ResultPage<Dataset> search(@Valid @BeanParam Page page, @BeanParam DatasetSearchRequest req, @Auth User user) {
+  public ResultPage<Dataset> search(@Valid @BeanParam Page page, @BeanParam DatasetSearchRequest req, @Auth Optional<User> user) {
     return dao.search(req, userkey(user), page);
   }
   

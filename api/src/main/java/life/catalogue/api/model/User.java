@@ -26,8 +26,8 @@ public class User implements Entity<Integer>, Principal {
   /**
    * Returns the user key or null if no user was given
    */
-  public static Integer userkey(@Nullable User user){
-    return user == null ? null : user.getKey();
+  public static Integer userkey(Optional<User> user){
+    return user.map(User::getKey).orElse(null);
   }
 
   private Integer key;
