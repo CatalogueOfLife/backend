@@ -13,7 +13,7 @@ public class ExecSqlCmdTest extends CmdTestBase {
 
   @Test
   public void execute() throws Exception {
-    assertTrue(run("execByPartition", "--prompt", "0", "--sql", "SELECT id, scientific_name FROM name_{KEY} LIMIT 1").isEmpty());
+    assertTrue(run("execSql", "--prompt", "0", "--sql", "SELECT id, scientific_name FROM name_{KEY} LIMIT 1").isEmpty());
   }
 
 }
