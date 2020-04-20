@@ -1,18 +1,20 @@
 package life.catalogue.dw.auth;
 
+import com.google.common.eventbus.Subscribe;
 import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.auth.AuthDynamicFeature;
 import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import life.catalogue.WsServerConfig;
+import life.catalogue.api.event.DatasetChanged;
+import life.catalogue.api.event.UserChanged;
 import life.catalogue.api.model.User;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
 import javax.ws.rs.container.ContainerRequestFilter;
-import java.util.Map;
 
 /**
  * Wires up authentication against the GBIF registry and authorization based on CoL user roles.
@@ -66,19 +68,24 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
     this.idService.setClient(http);
   }
 
-  public void updateUser(User user){
-    if (user != null) {
-      idService.cache(user);
+  @Subscribe
+  public void userChanged(UserChanged event){
+    if (event.isDeletion()) {
+      idService.removeFromCache(event.username);
+    } else {
+      idService.cache(event.obj);
     }
   }
 
-  public void updateDatasetPrivacy(Map<Integer, Boolean> datasetPrivacy){
-    if (datasetPrivacy != null) {
-      for (Map.Entry<Integer, Boolean> d : datasetPrivacy.entrySet()) {
-        if (d.getKey() != null && d.getValue() != null) {
-          privateFilter.updateCache(d.getKey(), d.getValue());
-        }
+  @Subscribe
+  public void datasetChanged(DatasetChanged event){
+    if (event.isDeletion()) {
+      privateFilter.updateCache(event.obj.getKey(), false);
+    } else {
+      if (event.obj.getKey() != null) {
+        privateFilter.updateCache(event.obj.getKey(), event.obj.isPrivat());
       }
     }
   }
+
 }

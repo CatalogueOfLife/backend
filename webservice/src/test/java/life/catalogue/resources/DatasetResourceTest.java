@@ -4,10 +4,7 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.DatasetSearchRequest;
-import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.DatasetType;
-import life.catalogue.api.vocab.Frequency;
+import life.catalogue.api.vocab.*;
 import life.catalogue.db.TestDataRule;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -35,16 +32,11 @@ public class DatasetResourceTest extends ResourceTestBase {
     super("/dataset");
   }
 
-  @Test
+  @Test(expected = NotAuthorizedException.class)
   @Ignore("auth is currently NOT required")
   public void auth() {
     // we require authentication on every request
-    try {
-      base.request().get(Dataset.class);
-      fail("Authentication should be required");
-    } catch (NotAuthorizedException e) {
-      // yes!
-    }
+    base.request().get(Dataset.class);
   }
 
   @Test
@@ -98,9 +90,15 @@ public class DatasetResourceTest extends ResourceTestBase {
     
     Dataset d2 = userCreds(base.path(key.toString())).get(Dataset.class);
     
-    assertEquals(nullifyUserDate(d2), nullifyUserDate(d));
+    assertEquals(nullifyVolatile(d2), nullifyVolatile(d));
   }
-  
+
+  static Dataset nullifyVolatile(Dataset d) {
+    nullifyUserDate(d);
+    d.getEditors().clear();
+    return d;
+  }
+
   @Test
   public void get() {
     Dataset d = userCreds(base.path("1008")).get(Dataset.class);
@@ -120,7 +118,7 @@ public class DatasetResourceTest extends ResourceTestBase {
     // no permission!
     assertEquals(403, resp.getStatus());
 
-    addUserPermissions("editor", 2035);
+    addUserPermission("editor", 2035);
 
     resp = editorCreds(base.path("2035")).delete();
     assertEquals(204, resp.getStatus());

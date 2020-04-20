@@ -57,8 +57,8 @@ abstract class SectorRunnable implements Runnable {
     this.catalogueKey = sector.getDatasetKey();
     this.datasetKey = sector.getSubjectDatasetKey();
     try (SqlSession session = factory.openSession(true)) {
-      // make sure the catalogue is MANAGED and not RELEASED!
-      Dataset d = session.getMapper(DatasetMapper.class).get(datasetKey);
+      // make sure the target catalogue is MANAGED and not RELEASED!
+      Dataset d = session.getMapper(DatasetMapper.class).get(catalogueKey);
       if (d.getOrigin() != DatasetOrigin.MANAGED) {
         throw new IllegalArgumentException("Cannot run a " + getClass().getSimpleName() + " against a " + d.getOrigin() + " dataset");
       }

@@ -7,7 +7,9 @@ import java.util.List;
 import com.google.common.collect.Lists;
 import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.junit.DropwizardAppRule;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.dw.auth.AuthBundle;
 import org.apache.ibatis.session.SqlSession;
@@ -85,21 +87,8 @@ public class WsServerRule extends DropwizardAppRule<WsServerConfig> {
     return ((WsServer) getTestSupport().getApplication()).getSqlSessionFactory();
   }
 
-  public AuthBundle getAuthBundle() {
-    return ((WsServer) getTestSupport().getApplication()).getAuthBundle();
-  }
-
-  public void addUserPermissions(String username, int... datasetKey) {
-    try (SqlSession session = getSqlSessionFactory().openSession(false)) {
-      UserMapper um = session.getMapper(UserMapper.class);
-      User user = um.getByUsername(username);
-      for (int key : datasetKey) {
-        user.addDataset(key);
-      }
-      um.update(user);
-      session.commit();
-      getAuthBundle().updateUser(user);
-    }
+  public WsServer getServer() {
+    return ((WsServer) getTestSupport().getApplication());
   }
 
   @Override

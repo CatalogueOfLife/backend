@@ -224,7 +224,7 @@
 
     <delete id="deleteByDataset" parameterType="map">
         <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        DELETE FROM name_usage_${partition} WHERE NOT is_synonym
+        DELETE FROM name_usage_${partition}
     </delete>
 
     <select id="foreignChildren" resultMap="taxonResultMap">

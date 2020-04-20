@@ -4,6 +4,7 @@ import java.io.IOException;
 import javax.ws.rs.client.Client;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.eventbus.EventBus;
 import life.catalogue.dao.*;
 import life.catalogue.resources.*;
 import org.apache.commons.io.FileUtils;
@@ -74,6 +75,7 @@ public class WsServer extends Application<WsServerConfig> {
 
   private final MybatisBundle mybatis = new MybatisBundle();
   private final AuthBundle auth = new AuthBundle();
+  private final EventBus bus = new EventBus();
   protected CloseableHttpClient httpClient;
   protected Client jerseyClient;
   private NameIndex ni;
@@ -122,6 +124,10 @@ public class WsServer extends Application<WsServerConfig> {
   @VisibleForTesting
   public AuthBundle getAuthBundle() {
     return auth;
+  }
+
+  public EventBus getBus() {
+    return bus;
   }
 
   @Override
@@ -229,9 +235,7 @@ public class WsServer extends Application<WsServerConfig> {
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory());
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory());
     TreeDao trDao = new TreeDao(getSqlSessionFactory());
-    DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), new DownloadUtil(httpClient), imgService, diDao, indexService, cfg.normalizer::scratchFile,
-      // update user and dataset in auth bundle when datasets change
-      auth::updateUser, auth::updateDatasetPrivacy);
+    DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), new DownloadUtil(httpClient), imgService, diDao, indexService, cfg.normalizer::scratchFile, bus);
     DecisionDao decdao = new DecisionDao(getSqlSessionFactory(), indexService);
     EstimateDao edao = new EstimateDao(getSqlSessionFactory());
     SectorDao secdao = new SectorDao(getSqlSessionFactory());
@@ -272,7 +276,12 @@ public class WsServer extends Application<WsServerConfig> {
     env.jersey().register(new NameParserResource(getSqlSessionFactory()));
     env.jersey().register(new ParserResource<>());
   }
-  
+
+  private void setupEventBus(Object... listeners){
+    for (Object obj : listeners) {
+    }
+  }
+
   @Override
   protected void onFatalError() {
     if (ni != null) {

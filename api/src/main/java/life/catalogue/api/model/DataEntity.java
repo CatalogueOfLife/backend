@@ -6,7 +6,7 @@ import java.util.Objects;
 /**
  * Entity that can be created and modified by a user.
  */
-public abstract class DataEntity<K> implements UserManaged {
+public abstract class DataEntity<K> implements Entity<K>, UserManaged {
 
   private LocalDateTime created;
   private Integer createdBy;
@@ -61,7 +61,7 @@ public abstract class DataEntity<K> implements UserManaged {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    DataEntity that = (DataEntity) o;
+    DataEntity<K> that = (DataEntity<K>) o;
     return Objects.equals(createdBy, that.createdBy) &&
            Objects.equals(modifiedBy, that.modifiedBy);
   }

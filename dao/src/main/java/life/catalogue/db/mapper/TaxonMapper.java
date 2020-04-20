@@ -13,6 +13,8 @@ import javax.annotation.Nullable;
 
 /**
  * Mapper dealing only with accepted name usages, i.e. Taxon instances.
+ *
+ * Note that {@link DatasetPageable#deleteByDataset(int)} needs to also delete all synonyms.
  */
 public interface TaxonMapper extends CRUD<DSID<String>, Taxon>, ProcessableDataset<Taxon>, DatasetPageable<Taxon> {
   

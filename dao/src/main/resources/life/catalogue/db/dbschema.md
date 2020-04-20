@@ -11,12 +11,13 @@ and done it manually. So we can as well log changes here.
 ### PROD changes
 
 #### 2020-04-17 remove cascading delete from taxon.parent_id
+
+It is required to run the `ExecByPartition --sql` command using the following sql template
+in order to update all existing name_usage partitions: 
 ```
-ALTER TABLE name_usage DROP CONSTRAINT name_usage_100_parent_id_fk, 
-ADD CONSTRAINT name_usage_KEY_parent_id_fk FOREIGN KEY (parent_id) REFERENCES name_usage(id);
+ALTER TABLE name_usage_{KEY} DROP CONSTRAINT name_usage_{KEY}_parent_id_fk, 
+ADD CONSTRAINT name_usage_{KEY}_parent_id_fk FOREIGN KEY (parent_id) REFERENCES name_usage(id) DEFERRABLE INITIALLY DEFERRED;
 ```
-Afterwards it is required to run the `AddTableCmd -t type_material` using the cli tools
-in order to create partitions for all existing datasets. 
 
 #### 2020-04-17 move editors to dataset, not user 
 ```

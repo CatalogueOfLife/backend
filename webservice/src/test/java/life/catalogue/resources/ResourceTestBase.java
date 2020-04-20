@@ -4,7 +4,15 @@ import javax.ws.rs.client.WebTarget;
 
 import io.dropwizard.testing.ResourceHelpers;
 import life.catalogue.WsServerRule;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
+import life.catalogue.api.vocab.Users;
+import life.catalogue.dao.DatasetDao;
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.UserMapper;
+import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.img.ImageService;
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
@@ -16,12 +24,13 @@ public class ResourceTestBase {
   protected String baseURL;
   protected WebTarget base;
   private final String path;
-  
+  private final DatasetDao ddao;
+
   public ResourceTestBase(String path) {
     this.path = path;
     baseURL = String.format("http://localhost:%d"+path, RULE.getLocalPort());
     base = RULE.client().target(baseURL);
-
+    ddao = new DatasetDao(factory(), null, ImageService.passThru(), null, NameUsageIndexService.passThru(), null, RULE.getServer().getBus());
   }
   
   @ClassRule
@@ -32,8 +41,17 @@ public class ResourceTestBase {
     return RULE.getSqlSessionFactory();
   }
 
-  public void addUserPermissions(String username, int... datasetKey) {
-    RULE.addUserPermissions(username, datasetKey);
+  public void addUserPermission(String username, int datasetKey) {
+    try (SqlSession session = factory().openSession(true)) {
+      User u = session.getMapper(UserMapper.class).getByUsername(username);
+      addUserPermission(u.getKey(), datasetKey);
+    }
+  }
+
+  public void addUserPermission(int userKey, int datasetKey) {
+    Dataset d = ddao.get(datasetKey);
+    d.addEditor(userKey);
+    ddao.update(d, Users.TESTER);
   }
 
   protected void printDiff(Object o1, Object o2) {

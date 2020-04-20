@@ -66,7 +66,13 @@ public class IdentityService {
     }
     return user;
   }
-  
+
+  public void removeFromCache(String username) {
+    if (cache != null) {
+      cache.remove(username);
+    }
+  }
+
   public Optional<User> authenticate(String username, String password) {
     Optional<User> optUser = authProvider.authenticate(username, password);
     if (optUser.isPresent()) {

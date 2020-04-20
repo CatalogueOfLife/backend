@@ -341,10 +341,8 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
         // cascading delete removes vernacular, distributions, descriptions, media
         num.delete(key.id(unid.usageId));
         nm.delete(key.id(unid.nameId));
-        if (counter++ % 1000 == 0) {
-          session.commit();
-        }
       }
+      session.commit();
 
       // remove delta from parents
       key = DSID.copy(id);

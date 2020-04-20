@@ -90,7 +90,7 @@ public class User implements Principal {
   public boolean hasRole(Role role, Integer datasetKey) {
     // the editor role is scoped by datasetKey, see https://github.com/CatalogueOfLife/backend/issues/580
     return roles.contains(role) &&
-      (role != Role.EDITOR || datasetKey == null || isEditor(datasetKey)
+      (role == Role.ADMIN || datasetKey == null || isEditor(datasetKey)
     );
   }
 

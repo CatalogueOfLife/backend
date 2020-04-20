@@ -1,5 +1,7 @@
 package life.catalogue.dao;
 
+import com.google.common.eventbus.EventBus;
+import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.model.User;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
@@ -37,12 +39,10 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
   private final BiFunction<Integer, String, File> scratchFileFunc;
   private final DatasetImportDao diDao;
   private final NameUsageIndexService indexService;
-  private final Consumer<User> userChangedNotifier;
-  private final Consumer<Map<Integer, Boolean>> datasetChangedNotifier;
+  private final EventBus bus;
 
   /**
    * @param scratchFileFunc function to generate a scrach dir for logo updates
-   * @param userChangedNotifier notification hook when a user has changed, e.g. a new dataset key was added
    */
   public DatasetDao(SqlSessionFactory factory,
                     DownloadUtil downloader,
@@ -50,16 +50,14 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
                     DatasetImportDao diDao,
                     NameUsageIndexService indexService,
                     BiFunction<Integer, String, File> scratchFileFunc,
-                    Consumer<User> userChangedNotifier,
-                    Consumer<Map<Integer, Boolean>> datasetChangedNotifier) {
+                    EventBus bus) {
     super(false, factory, DatasetMapper.class);
     this.downloader = downloader;
     this.imgService = imgService;
     this.scratchFileFunc = scratchFileFunc;
     this.diDao = diDao;
     this.indexService = indexService;
-    this.userChangedNotifier = userChangedNotifier;
-    this.datasetChangedNotifier = datasetChangedNotifier;
+    this.bus = bus;
   }
   
   public ResultPage<Dataset> list(Page page) {
@@ -108,12 +106,14 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
               LOG.error("Failed to delete ES docs for dataset {}", key, e.getCause());
               return 0;
             });
-    // not a private dataset anymore - its gone!
-    datasetChangedNotifier.accept(Map.of(key, false));
+    // notify event bus
+    bus.post(DatasetChanged.delete(key));
   }
 
   @Override
   public Integer create(Dataset obj, int user) {
+    // make sure the creator is an editor
+    obj.addEditor(user);
     return super.create(resetOriginProps(obj), user);
   }
 
@@ -137,13 +137,7 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
     if (obj.getOrigin() == DatasetOrigin.MANAGED) {
       recreatePartition(obj.getKey());
     }
-    // update user permissions
-    UserMapper um = session.getMapper(UserMapper.class);
-    User u = um.get(user);
-    u.addDataset(obj.getKey());
-    um.update(u);
-    userChangedNotifier.accept(u);
-    notifyPrivacyChange(obj);
+    bus.post(DatasetChanged.change(obj));
     session.commit();
   }
 
@@ -158,11 +152,7 @@ public class DatasetDao extends EntityDao<Integer, Dataset, DatasetMapper> {
     if (obj.getOrigin() == DatasetOrigin.MANAGED && !session.getMapper(DatasetPartitionMapper.class).exists(obj.getKey())) {
       recreatePartition(obj.getKey());
     }
-    notifyPrivacyChange(obj);
-  }
-
-  private void notifyPrivacyChange(Dataset obj) {
-    datasetChangedNotifier.accept(Map.of(obj.getKey(), obj.isPrivat()));
+    bus.post(DatasetChanged.change(obj));
   }
 
   private void recreatePartition(int datasetKey) {
