@@ -5,6 +5,7 @@ import javax.ws.rs.client.Client;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.eventbus.EventBus;
+import life.catalogue.command.updatedb.ExecSqlCmd;
 import life.catalogue.dao.*;
 import life.catalogue.resources.*;
 import org.apache.commons.io.FileUtils;
@@ -75,7 +76,7 @@ public class WsServer extends Application<WsServerConfig> {
 
   private final MybatisBundle mybatis = new MybatisBundle();
   private final AuthBundle auth = new AuthBundle();
-  private final EventBus bus = new EventBus();
+  private final EventBus bus = new EventBus("bus");
   protected CloseableHttpClient httpClient;
   protected Client jerseyClient;
   private NameIndex ni;
@@ -106,6 +107,7 @@ public class WsServer extends Application<WsServerConfig> {
     bootstrap.addCommand(new InitDbCmd());
     bootstrap.addCommand(new IndexCmd());
     bootstrap.addCommand(new AddTableCmd());
+    bootstrap.addCommand(new ExecSqlCmd());
   }
 
   @Override

@@ -12,7 +12,7 @@ and done it manually. So we can as well log changes here.
 
 #### 2020-04-17 remove cascading delete from taxon.parent_id
 
-It is required to run the `ExecByPartition --sql` command using the following sql template
+It is required to run the `execSql --sql` command using the following sql template
 in order to update all existing name_usage partitions: 
 ```
 ALTER TABLE name_usage_{KEY} DROP CONSTRAINT name_usage_{KEY}_parent_id_fk, 

@@ -1,7 +1,5 @@
 package life.catalogue.command.updatedb;
 
-import com.google.common.annotations.VisibleForTesting;
-import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
 import life.catalogue.WsServerConfig;
 import life.catalogue.command.AbstractPromptCmd;
@@ -17,13 +15,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.StringReader;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Command to execute given SQL statements for each dataset partition.
@@ -32,13 +23,13 @@ import java.util.regex.Pattern;
  *
  * The command will look at the existing name partition tables to find the datasets with data.
  */
-public class ExecByPartitionCmd extends AbstractPromptCmd {
-  private static final Logger LOG = LoggerFactory.getLogger(ExecByPartitionCmd.class);
+public class ExecSqlCmd extends AbstractPromptCmd {
+  private static final Logger LOG = LoggerFactory.getLogger(ExecSqlCmd.class);
   private static final String ARG_SQL = "sql";
   private static final String ARG_FILE = "sqlfile";
 
-  public ExecByPartitionCmd() {
-    super("execByPartition", "Executes a SQL template for each data partition");
+  public ExecSqlCmd() {
+    super("execSql", "Executes a SQL template for each data partition");
   }
   
   @Override

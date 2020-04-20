@@ -5,10 +5,10 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class ExecByPartitionCmdTest extends CmdTestBase {
+public class ExecSqlCmdTest extends CmdTestBase {
 
-  public ExecByPartitionCmdTest() {
-    super(new ExecByPartitionCmd());
+  public ExecSqlCmdTest() {
+    super(new ExecSqlCmd());
   }
 
   @Test
