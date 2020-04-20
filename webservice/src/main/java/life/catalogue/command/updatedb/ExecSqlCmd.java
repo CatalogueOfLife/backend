@@ -76,7 +76,7 @@ public class ExecSqlCmd extends AbstractPromptCmd {
       ScriptRunner runner = PgConfig.scriptRunner(con);
       for (int key : AddTableCmd.datasetKeys(con)) {
         String sql = template.replaceAll("\\{KEY}", String.valueOf(key));
-        LOG.info("Execute SQL for dataset key {}", key);
+        System.out.println("Execute SQL for dataset key " + key);
         runner.runScript(new StringReader(sql));
         con.commit();
       }
