@@ -1,19 +1,20 @@
 package life.catalogue.importer.proxy;
 
-import java.io.File;
-import java.net.URI;
-
 import com.codahale.metrics.MetricRegistry;
 import io.dropwizard.client.HttpClientBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
 import life.catalogue.WsServerConfig;
 import life.catalogue.WsServerConfigTest;
 import life.catalogue.common.io.Resources;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
-//@Ignore("manual tests depending on proxied external sources")
+import java.io.File;
+import java.net.URI;
+
+@Ignore("require github raw to always work. Currently down")
 public class DistributedArchiveServiceTest {
   
   static CloseableHttpClient client;
