@@ -1,15 +1,15 @@
 package life.catalogue.api.search;
 
-import java.time.LocalDate;
-import java.util.Objects;
-import javax.ws.rs.QueryParam;
-
 import com.google.common.base.Preconditions;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.NomCode;
+
+import javax.ws.rs.QueryParam;
+import java.time.LocalDate;
+import java.util.Objects;
 
 public class DatasetSearchRequest {
   
@@ -28,18 +28,38 @@ public class DatasetSearchRequest {
   
   @QueryParam("code")
   private NomCode code;
-  
+
+  /**
+   * Filters release datasets by their parent project.
+   * Automatically also restricts datasets to origin=released
+   */
+  @QueryParam("releasedFrom")
+  private Integer releasedFrom;
+
+  /**
+   * Filters datasets to only list those that contribute as a source dataset with at least one sector to a given project.
+   */
   @QueryParam("contributesTo")
   private Integer contributesTo;
 
+  /**
+   * Filters datasets by having at least one sector with a given source datasetKey.
+   * Sectors only exist for managed but also released datasets.
+   */
+  @QueryParam("hasSourceDataset")
+  private Integer hasSourceDataset;
+
+  /**
+   * Filters datasets by having the given editor key authorized.
+   */
   @QueryParam("editor")
   private Integer editor;
 
+  /**
+   * Filters datasets by the user key that has last modified/created the dataset.
+   */
   @QueryParam("modifiedBy")
   private Integer modifiedBy;
-
-  @QueryParam("sourceDatasetKey")
-  private Integer sourceDatasetKey;
 
   @QueryParam("format")
   private DataFormat format;
@@ -108,6 +128,14 @@ public class DatasetSearchRequest {
     this.contributesTo = contributesTo;
   }
 
+  public Integer getReleasedFrom() {
+    return releasedFrom;
+  }
+
+  public void setReleasedFrom(Integer releasedFrom) {
+    this.releasedFrom = releasedFrom;
+  }
+
   public Integer getEditor() {
     return editor;
   }
@@ -124,12 +152,12 @@ public class DatasetSearchRequest {
     this.modifiedBy = modifiedBy;
   }
 
-  public Integer getSourceDatasetKey() {
-    return sourceDatasetKey;
+  public Integer getHasSourceDataset() {
+    return hasSourceDataset;
   }
 
-  public void setSourceDatasetKey(Integer sourceDatasetKey) {
-    this.sourceDatasetKey = sourceDatasetKey;
+  public void setHasSourceDataset(Integer hasSourceDataset) {
+    this.hasSourceDataset = hasSourceDataset;
   }
 
   public DataFormat getFormat() {
@@ -205,10 +233,11 @@ public class DatasetSearchRequest {
     return reverse == that.reverse &&
       Objects.equals(q, that.q) &&
       code == that.code &&
+      Objects.equals(releasedFrom, that.releasedFrom) &&
       Objects.equals(contributesTo, that.contributesTo) &&
+      Objects.equals(hasSourceDataset, that.hasSourceDataset) &&
       Objects.equals(editor, that.editor) &&
       Objects.equals(modifiedBy, that.modifiedBy) &&
-      Objects.equals(sourceDatasetKey, that.sourceDatasetKey) &&
       format == that.format &&
       origin == that.origin &&
       type == that.type &&
@@ -220,6 +249,6 @@ public class DatasetSearchRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(q, code, contributesTo, editor, modifiedBy, sourceDatasetKey, format, origin, type, modified, created, released, sortBy, reverse);
+    return Objects.hash(q, code, releasedFrom, contributesTo, hasSourceDataset, editor, modifiedBy, format, origin, type, modified, created, released, sortBy, reverse);
   }
 }

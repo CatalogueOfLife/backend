@@ -415,13 +415,13 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
 
     // by source dataset
     query = new DatasetSearchRequest();
-    query.setSourceDatasetKey(d3);
+    query.setHasSourceDataset(d3);
     assertEquals(2, mapper().search(query, null, new Page()).size());
 
-    query.setSourceDatasetKey(d4);
+    query.setHasSourceDataset(d4);
     assertEquals(1, mapper().search(query, null, new Page()).size());
 
-    query.setSourceDatasetKey(99); // non existing
+    query.setHasSourceDataset(99); // non existing
     assertEquals(0, mapper().search(query, null, new Page()).size());
 
     // partial search
@@ -456,14 +456,19 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     // by origin
     query = new DatasetSearchRequest();
     query.setOrigin(DatasetOrigin.MANAGED);
-    assertEquals(3, mapper().search(query, null, new Page()).size());
+    assertEquals(7, mapper().search(query, null, new Page()).size());
   
     query.setOrigin(DatasetOrigin.EXTERNAL);
-    assertEquals(5, mapper().search(query, null, new Page()).size());
+    assertEquals(1, mapper().search(query, null, new Page()).size());
 
     // by code
     query = new DatasetSearchRequest();
     query.setCode(NomCode.CULTIVARS);
+    assertEquals(0, mapper().search(query, null, new Page()).size());
+
+    // by release
+    query = new DatasetSearchRequest();
+    query.setReleasedFrom(Datasets.DRAFT_COL);
     assertEquals(0, mapper().search(query, null, new Page()).size());
   }
 
@@ -476,7 +481,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     ds.getOrganisations().add(organisation);
     ds.setDescription(description);
     ds.setType(DatasetType.TAXONOMIC);
-    ds.setOrigin(DatasetOrigin.EXTERNAL);
+    ds.setOrigin(DatasetOrigin.MANAGED);
     mapper().create(TestEntityGenerator.setUserDate(ds));
     return ds.getKey();
   }

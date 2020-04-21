@@ -127,13 +127,17 @@
         dataset d LEFT JOIN dataset_import di ON d.last_data_import_attempt=di.attempt AND d.key=di.dataset_key
     </sql>
 
+  <sql id="PRIVATE">
+    <if test="userKey != -1">
+      <!-- magic number for admins -->
+      AND (NOT ${alias}.private <if test="userKey != null">OR ${alias}.editors @> ARRAY[#{userKey}::int]</if>)
+    </if>
+  </sql>
+
     <sql id="SEARCH_WHERE">
         <!-- always hide the names index -->
-        deleted IS NULL AND key != 1
-        <if test="userKey != -1">
-          <!-- magic number for admins -->
-          AND (NOT private <if test="userKey != null">OR editors @> ARRAY[#{userKey}::int]</if>)
-        </if>
+        d.deleted IS NULL AND d.key != 1
+        <include refid="PRIVATE"><property name="alias" value="d"/></include>
         <if test="req != null">
             <if test="req.q != null">
                 AND (
@@ -143,19 +147,29 @@
                 )
             </if>
             <if test="req.code != null">
-                AND settings @> jsonb_build_object('NOMENCLATURAL_CODE', #{req.code})
+                AND d.settings @> jsonb_build_object('NOMENCLATURAL_CODE', #{req.code})
             </if>
             <if test="req.type != null">
-                AND type=#{req.type}::DATASETTYPE
+                AND d.type=#{req.type}::DATASETTYPE
             </if>
             <if test="req.origin != null">
                 AND d.origin=#{req.origin}::DATASETORIGIN
             </if>
             <if test="req.contributesTo != null">
-                AND exists(select 1 from sector s WHERE dataset_key=#{req.contributesTo} AND s.subject_dataset_key=d.key)
+                AND exists(
+                  SELECT 1 FROM sector s JOIN dataset pr ON pr.key=s.dataset_key
+                  WHERE s.dataset_key=#{req.contributesTo} AND s.subject_dataset_key=d.key AND pr.origin='MANAGED'::DATASETORIGIN
+                  <include refid="PRIVATE"><property name="alias" value="pr"/></include>
+                )
             </if>
-            <if test="req.sourceDatasetKey != null">
-              AND exists(select 1 from sector s WHERE subject_dataset_key=#{req.sourceDatasetKey} AND s.dataset_key=d.key)
+            <if test="req.hasSourceDataset != null">
+              AND exists(
+                SELECT 1 FROM sector s JOIN dataset pr ON pr.key=s.dataset_key
+                WHERE subject_dataset_key=#{req.hasSourceDataset} AND s.dataset_key=d.key AND pr.origin='MANAGED'::DATASETORIGIN
+              )
+            </if>
+            <if test="req.releasedFrom != null">
+              AND d.source_key=#{req.releasedFrom}
             </if>
             <if test="req.format != null">
                 AND d.data_format=#{req.format}::DATAFORMAT
