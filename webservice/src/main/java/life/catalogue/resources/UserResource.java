@@ -8,14 +8,12 @@ import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.User;
 import life.catalogue.dao.UserDao;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.dw.auth.IdentityService;
 import life.catalogue.dw.auth.JwtCodec;
 import life.catalogue.dw.auth.Roles;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
@@ -36,12 +34,10 @@ public class UserResource {
   private static final Logger LOG = LoggerFactory.getLogger(UserResource.class);
   
   private final JwtCodec jwt;
-  private final IdentityService idService;
   private final UserDao dao;
 
-  public UserResource(JwtCodec jwt, IdentityService idService, UserDao dao) {
+  public UserResource(JwtCodec jwt, UserDao dao) {
     this.jwt = jwt;
-    this.idService = idService;
     this.dao = dao;
   }
 
@@ -76,7 +72,6 @@ public class UserResource {
 
   @GET
   @Path("/me")
-  @PermitAll
   public User me(@Auth User user) {
     return user;
   }
@@ -99,14 +94,12 @@ public class UserResource {
   
   @PUT
   @Path("/settings")
-  @PermitAll
   public void updateSettings(Map<String, String> settings, @Auth User user) {
     dao.updateSettings(settings, user);
   }
 
   @GET
   @Path("/dataset")
-  @PermitAll
   public List<Dataset> datasets(@Auth User user, @Context SqlSession session) {
     final DatasetMapper dm = session.getMapper(DatasetMapper.class);
     return user.getDatasets().stream()

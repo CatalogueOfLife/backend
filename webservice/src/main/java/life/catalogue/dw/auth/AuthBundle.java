@@ -13,8 +13,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
-import javax.ws.rs.container.ContainerRequestFilter;
-
 /**
  * Wires up authentication against the GBIF registry and authorization based on CoL user roles.
  * Apart from the base root of the API ALL requests including OPTION and GET will have to provide authentication!
@@ -33,12 +31,15 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
     idService = new IdentityService(cfg.auth.createAuthenticationProvider(), true);
     privateFilter = new PrivateFilter();
 
-    ContainerRequestFilter authFilter = new AuthFilter(idService, jwtCodec, cfg.requireSSL);
-    // WARNING!!! Never check in the LocalAuthFilter. It is meant purely for local testing !!!
-    //authFilter = new LocalAuthFilter();
-    environment.jersey().register(authFilter);
-    environment.jersey().register(RolesAllowedDynamicFeature.class);
+    // authentication - both basic & JWT
+    environment.jersey().register(new AuthFilter(idService, jwtCodec, cfg.requireSSL));
+    // inject user via @Auth
     environment.jersey().register(new AuthValueFactoryProvider.Binder<>(User.class));
+    // require authenticated user for methods with @Auth
+    environment.jersey().register(RequireAuthDynamicFeature.class);
+    // require specific roles annotation
+    environment.jersey().register(RolesAllowedDynamicFeature.class);
+    // check access to private datasets based on URI
     environment.jersey().register(privateFilter);
   }
   
@@ -46,11 +47,7 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
   public void initialize(Bootstrap<?> bootstrap) {
   
   }
-  
-  public IdentityService getIdentityService() {
-    return idService;
-  }
-  
+
   public JwtCodec getJwtCodec() {
     return jwtCodec;
   }
