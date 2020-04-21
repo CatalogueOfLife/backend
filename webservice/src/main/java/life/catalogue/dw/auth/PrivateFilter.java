@@ -10,6 +10,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 
 import javax.annotation.Priority;
 import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -37,13 +38,10 @@ public class PrivateFilter implements ContainerRequestFilter {
     Integer datasetKey = AuthFilter.requestedDataset(req.getUriInfo());
     if (datasetKey != null) {
       // is this a private dataset?
-      boolean priv = cache.computeIfAbsent(datasetKey, new IntPredicate() {
-        @Override
-        public boolean test(int value) {
-          try (SqlSession session = factory.openSession()) {
-            DatasetMapper dm = session.getMapper(DatasetMapper.class);
-            return dm.isPrivate(datasetKey);
-          }
+      boolean priv = cache.computeIfAbsent(datasetKey, (IntPredicate) value -> {
+        try (SqlSession session = factory.openSession()) {
+          DatasetMapper dm = session.getMapper(DatasetMapper.class);
+          return dm.isPrivate(datasetKey);
         }
       });
 
@@ -52,11 +50,12 @@ public class PrivateFilter implements ContainerRequestFilter {
         SecurityContext secCtxt = req.getSecurityContext();
         if (secCtxt != null && secCtxt.getUserPrincipal() != null && secCtxt.getUserPrincipal() instanceof User) {
           User user = (User) secCtxt.getUserPrincipal();
-          if (user.isAuthorized(datasetKey)) {
-            return;
+          if (!user.isAuthorized(datasetKey)) {
+            throw new ForbiddenException("Dataset " + datasetKey + " is private");
           }
+        } else {
+          throw new NotAuthorizedException("Dataset " + datasetKey + " is private");
         }
-        throw new ForbiddenException("Dataset " + datasetKey + " is private");
       }
     }
   }

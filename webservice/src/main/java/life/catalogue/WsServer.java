@@ -228,27 +228,19 @@ public class WsServer extends Application<WsServerConfig> {
     env.healthChecks().register("diff", new DiffHealthCheck(diff));
 
     // daos
-    NameDao ndao = new NameDao(getSqlSessionFactory());
-    TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, indexService);
-    ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory());
-    SynonymDao sdao = new SynonymDao(getSqlSessionFactory());
-    TreeDao trDao = new TreeDao(getSqlSessionFactory());
     DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), new DownloadUtil(httpClient), imgService, diDao, indexService, cfg.normalizer::scratchFile, bus);
     DecisionDao decdao = new DecisionDao(getSqlSessionFactory(), indexService);
     EstimateDao edao = new EstimateDao(getSqlSessionFactory());
+    NameDao ndao = new NameDao(getSqlSessionFactory());
+    ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory());
     SectorDao secdao = new SectorDao(getSqlSessionFactory());
+    SynonymDao sdao = new SynonymDao(getSqlSessionFactory());
+    TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, indexService);
+    TreeDao trDao = new TreeDao(getSqlSessionFactory());
     UserDao udao = new UserDao(getSqlSessionFactory(), bus);
 
     // resources
-    env.jersey()
-        .register(new AdminResource(getSqlSessionFactory(),
-            new DownloadUtil(httpClient),
-            cfg,
-            imgService,
-            ni,
-            indexService,
-            cImporter,
-            gbifSync));
+    env.jersey().register(new AdminResource(getSqlSessionFactory(), new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter, gbifSync));
     env.jersey().register(new AssemblyResource(getSqlSessionFactory(), tdao, assembly, exporter, releaseManager));
     env.jersey().register(new DataPackageResource());
     env.jersey().register(new DatasetResource(getSqlSessionFactory(), ddao, imgService, diDao, diff, exporter));
@@ -268,9 +260,6 @@ public class WsServer extends Application<WsServerConfig> {
     env.jersey().register(new UserResource(auth.getJwtCodec(), udao));
     env.jersey().register(new VerbatimResource());
     env.jersey().register(new VocabResource());
-    env.jersey().register(new LEGACYDecisionResource(getSqlSessionFactory(), decdao));
-    env.jersey().register(new LEGACYEstimateResource(getSqlSessionFactory(), edao));
-    env.jersey().register(new LEGACYSectorResource(getSqlSessionFactory(), secdao, diDao, diff, assembly));
     // parsers
     env.jersey().register(new NameParserResource(getSqlSessionFactory()));
     env.jersey().register(new ParserResource<>());
@@ -280,14 +269,16 @@ public class WsServer extends Application<WsServerConfig> {
   }
 
   @Override
-  protected void onFatalError() {
+  protected void onFatalError(Throwable t) {
     if (ni != null) {
       try {
-        LOG.error("Fatal statup error, closing names index gracefully");
+        LOG.error("Fatal startup error, closing names index gracefully", t);
         ni.close();
       } catch (Exception e) {
         LOG.error("Failed to shutdown names index", e);
       }
+    } else {
+      LOG.error("Fatal startup error", t);
     }
     System.exit(1);
   }

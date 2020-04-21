@@ -5,7 +5,7 @@ import org.glassfish.jersey.server.internal.LocalizationMessages;
 import org.glassfish.jersey.server.model.AnnotatedMethod;
 
 import javax.annotation.Priority;
-import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -44,7 +44,7 @@ public class RequireAuthDynamicFeature implements DynamicFeature {
     @Override
     public void filter(final ContainerRequestContext requestContext) throws IOException {
       if (requestContext.getSecurityContext().getUserPrincipal() == null) {
-        throw new ForbiddenException(LocalizationMessages.USER_NOT_AUTHORIZED());
+        throw new NotAuthorizedException(LocalizationMessages.USER_NOT_AUTHORIZED());
       }
     }
   }
