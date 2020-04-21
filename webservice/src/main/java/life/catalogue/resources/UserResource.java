@@ -1,7 +1,20 @@
 package life.catalogue.resources;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import io.dropwizard.auth.Auth;
+import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.ResultPage;
+import life.catalogue.api.model.User;
+import life.catalogue.dao.UserDao;
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.dw.auth.IdentityService;
+import life.catalogue.dw.auth.JwtCodec;
+import life.catalogue.dw.auth.Roles;
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
@@ -10,24 +23,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-
-import com.google.common.base.Objects;
-import io.dropwizard.auth.Auth;
-import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.ResultPage;
-import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.dao.UserDao;
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.dw.auth.IdentityService;
-import life.catalogue.dw.auth.Roles;
-import org.apache.ibatis.session.SqlSession;
-import life.catalogue.api.model.User;
-import life.catalogue.db.mapper.UserMapper;
-import life.catalogue.dw.auth.JwtCodec;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Path("/user")
 @Produces(MediaType.APPLICATION_JSON)
@@ -107,7 +105,7 @@ public class UserResource {
   }
 
   @GET
-  @Path("/me/dataset")
+  @Path("/dataset")
   @PermitAll
   public List<Dataset> datasets(@Auth User user, @Context SqlSession session) {
     final DatasetMapper dm = session.getMapper(DatasetMapper.class);

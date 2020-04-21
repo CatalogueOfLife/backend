@@ -1,22 +1,5 @@
 package life.catalogue.dw.auth;
 
-import java.io.IOException;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.security.Principal;
-import java.util.List;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.annotation.Priority;
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.OPTIONS;
-import javax.ws.rs.Priorities;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.core.*;
-
 import com.google.common.io.BaseEncoding;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -24,11 +7,30 @@ import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import life.catalogue.api.model.User;
 import life.catalogue.dw.jersey.exception.JsonExceptionMapperBase;
-import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Priority;
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.Priorities;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriInfo;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.security.Principal;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Authenticates an CoL user via Basic or from an encoded Bearer JWT token
- * and populates the security context. OPTIONS preflight requests and GET to the API root are excluded.
+ * and populates the security context. OPTIONS preflight requests are excluded.
  *
  * Otherwise if no authentication is given or it failed a 401 will be send.
  *
@@ -38,11 +40,11 @@ import org.apache.commons.lang3.StringUtils;
 @Priority(Priorities.AUTHENTICATION)
 public class AuthFilter implements ContainerRequestFilter {
 
-  private static final String REALM  = "COL";
+  private static final Logger LOG = LoggerFactory.getLogger(AuthFilter.class);
+
   private static final String BASIC  = "Basic";
   private static final String BEARER = "Bearer";
   private static final String TOKEN_PARAM = "token";
-  private static final String CHALLENGE_FORMAT = "%s realm=\"%s\"";
 
   private static final Pattern AUTH_PATTERN = Pattern.compile("^(Basic|Bearer)\\s+(.+)$");
   private static final Pattern DATASET_PATTERN = Pattern.compile("/dataset/([0-9]+)");
@@ -57,14 +59,11 @@ public class AuthFilter implements ContainerRequestFilter {
     this.requireSecure = requireSecure;
   }
 
-  /**
-   * Tries to read the Bearer token from the authorization header if present
-   */
   @Override
   public void filter(ContainerRequestContext req) throws IOException {
-    if (exclude(req)) return;
+    if (req.getMethod().equals(HttpMethod.OPTIONS)) return;
 
-    Optional<AuthedUser> user = Optional.empty();
+    AuthedUser user = null;
 
     final String auth = req.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
     if (auth != null) {
@@ -72,7 +71,7 @@ public class AuthFilter implements ContainerRequestFilter {
       if (m.find()) {
         if (m.group(1).equals(BASIC)) {
           if (requireSecure && !isSecure(req)) {
-            throw unauthorized("Basic authentication requires SSL");
+            throw authenticationError("Basic authentication requires SSL");
           }
           user = doBasic(m.group(2));
         } else {
@@ -84,10 +83,8 @@ public class AuthFilter implements ContainerRequestFilter {
       user = doJWT(jwt);
     }
 
-    if (user.isPresent()) {
-      setSecurityContext(user.get(), req);
-    } else {
-      unauthorized();
+    if (user != null) {
+      setSecurityContext(user, req);
     }
   }
 
@@ -152,61 +149,63 @@ public class AuthFilter implements ContainerRequestFilter {
     return null;
   }
 
-  static WebApplicationException unauthorized(String msg) {
-    Response resp = JsonExceptionMapperBase.jsonErrorResponseBuilder(Response.Status.UNAUTHORIZED, msg)
-      .header(HttpHeaders.WWW_AUTHENTICATE, String.format(CHALLENGE_FORMAT, "Basic", REALM))
-      // see https://tools.ietf.org/html/rfc6750#page-7
-      .header(HttpHeaders.WWW_AUTHENTICATE, String.format(CHALLENGE_FORMAT, "Bearer token_type=\"JWT\"", REALM))
-      .build();
+  static WebApplicationException authenticationError(String msg) {
+    Response resp = JsonExceptionMapperBase.jsonErrorResponseBuilder(Response.Status.UNAUTHORIZED, msg).build();
     return new WebApplicationException(resp);
   }
 
   /**
    * @param token BASE64 encoded Basic credentials
    */
-  private Optional<AuthedUser> doBasic(String token) {
+  private AuthedUser doBasic(String token) {
     try {
       String cred = new String(BaseEncoding.base64().decode(token), StandardCharsets.UTF_8);
       String[] parts = cred.split(":", 2  );
-      return idService.authenticate(parts[0], parts[1]).map(AuthedUser::basic);
+      return idService.authenticate(parts[0], parts[1])
+        .map(AuthedUser::basic)
+        .orElseThrow(() -> {
+          throw authenticationError("Basic authentication failed");
+        });
+
+    } catch (WebApplicationException e) {
+      throw e;
 
     } catch (Exception e) {
-      throw unauthorized("Basic authentication error: " + e.getMessage());
+      LOG.info("Basic authentication error", e);
+      throw authenticationError("Basic authentication failed");
     }
   }
 
   /**
    * @param token BASE64 encoded JWT token
    */
-  private Optional<AuthedUser> doJWT(String token) {
+  private AuthedUser doJWT(String token) {
     try {
       Jws<Claims> jws = jwt.parse(token);
       return Optional.of(jws.getBody().getSubject())
         .map(idService::get)
-        .map(AuthedUser::bearer);
+        .map(AuthedUser::bearer)
+        .orElseThrow(() -> {
+          throw authenticationError("Bearer authentication failed");
+        });
+
+    } catch (WebApplicationException e) {
+      throw e;
 
     } catch (ExpiredJwtException ex) {
-      throw unauthorized("Expired JWT token: " + ex.getClaims().getExpiration());
+      throw authenticationError("Expired JWT token: " + ex.getClaims().getExpiration());
 
     } catch (JwtException | IllegalArgumentException ex) {
       StringBuilder sb = new StringBuilder("Invalid JWT token");
       if (ex.getMessage() != null) {
         sb.append(": ").append(ex.getMessage());
       }
-      throw unauthorized(sb.toString());
+      throw authenticationError(sb.toString());
 
     } catch (Exception e) {
-      throw unauthorized("JWT authentication failed: " + e.getMessage());
+      LOG.info("JWT authentication error", e);
+      throw authenticationError("JWT authentication failed");
     }
-  }
-
-  private static boolean exclude(ContainerRequestContext req){
-    return req.getMethod().equals(HttpMethod.OPTIONS)
-      || StringUtils.isBlank(req.getUriInfo().getPath());
-  }
-
-  private static void unauthorized() {
-    throw unauthorized("Failed to authenticate via Basic or Bearer JWT");
   }
 
 }

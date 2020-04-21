@@ -14,7 +14,10 @@ import javax.ws.rs.BeanParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
 
 @Path("/estimate")
 @Produces(MediaType.APPLICATION_JSON)
@@ -32,7 +35,8 @@ public class LEGACYEstimateResource extends LEGACYAbstractDecisionResource<Speci
   }
   
   @GET
-  public ResultPage<SpeciesEstimate> search(@Valid @BeanParam Page page, @BeanParam EstimateSearchRequest req) {
+  public ResultPage<SpeciesEstimate> search(@Valid @BeanParam Page page, @BeanParam EstimateSearchRequest req, @Context UriInfo uri, @Context HttpHeaders headers) {
+    warn(uri, headers);
     return dao.search(req, page);
   }
   

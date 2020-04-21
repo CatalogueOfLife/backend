@@ -2,7 +2,6 @@ package life.catalogue.dw.auth;
 
 import com.google.common.eventbus.Subscribe;
 import io.dropwizard.ConfiguredBundle;
-import io.dropwizard.auth.AuthDynamicFeature;
 import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -37,11 +36,10 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
     ContainerRequestFilter authFilter = new AuthFilter(idService, jwtCodec, cfg.requireSSL);
     // WARNING!!! Never check in the LocalAuthFilter. It is meant purely for local testing !!!
     //authFilter = new LocalAuthFilter();
-    //environment.jersey().register(authFilter);
-    environment.jersey().register(new AuthDynamicFeature(authFilter));
+    environment.jersey().register(authFilter);
+    environment.jersey().register(RolesAllowedDynamicFeature.class);
     environment.jersey().register(new AuthValueFactoryProvider.Binder<>(User.class));
     environment.jersey().register(privateFilter);
-
   }
   
   @Override

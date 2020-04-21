@@ -1,25 +1,8 @@
 package life.catalogue;
 
-import java.io.IOException;
-import javax.ws.rs.client.Client;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.eventbus.EventBus;
-import life.catalogue.command.updatedb.ExecSqlCmd;
-import life.catalogue.dao.*;
-import life.catalogue.resources.*;
-import org.apache.commons.io.FileUtils;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.elasticsearch.client.RestClient;
-import org.gbif.dwc.terms.TermFactory;
-import org.glassfish.jersey.client.spi.ConnectorProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.bridge.SLF4JBridgeHandler;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.Application;
 import io.dropwizard.client.DropwizardApacheConnector;
 import io.dropwizard.client.HttpClientBuilder;
@@ -36,20 +19,18 @@ import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.command.es.IndexCmd;
 import life.catalogue.command.initdb.InitDbCmd;
 import life.catalogue.command.updatedb.AddTableCmd;
+import life.catalogue.command.updatedb.ExecSqlCmd;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.tax.AuthorshipNormalizer;
+import life.catalogue.dao.*;
 import life.catalogue.db.tree.DiffService;
 import life.catalogue.dw.ManagedCloseable;
 import life.catalogue.dw.auth.AuthBundle;
 import life.catalogue.dw.cors.CorsBundle;
 import life.catalogue.dw.db.MybatisBundle;
 import life.catalogue.dw.es.ManagedEsClient;
-import life.catalogue.dw.health.CslUtilsHealthCheck;
-import life.catalogue.dw.health.DiffHealthCheck;
-import life.catalogue.dw.health.EsHealthCheck;
-import life.catalogue.dw.health.NameParserHealthCheck;
-import life.catalogue.dw.health.NamesIndexHealthCheck;
+import life.catalogue.dw.health.*;
 import life.catalogue.dw.jersey.ColJerseyBundle;
 import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.NameUsageIndexService;
@@ -68,8 +49,23 @@ import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.parser.NameParser;
 import life.catalogue.release.AcExporter;
 import life.catalogue.release.ReleaseManager;
+import life.catalogue.resources.*;
 import life.catalogue.resources.parser.NameParserResource;
 import life.catalogue.resources.parser.ParserResource;
+import org.apache.commons.io.FileUtils;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.elasticsearch.client.RestClient;
+import org.gbif.dwc.terms.TermFactory;
+import org.glassfish.jersey.client.spi.ConnectorProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
+
+import javax.ws.rs.client.Client;
+import java.io.IOException;
 
 public class WsServer extends Application<WsServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(WsServer.class);
@@ -278,11 +274,9 @@ public class WsServer extends Application<WsServerConfig> {
     // parsers
     env.jersey().register(new NameParserResource(getSqlSessionFactory()));
     env.jersey().register(new ParserResource<>());
-  }
 
-  private void setupEventBus(Object... listeners){
-    for (Object obj : listeners) {
-    }
+    // attach listeners to event bus
+    bus.register(auth);
   }
 
   @Override

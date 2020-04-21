@@ -24,7 +24,6 @@ import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
@@ -38,6 +37,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
+
 import static life.catalogue.api.model.User.userkey;
 
 @Path("/dataset")
@@ -206,8 +206,10 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
       throw new WebApplicationException(Response.Status.FORBIDDEN);
     }
     Dataset d = get(key);
-    d.addEditor(editorKey);
-    dao.update(d, user.getKey());
+    if (!d.getEditors().contains(editorKey)) {
+      d.addEditor(editorKey);
+      dao.update(d, user.getKey());
+    }
   }
 
   @DELETE
@@ -218,8 +220,10 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
       throw new WebApplicationException(Response.Status.FORBIDDEN);
     }
     Dataset d = get(key);
-    d.removeEditor(editorKey);
-    dao.update(d, user.getKey());
+    if (d.getEditors().contains(editorKey)) {
+      d.removeEditor(editorKey);
+      dao.update(d, user.getKey());
+    }
   }
 
 }

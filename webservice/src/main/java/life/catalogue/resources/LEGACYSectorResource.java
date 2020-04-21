@@ -23,7 +23,9 @@ import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.stream.Stream;
@@ -49,7 +51,8 @@ public class LEGACYSectorResource extends LEGACYAbstractDecisionResource<Sector>
   }
 
   @GET
-  public ResultPage<Sector> search(@Valid @BeanParam Page page, @BeanParam SectorSearchRequest req) {
+  public ResultPage<Sector> search(@Valid @BeanParam Page page, @BeanParam SectorSearchRequest req, @Context UriInfo uri, @Context HttpHeaders headers) {
+    warn(uri, headers);
     return dao.search(req, page);
   }
 
@@ -57,7 +60,8 @@ public class LEGACYSectorResource extends LEGACYAbstractDecisionResource<Sector>
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void deleteByDataset(@QueryParam("datasetKey") int datasetKey,
                                    @QueryParam("catalogueKey") @DefaultValue(Datasets.DRAFT_COL+"") int catalogueKey,
-                                   @Context SqlSession session, @Auth User user) {
+                                   @Context SqlSession session, @Auth User user, @Context UriInfo uri, @Context HttpHeaders headers) {
+    warn(uri, headers);
     SectorMapper sm = session.getMapper(SectorMapper.class);
     int counter = 0;
     for (Sector s : sm.listByDataset(catalogueKey, datasetKey)) {
@@ -71,7 +75,8 @@ public class LEGACYSectorResource extends LEGACYAbstractDecisionResource<Sector>
   @Override
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void delete(@PathParam("key") Integer key, @Auth User user) {
+  public void delete(@PathParam("key") Integer key, @Auth User user, @Context UriInfo uri, @Context HttpHeaders headers) {
+    warn(uri, headers);
     // an asynchroneous sector deletion will be triggered which also removes catalogue data
     assembly.deleteSector(key, user);
   }
@@ -79,14 +84,16 @@ public class LEGACYSectorResource extends LEGACYAbstractDecisionResource<Sector>
   @GET
   @Path("{key}/import/{attempt}/tree")
   public Stream<String> getImportAttemptTree(@PathParam("key") int key,
-                                             @PathParam("attempt") int attempt) throws IOException {
+                                             @PathParam("attempt") int attempt, @Context UriInfo uri, @Context HttpHeaders headers) throws IOException {
+    warn(uri, headers);
     return diDao.getTreeDao().getSectorTree(key, attempt);
   }
   
   @GET
   @Path("{key}/import/{attempt}/names")
   public Stream<String> getImportAttemptNames(@PathParam("key") int key,
-                                              @PathParam("attempt") int attempt) {
+                                              @PathParam("attempt") int attempt, @Context UriInfo uri, @Context HttpHeaders headers) {
+    warn(uri, headers);
     return diDao.getTreeDao().getSectorNames(key, attempt);
   }
   
@@ -94,7 +101,8 @@ public class LEGACYSectorResource extends LEGACYAbstractDecisionResource<Sector>
   @Path("{key}/treediff")
   public Reader diffTree(@PathParam("key") int sectorKey,
                          @QueryParam("attempts") String attempts,
-                         @Context SqlSession session) throws IOException {
+                         @Context SqlSession session, @Context UriInfo uri, @Context HttpHeaders headers) throws IOException {
+    warn(uri, headers);
     return diff.sectorTreeDiff(sectorKey, attempts);
   }
   
@@ -102,7 +110,8 @@ public class LEGACYSectorResource extends LEGACYAbstractDecisionResource<Sector>
   @Path("{key}/namesdiff")
   public NamesDiff diffNames(@PathParam("key") int sectorKey,
                              @QueryParam("attempts") String attempts,
-                             @Context SqlSession session) throws IOException {
+                             @Context SqlSession session, @Context UriInfo uri, @Context HttpHeaders headers) throws IOException {
+    warn(uri, headers);
     return diff.sectorNamesDiff(sectorKey, attempts);
   }
 }

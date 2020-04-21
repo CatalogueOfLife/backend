@@ -1,20 +1,17 @@
 package life.catalogue.api.model;
 
-import java.security.Principal;
-import java.time.LocalDateTime;
-import java.util.*;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.security.auth.Subject;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.annotations.VisibleForTesting;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.common.collection.CollectionUtils;
-import org.checkerframework.checker.units.qual.K;
+
+import javax.annotation.Nonnull;
+import javax.security.auth.Subject;
+import java.security.Principal;
+import java.time.LocalDateTime;
+import java.util.*;
 
 public class User implements Entity<Integer>, Principal {
 
@@ -24,10 +21,17 @@ public class User implements Entity<Integer>, Principal {
   }
 
   /**
-   * Returns the user key or null if no user was given
+   * Returns the user key, -1 for admins or null if no user was given
    */
   public static Integer userkey(Optional<User> user){
-    return user.map(User::getKey).orElse(null);
+    if (user.isPresent()) {
+      User u = user.get();
+      if (u.hasRole(Role.ADMIN, null)) {
+        return -1;
+      }
+      return u.getKey();
+    }
+    return null;
   }
 
   private Integer key;

@@ -128,8 +128,12 @@
     </sql>
 
     <sql id="SEARCH_WHERE">
+        <!-- always hide the names index -->
         deleted IS NULL AND key != 1
-        AND (NOT private<if test="userKey != null"> OR editors @> ARRAY[#{userKey}::int]</if>)
+        <if test="userKey != -1">
+          <!-- magic number for admins -->
+          AND (NOT private <if test="userKey != null">OR editors @> ARRAY[#{userKey}::int]</if>)
+        </if>
         <if test="req != null">
             <if test="req.q != null">
                 AND (

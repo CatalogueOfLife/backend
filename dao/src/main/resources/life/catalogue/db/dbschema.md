@@ -22,7 +22,7 @@ ADD CONSTRAINT name_usage_{KEY}_parent_id_fk FOREIGN KEY (parent_id) REFERENCES 
 #### 2020-04-17 move editors to dataset, not user 
 ```
 ALTER TABLE dataset ADD COLUMN editors INT[];
-UPDATE dataset SET editors = (SELECT array_agg(u.key) FROM "user" u WHERE u.datasets @> array[key] OR created_by=u.key) 
+UPDATE dataset SET editors = (SELECT array_agg(u.key) FROM "user" u WHERE u.datasets @> array[key] OR created_by=u.key); 
 ALTER TABLE "user" DROP COLUMN datasets;
 ```
 

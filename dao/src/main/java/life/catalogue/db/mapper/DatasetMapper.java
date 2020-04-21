@@ -26,8 +26,6 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   
   Dataset getArchive(@Param("key") int key, @Param("catalogueKey") int catalogueKey);
 
-  int count(@Param("req") DatasetSearchRequest request, @Param("userKey") Integer userKey);
-  
   /**
    * Iterates over all datasets and processes them with the supplied handler.
    * Includes private datasets.
@@ -39,7 +37,14 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
                           @Nullable @Param("catalogueKey") Integer catalogueKey);
 
   /**
-   * @param userKey optional user key so that private datasets for that user will be included in the results
+   * @param userKey optional user key so that private datasets for that user will be included in the count.
+   *                Use -1 for admins and other roles that should always see all private datasets
+   */
+  int count(@Param("req") DatasetSearchRequest request, @Param("userKey") Integer userKey);
+
+  /**
+   * @param userKey optional user key so that private datasets for that user will be included in the results.
+   *                Use -1 for admins and other roles that should always see all private datasets
    */
   List<Dataset> search(@Param("req") DatasetSearchRequest request, @Param("userKey") Integer userKey, @Param("page") Page page);
   

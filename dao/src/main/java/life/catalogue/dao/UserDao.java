@@ -1,39 +1,19 @@
 package life.catalogue.dao;
 
 import com.google.common.eventbus.EventBus;
-import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.UserChanged;
-import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.User;
-import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.Frequency;
-import life.catalogue.common.io.DownloadUtil;
-import life.catalogue.db.DatasetPageable;
-import life.catalogue.db.mapper.*;
-import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.img.ImageService;
-import life.catalogue.img.LogoUpdateJob;
-import org.apache.commons.lang3.StringUtils;
+import life.catalogue.db.mapper.UserMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import javax.validation.Valid;
-import javax.ws.rs.BeanParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import java.io.File;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.BiFunction;
 
 public class UserDao extends EntityDao<Integer, User, UserMapper> {
 

@@ -10,7 +10,6 @@ import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.dao.DecisionDao;
 import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.dw.auth.Roles;
-import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -20,7 +19,9 @@ import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
 
 @Path("/decision")
 @Produces(MediaType.APPLICATION_JSON)
@@ -37,7 +38,8 @@ public class LEGACYDecisionResource extends LEGACYAbstractDecisionResource<Edito
   }
   
   @GET
-  public ResultPage<EditorialDecision> search(@Valid @BeanParam Page page, @BeanParam DecisionSearchRequest req) {
+  public ResultPage<EditorialDecision> search(@Valid @BeanParam Page page, @BeanParam DecisionSearchRequest req, @Context UriInfo uri, @Context HttpHeaders headers) {
+    warn(uri, headers);
     return dao.search(req, page);
   }
 
@@ -45,7 +47,8 @@ public class LEGACYDecisionResource extends LEGACYAbstractDecisionResource<Edito
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void deleteByDataset(@QueryParam("datasetKey") Integer datasetKey,
                               @QueryParam("catalogueKey") Integer catalogueKey,
-                              @Context SqlSession session, @Auth User user) {
+                              @Context SqlSession session, @Auth User user, @Context UriInfo uri, @Context HttpHeaders headers) {
+    warn(uri, headers);
     Preconditions.checkNotNull(catalogueKey, "catalogueKey parameter is required");
     Preconditions.checkNotNull(datasetKey, "datasetKey parameter is required");
     DecisionMapper mapper = session.getMapper(DecisionMapper.class);

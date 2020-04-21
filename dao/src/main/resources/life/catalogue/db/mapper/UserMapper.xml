@@ -94,7 +94,7 @@
     <include refid="life.catalogue.db.Common.limit" />
   </select>
 
-  <select id="searchCount" resultMap="userResultMap">
+  <select id="searchCount" resultType="integer">
     SELECT count(*)
     FROM <include refid="FROM" />
     WHERE <include refid="WHERE" />
