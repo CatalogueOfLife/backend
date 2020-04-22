@@ -1,13 +1,3 @@
-DROP TABLE IF EXISTS __scrutinizer;
-DROP TABLE IF EXISTS __ref_keys;
-DROP TABLE IF EXISTS __tax_keys;
-DROP TABLE IF EXISTS __classification;
-DROP TABLE IF EXISTS __classification2;
-DROP TABLE IF EXISTS __coverage;
-DROP TABLE IF EXISTS __coverage2;
-DROP SEQUENCE IF EXISTS __record_id_seq;
-DROP SEQUENCE IF EXISTS __unassigned_seq;
-
 
 CREATE TABLE __coverage AS
     -- ATTACH MODE
@@ -329,7 +319,7 @@ SELECT
   tk.key AS record_id,
   t.id AS name_code,
   t.link AS web_site,
-  n.genus AS genus,
+  n.uninomial AS genus,
   NULL AS subgenus,
   NULL AS species,
   NULL AS infraspecies_parent_name_code,

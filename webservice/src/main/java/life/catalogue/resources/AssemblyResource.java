@@ -113,20 +113,16 @@ public class AssemblyResource {
   @Deprecated
   @Path("/{catKey}/export")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public String export(@PathParam("catKey") int catKey, @Auth User user) {
+  public boolean export(@PathParam("catKey") int catKey, @Auth User user) {
     requireManaged(catKey, true);
   
-    life.catalogue.release.Logger logger = new life.catalogue.release.Logger(LOG);
     try {
-      exporter.export(catKey, logger);
+      exporter.export(catKey);
+      return true;
     } catch (Throwable e) {
       LOG.error("Error exporting catalogue {}", catKey, e);
-      logger.log("\n\nERROR!");
-      if (e.getMessage() != null) {
-        logger.log(e.getMessage());
-      }
     }
-    return logger.toString();
+    return false;
   }
   
   @POST

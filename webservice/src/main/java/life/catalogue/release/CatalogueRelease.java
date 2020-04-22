@@ -275,7 +275,7 @@ public class CatalogueRelease implements Runnable {
   
   public void export() throws IOException {
     try {
-      exporter.export(releaseKey, logger);
+      exporter.export(releaseKey);
     } catch (Throwable e) {
       LOG.error("Error exporting catalogue {}", releaseKey, e);
       logger.log("\n\nERROR!");

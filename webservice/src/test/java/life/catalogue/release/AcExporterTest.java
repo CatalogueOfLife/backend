@@ -63,10 +63,8 @@ public class AcExporterTest {
       dm.update(d);
     }
     
-    Logger lg = new Logger();
-    arch = exp.export(Datasets.DRAFT_COL, lg);
+    arch = exp.export(Datasets.DRAFT_COL);
     System.out.println("LOGS:\n");
-    System.out.println(lg.toString());
 
     // test decompressed archive
     File check = new File(cfg.normalizer.scratchDir, "archiveCheck");
@@ -104,10 +102,8 @@ public class AcExporterTest {
       dm.update(d);
     }
 
-    Logger lg = new Logger();
-    arch = exp.export(key, lg);
+    arch = exp.export(key);
     System.out.println("LOGS:\n");
-    System.out.println(lg.toString());
 
     // test decompressed archive
     File check = new File(cfg.normalizer.scratchDir, "archiveCheck");

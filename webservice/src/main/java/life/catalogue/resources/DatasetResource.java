@@ -69,22 +69,19 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @POST
   @Path("{key}/export")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public String export(@PathParam("key") int key, @Auth User user) {
+  public boolean export(@PathParam("key") int key, @Auth User user) {
     return exportAC(key, user);
   }
 
-  private String exportAC(int key, User user) {
-    life.catalogue.release.Logger logger = new life.catalogue.release.Logger(LOG);
+  private boolean exportAC(int key, User user) {
     try {
-      exporter.export(key, logger);
+      exporter.export(key);
+      return true;
+
     } catch (Throwable e) {
       LOG.error("Error exporting dataset {}", key, e);
-      logger.log("\n\nERROR!");
-      if (e.getMessage() != null) {
-        logger.log(e.getMessage());
-      }
     }
-    return logger.toString();
+    return false;
   }
 
   @GET
