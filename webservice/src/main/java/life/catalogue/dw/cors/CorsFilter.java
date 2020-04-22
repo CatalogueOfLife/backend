@@ -1,5 +1,7 @@
 package life.catalogue.dw.cors;
 
+import life.catalogue.api.util.ObjectUtils;
+
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.container.*;
@@ -33,12 +35,9 @@ public class CorsFilter implements ContainerRequestFilter, ContainerResponseFilt
   @Override
   public void filter(ContainerRequestContext requestContext) throws IOException {
     String origin = requestContext.getHeaderString(ORIGIN);
-    if (origin == null) {
-      return;
-    }
     if (requestContext.getMethod().equalsIgnoreCase(HttpMethod.OPTIONS)) {
-      preflight(origin, requestContext);
-    } else {
+      preflight(ObjectUtils.coalesce(origin, cfg.origins), requestContext);
+    } else if (origin != null){
       checkOrigin(requestContext, origin);
     }
   }
@@ -84,7 +83,7 @@ public class CorsFilter implements ContainerRequestFilter, ContainerResponseFilt
   }
 
   protected void checkOrigin(ContainerRequestContext requestContext, String origin) {
-    if (!cfg.origins.contains(CorsConfiguration.ANY_ORIGIN) && !cfg.origins.contains(origin)) {
+    if (!cfg.anyOrigin() && !cfg.origins.contains(origin)) {
       requestContext.setProperty(FAILURE_PROP, true);
       throw new ForbiddenException("Origin " + origin + " not allowed");
     }
