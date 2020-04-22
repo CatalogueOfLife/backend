@@ -1,12 +1,13 @@
 package life.catalogue.api.model;
 
-import java.util.Objects;
-
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
+import java.util.Objects;
+
 /**
- *
+ * A name without any associated name usage, i.e. no {@link Taxon} nor {@link Synonym}.
+ * We indicate this by having no taxonomic status at all.
  */
 public class BareName implements NameUsage {
   private Name name;

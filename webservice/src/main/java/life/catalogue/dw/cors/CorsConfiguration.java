@@ -10,11 +10,11 @@ public class CorsConfiguration {
   @NotEmpty
   public String origins = ANY_ORIGIN;
   
-  @NotEmpty
+  @Nullable
   public String methods = "OPTIONS, HEAD, GET, POST, PUT, DELETE";
-  
-  @NotEmpty
-  public String headers = "Authorization, Content-Type, Accept-Language";
+
+  @Nullable
+  public String headers = "Authorization, Content-Type, Accept-Language, User-Agent, Referer";
 
   @Nullable
   public String exposedHeaders = null;
