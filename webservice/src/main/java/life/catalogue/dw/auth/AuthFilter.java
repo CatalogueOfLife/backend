@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Priority;
-import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -61,8 +60,6 @@ public class AuthFilter implements ContainerRequestFilter {
 
   @Override
   public void filter(ContainerRequestContext req) throws IOException {
-    if (req.getMethod().equals(HttpMethod.OPTIONS)) return;
-
     AuthedUser user = null;
 
     final String auth = req.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);

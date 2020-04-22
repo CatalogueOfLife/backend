@@ -8,7 +8,6 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.constraints.AbsoluteURI;
 import life.catalogue.api.constraints.ValidDataset;
 import life.catalogue.api.vocab.*;
-import org.gbif.nameparser.api.NomCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,6 +59,7 @@ public class Dataset extends DataEntity<Integer> {
   @AbsoluteURI
   private URI dataAccess;
   private Frequency importFrequency;
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   private Integer size;
   @Max(5)
   @Min(1)
@@ -276,10 +276,6 @@ public class Dataset extends DataEntity<Integer> {
     return size;
   }
   
-  public void setSize(Integer size) {
-    this.size = size;
-  }
-  
   /**
    * If the dataset participates in any catalogue assemblies
    * this is indicated here by listing the catalogues datasetKey.
@@ -467,11 +463,9 @@ public class Dataset extends DataEntity<Integer> {
         locked == dataset.locked &&
         privat == dataset.privat &&
         importFrequency == dataset.importFrequency &&
-        Objects.equals(size, dataset.size) &&
         Objects.equals(confidence, dataset.confidence) &&
         Objects.equals(completeness, dataset.completeness) &&
         Objects.equals(notes, dataset.notes) &&
-        Objects.equals(contributesTo, dataset.contributesTo) &&
         Objects.equals(imported, dataset.imported) &&
         Objects.equals(deleted, dataset.deleted) &&
         Objects.equals(settings, dataset.settings) &&
@@ -482,8 +476,7 @@ public class Dataset extends DataEntity<Integer> {
   public int hashCode() {
     return Objects.hash(super.hashCode(), key, sourceKey, type, title, alias, gbifKey, gbifPublisherKey, description, organisations,
             contact, authorsAndEditors, license, version, released, citation, geographicScope, website, group, logo,
-            dataFormat, dataAccess, origin, locked, privat, importFrequency, size, confidence, completeness, notes,
-            contributesTo, imported, deleted, settings, editors);
+            dataFormat, dataAccess, origin, locked, privat, importFrequency, confidence, completeness, notes, imported, deleted, settings, editors);
   }
   
   @Override

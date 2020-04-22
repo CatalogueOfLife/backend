@@ -15,7 +15,12 @@ import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
 /**
  * Wires up authentication against the GBIF registry and authorization based on CoL user roles.
- * Apart from the base root of the API ALL requests including OPTION and GET will have to provide authentication!
+ * Sets up request filters to authenticate any request if an Authorization header is given.
+ * <p/>
+ * Authorization is done in 2 parts:
+ *  - a filter to protect private datasets by inspecting the requested URI.
+ *  - a dynamic feature that reuires some authenticated user if a non Optional @Auth annotation is present on a method
+ *  - the {@RolesAllowedDynamicFeature} that makes sure required user roles do exist on specifically annotated methods
  */
 public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
   

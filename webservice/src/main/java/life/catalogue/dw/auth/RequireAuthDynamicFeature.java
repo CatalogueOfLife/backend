@@ -42,8 +42,8 @@ public class RequireAuthDynamicFeature implements DynamicFeature {
   private static class RequirePrincipalRequestFilter implements ContainerRequestFilter {
 
     @Override
-    public void filter(final ContainerRequestContext requestContext) throws IOException {
-      if (requestContext.getSecurityContext().getUserPrincipal() == null) {
+    public void filter(final ContainerRequestContext req) throws IOException {
+      if (req.getSecurityContext().getUserPrincipal() == null) {
         throw new NotAuthorizedException(LocalizationMessages.USER_NOT_AUTHORIZED());
       }
     }
