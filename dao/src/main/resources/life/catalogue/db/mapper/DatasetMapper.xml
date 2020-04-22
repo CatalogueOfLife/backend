@@ -186,6 +186,10 @@
             <if test="req.released != null">
                 AND released > #{req.released}
             </if>
+            <if test="req.minSize != null">
+                AND di.verbatim_count >= #{req.minSize}
+            </if>
+
         </if>
     </sql>
 

@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.DatasetType;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.NomCode;
 
+import javax.validation.constraints.Min;
 import javax.ws.rs.QueryParam;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -78,7 +79,11 @@ public class DatasetSearchRequest {
   
   @QueryParam("released")
   private LocalDate released;
-  
+
+  @Min(0)
+  @QueryParam("minSize")
+  private Integer minSize;
+
   @QueryParam("sortBy")
   private SortBy sortBy;
   
