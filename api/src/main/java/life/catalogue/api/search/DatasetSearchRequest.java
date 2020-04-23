@@ -31,6 +31,12 @@ public class DatasetSearchRequest {
   private NomCode code;
 
   /**
+   * Filters by private flag.
+   */
+  @QueryParam("private")
+  private Boolean privat;
+
+  /**
    * Filters release datasets by their parent project.
    * Automatically also restricts datasets to origin=released
    */
@@ -116,7 +122,23 @@ public class DatasetSearchRequest {
   public void setQ(String q) {
     this.q = q;
   }
-  
+
+  public Boolean isPrivat() {
+    return privat;
+  }
+
+  public void setPrivat(Boolean privat) {
+    this.privat = privat;
+  }
+
+  public Integer getMinSize() {
+    return minSize;
+  }
+
+  public void setMinSize(Integer minSize) {
+    this.minSize = minSize;
+  }
+
   public NomCode getCode() {
     return code;
   }
@@ -238,6 +260,7 @@ public class DatasetSearchRequest {
     return reverse == that.reverse &&
       Objects.equals(q, that.q) &&
       code == that.code &&
+      Objects.equals(privat, that.privat) &&
       Objects.equals(releasedFrom, that.releasedFrom) &&
       Objects.equals(contributesTo, that.contributesTo) &&
       Objects.equals(hasSourceDataset, that.hasSourceDataset) &&
@@ -249,11 +272,12 @@ public class DatasetSearchRequest {
       Objects.equals(modified, that.modified) &&
       Objects.equals(created, that.created) &&
       Objects.equals(released, that.released) &&
+      Objects.equals(minSize, that.minSize) &&
       sortBy == that.sortBy;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(q, code, releasedFrom, contributesTo, hasSourceDataset, editor, modifiedBy, format, origin, type, modified, created, released, sortBy, reverse);
+    return Objects.hash(q, code, privat, releasedFrom, contributesTo, hasSourceDataset, editor, modifiedBy, format, origin, type, modified, created, released, minSize, sortBy, reverse);
   }
 }

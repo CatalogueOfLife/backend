@@ -140,27 +140,30 @@
         <include refid="PRIVATE"><property name="alias" value="d"/></include>
         <if test="req != null">
             <if test="req.q != null">
-                AND (
-                    f_unaccent(title) ILIKE f_unaccent('%${req.q}%')
-                    OR f_unaccent(alias) ILIKE f_unaccent('%${req.q}%')
-                    OR doc @@ plainto_tsquery('simple2', #{req.q})
-                )
+              AND (
+                  f_unaccent(title) ILIKE f_unaccent('%${req.q}%')
+                  OR f_unaccent(alias) ILIKE f_unaccent('%${req.q}%')
+                  OR doc @@ plainto_tsquery('simple2', #{req.q})
+              )
+            </if>
+            <if test="req.privat != null">
+              AND d.private = #{req.privat}
             </if>
             <if test="req.code != null">
-                AND d.settings @> jsonb_build_object('NOMENCLATURAL_CODE', #{req.code})
+              AND d.settings @> jsonb_build_object('NOMENCLATURAL_CODE', #{req.code})
             </if>
             <if test="req.type != null">
-                AND d.type=#{req.type}::DATASETTYPE
+              AND d.type=#{req.type}::DATASETTYPE
             </if>
             <if test="req.origin != null">
-                AND d.origin=#{req.origin}::DATASETORIGIN
+              AND d.origin=#{req.origin}::DATASETORIGIN
             </if>
             <if test="req.contributesTo != null">
-                AND exists(
-                  SELECT 1 FROM sector s JOIN dataset pr ON pr.key=s.dataset_key
-                  WHERE s.dataset_key=#{req.contributesTo} AND s.subject_dataset_key=d.key AND pr.origin='MANAGED'::DATASETORIGIN
-                  <include refid="PRIVATE"><property name="alias" value="pr"/></include>
-                )
+              AND exists(
+                SELECT 1 FROM sector s JOIN dataset pr ON pr.key=s.dataset_key
+                WHERE s.dataset_key=#{req.contributesTo} AND s.subject_dataset_key=d.key AND pr.origin='MANAGED'::DATASETORIGIN
+                <include refid="PRIVATE"><property name="alias" value="pr"/></include>
+              )
             </if>
             <if test="req.hasSourceDataset != null">
               AND exists(
@@ -172,22 +175,22 @@
               AND d.source_key=#{req.releasedFrom}
             </if>
             <if test="req.format != null">
-                AND d.data_format=#{req.format}::DATAFORMAT
+              AND d.data_format=#{req.format}::DATAFORMAT
             </if>
             <if test="req.modifiedBy != null">
               AND d.modified_by = #{req.modifiedBy}
             </if>
             <if test="req.modified != null">
-                AND di.finished > #{req.modified}
+              AND di.finished > #{req.modified}
             </if>
             <if test="req.created != null">
-                AND created > #{req.created}
+              AND created > #{req.created}
             </if>
             <if test="req.released != null">
-                AND released > #{req.released}
+              AND released > #{req.released}
             </if>
             <if test="req.minSize != null">
-                AND di.verbatim_count >= #{req.minSize}
+              AND di.verbatim_count >= #{req.minSize}
             </if>
 
         </if>
