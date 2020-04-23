@@ -322,6 +322,13 @@
       )
     </select>
 
+  <select id="latestRelease" resultType="integer">
+    SELECT key FROM dataset
+    WHERE source_key = #{key} AND deleted IS NULL
+    ORDER BY created DESC
+    LIMIT 1
+  </select>
+
     <select id="get" resultMap="datasetResultMap">
       SELECT <include refid="SELECT" />
       FROM <include refid="FROM" />

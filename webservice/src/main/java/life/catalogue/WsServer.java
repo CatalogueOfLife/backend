@@ -70,6 +70,7 @@ import java.io.IOException;
 public class WsServer extends Application<WsServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(WsServer.class);
 
+  private final ColJerseyBundle coljersey = new ColJerseyBundle();
   private final MybatisBundle mybatis = new MybatisBundle();
   private final AuthBundle auth = new AuthBundle();
   private final EventBus bus = new EventBus("bus");
@@ -87,7 +88,7 @@ public class WsServer extends Application<WsServerConfig> {
     // our mybatis classes
     bootstrap.addBundle(mybatis);
     // various custom jersey providers
-    bootstrap.addBundle(new ColJerseyBundle());
+    bootstrap.addBundle(coljersey);
     bootstrap.addBundle(new MultiPartBundle());
     bootstrap.addBundle(new CorsBundle());
     // authentication which requires the UserMapper from mybatis AFTER the mybatis bundle has run
@@ -148,7 +149,8 @@ public class WsServer extends Application<WsServerConfig> {
   
     jerseyClient = builder.build(getName());
 
-    // finally provide the SqlSessionFactory & http client to the auth bundle
+    // finally provide the SqlSessionFactory & http client to the auth and jersey bundle
+    coljersey.setSqlSessionFactory(mybatis.getSqlSessionFactory());
     auth.setSqlSessionFactory(mybatis.getSqlSessionFactory());
     auth.setClient(httpClient);
 

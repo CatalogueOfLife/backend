@@ -65,7 +65,20 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   public ResultPage<Dataset> search(@Valid @BeanParam Page page, @BeanParam DatasetSearchRequest req, @Auth Optional<User> user) {
     return dao.search(req, userkey(user), page);
   }
-  
+
+  /**
+   * Convenience method to get the latest release of a project.
+   * This can also be achieved using the search, but it is a common operation we make as simple as possible in the API.
+   *
+   * See also {@link life.catalogue.dw.jersey.filter.DatasetKeyRequestFilter} on using <pre>LR</pre> as a suffix in dataset keys to indicate the latest release.
+   * @param key
+   */
+  @GET
+  @Path("{key}/latest")
+  public Dataset getLatestRelease(@PathParam("key") int key) {
+    return dao.latestRelease(key);
+  }
+
   @POST
   @Path("{key}/export")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})

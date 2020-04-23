@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import javax.ws.rs.NotFoundException;
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -60,7 +61,18 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   public ResultPage<Dataset> list(Page page) {
     return super.list(DatasetMapper.class, page);
   }
-  
+
+  public Dataset latestRelease(int projectKey) {
+    try (SqlSession session = factory.openSession()){
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      Integer key = dm.latestRelease(projectKey);
+      if (key == null) {
+        throw new NotFoundException("Dataset " + projectKey + " was never released");
+      }
+      return dm.get(key);
+    }
+  }
+
   public ResultPage<Dataset> search(@Nullable DatasetSearchRequest nullableRequest, @Nullable Integer userKey, @Nullable Page page) {
     page = page == null ? new Page() : page;
     final DatasetSearchRequest req = nullableRequest == null || nullableRequest.isEmpty() ? new DatasetSearchRequest() : nullableRequest;

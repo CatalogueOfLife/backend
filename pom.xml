@@ -37,7 +37,7 @@
             by these BOMs (use the right versions):
 
             Main two Dropwizard BOMs:
-            https://github.com/dropwizard/dropwizard/blob/v1.3.12/dropwizard-bom/pom.xml
+            https://github.com/dropwizard/dropwizard/blob/v2.0.2/dropwizard-bom/pom.xml
             io.dropwizard:dropwizard-dependencies
             Which also imports the Jersey BOM: https://github.com/jersey/jersey/blob/2.25.1/bom/pom.xml
             and Jackson BOM: https://github.com/FasterXML/jackson-bom/blob/jackson-bom-2.9.6/pom.xml
@@ -273,6 +273,7 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
+                <!-- https://github.com/dropwizard/dropwizard/blob/v2.0.2/dropwizard-dependencies/pom.xml -->
                 <groupId>io.dropwizard</groupId>
                 <artifactId>dropwizard-dependencies</artifactId>
                 <version>${dropwizard.version}</version>
