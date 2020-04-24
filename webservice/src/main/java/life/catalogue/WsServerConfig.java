@@ -97,13 +97,6 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
    */
   @NotNull
   public File downloadDir = new File("/tmp");
-
-  /**
-   * URL to the openAPI specification to render the swagger API docs
-   */
-  @NotNull
-  public String openApiUrl = "http://api.catalogue.life/openapi.json";
-  
   
   @Override
   @JsonIgnore

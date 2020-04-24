@@ -13,7 +13,13 @@ import io.dropwizard.jackson.Jackson;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import io.swagger.v3.core.converter.ModelConverters;
+import io.swagger.v3.core.jackson.ModelResolver;
+import io.swagger.v3.jaxrs2.integration.JaxrsOpenApiContextBuilder;
 import io.swagger.v3.jaxrs2.integration.resources.OpenApiResource;
+import io.swagger.v3.oas.integration.OpenApiConfigurationException;
+import io.swagger.v3.oas.integration.SwaggerConfiguration;
+import io.swagger.v3.oas.models.OpenAPI;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.vocab.ColDwcTerm;
@@ -68,6 +74,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import javax.ws.rs.client.Client;
 import java.io.IOException;
+import java.util.Set;
 
 public class WsServer extends Application<WsServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(WsServer.class);
@@ -272,10 +279,33 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new ParserResource<>());
 
     // swagger
-    j.register(new OpenApiResource());
+    initSwagger(cfg, env);
 
     // attach listeners to event bus
     bus.register(auth);
+  }
+
+  private void initSwagger(WsServerConfig cfg, Environment env) throws OpenApiConfigurationException {
+    OpenAPI oas = new JaxrsOpenApiContextBuilder()
+      .buildContext(true)
+      .read();
+    // we set the version programmatically from our git properties if they exist
+    String v = cfg.versionString();
+    if (v != null) {
+      oas.getInfo().setVersion(v);
+    }
+    oas.getInfo().setVersion("TESTFRTFTZGVBHJBGHVCBEHJC45674832749238423043243223");
+    SwaggerConfiguration swCfg = new SwaggerConfiguration()
+      .openAPI(oas)
+      .prettyPrint(true)
+      .resourcePackages(Set.of(DocsResource.class.getPackageName()));
+
+    ModelConverters.getInstance().addConverter(new ModelResolver(env.getObjectMapper()));
+    OpenApiResource oar = new OpenApiResource();
+    // TODO: cant get the new version to show up in the context
+    oar.setOpenApiConfiguration(swCfg);
+
+    env.jersey().register(oar);
   }
 
   @Override

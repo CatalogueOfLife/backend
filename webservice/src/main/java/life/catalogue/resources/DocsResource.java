@@ -8,13 +8,13 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  *
  */
 @Path("/")
 public class DocsResource {
-  private final String openApiUrl = "http://localhost:8080/openapi.json";
   private final String version;
   
   public DocsResource(WsServerConfig cfg) {
@@ -23,9 +23,8 @@ public class DocsResource {
   
   @GET
   @Produces(MediaType.TEXT_HTML)
-  public String docs() throws IOException {
-    String html = Resources.toString("swagger.html");
-    return html.replaceFirst("OPENAPI_URL", openApiUrl);
+  public InputStream docs() throws IOException {
+    return Resources.stream("swagger.html");
   }
   
   @GET
