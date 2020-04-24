@@ -94,7 +94,7 @@ public class SectorSyncIT {
   
   NameUsageBase getByID(int datasetKey, String id) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      return session.getMapper(TaxonMapper.class).get(DSID.key(datasetKey, id));
+      return session.getMapper(TaxonMapper.class).get(DSID.of(datasetKey, id));
     }
   }
 
@@ -102,7 +102,7 @@ public class SectorSyncIT {
     Taxon src;
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      src = tm.get(DSID.key(sourceDatasetKey, id));
+      src = tm.get(DSID.of(sourceDatasetKey, id));
     }
     return (Taxon) getByName(Datasets.DRAFT_COL, src.getName().getRank(), src.getName().getScientificName());
   }

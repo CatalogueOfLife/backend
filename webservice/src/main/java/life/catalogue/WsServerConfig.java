@@ -1,10 +1,5 @@
 package life.catalogue;
 
-import java.io.File;
-import java.util.Properties;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.Configuration;
 import io.dropwizard.client.JerseyClientConfiguration;
@@ -21,6 +16,11 @@ import life.catalogue.es.EsConfig;
 import life.catalogue.img.ImgConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.io.File;
+import java.util.Properties;
 
 
 public class WsServerConfig extends Configuration implements CorsBundleConfiguration {
@@ -97,9 +97,12 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
    */
   @NotNull
   public File downloadDir = new File("/tmp");
-  
+
+  /**
+   * URL to the openAPI specification to render the swagger API docs
+   */
   @NotNull
-  public String raml = "https://catalogueoflife.github.io/general/api/api.html";
+  public String openApiUrl = "http://api.catalogue.life/openapi.json";
   
   
   @Override

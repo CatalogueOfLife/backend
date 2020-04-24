@@ -3,8 +3,10 @@ package life.catalogue.resources;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.lifecycle.Managed;
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.model.User;
 import life.catalogue.api.model.RequestScope;
+import life.catalogue.api.model.User;
+import life.catalogue.assembly.AssemblyCoordinator;
+import life.catalogue.assembly.AssemblyState;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.es.NameUsageIndexService;
@@ -41,11 +43,13 @@ public class AdminResource {
   // background processes
   private final ContinuousImporter continuousImporter;
   private final GbifSync gbifSync;
-  
-  
-  public AdminResource(SqlSessionFactory factory, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
+  private final AssemblyCoordinator assembly;
+
+
+  public AdminResource(SqlSessionFactory factory, AssemblyCoordinator assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
                        NameUsageIndexService indexService, ContinuousImporter continuousImporter, GbifSync gbifSync) {
     this.factory = factory;
+    this.assembly = assembly;
     this.imgService = imgService;
     this.ni = ni;
     this.cfg = cfg;
@@ -59,7 +63,13 @@ public class AdminResource {
     public boolean gbifSync;
     public boolean importer;
   }
-  
+
+  @GET
+  @Path("/assembly")
+  public AssemblyState globalState() {
+    return assembly.getState();
+  }
+
   @GET
   @Path("/background")
   public BackgroundProcesses getBackground() {

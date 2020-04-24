@@ -1,39 +1,17 @@
 package life.catalogue.command.initdb;
 
-import java.io.Reader;
-import java.sql.Connection;
-import java.sql.Statement;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-
-import life.catalogue.command.AbstractPromptCmd;
-import life.catalogue.dao.NameDao;
-import org.apache.commons.io.FileUtils;
-import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.jdbc.ScriptRunner;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.elasticsearch.client.RestClient;
-import org.gbif.nameparser.api.NameType;
-import org.postgresql.jdbc.PgConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableMap;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Sector;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.EstimateType;
-import life.catalogue.api.vocab.NomStatus;
-import life.catalogue.api.vocab.Origin;
-import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.api.vocab.Users;
+import life.catalogue.api.vocab.*;
+import life.catalogue.command.AbstractPromptCmd;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
+import life.catalogue.dao.NameDao;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.PgConfig;
@@ -47,7 +25,21 @@ import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.postgres.PgCopyUtils;
 import net.sourceforge.argparse4j.inf.Namespace;
-import net.sourceforge.argparse4j.inf.Subparser;
+import org.apache.commons.io.FileUtils;
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.jdbc.ScriptRunner;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.elasticsearch.client.RestClient;
+import org.gbif.nameparser.api.NameType;
+import org.postgresql.jdbc.PgConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.Reader;
+import java.sql.Connection;
+import java.sql.Statement;
+import java.util.function.Function;
 
 /**
  * Command to initialise a new database schema.
@@ -150,14 +142,13 @@ public class InitDbCmd extends AbstractPromptCmd {
   
       LOG.info("Update dataset sector counts");
       NameDao nd = new NameDao(factory);
-      new TaxonDao(factory, nd, NameUsageIndexService.passThru()).updateAllSectorCounts(Datasets.DRAFT_COL, factory);
+      new TaxonDao(factory, nd, NameUsageIndexService.passThru()).updateAllSectorCounts(Datasets.DRAFT_COL);
       
       updateSearchIndex(cfg, factory);
     }
   }
   
   private static void loadDraftHierarchy(Connection con, SqlSessionFactory factory, WsServerConfig cfg) throws Exception {
-
     LOG.info("Insert CoL draft data linked to sectors");
     PgConnection pgc = (PgConnection) con;
     // Use sector exports from Global Assembly:

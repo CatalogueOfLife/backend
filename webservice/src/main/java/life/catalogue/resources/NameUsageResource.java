@@ -82,7 +82,7 @@ public class NameUsageResource {
     if (results.size()==1) {
       return results.getResult().get(0);
     }
-    throw NotFoundException.idNotFound(NameUsage.class, datasetKey, id);
+    throw NotFoundException.notFound(NameUsage.class, datasetKey, id);
   }
 
   @GET

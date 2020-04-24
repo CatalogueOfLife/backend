@@ -50,7 +50,7 @@ public class TreeResource {
                                 @QueryParam("catalogueKey") @DefaultValue(Datasets.DRAFT_COL+"") int catalogueKey,
                                 @QueryParam("insertPlaceholder") boolean placeholder,
                                 @QueryParam("type") TreeNode.Type type) {
-    return tree.classification(DSID.key(datasetKey, id), catalogueKey, placeholder, type);
+    return tree.classification(DSID.of(datasetKey, id), catalogueKey, placeholder, type);
   }
 
   @DELETE
@@ -59,7 +59,7 @@ public class TreeResource {
   public void deleteRecursively(@PathParam("datasetKey") int datasetKey,
                                 @PathParam("id") String id,
                                 @Auth User user) {
-    dao.deleteRecursively(DSID.key(datasetKey, id), user);
+    dao.deleteRecursively(DSID.of(datasetKey, id), user);
   }
   
   @GET
@@ -70,6 +70,6 @@ public class TreeResource {
                                        @QueryParam("insertPlaceholder") boolean placeholder,
                                        @QueryParam("type") TreeNode.Type type,
                                        @Valid @BeanParam Page page) {
-    return tree.children(DSID.key(datasetKey, id), catalogueKey, placeholder, type, defaultPage(page));
+    return tree.children(DSID.of(datasetKey, id), catalogueKey, placeholder, type, defaultPage(page));
   }
 }

@@ -26,7 +26,7 @@ public class TaxonMapperTreeTest extends MapperTestBase<TaxonMapper> {
   
   @Test
   public void classificationCounts() throws Exception {
-    DSIDValue<String> key = DSID.key(DATASET11.getKey(), "t20");
+    DSIDValue<String> key = DSID.of(DATASET11.getKey(), "t20");
     List<TaxonSectorCountMap> x = mapper().classificationCounts(key);
     assertEquals(6, x.size());
     for (TaxonSectorCountMap c : x) {
@@ -52,7 +52,7 @@ public class TaxonMapperTreeTest extends MapperTestBase<TaxonMapper> {
   
   @Test
   public void classificationSimple() throws Exception {
-    List<?> cl = mapper().classificationSimple(DSID.key(NAME4.getDatasetKey(), "t15"));
+    List<?> cl = mapper().classificationSimple(DSID.of(NAME4.getDatasetKey(), "t15"));
     assertEquals(7, cl.size());
   }
   

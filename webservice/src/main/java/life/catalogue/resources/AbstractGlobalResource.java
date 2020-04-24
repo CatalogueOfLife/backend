@@ -48,7 +48,7 @@ public abstract class AbstractGlobalResource<T extends DataEntity<Integer>> {
   public T get(@PathParam("key") Integer key) {
     T obj = dao.get(key);
     if (obj == null) {
-      throw NotFoundException.keyNotFound(objClass, key);
+      throw NotFoundException.notFound(objClass, key);
     }
     return obj;
   }
@@ -61,7 +61,7 @@ public abstract class AbstractGlobalResource<T extends DataEntity<Integer>> {
     obj.applyUser(user);
     int i = dao.update(obj, user.getKey());
     if (i == 0) {
-      throw NotFoundException.keyNotFound(objClass, key);
+      throw NotFoundException.notFound(objClass, key);
     }
   }
 
@@ -71,7 +71,7 @@ public abstract class AbstractGlobalResource<T extends DataEntity<Integer>> {
   public void delete(@PathParam("key") Integer key, @Auth User user) {
     int i = dao.delete(key, user.getKey());
     if (i == 0) {
-      throw NotFoundException.keyNotFound(objClass, key);
+      throw NotFoundException.notFound(objClass, key);
     }
   }
 }

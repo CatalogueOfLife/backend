@@ -155,7 +155,7 @@ public class EditorialDecision extends DatasetScopedEntity<Integer> {
   
   @JsonIgnore
   public DSID<String> getSubjectAsDSID() {
-    return subject == null ? null : DSID.key(subjectDatasetKey, subject.getId());
+    return subject == null ? null : DSID.of(subjectDatasetKey, subject.getId());
   }
   
   @JsonIgnore

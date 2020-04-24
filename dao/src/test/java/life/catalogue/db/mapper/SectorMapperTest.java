@@ -63,16 +63,16 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
   @Test
   public void getBySubject() {
     add2Sectors();
-    assertNotNull(mapper().getBySubject(targetDatasetKey, DSID.key(subjectDatasetKey, TestEntityGenerator.TAXON1.getId())));
-    assertNull(mapper().getBySubject(targetDatasetKey, DSID.key(subjectDatasetKey +1, TestEntityGenerator.TAXON1.getId())));
-    assertNull(mapper().getBySubject(targetDatasetKey, DSID.key(subjectDatasetKey, TestEntityGenerator.TAXON1.getId()+"dfrtgzh")));
+    assertNotNull(mapper().getBySubject(targetDatasetKey, DSID.of(subjectDatasetKey, TestEntityGenerator.TAXON1.getId())));
+    assertNull(mapper().getBySubject(targetDatasetKey, DSID.of(subjectDatasetKey +1, TestEntityGenerator.TAXON1.getId())));
+    assertNull(mapper().getBySubject(targetDatasetKey, DSID.of(subjectDatasetKey, TestEntityGenerator.TAXON1.getId()+"dfrtgzh")));
   }
   
   @Test
   public void listByTarget() {
     add2Sectors();
-    assertEquals(1, mapper().listByTarget(DSID.key(targetDatasetKey,"t4")).size());
-    assertEquals(0, mapper().listByTarget(DSID.key(targetDatasetKey,"t32134")).size());
+    assertEquals(1, mapper().listByTarget(DSID.of(targetDatasetKey,"t4")).size());
+    assertEquals(0, mapper().listByTarget(DSID.of(targetDatasetKey,"t32134")).size());
   }
 
   @Test
@@ -137,7 +137,7 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
   }
 
   public static Sector create() {
-    return create(DSID.draftID(UUID.randomUUID().toString()), DSID.key(subjectDatasetKey, UUID.randomUUID().toString()));
+    return create(DSID.draftID(UUID.randomUUID().toString()), DSID.of(subjectDatasetKey, UUID.randomUUID().toString()));
   }
 
   public static Sector create(DSID<String> target, DSID<String> subject) {

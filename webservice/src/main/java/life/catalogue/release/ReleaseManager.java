@@ -34,12 +34,12 @@ public class ReleaseManager {
     this.factory = factory;
   }
 
-  public Integer release(int catKey, User user) {
+  public Integer release(int datasetKey, User user) {
     if (release != null) {
       throw new IllegalStateException("Release "+release.getSourceDatasetKey() + " to " + release.getReleaseKey() + " is already running");
     }
 
-    release = CatalogueRelease.release(factory, indexService, exporter, diDao, catKey, user.getKey());
+    release = CatalogueRelease.release(factory, indexService, exporter, diDao, datasetKey, user.getKey());
     final int key = release.getReleaseKey();
 
     CompletableFuture.runAsync(release, RELEASE_EXEC)

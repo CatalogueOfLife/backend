@@ -152,7 +152,7 @@ public class SubjectRematcher {
   private static <T extends DatasetScopedEntity<Integer>> T getNotNull(CRUD<DSID<Integer>, T> mapper, int key) throws NotFoundException {
     T obj = mapper.get(DSID.idOnly(key));
     if (obj == null) {
-      throw new NotFoundException("Key " + key + " does not exist");
+      throw NotFoundException.notFound(Object.class, key);
     }
     return obj;
   }

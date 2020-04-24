@@ -51,7 +51,7 @@ public class NameResource extends AbstractDatasetScopedResource<String, Name, Pa
   public List<TypeMaterial> getTypeMaterial(@PathParam("datasetKey") int datasetKey,
                                          @PathParam("id") String id, @Context SqlSession session) {
     TypeMaterialMapper mapper = session.getMapper(TypeMaterialMapper.class);
-    return mapper.listByName(DSID.key(datasetKey, id));
+    return mapper.listByName(DSID.of(datasetKey, id));
   }
 
   @GET

@@ -10,8 +10,10 @@ import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.jackson.Jackson;
+import io.dropwizard.jersey.setup.JerseyEnvironment;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import io.swagger.v3.jaxrs2.integration.resources.OpenApiResource;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.vocab.ColDwcTerm;
@@ -131,6 +133,8 @@ public class WsServer extends Application<WsServerConfig> {
 
   @Override
   public void run(WsServerConfig cfg, Environment env) throws Exception {
+    final JerseyEnvironment j = env.jersey();
+
     if (cfg.mkdirs()) {
       LOG.info("Created config repository directories");
     }
@@ -209,7 +213,7 @@ public class WsServer extends Application<WsServerConfig> {
         imgService,
         releaseManager);
     env.lifecycle().manage(importManager);
-    env.jersey().register(new ImporterResource(importManager, diDao));
+    j.register(new ImporterResource(importManager, diDao));
     ContinuousImporter cImporter = new ContinuousImporter(cfg.importer, importManager, getSqlSessionFactory());
     env.lifecycle().manage(cImporter);
 
@@ -242,29 +246,33 @@ public class WsServer extends Application<WsServerConfig> {
     UserDao udao = new UserDao(getSqlSessionFactory(), bus);
 
     // resources
-    env.jersey().register(new AdminResource(getSqlSessionFactory(), new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter, gbifSync));
-    env.jersey().register(new AssemblyResource(getSqlSessionFactory(), tdao, assembly, exporter, releaseManager));
-    env.jersey().register(new DataPackageResource());
-    env.jersey().register(new DatasetResource(getSqlSessionFactory(), ddao, imgService, diDao, diff, exporter));
-    env.jersey().register(new DecisionResource(decdao));
-    env.jersey().register(new DocsResource(cfg));
-    env.jersey().register(new DuplicateResource());
-    env.jersey().register(new EstimateResource(edao));
-    env.jersey().register(new MatchingResource(ni));
-    env.jersey().register(new NameResource(ndao));
-    env.jersey().register(new NameUsageResource(searchService, suggestService));
-    env.jersey().register(new NameUsageSearchResource(searchService, suggestService));
-    env.jersey().register(new ReferenceResource(rdao));
-    env.jersey().register(new SectorResource(secdao, diDao, diff, assembly));
-    env.jersey().register(new SynonymResource(sdao));
-    env.jersey().register(new TaxonResource(tdao));
-    env.jersey().register(new TreeResource(tdao, trDao));
-    env.jersey().register(new UserResource(auth.getJwtCodec(), udao));
-    env.jersey().register(new VerbatimResource());
-    env.jersey().register(new VocabResource());
+    j.register(new AdminResource(getSqlSessionFactory(), assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter, gbifSync));
+    j.register(new DataPackageResource());
+    j.register(new DatasetResource(getSqlSessionFactory(), ddao, imgService, diDao, diff, assembly, releaseManager));
+    j.register(new DecisionResource(decdao));
+    j.register(new DocsResource(cfg));
+    j.register(new DuplicateResource());
+    j.register(new EstimateResource(edao));
+    j.register(new ExportResource(exporter));
+    j.register(new MatchingResource(ni));
+    j.register(new NameResource(ndao));
+    j.register(new NameUsageResource(searchService, suggestService));
+    j.register(new NameUsageSearchResource(searchService, suggestService));
+    j.register(new ReferenceResource(rdao));
+    j.register(new SectorResource(secdao, tdao, diDao, diff, assembly));
+    j.register(new SynonymResource(sdao));
+    j.register(new TaxonResource(tdao));
+    j.register(new TreeResource(tdao, trDao));
+    j.register(new UserResource(auth.getJwtCodec(), udao));
+    j.register(new VerbatimResource());
+    j.register(new VocabResource());
+
     // parsers
-    env.jersey().register(new NameParserResource(getSqlSessionFactory()));
-    env.jersey().register(new ParserResource<>());
+    j.register(new NameParserResource(getSqlSessionFactory()));
+    j.register(new ParserResource<>());
+
+    // swagger
+    j.register(new OpenApiResource());
 
     // attach listeners to event bus
     bus.register(auth);

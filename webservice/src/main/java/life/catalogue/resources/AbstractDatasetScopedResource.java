@@ -67,7 +67,7 @@ public abstract class AbstractDatasetScopedResource<K, T extends DatasetScopedEn
     DSIDValue<K> key = new DSIDValue<>(datasetKey, id);
     T obj = dao.get(key);
     if (obj == null) {
-      throw NotFoundException.idNotFound(objClass, key);
+      throw NotFoundException.notFound(objClass, key);
     }
     return obj;
   }
@@ -80,7 +80,7 @@ public abstract class AbstractDatasetScopedResource<K, T extends DatasetScopedEn
     obj.setId(id);
     int i = dao.update(obj, user.getKey());
     if (i == 0) {
-      throw NotFoundException.idNotFound(objClass, new DSIDValue<>(datasetKey, id));
+      throw NotFoundException.notFound(objClass, new DSIDValue<>(datasetKey, id));
     }
   }
 
@@ -91,7 +91,7 @@ public abstract class AbstractDatasetScopedResource<K, T extends DatasetScopedEn
     DSIDValue<K> key = new DSIDValue<>(datasetKey, id);
     int i = dao.delete(key, user.getKey());
     if (i == 0) {
-      throw NotFoundException.idNotFound(objClass, key);
+      throw NotFoundException.notFound(objClass, key);
     }
   }
   

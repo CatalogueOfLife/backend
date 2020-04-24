@@ -85,12 +85,12 @@ public class Sector extends DatasetScopedEntity<Integer> {
 
   @JsonIgnore
   public DSID<String> getSubjectAsDSID() {
-    return subject == null ? null : DSID.key(subjectDatasetKey, subject.getId());
+    return subject == null ? null : DSID.of(subjectDatasetKey, subject.getId());
   }
   
   @JsonIgnore
   public DSID<String> getTargetAsDSID() {
-    return target == null ? null : DSID.key(getDatasetKey(), target.getId());
+    return target == null ? null : DSID.of(getDatasetKey(), target.getId());
   }
   
   public String getNote() {

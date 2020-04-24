@@ -1,30 +1,17 @@
 package life.catalogue.db.tree;
 
-import life.catalogue.api.RandomUtils;
-import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
-import life.catalogue.api.txtree.Tree;
-import life.catalogue.api.txtree.TreeNode;
 import life.catalogue.api.vocab.*;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.*;
-import life.catalogue.parser.NameParser;
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -106,7 +93,7 @@ public class SectorDataRule extends ExternalResource implements AutoCloseable {
         // in UNION mode do not attach the subject itself, just its children
         // if we have a placeholder rank configured ignore children of that rank or higher
         // see https://github.com/CatalogueOfLife/clearinghouse-ui/issues/518
-        for (NameUsageBase child : um.children(DSID.key(s.getSubjectDatasetKey(), s.getSubject().getId()), s.getPlaceholderRank())){
+        for (NameUsageBase child : um.children(DSID.of(s.getSubjectDatasetKey(), s.getSubject().getId()), s.getPlaceholderRank())){
           parentID = s.getTarget().getId();
           if (child.isSynonym()) {
             copy(child);

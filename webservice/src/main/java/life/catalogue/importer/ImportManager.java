@@ -326,7 +326,7 @@ public class ImportManager implements Managed {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       Dataset d = dm.get(datasetKey);
       if (d == null) {
-        throw NotFoundException.keyNotFound(Dataset.class, datasetKey);
+        throw NotFoundException.notFound(Dataset.class, datasetKey);
       } else if (d.hasDeletedDate()) {
         throw new IllegalArgumentException("Dataset " + datasetKey + " is deleted and cannot be imported");
       } else if (d.getOrigin() == DatasetOrigin.RELEASED) {
@@ -391,11 +391,11 @@ public class ImportManager implements Managed {
     try (SqlSession session = factory.openSession(true)) {
       Dataset d = session.getMapper(DatasetMapper.class).get(req.datasetKey);
       if (d == null) {
-        throw NotFoundException.keyNotFound(Dataset.class, req.datasetKey);
+        throw NotFoundException.notFound(Dataset.class, req.datasetKey);
 
       } else if (d.hasDeletedDate()) {
         LOG.warn("Dataset {} was deleted and cannot be imported", req.datasetKey);
-        throw NotFoundException.keyNotFound(Dataset.class, req.datasetKey);
+        throw NotFoundException.notFound(Dataset.class, req.datasetKey);
       }
       ImportJob job = new ImportJob(req,
           d,

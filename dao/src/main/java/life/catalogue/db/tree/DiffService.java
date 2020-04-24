@@ -87,7 +87,7 @@ public class DiffService {
     for (int at : attempts) {
       File f = getFile.apply(at);
       if (!f.exists()) {
-        throw new NotFoundException("Import attempt " +at+ " not existing");
+        throw NotFoundException.notFound("Import attempt", at);
       }
       files[idx++]=f;
     }

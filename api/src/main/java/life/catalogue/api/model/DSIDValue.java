@@ -56,6 +56,6 @@ public class DSIDValue<T> implements DSID<T> {
   
   @Override
   public String toString() {
-    return datasetKey + ":" + id;
+    return concat();
   }
 }

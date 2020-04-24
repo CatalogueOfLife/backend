@@ -5,7 +5,6 @@ import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
 
 import com.codahale.metrics.annotation.Timed;
 import org.apache.ibatis.session.SqlSession;
@@ -43,7 +42,7 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @GET
   @Path("{id}/children")
   public ResultPage<Taxon> children(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Valid @BeanParam Page page) {
-    return dao.getChildren(DSID.key(datasetKey, id), page);
+    return dao.getChildren(DSID.of(datasetKey, id), page);
   }
   
   @GET
@@ -55,7 +54,7 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @GET
   @Path("{id}/classification")
   public List<Taxon> classification(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
-    return session.getMapper(TaxonMapper.class).classification(DSID.key(datasetKey, id));
+    return session.getMapper(TaxonMapper.class).classification(DSID.of(datasetKey, id));
   }
   
   @GET
@@ -64,7 +63,7 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   public TaxonInfo info(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id) {
     TaxonInfo info = dao.getTaxonInfo(datasetKey, id);
     if (info == null) {
-      throw NotFoundException.idNotFound(Taxon.class, datasetKey, id);
+      throw NotFoundException.notFound(Taxon.class, datasetKey, id);
     }
     return info;
   }

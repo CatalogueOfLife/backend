@@ -601,7 +601,7 @@ public class PgImportIT {
 
       // types
       TypeMaterialMapper tmm = session.getMapper(TypeMaterialMapper.class);
-      List<TypeMaterial> types = tmm.listByName(DSID.key(dataset.getKey(), "1001c"));
+      List<TypeMaterial> types = tmm.listByName(DSID.of(dataset.getKey(), "1001c"));
       assertEquals(2, types.size());
       for (TypeMaterial tm : types) {
         assertEquals("1001c", tm.getNameId());

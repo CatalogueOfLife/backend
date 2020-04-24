@@ -117,7 +117,7 @@ public class UserResource {
   private User getUser(int key) throws NotFoundException {
     User user = dao.get(key);
     if (user == null) {
-      throw NotFoundException.keyNotFound(User.class, key);
+      throw NotFoundException.notFound(User.class, key);
     }
     return user;
   }

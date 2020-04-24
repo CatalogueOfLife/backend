@@ -78,7 +78,7 @@ public class VerbatimResource {
   @Path("{key}")
   public VerbatimRecord get(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @Context SqlSession session) {
     VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
-    return mapper.get(DSID.key(datasetKey, key));
+    return mapper.get(DSID.of(datasetKey, key));
   }
   
 }

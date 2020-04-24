@@ -61,6 +61,6 @@ public class TypeMaterialMapperTest extends CRUDTestBase<DSID<String>, TypeMater
         assertEquals(types, types2);
 
         // empty list, not null
-        assertEquals(0, mapper().listByName(DSID.key(datasetKey, "NoT-REALL")).size());
+        assertEquals(0, mapper().listByName(DSID.of(datasetKey, "NoT-REALL")).size());
     }
 }

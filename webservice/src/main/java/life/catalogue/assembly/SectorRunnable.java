@@ -1,6 +1,7 @@
 package life.catalogue.assembly;
 
 import com.google.common.base.Preconditions;
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
@@ -44,7 +45,10 @@ abstract class SectorRunnable implements Runnable {
   private final LocalDateTime created = LocalDateTime.now();
   final User user;
   final SectorImport state = new SectorImport();
-  
+
+  /**
+   * @throws IllegalArgumentException if the sectors dataset is not of MANAGED origin
+   */
   SectorRunnable(int sectorKey, boolean validateSector, SqlSessionFactory factory, NameUsageIndexService indexService,
                       Consumer<SectorRunnable> successCallback,
                       BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
@@ -125,7 +129,7 @@ abstract class SectorRunnable implements Runnable {
       SectorMapper sm = session.getMapper(SectorMapper.class);
       Sector s = sm.get(sectorKey);
       if (s == null) {
-        throw new IllegalArgumentException("Sector "+sectorKey+" does not exist");
+        throw new NotFoundException("Sector "+sectorKey+" does not exist");
       }
 
       if (validate) {

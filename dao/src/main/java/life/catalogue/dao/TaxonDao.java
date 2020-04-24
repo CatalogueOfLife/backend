@@ -203,7 +203,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
         parseName(n);
         nameDao.create(n, user);
       } else {
-        Name nExisting = nameDao.get(DSID.key(datasetKey, n.getId()));
+        Name nExisting = nameDao.get(DSID.of(datasetKey, n.getId()));
         if (nExisting == null) {
           throw new IllegalArgumentException("No name exists with ID " + n.getId() + " in dataset " + datasetKey);
         }
@@ -247,9 +247,9 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       // migrate entire DatasetSectors from old to new
       Int2IntOpenHashMap delta = tm.getCounts(t).getCount();
       if (delta != null && !delta.isEmpty()) {
-        DSID<String> parentKey =  DSID.key(t.getDatasetKey(), old.getParentId());
+        DSID<String> parentKey =  DSID.of(t.getDatasetKey(), old.getParentId());
         // reusable catalogue key instance
-        final DSIDValue<String> catKey = DSID.key(t.getDatasetKey(), "");
+        final DSIDValue<String> catKey = DSID.of(t.getDatasetKey(), "");
         // remove delta
         for (TaxonSectorCountMap tc : tm.classificationCounts(parentKey)) {
           tm.updateDatasetSectorCount(catKey.id(tc.getId()), mergeMapCounts(tc.getCount(), delta, -1));
@@ -356,7 +356,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       for (int skey : sectorKeys) {
         LOG.info("Delete sector {} from project {} and its imports by user {}", skey, id.getDatasetKey(), user);
         sim.delete(skey);
-        sm.delete(DSID.key(id.getDatasetKey(), skey));
+        sm.delete(DSID.of(id.getDatasetKey(), skey));
       }
       session.commit();
     }
@@ -371,7 +371,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
    *
    * @param catalogueKey
    */
-  public void updateAllSectorCounts(int catalogueKey, SqlSessionFactory factory) {
+  public void updateAllSectorCounts(int catalogueKey) {
     try (SqlSession session = factory.openSession(false)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
       SectorMapper sm = session.getMapper(SectorMapper.class);

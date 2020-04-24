@@ -6,7 +6,6 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.date.FuzzyDate;
-import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.NameDao;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
@@ -79,7 +78,7 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
     generateDatasetImport(DATASET11.getKey());
     
     assertEquals(5, mapper().count(DATASET11.getKey()));
-    assertEquals(3, mapper().countChildrenWithRank(DSID.key(DATASET11.getKey(), "root-1"), Rank.SPECIES));
+    assertEquals(3, mapper().countChildrenWithRank(DSID.of(DATASET11.getKey(), "root-1"), Rank.SPECIES));
   }
   
   @Test

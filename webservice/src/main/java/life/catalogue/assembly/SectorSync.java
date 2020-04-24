@@ -119,7 +119,7 @@ public class SectorSync extends SectorRunnable {
     final String newParentID = sector.getTarget().getId();
     processForeignChildren((tm, t) -> {
         // remember original parent
-        Taxon parent = tm.get(DSID.key(catalogueKey, t.getParentId()));
+        Taxon parent = tm.get(DSID.of(catalogueKey, t.getParentId()));
         foreignChildrenParents.put(t.getId(), parent.getName());
         // update to new parent
         t.setParentId(newParentID);
@@ -210,7 +210,7 @@ public class SectorSync extends SectorRunnable {
         // in UNION mode do not attach the subject itself, just its children
         // if we have a placeholder rank configured ignore children of that rank or higher
         // see https://github.com/CatalogueOfLife/clearinghouse-ui/issues/518
-        for (NameUsageBase child : um.children(DSID.key(datasetKey, sector.getSubject().getId()), sector.getPlaceholderRank())){
+        for (NameUsageBase child : um.children(DSID.of(datasetKey, sector.getSubject().getId()), sector.getPlaceholderRank())){
           if (child.isSynonym()) {
             if (!blockedIds.contains(child.getId())) {
               LOG.info("Add synonym child {}", child);

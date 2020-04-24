@@ -4,7 +4,6 @@ import life.catalogue.api.model.*;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.tree.TxtTreeDataRule;
 import org.gbif.nameparser.api.Rank;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -50,7 +49,7 @@ public class TreeMapper2Test extends MapperTestBase<TreeMapper> {
   public void parents() {
     TreeMapper tm = mapper(TreeMapper.class);
     for (TreeNode.Type type : TreeNode.types()) {
-      List<TreeNode> parents = valid(tm.classification(catKey, type, DSID.key(TRILOBITA, "10")));
+      List<TreeNode> parents = valid(tm.classification(catKey, type, DSID.of(TRILOBITA, "10")));
       assertEquals(6, parents.size());
       assertEquals(Rank.SPECIES, parents.get(0).getRank());
       assertEquals(Rank.GENUS, parents.get(1).getRank());

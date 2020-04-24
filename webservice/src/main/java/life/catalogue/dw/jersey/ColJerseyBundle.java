@@ -5,7 +5,7 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import life.catalogue.dw.jersey.exception.IllegalArgumentExceptionMapper;
 import life.catalogue.dw.jersey.filter.CreatedResponseFilter;
-import life.catalogue.dw.jersey.filter.DatasetKeyRequestFilter;
+import life.catalogue.dw.jersey.filter.DatasetKeyRewriteFilter;
 import life.catalogue.dw.jersey.provider.EnumParamConverterProvider;
 import life.catalogue.dw.jersey.writers.BufferedImageBodyWriter;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -15,7 +15,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
  */
 public class ColJerseyBundle implements Bundle {
 
-  DatasetKeyRequestFilter filter;
+  DatasetKeyRewriteFilter filter;
 
   @Override
   public void initialize(Bootstrap<?> bootstrap) {
@@ -29,7 +29,7 @@ public class ColJerseyBundle implements Bundle {
     
     // response and request filters
     env.jersey().packages(CreatedResponseFilter.class.getPackage().getName());
-    filter = new DatasetKeyRequestFilter();
+    filter = new DatasetKeyRewriteFilter();
     env.jersey().register(filter);
 
     // exception mappers

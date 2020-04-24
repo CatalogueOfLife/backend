@@ -1,46 +1,45 @@
 package life.catalogue.api.exception;
 
-import java.util.Map;
-
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableMap;
 import life.catalogue.api.model.DSID;
 
 public class NotFoundException extends RuntimeException {
-  
-  private final static Joiner.MapJoiner PARAM_JOINER = Joiner.on(", ")
-      .withKeyValueSeparator("=")
-      .useForNull("null");
-  
-  private static String createMessage(Class<?> entity, Map<String, Object> params) {
-    return createMessage(entity, PARAM_JOINER.join(params));
-  }
-  
-  private static String createMessage(Class<?> entity, String param) {
-    return "No such " + entity.getSimpleName() + ": " + param;
+  private final Object key;
+
+  public Object getKey() {
+    return key;
   }
 
   public NotFoundException(String message) {
     super(message);
-  }
-  
-  public static NotFoundException keyNotFound(Class<?> entity, Object key) {
-    return new NotFoundException(entity, ImmutableMap.of("key", key));
+    this.key = null;
   }
 
-  public static NotFoundException idNotFound(Class<?> entity, DSID<?> key) {
-    return new NotFoundException(entity, ImmutableMap.of("datasetKey", key.getDatasetKey(), "id", key.getId()));
+  public NotFoundException(Object key, String message) {
+    super(message);
+    this.key = key;
   }
 
-  public static NotFoundException idNotFound(Class<?> entity, int datasetKey, String id) {
-    return new NotFoundException(entity, ImmutableMap.of("datasetKey", datasetKey, "id", id));
+  public static NotFoundException notFound(String entityName, Object key) {
+    return new NotFoundException(key, createMessage(entityName, key.toString()));
   }
-  
-  public NotFoundException(Class<?> entity, Map<String, Object> params) {
-    super(createMessage(entity, params));
+
+  public static NotFoundException notFound(Class<?> entity, Object key) {
+    return new NotFoundException(key, createMessage(entity, key.toString()));
   }
-  
-  public NotFoundException(Class<?> entity, String name) {
-    super(createMessage(entity, name));
+
+  public static NotFoundException notFound(Class<?> entity, DSID<?> key) {
+    return new NotFoundException(key, createMessage(entity, key.concat()));
+  }
+
+  public static NotFoundException notFound(Class<?> entity, int datasetKey, String id) {
+    return notFound(entity, DSID.of(datasetKey, id));
+  }
+
+  private static String createMessage(Class<?> entity, String key) {
+    return createMessage(entity.getSimpleName(), key);
+  }
+
+  private static String createMessage(String entityName, String key) {
+    return entityName + " " + key + " does not exist";
   }
 }

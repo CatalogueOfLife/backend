@@ -4,8 +4,12 @@ import io.dropwizard.auth.Auth;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.assembly.AssemblyCoordinator;
+import life.catalogue.assembly.AssemblyState;
+import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.dao.SubjectRematcher;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.db.tree.DiffService;
@@ -13,10 +17,11 @@ import life.catalogue.db.tree.NamesDiff;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.dw.jersey.filter.DatasetKeyRewriteFilter;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.img.ImgConfig;
-import life.catalogue.release.AcExporter;
+import life.catalogue.release.ReleaseManager;
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -50,17 +55,20 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   private final ImageService imgService;
   private final DatasetImportDao diDao;
   private final DiffService diff;
-  private final AcExporter exporter;
+  private final AssemblyCoordinator assembly;
+  private final ReleaseManager releaseManager;
 
-  public DatasetResource(SqlSessionFactory factory, DatasetDao dao, ImageService imgService, DatasetImportDao diDao, DiffService diff, AcExporter exporter) {
+  public DatasetResource(SqlSessionFactory factory, DatasetDao dao, ImageService imgService, DatasetImportDao diDao, DiffService diff,
+                         AssemblyCoordinator assembly, ReleaseManager releaseManager) {
     super(Dataset.class, dao, factory);
     this.dao = dao;
     this.imgService = imgService;
     this.diDao = diDao;
     this.diff = diff;
-    this.exporter = exporter;
+    this.assembly = assembly;
+    this.releaseManager = releaseManager;
   }
-  
+
   @GET
   public ResultPage<Dataset> search(@Valid @BeanParam Page page, @BeanParam DatasetSearchRequest req, @Auth Optional<User> user) {
     return dao.search(req, userkey(user), page);
@@ -70,7 +78,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
    * Convenience method to get the latest release of a project.
    * This can also be achieved using the search, but it is a common operation we make as simple as possible in the API.
    *
-   * See also {@link life.catalogue.dw.jersey.filter.DatasetKeyRequestFilter} on using <pre>LR</pre> as a suffix in dataset keys to indicate the latest release.
+   * See also {@link DatasetKeyRewriteFilter} on using <pre>LR</pre> as a suffix in dataset keys to indicate the latest release.
    * @param key
    */
   @GET
@@ -79,22 +87,10 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     return dao.latestRelease(key);
   }
 
-  @POST
-  @Path("{key}/export")
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public boolean export(@PathParam("key") int key, @Auth User user) {
-    return exportAC(key, user);
-  }
-
-  private boolean exportAC(int key, User user) {
-    try {
-      exporter.export(key);
-      return true;
-
-    } catch (Throwable e) {
-      LOG.error("Error exporting dataset {}", key, e);
-    }
-    return false;
+  @GET
+  @Path("{key}/assembly")
+  public AssemblyState assemblyState(@PathParam("key") int key) {
+    return assembly.getState(key);
   }
 
   @GET
@@ -199,6 +195,22 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   public Response deleteLogo(@PathParam("key") int key) throws IOException {
     imgService.putDatasetLogo(key, null);
     return Response.ok().build();
+  }
+
+  @POST
+  @Path("/{key}/release")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public Integer release(@PathParam("key") int key, @Auth User user) {
+    return releaseManager.release(key, user);
+  }
+
+  @POST
+  @Path("/{key}/rematch")
+  public SubjectRematcher rematch(@PathParam("key") int key, RematchRequest req, @Auth User user) {
+    DaoUtils.requireManagedNoLock(key, factory);
+    SubjectRematcher matcher = new SubjectRematcher(factory, key, user.getKey());
+    matcher.match(req);
+    return matcher;
   }
 
   @GET

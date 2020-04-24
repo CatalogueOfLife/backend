@@ -2,7 +2,6 @@ package life.catalogue.matching;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
-import life.catalogue.api.vocab.MatchType;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.VerbatimRecordMapper;
 import org.apache.ibatis.session.ExecutorType;
@@ -62,7 +61,7 @@ public class DatasetMatcher {
       this.session = factory.openSession(ExecutorType.BATCH, false);
       this.nm = session.getMapper(NameMapper.class);
       this.vm = session.getMapper(VerbatimRecordMapper.class);
-      key = DSID.key(datasetKey, -1);
+      key = DSID.of(datasetKey, -1);
     }
   
     @Override

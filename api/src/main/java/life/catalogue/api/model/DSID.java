@@ -1,5 +1,7 @@
 package life.catalogue.api.model;
 
+import java.util.function.Function;
+
 import static life.catalogue.api.vocab.Datasets.DRAFT_COL;
 
 /**
@@ -20,6 +22,32 @@ public interface DSID<K> extends DatasetScoped {
   }
 
   /**
+   * Returns a colon concatenated version of both dataset key and id
+   */
+  default String concat() {
+    return getDatasetKey() + ":" + getId();
+  }
+
+  /**
+   * Parses a colon concatenated version of both dataset key and id
+   */
+  static <K> DSID<K> parse(String key, Function<String, K> parser) {
+    if (key == null) return null;
+    String[] parts = key.split(":", 2);
+    if (parts.length == 1) return null;
+    int datasetKey = Integer.parseInt(parts[0]);
+    return of(datasetKey, parser.apply(parts[1]));
+  }
+
+  static DSID<Integer> parseInt(String key) {
+    return parse(key, Integer::parseInt);
+  }
+
+  static DSID<String> parseStr(String key) {
+    return parse(key, x -> x);
+  }
+
+  /**
    * @return a dataset scoped id using the verbatimKey of the supplied src
    */
   static DSIDValue<Integer> vkey(VerbatimEntity src) {
@@ -30,7 +58,7 @@ public interface DSID<K> extends DatasetScoped {
     return new DSIDValue<K>(src.getDatasetKey(), src.getId());
   }
 
-  static <K> DSIDValue<K> key(int datasetKey, K id) {
+  static <K> DSIDValue<K> of(int datasetKey, K id) {
     return new DSIDValue<K>(datasetKey, id);
   }
 
@@ -45,5 +73,5 @@ public interface DSID<K> extends DatasetScoped {
   static <K> DSIDValue<K> draftID(K id) {
     return new DSIDValue<K>(DRAFT_COL, id);
   }
-  
+
 }

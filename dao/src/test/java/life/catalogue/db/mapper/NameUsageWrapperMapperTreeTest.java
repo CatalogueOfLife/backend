@@ -33,7 +33,7 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
   @Test
   public void getTaxa() throws Exception {
     
-    List<?> cl = mapper(TaxonMapper.class).classificationSimple(DSID.key(NAME4.getDatasetKey(), "t15"));
+    List<?> cl = mapper(TaxonMapper.class).classificationSimple(DSID.of(NAME4.getDatasetKey(), "t15"));
     assertEquals(7, cl.size());
     
     NameUsageWrapper tax = mapper().get(NAME4.getDatasetKey(), "t15");

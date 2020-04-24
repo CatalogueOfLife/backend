@@ -53,6 +53,8 @@ public class CatalogueRelease implements Runnable {
   /**
    * Release the catalogue into a new dataset
    * @param catalogueKey the draft catalogue to be released, e.g. 3 for the CoL draft
+   *
+   * @throws IllegalArgumentException if the dataset is not managed
    */
   public static CatalogueRelease release(SqlSessionFactory factory, NameUsageIndexService indexService, AcExporter exporter, DatasetImportDao diDao, int catalogueKey, int userKey) {
     if (!aquireLock()) {

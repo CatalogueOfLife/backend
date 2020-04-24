@@ -14,6 +14,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -35,14 +36,15 @@ import java.util.regex.Pattern;
  *  - the latest release of a project: {projectKey}LR
  */
 @PreMatching
-public class DatasetKeyRequestFilter implements ContainerRequestFilter {
+public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
 
-  private static final Logger LOG = LoggerFactory.getLogger(DatasetKeyRequestFilter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DatasetKeyRewriteFilter.class);
 
   private static final String LATEST_RELEASE_SUFFIX  = "LR";
   private static final Pattern LR_PATH  = Pattern.compile("dataset/(\\d+)" + LATEST_RELEASE_SUFFIX);
   // all parameters that contain dataset keys and which we check if they need to be rewritten
   private static final Set<String> QUERY_PARAMS  = Set.of("datasetKey", "catalogueKey", "projectKey", "subjectDatasetKey");
+  private static final Set<String> METHODS  = Set.of(HttpMethod.GET, HttpMethod.OPTIONS, HttpMethod.HEAD);
 
   private SqlSessionFactory factory;
   private final LoadingCache<Integer, Integer> latest = Caffeine.newBuilder()
@@ -57,6 +59,11 @@ public class DatasetKeyRequestFilter implements ContainerRequestFilter {
 
   @Override
   public void filter(ContainerRequestContext req) throws IOException {
+    // apply only to simple read operations, not POST, PUT or DELETE
+    if (!METHODS.contains(req.getMethod())) {
+      return;
+    }
+
     UriBuilder builder = req.getUriInfo().getRequestUriBuilder();
     final URI original = builder.build();
 
