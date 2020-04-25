@@ -1,6 +1,7 @@
 package life.catalogue.resources;
 
 import io.dropwizard.auth.Auth;
+import io.swagger.v3.oas.annotations.Parameter;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.ImportState;
@@ -70,7 +71,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   }
 
   @GET
-  public ResultPage<Dataset> search(@Valid @BeanParam Page page, @BeanParam DatasetSearchRequest req, @Auth Optional<User> user) {
+  public ResultPage<Dataset> search(@Valid @BeanParam Page page, @BeanParam DatasetSearchRequest req, @Parameter(hidden = true) @Auth Optional<User> user) {
     return dao.search(req, userkey(user), page);
   }
 
