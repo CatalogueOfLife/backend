@@ -11,6 +11,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.List;
 
+/**
+ * Modified reader that skip all parameters marked with the {@link Auth} interface which is provided by Dropwizard
+ * and should not be a request body.
+ */
 public class DWReader extends Reader {
 
   @Override

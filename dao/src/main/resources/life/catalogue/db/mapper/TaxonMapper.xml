@@ -1,283 +1,301 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="life.catalogue.db.mapper.TaxonMapper">
 
 
-    <sql id="taxonCols">
-        <include refid="life.catalogue.db.mapper.NameUsageMapper.usageCols"/>,
-        ${alias}.according_to_date AS ${prefix}according_to_date,
-        ${alias}.extinct AS ${prefix}extinct,
-        ${alias}.temporal_range_start AS ${prefix}temporal_range_start,
-        ${alias}.temporal_range_end AS ${prefix}temporal_range_end,
-        ${alias}.lifezones AS ${prefix}lifezones,
-        ${alias}.link AS ${prefix}link
-    </sql>
+  <sql id="taxonCols">
+    <include refid="life.catalogue.db.mapper.NameUsageMapper.usageCols"/>,
+    ${alias}.according_to_date AS ${prefix}according_to_date,
+    ${alias}.extinct AS ${prefix}extinct,
+    ${alias}.temporal_range_start AS ${prefix}temporal_range_start,
+    ${alias}.temporal_range_end AS ${prefix}temporal_range_end,
+    ${alias}.lifezones AS ${prefix}lifezones,
+    ${alias}.link AS ${prefix}link
+  </sql>
 
-    <sql id="SELECT">
-        <include refid="taxonCols">
-            <property name="alias" value="u"/>
-            <property name="prefix" value=""/>
-        </include>,
-        <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
-            <property name="alias" value="n"/>
-            <property name="prefix" value="n_"/>
-        </include>,
-        (SELECT count(*) FROM name_usage_${partition} WHERE parent_id=u.id) AS child_count
-    </sql>
+  <sql id="SELECT">
+    <include refid="taxonCols">
+      <property name="alias" value="u"/>
+      <property name="prefix" value=""/>
+    </include>
+    ,
+    <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
+      <property name="alias" value="n"/>
+      <property name="prefix" value="n_"/>
+    </include>
+    ,
+    (SELECT count(*) FROM name_usage_${partition} WHERE parent_id=u.id) AS child_count
+  </sql>
 
-    <sql id="COLS">
-        <include refid="life.catalogue.db.mapper.NameUsageMapper.COLS"/>,
-        according_to_date,
-        extinct,
-        temporal_range_start,
-        temporal_range_end,
-        lifezones,
-        link
-    </sql>
+  <sql id="COLS">
+    <include refid="life.catalogue.db.mapper.NameUsageMapper.COLS"/>,
+    according_to_date,
+    extinct,
+    temporal_range_start,
+    temporal_range_end,
+    lifezones,
+    link
+  </sql>
 
-    <sql id="PROPS">
-        <include refid="life.catalogue.db.mapper.NameUsageMapper.PROPS"/>,
-        #{accordingToDate},
-        #{extinct},
-        #{temporalRangeStart},
-        #{temporalRangeEnd},
-        #{lifezones, typeHandler=life.catalogue.db.type.LifezoneSetTypeHandler},
-        #{link, typeHandler=life.catalogue.db.type.UriTypeHandler}
-    </sql>
+  <sql id="PROPS">
+    <include refid="life.catalogue.db.mapper.NameUsageMapper.PROPS"/>,
+    #{accordingToDate},
+    #{extinct},
+    #{temporalRangeStart},
+    #{temporalRangeEnd},
+    #{lifezones, typeHandler=life.catalogue.db.type.LifezoneSetTypeHandler},
+    #{link, typeHandler=life.catalogue.db.type.UriTypeHandler}
+  </sql>
 
-    <sql id="FROM">
-        name_usage_${partition} u JOIN name_${partition} n ON u.name_id=n.id
-    </sql>
+  <sql id="FROM">
+    name_usage_${partition} u JOIN name_${partition} n ON u.name_id=n.id
+  </sql>
 
-    <resultMap id="taxonResultMap" type="Taxon" autoMapping="true" >
-        <id property="id" column="id" />
-        <result property="lifezones" column="lifezones" typeHandler="life.catalogue.db.type.LifezoneSetTypeHandler" />
-        <association property="name" javaType="Name" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
-    </resultMap>
+  <resultMap id="taxonResultMap" type="Taxon" autoMapping="true">
+    <id property="id" column="id"/>
+    <result property="lifezones" column="lifezones" typeHandler="life.catalogue.db.type.LifezoneSetTypeHandler"/>
+    <association property="name" javaType="Name" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap" columnPrefix="n_"/>
+  </resultMap>
 
-    <resultMap id="taxonCountResultMap" type="TaxonSectorCountMap" autoMapping="false">
-        <id property="id" column="id" />
-        <result property="count" column="dataset_sectors" />
-    </resultMap>
+  <resultMap id="taxonCountResultMap" type="TaxonSectorCountMap" autoMapping="false">
+    <id property="id" column="id"/>
+    <result property="count" column="dataset_sectors"/>
+  </resultMap>
 
 
-    <select id="count" resultType="integer">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        SELECT count(*) FROM name_usage_${partition} WHERE NOT is_synonym
-    </select>
+  <select id="count" resultType="integer">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT count(*) FROM name_usage_${partition} WHERE NOT is_synonym
+  </select>
 
-    <select id="countChildren" resultType="integer">
-        <include refid="life.catalogue.db.Common.partitionByKey"/>
-        SELECT count(*) FROM name_usage_${partition}
-        WHERE parent_id=#{key.id} AND NOT is_synonym
-    </select>
+  <select id="countChildren" resultType="integer">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    SELECT count(*) FROM name_usage_${partition}
+    WHERE parent_id=#{key.id} AND NOT is_synonym
+  </select>
 
-    <select id="countChildrenWithRank" resultType="integer">
-        <include refid="life.catalogue.db.Common.partitionByKey"/>
-        SELECT count(*) FROM name_usage_${partition} u JOIN name_${partition} n ON n.id=u.name_id
-        WHERE u.parent_id=#{key.id} AND NOT u.is_synonym and n.rank=#{rank}::rank
-    </select>
+  <select id="countChildrenWithRank" resultType="integer">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    SELECT count(*) FROM name_usage_${partition} u JOIN name_${partition} n ON n.id=u.name_id
+    WHERE u.parent_id=#{key.id} AND NOT u.is_synonym and n.rank=#{rank}::rank
+  </select>
 
-    <select id="countChildrenBelowRank" resultType="integer">
-        <include refid="life.catalogue.db.Common.partitionByKey"/>
-        SELECT count(*) FROM name_usage_${partition} u JOIN name_${partition} n ON n.id=u.name_id
-        WHERE u.parent_id=#{key.id} AND NOT u.is_synonym and n.rank > #{rank}::rank
-    </select>
+  <select id="countChildrenBelowRank" resultType="integer">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    SELECT count(*) FROM name_usage_${partition} u JOIN name_${partition} n ON n.id=u.name_id
+    WHERE u.parent_id=#{key.id} AND NOT u.is_synonym and n.rank > #{rank}::rank
+  </select>
 
-    <select id="countRoot" resultType="integer">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        SELECT count(*)
-        FROM name_usage_${partition}
-        WHERE parent_id IS NULL AND NOT is_synonym
-    </select>
+  <select id="countRoot" resultType="integer">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT count(*)
+    FROM name_usage_${partition}
+    WHERE parent_id IS NULL AND NOT is_synonym
+  </select>
 
-    <select id="list" resultMap="taxonResultMap">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE NOT u.is_synonym
-        ORDER BY id
-        <include refid="life.catalogue.db.Common.limit" />
-    </select>
+  <select id="list" resultMap="taxonResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
+    WHERE NOT u.is_synonym
+    ORDER BY id
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
 
-    <select id="listRoot" resultMap="taxonResultMap">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE u.parent_id IS NULL AND NOT u.is_synonym
-        ORDER BY id
-        <include refid="life.catalogue.db.Common.limit" />
-    </select>
+  <select id="listRoot" resultMap="taxonResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
+    WHERE u.parent_id IS NULL AND NOT u.is_synonym
+    ORDER BY id
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
 
-    <select id="listRootIds" resultType="string">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        SELECT id
-        FROM name_usage_${partition}
-        WHERE parent_id IS NULL AND NOT is_synonym
-        ORDER BY id
-    </select>
+  <select id="listRootIds" resultType="string">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT id
+    FROM name_usage_${partition}
+    WHERE parent_id IS NULL AND NOT is_synonym
+    ORDER BY id
+  </select>
 
-    <select id="children" resultMap="taxonResultMap">
-        <include refid="life.catalogue.db.Common.partitionByKey"/>
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE u.parent_id = #{key.id} AND NOT u.is_synonym
-        <if test="rank != null">
-          AND n.rank > #{rank}::rank
-        </if>
-        ORDER BY n.rank, n.scientific_name
-        <include refid="life.catalogue.db.Common.limit" />
-    </select>
+  <select id="children" resultMap="taxonResultMap">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
+    WHERE u.parent_id = #{key.id} AND NOT u.is_synonym
+    <if test="rank != null">
+      AND n.rank > #{rank}::rank
+    </if>
+    ORDER BY n.rank, n.scientific_name
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
 
-    <select id="classification" resultMap="taxonResultMap">
-        <include refid="life.catalogue.db.Common.partitionByKey"/>
-        WITH RECURSIVE x AS(
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE u.id = #{key.id}
-        UNION
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />, x
-        WHERE u.id = x.parent_id
-        )
-        SELECT *
-        FROM x
-        WHERE x.id != #{key.id}
-    </select>
+  <select id="classification" resultMap="taxonResultMap">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    WITH RECURSIVE x AS(
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
+    WHERE u.id = #{key.id}
+    UNION
+    SELECT
+    <include refid="SELECT"/>
+    FROM<include refid="FROM"/>, x
+    WHERE u.id = x.parent_id
+    )
+    SELECT *
+    FROM x
+    WHERE x.id != #{key.id}
+  </select>
 
-    <select id="classificationSimple" parameterType="map" resultType="SimpleName">
-        <include refid="life.catalogue.db.Common.partitionByKey"/>
-        WITH RECURSIVE cl AS (
-        SELECT u.id, u.parent_id, n.scientific_name as name, n.authorship, n.rank
-        FROM <include refid="FROM"/>
-        WHERE u.id = #{key.id}
+  <select id="classificationSimple" parameterType="map" resultType="SimpleName">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    WITH RECURSIVE cl AS (
+    SELECT u.id, u.parent_id, n.scientific_name as name, n.authorship, n.rank
+    FROM
+    <include refid="FROM"/>
+    WHERE u.id = #{key.id}
 
-        UNION
+    UNION
 
-        SELECT u.id, u.parent_id, n.scientific_name, n.authorship, n.rank
-        FROM <include refid="FROM"/>, cl
-        WHERE u.id = cl.parent_id
-        )
-        SELECT *
-        FROM cl
-        WHERE cl.id != #{key.id}
-    </select>
+    SELECT u.id, u.parent_id, n.scientific_name, n.authorship, n.rank
+    FROM<include refid="FROM"/>, cl
+    WHERE u.id = cl.parent_id
+    )
+    SELECT *
+    FROM cl
+    WHERE cl.id != #{key.id}
+  </select>
 
-    <select id="getCounts" resultMap="taxonCountResultMap">
-        <include refid="life.catalogue.db.Common.partitionByKey"/>
-        SELECT id, dataset_sectors
-        FROM name_usage_${partition}
-        WHERE id = #{key.id} AND NOT is_synonym
-    </select>
+  <select id="getCounts" resultMap="taxonCountResultMap">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    SELECT id, dataset_sectors
+    FROM name_usage_${partition}
+    WHERE id = #{key.id} AND NOT is_synonym
+  </select>
 
-    <select id="classificationCounts" resultMap="taxonCountResultMap">
-        <include refid="life.catalogue.db.Common.partitionByKey"/>
-        WITH RECURSIVE x AS(
-            SELECT id, parent_id, dataset_sectors
-            FROM name_usage_${partition} u
-            WHERE u.id = #{key.id}
-        UNION
-            SELECT u.id, u.parent_id, u.dataset_sectors
-            FROM name_usage_${partition} u, x
-            WHERE u.id = x.parent_id
-        )
-        SELECT id, dataset_sectors
-        FROM x
-    </select>
+  <select id="classificationCounts" resultMap="taxonCountResultMap">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    WITH RECURSIVE x AS(
+    SELECT id, parent_id, dataset_sectors
+    FROM name_usage_${partition} u
+    WHERE u.id = #{key.id}
+    UNION
+    SELECT u.id, u.parent_id, u.dataset_sectors
+    FROM name_usage_${partition} u, x
+    WHERE u.id = x.parent_id
+    )
+    SELECT id, dataset_sectors
+    FROM x
+  </select>
 
-    <select id="get" resultMap="taxonResultMap" flushCache="true">
-        <include refid="life.catalogue.db.Common.partitionByKey"/>
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE u.id = #{key.id} AND NOT u.is_synonym
-    </select>
+  <select id="get" resultMap="taxonResultMap" flushCache="true">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
+    WHERE u.id = #{key.id} AND NOT u.is_synonym
+  </select>
 
-    <select id="processDataset" parameterType="map" resultMap="taxonResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE NOT u.is_synonym
-    </select>
+  <select id="processDataset" parameterType="map" resultMap="taxonResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
+    WHERE NOT u.is_synonym
+  </select>
 
-    <insert id="create" parameterType="Taxon" useGeneratedKeys="false" keyProperty="id">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        INSERT INTO name_usage_${partition}
-        (id, <include refid="COLS" />, created, modified)
-        VALUES (#{id}, <include refid="PROPS" />, now(), now())
-    </insert>
+  <insert id="create" parameterType="Taxon" useGeneratedKeys="false" keyProperty="id">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    INSERT INTO name_usage_${partition}
+    (id,<include refid="COLS"/>, created, modified)
+    VALUES (#{id},<include refid="PROPS"/>, now(), now())
+  </insert>
 
-    <update id="update" parameterType="Taxon" keyProperty="id">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        UPDATE name_usage_${partition}
-        SET (<include refid="COLS" />, created, modified)
-        = (<include refid="PROPS" />, now(), now())
-        WHERE id = #{id}
-    </update>
+  <update id="update" parameterType="Taxon" keyProperty="id">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    UPDATE name_usage_${partition}
+    SET (<include refid="COLS"/>, created, modified)
+    = (<include refid="PROPS"/>, now(), now())
+    WHERE id = #{id}
+  </update>
 
-    <delete id="delete" parameterType="map">
-        <include refid="life.catalogue.db.Common.partitionByKey"/>
-        DELETE FROM name_usage_${partition}
-        WHERE id = #{key.id} AND NOT is_synonym
-    </delete>
+  <delete id="delete" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    DELETE FROM name_usage_${partition}
+    WHERE id = #{key.id} AND NOT is_synonym
+  </delete>
 
-    <delete id="deleteByDataset" parameterType="map">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        DELETE FROM name_usage_${partition}
-    </delete>
+  <delete id="deleteByDataset" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    DELETE FROM name_usage_${partition}
+  </delete>
 
-    <select id="foreignChildren" resultMap="taxonResultMap">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        JOIN name_usage_${partition} p ON p.id=u.parent_id
-        WHERE p.sector_key=#{sectorKey}
-        AND u.sector_key!=#{sectorKey}
-    </select>
+  <select id="foreignChildren" resultMap="taxonResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
+    JOIN name_usage_${partition} p ON p.id=u.parent_id
+    WHERE p.sector_key=#{sectorKey}
+    AND u.sector_key!=#{sectorKey}
+  </select>
 
-    <update id="incDatasetSectorCount">
-        <include refid="life.catalogue.db.Common.partitionByKey"/>
-        WITH RECURSIVE x AS (
-            SELECT u.id, u.parent_id
-            FROM name_usage_${partition} u
-            WHERE u.id = #{key.id}
-            UNION
-            SELECT u.id, u.parent_id
-            FROM name_usage_${partition} u, x
-            WHERE u.id = x.parent_id
-        )
-        UPDATE name_usage_${partition}
-        SET dataset_sectors =
-            CASE coalesce((dataset_sectors->'${dkey}')::int, 0) + ${delta}
-            WHEN 0 THEN
-                dataset_sectors - '${dkey}'
-            ELSE
-                jsonb_set(
-                    coalesce(dataset_sectors, '{}'::jsonb),
-                    '{"${dkey}"}',
-                    to_jsonb( coalesce( (dataset_sectors->'${dkey}')::int, 0) + ${delta} ),
-                    true
-                )
-            END
-        WHERE id IN (SELECT id FROM x)
-    </update>
+  <update id="incDatasetSectorCount">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    WITH RECURSIVE x AS (
+    SELECT u.id, u.parent_id
+    FROM name_usage_${partition} u
+    WHERE u.id = #{key.id}
+    UNION
+    SELECT u.id, u.parent_id
+    FROM name_usage_${partition} u, x
+    WHERE u.id = x.parent_id
+    )
+    UPDATE name_usage_${partition}
+    SET dataset_sectors =
+    CASE coalesce((dataset_sectors->'${dkey}')::int, 0) + ${delta}
+    WHEN 0 THEN
+    dataset_sectors - '${dkey}'
+    ELSE
+    jsonb_set(
+    coalesce(dataset_sectors, '{}'::jsonb),
+    '{"${dkey}"}',
+    to_jsonb( coalesce( (dataset_sectors->'${dkey}')::int, 0) + ${delta} ),
+    true
+    )
+    END
+    WHERE id IN (SELECT id FROM x)
+  </update>
 
-    <update id="updateDatasetSectorCount">
-        <include refid="life.catalogue.db.Common.partitionByKey"/>
-        UPDATE name_usage_${partition}
-        SET dataset_sectors = to_jsonb( #{count, typeHandler=life.catalogue.db.type.FastutilIntIntHandler}::jsonb )
-        WHERE id = #{key.id}
-    </update>
+  <update id="updateDatasetSectorCount">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    UPDATE name_usage_${partition}
+    SET dataset_sectors = to_jsonb( #{count, typeHandler=life.catalogue.db.type.FastutilIntIntHandler}::jsonb )
+    WHERE id = #{key.id}
+  </update>
 
-    <update id="resetDatasetSectorCount">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        UPDATE name_usage_${partition} AS u
-        SET dataset_sectors = NULL
-        FROM name n
-        WHERE n.id=u.name_id
-            AND n.rank &lt; 'GENUS'
-            AND NOT u.is_synonym
-    </update>
+  <update id="resetDatasetSectorCount">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    UPDATE name_usage_${partition} AS u
+    SET dataset_sectors = NULL
+    FROM name n
+    WHERE n.id=u.name_id
+    AND n.rank &lt; 'GENUS'
+    AND NOT u.is_synonym
+  </update>
 
 </mapper>

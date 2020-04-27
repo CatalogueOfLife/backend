@@ -1,116 +1,129 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="life.catalogue.db.mapper.SynonymMapper">
 
-    <sql id="synCols">
-        <include refid="life.catalogue.db.mapper.NameUsageMapper.usageCols"/>
-    </sql>
+  <sql id="synCols">
+    <include refid="life.catalogue.db.mapper.NameUsageMapper.usageCols"/>
+  </sql>
 
-    <sql id="COLS">
-        <include refid="life.catalogue.db.mapper.NameUsageMapper.COLS"/>
-    </sql>
+  <sql id="COLS">
+    <include refid="life.catalogue.db.mapper.NameUsageMapper.COLS"/>
+  </sql>
 
-    <sql id="PROPS">
-        <include refid="life.catalogue.db.mapper.NameUsageMapper.PROPS"/>
-    </sql>
+  <sql id="PROPS">
+    <include refid="life.catalogue.db.mapper.NameUsageMapper.PROPS"/>
+  </sql>
 
-    <sql id="SELECT">
-        <include refid="life.catalogue.db.mapper.SynonymMapper.synCols">
-            <property name="alias" value="u"/>
-            <property name="prefix" value=""/>
-        </include>,
-        <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
-            <property name="alias" value="n"/>
-            <property name="prefix" value="n_"/>
-        </include>,
-        <include refid="life.catalogue.db.mapper.TaxonMapper.taxonCols">
-            <property name="alias" value="a"/>
-            <property name="prefix" value="a_"/>
-        </include>,
-        <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
-            <property name="alias" value="an"/>
-            <property name="prefix" value="a_n_"/>
-        </include>
-    </sql>
+  <sql id="SELECT">
+    <include refid="life.catalogue.db.mapper.SynonymMapper.synCols">
+      <property name="alias" value="u"/>
+      <property name="prefix" value=""/>
+    </include>
+    ,
+    <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
+      <property name="alias" value="n"/>
+      <property name="prefix" value="n_"/>
+    </include>
+    ,
+    <include refid="life.catalogue.db.mapper.TaxonMapper.taxonCols">
+      <property name="alias" value="a"/>
+      <property name="prefix" value="a_"/>
+    </include>
+    ,
+    <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
+      <property name="alias" value="an"/>
+      <property name="prefix" value="a_n_"/>
+    </include>
+  </sql>
 
-    <sql id="FROM">
-        <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM"/>
-    </sql>
-
-
-    <resultMap id="synonymResultMap" type="Synonym" autoMapping="true">
-        <id property="id" column="id" />
-        <association property="name" javaType="Name" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap" columnPrefix="n_" />
-        <association property="accepted" javaType="Taxon" resultMap="life.catalogue.db.mapper.TaxonMapper.taxonResultMap" columnPrefix="a_" />
-    </resultMap>
+  <sql id="FROM">
+    <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM"/>
+  </sql>
 
 
-    <select id="listByTaxon" resultMap="synonymResultMap">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE u.parent_id = #{taxonId} AND u.is_synonym
-        ORDER BY u.status, n.homotypic_name_id, n.scientific_name
-    </select>
+  <resultMap id="synonymResultMap" type="Synonym" autoMapping="true">
+    <id property="id" column="id"/>
+    <association property="name" javaType="Name" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap" columnPrefix="n_"/>
+    <association property="accepted" javaType="Taxon" resultMap="life.catalogue.db.mapper.TaxonMapper.taxonResultMap" columnPrefix="a_"/>
+  </resultMap>
 
-    <select id="listByNameID" resultMap="synonymResultMap">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE u.is_synonym AND u.name_id = #{nameId}
-    </select>
 
-    <select id="count" resultType="integer">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        SELECT count(*) FROM name_usage_${partition} WHERE is_synonym
-    </select>
+  <select id="listByTaxon" resultMap="synonymResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
+    WHERE u.parent_id = #{taxonId} AND u.is_synonym
+    ORDER BY u.status, n.homotypic_name_id, n.scientific_name
+  </select>
 
-    <select id="list" resultMap="synonymResultMap">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE u.is_synonym
-        ORDER BY id
-        <include refid="life.catalogue.db.Common.limit" />
-    </select>
+  <select id="listByNameID" resultMap="synonymResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
+    WHERE u.is_synonym AND u.name_id = #{nameId}
+  </select>
 
-    <select id="get" resultMap="synonymResultMap" flushCache="true">
-        <include refid="life.catalogue.db.Common.partitionByKey"/>
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE u.id = #{key.id} AND u.is_synonym
-    </select>
+  <select id="count" resultType="integer">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT count(*) FROM name_usage_${partition} WHERE is_synonym
+  </select>
 
-    <select id="processDataset" parameterType="map" resultMap="synonymResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE u.is_synonym
-    </select>
+  <select id="list" resultMap="synonymResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
+    WHERE u.is_synonym
+    ORDER BY id
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
 
-    <insert id="create" parameterType="Synonym" useGeneratedKeys="false" keyProperty="id">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        INSERT INTO name_usage_${partition} (id, <include refid="COLS" />, created, modified)
-        VALUES (#{id}, <include refid="PROPS" />, now(), now())
-    </insert>
+  <select id="get" resultMap="synonymResultMap" flushCache="true">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
+    WHERE u.id = #{key.id} AND u.is_synonym
+  </select>
 
-    <update id="update" parameterType="Synonym" keyProperty="id">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        UPDATE name_usage_${partition}
-        SET (<include refid="COLS" />, created, modified) = (<include refid="PROPS" />, now(), now())
-        WHERE id = #{id} AND is_synonym
-    </update>
+  <select id="processDataset" parameterType="map" resultMap="synonymResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
+    WHERE u.is_synonym
+  </select>
 
-    <delete id="delete" parameterType="map">
-        <include refid="life.catalogue.db.Common.partitionByKey"/>
-        DELETE FROM name_usage_${partition} WHERE id = #{key.id} AND is_synonym
-    </delete>
+  <insert id="create" parameterType="Synonym" useGeneratedKeys="false" keyProperty="id">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    INSERT INTO name_usage_${partition} (id,<include refid="COLS"/>, created, modified)
+    VALUES (#{id},<include refid="PROPS"/>, now(), now())
+  </insert>
 
-    <delete id="deleteByDataset" parameterType="map">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        DELETE FROM name_usage_${partition} WHERE is_synonym
-    </delete>
+  <update id="update" parameterType="Synonym" keyProperty="id">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    UPDATE name_usage_${partition}
+    SET (<include refid="COLS"/>, created, modified) = (<include refid="PROPS"/>, now(), now())
+    WHERE id = #{id} AND is_synonym
+  </update>
+
+  <delete id="delete" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    DELETE FROM name_usage_${partition} WHERE id = #{key.id} AND is_synonym
+  </delete>
+
+  <delete id="deleteByDataset" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    DELETE FROM name_usage_${partition} WHERE is_synonym
+  </delete>
 
 </mapper>

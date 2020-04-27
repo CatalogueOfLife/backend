@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="life.catalogue.db.mapper.VernacularNameMapper">
 
   <sql id="SELECT">
@@ -55,42 +55,48 @@
   <sql id="FROM">vernacular_name_${partition} vn</sql>
 
   <resultMap id="vernacularNameResultMap" type="VernacularName" autoMapping="true">
-    <id property="id" column="id" />
+    <id property="id" column="id"/>
   </resultMap>
 
   <resultMap id="vernacularExtNameResultMap" type="TaxonExtension" autoMapping="true">
-    <id column="id" />
-    <result property="taxonID" column="taxon_id" />
+    <id column="id"/>
+    <result property="taxonID" column="taxon_id"/>
     <association property="obj" autoMapping="true" javaType="VernacularName">
-      <id property="id" column="id" />
+      <id property="id" column="id"/>
     </association>
   </resultMap>
 
   <select id="listByTaxon" resultMap="vernacularNameResultMap">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
-    SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
     WHERE vn.taxon_id = #{key.id}
     ORDER BY name
   </select>
 
   <select id="get" resultMap="vernacularNameResultMap">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
-    SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
     WHERE vn.id = #{key.id}
   </select>
 
   <select id="processDataset" parameterType="map" resultMap="vernacularExtNameResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
   </select>
 
   <insert id="create" parameterType="VernacularName" useGeneratedKeys="true" keyProperty="obj.id">
     <include refid="life.catalogue.db.Common.partitionByObj"/>
-    INSERT INTO vernacular_name_${partition} ( <include refid="COLS" />, created, modified)
-    VALUES ( <include refid="PROPS" />, now(), now())
+    INSERT INTO vernacular_name_${partition} (<include refid="COLS"/>, created, modified)
+    VALUES (<include refid="PROPS"/>, now(), now())
   </insert>
 
 </mapper>

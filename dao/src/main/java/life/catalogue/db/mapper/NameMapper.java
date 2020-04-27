@@ -6,6 +6,7 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.DatasetPageable;
+import life.catalogue.db.DatasetProcessable;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
 
@@ -17,7 +18,7 @@ import java.util.List;
  * When creating a new name if the homotypic group key is not yet set the newly created name key will be
  * used to point to the name itself
  */
-public interface NameMapper extends CRUD<DSID<String>, Name>, ProcessableDataset<Name>, DatasetPageable<Name> {
+public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable<Name>, DatasetPageable<Name> {
   
   Name getByUsage(@Param("datasetKey") int datasetKey, @Param("usageId") String usageId);
   

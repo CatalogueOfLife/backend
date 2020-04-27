@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import java.util.List;
 
+import life.catalogue.db.DatasetProcessable;
 import org.apache.ibatis.annotations.Param;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.NameRelation;
@@ -12,7 +13,7 @@ import life.catalogue.db.CRUD;
  * WARNING!
  * Only Create from CRUD is implemented !!!
  */
-public interface NameRelationMapper extends CRUD<DSID<Integer>, NameRelation>, ProcessableDataset<NameRelation> {
+public interface NameRelationMapper extends CRUD<DSID<Integer>, NameRelation>, DatasetProcessable<NameRelation> {
   
   /**
    * Returns the list of name relations for a single name,

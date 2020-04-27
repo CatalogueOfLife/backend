@@ -601,8 +601,7 @@ CREATE TABLE dataset (
 );
 
 CREATE TABLE dataset_archive (LIKE dataset);
-ALTER TABLE dataset_archive DROP COLUMN doc;
-ALTER TABLE dataset_archive DROP COLUMN editors;
+ALTER TABLE dataset_archive DROP COLUMN doc, DROP COLUMN editors;
 ALTER TABLE dataset_archive ADD COLUMN catalogue_key INTEGER NOT NULL REFERENCES dataset;
 
 CREATE INDEX ON dataset USING gin (f_unaccent(title) gin_trgm_ops);
@@ -625,6 +624,28 @@ LANGUAGE plpgsql;
 
 CREATE TRIGGER dataset_trigger BEFORE INSERT OR UPDATE
   ON dataset FOR EACH ROW EXECUTE PROCEDURE dataset_doc_update();
+
+
+CREATE TABLE dataset_patch AS SELECT * FROM dataset LIMIT 0;
+ALTER TABLE dataset_patch
+  DROP COLUMN source_key,
+  DROP COLUMN gbif_key,
+  DROP COLUMN gbif_publisher_key,
+  DROP COLUMN data_format,
+  DROP COLUMN origin,
+  DROP COLUMN import_frequency,
+  DROP COLUMN last_data_import_attempt,
+  DROP COLUMN deleted,
+  DROP COLUMN locked,
+  DROP COLUMN private,
+  DROP COLUMN data_access,
+  DROP COLUMN notes,
+  DROP COLUMN settings,
+  DROP COLUMN editors,
+  DROP COLUMN doc,
+  ADD COLUMN dataset_key INTEGER NOT NULL REFERENCES dataset;
+ALTER TABLE dataset_patch ADD PRIMARY KEY (key, dataset_key);
+
 
 CREATE TABLE dataset_import (
   dataset_key INTEGER NOT NULL REFERENCES dataset,

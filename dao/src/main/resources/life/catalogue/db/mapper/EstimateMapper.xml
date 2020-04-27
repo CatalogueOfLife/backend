@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="life.catalogue.db.mapper.EstimateMapper">
 
   <sql id="SelectVar">
@@ -96,32 +96,36 @@
 
 
   <resultMap id="estimateResultMap" type="SpeciesEstimate" autoMapping="true">
-    <id property="id" column="id" />
-    <association property="target" javaType="SimpleName" autoMapping="true" columnPrefix="target_" />
+    <id property="id" column="id"/>
+    <association property="target" javaType="SimpleName" autoMapping="true" columnPrefix="target_"/>
   </resultMap>
 
 
   <select id="list" resultMap="estimateResultMap">
-    SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
     ORDER BY est.id
-    <include refid="life.catalogue.db.Common.limit" />
+    <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="get" resultMap="estimateResultMap">
-    SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
     WHERE id = #{key.id}
   </select>
 
   <insert id="create" parameterType="SpeciesEstimate" useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO estimate ( <include refid="COLS" />, created_by )
-    VALUES ( <include refid="PROPS" />, #{createdBy} )
+    INSERT INTO estimate (<include refid="COLS"/>, created_by )
+    VALUES (<include refid="PROPS"/>, #{createdBy} )
   </insert>
 
   <update id="update" parameterType="SpeciesEstimate">
     UPDATE estimate
-    SET (<include refid="COLS" />) = (<include refid="PROPS" />)
+    SET (<include refid="COLS"/>) = (<include refid="PROPS"/>)
     WHERE id = #{id}
   </update>
 
@@ -136,34 +140,42 @@
 
   <select id="count" resultType="integer">
     SELECT count(*)
-    FROM <include refid="FROM" />
+    FROM
+    <include refid="FROM"/>
     WHERE dataset_key=#{datasetKey}
   </select>
 
   <select id="search" resultMap="estimateResultMap">
-    SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
     <include refid="WHERE"/>
     ORDER BY est.target_rank, est.target_name
-    <include refid="life.catalogue.db.Common.limit" />
+    <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="processSearch" resultMap="estimateResultMap">
-    SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
     <include refid="WHERE"/>
     ORDER BY est.target_rank, est.target_name
   </select>
 
   <select id="countSearch" resultType="int">
     SELECT count(*)
-    FROM <include refid="FROM" />
+    FROM
+    <include refid="FROM"/>
     <include refid="WHERE"/>
   </select>
 
   <select id="processDataset" parameterType="map" resultMap="estimateResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    SELECT <include refid="SELECT" />
-    FROM <include refid="FROM" />
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
     WHERE dataset_key=#{datasetKey}
   </select>
 

@@ -1,120 +1,131 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="life.catalogue.db.mapper.ParserConfigMapper">
 
-    <sql id="SELECT"><include refid="COLS"/>, created</sql>
+  <sql id="SELECT"><include refid="COLS"/>, created
+  </sql>
 
-    <sql id="COLS">
-        id,
-        rank,
-        uninomial,
-        genus,
-        infrageneric_epithet,
-        specific_epithet,
-        infraspecific_epithet,
-        cultivar_epithet,
-        appended_phrase,
-        candidatus,
-        notho,
-        basionym_authors,
-        basionym_ex_authors,
-        basionym_year,
-        combination_authors,
-        combination_ex_authors,
-        combination_year,
-        sanctioning_author,
-        code,
-        type,
-        nomenclatural_note,
-        taxonomic_note,
-        created_by
-    </sql>
+  <sql id="COLS">
+    id,
+    rank,
+    uninomial,
+    genus,
+    infrageneric_epithet,
+    specific_epithet,
+    infraspecific_epithet,
+    cultivar_epithet,
+    appended_phrase,
+    candidatus,
+    notho,
+    basionym_authors,
+    basionym_ex_authors,
+    basionym_year,
+    combination_authors,
+    combination_ex_authors,
+    combination_year,
+    sanctioning_author,
+    code,
+    type,
+    nomenclatural_note,
+    taxonomic_note,
+    created_by
+  </sql>
 
-    <sql id="PROPS">
-        #{id},
-        #{rank}::RANK,
-        #{uninomial},
-        #{genus},
-        #{infragenericEpithet},
-        #{specificEpithet},
-        #{infraspecificEpithet},
-        #{cultivarEpithet},
-        #{appendedPhrase},
-        #{candidatus},
-        #{notho}::NAMEPART,
-        #{basionymAuthorship.authors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
-        #{basionymAuthorship.exAuthors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
-        #{basionymAuthorship.year},
-        #{combinationAuthorship.authors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
-        #{combinationAuthorship.exAuthors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
-        #{combinationAuthorship.year},
-        #{sanctioningAuthor},
-        #{code}::NOMCODE,
-        #{type}::NAMETYPE,
-        #{remarks},
-        #{taxonomicNote},
-        #{createdBy}
-    </sql>
+  <sql id="PROPS">
+    #{id},
+    #{rank}::RANK,
+    #{uninomial},
+    #{genus},
+    #{infragenericEpithet},
+    #{specificEpithet},
+    #{infraspecificEpithet},
+    #{cultivarEpithet},
+    #{appendedPhrase},
+    #{candidatus},
+    #{notho}::NAMEPART,
+    #{basionymAuthorship.authors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
+    #{basionymAuthorship.exAuthors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
+    #{basionymAuthorship.year},
+    #{combinationAuthorship.authors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
+    #{combinationAuthorship.exAuthors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
+    #{combinationAuthorship.year},
+    #{sanctioningAuthor},
+    #{code}::NOMCODE,
+    #{type}::NAMETYPE,
+    #{remarks},
+    #{taxonomicNote},
+    #{createdBy}
+  </sql>
 
-    <sql id="FROM">parser_config n</sql>
+  <sql id="FROM">parser_config n</sql>
 
-    <sql id="WHERE">
-        <if test="req != null">
-            <if test="req.q != null">
-                WHERE id ~* #{req.q}
-            </if>
-        </if>
-    </sql>
+  <sql id="WHERE">
+    <if test="req != null">
+      <if test="req.q != null">
+        WHERE id ~* #{req.q}
+      </if>
+    </if>
+  </sql>
 
-     <!-- A mapping to Name, mostly auto mapped -->
-    <resultMap id="parserConfigResultMap" type="ParserConfig" autoMapping="true" extends="life.catalogue.db.mapper.NameMapper.nameResultMap">
-        <id property="id" column="id" />
-        <id property="remarks" column="nomenclatural_note" />
-    </resultMap>
+  <!-- A mapping to Name, mostly auto mapped -->
+  <resultMap id="parserConfigResultMap" type="ParserConfig" autoMapping="true" extends="life.catalogue.db.mapper.NameMapper.nameResultMap">
+    <id property="id" column="id"/>
+    <id property="remarks" column="nomenclatural_note"/>
+  </resultMap>
 
-    <select id="countSearch" resultType="integer">
-        SELECT count(*)
-        FROM <include refid="FROM" />
-        <include refid="WHERE" />
-    </select>
+  <select id="countSearch" resultType="integer">
+    SELECT count(*)
+    FROM
+    <include refid="FROM"/>
+    <include refid="WHERE"/>
+  </select>
 
-    <select id="search" resultMap="parserConfigResultMap">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        <include refid="WHERE" />
-        ORDER BY id
-        <include refid="life.catalogue.db.Common.limit" />
-    </select>
+  <select id="search" resultMap="parserConfigResultMap">
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
+    <include refid="WHERE"/>
+    ORDER BY id
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
 
-    <select id="processSearch" resultMap="parserConfigResultMap">
-      SELECT <include refid="SELECT" />
-      FROM <include refid="FROM" />
-      <include refid="WHERE" />
-      ORDER BY id
-    </select>
+  <select id="processSearch" resultMap="parserConfigResultMap">
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
+    <include refid="WHERE"/>
+    ORDER BY id
+  </select>
 
-    <select id="get" resultMap="parserConfigResultMap">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE id = #{id}
-    </select>
+  <select id="get" resultMap="parserConfigResultMap">
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
+    WHERE id = #{id}
+  </select>
 
-    <select id="process" parameterType="map" resultMap="parserConfigResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-    </select>
+  <select id="process" parameterType="map" resultMap="parserConfigResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
+  </select>
 
-    <insert id="create" parameterType="ParserConfig" useGeneratedKeys="false" keyProperty="id">
-        INSERT INTO parser_config (<include refid="COLS" />, created)
-        VALUES (<include refid="PROPS" />, now())
-    </insert>
+  <insert id="create" parameterType="ParserConfig" useGeneratedKeys="false" keyProperty="id">
+    INSERT INTO parser_config (<include refid="COLS"/>, created)
+    VALUES (<include refid="PROPS"/>, now())
+  </insert>
 
-    <delete id="delete" parameterType="map">
-        DELETE
-        FROM <include refid="FROM" />
-        WHERE id = #{id}
-    </delete>
+  <delete id="delete" parameterType="map">
+    DELETE
+    FROM
+    <include refid="FROM"/>
+    WHERE id = #{id}
+  </delete>
 
 </mapper>

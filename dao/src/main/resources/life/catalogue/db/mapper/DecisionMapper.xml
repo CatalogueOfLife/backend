@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="life.catalogue.db.mapper.DecisionMapper">
 
   <sql id="SelectVar">
@@ -111,19 +111,20 @@
 
 
   <resultMap id="decisionResultMap" type="EditorialDecision" autoMapping="true">
-    <id property="id" column="id" />
-    <result property="name" column="name" typeHandler="life.catalogue.db.type2.JsonNameHandler" />
-    <result property="lifezones" column="lifezones" typeHandler="life.catalogue.db.type.LifezoneSetTypeHandler" />
-    <association property="subject" javaType="SimpleName" autoMapping="true" columnPrefix="subject_" />
+    <id property="id" column="id"/>
+    <result property="name" column="name" typeHandler="life.catalogue.db.type2.JsonNameHandler"/>
+    <result property="lifezones" column="lifezones" typeHandler="life.catalogue.db.type.LifezoneSetTypeHandler"/>
+    <association property="subject" javaType="SimpleName" autoMapping="true" columnPrefix="subject_"/>
   </resultMap>
 
 
   <select id="list" resultMap="decisionResultMap">
-    SELECT <include refid="SELECT" />
+    SELECT
+    <include refid="SELECT"/>
     FROM decision ed
     WHERE ed.dataset_key = #{datasetKey}
     ORDER BY ed.id
-    <include refid="life.catalogue.db.Common.limit" />
+    <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="count" resultType="integer">
@@ -139,42 +140,46 @@
   </select>
 
   <select id="search" resultMap="decisionResultMap">
-    SELECT <include refid="SELECT" />
+    SELECT
+    <include refid="SELECT"/>
     FROM decision ed
     <include refid="WHERE"/>
     ORDER BY ed.id desc
-    <include refid="life.catalogue.db.Common.limit" />
+    <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="processSearch" resultMap="decisionResultMap">
-    SELECT <include refid="SELECT" />
+    SELECT
+    <include refid="SELECT"/>
     FROM decision ed
     <include refid="WHERE"/>
     ORDER BY ed.id desc
   </select>
 
   <select id="get" resultMap="decisionResultMap">
-    SELECT <include refid="SELECT" />
+    SELECT
+    <include refid="SELECT"/>
     FROM decision ed
     WHERE id = #{key.id}
   </select>
 
   <select id="getBySubject" resultMap="decisionResultMap">
-    SELECT <include refid="SELECT" />
+    SELECT
+    <include refid="SELECT"/>
     FROM decision ed
     WHERE ed.subject_dataset_key = #{subjectDatasetKey}
-      AND ed.dataset_key = #{datasetKey}
-      AND ed.subject_id = #{id}
+    AND ed.dataset_key = #{datasetKey}
+    AND ed.subject_id = #{id}
   </select>
 
   <insert id="create" parameterType="EditorialDecision" useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO decision ( <include refid="COLS" />, original_subject_id, created_by )
-    VALUES ( <include refid="PROPS" />, #{subject.id}, #{createdBy} )
+    INSERT INTO decision (<include refid="COLS"/>, original_subject_id, created_by )
+    VALUES (<include refid="PROPS"/>, #{subject.id}, #{createdBy} )
   </insert>
 
   <update id="update" parameterType="EditorialDecision">
     UPDATE decision
-    SET (<include refid="COLS" />) = (<include refid="PROPS" />)
+    SET (<include refid="COLS"/>) = (<include refid="PROPS"/>)
     WHERE id = #{id}
   </update>
 
@@ -188,13 +193,15 @@
   </delete>
 
   <select id="processDataset" parameterType="map" resultMap="decisionResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    SELECT <include refid="SELECT" />
+    SELECT
+    <include refid="SELECT"/>
     FROM decision ed
     WHERE dataset_key=#{datasetKey}
   </select>
 
   <select id="processDecisions" parameterType="map" resultMap="decisionResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    SELECT <include refid="SELECT" />
+    SELECT
+    <include refid="SELECT"/>
     FROM decision ed
     WHERE subject_dataset_key = #{subjectDatasetKey} AND dataset_key = #{datasetKey}
   </select>

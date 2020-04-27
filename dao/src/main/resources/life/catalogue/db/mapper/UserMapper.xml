@@ -1,58 +1,58 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="life.catalogue.db.mapper.UserMapper">
 
-    <sql id="SELECT">
-      <include refid="SELECT_PUBLIC"/>,
-      u.email,
-      u.roles,
-      u.settings,
-      (SELECT array_agg(d.key) FROM dataset d WHERE d.editors @> ARRAY[u.key] OR d.created_by=u.key) AS datasets,
-      u.last_login,
-      u.created,
-      u.deleted
-    </sql>
+  <sql id="SELECT">
+    <include refid="SELECT_PUBLIC"/>,
+    u.email,
+    u.roles,
+    u.settings,
+    (SELECT array_agg(d.key) FROM dataset d WHERE d.editors @> ARRAY[u.key] OR d.created_by=u.key) AS datasets,
+    u.last_login,
+    u.created,
+    u.deleted
+  </sql>
 
-    <sql id="SELECT_PUBLIC">
-      u.key,
-      u.username,
-      u.firstname,
-      u.lastname,
-      u.orcid,
-      u.country
-    </sql>
+  <sql id="SELECT_PUBLIC">
+    u.key,
+    u.username,
+    u.firstname,
+    u.lastname,
+    u.orcid,
+    u.country
+  </sql>
 
-    <sql id="COLS">
-      username,
-      firstname,
-      lastname,
-      email,
-      orcid,
-      country,
-      roles,
-      settings,
-      last_login,
-      deleted
-    </sql>
+  <sql id="COLS">
+    username,
+    firstname,
+    lastname,
+    email,
+    orcid,
+    country,
+    roles,
+    settings,
+    last_login,
+    deleted
+  </sql>
 
-    <sql id="PROPS">
-      #{username},
-      #{firstname},
-      #{lastname},
-      #{email},
-      #{orcid},
-      #{country},
-      #{roles, typeHandler=life.catalogue.db.type.RoleSetTypeHandler},
-      #{settings, typeHandler=life.catalogue.db.type2.HstoreMapTypeHandler}::hstore,
-      #{lastLogin},
-      #{deleted}
-    </sql>
+  <sql id="PROPS">
+    #{username},
+    #{firstname},
+    #{lastname},
+    #{email},
+    #{orcid},
+    #{country},
+    #{roles, typeHandler=life.catalogue.db.type.RoleSetTypeHandler},
+    #{settings, typeHandler=life.catalogue.db.type2.HstoreMapTypeHandler}::hstore,
+    #{lastLogin},
+    #{deleted}
+  </sql>
 
-    <sql id="FROM">
-        "user" u
-    </sql>
+  <sql id="FROM">
+    "user" u
+  </sql>
 
   <sql id="WHERE">
     u.username ILIKE '%${q}%'
@@ -61,66 +61,78 @@
   </sql>
 
   <resultMap id="userResultMap" type="User" autoMapping="true">
-        <id property="key" column="key" />
-        <result property="roles" column="roles" typeHandler="life.catalogue.db.type.RoleSetTypeHandler"/>
-        <result property="settings" column="settings" typeHandler="life.catalogue.db.type2.HstoreMapTypeHandler"/>
-        <result property="datasets" column="datasets" typeHandler="life.catalogue.db.type2.IntSetTypeHandler"/>
-    </resultMap>
+    <id property="key" column="key"/>
+    <result property="roles" column="roles" typeHandler="life.catalogue.db.type.RoleSetTypeHandler"/>
+    <result property="settings" column="settings" typeHandler="life.catalogue.db.type2.HstoreMapTypeHandler"/>
+    <result property="datasets" column="datasets" typeHandler="life.catalogue.db.type2.IntSetTypeHandler"/>
+  </resultMap>
 
 
-    <select id="get" resultMap="userResultMap">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE u.key = #{key}
-    </select>
+  <select id="get" resultMap="userResultMap">
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
+    WHERE u.key = #{key}
+  </select>
 
-    <select id="getPublic" resultMap="userResultMap">
-      SELECT <include refid="SELECT_PUBLIC" />
-      FROM <include refid="FROM" />
-      WHERE u.key = #{key}
-    </select>
+  <select id="getPublic" resultMap="userResultMap">
+    SELECT
+    <include refid="SELECT_PUBLIC"/>
+    FROM
+    <include refid="FROM"/>
+    WHERE u.key = #{key}
+  </select>
 
-    <select id="getByUsername" resultMap="userResultMap">
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE u.username = #{username}
-    </select>
+  <select id="getByUsername" resultMap="userResultMap">
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
+    WHERE u.username = #{username}
+  </select>
 
   <select id="search" resultMap="userResultMap">
-    SELECT <include refid="SELECT_PUBLIC" />
-    FROM <include refid="FROM" />
-    WHERE <include refid="WHERE" />
+    SELECT
+    <include refid="SELECT_PUBLIC"/>
+    FROM
+    <include refid="FROM"/>
+    WHERE
+    <include refid="WHERE"/>
     ORDER BY u.username
-    <include refid="life.catalogue.db.Common.limit" />
+    <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="searchCount" resultType="integer">
     SELECT count(*)
-    FROM <include refid="FROM" />
-    WHERE <include refid="WHERE" />
+    FROM
+    <include refid="FROM"/>
+    WHERE
+    <include refid="WHERE"/>
   </select>
 
   <select id="datasetEditors" resultMap="userResultMap">
-    SELECT <include refid="SELECT_PUBLIC" />
+    SELECT
+    <include refid="SELECT_PUBLIC"/>
     FROM dataset d
-      JOIN "user" u ON d.editors @> ARRAY[u.key]
+    JOIN "user" u ON d.editors @> ARRAY[u.key]
     WHERE d.key = #{datasetKey}
   </select>
 
-    <insert id="create" parameterType="User" useGeneratedKeys="true" keyProperty="key">
-      INSERT INTO "user" (<include refid="COLS" />)
-             VALUES (<include refid="PROPS" />)
-    </insert>
+  <insert id="create" parameterType="User" useGeneratedKeys="true" keyProperty="key">
+    INSERT INTO "user" (<include refid="COLS"/>)
+    VALUES (<include refid="PROPS"/>)
+  </insert>
 
-    <update id="update" parameterType="User">
-        UPDATE "user"
-        SET (<include refid="COLS" />) = (<include refid="PROPS" />)
-        WHERE key = #{key}
-    </update>
+  <update id="update" parameterType="User">
+    UPDATE "user"
+    SET (<include refid="COLS"/>) = (<include refid="PROPS"/>)
+    WHERE key = #{key}
+  </update>
 
-    <delete id="delete" parameterType="map">
-        DELETE FROM "user"
-        WHERE key = #{key}
-    </delete>
+  <delete id="delete" parameterType="map">
+    DELETE FROM "user"
+    WHERE key = #{key}
+  </delete>
 
 </mapper>

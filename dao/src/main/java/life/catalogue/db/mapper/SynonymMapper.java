@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import java.util.List;
 
+import life.catalogue.db.DatasetProcessable;
 import org.apache.ibatis.annotations.Param;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Synonym;
@@ -14,7 +15,7 @@ import life.catalogue.db.DatasetPageable;
  * <p>
  * Mapper sql should be reusing sql fragments from the 3 concrete implementations as much as possible avoiding duplication.
  */
-public interface SynonymMapper extends CRUD<DSID<String>, Synonym>, ProcessableDataset<Synonym>, DatasetPageable<Synonym> {
+public interface SynonymMapper extends CRUD<DSID<String>, Synonym>, DatasetProcessable<Synonym>, DatasetPageable<Synonym> {
   
   /**
    * Return synonyms including misapplied names from the synonym relation table.

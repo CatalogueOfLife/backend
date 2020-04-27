@@ -57,13 +57,13 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
       return new ResultPage<>(p, result, mapper::count);
     }
   }
-  
+
   public T get(K key) {
     try (SqlSession session = factory.openSession()) {
       return session.getMapper(mapperClass).get(key);
     }
   }
-  
+
   public K create(T obj, int user) {
     try (SqlSession session = factory.openSession(false)) {
       M mapper = session.getMapper(mapperClass);
@@ -77,7 +77,7 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
   protected void createAfter(T obj, int user, M mapper, SqlSession session) {
     // override to do sth useful
   }
-  
+
   public int update(T obj, int user) {
     try (SqlSession session = factory.openSession(false)) {
       M mapper = session.getMapper(mapperClass);
@@ -96,7 +96,7 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
   protected void updateAfter(T obj, T old, int user, M mapper, SqlSession session) {
     // override to do sth useful
   }
-  
+
   public int delete(K key, int user) {
     try (SqlSession session = factory.openSession(false)) {
       M mapper = session.getMapper(mapperClass);

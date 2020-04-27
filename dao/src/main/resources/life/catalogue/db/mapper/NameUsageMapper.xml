@@ -1,275 +1,296 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="life.catalogue.db.mapper.NameUsageMapper">
 
 
-    <sql id="usageCols">
-        ${alias}.id AS ${prefix}id,
-        ${alias}.dataset_key AS ${prefix}dataset_key,
-        ${alias}.sector_key AS ${prefix}sector_key,
-        ${alias}.verbatim_key AS ${prefix}verbatim_key,
-        ${alias}.status AS ${prefix}status,
-        ${alias}.origin AS ${prefix}origin,
-        ${alias}.parent_id AS ${prefix}parent_id,
-        ${alias}.according_to AS ${prefix}according_to,
-        ${alias}.reference_ids AS ${prefix}reference_ids,
-        ${alias}.remarks AS ${prefix}remarks,
-        ${alias}.created AS ${prefix}created,
-        ${alias}.created_by AS ${prefix}created_by,
-        ${alias}.modified AS ${prefix}modified,
-        ${alias}.modified_by AS ${prefix}modified_by
-    </sql>
+  <sql id="usageCols">
+    ${alias}.id AS ${prefix}id,
+    ${alias}.dataset_key AS ${prefix}dataset_key,
+    ${alias}.sector_key AS ${prefix}sector_key,
+    ${alias}.verbatim_key AS ${prefix}verbatim_key,
+    ${alias}.status AS ${prefix}status,
+    ${alias}.origin AS ${prefix}origin,
+    ${alias}.parent_id AS ${prefix}parent_id,
+    ${alias}.according_to AS ${prefix}according_to,
+    ${alias}.reference_ids AS ${prefix}reference_ids,
+    ${alias}.remarks AS ${prefix}remarks,
+    ${alias}.created AS ${prefix}created,
+    ${alias}.created_by AS ${prefix}created_by,
+    ${alias}.modified AS ${prefix}modified,
+    ${alias}.modified_by AS ${prefix}modified_by
+  </sql>
 
-    <sql id="SELECT">
-        u.is_synonym,
-        <include refid="life.catalogue.db.mapper.TaxonMapper.taxonCols">
-            <property name="alias" value="u"/>
-            <property name="prefix" value=""/>
-        </include>,
-        <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
-            <property name="alias" value="n"/>
-            <property name="prefix" value="n_"/>
-        </include>,
-        <include refid="life.catalogue.db.mapper.TaxonMapper.taxonCols">
-            <property name="alias" value="a"/>
-            <property name="prefix" value="a_"/>
-        </include>,
-        <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
-            <property name="alias" value="an"/>
-            <property name="prefix" value="a_n_"/>
-        </include>
-    </sql>
+  <sql id="SELECT">
+    u.is_synonym,
+    <include refid="life.catalogue.db.mapper.TaxonMapper.taxonCols">
+      <property name="alias" value="u"/>
+      <property name="prefix" value=""/>
+    </include>
+    ,
+    <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
+      <property name="alias" value="n"/>
+      <property name="prefix" value="n_"/>
+    </include>
+    ,
+    <include refid="life.catalogue.db.mapper.TaxonMapper.taxonCols">
+      <property name="alias" value="a"/>
+      <property name="prefix" value="a_"/>
+    </include>
+    ,
+    <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
+      <property name="alias" value="an"/>
+      <property name="prefix" value="a_n_"/>
+    </include>
+  </sql>
 
-    <sql id="COLS">
-        dataset_key,
-        sector_key,
-        verbatim_key,
-        parent_id,
-        name_id,
-        status,
-        is_synonym,
-        origin,
-        according_to,
-        reference_ids,
-        remarks,
-        created_by,
-        modified_by
-    </sql>
+  <sql id="COLS">
+    dataset_key,
+    sector_key,
+    verbatim_key,
+    parent_id,
+    name_id,
+    status,
+    is_synonym,
+    origin,
+    according_to,
+    reference_ids,
+    remarks,
+    created_by,
+    modified_by
+  </sql>
 
-    <sql id="PROPS">
-        #{datasetKey},
-        #{sectorKey},
-        #{verbatimKey},
-        #{parentId},
-        #{name.id},
-        #{status}::TAXONOMICSTATUS,
-        #{status.synonym},
-        #{origin}::ORIGIN,
-        #{accordingTo},
-        #{referenceIds},
-        #{remarks},
-        #{createdBy},
-        #{modifiedBy}
-    </sql>
+  <sql id="PROPS">
+    #{datasetKey},
+    #{sectorKey},
+    #{verbatimKey},
+    #{parentId},
+    #{name.id},
+    #{status}::TAXONOMICSTATUS,
+    #{status.synonym},
+    #{origin}::ORIGIN,
+    #{accordingTo},
+    #{referenceIds},
+    #{remarks},
+    #{createdBy},
+    #{modifiedBy}
+  </sql>
 
-    <sql id="FROM">
-        name_usage_${partition} u JOIN name_${partition} n ON u.name_id=n.id
-            LEFT JOIN name_usage_${partition} a ON u.parent_id=a.id AND u.is_synonym
-            LEFT JOIN name_${partition} an ON a.name_id=an.id
-    </sql>
+  <sql id="FROM">
+    name_usage_${partition} u JOIN name_${partition} n ON u.name_id=n.id
+    LEFT JOIN name_usage_${partition} a ON u.parent_id=a.id AND u.is_synonym
+    LEFT JOIN name_${partition} an ON a.name_id=an.id
+  </sql>
 
-    <resultMap id="usageResultMap" type="NameUsageBase" autoMapping="true">
-        <id property="id" column="id" />
-        <discriminator column="is_synonym" javaType="boolean">
-            <case value="false" resultType="Taxon"   resultMap="life.catalogue.db.mapper.TaxonMapper.taxonResultMap"/>
-            <case value="true"  resultType="Synonym" resultMap="life.catalogue.db.mapper.SynonymMapper.synonymResultMap"/>
-        </discriminator>
-    </resultMap>
+  <resultMap id="usageResultMap" type="NameUsageBase" autoMapping="true">
+    <id property="id" column="id"/>
+    <discriminator column="is_synonym" javaType="boolean">
+      <case value="false" resultType="Taxon" resultMap="life.catalogue.db.mapper.TaxonMapper.taxonResultMap"/>
+      <case value="true" resultType="Synonym" resultMap="life.catalogue.db.mapper.SynonymMapper.synonymResultMap"/>
+    </discriminator>
+  </resultMap>
 
-    <resultMap id="simpleResultMap" type="SimpleName" autoMapping="true">
-        <id property="id" column="id" />
-    </resultMap>
+  <resultMap id="simpleResultMap" type="SimpleName" autoMapping="true">
+    <id property="id" column="id"/>
+  </resultMap>
 
-    <resultMap id="idResultMap" type="UsageNameID" autoMapping="false">
-      <id property="usageId" column="id" />
-      <result property="nameId" column="nid" />
-    </resultMap>
+  <resultMap id="idResultMap" type="UsageNameID" autoMapping="false">
+    <id property="usageId" column="id"/>
+    <result property="nameId" column="nid"/>
+  </resultMap>
 
 
-    <select id="count" resultType="integer">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        SELECT count(*) FROM name_usage_${partition}
-    </select>
+  <select id="count" resultType="integer">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT count(*) FROM name_usage_${partition}
+  </select>
 
-    <select id="get" resultMap="usageResultMap">
-        <include refid="life.catalogue.db.Common.partitionByKey"/>
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE u.id = #{key.id}
-    </select>
+  <select id="get" resultMap="usageResultMap">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
+    WHERE u.id = #{key.id}
+  </select>
 
-    <select id="list" resultMap="usageResultMap">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        ORDER BY u.id
-        <include refid="life.catalogue.db.Common.limit" />
-    </select>
+  <select id="list" resultMap="usageResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
+    ORDER BY u.id
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
 
-    <select id="listByNameID" resultMap="usageResultMap">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE u.name_id=#{nameId}
-        ORDER BY u.id
-    </select>
+  <select id="listByNameID" resultMap="usageResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
+    WHERE u.name_id=#{nameId}
+    ORDER BY u.id
+  </select>
 
-    <select id="listByNameIndexID" resultMap="usageResultMap">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE u.name_index_id IN (<foreach collection="nameIdxIds" item="nidx" separator=",">#{nidx}</foreach>)
-        ORDER BY u.id
-    </select>
+  <select id="listByNameIndexID" resultMap="usageResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
+    WHERE u.name_index_id IN (<foreach collection="nameIdxIds" item="nidx" separator=",">#{nidx}</foreach>)
+    ORDER BY u.id
+  </select>
 
-    <select id="listByName" resultMap="usageResultMap">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE lower(n.scientific_name) = lower(#{name})
-        <if test="rank != null">
-            AND n.rank=#{rank}::rank
-        </if>
-        ORDER BY u.id
-    </select>
+  <select id="listByName" resultMap="usageResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
+    WHERE lower(n.scientific_name) = lower(#{name})
+    <if test="rank != null">
+      AND n.rank=#{rank}::rank
+    </if>
+    ORDER BY u.id
+  </select>
 
-    <select id="children" resultMap="usageResultMap">
-        <include refid="life.catalogue.db.Common.partitionByKey"/>
-        SELECT <include refid="SELECT" />
-        FROM <include refid="FROM" />
-        WHERE u.parent_id = #{key.id}
-        <if test="rank != null">
-          AND n.rank > #{rank}::rank
-        </if>
-    </select>
+  <select id="children" resultMap="usageResultMap">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    SELECT
+    <include refid="SELECT"/>
+    FROM
+    <include refid="FROM"/>
+    WHERE u.parent_id = #{key.id}
+    <if test="rank != null">
+      AND n.rank > #{rank}::rank
+    </if>
+  </select>
 
-    <update id="updateParentId" parameterType="map">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        UPDATE name_usage_${partition}
-        SET (parent_id, modified, modified_by) = (#{newParentId}, now(), #{userKey})
-        WHERE parent_id = #{parentId}
-    </update>
+  <update id="updateParentId" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    UPDATE name_usage_${partition}
+    SET (parent_id, modified, modified_by) = (#{newParentId}, now(), #{userKey})
+    WHERE parent_id = #{parentId}
+  </update>
 
-    <delete id="deleteBySector" parameterType="map">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        DELETE FROM name_usage_${partition} WHERE sector_key = #{sectorKey}
-    </delete>
+  <delete id="deleteBySector" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    DELETE FROM name_usage_${partition} WHERE sector_key = #{sectorKey}
+  </delete>
 
   <select id="deleteSubtree" parameterType="map" resultType="String">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
     WITH RECURSIVE tree AS (
-      SELECT id, name_id AS nid
-      FROM name_usage_${partition}
-      WHERE id=#{key.id}
+    SELECT id, name_id AS nid
+    FROM name_usage_${partition}
+    WHERE id=#{key.id}
     UNION
-      SELECT c.id, c.name_id
-      FROM name_usage_${partition} c JOIN tree ON tree.id = c.parent_id
+    SELECT c.id, c.name_id
+    FROM name_usage_${partition} c JOIN tree ON tree.id = c.parent_id
     )
     DELETE
-      FROM name_usage_${partition} u
-      USING tree t
-      WHERE u.id = t.id
-      RETURNING t.nid;
+    FROM name_usage_${partition} u
+    USING tree t
+    WHERE u.id = t.id
+    RETURNING t.nid;
   </select>
 
-    <sql id="WHERE_START">
-        <choose>
-            <when test="startID != null">
-                u.id = #{startID}
-            </when>
-            <otherwise>
-                u.parent_id IS NULL
-            </otherwise>
-        </choose>
-        AND NOT u.is_synonym
-        <if test="lowestRank">
-            AND n.rank &lt;= #{lowestRank}::rank
-        </if>
-    </sql>
+  <sql id="WHERE_START">
+    <choose>
+      <when test="startID != null">
+        u.id = #{startID}
+      </when>
+      <otherwise>
+        u.parent_id IS NULL
+      </otherwise>
+    </choose>
+    AND NOT u.is_synonym
+    <if test="lowestRank">
+      AND n.rank &lt;= #{lowestRank}::rank
+    </if>
+  </sql>
 
-    <sql id="WHERE_UNION">
-        <where>
-            <if test="!includeSynonyms">
-                NOT u.is_synonym
-            </if>
-            <if test="exclusions != null and !exclusions.isEmpty()">
-                AND u.id NOT IN
-                <foreach item="id" collection="exclusions" open="(" separator="," close=")">#{id}</foreach>
-            </if>
-            <if test="sectorKey != null">
-                AND u.sector_key = #{sectorKey}
-            </if>
-            <if test="lowestRank">
-                AND n.rank &lt;= #{lowestRank}::rank
-            </if>
-        </where>
-    </sql>
+  <sql id="WHERE_UNION">
+    <where>
+      <if test="!includeSynonyms">
+        NOT u.is_synonym
+      </if>
+      <if test="exclusions != null and !exclusions.isEmpty()">
+        AND u.id NOT IN
+        <foreach item="id" collection="exclusions" open="(" separator="," close=")">#{id}</foreach>
+      </if>
+      <if test="sectorKey != null">
+        AND u.sector_key = #{sectorKey}
+      </if>
+      <if test="lowestRank">
+        AND n.rank &lt;= #{lowestRank}::rank
+      </if>
+    </where>
+  </sql>
 
-    <select id="processTree" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        WITH RECURSIVE x AS(
-            SELECT <include refid="SELECT" />
-            <if test="depthFirst">
-                ,concat_ws('|', n.scientific_name, u.id) AS path
-            </if>
-            FROM <include refid="FROM" />
-            WHERE <include refid="WHERE_START"/>
+  <select id="processTree" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    WITH RECURSIVE x AS(
+    SELECT
+    <include refid="SELECT"/>
+    <if test="depthFirst">
+      ,concat_ws('|', n.scientific_name, u.id) AS path
+    </if>
+    FROM
+    <include refid="FROM"/>
+    WHERE
+    <include refid="WHERE_START"/>
 
-            UNION
+    UNION
 
-            SELECT <include refid="SELECT" />
-            <if test="depthFirst">
-                ,concat_ws('|', x.path, not u.is_synonym, n.scientific_name, u.id)  AS path
-            </if>
-            FROM <include refid="FROM" />
-            JOIN x ON x.id = u.parent_id
-            <include refid="WHERE_UNION"/>
-        )
-        SELECT * FROM x
-        <if test="depthFirst">
-            ORDER BY x.path
-        </if>
-    </select>
+    SELECT
+    <include refid="SELECT"/>
+    <if test="depthFirst">
+      ,concat_ws('|', x.path, not u.is_synonym, n.scientific_name, u.id) AS path
+    </if>
+    FROM
+    <include refid="FROM"/>
+    JOIN x ON x.id = u.parent_id
+    <include refid="WHERE_UNION"/>
+    )
+    SELECT * FROM x
+    <if test="depthFirst">
+      ORDER BY x.path
+    </if>
+  </select>
 
-    <select id="processTreeSimple" parameterType="map" resultMap="simpleResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-        <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-        WITH RECURSIVE x AS(
-            SELECT u.id, n.scientific_name, n.authorship, n.rank, n.code, u.status, u.parent_id,
-                concat_ws('|', n.scientific_name, u.id) AS path
-            FROM name_usage_${partition} u JOIN name_${partition} n ON u.name_id=n.id
-            WHERE <include refid="WHERE_START"/>
-        UNION
-            SELECT u.id, n.scientific_name, n.authorship, n.rank, n.code, u.status, u.parent_id,
-                concat_ws('|', x.path, not u.is_synonym, n.scientific_name, u.id)
-            FROM name_usage_${partition} u JOIN name_${partition} n ON u.name_id=n.id
-                JOIN x ON x.id = u.parent_id
-            <include refid="WHERE_UNION"/>
-        )
-        SELECT id, scientific_name AS name, authorship, rank, code, status, parent_id AS parent
-        FROM x ORDER BY x.path
-    </select>
+  <select id="processTreeSimple" parameterType="map" resultMap="simpleResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    WITH RECURSIVE x AS(
+    SELECT u.id, n.scientific_name, n.authorship, n.rank, n.code, u.status, u.parent_id,
+    concat_ws('|', n.scientific_name, u.id) AS path
+    FROM name_usage_${partition} u JOIN name_${partition} n ON u.name_id=n.id
+    WHERE
+    <include refid="WHERE_START"/>
+    UNION
+    SELECT u.id, n.scientific_name, n.authorship, n.rank, n.code, u.status, u.parent_id,
+    concat_ws('|', x.path, not u.is_synonym, n.scientific_name, u.id)
+    FROM name_usage_${partition} u JOIN name_${partition} n ON u.name_id=n.id
+    JOIN x ON x.id = u.parent_id
+    <include refid="WHERE_UNION"/>
+    )
+    SELECT id, scientific_name AS name, authorship, rank, code, status, parent_id AS parent
+    FROM x ORDER BY x.path
+  </select>
 
   <select id="processTreeIds" parameterType="map" resultMap="idResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
     WITH RECURSIVE tree AS (
-      SELECT id, name_id AS nid
-      FROM name_usage_${partition}
-      WHERE id=#{key.id}
+    SELECT id, name_id AS nid
+    FROM name_usage_${partition}
+    WHERE id=#{key.id}
     UNION
-      SELECT c.id, c.name_id
-      FROM name_usage_${partition} c JOIN tree ON tree.id = c.parent_id
+    SELECT c.id, c.name_id
+    FROM name_usage_${partition} c JOIN tree ON tree.id = c.parent_id
     )
     SELECT * FROM tree;
   </select>

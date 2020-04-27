@@ -5,11 +5,11 @@ import java.util.function.Consumer;
 import org.apache.ibatis.session.*;
 import life.catalogue.api.model.DataEntity;
 import life.catalogue.db.CRUD;
-import life.catalogue.db.mapper.ProcessableDataset;
+import life.catalogue.db.DatasetProcessable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TableCopyHandler<K, T extends DataEntity<K>, M extends CRUD<K,T> & ProcessableDataset<T>> extends TableCopyHandlerBase<T> {
+public class TableCopyHandler<K, T extends DataEntity<K>, M extends CRUD<K,T> & DatasetProcessable<T>> extends TableCopyHandlerBase<T> {
   
   private static final Logger LOG = LoggerFactory.getLogger(TableCopyHandler.class);
   private final M mapper;

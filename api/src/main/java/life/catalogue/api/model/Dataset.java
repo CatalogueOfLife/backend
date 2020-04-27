@@ -24,7 +24,7 @@ import java.util.*;
  * Metadata about a dataset or a subset of it if parentKey is given.
  */
 @ValidDataset
-public class Dataset extends DataEntity<Integer> {
+public class Dataset extends DataEntity<Integer> implements DatasetMetadata {
   private static final Logger LOG = LoggerFactory.getLogger(Dataset.class);
 
   private Integer key;
@@ -75,6 +75,7 @@ public class Dataset extends DataEntity<Integer> {
   private Map<DatasetSettings, Object> settings = new HashMap<>();
   private IntSet editors = new IntOpenHashSet();
 
+  @Override
   public Integer getKey() {
     return key;
   }
@@ -87,6 +88,7 @@ public class Dataset extends DataEntity<Integer> {
     this.type = type;
   }
   
+  @Override
   public void setKey(Integer key) {
     this.key = key;
   }
@@ -99,10 +101,12 @@ public class Dataset extends DataEntity<Integer> {
     this.sourceKey = sourceKey;
   }
 
+  @Override
   public String getTitle() {
     return title;
   }
   
+  @Override
   public void setTitle(String title) {
     this.title = title;
   }
@@ -123,58 +127,72 @@ public class Dataset extends DataEntity<Integer> {
     this.gbifPublisherKey = gbifPublisherKey;
   }
   
+  @Override
   public String getDescription() {
     return description;
   }
   
+  @Override
   public void setDescription(String description) {
     this.description = description;
   }
   
+  @Override
   public List<String> getAuthorsAndEditors() {
     return authorsAndEditors;
   }
   
+  @Override
   public void setAuthorsAndEditors(List<String> authorsAndEditors) {
     this.authorsAndEditors = authorsAndEditors;
   }
   
+  @Override
   public List<String> getOrganisations() {
     return organisations;
   }
   
+  @Override
   public void setOrganisations(List<String> organisations) {
     this.organisations = organisations;
   }
   
+  @Override
   public String getContact() {
     return contact;
   }
   
+  @Override
   public void setContact(String contact) {
     this.contact = contact;
   }
   
+  @Override
   public License getLicense() {
     return license;
   }
   
+  @Override
   public void setLicense(License license) {
     this.license = license;
   }
   
+  @Override
   public String getVersion() {
     return version;
   }
   
+  @Override
   public void setVersion(String version) {
     this.version = version;
   }
   
+  @Override
   public String getGeographicScope() {
     return geographicScope;
   }
   
+  @Override
   public void setGeographicScope(String geographicScope) {
     this.geographicScope = geographicScope;
   }
@@ -183,26 +201,32 @@ public class Dataset extends DataEntity<Integer> {
    * Release date of the source data.
    * The date can usually only be taken from metadata explicitly given by the source.
    */
+  @Override
   public LocalDate getReleased() {
     return released;
   }
   
+  @Override
   public void setReleased(LocalDate released) {
     this.released = released;
   }
   
+  @Override
   public String getCitation() {
     return citation;
   }
   
+  @Override
   public void setCitation(String citation) {
     this.citation = citation;
   }
   
+  @Override
   public URI getWebsite() {
     return website;
   }
   
+  @Override
   public void setWebsite(URI website) {
     this.website = website;
   }
@@ -323,34 +347,42 @@ public class Dataset extends DataEntity<Integer> {
     this.deleted = deleted;
   }
   
+  @Override
   public String getAlias() {
     return alias;
   }
   
+  @Override
   public void setAlias(String alias) {
     this.alias = alias;
   }
   
+  @Override
   public String getGroup() {
     return group;
   }
   
+  @Override
   public void setGroup(String group) {
     this.group = group;
   }
   
+  @Override
   public Integer getConfidence() {
     return confidence;
   }
   
+  @Override
   public void setConfidence(Integer confidence) {
     this.confidence = confidence;
   }
   
+  @Override
   public Integer getCompleteness() {
     return completeness;
   }
   
+  @Override
   public void setCompleteness(Integer completeness) {
     this.completeness = completeness;
   }

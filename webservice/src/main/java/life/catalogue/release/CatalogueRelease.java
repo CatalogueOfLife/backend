@@ -10,6 +10,7 @@ import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.Partitioner;
 import life.catalogue.db.CRUD;
+import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
@@ -232,13 +233,13 @@ public class CatalogueRelease implements Runnable {
     }
   }
   
-  private <K, V extends DataEntity<K>, M extends CRUD<K, V> & ProcessableDataset<V>> void copyTable(Class<M> mapperClass, Class<V> entity, Consumer<V> updater) {
+  private <K, V extends DataEntity<K>, M extends CRUD<K, V> & DatasetProcessable<V>> void copyTable(Class<M> mapperClass, Class<V> entity, Consumer<V> updater) {
     interruptIfCancelled();
     try (SqlSession session = factory.openSession(false);
          TableCopyHandler<K, V,M> handler = new TableCopyHandler<>(factory, entity.getSimpleName(), mapperClass, updater)
     ) {
       logger.log("Copy all " + entity.getSimpleName());
-      ProcessableDataset<V> mapper = session.getMapper(mapperClass);
+      DatasetProcessable<V> mapper = session.getMapper(mapperClass);
       mapper.processDataset(sourceDatasetKey).forEach(handler);
       logger.log("Copied " + handler.getCounter() +" "+ entity.getSimpleName());
     }

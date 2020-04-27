@@ -3,6 +3,7 @@ package life.catalogue.db.mapper;
 import java.util.List;
 
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import life.catalogue.db.DatasetProcessable;
 import org.apache.ibatis.annotations.Param;
 import life.catalogue.api.model.*;
 import life.catalogue.db.CRUD;
@@ -16,7 +17,7 @@ import javax.annotation.Nullable;
  *
  * Note that {@link DatasetPageable#deleteByDataset(int)} needs to also delete all synonyms.
  */
-public interface TaxonMapper extends CRUD<DSID<String>, Taxon>, ProcessableDataset<Taxon>, DatasetPageable<Taxon> {
+public interface TaxonMapper extends CRUD<DSID<String>, Taxon>, DatasetProcessable<Taxon>, DatasetPageable<Taxon> {
   
   int countRoot(@Param("datasetKey") int datasetKey);
   

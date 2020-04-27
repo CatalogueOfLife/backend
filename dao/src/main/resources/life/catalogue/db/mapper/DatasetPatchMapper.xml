@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.DatasetPatchMapper">
+
+  <sql id="SELECT">
+    <include refid="life.catalogue.db.mapper.DatasetMapper.SELECT_PATCH"/>
+  </sql>
+
+  <sql id="COLS">
+    <include refid="life.catalogue.db.mapper.DatasetMapper.COLS_PATCH"/>
+  </sql>
+
+  <sql id="PROPS">
+    #{obj.type}::datasettype,
+    #{obj.title},
+    #{obj.description},
+    #{obj.organisations, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
+    #{obj.contact},
+    #{obj.authorsAndEditors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
+    #{obj.license}::LICENSE,
+    #{obj.version},
+    #{obj.released},
+    #{obj.citation},
+    #{obj.geographicScope},
+    #{obj.website},
+    #{obj.logo},
+    #{obj.alias},
+    #{obj.group},
+    #{obj.confidence},
+    #{obj.completeness},
+    #{obj.createdBy},
+    #{obj.modifiedBy}
+  </sql>
+
+  <select id="processDataset" parameterType="map" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap" resultOrdered="true" fetchSize="100"
+          resultSetType="FORWARD_ONLY">
+    SELECT <include refid="SELECT"/>
+    FROM dataset_patch d
+    WHERE dataset_key = #{datasetKey}
+  </select>
+
+  <select id="get" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM dataset_patch d
+    WHERE key = #{key} and dataset_key = #{datasetKey}
+  </select>
+
+  <insert id="create" parameterType="DatasetPatch" useGeneratedKeys="false">
+    INSERT INTO dataset_patch ( key, dataset_key,<include refid="COLS"/>, created, modified)
+    VALUES ( #{obj.key}, #{datasetKey},<include refid="PROPS"/>, now(), now())
+  </insert>
+
+  <update id="update" parameterType="DatasetPatch">
+    UPDATE dataset_patch
+    SET (<include refid="COLS"/>, modified)
+    = (<include refid="PROPS"/>, now())
+    WHERE key = #{obj.key} and dataset_key = #{datasetKey}
+  </update>
+
+  <update id="delete" parameterType="map">
+    DELETE FROM dataset_patch
+    WHERE key = #{key} and dataset_key = #{datasetKey}
+  </update>
+
+</mapper>

@@ -11,6 +11,29 @@ and done it manually. So we can as well log changes here.
 ### PROD changes
 
 
+#### 2020-04-27 dataset patches
+```
+CREATE TABLE dataset_patch AS SELECT * FROM dataset LIMIT 0;
+ALTER TABLE dataset_patch
+  DROP COLUMN source_key,
+  DROP COLUMN gbif_key,
+  DROP COLUMN gbif_publisher_key,
+  DROP COLUMN data_format,
+  DROP COLUMN origin,
+  DROP COLUMN import_frequency,
+  DROP COLUMN last_data_import_attempt,
+  DROP COLUMN deleted,
+  DROP COLUMN locked,
+  DROP COLUMN private,
+  DROP COLUMN data_access,
+  DROP COLUMN notes,
+  DROP COLUMN settings,
+  DROP COLUMN editors,
+  DROP COLUMN doc,
+  ADD COLUMN dataset_key INTEGER NOT NULL REFERENCES dataset;
+ALTER TABLE dataset_patch ADD PRIMARY KEY (key, dataset_key);
+```
+
 #### 2020-04-17 remove cascading delete from taxon.parent_id
 It is required to run the `execSql --sql` command using the following sql template
 in order to update all existing name_usage partitions: 
