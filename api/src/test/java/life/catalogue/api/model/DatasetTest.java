@@ -1,13 +1,13 @@
 package life.catalogue.api.model;
 
-import java.net.URI;
-
 import com.google.common.collect.ImmutableSet;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
 import life.catalogue.api.vocab.*;
 import org.gbif.nameparser.api.NomCode;
 import org.junit.Test;
+
+import java.net.URI;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -45,6 +45,19 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.setNotes("cuzdsghazugbe67wqt6c g cuzdsghazugbe67wqt6c g  nhjs");
     d.getSettings().put(DatasetSettings.REMATCH_DECISIONS, false);
     return d;
+  }
+
+  @Test
+  public void patch() throws Exception {
+    Dataset d = genTestValue();
+
+    DatasetMetadata patch = new Dataset();
+    patch.setTitle("Grundig");
+    patch.setAlias("grr");
+    d.apply(patch);
+
+    assertEquals("Grundig", d.getTitle());
+    assertEquals("grr", d.getAlias());
   }
 
   @Test

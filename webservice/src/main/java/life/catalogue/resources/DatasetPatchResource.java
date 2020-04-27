@@ -15,6 +15,10 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * Editorial decision patching the metadata of a source dataset.
+ * The integer id value of the underlying DSID<Integer> refers to the source dataset key.
+ */
 @Path("/dataset/{datasetKey}/patch")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
@@ -51,7 +55,7 @@ public class DatasetPatchResource {
     obj.applyUser(user);
     int i = session.getMapper(DatasetPatchMapper.class).update(datasetKey, obj);
     if (i == 0) {
-      throw NotFoundException.notFound(DatasetPatch.class, new DSIDValue<>(datasetKey, id));
+      throw NotFoundException.notFound("DatasetPatch", new DSIDValue<>(datasetKey, id));
     }
   }
 
@@ -61,7 +65,7 @@ public class DatasetPatchResource {
   public void delete(@PathParam("datasetKey") int datasetKey, @PathParam("id") Integer id, @Auth User user, @Context SqlSession session) {
     int i = session.getMapper(DatasetPatchMapper.class).delete(datasetKey, id);
     if (i == 0) {
-      throw NotFoundException.notFound(DatasetPatch.class, new DSIDValue<>(datasetKey, id));
+      throw NotFoundException.notFound("DatasetPatch", new DSIDValue<>(datasetKey, id));
     }
   }
 

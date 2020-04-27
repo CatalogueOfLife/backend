@@ -47,12 +47,12 @@
     WHERE key = #{key} and dataset_key = #{datasetKey}
   </select>
 
-  <insert id="create" parameterType="DatasetPatch" useGeneratedKeys="false">
+  <insert id="create" parameterType="Dataset" useGeneratedKeys="false">
     INSERT INTO dataset_patch ( key, dataset_key,<include refid="COLS"/>, created, modified)
     VALUES ( #{obj.key}, #{datasetKey},<include refid="PROPS"/>, now(), now())
   </insert>
 
-  <update id="update" parameterType="DatasetPatch">
+  <update id="update" parameterType="Dataset">
     UPDATE dataset_patch
     SET (<include refid="COLS"/>, modified)
     = (<include refid="PROPS"/>, now())

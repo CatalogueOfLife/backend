@@ -87,6 +87,7 @@ abstract class SectorRunnable implements Runnable {
       state.setStarted(LocalDateTime.now());
       init();
       doWork();
+      LOG.info("Completed {}", this);
       successCallback.accept(this);
       
     } catch (InterruptedException e) {
@@ -95,13 +96,12 @@ abstract class SectorRunnable implements Runnable {
       state.setState(SectorImport.State.CANCELED);
       
     } catch (Exception e) {
-      LOG.error("Error running {}", this, e);
+      LOG.error("Failed {}", this, e);
       state.setError(ExceptionUtils.getRootCauseMessage(e));
       errorCallback.accept(this, e);
       state.setState(SectorImport.State.FAILED);
       
     } finally {
-      LOG.info("Completed {}", this);
       state.setFinished(LocalDateTime.now());
       finalWork();
       LoggingUtils.removeSectorMDC();

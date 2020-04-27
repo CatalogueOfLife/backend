@@ -226,7 +226,13 @@ public class CatalogueRelease implements Runnable {
     // archive dataset metadata
     try (SqlSession session = factory.openSession(false)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      DatasetPatchMapper dpm = session.getMapper(DatasetPatchMapper.class);
       dm.process(null, sourceDatasetKey).forEach(d -> {
+        DatasetMetadata patch = dpm.get(sourceDatasetKey, d.getKey());
+        if (patch != null) {
+          LOG.debug("Apply dataset patch from project {} to {}: {}", sourceDatasetKey, d.getKey(), d.getTitle());
+          d.apply(patch);
+        }
         LOG.debug("Archive dataset {}: {}", d.getKey(), d.getTitle());
         dm.createArchive(d.getKey(), releaseKey);
       });

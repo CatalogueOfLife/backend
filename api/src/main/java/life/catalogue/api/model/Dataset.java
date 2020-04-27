@@ -15,6 +15,10 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,6 +30,14 @@ import java.util.*;
 @ValidDataset
 public class Dataset extends DataEntity<Integer> implements DatasetMetadata {
   private static final Logger LOG = LoggerFactory.getLogger(Dataset.class);
+  private static final PropertyDescriptor[] METADATA_PROPS;
+  static {
+    try {
+      METADATA_PROPS = Introspector.getBeanInfo(DatasetMetadata.class).getPropertyDescriptors();
+    } catch (IntrospectionException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   private Integer key;
   private Integer sourceKey;
@@ -74,6 +86,24 @@ public class Dataset extends DataEntity<Integer> implements DatasetMetadata {
   private LocalDateTime deleted;
   private Map<DatasetSettings, Object> settings = new HashMap<>();
   private IntSet editors = new IntOpenHashSet();
+
+  /**
+   * Applies a dataset metadata patch, setting all non null fields
+   * @param patch
+   */
+  public void apply(DatasetMetadata patch) {
+    // copy all properties that are not null
+    try {
+      for (PropertyDescriptor prop : METADATA_PROPS){
+        Object val = prop.getReadMethod().invoke(patch);
+        if (val != null) {
+          prop.getWriteMethod().invoke(this, val);
+        }
+      }
+    } catch (IllegalAccessException | InvocationTargetException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   @Override
   public Integer getKey() {
