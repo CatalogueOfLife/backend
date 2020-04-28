@@ -75,7 +75,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   public ResultPage<Dataset> search(@Nullable DatasetSearchRequest nullableRequest, @Nullable Integer userKey, @Nullable Page page) {
     page = page == null ? new Page() : page;
-    final DatasetSearchRequest req = nullableRequest == null || nullableRequest.isEmpty() ? new DatasetSearchRequest() : nullableRequest;
+    final DatasetSearchRequest req = nullableRequest == null ? new DatasetSearchRequest() : nullableRequest;
     if (req.getSortBy() == null) {
       if (!StringUtils.isBlank(req.getQ())) {
         req.setSortBy(DatasetSearchRequest.SortBy.RELEVANCE);

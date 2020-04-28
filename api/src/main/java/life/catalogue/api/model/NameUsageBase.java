@@ -162,7 +162,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
     NameUsageBase that = (NameUsageBase) o;
     return Objects.equals(sectorKey, that.sectorKey) &&
       Objects.equals(verbatimKey, that.verbatimKey) &&
-      name.equals(that.name) &&
+      Objects.equals(name, that.name) &&
       status == that.status &&
       origin == that.origin &&
       Objects.equals(parentId, that.parentId) &&

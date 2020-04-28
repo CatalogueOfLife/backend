@@ -109,14 +109,6 @@
     <result property="editors" column="editors" typeHandler="life.catalogue.db.type2.IntSetTypeHandler"/>
   </resultMap>
 
-  <select id="count" resultType="integer">
-    SELECT COUNT(*)
-    FROM
-    <include refid="FROM"/>
-    WHERE
-    <include refid="SEARCH_WHERE"/>
-  </select>
-
   <select id="keys" resultType="integer">
     SELECT key
     FROM dataset
@@ -128,6 +120,14 @@
     FROM <include refid="FROM"/>
     WHERE deleted IS NULL
     <if test="filter != null">AND ${filter}</if>
+  </select>
+
+  <select id="count" resultType="integer">
+    SELECT COUNT(*)
+    FROM
+    <include refid="FROM"/>
+    WHERE
+    <include refid="SEARCH_WHERE"/>
   </select>
 
   <select id="search" resultMap="datasetResultMap">

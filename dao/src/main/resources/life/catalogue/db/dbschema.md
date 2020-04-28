@@ -11,6 +11,7 @@ and done it manually. So we can as well log changes here.
 ### PROD changes
 
 #### 2020-04-29 metadata archive
+See https://github.com/CatalogueOfLife/backend/issues/689
 ```
 ALTER TABLE dataset 
     RENAME COLUMN last_data_import_attempt TO import_attempt;

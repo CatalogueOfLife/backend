@@ -89,13 +89,14 @@ public class PgImport implements Callable<Boolean> {
   private void updateMetadata() {
     try (SqlSession session = sessionFactory.openSession(false)) {
       LOG.info("Updating dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
-      DatasetMapper mapper = session.getMapper(DatasetMapper.class);
       // archive the previous attempt before we update the current metadata and tie it to a new attempt
-      mapper.createArchive(dataset.getKey());
+      DatasetArchiveMapper dam = session.getMapper(DatasetArchiveMapper.class);
+      dam.createArchive(dataset.getKey());
       // update current
-      Dataset old = mapper.get(dataset.getKey());
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      Dataset old = dm.get(dataset.getKey());
       updateMetadata(old, dataset);
-      mapper.update(old);
+      dm.update(old);
 
       session.commit();
     }

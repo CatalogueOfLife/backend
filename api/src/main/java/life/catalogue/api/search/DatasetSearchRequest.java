@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
-import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.NomCode;
 
 import javax.validation.constraints.Min;
@@ -100,19 +99,6 @@ public class DatasetSearchRequest {
     DatasetSearchRequest q = new DatasetSearchRequest();
     q.q = query;
     return q;
-  }
-  
-  public boolean isEmpty() {
-    return StringUtils.isBlank(q) &&
-        code == null &&
-        contributesTo == null &&
-        format == null &&
-        type == null &&
-        origin == null &&
-        sortBy == null &&
-        modified == null &&
-        created == null &&
-        released == null;
   }
   
   public String getQ() {
