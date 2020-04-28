@@ -1,9 +1,11 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.NameUsageBase;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.SimpleName;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
-import org.checkerframework.checker.units.qual.K;
 import org.gbif.nameparser.api.Rank;
 
 import javax.annotation.Nullable;
@@ -109,10 +111,10 @@ public interface NameUsageMapper {
                    @Param("includeSynonyms") boolean includeSynonyms);
 
   /**
-   * Very lightweight (sub)tree traversal that only returns the usage and name id of any descendant of the start usage.
+   * Very lightweight (sub)tree traversal that only returns the usage and name id of the start usage and any descendant of the start usage.
    * Iterates over all descendants including synonyms in a tree in depth-first order for a given start taxon
    *
-   * @param key taxon to start the traversal. Will be included in the result. If null start with all root taxa
+   * @param key taxon to start the traversal. Will be included in the result
    */
   Cursor<UsageNameID> processTreeIds(@Param("key") DSID<String> key);
 

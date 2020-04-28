@@ -1,18 +1,19 @@
 package life.catalogue.db.mapper;
 
-import java.util.Collection;
-import java.util.List;
-import javax.annotation.Nullable;
-
-import org.apache.ibatis.annotations.Param;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.SectorImport;
+import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.type2.StringCount;
+import org.apache.ibatis.annotations.Param;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * The MyBatis mapper interface for SectorImport.
  */
-public interface SectorImportMapper {
+public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
   
   /**
    * Retrieves the full import with the entire potentially very large text tree and names id set.

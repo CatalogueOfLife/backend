@@ -3,6 +3,7 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.type2.StringCount;
 import org.apache.ibatis.annotations.Param;
 import org.gbif.dwc.terms.Term;
@@ -14,7 +15,7 @@ import java.util.List;
 /**
  * The MyBatis mapper interface for DatasetImport.
  */
-public interface DatasetImportMapper {
+public interface DatasetImportMapper extends DatasetProcessable<DatasetImport> {
   
   DatasetImport get(@Param("key") int datasetKey, @Param("attempt") int attempt);
   
@@ -34,8 +35,6 @@ public interface DatasetImportMapper {
   void create(@Param("imp") DatasetImport datasetImport);
   
   void update(@Param("imp") DatasetImport datasetImport);
-  
-  void deleteByDataset(@Param("datasetKey") int datasetKey);
 
   Integer countDescription(@Param("key") int datasetKey);
   Integer countDistribution(@Param("key") int datasetKey);

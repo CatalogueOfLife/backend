@@ -12,5 +12,11 @@ public interface DatasetProcessable<V> {
    * Iterates over all entities of a given dataset in a memory friendly way, bypassing the 1st level mybatis cache.
    */
   Cursor<V> processDataset(@Param("datasetKey") int datasetKey);
-  
+
+  /**
+   * Deletes all entities from the given dataset
+   * @param datasetKey dataset key
+   */
+  int deleteByDataset(@Param("datasetKey") int datasetKey);
+
 }

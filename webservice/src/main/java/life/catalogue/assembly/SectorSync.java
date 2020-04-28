@@ -47,13 +47,15 @@ public class SectorSync extends SectorRunnable {
   @Override
   void finalWork() {
     try (SqlSession session = factory.openSession(true)) {
-      SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
-      sim.create(state);
+      session.getMapper(SectorImportMapper.class).create(state);
+      // update sector with latest attempt
+      session.getMapper(SectorMapper.class).updateLastSync(sectorKey, state.getAttempt());
     }
   }
 
   private void metrics() {
     try (SqlSession session = factory.openSession(true)) {
+      // generate import metrics
       SectorImportMapper mapper = session.getMapper(SectorImportMapper.class);
       final int key = sector.getId();
       state.setDescriptionCount(mapper.countDescription(catalogueKey, key));
@@ -98,7 +100,7 @@ public class SectorSync extends SectorRunnable {
       state.setState(SectorImport.State.COPYING);
       processTree();
       checkIfCancelled();
-  
+
     } finally {
       // run these even if we get errors in the main tree copying
       state.setState( SectorImport.State.RELINKING);

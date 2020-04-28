@@ -178,7 +178,12 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     assertEquals((Integer) 3, mapper().countVernacular(DATASET11.getKey()));
     assertEquals((Integer) 3, mapper().countDistribution(DATASET11.getKey()));
   }
-  
+
+  @Test
+  public void deleteByDataset() throws Exception {
+    mapper().deleteByDataset(Datasets.DRAFT_COL);
+  }
+
   @Test
   public void countMaps() throws Exception {
     Set<StringCount> expected = new HashSet<>();

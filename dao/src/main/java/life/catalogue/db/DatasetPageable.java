@@ -11,10 +11,4 @@ public interface DatasetPageable<T> {
   
   int count(@Param("datasetKey") int datasetKey);
 
-  /**
-   * Deletes all entities from the given dataset
-   * @param datasetKey dataset key
-   */
-  int deleteByDataset(@Param("datasetKey") int datasetKey);
-
 }

@@ -225,16 +225,17 @@ public class CatalogueRelease implements Runnable {
     copyTable(EstimateMapper.class, SpeciesEstimate.class, this::updateEntity);
     // archive dataset metadata
     try (SqlSession session = factory.openSession(false)) {
-      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      DatasetArchiveMapper dam = session.getMapper(DatasetArchiveMapper.class);
       DatasetPatchMapper dpm = session.getMapper(DatasetPatchMapper.class);
-      dm.process(null, sourceDatasetKey).forEach(d -> {
+      dam.processSources(sourceDatasetKey).forEach(d -> {
         DatasetMetadata patch = dpm.get(sourceDatasetKey, d.getKey());
         if (patch != null) {
           LOG.debug("Apply dataset patch from project {} to {}: {}", sourceDatasetKey, d.getKey(), d.getTitle());
           d.apply(patch);
         }
-        LOG.debug("Archive dataset {}: {}", d.getKey(), d.getTitle());
-        dm.createArchive(d.getKey(), releaseKey);
+        d.setDatasetKey(releaseKey);
+        LOG.debug("Archive dataset {}: {} for release {}", d.getKey(), d.getTitle(), releaseKey);
+        dam.createProjectArchive(d);
       });
     }
   }

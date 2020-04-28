@@ -18,23 +18,12 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   void createWithKey(Dataset d);
 
   /**
-   * Copies a given dataset key into the archive with the given catalogueKey
-   * @param key
-   * @param catalogueKey
-   */
-  void createArchive(@Param("key") int key, @Param("catalogueKey") int catalogueKey);
-  
-  Dataset getArchive(@Param("key") int key, @Param("catalogueKey") int catalogueKey);
-
-  /**
-   * Iterates over all datasets and processes them with the supplied handler.
+   * Iterates over all datasets with a cursor.
    * Includes private datasets.
    *
    * @param filter optional SQL where clause (without WHERE)
-   * @param catalogueKey optional filter returning only datasets being constituents of the given catalogueKey
    */
-  Cursor<Dataset> process(@Nullable @Param("filter") String filter,
-                          @Nullable @Param("catalogueKey") Integer catalogueKey);
+  Cursor<Dataset> process(@Nullable @Param("filter") String filter);
 
   /**
    * @param userKey optional user key so that private datasets for that user will be included in the count.

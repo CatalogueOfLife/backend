@@ -153,25 +153,25 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   public void setLink(URI link) {
     this.link = link;
   }
-  
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof NameUsageBase)) return false;
     if (!super.equals(o)) return false;
     NameUsageBase that = (NameUsageBase) o;
     return Objects.equals(sectorKey, that.sectorKey) &&
-        Objects.equals(verbatimKey, that.verbatimKey) &&
-        Objects.equals(name, that.name) &&
-        status == that.status &&
-        origin == that.origin &&
-        Objects.equals(parentId, that.parentId) &&
-        Objects.equals(accordingTo, that.accordingTo) &&
-        Objects.equals(link, that.link) &&
-        Objects.equals(remarks, that.remarks) &&
-        Objects.equals(referenceIds, that.referenceIds);
+      Objects.equals(verbatimKey, that.verbatimKey) &&
+      name.equals(that.name) &&
+      status == that.status &&
+      origin == that.origin &&
+      Objects.equals(parentId, that.parentId) &&
+      Objects.equals(accordingTo, that.accordingTo) &&
+      Objects.equals(link, that.link) &&
+      Objects.equals(remarks, that.remarks) &&
+      Objects.equals(referenceIds, that.referenceIds);
   }
-  
+
   @Override
   public int hashCode() {
     return Objects.hash(super.hashCode(), sectorKey, verbatimKey, name, status, origin, parentId, accordingTo, link, remarks, referenceIds);

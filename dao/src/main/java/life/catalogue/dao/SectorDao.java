@@ -1,29 +1,31 @@
 package life.catalogue.dao;
 
+import life.catalogue.api.model.*;
+import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.search.SectorSearchRequest;
+import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.TaxonMapper;
+import life.catalogue.es.NameUsageIndexService;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import life.catalogue.api.model.*;
-import life.catalogue.api.search.SectorSearchRequest;
-import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.db.mapper.TaxonMapper;
-import org.apache.ibatis.session.ExecutorType;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.gbif.nameparser.api.Rank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.stream.Collectors;
 
 public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorDao.class);
-  
-  public SectorDao(SqlSessionFactory factory) {
+  private final NameUsageIndexService indexService;
+
+  public SectorDao(SqlSessionFactory factory, NameUsageIndexService indexService) {
     super(true, factory, SectorMapper.class);
+    this.indexService = indexService;
   }
   
   public ResultPage<Sector> search(SectorSearchRequest request, Page page) {
@@ -78,7 +80,15 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
         t.setSectorKey(s.getId());
         TaxonDao.copyTaxon(session, t, did, user, Collections.emptySet());
       }
-  
+      indexService.add(toCopy.stream()
+        .map(t -> {
+          NameUsageWrapper w = new NameUsageWrapper(t);
+          w.setSectorDatasetKey(s.getSubjectDatasetKey());
+          return w;
+        })
+        .collect(Collectors.toList()))
+      ;
+
       incSectorCounts(session, s, 1);
   
       session.commit();

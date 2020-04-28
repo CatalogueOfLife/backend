@@ -41,6 +41,7 @@ public class Dataset extends DataEntity<Integer> implements DatasetMetadata {
 
   private Integer key;
   private Integer sourceKey;
+  private Integer importAttempt;
   @NotNull
   private DatasetType type;
   @NotNull
@@ -129,6 +130,17 @@ public class Dataset extends DataEntity<Integer> implements DatasetMetadata {
 
   public void setSourceKey(Integer sourceKey) {
     this.sourceKey = sourceKey;
+  }
+
+  /**
+   * @return the last successful import attempt that created the current data in the data partitions
+   */
+  public Integer getImportAttempt() {
+    return importAttempt;
+  }
+
+  public void setImportAttempt(Integer importAttempt) {
+    this.importAttempt = importAttempt;
   }
 
   @Override
@@ -496,51 +508,51 @@ public class Dataset extends DataEntity<Integer> implements DatasetMetadata {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof Dataset)) return false;
     if (!super.equals(o)) return false;
     Dataset dataset = (Dataset) o;
-    return
-        Objects.equals(key, dataset.key) &&
-        Objects.equals(sourceKey, dataset.sourceKey) &&
-        type == dataset.type &&
-        Objects.equals(title, dataset.title) &&
-        Objects.equals(alias, dataset.alias) &&
-        Objects.equals(gbifKey, dataset.gbifKey) &&
-        Objects.equals(gbifPublisherKey, dataset.gbifPublisherKey) &&
-        Objects.equals(description, dataset.description) &&
-        Objects.equals(organisations, dataset.organisations) &&
-        Objects.equals(contact, dataset.contact) &&
-        Objects.equals(authorsAndEditors, dataset.authorsAndEditors) &&
-        Objects.equals(license, dataset.license) &&
-        Objects.equals(version, dataset.version) &&
-        Objects.equals(released, dataset.released) &&
-        Objects.equals(citation, dataset.citation) &&
-        Objects.equals(geographicScope, dataset.geographicScope) &&
-        Objects.equals(website, dataset.website) &&
-        Objects.equals(group, dataset.group) &&
-        Objects.equals(logo, dataset.logo) &&
-        dataFormat == dataset.dataFormat &&
-        Objects.equals(dataAccess, dataset.dataAccess) &&
-        origin == dataset.origin &&
-        locked == dataset.locked &&
-        privat == dataset.privat &&
-        importFrequency == dataset.importFrequency &&
-        Objects.equals(confidence, dataset.confidence) &&
-        Objects.equals(completeness, dataset.completeness) &&
-        Objects.equals(notes, dataset.notes) &&
-        Objects.equals(imported, dataset.imported) &&
-        Objects.equals(deleted, dataset.deleted) &&
-        Objects.equals(settings, dataset.settings) &&
-        Objects.equals(editors, dataset.editors);
+    return locked == dataset.locked &&
+      privat == dataset.privat &&
+      Objects.equals(key, dataset.key) &&
+      Objects.equals(sourceKey, dataset.sourceKey) &&
+      Objects.equals(importAttempt, dataset.importAttempt) &&
+      type == dataset.type &&
+      origin == dataset.origin &&
+      Objects.equals(title, dataset.title) &&
+      Objects.equals(alias, dataset.alias) &&
+      Objects.equals(gbifKey, dataset.gbifKey) &&
+      Objects.equals(gbifPublisherKey, dataset.gbifPublisherKey) &&
+      Objects.equals(description, dataset.description) &&
+      Objects.equals(organisations, dataset.organisations) &&
+      Objects.equals(contact, dataset.contact) &&
+      Objects.equals(authorsAndEditors, dataset.authorsAndEditors) &&
+      license == dataset.license &&
+      Objects.equals(version, dataset.version) &&
+      Objects.equals(released, dataset.released) &&
+      Objects.equals(citation, dataset.citation) &&
+      Objects.equals(geographicScope, dataset.geographicScope) &&
+      Objects.equals(website, dataset.website) &&
+      Objects.equals(group, dataset.group) &&
+      Objects.equals(logo, dataset.logo) &&
+      dataFormat == dataset.dataFormat &&
+      Objects.equals(dataAccess, dataset.dataAccess) &&
+      importFrequency == dataset.importFrequency &&
+      Objects.equals(size, dataset.size) &&
+      Objects.equals(confidence, dataset.confidence) &&
+      Objects.equals(completeness, dataset.completeness) &&
+      Objects.equals(notes, dataset.notes) &&
+      Objects.equals(contributesTo, dataset.contributesTo) &&
+      Objects.equals(imported, dataset.imported) &&
+      Objects.equals(deleted, dataset.deleted) &&
+      Objects.equals(settings, dataset.settings) &&
+      Objects.equals(editors, dataset.editors);
   }
-  
+
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, sourceKey, type, title, alias, gbifKey, gbifPublisherKey, description, organisations,
-            contact, authorsAndEditors, license, version, released, citation, geographicScope, website, group, logo,
-            dataFormat, dataAccess, origin, locked, privat, importFrequency, confidence, completeness, notes, imported, deleted, settings, editors);
+    return Objects.hash(super.hashCode(), key, sourceKey, importAttempt, type, origin, locked, privat, title, alias, gbifKey, gbifPublisherKey, description, organisations, contact, authorsAndEditors, license, version, released, citation, geographicScope, website, group, logo, dataFormat, dataAccess, importFrequency, size, confidence, completeness, notes, contributesTo, imported, deleted, settings, editors);
   }
-  
+
   @Override
   public String toString() {
     return "Dataset " + key + ": " + title;

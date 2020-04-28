@@ -5,11 +5,50 @@
 <mapper namespace="life.catalogue.db.mapper.DatasetPatchMapper">
 
   <sql id="SELECT">
-    <include refid="life.catalogue.db.mapper.DatasetMapper.SELECT_PATCH"/>
+    d.key,
+    d.type,
+    d.title,
+    d.description,
+    d.organisations,
+    d.contact,
+    d.authors_and_editors,
+    d.license,
+    d.version,
+    d.released,
+    d.citation,
+    d.geographic_scope,
+    d.website,
+    d.logo,
+    d.alias,
+    d."group",
+    d.confidence,
+    d.completeness,
+    d.created,
+    d.created_by,
+    d.modified,
+    d.modified_by
   </sql>
 
   <sql id="COLS">
-    <include refid="life.catalogue.db.mapper.DatasetMapper.COLS_PATCH"/>
+    type,
+    title,
+    description,
+    organisations,
+    contact,
+    authors_and_editors,
+    license,
+    version,
+    released,
+    citation,
+    geographic_scope,
+    website,
+    logo,
+    alias,
+    "group",
+    confidence,
+    completeness,
+    created_by,
+    modified_by
   </sql>
 
   <sql id="PROPS">

@@ -9,7 +9,7 @@ import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Frequency;
 import life.catalogue.common.io.DownloadUtil;
-import life.catalogue.db.DatasetPageable;
+import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
@@ -96,10 +96,19 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   
   @Override
   protected void deleteBefore(Integer key, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
-    // remove decisions, sectors and estimates
-    for (Class<DatasetPageable<?>> mapperCLass : new Class[]{SectorMapper.class, DecisionMapper.class, EstimateMapper.class}) {
-      session.getMapper(mapperCLass).deleteByDataset(key);
+    // remove decisions, sectors, estimates, dataset patches
+    for (Class<DatasetProcessable<?>> mClass : new Class[]{SectorMapper.class, DecisionMapper.class, EstimateMapper.class, DatasetPatchMapper.class}) {
+      LOG.info("Delete {}s for dataset {}", mClass.getSimpleName().substring(0, mClass.getSimpleName().length() - 6), key);
+      session.getMapper(mClass).deleteByDataset(key);
     }
+    // remove project source dataset archives
+    LOG.info("Delete project source dataset archives for dataset {}", key);
+    session.getMapper(DatasetArchiveMapper.class).deleteByDataset(key);
+    // remove import & sync history
+    LOG.info("Delete sector sync history for dataset {}", key);
+    session.getMapper(SectorImportMapper.class).deleteByDataset(key);
+    LOG.info("Delete dataset import history for dataset {}", key);
+    session.getMapper(DatasetImportMapper.class).deleteByDataset(key);
     // delete data partitions
     Partitioner.delete(session, key);
     session.commit();

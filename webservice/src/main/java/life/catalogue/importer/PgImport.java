@@ -3,7 +3,6 @@ package life.catalogue.importer;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.lang.InterruptedRuntimeException;
-import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.dao.Partitioner;
 import life.catalogue.db.mapper.*;
@@ -91,9 +90,13 @@ public class PgImport implements Callable<Boolean> {
     try (SqlSession session = sessionFactory.openSession(false)) {
       LOG.info("Updating dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
       DatasetMapper mapper = session.getMapper(DatasetMapper.class);
+      // archive the previous attempt before we update the current metadata and tie it to a new attempt
+      mapper.createArchive(dataset.getKey());
+      // update current
       Dataset old = mapper.get(dataset.getKey());
       updateMetadata(old, dataset);
       mapper.update(old);
+
       session.commit();
     }
   }

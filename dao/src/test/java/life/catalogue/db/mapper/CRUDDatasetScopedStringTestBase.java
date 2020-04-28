@@ -5,15 +5,15 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DatasetScopedEntity;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.DatasetPageable;
+import life.catalogue.db.DatasetProcessable;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 /**
  *
  */
-abstract class CRUDDatasetScopedStringTestBase<T extends DatasetScopedEntity<String>, M extends CRUD<DSID<String>, T> & DatasetPageable<T>>
+abstract class CRUDDatasetScopedStringTestBase<T extends DatasetScopedEntity<String>, M extends CRUD<DSID<String>, T> & DatasetPageable<T> & DatasetProcessable<T>>
     extends CRUDPageableTestBase<String, T, M> {
 
   public CRUDDatasetScopedStringTestBase(Class<M> mapperClazz) {

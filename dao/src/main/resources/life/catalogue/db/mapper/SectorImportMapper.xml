@@ -103,6 +103,12 @@
     WHERE sector_key=#{key}
   </delete>
 
+  <delete id="deleteByDataset" parameterType="map">
+    DELETE FROM sector_import si
+    USING sector s
+    WHERE si.sector_key=s.id AND s.dataset_key=#{datasetKey}
+  </delete>
+
   <select id="countDescription" resultType="integer">
     SELECT count(*)
     FROM description_${datasetKey} x

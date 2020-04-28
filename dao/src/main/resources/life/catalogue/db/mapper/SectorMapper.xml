@@ -91,7 +91,7 @@
   </sql>
 
   <sql id="FROM">
-    sector s LEFT JOIN sector_import si ON si.sector_key=s.id AND s.last_sync_attempt=si.attempt
+    sector s LEFT JOIN sector_import si ON si.sector_key=s.id AND s.sync_attempt=si.attempt
   </sql>
 
   <sql id="WHERE">
@@ -299,8 +299,9 @@
   </select>
 
   <update id="updateLastSync" parameterType="integer">
-    UPDATE sector
-    SET last_sync_attempt = #{attempt}
-    WHERE id = #{key}
+    UPDATE sector s
+    SET sync_attempt = #{attempt}, dataset_import_attempt = d.import_attempt
+    FROM dataset d
+    WHERE d.key=s.subject_dataset_key AND s.id = #{key}
   </update>
 </mapper>

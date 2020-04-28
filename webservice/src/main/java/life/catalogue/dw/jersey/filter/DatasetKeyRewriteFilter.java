@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.ints.Int2BooleanMaps;
 import it.unimi.dsi.fastutil.ints.Int2BooleanOpenHashMap;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 import org.apache.ibatis.session.SqlSession;
@@ -72,10 +73,12 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     for( Map.Entry<String, List<String>> query : params.entrySet() ) {
       String key = query.getKey();
       if (QUERY_PARAMS.contains(key)) {
-        String[] values = query.getValue().stream()
+        Object[] values = query.getValue().stream()
           .map(this::rewriteDatasetKey)
           .toArray(String[]::new);
-        builder.replaceQueryParam(key, (Object[]) values);
+        if (!CollectionUtils.equals(query.getValue(), values)) {
+          builder.replaceQueryParam(key, values);
+        }
       }
     }
 

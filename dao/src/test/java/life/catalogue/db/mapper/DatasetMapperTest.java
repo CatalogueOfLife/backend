@@ -32,9 +32,14 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   public DatasetMapperTest() {
     super(DatasetMapper.class);
   }
-  
+
   public static Dataset create() {
     Dataset d = new Dataset();
+    populate(d);
+    return d;
+  }
+
+  static void populate(Dataset d) {
     d.applyUser(Users.DB_INIT);
     d.setType(DatasetType.TAXONOMIC);
     d.setOrigin(DatasetOrigin.EXTERNAL);
@@ -60,7 +65,6 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     d.putSetting(DatasetSettings.CSV_DELIMITER, "fun");
     d.putSetting(DatasetSettings.DISTRIBUTION_GAZETTEER, Gazetteer.ISO);
     d.getEditors().add(Users.TESTER);
-    return d;
   }
   
   @Test
@@ -128,25 +132,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     Dataset d2 = mapper().get(d1.getKey());
     assertEquals(DatasetOrigin.EXTERNAL, d2.getOrigin());
   }
-  
-  @Test
-  public void archive() throws Exception {
-    Dataset d1 = create();
-    mapper().create(d1);
-    commit();
-  
-    mapper().createArchive(d1.getKey(), Datasets.DRAFT_COL);
-    // reload to also get the creation/modified dates,
-    d1 = mapper().get(d1.getKey());
-    // but remove the editors as we dont keep them in archives
-    d1.getEditors().clear();
 
-    Dataset d2 = mapper().getArchive(d1.getKey(), Datasets.DRAFT_COL);
-    
-    //printDiff(d1, d2);
-    assertEquals(d1, d2);
-  }
-  
   /**
    * We only logically delete datasets, dont run super test
    */
@@ -500,6 +486,10 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   
   @Override
   Dataset removeDbCreatedProps(Dataset d) {
+    return rmDbCreatedProps(d);
+  }
+
+  public static Dataset rmDbCreatedProps(Dataset d) {
     // dont compare created stamps
     d.setCreated(null);
     d.setModified(null);
@@ -507,7 +497,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     d.setContributesTo(null);
     return d;
   }
-  
+
   private List<Dataset> removeCreated(List<Dataset> ds) {
     for (Dataset d : ds) {
       removeDbCreatedProps(d);

@@ -10,6 +10,33 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2020-04-29 metadata archive
+```
+ALTER TABLE dataset 
+    RENAME COLUMN last_data_import_attempt TO import_attempt;
+ALTER TABLE dataset_archive 
+    RENAME COLUMN catalogue_key TO dataset_key,
+    RENAME COLUMN last_data_import_attempt TO import_attempt;
+UPDATE dataset_archive a SET import_attempt=d.import_attempt
+    FROM dataset d WHERE a.import_attempt IS NULL AND d.key=a.key;
+ALTER TABLE dataset_archive ADD UNIQUE (key, import_attempt, dataset_key);
+
+ALTER TABLE sector 
+    ADD COLUMN dataset_import_attempt INTEGER,
+    RENAME COLUMN last_sync_attempt TO sync_attempt;
+UPDATE sector s SET dataset_import_attempt=d.import_attempt
+    FROM dataset d 
+    WHERE s.sync_attempt IS NOT NULL AND d.key=d.subject_dataset_key;
+```
+
+!!! make sure all current sector imports exist in the archive !!!
+```
+  SELECT s.dataset_key AS project_key, s.subject_dataset_key AS key, max(s.dataset_import_attempt) AS attempt, d.import_attempt AS curr_attempt
+  FROM sector s
+    JOIN dataset d ON d.key=s.subject_dataset_key
+  GROUP BY s.dataset_key, s.subject_dataset_key, d.import_attempt
+  ORDER BY s.dataset_key, s.subject_dataset_key
+```
 
 #### 2020-04-27 dataset patches
 ```

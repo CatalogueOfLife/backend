@@ -35,7 +35,18 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     this.indexService = indexService;
     this.nameDao = nameDao;
   }
-  
+
+  /**
+   * Copies the given source taxon into the dataset and under the given target parent.
+   * The taxon and name source instance will be modified to represent the newly generated taxon and finally persisted.
+   * The original id is retained and finally returned.
+   * An optional set of associated entity types can be indicated to be copied too.
+   *
+   * The sectorKey found on the main taxon will also be applied to associated name, reference and other copied entities.
+   * See {@link CatCopy#copyUsage} for details.
+   *
+   * @return the original source taxon id
+   */
   public static DSID<String> copyTaxon(SqlSession session, final Taxon t, final DSID<String> target, int user, Set<EntityType> include) {
     return CatCopy.copyUsage(session, t, target, user, include, TaxonDao::devNull, TaxonDao::devNull);
   }
@@ -346,9 +357,11 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
 
       // remove delta from parents
       key = DSID.copy(id);
-      for (TaxonSectorCountMap tc : parents) {
-        if (!tc.getId().equals(id.getId())) {
-          tm.updateDatasetSectorCount(key.id(tc.getId()), mergeMapCounts(tc.getCount(), delta.getCount(), -1));
+      if (!delta.isEmpty()) {
+        for (TaxonSectorCountMap tc : parents) {
+          if (!tc.getId().equals(id.getId())) {
+            tm.updateDatasetSectorCount(key.id(tc.getId()), mergeMapCounts(tc.getCount(), delta.getCount(), -1));
+          }
         }
       }
 

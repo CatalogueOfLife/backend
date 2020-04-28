@@ -573,7 +573,7 @@ CREATE TABLE dataset (
   completeness INTEGER CHECK (completeness >= 0 AND completeness <= 100),
   origin DATASETORIGIN NOT NULL,
   import_frequency INTEGER NOT NULL DEFAULT 7,
-  last_data_import_attempt INTEGER,
+  import_attempt INTEGER,
   created_by INTEGER NOT NULL,
   modified_by INTEGER NOT NULL,
   deleted TIMESTAMP WITHOUT TIME ZONE,
@@ -601,8 +601,11 @@ CREATE TABLE dataset (
 );
 
 CREATE TABLE dataset_archive (LIKE dataset);
-ALTER TABLE dataset_archive DROP COLUMN doc, DROP COLUMN editors;
-ALTER TABLE dataset_archive ADD COLUMN catalogue_key INTEGER NOT NULL REFERENCES dataset;
+ALTER TABLE dataset_archive
+  DROP COLUMN doc,
+  DROP COLUMN editors,
+  ADD COLUMN dataset_key INTEGER REFERENCES dataset;
+ALTER TABLE dataset_archive ADD UNIQUE (key, import_attempt, dataset_key);
 
 CREATE INDEX ON dataset USING gin (f_unaccent(title) gin_trgm_ops);
 CREATE INDEX ON dataset USING gin (f_unaccent(alias) gin_trgm_ops);
@@ -634,7 +637,7 @@ ALTER TABLE dataset_patch
   DROP COLUMN data_format,
   DROP COLUMN origin,
   DROP COLUMN import_frequency,
-  DROP COLUMN last_data_import_attempt,
+  DROP COLUMN import_attempt,
   DROP COLUMN deleted,
   DROP COLUMN locked,
   DROP COLUMN private,
@@ -698,7 +701,8 @@ CREATE TABLE sector (
   target_code NOMCODE,
   mode SECTOR_MODE NOT NULL,
   code NOMCODE,
-  last_sync_attempt INTEGER,
+  sync_attempt INTEGER,
+  dataset_import_attempt INTEGER,
   created_by INTEGER NOT NULL,
   modified_by INTEGER NOT NULL,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
@@ -719,7 +723,7 @@ CREATE TABLE sector (
 );
 
 CREATE TABLE sector_import (
-  sector_key INTEGER NOT NULL REFERENCES sector,
+  sector_key INTEGER NOT NULL REFERENCES sector ON DELETE CASCADE,
   attempt INTEGER NOT NULL,
   started TIMESTAMP WITHOUT TIME ZONE,
   finished TIMESTAMP WITHOUT TIME ZONE,

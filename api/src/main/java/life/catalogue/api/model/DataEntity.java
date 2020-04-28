@@ -57,11 +57,14 @@ public abstract class DataEntity<K> implements Entity<K>, UserManaged {
     this.modifiedBy = modifiedBy;
   }
 
+  /**
+   * We ignore the timestamps - they often lead to cumbersome comparisons in tests
+   */
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    DataEntity<K> that = (DataEntity<K>) o;
+    if (!(o instanceof DataEntity)) return false;
+    DataEntity<?> that = (DataEntity<?>) o;
     return Objects.equals(createdBy, that.createdBy) &&
            Objects.equals(modifiedBy, that.modifiedBy);
   }

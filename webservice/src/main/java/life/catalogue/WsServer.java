@@ -239,7 +239,7 @@ public class WsServer extends Application<WsServerConfig> {
     EstimateDao edao = new EstimateDao(getSqlSessionFactory());
     NameDao ndao = new NameDao(getSqlSessionFactory());
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory());
-    SectorDao secdao = new SectorDao(getSqlSessionFactory());
+    SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService);
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory());
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, indexService);
     TreeDao trDao = new TreeDao(getSqlSessionFactory());

@@ -5,138 +5,23 @@
 <mapper namespace="life.catalogue.db.mapper.DatasetMapper">
 
   <sql id="SELECT">
-    <include refid="SELECT_ARCHIVE"/>,
+    <include refid="life.catalogue.db.mapper.DatasetArchiveMapper.SELECT"/>,
     d.editors
   </sql>
 
-  <sql id="SELECT_ARCHIVE">
-    <include refid="SELECT_PATCH"/>,
-    d.source_key,
-    d.gbif_key,
-    d.gbif_publisher_key,
-    d.data_format,
-    d.data_access,
-    d.origin,
-    d.locked,
-    d.private,
-    d.import_frequency,
-    d.notes,
-    d.settings,
-    d.deleted,
-    di.finished AS imported,
-    di.verbatim_count AS size,
-    (select array_agg(distinct s.dataset_key) from sector s where s.subject_dataset_key=d.key) AS contributes_to
-  </sql>
-
-  <sql id="SELECT_PATCH">
-    d.key,
-    d.type,
-    d.title,
-    d.description,
-    d.organisations,
-    d.contact,
-    d.authors_and_editors,
-    d.license,
-    d.version,
-    d.released,
-    d.citation,
-    d.geographic_scope,
-    d.website,
-    d.logo,
-    d.alias,
-    d."group",
-    d.confidence,
-    d.completeness,
-    d.created,
-    d.created_by,
-    d.modified,
-    d.modified_by
-  </sql>
-
   <sql id="COLS">
-    <include refid="COLS_ARCHIVE"/>,
+    <include refid="life.catalogue.db.mapper.DatasetArchiveMapper.COLS"/>,
     editors
   </sql>
 
-  <sql id="COLS_ARCHIVE">
-    source_key,
-    gbif_key,
-    gbif_publisher_key,
-    data_format,
-    data_access,
-    locked,
-    private,
-    import_frequency,
-    notes,
-    settings,
-    <include refid="COLS_PATCH"/>
-  </sql>
-
-  <sql id="COLS_PATCH">
-    type,
-    title,
-    description,
-    organisations,
-    contact,
-    authors_and_editors,
-    license,
-    version,
-    released,
-    citation,
-    geographic_scope,
-    website,
-    logo,
-    alias,
-    "group",
-    confidence,
-    completeness,
-    created_by,
-    modified_by
-  </sql>
 
   <sql id="PROPS">
-    <include refid="PROPS_ARCHIVE"/>,
+    <include refid="life.catalogue.db.mapper.DatasetArchiveMapper.PROPS"/>,
     #{editors, typeHandler=life.catalogue.db.type2.IntSetTypeHandler}
   </sql>
 
-  <sql id="PROPS_ARCHIVE">
-    #{sourceKey},
-    #{gbifKey},
-    #{gbifPublisherKey},
-    #{dataFormat}::DATAFORMAT,
-    #{dataAccess},
-    #{locked},
-    #{privat},
-    #{importFrequency, typeHandler=life.catalogue.db.type.FrequencyTypeHandler},
-    #{notes},
-    #{settings, typeHandler=life.catalogue.db.type2.SettingsTypeHandler}::JSONB,
-    <!--
-    PROPS_PATCH uses obj. prefix so we cannot share the list
-    But we need to make sure we have the same order so the COLS match up!
-    -->
-    #{type}::datasettype,
-    #{title},
-    #{description},
-    #{organisations, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
-    #{contact},
-    #{authorsAndEditors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
-    #{license}::LICENSE,
-    #{version},
-    #{released},
-    #{citation},
-    #{geographicScope},
-    #{website},
-    #{logo},
-    #{alias},
-    #{group},
-    #{confidence},
-    #{completeness},
-    #{createdBy},
-    #{modifiedBy}
-  </sql>
-
   <sql id="FROM">
-    dataset d LEFT JOIN dataset_import di ON d.last_data_import_attempt=di.attempt AND d.key=di.dataset_key
+    dataset d LEFT JOIN dataset_import di ON d.import_attempt=di.attempt AND d.key=di.dataset_key
   </sql>
 
   <sql id="PRIVATE">
@@ -239,25 +124,16 @@
   </select>
 
   <select id="process" parameterType="map" resultMap="datasetResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE deleted IS NULL
-    <if test="catalogueKey != null">
-      AND exists(select 1 from sector s WHERE dataset_key=#{catalogueKey} AND s.subject_dataset_key=d.key)
-    </if>
     <if test="filter != null">AND ${filter}</if>
-    ORDER BY key
   </select>
 
   <select id="search" resultMap="datasetResultMap">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
-    WHERE
-    <include refid="SEARCH_WHERE"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE <include refid="SEARCH_WHERE"/>
     ORDER BY
     <bind name="rev" value="req.reverse"/>
     <choose>
@@ -295,10 +171,8 @@
   </select>
 
   <select id="list" resultMap="datasetResultMap">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE deleted IS NULL AND NOT private
     ORDER BY key
     <include refid="life.catalogue.db.Common.limit"/>
@@ -357,25 +231,14 @@
   </select>
 
   <select id="get" resultMap="datasetResultMap">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE key = #{key}
   </select>
 
-  <select id="getArchive" resultMap="datasetResultMap">
-    SELECT
-    <include refid="SELECT_ARCHIVE"/>
-    FROM dataset_archive d LEFT JOIN dataset_import di ON d.last_data_import_attempt=di.attempt AND d.key=di.dataset_key
-    WHERE key = #{key} AND catalogue_key = #{catalogueKey}
-  </select>
-
   <select id="getByGBIF" resultMap="datasetResultMap">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE gbif_key = #{key}
   </select>
 
@@ -389,12 +252,6 @@
     VALUES (#{key},<include refid="PROPS"/>, #{origin}::DATASETORIGIN, now(), now())
   </insert>
 
-  <insert id="createArchive" parameterType="map">
-    INSERT INTO dataset_archive (key, catalogue_key,<include refid="COLS_ARCHIVE"/>, origin, created, modified)
-    SELECT key, #{catalogueKey},<include refid="COLS_ARCHIVE"/>, origin, created, modified
-    FROM dataset d
-    WHERE d.key = #{key}
-  </insert>
 
   <update id="update" parameterType="Dataset">
     UPDATE dataset
@@ -404,19 +261,19 @@
   </update>
 
   <select id="lastImportAttempt" resultType="Integer">
-    SELECT last_data_import_attempt
+    SELECT import_attempt
     FROM dataset
     WHERE key=#{key}
   </select>
 
   <update id="updateLastImport" parameterType="integer">
     UPDATE dataset
-    SET last_data_import_attempt = #{attempt}
+    SET import_attempt = #{attempt}
     WHERE key = #{key}
   </update>
 
   <update id="delete" parameterType="map">
-    UPDATE dataset SET deleted = now(), last_data_import_attempt=null
+    UPDATE dataset SET deleted = now(), import_attempt=null
     WHERE key = #{key}
   </update>
 

@@ -1,6 +1,5 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetScopedEntity;
@@ -11,18 +10,19 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.Partitioner;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.DatasetPageable;
+import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.PgSetupRule;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  *
  */
-abstract class CRUDPageableTestBase<K, T extends DatasetScopedEntity<K>, M extends CRUD<DSID<K>, T> & DatasetPageable<T>>
+abstract class CRUDPageableTestBase<K, T extends DatasetScopedEntity<K>, M extends CRUD<DSID<K>, T> & DatasetPageable<T> & DatasetProcessable<T>>
     extends CRUDTestBase<DSID<K>, T, M> {
   
   public CRUDPageableTestBase(Class<M> mapperClazz) {

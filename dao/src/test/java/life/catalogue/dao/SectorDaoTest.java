@@ -1,5 +1,6 @@
 package life.catalogue.dao;
 
+import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
@@ -29,7 +30,7 @@ public class SectorDaoTest extends DaoTestBase {
       session.commit();
     }
   
-    SectorDao dao = new SectorDao(factory());
+    SectorDao dao = new SectorDao(factory(), NameUsageIndexService.passThru());
     Sector s = SectorMapperTest.create();
     s.setSubjectDatasetKey(11);
     s.getSubject().setId("root-1");

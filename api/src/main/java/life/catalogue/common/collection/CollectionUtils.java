@@ -1,5 +1,6 @@
 package life.catalogue.common.collection;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.BiConsumer;
 
@@ -41,7 +42,7 @@ public class CollectionUtils {
   /**
    * Iterate over 2 collections in parallel
    */
-  public static <T,U> void zip(Collection<T> ct, Collection<U> cu, BiConsumer<T,U> each) {
+  public static <T, U> void zip(Collection<T> ct, Collection<U> cu, BiConsumer<T, U> each) {
     Iterator<T> it = ct.iterator();
     Iterator<U> iu = cu.iterator();
     while (it.hasNext() && iu.hasNext()) {
@@ -52,7 +53,7 @@ public class CollectionUtils {
   /**
    * Creates a list from an array of values that can include null values.
    */
-  public static  <T> List<T> list(T... args) {
+  public static <T> List<T> list(T... args) {
     List<T> list = new ArrayList<>();
     for (T arg : args) {
       list.add(arg);
@@ -60,6 +61,55 @@ public class CollectionUtils {
     return list;
   }
 
-  private CollectionUtils() {}
+  public static boolean equals(List<?> first, Object[] second) {
+    if (first == null & second == null) return true;
+    if (first == null || second == null) return false;
+
+    if (first.size() != second.length) return false;
+    int idx = 0;
+    for (Object o1 : first) {
+      if (!o1.equals(second[idx])) {
+        return false;
+      }
+      idx++;
+    }
+    return true;
+  }
+
+  /**
+   * Compact an array, 'removing' any element that is null
+   *
+   * @param original The array to be compacted
+   * @return The compacted array
+   */
+  public static <T> T[] compact(T[] original) {
+    T[] result = null;
+    int ix = 0;
+
+    for (int i = 0; i < original.length; i++) {
+      if (original[i] != null) {
+        original[ix++] = original[i];
+      }
+    }
+
+    if (ix != original.length) {
+      int i;
+
+      for (i = 0; (i < original.length) && (original[i] == null); i++) {
+      }
+
+      if (i == original.length) {
+        throw new RuntimeException("All elements null. Cannot determine element type");
+      }
+
+      result = (T[]) Array.newInstance(original[i].getClass(), ix);
+      System.arraycopy(original, 0, result, 0, result.length);
+    }
+
+    return result;
+  }
+
+  private CollectionUtils() {
+  }
 
 }

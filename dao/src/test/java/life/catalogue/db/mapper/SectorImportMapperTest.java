@@ -6,6 +6,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
+import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import org.junit.Before;
 import org.junit.Test;
@@ -118,5 +119,10 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     assertEquals(0, mapper().count(null, 456789876, null, null));
     
   }
-  
+
+  @Test
+  public void deleteByDataset() throws Exception {
+    mapper().deleteByDataset(Datasets.DRAFT_COL);
+  }
+
 }

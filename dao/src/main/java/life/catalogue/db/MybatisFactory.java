@@ -6,6 +6,7 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.model.TreeNode;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.ProjectSourceDataset;
 import life.catalogue.db.mapper.UsageNameID;
 import life.catalogue.db.type.UuidTypeHandler;
 import life.catalogue.db.type2.StringCount;
@@ -113,6 +114,7 @@ public class MybatisFactory {
     registry.registerAliases(NameUsageWrapper.class.getPackage().getName());
     registry.registerAlias(StringCount.class);
     registry.registerAlias(UsageNameID.class);
+    registry.registerAlias(ProjectSourceDataset.class);
     registry.registerAlias("TreeNodeMybatis", TreeNode.TreeNodeMybatis.class);
     registry.registerAlias("UsageDecision", Duplicate.UsageDecision.class);
     registry.registerAlias("DuplicateMybatis", Duplicate.Mybatis.class);

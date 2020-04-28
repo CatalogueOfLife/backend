@@ -1,10 +1,10 @@
 package life.catalogue.api.model;
 
-import java.util.Objects;
-
 import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+
+import java.util.Objects;
 
 /**
  * Sector counts by dataset key for a given taxon.
@@ -59,5 +59,9 @@ public class TaxonSectorCountMap {
   @Override
   public int hashCode() {
     return Objects.hash(id, count);
+  }
+
+  public boolean isEmpty() {
+    return count != null && size()>0;
   }
 }

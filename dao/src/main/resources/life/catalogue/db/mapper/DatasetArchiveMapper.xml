@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.DatasetArchiveMapper">
+
+  <sql id="SELECT">
+    <include refid="life.catalogue.db.mapper.DatasetPatchMapper.SELECT"/>,
+    d.source_key,
+    d.import_attempt,
+    d.gbif_key,
+    d.gbif_publisher_key,
+    d.data_format,
+    d.data_access,
+    d.origin,
+    d.locked,
+    d.private,
+    d.import_frequency,
+    d.notes,
+    d.settings,
+    d.deleted,
+    di.finished AS imported,
+    di.verbatim_count AS size,
+    (select array_agg(distinct s.dataset_key) from sector s where s.subject_dataset_key=d.key) AS contributes_to
+  </sql>
+
+  <sql id="COLS">
+    source_key,
+    gbif_key,
+    gbif_publisher_key,
+    data_format,
+    data_access,
+    locked,
+    private,
+    import_frequency,
+    notes,
+    settings,
+    <include refid="life.catalogue.db.mapper.DatasetPatchMapper.COLS"/>
+  </sql>
+
+  <sql id="PROPS">
+    #{sourceKey},
+    #{gbifKey},
+    #{gbifPublisherKey},
+    #{dataFormat}::DATAFORMAT,
+    #{dataAccess},
+    #{locked},
+    #{privat},
+    #{importFrequency, typeHandler=life.catalogue.db.type.FrequencyTypeHandler},
+    #{notes},
+    #{settings, typeHandler=life.catalogue.db.type2.SettingsTypeHandler}::JSONB,
+    <!--
+    PROPS_PATCH uses obj. prefix so we cannot share the list
+    But we need to make sure we have the same order so the COLS match up!
+    -->
+    #{type}::datasettype,
+    #{title},
+    #{description},
+    #{organisations, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
+    #{contact},
+    #{authorsAndEditors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
+    #{license}::LICENSE,
+    #{version},
+    #{released},
+    #{citation},
+    #{geographicScope},
+    #{website},
+    #{logo},
+    #{alias},
+    #{group},
+    #{confidence},
+    #{completeness},
+    #{createdBy},
+    #{modifiedBy}
+  </sql>
+
+  <sql id="FROM">
+    dataset_archive d LEFT JOIN dataset_import di ON d.import_attempt=di.attempt AND d.key=di.dataset_key
+  </sql>
+
+
+  <resultMap id="datasetProjectResultMap" type="ProjectSourceDataset" autoMapping="true" extends="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
+    <id property="key" column="key"/>
+  </resultMap>
+
+
+  <select id="processSources" parameterType="map" resultMap="datasetProjectResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
+    WITH src AS (
+      SELECT s.subject_dataset_key AS key, max(s.dataset_import_attempt) AS attempt, d.import_attempt AS curr_attempt
+      FROM sector s
+        JOIN dataset d ON d.key=s.subject_dataset_key
+      WHERE s.dataset_key=#{datasetKey}
+      GROUP BY s.subject_dataset_key, d.import_attempt
+    )
+    <!-- current dataset metadata -->
+    SELECT #{datasetKey} AS dataset_key, <include refid="life.catalogue.db.mapper.DatasetMapper.SELECT"/>
+    FROM src, <include refid="life.catalogue.db.mapper.DatasetMapper.FROM"/>
+    WHERE src.key=d.key AND src.attempt=src.curr_attempt
+
+    UNION
+
+    <!-- archived dataset metadata for the source (dataset_key IS NULL), not a project -->
+    SELECT #{datasetKey} AS dataset_key, <include refid="SELECT"/>
+    FROM src, <include refid="FROM"/>
+    WHERE d.key=src.key AND d.dataset_key IS NULL AND d.import_attempt=src.attempt AND src.attempt!=src.curr_attempt
+  </select>
+
+  <select id="getArchive" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE d.key = #{key} AND d.dataset_key IS NULL AND d.import_attempt = #{attempt}
+  </select>
+
+  <select id="getProjectArchive" resultMap="datasetProjectResultMap">
+    SELECT d.dataset_key, <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE d.key = #{key} AND d.dataset_key = #{datasetKey} AND d.import_attempt = #{attempt}
+  </select>
+
+  <insert id="createArchive" parameterType="map">
+    INSERT INTO dataset_archive (key, dataset_key, import_attempt, <include refid="COLS"/>, origin, created, modified)
+    SELECT key, NULL, import_attempt, <include refid="COLS"/>, origin, now(), now()
+    FROM dataset d
+    WHERE d.key = #{key}
+  </insert>
+
+  <insert id="createProjectArchive" parameterType="ProjectSourceDataset">
+    INSERT INTO dataset_archive (key, dataset_key, import_attempt, <include refid="COLS"/>, origin,  created, modified)
+    VALUES (#{key}, #{datasetKey}, #{importAttempt}, <include refid="PROPS"/>, #{origin}::DATASETORIGIN, now(), now())
+  </insert>
+
+</mapper>
