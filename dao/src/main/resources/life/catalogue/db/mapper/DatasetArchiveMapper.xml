@@ -17,7 +17,6 @@
     d.private,
     d.import_frequency,
     d.notes,
-    d.settings,
     d.deleted,
     di.finished AS imported,
     di.verbatim_count AS size,
@@ -34,7 +33,6 @@
     private,
     import_frequency,
     notes,
-    settings,
     <include refid="life.catalogue.db.mapper.DatasetPatchMapper.COLS"/>
   </sql>
 
@@ -48,7 +46,6 @@
     #{privat},
     #{importFrequency, typeHandler=life.catalogue.db.type.FrequencyTypeHandler},
     #{notes},
-    #{settings, typeHandler=life.catalogue.db.type2.SettingsTypeHandler}::JSONB,
     <!--
     PROPS_PATCH uses obj. prefix so we cannot share the list
     But we need to make sure we have the same order so the COLS match up!

@@ -6,17 +6,20 @@
 
   <sql id="SELECT">
     <include refid="life.catalogue.db.mapper.DatasetArchiveMapper.SELECT"/>,
+    d.settings,
     d.editors
   </sql>
 
   <sql id="COLS">
     <include refid="life.catalogue.db.mapper.DatasetArchiveMapper.COLS"/>,
+    settings,
     editors
   </sql>
 
 
   <sql id="PROPS">
     <include refid="life.catalogue.db.mapper.DatasetArchiveMapper.PROPS"/>,
+    #{settings, typeHandler=life.catalogue.db.type2.SettingsTypeHandler}::JSONB,
     #{editors, typeHandler=life.catalogue.db.type2.IntSetTypeHandler}
   </sql>
 

@@ -39,6 +39,7 @@ public class DatasetArchiveMapperTest extends MapperTestBase<DatasetArchiveMappe
     d1 = dmapper().get(d1.getKey());
     // but remove the editors as we dont keep them in archives
     d1.getEditors().clear();
+    d1.getSettings().clear();
 
     Dataset d2 = mapper().getArchive(d1.getKey(), d1.getImportAttempt());
     
@@ -58,6 +59,7 @@ public class DatasetArchiveMapperTest extends MapperTestBase<DatasetArchiveMappe
 
     rmDbCreatedProps(d1);
     d1.getEditors().clear();
+    d1.getSettings().clear();
     rmDbCreatedProps(d2);
     assertTrue(d2.equals(d1));
   }

@@ -604,6 +604,7 @@ CREATE TABLE dataset_archive (LIKE dataset);
 ALTER TABLE dataset_archive
   DROP COLUMN doc,
   DROP COLUMN editors,
+  DROP COLUMN settings,
   ADD COLUMN dataset_key INTEGER REFERENCES dataset;
 ALTER TABLE dataset_archive ADD UNIQUE (key, import_attempt, dataset_key);
 

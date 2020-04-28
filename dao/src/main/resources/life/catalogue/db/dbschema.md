@@ -17,7 +17,8 @@ ALTER TABLE dataset
     RENAME COLUMN last_data_import_attempt TO import_attempt;
 ALTER TABLE dataset_archive 
     RENAME COLUMN catalogue_key TO dataset_key,
-    RENAME COLUMN last_data_import_attempt TO import_attempt;
+    RENAME COLUMN last_data_import_attempt TO import_attempt,
+    DROP COLUMN settings;
 UPDATE dataset_archive a SET import_attempt=d.import_attempt
     FROM dataset d WHERE a.import_attempt IS NULL AND d.key=a.key;
 ALTER TABLE dataset_archive ADD UNIQUE (key, import_attempt, dataset_key);
