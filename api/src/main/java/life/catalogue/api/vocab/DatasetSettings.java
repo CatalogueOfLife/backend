@@ -47,6 +47,10 @@ public enum DatasetSettings {
 
   /**
    * Template used to build a new release title.
+   * Use dataset properties in curly brackets, e.g. {title}
+   * and the current {date} followed by an optional {@link java.time.format.DateTimeFormatter} syntax.
+   *
+   * See https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/time/format/DateTimeFormatter.html
    */
   RELEASE_TITLE_TEMPLATE(String.class);
 

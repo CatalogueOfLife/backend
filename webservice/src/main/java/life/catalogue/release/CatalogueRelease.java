@@ -3,9 +3,11 @@ package life.catalogue.release;
 import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.DatasetSettings;
 import life.catalogue.api.vocab.Frequency;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.lang.Exceptions;
+import life.catalogue.common.text.SimpleTemplate;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.Partitioner;
@@ -20,13 +22,15 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.IllegalFormatException;
 import java.util.function.Consumer;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 
 public class CatalogueRelease implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(CatalogueRelease.class);
-  
+  private static final String DEFAULT_TITLE_TEMPLATE = "{title}, {date}";
+
   private final SqlSessionFactory factory;
   private final DatasetImportDao diDao;
   private final NameUsageIndexService indexService;
@@ -70,7 +74,18 @@ public class CatalogueRelease implements Runnable {
         throw new IllegalArgumentException("Only managed datasets can be released, but origin is " + release.getOrigin());
       }
       
-      LocalDate today = LocalDate.now();
+      try {
+        String tmpl = DEFAULT_TITLE_TEMPLATE;
+        if (release.hasSetting(DatasetSettings.RELEASE_TITLE_TEMPLATE)) {
+          tmpl = release.getSettingString(DatasetSettings.RELEASE_TITLE_TEMPLATE);
+        }
+        String title = SimpleTemplate.render(tmpl, release);
+        release.setTitle(title);
+      } catch (IllegalFormatException e) {
+        LOG.error("Error rendering release title", e);
+        throw e;
+      }
+      final LocalDate today = LocalDate.now();
       release.setKey(null);
       release.setSourceKey(catalogueKey);
       release.setOrigin(DatasetOrigin.RELEASED);
