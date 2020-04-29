@@ -98,9 +98,13 @@
     WHERE key = #{obj.key} and dataset_key = #{datasetKey}
   </update>
 
-  <update id="delete" parameterType="map">
+  <delete id="delete" parameterType="map">
     DELETE FROM dataset_patch
     WHERE key = #{key} and dataset_key = #{datasetKey}
-  </update>
+  </delete>
+
+  <delete id="deleteByDataset" parameterType="map">
+    DELETE FROM dataset_patch WHERE dataset_key = #{datasetKey}
+  </delete>
 
 </mapper>

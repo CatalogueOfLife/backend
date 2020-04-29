@@ -126,4 +126,9 @@
     VALUES (#{key}, #{datasetKey}, #{importAttempt}, <include refid="PROPS"/>, #{origin}::DATASETORIGIN, now(), now())
   </insert>
 
+  <delete id="deleteByDataset" parameterType="map">
+    DELETE FROM dataset_archive WHERE dataset_key = #{datasetKey};
+    DELETE FROM dataset_archive WHERE dataset_key IS NULL AND key = #{datasetKey};
+  </delete>
+
 </mapper>

@@ -48,6 +48,11 @@ public class DatasetArchiveMapperTest extends MapperTestBase<DatasetArchiveMappe
   }
 
   @Test
+  public void deleteByDataset() throws Exception {
+    mapper().deleteByDataset(Datasets.DRAFT_COL);
+  }
+
+  @Test
   public void projectArchive() throws Exception {
     ProjectSourceDataset d1 = createProjectSource();
     d1.setDatasetKey(Datasets.DRAFT_COL);

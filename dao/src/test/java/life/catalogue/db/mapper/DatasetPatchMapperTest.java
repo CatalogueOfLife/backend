@@ -21,6 +21,11 @@ public class DatasetPatchMapperTest extends MapperTestBase<DatasetPatchMapper> {
   }
 
   @Test
+  public void deleteByDataset() throws Exception {
+    mapper().deleteByDataset(Datasets.DRAFT_COL);
+  }
+
+  @Test
   public void roundtripCrud() throws Exception {
     Dataset u1 = readFirst();
     mapper().create(Datasets.DRAFT_COL, u1);
