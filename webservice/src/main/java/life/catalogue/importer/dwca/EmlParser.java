@@ -1,5 +1,18 @@
 package life.catalogue.importer.dwca;
 
+import life.catalogue.common.date.FuzzyDate;
+import life.catalogue.common.io.CharsetDetectingStream;
+import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.parser.DateParser;
+import life.catalogue.parser.SafeParser;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -7,19 +20,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
-import org.apache.commons.lang3.StringUtils;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.common.date.FuzzyDate;
-import life.catalogue.common.io.CharsetDetectingStream;
-import life.catalogue.parser.DateParser;
-import life.catalogue.parser.SafeParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -32,21 +32,21 @@ public class EmlParser {
     factory = XMLInputFactory.newInstance();
   }
   
-  Optional<Dataset> parse(Path file) throws IOException {
+  Optional<DatasetWithSettings> parse(Path file) throws IOException {
     CharsetDetectingStream cds = CharsetDetectingStream.create(Files.newInputStream(file));
     return parse(cds, cds.getCharset());
   }
   
-  Optional<Dataset> parse(InputStream stream) throws IOException {
+  Optional<DatasetWithSettings> parse(InputStream stream) throws IOException {
     CharsetDetectingStream cds = CharsetDetectingStream.create(stream);
     return parse(cds, cds.getCharset());
   }
   
-  Optional<Dataset> parse(InputStream stream, Charset encoding) {
+  Optional<DatasetWithSettings> parse(InputStream stream, Charset encoding) {
     try {
       XMLStreamReader parser = factory.createXMLStreamReader(stream, encoding.name());
       
-      final Dataset d = new Dataset();
+      final DatasetWithSettings d = new DatasetWithSettings();
       boolean isDataset = false;
       boolean isProject = false;
       boolean isAdditionalMetadata = false;

@@ -1,13 +1,13 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.ArchivedDataset;
 
 import java.util.Objects;
 
 /**
  * Mapper internal class to bundle a dataset to a project key
  */
-public class ProjectSourceDataset extends Dataset {
+public class ProjectSourceDataset extends ArchivedDataset {
   private Integer datasetKey;
 
   public Integer getDatasetKey() {

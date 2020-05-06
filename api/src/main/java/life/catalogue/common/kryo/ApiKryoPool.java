@@ -4,7 +4,6 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
 import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer;
 import de.javakaffee.kryoserializers.guava.ImmutableListSerializer;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
@@ -98,7 +97,7 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(Country.class);
     kryo.register(DataFormat.class);
     kryo.register(DatasetOrigin.class);
-    kryo.register(DatasetSettings.class);
+    kryo.register(Setting.class);
     kryo.register(DatasetType.class);
     kryo.register(DistributionStatus.class);
     kryo.register(EnumMap.class, new EnumMapSerializer());

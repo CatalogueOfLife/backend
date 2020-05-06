@@ -92,7 +92,6 @@ public class DatasetPatchMapperTest extends MapperTestBase<DatasetPatchMapper> {
 
   Dataset removeDbCreatedProps(Dataset obj) {
     TestEntityGenerator.nullifyUserDate(obj);
-    obj.setSettings(null);
     return obj;
   }
 

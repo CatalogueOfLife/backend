@@ -1,10 +1,8 @@
 package life.catalogue.resources;
 
-import javax.ws.rs.client.WebTarget;
-
 import io.dropwizard.testing.ResourceHelpers;
 import life.catalogue.WsServerRule;
-import life.catalogue.api.model.Dataset;
+import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.DatasetDao;
@@ -18,6 +16,8 @@ import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
 import org.junit.ClassRule;
+
+import javax.ws.rs.client.WebTarget;
 
 public class ResourceTestBase {
   
@@ -48,10 +48,11 @@ public class ResourceTestBase {
     }
   }
 
-  public void addUserPermission(int userKey, int datasetKey) {
-    Dataset d = ddao.get(datasetKey);
-    d.addEditor(userKey);
-    ddao.update(d, Users.TESTER);
+  public void addUserPermission(int editorKey, int datasetKey) {
+    try (SqlSession session = factory().openSession(true)) {
+      session.getMapper(DatasetMapper.class).addEditor(datasetKey, editorKey, Users.TESTER);
+    }
+    ddao.addEditor(datasetKey, editorKey, TestEntityGenerator.USER_ADMIN);
   }
 
   protected void printDiff(Object o1, Object o2) {

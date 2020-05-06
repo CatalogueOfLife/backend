@@ -1,6 +1,9 @@
 package life.catalogue.db.mapper;
 
+import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetSettings;
+import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.db.CRUD;
@@ -14,8 +17,34 @@ import java.util.UUID;
 
 public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Dataset> {
 
+  default void createAll(DatasetWithSettings d) {
+    create(d.getDataset());
+    updateSettings(d.getKey(), d.getSettings(), d.getDataset().getModifiedBy());
+  }
+
   // for tests only !!!
   void createWithKey(Dataset d);
+
+  DatasetSettings getSettings(@Param("key") int key);
+
+  /**
+   * Updates the settings. This requires an existing dataset record with a key to exist!
+   * Editors are NOT updated, use the separate {@link #updateEditors} method instead
+   */
+  void updateSettings(@Param("key") int key, @Param("settings") DatasetSettings settings, @Param("userKey") int userKey);
+
+  IntSet getEditors(@Param("key") int key);
+
+  void updateEditors(@Param("key") int key, @Param("editors") IntSet editors, @Param("userKey") int userKey);
+
+  void addEditor(@Param("key") int key, @Param("editor") int editor, @Param("userKey") int userKey);
+
+  void removeEditor(@Param("key") int key, @Param("editor") int editor, @Param("userKey") int userKey);
+
+  default void updateAll(DatasetWithSettings d) {
+    update(d.getDataset());
+    updateSettings(d.getKey(), d.getSettings(), d.getDataset().getModifiedBy());
+  }
 
   /**
    * Iterates over all datasets with a cursor.
@@ -27,13 +56,13 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
 
   /**
    * @param userKey optional user key so that private datasets for that user will be included in the count.
-   *                Use -1 for admins and other roles that should always see all private datasets
+   *                Use -42 for admins and other roles that should always see all private datasets
    */
   int count(@Param("req") DatasetSearchRequest request, @Param("userKey") Integer userKey);
 
   /**
    * @param userKey optional user key so that private datasets for that user will be included in the results.
-   *                Use -1 for admins and other roles that should always see all private datasets
+   *                Use -42 for admins and other roles that should always see all private datasets
    */
   List<Dataset> search(@Param("req") DatasetSearchRequest request, @Param("userKey") Integer userKey, @Param("page") Page page);
   

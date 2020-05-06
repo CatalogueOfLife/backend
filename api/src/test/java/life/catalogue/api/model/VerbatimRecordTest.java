@@ -19,12 +19,7 @@ public class VerbatimRecordTest extends SerdeTestBase<VerbatimRecord> {
   public VerbatimRecordTest() {
     super(VerbatimRecord.class);
   }
-  
-  @Override
-  protected void debug(String json, Wrapper<VerbatimRecord> wrapper, Wrapper<VerbatimRecord> wrapper2) {
-    //System.out.println(json);
-  }
-  
+
   @Override
   public VerbatimRecord genTestValue() throws Exception {
     return TestEntityGenerator.createVerbatim();

@@ -1,5 +1,29 @@
 package life.catalogue.importer;
 
+import com.google.common.base.Charsets;
+import com.google.common.collect.Sets;
+import com.google.common.io.Files;
+import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.config.NormalizerConfig;
+import life.catalogue.img.ImageService;
+import life.catalogue.importer.neo.NeoDb;
+import life.catalogue.importer.neo.NeoDbFactory;
+import life.catalogue.importer.neo.model.NeoProperties;
+import life.catalogue.importer.neo.model.RankedName;
+import life.catalogue.importer.neo.printer.PrinterUtils;
+import life.catalogue.matching.NameIndexFactory;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.neo4j.graphdb.Transaction;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStream;
@@ -13,31 +37,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
-import com.google.common.base.Charsets;
-import com.google.common.collect.Sets;
-import com.google.common.io.Files;
-import life.catalogue.api.vocab.DatasetSettings;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.config.NormalizerConfig;
-import life.catalogue.img.ImageService;
-import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.NeoDbFactory;
-import life.catalogue.importer.neo.model.NeoProperties;
-import life.catalogue.importer.neo.model.RankedName;
-import life.catalogue.importer.neo.printer.PrinterUtils;
-import life.catalogue.matching.NameIndexFactory;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.neo4j.graphdb.Transaction;
 
 import static org.junit.Assert.*;
 
@@ -142,15 +141,13 @@ public class NormalizerTreeIT {
       
       store = NeoDbFactory.create(datasetKey, 1, cfg);
 
-      Dataset d = new Dataset();
+      DatasetWithSettings d = new DatasetWithSettings();
       d.setKey(datasetKey);
       d.setDataFormat(format);
       // check if dataset.yaml file exists for extended dataset properties
-      NormalizerITBase.readDatasetCode(resourceDir).ifPresent(code -> d.putSetting(DatasetSettings.NOMENCLATURAL_CODE, code));
+      NormalizerITBase.readDatasetCode(resourceDir).ifPresent(d::setCode);
       
-      store.put(d);
-      
-      Normalizer norm = new Normalizer(format, store, source, NameIndexFactory.passThru(), ImageService.passThru());
+      Normalizer norm = new Normalizer(d, store, source, NameIndexFactory.passThru(), ImageService.passThru());
       norm.call();
       // reopen the neo db
       store = NeoDbFactory.open(datasetKey, 1, cfg);

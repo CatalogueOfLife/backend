@@ -48,7 +48,7 @@ public class PgImportIT {
   private NeoDb store;
   private NormalizerConfig cfg;
   private ImporterConfig icfg = new ImporterConfig();
-  private Dataset dataset;
+  private DatasetWithSettings dataset;
   private VerbatimRecordMapper vMapper;
   private boolean fullInit = true;
   SynonymDao sdao;
@@ -70,7 +70,7 @@ public class PgImportIT {
     cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
-    dataset = new Dataset();
+    dataset = new DatasetWithSettings();
     dataset.setType(DatasetType.OTHER);
     dataset.setOrigin(DatasetOrigin.EXTERNAL);
     dataset.setCreatedBy(TestDataRule.TEST_USER.getKey());
@@ -109,19 +109,18 @@ public class PgImportIT {
       
       SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true);
       // this creates a new key, usually 2000!
-      session.getMapper(DatasetMapper.class).create(dataset);
+      session.getMapper(DatasetMapper.class).createAll(dataset);
       session.commit();
       session.close();
       
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
-      store.put(dataset);
-      Normalizer norm = new Normalizer(dataset.getDataFormat(), store, source, NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE), ImageService.passThru());
+      Normalizer norm = new Normalizer(dataset, store, source, NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE), ImageService.passThru());
       norm.call();
       
       // import into postgres
       store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
-      PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), icfg);
+      PgImport importer = new PgImport(dataset, store, PgSetupRule.getSqlSessionFactory(), icfg);
       importer.call();
       
     } catch (Exception e) {
@@ -675,9 +674,7 @@ public class PgImportIT {
   @Test
   @Ignore("manual test for debugging entire imports")
   public void testExternalManually() throws Exception {
-    // comment out if name matching is needed
-    dataset.setContributesTo(null);
-    dataset.putSetting(DatasetSettings.NOMENCLATURAL_CODE, NomCode.ZOOLOGICAL);
+    dataset.setCode(NomCode.ZOOLOGICAL);
     dataset.setType(DatasetType.TAXONOMIC);
   
     normalizeAndImport(URI.create("https://github.com/Sp2000/coldp/archive/master.zip"), COLDP);

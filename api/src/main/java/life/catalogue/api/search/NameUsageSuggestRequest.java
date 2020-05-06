@@ -1,8 +1,9 @@
 package life.catalogue.api.search;
 
-import java.util.Objects;
-import javax.ws.rs.QueryParam;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import javax.ws.rs.QueryParam;
+import java.util.Objects;
 
 public class NameUsageSuggestRequest extends NameUsageRequest {
 

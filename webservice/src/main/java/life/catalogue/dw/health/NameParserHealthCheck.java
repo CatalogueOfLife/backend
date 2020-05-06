@@ -1,13 +1,13 @@
 package life.catalogue.dw.health;
 
 
-import java.util.Optional;
-
 import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.Lists;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameAccordingTo;
 import life.catalogue.parser.NameParser;
+
+import java.util.Optional;
 
 /**
  * Calls the name parser with a known binomial to check its health.
@@ -21,7 +21,7 @@ public class NameParserHealthCheck extends HealthCheck {
   @Override
   protected Result check() throws Exception {
     try {
-      Optional<NameAccordingTo> result = parser.parse("Abies alba (L.) Mill.  sec Döring 1999");
+      Optional<NameAccordingTo> result = parser.parse("Abies alba (L.) Mill. sec Döring 1999");
       if (result.isPresent()) {
         Name name = result.get().getName();
         if (name.isBinomial() &&

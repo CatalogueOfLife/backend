@@ -4,13 +4,12 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Snapshot;
 import com.codahale.metrics.Timer;
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetSettings;
+import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Reference;
 import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.DatasetSettings;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.csl.CslUtil;
-import life.catalogue.img.ImageService;
 import life.catalogue.importer.InserterBaseTest;
 import life.catalogue.importer.NeoInserter;
 import life.catalogue.importer.reference.ReferenceFactory;
@@ -27,7 +26,7 @@ public class ColdpInserterTest extends InserterBaseTest {
   @Test
   public void readMetadata() throws Exception {
     NeoInserter ins = setup("/coldp/0");
-    Dataset d = ins.readMetadata().get();
+    DatasetWithSettings d = ins.readMetadata().get();
     
     assertNull(d.getType());
     assertEquals(DataFormat.COLDP, d.getDataFormat());
@@ -43,7 +42,7 @@ public class ColdpInserterTest extends InserterBaseTest {
     assertEquals("https://www.fishbase.de/images/gifs/fblogo_new.gif", d.getLogo().toString());
     assertEquals("Froese R. & Pauly D. (eds) (2018). FishBase (version 06/2018).", d.getCitation());
 
-    assertEquals(NomCode.BOTANICAL, d.getSettingEnum(DatasetSettings.NOMENCLATURAL_CODE));
+    assertEquals(NomCode.BOTANICAL, d.getCode());
     assertEquals((Integer)4, d.getConfidence());
     assertEquals((Integer)32, d.getCompleteness());
     assertEquals("my personal,\n" +
@@ -105,7 +104,7 @@ public class ColdpInserterTest extends InserterBaseTest {
   }
   
   @Override
-  public NeoInserter newInserter(Path resource) throws IOException {
-    return new ColdpInserter(store, resource, new ReferenceFactory(store));
+  public NeoInserter newInserter(Path resource, DatasetSettings settings) throws IOException {
+    return new ColdpInserter(store, resource, settings, new ReferenceFactory(store));
   }
 }

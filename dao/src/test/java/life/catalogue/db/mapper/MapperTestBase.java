@@ -3,6 +3,7 @@ package life.catalogue.db.mapper;
 import com.google.common.base.Preconditions;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TreeRepoRule;
@@ -105,9 +106,10 @@ public abstract class MapperTestBase<M> {
       DatasetImportMapper dim = session.getMapper(DatasetImportMapper.class);
 
       Dataset d = Preconditions.checkNotNull(dm.get(datasetKey), "Dataset "+datasetKey+" does not exist");
-      di.setDownloadUri(d.getDataAccess());
+      DatasetSettings ds = dm.getSettings(datasetKey);
+      di.setDownloadUri(ds.getURI(Setting.DATA_ACCESS));
       di.setOrigin(d.getOrigin());
-      di.setFormat(d.getDataFormat());
+      di.setFormat(ds.getEnum(Setting.DATA_FORMAT));
       dim.create(di);
     }
     // also update dataset with attempt

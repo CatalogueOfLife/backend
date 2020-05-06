@@ -12,7 +12,6 @@ import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
 import life.catalogue.importer.IdGenerator;
 import life.catalogue.importer.NormalizationFailedException;
-import life.catalogue.importer.PgImport;
 import life.catalogue.importer.neo.NodeBatchProcessor.BatchConsumer;
 import life.catalogue.importer.neo.model.*;
 import life.catalogue.importer.neo.printer.PrinterUtils;
@@ -21,7 +20,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
-import org.mapdb.Atomic;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
 import org.neo4j.graphalgo.LabelPropagationProc;
@@ -76,7 +74,6 @@ public class NeoDb {
   public final int batchSize;
   public final int batchTimeout;
 
-  private final Atomic.Var<Dataset> dataset;
   // verbatimKey sequence and lookup
   private final AtomicInteger verbatimSequence = new AtomicInteger(0);
   private final Map<Integer, VerbatimRecord> verbatim;
@@ -107,8 +104,6 @@ public class NeoDb {
     
     try {
       pool = new NeoKryoPool(8);
-      dataset = (Atomic.Var<Dataset>) mapDb.atomicVar("dataset", new MapDbObjectSerializer(Dataset.class, pool, 256))
-          .createOrOpen();
       verbatim = mapDb.hashMap("verbatim")
           .keySerializer(Serializer.INTEGER)
           .valueSerializer(new MapDbObjectSerializer(VerbatimRecord.class, pool, 128))
@@ -175,17 +170,13 @@ public class NeoDb {
       LOG.error("Failed to close neo4j {}", neoDir.getAbsolutePath(), e);
     }
   }
-  
-  public GraphDatabaseService getNeo() {
-    return neo;
+
+  public int getDatasetKey() {
+    return datasetKey;
   }
 
-  /**
-   * The dataset initially taken from the db, later on updated with metadata read from the archives.
-   * Dataset settings will be preserved when reading new metadata!
-   */
-  public Dataset getDataset() {
-    return dataset.get();
+  public GraphDatabaseService getNeo() {
+    return neo;
   }
   
   public NeoNameStore names() {
@@ -552,16 +543,6 @@ public class NeoDb {
 
   public Iterable<VerbatimRecord> verbatimList() {
     return verbatim.values();
-  }
-
-  public Dataset put(Dataset d) {
-    // keep existing dataset key & settings
-    Dataset old = dataset.get();
-    if (old != null) {
-      d = PgImport.updateMetadata(old, d);
-    }
-    dataset.set(d);
-    return d;
   }
   
   /**

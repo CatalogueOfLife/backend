@@ -159,7 +159,7 @@ public class SectorSyncIT {
   }
   
   private void delete(Sector s) {
-    SectorDelete sd = new SectorDelete(s.getId(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(),
+    SectorDeleteFull sd = new SectorDeleteFull(s.getId(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(),
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     System.out.println("\n*** SECTOR DELETION " + s.getKey() + " ***");
     sd.run();

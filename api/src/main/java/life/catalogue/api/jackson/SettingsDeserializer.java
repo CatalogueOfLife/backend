@@ -5,40 +5,48 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonSerializer;
 import life.catalogue.api.model.DatasetSettings;
+import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.Setting;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.Map;
 
-/**
- * Jackson {@link JsonSerializer} and Jackson {@link JsonDeserializer} classes for
- * terms as used in the verbatim class.
- * It renders terms with their prefixed name or full term URI if unknown.
- */
-public class SettingsSerde extends JsonDeserializer {
-  TypeReference<Map<Setting, Object>> REF = new TypeReference<Map<Setting, Object>>() {};
+public class SettingsDeserializer extends JsonDeserializer {
+
+  private static final Logger LOG = LoggerFactory.getLogger(SettingsDeserializer.class);
+  private static final TypeReference<Map<Setting, Object>> REF = new TypeReference<Map<Setting, Object>>() {};
 
   @Override
   public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-    Map<Setting, Object> map = p.readValueAs(REF);
-    DatasetSettings ds = new DatasetSettings();
-    for (Map.Entry<Setting, Object> entry : map.entrySet()) {
-      final Class type = entry.getKey().getType();
-      if (type.isEnum()) {
-        ds.put(entry.getKey(), entry.getValue());
-      } else if (type.equals(LocalDate.class)) {
-        ds.put(entry.getKey(), entry.getValue());
-      } else if (type.equals(URI.class)) {
-        ds.put(entry.getKey(), entry.getValue());
-      } else {
-        // String, Integer or Boolean are converted natively in JSON
-        ds.put(entry.getKey(), entry.getValue());
+    Map<Setting, Object> raw = p.readValueAs(REF);
+    convertFromJSON(raw);
+    return DatasetSettings.of(raw);
+  }
+
+  public static void convertFromJSON(Map<Setting, Object> map){
+    if (map != null) {
+      for (Map.Entry<Setting, Object> e : map.entrySet()) {
+        Setting s = e.getKey();
+        try {
+          if (s.getType().equals(LocalDate.class)) {
+            map.replace(e.getKey(), LocalDate.parse((String) e.getValue()));
+          } else if (s.getType().equals(URI.class)) {
+            map.replace(e.getKey(), URI.create( (String) e.getValue()));
+          } else if (s.isEnum()) {
+            map.replace(e.getKey(), VocabularyUtils.lookupEnum((String) e.getValue(), (Class<Enum<?>>) s.getType()));
+          } else {
+            // String, Integer or Boolean are converted natively in JSON already
+          }
+        } catch (RuntimeException ex) {
+          LOG.error("Unable to convert value {} for setting {} into {}", e.getValue(), e.getKey(), e.getKey().getType());
+          map.remove(e.getKey());
+        }
       }
     }
-    return ds;
   }
 }

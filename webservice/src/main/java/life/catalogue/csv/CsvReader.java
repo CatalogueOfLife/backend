@@ -34,7 +34,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.Charset;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -129,11 +128,34 @@ public class CsvReader {
       throw new NormalizationFailedException.SourceInvalidException("No data files found in " + folder);
     }
   }
-  
+
+  /**
+   * Replaces an existing schema by its row type.
+   * Can be used to "modify" a schema which is final.
+   */
+  protected void updateSchema(Schema s) {
+    schemas.put(s.rowType, s);
+  }
+
   protected void putSchema(Schema s) {
     if (s != null) {
-      schemas.put(s.rowType, s);
+      if (schemas.containsKey(s.rowType)) {
+        Schema first = schemas.get(s.rowType);
+        if (rowTypeMatchesFilename(s) && !rowTypeMatchesFilename(first)) {
+          LOG.warn("Replace existing schema for rowtype {} with new schema {} that also matches the filename", s.rowType, s);
+          schemas.put(s.rowType, s);
+        } else {
+          LOG.warn("Rowtype {} exists already. Skip later schema {}", s.rowType, s);
+        }
+      } else {
+        schemas.put(s.rowType, s);
+      }
     }
+  }
+
+  private static boolean rowTypeMatchesFilename(Schema s) {
+    String fn = PathUtils.getBasename(s.file);
+    return fn.equalsIgnoreCase(s.rowType.simpleName());
   }
 
   protected void filterSchemas(Predicate<Term> keepRowType) {

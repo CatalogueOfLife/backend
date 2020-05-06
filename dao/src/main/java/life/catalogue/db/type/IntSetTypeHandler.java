@@ -10,19 +10,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package life.catalogue.db.type2;
+package life.catalogue.db.type;
 
-import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.ints.IntSets;
-import org.apache.ibatis.type.BaseTypeHandler;
-import org.apache.ibatis.type.JdbcType;
+import life.catalogue.db.type2.AbstractArrayTypeHandler;
 
-import java.sql.*;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.sql.Array;
+import java.sql.SQLException;
 
 /**
  * Stores primitive fastutils IntSet instances as non null arrays in postgres, avoiding nulls and uses empty sets instead.

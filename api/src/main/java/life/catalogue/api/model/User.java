@@ -15,6 +15,8 @@ import java.util.*;
 
 public class User implements Entity<Integer>, Principal {
 
+  public static final int ADMIN_MAGIC_KEY = -42;
+
   public enum Role {
     EDITOR,
     ADMIN
@@ -27,7 +29,7 @@ public class User implements Entity<Integer>, Principal {
     if (user.isPresent()) {
       User u = user.get();
       if (u.hasRole(Role.ADMIN, null)) {
-        return -1;
+        return ADMIN_MAGIC_KEY;
       }
       return u.getKey();
     }

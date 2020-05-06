@@ -19,6 +19,7 @@ import static life.catalogue.api.util.VocabularyUtils.lookupEnum;
 public class NameUsageSearchRequest extends NameUsageRequest {
 
   private static final Set<String> NON_FILTERS;
+
   static {
     Set<String> non = new HashSet<>();
     // for paging
@@ -26,13 +27,14 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     non.add("offset");
     // search request itself
     for (Field f : FieldUtils.getFieldsWithAnnotation(NameUsageSearchRequest.class, QueryParam.class)) {
-      for (QueryParam qp : f.getAnnotationsByType(QueryParam.class)){
+      for (QueryParam qp : f.getAnnotationsByType(QueryParam.class)) {
         non.add(qp.value());
       }
     }
     NON_FILTERS = Set.copyOf(non);
     System.out.println(NON_FILTERS);
   }
+
   public static enum SearchContent {
     SCIENTIFIC_NAME, AUTHORSHIP, VERNACULAR_NAME
   }
@@ -71,7 +73,8 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   @QueryParam("prefix")
   private boolean prefix;
 
-  public NameUsageSearchRequest() {}
+  public NameUsageSearchRequest() {
+  }
 
   @JsonCreator
   public NameUsageSearchRequest(@JsonProperty("filter") Map<NameUsageSearchParameter, @Size(max = 1000) List<Object>> filters,
@@ -82,8 +85,8 @@ public class NameUsageSearchRequest extends NameUsageRequest {
                                 @JsonProperty("reverse") boolean reverse,
                                 @JsonProperty("prefix") boolean prefix) {
     this.filters = filters == null ? new EnumMap<>(NameUsageSearchParameter.class) : new EnumMap<>(filters);
-    this.facets = facets;
-    this.content = content;
+    this.facets = facets == null ? EnumSet.noneOf(NameUsageSearchParameter.class) : EnumSet.copyOf(facets);
+    this.content = content == null ? EnumSet.noneOf(SearchContent.class) : EnumSet.copyOf(content);
     this.sortBy = sortBy;
     this.highlight = highlight;
     this.reverse = reverse;
@@ -179,13 +182,13 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   @JsonIgnore
   public boolean isEmpty() {
     return super.isEmpty() &&
-        (content == null || content.isEmpty())
-        && (facets == null || facets.isEmpty())
-        && (filters == null || filters.isEmpty())
-        && sortBy == null
-        && !highlight
-        && !reverse
-        && !prefix;
+      (content == null || content.isEmpty())
+      && (facets == null || facets.isEmpty())
+      && (filters == null || filters.isEmpty())
+      && sortBy == null
+      && !highlight
+      && !reverse
+      && !prefix;
   }
 
   public void addFilter(NameUsageSearchParameter param, Integer value) {
@@ -327,9 +330,13 @@ public class NameUsageSearchRequest extends NameUsageRequest {
       return false;
     }
     NameUsageSearchRequest other = (NameUsageSearchRequest) obj;
-    return Objects.equals(content, other.content) && Objects.equals(facets, other.facets) && Objects.equals(filters, other.filters)
-        && highlight == other.highlight && reverse == other.reverse && sortBy == other.sortBy
-        && prefix == other.prefix;
+    return Objects.equals(content, other.content) &&
+      Objects.equals(facets, other.facets) &&
+      Objects.equals(filters, other.filters) &&
+      highlight == other.highlight &&
+      reverse == other.reverse &&
+      sortBy == other.sortBy &&
+      prefix == other.prefix;
   }
 
 }

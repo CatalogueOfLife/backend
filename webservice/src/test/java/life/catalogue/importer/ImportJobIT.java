@@ -5,7 +5,7 @@ import com.google.common.io.Files;
 import io.dropwizard.client.HttpClientBuilder;
 import io.dropwizard.util.Duration;
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
@@ -53,7 +53,7 @@ public class ImportJobIT {
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
   private WsServerConfig cfg;
   private ImportJob job;
-  private Dataset d;
+  private DatasetWithSettings d;
 
   private static WsServerConfig provideConfig() {
     WsServerConfig cfg = new WsServerConfig();
@@ -106,7 +106,7 @@ public class ImportJobIT {
 
   private void setupNrun(DataFormat format, String access){
     URI archive = Resources.uri(access);
-    d = new Dataset();
+    d = new DatasetWithSettings();
     d.setType(DatasetType.OTHER);
     d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setCreatedBy(TestDataRule.TEST_USER.getKey());
@@ -115,7 +115,7 @@ public class ImportJobIT {
     d.setDataFormat(format);
     d.setDataAccess(archive);
     try(SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()){
-      session.getMapper(DatasetMapper.class).create(d);
+      session.getMapper(DatasetMapper.class).createAll(d);
       session.commit();
     }
 

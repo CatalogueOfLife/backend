@@ -64,7 +64,7 @@
     <id property="key" column="key"/>
     <result property="roles" column="roles" typeHandler="life.catalogue.db.type.RoleSetTypeHandler"/>
     <result property="settings" column="settings" typeHandler="life.catalogue.db.type2.HstoreMapTypeHandler"/>
-    <result property="datasets" column="datasets" typeHandler="life.catalogue.db.type2.IntSetTypeHandler"/>
+    <result property="datasets" column="datasets" typeHandler="life.catalogue.db.type.IntSetTypeHandler"/>
   </resultMap>
 
 

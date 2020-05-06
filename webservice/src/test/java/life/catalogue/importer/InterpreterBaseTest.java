@@ -21,11 +21,11 @@ public class InterpreterBaseTest {
   @Mock
   ReferenceStore refStore;
   IssueContainer issues = new VerbatimRecord();
-  InterpreterBase inter = new InterpreterBase(new Dataset(), new ReferenceFactory(1, refStore), null);
+  InterpreterBase inter = new InterpreterBase(new DatasetSettings(), new ReferenceFactory(1, refStore), null);
 
   @Test
   public void interpretName() throws Exception {
-    InterpreterBase ib = new InterpreterBase(new Dataset(), null, null);
+    InterpreterBase ib = new InterpreterBase(new DatasetSettings(), null, null);
     VerbatimRecord v = new VerbatimRecord();
     Optional<NameAccordingTo> nat = ib.interpretName(true, "1", "species", "Picea arlba", "Mill. and Desbrochers de Loges, 1881", "Abies", null, "alba", null, null, "s.l.", null, null, null, null, v);
     Name n = nat.get().getName();

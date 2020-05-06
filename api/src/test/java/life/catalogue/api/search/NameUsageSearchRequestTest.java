@@ -1,33 +1,33 @@
 package life.catalogue.api.search;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.HashSet;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
 import life.catalogue.api.search.NameUsageSearchRequest.SearchContent;
 import life.catalogue.api.vocab.NomStatus;
-import org.hibernate.validator.HibernateValidator;
 import org.junit.Test;
 
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.HashSet;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class NameUsageSearchRequestTest extends SerdeTestBase<NameUsageSearchRequest> {
 
   public NameUsageSearchRequestTest() {
     super(NameUsageSearchRequest.class);
+  }
+
+  @Test
+  public void equals() throws Exception {
+    assertEquals(genTestValue(), genTestValue());
   }
 
   @Override

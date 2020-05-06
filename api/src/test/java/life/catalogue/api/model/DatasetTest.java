@@ -3,8 +3,9 @@ package life.catalogue.api.model;
 import com.google.common.collect.ImmutableSet;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
-import life.catalogue.api.vocab.*;
-import org.gbif.nameparser.api.NomCode;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.api.vocab.License;
 import org.junit.Test;
 
 import java.net.URI;
@@ -30,8 +31,6 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.setDescription("gefzw fuewh gczew fw hfueh j ijdfeiw jfie eö.. few . few .");
     d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setType(DatasetType.TAXONOMIC);
-    d.setImportFrequency(Frequency.MONTHLY);
-    d.setDataAccess(URI.create("www.gbif.org"));
     d.setWebsite(URI.create("www.gbif.org"));
     d.setLogo(URI.create("www.gbif.org"));
     d.setLicense(License.CC0);
@@ -43,7 +42,6 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.getOrganisations().add("bla");
     d.setContact("foo");
     d.setNotes("cuzdsghazugbe67wqt6c g cuzdsghazugbe67wqt6c g  nhjs");
-    d.getSettings().put(DatasetSettings.REMATCH_DECISIONS, false);
     return d;
   }
 
@@ -86,23 +84,7 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     
     Dataset d = ApiModule.MAPPER.readValue(json, Dataset.class);
     assertNull(d.getWebsite());
-    assertNull(d.getDataAccess());
     assertNull(d.getLogo());
     assertNull(d.getLicense());
-  }
-
-  @Test
-  public void testSettings() throws Exception {
-    Dataset d = new Dataset();
-
-    assertNull(d.getSettingEnum(DatasetSettings.NOMENCLATURAL_CODE));
-
-    d.putSetting(DatasetSettings.NOMENCLATURAL_CODE, NomCode.BOTANICAL);
-    assertEquals(NomCode.BOTANICAL, d.getSettingEnum(DatasetSettings.NOMENCLATURAL_CODE));
-  }
-
-  @Override
-  protected void debug(String json, Wrapper<Dataset> wrapper, Wrapper<Dataset> wrapper2) {
-    System.out.println(json);
   }
 }

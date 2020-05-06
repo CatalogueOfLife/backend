@@ -11,6 +11,7 @@ import life.catalogue.common.tax.MisappliedNameMatcher;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.importer.acef.AcefInserter;
+import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.importer.coldp.ColdpInserter;
 import life.catalogue.importer.dwca.DwcaInserter;
 import life.catalogue.importer.neo.NeoDb;
@@ -51,14 +52,16 @@ public class Normalizer implements Callable<Boolean> {
   private final ReferenceFactory refFactory;
   private final ImageService imgService;
   private final NameIndex index;
+  private final DatasetWithSettings dataset;
   private MappingFlags meta;
 
 
-  public Normalizer(DataFormat format, NeoDb store, Path sourceDir, NameIndex index, ImageService imgService) {
-    this.format = Preconditions.checkNotNull(format, "Data format not given");
+  public Normalizer(DatasetWithSettings dataset, NeoDb store, Path sourceDir, NameIndex index, ImageService imgService) {
+    this.format = Preconditions.checkNotNull(dataset.getDataFormat(), "Data format not given");
+    this.dataset = dataset;
     this.sourceDir = sourceDir;
     this.store = store;
-    this.datasetKey = store.getDataset().getKey();
+    this.datasetKey = dataset.getKey();
     refFactory = new ReferenceFactory(datasetKey, store.references());
     this.index = index;
     this.imgService = imgService;
@@ -800,13 +803,13 @@ public class Normalizer implements Callable<Boolean> {
       NeoInserter inserter;
       switch (format) {
         case COLDP:
-          inserter = new ColdpInserter(store, sourceDir, refFactory);
+          inserter = new ColdpInserter(store, sourceDir, dataset.getSettings(), refFactory);
           break;
         case DWCA:
-          inserter = new DwcaInserter(store, sourceDir, refFactory);
+          inserter = new DwcaInserter(store, sourceDir, dataset.getSettings(), refFactory);
           break;
         case ACEF:
-          inserter = new AcefInserter(store, sourceDir, refFactory);
+          inserter = new AcefInserter(store, sourceDir, dataset.getSettings(), refFactory);
           break;
         case TEXT_TREE:
           inserter = new TxtTreeInserter(store, sourceDir);
@@ -814,9 +817,9 @@ public class Normalizer implements Callable<Boolean> {
         default:
           throw new NormalizationFailedException("Unsupported data format " + format);
       }
-      // metadata, the key will be preserved by the store
-      Optional<Dataset> d = inserter.readMetadata();
-      d.ifPresent(store::put);
+      // first metadata, the key will be preserved by the store
+      //TODO: should we not also read the nom code and other potential settings?
+      inserter.readMetadata().ifPresent(d -> PgImport.updateMetadata(dataset, d));
       // data
       inserter.insertAll();
       meta = inserter.getMappingFlags();

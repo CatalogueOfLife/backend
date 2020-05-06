@@ -12,7 +12,17 @@ public abstract class DataEntity<K> implements Entity<K>, UserManaged {
   private Integer createdBy;
   private LocalDateTime modified;
   private Integer modifiedBy;
-  
+
+  public DataEntity() {
+  }
+
+  public DataEntity(DataEntity<K> other) {
+    this.created = other.created;
+    this.createdBy = other.createdBy;
+    this.modified = other.modified;
+    this.modifiedBy = other.modifiedBy;
+  }
+
   public abstract K getKey();
   
   public abstract void setKey(K key);

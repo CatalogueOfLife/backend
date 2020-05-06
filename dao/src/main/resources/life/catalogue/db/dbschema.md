@@ -13,22 +13,40 @@ and done it manually. So we can as well log changes here.
 #### 2020-04-29 metadata archive
 See https://github.com/CatalogueOfLife/backend/issues/689
 ```
+UPDATE dataset SET settings = settings || jsonb_build_object('import frequency',  import_frequency) WHERE import_frequency IS NOT NULL;
+UPDATE dataset SET settings = settings || jsonb_build_object('data access', data_access) WHERE data_access IS NOT NULL;
+UPDATE dataset SET settings = settings || jsonb_build_object('data format', data_format) WHERE data_format IS NOT NULL;
+
+ALTER TABLE dataset
+  DROP COLUMN import_frequency,
+  DROP COLUMN data_access,
+  DROP COLUMN data_format;
 ALTER TABLE dataset 
     RENAME COLUMN last_data_import_attempt TO import_attempt;
-ALTER TABLE dataset_archive 
-    RENAME COLUMN catalogue_key TO dataset_key,
-    RENAME COLUMN last_data_import_attempt TO import_attempt,
-    DROP COLUMN settings;
+
+ALTER TABLE dataset_archive
+  DROP COLUMN import_frequency,
+  DROP COLUMN data_access,
+  DROP COLUMN data_format,
+  DROP COLUMN deleted,
+  DROP COLUMN doc,
+  DROP COLUMN editors,
+  DROP COLUMN gbif_key,
+  DROP COLUMN gbif_publisher_key,
+  DROP COLUMN locked,
+  DROP COLUMN private,
+  DROP COLUMN settings;
+ALTER TABLE dataset_archive RENAME COLUMN catalogue_key TO dataset_key;
+ALTER TABLE dataset_archive RENAME COLUMN last_data_import_attempt TO import_attempt;
 UPDATE dataset_archive a SET import_attempt=d.import_attempt
     FROM dataset d WHERE a.import_attempt IS NULL AND d.key=a.key;
 ALTER TABLE dataset_archive ADD UNIQUE (key, import_attempt, dataset_key);
 
-ALTER TABLE sector 
-    ADD COLUMN dataset_import_attempt INTEGER,
-    RENAME COLUMN last_sync_attempt TO sync_attempt;
+ALTER TABLE sector ADD COLUMN dataset_import_attempt INTEGER;
+ALTER TABLE sector RENAME COLUMN last_sync_attempt TO sync_attempt;
 UPDATE sector s SET dataset_import_attempt=d.import_attempt
     FROM dataset d 
-    WHERE s.sync_attempt IS NOT NULL AND d.key=d.subject_dataset_key;
+    WHERE s.sync_attempt IS NOT NULL AND d.key=s.subject_dataset_key;
 ```
 
 !!! make sure all current sector imports exist in the archive !!!
@@ -36,6 +54,7 @@ UPDATE sector s SET dataset_import_attempt=d.import_attempt
   SELECT s.dataset_key AS project_key, s.subject_dataset_key AS key, max(s.dataset_import_attempt) AS attempt, d.import_attempt AS curr_attempt
   FROM sector s
     JOIN dataset d ON d.key=s.subject_dataset_key
+  WHERE s.dataset_import_attempt IS NOT NULL
   GROUP BY s.dataset_key, s.subject_dataset_key, d.import_attempt
   ORDER BY s.dataset_key, s.subject_dataset_key
 ```

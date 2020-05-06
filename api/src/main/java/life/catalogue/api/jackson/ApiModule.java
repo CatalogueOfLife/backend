@@ -1,9 +1,5 @@
 package life.catalogue.api.jackson;
 
-import java.io.IOException;
-import java.net.URI;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.*;
@@ -22,6 +18,10 @@ import life.catalogue.api.vocab.TxtTreeTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.nameparser.api.Authorship;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.Set;
 
 /**
  * Jackson module that defines all serde rules for all CoL API model classes.

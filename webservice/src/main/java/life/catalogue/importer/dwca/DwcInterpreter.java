@@ -34,8 +34,8 @@ public class DwcInterpreter extends InterpreterBase {
 
   private final MappingFlags mappingFlags;
 
-  public DwcInterpreter(Dataset dataset, MappingFlags mappingFlags, ReferenceFactory refFactory, NeoDb store) {
-    super(dataset, refFactory, store);
+  public DwcInterpreter(DatasetSettings settings, MappingFlags mappingFlags, ReferenceFactory refFactory, NeoDb store) {
+    super(settings, refFactory, store);
     this.mappingFlags = mappingFlags;
   }
 

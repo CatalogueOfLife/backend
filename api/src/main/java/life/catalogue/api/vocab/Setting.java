@@ -3,10 +3,10 @@ package life.catalogue.api.vocab;
 import com.google.common.base.Preconditions;
 import org.gbif.nameparser.api.NomCode;
 
+import java.net.URI;
 import java.time.LocalDate;
 
-public enum Settings {
-
+public enum Setting {
 
   /**
    * When importing data from text files this overrides
@@ -57,7 +57,12 @@ public enum Settings {
   /**
    * In continuous import mode the frequency the dataset is scheduled for imports.
    */
-  IMPORT_FREQUENCY(Frequency.class);
+  IMPORT_FREQUENCY(Frequency.class),
+
+  DATA_FORMAT(DataFormat.class),
+
+  DATA_ACCESS(URI.class)
+  ;
 
   private final Class type;
 
@@ -70,15 +75,16 @@ public enum Settings {
   }
 
   /**
-   * Use String, Integer, Boolean, LocalDate or a custom col enumeration class
+   * Use String, Integer, Boolean, LocalDate, URI or a custom col enumeration class
    *
    * @param type
    */
-  Settings(Class type) {
+  Setting(Class type) {
     Preconditions.checkArgument(type.equals(String.class)
       || type.equals(Integer.class)
       || type.equals(Boolean.class)
       || type.equals(LocalDate.class)
+      || type.equals(URI.class)
       || type.isEnum(), "Unsupported type");
     this.type = type;
   }

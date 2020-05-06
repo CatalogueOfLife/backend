@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.MatchType;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.DatasetPageable;
 import life.catalogue.db.DatasetProcessable;
+import life.catalogue.db.SectorProcessable;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
 
@@ -18,7 +19,7 @@ import java.util.List;
  * When creating a new name if the homotypic group key is not yet set the newly created name key will be
  * used to point to the name itself
  */
-public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable<Name>, DatasetPageable<Name> {
+public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable<Name>, DatasetPageable<Name>, SectorProcessable<Name> {
   
   Name getByUsage(@Param("datasetKey") int datasetKey, @Param("usageId") String usageId);
   
@@ -65,7 +66,12 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
   );
   
   int deleteBySector(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
-  
+
+  /**
+   * Updates all names for the given sector and sets their sectorKey to NULL
+   */
+  int removeSectorKey(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+
   /**
    * @return true if at least one record for the given dataset exists
    */

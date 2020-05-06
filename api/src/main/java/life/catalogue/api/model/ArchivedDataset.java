@@ -1,10 +1,6 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.constraints.AbsoluteURI;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
@@ -20,13 +16,13 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Metadata about a dataset or a subset of it if parentKey is given.
  */
-public class Dataset extends DataEntity<Integer> implements DatasetMetadata {
+public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetadata {
   private static final PropertyDescriptor[] METADATA_PROPS;
   static {
     try {
@@ -43,12 +39,6 @@ public class Dataset extends DataEntity<Integer> implements DatasetMetadata {
   private DatasetType type;
   @NotNull
   private DatasetOrigin origin;
-  private boolean locked = false;
-  private boolean privat = false;
-  private UUID gbifKey;
-  private UUID gbifPublisherKey;
-  private LocalDateTime imported; // from import table
-  private LocalDateTime deleted;
 
   // human metadata
   @NotNull @NotBlank
@@ -74,15 +64,34 @@ public class Dataset extends DataEntity<Integer> implements DatasetMetadata {
   private Integer completeness;
   private String notes;
 
-  // human metadata
-  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-  private Integer size;
-  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-  private Set<Integer> contributesTo;
+  public ArchivedDataset() {
+  }
 
-  // security
-  @JsonIgnore
-  private IntSet editors = new IntOpenHashSet();
+  public ArchivedDataset(ArchivedDataset other) {
+    super(other);
+    this.key = other.key;
+    this.sourceKey = other.sourceKey;
+    this.importAttempt = other.importAttempt;
+    this.type = other.type;
+    this.origin = other.origin;
+    this.title = other.title;
+    this.alias = other.alias;
+    this.description = other.description;
+    this.organisations = other.organisations;
+    this.contact = other.contact;
+    this.authorsAndEditors = other.authorsAndEditors;
+    this.license = other.license;
+    this.version = other.version;
+    this.released = other.released;
+    this.citation = other.citation;
+    this.geographicScope = other.geographicScope;
+    this.website = other.website;
+    this.logo = other.logo;
+    this.group = other.group;
+    this.confidence = other.confidence;
+    this.completeness = other.completeness;
+    this.notes = other.notes;
+  }
 
   /**
    * Applies a dataset metadata patch, setting all non null fields
@@ -148,23 +157,7 @@ public class Dataset extends DataEntity<Integer> implements DatasetMetadata {
   public void setTitle(String title) {
     this.title = title;
   }
-  
-  public UUID getGbifKey() {
-    return gbifKey;
-  }
-  
-  public void setGbifKey(UUID gbifKey) {
-    this.gbifKey = gbifKey;
-  }
-  
-  public UUID getGbifPublisherKey() {
-    return gbifPublisherKey;
-  }
-  
-  public void setGbifPublisherKey(UUID gbifPublisherKey) {
-    this.gbifPublisherKey = gbifPublisherKey;
-  }
-  
+
   @Override
   public String getDescription() {
     return description;
@@ -284,23 +277,6 @@ public class Dataset extends DataEntity<Integer> implements DatasetMetadata {
   public void setOrigin(DatasetOrigin origin) {
     this.origin = origin;
   }
-  
-  public boolean isLocked() {
-    return locked;
-  }
-
-  @JsonProperty("private")
-  public boolean isPrivat() {
-    return privat;
-  }
-
-  public void setPrivat(boolean privat) {
-    this.privat = privat;
-  }
-
-  public void setLocked(boolean locked) {
-    this.locked = locked;
-  }
 
   public String getNotes() {
     return notes;
@@ -310,57 +286,6 @@ public class Dataset extends DataEntity<Integer> implements DatasetMetadata {
     this.notes = notes;
   }
 
-  public Integer getSize() {
-    return size;
-  }
-  
-  /**
-   * If the dataset participates in any catalogue assemblies
-   * this is indicated here by listing the catalogues datasetKey.
-   * <p>
-   * Dataset used to build the provisional catalogue will be trusted and insert their names into the names index.
-   */
-  public Set<Integer> getContributesTo() {
-    return contributesTo;
-  }
-  
-  public void setContributesTo(Set<Integer> contributesTo) {
-    this.contributesTo = contributesTo;
-  }
-  
-  public void addContributesTo(Integer catalogueKey) {
-    if (contributesTo == null) {
-      contributesTo = new HashSet<>();
-    }
-    contributesTo.add(catalogueKey);
-  }
-
-  /**
-   * Time the data of the dataset was last changed in the Clearinghouse,
-   * i.e. time of the last import that changed at least one record.
-   */
-  public LocalDateTime getImported() {
-    return imported;
-  }
-
-  public void setImported(LocalDateTime imported) {
-    this.imported = imported;
-  }
-
-
-  public LocalDateTime getDeleted() {
-    return deleted;
-  }
-
-  @JsonIgnore
-  public boolean hasDeletedDate() {
-    return deleted != null;
-  }
-  
-  public void setDeleted(LocalDateTime deleted) {
-    this.deleted = deleted;
-  }
-  
   @Override
   public String getAlias() {
     return alias;
@@ -401,73 +326,43 @@ public class Dataset extends DataEntity<Integer> implements DatasetMetadata {
     this.completeness = completeness;
   }
 
-
-
-  public IntSet getEditors() {
-    return editors;
-  }
-
-  public void setEditors(IntSet editors) {
-    this.editors = editors == null ? new IntOpenHashSet() : editors;
-  }
-
-  public void addEditor(int userKey) {
-    editors.add(userKey);
-  }
-
-  public void removeEditor(int userKey) {
-    if (getCreatedBy() != null && userKey == (int) getCreatedBy()) {
-      throw new IllegalArgumentException("Original dataset creator cannot be removed from editors");
-    }
-    editors.remove(userKey);
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof Dataset)) return false;
+    if (!(o instanceof ArchivedDataset)) return false;
     if (!super.equals(o)) return false;
-    Dataset dataset = (Dataset) o;
-    return locked == dataset.locked &&
-      privat == dataset.privat &&
-      Objects.equals(key, dataset.key) &&
-      Objects.equals(sourceKey, dataset.sourceKey) &&
-      Objects.equals(importAttempt, dataset.importAttempt) &&
-      type == dataset.type &&
-      origin == dataset.origin &&
-      Objects.equals(title, dataset.title) &&
-      Objects.equals(alias, dataset.alias) &&
-      Objects.equals(gbifKey, dataset.gbifKey) &&
-      Objects.equals(gbifPublisherKey, dataset.gbifPublisherKey) &&
-      Objects.equals(description, dataset.description) &&
-      Objects.equals(organisations, dataset.organisations) &&
-      Objects.equals(contact, dataset.contact) &&
-      Objects.equals(authorsAndEditors, dataset.authorsAndEditors) &&
-      license == dataset.license &&
-      Objects.equals(version, dataset.version) &&
-      Objects.equals(released, dataset.released) &&
-      Objects.equals(citation, dataset.citation) &&
-      Objects.equals(geographicScope, dataset.geographicScope) &&
-      Objects.equals(website, dataset.website) &&
-      Objects.equals(group, dataset.group) &&
-      Objects.equals(logo, dataset.logo) &&
-      Objects.equals(size, dataset.size) &&
-      Objects.equals(confidence, dataset.confidence) &&
-      Objects.equals(completeness, dataset.completeness) &&
-      Objects.equals(notes, dataset.notes) &&
-      Objects.equals(contributesTo, dataset.contributesTo) &&
-      Objects.equals(imported, dataset.imported) &&
-      Objects.equals(deleted, dataset.deleted) &&
-      Objects.equals(editors, dataset.editors);
+    ArchivedDataset that = (ArchivedDataset) o;
+    return Objects.equals(key, that.key) &&
+      Objects.equals(sourceKey, that.sourceKey) &&
+      Objects.equals(importAttempt, that.importAttempt) &&
+      type == that.type &&
+      origin == that.origin &&
+      Objects.equals(title, that.title) &&
+      Objects.equals(alias, that.alias) &&
+      Objects.equals(description, that.description) &&
+      Objects.equals(organisations, that.organisations) &&
+      Objects.equals(contact, that.contact) &&
+      Objects.equals(authorsAndEditors, that.authorsAndEditors) &&
+      license == that.license &&
+      Objects.equals(version, that.version) &&
+      Objects.equals(released, that.released) &&
+      Objects.equals(citation, that.citation) &&
+      Objects.equals(geographicScope, that.geographicScope) &&
+      Objects.equals(website, that.website) &&
+      Objects.equals(logo, that.logo) &&
+      Objects.equals(group, that.group) &&
+      Objects.equals(confidence, that.confidence) &&
+      Objects.equals(completeness, that.completeness) &&
+      Objects.equals(notes, that.notes);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, sourceKey, importAttempt, type, origin, locked, privat, title, alias, gbifKey, gbifPublisherKey, description, organisations, contact, authorsAndEditors, license, version, released, citation, geographicScope, website, group, logo, size, confidence, completeness, notes, contributesTo, imported, deleted, editors);
+    return Objects.hash(super.hashCode(), key, sourceKey, importAttempt, type, origin, title, alias, description, organisations, contact, authorsAndEditors, license, version, released, citation, geographicScope, website, logo, group, confidence, completeness, notes);
   }
 
   @Override
   public String toString() {
-    return "Dataset " + key + ": " + title;
+    return "ArchivedDataset " + key + ": " + importAttempt;
   }
 }

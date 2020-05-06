@@ -20,16 +20,15 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
- * Deletes a sector and all its imports, but keeps synced data of rank above species level by default.
- * Names and taxa of ranks above species are kept, but the sectorKey is removed from all entities that previously belonged to the deleted sector.
+ * Deletes a sector, all its data and recursively deletes also all included, nested sectors!
  */
-public class SectorDelete extends SectorRunnable {
-  private static final Logger LOG = LoggerFactory.getLogger(SectorDelete.class);
+public class SectorDeleteFull extends SectorRunnable {
+  private static final Logger LOG = LoggerFactory.getLogger(SectorDeleteFull.class);
   private Set<Integer> visitedSectors = new HashSet<>();
   
-  public SectorDelete(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService,
-                      Consumer<SectorRunnable> successCallback,
-                      BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
+  public SectorDeleteFull(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService,
+                          Consumer<SectorRunnable> successCallback,
+                          BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     super(sectorKey, false, factory, indexService, successCallback, errorCallback, false, user);
   }
   

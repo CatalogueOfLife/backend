@@ -9,8 +9,8 @@ INSERT INTO "user" (key, username, firstname, lastname, roles, created) VALUES
 ALTER SEQUENCE user_key_seq RESTART WITH 100;
 
 -- insert well known datasets
-INSERT INTO dataset (key, type, origin, import_frequency, title, alias, created_by, modified_by) VALUES
-    (1, 'NOMENCLATURAL', 'MANAGED', -1, 'Names Index',           'NIdx',  0, 0),
-    (3, 'TAXONOMIC', 'MANAGED', -1, 'Draft Catalogue of Life',   'Draft', 0, 0);
+INSERT INTO dataset (key, type, origin, title, alias, settings, created_by, modified_by) VALUES
+    (1, 'NOMENCLATURAL', 'MANAGED', 'Names Index',         'NIdx',  jsonb_build_object('import frequency', -1), 0, 0),
+    (3, 'TAXONOMIC', 'MANAGED', 'Draft Catalogue of Life', 'Draft', jsonb_build_object('import frequency', -1), 0, 0);
 
 ALTER SEQUENCE dataset_key_seq RESTART WITH 1000;

@@ -4,10 +4,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.google.common.io.Files;
 import io.dropwizard.client.HttpClientBuilder;
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DatasetImport;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.ResultPage;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TreeRepoRule;
@@ -98,19 +95,19 @@ public class ImportManagerLiveTest {
     hc.close();
   }
   
-  private Dataset createExternal() {
-    Dataset d = new Dataset();
+  private DatasetWithSettings createExternal() {
+    DatasetWithSettings d = new DatasetWithSettings();
     d.setType(DatasetType.TAXONOMIC);
     d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setTitle("Moss Bug Base");
-    d.putSetting(DatasetSettings.NOMENCLATURAL_CODE, NomCode.BACTERIAL);
+    d.setCode(NomCode.BACTERIAL);
     d.setDataFormat(DataFormat.DWCA);
     d.setDataAccess(URI.create("http://rs.gbif.org/datasets/dsmz.zip"));
     d.setCreatedBy(TestDataRule.TEST_USER.getKey());
     d.setModifiedBy(TestDataRule.TEST_USER.getKey());
   
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true) ) {
-      session.getMapper(DatasetMapper.class).create(d);
+      session.getMapper(DatasetMapper.class).createAll(d);
       session.commit();
     }
     return d;
@@ -118,7 +115,7 @@ public class ImportManagerLiveTest {
   
   @Test
   public void cancel() throws Exception {
-    final Dataset d1 = createExternal();
+    final DatasetWithSettings d1 = createExternal();
   
     LOG.warn("SUBMIT");
     importManager.submit(new ImportRequest(d1.getKey(), Users.IMPORTER));
@@ -141,10 +138,10 @@ public class ImportManagerLiveTest {
   public void submitAndCancel() throws Exception {
     final List<ImportState> runningStates = ImportState.runningStates();
     
-    final Dataset d1 = createExternal();
-    final Dataset d2 = createExternal();
-    final Dataset d3 = createExternal();
-    final Dataset d4 = createExternal();
+    final DatasetWithSettings d1 = createExternal();
+    final DatasetWithSettings d2 = createExternal();
+    final DatasetWithSettings d3 = createExternal();
+    final DatasetWithSettings d4 = createExternal();
   
     importManager.submit(new ImportRequest(d1.getKey(), Users.IMPORTER));
     Thread.sleep(50);

@@ -2,7 +2,7 @@ package life.catalogue.importer.acef;
 
 import com.google.common.base.Strings;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.DatasetSettings;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -36,8 +36,8 @@ public class AcefInterpreter extends InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(AcefInterpreter.class);
   private static final int ACEF_AUTHOR_MAX = 100;
 
-  AcefInterpreter(Dataset dataset, MappingFlags metadata, ReferenceFactory refFactory, NeoDb store) {
-    super(dataset, refFactory, store);
+  AcefInterpreter(DatasetSettings settings, MappingFlags metadata, ReferenceFactory refFactory, NeoDb store) {
+    super(settings, refFactory, store);
     // turn on normalization of flat classification
     metadata.setDenormedClassificationMapped(true);
   }
@@ -208,7 +208,7 @@ public class AcefInterpreter extends InterpreterBase {
       );
       opt = Optional.of(nat);
 
-    } else if (dataset.getSettingEnum(DatasetSettings.NOMENCLATURAL_CODE) == NomCode.VIRUS) {
+    } else if (settings.getEnum(Setting.NOMENCLATURAL_CODE) == NomCode.VIRUS) {
       // we shortcut building the ACEF virus name here as we don't want the genus classification to end up in the full name
       NameAccordingTo nat = new NameAccordingTo();
       nat.setName(new Name());

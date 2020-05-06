@@ -5,7 +5,7 @@ import life.catalogue.api.model.DataEntity;
 import life.catalogue.db.CRUD;
 import org.junit.Test;
 
-import java.util.Collection;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -20,10 +20,14 @@ abstract class CRUDTestBase<K, V extends DataEntity<K>, M extends CRUD<K, V>> ex
   
   abstract V createTestEntity(int datasetKey);
   
-  abstract V removeDbCreatedProps(V obj);
-  
-  void removeDbCreatedProps(Collection<V> objs) {
+  V removeDbCreatedProps(V obj) {
+    // nothing by default
+    return obj;
+  }
+
+  List<V> removeDbCreatedProps(List<V> objs) {
     objs.forEach(this::removeDbCreatedProps);
+    return objs;
   }
 
   void removeDbCreatedProps(V... objs) {

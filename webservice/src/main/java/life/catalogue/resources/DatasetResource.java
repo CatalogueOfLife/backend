@@ -74,6 +74,19 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     return dao.search(req, userkey(user), page);
   }
 
+  @GET
+  @Path("{key}/settings")
+  public DatasetSettings getSettings(@PathParam("key") int key) {
+    return dao.getSettings(key);
+  }
+
+  @PUT
+  @Path("{key}/settings")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void putSettings(@PathParam("key") int key, DatasetSettings settings, @Auth User user) {
+    dao.putSettings(key, settings, user.getKey());
+  }
+
   /**
    * Convenience method to get the latest release of a project.
    * This can also be achieved using the search, but it is a common operation we make as simple as possible in the API.
@@ -223,29 +236,15 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @POST
   @Path("/{key}/editor")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void addEditor(@PathParam("key") int key, int editorKey, @Auth User user, @Context SqlSession session) {
-    if (!user.isAuthorized(key)) {
-      throw new WebApplicationException(Response.Status.FORBIDDEN);
-    }
-    Dataset d = get(key);
-    if (!d.getEditors().contains(editorKey)) {
-      d.addEditor(editorKey);
-      dao.update(d, user.getKey());
-    }
+  public void addEditor(@PathParam("key") int key, int editorKey, @Auth User user) {
+    dao.addEditor(key, editorKey, user);
   }
 
   @DELETE
   @Path("/{key}/editor/{editorKey}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void removeEditor(@PathParam("key") int key, @PathParam("editorKey") int editorKey, @Auth User user, @Context SqlSession session) {
-    if (!user.isAuthorized(key)) {
-      throw new WebApplicationException(Response.Status.FORBIDDEN);
-    }
-    Dataset d = get(key);
-    if (d.getEditors().contains(editorKey)) {
-      d.removeEditor(editorKey);
-      dao.update(d, user.getKey());
-    }
+  public void removeEditor(@PathParam("key") int key, @PathParam("editorKey") int editorKey, @Auth User user) {
+    dao.removeEditor(key, editorKey, user);
   }
 
 }

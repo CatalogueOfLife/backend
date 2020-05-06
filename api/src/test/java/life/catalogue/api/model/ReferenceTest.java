@@ -44,9 +44,4 @@ public class ReferenceTest extends SerdeTestBase<Reference> {
     TestEntityGenerator.nullifyUserDate(r2);
     assertEquals(r1, r2);
   }
-
-  @Override
-  protected void debug(String json, Wrapper<Reference> wrapper, Wrapper<Reference> wrapper2) {
-    System.out.println(json);
-  }
 }

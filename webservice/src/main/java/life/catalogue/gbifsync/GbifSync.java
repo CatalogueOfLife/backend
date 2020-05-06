@@ -1,28 +1,29 @@
 package life.catalogue.gbifsync;
 
+import io.dropwizard.lifecycle.Managed;
+import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetSettings;
+import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.vocab.Users;
+import life.catalogue.common.concurrent.ExecutorUtils;
+import life.catalogue.common.util.LoggingUtils;
+import life.catalogue.config.GbifConfig;
+import life.catalogue.db.mapper.DatasetMapper;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.gbif.nameparser.utils.NamedThreadFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+
+import javax.ws.rs.client.Client;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import javax.ws.rs.client.Client;
-
-import io.dropwizard.lifecycle.Managed;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import life.catalogue.api.vocab.Users;
-import life.catalogue.config.GbifConfig;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.Page;
-import life.catalogue.common.concurrent.ExecutorUtils;
-import life.catalogue.common.util.LoggingUtils;
-import life.catalogue.db.mapper.DatasetMapper;
-import org.gbif.nameparser.utils.NamedThreadFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 
 /**
@@ -85,10 +86,13 @@ public class GbifSync implements Managed {
     private void syncAll() throws Exception {
       LOG.info("Syncing all datasets from GBIF registry {}", gbif.api);
       while (pager.hasNext()) {
-        List<Dataset> page = pager.next();
+        List<DatasetWithSettings> page = pager.next();
         LOG.debug("Received page " + pager.currPageNumber() + " with " + page.size() + " datasets from GBIF");
-        for (Dataset gbif : page) {
-          sync(gbif, mapper.getByGBIF(gbif.getGbifKey()));
+        for (DatasetWithSettings gbif : page) {
+          Dataset d = mapper.getByGBIF(gbif.getGbifKey());
+          DatasetSettings s = mapper.getSettings(d.getKey());
+          DatasetWithSettings curr = new DatasetWithSettings(d, s);
+          sync(gbif, curr);
         }
       }
       //TODO: delete datasets no longer in GBIF
@@ -102,20 +106,23 @@ public class GbifSync implements Managed {
         datasets = mapper.list(page);
         for (Dataset d : datasets) {
           if (d.getGbifKey() != null) {
-            Dataset gbif = pager.get(d.getGbifKey());
-            sync(gbif, d);
+            DatasetWithSettings gbif = pager.get(d.getGbifKey());
+            DatasetWithSettings curr = new DatasetWithSettings(d, mapper.getSettings(d.getKey()));
+            sync(gbif, curr);
           }
         }
         page.next();
       }
     }
     
-    private void sync(Dataset gbif, Dataset curr) throws Exception {
+    private void sync(DatasetWithSettings gbif, DatasetWithSettings curr) throws Exception {
       if (curr == null) {
         // create new dataset
         gbif.setCreatedBy(Users.GBIF_SYNC);
         gbif.setModifiedBy(Users.GBIF_SYNC);
-        mapper.create(gbif);
+        mapper.create(gbif.getDataset());
+        gbif.setKey(gbif.getKey());
+        mapper.updateSettings(gbif.getKey(), gbif.getSettings(), Users.GBIF_SYNC);
         created++;
         LOG.info("New dataset {} added from GBIF: {}", gbif.getKey(), gbif.getTitle());
         
@@ -134,7 +141,7 @@ public class GbifSync implements Managed {
         curr.setLicense(gbif.getLicense());
         curr.setOrganisations(gbif.getOrganisations());
         curr.setWebsite(gbif.getWebsite());
-        mapper.update(curr);
+        mapper.updateAll(curr);
         updated++;
       }
     }

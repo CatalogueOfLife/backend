@@ -1,17 +1,14 @@
 package life.catalogue.importer;
 
-import com.google.common.collect.Lists;
-import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.TypeMaterial;
 import life.catalogue.api.model.VerbatimEntity;
 import life.catalogue.api.model.VerbatimRecord;
-import life.catalogue.api.vocab.DatasetSettings;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.collection.DefaultMap;
 import life.catalogue.csv.CsvReader;
 import life.catalogue.csv.Schema;
-import life.catalogue.img.ImageService;
-import life.catalogue.img.ImageServiceFS;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.neo.model.NeoNameRel;
@@ -22,8 +19,6 @@ import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +35,8 @@ import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
  */
 public abstract class NeoCsvInserter implements NeoInserter {
   private static final Logger LOG = LoggerFactory.getLogger(NeoCsvInserter.class);
-  
+
+  protected final DatasetSettings settings;
   protected final NeoDb store;
   protected final Path folder;
   protected final CsvReader reader;
@@ -49,23 +45,24 @@ public abstract class NeoCsvInserter implements NeoInserter {
   private Map<Term, AtomicInteger> badTaxonFks = DefaultMap.createCounter();
   
   
-  public NeoCsvInserter(Path folder, CsvReader reader, NeoDb store, ReferenceFactory refFactory) {
+  public NeoCsvInserter(Path folder, CsvReader reader, NeoDb store, DatasetSettings settings, ReferenceFactory refFactory) {
     this.folder = folder;
     this.reader = reader;
     this.store = store;
+    this.settings = settings;
     this.refFactory = refFactory;
     // update CSV reader with manual dataset settings if existing
     // see https://github.com/Sp2000/colplus-backend/issues/582
     for (Schema s : reader.schemas()) {
-      setChar(DatasetSettings.CSV_DELIMITER, s.settings.getFormat()::setDelimiter);
-      setChar(DatasetSettings.CSV_QUOTE, s.settings.getFormat()::setQuote);
-      setChar(DatasetSettings.CSV_QUOTE_ESCAPE, s.settings.getFormat()::setQuoteEscape);
+      setChar(Setting.CSV_DELIMITER, s.settings.getFormat()::setDelimiter);
+      setChar(Setting.CSV_QUOTE, s.settings.getFormat()::setQuote);
+      setChar(Setting.CSV_QUOTE_ESCAPE, s.settings.getFormat()::setQuoteEscape);
     }
   }
 
-  private void setChar(DatasetSettings key, Consumer<Character> setter) {
-    if (store.getDataset().hasSetting(key)) {
-      String val = store.getDataset().getSettingString(key);
+  private void setChar(Setting key, Consumer<Character> setter) {
+    if (settings.has(key)) {
+      String val = settings.getString(key);
       if (!val.isEmpty()) {
         if (val.length() != 1) {
           LOG.warn("Setting {} must be a single character but got >>{}<< instead. Ignore setting", key, val);

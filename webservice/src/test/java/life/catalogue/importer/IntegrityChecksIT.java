@@ -35,7 +35,7 @@ public class IntegrityChecksIT {
   private NeoDb store;
   private NormalizerConfig cfg;
   private ImporterConfig icfg = new ImporterConfig();
-  private Dataset dataset;
+  private DatasetWithSettings dataset;
   
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -51,7 +51,7 @@ public class IntegrityChecksIT {
     cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
-    dataset = new Dataset();
+    dataset = new DatasetWithSettings();
     dataset.setType(DatasetType.OTHER);
     dataset.setOrigin(DatasetOrigin.MANAGED);
     dataset.setCreatedBy(TestDataRule.TEST_USER.getKey());
@@ -79,19 +79,18 @@ public class IntegrityChecksIT {
       
       SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true);
       // this creates a new key, usually 2000!
-      session.getMapper(DatasetMapper.class).create(dataset);
+      session.getMapper(DatasetMapper.class).create(dataset.getDataset());
       session.commit();
       session.close();
       
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
-      store.put(dataset);
-      Normalizer norm = new Normalizer(dataset.getDataFormat(), store, Paths.get(url.toURI()), NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE), ImageService.passThru());
+      Normalizer norm = new Normalizer(dataset, store, Paths.get(url.toURI()), NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE), ImageService.passThru());
       norm.call();
       
       // import into postgres
       store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
-      PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), icfg);
+      PgImport importer = new PgImport(dataset, store, PgSetupRule.getSqlSessionFactory(), icfg);
       importer.call();
       
     } catch (Exception e) {

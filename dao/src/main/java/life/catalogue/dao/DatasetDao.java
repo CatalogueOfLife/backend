@@ -2,12 +2,10 @@ package life.catalogue.dao;
 
 import com.google.common.eventbus.EventBus;
 import life.catalogue.api.event.DatasetChanged;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.ResultPage;
+import life.catalogue.api.event.UserPermissionChanged;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.Frequency;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.mapper.*;
@@ -22,16 +20,19 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetDao.class);
-  
+
   private final DownloadUtil downloader;
   private final ImageService imgService;
   private final BiFunction<Integer, String, File> scratchFileFunc;
@@ -62,6 +63,19 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     return super.list(DatasetMapper.class, page);
   }
 
+  public DatasetSettings getSettings(int key) {
+    try (SqlSession session = factory.openSession()) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      return dm.getSettings(key);
+    }
+  }
+
+  public void putSettings(int key, DatasetSettings settings, int userKey) {
+    try (SqlSession session = factory.openSession()) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      dm.updateSettings(key, settings, userKey);
+    }
+  }
   public Dataset latestRelease(int projectKey) {
     try (SqlSession session = factory.openSession()){
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
@@ -129,27 +143,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   }
 
   @Override
-  public Integer create(Dataset obj, int user) {
-    // make sure the creator is an editor
-    obj.addEditor(user);
-    return super.create(resetOriginProps(obj), user);
-  }
-
-  private static Dataset resetOriginProps(Dataset d) {
-    // null properties not matching its origin
-    if (d.getOrigin() != null) {
-      switch (d.getOrigin()) {
-        case MANAGED:
-        case RELEASED:
-          d.setDataFormat(null);
-          d.setDataAccess(null);
-          d.setImportFrequency(Frequency.NEVER);
-      }
-    }
-    return d;
-  }
-
-  @Override
   protected void createAfter(Dataset obj, int user, DatasetMapper mapper, SqlSession session) {
     pullLogo(obj);
     if (obj.getOrigin() == DatasetOrigin.MANAGED) {
@@ -161,11 +154,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   @Override
   protected void updateBefore(Dataset obj, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
-    // make sure to never remove the creator from editors
-    if (obj.getCreatedBy() != null) {
-      obj.addEditor(obj.getCreatedBy());
-    }
-    super.updateBefore(resetOriginProps(obj), old, user, mapper, session);
+    super.updateBefore(obj, old, user, mapper, session);
   }
 
   @Override
@@ -183,6 +172,24 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   }
   private void pullLogo(Dataset d) {
     LogoUpdateJob.updateDatasetAsync(d, factory, downloader, scratchFileFunc, imgService);
+  }
+
+  public void addEditor(int key, int editorKey, User user) {
+    changeEditor(key, user, dm -> dm.addEditor(key, editorKey, user.getKey()));
+  }
+
+  public void removeEditor(int key, int editorKey, User user) {
+    changeEditor(key, user, dm -> dm.removeEditor(key, editorKey, user.getKey()));
+  }
+
+  private void changeEditor(int key, User user, Consumer<DatasetMapper> action) {
+    if (!user.isAuthorized(key)) {
+      throw new WebApplicationException(Response.Status.FORBIDDEN);
+    }
+    try (SqlSession session = factory.openSession()){
+      action.accept(session.getMapper(DatasetMapper.class));
+    }
+    bus.post(new UserPermissionChanged(user.getUsername()));
   }
 
 }

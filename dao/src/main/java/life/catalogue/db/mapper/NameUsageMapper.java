@@ -4,6 +4,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.SimpleName;
+import life.catalogue.db.SectorProcessable;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
 import org.gbif.nameparser.api.Rank;
@@ -18,7 +19,7 @@ import java.util.Set;
  * <p>
  * Mapper sql should be reusing sql fragments from the 3 concrete implementations as much as possible avoiding duplication.
  */
-public interface NameUsageMapper {
+public interface NameUsageMapper extends SectorProcessable<NameUsageBase> {
 
   NameUsageBase get(@Param("key") DSID<String> key);
 
@@ -56,6 +57,11 @@ public interface NameUsageMapper {
                      @Param("userKey") int userKey);
   
   int deleteBySector(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+
+  /**
+   * Updates all usages for the given sector and sets their sectorKey to NULL
+   */
+  int removeSectorKey(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
 
   /**
    * Does a recursive delete to remove an entire subtree including synonyms and cascading to all associated data.

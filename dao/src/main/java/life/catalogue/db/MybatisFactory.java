@@ -1,6 +1,7 @@
 package life.catalogue.db;
 
 import com.google.common.base.Preconditions;
+import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.Duplicate;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.TreeNode;
@@ -11,6 +12,10 @@ import life.catalogue.db.mapper.UsageNameID;
 import life.catalogue.db.type.UuidTypeHandler;
 import life.catalogue.db.type2.StringCount;
 import org.apache.ibatis.binding.MapperRegistry;
+import org.apache.ibatis.reflection.MetaObject;
+import org.apache.ibatis.reflection.wrapper.BeanWrapper;
+import org.apache.ibatis.reflection.wrapper.DefaultObjectWrapperFactory;
+import org.apache.ibatis.reflection.wrapper.ObjectWrapper;
 import org.apache.ibatis.session.*;
 import org.apache.ibatis.transaction.TransactionFactory;
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
@@ -57,7 +62,7 @@ public class MybatisFactory {
     // 2nd level cache
     mybatisCfg.setCacheEnabled(false);
     mybatisCfg.setDefaultExecutorType(ExecutorType.SIMPLE);
-    
+    mybatisCfg.setObjectWrapperFactory(new ApiObjectWrapperFactory());
     // aliases
     registerTypeAliases(mybatisCfg.getTypeAliasRegistry());
     
@@ -69,6 +74,27 @@ public class MybatisFactory {
     
     SqlSessionFactoryBuilder builder = new SqlSessionFactoryBuilder();
     return requireUtf8Encoding(builder.build(mybatisCfg));
+  }
+
+  /**
+   * Classes that extend from Map, e.g. DatasetSettings, need a differrent Wrapper then the default MapWrapper.
+   */
+  public static class ApiObjectWrapperFactory extends DefaultObjectWrapperFactory {
+    @Override
+    public boolean hasWrapperFor(Object object) {
+      if (object instanceof DatasetSettings) {
+        return true;
+      }
+      return super.hasWrapperFor(object);
+    }
+
+    @Override
+    public ObjectWrapper getWrapperFor(MetaObject metaObject, Object object) {
+      if (object instanceof DatasetSettings) {
+        return new BeanWrapper(metaObject, object);
+      }
+      return super.getWrapperFor(metaObject, object);
+    }
   }
 
   private static SqlSessionFactory requireUtf8Encoding(SqlSessionFactory factory) {
