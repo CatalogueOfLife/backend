@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class NameDao extends DatasetEntityDao<String, Name, NameMapper> {
+public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameDao.class);

@@ -1,8 +1,8 @@
 package life.catalogue.assembly;
 
+import life.catalogue.api.model.User;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
-import life.catalogue.api.model.User;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorImportMapper;
@@ -23,13 +23,13 @@ import java.util.stream.Collectors;
  * Deletes a sector and all its imports, but keeps synced data of rank above species level by default.
  * Names and taxa of ranks above species are kept, but the sectorKey is removed from all entities that previously belonged to the deleted sector.
  */
-public class SectorDelete2 extends SectorRunnable {
-  private static final Logger LOG = LoggerFactory.getLogger(SectorDelete2.class);
+public class SectorDelete extends SectorRunnable {
+  private static final Logger LOG = LoggerFactory.getLogger(SectorDelete.class);
   private Set<Integer> visitedSectors = new HashSet<>();
-
-  public SectorDelete2(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService,
-                       Consumer<SectorRunnable> successCallback,
-                       BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
+  
+  public SectorDelete(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService,
+                      Consumer<SectorRunnable> successCallback,
+                      BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     super(sectorKey, false, factory, indexService, successCallback, errorCallback, false, user);
   }
   

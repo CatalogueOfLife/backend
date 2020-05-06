@@ -1,22 +1,38 @@
 package life.catalogue.api.search;
 
-import java.beans.ConstructorProperties;
-import java.util.*;
-import javax.validation.constraints.NotBlank;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Preconditions;
+import life.catalogue.api.util.VocabularyUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
+
 import javax.validation.constraints.Size;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MultivaluedMap;
+import java.lang.reflect.Field;
+import java.util.*;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.commons.lang3.StringUtils;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Preconditions;
-import life.catalogue.api.util.VocabularyUtils;
 import static life.catalogue.api.util.VocabularyUtils.lookupEnum;
 
 public class NameUsageSearchRequest extends NameUsageRequest {
 
+  private static final Set<String> NON_FILTERS;
+  static {
+    Set<String> non = new HashSet<>();
+    // for paging
+    non.add("limit");
+    non.add("offset");
+    // search request itself
+    for (Field f : FieldUtils.getFieldsWithAnnotation(NameUsageSearchRequest.class, QueryParam.class)) {
+      for (QueryParam qp : f.getAnnotationsByType(QueryParam.class)){
+        non.add(qp.value());
+      }
+    }
+    NON_FILTERS = Set.copyOf(non);
+    System.out.println(NON_FILTERS);
+  }
   public static enum SearchContent {
     SCIENTIFIC_NAME, AUTHORSHIP, VERNACULAR_NAME
   }
@@ -53,7 +69,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   private boolean reverse;
 
   @QueryParam("prefix")
-  private boolean prefixMatchingEnabled;
+  private boolean prefix;
 
   public NameUsageSearchRequest() {}
 
@@ -71,7 +87,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     this.sortBy = sortBy;
     this.highlight = highlight;
     this.reverse = reverse;
-    this.prefixMatchingEnabled = prefix;
+    this.prefix = prefix;
   }
 
   /**
@@ -98,7 +114,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     copy.sortBy = sortBy;
     copy.highlight = highlight;
     copy.reverse = reverse;
-    copy.prefixMatchingEnabled = prefixMatchingEnabled;
+    copy.prefix = prefix;
     return copy;
   }
 
@@ -108,18 +124,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
    * cases it is the ordinal that will be registered as the query filter.
    */
   public void addFilters(MultivaluedMap<String, String> params) {
-    Set<String> nonFilters = Set.of(
-        "content",
-        "facet",
-        "fuzzy",
-        "highlight",
-        "limit",
-        "offset",
-        "q",
-        "reverse",
-        "sortBy",
-        "wholeWords");
-    params.entrySet().stream().filter(e -> !nonFilters.contains(e.getKey())).forEach(e -> {
+    params.entrySet().stream().filter(e -> !NON_FILTERS.contains(e.getKey())).forEach(e -> {
       NameUsageSearchParameter p = lookupEnum(e.getKey(), NameUsageSearchParameter.class); // Allow IllegalArgumentException
       addFilter(p, e.getValue());
     });
@@ -180,7 +185,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
         && sortBy == null
         && !highlight
         && !reverse
-        && !prefixMatchingEnabled;
+        && !prefix;
   }
 
   public void addFilter(NameUsageSearchParameter param, Integer value) {
@@ -289,12 +294,12 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   /**
    * Whether or not to match on whole words only.
    */
-  public boolean isPrefixMatchingEnabled() {
-    return prefixMatchingEnabled;
+  public boolean isPrefix() {
+    return prefix;
   }
 
-  public void setPrefixMatchingEnabled(boolean prefix) {
-    this.prefixMatchingEnabled = prefix;
+  public void setPrefix(boolean prefix) {
+    this.prefix = prefix;
   }
 
   private static IllegalArgumentException illegalValueForParameter(NameUsageSearchParameter param, String value) {
@@ -306,7 +311,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result = prime * result + Objects.hash(content, facets, filters, highlight, reverse, sortBy, prefixMatchingEnabled);
+    result = prime * result + Objects.hash(content, facets, filters, highlight, reverse, sortBy, prefix);
     return result;
   }
 
@@ -324,7 +329,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     NameUsageSearchRequest other = (NameUsageSearchRequest) obj;
     return Objects.equals(content, other.content) && Objects.equals(facets, other.facets) && Objects.equals(filters, other.filters)
         && highlight == other.highlight && reverse == other.reverse && sortBy == other.sortBy
-        && prefixMatchingEnabled == other.prefixMatchingEnabled;
+        && prefix == other.prefix;
   }
 
 }

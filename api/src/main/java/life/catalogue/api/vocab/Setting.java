@@ -5,7 +5,7 @@ import org.gbif.nameparser.api.NomCode;
 
 import java.time.LocalDate;
 
-public enum DatasetSettings {
+public enum Settings {
 
 
   /**
@@ -52,7 +52,12 @@ public enum DatasetSettings {
    *
    * See https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/time/format/DateTimeFormatter.html
    */
-  RELEASE_TITLE_TEMPLATE(String.class);
+  RELEASE_TITLE_TEMPLATE(String.class),
+
+  /**
+   * In continuous import mode the frequency the dataset is scheduled for imports.
+   */
+  IMPORT_FREQUENCY(Frequency.class);
 
   private final Class type;
 
@@ -69,7 +74,7 @@ public enum DatasetSettings {
    *
    * @param type
    */
-  DatasetSettings(Class type) {
+  Settings(Class type) {
     Preconditions.checkArgument(type.equals(String.class)
       || type.equals(Integer.class)
       || type.equals(Boolean.class)

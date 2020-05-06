@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
-public class ReferenceDao extends DatasetEntityDao<String, Reference, ReferenceMapper> {
+public class ReferenceDao extends DatasetStringEntityDao<Reference, ReferenceMapper> {
   private static final Logger LOG = LoggerFactory.getLogger(ReferenceDao.class);
 
   public ReferenceDao(SqlSessionFactory factory) {
