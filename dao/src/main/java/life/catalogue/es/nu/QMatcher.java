@@ -25,11 +25,11 @@ public abstract class QMatcher {
 
   public static QMatcher getInstance(NameUsageRequest request) {
     if (request.isFuzzyMatchingEnabled()) {
-      if (request.isPrefixMatchingEnabled()) {
+      if (request.isPrefix()) {
         return new FuzzyPrefixQMatcher(request);
       }
       return new FuzzyWholeWordQMatcher(request);
-    } else if (request.isPrefixMatchingEnabled()) {
+    } else if (request.isPrefix()) {
       return new PrefixQMatcher(request);
     }
     return new WholeWordQMatcher(request);

@@ -8,6 +8,7 @@ import io.dropwizard.setup.Environment;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.UserChanged;
+import life.catalogue.api.event.UserPermissionChanged;
 import life.catalogue.api.model.User;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -70,12 +71,13 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
   }
 
   @Subscribe
+  public void permissionChanged(UserPermissionChanged event){
+    idService.removeFromCache(event.username);
+  }
+
+  @Subscribe
   public void userChanged(UserChanged event){
-    if (event.isDeletion()) {
-      idService.removeFromCache(event.username);
-    } else {
-      idService.cache(event.obj);
-    }
+    idService.removeFromCache(event.username);
   }
 
   @Subscribe

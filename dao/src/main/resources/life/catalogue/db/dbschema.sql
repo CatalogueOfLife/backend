@@ -563,48 +563,54 @@ CREATE TABLE "user" (
 CREATE TABLE dataset (
   key serial PRIMARY KEY,
   source_key INTEGER REFERENCES dataset,
-  type DATASETTYPE NOT NULL DEFAULT 'OTHER',
-  gbif_key UUID,
-  gbif_publisher_key UUID,
-  license LICENSE,
-  released DATE,
-  data_format DATAFORMAT,
-  confidence INTEGER CHECK (confidence > 0 AND confidence <= 5),
-  completeness INTEGER CHECK (completeness >= 0 AND completeness <= 100),
-  origin DATASETORIGIN NOT NULL,
-  import_frequency INTEGER NOT NULL DEFAULT 7,
   import_attempt INTEGER,
-  created_by INTEGER NOT NULL,
-  modified_by INTEGER NOT NULL,
-  deleted TIMESTAMP WITHOUT TIME ZONE,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  type DATASETTYPE NOT NULL DEFAULT 'OTHER',
+  origin DATASETORIGIN NOT NULL,
   locked BOOLEAN DEFAULT FALSE,
   private BOOLEAN DEFAULT FALSE,
+  gbif_key UUID,
+  gbif_publisher_key UUID,
+
   title TEXT NOT NULL,
   alias TEXT,
   description TEXT,
   organisations TEXT[] DEFAULT '{}',
   contact TEXT,
   authors_and_editors TEXT[] DEFAULT '{}',
+  license LICENSE,
   version TEXT,
+  released DATE,
   citation TEXT,
   geographic_scope TEXT,
   website TEXT,
   logo TEXT,
-  data_access TEXT,
   "group" TEXT,
+  confidence INTEGER CHECK (confidence > 0 AND confidence <= 5),
+  completeness INTEGER CHECK (completeness >= 0 AND completeness <= 100),
   notes text,
+
   settings JSONB,
   editors INT[],
+
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  deleted TIMESTAMP WITHOUT TIME ZONE,
   doc tsvector
 );
 
 CREATE TABLE dataset_archive (LIKE dataset);
 ALTER TABLE dataset_archive
+  DROP COLUMN deleted,
   DROP COLUMN doc,
   DROP COLUMN editors,
+  DROP COLUMN gbif_key,
+  DROP COLUMN gbif_publisher_key,
+  DROP COLUMN locked,
+  DROP COLUMN private,
   DROP COLUMN settings,
+
   ADD COLUMN dataset_key INTEGER REFERENCES dataset;
 ALTER TABLE dataset_archive ADD UNIQUE (key, import_attempt, dataset_key);
 
@@ -630,23 +636,13 @@ CREATE TRIGGER dataset_trigger BEFORE INSERT OR UPDATE
   ON dataset FOR EACH ROW EXECUTE PROCEDURE dataset_doc_update();
 
 
-CREATE TABLE dataset_patch AS SELECT * FROM dataset LIMIT 0;
+CREATE TABLE dataset_patch AS SELECT * FROM dataset_archive LIMIT 0;
 ALTER TABLE dataset_patch
   DROP COLUMN source_key,
-  DROP COLUMN gbif_key,
-  DROP COLUMN gbif_publisher_key,
-  DROP COLUMN data_format,
-  DROP COLUMN origin,
-  DROP COLUMN import_frequency,
   DROP COLUMN import_attempt,
-  DROP COLUMN deleted,
-  DROP COLUMN locked,
-  DROP COLUMN private,
-  DROP COLUMN data_access,
   DROP COLUMN notes,
-  DROP COLUMN settings,
-  DROP COLUMN editors,
-  DROP COLUMN doc,
+  DROP COLUMN origin,
+  DROP COLUMN dataset_key,
   ADD COLUMN dataset_key INTEGER NOT NULL REFERENCES dataset;
 ALTER TABLE dataset_patch ADD PRIMARY KEY (key, dataset_key);
 

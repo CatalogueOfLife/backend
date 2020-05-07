@@ -1,12 +1,11 @@
 package life.catalogue.importer.dwca;
 
 import com.google.common.collect.Lists;
-import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetSettings;
+import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.DatasetSettings;
 import life.catalogue.api.vocab.DatasetType;
-import life.catalogue.img.ImageService;
 import life.catalogue.importer.InserterBaseTest;
 import life.catalogue.importer.NeoInserter;
 import life.catalogue.importer.neo.model.NeoUsage;
@@ -24,8 +23,8 @@ import static org.junit.Assert.*;
 public class DwcaInserterTest extends InserterBaseTest {
   
   @Override
-  public NeoInserter newInserter(Path resource) throws IOException  {
-    return new DwcaInserter(store, resource, new ReferenceFactory(store));
+  public NeoInserter newInserter(Path resource, DatasetSettings settings) throws IOException  {
+    return new DwcaInserter(store, resource, settings, new ReferenceFactory(store));
   }
   /**
    * EEA redlist file with unknown term columns
@@ -47,7 +46,7 @@ public class DwcaInserterTest extends InserterBaseTest {
   @Ignore
   public void readMetadata() throws Exception {
     NeoInserter ins = setup("/acef/0");
-    Dataset d = ins.readMetadata().get();
+    DatasetWithSettings d = ins.readMetadata().get();
     
     assertEquals(DatasetType.TAXONOMIC, d.getType());
     assertEquals(DataFormat.ACEF, d.getDataFormat());
@@ -69,7 +68,7 @@ public class DwcaInserterTest extends InserterBaseTest {
     assertNull(d.getLicense());
     assertEquals("http://ILDIS.gif", d.getLogo().toString());
     assertNull(d.getCitation());
-    assertNull(d.getSettingEnum(DatasetSettings.NOMENCLATURAL_CODE));
+    assertNull(d.getCode());
   }
 
 

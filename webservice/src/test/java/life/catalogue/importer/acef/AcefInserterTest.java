@@ -1,18 +1,17 @@
 package life.catalogue.importer.acef;
 
-import java.io.IOException;
-import java.nio.file.Path;
-
 import com.google.common.collect.Lists;
-import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetSettings;
+import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.DatasetSettings;
 import life.catalogue.api.vocab.DatasetType;
-import life.catalogue.img.ImageService;
 import life.catalogue.importer.InserterBaseTest;
 import life.catalogue.importer.NeoInserter;
 import life.catalogue.importer.reference.ReferenceFactory;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.nio.file.Path;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
@@ -20,14 +19,14 @@ import static org.junit.Assert.*;
 public class AcefInserterTest extends InserterBaseTest {
   
   @Override
-  public NeoInserter newInserter(Path resource) throws IOException  {
-    return new AcefInserter(store, resource, new ReferenceFactory(store));
+  public NeoInserter newInserter(Path resource, DatasetSettings settings) throws IOException  {
+    return new AcefInserter(store, resource, settings, new ReferenceFactory(store));
   }
 
   @Test
   public void readMetadata() throws Exception {
     NeoInserter ins = setup("/acef/0");
-    Dataset d = ins.readMetadata().get();
+    DatasetWithSettings d = ins.readMetadata().get();
     
     assertEquals(DatasetType.TAXONOMIC, d.getType());
     assertEquals(DataFormat.ACEF, d.getDataFormat());
@@ -49,13 +48,13 @@ public class AcefInserterTest extends InserterBaseTest {
     assertNull(d.getLicense());
     assertEquals("http://ILDIS.gif", d.getLogo().toString());
     assertNull(d.getCitation());
-    assertNull(d.getSettingEnum(DatasetSettings.NOMENCLATURAL_CODE));
+    assertNull(d.getCode());
   }
   
   @Test
   public void readMetadataBadType() throws Exception {
     NeoInserter ins = setup("/acef/16");
-    Dataset d = ins.readMetadata().get();
+    DatasetWithSettings d = ins.readMetadata().get();
     
     assertNull(d.getType());
   }

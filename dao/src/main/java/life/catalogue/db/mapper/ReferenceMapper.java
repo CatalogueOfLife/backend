@@ -7,6 +7,7 @@ import life.catalogue.api.search.ReferenceSearchRequest;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.DatasetPageable;
 import life.catalogue.db.DatasetProcessable;
+import life.catalogue.db.SectorProcessable;
 import org.apache.ibatis.annotations.Param;
 
 import javax.annotation.Nullable;
@@ -17,7 +18,7 @@ import java.util.Set;
 /**
  *
  */
-public interface ReferenceMapper extends CRUD<DSID<String>, Reference>, DatasetProcessable<Reference>, DatasetPageable<Reference> {
+public interface ReferenceMapper extends CRUD<DSID<String>, Reference>, DatasetProcessable<Reference>, DatasetPageable<Reference>, SectorProcessable<Reference> {
 	
 	/**
    * Selects a number of distinct references from a single dataset by their keys

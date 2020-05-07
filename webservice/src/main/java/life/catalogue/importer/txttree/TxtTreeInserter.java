@@ -14,6 +14,7 @@ import life.catalogue.csv.CsvReader;
 import life.catalogue.importer.MappingFlags;
 import life.catalogue.importer.NeoInserter;
 import life.catalogue.importer.NormalizationFailedException;
+import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.importer.coldp.MetadataParser;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoNameRel;
@@ -58,7 +59,7 @@ public class TxtTreeInserter implements NeoInserter {
     if (!Files.isDirectory(folder)) {
       throw new FileNotFoundException("Folder does not exist: " + folder);
     }
-    datasetKey = store.getDataset().getKey();
+    this.datasetKey = store.getDatasetKey();
     this.store = store;
     this.folder = folder;
     findReadable(folder).ifPresent(f -> {
@@ -157,7 +158,7 @@ public class TxtTreeInserter implements NeoInserter {
   /**
    * Reads the ColDP metadata.yaml if existing and puts it into the store
    */
-  public Optional<Dataset> readMetadata() {
+  public Optional<DatasetWithSettings> readMetadata() {
     return MetadataParser.readMetadata(folder);
   }
 

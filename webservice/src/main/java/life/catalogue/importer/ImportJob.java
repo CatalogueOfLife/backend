@@ -2,19 +2,18 @@ package life.catalogue.importer;
 
 import com.google.common.base.Preconditions;
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetImport;
+import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.DatasetSettings;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.concurrent.StartNotifier;
 import life.catalogue.common.io.ChecksumUtils;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.lang.InterruptedRuntimeException;
-import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.SubjectRematcher;
@@ -33,9 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -55,8 +52,7 @@ public class ImportJob implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(ImportJob.class);
   private final int datasetKey;
   private final ImportRequest req;
-  private final Dataset dataset;
-  private DataFormat format;
+  private final DatasetWithSettings dataset;
   private DatasetImport di;
   private DatasetImport last;
   private final WsServerConfig cfg;
@@ -72,7 +68,7 @@ public class ImportJob implements Runnable {
   private final Consumer<ImportRequest> successCallback;
   private final BiConsumer<ImportRequest, Exception> errorCallback;
   
-  ImportJob(ImportRequest req, Dataset d,
+  ImportJob(ImportRequest req, DatasetWithSettings d,
             WsServerConfig cfg,
             DownloadUtil downloader, SqlSessionFactory factory, NameIndex index,
             NameUsageIndexService indexService, ImageService imgService,
@@ -103,7 +99,7 @@ public class ImportJob implements Runnable {
     if (dataset.getOrigin() == DatasetOrigin.RELEASED) {
       throw new IllegalArgumentException("Dataset " + datasetKey + " is released and cannot be imported");
       
-    } else if (!req.upload && dataset.getOrigin() == DatasetOrigin.EXTERNAL && dataset.getDataAccess() == null) {
+    } else if (!req.upload && dataset.getOrigin() == DatasetOrigin.EXTERNAL && !dataset.has(Setting.DATA_ACCESS)) {
       throw new IllegalArgumentException("Dataset " + datasetKey + " is external but lacks a data access URL");
     }
   }
@@ -145,7 +141,12 @@ public class ImportJob implements Runnable {
     dao.update(di);
     checkIfCancelled();
   }
-  
+
+  private void setFormat(DataFormat format) {
+    di.setFormat(format);
+    dataset.setDataFormat(format);
+  }
+
   private void checkIfCancelled() {
     Exceptions.interruptIfCancelled("Import " + di.attempt() + " was cancelled");
   }
@@ -166,7 +167,7 @@ public class ImportJob implements Runnable {
       if (DataFormatDetector.isProxyDescriptor(source)) {
         updateState(ImportState.DOWNLOADING);
         ArchiveDescriptor proxy = distributedArchiveService.uploaded(source);
-        format = proxy.format;
+        setFormat(proxy.format);
       }
 
     } else if (DatasetOrigin.EXTERNAL == dataset.getOrigin()){
@@ -174,7 +175,7 @@ public class ImportJob implements Runnable {
       updateState(ImportState.DOWNLOADING);
       if (dataset.getDataFormat() == DataFormat.PROXY) {
         ArchiveDescriptor proxy = distributedArchiveService.download(dataset.getDataAccess(), source);
-        format = proxy.format;
+        setFormat(proxy.format);
       } else {
         // download archive directly
         LOG.info("Downloading source for dataset {} from {} to {}", datasetKey, dataset.getDataAccess(), source);
@@ -200,9 +201,9 @@ public class ImportJob implements Runnable {
       CompressionUtil.decompressFile(sourceDir.toFile(), source);
 
       // detect data format if not set from proxy yet
-      if (format == null) {
-        format = DataFormatDetector.detectFormat(sourceDir);
-        LOG.info("Detected data format {} for dataset {}", format, dataset.getKey());
+      if (dataset.getDataFormat() == null) {
+        setFormat(DataFormatDetector.detectFormat(sourceDir));
+        LOG.info("Detected data format {} for dataset {}", dataset.getDataFormat(), dataset.getKey());
       }
       return true;
     }
@@ -210,7 +211,7 @@ public class ImportJob implements Runnable {
   }
 
   private void importDataset() throws Exception {
-    di = dao.createWaiting(dataset, req.createdBy);
+    di = dao.createWaiting(dataset.getDataset(), req.createdBy);
     LoggingUtils.setDatasetMDC(datasetKey, getAttempt(), getClass());
     LOG.info("Start new import attempt {} for {} dataset {}: {}", di.getAttempt(), dataset.getOrigin(), datasetKey, dataset.getTitle());
 
@@ -224,16 +225,15 @@ public class ImportJob implements Runnable {
         LOG.info("Normalizing {}", datasetKey);
         updateState(ImportState.PROCESSING);
         store = NeoDbFactory.create(datasetKey, getAttempt(), cfg.normalizer);
-        store.put(dataset);
-        new Normalizer(format, store, sourceDir, index, imgService).call();
+        new Normalizer(dataset, store, sourceDir, index, imgService).call();
   
         LOG.info("Fetching logo for {}", datasetKey);
-        LogoUpdateJob.updateDatasetAsync(dataset, factory, downloader, cfg.normalizer::scratchFile, imgService);
+        LogoUpdateJob.updateDatasetAsync(dataset.getDataset(), factory, downloader, cfg.normalizer::scratchFile, imgService);
         
         LOG.info("Writing {} to Postgres!", datasetKey);
         updateState(ImportState.INSERTING);
         store = NeoDbFactory.open(datasetKey, getAttempt(), cfg.normalizer);
-        new PgImport(datasetKey, store, factory, cfg.importer).call();
+        new PgImport(dataset, store, factory, cfg.importer).call();
         // update dataset with latest success attempt now that all data is in postgres - even if we fail further down
         dao.updateDatasetLastAttempt(di);
 
@@ -303,8 +303,8 @@ public class ImportJob implements Runnable {
   }
 
   private boolean rematchDecisions() {
-    return dataset.hasSetting(DatasetSettings.REMATCH_DECISIONS)
-        && dataset.getSettingBool(DatasetSettings.REMATCH_DECISIONS);
+    return dataset.has(Setting.REMATCH_DECISIONS)
+        && dataset.getBool(Setting.REMATCH_DECISIONS);
   }
 
   /**

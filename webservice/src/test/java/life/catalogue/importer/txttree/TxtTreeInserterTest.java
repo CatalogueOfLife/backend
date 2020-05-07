@@ -1,5 +1,6 @@
 package life.catalogue.importer.txttree;
 
+import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.TxtTreeTerm;
 import life.catalogue.importer.InserterBaseTest;
@@ -18,7 +19,7 @@ import static org.junit.Assert.assertEquals;
 public class TxtTreeInserterTest extends InserterBaseTest {
 
   @Override
-  public NeoInserter newInserter(Path resource) throws IOException {
+  public NeoInserter newInserter(Path resource, DatasetSettings settings) throws IOException {
     return new TxtTreeInserter(store, resource);
   }
 

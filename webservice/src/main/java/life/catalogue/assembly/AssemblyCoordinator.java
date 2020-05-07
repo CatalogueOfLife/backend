@@ -55,7 +55,7 @@ public class AssemblyCoordinator implements Managed {
       this.datasetKey = job.sector.getDatasetKey();
       this.state = job.getState();
       this.future = future;
-      this.delete = job instanceof SectorDelete;
+      this.delete = job instanceof SectorDeleteFull;
     }
 
   }

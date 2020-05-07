@@ -33,7 +33,7 @@ public class QSearchTests extends EsReadTestBase {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setQ("Parus maj");
     query.setContent(EnumSet.of(SearchContent.SCIENTIFIC_NAME));
-    query.setPrefixMatchingEnabled(true);
+    query.setPrefix(true);
 
     Name name = new Name();
     name.setGenus("Parus");
@@ -55,7 +55,7 @@ public class QSearchTests extends EsReadTestBase {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setQ("PARUS MAJ");
     query.setContent(EnumSet.of(SearchContent.SCIENTIFIC_NAME));
-    query.setPrefixMatchingEnabled(true);
+    query.setPrefix(true);
 
     Name name = new Name();
     name.setGenus("Parus");

@@ -6,21 +6,32 @@
 
   <sql id="SELECT">
     <include refid="life.catalogue.db.mapper.DatasetArchiveMapper.SELECT"/>,
-    d.settings,
-    d.editors
+    d.deleted,
+    d.gbif_key,
+    d.gbif_publisher_key,
+    d.locked,
+    d.private,
+    di.verbatim_count AS size,
+    (select array_agg(distinct s.dataset_key) from sector s where s.subject_dataset_key=d.key) AS contributes_to
   </sql>
 
   <sql id="COLS">
     <include refid="life.catalogue.db.mapper.DatasetArchiveMapper.COLS"/>,
-    settings,
-    editors
+    deleted,
+    gbif_key,
+    gbif_publisher_key,
+    locked,
+    private
   </sql>
 
 
   <sql id="PROPS">
     <include refid="life.catalogue.db.mapper.DatasetArchiveMapper.PROPS"/>,
-    #{settings, typeHandler=life.catalogue.db.type2.SettingsTypeHandler}::JSONB,
-    #{editors, typeHandler=life.catalogue.db.type2.IntSetTypeHandler}
+    #{deleted},
+    #{gbifKey},
+    #{gbifPublisherKey},
+    #{locked},
+    #{privat}
   </sql>
 
   <sql id="FROM">
@@ -28,8 +39,8 @@
   </sql>
 
   <sql id="PRIVATE">
-    <if test="userKey != -1">
-      <!-- magic number for admins -->
+    <!-- magic number for admins -->
+    <if test="userKey != -42">
       AND (NOT ${alias}.private <if test="userKey != null">OR ${alias}.editors @> ARRAY[#{userKey}::int]</if>)
     </if>
   </sql>
@@ -79,7 +90,7 @@
         AND d.source_key=#{req.releasedFrom}
       </if>
       <if test="req.format != null">
-        AND d.data_format=#{req.format}::DATAFORMAT
+        AND d.settings @> jsonb_build_object('DATA_FORMAT', #{req.format})
       </if>
       <if test="req.modifiedBy != null">
         AND d.modified_by = #{req.modifiedBy}
@@ -101,15 +112,15 @@
   </sql>
 
   <!--  A mapping to Name, mostly auto mapped -->
-  <resultMap id="datasetResultMap" type="Dataset" autoMapping="true">
+  <resultMap id="datasetResultMap" type="Dataset" autoMapping="true" extends="life.catalogue.db.mapper.DatasetArchiveMapper.archiveResultMap">
     <id property="key" column="key"/>
     <result property="privat" column="private"/>
     <result property="contributesTo" column="contributes_to" typeHandler="life.catalogue.db.type2.IntegerSetTypeHandler"/>
-    <result property="organisations" column="organisations" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
-    <result property="authorsAndEditors" column="authors_and_editors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
-    <result property="importFrequency" column="import_frequency" typeHandler="life.catalogue.db.type.FrequencyTypeHandler"/>
+  </resultMap>
+
+  <resultMap id="settingsResultMap" type="DatasetSettings" autoMapping="false">
+    <id column="key"/>
     <result property="settings" column="settings" typeHandler="life.catalogue.db.type2.SettingsTypeHandler"/>
-    <result property="editors" column="editors" typeHandler="life.catalogue.db.type2.IntSetTypeHandler"/>
   </resultMap>
 
   <select id="keys" resultType="integer">
@@ -188,7 +199,7 @@
     LEFT JOIN dataset_import di ON di.dataset_key=d.key
     WHERE d.deleted IS NULL
     AND d.origin = 'EXTERNAL'
-    AND d.import_frequency >= 0
+    AND coalesce((d.settings ->> 'import frequency')::int, 0) >= 0
     AND di.attempt IS NULL
     ORDER BY d.key ASC
     LIMIT #{limit}
@@ -197,17 +208,17 @@
   <select id="listToBeImported" resultMap="datasetResultMap">
     SELECT *
     FROM (
-    SELECT DISTINCT ON (d.key) di.state, di.finished,
-    <include refid="SELECT"/>
-    FROM dataset d
-    LEFT JOIN dataset_import di ON di.dataset_key=d.key
-    WHERE d.deleted IS NULL
-    AND d.origin = 'EXTERNAL'
-    AND di.finished IS NOT NULL
-    AND d.import_frequency > 0
-    ORDER BY d.key, di.attempt DESC
+      SELECT DISTINCT ON (d.key) di.state, di.finished,
+      <include refid="SELECT"/>, (settings ->> 'import frequency')::int AS frequency
+      FROM dataset d
+      LEFT JOIN dataset_import di ON di.dataset_key=d.key
+      WHERE d.deleted IS NULL
+      AND d.origin = 'EXTERNAL'
+      AND di.finished IS NOT NULL
+      AND coalesce((d.settings ->> 'import frequency')::int, 0) > 0
+      ORDER BY d.key, di.attempt DESC
     ) AS latest
-    WHERE state != 'WAITING'::importstate AND (finished + import_frequency * interval '1 day') &lt; now()
+    WHERE state != 'WAITING'::importstate AND (finished + frequency * interval '1 day') &lt; now()
     ORDER BY finished ASC
     LIMIT #{limit}
   </select>
@@ -245,16 +256,53 @@
     WHERE gbif_key = #{key}
   </select>
 
+  <!--  makes sure to add creator to editors -->
   <insert id="create" parameterType="Dataset" useGeneratedKeys="true" keyProperty="key">
-    INSERT INTO dataset (<include refid="COLS"/>, origin, created, modified)
-    VALUES (<include refid="PROPS"/>, #{origin}::DATASETORIGIN, now(), now())
+    INSERT INTO dataset (<include refid="COLS"/>, origin, editors, created, modified)
+    VALUES (<include refid="PROPS"/>, #{origin}::DATASETORIGIN, array[#{createdBy}::int], now(), now())
   </insert>
 
+  <!--  makes sure to add creator to editors -->
   <insert id="createWithKey" parameterType="Dataset" useGeneratedKeys="false">
-    INSERT INTO dataset (key,<include refid="COLS"/>, origin, created, modified)
-    VALUES (#{key},<include refid="PROPS"/>, #{origin}::DATASETORIGIN, now(), now())
+    INSERT INTO dataset (key,<include refid="COLS"/>, origin, editors, created, modified)
+    VALUES (#{key},<include refid="PROPS"/>, #{origin}::DATASETORIGIN, array[#{createdBy}::int], now(), now())
   </insert>
 
+  <select id="getSettings" resultMap="settingsResultMap">
+    SELECT key, settings
+    FROM dataset
+    WHERE key = #{key}
+  </select>
+
+  <update id="updateSettings" parameterType="map">
+    UPDATE dataset SET (settings, modified_by, modified) =
+      ( #{settings, typeHandler=life.catalogue.db.type2.SettingsTypeHandler}::JSONB, #{userKey}, now() )
+    WHERE key = #{key}
+  </update>
+
+  <select id="getEditors" resultType="it.unimi.dsi.fastutil.ints.IntSet">
+    SELECT editors || array[created_by]
+    FROM dataset
+    WHERE key = #{key}
+  </select>
+
+  <update id="updateEditors" parameterType="map">
+    UPDATE dataset  SET (editors, modified_by, modified) =
+      ( #{editors, typeHandler=life.catalogue.db.type.IntSetTypeHandler}, #{userKey}, now() )
+    WHERE key = #{key}
+  </update>
+
+  <update id="addEditor" parameterType="map">
+    UPDATE dataset SET (editors, modified_by, modified) =
+      ( editors || #{editor}, #{userKey}, now() )
+    WHERE key = #{key}
+  </update>
+
+  <update id="removeEditor" parameterType="map">
+    UPDATE dataset  SET (editors, modified_by, modified) =
+      ( array_remove(editors, #{editor}), #{userKey}, now() )
+    WHERE key = #{key}
+  </update>
 
   <update id="update" parameterType="Dataset">
     UPDATE dataset

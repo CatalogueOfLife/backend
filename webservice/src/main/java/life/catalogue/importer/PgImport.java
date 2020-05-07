@@ -39,7 +39,7 @@ public class PgImport implements Callable<Boolean> {
   private final NeoDb store;
   private final int batchSize;
   private final SqlSessionFactory sessionFactory;
-  private final Dataset dataset;
+  private final DatasetWithSettings dataset;
   private final Map<Integer, Integer> verbatimKeys = new HashMap<>();
   private final Set<String> proParteIds = new HashSet<>();
   private final AtomicInteger nCounter = new AtomicInteger(0);
@@ -52,9 +52,8 @@ public class PgImport implements Callable<Boolean> {
   private final AtomicInteger vCounter = new AtomicInteger(0);
   private final AtomicInteger tmCounter = new AtomicInteger(0);
 
-  public PgImport(int datasetKey, NeoDb store, SqlSessionFactory sessionFactory, ImporterConfig cfg) {
-    this.dataset = store.getDataset();
-    this.dataset.setKey(datasetKey);
+  public PgImport(DatasetWithSettings dataset, NeoDb store, SqlSessionFactory sessionFactory, ImporterConfig cfg) {
+    this.dataset = dataset;
     this.store = store;
     this.batchSize = cfg.batchSize;
     this.sessionFactory = sessionFactory;
@@ -91,13 +90,15 @@ public class PgImport implements Callable<Boolean> {
       LOG.info("Updating dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
       // archive the previous attempt before we update the current metadata and tie it to a new attempt
       DatasetArchiveMapper dam = session.getMapper(DatasetArchiveMapper.class);
-      dam.createArchive(dataset.getKey());
+      dam.create(dataset.getKey());
       // update current
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      Dataset old = dm.get(dataset.getKey());
+      DatasetWithSettings old = new DatasetWithSettings(
+        dm.get(dataset.getKey()),
+        dm.getSettings(dataset.getKey())
+      );
       updateMetadata(old, dataset);
-      dm.update(old);
-
+      dm.updateAll(old);
       session.commit();
     }
   }
@@ -105,8 +106,10 @@ public class PgImport implements Callable<Boolean> {
   /**
    * Updates the given dataset d with the provided metadata update,
    * retaining managed properties like keys and settings
+   * @param d
+   * @param update
    */
-  public static Dataset updateMetadata(Dataset d, Dataset update) {
+  public static DatasetWithSettings updateMetadata(DatasetWithSettings d, DatasetWithSettings update) {
     copyIfNotNull(update::getAlias, d::setAlias);
     copyIfNotNull(update::getAuthorsAndEditors, d::setAuthorsAndEditors);
     copyIfNotNull(update::getCompleteness, d::setCompleteness);

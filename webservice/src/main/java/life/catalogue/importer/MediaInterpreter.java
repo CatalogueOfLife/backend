@@ -1,19 +1,19 @@
 package life.catalogue.importer;
 
-import java.net.URI;
-import java.util.Set;
-import javax.annotation.Nullable;
-
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
+import life.catalogue.api.model.Media;
+import life.catalogue.api.vocab.MediaType;
 import org.apache.tika.Tika;
 import org.apache.tika.mime.MimeType;
 import org.apache.tika.mime.MimeTypeException;
 import org.apache.tika.mime.MimeTypes;
-import life.catalogue.api.model.Media;
-import life.catalogue.api.vocab.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.net.URI;
+import java.util.Set;
 
 public class MediaInterpreter {
   private static final Logger LOG = LoggerFactory.getLogger(MediaInterpreter.class);
@@ -60,7 +60,7 @@ public class MediaInterpreter {
    * Parses a mime type using apache tika which can handle the following:
    * http://svn.apache.org/repos/asf/tika/trunk/tika-core/src/main/resources/org/apache/tika/mime/tika-mimetypes.xml
    */
-  public String parseMimeType(@Nullable String format) {
+  public static String parseMimeType(@Nullable String format) {
     if (format != null) {
       format = Strings.emptyToNull(format.trim().toLowerCase());
     }

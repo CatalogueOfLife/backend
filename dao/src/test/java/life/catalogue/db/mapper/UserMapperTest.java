@@ -1,10 +1,5 @@
 package life.catalogue.db.mapper;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
@@ -13,6 +8,11 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Users;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -73,13 +73,13 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
 
     Dataset d1 = TestEntityGenerator.newDataset("all");
     d1.applyUser(Users.TESTER);
-    d1.setEditors(new IntOpenHashSet(all));
     dm.create(d1);
+    dm.updateEditors(d1.getKey(), new IntOpenHashSet(all), Users.TESTER);
 
     Dataset d2 = TestEntityGenerator.newDataset("even");
     d2.applyUser(Users.TESTER);
-    d2.setEditors(new IntOpenHashSet(even));
     dm.create(d2);
+    dm.updateEditors(d2.getKey(), new IntOpenHashSet(even), Users.TESTER);
 
     commit();
 

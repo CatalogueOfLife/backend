@@ -5,13 +5,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import de.undercouch.citeproc.bibtex.BibTeXConverter;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.CslData;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.Reference;
-import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.csl.CslDataConverter;
-import life.catalogue.img.ImageService;
 import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.NeoDb;
@@ -45,8 +41,8 @@ public class ColdpInserter extends NeoCsvInserter {
   
   private ColdpInterpreter inter;
 
-  public ColdpInserter(NeoDb store, Path folder, ReferenceFactory refFactory) throws IOException {
-    super(folder, ColdpReader.from(folder), store, refFactory);
+  public ColdpInserter(NeoDb store, Path folder, DatasetSettings settings, ReferenceFactory refFactory) throws IOException {
+    super(folder, ColdpReader.from(folder), store, settings, refFactory);
   }
   
   /**
@@ -56,7 +52,7 @@ public class ColdpInserter extends NeoCsvInserter {
   @Override
   protected void batchInsert() throws NormalizationFailedException {
     try {
-      inter = new ColdpInterpreter(store.getDataset(), reader.getMappingFlags(), refFactory, store);
+      inter = new ColdpInterpreter(settings, reader.getMappingFlags(), refFactory, store);
 
       // This inserts the plain references from the Reference file with no links to names, taxa or distributions.
       // Links are added afterwards in other methods when a ACEF:ReferenceID field is processed by lookup to the neo store.
@@ -125,7 +121,7 @@ public class ColdpInserter extends NeoCsvInserter {
   private void insertExtendedReferences() {
     ColdpReader coldp = (ColdpReader) reader;
     if (coldp.hasExtendedReferences()) {
-      final int datasetKey = store.getDataset().getKey();
+      final int datasetKey = store.getDatasetKey();
       if (coldp.getBibtexFile() != null) {
         insertBibTex(datasetKey, coldp.getBibtexFile());
       }
@@ -223,7 +219,7 @@ public class ColdpInserter extends NeoCsvInserter {
    * Reads the dataset metadata.yaml and puts it into the store
    */
   @Override
-  public Optional<Dataset> readMetadata() {
+  public Optional<DatasetWithSettings> readMetadata() {
     return MetadataParser.readMetadata(super.folder);
   }
   

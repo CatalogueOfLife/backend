@@ -1,5 +1,21 @@
 package life.catalogue.importer.proxy;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import life.catalogue.api.jackson.TermSerde;
+import life.catalogue.common.io.PathUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.gbif.dwc.terms.Term;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 import java.net.URI;
 import java.nio.file.Files;
@@ -8,24 +24,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import life.catalogue.api.txtree.Tree;
-import life.catalogue.common.io.PathUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import life.catalogue.api.jackson.TermSerde;
-import life.catalogue.api.vocab.DataFormat;
-import org.gbif.dwc.terms.Term;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DistributedArchiveService {
   private static final Logger LOG = LoggerFactory.getLogger(DistributedArchiveService.class);
@@ -69,7 +67,8 @@ public class DistributedArchiveService {
 
   public static boolean isReadable(InputStream is) {
     try {
-      return DESCRIPTOR_READER.readValue(is) != null;
+      ArchiveDescriptor desc = DESCRIPTOR_READER.readValue(is);
+      return desc != null && desc.format != null && !desc.files.isEmpty();
     } catch (Exception e) {
     }
     return false;

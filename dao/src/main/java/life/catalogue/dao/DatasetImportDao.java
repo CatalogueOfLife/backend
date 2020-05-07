@@ -73,7 +73,6 @@ public class DatasetImportDao {
     di.setStarted(LocalDateTime.now());
     di.setDownloadUri(null);
     di.setOrigin(d.getOrigin());
-    di.setFormat(d.getDataFormat());
     di.setState(ImportState.WAITING);
     try (SqlSession session = factory.openSession(true)) {
       session.getMapper(DatasetImportMapper.class).create(di);

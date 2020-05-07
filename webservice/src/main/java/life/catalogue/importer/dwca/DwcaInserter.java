@@ -1,10 +1,10 @@
 package life.catalogue.importer.dwca;
 
-import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.vocab.ColDwcTerm;
-import life.catalogue.img.ImageService;
 import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
+import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.reference.ReferenceFactory;
@@ -26,8 +26,8 @@ public class DwcaInserter extends NeoCsvInserter {
   private static final Logger LOG = LoggerFactory.getLogger(DwcaInserter.class);
   private DwcInterpreter inter;
   
-  public DwcaInserter(NeoDb store, Path folder, ReferenceFactory refFactory) throws IOException {
-    super(folder, DwcaReader.from(folder), store, refFactory);
+  public DwcaInserter(NeoDb store, Path folder, DatasetSettings settings, ReferenceFactory refFactory) throws IOException {
+    super(folder, DwcaReader.from(folder), store, settings, refFactory);
   }
   
   /**
@@ -37,7 +37,7 @@ public class DwcaInserter extends NeoCsvInserter {
   @Override
   protected void batchInsert() throws NormalizationFailedException {
     try {
-      inter = new DwcInterpreter(store.getDataset(), reader.getMappingFlags(), refFactory, store);
+      inter = new DwcInterpreter(settings, reader.getMappingFlags(), refFactory, store);
 
       // taxon core only, extensions are interpreted later
       insertEntities(reader, DwcTerm.Taxon,
@@ -108,7 +108,7 @@ public class DwcaInserter extends NeoCsvInserter {
    * Reads the dataset metadata and puts it into the store
    */
   @Override
-  public Optional<Dataset> readMetadata() {
+  public Optional<DatasetWithSettings> readMetadata() {
     EmlParser parser = new EmlParser();
     Optional<Path> mf = ((DwcaReader)reader).getMetadataFile();
     if (mf.isPresent()) {

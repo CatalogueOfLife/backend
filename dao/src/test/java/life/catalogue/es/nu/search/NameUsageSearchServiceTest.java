@@ -616,7 +616,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   @Test
   public void testWithSmthii__1() {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
-    query.setPrefixMatchingEnabled(true);
+    query.setPrefix(true);
     query.setHighlight(false);
     query.setQ("Smithi");
      index(testWithSmthii_data());
@@ -628,7 +628,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   @Test
   public void testWithSmthii__2() {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
-    query.setPrefixMatchingEnabled(true);
+    query.setPrefix(true);
     query.setHighlight(false);
     query.setQ("Smithii");
     index(testWithSmthii_data());

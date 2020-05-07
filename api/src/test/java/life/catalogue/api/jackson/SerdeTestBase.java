@@ -51,12 +51,9 @@ public abstract class SerdeTestBase<T> {
   protected void testRoundtrip(T value) throws Exception {
     Wrapper<T> wrapper = new Wrapper<T>(value);
     String json = ApiModule.MAPPER.writeValueAsString(wrapper);
+    System.out.println(json);
     Wrapper<T> wrapper2 = ApiModule.MAPPER.readValue(json, type);
-    debug(json, wrapper, wrapper2);
     assertEquals(wrapper.value, wrapper2.value);
   }
-  
-  protected void debug(String json, Wrapper<T> wrapper, Wrapper<T> wrapper2) {
-    System.out.println(json);
-  }
+
 }

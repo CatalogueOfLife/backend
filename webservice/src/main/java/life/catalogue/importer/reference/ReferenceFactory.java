@@ -56,7 +56,7 @@ public class ReferenceFactory {
   private final ReferenceStore store;
   
   public ReferenceFactory(NeoDb db) {
-    this(db.getDataset().getKey(), db.references());
+    this(db.getDatasetKey(), db.references());
   }
 
   public ReferenceFactory(Integer datasetKey, ReferenceStore store) {

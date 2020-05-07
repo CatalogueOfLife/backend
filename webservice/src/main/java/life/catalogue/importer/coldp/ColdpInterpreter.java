@@ -29,8 +29,8 @@ public class ColdpInterpreter extends InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(ColdpInterpreter.class);
   private static final EnumNote<TaxonomicStatus> SYN_NOTE = new EnumNote<>(TaxonomicStatus.SYNONYM, null);
 
-  ColdpInterpreter(Dataset dataset, MappingFlags metadata, ReferenceFactory refFactory, NeoDb store) {
-    super(dataset, refFactory, store);
+  ColdpInterpreter(DatasetSettings settings, MappingFlags metadata, ReferenceFactory refFactory, NeoDb store) {
+    super(settings, refFactory, store);
     // turn on normalization of flat classification
     metadata.setDenormedClassificationMapped(true);
   }

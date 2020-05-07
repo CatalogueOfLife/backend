@@ -77,7 +77,7 @@ public class PgSetupRuleTest {
     enums.remove(TxtTreeTerm.class);
     enums.remove(Frequency.class);
     enums.remove(GeoTimeType.class);
-    enums.remove(DatasetSettings.class);
+    enums.remove(Setting.class);
     // sort and print
     enums.sort(Comparator.comparing(cl -> BaseEnumSetTypeHandler.pgEnumName(cl)));
     return enums;

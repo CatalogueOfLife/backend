@@ -1,43 +1,52 @@
 package life.catalogue.db.type2;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import life.catalogue.api.util.VocabularyUtils;
-import life.catalogue.api.vocab.DatasetSettings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import life.catalogue.api.jackson.SettingsDeserializer;
+import life.catalogue.api.vocab.Frequency;
+import life.catalogue.api.vocab.Setting;
+import org.apache.ibatis.type.JdbcType;
 
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.LocalDate;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Postgres type handler converting an map of object values into a postgres JSONB data type.
  */
-public class SettingsTypeHandler extends JsonAbstractHandler<Map<DatasetSettings, Object>> {
-  private static final Logger LOG = LoggerFactory.getLogger(SettingsTypeHandler.class);
+public class SettingsTypeHandler extends JsonAbstractHandler<Map<Setting, Object>> {
 
   public SettingsTypeHandler() {
-    super("map", new TypeReference<Map<DatasetSettings, Object>>() {});
+    super("map", new TypeReference<Map<Setting, Object>>() {});
   }
 
   @Override
-  protected Map<DatasetSettings, Object> fromJson(String json) throws SQLException {
-    Map<DatasetSettings, Object> map = super.fromJson(json);
-    if (map != null) {
-      for (Map.Entry<DatasetSettings, Object> e : map.entrySet()) {
-        DatasetSettings s = e.getKey();
-        try {
-          if (s.getType().equals(LocalDate.class)) {
-            map.replace(e.getKey(), LocalDate.parse((String) e.getValue()));
-          } else if (s.isEnum()) {
-            map.replace(e.getKey(), VocabularyUtils.lookupEnum((String) e.getValue(), (Class<Enum<?>>) s.getType()));
-          }
-        } catch (RuntimeException ex) {
-          LOG.error("Unable to convert value {} for setting {} into {}", e.getValue(), e.getKey(), e.getKey().getType());
-          map.remove(e.getKey());
-        }
-      }
+  public void setNonNullParameter(PreparedStatement ps, int i, Map<Setting, Object> parameter, JdbcType jdbcType) throws SQLException {
+    // we treat frequency special and store its days to allow simpler calculations in SQL
+    if (parameter.containsKey(Setting.IMPORT_FREQUENCY)) {
+      Map<Setting, Object> freqMap = new HashMap<>(parameter);
+      Frequency freq = (Frequency) freqMap.get(Setting.IMPORT_FREQUENCY);
+      freqMap.replace(Setting.IMPORT_FREQUENCY, freq.getDays());
+      super.setNonNullParameter(ps, i, freqMap, jdbcType);
+    } else {
+      super.setNonNullParameter(ps, i, parameter, jdbcType);
+    }
+  }
+
+  @Override
+  protected Map<Setting, Object> fromJson(String json) throws SQLException {
+    Map<Setting, Object> map = super.fromJson(json);
+    if (map == null) return Collections.emptyMap();
+
+    // we treat frequency special and store its days to allow simpler calculations in SQL
+    Integer days = (Integer) map.remove(Setting.IMPORT_FREQUENCY);
+    SettingsDeserializer.convertFromJSON(map);
+    if (days != null) {
+      map.put(Setting.IMPORT_FREQUENCY, Frequency.fromDays(days));
     }
     return map;
   }
+
+
 }

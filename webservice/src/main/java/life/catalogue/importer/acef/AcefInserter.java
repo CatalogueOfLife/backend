@@ -1,15 +1,15 @@
 package life.catalogue.importer.acef;
 
 import com.google.common.base.Splitter;
-import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.Reference;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.date.FuzzyDate;
-import life.catalogue.img.ImageService;
 import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
+import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.neo.model.NeoName;
@@ -43,8 +43,8 @@ public class AcefInserter extends NeoCsvInserter {
   
   private AcefInterpreter inter;
   
-  public AcefInserter(NeoDb store, Path folder, ReferenceFactory refFactory) throws IOException {
-    super(folder, AcefReader.from(folder), store, refFactory);
+  public AcefInserter(NeoDb store, Path folder, DatasetSettings settings, ReferenceFactory refFactory) throws IOException {
+    super(folder, AcefReader.from(folder), store, settings, refFactory);
   }
   
   /**
@@ -54,7 +54,7 @@ public class AcefInserter extends NeoCsvInserter {
   @Override
   protected void batchInsert() throws NormalizationFailedException {
     try {
-      inter = new AcefInterpreter(store.getDataset(), reader.getMappingFlags(), refFactory, store);
+      inter = new AcefInterpreter(settings, reader.getMappingFlags(), refFactory, store);
 
       // This inserts the plain references from the Reference file with no links to names, taxa or distributions.
       // Links are added afterwards in other methods when a ACEF:ReferenceID field is processed by lookup to the neo store.
@@ -247,12 +247,13 @@ public class AcefInserter extends NeoCsvInserter {
    * Reads the dataset metadata and puts it into the store
    */
   @Override
-  public Optional<Dataset> readMetadata() {
-    Dataset d = null;
+  public Optional<DatasetWithSettings> readMetadata() {
+    DatasetWithSettings d = null;
     Optional<VerbatimRecord> metadata = reader.readFirstRow(AcefTerm.SourceDatabase);
     if (metadata.isPresent()) {
       VerbatimMeta dr = new VerbatimMeta(metadata.get());
-      d = new Dataset();
+      d = new DatasetWithSettings();
+      d.setDataFormat(DataFormat.ACEF);
       d.setTitle(dr.get(AcefTerm.DatabaseFullName));
       d.setAlias(dr.get(AcefTerm.DatabaseShortName));
       d.setVersion(dr.get(AcefTerm.DatabaseVersion));
@@ -268,7 +269,6 @@ public class AcefInserter extends NeoCsvInserter {
       d.setContact(dr.get(AcefTerm.ContactPerson));
       d.setAuthorsAndEditors(dr.get(AcefTerm.AuthorsEditors, COMMA_SPLITTER));
       d.setOrganisations(dr.get(AcefTerm.Organisation, COMMA_SPLITTER));
-      d.setDataFormat(DataFormat.ACEF);
     }
     return Optional.ofNullable(d);
   }

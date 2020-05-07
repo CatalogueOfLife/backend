@@ -389,7 +389,8 @@ public class ImportManager implements Managed {
    */
   private ImportJob createImport(ImportRequest req) throws NotFoundException, IllegalArgumentException {
     try (SqlSession session = factory.openSession(true)) {
-      Dataset d = session.getMapper(DatasetMapper.class).get(req.datasetKey);
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      Dataset d = dm.get(req.datasetKey);
       if (d == null) {
         throw NotFoundException.notFound(Dataset.class, req.datasetKey);
 
@@ -397,14 +398,8 @@ public class ImportManager implements Managed {
         LOG.warn("Dataset {} was deleted and cannot be imported", req.datasetKey);
         throw NotFoundException.notFound(Dataset.class, req.datasetKey);
       }
-      ImportJob job = new ImportJob(req,
-          d,
-          cfg,
-          downloader,
-          factory,
-          index,
-          indexService,
-          imgService,
+      DatasetSettings ds = dm.getSettings(req.datasetKey);
+      ImportJob job = new ImportJob(req, new DatasetWithSettings(d, ds), cfg, downloader, factory, index, indexService, imgService,
           new StartNotifier() {
             @Override
             public void started() {

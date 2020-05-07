@@ -1,17 +1,9 @@
 package life.catalogue.importer;
 
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
-
 import com.google.common.base.Preconditions;
 import com.google.common.io.Files;
-import life.catalogue.api.vocab.DatasetSettings;
-import org.apache.commons.io.FileUtils;
-import org.apache.ibatis.session.SqlSession;
+import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.User;
-import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
@@ -24,10 +16,17 @@ import life.catalogue.img.ImageService;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
 import life.catalogue.matching.NameIndexFactory;
+import org.apache.commons.io.FileUtils;
+import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.NomCode;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 /**
  * Imports the given datasets from the test resources
@@ -50,7 +49,7 @@ public class PgImportRule extends ExternalResource {
   private NeoDb store;
   private NormalizerConfig cfg;
   private ImporterConfig icfg = new ImporterConfig();
-  private Dataset dataset;
+  private DatasetWithSettings dataset;
   private final TestResource[] datasets;
   private final Map<TestResource, Integer> datasetKeyMap = new HashMap<>();
   
@@ -139,33 +138,32 @@ public class PgImportRule extends ExternalResource {
   void normalizeAndImport(TestResource tr) throws Exception {
     URL url = getClass().getResource("/" + tr.format.name().toLowerCase() + "/" + tr.key);
     Path source = Paths.get(url.toURI());
-    dataset = new Dataset();
-    dataset.setContributesTo(null);
+    dataset = new DatasetWithSettings();
+    dataset.getDataset().setContributesTo(null); // is this needed?
     dataset.setCreatedBy(IMPORT_USER.getKey());
     dataset.setModifiedBy(IMPORT_USER.getKey());
     dataset.setDataFormat(tr.format);
     dataset.setType(tr.type);
     dataset.setOrigin(DatasetOrigin.MANAGED);
-    dataset.putSetting(DatasetSettings.NOMENCLATURAL_CODE, tr.code);
+    dataset.setCode(tr.code);
     dataset.setTitle("Test Dataset " + source.toString());
 
     // insert trusted dataset
     try {
       SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true);
       // this creates a new key, usually above 2000!
-      session.getMapper(DatasetMapper.class).create(dataset);
+      session.getMapper(DatasetMapper.class).createAll(dataset);
       session.commit();
       session.close();
       
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
-      store.put(dataset);
-      Normalizer norm = new Normalizer(tr.format, store, source, NameIndexFactory.passThru(), ImageService.passThru());
+      Normalizer norm = new Normalizer(dataset, store, source, NameIndexFactory.passThru(), ImageService.passThru());
       norm.call();
       
       // import into postgres
       store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
-      PgImport importer = new PgImport(dataset.getKey(), store, PgSetupRule.getSqlSessionFactory(), icfg);
+      PgImport importer = new PgImport(dataset, store, PgSetupRule.getSqlSessionFactory(), icfg);
       importer.call();
       
     } catch (Exception e) {

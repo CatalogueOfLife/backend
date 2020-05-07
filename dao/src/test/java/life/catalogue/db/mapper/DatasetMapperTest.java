@@ -3,15 +3,10 @@ package life.catalogue.db.mapper;
 import com.google.common.collect.Lists;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.*;
 import org.gbif.nameparser.api.NomCode;
-import org.javers.core.Javers;
-import org.javers.core.JaversBuilder;
-import org.javers.core.diff.Diff;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -40,33 +35,60 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   }
 
   static void populate(Dataset d) {
+    populate((ArchivedDataset)d);
+    d.setGbifKey(UUID.randomUUID());
+    d.setGbifPublisherKey(UUID.randomUUID());
+  }
+
+  static void populate(ArchivedDataset d) {
     d.applyUser(Users.DB_INIT);
     d.setType(DatasetType.TAXONOMIC);
     d.setOrigin(DatasetOrigin.EXTERNAL);
-    d.setGbifKey(UUID.randomUUID());
     d.setTitle(RandomUtils.randomLatinString(80));
     d.setDescription(RandomUtils.randomLatinString(500));
     d.setLicense(License.CC0);
-    d.setImportFrequency(Frequency.MONTHLY);
     for (int i = 0; i < 8; i++) {
       d.getAuthorsAndEditors().add(RandomUtils.randomLatinString(100));
     }
     d.setContact("Hans Peter");
-    d.setDataAccess(URI.create("https://api.gbif.org/v1/dataset/" + d.getGbifKey()));
-    d.setDataFormat(DataFormat.ACEF);
     d.setReleased(LocalDate.now());
     d.setVersion("v123");
-    d.setWebsite(URI.create("https://www.gbif.org/dataset/" + d.getGbifKey()));
+    d.setWebsite(URI.create("https://www.gbif.org/dataset/" + d.getVersion()));
     d.setNotes("my notes");
     d.getOrganisations().add("my org");
     d.getOrganisations().add("your org");
-    d.putSetting(DatasetSettings.REMATCH_DECISIONS, false);
-    d.putSetting(DatasetSettings.NOMENCLATURAL_CODE, NomCode.ZOOLOGICAL);
-    d.putSetting(DatasetSettings.CSV_DELIMITER, "fun");
-    d.putSetting(DatasetSettings.DISTRIBUTION_GAZETTEER, Gazetteer.ISO);
-    d.getEditors().add(Users.TESTER);
   }
-  
+
+  @Test
+  public void settings() throws Exception {
+    Dataset d1 = create();
+    mapper().create(d1);
+    commit();
+
+    DatasetSettings ds = mapper().getSettings(d1.getKey());
+    assertNotNull(ds);
+    assertTrue(ds.isEmpty());
+
+    ds = new DatasetSettings();
+    ds.put(Setting.IMPORT_FREQUENCY, Frequency.MONTHLY);
+    ds.put(Setting.DATA_ACCESS, URI.create("https://api.gbif.org/v1/dataset/" + d1.getGbifKey()));
+    ds.put(Setting.DATA_FORMAT, DataFormat.ACEF);
+
+    mapper().updateSettings(d1.getKey(), ds, Users.TESTER);
+    commit();
+
+    DatasetSettings ds2 = mapper().getSettings(d1.getKey());
+    printDiff(ds2, ds);
+    assertEquals(ds2, ds);
+
+    ds.put(Setting.REMATCH_DECISIONS, true);
+    ds.remove(Setting.DATA_ACCESS);
+    mapper().updateSettings(d1.getKey(), ds, Users.TESTER);
+
+    ds2 = mapper().getSettings(d1.getKey());
+    assertEquals(ds2, ds);
+  }
+
   @Test
   public void roundtrip() throws Exception {
     Dataset d1 = create();
@@ -100,7 +122,6 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     assertFalse(mapper().isPrivate(-528));
 
     d1.setPrivat(true);
-    d1.addEditor(Users.TESTER);
     mapper().update(d1);
     commit();
 
@@ -108,13 +129,21 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     assertTrue(mapper().isPrivate(d1.getKey()));
     assertFalse(mapper().isPrivate(-528));
 
+
+    // 5 datasets, 1 names index, 4 creator=DB_INIT, one is private
     resp = mapper().search(req, null, new Page());
     assertEquals(3, resp.size());
+
     resp = mapper().search(req, Users.DB_INIT, new Page());
-    assertEquals(3, resp.size());
-    resp = mapper().search(req, Users.TESTER, new Page());
     assertEquals(4, resp.size());
 
+    resp = mapper().search(req, Users.TESTER, new Page());
+    assertEquals(3, resp.size());
+
+    // add editor to private dataset
+    mapper().addEditor(d1.getKey(), Users.TESTER, Users.TESTER);
+    resp = mapper().search(req, Users.TESTER, new Page());
+    assertEquals(4, resp.size());
   }
 
   @Test
@@ -215,28 +244,26 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
       d.setCreated(null);
     }
     commit();
-    removeCreated(ds);
+    removeDbCreatedProps(ds);
 
     // get first page
     Page p = new Page(0, 4);
 
-    List<Dataset> res = removeCreated(mapper().list(p));
+    List<Dataset> res = removeDbCreatedProps(mapper().list(p));
     assertEquals(4, res.size());
     
-    Javers javers = JaversBuilder.javers().build();
-    Diff diff = javers.compare(ds.get(0), res.get(0));
-    assertEquals(0, diff.getChanges().size());
+    assertEquals(ds.get(0), res.get(0));
     assertEquals(ds.subList(0, 4), res);
 
     // next page (d5-8)
     p.next();
-    res = removeCreated(mapper().list(p));
+    res = removeDbCreatedProps(mapper().list(p));
     assertEquals(4, res.size());
     assertEquals(ds.subList(4, 8), res);
 
     // next page (d9)
     p.next();
-    res = removeCreated(mapper().list(p));
+    res = removeDbCreatedProps(mapper().list(p));
     assertEquals(1, res.size());
   }
 
@@ -490,21 +517,11 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   }
 
   public static Dataset rmDbCreatedProps(Dataset d) {
-    // dont compare created stamps
-    d.setCreated(null);
-    d.setModified(null);
     // we generate this on the fly
     d.setContributesTo(null);
     return d;
   }
 
-  private List<Dataset> removeCreated(List<Dataset> ds) {
-    for (Dataset d : ds) {
-      removeDbCreatedProps(d);
-    }
-    return ds;
-  }
-  
   @Override
   void updateTestObj(Dataset d) {
     d.setDescription("brand new thing");

@@ -1,9 +1,5 @@
 package life.catalogue.importer;
 
-import java.net.URI;
-import java.util.List;
-import java.util.Set;
-
 import com.google.common.collect.Sets;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
@@ -22,6 +18,10 @@ import org.junit.Test;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.collection.Iterators;
+
+import java.net.URI;
+import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -131,9 +131,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
   @Test
   public void acef5Datasource() throws Exception {
     normalize(5);
-    
-    Dataset d = store.getDataset();
-    assertEquals("Systema Dipterorum", d.getTitle());
+    assertEquals("Systema Dipterorum", dws.getTitle());
   }
   
   @Test

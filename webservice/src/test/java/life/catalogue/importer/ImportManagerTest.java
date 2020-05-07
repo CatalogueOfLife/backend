@@ -1,11 +1,5 @@
 package life.catalogue.importer;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
@@ -19,8 +13,9 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.io.Resources;
 import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.TestDataRule;
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.release.ReleaseManager;
@@ -32,6 +27,12 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
@@ -91,7 +92,7 @@ public class ImportManagerTest {
     MetricRegistry metrics = new MetricRegistry();
     final WsServerConfig cfg = provideConfig();
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
-    manager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), null, imgService, releaseManager);
+    manager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), NameUsageIndexService.passThru(), imgService, releaseManager);
     manager.start();
   }
 

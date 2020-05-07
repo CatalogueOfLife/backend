@@ -1,19 +1,14 @@
 package life.catalogue.importer;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
-import javax.annotation.Nullable;
-
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.io.Files;
-import life.catalogue.api.vocab.DatasetSettings;
-import org.apache.commons.io.FileUtils;
+import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.model.IssueContainer;
+import life.catalogue.api.model.VerbatimEntity;
+import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.coldp.MetadataParser;
@@ -27,12 +22,7 @@ import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.neo.traverse.Traversals;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.VerbatimEntity;
-import life.catalogue.api.model.VerbatimRecord;
-import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.Issue;
+import org.apache.commons.io.FileUtils;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -43,6 +33,15 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Relationship;
 
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+
 import static org.junit.Assert.*;
 
 abstract class NormalizerITBase {
@@ -52,7 +51,8 @@ abstract class NormalizerITBase {
   private NormalizerConfig cfg;
   private final DataFormat format;
   private final Supplier<NameIndex> nameIndexSupplier;
-  
+  protected DatasetWithSettings dws;
+
   NormalizerITBase(DataFormat format, Supplier<NameIndex> supplier) {
     this.format = format;
     nameIndexSupplier = supplier;
@@ -88,9 +88,9 @@ abstract class NormalizerITBase {
     URL metaUrl = NormalizerTreeIT.class.getResource(resourceDir + "/metadata.yaml");
     if (metaUrl != null) {
       try {
-        Optional<Dataset> meta = MetadataParser.readMetadata(metaUrl.openStream());
+        Optional<DatasetWithSettings> meta = MetadataParser.readMetadata(metaUrl.openStream());
         if (meta.isPresent()) {
-          NomCode code = meta.get().getSettingEnum(DatasetSettings.NOMENCLATURAL_CODE);
+          NomCode code = meta.get().getCode();
           System.out.println("Use code " + code);
           return Optional.of(code);
         }
@@ -131,12 +131,11 @@ abstract class NormalizerITBase {
   protected void normalize(Path arch, @Nullable NomCode code) {
     try {
       store = NeoDbFactory.create(1, attempt, cfg);
-      Dataset d = new Dataset();
-      d.setKey(1);
-      d.setDataFormat(format);
-      d.putSetting(DatasetSettings.NOMENCLATURAL_CODE, code);
-      store.put(d);
-      Normalizer norm = new Normalizer(format, store, arch, nameIndexSupplier.get(), ImageService.passThru());
+      dws = new DatasetWithSettings();
+      dws.setKey(store.getDatasetKey());
+      dws.setDataFormat(format);
+      dws.setCode(code);
+      Normalizer norm = new Normalizer(dws, store, arch, nameIndexSupplier.get(), ImageService.passThru());
       norm.call();
     
       // reopen

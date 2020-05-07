@@ -2,7 +2,6 @@ package life.catalogue.es.nu.search;
 
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
-import life.catalogue.es.query.Query;
 import org.junit.Test;
 
 import java.util.Set;
@@ -31,7 +30,7 @@ public class RequestTranslatorTest {
     req.setSortBy(NameUsageSearchRequest.SortBy.TAXONOMIC);
     assertNotNull(RequestTranslator.generateQuery(req));
 
-    req.setPrefixMatchingEnabled(true);
+    req.setPrefix(true);
     assertNotNull(RequestTranslator.generateQuery(req));
 
     req.setReverse(true);

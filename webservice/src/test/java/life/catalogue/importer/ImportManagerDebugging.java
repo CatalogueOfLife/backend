@@ -5,7 +5,7 @@ import com.google.common.io.Files;
 import io.dropwizard.client.HttpClientBuilder;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
@@ -13,8 +13,8 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.TestDataRule;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.matching.NameIndexFactory;
@@ -103,7 +103,7 @@ public class ImportManagerDebugging {
   
   @Test
   public void debugTaxonworks() throws Exception {
-    Dataset d = create(DataFormat.COLDP, "https://sfg.taxonworks.org/downloads/15/download_file", "TW Test");
+    DatasetWithSettings d = create(DataFormat.COLDP, "https://sfg.taxonworks.org/downloads/15/download_file", "TW Test");
     importManager.submit(new ImportRequest(d.getKey(), Users.IMPORTER));
     Thread.sleep(1000);
     while (importManager.hasRunning()) {
@@ -114,7 +114,7 @@ public class ImportManagerDebugging {
 
   @Test
   public void debugDsmz() throws Exception {
-    Dataset d = create(DataFormat.DWCA, "http://rs.gbif.org/datasets/dsmz.zip", "DSMZ");
+    DatasetWithSettings d = create(DataFormat.DWCA, "http://rs.gbif.org/datasets/dsmz.zip", "DSMZ");
     importManager.submit(new ImportRequest(d.getKey(), Users.IMPORTER));
     Thread.sleep(1000);
     while (importManager.hasRunning()) {
@@ -125,7 +125,7 @@ public class ImportManagerDebugging {
 
   @Test
   public void debugUpload() throws Exception {
-    Dataset d = create(DataFormat.DWCA, null,"Upload test");
+    DatasetWithSettings d = create(DataFormat.DWCA, null,"Upload test");
     InputStream data = new FileInputStream(new File("/Users/markus/Desktop/testUnassigned.txt"));
     importManager.upload(d.getKey(), data, true, "tsv", TestEntityGenerator.USER_ADMIN);
 
@@ -136,8 +136,8 @@ public class ImportManagerDebugging {
     System.out.println("Done");
   }
 
-  private Dataset create(DataFormat format, String url, String title) {
-    Dataset d = new Dataset();
+  private DatasetWithSettings create(DataFormat format, String url, String title) {
+    DatasetWithSettings d = new DatasetWithSettings();
     d.setType(DatasetType.OTHER);
     d.setTitle(title);
     d.setOrigin(DatasetOrigin.EXTERNAL);
@@ -145,10 +145,10 @@ public class ImportManagerDebugging {
     if (url != null) {
       d.setDataAccess(URI.create(url));
     }
-    TestEntityGenerator.setUser(d);
+    TestEntityGenerator.setUser(d.getDataset());
     
     try (SqlSession s = PgSetupRule.getSqlSessionFactory().openSession()) {
-      s.getMapper(DatasetMapper.class).create(d);
+      s.getMapper(DatasetMapper.class).createAll(d);
       s.commit();
     }
     

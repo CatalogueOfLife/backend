@@ -3,9 +3,8 @@ package life.catalogue.release;
 import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.DatasetSettings;
-import life.catalogue.api.vocab.Frequency;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.text.SimpleTemplate;
 import life.catalogue.common.util.LoggingUtils;
@@ -73,11 +72,12 @@ public class CatalogueRelease implements Runnable {
       if (release.getOrigin() != DatasetOrigin.MANAGED) {
         throw new IllegalArgumentException("Only managed datasets can be released, but origin is " + release.getOrigin());
       }
-      
+
+      DatasetSettings ds = dm.getSettings(catalogueKey);
       try {
         String tmpl = DEFAULT_TITLE_TEMPLATE;
-        if (release.hasSetting(DatasetSettings.RELEASE_TITLE_TEMPLATE)) {
-          tmpl = release.getSettingString(DatasetSettings.RELEASE_TITLE_TEMPLATE);
+        if (ds.has(Setting.RELEASE_TITLE_TEMPLATE)) {
+          tmpl = ds.getString(Setting.RELEASE_TITLE_TEMPLATE);
         }
         String title = SimpleTemplate.render(tmpl, release);
         release.setTitle(title);
@@ -91,7 +91,6 @@ public class CatalogueRelease implements Runnable {
       release.setOrigin(DatasetOrigin.RELEASED);
       release.setAlias(null);
       release.setLocked(true);
-      release.setImportFrequency(Frequency.NEVER);
       release.setModifiedBy(userKey);
       release.setCreatedBy(userKey);
       release.setReleased(today);
@@ -250,7 +249,7 @@ public class CatalogueRelease implements Runnable {
         }
         d.setDatasetKey(releaseKey);
         LOG.debug("Archive dataset {}: {} for release {}", d.getKey(), d.getTitle(), releaseKey);
-        dam.createProjectArchive(d);
+        dam.createProjectSource(d);
       });
     }
   }

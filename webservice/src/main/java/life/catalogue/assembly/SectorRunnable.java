@@ -43,15 +43,18 @@ abstract class SectorRunnable implements Runnable {
   private final Consumer<SectorRunnable> successCallback;
   private final BiConsumer<SectorRunnable, Exception> errorCallback;
   private final LocalDateTime created = LocalDateTime.now();
+  private final boolean persistSync;
   final User user;
   final SectorImport state = new SectorImport();
 
   /**
+   * @param persistSync if true the sync import is persisted on success and the last sync attempt is updated on the sector
    * @throws IllegalArgumentException if the sectors dataset is not of MANAGED origin
    */
   SectorRunnable(int sectorKey, boolean validateSector, SqlSessionFactory factory, NameUsageIndexService indexService,
-                      Consumer<SectorRunnable> successCallback,
-                      BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
+                 Consumer<SectorRunnable> successCallback,
+                 BiConsumer<SectorRunnable, Exception> errorCallback, boolean persistSync, User user) throws IllegalArgumentException {
+    this.persistSync = persistSync;
     this.user = Preconditions.checkNotNull(user);
     this.validateSector = validateSector;
     this.factory = factory;
@@ -83,33 +86,42 @@ abstract class SectorRunnable implements Runnable {
   @Override
   public void run() {
     LoggingUtils.setSectorMDC(sectorKey, state.getAttempt(), getClass());
+    boolean failed = true;
     try {
       state.setStarted(LocalDateTime.now());
       init();
       doWork();
       LOG.info("Completed {}", this);
+      failed = false;
       successCallback.accept(this);
-      
+
     } catch (InterruptedException e) {
       LOG.warn("Interrupted {}", this, e);
-      errorCallback.accept(this, e);
       state.setState(SectorImport.State.CANCELED);
-      
+      errorCallback.accept(this, e);
+
     } catch (Exception e) {
       LOG.error("Failed {}", this, e);
       state.setError(ExceptionUtils.getRootCauseMessage(e));
-      errorCallback.accept(this, e);
       state.setState(SectorImport.State.FAILED);
-      
+      errorCallback.accept(this, e);
+
     } finally {
       state.setFinished(LocalDateTime.now());
-      finalWork();
+      // persist sector import
+      try (SqlSession session = factory.openSession(true)) {
+        if (persistSync || failed) {
+          session.getMapper(SectorImportMapper.class).create(state);
+        }
+        // update sector with latest attempt on success only
+        if (persistSync && !failed) {
+          session.getMapper(SectorMapper.class).updateLastSync(sectorKey, state.getAttempt());
+        }
+      }
       LoggingUtils.removeSectorMDC();
     }
   }
-  
-  abstract void finalWork();
-  
+
   void init() throws Exception {
     state.setState( SectorImport.State.PREPARING);
     // load latest version of the sector again to get the latest target ids

@@ -16,6 +16,7 @@ import javax.ws.rs.core.UriBuilder;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import life.catalogue.api.model.DatasetWithSettings;
 import org.apache.commons.lang3.StringUtils;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
@@ -91,7 +92,7 @@ public class DatasetPager {
     }
   }
   
-  public Dataset get(UUID gbifKey) {
+  public DatasetWithSettings get(UUID gbifKey) {
     LOG.debug("retrieve {}", gbifKey);
     return dataset.path(gbifKey.toString())
         .request()
@@ -103,7 +104,7 @@ public class DatasetPager {
         .join();
   }
   
-  public List<Dataset> next() {
+  public List<DatasetWithSettings> next() {
     LOG.info("retrieve {}", page);
     try {
       return datasetPage()
@@ -135,12 +136,12 @@ public class DatasetPager {
   /**
    * @return converted dataset or NULL if illegitimate
    */
-  private Dataset convert(GDataset g) {
+  private DatasetWithSettings convert(GDataset g) {
     if (g.parentDatasetKey != null) {
       LOG.debug("Skip constituent dataset: {} - {}", g.key, g.title);
     }
-    
-    Dataset d = new Dataset();
+
+    DatasetWithSettings d = new DatasetWithSettings();
     d.setGbifKey(g.key);
     d.setGbifPublisherKey(g.publishingOrganizationKey);
     d.getOrganisations().add(publisher(g.publishingOrganizationKey));

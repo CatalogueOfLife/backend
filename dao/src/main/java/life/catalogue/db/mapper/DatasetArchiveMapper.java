@@ -1,6 +1,6 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.ArchivedDataset;
 import life.catalogue.db.DatasetProcessable;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
@@ -14,7 +14,7 @@ public interface DatasetArchiveMapper extends DatasetProcessable<ProjectSourceDa
    * Copies a given dataset key into the archive.
    * @param key current dataset key to archive
    */
-  void createArchive(@Param("key") int key);
+  void create(@Param("key") int key);
 
   /**
    * Copies a given dataset into the archive.
@@ -22,14 +22,14 @@ public interface DatasetArchiveMapper extends DatasetProcessable<ProjectSourceDa
    *
    * @param d dataset to archive
    */
-  void createProjectArchive(ProjectSourceDataset d);
+  void createProjectSource(ProjectSourceDataset d);
 
   /**
    * Retrieves a dataset from the archive by its key and import attempt.
    * @param key
    * @param attempt
    */
-  Dataset getArchive(@Param("key") int key, @Param("attempt") int attempt);
+  ArchivedDataset get(@Param("key") int key, @Param("attempt") int attempt);
 
   /**
    * Retrieves a projects source dataset from the archive by its key, import attempt and the projects datasetKey.
@@ -37,7 +37,7 @@ public interface DatasetArchiveMapper extends DatasetProcessable<ProjectSourceDa
    * @param attempt
    * @param datasetKey
    */
-  ProjectSourceDataset getProjectArchive(@Param("key") int key, @Param("attempt") int attempt, @Param("datasetKey") int datasetKey);
+  ProjectSourceDataset getProjectSource(@Param("key") int key, @Param("attempt") int attempt, @Param("datasetKey") int datasetKey);
 
   /**
    * Iterates over all source datasets of a given project.

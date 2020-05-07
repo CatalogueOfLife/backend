@@ -1,12 +1,5 @@
 package life.catalogue.importer.coldp;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Optional;
-
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -17,17 +10,21 @@ import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.jackson.FastutilsSerde;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
-import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.DatasetSettings;
-import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.License;
 import life.catalogue.importer.jackson.EnumParserSerde;
 import life.catalogue.parser.LicenseParser;
 import org.gbif.dwc.terms.TermFactory;
-import org.gbif.nameparser.api.NomCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
 
 public class MetadataParser {
   private static final Logger LOG = LoggerFactory.getLogger(MetadataParser.class);
@@ -39,7 +36,7 @@ public class MetadataParser {
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .registerModule(new JavaTimeModule())
         .registerModule(new ColdpYamlModule());
-    DATASET_READER = OM.readerFor(ColdpDataset.class);
+    DATASET_READER = OM.readerFor(DatasetWithSettings.class);
     
     TermFactory.instance().registerTerm(ColdpInserter.BIBTEX_CLASS_TERM);
     TermFactory.instance().registerTerm(ColdpInserter.CSLJSON_CLASS_TERM);
@@ -61,20 +58,10 @@ public class MetadataParser {
     }
   }
 
-  static class ColdpDataset extends Dataset {
-    public void setCode(NomCode code){
-      putSetting(DatasetSettings.NOMENCLATURAL_CODE, code);
-    }
-    public void setGazetteer(Gazetteer gazetteer){
-      putSetting(DatasetSettings.DISTRIBUTION_GAZETTEER, gazetteer);
-    }
-
-  }
-
   /**
    * Reads the dataset metadata.yaml or metadata.yml from a given folder
    */
-  public static Optional<Dataset> readMetadata(Path dir) {
+  public static Optional<DatasetWithSettings> readMetadata(Path dir) {
     for (String fn : METADATA_FILENAMES) {
       Path metapath = dir.resolve(fn);
       if (Files.exists(metapath)) {
@@ -88,10 +75,10 @@ public class MetadataParser {
     return Optional.empty();
   }
   
-  public static Optional<Dataset> readMetadata(InputStream stream) {
+  public static Optional<DatasetWithSettings> readMetadata(InputStream stream) {
     if (stream != null) {
       try {
-        Dataset d = DATASET_READER.readValue(stream);
+        DatasetWithSettings d = DATASET_READER.readValue(stream);
         d.setDataFormat(DataFormat.COLDP);
         if (d.getDescription() != null) {
           d.setDescription(d.getDescription().trim());

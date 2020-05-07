@@ -41,20 +41,19 @@ public class InterpreterBase {
   private static final Pattern YEAR_PATTERN = Pattern.compile("^(\\d{3,4})\\s*(\\?)?(?!\\d)");
   
   protected final NeoDb store;
-  protected final Dataset dataset;
+  protected final DatasetSettings settings;
   private final Gazetteer distributionStandard;
   protected final ReferenceFactory refFactory;
-  private final MediaInterpreter mediaInterpreter = new MediaInterpreter();
 
-  public InterpreterBase(Dataset dataset, ReferenceFactory refFactory, NeoDb store) {
-    this.dataset = dataset;
+  public InterpreterBase(DatasetSettings settings, ReferenceFactory refFactory, NeoDb store) {
+    this.settings = settings;
     this.refFactory = refFactory;
     this.store = store;
-    if (dataset.hasSetting(DatasetSettings.DISTRIBUTION_GAZETTEER)) {
-      distributionStandard = dataset.getSettingEnum(DatasetSettings.DISTRIBUTION_GAZETTEER);
+    if (settings.has(Setting.DISTRIBUTION_GAZETTEER)) {
+      distributionStandard = settings.getEnum(Setting.DISTRIBUTION_GAZETTEER);
       LOG.info("Dataset wide distribution standard {} found in settings", distributionStandard);
     } else {
-      LOG.info("No dataset wide distribution standard found in settings: {}", dataset.getSettings());
+      LOG.info("No dataset wide distribution standard found in settings");
       distributionStandard = null;
     }
   }
@@ -212,9 +211,9 @@ public class InterpreterBase {
       m.setCapturedBy(rec.get(creator));
       m.setCaptured( date(rec, Issue.MEDIA_CREATED_DATE_INVALID, created) );
       m.setTitle(rec.get(title));
-      m.setFormat(mediaInterpreter.parseMimeType(rec.get(format)));
+      m.setFormat(MediaInterpreter.parseMimeType(rec.get(format)));
       m.setType( SafeParser.parse(MediaTypeParser.PARSER, rec.get(type)).orNull() );
-      mediaInterpreter.detectType(m);
+      MediaInterpreter.detectType(m);
       
       addReference.accept(m, rec);
   
@@ -301,7 +300,7 @@ public class InterpreterBase {
 
     // parse rank & code as they improve name parsing
     Rank rank = SafeParser.parse(RankParser.PARSER, vrank).orElse(Rank.UNRANKED, Issue.RANK_INVALID, v);
-    final NomCode code = SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse(dataset.getSettingEnum(DatasetSettings.NOMENCLATURAL_CODE), Issue.NOMENCLATURAL_CODE_INVALID, v);
+    final NomCode code = SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse(settings.getEnum(Setting.NOMENCLATURAL_CODE), Issue.NOMENCLATURAL_CODE_INVALID, v);
 
     NameAccordingTo nat;
 

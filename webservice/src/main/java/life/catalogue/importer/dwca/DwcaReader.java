@@ -1,17 +1,5 @@
 package life.catalogue.importer.dwca;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Stream;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
@@ -20,11 +8,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParserSettings;
-import org.apache.commons.text.StringEscapeUtils;
-import org.codehaus.stax2.XMLInputFactory2;
-import org.codehaus.stax2.XMLStreamReader2;
 import life.catalogue.api.datapackage.ColdpTerm;
-import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.ColDwcTerm;
@@ -32,10 +16,26 @@ import life.catalogue.common.io.CharsetDetectingStream;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.csv.CsvReader;
 import life.catalogue.csv.Schema;
+import life.catalogue.importer.NormalizationFailedException;
+import org.apache.commons.text.StringEscapeUtils;
+import org.codehaus.stax2.XMLInputFactory2;
+import org.codehaus.stax2.XMLStreamReader2;
 import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  *
@@ -125,7 +125,7 @@ public class DwcaReader extends CsvReader {
             List<Schema.Field> columns = Lists.newArrayList(s.columns);
             columns.add(id);
             Schema s2 = new Schema(s.file, s.rowType, s.encoding, s.settings, columns);
-            putSchema(s2);
+            updateSchema(s2);
           }
         }
       }
@@ -397,7 +397,7 @@ public class DwcaReader extends CsvReader {
     }
     
     // check if taxonID should be used, not the generic ID
-    if (core.hasTerm(DwcTerm.taxonID) && !core.field(DwcaTerm.ID).index.equals(core.field(DwcTerm.taxonID).index)) {
+    if (core.hasTerm(DwcTerm.taxonID) && (!core.hasTerm(DwcaTerm.ID) || !core.field(DwcaTerm.ID).index.equals(core.field(DwcTerm.taxonID).index))) {
       LOG.info("Use taxonID instead of ID");
       mappingFlags.setTaxonId(true);
     }

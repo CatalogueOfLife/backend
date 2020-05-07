@@ -119,7 +119,7 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
   @Override
   public void commitBatch(int counter) {
     if (Thread.interrupted()) {
-      LOG.warn("Normalizer interrupted, exit dataset {} early with incomplete parsing", store.getDataset().getKey());
+      LOG.warn("Normalizer interrupted, exit dataset {} early with incomplete parsing", store.getDatasetKey());
       throw new NormalizationFailedException("Normalizer interrupted");
     }
     LOG.debug("Processed relations for {} nodes", counter);
