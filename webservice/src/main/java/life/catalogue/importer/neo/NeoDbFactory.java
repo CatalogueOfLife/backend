@@ -1,13 +1,16 @@
 package life.catalogue.importer.neo;
 
-import java.io.File;
-import java.io.IOException;
-
+import life.catalogue.common.lang.Exceptions;
+import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.NormalizerConfig;
 import org.mapdb.DBMaker;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.channels.ClosedByInterruptException;
 
 /**
  * A factory for persistent & temporary, volatile neodb instances.
@@ -44,8 +47,13 @@ public class NeoDbFactory {
         storeDir.mkdirs();
       }
       return new NeoDb(datasetKey, attempt, dbMaker.make(), storeDir, builder, cfg.batchSize, cfg.batchTimeout);
-      
+
     } catch (Exception e) {
+      // can be caused by interruption in mapdb
+      Throwable root = Exceptions.getRootCause(e);
+      if (root instanceof ClosedByInterruptException) {
+        throw new InterruptedRuntimeException("Failed to create NeoDB, thread was interrupted", e);
+      }
       throw new IllegalStateException("Failed to init NormalizerStore at " + storeDir, e);
     }
   }
