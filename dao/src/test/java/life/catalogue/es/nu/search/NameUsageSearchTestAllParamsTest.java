@@ -1,16 +1,6 @@
 package life.catalogue.es.nu.search;
 
-import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.NAME_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.NAME_INDEX_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.NOM_STATUS;
-import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHED_IN_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHER_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.SECTOR_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.TAXON_ID;
-import static life.catalogue.api.search.NameUsageSearchRequest.IS_NOT_NULL;
-import static life.catalogue.api.search.NameUsageSearchRequest.IS_NULL;
-import static org.junit.Assert.assertEquals;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -19,7 +9,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +23,30 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.es.EsReadTestBase;
+import static java.util.stream.Collectors.toList;
+import static org.junit.Assert.assertEquals;
+import static life.catalogue.api.search.NameUsageSearchParameter.ALPHAINDEX;
+import static life.catalogue.api.search.NameUsageSearchParameter.CATALOGUE_KEY;
+import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
+import static life.catalogue.api.search.NameUsageSearchParameter.DECISION_MODE;
+import static life.catalogue.api.search.NameUsageSearchParameter.NAME_ID;
+import static life.catalogue.api.search.NameUsageSearchParameter.NAME_INDEX_ID;
+import static life.catalogue.api.search.NameUsageSearchParameter.NOM_STATUS;
+import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHED_IN_ID;
+import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHER_KEY;
+import static life.catalogue.api.search.NameUsageSearchParameter.SECTOR_KEY;
+import static life.catalogue.api.search.NameUsageSearchParameter.TAXON_ID;
+import static life.catalogue.api.search.NameUsageSearchRequest.IS_NOT_NULL;
+import static life.catalogue.api.search.NameUsageSearchRequest.IS_NULL;
 
+/**
+ * <p>
+ * Meant to test all name usage search parameters using a simple (non-exhaustive) test. More subtle aspects of search and suggest are not
+ * meant to be tested here.
+ * <p>
+ * As always: when adding tests, be mindful that after indexing NameUsageWrapper instances, they will have changed! There you must rebuild
+ * your test data when making assertions.
+ */
 public class NameUsageSearchTestAllParamsTest extends EsReadTestBase {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchTestAllParamsTest.class);
@@ -57,7 +69,7 @@ public class NameUsageSearchTestAllParamsTest extends EsReadTestBase {
   }
 
   @Test
-  public void testTaxonID1() {
+  public void testTaxonId1() {
 
     SimpleName t1 = new SimpleName("1", null, null);
     SimpleName t2 = new SimpleName("2", null, null);
@@ -96,7 +108,7 @@ public class NameUsageSearchTestAllParamsTest extends EsReadTestBase {
   }
 
   @Test
-  public void testTaxonID2() {
+  public void testTaxonId2() {
     SimpleName t1 = new SimpleName("1", null, null);
     SimpleName t2 = new SimpleName("2", null, null);
     SimpleName t3 = new SimpleName("3", null, null);
@@ -271,97 +283,108 @@ public class NameUsageSearchTestAllParamsTest extends EsReadTestBase {
   }
 
   @Test
-  public void testDecisionKey1() {
-     
+  public void testCatalogueKey() {
+    /*
+     * This apparently simple test really is a gotcha upon a gotcha debug nightmare with the production code winning and the test code
+     * having to adapt. Catalog key alone (without decision mode) is ignored, so all documents should come back. However, the catalog key is
+     * still used to prune the list of decisions within those documents, so the query result still differs from the original test data.
+     */
+    index(decisionTestData());
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.addFilter(CATALOGUE_KEY, 101);
+    List<NameUsageWrapper> testData = decisionTestData();
+    for (NameUsageWrapper nuw : testData) {
+      if (nuw.getDecisions() != null) {
+        nuw.setDecisions(nuw.getDecisions().stream().filter(sd -> sd.getDatasetKey() == 101).collect(toList()));
+        if (nuw.getDecisions().isEmpty()) {
+          nuw.setDecisions(null);
+        }
+      }
+    }
+    assertEquals(testData, search(query).getResult());
+    countdown(CATALOGUE_KEY);
+  }
+
+  @Test
+  public void testDecisionMode() {
+    /*
+     * This apparently simple test really is a gotcha upon a gotcha debug nightmare with the production code winning and the test code
+     * having to adapt. Catalog key alone (without decision mode) is ignored, so all documents should come back. However, the catalog key is
+     * still used to prune the list of decisions within those documents, so the query result still differs from the original test data.
+     */
+    index(decisionTestData());
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.addFilter(DECISION_MODE, Mode.REVIEWED);
+    assertEquals(decisionTestData().subList(1, 3), search(query).getResult());
+    query = new NameUsageSearchRequest();
+    query.addFilter(DECISION_MODE, IS_NULL);
+    assertEquals(decisionTestData().subList(4, 5), search(query).getResult());
+    countdown(DECISION_MODE);
+  }
+
+  private static List<NameUsageWrapper> decisionTestData() {
     NameUsageWrapper nuw1 = minimalNameUsage();
+    nuw1.setId("1");
     SimpleDecision sd = new SimpleDecision();
     sd.setDatasetKey(100);
     sd.setMode(Mode.BLOCK);
-    nuw1.setDecisions(Arrays.asList(sd));
-    
+    // Must be mutable list (see above)
+    nuw1.setDecisions(new ArrayList<>(List.of(sd)));
+
     NameUsageWrapper nuw2 = minimalNameUsage();
+    nuw2.setId("2");
     sd = new SimpleDecision();
     sd.setDatasetKey(100);
     sd.setMode(Mode.REVIEWED);
-    nuw2.setDecisions(Arrays.asList(sd));
-    
+    nuw2.setDecisions(new ArrayList<>(List.of(sd)));
+
     NameUsageWrapper nuw3 = minimalNameUsage();
+    nuw3.setId("3");
     sd = new SimpleDecision();
     sd.setDatasetKey(101);
     sd.setMode(Mode.REVIEWED);
-    nuw3.setDecisions(Arrays.asList(sd));   
-    
+    nuw3.setDecisions(new ArrayList<>(List.of(sd)));
+
     NameUsageWrapper nuw4 = minimalNameUsage();
-    nuw4.setDecisions(null);
+    nuw4.setId("4");
+    sd = new SimpleDecision();
+    sd.setDatasetKey(101);
+    sd.setMode(Mode.UPDATE_RECURSIVE);
+    nuw4.setDecisions(new ArrayList<>(List.of(sd)));
 
-    index(nuw1, nuw2, nuw3, nuw4);
+    NameUsageWrapper nuw5 = minimalNameUsage();
+    nuw5.setId("5");
+    nuw5.setDecisions(null);
 
-    NameUsageSearchRequest query = new NameUsageSearchRequest();
-    //qu
-    
-
+    return List.of(nuw1, nuw2, nuw3, nuw4, nuw5);
   }
 
-  @Test
-  @Ignore
-  public void testDecisionKey2() {
-    Integer key1 = 100;
-    Integer key2 = 101;
-    NameUsageWrapper nuw1 = minimalNameUsage();
-    //nuw1.setDecisionKey(key1);
-    NameUsageWrapper nuw2 = minimalNameUsage();
-    //nuw2.setDecisionKey(key1);
-    NameUsageWrapper nuw3 = minimalNameUsage();
-    //nuw3.setDecisionKey(key2);
-    NameUsageWrapper nuw4 = minimalNameUsage();
-    //nuw4.setDecisionKey(null);
-
-    index(nuw1, nuw2, nuw3, nuw4);
-
+  public void testAlphaIndex() {
+    index(alphaIndexTestData());
     NameUsageSearchRequest query = new NameUsageSearchRequest();
-    //TODO: query.addFilter(DECISION_KEY, IS_NOT_NULL);
-
-    //nuw1.setDecisionKey(key1);
-    //nuw2.setDecisionKey(key1);
-    //nuw3.setDecisionKey(key2);
-    //nuw4.setDecisionKey(null);
-    List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw3);
-
-    assertEquals(expected, search(query).getResult());
-  
-    //TODO:countdown(DECISION_KEY);
-
+    query.addFilter(ALPHAINDEX, "a");
+    assertEquals(alphaIndexTestData().subList(0, 1), search(query).getResult());
+    query = new NameUsageSearchRequest();
+    query.addFilter(ALPHAINDEX, "b");
+    assertEquals(alphaIndexTestData().subList(1, 3), search(query).getResult());
+    query = new NameUsageSearchRequest();
+    query.addFilter(ALPHAINDEX, "z");
+    assertEquals(Collections.emptyList(), search(query).getResult());
+    countdown(ALPHAINDEX);
   }
 
-  @Test
-  @Ignore
-  public void testDecisionKey3() {
-    Integer key1 = 100;
-    Integer key2 = 101;
+  private static List<NameUsageWrapper> alphaIndexTestData() {
     NameUsageWrapper nuw1 = minimalNameUsage();
-    //nuw1.setDecisionKey(key1);
+    nuw1.getUsage().getName().setScientificName("Alpha");
     NameUsageWrapper nuw2 = minimalNameUsage();
-    //nuw2.setDecisionKey(key1);
+    nuw2.getUsage().getName().setScientificName("Beta");
     NameUsageWrapper nuw3 = minimalNameUsage();
-    //nuw3.setDecisionKey(key2);
+    nuw3.getUsage().getName().setNameIndexId("Borneo");
     NameUsageWrapper nuw4 = minimalNameUsage();
-    //nuw4.setDecisionKey(null);
+    nuw4.getUsage().getName().setScientificName("Crocodylidae");
 
-    index(nuw1, nuw2, nuw3, nuw4);
-
-    NameUsageSearchRequest query = new NameUsageSearchRequest();
-    //TODO: query.addFilter(DECISION_KEY, IS_NULL);
-
-    //nuw1.setDecisionKey(key1);
-    //nuw2.setDecisionKey(key1);
-    //nuw3.setDecisionKey(key2);
-    //nuw4.setDecisionKey(null);
-    List<NameUsageWrapper> expected = Arrays.asList(nuw4);
-
-    assertEquals(expected, search(query).getResult());
-  
-    //TODO: countdown(DECISION_KEY);
-
+    List<NameUsageWrapper> testData = List.of(nuw1, nuw2, nuw3, nuw4);
+    return testData;
   }
 
   @Test
@@ -716,15 +739,16 @@ public class NameUsageSearchTestAllParamsTest extends EsReadTestBase {
 
   private static void countdown(NameUsageSearchParameter param) {
     tested.add(param);
-    LOG.info("####  Name search parameter {} unit tested  ####", param);
+    LOG.info("-->  Name search parameter {} tested", param);
     if (tested.size() == NameUsageSearchParameter.values().length) {
-      LOG.info("####  All name search parameters tested!  ####");
+      LOG.info("***  All name search parameters tested!");
     } else {
-      LOG.info("####  {} parameter(s) tested. {} more to go  ####", tested.size(), NameUsageSearchParameter.values().length - tested.size());
+      LOG.info("*** {} parameter(s) tested. {} more to go", tested.size(),
+          NameUsageSearchParameter.values().length - tested.size());
       Set<NameUsageSearchParameter> todo = EnumSet.allOf(NameUsageSearchParameter.class);
       todo.removeAll(tested);
       String todoStr = todo.stream().map(NameUsageSearchParameter::toString).collect(Collectors.joining(", "));
-      LOG.info("####  Missing: {}  ####", todoStr);
+      LOG.info("*** Missing: {}", todoStr);
     }
   }
 

@@ -1,23 +1,25 @@
 package life.catalogue.es.nu;
 
-import life.catalogue.api.model.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.gbif.nameparser.api.Rank;
+import org.junit.Before;
+import org.junit.Test;
+import life.catalogue.api.model.Name;
+import life.catalogue.api.model.NameUsage;
+import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.Synonym;
+import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchRequest.SortBy;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.EsUtil;
-import life.catalogue.es.nu.ClassificationUpdater;
-import life.catalogue.es.nu.NameUsageIndexer;
-import org.gbif.nameparser.api.Rank;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.gbif.nameparser.api.Rank.*;
+import static org.gbif.nameparser.api.Rank.FAMILY;
+import static org.gbif.nameparser.api.Rank.GENUS;
+import static org.gbif.nameparser.api.Rank.ORDER;
+import static org.gbif.nameparser.api.Rank.SPECIES;
 import static org.junit.Assert.assertEquals;
 
 public class ClassificationUpdaterTest extends EsReadTestBase {
@@ -30,7 +32,7 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
   }
 
   @Test
-  public void test1() throws IOException {
+  public void test1() {
 
     // Index some test objects
     index(createTestObjects());

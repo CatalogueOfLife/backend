@@ -1,16 +1,21 @@
 package life.catalogue.api.search;
 
-import java.beans.ConstructorProperties;
-import java.util.*;
-import javax.validation.constraints.NotBlank;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 import javax.validation.constraints.Size;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MultivaluedMap;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import life.catalogue.api.util.VocabularyUtils;
 import static life.catalogue.api.util.VocabularyUtils.lookupEnum;
@@ -59,12 +64,12 @@ public class NameUsageSearchRequest extends NameUsageRequest {
 
   @JsonCreator
   public NameUsageSearchRequest(@JsonProperty("filter") Map<NameUsageSearchParameter, @Size(max = 1000) List<Object>> filters,
-                                @JsonProperty("facet") Set<NameUsageSearchParameter> facets,
-                                @JsonProperty("content") Set<SearchContent> content,
-                                @JsonProperty("sortBy") SortBy sortBy,
-                                @JsonProperty("highlight") boolean highlight,
-                                @JsonProperty("reverse") boolean reverse,
-                                @JsonProperty("prefix") boolean prefix) {
+      @JsonProperty("facet") Set<NameUsageSearchParameter> facets,
+      @JsonProperty("content") Set<SearchContent> content,
+      @JsonProperty("sortBy") SortBy sortBy,
+      @JsonProperty("highlight") boolean highlight,
+      @JsonProperty("reverse") boolean reverse,
+      @JsonProperty("prefix") boolean prefix) {
     this.filters = filters == null ? new EnumMap<>(NameUsageSearchParameter.class) : new EnumMap<>(filters);
     this.facets = facets;
     this.content = content;

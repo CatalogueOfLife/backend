@@ -43,8 +43,10 @@ public class NameUsageFieldLookup extends EnumMap<NameUsageSearchParameter, Stri
 
   private NameUsageFieldLookup() {
     super(NameUsageSearchParameter.class);
-    putSingle(USAGE_ID, "usageId");
+    putSingle(ALPHAINDEX, "nameStrings.sciNameLetter");
+    putSingle(CATALOGUE_KEY, "decisions.catalogueKey");
     putSingle(DATASET_KEY, "datasetKey");
+    putSingle(DECISION_MODE, "decisions.mode");
     putSingle(FIELD, "nameFields");
     putSingle(FOSSIL, "fossil");
     putSingle(ISSUE, "issues");
@@ -57,13 +59,11 @@ public class NameUsageFieldLookup extends EnumMap<NameUsageSearchParameter, Stri
     putSingle(RANK, "rank");
     putSingle(RECENT, "recent");
     putSingle(STATUS, "status");
-    putSingle(SECTOR_KEY, "sectorKey");
     putSingle(SECTOR_DATASET_KEY, "sectorDatasetKey");
-    putSingle(TYPE, "type");
+    putSingle(SECTOR_KEY, "sectorKey");
     putSingle(TAXON_ID, "classificationIds");
-    putSingle(CATALOGUE_KEY, "decisions.catalogueKey");
-    putSingle(DECISION_MODE, "decisions.mode");
-    putSingle(ALPHAINDEX, "nameStrings.sciNameLetter");
+    putSingle(TYPE, "type");
+    putSingle(USAGE_ID, "usageId");
 
     if (size() != NameUsageSearchParameter.values().length) {
       Set<NameUsageSearchParameter> all = new HashSet<>(List.of(NameUsageSearchParameter.values()));
