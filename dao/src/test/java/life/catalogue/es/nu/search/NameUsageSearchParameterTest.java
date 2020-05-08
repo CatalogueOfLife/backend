@@ -41,15 +41,15 @@ import static life.catalogue.api.search.NameUsageSearchRequest.IS_NULL;
 
 /**
  * <p>
- * Meant to test all name usage search parameters using a simple (non-exhaustive) test. More subtle aspects of search and suggest are not
- * meant to be tested here.
+ * Meant to lightly test all name usage search parameters using a simple (non-exhaustive) test. More subtle aspects of search and suggest
+ * are not meant to be tested here.
  * <p>
- * As always: when adding tests, be mindful that after indexing NameUsageWrapper instances, they will have changed! There you must rebuild
- * your test data when making assertions.
+ * As always: when adding tests, be mindful that after indexing NameUsageWrapper instances, they will have changed! Therefore you must
+ * rebuild your test data when making assertions.
  */
-public class NameUsageSearchTestAllParamsTest extends EsReadTestBase {
+public class NameUsageSearchParameterTest extends EsReadTestBase {
 
-  private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchTestAllParamsTest.class);
+  private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchParameterTest.class);
   private static EnumSet<NameUsageSearchParameter> tested = EnumSet.noneOf(NameUsageSearchParameter.class);
 
   @Before
@@ -319,6 +319,9 @@ public class NameUsageSearchTestAllParamsTest extends EsReadTestBase {
     query = new NameUsageSearchRequest();
     query.addFilter(DECISION_MODE, IS_NULL);
     assertEquals(decisionTestData().subList(4, 5), search(query).getResult());
+    query = new NameUsageSearchRequest();
+    query.addFilter(DECISION_MODE, IS_NOT_NULL);
+    assertEquals(decisionTestData().subList(0, 4), search(query).getResult());
     countdown(DECISION_MODE);
   }
 

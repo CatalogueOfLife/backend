@@ -16,7 +16,7 @@ import life.catalogue.es.nu.search.FacetsTranslatorTest;
 import life.catalogue.es.nu.search.NameUsageSearchHighlighterTest;
 import life.catalogue.es.nu.search.NameUsageSearchServiceFacetTest;
 import life.catalogue.es.nu.search.NameUsageSearchServiceTest;
-import life.catalogue.es.nu.search.NameUsageSearchTestAllParamsTest;
+import life.catalogue.es.nu.search.NameUsageSearchParameterTest;
 import life.catalogue.es.nu.search.QSearchTests;
 import life.catalogue.es.nu.search.SortingTest;
 import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceTest;
@@ -42,7 +42,7 @@ import life.catalogue.es.query.TermQueryTest;
     NameUsageSearchHighlighterTest.class,
     NameUsageResponseConverterTest.class,
     NameUsageSearchHighlighterTest.class,
-    NameUsageSearchTestAllParamsTest.class,
+    NameUsageSearchParameterTest.class,
     NameUsageIndexServiceIT.class,
     NameUsageSearchServiceTest.class,
     NameUsageSearchServiceFacetTest.class,
