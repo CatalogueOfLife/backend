@@ -296,6 +296,12 @@
     WHERE sector_key=#{sectorKey} AND dataset_key=#{datasetKey}
   </delete>
 
+  <update id="removeSectorKey" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    UPDATE name_${partition} SET sector_key = NULL
+    WHERE sector_key = #{sectorKey}
+  </update>
+
   <delete id="deleteByDataset" parameterType="map">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     TRUNCATE name_${partition} CASCADE

@@ -36,67 +36,62 @@ public class DwcaInserter extends NeoCsvInserter {
    */
   @Override
   protected void batchInsert() throws NormalizationFailedException {
-    try {
-      inter = new DwcInterpreter(settings, reader.getMappingFlags(), refFactory, store);
+    inter = new DwcInterpreter(settings, reader.getMappingFlags(), refFactory, store);
 
-      // taxon core only, extensions are interpreted later
-      insertEntities(reader, DwcTerm.Taxon,
-          inter::interpret,
-          u -> store.createNameAndUsage(u) != null
-      );
-  
-      // TODO: read type specimen extension and update name usage!
-      // http://rs.gbif.org/extension/gbif/1.0/typesandspecimen.xml
-      //updateEntities(reader, DwcTerm.Taxon,
-      //    inter::interpret,
-      //    u -> store.createNameAndUsage(u) != null
-      //);
-  
-      insertNameRelations(reader, ColDwcTerm.NameRelations,
-          inter::interpretNameRelations,
-          DwcaTerm.ID,
-          ColDwcTerm.relatedNameUsageID
-      );
-  
-      insertTaxonEntities(reader, GbifTerm.Distribution,
-          inter::interpretDistribution,
-          DwcaTerm.ID,
-          (t, d) -> t.distributions.add(d)
-      );
-  
-      insertTaxonEntities(reader, GbifTerm.VernacularName,
-          inter::interpretVernacularName,
-          DwcaTerm.ID,
-          (t, vn) -> t.vernacularNames.add(vn)
-      );
-  
-      insertTaxonEntities(reader, GbifTerm.Description,
-          inter::interpretDescription,
-          DwcaTerm.ID,
-          (t, d) -> t.descriptions.add(d)
-      );
-  
-      insertTaxonEntities(reader, GbifTerm.Multimedia,
-          inter::interpretMedia,
-          DwcaTerm.ID,
-          (t, d) -> t.media.add(d)
-      );
+    // taxon core only, extensions are interpreted later
+    insertEntities(reader, DwcTerm.Taxon,
+        inter::interpret,
+        u -> store.createNameAndUsage(u) != null
+    );
 
-      insertTaxonEntities(reader, GbifTerm.Reference,
-          inter::interpretReference,
-          DwcaTerm.ID,
-          (t, r) -> {
-            if (store.references().create(r)) {
-              t.usage.getReferenceIds().add(r.getId());
-            } else {
-          
-            }
+    // TODO: read type specimen extension and update name usage!
+    // http://rs.gbif.org/extension/gbif/1.0/typesandspecimen.xml
+    //updateEntities(reader, DwcTerm.Taxon,
+    //    inter::interpret,
+    //    u -> store.createNameAndUsage(u) != null
+    //);
+
+    insertNameRelations(reader, ColDwcTerm.NameRelations,
+        inter::interpretNameRelations,
+        DwcaTerm.ID,
+        ColDwcTerm.relatedNameUsageID
+    );
+
+    insertTaxonEntities(reader, GbifTerm.Distribution,
+        inter::interpretDistribution,
+        DwcaTerm.ID,
+        (t, d) -> t.distributions.add(d)
+    );
+
+    insertTaxonEntities(reader, GbifTerm.VernacularName,
+        inter::interpretVernacularName,
+        DwcaTerm.ID,
+        (t, vn) -> t.vernacularNames.add(vn)
+    );
+
+    insertTaxonEntities(reader, GbifTerm.Description,
+        inter::interpretDescription,
+        DwcaTerm.ID,
+        (t, d) -> t.descriptions.add(d)
+    );
+
+    insertTaxonEntities(reader, GbifTerm.Multimedia,
+        inter::interpretMedia,
+        DwcaTerm.ID,
+        (t, d) -> t.media.add(d)
+    );
+
+    insertTaxonEntities(reader, GbifTerm.Reference,
+        inter::interpretReference,
+        DwcaTerm.ID,
+        (t, r) -> {
+          if (store.references().create(r)) {
+            t.usage.getReferenceIds().add(r.getId());
+          } else {
+
           }
-      );
-      
-    } catch (RuntimeException e) {
-      throw new NormalizationFailedException("Failed to insert DwC-A data", e);
-    }
+        }
+    );
   }
   
   @Override

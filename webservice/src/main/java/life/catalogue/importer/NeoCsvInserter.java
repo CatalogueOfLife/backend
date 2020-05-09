@@ -4,9 +4,10 @@ import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.TypeMaterial;
 import life.catalogue.api.model.VerbatimEntity;
 import life.catalogue.api.model.VerbatimRecord;
-import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.collection.DefaultMap;
+import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.csv.CsvReader;
 import life.catalogue.csv.Schema;
 import life.catalogue.importer.neo.NeoDb;
@@ -77,9 +78,15 @@ public abstract class NeoCsvInserter implements NeoInserter {
   public final void insertAll() throws NormalizationFailedException {
     store.startBatchMode();
     interruptIfCancelled("Normalizer interrupted, exit early");
-    batchInsert();
-    LOG.info("Batch insert completed, {} verbatim records processed, {} nodes created", vcounter, store.size());
-  
+    try {
+      batchInsert();
+      LOG.info("Batch insert completed, {} verbatim records processed, {} nodes created", vcounter, store.size());
+    } catch (InterruptedRuntimeException e) {
+      throw e;
+    } catch (RuntimeException e) {
+      throw new NormalizationFailedException("Failed to batch insert csv data", e);
+    }
+
     interruptIfCancelled("Normalizer interrupted, exit early");
     store.endBatchMode();
     LOG.info("Neo batch inserter closed, data flushed to disk");

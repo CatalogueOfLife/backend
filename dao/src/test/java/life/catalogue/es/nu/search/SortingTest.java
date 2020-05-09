@@ -1,20 +1,19 @@
 package life.catalogue.es.nu.search;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchRequest.SortBy;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
-import life.catalogue.es.nu.search.RequestTranslator;
 import life.catalogue.es.query.EsSearchRequest;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -93,30 +92,6 @@ public class SortingTest extends EsReadTestBase {
 
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setSortBy(null);
-    EsSearchRequest esQuery = new RequestTranslator(query, new Page()).translateRequest();
-    List<EsNameUsage> result = queryRaw(esQuery);
-    assertEquals(docs, result);
-  }
-
-  @Test
-  public void testSortNative_02() {
-    EsNameUsage docA = new EsNameUsage();
-    docA.setScientificName("A");
-    EsNameUsage docB = new EsNameUsage();
-    docB.setScientificName("B");
-    EsNameUsage docC = new EsNameUsage();
-    docC.setScientificName("C");
-    EsNameUsage docD = new EsNameUsage();
-    docD.setScientificName("D");
-    EsNameUsage docE = new EsNameUsage();
-    docE.setScientificName("E");
-
-    List<EsNameUsage> docs = Arrays.asList(docB, docA, docD, docE, docC);
-
-    indexRaw(docs);
-
-    NameUsageSearchRequest query = new NameUsageSearchRequest();
-    query.setSortBy(SortBy.NATIVE);
     EsSearchRequest esQuery = new RequestTranslator(query, new Page()).translateRequest();
     List<EsNameUsage> result = queryRaw(esQuery);
     assertEquals(docs, result);
@@ -278,36 +253,6 @@ public class SortingTest extends EsReadTestBase {
 
   }
 
-  public void testSortIndexingOrderReversed() {
-    EsNameUsage a = new EsNameUsage();
-    EsNameUsage b = new EsNameUsage();
-    EsNameUsage c = new EsNameUsage();
-    EsNameUsage d = new EsNameUsage();
-    EsNameUsage e = new EsNameUsage();
-    List<EsNameUsage> docs = Arrays.asList(a, b, c, d, e);
-    indexRaw(docs);
-
-    NameUsageSearchRequest query = new NameUsageSearchRequest();
-    query.setSortBy(SortBy.NATIVE);
-    query.setReverse(true);
-    EsSearchRequest esQuery = new RequestTranslator(query, new Page()).translateRequest();
-
-    List<EsNameUsage> result = queryRaw(esQuery);
-
-    Collections.reverse(docs);
-    assertEquals(docs, result);
-
-    // Let's just do this one more time.
-    truncate();   
-    Collections.shuffle(docs);
-    indexRaw(docs);
-    queryRaw(esQuery);
-    Collections.reverse(docs);
-    assertEquals(docs, result);
-    
-  }
-
-
   @Test
   public void testSortByIndexNameId_01() {
     EsNameUsage docA = new EsNameUsage();
@@ -331,7 +276,6 @@ public class SortingTest extends EsReadTestBase {
     List<EsNameUsage> result = queryRaw(esQuery);
     assertEquals(expected, result);
   }
-
 
   @Test
   public void testSortByIndexNameIdDescending_01() {

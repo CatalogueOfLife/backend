@@ -64,13 +64,6 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
                    @Param("nameIndexID") String nameIndexID,
                    @Param("matchType") MatchType matchType
   );
-  
-  int deleteBySector(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
-
-  /**
-   * Updates all names for the given sector and sets their sectorKey to NULL
-   */
-  int removeSectorKey(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
 
   /**
    * @return true if at least one record for the given dataset exists

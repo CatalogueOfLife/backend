@@ -6,8 +6,6 @@ import life.catalogue.api.search.NameUsageSearchRequest.SortBy;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.EsUtil;
-import life.catalogue.es.nu.ClassificationUpdater;
-import life.catalogue.es.nu.NameUsageIndexer;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,7 +48,7 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
 
     // Make sure that what ends up in ES equals the modified nam usages
     NameUsageSearchRequest query = new NameUsageSearchRequest();
-    query.setSortBy(SortBy.NATIVE);
+    query.setSortBy(SortBy.NAME);
     List<NameUsageWrapper> actual = search(query).getResult();
 
     assertEquals(expected, actual);

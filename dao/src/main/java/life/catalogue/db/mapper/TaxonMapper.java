@@ -1,21 +1,20 @@
 package life.catalogue.db.mapper;
 
-import java.util.List;
-
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import life.catalogue.db.DatasetProcessable;
-import org.apache.ibatis.annotations.Param;
 import life.catalogue.api.model.*;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.DatasetPageable;
+import life.catalogue.db.DatasetProcessable;
+import org.apache.ibatis.annotations.Param;
 import org.gbif.nameparser.api.Rank;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Mapper dealing only with accepted name usages, i.e. Taxon instances.
  *
- * Note that {@link DatasetPageable#deleteByDataset(int)} needs to also delete all synonyms.
+ * Note that {@link DatasetProcessable#deleteByDataset(int)} needs to also delete all synonyms to not break fk constraints.
  */
 public interface TaxonMapper extends CRUD<DSID<String>, Taxon>, DatasetProcessable<Taxon>, DatasetPageable<Taxon> {
   

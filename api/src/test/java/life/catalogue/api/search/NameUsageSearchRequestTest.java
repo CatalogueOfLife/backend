@@ -35,7 +35,7 @@ public class NameUsageSearchRequestTest extends SerdeTestBase<NameUsageSearchReq
     NameUsageSearchRequest s = new NameUsageSearchRequest();
     s.setQ("Abies");
     s.setContent(new HashSet<>(Arrays.asList(NameUsageSearchRequest.SearchContent.AUTHORSHIP)));
-    s.setSortBy(NameUsageSearchRequest.SortBy.NATIVE);
+    s.setSortBy(NameUsageSearchRequest.SortBy.TAXONOMIC);
     s.addFilter(NameUsageSearchParameter.NOM_STATUS, NomStatus.MANUSCRIPT);
     s.addFilter(NameUsageSearchParameter.NOM_STATUS, NomStatus.CHRESONYM);
     return s;

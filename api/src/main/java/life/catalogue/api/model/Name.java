@@ -712,6 +712,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   /**
    * @See NameFormatter.authorshipComplete()
    */
+  @JsonIgnore
   public String authorshipComplete() {
     return NameFormatter.authorshipComplete(toParsedName(this));
   }
@@ -833,5 +834,12 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     
     return sb.toString();
   }
-  
+
+  public static String completeName(Name n, boolean html, boolean authorship, boolean nomNote) {
+    return n.isParsed() ? completeName(toParsedName(n), html, authorship, nomNote) : n.scientificNameAuthorship();
+  }
+
+  public static String completeName(ParsedName pn, boolean html, boolean authorship, boolean nomNote) {
+      return NameFormatter.buildName(pn, true, true, authorship, true, true, true, false, true, true, nomNote, true, true, true, html);
+  }
 }

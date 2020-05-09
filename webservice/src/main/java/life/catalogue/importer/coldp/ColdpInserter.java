@@ -51,71 +51,66 @@ public class ColdpInserter extends NeoCsvInserter {
    */
   @Override
   protected void batchInsert() throws NormalizationFailedException {
-    try {
-      inter = new ColdpInterpreter(settings, reader.getMappingFlags(), refFactory, store);
+    inter = new ColdpInterpreter(settings, reader.getMappingFlags(), refFactory, store);
 
-      // This inserts the plain references from the Reference file with no links to names, taxa or distributions.
-      // Links are added afterwards in other methods when a ACEF:ReferenceID field is processed by lookup to the neo store.
-      insertEntities(reader, ColdpTerm.Reference,
-          inter::interpretReference,
-          store.references()::create
-      );
-  
-      // insert CSL-JSON references
-      // insert BibTex references
-      insertExtendedReferences();
-      
-      // name & relations
-      insertEntities(reader, ColdpTerm.Name,
-          inter::interpretName,
-          n -> store.names().create(n) != null
-      );
-      insertNameRelations(reader, ColdpTerm.NameRel,
-          inter::interpretNameRelations,
-          ColdpTerm.nameID,
-          ColdpTerm.relatedNameID
-      );
-      interpretTypeMaterial(reader, ColdpTerm.TypeMaterial,
-              inter::interpretTypeMaterial
-      );
+    // This inserts the plain references from the Reference file with no links to names, taxa or distributions.
+    // Links are added afterwards in other methods when a ACEF:ReferenceID field is processed by lookup to the neo store.
+    insertEntities(reader, ColdpTerm.Reference,
+        inter::interpretReference,
+        store.references()::create
+    );
 
-      // taxa
-      insertEntities(reader, ColdpTerm.Taxon,
-          inter::interpretTaxon,
-          t -> store.usages().create(t) != null
-      );
-      
-      // synonyms
-      insertEntities(reader, ColdpTerm.Synonym,
-          inter::interpretSynonym,
-          s -> store.usages().create(s) != null
-      );
-  
-      // supplementary
-      insertTaxonEntities(reader, ColdpTerm.Description,
-          inter::interpretDescription,
-          ColdpTerm.taxonID,
-          (t, d) -> t.descriptions.add(d)
-      );
-      insertTaxonEntities(reader, ColdpTerm.Distribution,
-          inter::interpretDistribution,
-          ColdpTerm.taxonID,
-          (t, d) -> t.distributions.add(d)
-      );
-      insertTaxonEntities(reader, ColdpTerm.Media,
-          inter::interpretMedia,
-          ColdpTerm.taxonID,
-          (t, d) -> t.media.add(d)
-      );
-      insertTaxonEntities(reader, ColdpTerm.VernacularName,
-          inter::interpretVernacular,
-          ColdpTerm.taxonID,
-          (t, d) -> t.vernacularNames.add(d)
-      );
-      
-    } catch (RuntimeException e) {
-      throw new NormalizationFailedException("Failed to insert ColDP files", e);
-    }
+    // insert CSL-JSON references
+    // insert BibTex references
+    insertExtendedReferences();
+
+    // name & relations
+    insertEntities(reader, ColdpTerm.Name,
+        inter::interpretName,
+        n -> store.names().create(n) != null
+    );
+    insertNameRelations(reader, ColdpTerm.NameRel,
+        inter::interpretNameRelations,
+        ColdpTerm.nameID,
+        ColdpTerm.relatedNameID
+    );
+    interpretTypeMaterial(reader, ColdpTerm.TypeMaterial,
+            inter::interpretTypeMaterial
+    );
+
+    // taxa
+    insertEntities(reader, ColdpTerm.Taxon,
+        inter::interpretTaxon,
+        t -> store.usages().create(t) != null
+    );
+
+    // synonyms
+    insertEntities(reader, ColdpTerm.Synonym,
+        inter::interpretSynonym,
+        s -> store.usages().create(s) != null
+    );
+
+    // supplementary
+    insertTaxonEntities(reader, ColdpTerm.Description,
+        inter::interpretDescription,
+        ColdpTerm.taxonID,
+        (t, d) -> t.descriptions.add(d)
+    );
+    insertTaxonEntities(reader, ColdpTerm.Distribution,
+        inter::interpretDistribution,
+        ColdpTerm.taxonID,
+        (t, d) -> t.distributions.add(d)
+    );
+    insertTaxonEntities(reader, ColdpTerm.Media,
+        inter::interpretMedia,
+        ColdpTerm.taxonID,
+        (t, d) -> t.media.add(d)
+    );
+    insertTaxonEntities(reader, ColdpTerm.VernacularName,
+        inter::interpretVernacular,
+        ColdpTerm.taxonID,
+        (t, d) -> t.vernacularNames.add(d)
+    );
   }
   
   private void insertExtendedReferences() {

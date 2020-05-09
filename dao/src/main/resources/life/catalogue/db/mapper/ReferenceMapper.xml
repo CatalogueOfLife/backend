@@ -198,6 +198,12 @@
     WHERE sector_key=#{sectorKey}
   </delete>
 
+  <update id="removeSectorKey" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    UPDATE reference_${partition} SET sector_key = NULL
+    WHERE sector_key = #{sectorKey}
+  </update>
+
   <sql id="orphanWhere">
     WHERE NOT EXISTS (
     SELECT NULL FROM name_${partition} WHERE r.id=published_in_id
