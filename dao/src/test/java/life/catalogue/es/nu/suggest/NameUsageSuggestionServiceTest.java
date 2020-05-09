@@ -31,6 +31,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetKey(1);
     query.setQ("abcde");
+    query.setFuzzy(true);
 
     EsNameUsage doc1 = new EsNameUsage(); // match 1
     doc1.setDatasetKey(1);
@@ -94,6 +95,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
     query.setDatasetKey(1);
     query.setQ("abcde");
     query.setVernaculars(true);
+    query.setFuzzy(true);
 
     String THE_NAME = "AbCdEfGhIjK";
 
@@ -206,6 +208,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
     query.setDatasetKey(1);
     query.setQ("LARUS FUSCUS FUSCUS (LINNAEUS 1752)");
     query.setVernaculars(true);
+    query.setFuzzy(true);
 
     EsNameUsage doc1 = new EsNameUsage();
     doc1.setDatasetKey(1);

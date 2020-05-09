@@ -362,14 +362,17 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
     return List.of(nuw1, nuw2, nuw3, nuw4, nuw5);
   }
 
+  @Test
   public void testAlphaIndex() {
     index(alphaIndexTestData());
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(ALPHAINDEX, "a");
     assertEquals(alphaIndexTestData().subList(0, 1), search(query).getResult());
+    
     query = new NameUsageSearchRequest();
-    query.addFilter(ALPHAINDEX, "b");
+    query.addFilter(ALPHAINDEX, "b");  
     assertEquals(alphaIndexTestData().subList(1, 3), search(query).getResult());
+    
     query = new NameUsageSearchRequest();
     query.addFilter(ALPHAINDEX, "z");
     assertEquals(Collections.emptyList(), search(query).getResult());
@@ -382,7 +385,7 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
     NameUsageWrapper nuw2 = minimalNameUsage();
     nuw2.getUsage().getName().setScientificName("Beta");
     NameUsageWrapper nuw3 = minimalNameUsage();
-    nuw3.getUsage().getName().setNameIndexId("Borneo");
+    nuw3.getUsage().getName().setScientificName("Borneo");
     NameUsageWrapper nuw4 = minimalNameUsage();
     nuw4.getUsage().getName().setScientificName("Crocodylidae");
 

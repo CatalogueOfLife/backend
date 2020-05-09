@@ -98,7 +98,7 @@ public enum NameUsageSearchParameter {
 
   RECENT(Boolean.class),
 
-  ALPHAINDEX(Character.class);
+  ALPHAINDEX(String.class);
 
   private final Class<?> type;
 

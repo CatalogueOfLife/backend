@@ -36,7 +36,7 @@ public class RequestTranslatorTest {
     req.setReverse(true);
     assertNotNull(RequestTranslator.generateQuery(req));
 
-    req.setFuzzyMatchingEnabled(true);
+    req.setFuzzy(true);
     assertNotNull(RequestTranslator.generateQuery(req));
 
     req.addFilter(NameUsageSearchParameter.USAGE_ID, "abcdef");

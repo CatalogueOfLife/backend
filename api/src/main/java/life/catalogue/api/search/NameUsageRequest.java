@@ -16,14 +16,18 @@ public abstract class NameUsageRequest {
   @QueryParam("q")
   protected String q;
   @QueryParam("fuzzy")
-  protected boolean fuzzyMatchingEnabled = true;
+  protected boolean fuzzy = false;
   protected String[] searchTerms;
 
+  /**
+   * Whether or not to apply fuzzing matching for scientific names. Will always return true for the suggestion service (whole word matching
+   * defies the purpose of an auto-completion), but is user-configurable for the search service.
+   */
   public abstract boolean isPrefix();
 
   @JsonIgnore
   public boolean isEmpty() {
-    return q == null && !fuzzyMatchingEnabled;
+    return q == null && !fuzzy;
   }
 
   @JsonIgnore // These are derived & set after the request comes in
@@ -47,12 +51,12 @@ public abstract class NameUsageRequest {
     this.q = q;
   }
 
-  public boolean isFuzzyMatchingEnabled() {
-    return fuzzyMatchingEnabled;
+  public boolean isFuzzy() {
+    return fuzzy;
   }
 
-  public void setFuzzyMatchingEnabled(boolean fuzzyMatchingEnabled) {
-    this.fuzzyMatchingEnabled = fuzzyMatchingEnabled;
+  public void setFuzzy(boolean fuzzy) {
+    this.fuzzy = fuzzy;
   }
 
   @Override
@@ -60,7 +64,7 @@ public abstract class NameUsageRequest {
     final int prime = 31;
     int result = 1;
     result = prime * result + Arrays.hashCode(searchTerms);
-    result = prime * result + Objects.hash(fuzzyMatchingEnabled, q);
+    result = prime * result + Objects.hash(fuzzy, q);
     return result;
   }
 
@@ -76,7 +80,7 @@ public abstract class NameUsageRequest {
       return false;
     }
     NameUsageRequest other = (NameUsageRequest) obj;
-    return fuzzyMatchingEnabled == other.fuzzyMatchingEnabled && Objects.equals(q, other.q)
+    return fuzzy == other.fuzzy && Objects.equals(q, other.q)
         && Arrays.equals(searchTerms, other.searchTerms);
   }
 
