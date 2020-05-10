@@ -1,5 +1,6 @@
 package life.catalogue.api.search;
 
+import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.SimpleNameClassification;
 import life.catalogue.api.model.VernacularName;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class NameUsageWrapper extends SimpleNameClassification {
 
@@ -48,11 +50,11 @@ public class NameUsageWrapper extends SimpleNameClassification {
   public void setVernacularNames(List<VernacularName> vernacularNames) {
     this.vernacularNames = vernacularNames;
   }
-  
+
   public List<SimpleDecision> getDecisions() {
     return decisions;
   }
-  
+
   public void setDecisions(List<SimpleDecision> decisions) {
     this.decisions = decisions;
   }
@@ -80,15 +82,24 @@ public class NameUsageWrapper extends SimpleNameClassification {
     if (!super.equals(o)) return false;
     NameUsageWrapper that = (NameUsageWrapper) o;
     return Objects.equals(usage, that.usage) &&
-            Objects.equals(vernacularNames, that.vernacularNames) &&
-            Objects.equals(issues, that.issues) &&
-            Objects.equals(decisions, that.decisions) &&
-            Objects.equals(sectorDatasetKey, that.sectorDatasetKey) &&
-            Objects.equals(publisherKey, that.publisherKey);
+        Objects.equals(vernacularNames, that.vernacularNames) &&
+        Objects.equals(issues, that.issues) &&
+        Objects.equals(decisions, that.decisions) &&
+        Objects.equals(sectorDatasetKey, that.sectorDatasetKey) &&
+        Objects.equals(publisherKey, that.publisherKey);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(super.hashCode(), usage, vernacularNames, issues, decisions, sectorDatasetKey, publisherKey);
+  }
+
+  @Override
+  public String toString() {
+    try {
+      return "\n" + ApiModule.MAPPER.writeValueAsString(this);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

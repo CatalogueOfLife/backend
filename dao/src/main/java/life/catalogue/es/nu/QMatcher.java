@@ -24,7 +24,7 @@ public abstract class QMatcher {
   static final String FLD_SUBSPECIES = "nameStrings.infraspecificEpithetSN";
 
   public static QMatcher getInstance(NameUsageRequest request) {
-    if (request.isFuzzyMatchingEnabled()) {
+    if (request.isFuzzy()) {
       if (request.isPrefix()) {
         return new FuzzyPrefixQMatcher(request);
       }

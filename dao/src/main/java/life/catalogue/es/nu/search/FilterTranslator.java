@@ -61,11 +61,11 @@ class FilterTranslator {
 
   // Is one of the values of the query parameter the symbol for IS NULL?
   private boolean containsNullValue(NameUsageSearchParameter param) {
-    return request.getFilterValues(param).stream().anyMatch(s -> s.equals(IS_NULL));
+    return request.getFilterValues(param).contains(IS_NULL);
   }
 
   // Is one of the values of the query parameter the symbol for IS NOT NULL?
   private boolean containsNotNullValue(NameUsageSearchParameter param) {
-    return request.getFilterValues(param).stream().anyMatch(s -> s.equals(IS_NOT_NULL));
+    return request.getFilterValues(param).contains(IS_NOT_NULL);
   }
 }

@@ -74,8 +74,8 @@ public class NameUsageQueryService {
   @VisibleForTesting
   List<EsNameUsage> getDocumentsWithDocId(String index, EsSearchRequest esSearchRequest) throws IOException {
     EsResponse<EsNameUsage> esResponse = executeSearchRequest(index, esSearchRequest);
-    EsNameUsageConverter transfer = new EsNameUsageConverter(esResponse);
-    return transfer.getDocumentsWithDocId();
+    EsNameUsageConverter converter = new EsNameUsageConverter(esResponse);
+    return converter.getDocumentsWithDocId();
   }
 
   protected EsResponse<EsNameUsage> executeSearchRequest(String index, EsSearchRequest esSearchRequest) throws IOException {

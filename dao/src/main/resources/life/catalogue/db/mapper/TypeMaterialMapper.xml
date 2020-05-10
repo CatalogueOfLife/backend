@@ -127,6 +127,13 @@
     FROM <include refid="FROM"/>
   </select>
 
+  <select id="processSector" parameterType="map" resultMap="typeResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE sector_key = #{sectorKey}
+  </select>
+
   <delete id="deleteBySector" parameterType="map">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     DELETE FROM type_material_${partition}

@@ -5,17 +5,14 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
-
+import org.gbif.nameparser.api.Authorship;
+import org.junit.Test;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.VernacularName;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchRequest.SearchContent;
-import life.catalogue.es.nu.search.NameSearchHighlighter;
 import life.catalogue.api.search.NameUsageWrapper;
-import org.gbif.nameparser.api.Authorship;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 
 public class NameUsageSearchHighlighterTest {

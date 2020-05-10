@@ -1,8 +1,7 @@
 package life.catalogue.es.nu;
 
 import org.junit.Test;
-import life.catalogue.es.nu.NameUsageWrapperConverter;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Focuses on the normalization methods within NameUsageWrapperConverter

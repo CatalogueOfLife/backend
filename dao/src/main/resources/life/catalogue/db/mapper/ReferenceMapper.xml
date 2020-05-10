@@ -174,7 +174,7 @@
     VALUES (<include refid="PROPS"/>, now(), now())
   </insert>
 
-  <update id="update" parameterType="Name" keyProperty="id">
+  <update id="update" parameterType="Reference" keyProperty="id">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     UPDATE reference_${partition}
     SET (<include refid="COLS"/>, created, modified) = (<include refid="PROPS"/>, now(), now())
@@ -191,6 +191,13 @@
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     TRUNCATE reference_${partition} CASCADE
   </delete>
+
+  <select id="processSector" parameterType="map" resultMap="referenceResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE sector_key = #{sectorKey}
+  </select>
 
   <delete id="deleteBySector" parameterType="map">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>

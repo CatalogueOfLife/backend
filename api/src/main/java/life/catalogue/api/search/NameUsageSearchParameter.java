@@ -98,7 +98,12 @@ public enum NameUsageSearchParameter {
 
   RECENT(Boolean.class),
 
-  ALPHAINDEX(Character.class);
+  /**
+   * First, upper cased character of the name.
+   * Allows to built an alphabetical index to all search results,
+   * see https://github.com/CatalogueOfLife/backend/issues/236
+   */
+  ALPHAINDEX(String.class);
 
   private final Class<?> type;
 

@@ -1,7 +1,6 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.db.SectorProcessable;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -43,7 +42,6 @@ public class ProcessableSectorTest extends MapperTestBase<NameUsageMapper> {
   }
 
   @Test
-  @Ignore("Not all implemented yet")
   public void processSector() {
     mapper(mapperClass).processSector(3,1).forEach(System.out::println);
   }

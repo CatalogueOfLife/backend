@@ -1,15 +1,12 @@
 package life.catalogue.es.query;
 
+import java.util.Arrays;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class BoolQuery extends ConstraintQuery<BoolConstraint> {
 
   public static BoolQuery withFilters(Query... filters) {
-    BoolQuery bq = new BoolQuery();
-    for (Query filter : filters) {
-      bq.filter(filter);
-    }
-    return bq;
+    return (BoolQuery) Arrays.stream(filters).reduce(new BoolQuery(), (q1, q2) -> ((BoolQuery) q1).filter(q2));
   }
 
   @JsonProperty("bool")

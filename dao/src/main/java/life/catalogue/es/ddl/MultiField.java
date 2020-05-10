@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * A {@code MultiField} is a virtual field underneath a {@link SimpleField regular field} that specifies an extra analyzer to be applied to
- * the data stored in that field. Also note that there is no multifield for no-op as-is indexing (the "keyword" analyzer). If a
+ * the data stored in that field. Note that there is no multifield for no-op as-is indexing (the "keyword" analyzer). If a
  * <code>SimpleField</code> was created from a stringy Java datatype, it will by default be indexed as such. In fact if you <i>don't</i>
  * want it to be indexed as such (and you don't specify any other analyzer either), you have to explicitly decorate the Java field with
  * {@link NotIndexed}. (Alternative, you could specify an empty {@link Analyzers} array.)

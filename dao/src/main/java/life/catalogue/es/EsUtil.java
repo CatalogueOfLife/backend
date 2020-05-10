@@ -183,9 +183,9 @@ public class EsUtil {
    * @throws IOException
    */
   public static int deleteSubtree(RestClient client, String index, DSID<String> root) {
-    BoolQuery query = new BoolQuery()
-        .filter(new TermQuery("datasetKey", root.getDatasetKey()))
-        .filter(new TermQuery(NameUsageFieldLookup.INSTANCE.lookup(NameUsageSearchParameter.TAXON_ID), root.getId()));
+    BoolQuery query = BoolQuery.withFilters(
+        new TermQuery("datasetKey", root.getDatasetKey()),
+        new TermQuery(NameUsageFieldLookup.INSTANCE.lookup(NameUsageSearchParameter.TAXON_ID), root.getId()));
     return deleteByQuery(client, index, query);
   }
 
@@ -202,9 +202,9 @@ public class EsUtil {
     int deleted = 0;
     while (from < ids.size()) {
       int to = Math.min(ids.size(), from + 1024); // 1024 is max num terms in terms query
-      BoolQuery query = new BoolQuery()
-          .filter(new TermQuery("datasetKey", datasetKey))
-          .filter(new TermsQuery("usageId", ids.subList(from, to)));
+      BoolQuery query = BoolQuery.withFilters(
+          new TermQuery("datasetKey", datasetKey),
+          new TermsQuery("usageId", ids.subList(from, to)));
       deleted += deleteByQuery(client, index, query);
       from = to;
     }

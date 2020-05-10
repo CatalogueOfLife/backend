@@ -59,15 +59,15 @@ public class ClassificationUpdater implements Consumer<List<? extends SimpleName
   }
 
   /*
-   * Returns bare bones name usage documents containing only the internal document ID (needed for the update later on) and
-   * the usage ID (so they can be matched to the Postgres records).
+   * Returns bare bones name usage documents containing only the internal document ID (needed for the update later on) and the usage ID (so
+   * they can be matched to the Postgres records).
    */
   private List<EsNameUsage> loadChunk(List<String> terms) {
     EsSearchRequest query = EsSearchRequest.emptyRequest()
         .select("usageId")
-        .where(new BoolQuery()
-            .filter(new TermsQuery("usageId", terms))
-            .filter(new TermQuery("datasetKey", datasetKey)))
+        .where(BoolQuery.withFilters(
+            new TermQuery("datasetKey", datasetKey),
+            new TermsQuery("usageId", terms)))
         .sortBy(SortField.DOC)
         .size(terms.size());
     NameUsageQueryService svc = new NameUsageQueryService(indexer.getIndexName(), indexer.getEsClient());

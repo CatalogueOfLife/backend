@@ -409,7 +409,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     nsr.addFilter(NameUsageSearchParameter.USAGE_ID, ids.get(4));
     result = svc.search(indexName(), nsr, new Page());
     assertEquals(3, result.getResult().size());
- }
+  }
 
   @Test
   public void testNameFieldsQuery1() throws IOException {
@@ -518,7 +518,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setHighlight(false);
     query.addFilter(NameUsageSearchParameter.FIELD, "uninomial", "remarks", "specific_epithet");
-    
+
     index(testNameFieldsQuery3_data());
 
     refreshIndex(client, indexName());
@@ -619,7 +619,8 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     query.setPrefix(true);
     query.setHighlight(false);
     query.setQ("Smithi");
-     index(testWithSmthii_data());
+    query.setFuzzy(true);
+    index(testWithSmthii_data());
     // Expect all to come back
     NameUsageSearchResponse result = search(query);
     assertEquals(testWithSmthii_data(), result.getResult());
@@ -631,6 +632,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     query.setPrefix(true);
     query.setHighlight(false);
     query.setQ("Smithii");
+    query.setFuzzy(true);
     index(testWithSmthii_data());
     // Expect all to come back
     NameUsageSearchResponse result = search(query);

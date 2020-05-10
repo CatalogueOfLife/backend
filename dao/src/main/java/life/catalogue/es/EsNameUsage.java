@@ -60,6 +60,7 @@ public class EsNameUsage {
   private Boolean fossil;
   private Boolean recent;
 
+  // Nested documents. Will require special query logic!
   private List<EsMonomial> classification;
   private List<EsDecision> decisions;
 

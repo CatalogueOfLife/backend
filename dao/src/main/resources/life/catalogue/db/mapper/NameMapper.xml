@@ -290,6 +290,13 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
+  <select id="processSector" parameterType="map" resultMap="nameResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE n.sector_key = #{sectorKey}
+  </select>
+
   <delete id="deleteBySector" parameterType="map">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     DELETE FROM name_${partition}

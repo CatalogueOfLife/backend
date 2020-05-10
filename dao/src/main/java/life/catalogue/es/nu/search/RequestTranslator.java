@@ -19,14 +19,14 @@ class RequestTranslator implements DownwardConverter<NameUsageSearchRequest, EsS
 
   static Query generateQuery(NameUsageSearchRequest request) {
     if (request.hasFilter(USAGE_ID)) {
-      return new BoolQuery()
-        .filter(new FilterTranslator(request).translate(DATASET_KEY))
-        .filter(new FilterTranslator(request).translate(USAGE_ID));
+      return BoolQuery.withFilters(
+          new FilterTranslator(request).translate(DATASET_KEY),
+          new FilterTranslator(request).translate(USAGE_ID));
     } else if (mustGenerateFilters(request)) {
       if (request.hasQ()) {
-        return new BoolQuery()
-            .filter(new FiltersTranslator(request).translate())
-            .filter(new QTranslator(request).translate());
+        return BoolQuery.withFilters(
+            new FiltersTranslator(request).translate(),
+            new QTranslator(request).translate());
       }
       return new FiltersTranslator(request).translate();
     } else if (request.hasQ()) {
@@ -66,7 +66,7 @@ class RequestTranslator implements DownwardConverter<NameUsageSearchRequest, EsS
   }
 
   private static boolean mustGenerateFilters(NameUsageSearchRequest request) {
-    return request.getFilters().size() > 1 || (request.getFilters().size() == 1 && !request.getFilters().keySet().contains(CATALOGUE_KEY));
+    return request.getFilters().size() > 1 || (request.getFilters().size() == 1 && !request.hasFilter(CATALOGUE_KEY));
   }
 
 }

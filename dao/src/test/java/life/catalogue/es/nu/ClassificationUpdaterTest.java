@@ -1,21 +1,27 @@
 package life.catalogue.es.nu;
 
-import life.catalogue.api.model.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.gbif.nameparser.api.Rank;
+import org.junit.Before;
+import org.junit.Test;
+import life.catalogue.api.model.Name;
+import life.catalogue.api.model.NameUsage;
+import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.Synonym;
+import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchRequest.SortBy;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.EsUtil;
-import org.gbif.nameparser.api.Rank;
-import org.junit.Before;
-import org.junit.Test;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.gbif.nameparser.api.Rank.*;
+import static org.gbif.nameparser.api.Rank.FAMILY;
+import static org.gbif.nameparser.api.Rank.GENUS;
+import static org.gbif.nameparser.api.Rank.ORDER;
+import static org.gbif.nameparser.api.Rank.SPECIES;
 import static org.junit.Assert.assertEquals;
 
 public class ClassificationUpdaterTest extends EsReadTestBase {
@@ -28,7 +34,7 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
   }
 
   @Test
-  public void test1() throws IOException {
+  public void test1() {
 
     // Index some test objects
     index(createTestObjects());
@@ -58,18 +64,18 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
 
     NameUsageWrapper nuw1 = new NameUsageWrapper();
     nuw1.setClassification(createClassification(
-        "7",
-        ORDER,
-        "order_1",
-        "8",
-        FAMILY,
-        "family_1",
-        "9",
-        GENUS,
-        "genus_1",
-        "10",
-        SPECIES,
-        "order_1"));
+      "7",
+      ORDER,
+      "order_1",
+      "8",
+      FAMILY,
+      "family_1",
+      "9",
+      GENUS,
+      "genus_1",
+      "10",
+      SPECIES,
+      "order_1"));
     NameUsage nu = new Taxon();
     nu.setId("10");
     nuw1.setId("10");
@@ -81,18 +87,18 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
 
     NameUsageWrapper nuw2 = new NameUsageWrapper();
     nuw2.setClassification(createClassification(
-        "17",
-        ORDER,
-        "order_2",
-        "18",
-        FAMILY,
-        "family_2",
-        "19",
-        GENUS,
-        "genus_2",
-        "20",
-        SPECIES,
-        "species_2"));
+      "17",
+      ORDER,
+      "order_2",
+      "18",
+      FAMILY,
+      "family_2",
+      "19",
+      GENUS,
+      "genus_2",
+      "20",
+      SPECIES,
+      "species_2"));
     nu = new Taxon();
     nu.setId("20");
     nuw2.setId("20");
@@ -104,21 +110,21 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
 
     NameUsageWrapper nuw3 = new NameUsageWrapper();
     nuw3.setClassification(createClassification(
-        "17",
-        ORDER,
-        "order_2",
-        "18",
-        FAMILY,
-        "family_2",
-        "19",
-        GENUS,
-        "genus_2",
-        "20",
-        SPECIES,
-        "species_2",
-        "777",
-        SPECIES,
-        "synonym_2"));
+      "17",
+      ORDER,
+      "order_2",
+      "18",
+      FAMILY,
+      "family_2",
+      "19",
+      GENUS,
+      "genus_2",
+      "20",
+      SPECIES,
+      "species_2",
+      "777",
+      SPECIES,
+      "synonym_2"));
     nu = new Synonym();
     // The most minimalistic taxon that will still make it through the indexing process without NPEs etc.
     Taxon accepted = new Taxon();

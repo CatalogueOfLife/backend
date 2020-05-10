@@ -53,10 +53,7 @@ class ResponsePostProcessor implements UpwardConverter<NameUsageSearchResponse, 
   }
 
   private boolean mustPruneDecisions() {
-    // Both-query-and-prune:
     return request.hasFilter(CATALOGUE_KEY);
-    // Either-query-or-prune:
-    // return request.hasFilter(CATALOGUE_KEY) && !request.hasFilter(DECISION_MODE);
   }
 
   private boolean mustHighlight() {

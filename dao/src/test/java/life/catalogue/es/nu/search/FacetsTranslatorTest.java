@@ -1,10 +1,5 @@
 package life.catalogue.es.nu.search;
 
-import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.ISSUE;
-import static life.catalogue.api.search.NameUsageSearchParameter.NAME_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.RANK;
-import static life.catalogue.api.search.NameUsageSearchParameter.STATUS;
 import java.util.EnumSet;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
@@ -12,12 +7,14 @@ import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchRequest.SearchContent;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.es.EsModule;
-import life.catalogue.es.nu.NameUsageFieldLookup;
-import life.catalogue.es.nu.search.FacetsTranslator;
+import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
+import static life.catalogue.api.search.NameUsageSearchParameter.ISSUE;
+import static life.catalogue.api.search.NameUsageSearchParameter.NAME_ID;
+import static life.catalogue.api.search.NameUsageSearchParameter.RANK;
+import static life.catalogue.api.search.NameUsageSearchParameter.STATUS;
 
 /*
- * No real tests here. Just to make sure we don't get exceptions & to peek at the results of specifying an aggregation
- * via the object model.
+ * No real tests here. Just to make sure we don't get exceptions & to peek at the results of specifying an aggregation via the object model.
  */
 public class FacetsTranslatorTest {
 
@@ -130,8 +127,8 @@ public class FacetsTranslatorTest {
     request.addFilter(ISSUE, Issue.CHAINED_SYNONYM);
 
     /*
-     * Just one filter corresponding to a facet. For that facet, the aggregation should collapse into a simple terms
-     * aggregation, while for the others a filter aggregation should be generated.
+     * Just one filter corresponding to a facet. For that facet, the aggregation should collapse into a simple terms aggregation, while for
+     * the others a filter aggregation should be generated.
      */
 
     // Add non-facet filters
@@ -147,7 +144,7 @@ public class FacetsTranslatorTest {
 
   @Test
   public void test5() {
-    
+
     NameUsageSearchRequest request = new NameUsageSearchRequest();
 
     request.addFacet(ISSUE);
@@ -160,6 +157,5 @@ public class FacetsTranslatorTest {
     System.out.println(EsModule.writeDebug(translator.translate()));
 
   }
-
 
 }

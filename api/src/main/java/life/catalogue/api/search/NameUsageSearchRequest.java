@@ -1,19 +1,27 @@
+
 package life.catalogue.api.search;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import javax.validation.constraints.Size;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MultivaluedMap;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import life.catalogue.api.util.VocabularyUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
-
-import javax.validation.constraints.Size;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MultivaluedMap;
-import java.lang.reflect.Field;
-import java.util.*;
-
 import static life.catalogue.api.util.VocabularyUtils.lookupEnum;
 
 public class NameUsageSearchRequest extends NameUsageRequest {
@@ -32,8 +40,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
       }
     }
     NON_FILTERS = Set.copyOf(non);
-    System.out.println(NON_FILTERS);
-  }
+   }
 
   public static enum SearchContent {
     SCIENTIFIC_NAME, AUTHORSHIP, VERNACULAR_NAME
@@ -73,23 +80,24 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   @QueryParam("prefix")
   private boolean prefix;
 
-  public NameUsageSearchRequest() {
-  }
+  public NameUsageSearchRequest() {}
 
   @JsonCreator
   public NameUsageSearchRequest(@JsonProperty("filter") Map<NameUsageSearchParameter, @Size(max = 1000) List<Object>> filters,
-                                @JsonProperty("facet") Set<NameUsageSearchParameter> facets,
-                                @JsonProperty("content") Set<SearchContent> content,
-                                @JsonProperty("sortBy") SortBy sortBy,
-                                @JsonProperty("highlight") boolean highlight,
-                                @JsonProperty("reverse") boolean reverse,
-                                @JsonProperty("prefix") boolean prefix) {
+      @JsonProperty("facet") Set<NameUsageSearchParameter> facets,
+      @JsonProperty("content") Set<SearchContent> content,
+      @JsonProperty("sortBy") SortBy sortBy,
+      @JsonProperty("highlight") boolean highlight,
+      @JsonProperty("reverse") boolean reverse,
+      @JsonProperty("fuzzy") boolean fuzzy,
+      @JsonProperty("prefix") boolean prefix) {
     this.filters = filters == null ? new EnumMap<>(NameUsageSearchParameter.class) : new EnumMap<>(filters);
     this.facets = facets == null ? EnumSet.noneOf(NameUsageSearchParameter.class) : EnumSet.copyOf(facets);
     this.content = content == null ? EnumSet.noneOf(SearchContent.class) : EnumSet.copyOf(content);
     this.sortBy = sortBy;
     this.highlight = highlight;
     this.reverse = reverse;
+    this.fuzzy = fuzzy;
     this.prefix = prefix;
   }
 
@@ -117,6 +125,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     copy.sortBy = sortBy;
     copy.highlight = highlight;
     copy.reverse = reverse;
+    copy.fuzzy = fuzzy;
     copy.prefix = prefix;
     return copy;
   }
@@ -182,13 +191,14 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   @JsonIgnore
   public boolean isEmpty() {
     return super.isEmpty() &&
-      (content == null || content.isEmpty())
-      && (facets == null || facets.isEmpty())
-      && (filters == null || filters.isEmpty())
-      && sortBy == null
-      && !highlight
-      && !reverse
-      && !prefix;
+        (content == null || content.isEmpty())
+        && (facets == null || facets.isEmpty())
+        && (filters == null || filters.isEmpty())
+        && sortBy == null
+        && !highlight
+        && !reverse
+        && !fuzzy
+        && !prefix;
   }
 
   public void addFilter(NameUsageSearchParameter param, Integer value) {
@@ -331,12 +341,12 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     }
     NameUsageSearchRequest other = (NameUsageSearchRequest) obj;
     return Objects.equals(content, other.content) &&
-      Objects.equals(facets, other.facets) &&
-      Objects.equals(filters, other.filters) &&
-      highlight == other.highlight &&
-      reverse == other.reverse &&
-      sortBy == other.sortBy &&
-      prefix == other.prefix;
+        Objects.equals(facets, other.facets) &&
+        Objects.equals(filters, other.filters) &&
+        highlight == other.highlight &&
+        reverse == other.reverse &&
+        sortBy == other.sortBy &&
+        prefix == other.prefix;
   }
 
 }
