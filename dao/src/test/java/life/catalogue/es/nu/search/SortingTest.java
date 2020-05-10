@@ -25,7 +25,7 @@ public class SortingTest extends EsReadTestBase {
   }
 
   @Test
-  public void testSortByName_01() {
+  public void testSortByName() {
     EsNameUsage docA = new EsNameUsage();
     docA.setScientificName("A");
     EsNameUsage docB = new EsNameUsage();
@@ -49,7 +49,7 @@ public class SortingTest extends EsReadTestBase {
   }
 
   @Test
-  public void testSortByNameDescending_01() {
+  public void testSortByNameDescending() {
     EsNameUsage docA = new EsNameUsage();
     docA.setScientificName("A");
     EsNameUsage docB = new EsNameUsage();
@@ -74,7 +74,7 @@ public class SortingTest extends EsReadTestBase {
   }
 
   @Test
-  public void testSortNative_01() {
+  public void testSortNative() {
     EsNameUsage docA = new EsNameUsage();
     docA.setScientificName("A");
     EsNameUsage docB = new EsNameUsage();
@@ -86,7 +86,7 @@ public class SortingTest extends EsReadTestBase {
     EsNameUsage docE = new EsNameUsage();
     docE.setScientificName("E");
 
-    List<EsNameUsage> docs = Arrays.asList(docB, docA, docD, docE, docC);
+    List<EsNameUsage> docs = Arrays.asList(docA, docB, docC, docD, docE);
 
     indexRaw(docs);
 
@@ -98,7 +98,7 @@ public class SortingTest extends EsReadTestBase {
   }
 
   @Test
-  public void testSortTaxonomic_01() {
+  public void testSortTaxonomic() {
 
     EsNameUsage kingdomF = new EsNameUsage();
     kingdomF.setRank(Rank.KINGDOM);
