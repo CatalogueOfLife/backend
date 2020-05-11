@@ -1,17 +1,5 @@
 package life.catalogue.es.nu.search;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import life.catalogue.api.model.EditorialDecision.Mode;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameUsage;
@@ -23,21 +11,19 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.es.EsReadTestBase;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
 import static java.util.stream.Collectors.toList;
-import static org.junit.Assert.assertEquals;
-import static life.catalogue.api.search.NameUsageSearchParameter.ALPHAINDEX;
-import static life.catalogue.api.search.NameUsageSearchParameter.CATALOGUE_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.DECISION_MODE;
-import static life.catalogue.api.search.NameUsageSearchParameter.NAME_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.NAME_INDEX_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.NOM_STATUS;
-import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHED_IN_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHER_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.SECTOR_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.TAXON_ID;
+import static life.catalogue.api.search.NameUsageSearchParameter.*;
 import static life.catalogue.api.search.NameUsageSearchRequest.IS_NOT_NULL;
 import static life.catalogue.api.search.NameUsageSearchRequest.IS_NULL;
+import static org.junit.Assert.assertEquals;
 
 /**
  * <p>

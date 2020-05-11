@@ -29,15 +29,10 @@ ALTER TABLE dataset_archive
   DROP COLUMN data_access,
   DROP COLUMN data_format,
   DROP COLUMN deleted,
-  DROP COLUMN doc,
-  DROP COLUMN editors,
   DROP COLUMN gbif_key,
   DROP COLUMN gbif_publisher_key,
   DROP COLUMN locked,
-  DROP COLUMN private,
-  DROP COLUMN settings;
-ALTER TABLE dataset_archive RENAME COLUMN catalogue_key TO dataset_key;
-ALTER TABLE dataset_archive RENAME COLUMN last_data_import_attempt TO import_attempt;
+  DROP COLUMN private;
 UPDATE dataset_archive a SET import_attempt=d.import_attempt
     FROM dataset d WHERE a.import_attempt IS NULL AND d.key=a.key;
 ALTER TABLE dataset_archive ADD UNIQUE (key, import_attempt, dataset_key);
@@ -48,6 +43,11 @@ UPDATE sector s SET dataset_import_attempt=d.import_attempt
     FROM dataset d 
     WHERE s.sync_attempt IS NOT NULL AND d.key=s.subject_dataset_key;
 ```
+
+ALTER TABLE dataset_archive RENAME COLUMN catalogue_key TO dataset_key;
+ALTER TABLE dataset_archive RENAME COLUMN last_data_import_attempt TO import_attempt;
+
+
 
 !!! make sure all current sector imports exist in the archive !!!
 ```

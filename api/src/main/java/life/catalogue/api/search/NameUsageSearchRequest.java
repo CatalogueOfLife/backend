@@ -47,7 +47,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   }
 
   public static enum SortBy {
-    NATIVE, NAME, TAXONOMIC, INDEX_NAME_ID
+    NAME, TAXONOMIC, INDEX_NAME_ID
   }
 
   /**
@@ -69,7 +69,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   private Set<SearchContent> content;
 
   @QueryParam("sortBy")
-  private SortBy sortBy;
+  private SortBy sortBy = SortBy.TAXONOMIC;
 
   @QueryParam("highlight")
   private boolean highlight;

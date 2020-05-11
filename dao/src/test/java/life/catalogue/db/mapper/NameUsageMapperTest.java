@@ -1,25 +1,31 @@
 package life.catalogue.db.mapper;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.NameDao;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.TestDataRule;
+import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   
   TaxonMapper tm;
   SynonymMapper sm;
-  
+  NameMapper nm;
+  int idGen = 1;
+  int datasetKey = TestDataRule.TestData.APPLE.key;
+
   public NameUsageMapperTest() {
     super(NameUsageMapper.class);
   }
@@ -28,8 +34,9 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   public void init() {
     tm = mapper(TaxonMapper.class);
     sm = mapper(SynonymMapper.class);
+    nm = mapper(NameMapper.class);
   }
-  
+
   @Test
   public void list() throws Exception {
     NameDao nameDao = new NameDao(PgSetupRule.getSqlSessionFactory());
@@ -85,7 +92,69 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
     assertIdClassEquals(taxa.get(0), res.get(1));
     assertIdClassEquals(taxa.get(1), res.get(2));
   }
-  
+
+
+  private Name createName(Rank rank, Integer sectorKey) {
+    Name n = TestEntityGenerator.newName(datasetKey, "n-" + idGen++,
+      rank.isSpeciesOrBelow() ? RandomUtils.randomSpecies() : RandomUtils.randomGenus(), rank);
+    n.setSectorKey(sectorKey);
+    nm.create(n);
+    return n;
+  }
+
+  private Taxon createTaxon(Rank rank, String parentID, Integer sectorKey){
+    Name n = createName(rank, sectorKey);
+    Taxon t = TestEntityGenerator.newTaxon(n, "t-"+idGen++, parentID);
+    t.setSectorKey(sectorKey);
+    tm.create(t);
+    return t;
+  }
+
+  private Synonym createSynonym(Taxon acc, Rank rank){
+    Name n = createName(rank, acc.getSectorKey());
+    Synonym s = TestEntityGenerator.newSynonym(n, acc.getId());
+    s.setSectorKey(acc.getSectorKey());
+    sm.create(s);
+    return s;
+  }
+
+  @Test
+  public void deleteUsages() throws Exception {
+    // attach taxa with sector to
+    int sectorKey = 1;
+    for (int sp = 1; sp < 10; sp++) {
+      Taxon species = createTaxon(Rank.SPECIES, "root-1", sectorKey);
+      createTaxon(Rank.UNRANKED, species.getId(), sectorKey);
+      createTaxon(Rank.VARIETY, species.getId(), sectorKey);
+      createSynonym(species, Rank.SPECIES_AGGREGATE);
+      for (int ssp = 1; ssp < 5; ssp++) {
+        Taxon subspecies = createTaxon(Rank.SUBSPECIES, species.getId(), sectorKey);
+        createTaxon(Rank.UNRANKED, subspecies.getId(), sectorKey);
+        for (int var = 1; var < 3; var++) {
+          Taxon variety = createTaxon(Rank.VARIETY, species.getId(), sectorKey);
+          createTaxon(Rank.CHEMOFORM, variety.getId(), sectorKey);
+        }
+        createTaxon(Rank.VARIETY, subspecies.getId(), sectorKey);
+        createSynonym(subspecies, Rank.UNRANKED);
+        for (int syn = 1; syn < 5; syn++) {
+          createSynonym(subspecies, Rank.VARIETY);
+        }
+      }
+    }
+    commit();
+
+    final AtomicInteger count = new AtomicInteger(0);
+    mapper().processSector(DATASET11.getKey(), sectorKey).forEach(n -> count.incrementAndGet());
+    assertEquals(468, count.get());
+
+    // delete
+    List<String> dels = mapper().deleteBySectorAndRank(datasetKey, sectorKey, Rank.SUBSPECIES);
+    assertEquals(450, dels.size());
+    count.set(0);
+    mapper().processSector(DATASET11.getKey(), sectorKey).forEach(n -> count.incrementAndGet());
+    assertEquals(18, count.get());
+  }
+
   void assertIdClassEquals(NameUsageBase o1, NameUsageBase o2) {
     assertEquals(o1.getId(), o2.getId());
     assertEquals(o1.getClass(), o2.getClass());

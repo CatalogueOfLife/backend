@@ -31,6 +31,7 @@ public class Issue541_SearchForUnparsedNames extends EsReadTestBase {
     index(nuw);
 
     NameUsageSearchRequest request = new NameUsageSearchRequest();
+    request.setPrefix(false);
 
     request.setQ(q);
     NameUsageSearchResponse response = search(request);
@@ -47,6 +48,11 @@ public class Issue541_SearchForUnparsedNames extends EsReadTestBase {
     assertEquals(0, response.getTotal());
 
     q = "MV-L51 MV-L51";
+    request.setQ(q);
+    response = search(request);
+    assertEquals(1, response.getTotal()); // zero results!
+
+    q = "MV-L51 MV-L52";
     request.setQ(q);
     response = search(request);
     assertEquals(0, response.getTotal()); // zero results!

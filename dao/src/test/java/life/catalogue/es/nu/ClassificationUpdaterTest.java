@@ -3,6 +3,7 @@ package life.catalogue.es.nu;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,6 +17,7 @@ import life.catalogue.api.search.NameUsageSearchRequest.SortBy;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.EsUtil;
+
 import static org.gbif.nameparser.api.Rank.FAMILY;
 import static org.gbif.nameparser.api.Rank.GENUS;
 import static org.gbif.nameparser.api.Rank.ORDER;
@@ -52,7 +54,7 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
 
     // Make sure that what ends up in ES equals the modified nam usages
     NameUsageSearchRequest query = new NameUsageSearchRequest();
-    query.setSortBy(SortBy.NATIVE);
+    query.setSortBy(SortBy.NAME);
     List<NameUsageWrapper> actual = search(query).getResult();
 
     assertEquals(expected, actual);
@@ -62,18 +64,18 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
 
     NameUsageWrapper nuw1 = new NameUsageWrapper();
     nuw1.setClassification(createClassification(
-        "7",
-        ORDER,
-        "order_1",
-        "8",
-        FAMILY,
-        "family_1",
-        "9",
-        GENUS,
-        "genus_1",
-        "10",
-        SPECIES,
-        "order_1"));
+      "7",
+      ORDER,
+      "order_1",
+      "8",
+      FAMILY,
+      "family_1",
+      "9",
+      GENUS,
+      "genus_1",
+      "10",
+      SPECIES,
+      "order_1"));
     NameUsage nu = new Taxon();
     nu.setId("10");
     nuw1.setId("10");
@@ -85,18 +87,18 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
 
     NameUsageWrapper nuw2 = new NameUsageWrapper();
     nuw2.setClassification(createClassification(
-        "17",
-        ORDER,
-        "order_2",
-        "18",
-        FAMILY,
-        "family_2",
-        "19",
-        GENUS,
-        "genus_2",
-        "20",
-        SPECIES,
-        "species_2"));
+      "17",
+      ORDER,
+      "order_2",
+      "18",
+      FAMILY,
+      "family_2",
+      "19",
+      GENUS,
+      "genus_2",
+      "20",
+      SPECIES,
+      "species_2"));
     nu = new Taxon();
     nu.setId("20");
     nuw2.setId("20");
@@ -108,21 +110,21 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
 
     NameUsageWrapper nuw3 = new NameUsageWrapper();
     nuw3.setClassification(createClassification(
-        "17",
-        ORDER,
-        "order_2",
-        "18",
-        FAMILY,
-        "family_2",
-        "19",
-        GENUS,
-        "genus_2",
-        "20",
-        SPECIES,
-        "species_2",
-        "777",
-        SPECIES,
-        "synonym_2"));
+      "17",
+      ORDER,
+      "order_2",
+      "18",
+      FAMILY,
+      "family_2",
+      "19",
+      GENUS,
+      "genus_2",
+      "20",
+      SPECIES,
+      "species_2",
+      "777",
+      SPECIES,
+      "synonym_2"));
     nu = new Synonym();
     // The most minimalistic taxon that will still make it through the indexing process without NPEs etc.
     Taxon accepted = new Taxon();

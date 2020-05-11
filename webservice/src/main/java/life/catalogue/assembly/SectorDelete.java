@@ -1,12 +1,11 @@
 package life.catalogue.assembly;
 
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
 import life.catalogue.api.model.User;
 import life.catalogue.dao.SectorDao;
-import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.SectorImportMapper;
-import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -14,6 +13,7 @@ import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -45,21 +45,36 @@ public class SectorDelete extends SectorRunnable {
 
   
   private void deleteSector(int sectorKey) {
-    try (SqlSession session = factory.openSession(true)) {
+    try (SqlSession session = factory.openSession(false)) {
       Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
       if (s == null) {
         throw new IllegalArgumentException("Sector "+sectorKey+" does not exist");
       }
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
-      int count = um.removeSectorKey(catalogueKey, sectorKey);
+      NameMapper nm = session.getMapper(NameMapper.class);
+      // cascading delete removes vernacular, distributions, descriptions, media
+      List<String> ids = um.deleteBySectorAndRank(catalogueKey, sectorKey, Rank.SUBGENUS);
+      int delTaxa = ids.size();
+      // now also remove the names
+      final DSID<String> key = DSID.of(catalogueKey, "");
+      ids.forEach(nid -> nm.delete(key.id(nid)));
+      session.commit();
+      // TODO: remove refs and name rels
+      LOG.info("Deleted {} taxa and synonyms below genus level from sector {} of dataset {}", delTaxa, sectorKey, catalogueKey);
 
-      LOG.info("Deleted {} existing taxa with their synonyms and related information from sector {}", count, sectorKey);
+      // remove sector from usages, names, refs & type_material
+      int count = um.removeSectorKey(catalogueKey, sectorKey);
+      session.getMapper(NameMapper.class).removeSectorKey(catalogueKey, sectorKey);
+      session.getMapper(ReferenceMapper.class).removeSectorKey(catalogueKey, sectorKey);
+      session.getMapper(TypeMaterialMapper.class).removeSectorKey(catalogueKey, sectorKey);
+      LOG.info("Mark {} existing taxa with their synonyms and related information to not belong to sector {} of dataset {} anymore", count, sectorKey, catalogueKey);
 
       // update datasetSectors counts
       SectorDao.incSectorCounts(session, s, -1);
       // remove imports and sector itself
       session.getMapper(SectorImportMapper.class).delete(sectorKey);
       session.getMapper(SectorMapper.class).delete(sectorKey);
+      session.commit();
       LOG.info("Deleted sector {}", sectorKey);
     }
   }

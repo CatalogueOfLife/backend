@@ -53,52 +53,47 @@ public class AcefInserter extends NeoCsvInserter {
    */
   @Override
   protected void batchInsert() throws NormalizationFailedException {
-    try {
-      inter = new AcefInterpreter(settings, reader.getMappingFlags(), refFactory, store);
+    inter = new AcefInterpreter(settings, reader.getMappingFlags(), refFactory, store);
 
-      // This inserts the plain references from the Reference file with no links to names, taxa or distributions.
-      // Links are added afterwards in other methods when a ACEF:ReferenceID field is processed by lookup to the neo store.
-      insertEntities(reader, AcefTerm.Reference,
-          inter::interpretReference,
-          store.references()::create
-      );
-      
-      // species
-      insertEntities(reader, AcefTerm.AcceptedSpecies,
-          inter::interpretSpecies,
-          u -> store.createNameAndUsage(u) != null
-      );
-      
-      // infraspecies
-      // accepted infraspecific names in ACEF have no genus or species
-      // but a link to their parent species ID.
-      // so we cannot update the scientific name yet - we do this in the relation inserter instead!
-      insertEntities(reader, AcefTerm.AcceptedInfraSpecificTaxa,
-          inter::interpretInfraspecies,
-          u -> store.createNameAndUsage(u) != null
-      );
-      
-      // synonyms
-      insertEntities(reader, AcefTerm.Synonyms,
-          inter::interpretSynonym,
-          this::createSynonymNameUsage
-      );
-  
-      insertTaxonEntities(reader, AcefTerm.Distribution,
-          inter::interpretDistribution,
-          AcefTerm.AcceptedTaxonID,
-          (t, d) -> t.distributions.add(d)
-      );
-      
-      insertTaxonEntities(reader, AcefTerm.CommonNames,
-          inter::interpretVernacular,
-          AcefTerm.AcceptedTaxonID,
-          (t, vn) -> t.vernacularNames.add(vn)
-      );
-  
-    } catch (RuntimeException e) {
-      throw new NormalizationFailedException("Failed to read ACEF files", e);
-    }
+    // This inserts the plain references from the Reference file with no links to names, taxa or distributions.
+    // Links are added afterwards in other methods when a ACEF:ReferenceID field is processed by lookup to the neo store.
+    insertEntities(reader, AcefTerm.Reference,
+        inter::interpretReference,
+        store.references()::create
+    );
+
+    // species
+    insertEntities(reader, AcefTerm.AcceptedSpecies,
+        inter::interpretSpecies,
+        u -> store.createNameAndUsage(u) != null
+    );
+
+    // infraspecies
+    // accepted infraspecific names in ACEF have no genus or species
+    // but a link to their parent species ID.
+    // so we cannot update the scientific name yet - we do this in the relation inserter instead!
+    insertEntities(reader, AcefTerm.AcceptedInfraSpecificTaxa,
+        inter::interpretInfraspecies,
+        u -> store.createNameAndUsage(u) != null
+    );
+
+    // synonyms
+    insertEntities(reader, AcefTerm.Synonyms,
+        inter::interpretSynonym,
+        this::createSynonymNameUsage
+    );
+
+    insertTaxonEntities(reader, AcefTerm.Distribution,
+        inter::interpretDistribution,
+        AcefTerm.AcceptedTaxonID,
+        (t, d) -> t.distributions.add(d)
+    );
+
+    insertTaxonEntities(reader, AcefTerm.CommonNames,
+        inter::interpretVernacular,
+        AcefTerm.AcceptedTaxonID,
+        (t, vn) -> t.vernacularNames.add(vn)
+    );
   }
   
   public boolean createSynonymNameUsage(NeoUsage u) {

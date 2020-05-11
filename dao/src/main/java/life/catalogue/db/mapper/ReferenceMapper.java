@@ -36,8 +36,6 @@ public interface ReferenceMapper extends CRUD<DSID<String>, Reference>, DatasetP
 	
 	int searchCount(@Param("datasetKey") int datasetKey, @Param("req") ReferenceSearchRequest request);
 
-	int deleteBySector(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
-
 	/**
 	 * Deletes all references that have no foreign key pointing to them from any of the other tables.
 	 * @param datasetKey the datasetKey to restrict the deletion to

@@ -53,20 +53,16 @@
 
   <select id="list" resultMap="nameRelResultMap">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE nr.name_id = #{nameId} OR nr.related_name_id = #{nameId}
     ORDER BY nr.id
   </select>
 
   <select id="processDataset" parameterType="map" resultMap="nameRelResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
   </select>
 
   <select id="listByType" resultMap="nameRelResultMap">

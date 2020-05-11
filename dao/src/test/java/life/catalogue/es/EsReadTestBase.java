@@ -1,27 +1,24 @@
 package life.catalogue.es;
 
+import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.Taxon;
+import life.catalogue.api.search.*;
+import life.catalogue.es.nu.NameUsageWrapperConverter;
+import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
+import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
+import life.catalogue.es.query.EsSearchRequest;
+import life.catalogue.es.query.Query;
+import org.elasticsearch.client.RestClient;
+import org.junit.ClassRule;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import org.elasticsearch.client.RestClient;
-import org.junit.ClassRule;
-import life.catalogue.api.RandomUtils;
-import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.Taxon;
-import life.catalogue.api.search.NameUsageSearchRequest;
-import life.catalogue.api.search.NameUsageSearchResponse;
-import life.catalogue.api.search.NameUsageSuggestRequest;
-import life.catalogue.api.search.NameUsageSuggestResponse;
-import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.es.nu.NameUsageWrapperConverter;
-import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
-import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
-import life.catalogue.es.query.EsSearchRequest;
-import life.catalogue.es.query.Query;
+
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -128,12 +125,8 @@ public class EsReadTestBase {
     return IntStream.rangeClosed(1, howmany).mapToObj(this::createNameUsage).collect(toList());
   }
 
-  protected List<NameUsageWrapper> createNameUsages(int first, int last) {
-    return IntStream.rangeClosed(first, last).mapToObj(this::createNameUsage).collect(toList());
-  }
-
   protected NameUsageWrapper createNameUsage(int seqno) {
-    Taxon t = TestEntityGenerator.newTaxon(EsSetupRule.DATASET_KEY, "t" + seqno, RandomUtils.randomSpecies());
+    Taxon t = TestEntityGenerator.newTaxon(EsSetupRule.DATASET_KEY, "t" + seqno, "Abies alba"+seqno);
     return new NameUsageWrapper(t);
   }
 

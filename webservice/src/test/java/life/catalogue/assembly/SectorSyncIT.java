@@ -158,13 +158,20 @@ public class SectorSyncIT {
     ss.run();
   }
   
-  private void delete(Sector s) {
+  private void deleteFull(Sector s) {
     SectorDeleteFull sd = new SectorDeleteFull(s.getId(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(),
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
+    System.out.println("\n*** SECTOR FULL DELETION " + s.getKey() + " ***");
+    sd.run();
+  }
+
+  private void delete(Sector s) {
+    SectorDelete sd = new SectorDelete(s.getId(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(),
+      SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     System.out.println("\n*** SECTOR DELETION " + s.getKey() + " ***");
     sd.run();
   }
-  
+
   void print(int datasetKey) throws Exception {
     StringWriter writer = new StringWriter();
     writer.append("\nDATASET "+datasetKey+"\n");
@@ -331,7 +338,7 @@ public class SectorSyncIT {
    * Deletion of nested sectors
    */
   @Test
-  public void testDeletion() throws Exception {
+  public void testDeletionFull() throws Exception {
     print(Datasets.DRAFT_COL);
     print(datasetKey(5, DataFormat.ACEF));
     print(datasetKey(6, DataFormat.ACEF));
@@ -366,15 +373,63 @@ public class SectorSyncIT {
       assertTree("cat5_6_11.txt");
       
       // first we delete the merged sector which should have no nested sectors
+      deleteFull(sm.get(s5));
+      assertTree("cat5_6_11_delete_full_5.txt");
+  
+      // now we delete Theridiidae with its nested genus Dectus
+      deleteFull(sm.get(s6));
+      assertTree("cat5_6_11_delete_full_5_6.txt");
+    }
+  }
+
+  /**
+   * Deletion of nested sectors only removing species
+   */
+  @Test
+  public void testDeletion() throws Exception {
+    print(Datasets.DRAFT_COL);
+    print(datasetKey(5, DataFormat.ACEF));
+    print(datasetKey(6, DataFormat.ACEF));
+    print(datasetKey(11, DataFormat.ACEF));
+
+    NameUsageBase src = getByName(datasetKey(5, DataFormat.ACEF), Rank.CLASS, "Insecta");
+    NameUsageBase trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
+    final int s5 = createSector(Sector.Mode.UNION, src, trg);
+
+    src = getByName(datasetKey(6, DataFormat.ACEF), Rank.FAMILY, "Theridiidae");
+    trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
+    final int s6 = createSector(Sector.Mode.ATTACH, src, trg);
+
+    src = getByName(datasetKey(11, DataFormat.ACEF), Rank.GENUS, "Dectus");
+    // target without id so far
+    final int s11 = createSector(Sector.Mode.ATTACH, src.getDatasetKey(), simple(src),
+      new SimpleName(null, "Theridiidae", Rank.FAMILY)
+    );
+
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+      SectorMapper sm = session.getMapper(SectorMapper.class);
+      sync(sm.get(s5));
+      sync(sm.get(s6));
+
+      // update sector with now existing Theridiidae key
+      NameUsageBase ther = getByName(Datasets.DRAFT_COL, Rank.FAMILY, "Theridiidae");
+      Sector s = sm.get(s11);
+      s.getTarget().setId(ther.getId());
+      sm.update(s);
+
+      sync(s);
+      assertTree("cat5_6_11.txt");
+
+      // first we delete the merged sector which should have no nested sectors
       delete(sm.get(s5));
       assertTree("cat5_6_11_delete_5.txt");
-  
+
       // now we delete Theridiidae with its nested genus Dectus
       delete(sm.get(s6));
       assertTree("cat5_6_11_delete_5_6.txt");
     }
   }
-  
+
   @Test
   public void testImplicitGenus() throws Exception {
     print(Datasets.DRAFT_COL);
