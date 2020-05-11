@@ -24,11 +24,11 @@ public class NameStrings {
   private char sciNameLetter; // Used for alphabetical index
   private char genusLetter; // Used for fast term queries with search phrases like "H sapiens"
   @Analyzers({SCINAME_IGNORE_CASE, SCINAME_AUTO_COMPLETE})
-  private String genusOrMonomialWN;
+  private String genusOrMonomialWN; // Weakly normalized genus/uninomial
   @Analyzers({SCINAME_IGNORE_CASE, SCINAME_AUTO_COMPLETE})
-  private String specificEpithetSN;
+  private String specificEpithetSN; // Strongly normalized specific epithet
   @Analyzers({SCINAME_IGNORE_CASE, SCINAME_AUTO_COMPLETE})
-  private String infraspecificEpithetSN;
+  private String infraspecificEpithetSN; // Strongly normalize infraspecific epithet
 
   /**
    * Creates a {@code NameStrings} object from the provided {@link Name}, presumably coming in from postgres.

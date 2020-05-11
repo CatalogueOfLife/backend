@@ -53,10 +53,12 @@ public class EsUtil {
     indexDef.setMappings(MappingsFactory.usingFields().getMapping(modelClass));
     indexDef.getSettings().getIndex().setNumberOfShards(config.numShards);
     indexDef.getSettings().getIndex().setNumberOfReplicas(config.numReplicas);
-    LOG.trace("Creating index {}: {}", config.name, EsModule.writeDebug(indexDef));
+    LOG.warn("Creating Elasticsearch index {}", config.name);
+    if (LOG.isTraceEnabled()) {
+      LOG.trace("Index settings: " + EsModule.writeDebug(indexDef));
+    }
     Request request = new Request("PUT", config.name);
     request.setJsonEntity(EsModule.write(indexDef));
-    LOG.warn("Creating new ES Index {}", config.name);
     executeRequest(client, request);
   }
 
@@ -97,7 +99,7 @@ public class EsUtil {
   public static IndexDefinition getIndexDefinition(RestClient client, String name) throws IOException {
     try {
       Response response = client.performRequest(new Request("GET", name));
-      return EsModule.readDDLObject(response.getEntity().getContent(), IndexDefinition.class);
+      return EsModule.readObject(response.getEntity().getContent(), IndexDefinition.class);
     } catch (ResponseException e) {
       if (e.getResponse().getStatusLine().getStatusCode() == 404) {
         throw new IllegalArgumentException("No such index: \"" + name + "\"");
@@ -114,7 +116,7 @@ public class EsUtil {
    * @throws IOException
    */
   public static void deleteIndex(RestClient client, IndexConfig index) throws IOException {
-    LOG.warn("Deleting ES Index {}", index.name);
+    LOG.warn("Deleting Elasticsearch Index {}", index.name);
     Response response = null;
     try {
       response = client.performRequest(new Request("DELETE", index.name));
@@ -250,7 +252,9 @@ public class EsUtil {
         response = executeRequest(client, request);
         break;
       } catch (TooManyRequestsException e) {
-        sleep(1000 * 60 * 5);
+        int i = TooManyRequestsException.WAIT_INTERVAL_MILLIS;
+        LOG.warn("_delete_by_query request rejected by Elasticsearch. Waiting {} milliseconds before trying again", i);
+        sleep(i);
       }
     }
     String taskId = readFromResponse(response, "task");
@@ -267,12 +271,12 @@ public class EsUtil {
         if (failures == null || failures.isEmpty()) {
           return (Integer) content.get("deleted");
         }
-        throw new EsRequestException("Error executing delete_by_query request. Failures: %s. Query: %s",
+        throw new EsRequestException("Error executing _delete_by_query request. Failures: %s. Query: %s",
             EsModule.writeDebug(failures),
             EsModule.writeDebug(query));
       }
     }
-    throw new EsRequestException("delete_by_query request failed to complete");
+    throw new EsRequestException("_delete_by_query request failed to complete");
   }
 
   /**
@@ -372,7 +376,7 @@ public class EsUtil {
     if (response.getStatusLine().getStatusCode() < 400) {
       return response;
     } else if (response.getStatusLine().getStatusCode() == 400) {
-      // That really just is a bug in our code
+      // That really just means there is a bug in our code
       throw new EsException(getErrorMessage(response));
     } else if (response.getStatusLine().getStatusCode() == 429) {
       throw new TooManyRequestsException();
@@ -410,15 +414,17 @@ public class EsUtil {
           try {
             return executeRequest(client, request);
           } catch (TooManyRequestsException e) {
-            sleep(1000 * 60 * 5);
+            String s = StringUtils.substringBefore(request.getEndpoint(), "?");
+            int j = TooManyRequestsException.WAIT_INTERVAL_MILLIS;
+            LOG.warn("{} request rejected by Elasticsearch. Waiting {} milliseconds before trying again", s, j);
+            sleep(j);
           }
         }
       } catch (EsRequestException e) {
         if (i == attempts) {
           throw e;
         } else if (LOG.isTraceEnabled()) {
-          LOG.trace("{}. Attempt {} failed. Will attempt again after {} milliseconds",
-              e.getMessage(), i, waitMillis);
+          LOG.trace("{}. Attempt {} failed. Will attempt again after {} milliseconds", e.getMessage(), i, waitMillis);
         }
       }
       sleep(waitMillis);

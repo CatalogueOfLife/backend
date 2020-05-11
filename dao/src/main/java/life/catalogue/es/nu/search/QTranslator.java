@@ -25,16 +25,16 @@ class QTranslator {
   }
 
   Query translate() {
-    QMatcher qMatcher = QMatcher.getInstance(request);
+    QMatcher matcher = QMatcher.getInstance(request);
     List<Query> queries = new ArrayList<Query>(request.getContent().size());
     if (request.getContent().contains(SCIENTIFIC_NAME)) {
-      queries.add(qMatcher.getScientificNameQuery().withBoost(SCINAME_EXTRA_BOOST));
+      queries.add(matcher.getScientificNameQuery().withBoost(SCINAME_EXTRA_BOOST));
     }
     if (request.getContent().contains(VERNACULAR_NAME)) {
-      queries.add(qMatcher.getVernacularNameQuery());
+      queries.add(matcher.getVernacularNameQuery());
     }
     if (request.getContent().contains(AUTHORSHIP)) {
-      queries.add(qMatcher.getAuthorshipQuery());
+      queries.add(matcher.getAuthorshipQuery());
     }
     if (queries.size() == 1) {
       return queries.get(0);
