@@ -314,10 +314,6 @@ public class DatasetWithSettings {
     dataset.setOrigin(origin);
   }
 
-  public boolean isLocked() {
-    return dataset.isLocked();
-  }
-
   @JsonProperty("private")
   public boolean isPrivat() {
     return dataset.isPrivat();
@@ -327,7 +323,4 @@ public class DatasetWithSettings {
     dataset.setPrivat(privat);
   }
 
-  public void setLocked(boolean locked) {
-    dataset.setLocked(locked);
-  }
 }

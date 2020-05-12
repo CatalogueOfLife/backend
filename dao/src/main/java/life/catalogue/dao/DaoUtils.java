@@ -8,27 +8,13 @@ import org.apache.ibatis.session.SqlSessionFactory;
 
 public class DaoUtils {
 
-  public static Dataset requireManagedNoLock(int datasetKey, SqlSession session) {
-    Dataset d = requireManaged(datasetKey, session);
-    if (d.isLocked()) {
-      throw new IllegalArgumentException("The dataset " + datasetKey + " is locked and cannot be assembled.");
-    }
-    return d;
-  }
-
-  public static Dataset requireManagedNoLock(int datasetKey, SqlSessionFactory factory) {
-    try (SqlSession s = factory.openSession()) {
-      return requireManagedNoLock(datasetKey, s);
-    }
-  }
-
   public static Dataset requireManaged(int datasetKey, SqlSession session) {
     Dataset d = session.getMapper(DatasetMapper.class).get(datasetKey);
     if (d.getDeleted() != null) {
-      throw new IllegalArgumentException("The dataset " + datasetKey + " is deleted and cannot be assembled.");
+      throw new IllegalArgumentException("The dataset " + datasetKey + " is deleted and cannot be modified.");
     }
     if (d.getOrigin() != DatasetOrigin.MANAGED) {
-      throw new IllegalArgumentException("Only managed datasets can be assembled. Dataset " + datasetKey + " is of origin " + d.getOrigin());
+      throw new IllegalArgumentException("Only data from managed datasets can be modified. Dataset " + datasetKey + " is of origin " + d.getOrigin());
     }
     return d;
   }

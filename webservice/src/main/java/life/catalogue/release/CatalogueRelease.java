@@ -90,7 +90,6 @@ public class CatalogueRelease implements Runnable {
       release.setSourceKey(catalogueKey);
       release.setOrigin(DatasetOrigin.RELEASED);
       release.setAlias(null);
-      release.setLocked(true);
       release.setModifiedBy(userKey);
       release.setCreatedBy(userKey);
       release.setReleased(today);

@@ -96,7 +96,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @Path("sync")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void sync(@PathParam("datasetKey") int datasetKey, RequestScope request, @Auth User user, @Context SqlSession session) {
-    DaoUtils.requireManagedNoLock(datasetKey, session);
+    DaoUtils.requireManaged(datasetKey, session);
     assembly.sync(datasetKey, request, user);
   }
 
@@ -113,7 +113,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @Path("{id}/sync")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void deleteSync(@PathParam("datasetKey") int datasetKey, @PathParam("id") int id, @Auth User user, @Context SqlSession session) {
-    DaoUtils.requireManagedNoLock(datasetKey, session);
+    DaoUtils.requireManaged(datasetKey, session);
     assembly.cancel(id, user);
   }
 
@@ -123,7 +123,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
                                        @PathParam("id") int id,
                                        @PathParam("attempt") int attempt,
                                        @Context SqlSession session) {
-    DaoUtils.requireManagedNoLock(datasetKey, session);
+    DaoUtils.requireManaged(datasetKey, session);
     return session.getMapper(SectorImportMapper.class).get(id, attempt);
   }
 
@@ -160,7 +160,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @POST
   @Path("count-update")
   public boolean updateAllSectorCounts(@PathParam("datasetKey") int datasetKey, @Context SqlSession session) {
-    DaoUtils.requireManagedNoLock(datasetKey, session);
+    DaoUtils.requireManaged(datasetKey, session);
     tdao.updateAllSectorCounts(datasetKey);
     session.commit();
     return true;

@@ -220,7 +220,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @POST
   @Path("/{key}/rematch")
   public SubjectRematcher rematch(@PathParam("key") int key, RematchRequest req, @Auth User user) {
-    DaoUtils.requireManagedNoLock(key, factory);
+    DaoUtils.requireManaged(key, factory);
     SubjectRematcher matcher = new SubjectRematcher(factory, key, user.getKey());
     matcher.match(req);
     return matcher;

@@ -10,6 +10,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2020-05-12 remove locked
+```
+ALTER TABLE dataset DROP COLUMN locked;
+```
+  
 #### 2020-04-29 metadata archive
 See https://github.com/CatalogueOfLife/backend/issues/689
 ```
