@@ -9,7 +9,6 @@
     d.deleted,
     d.gbif_key,
     d.gbif_publisher_key,
-    d.locked,
     d.private,
     di.verbatim_count AS size,
     (select array_agg(distinct s.dataset_key) from sector s where s.subject_dataset_key=d.key) AS contributes_to
@@ -20,7 +19,6 @@
     deleted,
     gbif_key,
     gbif_publisher_key,
-    locked,
     private
   </sql>
 
@@ -30,7 +28,6 @@
     #{deleted},
     #{gbifKey},
     #{gbifPublisherKey},
-    #{locked},
     #{privat}
   </sql>
 
