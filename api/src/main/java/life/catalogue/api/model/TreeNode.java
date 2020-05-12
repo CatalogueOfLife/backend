@@ -64,7 +64,7 @@ public abstract class TreeNode implements DSID<String> {
     }
 
     @Override
-    public String getFormattedName() {
+    public String getLabelHtml() {
       return _name.canonicalNameCompleteHtml();
     }
   }
@@ -78,7 +78,7 @@ public abstract class TreeNode implements DSID<String> {
     }
 
     @Override
-    public String getFormattedName() {
+    public String getLabelHtml() {
       return NAME;
     }
 
@@ -118,7 +118,7 @@ public abstract class TreeNode implements DSID<String> {
 
   public abstract String getAuthorship();
 
-  public abstract String getFormattedName();
+  public abstract String getLabelHtml();
 
   public abstract String getName();
 

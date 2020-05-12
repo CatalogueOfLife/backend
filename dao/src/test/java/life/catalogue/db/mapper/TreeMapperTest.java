@@ -36,7 +36,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     assertNull(tn.getParentId());
     // make sure we get the html markup
     assertEquals("Malus sylvestris", tn.getName());
-    assertEquals("<i>Malus</i> <i>sylvestris</i>", tn.getFormattedName());
+    assertEquals("<i>Malus</i> <i>sylvestris</i>", tn.getLabelHtml());
     assertNull(tn.getAuthorship());
     assertNull(tn.getDatasetSectors());
   
@@ -68,7 +68,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     assertNull(tn.getParentId());
     // make sure we get the html markup
     assertEquals("Larus fuscus", tn.getName());
-    assertEquals("<i>Larus</i> <i>fuscus</i>", tn.getFormattedName());
+    assertEquals("<i>Larus</i> <i>fuscus</i>", tn.getLabelHtml());
     assertNull(tn.getAuthorship());
   }
   

@@ -13,9 +13,9 @@ and done it manually. So we can as well log changes here.
 #### 2020-04-29 metadata archive
 See https://github.com/CatalogueOfLife/backend/issues/689
 ```
-UPDATE dataset SET settings = settings || jsonb_build_object('import frequency',  import_frequency) WHERE import_frequency IS NOT NULL;
-UPDATE dataset SET settings = settings || jsonb_build_object('data access', data_access) WHERE data_access IS NOT NULL;
-UPDATE dataset SET settings = settings || jsonb_build_object('data format', data_format) WHERE data_format IS NOT NULL;
+UPDATE dataset SET settings = coalesce(settings, jsonb_build_object()) || jsonb_build_object('import frequency',  import_frequency) WHERE import_frequency IS NOT NULL;
+UPDATE dataset SET settings = coalesce(settings, jsonb_build_object()) || jsonb_build_object('data access', data_access) WHERE data_access IS NOT NULL;
+UPDATE dataset SET settings = coalesce(settings, jsonb_build_object()) || jsonb_build_object('data format', data_format) WHERE data_format IS NOT NULL;
 
 ALTER TABLE dataset
   DROP COLUMN import_frequency,

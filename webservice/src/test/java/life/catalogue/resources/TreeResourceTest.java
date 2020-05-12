@@ -1,12 +1,12 @@
 package life.catalogue.resources;
 
-import javax.ws.rs.core.GenericType;
-
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.TreeNode;
 import life.catalogue.db.TestDataRule;
 import org.junit.Rule;
 import org.junit.Test;
+
+import javax.ws.rs.core.GenericType;
 
 import static life.catalogue.ApiUtils.userCreds;
 import static org.junit.Assert.assertEquals;
@@ -15,7 +15,7 @@ public class TreeResourceTest extends ResourceTestBase {
 
   public static class TreeNodeProps extends TreeNode {
     private String name;
-    private String formattedName;
+    private String labelHtml;
     private String authorship;
 
     public void setName(String name) {
@@ -32,12 +32,12 @@ public class TreeResourceTest extends ResourceTestBase {
     }
 
     @Override
-    public String getFormattedName() {
-      return formattedName;
+    public String getLabelHtml() {
+      return labelHtml;
     }
 
-    public void setFormattedName(String formattedName) {
-      this.formattedName = formattedName;
+    public void setLabelHtml(String labelHtml) {
+      this.labelHtml = labelHtml;
     }
 
     @Override
@@ -64,7 +64,7 @@ public class TreeResourceTest extends ResourceTestBase {
     assertEquals(2, root.size());
     // make sure we get the html markup
     assertEquals("Larus fuscus", root.getResult().get(0).getName());
-    assertEquals("<i>Larus</i> <i>fuscus</i>", root.getResult().get(0).getFormattedName());
+    assertEquals("<i>Larus</i> <i>fuscus</i>", root.getResult().get(0).getLabelHtml());
   }
   
 }

@@ -684,7 +684,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
    * Full name.O
    * @return same as canonicalNameComplete but formatted with basic html tags
    */
-  @JsonProperty(value = "formattedName", access = JsonProperty.Access.READ_ONLY)
+  @JsonProperty(value = "labelHtml", access = JsonProperty.Access.READ_ONLY)
   public String canonicalNameCompleteHtml() {
     return completeName(true, true, true);
   }
