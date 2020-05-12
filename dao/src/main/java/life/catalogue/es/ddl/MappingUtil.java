@@ -1,10 +1,15 @@
 package life.catalogue.es.ddl;
 
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import org.gbif.common.shaded.com.google.common.base.Preconditions;
 import static life.catalogue.es.ddl.ESDataType.KEYWORD;
 
 class MappingUtil {
@@ -29,20 +34,40 @@ class MappingUtil {
     return set;
   }
 
-  static boolean isA(Class<?> cls, Class<?> interfaceOrSuper) {
-    return interfaceOrSuper.isAssignableFrom(cls);
+  static boolean isA(Class<?> clazz, Class<?> interfaceOrSuper) {
+    return interfaceOrSuper.isAssignableFrom(clazz);
   }
 
-  // Returns 1st type argument for generic type (e.g. Person for List<Person>)
-  static Class<?> getClassForTypeArgument(Type t) {
-    String s = t.getTypeName();
-    int i = s.indexOf('<');
-    s = s.substring(i + 1, s.length() - 1);
+  static Class<?> getTypeArgument(Field f) {
+    Preconditions.checkArgument(isA(f.getType(), Collection.class));
+    Type t;
     try {
-      return Class.forName(s);
-    } catch (ClassNotFoundException e) {
-      throw new MappingException(e);
+      t = f.getGenericType();
+    } catch (TypeNotPresentException e) {
+      throw new MappingException("Raw types not supported in Elasticsearch data model " + f.getName());
     }
+    ParameterizedType pt = (ParameterizedType) t;
+    Type[] args = pt.getActualTypeArguments();
+    if (args.length != 1) { // Huh?
+      throw new MappingException("Cannot map " + f.getName());
+    }
+    return (Class<?>) args[0];
+  }
+
+  static Class<?> getTypeArgument(Method m) {
+    Preconditions.checkArgument(isA(m.getReturnType(), Collection.class));
+    Type t;
+    try {
+      t = m.getGenericReturnType();
+    } catch (TypeNotPresentException e) {
+      throw new MappingException("Raw types not supported in Elasticsearch data model " + m.getName());
+    }
+    ParameterizedType pt = (ParameterizedType) t;
+    Type[] args = pt.getActualTypeArguments();
+    if (args.length != 1) { // Huh?
+      throw new MappingException("Cannot map " + m.getName());
+    }
+    return (Class<?>) args[0];
   }
 
   private static void addMultiFields(AnnotatedElement fm, KeywordField kf) {
@@ -53,8 +78,8 @@ class MappingUtil {
   }
 
   /*
-   * With us stringy fields are always mapped to the KEYWORD datatype (never TEXT). However, if they are not analyzed using the KEYWORD
-   * analyzer, they will not be indexed as-is. They will only be indexed using the other analyzers specified for the field and queries can
+   * Stringy fields are always mapped to the "keyword" datatype (never "text"). However, if they are not analyzed using the KEYWORD
+   * analyzer, values will not be indexed as-is. They will only be indexed using the other analyzers specified for the field and queries can
    * only target the "multifields" underneath the main field to access the indexed values. The main field becomes a ghostly hook for the
    * "multifields" underneath it (which is OK - it's all just syntax; it has no space or performance implications).
    */

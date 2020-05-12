@@ -1,5 +1,11 @@
 package life.catalogue.es.ddl;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import static java.lang.Character.isUpperCase;
 import static java.lang.Character.toLowerCase;
 import static java.lang.reflect.Modifier.isPublic;
@@ -8,12 +14,6 @@ import static life.catalogue.es.ddl.ESDataType.NESTED;
 import static life.catalogue.es.ddl.MappingUtil.createSimpleField;
 import static life.catalogue.es.ddl.MappingUtil.isA;
 import static life.catalogue.es.ddl.MappingUtil.newAncestor;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Generates an Elasticsearch document type mapping from the getters of a {@link Class}.
@@ -37,7 +37,7 @@ class GetterMappingsFactory extends MappingsFactory {
     if (annotation != null) {
       esType = annotation.value();
     } else {
-      Class<?> mapToType = getMappedType(method.getReturnType(), method.getGenericReturnType());
+      Class<?> mapToType = getMappedType(method);
       esType = DataTypeMap.INSTANCE.getESType(mapToType);
       if (esType == null) { // we are dealing with a complex type
         if (ancestors.contains(mapToType)) {

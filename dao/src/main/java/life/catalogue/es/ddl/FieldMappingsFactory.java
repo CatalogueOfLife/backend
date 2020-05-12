@@ -5,9 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import static java.lang.reflect.Modifier.isStatic;
 import static life.catalogue.es.ddl.ESDataType.NESTED;
 import static life.catalogue.es.ddl.MappingUtil.createSimpleField;
@@ -35,9 +33,9 @@ public class FieldMappingsFactory extends MappingsFactory {
     if (annotation != null) {
       esType = annotation.value();
     } else {
-      Class<?> mapToType = getMappedType(field.getType(), field.getGenericType());
+      Class<?> mapToType = getMappedType(field);
       esType = DataTypeMap.INSTANCE.getESType(mapToType);
-      if (esType == null) { // we are dealing with a complex type
+      if (esType == null) { // we are dealing with a complex type (an object or nested document)
         if (ancestors.contains(mapToType)) {
           throw new ClassCircularityException(field, mapToType);
         }

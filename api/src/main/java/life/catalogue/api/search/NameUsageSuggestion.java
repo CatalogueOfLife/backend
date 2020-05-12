@@ -23,24 +23,18 @@ public class NameUsageSuggestion {
   private Rank rank;
   private TaxonomicStatus status;
   private NomCode nomCode;
-  /*
-   * Temporarily include the Elasticsearch score as well to see if it can help us fine-tune the auto-complete routines
-   * (e.g. boost values).
-   */
   private float score;
 
-  /*
-   * A simple construction of an actual suggestion created from the data in this {@code NameSuggestion} instance. Just an
-   * example of how the drop-down list could be pupulated. Probably not actually useful because it's not multi-lingual.
+  /**
+   * Returns a single-line suggestion string. Could be used to populate a drop-down list. Probably not actually useful because it's not
+   * multi-lingual.
    */
   public String getSuggestion() {
     if (vernacularName) {
       return String.format("%s (vernacular name of %s)", match, acceptedName);
-    }
-    if (status == null) {
+    } else if (status == null) {
       return match + " (nomen nudum)";
-    }
-    if (status.isSynonym()) {
+    } else if (status.isSynonym()) {
       return String.format("%s (synonym of %s)", match, acceptedName);
     }
     return match;
