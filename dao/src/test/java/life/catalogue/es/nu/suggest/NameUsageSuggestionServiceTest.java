@@ -1,6 +1,5 @@
 package life.catalogue.es.nu.suggest;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
 import org.gbif.nameparser.api.Rank;
@@ -8,17 +7,12 @@ import org.junit.Before;
 import org.junit.Test;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Taxon;
-import life.catalogue.api.search.NameUsageSearchParameter;
-import life.catalogue.api.search.NameUsageSearchRequest;
-import life.catalogue.api.search.NameUsageSearchRequest.SearchContent;
-import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.api.search.NameUsageSuggestResponse;
 import life.catalogue.api.search.NameUsageSuggestion;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
-import life.catalogue.es.EsTestUtils;
 import life.catalogue.es.NameStrings;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertEquals;
@@ -301,27 +295,6 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
     // assertTrue(score3 > score4);
     // assertTrue(score4 > score5);
     // assertTrue(score5 > score6);
-  }
-
-  // Issue #697
-  @Test
-  public void suggestHigherTaxa01() throws IOException {
-    EsTestUtils.indexCrocodiles(this);
-
-    NameUsageSearchRequest searchQuery = new NameUsageSearchRequest();
-    searchQuery.setContent(Set.of(SearchContent.SCIENTIFIC_NAME));
-    searchQuery.setQ("Crocodylidae");
-    searchQuery.addFilter(NameUsageSearchParameter.DATASET_KEY, 1008);
-    searchQuery.setPrefix(true);
-    NameUsageSearchResponse nsr = search(searchQuery);
-
-    NameUsageSuggestRequest suggestQuery = new NameUsageSuggestRequest();
-    suggestQuery.setDatasetKey(1008);
-    suggestQuery.setQ("Crocodylidae");
-    suggestQuery.setLimit(1000);
-    NameUsageSuggestResponse nur = suggest(suggestQuery);
-
-    assertEquals(nsr.getTotal(), nur.getSuggestions().size());
   }
 
   private static boolean containsUsageIds(NameUsageSuggestResponse response, EsNameUsage... docs) {

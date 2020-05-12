@@ -4,6 +4,81 @@
 	"total": 19,
 	"result": [
 		{
+			"id": "ayco7",
+			"classification": [
+				{
+					"id": "ayco1",
+					"name": "Animalia",
+					"rank": "KINGDOM"
+				},
+				{
+					"id": "ayco2",
+					"name": "Chordata",
+					"rank": "PHYLUM"
+				},
+				{
+					"id": "ayco3",
+					"name": "Reptilia",
+					"rank": "CLASS"
+				},
+				{
+					"id": "ayco4",
+					"name": "Crocodylia",
+					"rank": "ORDER"
+				},
+				{
+					"id": "ayco5",
+					"name": "Crocodylidae",
+					"rank": "FAMILY"
+				},
+				{
+					"id": "ayco6",
+					"name": "Crocodylus",
+					"rank": "GENUS"
+				},
+				{
+					"id": "ayco7",
+					"name": "Crocodylus moreletii",
+					"rank": "SPECIES"
+				}
+			],
+			"usage": {
+				"@type": "T",
+				"created": "2019-12-23T17:45:31.775122",
+				"createdBy": 10,
+				"modified": "2019-12-23T17:45:31.775122",
+				"modifiedBy": 10,
+				"datasetKey": 123123123,
+				"id": "ayco7",
+				"name": {
+					"created": "2019-12-23T17:45:24.456272",
+					"createdBy": 10,
+					"modified": "2019-12-23T17:45:24.456272",
+					"modifiedBy": 10,
+					"datasetKey": 123123123,
+					"id": "ayco7",
+					"homotypicNameId": "ayco7",
+					"nameIndexId": "3J45",
+					"scientificName": "Crocodylidus moreletii",
+					"rank": "SPECIES",
+					"genus": "Crocodylidus",
+					"specificEpithet": "moreletii",
+					"origin": "DENORMED_CLASSIFICATION",
+					"type": "SCIENTIFIC",
+					"parsed": true,
+					"formattedName": "<i>Crocodylidus</i> <i>moreletii</i> A.H.A. Duméril & Bibron, 1851"
+				},
+				"status": "ACCEPTED",
+				"origin": "DENORMED_CLASSIFICATION",
+				"parentId": "ayco6",
+				"label": "Crocodylidus moreletii",
+				"labelHtml": "An extra result added by Ayco (taken from Wikipedia)",
+				"taxon": true,
+				"bareName": false,
+				"synonym": false
+			}
+		},
+		{
 			"usage": {
 				"@type": "B",
 				"name": {
