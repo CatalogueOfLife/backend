@@ -14,7 +14,6 @@ import java.util.UUID;
  */
 public class Dataset extends ArchivedDataset {
 
-  private boolean locked = false;
   private boolean privat = false;
   private UUID gbifKey;
   private UUID gbifPublisherKey;
@@ -36,7 +35,6 @@ public class Dataset extends ArchivedDataset {
 
   public Dataset(Dataset other) {
     super(other);
-    this.locked = other.locked;
     this.privat = other.privat;
     this.gbifKey = other.gbifKey;
     this.gbifPublisherKey = other.gbifPublisherKey;
@@ -62,10 +60,6 @@ public class Dataset extends ArchivedDataset {
     this.gbifPublisherKey = gbifPublisherKey;
   }
   
-  public boolean isLocked() {
-    return locked;
-  }
-
   @JsonProperty("private")
   public boolean isPrivat() {
     return privat;
@@ -73,10 +67,6 @@ public class Dataset extends ArchivedDataset {
 
   public void setPrivat(boolean privat) {
     this.privat = privat;
-  }
-
-  public void setLocked(boolean locked) {
-    this.locked = locked;
   }
 
   public Integer getSize() {
@@ -136,8 +126,7 @@ public class Dataset extends ArchivedDataset {
     if (!(o instanceof Dataset)) return false;
     if (!super.equals(o)) return false;
     Dataset dataset = (Dataset) o;
-    return locked == dataset.locked &&
-      privat == dataset.privat &&
+    return privat == dataset.privat &&
       Objects.equals(gbifKey, dataset.gbifKey) &&
       Objects.equals(gbifPublisherKey, dataset.gbifPublisherKey) &&
       Objects.equals(imported, dataset.imported) &&
@@ -148,7 +137,7 @@ public class Dataset extends ArchivedDataset {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), locked, privat, gbifKey, gbifPublisherKey, imported, deleted, size, contributesTo);
+    return Objects.hash(super.hashCode(), privat, gbifKey, gbifPublisherKey, imported, deleted, size, contributesTo);
   }
 
   @Override

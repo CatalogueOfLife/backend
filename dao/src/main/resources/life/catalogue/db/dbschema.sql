@@ -566,7 +566,6 @@ CREATE TABLE dataset (
   import_attempt INTEGER,
   type DATASETTYPE NOT NULL DEFAULT 'OTHER',
   origin DATASETORIGIN NOT NULL,
-  locked BOOLEAN DEFAULT FALSE,
   private BOOLEAN DEFAULT FALSE,
   gbif_key UUID,
   gbif_publisher_key UUID,
@@ -607,7 +606,6 @@ ALTER TABLE dataset_archive
   DROP COLUMN editors,
   DROP COLUMN gbif_key,
   DROP COLUMN gbif_publisher_key,
-  DROP COLUMN locked,
   DROP COLUMN private,
   DROP COLUMN settings,
 
