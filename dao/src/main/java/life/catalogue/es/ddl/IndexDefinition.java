@@ -13,7 +13,7 @@ public class IndexDefinition {
 
   public static IndexDefinition loadDefaults() throws IOException {
     InputStream is = IndexDefinition.class.getResourceAsStream("es-settings.json");
-    return EsModule.readDDLObject(is, IndexDefinition.class);
+    return EsModule.readObject(is, IndexDefinition.class);
   }
 
   private Settings settings;

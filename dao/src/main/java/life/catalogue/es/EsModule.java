@@ -27,7 +27,6 @@ import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.es.ddl.IndexDefinition;
 import life.catalogue.es.query.EsSearchRequest;
-import life.catalogue.es.response.EsFacet;
 import life.catalogue.es.response.EsMultiResponse;
 import life.catalogue.es.response.EsResponse;
 import life.catalogue.es.response.SearchHit;
@@ -67,7 +66,7 @@ import life.catalogue.es.response.SearchHit;
  * <li>When querying name usage documents, we get them wrapped into an Elasticsearch response object. The name usage documents need a mapper
  * that maps (and writes) enums to integers. The Elasticsearch response object needs a mapper that maps enums to strings. That looks like a
  * conundrum. However, we are now talking about <i>reading</i> JSON, not writing it, and Jackson will just try everything to infer the
- * intended enum constant. So it doesn't really matter which mapper we use for deserialization. Narrow escape though.
+ * intended enum constant. So it doesn't matter which mapper we use for deserialization.
  * </ol>
  * </p>
  */
@@ -104,7 +103,7 @@ public class EsModule extends SimpleModule {
    * @throws IOException
    */
   public static Map<String, Object> readIntoMap(InputStream is) throws IOException {
-    // Any mapper will do
+    // For reading any mapper will do
     return esObjectMapper.readValue(is, mapType);
   }
 
@@ -116,7 +115,6 @@ public class EsModule extends SimpleModule {
    * @return
    */
   public static String escape(String s) {
-    // Any mapper will do
     try {
       return esObjectMapper.writeValueAsString(s);
     } catch (JsonProcessingException e) { // Won't happen
@@ -124,14 +122,24 @@ public class EsModule extends SimpleModule {
     }
   }
 
-  @SuppressWarnings("unchecked")
-  public static <T> T convertValue(Object object, Class<EsFacet> class1) {
-    // Any mapper will do
-    return (T) esObjectMapper.convertValue(object, class1);
+  public static <T> T convertValue(Object object, Class<T> cls) {
+    return esObjectMapper.convertValue(object, cls);
   }
 
-  public static <T> T readDDLObject(InputStream is, Class<T> cls) throws IOException {
+  public static <T> T readObject(InputStream is, Class<T> cls) throws IOException {
     return esObjectMapper.readValue(is, cls);
+  }
+
+  public static <T> T readObject(InputStream is, TypeReference<T> tr) throws IOException {
+    return esObjectMapper.readValue(is, tr);
+  }
+
+  public static <T> T readObject(String json, Class<T> cls) throws IOException {
+    return esObjectMapper.readValue(json, cls);
+  }
+
+  public static <T> T readObject(String json, TypeReference<T> tr) throws IOException {
+    return esObjectMapper.readValue(json, tr);
   }
 
   public static EsResponse<EsNameUsage> readEsResponse(InputStream is) throws IOException {

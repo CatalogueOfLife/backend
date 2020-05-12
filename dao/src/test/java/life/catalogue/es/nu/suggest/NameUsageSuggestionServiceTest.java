@@ -1,5 +1,6 @@
 package life.catalogue.es.nu.suggest;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Set;
 import org.gbif.nameparser.api.Rank;
@@ -7,12 +8,17 @@ import org.junit.Before;
 import org.junit.Test;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Taxon;
+import life.catalogue.api.search.NameUsageSearchParameter;
+import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.api.search.NameUsageSearchRequest.SearchContent;
+import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.api.search.NameUsageSuggestResponse;
 import life.catalogue.api.search.NameUsageSuggestion;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
+import life.catalogue.es.EsTestUtils;
 import life.catalogue.es.NameStrings;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertEquals;
@@ -73,19 +79,19 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
     n.setSpecificEpithet("abcde");
     doc5.setNameStrings(new NameStrings(n));
 
-    EsNameUsage doc6 = new EsNameUsage(); // no match (rank must be species or lower)
-    doc5.setDatasetKey(1);
-    doc5.setUsageId("6");
-    doc5.setRank(Rank.FAMILY);
+    EsNameUsage doc6 = new EsNameUsage(); // match 4
+    doc6.setDatasetKey(1);
+    doc6.setUsageId("6");
+    doc6.setRank(Rank.FAMILY);
     n = new Name();
     n.setSpecificEpithet("abcde");
-    doc5.setNameStrings(new NameStrings(n));
+    doc6.setNameStrings(new NameStrings(n));
 
     indexRaw(doc1, doc2, doc3, doc4, doc5, doc6);
 
     NameUsageSuggestResponse response = suggest(query);
 
-    assertTrue(containsUsageIds(response, doc1, doc2, doc3));
+    assertTrue(containsUsageIds(response, doc1, doc2, doc3, doc6));
   }
 
   @Test // Relevance goes from infraspecific epithet -> specific epithet -> genus
@@ -235,8 +241,6 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
   @Test
   public void test04() {
 
-    // Let's go through the whose conversion process from NameUsageWrapper to NameUsageDocument
-
     Name n = new Name();
     n.setDatasetKey(1);
     n.setId("1");
@@ -297,6 +301,27 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
     // assertTrue(score3 > score4);
     // assertTrue(score4 > score5);
     // assertTrue(score5 > score6);
+  }
+
+  // Issue #697
+  @Test
+  public void suggestHigherTaxa01() throws IOException {
+    EsTestUtils.indexCrocodiles(this);
+
+    NameUsageSearchRequest searchQuery = new NameUsageSearchRequest();
+    searchQuery.setContent(Set.of(SearchContent.SCIENTIFIC_NAME));
+    searchQuery.setQ("Crocodylidae");
+    searchQuery.addFilter(NameUsageSearchParameter.DATASET_KEY, 1008);
+    searchQuery.setPrefix(true);
+    NameUsageSearchResponse nsr = search(searchQuery);
+
+    NameUsageSuggestRequest suggestQuery = new NameUsageSuggestRequest();
+    suggestQuery.setDatasetKey(1008);
+    suggestQuery.setQ("Crocodylidae");
+    suggestQuery.setLimit(1000);
+    NameUsageSuggestResponse nur = suggest(suggestQuery);
+
+    assertEquals(nsr.getTotal(), nur.getSuggestions().size());
   }
 
   private static boolean containsUsageIds(NameUsageSuggestResponse response, EsNameUsage... docs) {

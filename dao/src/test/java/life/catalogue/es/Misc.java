@@ -1,7 +1,6 @@
 package life.catalogue.es;
 
 import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -17,7 +16,7 @@ public class Misc {
     assertTrue(ss.length > 1);
   }
 
-  @Test
+  @Test // Beware the escaped value (naturally) is already surrounded by double quotes
   public void testEscapeJson() {
     String value = "Hello, \"World\"";
     String json = "{\"message\": " + EsModule.escape(value) + "}";

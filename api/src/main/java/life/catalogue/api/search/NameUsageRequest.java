@@ -48,7 +48,15 @@ public abstract class NameUsageRequest {
   }
 
   public void setQ(String q) {
-    this.q = q;
+    /*
+     * BEWARE: currently ALL analyzers involved in q matching (whether on scientific name, verbacular name or authorship) churn out
+     * all-lowercase tokens. Therefore, we might as well be done with it and lowercase the Q as well as soon as possible (i.e. here).
+     * Otherwise it's easy to forget (issue #697). If case-sensitive matching is introduced, we must change this setter, and whether or not
+     * to lowercase the Q becomes a matter for the various QMatcher classes.
+     */
+    if (q != null) {
+      this.q = q.toLowerCase();
+    }
   }
 
   public boolean isFuzzy() {

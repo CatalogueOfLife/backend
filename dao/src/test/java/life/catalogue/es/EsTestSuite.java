@@ -3,7 +3,8 @@ package life.catalogue.es;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
-import life.catalogue.es.mapping.MappingFactoryTest;
+import life.catalogue.es.ddl.MappingFactoryTest;
+import life.catalogue.es.ddl.MappingUtilTest;
 import life.catalogue.es.nu.ClassificationUpdaterTest;
 import life.catalogue.es.nu.EsNameUsageSerde;
 import life.catalogue.es.nu.Issue333;
@@ -37,6 +38,7 @@ import life.catalogue.es.query.TermQueryTest;
     FacetsTranslatorTest.class,
     Issue333.class,
     MappingFactoryTest.class,
+    MappingUtilTest.class,
     Misc.class,
     MultiValuedMapTest.class,
     NameUsageSearchHighlighterTest.class,

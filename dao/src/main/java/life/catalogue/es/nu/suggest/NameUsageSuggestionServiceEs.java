@@ -17,14 +17,13 @@ import life.catalogue.es.EsUtil;
 import life.catalogue.es.NameUsageSuggestionService;
 import life.catalogue.es.ddl.Analyzer;
 import life.catalogue.es.nu.NameUsageQueryService;
-import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
 import life.catalogue.es.query.EsSearchRequest;
 import life.catalogue.es.response.EsResponse;
 
 public class NameUsageSuggestionServiceEs extends NameUsageQueryService implements NameUsageSuggestionService {
 
   @SuppressWarnings("unused")
-  private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchServiceEs.class);
+  private static final Logger LOG = LoggerFactory.getLogger(NameUsageSuggestionServiceEs.class);
 
   public NameUsageSuggestionServiceEs(String indexName, RestClient client) {
     super(indexName, client);
