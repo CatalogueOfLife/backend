@@ -323,4 +323,8 @@ public class DatasetWithSettings {
     dataset.setPrivat(privat);
   }
 
+  @Override
+  public String toString() {
+    return "DatasetWithSettings " + getKey() + ": " + getTitle();
+  }
 }
