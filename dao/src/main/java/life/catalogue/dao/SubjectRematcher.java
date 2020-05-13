@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DecisionSearchRequest;
+import life.catalogue.api.search.EstimateSearchRequest;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DecisionMapper;
@@ -134,7 +135,23 @@ public class SubjectRematcher {
     }
     log();
   }
-  
+
+  public void matchBrokenEstimates(int datasetKey) {
+    try(SqlSession session = factory.openSession(true)) {
+      init(session);
+
+      // only process broken estimates for the given dataset
+      EstimateSearchRequest req = EstimateSearchRequest.byCatalogue(datasetKey);
+      req.setBroken(true);
+
+      LOG.info("Rematch broken estimates for dataset {}", datasetKey);
+      esm.processSearch(req).forEach(this::matchEstimate);
+
+      session.commit();
+    }
+    log("estimates", estimates);
+  }
+
   public void matchDatasetSubjects(final int datasetKey) {
     LOG.info("Rematch all sector and decision subjects in dataset {}", datasetKey);
     try(SqlSession session = factory.openSession(true)) {

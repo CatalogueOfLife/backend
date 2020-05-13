@@ -21,6 +21,8 @@ import org.gbif.nameparser.api.Authorship;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 /**
@@ -44,7 +46,7 @@ public class ApiModule extends SimpleModule {
     
     mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     mapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
-    
+
     mapper.registerModule(new JavaTimeModule());
     mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     
@@ -69,6 +71,9 @@ public class ApiModule extends SimpleModule {
     addDeserializer(URI.class, new URIDeserializer());
     addDeserializer(Int2IntMap.class, new FastutilsSerde.MapDeserializer());
     addDeserializer(IntSet.class, new FastutilsSerde.SetDeserializer());
+    // override the JavaTimeModule to use a permissive localdate deserializer catching parsing exceptions
+    addDeserializer(LocalDateTime.class, new PermissiveJavaDateSerde.LocalDateTimeDeserializer());
+    addDeserializer(LocalDate.class, new PermissiveJavaDateSerde.LocalDateDeserializer());
 
     // then serializers:
     addSerializer(Country.class, new CountrySerde.Serializer());

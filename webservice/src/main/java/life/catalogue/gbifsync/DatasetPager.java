@@ -1,24 +1,9 @@
 package life.catalogue.gbifsync;
 
-import java.net.URI;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriBuilder;
-
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import life.catalogue.api.model.DatasetWithSettings;
-import org.apache.commons.lang3.StringUtils;
-import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -28,8 +13,23 @@ import life.catalogue.config.GbifConfig;
 import life.catalogue.parser.LicenseParser;
 import life.catalogue.parser.SafeParser;
 import life.catalogue.parser.UriParser;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -226,8 +226,7 @@ public class DatasetPager {
     public GCitation citation;
     public List<GCoverage> geographicCoverages;
     public String license;
-    public String modified;
-    public LocalDateTime pubDate;
+    public LocalDate pubDate;
     public List<GEndpoint> endpoints;
     public List<GContact> contacts;
   }
@@ -260,7 +259,6 @@ public class DatasetPager {
     public String description;
     public String latitude;
     public String longitude;
-    public String modified;
     public List<GContact> contacts;
   }
   

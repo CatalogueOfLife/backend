@@ -5,6 +5,7 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.MatchingDao;
 import life.catalogue.dao.NamesTreeDao;
+import life.catalogue.dao.SubjectRematcher;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import org.apache.commons.lang3.NotImplementedException;
@@ -97,13 +98,22 @@ public class SectorSync extends SectorRunnable {
       state.setState( SectorImport.State.RELINKING);
       rematchForeignChildren();
       relinkAttachedSectors();
+      rematchEstimates();
       state.setState( SectorImport.State.INDEXING);
       indexService.indexSector(sector);
     }
   
     state.setState( SectorImport.State.FINISHED);
   }
-  
+
+  /**
+   * Rematch all broken estimates that fall into this sector
+   */
+  private void rematchEstimates() {
+    final SubjectRematcher rematcher = new SubjectRematcher(factory, catalogueKey, user.getKey());
+    rematcher.matchBrokenEstimates(catalogueKey);
+  }
+
   /**
    * Temporarily relink all foreign children to the target taxon
    * so we don't break referential integrity when deleting the sector.
