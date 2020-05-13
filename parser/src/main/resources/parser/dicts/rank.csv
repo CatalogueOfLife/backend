@@ -84,6 +84,7 @@ group,SPECIES_AGGREGATE
 groupgenus,GENUS
 groupspecies,SPECIES_AGGREGATE
 higher taxon,SUPRAGENERIC_NAME
+hyperorder,MIRORDER
 imperium,KINGDOM
 infraclassis,INFRACLASS
 infragen,INFRAGENUS
@@ -109,6 +110,7 @@ legio,LEGION
 lysotype,PHAGOVAR
 megaorder,MAGNORDER
 microgen,INFRAGENERIC_NAME
+microorder,PARVORDER
 morphotype,MORPHOVAR
 nat,NATIO
 no rank,UNRANKED

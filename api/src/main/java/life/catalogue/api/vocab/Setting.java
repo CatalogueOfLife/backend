@@ -5,6 +5,8 @@ import org.gbif.nameparser.api.NomCode;
 
 import java.net.URI;
 import java.time.LocalDate;
+import static life.catalogue.api.vocab.DatasetOrigin.*;
+
 
 public enum Setting {
 
@@ -12,25 +14,25 @@ public enum Setting {
    * When importing data from text files this overrides
    * the field delimiter character used
    */
-  CSV_DELIMITER(String.class),
+  CSV_DELIMITER(String.class, EXTERNAL),
 
   /**
    * When importing data from text files this overrides
    * the quote character used
    */
-  CSV_QUOTE(String.class),
+  CSV_QUOTE(String.class, EXTERNAL),
 
   /**
    * When importing data from text files this overrides
    * the single character used for escaping quotes inside an already quoted value.
    * For example '"' for CSV
    */
-  CSV_QUOTE_ESCAPE(String.class),
+  CSV_QUOTE_ESCAPE(String.class, EXTERNAL),
 
   /**
    * Overrides the gazetteer standard to use in all distribution interpretations for the dataset.
    */
-  DISTRIBUTION_GAZETTEER(Gazetteer.class),
+  DISTRIBUTION_GAZETTEER(Gazetteer.class, EXTERNAL),
 
   /**
    * The nomenclatural code followed in the dataset.
@@ -43,7 +45,7 @@ public enum Setting {
    * Setting that will inform the importer to rematch all decisions (decisions sensu strictu but also sectors and estimates)
    * Defaults to false
    */
-  REMATCH_DECISIONS(Boolean.class),
+  REMATCH_DECISIONS(Boolean.class, EXTERNAL),
 
   /**
    * Template used to build a new release title.
@@ -52,34 +54,45 @@ public enum Setting {
    *
    * See https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/time/format/DateTimeFormatter.html
    */
-  RELEASE_TITLE_TEMPLATE(String.class),
+  RELEASE_TITLE_TEMPLATE(String.class, MANAGED),
 
   /**
    * In continuous import mode the frequency the dataset is scheduled for imports.
    */
-  IMPORT_FREQUENCY(Frequency.class),
+  IMPORT_FREQUENCY(Frequency.class, EXTERNAL),
 
-  DATA_FORMAT(DataFormat.class),
+  DATA_FORMAT(DataFormat.class, EXTERNAL),
 
-  DATA_ACCESS(URI.class)
+  DATA_ACCESS(URI.class, EXTERNAL)
   ;
 
   private final Class type;
+  private final DatasetOrigin origin;
 
   public Class getType() {
     return type;
+  }
+
+  public DatasetOrigin getOrigin() {
+    return origin;
   }
 
   public boolean isEnum() {
     return type.isEnum();
   }
 
+  Setting(Class type) {
+    this(type, null);
+  }
+
   /**
    * Use String, Integer, Boolean, LocalDate, URI or a custom col enumeration class
    *
    * @param type
+   * @param origin
    */
-  Setting(Class type) {
+  Setting(Class type, DatasetOrigin origin) {
+    this.origin = origin;
     Preconditions.checkArgument(type.equals(String.class)
       || type.equals(Integer.class)
       || type.equals(Boolean.class)

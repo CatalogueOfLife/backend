@@ -22,10 +22,13 @@ public class PermissiveJavaDateSerde {
       .parseCaseInsensitive()
       .parseLenient()
       .append(DateTimeFormatter.ISO_LOCAL_DATE)
-      .appendLiteral('T')
-      .append(DateTimeFormatter.ISO_LOCAL_TIME)
       .optionalStart()
-      .appendOffset("+HHmm", "+0000")
+        .appendLiteral('T')
+        .append(DateTimeFormatter.ISO_LOCAL_TIME)
+        .optionalStart()
+          .appendOffset("+HHmm", "+0000")
+        .optionalEnd()
+      .optionalEnd()
       .toFormatter();
 
   public static class LocalDateTimeDeserializer extends com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer {
@@ -53,7 +56,7 @@ public class PermissiveJavaDateSerde {
     public LocalDate deserialize(JsonParser parser, DeserializationContext context) throws IOException {
       try {
         return super.deserialize(parser, context);
-      } catch (DateTimeParseException e) {
+      } catch (DateTimeParseException | InvalidFormatException e) {
         LOG.warn("LocalDate parsing exception", e);
         return null;
       }
