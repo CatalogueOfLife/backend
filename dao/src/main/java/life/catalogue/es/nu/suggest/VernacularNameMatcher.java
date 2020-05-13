@@ -2,14 +2,13 @@ package life.catalogue.es.nu.suggest;
 
 import java.util.Arrays;
 import java.util.List;
-
+import java.util.function.Predicate;
 import life.catalogue.api.search.NameUsageSuggestRequest;
 
 /**
- * Determines which of the vernacular names in a usage document actually matched the search phrase (q). Using named
- * queries we can determine whether a document was returned because the q could be matched a scientific name or a
- * vernacular name. But if the document contains multiple vernacular names, we still don't know which one provided the
- * match.
+ * Determines which of the vernacular names in a usage document actually matched the search phrase (q). Using named queries we can determine
+ * whether a document was returned because the q matched a scientific name or a vernacular name, but if the document contains multiple
+ * vernacular names, we still don't know which one provided the match.
  *
  */
 class VernacularNameMatcher {
@@ -36,7 +35,10 @@ class VernacularNameMatcher {
   }
 
   private static String[] tokenize(String str) {
-    return Arrays.stream(str.split("\\W")).filter(s -> !s.isEmpty()).map(String::toLowerCase).toArray(String[]::new);
+    return Arrays.stream(str.split("\\W"))
+        .filter(Predicate.not(String::isEmpty))
+        .map(String::toLowerCase)
+        .toArray(String[]::new);
   }
 
 }

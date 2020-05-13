@@ -3,6 +3,7 @@ package life.catalogue.es.ddl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import life.catalogue.es.EsException;
 import life.catalogue.es.EsModule;
 
 /**
@@ -11,9 +12,13 @@ import life.catalogue.es.EsModule;
  */
 public class IndexDefinition {
 
-  public static IndexDefinition loadDefaults() throws IOException {
+  public static IndexDefinition loadDefaults() {
     InputStream is = IndexDefinition.class.getResourceAsStream("es-settings.json");
-    return EsModule.readObject(is, IndexDefinition.class);
+    try {
+      return EsModule.readObject(is, IndexDefinition.class);
+    } catch (IOException e) {
+      throw new EsException("Error while reading/parsing es-settings.json", e);
+    }
   }
 
   private Settings settings;

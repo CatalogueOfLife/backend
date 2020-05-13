@@ -31,7 +31,7 @@ public enum Analyzer {
   SCINAME_IGNORE_CASE(MultiField.SCINAME_IGNORE_CASE),
   
   /**
-   * Afull-text analyzer for scientific names.
+   * A full-text analyzer for scientific names.
    */
   SCINAME_WHOLE_WORDS(MultiField.SCINAME_WHOLE_WORDS),
 

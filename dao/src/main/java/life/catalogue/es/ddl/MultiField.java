@@ -1,6 +1,8 @@
 package life.catalogue.es.ddl;
 
+import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Preconditions;
 
 /**
  * A {@code MultiField} is a virtual field underneath a {@link SimpleField regular field} that specifies an alternative way of indexing the
@@ -32,6 +34,12 @@ public class MultiField extends ESField {
    * A full-text type analyzer tailored for scientific names
    */
   public static final MultiField SCINAME_WHOLE_WORDS;
+
+  private static final Set<String> definedAnalyzers = IndexDefinition.loadDefaults()
+      .getSettings()
+      .getAnalysis()
+      .getAnalyzer()
+      .keySet();
 
   /**
    * A string field for case-insensitive "starts with" comparisons for scientific names. The main (and crucial) differences between the
@@ -67,11 +75,11 @@ public class MultiField extends ESField {
     this(name, analyzer, null);
   }
 
-  /*
-   * NB The name of the analyzer (and search analyzer if applicable) __must__ match the name of an analyzer defined in es-settings.json !!!
-   */
   private MultiField(String name, String analyzer, String searchAnalyzer) {
     super();
+    Preconditions.checkArgument(definedAnalyzers.contains(analyzer), "Analyzer %s not defined in es-settings.json", analyzer);
+    Preconditions.checkArgument(searchAnalyzer == null || definedAnalyzers.contains(searchAnalyzer),
+        "Search analyzer %s not defined in es-settings.json", searchAnalyzer);
     this.type = ESDataType.TEXT;
     this.name = name;
     this.analyzer = analyzer;

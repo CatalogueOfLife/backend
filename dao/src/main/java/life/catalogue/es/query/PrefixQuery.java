@@ -21,6 +21,9 @@ public class PrefixQuery extends ConstraintQuery<TermConstraint> {
     return prefix.values().iterator().next();
   }
 
+  /*
+   * A prefix query targets the field itself, not some multified underneath it.
+   */
   String getField(String field) {
     return field;
   }
