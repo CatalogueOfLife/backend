@@ -1,29 +1,53 @@
 package life.catalogue.es.nu.search;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import org.gbif.nameparser.api.Authorship;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import life.catalogue.api.model.BareName;
 import life.catalogue.api.model.EditorialDecision.Mode;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.Taxon;
+import life.catalogue.api.search.FacetValue;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.NomStatus;
+import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
+import life.catalogue.es.nu.NameUsageWrapperConverter;
 import static java.util.stream.Collectors.toList;
-import static life.catalogue.api.search.NameUsageSearchParameter.*;
+import static org.junit.Assert.assertEquals;
+import static life.catalogue.api.search.NameUsageSearchParameter.ALPHAINDEX;
+import static life.catalogue.api.search.NameUsageSearchParameter.AUTHORSHIP;
+import static life.catalogue.api.search.NameUsageSearchParameter.AUTHORSHIP_YEAR;
+import static life.catalogue.api.search.NameUsageSearchParameter.CATALOGUE_KEY;
+import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
+import static life.catalogue.api.search.NameUsageSearchParameter.DECISION_MODE;
+import static life.catalogue.api.search.NameUsageSearchParameter.NAME_ID;
+import static life.catalogue.api.search.NameUsageSearchParameter.NAME_INDEX_ID;
+import static life.catalogue.api.search.NameUsageSearchParameter.NOM_STATUS;
+import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHED_IN_ID;
+import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHER_KEY;
+import static life.catalogue.api.search.NameUsageSearchParameter.SECTOR_KEY;
+import static life.catalogue.api.search.NameUsageSearchParameter.TAXON_ID;
 import static life.catalogue.api.search.NameUsageSearchRequest.IS_NOT_NULL;
 import static life.catalogue.api.search.NameUsageSearchRequest.IS_NULL;
-import static org.junit.Assert.assertEquals;
 
 /**
  * <p>
@@ -354,11 +378,11 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(ALPHAINDEX, "a");
     assertEquals(alphaIndexTestData().subList(0, 1), search(query).getResult());
-    
+
     query = new NameUsageSearchRequest();
-    query.addFilter(ALPHAINDEX, "b");  
+    query.addFilter(ALPHAINDEX, "b");
     assertEquals(alphaIndexTestData().subList(1, 3), search(query).getResult());
-    
+
     query = new NameUsageSearchRequest();
     query.addFilter(ALPHAINDEX, "z");
     assertEquals(Collections.emptyList(), search(query).getResult());
@@ -381,8 +405,8 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
 
   @Test
   public void testNameIndexId1() {
-    String key1 = "100";
-    String key2 = "101";
+    String key1 = "100XyA";
+    String key2 = "101_@xx";
     NameUsageWrapper nuw1 = minimalNameUsage();
     nuw1.getUsage().getName().setNameIndexId(key1);
     NameUsageWrapper nuw2 = minimalNameUsage();
@@ -410,8 +434,8 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
 
   @Test
   public void testNameIndexId2() {
-    String key1 = "100";
-    String key2 = "101";
+    String key1 = "aB#100z";
+    String key2 = "x$-020";
     NameUsageWrapper nuw1 = minimalNameUsage();
     nuw1.getUsage().getName().setNameIndexId(key1);
     NameUsageWrapper nuw2 = minimalNameUsage();
@@ -727,6 +751,74 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
 
     countdown(SECTOR_KEY);
 
+  }
+
+  @Test
+  public void testAuthorShip() throws IOException {
+
+    Authorship a1 = new Authorship();
+    a1.setAuthors(List.of("Mark", "John"));
+    a1.setExAuthors(List.of("Cornelius"));
+    a1.setYear("2000");
+    Authorship a2 = new Authorship();
+    a2.setAuthors(List.of("Jim"));
+    a2.setYear(null);
+    Authorship a3 = new Authorship();
+    a3.setAuthors(List.of("Cornelius"));
+    a3.setExAuthors(List.of("Aaron", "Billy"));
+    a3.setYear("1752");
+
+    Name n = new Name();
+    n.setBasionymAuthorship(a1);
+    n.setCombinationAuthorship(a2);
+    NameUsageWrapper nuw1 = minimalNameUsage();
+    nuw1.setUsage(new BareName(n));
+
+    n = new Name();
+    n.setBasionymAuthorship(a3);
+    NameUsageWrapper nuw2 = minimalNameUsage();
+    nuw2.setUsage(new BareName(n));
+
+    // Let's also check that the conversion from NameUsageWrapperConverter to document is as expected
+    EsNameUsage doc = new NameUsageWrapperConverter().toDocument(nuw1);
+    assertEquals(List.of("Cornelius", "Jim", "John", "Mark"), new ArrayList<>(doc.getAuthorship()));
+    assertEquals(List.of("2000"), new ArrayList<>(doc.getAuthorshipYear()));
+
+    doc = new NameUsageWrapperConverter().toDocument(nuw2);
+    assertEquals(List.of("Aaron", "Billy", "Cornelius"), new ArrayList<>(doc.getAuthorship()));
+    assertEquals(List.of("1752"), new ArrayList<>(doc.getAuthorshipYear()));
+
+    // Index the name usages
+    index(nuw1, nuw2);
+
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.addFacet(AUTHORSHIP);
+    query.addFacet(AUTHORSHIP_YEAR);
+
+    NameUsageSearchResponse result = search(query);
+
+    Set<FacetValue<?>> facets = result.getFacets().get(AUTHORSHIP);
+
+    LinkedHashSet<FacetValue<?>> expected = new LinkedHashSet<>(List.of(
+        FacetValue.forString("Cornelius", 2),
+        FacetValue.forString("Aaron", 1),
+        FacetValue.forString("Billy", 1),
+        FacetValue.forString("Jim", 1),
+        FacetValue.forString("John", 1),
+        FacetValue.forString("Mark", 1)));
+
+    assertEquals(expected, facets);
+
+    facets = result.getFacets().get(AUTHORSHIP_YEAR);
+
+    expected = new LinkedHashSet<>(List.of(
+        FacetValue.forString("1752", 1),
+        FacetValue.forString("2000", 1)));
+
+    assertEquals(expected, facets);
+
+    countdown(AUTHORSHIP);
+    countdown(AUTHORSHIP_YEAR);
   }
 
   private static void countdown(NameUsageSearchParameter param) {

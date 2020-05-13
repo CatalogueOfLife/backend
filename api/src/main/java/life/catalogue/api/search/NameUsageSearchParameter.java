@@ -97,6 +97,10 @@ public enum NameUsageSearchParameter {
   FOSSIL(Boolean.class),
 
   RECENT(Boolean.class),
+  
+  AUTHORSHIP(String.class),
+  
+  AUTHORSHIP_YEAR(String.class),
 
   /**
    * First, upper cased character of the name.

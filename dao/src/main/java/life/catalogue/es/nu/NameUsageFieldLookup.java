@@ -28,7 +28,7 @@ import static life.catalogue.api.search.NameUsageSearchParameter.SECTOR_KEY;
 import static life.catalogue.api.search.NameUsageSearchParameter.STATUS;
 import static life.catalogue.api.search.NameUsageSearchParameter.TAXON_ID;
 import static life.catalogue.api.search.NameUsageSearchParameter.TYPE;
-import static life.catalogue.api.search.NameUsageSearchParameter.USAGE_ID;
+import static life.catalogue.api.search.NameUsageSearchParameter.*;
 
 /**
  * Maps a name search parameter the corresponding Elasticsearch field(s). In principle a name search parameter may be mapped to multiple
@@ -44,6 +44,8 @@ public class NameUsageFieldLookup extends EnumMap<NameUsageSearchParameter, Stri
   private NameUsageFieldLookup() {
     super(NameUsageSearchParameter.class);
     putSingle(ALPHAINDEX, "nameStrings.sciNameLetter");
+    putSingle(AUTHORSHIP, "authorship");
+    putSingle(AUTHORSHIP_YEAR, "authorshipYear");
     putSingle(CATALOGUE_KEY, "decisions.catalogueKey");
     putSingle(DATASET_KEY, "datasetKey");
     putSingle(DECISION_MODE, "decisions.mode");

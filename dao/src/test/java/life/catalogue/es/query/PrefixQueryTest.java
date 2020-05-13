@@ -23,9 +23,9 @@ public class PrefixQueryTest extends EsReadTestBase {
     EsNameUsage doc = new EsNameUsage();
     String s = "  tHiS  iS  a  LoNg  string  with  spaces";
     // This field is indexed using the IGNORE_CASE analyzer.
-    doc.setAuthorship(s);
+    doc.setAuthorshipComplete(s);
     indexRaw(doc);
-    Query query = new CaseInsensitivePrefixQuery("authorship", s.substring(0, 8));
+    Query query = new CaseInsensitivePrefixQuery("authorshipComplete", s.substring(0, 8));
     List<EsNameUsage> result = queryRaw(query);
     assertEquals(1, result.size());
   }
@@ -35,9 +35,9 @@ public class PrefixQueryTest extends EsReadTestBase {
     EsNameUsage doc = new EsNameUsage();
     String s = "  tHiS  iS  a  LoNg  string  with  spaces";
     // This field is indexed using the IGNORE_CASE analyzer.
-    doc.setAuthorship(s);
+    doc.setAuthorshipComplete(s);
     indexRaw(doc);
-    Query query = new BoolQuery().must(new CaseInsensitivePrefixQuery("authorship", s.substring(0, 8)));
+    Query query = new BoolQuery().must(new CaseInsensitivePrefixQuery("authorshipComplete", s.substring(0, 8)));
     List<EsNameUsage> result = queryRaw(query);
     assertEquals(1, result.size());
   }

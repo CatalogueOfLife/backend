@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
@@ -267,12 +268,12 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
   public EsNameUsage toDocument(NameUsageWrapper nuw) throws IOException {
     EsNameUsage doc = new EsNameUsage();
     saveScientificName(nuw, doc);
+    saveAuthorship(nuw, doc);
     saveVernacularNames(nuw, doc);
     saveClassification(doc, nuw);
     saveDecisions(nuw, doc);
     doc.setIssues(nuw.getIssues());
     Name name = nuw.getUsage().getName();
-    doc.setAuthorship(name.authorshipComplete());
     doc.setDatasetKey(name.getDatasetKey());
     doc.setSectorDatasetKey(nuw.getSectorDatasetKey());
     doc.setNameId(name.getId());
@@ -306,6 +307,41 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
   private static void saveScientificName(NameUsageWrapper nuw, EsNameUsage doc) {
     doc.setScientificName(nuw.getUsage().getName().getScientificName());
     doc.setNameStrings(new NameStrings(nuw.getUsage().getName()));
+  }
+
+  private static void saveAuthorship(NameUsageWrapper nuw, EsNameUsage doc) {
+    Name name = nuw.getUsage().getName();
+    doc.setAuthorshipComplete(name.authorshipComplete());
+    Set<String> authorship = new TreeSet<>();
+    Set<String> year = new TreeSet<>();
+    if (name.getBasionymAuthorship() != null) {
+      if (name.getBasionymAuthorship().getYear() != null) {
+        year.add(name.getBasionymAuthorship().getYear());
+      }
+      if (name.getBasionymAuthorship().getAuthors() != null) {
+        authorship.addAll(name.getBasionymAuthorship().getAuthors());
+      }
+      if (name.getBasionymAuthorship().getExAuthors() != null) {
+        authorship.addAll(name.getBasionymAuthorship().getExAuthors());
+      }
+    }
+    if (name.getCombinationAuthorship() != null) {
+      if (name.getCombinationAuthorship().getYear() != null) {
+        year.add(name.getCombinationAuthorship().getYear());
+      }
+      if (name.getCombinationAuthorship().getAuthors() != null) {
+        authorship.addAll(name.getCombinationAuthorship().getAuthors());
+      }
+      if (name.getCombinationAuthorship().getExAuthors() != null) {
+        authorship.addAll(name.getCombinationAuthorship().getExAuthors());
+      }
+    }
+    if (!authorship.isEmpty()) {
+      doc.setAuthorship(authorship);
+    }
+    if (!year.isEmpty()) {
+      doc.setAuthorshipYear(year);
+    }
   }
 
   private static void saveVernacularNames(NameUsageWrapper nuw, EsNameUsage doc) {
