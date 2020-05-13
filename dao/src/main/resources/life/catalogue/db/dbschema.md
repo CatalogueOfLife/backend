@@ -13,6 +13,8 @@ and done it manually. So we can as well log changes here.
 
 #### 2020-05-13 new order ranks
 ```
+ALTER TYPE NOMCODE ADD VALUE 'PHYTOSOCIOLOGICAL' after 'CULTIVARS';
+
 ALTER TYPE RANK ADD VALUE 'GIGAORDER' after 'INFRACOHORT';
 ALTER TYPE RANK ADD VALUE 'MIRORDER' after 'GRANDORDER';
 ALTER TYPE RANK ADD VALUE 'NANORDER' after 'ORDER';
