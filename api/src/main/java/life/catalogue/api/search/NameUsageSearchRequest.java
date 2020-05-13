@@ -40,7 +40,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
       }
     }
     NON_FILTERS = Set.copyOf(non);
-   }
+  }
 
   public static enum SearchContent {
     SCIENTIFIC_NAME, AUTHORSHIP, VERNACULAR_NAME
@@ -87,6 +87,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
       @JsonProperty("facet") Set<NameUsageSearchParameter> facets,
       @JsonProperty("content") Set<SearchContent> content,
       @JsonProperty("sortBy") SortBy sortBy,
+      @JsonProperty("q") String q,
       @JsonProperty("highlight") boolean highlight,
       @JsonProperty("reverse") boolean reverse,
       @JsonProperty("fuzzy") boolean fuzzy,
@@ -94,6 +95,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     this.filters = filters == null ? new EnumMap<>(NameUsageSearchParameter.class) : new EnumMap<>(filters);
     this.facets = facets == null ? EnumSet.noneOf(NameUsageSearchParameter.class) : EnumSet.copyOf(facets);
     this.content = content == null ? EnumSet.noneOf(SearchContent.class) : EnumSet.copyOf(content);
+    setQ(q); // see comments there
     this.sortBy = sortBy;
     this.highlight = highlight;
     this.reverse = reverse;
@@ -111,7 +113,6 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     if (filters != null) {
       copy.filters = new EnumMap<>(NameUsageSearchParameter.class);
       copy.filters.putAll(filters);
-
     }
     if (facets != null) {
       copy.facets = EnumSet.noneOf(NameUsageSearchParameter.class);

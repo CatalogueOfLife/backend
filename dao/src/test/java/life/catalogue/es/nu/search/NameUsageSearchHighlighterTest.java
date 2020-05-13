@@ -43,7 +43,7 @@ public class NameUsageSearchHighlighterTest {
     return a;
   }
 
-  private static NameSearchHighlighter createHighlighter(String q, SearchContent... sc) {
+  private static NameUsageHighlighter createHighlighter(String q, SearchContent... sc) {
     NameUsageSearchRequest nsr = new NameUsageSearchRequest();
     nsr.setQ(q);
     if (sc.length == 0) {
@@ -51,7 +51,7 @@ public class NameUsageSearchHighlighterTest {
     } else {
       nsr.setContent(new HashSet<SearchContent>(Arrays.asList(sc)));
     }
-    return new NameSearchHighlighter(nsr, null);
+    return new NameUsageHighlighter(nsr, null);
   }
 
   @Test

@@ -30,7 +30,7 @@ class ResponsePostProcessor implements UpwardConverter<NameUsageSearchResponse, 
         pruneDecisions();
       }
       if (mustHighlight()) {
-        NameSearchHighlighter highlighter = new NameSearchHighlighter(request, response);
+        NameUsageHighlighter highlighter = new NameUsageHighlighter(request, response);
         highlighter.highlightNameUsages();
       }
     }
