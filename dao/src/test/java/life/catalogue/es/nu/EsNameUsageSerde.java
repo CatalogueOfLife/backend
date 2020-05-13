@@ -85,7 +85,7 @@ public class EsNameUsageSerde extends EsReadTestBase {
   public void testEsNameUsage1() throws IOException {
     EsNameUsage docIn = new EsNameUsage();
     docIn.setPayload(EsModule.write(TestEntityGenerator.newNameUsageTaxonWrapper()));
-    docIn.setAuthorship("John Smith");
+    docIn.setAuthorshipComplete("John Smith");
     docIn.setDatasetKey(472);
     docIn.setNameFields(EnumSet.of(NameField.COMBINATION_EX_AUTHORS, NameField.UNINOMIAL));
     docIn.setNameId("16");
@@ -110,7 +110,7 @@ public class EsNameUsageSerde extends EsReadTestBase {
     EsNameUsage docIn = new EsNameUsage();
     docIn.setPayload(
         EsModule.write(TestEntityGenerator.newNameUsageTaxonWrapper()));
-    docIn.setAuthorship("John Smith");
+    docIn.setAuthorshipComplete("John Smith");
     docIn.setDatasetKey(472);
     docIn.setNameFields(EnumSet.of(NameField.COMBINATION_EX_AUTHORS, NameField.UNINOMIAL));
     docIn.setNameId("16");

@@ -40,8 +40,11 @@ public class EsNameUsage {
   @Analyzers({SCINAME_IGNORE_CASE, SCINAME_WHOLE_WORDS, SCINAME_AUTO_COMPLETE})
   private String scientificName;
   private NameStrings nameStrings;
+  // Only indexed using KEYWORD analyzer since it's meant for faceting only (#371)
+  private Set<String> authorship;
+  private Set<String> authorshipYear;
   @Analyzers({IGNORE_CASE, AUTO_COMPLETE})
-  private String authorship;
+  private String authorshipComplete;
   private String nameId;
   private String nameIndexId;
   private String publishedInId;
@@ -132,12 +135,28 @@ public class EsNameUsage {
     this.nameStrings = nameStrings;
   }
 
-  public String getAuthorship() {
+  public Set<String> getAuthorship() {
     return authorship;
   }
 
-  public void setAuthorship(String authorship) {
+  public Set<String> getAuthorshipYear() {
+    return authorshipYear;
+  }
+
+  public void setAuthorship(Set<String> authorship) {
     this.authorship = authorship;
+  }
+
+  public void setAuthorshipYear(Set<String> authorshipYear) {
+    this.authorshipYear = authorshipYear;
+  }
+
+  public String getAuthorshipComplete() {
+    return authorshipComplete;
+  }
+
+  public void setAuthorshipComplete(String authorship) {
+    this.authorshipComplete = authorship;
   }
 
   public String getNameId() {
@@ -302,9 +321,9 @@ public class EsNameUsage {
 
   @Override
   public int hashCode() {
-    return Objects.hash(acceptedName, authorship, classification, classificationIds, datasetKey, decisions, documentId, fossil, issues,
-        nameFields, nameId, nameIndexId, nameStrings, nomCode, nomStatus, payload, publishedInId, publisherKey, rank, recent,
-        scientificName, sectorDatasetKey, sectorKey, status, type, usageId, vernacularNames);
+    return Objects.hash(acceptedName, authorship, authorshipComplete, authorshipYear, classification, classificationIds, datasetKey,
+        decisions, documentId, fossil, issues, nameFields, nameId, nameIndexId, nameStrings, nomCode, nomStatus, payload, publishedInId,
+        publisherKey, rank, recent, scientificName, sectorDatasetKey, sectorKey, status, type, usageId, vernacularNames);
   }
 
   @Override
@@ -320,6 +339,7 @@ public class EsNameUsage {
     }
     EsNameUsage other = (EsNameUsage) obj;
     return Objects.equals(acceptedName, other.acceptedName) && Objects.equals(authorship, other.authorship)
+        && Objects.equals(authorshipComplete, other.authorshipComplete) && Objects.equals(authorshipYear, other.authorshipYear)
         && Objects.equals(classification, other.classification) && Objects.equals(classificationIds, other.classificationIds)
         && Objects.equals(datasetKey, other.datasetKey) && Objects.equals(decisions, other.decisions)
         && Objects.equals(documentId, other.documentId) && Objects.equals(fossil, other.fossil) && Objects.equals(issues, other.issues)

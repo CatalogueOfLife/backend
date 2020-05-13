@@ -30,7 +30,7 @@ class DataTypeMap {
   private final EnumMap<ESDataType, HashSet<Class<?>>> es2java = new EnumMap<>(ESDataType.class);
 
   private DataTypeMap() {
-    
+
     /* Stringy types */
     java2es.put(String.class, KEYWORD);
     java2es.put(char.class, KEYWORD);
@@ -38,7 +38,7 @@ class DataTypeMap {
     java2es.put(URI.class, KEYWORD);
     java2es.put(URL.class, KEYWORD);
     java2es.put(UUID.class, KEYWORD);
-    
+
     /* Number types */
     java2es.put(byte.class, BYTE);
     java2es.put(Byte.class, BYTE);
@@ -52,11 +52,11 @@ class DataTypeMap {
     java2es.put(Float.class, FLOAT);
     java2es.put(double.class, DOUBLE);
     java2es.put(Double.class, DOUBLE);
-    
+
     /* Boolean types */
     java2es.put(boolean.class, BOOLEAN);
     java2es.put(Boolean.class, BOOLEAN);
-    
+
     /* Date types */
     java2es.put(LocalDateTime.class, DATE);
     java2es.put(LocalDate.class, DATE);
@@ -67,7 +67,7 @@ class DataTypeMap {
   }
 
   /**
-   * Whether or not the specified Java type maps to a primitive Elasticsearch type (other than "object" or "nested").
+   * Whether or not the specified Java type maps to a primitive Elasticsearch type (i.e. other than "object" or "nested").
    */
   boolean isESPrimitive(Class<?> javaType) {
     return getESType(javaType) == null;

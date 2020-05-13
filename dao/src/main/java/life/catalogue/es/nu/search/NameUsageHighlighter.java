@@ -21,43 +21,40 @@ import static life.catalogue.es.nu.NameUsageWrapperConverter.normalizeStrongly;
 import static life.catalogue.es.nu.NameUsageWrapperConverter.normalizeWeakly;
 
 /*
- * A DIY highlighter we use in stead of Elasticsearch's highlight capabilities. The life.catalogue.es.query package contains the classes to specify
- * and serialize a highlight request, but we currently don't use them. The reason is that the things we want to apply the highlighting to
- * are tucked away within the payload field, which is completely opaque to Elasticsearch.
+ * A DIY highlighter we use in stead of Elasticsearch's highlight capabilities.
+ * 
+ * The life.catalogue.es.query package does contain the classes to specify and serialize a Elasticsearch-native highlight request, but we
+ * currently don't use them. The reason is that the things we want to apply the highlighting to are tucked away within the payload field,
+ * which is completely opaque to Elasticsearch.
  * 
  * With respect to scientific names, the highlighting may be imprecise. The highlighting is based on occurences of a normalized Q within the
  * normalized name. The start and end positions are used to insert the <em> tags in the original name, so we take a chance and hope that the
- * name and normalized name are similar enough for the user to understand why some snippet of text get highlighted.
+ * name and normalized name are similar enough for the user to understand why some snippet of text gets highlighted.
  */
-class NameSearchHighlighter {
+class NameUsageHighlighter {
 
   private static final String HIGHLIGHT_BEGIN = "<em class='highlight'>";
   private static final String HIGHLIGHT_END = "</em>";
-  
+
   private final NameUsageSearchRequest request;
   private final NameUsageSearchResponse response;
 
-  private final Pattern pattern; // pattern for authorship and vernacular names
-  private final Pattern patternWN; // pattern for weakly normalized Q
-  private final Pattern patternSN; // pattern for strongly normalized Q
+  private Pattern pattern; // pattern for authorship and vernacular names
+  private Pattern patternWN; // pattern for weakly normalized Q
+  private Pattern patternSN; // pattern for strongly normalized Q
 
-  NameSearchHighlighter(NameUsageSearchRequest request, NameUsageSearchResponse response) {
+  NameUsageHighlighter(NameUsageSearchRequest request, NameUsageSearchResponse response) {
     this.request = request;
     this.response = response;
     Set<SearchContent> sc = request.getContent();
     if (sc.contains(AUTHORSHIP) || sc.contains(VERNACULAR_NAME)) {
-      pattern = Pattern.compile(Pattern.quote(request.getQ().toLowerCase()));
-    } else {
-      pattern = null;
+      pattern = Pattern.compile(Pattern.quote(request.getQ()));
     }
     if (sc.contains(SCIENTIFIC_NAME)) {
-      String qWN = normalizeWeakly(request.getQ()).toLowerCase();
-      String qSN = normalizeStrongly(request.getQ()).toLowerCase();
-      patternWN = Pattern.compile(Pattern.quote(qWN.toLowerCase()));
+      String qWN = normalizeWeakly(request.getQ());
+      String qSN = normalizeStrongly(request.getQ());
+      patternWN = Pattern.compile(Pattern.quote(qWN));
       patternSN = qWN.equals(qSN) ? null : Pattern.compile(Pattern.quote(qSN));
-    } else {
-      patternWN = null;
-      patternSN = null;
     }
   }
 
@@ -96,17 +93,20 @@ class NameSearchHighlighter {
 
   private void highlightScientificName(NameUsageWrapper nuw) {
     String original = nuw.getUsage().getName().getScientificName();
-    Matcher matcher = patternWN.matcher(normalizeWeakly(original).toLowerCase());
+    Matcher matcher = patternWN.matcher(normalizeWeakly(original));
     String highlighted = highlight(original, matcher);
     if (highlighted.length() == original.length() && patternSN != null) {
       // Then no highlighting took place; let's try with the strongly normalized name
-      matcher = patternSN.matcher(normalizeStrongly(original).toLowerCase());
+      matcher = patternSN.matcher(normalizeStrongly(original));
       highlighted = highlight(original, matcher);
     }
     nuw.getUsage().getName().setScientificName(highlighted);
   }
 
   private String highlight(String value) {
+    if (value == null) {
+      return value;
+    }
     return highlight(value, pattern.matcher(value.toLowerCase()));
   }
 

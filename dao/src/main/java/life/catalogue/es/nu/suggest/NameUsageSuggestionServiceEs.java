@@ -41,23 +41,19 @@ public class NameUsageSuggestionServiceEs extends NameUsageQueryService implemen
   @VisibleForTesting
   public NameUsageSuggestResponse suggest(String index, NameUsageSuggestRequest request) throws IOException {
     validateRequest(request);
-    request.setSearchTerms(EsUtil.getSearchTerms(client, index, Analyzer.SCINAME_AUTO_COMPLETE, request.getQ()));
+    String[] terms = EsUtil.getSearchTerms(client, index, Analyzer.SCINAME_AUTO_COMPLETE, request.getQ());
+    request.setSearchTerms(terms);
     RequestTranslator translator = new RequestTranslator(request);
     EsSearchRequest query = translator.translate();
-    EsResponse<EsNameUsage> esResponse;
-    try {
-      esResponse = executeSearchRequest(index, query);
-    } catch (IOException e) {
-      throw new EsException(e);
-    }
+    EsResponse<EsNameUsage> esResponse = executeSearchRequest(index, query);
     List<NameUsageSuggestion> suggestions = new ArrayList<>();
-    SearchHitConverter factory = new SearchHitConverter(request);
+    SearchHitConverter suggestionFactory = new SearchHitConverter(request);
     esResponse.getHits().getHits().forEach(hit -> {
       if (hit.matchedQuery(QTranslator.SN_QUERY_NAME)) {
-        suggestions.add(factory.createSuggestion(hit, false));
+        suggestions.add(suggestionFactory.createSuggestion(hit, false));
       }
       if (hit.matchedQuery(QTranslator.VN_QUERY_NAME)) {
-        suggestions.add(factory.createSuggestion(hit, true));
+        suggestions.add(suggestionFactory.createSuggestion(hit, true));
       }
     });
     return new NameUsageSuggestResponse(suggestions);
