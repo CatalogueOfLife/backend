@@ -10,6 +10,16 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+
+#### 2020-05-13 new order ranks
+```
+ALTER TYPE RANK ADD VALUE 'GIGAORDER' after 'INFRACOHORT';
+ALTER TYPE RANK ADD VALUE 'MIRORDER' after 'GRANDORDER';
+ALTER TYPE RANK ADD VALUE 'NANORDER' after 'ORDER';
+ALTER TYPE RANK ADD VALUE 'HYPOORDER' after 'NANORDER';
+ALTER TYPE RANK ADD VALUE 'MINORDER' after 'HYPOORDER';
+```
+
 #### 2020-05-12 remove locked
 ```
 ALTER TABLE dataset DROP COLUMN locked;
