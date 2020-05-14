@@ -1,11 +1,10 @@
 package life.catalogue.parser;
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
 import life.catalogue.api.vocab.NomStatus;
-import life.catalogue.parser.NomStatusParser;
 import org.junit.Test;
+
+import java.util.List;
 
 /**
  *
@@ -32,7 +31,12 @@ public class NomStatusParserTest extends ParserTestBase<NomStatus> {
     assertParse(NomStatus.DOUBTFUL, "nom inquirenda");
     assertParse(NomStatus.DOUBTFUL, "nomen inquirendum");
     assertParse(NomStatus.DOUBTFUL, "nomina inquirenda");
-    
+
+    assertParse(NomStatus.ESTABLISHED, "NOMEN_0000228");
+    assertParse(NomStatus.ESTABLISHED, "http://purl.obolibrary.org/obo/NOMEN_0000228");
+    assertParse(NomStatus.ESTABLISHED, "NOMEN_228");
+
+    assertUnparsable("NOMEN_0012228");
   }
 
   @Override
