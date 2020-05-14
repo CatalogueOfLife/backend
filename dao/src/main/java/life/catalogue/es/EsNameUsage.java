@@ -1,26 +1,20 @@
 package life.catalogue.es;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
-import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NameField;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.es.ddl.Analyzers;
-import life.catalogue.es.ddl.ESDataType;
-import life.catalogue.es.ddl.MapToType;
-import life.catalogue.es.ddl.NotIndexed;
-import life.catalogue.es.ddl.NotMapped;
-import static life.catalogue.es.ddl.Analyzer.AUTO_COMPLETE;
-import static life.catalogue.es.ddl.Analyzer.IGNORE_CASE;
-import static life.catalogue.es.ddl.Analyzer.SCINAME_AUTO_COMPLETE;
-import static life.catalogue.es.ddl.Analyzer.SCINAME_IGNORE_CASE;
-import static life.catalogue.es.ddl.Analyzer.SCINAME_WHOLE_WORDS;
+import life.catalogue.es.ddl.*;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+
+import static life.catalogue.es.ddl.Analyzer.*;
 
 /**
  * Class modeling the Elasticsearch document type used to store NameUsageWrapper instances.

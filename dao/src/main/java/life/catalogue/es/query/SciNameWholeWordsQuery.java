@@ -1,5 +1,6 @@
 package life.catalogue.es.query;
 
+import life.catalogue.es.ddl.Analyzer;
 import life.catalogue.es.ddl.MultiField;
 
 public class SciNameWholeWordsQuery extends AbstractMatchQuery {
@@ -11,7 +12,7 @@ public class SciNameWholeWordsQuery extends AbstractMatchQuery {
 
   @Override
   protected MultiField getMultiField() {
-    return MultiField.SCINAME_WHOLE_WORDS;
+    return Analyzer.SCINAME_WHOLE_WORDS.getMultiField();
   }
 
 }

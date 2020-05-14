@@ -1,5 +1,6 @@
 package life.catalogue.es.query;
 
+import life.catalogue.es.ddl.Analyzer;
 import life.catalogue.es.ddl.MultiField;
 
 public class SciNameCaseInsensitiveQuery extends TermQuery {
@@ -10,7 +11,7 @@ public class SciNameCaseInsensitiveQuery extends TermQuery {
 
   @Override
   public MultiField getMultiField() {
-    return MultiField.SCINAME_IGNORE_CASE;
+    return Analyzer.SCINAME_IGNORE_CASE.getMultiField();
   }
 
 }

@@ -1,15 +1,14 @@
 package life.catalogue.es.ddl;
 
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import org.apache.commons.lang3.ArrayUtils;
+import org.gbif.common.shaded.com.google.common.base.Preconditions;
+
+import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import org.gbif.common.shaded.com.google.common.base.Preconditions;
+
 import static life.catalogue.es.ddl.ESDataType.KEYWORD;
 
 class MappingUtil {
@@ -87,7 +86,8 @@ class MappingUtil {
     if (esType == KEYWORD) {
       Analyzers annotation = fm.getAnnotation(Analyzers.class);
       if (annotation != null) {
-        if (!Arrays.asList(annotation.value()).contains(Analyzer.KEYWORD)) {
+        Analyzer[] anas = annotation.value();
+        if (!ArrayUtils.contains(anas, Analyzer.KEYWORD)) {
           return Boolean.FALSE;
         }
       }

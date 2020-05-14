@@ -10,6 +10,7 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+ALTER TABLE dataset_archive ALTER column dataset_key DROP NOT NULL;
 
 #### 2020-05-13 new order ranks
 ```

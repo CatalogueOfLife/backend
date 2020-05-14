@@ -1,8 +1,5 @@
 package life.catalogue.common.kryo;
 
-import java.io.*;
-import java.util.Iterator;
-
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.InputChunked;
 import com.esotericsoftware.kryo.io.OutputChunked;
@@ -10,6 +7,9 @@ import com.esotericsoftware.kryo.unsafe.UnsafeInput;
 import com.esotericsoftware.kryo.unsafe.UnsafeOutput;
 import com.esotericsoftware.kryo.util.Pool;
 import org.jetbrains.annotations.NotNull;
+
+import java.io.*;
+import java.util.Iterator;
 
 /**
  * Store that writes objects of the same type to a file and offers an iterator to read them all in the
@@ -79,7 +79,6 @@ public class KryoCollectionStore<T> implements AutoCloseable, Iterable<T> {
       Kryo kryo = pool.obtain();
       try {
         // Read data from first set of chunks...
-        System.out.println();
         T obj = kryo.readObject(input, clazz);
         input.nextChunk();
         return obj;

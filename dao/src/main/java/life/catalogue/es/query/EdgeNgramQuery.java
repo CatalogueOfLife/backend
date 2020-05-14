@@ -1,5 +1,6 @@
 package life.catalogue.es.query;
 
+import life.catalogue.es.ddl.Analyzer;
 import life.catalogue.es.ddl.MultiField;
 
 public class EdgeNgramQuery extends AbstractMatchQuery {
@@ -10,7 +11,7 @@ public class EdgeNgramQuery extends AbstractMatchQuery {
 
   @Override
   protected MultiField getMultiField() {
-    return MultiField.AUTO_COMPLETE;
+    return Analyzer.AUTO_COMPLETE.getMultiField();
   }
 
 }

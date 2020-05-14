@@ -1,14 +1,14 @@
 package life.catalogue.es.ddl;
 
+import life.catalogue.es.EsModule;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Set;
-import life.catalogue.es.EsModule;
+
 import static java.util.Collections.emptySet;
-import static life.catalogue.es.ddl.MappingUtil.getTypeArgument;
-import static life.catalogue.es.ddl.MappingUtil.isA;
-import static life.catalogue.es.ddl.MappingUtil.newAncestor;
+import static life.catalogue.es.ddl.MappingUtil.*;
 
 /**
  * Generates document type mappings from Class objects.
@@ -24,8 +24,6 @@ public abstract class MappingsFactory {
   }
 
   private boolean mapEnumToInt = true;
-
-  protected MappingsFactory() {}
 
   /**
    * Creates a document type mapping for the specified class.

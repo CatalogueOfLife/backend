@@ -614,7 +614,6 @@ ALTER TABLE dataset_archive
   DROP COLUMN gbif_publisher_key,
   DROP COLUMN private,
   DROP COLUMN settings,
-
   ADD COLUMN dataset_key INTEGER REFERENCES dataset;
 ALTER TABLE dataset_archive ADD UNIQUE (key, import_attempt, dataset_key);
 

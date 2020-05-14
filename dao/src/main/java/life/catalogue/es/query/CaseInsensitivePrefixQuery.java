@@ -1,6 +1,6 @@
 package life.catalogue.es.query;
 
-import life.catalogue.es.ddl.MultiField;
+import life.catalogue.es.ddl.Analyzer;
 
 /**
  * Case-insentive variant of the {@code PrefixQuery}. Note that since this class extends {@code PrefixQuery}, it will
@@ -16,7 +16,7 @@ public class CaseInsensitivePrefixQuery extends PrefixQuery {
   }
 
   protected String getField(String field) {
-    return field + "." + MultiField.IGNORE_CASE.getName();
+    return field + "." + Analyzer.IGNORE_CASE.getMultiField().getName();
   }
 
 }
