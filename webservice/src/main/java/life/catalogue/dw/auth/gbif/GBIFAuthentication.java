@@ -1,5 +1,19 @@
 package life.catalogue.dw.auth.gbif;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.io.BaseEncoding;
+import life.catalogue.api.model.User;
+import life.catalogue.api.vocab.Country;
+import life.catalogue.dw.auth.AuthenticationProvider;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.core.HttpHeaders;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -8,20 +22,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import javax.ws.rs.core.HttpHeaders;
-
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.io.BaseEncoding;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import life.catalogue.api.model.User;
-import life.catalogue.api.vocab.Country;
-import life.catalogue.dw.auth.AuthenticationProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Authentication provider that delegates authentication to the BASIC scheme using the
@@ -55,7 +55,7 @@ public class GBIFAuthentication implements AuthenticationProvider {
       throw new RuntimeException(e);
     }
     verificationUser = cfg.verificationUser;
-    LOG.info("Accessing GBIF user accounts at {}", cfg.api);
+    LOG.info("GBIF authentication created using API at {}", cfg.api);
   }
   
   @Override

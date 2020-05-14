@@ -44,7 +44,7 @@ public class SettingsDeserializer extends JsonDeserializer {
           }
         } catch (RuntimeException ex) {
           LOG.error("Unable to convert value {} for setting {} into {}", e.getValue(), e.getKey(), e.getKey().getType());
-          map.remove(e.getKey());
+          throw new IllegalArgumentException("Unable to convert value "+e.getValue()+" for setting " + e.getKey() + " into " + e.getKey().getType());
         }
       }
     }

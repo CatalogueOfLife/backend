@@ -74,8 +74,10 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       dm.updateSettings(key, settings, userKey);
+      session.commit();
     }
   }
+
   public Dataset latestRelease(int projectKey) {
     try (SqlSession session = factory.openSession()){
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
