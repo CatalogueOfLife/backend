@@ -14,38 +14,38 @@ public enum Setting {
    * When importing data from text files this overrides
    * the field delimiter character used
    */
-  CSV_DELIMITER(String.class, EXTERNAL),
+  CSV_DELIMITER(String.class, EXTERNAL, MANAGED),
 
   /**
    * When importing data from text files this overrides
    * the quote character used
    */
-  CSV_QUOTE(String.class, EXTERNAL),
+  CSV_QUOTE(String.class, EXTERNAL, MANAGED),
 
   /**
    * When importing data from text files this overrides
    * the single character used for escaping quotes inside an already quoted value.
    * For example '"' for CSV
    */
-  CSV_QUOTE_ESCAPE(String.class, EXTERNAL),
+  CSV_QUOTE_ESCAPE(String.class, EXTERNAL, MANAGED),
 
   /**
    * Overrides the gazetteer standard to use in all distribution interpretations for the dataset.
    */
-  DISTRIBUTION_GAZETTEER(Gazetteer.class, EXTERNAL),
+  DISTRIBUTION_GAZETTEER(Gazetteer.class, EXTERNAL, MANAGED),
 
   /**
    * The nomenclatural code followed in the dataset.
    * It will be used mostly as a hint to format names accordingly.
    * If the dataset contains mixed data from multiple codes keep this field null.
    */
-  NOMENCLATURAL_CODE(NomCode.class),
+  NOMENCLATURAL_CODE(NomCode.class, EXTERNAL, MANAGED),
 
   /**
    * Setting that will inform the importer to rematch all decisions (decisions sensu strictu but also sectors and estimates)
    * Defaults to false
    */
-  REMATCH_DECISIONS(Boolean.class, EXTERNAL),
+  REMATCH_DECISIONS(Boolean.class, EXTERNAL, MANAGED),
 
   /**
    * Template used to build a new release title.
@@ -56,24 +56,23 @@ public enum Setting {
    */
   RELEASE_TITLE_TEMPLATE(String.class, MANAGED),
 
+  DATA_FORMAT(DataFormat.class, EXTERNAL, MANAGED),
+
   /**
    * In continuous import mode the frequency the dataset is scheduled for imports.
    */
   IMPORT_FREQUENCY(Frequency.class, EXTERNAL),
 
-  DATA_FORMAT(DataFormat.class, EXTERNAL),
-
-  DATA_ACCESS(URI.class, EXTERNAL)
-  ;
+  DATA_ACCESS(URI.class, EXTERNAL);
 
   private final Class type;
-  private final DatasetOrigin origin;
+  private final DatasetOrigin[] origin;
 
   public Class getType() {
     return type;
   }
 
-  public DatasetOrigin getOrigin() {
+  public DatasetOrigin[] getOrigin() {
     return origin;
   }
 
@@ -91,7 +90,7 @@ public enum Setting {
    * @param type
    * @param origin
    */
-  Setting(Class type, DatasetOrigin origin) {
+  Setting(Class type, DatasetOrigin... origin) {
     this.origin = origin;
     Preconditions.checkArgument(type.equals(String.class)
       || type.equals(Integer.class)
