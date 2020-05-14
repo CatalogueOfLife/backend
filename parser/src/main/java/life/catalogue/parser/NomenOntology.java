@@ -1,5 +1,6 @@
 package life.catalogue.parser;
 
+import com.google.common.base.Preconditions;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.common.io.Resources;
 import org.gbif.nameparser.api.NomCode;
@@ -19,17 +20,19 @@ import java.util.stream.Collectors;
 public class NomenOntology {
   private static final Logger LOG = LoggerFactory.getLogger(NomenOntology.class);
   private static final String RESOURCE = "parser/nomen.owl";
+  private static final String NS_RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+  private static final String NS_OWL = "http://www.w3.org/2002/07/owl#";
 
   public static final URI NAMESPACE = URI.create("http://purl.obolibrary.org/obo/");
   private static final String ROOT = NAMESPACE.resolve("NOMEN").toString();
 
   private Map<String, Nomen> classes;
 
-  class Nomen {
-    final String name;
-    Nomen subClassOf;
-    NomCode code;
-    NomStatus status;
+  public class Nomen {
+    public final String name;
+    public Nomen subClassOf;
+    public NomCode code;
+    public NomStatus status;
 
     Nomen(String about) {
       this.name = norm(about);
@@ -59,6 +62,7 @@ public class NomenOntology {
       }
     });
     classes = Map.copyOf(map);
+    LOG.info("Loaded {} NOMEN classes", classes.size());
     // lookup status & code
     mapNomen();
   }
@@ -106,6 +110,7 @@ public class NomenOntology {
   }
 
   private void apply(Nomen n, Consumer<Nomen> func){
+    Preconditions.checkNotNull(n, "NOMEN concept missing");
     func.accept(n);
     // apply to children
     for (Nomen c : classes.values()) {
@@ -136,15 +141,17 @@ public class NomenOntology {
                   // we are already inside a class - ignore!
                   break;
                 }
-                String id = parser.getAttributeValue(null, "about");
-                System.out.println(id);
+                String id = parser.getAttributeValue(NS_RDF, "about");
+                //System.out.println(id);
+                //printAttrs(parser);
                 if (id != null && id.startsWith(ROOT)) {
                   n = new Nomen(id);
                 }
                 break;
               case "subClassOf":
                 if (n != null) {
-                  String sub = parser.getAttributeValue(null, "resource");
+                  String sub = parser.getAttributeValue(NS_RDF, "resource");
+                  //printAttrs(parser);
                   if (sub != null && sub.startsWith(ROOT)) {
                     n.subClassOf = new Nomen(sub);
                   }
@@ -165,12 +172,23 @@ public class NomenOntology {
         }
       }
       parser.close();
+      Preconditions.checkArgument(nomen.size() > 200, "NOMEN ontology contains only " + nomen.size() + " entries");
       return nomen;
 
     } catch (XMLStreamException e) {
-      LOG.error("Failed to read NOMEN ontology: {}", e.getMessage(), e);
+      throw new IllegalStateException("Failed to read NOMEN ontology", e);
     }
-    return Collections.EMPTY_LIST;
+  }
+
+  private static void printAttrs(XMLStreamReader parser){
+    System.out.println(parser.getAttributeCount() + " attributes");
+    for (int i=0; i<parser.getAttributeCount(); i++){
+      System.out.println(parser.getAttributeName(i) + " -> " + parser.getAttributeValue(i));
+    }
+  }
+
+  public int size() {
+    return classes.size();
   }
 
   public Collection<Nomen> list() {
