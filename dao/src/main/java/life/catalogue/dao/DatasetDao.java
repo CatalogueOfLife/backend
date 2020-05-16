@@ -190,6 +190,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
     try (SqlSession session = factory.openSession()){
       action.accept(session.getMapper(DatasetMapper.class));
+      session.commit();
     }
     bus.post(new UserPermissionChanged(user.getUsername()));
   }
