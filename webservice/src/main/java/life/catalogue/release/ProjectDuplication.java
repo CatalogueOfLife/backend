@@ -25,11 +25,11 @@ public class ProjectDuplication extends ProjectRunnable {
     // copy data
     updateState(ImportState.INSERTING);
 
-    sectors = copyTableWithKeyMap(SectorMapper.class, Sector.class, this::updateEntity);
-    copyTable(DecisionMapper.class, EditorialDecision.class, this::updateEntity);
-    copyTable(EstimateMapper.class, SpeciesEstimate.class, this::updateEntity);
+    sectors = copyTableWithKeyMap(SectorMapper.class, Sector.class, this::updateGlobalEntity);
+    copyTable(DecisionMapper.class, EditorialDecision.class, this::updateGlobalEntity);
+    copyTable(EstimateMapper.class, SpeciesEstimate.class, this::updateGlobalEntity);
 
-    copyTable(VerbatimRecordMapper.class, VerbatimRecord.class, this::updateEntity);
+    copyTable(VerbatimRecordMapper.class, VerbatimRecord.class, this::updateGlobalEntity);
 
     copyTable(ReferenceMapper.class, Reference.class, this::updateSectorEntity);
     copyTable(NameMapper.class, Name.class, this::updateSectorEntity);
@@ -37,7 +37,7 @@ public class ProjectDuplication extends ProjectRunnable {
     copyTable(SynonymMapper.class, Synonym.class, this::updateSectorEntity);
     copyTable(TypeMaterialMapper.class, TypeMaterial.class, this::updateSectorEntity);
 
-    copyTable(NameRelationMapper.class, NameRelation.class, this::updateEntity);
+    copyTable(NameRelationMapper.class, NameRelation.class, this::updateGlobalEntity);
 
     copyExtTable(VernacularNameMapper.class, VernacularName.class, this::updateExtensionEntity);
     copyExtTable(DistributionMapper.class, Distribution.class, this::updateExtensionEntity);
@@ -45,7 +45,7 @@ public class ProjectDuplication extends ProjectRunnable {
     copyExtTable(MediaMapper.class, Media.class, this::updateExtensionEntity);
   }
 
-  private <T extends DSID<?>> void updateEntity(T obj) {
+  private <T extends DSID<?>> void updateGlobalEntity(T obj) {
     obj.setId(null);
     obj.setDatasetKey(newDatasetKey);
   }
@@ -56,7 +56,7 @@ public class ProjectDuplication extends ProjectRunnable {
     }
   }
   private <E extends DatasetScopedEntity<Integer> & VerbatimEntity> void updateExtensionEntity(TaxonExtension<E> obj) {
-    updateEntity(obj.getObj());
+    obj.getObj().setDatasetKey(newDatasetKey);
   }
 
 }
