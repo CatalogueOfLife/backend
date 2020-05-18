@@ -97,7 +97,7 @@ public abstract class MapperTestBase<M> {
     di.setDatasetKey(datasetKey);
     di.setCreatedBy(user);
     di.setState(ImportState.FINISHED);
-
+    di.setJob(MapperTestBase.class.getSimpleName());
     di.setStarted(LocalDateTime.now());
     di.setDownload(LocalDateTime.now());
     di.setFinished(LocalDateTime.now());
