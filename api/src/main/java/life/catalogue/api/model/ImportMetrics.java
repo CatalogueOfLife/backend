@@ -10,13 +10,18 @@ import java.util.Map;
 import java.util.Objects;
 
 public class ImportMetrics<T extends Enum> implements ImportAttempt {
-  
+
   private Integer datasetKey;
 
   /**
    * Sequential attempt number starting with 1 for each dataset/sector
    */
   private int attempt;
+
+  /**
+   * Specific job that created the import, i.e. job class that generated this import
+   */
+  private String job;
 
   /**
    * State of the import, e.g. indicating if still running, success or failure.
@@ -297,56 +302,64 @@ public class ImportMetrics<T extends Enum> implements ImportAttempt {
     this.issuesCount = issuesCount;
   }
 
+  public String getJob() {
+    return job;
+  }
+
+  public void setJob(String job) {
+    this.job = job;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     ImportMetrics<?> that = (ImportMetrics<?>) o;
     return attempt == that.attempt &&
-            Objects.equals(datasetKey, that.datasetKey) &&
-            Objects.equals(state, that.state) &&
-            Objects.equals(started, that.started) &&
-            Objects.equals(finished, that.finished) &&
-            Objects.equals(createdBy, that.createdBy) &&
-            Objects.equals(error, that.error) &&
-            Objects.equals(nameCount, that.nameCount) &&
-            Objects.equals(taxonCount, that.taxonCount) &&
-            Objects.equals(synonymCount, that.synonymCount) &&
-            Objects.equals(referenceCount, that.referenceCount) &&
-            Objects.equals(typeMaterialCount, that.typeMaterialCount) &&
-            Objects.equals(descriptionCount, that.descriptionCount) &&
-            Objects.equals(distributionCount, that.distributionCount) &&
-            Objects.equals(mediaCount, that.mediaCount) &&
-            Objects.equals(vernacularCount, that.vernacularCount) &&
-            Objects.equals(namesByTypeCount, that.namesByTypeCount) &&
-            Objects.equals(namesByStatusCount, that.namesByStatusCount) &&
-            Objects.equals(namesByOriginCount, that.namesByOriginCount) &&
-            Objects.equals(namesByRankCount, that.namesByRankCount) &&
-            Objects.equals(nameRelationsByTypeCount, that.nameRelationsByTypeCount) &&
-            Objects.equals(typeMaterialByStatusCount, that.typeMaterialByStatusCount) &&
-            Objects.equals(distributionsByGazetteerCount, that.distributionsByGazetteerCount) &&
-            Objects.equals(vernacularsByLanguageCount, that.vernacularsByLanguageCount) &&
-            Objects.equals(mediaByTypeCount, that.mediaByTypeCount) &&
-            Objects.equals(usagesByStatusCount, that.usagesByStatusCount) &&
-            Objects.equals(taxaByRankCount, that.taxaByRankCount) &&
-            Objects.equals(issuesCount, that.issuesCount);
+        Objects.equals(datasetKey, that.datasetKey) &&
+        Objects.equals(job, that.job) &&
+        Objects.equals(state, that.state) &&
+        Objects.equals(started, that.started) &&
+        Objects.equals(finished, that.finished) &&
+        Objects.equals(createdBy, that.createdBy) &&
+        Objects.equals(error, that.error) &&
+        Objects.equals(nameCount, that.nameCount) &&
+        Objects.equals(taxonCount, that.taxonCount) &&
+        Objects.equals(synonymCount, that.synonymCount) &&
+        Objects.equals(referenceCount, that.referenceCount) &&
+        Objects.equals(typeMaterialCount, that.typeMaterialCount) &&
+        Objects.equals(descriptionCount, that.descriptionCount) &&
+        Objects.equals(distributionCount, that.distributionCount) &&
+        Objects.equals(mediaCount, that.mediaCount) &&
+        Objects.equals(vernacularCount, that.vernacularCount) &&
+        Objects.equals(namesByTypeCount, that.namesByTypeCount) &&
+        Objects.equals(namesByStatusCount, that.namesByStatusCount) &&
+        Objects.equals(namesByOriginCount, that.namesByOriginCount) &&
+        Objects.equals(namesByRankCount, that.namesByRankCount) &&
+        Objects.equals(nameRelationsByTypeCount, that.nameRelationsByTypeCount) &&
+        Objects.equals(typeMaterialByStatusCount, that.typeMaterialByStatusCount) &&
+        Objects.equals(distributionsByGazetteerCount, that.distributionsByGazetteerCount) &&
+        Objects.equals(vernacularsByLanguageCount, that.vernacularsByLanguageCount) &&
+        Objects.equals(mediaByTypeCount, that.mediaByTypeCount) &&
+        Objects.equals(usagesByStatusCount, that.usagesByStatusCount) &&
+        Objects.equals(taxaByRankCount, that.taxaByRankCount) &&
+        Objects.equals(issuesCount, that.issuesCount);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, attempt, state, started, finished, createdBy, error, nameCount, taxonCount, synonymCount, referenceCount, typeMaterialCount, descriptionCount, distributionCount, mediaCount, vernacularCount, namesByTypeCount, namesByStatusCount, namesByOriginCount, namesByRankCount, nameRelationsByTypeCount, typeMaterialByStatusCount, distributionsByGazetteerCount, vernacularsByLanguageCount, mediaByTypeCount, usagesByStatusCount, taxaByRankCount, issuesCount);
+    return Objects.hash(datasetKey, attempt, job, state, started, finished, createdBy, error, nameCount, taxonCount, synonymCount, referenceCount, typeMaterialCount, descriptionCount, distributionCount, mediaCount, vernacularCount, namesByTypeCount, namesByStatusCount, namesByOriginCount, namesByRankCount, nameRelationsByTypeCount, typeMaterialByStatusCount, distributionsByGazetteerCount, vernacularsByLanguageCount, mediaByTypeCount, usagesByStatusCount, taxaByRankCount, issuesCount);
   }
 
   @Override
   public String toString() {
-    return getClass().getSimpleName() + "{" +
-        attempt() +
-        ": " + state +
-        ", started=" + started +
-        ", finished=" + finished +
-        ", names=" + nameCount +
-        ", taxa=" + taxonCount +
-        '}';
+    return getClass().getSimpleName() + "{" + job + " " + attempt() +
+      ": " + state +
+      ", started=" + started +
+      ", finished=" + finished +
+      ", names=" + nameCount +
+      ", taxa=" + taxonCount +
+      '}';
   }
   
 }

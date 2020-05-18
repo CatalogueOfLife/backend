@@ -65,7 +65,7 @@ public class DatasetImportDao {
   /**
    * Create a new waiting dataset import with the next attempt
    */
-  public DatasetImport createWaiting(Dataset d, int user) {
+  public DatasetImport createWaiting(Dataset d, Runnable job, int user) {
     // build new import
     DatasetImport di = new DatasetImport();
     di.setDatasetKey(d.getKey());
@@ -73,6 +73,7 @@ public class DatasetImportDao {
     di.setStarted(LocalDateTime.now());
     di.setDownloadUri(null);
     di.setOrigin(d.getOrigin());
+    di.setJob(job.getClass().getSimpleName());
     di.setState(ImportState.WAITING);
     try (SqlSession session = factory.openSession(true)) {
       session.getMapper(DatasetImportMapper.class).create(di);

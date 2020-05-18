@@ -1,13 +1,13 @@
 package life.catalogue.release;
 
-import java.util.function.Consumer;
-
-import life.catalogue.db.mapper.TaxonExtensionMapper;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.DatasetScopedEntity;
 import life.catalogue.api.model.TaxonExtension;
+import life.catalogue.db.mapper.TaxonExtensionMapper;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.function.Consumer;
 
 public class ExtTableCopyHandler<T extends DatasetScopedEntity<Integer>> extends TableCopyHandlerBase<TaxonExtension<T>> {
   

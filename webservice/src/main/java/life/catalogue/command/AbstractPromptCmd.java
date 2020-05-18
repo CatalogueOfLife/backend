@@ -39,8 +39,13 @@ public abstract class AbstractPromptCmd extends ConfiguredCommand<WsServerConfig
 
   public abstract void execute(Bootstrap<WsServerConfig> bootstrap, Namespace namespace, WsServerConfig cfg) throws Exception;
 
+  public void prePromt(Bootstrap<WsServerConfig> bootstrap, Namespace namespace, WsServerConfig cfg){
+    // nothing by default
+  }
+
   @Override
   protected void run(Bootstrap<WsServerConfig> bootstrap, Namespace namespace, WsServerConfig cfg) throws Exception {
+    prePromt(bootstrap, namespace, cfg);
     final int prompt = namespace.getInt(ARG_PROMPT);
     if (prompt > 0) {
       System.out.format(describeCmd(namespace, cfg) + "\n");

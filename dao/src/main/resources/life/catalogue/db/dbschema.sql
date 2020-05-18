@@ -134,7 +134,6 @@ CREATE TYPE IMPORTSTATE AS ENUM (
   'EXPORTING',
   'UNCHANGED',
   'FINISHED',
-  'RELEASED',
   'CANCELED',
   'FAILED'
 );
@@ -684,6 +683,7 @@ CREATE TABLE dataset_import (
   verbatim_by_type_count HSTORE,
   verbatim_by_term_count JSONB,
   media_by_type_count HSTORE,
+  job TEXT NOT NULL,
   error TEXT,
   md5 TEXT,
   download_uri TEXT,
@@ -750,7 +750,7 @@ CREATE TABLE sector_import (
   name_relations_by_type_count HSTORE,
   verbatim_by_type_count HSTORE,
   media_by_type_count HSTORE,
-  type TEXT NOT NULL,
+  job TEXT NOT NULL,
   warnings TEXT[],
   error TEXT,
   PRIMARY KEY (sector_key, attempt)

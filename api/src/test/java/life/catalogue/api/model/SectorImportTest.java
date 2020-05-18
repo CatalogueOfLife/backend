@@ -12,8 +12,8 @@ public class SectorImportTest {
     SectorImport si2 = new SectorImport();
     
     assertEquals(si1, si2);
-    si1.setType("dfghjk");
-    si2.setType("dfghjk");
+    si1.setJob("dfghjk");
+    si2.setJob("dfghjk");
     assertEquals(si1, si2);
     
     si1.addWarning("fghj");

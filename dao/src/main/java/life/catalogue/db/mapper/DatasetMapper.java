@@ -17,6 +17,8 @@ import java.util.UUID;
 
 public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Dataset> {
 
+  void deletePhysically(@Param("key") int key);
+
   default void createAll(DatasetWithSettings d) {
     create(d.getDataset());
     updateSettings(d.getKey(), d.getSettings(), d.getDataset().getModifiedBy());

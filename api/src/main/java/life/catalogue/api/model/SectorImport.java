@@ -1,10 +1,10 @@
 package life.catalogue.api.model;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.google.common.base.Predicates;
 import com.google.common.collect.EvictingQueue;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SectorImport extends ImportMetrics<SectorImport.State> {
   
@@ -15,8 +15,7 @@ public class SectorImport extends ImportMetrics<SectorImport.State> {
       return this != FINISHED && this != FAILED && this != CANCELED;
     }
   }
-  
-  private String type;
+
   private int sectorKey;
   private Integer ignoredUsageCount;
   
@@ -34,15 +33,7 @@ public class SectorImport extends ImportMetrics<SectorImport.State> {
   public void addWarning(String warning) {
     warnings.add(warning);
   }
-  
-  public String getType() {
-    return type;
-  }
-  
-  public void setType(String type) {
-    this.type = type;
-  }
-  
+
   public int getSectorKey() {
     return sectorKey;
   }
@@ -78,7 +69,6 @@ public class SectorImport extends ImportMetrics<SectorImport.State> {
     if (!super.equals(o)) return false;
     SectorImport that = (SectorImport) o;
     return sectorKey == that.sectorKey &&
-        Objects.equals(type, that.type) &&
         Objects.equals(ignoredUsageCount, that.ignoredUsageCount) &&
         // EvictingQueue has no equals method implemented
         // for equality this hardly matters, so we just compare the sizes
@@ -87,12 +77,12 @@ public class SectorImport extends ImportMetrics<SectorImport.State> {
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), type, sectorKey, ignoredUsageCount, warnings);
+    return Objects.hash(super.hashCode(), sectorKey, ignoredUsageCount, warnings);
   }
   
   @Override
   public String attempt() {
-    return getType() + " " + getSectorKey() + " - " + getAttempt();
+    return getSectorKey() + "#" + getAttempt();
   }
-  
+
 }

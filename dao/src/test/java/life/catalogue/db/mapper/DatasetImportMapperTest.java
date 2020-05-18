@@ -36,6 +36,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     DatasetImport d = new DatasetImport();
     d.setDatasetKey(DATASET11.getKey());
     d.setCreatedBy(Users.TESTER);
+    d.setJob(DatasetImportMapperTest.class.getSimpleName());
     d.setError("no error");
     d.setState(state);
     d.setFormat(DataFormat.COLDP);
@@ -101,9 +102,8 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     commit();
     assertEquals(1, d1.getAttempt());
     
-    DatasetImport d2 = mapper().list(d1.getDatasetKey(), null, new Page(0, 100)).get(0);
-    d1.setAttempt(d2.getAttempt());
-    
+    DatasetImport d2 = mapper().get(d1.getDatasetKey(), d1.getAttempt());
+
     if (!d1.equals(d2)) {
       d1.setVerbatimByTermCount(null);
       d2.setVerbatimByTermCount(null);
@@ -114,8 +114,8 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     d1.setError("no error at all");
     mapper().update(d1);
     assertNotEquals(d1, d2);
-    
-    d2 = mapper().list(d1.getDatasetKey(), null, new Page(0, 100)).get(0);
+
+    d2 = mapper().get(d1.getDatasetKey(), d1.getAttempt());
     assertEquals(d1, d2);
     commit();
   }

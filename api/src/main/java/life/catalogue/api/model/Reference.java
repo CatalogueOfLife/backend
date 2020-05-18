@@ -1,12 +1,12 @@
 package life.catalogue.api.model;
 
-import java.util.Objects;
 import javax.annotation.Nonnull;
+import java.util.Objects;
 
 /**
  * Simplified citation class linked to an optional serial container.
  */
-public class Reference extends DatasetScopedEntity<String> implements VerbatimEntity {
+public class Reference extends DatasetScopedEntity<String> implements VerbatimEntity, SectorEntity {
   
   private Integer sectorKey;
   private Integer verbatimKey;

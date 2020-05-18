@@ -39,7 +39,9 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
                           @Param("page") Page page);
   
   void create(@Param("imp") SectorImport sectorImport);
-  
+
+  void update(@Param("imp") SectorImport sectorImport);
+
   /**
    * Deletes all imports for the given sector
    */

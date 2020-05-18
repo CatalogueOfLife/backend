@@ -10,7 +10,13 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-ALTER TABLE dataset_archive ALTER column dataset_key DROP NOT NULL;
+#### 2020-05-18 duplication job
+- remove ImportState.RELEASED (update imports with FINISHED instead)
+```
+ALTER TABLE sector_import RENAME COLUMN type TO job;
+ALTER TABLE dataset_import ADD COLUMN job text;
+```
+
 
 #### 2020-05-13 new order ranks
 ```

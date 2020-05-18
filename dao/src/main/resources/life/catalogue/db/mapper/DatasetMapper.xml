@@ -325,4 +325,8 @@
     WHERE key = #{key}
   </update>
 
+  <delete id="deletePhysically" parameterType="map">
+    DELETE FROM dataset WHERE key = #{key}
+  </delete>
+
 </mapper>

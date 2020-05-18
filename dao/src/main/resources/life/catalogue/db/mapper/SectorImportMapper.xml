@@ -6,7 +6,6 @@
 
   <sql id="SELECT">
     si.state,
-    si.type,
     si.sector_key,
     si.attempt,
     si.warnings,
@@ -17,9 +16,7 @@
 
   <sql id="COLS">
     state,
-    type,
     sector_key,
-    attempt,
     warnings,
     <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsCols">
       <property name="alias" value=""/>
@@ -28,9 +25,7 @@
 
   <sql id="PROPS">
     #{imp.state}::SECTORIMPORT_STATE,
-    #{imp.type},
     #{imp.sectorKey},
-    #{imp.attempt},
     #{imp.warnings, typeHandler=life.catalogue.db.type2.StringCollectionArrayTypeHandler},
     <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsProps"/>
   </sql>
@@ -94,9 +89,20 @@
   </select>
 
   <insert id="create" parameterType="SectorImport">
-    INSERT INTO sector_import (<include refid="COLS"/>)
-    VALUES (<include refid="PROPS"/>)
+    <selectKey keyProperty="imp.attempt" resultType="integer" order="BEFORE">
+      SELECT coalesce(max(attempt)+1, 1)
+      FROM sector_import
+      WHERE sector_key=#{imp.sectorKey}
+    </selectKey>
+    INSERT INTO sector_import (<include refid="COLS"/>, attempt)
+    VALUES (<include refid="PROPS"/>, #{imp.attempt})
   </insert>
+
+  <update id="update" parameterType="SectorImport">
+    UPDATE sector_import
+    SET (<include refid="COLS"/>) = (<include refid="PROPS"/>)
+    WHERE sector_key=#{imp.sectorKey} AND attempt=#{imp.attempt}
+  </update>
 
   <delete id="delete" parameterType="map">
     DELETE FROM sector_import

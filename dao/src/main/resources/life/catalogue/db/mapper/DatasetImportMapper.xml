@@ -10,8 +10,7 @@
     state,
     <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsCols">
       <property name="alias" value=""/>
-    </include>
-    ,
+    </include>,
     md5,
     download_uri,
     download,
@@ -23,6 +22,7 @@
   </sql>
 
   <sql id="metricsCols">
+    ${alias}job,
     ${alias}error,
     ${alias}started,
     ${alias}finished,
@@ -50,8 +50,7 @@
     state,
     <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsCols">
       <property name="alias" value=""/>
-    </include>
-    ,
+    </include>,
     md5,
     download_uri,
     download,
@@ -63,6 +62,7 @@
   </sql>
 
   <sql id="metricsProps">
+    #{imp.job},
     #{imp.error},
     #{imp.started},
     #{imp.finished},
@@ -124,8 +124,7 @@
     <result property="taxaByRankCount" column="taxa_by_rank_count" typeHandler="life.catalogue.db.type2.HstoreRankCountTypeHandler"/>
     <result property="namesByTypeCount" column="names_by_type_count" typeHandler="life.catalogue.db.type2.HstoreNameTypeCountTypeHandler"/>
     <result property="vernacularsByLanguageCount" column="vernaculars_by_language_count" typeHandler="life.catalogue.db.type2.HstoreLanguageCountTypeHandler"/>
-    <result property="distributionsByGazetteerCount" column="distributions_by_gazetteer_count"
-            typeHandler="life.catalogue.db.type2.HstoreGazetteerCountTypeHandler"/>
+    <result property="distributionsByGazetteerCount" column="distributions_by_gazetteer_count" typeHandler="life.catalogue.db.type2.HstoreGazetteerCountTypeHandler"/>
     <result property="namesByOriginCount" column="names_by_origin_count" typeHandler="life.catalogue.db.type2.HstoreOriginCountTypeHandler"/>
     <result property="usagesByStatusCount" column="usages_by_status_count" typeHandler="life.catalogue.db.type2.HstoreTaxStatusCountTypeHandler"/>
     <result property="namesByStatusCount" column="names_by_status_count" typeHandler="life.catalogue.db.type2.HstoreNomStatusCountTypeHandler"/>

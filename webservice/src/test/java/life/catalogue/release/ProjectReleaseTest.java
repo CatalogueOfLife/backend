@@ -18,7 +18,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.fail;
 
-public class CatalogueReleaseTest {
+public class ProjectReleaseTest {
   
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -52,12 +52,12 @@ public class CatalogueReleaseTest {
   
   @Test
   public void release() throws Exception {
-    CatalogueRelease release = buildRelease();
+    ProjectRelease release = buildRelease();
     release.run();
   }
   
-  private CatalogueRelease buildRelease() {
-    return CatalogueRelease.release(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), exp, diDao, d.getKey(), Users.TESTER);
+  private ProjectRelease buildRelease() {
+    return ReleaseManager.release(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), exp, diDao, d.getKey(), Users.TESTER);
   }
   
   @Test

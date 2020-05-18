@@ -1,23 +1,22 @@
 package life.catalogue.db.mapper;
 
+import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.Issue;
+import life.catalogue.db.Create;
+import life.catalogue.db.DatasetProcessable;
+import org.apache.ibatis.annotations.Param;
+import org.gbif.dwc.terms.Term;
+
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.Nullable;
-
-import org.apache.ibatis.annotations.Param;
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.VerbatimRecord;
-import life.catalogue.api.vocab.Issue;
-import org.gbif.dwc.terms.Term;
 
 /**
  *
  */
-public interface VerbatimRecordMapper {
+public interface VerbatimRecordMapper extends Create<VerbatimRecord>, DatasetProcessable<VerbatimRecord> {
   
   /**
    * See list method for parameters
@@ -54,8 +53,6 @@ public interface VerbatimRecordMapper {
   
   IssueContainer getIssues(@Param("key") DSID<Integer> key);
 
-  void create(VerbatimRecord record);
-  
   void update(@Param("key") DSID<Integer> key, @Param("issues") Set<Issue> issues);
 }
 

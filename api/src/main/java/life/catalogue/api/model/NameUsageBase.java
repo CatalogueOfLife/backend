@@ -16,7 +16,7 @@ import java.util.Objects;
 /**
  *
  */
-public abstract class NameUsageBase extends DatasetScopedEntity<String> implements NameUsage {
+public abstract class NameUsageBase extends DatasetScopedEntity<String> implements NameUsage, SectorEntity {
   
   private Integer sectorKey;
   private Integer verbatimKey;

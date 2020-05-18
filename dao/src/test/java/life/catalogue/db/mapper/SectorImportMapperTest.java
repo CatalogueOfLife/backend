@@ -53,7 +53,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
   
   public static SectorImport create(SectorImport.State state, Sector s) {
     SectorImport d = new SectorImport();
-    d.setType("SectorImportTest");
+    d.setJob("SectorImportTest");
     d.setSectorKey(s.getId());
     d.setCreatedBy(Users.TESTER);
     d.setAttempt(attempts++);

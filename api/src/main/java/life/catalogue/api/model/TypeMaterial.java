@@ -9,7 +9,7 @@ import java.util.Objects;
 /**
  * Type material should only be associated with the original name, not with a recombination.
  */
-public class TypeMaterial extends DatasetScopedEntity<String> implements VerbatimEntity, Referenced {
+public class TypeMaterial extends DatasetScopedEntity<String> implements VerbatimEntity, SectorEntity, Referenced {
 
     private Integer sectorKey;
     private Integer verbatimKey;

@@ -69,14 +69,12 @@ abstract class SectorRunnable implements Runnable {
       if (d.getOrigin() != DatasetOrigin.MANAGED) {
         throw new IllegalArgumentException("Cannot run a " + getClass().getSimpleName() + " against a " + d.getOrigin() + " dataset");
       }
-      // lookup next attempt
-      List<SectorImport> imports = session.getMapper(SectorImportMapper.class).list(sectorKey, null, null,null, new Page(0,1));
-      state.setAttempt(imports == null || imports.isEmpty() ? 1 : imports.get(0).getAttempt() + 1);
       state.setSectorKey(sectorKey);
       state.setDatasetKey(datasetKey);
-      state.setType(getClass().getSimpleName());
+      state.setJob(getClass().getSimpleName());
       state.setState(SectorImport.State.WAITING);
       state.setCreatedBy(user.getKey());
+      session.getMapper(SectorImportMapper.class).create(state);
     }
     this.indexService = indexService;
     this.successCallback = successCallback;
@@ -111,7 +109,7 @@ abstract class SectorRunnable implements Runnable {
       // persist sector import
       try (SqlSession session = factory.openSession(true)) {
         if (persistSync || failed) {
-          session.getMapper(SectorImportMapper.class).create(state);
+          session.getMapper(SectorImportMapper.class).update(state);
         }
         // update sector with latest attempt on success only
         if (persistSync && !failed) {
