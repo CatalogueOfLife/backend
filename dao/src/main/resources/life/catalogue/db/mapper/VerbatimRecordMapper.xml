@@ -141,4 +141,15 @@
     WHERE id = #{key.id}
   </update>
 
+  <select id="processDataset" parameterType="map" resultMap="verbatimResultMap" resultOrdered="true" fetchSize="2500" resultSetType="FORWARD_ONLY">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+  </select>
+
+  <delete id="deleteByDataset" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    TRUNCATE verbatim_${partition} CASCADE
+  </delete>
+
 </mapper>

@@ -181,7 +181,7 @@ public class ImportManager implements Managed {
         .collect(Collectors.toList());
 
     // include releasing job if existing and sort by creation date
-    releaseManager.getReleaseMetrics().ifPresent(running::add);
+    releaseManager.getMetrics().ifPresent(running::add);
     running.sort(DI_STARTED_COMPARATOR);
 
     // then add the priority queue from the executor, filtered for queued imports only keeping the queues priority order

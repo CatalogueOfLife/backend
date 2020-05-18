@@ -72,7 +72,7 @@
       GROUP BY s.subject_dataset_key, d.import_attempt
     )
     <!-- current dataset metadata -->
-    SELECT #{datasetKey} AS dataset_key, <include refid="life.catalogue.db.mapper.DatasetMapper.SELECT"/>
+    SELECT #{datasetKey} AS dataset_key, <include refid="SELECT"/>
     FROM src, <include refid="life.catalogue.db.mapper.DatasetMapper.FROM"/>
     WHERE src.key=d.key AND src.attempt=src.curr_attempt
 

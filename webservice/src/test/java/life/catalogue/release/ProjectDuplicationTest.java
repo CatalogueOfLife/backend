@@ -18,24 +18,23 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
-public class ProjectReleaseTest {
-  
+public class ProjectDuplicationTest {
+
+
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
-  
+
   @Rule
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
 
   @Rule
   public TestDataRule testDataRule = TestDataRule.apple();
-  
+
   WsServerConfig cfg;
   DatasetImportDao diDao;
-  AcExporter exp;
   Dataset d;
-  
+
   @Before
   public void init()  {
     cfg = new WsServerConfig();
@@ -43,43 +42,19 @@ public class ProjectReleaseTest {
     cfg.downloadDir = Files.createTempDir();
     cfg.normalizer.scratchDir  = Files.createTempDir();
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    exp = new AcExporter(cfg, PgSetupRule.getSqlSessionFactory());
-    
+
     // dataset needs to be a managed one
     try (SqlSession s = PgSetupRule.getSqlSessionFactory().openSession()) {
       DatasetMapper dm = s.getMapper(DatasetMapper.class);
       d = dm.get(TestDataRule.TestData.APPLE.key);
     }
   }
-  
+
   @Test
-  public void release() throws Exception {
-    ProjectRelease release = buildRelease();
-    release.run();
-    assertEquals(ImportState.FINISHED, release.getMetrics().getState());
+  public void copy() throws Exception {
+    ProjectDuplication dupl = ReleaseManager.duplicate(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao, d.getKey(), Users.TESTER);
+    dupl.run();
+    assertEquals(ImportState.FINISHED, dupl.getMetrics().getState());
   }
-  
-  private ProjectRelease buildRelease() {
-    return ReleaseManager.release(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), exp, diDao, d.getKey(), Users.TESTER);
-  }
-  
-  @Test
-  public void releaseConcurrently() throws Exception {
-    Thread t1 = new Thread(buildRelease());
-    t1.start();
-  
-    try {
-      buildRelease();
-      fail("Parallel releases should not be allowed!");
-    } catch (IllegalStateException e) {
-      // expected
-    }
-    // wait for release to be done and run another one
-    t1.join();
-  
-    Thread t2 = new Thread(buildRelease());
-    t2.start();
-    t2.join();
-  }
-  
+
 }

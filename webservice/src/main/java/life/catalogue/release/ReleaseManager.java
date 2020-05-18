@@ -20,6 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 public class ReleaseManager {
   private static final Logger LOG = LoggerFactory.getLogger(ReleaseManager.class);
@@ -34,7 +35,7 @@ public class ReleaseManager {
   private final NameUsageIndexService indexService;
   private final SqlSessionFactory factory;
 
-  private ProjectRelease release;
+  private ProjectRunnable job;
 
   public ReleaseManager(AcExporter exporter, DatasetImportDao diDao, NameUsageIndexService indexService, SqlSessionFactory factory) {
     this.exporter = exporter;
@@ -44,28 +45,36 @@ public class ReleaseManager {
   }
 
   public Integer release(int datasetKey, User user) {
-    if (release != null) {
-      throw new IllegalStateException("Release "+release.getDatasetKey() + " to " + release.getNewDatasetKey() + " is already running");
+    return execute(() -> release(factory, indexService, exporter, diDao, datasetKey, user.getKey()));
+  }
+
+  public Integer duplicate(int datasetKey, User user) {
+    return execute(() -> duplicate(factory, indexService, diDao, datasetKey, user.getKey()));
+  }
+
+  private Integer execute(Supplier<ProjectRunnable> jobSupplier) {
+    if (job != null) {
+      throw new IllegalStateException(job.getClass().getSimpleName() + " "+ job.getDatasetKey() + " to " + job.getNewDatasetKey() + " is already running");
     }
 
-    release = release(factory, indexService, exporter, diDao, datasetKey, user.getKey());
-    final int key = release.getNewDatasetKey();
+    job = jobSupplier.get();
+    final int key = job.getNewDatasetKey();
 
-    CompletableFuture.runAsync(release, RELEASE_EXEC)
-        .exceptionally(ex -> {
-          LOG.error("Failed to release dataset {} into dataset {}", release.getDatasetKey(), release.getNewDatasetKey(), ex);
-          return null;
-        })
-        .thenApply(x -> {
-          // clear release reference when job is done
-          release = null;
-          return x;
-        });
+    CompletableFuture.runAsync(job, RELEASE_EXEC)
+      .exceptionally(ex -> {
+        LOG.error("Failed to run {} on dataset {} to dataset {}", job.getClass().getSimpleName(), job.getDatasetKey(), job.getNewDatasetKey(), ex);
+        return null;
+      })
+      .thenApply(x -> {
+        // clear release reference when job is done
+        job = null;
+        return x;
+      });
     return key;
   }
 
-  public Optional<DatasetImport> getReleaseMetrics() {
-    return release == null ? Optional.empty() : Optional.of(release.getMetrics());
+  public Optional<DatasetImport> getMetrics() {
+    return job == null ? Optional.empty() : Optional.of(job.getMetrics());
   }
 
 
