@@ -1,5 +1,6 @@
 package life.catalogue.api.event;
 
+import com.google.common.base.Preconditions;
 import life.catalogue.api.model.DataEntity;
 
 public class EntityChanged<K, T> {
@@ -16,9 +17,9 @@ public class EntityChanged<K, T> {
   }
 
   EntityChanged(K key, T obj, Class<T> objClass) {
-    this.key = key;
-    this.obj = obj;
-    this.objClass = objClass;
+    this.key = Preconditions.checkNotNull(key);
+    this.obj = obj; // can be null in case of deletions
+    this.objClass = Preconditions.checkNotNull(objClass);
   }
 
   public boolean isDeletion(){

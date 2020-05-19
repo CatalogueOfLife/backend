@@ -83,11 +83,9 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
   @Subscribe
   public void datasetChanged(DatasetChanged event){
     if (event.isDeletion()) {
-      privateFilter.updateCache(event.obj.getKey(), false);
+      privateFilter.updateCache(event.key, false);
     } else {
-      if (event.obj.getKey() != null) {
-        privateFilter.updateCache(event.obj.getKey(), event.obj.isPrivat());
-      }
+      privateFilter.updateCache(event.key, event.obj.isPrivat());
     }
   }
 
