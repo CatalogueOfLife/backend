@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import io.dropwizard.auth.Auth;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.QuerySearchRequest;
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.dao.ParserConfigDao;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.parser.NameParser;
@@ -23,9 +24,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -42,11 +41,12 @@ public class NameParserResource {
     dao = new ParserConfigDao(factory);
   }
 
-  public class CRName {
+  public class CRName implements IssueContainer {
     private NomCode code;
     private Rank rank;
     private String name;
-  
+    private Set<Issue> issues = EnumSet.noneOf(Issue.class);
+
     public CRName() {
     }
   
@@ -79,13 +79,55 @@ public class NameParserResource {
     public void setName(String name) {
       this.name = name;
     }
+
+    @Override
+    public Set<Issue> getIssues() {
+      return issues;
+    }
+
+    @Override
+    public void setIssues(Set<Issue> issues) {
+      this.issues = issues;
+    }
+
+    @Override
+    public void addIssue(Issue issue) {
+      issues.add(issue);
+    }
+
+    @Override
+    public boolean removeIssue(Issue issue) {
+      return issues.remove(issue);
+    }
+
+    @Override
+    public boolean hasIssue(Issue issue) {
+      return issues.contains(issue);
+    }
   }
-  
+
+  static class NATIssue extends NameAccordingTo {
+    private Set<Issue> issues;
+
+    public NATIssue(NameAccordingTo nat, Set<Issue> issues) {
+      super(nat.getName(), nat.getAccordingTo());
+      this.issues = issues;
+    }
+
+    public Set<Issue> getIssues() {
+      return issues;
+    }
+  }
+
+
+
+
+
   /**
    * Parsing names as GET query parameters.
    */
   @GET
-  public List<NameAccordingTo> parseGet(@QueryParam("code") NomCode code,
+  public List<NATIssue> parseGet(@QueryParam("code") NomCode code,
                                         @QueryParam("rank") Rank rank,
                                         @QueryParam("name") List<String> names) {
     return parse(code, rank, names.stream());
@@ -96,7 +138,7 @@ public class NameParserResource {
    */
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
-  public List<NameAccordingTo> parseJson(List<CRName> names) {
+  public List<NATIssue> parseJson(List<CRName> names) {
     return parse(names.stream());
   }
   
@@ -108,7 +150,7 @@ public class NameParserResource {
    */
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
-  public List<NameAccordingTo> parseFile(@FormDataParam("code") NomCode code,
+  public List<NATIssue> parseFile(@FormDataParam("code") NomCode code,
                                          @FormDataParam("rank") Rank rank,
                                          @FormDataParam("names") InputStream file) throws UnsupportedEncodingException {
     if (file == null) {
@@ -129,18 +171,21 @@ public class NameParserResource {
    */
   @POST
   @Consumes(MediaType.TEXT_PLAIN)
-  public List<NameAccordingTo> parsePlainText(InputStream names) throws UnsupportedEncodingException {
+  public List<NATIssue> parsePlainText(InputStream names) throws UnsupportedEncodingException {
     return parseFile(null, Rank.UNRANKED, names);
   }
   
-  private List<NameAccordingTo> parse(final NomCode code, final Rank rank, Stream<String> names) {
+  private List<NATIssue> parse(final NomCode code, final Rank rank, Stream<String> names) {
     return parse(names.map(n -> new CRName(code, rank, n)));
   }
   
-  private List<NameAccordingTo> parse(Stream<CRName> names) {
+  private List<NATIssue> parse(Stream<CRName> names) {
     return names
-        .peek(n -> LOG.info("Parse: {}", n))
-        .map(n -> parser.parse(n.name, n.rank, n.code, IssueContainer.VOID))
+        .peek(n -> LOG.debug("Parse: {}", n))
+        .map(n -> {
+          Optional<NameAccordingTo> parsed = parser.parse(n.name, n.rank, n.code, n);
+          return parsed.map(nat -> new NATIssue(nat, n.issues));
+        })
         .filter(Optional::isPresent)
         .map(Optional::get)
         .collect(Collectors.toList());
