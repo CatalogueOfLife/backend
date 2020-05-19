@@ -82,7 +82,7 @@ public class ParserConfigDao {
   }
 
   public static void addToParser(ParserConfig obj){
-    LOG.info("Create parser config {}", obj.getId());
+    LOG.debug("Add config for {}", obj.getId());
     // defaults
     obj.setOrigin(Origin.USER);
     if (obj.getType() == null) {

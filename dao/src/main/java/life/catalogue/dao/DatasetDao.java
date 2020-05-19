@@ -177,22 +177,27 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   }
 
   public void addEditor(int key, int editorKey, User user) {
-    changeEditor(key, user, dm -> dm.addEditor(key, editorKey, user.getKey()));
+    changeEditor(key, editorKey, user, dm -> dm.addEditor(key, editorKey, user.getKey()));
   }
 
   public void removeEditor(int key, int editorKey, User user) {
-    changeEditor(key, user, dm -> dm.removeEditor(key, editorKey, user.getKey()));
+    changeEditor(key, editorKey, user, dm -> dm.removeEditor(key, editorKey, user.getKey()));
   }
 
-  private void changeEditor(int key, User user, Consumer<DatasetMapper> action) {
+  private void changeEditor(int key, int editorKey, User user, Consumer<DatasetMapper> action) {
     if (!user.isAuthorized(key)) {
       throw new WebApplicationException(Response.Status.FORBIDDEN);
     }
+    User editor;
     try (SqlSession session = factory.openSession()){
+      editor = session.getMapper(UserMapper.class).get(editorKey);
+      if (editor == null) {
+        throw new IllegalArgumentException("Editor " + editorKey + " does not exist");
+      }
       action.accept(session.getMapper(DatasetMapper.class));
       session.commit();
     }
-    bus.post(new UserPermissionChanged(user.getUsername()));
+    bus.post(new UserPermissionChanged(editor.getUsername()));
   }
 
 }

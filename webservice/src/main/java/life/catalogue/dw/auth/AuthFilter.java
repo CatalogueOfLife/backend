@@ -93,9 +93,11 @@ public class AuthFilter implements ContainerRequestFilter {
     static AuthedUser basic(User user) {
       return new AuthedUser(BASIC, user);
     }
+
     static AuthedUser bearer(User user) {
       return new AuthedUser(BEARER, user);
     }
+
     private AuthedUser(String scheme, User user) {
       this.scheme = scheme;
       this.user = user;
