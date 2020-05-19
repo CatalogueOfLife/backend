@@ -52,7 +52,7 @@ public class IndexCmd extends AbstractPromptCmd {
     if (namespace.getBoolean(ARG_ALL)) {
       // change index name, use current date
       String date = DateTimeFormatter.ISO_DATE.format(LocalDate.now());
-      cfg.es.nameUsage.name = cfg.es.nameUsage.name + date;
+      cfg.es.nameUsage.name = cfg.es.nameUsage.name + "-" + date;
       System.out.println("Use new index " + cfg.es.nameUsage.name);
     }
   }
