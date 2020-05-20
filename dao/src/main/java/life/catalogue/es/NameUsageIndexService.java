@@ -40,7 +40,8 @@ public interface NameUsageIndexService {
   int deleteDataset(int datasetKey);
 
   /**
-   * Re-indexes all datasets from scratch
+   * Recreates a new search index from scratch
+   * and re-indexes all datasets.
    */
   void indexAll();
 

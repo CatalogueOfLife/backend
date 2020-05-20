@@ -211,9 +211,9 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   }
 
   @POST
-  @Path("/{key}/duplicate")
+  @Path("/{key}/copy")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public Integer duplicate(@PathParam("key") int key, @Auth User user) {
+  public Integer copy(@PathParam("key") int key, @Auth User user) {
     return releaseManager.duplicate(key, user);
   }
 
