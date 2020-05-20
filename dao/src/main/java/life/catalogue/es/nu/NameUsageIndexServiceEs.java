@@ -1,5 +1,27 @@
 package life.catalogue.es.nu;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Iterables;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.SimpleNameClassification;
+import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.common.concurrent.ExecutorUtils;
+import life.catalogue.common.concurrent.NamedThreadFactory;
+import life.catalogue.common.func.BatchConsumer;
+import life.catalogue.dao.DaoUtils;
+import life.catalogue.dao.NameUsageProcessor;
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.DatasetPartitionMapper;
+import life.catalogue.db.mapper.NameUsageWrapperMapper;
+import life.catalogue.es.*;
+import org.apache.ibatis.cursor.Cursor;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.elasticsearch.client.RestClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,30 +32,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import org.apache.ibatis.cursor.Cursor;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.elasticsearch.client.RestClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Iterables;
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.Sector;
-import life.catalogue.api.model.SimpleNameClassification;
-import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.common.concurrent.ExecutorUtils;
-import life.catalogue.common.concurrent.NamedThreadFactory;
-import life.catalogue.common.func.BatchConsumer;
-import life.catalogue.dao.NameUsageProcessor;
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.DatasetPartitionMapper;
-import life.catalogue.db.mapper.NameUsageWrapperMapper;
-import life.catalogue.es.EsConfig;
-import life.catalogue.es.EsException;
-import life.catalogue.es.EsNameUsage;
-import life.catalogue.es.EsUtil;
-import life.catalogue.es.NameUsageIndexService;
+
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
@@ -54,29 +53,17 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     this.processor = new NameUsageProcessor(factory);
   }
 
-  class Stats {
-    int usages;
-    int names;
-
-    int total() {
-      return usages + names;
-    }
-
-    void add(Stats other) {
-      usages += other.usages;
-      names += other.names;
-    }
-  }
-
   @Override
-  public void indexDataset(int datasetKey) {
-    indexDatasetInternal(datasetKey, true);
+  public Stats indexDataset(int datasetKey) {
+    return indexDatasetInternal(datasetKey, true);
   }
 
   private Stats indexDatasetInternal(int datasetKey, boolean clearIndex) {
     NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
     Stats stats = new Stats();
-    try {
+    try (SqlSession lockSession = factory.openSession()) {
+      // we lock the main dataset tables so they are only accessible by select statements, but not any modifying statements.
+      DaoUtils.aquireTableLock(datasetKey, lockSession);
       LOG.info("Start indexing dataset {}", datasetKey);
       if (clearIndex) {
         LOG.info("Remove dataset {} from index", datasetKey);
@@ -89,7 +76,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       EsUtil.refreshIndex(client, esConfig.nameUsage.name);
       stats.usages = indexer.documentsIndexed();
       indexer.reset();
-      try (SqlSession session = factory.openSession(true)) {
+      try (SqlSession session = factory.openSession()) {
         LOG.info("Indexing bare names from dataset {}", datasetKey);
         NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
         Cursor<NameUsageWrapper> cursor = mapper.processDatasetBareNames(datasetKey, null);
@@ -115,7 +102,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
 
   @Override
-  public void indexSector(Sector s) {
+  public Stats indexSector(Sector s) {
     NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
     Stats stats = new Stats();
     try (SqlSession session = factory.openSession()) {
@@ -138,6 +125,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     }
     LOG.info("Successfully indexed sector {}. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
         s.getKey(), esConfig.nameUsage.name, stats.usages, stats.names, stats.total());
+    return stats;
   }
 
   @Override
@@ -206,7 +194,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
 
   @Override
-  public void indexAll() {
+  public Stats indexAll() {
     final Stats total = new Stats();
     try {
       EsUtil.deleteIndex(client, esConfig.nameUsage);
@@ -237,10 +225,11 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       ExecutorUtils.shutdown(exec);
 
       LOG.info("Successfully indexed all {} datasets. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
-          counter, esConfig.nameUsage.name, total.usages, total.names, total.total());
+        counter, esConfig.nameUsage.name, total.usages, total.names, total.total());
     } catch (IOException e) {
       throw new EsException(e);
     }
+    return total;
   }
 
   private void createOrEmptyIndex(int datasetKey) throws IOException {

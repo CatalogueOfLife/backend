@@ -91,6 +91,12 @@ public interface DatasetPartitionMapper {
   void attachTable(@Param("table") String table, @Param("key") int key);
 
   /**
+   * Locks a dataset specific table in EXCLUSIVE mode, only allowing select statements by other transactions.
+   * The lock is released when the transaction is ended. There is no other manual lock release possible.
+   */
+  void lockTables(@Param("datasetKey") int datasetKey);
+
+  /**
    * Checks whether the partition for the given datasetKey exists already.
    * @param key datasetKey
    * @return true if partition tables exist

@@ -82,8 +82,8 @@
         <neo4j-algorithms.version>3.4.0.0</neo4j-algorithms.version>
         <neo4j.version>3.4.17</neo4j.version>
         <poi.version>4.1.2</poi.version>
-        <postgresql.version>42.2.8</postgresql.version>
-        <pgjdbc-ng.version>0.8.3</pgjdbc-ng.version>
+        <postgresql.version>42.2.12</postgresql.version>
+        <pgjdbc-ng.version>0.8.4</pgjdbc-ng.version>
         <stax2.version>4.2</stax2.version>
         <text-tree.version>1.0.0</text-tree.version>
         <tika.version>1.22</tika.version>

@@ -13,10 +13,24 @@ public interface NameUsageIndexService {
 
   Logger LOG = LoggerFactory.getLogger(NameUsageIndexService.class);
 
+  class Stats {
+    public int usages;
+    public int names;
+
+    public int total() {
+      return usages + names;
+    }
+
+    public void add(Stats other) {
+      usages += other.usages;
+      names += other.names;
+    }
+  }
+
   /**
    * Indexes all CoL usages from an entire sector from postgres into ElasticSearch using the bulk API.
    */
-  void indexSector(Sector sector);
+  Stats indexSector(Sector sector);
 
   /**
    * Removed all CoL usage docs of the given sector from ElasticSearch, i.e. taxa and synonyms.
@@ -31,7 +45,7 @@ public interface NameUsageIndexService {
   /**
    * Indexes an entire dataset from postgres into ElasticSearch using the bulk API.
    */
-  void indexDataset(int datasetKey);
+  Stats indexDataset(int datasetKey);
 
   /**
    * Removes an entire dataset from ElasticSearch.
@@ -43,7 +57,7 @@ public interface NameUsageIndexService {
    * Recreates a new search index from scratch
    * and re-indexes all datasets.
    */
-  void indexAll();
+  Stats indexAll();
 
   /**
    * Removes a single usage document from ES
@@ -79,8 +93,9 @@ public interface NameUsageIndexService {
     return new NameUsageIndexService() {
 
       @Override
-      public void indexSector(Sector sector) {
+      public Stats indexSector(Sector sector) {
         LOG.info("No Elastic Search configured, pass through sector {}", sector);
+        return new Stats();
       }
 
       @Override
@@ -94,8 +109,9 @@ public interface NameUsageIndexService {
       }
 
       @Override
-      public void indexDataset(int datasetKey) {
+      public Stats indexDataset(int datasetKey) {
         LOG.info("No Elastic Search configured, pass through dataset {}", datasetKey);
+        return new Stats();
       }
 
       @Override
@@ -116,8 +132,9 @@ public interface NameUsageIndexService {
       }
 
       @Override
-      public void indexAll() {
+      public Stats indexAll() {
         LOG.info("No Elastic Search configured. Passing through");
+        return new Stats();
       }
 
       @Override

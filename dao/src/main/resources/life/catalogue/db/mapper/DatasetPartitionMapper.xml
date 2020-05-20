@@ -38,6 +38,14 @@
     ALTER TABLE ${table} ATTACH PARTITION ${table}_${key} FOR VALUES IN ( ${key} )
   </update>
 
+  <update id="lockTables" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    LOCK TABLE verbatim_${partition} IN EXCLUSIVE mode;
+    LOCK TABLE name_${partition} IN EXCLUSIVE mode;
+    LOCK TABLE name_usage_${partition} IN EXCLUSIVE mode;
+    LOCK TABLE reference_${partition} IN EXCLUSIVE mode;
+  </update>
+
   <update id="buildIndices" parameterType="map">
     ALTER TABLE verbatim_${key} ADD PRIMARY KEY (id);
     CREATE INDEX ON verbatim_${key} USING GIN(issues);

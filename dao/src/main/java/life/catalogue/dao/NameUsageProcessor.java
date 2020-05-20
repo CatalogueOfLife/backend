@@ -68,7 +68,7 @@ public class NameUsageProcessor {
   
   private void processTree(int datasetKey, @Nullable Integer sectorKey, String id, Consumer<NameUsageWrapper> consumer) {
     LOG.debug("Process dataset {} tree with root taxon {}", datasetKey, id);
-    try (SqlSession s = factory.openSession(true)) {
+    try (SqlSession s = factory.openSession()) {
       final NameUsageWrapperMapper nuwm = s.getMapper(NameUsageWrapperMapper.class);
       Cursor<SimpleNameClassification> c = nuwm.processTree(datasetKey, sectorKey, id);
       for (List<SimpleNameClassification> cls : Iterables.partition(c, 50)) {

@@ -3,10 +3,15 @@ package life.catalogue.dao;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.DatasetPartitionMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DaoUtils {
+
+  private static final Logger LOG = LoggerFactory.getLogger(DaoUtils.class);
 
   public static Dataset requireManaged(int datasetKey, SqlSession session) {
     Dataset d = session.getMapper(DatasetMapper.class).get(datasetKey);
@@ -23,6 +28,11 @@ public class DaoUtils {
     try (SqlSession s = factory.openSession()) {
       return requireManaged(datasetKey, s);
     }
+  }
+
+  public static void aquireTableLock(int datasetKey, SqlSession session) {
+    LOG.info("Try to aquire a table lock for dataset {}", datasetKey);
+    session.getMapper(DatasetPartitionMapper.class).lockTables(datasetKey);
   }
 
 }
