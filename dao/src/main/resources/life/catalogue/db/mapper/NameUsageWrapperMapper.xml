@@ -102,7 +102,7 @@
     </if>
   </select>
 
-  <select id="processDatasetUsageOnly" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+  <select id="processDatasetUsageWithIssuesOnly" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT u.id AS uid, null AS ed_id, null AS v_id,
     <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT"/>,
@@ -111,9 +111,7 @@
     <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM"/>
     LEFT JOIN verbatim_${partition} vbt ON vbt.id=u.verbatim_key
     LEFT JOIN verbatim_${partition} vbn ON vbn.id=n.verbatim_key
-    <if test="withIssueOnly">
-      WHERE array_length(vbn.issues, 1) > 0 OR array_length(vbt.issues, 1) > 0
-    </if>
+    WHERE array_length(vbn.issues, 1) > 0 OR array_length(vbt.issues, 1) > 0
   </select>
 
   <select id="processDatasetBareNames" parameterType="map" resultMap="bareNameResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">

@@ -45,6 +45,13 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase> {
   List<NameUsageBase> children(@Param("key") DSID<String> key, @Nullable @Param("rank") Rank rank);
 
   /**
+   * Iterates over all usages for a given dataset, optionally filtered by a minimum/maximum rank to include.
+   */
+  Cursor<NameUsageBase> processDataset(@Param("datasetKey") int datasetKey,
+                                       @Nullable @Param("minRank") Rank minRank,
+                                       @Nullable @Param("maxRank") Rank maxRank);
+
+  /**
    * Move all children including synonyms of a given taxon to a new parent.
    * @param datasetKey
    * @param parentId the current parentId

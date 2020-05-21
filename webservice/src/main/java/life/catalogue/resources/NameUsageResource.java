@@ -4,7 +4,10 @@ import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Streams;
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.NameUsage;
+import life.catalogue.api.model.NameUsageBase;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.*;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.NameUsageWrapperMapper;
@@ -13,6 +16,7 @@ import life.catalogue.es.InvalidQueryException;
 import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.es.NameUsageSuggestionService;
 import org.apache.ibatis.session.SqlSession;
+import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,22 +58,37 @@ public class NameUsageResource {
   @GET
   @Produces({MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_TSV})
   public Stream<Object[]> exportCsv(@PathParam("datasetKey") int datasetKey,
-                                  @QueryParam("issue") boolean withIssueOnly,
-                                  @Context SqlSession session) {
-    NameUsageWrapperMapper nuwm = session.getMapper(NameUsageWrapperMapper.class);
-    return Stream.concat(
-            Stream.of(NAME_HEADER),
-            Streams.stream(nuwm.processDatasetUsageOnly(datasetKey, withIssueOnly))
-              .map(nu -> new Object[]{
-                  nu.getId(),
-                  ((NameUsageBase) nu.getUsage()).getParentId(),
-                  nu.getUsage().getStatus(),
-                  nu.getUsage().getName().getRank(),
-                  nu.getUsage().getName().getScientificName(),
-                  nu.getUsage().getName().getAuthorship(),
-                  COMMA_CAT.join(nu.getIssues())
-            })
-    );
+                                    @QueryParam("issue") boolean withIssueOnly,
+                                    @QueryParam("min") Rank min,
+                                    @QueryParam("max") Rank max,
+                                    @Context SqlSession session) {
+    Stream<Object[]> data;
+    if (withIssueOnly) {
+      NameUsageWrapperMapper nuwm = session.getMapper(NameUsageWrapperMapper.class);
+      data = Streams.stream(nuwm.processDatasetUsageWithIssuesOnly(datasetKey)).map(this::map);
+    } else {
+      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+      data = Streams.stream(num.processDataset(datasetKey, min, max)).map(this::map);
+    }
+    return Stream.concat( Stream.of(NAME_HEADER), data);
+  }
+
+  private Object[] map(NameUsageBase nu){
+    return new Object[]{
+      nu.getId(),
+      nu.getParentId(),
+      nu.getStatus(),
+      nu.getName().getRank(),
+      nu.getName().getScientificName(),
+      nu.getName().getAuthorship(),
+      null
+    };
+  }
+
+  private Object[] map(NameUsageWrapper nuw){
+    Object[] row = map((NameUsageBase) nuw.getUsage());
+    row[6] = COMMA_CAT.join(nuw.getIssues());
+    return row;
   }
 
   @GET
