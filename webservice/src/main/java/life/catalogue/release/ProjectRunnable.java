@@ -164,22 +164,19 @@ public abstract class ProjectRunnable implements Runnable {
   }
 
   private void copyVerbatimTable() {
-    try (VerbatimTableCopyHandler handler = new VerbatimTableCopyHandler(newDatasetKey, factory)) {
-      copyTableInternal(VerbatimRecordMapper.class, VerbatimRecord.class, handler);
-    }
+    VerbatimTableCopyHandler handler = new VerbatimTableCopyHandler(newDatasetKey, factory);
+    copyTableInternal(VerbatimRecordMapper.class, VerbatimRecord.class, handler);
   }
 
   private <V extends DSID<?>, M extends Create<V> & DatasetProcessable<V>> void copyTable(Class<M> mapperClass, Class<V> entity, Consumer<V> updater) {
-    try (TableCopyHandler<V,M> handler = new TableCopyHandler<>(newDatasetKey, factory, entity.getSimpleName(), mapperClass, updater)) {
-      copyTableInternal(mapperClass, entity, handler);
-    }
+    TableCopyHandler<V,M> handler = new TableCopyHandler<>(newDatasetKey, factory, entity.getSimpleName(), mapperClass, updater);
+    copyTableInternal(mapperClass, entity, handler);
   }
 
   private <V extends DatasetScopedEntity<Integer>, M extends CRUD<DSID<Integer>, V> & DatasetProcessable<V>> Int2IntMap copyTableWithKeyMap(Class<M> mapperClass, Class<V> entity, Consumer<V> updater) {
-    try (TableCopyHandlerWithKeyMap<V,M> handler = new TableCopyHandlerWithKeyMap<>(newDatasetKey, factory, entity.getSimpleName(), mapperClass, updater)){
-      copyTableInternal(mapperClass, entity, handler);
-      return handler.getKeyMap();
-    }
+    TableCopyHandlerWithKeyMap<V,M> handler = new TableCopyHandlerWithKeyMap<>(newDatasetKey, factory, entity.getSimpleName(), mapperClass, updater);
+    copyTableInternal(mapperClass, entity, handler);
+    return handler.getKeyMap();
   }
 
   private <V, M extends Create<V> & DatasetProcessable<V>> void copyTableInternal(Class<M> mapperClass, Class<V> entity, TableCopyHandlerBase<V> handler) {
@@ -197,7 +194,7 @@ public abstract class ProjectRunnable implements Runnable {
   private <V extends DatasetScopedEntity<Integer>> void copyExtTable(Class<? extends TaxonExtensionMapper<V>> mapperClass, Class<V> entity, Consumer<TaxonExtension<V>> updater) {
     interruptIfCancelled();
     try (SqlSession session = factory.openSession(false);
-         ExtTableCopyHandler<V> handler = new ExtTableCopyHandler<V>(factory, entity.getSimpleName(), mapperClass, updater)
+         ExtTableCopyHandler<V> handler = new ExtTableCopyHandler<>(factory, entity.getSimpleName(), mapperClass, updater)
     ) {
       LOG.info("Copy {}s", entity.getSimpleName());
       TaxonExtensionMapper<V> mapper = session.getMapper(mapperClass);
