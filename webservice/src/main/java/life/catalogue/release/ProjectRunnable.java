@@ -10,8 +10,7 @@ import life.catalogue.dao.Partitioner;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.Create;
 import life.catalogue.db.DatasetProcessable;
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.TaxonExtensionMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -22,6 +21,10 @@ import java.util.function.Consumer;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 
+/**
+ * Abstract Runnable that copies a project with all its data into a new dataset
+ * and allows for custom pre/post work to be done.
+ */
 public abstract class ProjectRunnable implements Runnable {
   protected final Logger LOG = LoggerFactory.getLogger(getClass());
   protected final SqlSessionFactory factory;
@@ -57,7 +60,9 @@ public abstract class ProjectRunnable implements Runnable {
     return metrics;
   }
 
-  abstract void dataWork() throws Exception;
+  void prepWork() throws Exception {
+    // dont do nothing - override if needed
+  }
 
   void finalWork() throws Exception {
     // dont do nothing - override if needed
@@ -67,19 +72,49 @@ public abstract class ProjectRunnable implements Runnable {
   public void run() {
     LoggingUtils.setDatasetMDC(datasetKey, getClass());
     try {
+      LOG.info("{} project {} to new dataset {}", actionName, datasetKey, getNewDatasetKey());
       // prepare new tables
       updateState(ImportState.PROCESSING);
       Partitioner.partition(factory, newDatasetKey);
 
-      dataWork();
+      prepWork();
+
+      // copy data
+      LOG.info("Copy data into dataset {}", newDatasetKey);
+      updateState(ImportState.INSERTING);
+      final EntityUpdater updater = new EntityUpdater(newDatasetKey);
+
+      updater.setSectors(
+        copyTableWithKeyMap(SectorMapper.class, Sector.class, updater::globalKey)
+      );
+      copyTable(DecisionMapper.class, EditorialDecision.class, updater::globalKey);
+      copyTable(EstimateMapper.class, SpeciesEstimate.class, updater::globalKey);
+
+      copyVerbatimTable();
+
+      copyTable(ReferenceMapper.class, Reference.class, updater::sectorEntity);
+      copyTable(NameMapper.class, Name.class, updater::sectorEntity);
+      copyTable(TaxonMapper.class, Taxon.class, updater::sectorEntity);
+      copyTable(SynonymMapper.class, Synonym.class, updater::sectorEntity);
+      copyTable(TypeMaterialMapper.class, TypeMaterial.class, updater::sectorEntity);
+
+      copyTable(NameRelationMapper.class, NameRelation.class, updater::datasetKey);
+
+      copyExtTable(VernacularNameMapper.class, VernacularName.class, updater::extensionEntity);
+      copyExtTable(DistributionMapper.class, Distribution.class, updater::extensionEntity);
+      copyExtTable(DescriptionMapper.class, Description.class, updater::extensionEntity);
+      copyExtTable(MediaMapper.class, Media.class, updater::extensionEntity);
 
       // build indices and attach partition
+      LOG.info("Attach and index partitions for dataset {}", newDatasetKey);
       Partitioner.indexAndAttach(factory, newDatasetKey);
       // create metrics
+      LOG.info("Build metrics for dataset {}", newDatasetKey);
       updateState(ImportState.BUILDING_METRICS);
       metrics();
       try {
         // ES index
+        LOG.info("Index dataset {} into ES", newDatasetKey);
         updateState(ImportState.INDEXING);
         index();
       } catch (RuntimeException e) {
@@ -111,55 +146,63 @@ public abstract class ProjectRunnable implements Runnable {
   }
 
   void updateState(ImportState state) {
-    interruptIfCancelled();
     metrics.setState(state);
     diDao.update(metrics);
+    interruptIfCancelled();
   }
 
-  protected void index() {
+  private void index() {
     LOG.info("Build search index for dataset " + newDatasetKey);
     indexService.indexDataset(newDatasetKey);
   }
 
-  protected void metrics() {
+  private void metrics() {
     LOG.info("Build import metrics for dataset " + newDatasetKey);
     diDao.updateMetrics(metrics);
     diDao.update(metrics);
     diDao.updateDatasetLastAttempt(metrics);
   }
 
-  protected <V, M extends Create<V> & DatasetProcessable<V>> void copyTable(Class<M> mapperClass, Class<V> entity, Consumer<V> updater) {
-    TableCopyHandler<V,M> handler = new TableCopyHandler<>(factory, entity.getSimpleName(), mapperClass, updater);
-    copyTableInternal(mapperClass, entity, handler);
+  private void copyVerbatimTable() {
+    try (VerbatimTableCopyHandler handler = new VerbatimTableCopyHandler(newDatasetKey, factory)) {
+      copyTableInternal(VerbatimRecordMapper.class, VerbatimRecord.class, handler);
+    }
   }
 
-  protected <V extends DatasetScopedEntity<Integer>, M extends CRUD<DSID<Integer>, V> & DatasetProcessable<V>> Int2IntMap copyTableWithKeyMap(Class<M> mapperClass, Class<V> entity, Consumer<V> updater) {
-    TableCopyHandlerWithKeyMap<V,M> handler = new TableCopyHandlerWithKeyMap<>(factory, entity.getSimpleName(), mapperClass, updater);
-    copyTableInternal(mapperClass, entity, handler);
-    return handler.getKeyMap();
+  private <V extends DSID<?>, M extends Create<V> & DatasetProcessable<V>> void copyTable(Class<M> mapperClass, Class<V> entity, Consumer<V> updater) {
+    try (TableCopyHandler<V,M> handler = new TableCopyHandler<>(newDatasetKey, factory, entity.getSimpleName(), mapperClass, updater)) {
+      copyTableInternal(mapperClass, entity, handler);
+    }
+  }
+
+  private <V extends DatasetScopedEntity<Integer>, M extends CRUD<DSID<Integer>, V> & DatasetProcessable<V>> Int2IntMap copyTableWithKeyMap(Class<M> mapperClass, Class<V> entity, Consumer<V> updater) {
+    try (TableCopyHandlerWithKeyMap<V,M> handler = new TableCopyHandlerWithKeyMap<>(newDatasetKey, factory, entity.getSimpleName(), mapperClass, updater)){
+      copyTableInternal(mapperClass, entity, handler);
+      return handler.getKeyMap();
+    }
   }
 
   private <V, M extends Create<V> & DatasetProcessable<V>> void copyTableInternal(Class<M> mapperClass, Class<V> entity, TableCopyHandlerBase<V> handler) {
     interruptIfCancelled();
     try (SqlSession session = factory.openSession(false)) {
-      LOG.info("Copy all {}", entity.getSimpleName());
+      LOG.info("Copy {}s", entity.getSimpleName());
       DatasetProcessable<V> mapper = session.getMapper(mapperClass);
       mapper.processDataset(datasetKey).forEach(handler);
-      LOG.info("Copied {} {}", handler.getCounter(), entity.getSimpleName());
+      LOG.info("Copied {} {}s", handler.getCounter(), entity.getSimpleName());
     } finally {
       handler.close();
     }
   }
 
-  protected <V extends DatasetScopedEntity<Integer>> void copyExtTable(Class<? extends TaxonExtensionMapper<V>> mapperClass, Class<V> entity, Consumer<TaxonExtension<V>> updater) {
+  private <V extends DatasetScopedEntity<Integer>> void copyExtTable(Class<? extends TaxonExtensionMapper<V>> mapperClass, Class<V> entity, Consumer<TaxonExtension<V>> updater) {
     interruptIfCancelled();
     try (SqlSession session = factory.openSession(false);
          ExtTableCopyHandler<V> handler = new ExtTableCopyHandler<V>(factory, entity.getSimpleName(), mapperClass, updater)
     ) {
-      LOG.info("Copy all {}", entity.getSimpleName());
+      LOG.info("Copy {}s", entity.getSimpleName());
       TaxonExtensionMapper<V> mapper = session.getMapper(mapperClass);
       mapper.processDataset(datasetKey).forEach(handler);
-      LOG.info("Copied {} {}", handler.getCounter(), entity.getSimpleName());
+      LOG.info("Copied {} {}s", handler.getCounter(), entity.getSimpleName());
     }
   }
 }

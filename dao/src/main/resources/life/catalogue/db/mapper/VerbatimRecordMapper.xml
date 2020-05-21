@@ -134,6 +134,12 @@
     VALUES (<include refid="PROPS"/>)
   </insert>
 
+  <insert id="createWithKey" parameterType="VerbatimRecord" useGeneratedKeys="false">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    INSERT INTO verbatim_${datasetKey} (id,<include refid="COLS"/>)
+    VALUES (#{id},<include refid="PROPS"/>)
+  </insert>
+
   <update id="update" parameterType="VerbatimRecord" keyProperty="id">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
     UPDATE verbatim_${datasetKey}

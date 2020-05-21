@@ -54,5 +54,10 @@ public interface VerbatimRecordMapper extends Create<VerbatimRecord>, DatasetPro
   IssueContainer getIssues(@Param("key") DSID<Integer> key);
 
   void update(@Param("key") DSID<Integer> key, @Param("issues") Set<Issue> issues);
+
+  /**
+   * Creates a verbatim record with a preassigned key, not using a sequence
+   */
+  void createWithKey(VerbatimRecord obj);
 }
 

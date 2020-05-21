@@ -118,7 +118,6 @@ public class ReleaseManager {
 
       copy.setKey(null);
       copy.setSourceKey(projectKey);
-      copy.setOrigin(DatasetOrigin.RELEASED);
       copy.setAlias(null);
       copy.setModifiedBy(userKey);
       copy.setCreatedBy(userKey);

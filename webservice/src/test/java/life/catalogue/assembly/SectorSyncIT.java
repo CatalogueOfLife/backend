@@ -80,7 +80,7 @@ public class SectorSyncIT {
     return importRule.datasetKey(key, format);
   }
   
-  NameUsageBase getByName(int datasetKey, Rank rank, String name) {
+  public static NameUsageBase getByName(int datasetKey, Rank rank, String name) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       List<NameUsageBase> taxa = session.getMapper(NameUsageMapper.class).listByName(datasetKey, name, rank);
       if (taxa.size() > 1) throw new IllegalStateException("Multiple taxa found for name="+name);
@@ -111,11 +111,11 @@ public class SectorSyncIT {
     return new SimpleName(nu.getId(), nu.getName().canonicalNameWithAuthorship(), nu.getName().getRank());
   }
   
-  static int createSector(Sector.Mode mode, NameUsageBase src, NameUsageBase target) {
+  public static int createSector(Sector.Mode mode, NameUsageBase src, NameUsageBase target) {
     return createSector(mode, src.getDatasetKey(), simple(src), simple(target));
   }
-  
-  static int createSector(Sector.Mode mode, int datasetKey, SimpleName src, SimpleName target) {
+
+  public static int createSector(Sector.Mode mode, int datasetKey, SimpleName src, SimpleName target) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       Sector sector = new Sector();
       sector.setMode(mode);
@@ -128,8 +128,8 @@ public class SectorSyncIT {
       return sector.getId();
     }
   }
-  
-  static EditorialDecision createDecision(int datasetKey, SimpleName src, EditorialDecision.Mode mode, Name name) {
+
+  public static EditorialDecision createDecision(int datasetKey, SimpleName src, EditorialDecision.Mode mode, Name name) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       EditorialDecision ed = new EditorialDecision();
       ed.setMode(mode);
@@ -142,16 +142,24 @@ public class SectorSyncIT {
       return ed;
     }
   }
-    
-  void syncAll() {
+
+  public void syncAll() {
+    syncAll(diDao);
+  }
+
+  public static void syncAll(DatasetImportDao diDao) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       for (Sector s : session.getMapper(SectorMapper.class).list(Datasets.DRAFT_COL, null)) {
-        sync(s);
+        sync(s, diDao);
       }
     }
   }
-  
+
   void sync(Sector s) {
+    sync(s, diDao);
+  }
+
+  static void sync(Sector s, DatasetImportDao diDao) {
     SectorSync ss = new SectorSync(s.getId(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     System.out.println("\n*** SECTOR SYNC " + s.getKey() + " ***");

@@ -7,23 +7,45 @@ import life.catalogue.db.Create;
 import life.catalogue.db.DatasetProcessable;
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class TableCopyHandlerWithKeyMap<T extends DatasetScopedEntity<Integer>, M extends Create<T> & DatasetProcessable<T>>
   extends TableCopyHandler<T, M> {
 
   private final Int2IntMap keyMap;
+  private final List<OldKeyWrapper> batch = new ArrayList<>(TableCopyHandlerBase.BATCHSIZE);
 
-  public TableCopyHandlerWithKeyMap(SqlSessionFactory factory, String entityName, Class<M> mapperClass, Consumer<T> updater) {
-    super(factory, entityName, mapperClass, updater);
+  class OldKeyWrapper {
+    final int oldKey;
+    final T obj;
+
+    OldKeyWrapper(T obj) {
+      this.obj = obj;
+      oldKey = obj.getId();
+    }
+  }
+
+  public TableCopyHandlerWithKeyMap(int datasetKey, SqlSessionFactory factory, String entityName, Class<M> mapperClass, Consumer<T> updater) {
+    super(datasetKey, factory, entityName, mapperClass, updater);
     keyMap = new Int2IntOpenHashMap();
   }
 
   @Override
   public void accept(T obj) {
-    int oldKey = obj.getId();
+    batch.add(new OldKeyWrapper(obj));
     super.accept(obj);
-    keyMap.put(oldKey, (int) obj.getId());
+  }
+
+  @Override
+  void commitBatch() {
+    super.commitBatch();
+    // only now we have new keys!
+    for (OldKeyWrapper ow : batch) {
+      keyMap.put(ow.oldKey, (int) ow.obj.getId());
+    }
+    batch.clear();
   }
 
   public Int2IntMap getKeyMap() {

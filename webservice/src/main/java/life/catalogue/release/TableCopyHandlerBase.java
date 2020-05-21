@@ -11,16 +11,18 @@ import java.util.function.Consumer;
 abstract class TableCopyHandlerBase<T> implements Consumer<T>, AutoCloseable {
   
   private static final Logger LOG = LoggerFactory.getLogger(TableCopyHandlerBase.class);
-  private static final int BATCHSIZE = 10000;
+  static final int BATCHSIZE = 10000;
 
-  private final SqlSessionFactory factory;
   protected final Consumer<T> updater;
   protected final SqlSession session;
   private final String entityName;
   private int counter;
-  
+
+  public TableCopyHandlerBase(SqlSessionFactory factory, String entityName) {
+    this(factory, entityName, null);
+  }
+
   public TableCopyHandlerBase(SqlSessionFactory factory, String entityName, Consumer<T> updater) {
-    this.factory = factory;
     this.updater = updater;
     this.entityName = entityName;
     // we open up a separate batch session that we can write to so we do not disturb the open main cursor for processing with this handler
@@ -29,7 +31,7 @@ abstract class TableCopyHandlerBase<T> implements Consumer<T>, AutoCloseable {
   
   @Override
   public void close() {
-    session.commit();
+    commitBatch();
     session.close();
   }
   
@@ -41,12 +43,18 @@ abstract class TableCopyHandlerBase<T> implements Consumer<T>, AutoCloseable {
   
   @Override
   public void accept(T obj) {
-    updater.accept(obj);
+    if (updater != null) {
+      updater.accept(obj);
+    }
     create(obj);
     // commit in batches
     if (counter++ % BATCHSIZE == 0) {
-      session.commit();
-      LOG.debug("Inserted {} {}", counter, entityName);
+      commitBatch();
     }
+  }
+
+  void commitBatch(){
+    session.commit();
+    LOG.debug("Inserted {} {}", counter, entityName);
   }
 }

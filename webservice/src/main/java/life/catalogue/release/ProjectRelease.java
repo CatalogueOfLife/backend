@@ -19,8 +19,6 @@ public class ProjectRelease extends ProjectRunnable {
   private static final String DEFAULT_TITLE_TEMPLATE = "{title}, {date}";
 
   private final AcExporter exporter;
-  @Deprecated
-  private final life.catalogue.release.Logger logger = new life.catalogue.release.Logger(LOG);
 
   ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, AcExporter exporter, DatasetImportDao diDao, int datasetKey, Dataset release, int userKey) {
     super("releasing", factory, diDao, indexService, userKey, datasetKey, release);
@@ -28,23 +26,10 @@ public class ProjectRelease extends ProjectRunnable {
   }
 
   @Override
-  void dataWork() throws Exception {
-    logger.log("Release catalogue "+ datasetKey +" to new dataset" + getNewDatasetKey());
+  void prepWork() throws Exception {
     // map ids
     updateState(ImportState.MATCHING);
     mapIds();
-    // copy data
-    updateState(ImportState.INSERTING);
-    copyTable(SectorMapper.class, Sector.class, this::updateEntity);
-    copyTable(ReferenceMapper.class, Reference.class, this::updateVerbatimEntity);
-    copyTable(NameMapper.class, Name.class, this::updateVerbatimEntity);
-    copyTable(NameRelationMapper.class, NameRelation.class, this::updateEntity);
-    copyTable(TaxonMapper.class, Taxon.class, this::updateVerbatimEntity);
-    copyTable(SynonymMapper.class, Synonym.class, this::updateVerbatimEntity);
-
-    copyExtTable(VernacularNameMapper.class, VernacularName.class, this::updateEntity);
-    copyExtTable(DistributionMapper.class, Distribution.class, this::updateEntity);
-    copyTable(EstimateMapper.class, SpeciesEstimate.class, this::updateEntity);
     // archive dataset metadata
     try (SqlSession session = factory.openSession(false)) {
       DatasetArchiveMapper dam = session.getMapper(DatasetArchiveMapper.class);
@@ -104,38 +89,15 @@ public class ProjectRelease extends ProjectRunnable {
   }
 
   private void mapIds() {
-    logger.log("Map IDs");
+    LOG.info("Map IDs");
     //TODO: match & generate ids
-  }
-
-  private <T extends DatasetScopedEntity<Integer>> void updateEntity(T obj) {
-    obj.setId(null);
-    obj.setDatasetKey(newDatasetKey);
-  }
-  private <C extends DSID<String> & VerbatimEntity> void updateVerbatimEntity(C obj) {
-    obj.setDatasetKey(newDatasetKey);
-    obj.setVerbatimKey(null);
-  }
-  private void updateEntity(NameRelation obj) {
-    obj.setId(null);
-    obj.setDatasetKey(newDatasetKey);
-    obj.setVerbatimKey(null);
-  }
-  private <E extends DatasetScopedEntity<Integer> & VerbatimEntity> void updateEntity(TaxonExtension<E> obj) {
-    obj.getObj().setId(null);
-    obj.getObj().setDatasetKey(newDatasetKey);
-    obj.getObj().setVerbatimKey(null);
   }
 
   public void export() throws IOException {
     try {
       exporter.export(newDatasetKey);
     } catch (Throwable e) {
-      LOG.error("Error exporting catalogue {}", newDatasetKey, e);
-      logger.log("\n\nERROR!");
-      if (e.getMessage() != null) {
-        logger.log(e.getMessage());
-      }
+      LOG.error("Error exporting release {}", newDatasetKey, e);
     }
   }
   
