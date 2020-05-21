@@ -39,6 +39,9 @@
 
   <sql id="COLS">
     dataset_key,
+    <include refid="COLS_NO_DATASETKEY"/>
+  </sql>
+  <sql id="COLS_NO_DATASETKEY">
     subject_dataset_key,
     subject_id,
     subject_name,
@@ -205,4 +208,12 @@
     FROM decision ed
     WHERE subject_dataset_key = #{subjectDatasetKey} AND dataset_key = #{datasetKey}
   </select>
+
+  <insert id="copyDataset" parameterType="map">
+    INSERT INTO decision (dataset_key,<include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by )
+    SELECT #{newDatasetKey},<include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by
+    FROM decision
+    WHERE dataset_key=#{datasetKey}
+  </insert>
+
 </mapper>

@@ -80,30 +80,7 @@ public abstract class ProjectRunnable implements Runnable {
       prepWork();
 
       // copy data
-      LOG.info("Copy data into dataset {}", newDatasetKey);
-      updateState(ImportState.INSERTING);
-      final EntityUpdater updater = new EntityUpdater(newDatasetKey);
-
-      updater.setSectors(
-        copyTableWithKeyMap(SectorMapper.class, Sector.class, updater::globalKey)
-      );
-      copyTable(DecisionMapper.class, EditorialDecision.class, updater::globalKey);
-      copyTable(EstimateMapper.class, SpeciesEstimate.class, updater::globalKey);
-
-      copyVerbatimTable();
-
-      copyTable(ReferenceMapper.class, Reference.class, updater::sectorEntity);
-      copyTable(NameMapper.class, Name.class, updater::sectorEntity);
-      copyTable(TaxonMapper.class, Taxon.class, updater::sectorEntity);
-      copyTable(SynonymMapper.class, Synonym.class, updater::sectorEntity);
-      copyTable(TypeMaterialMapper.class, TypeMaterial.class, updater::sectorEntity);
-
-      copyTable(NameRelationMapper.class, NameRelation.class, updater::datasetKey);
-
-      copyExtTable(VernacularNameMapper.class, VernacularName.class, updater::extensionEntity);
-      copyExtTable(DistributionMapper.class, Distribution.class, updater::extensionEntity);
-      copyExtTable(DescriptionMapper.class, Description.class, updater::extensionEntity);
-      copyExtTable(MediaMapper.class, Media.class, updater::extensionEntity);
+      copyData();
 
       // build indices and attach partition
       LOG.info("Attach and index partitions for dataset {}", newDatasetKey);
@@ -145,6 +122,37 @@ public abstract class ProjectRunnable implements Runnable {
     }
   }
 
+  private void copyData() {
+    LOG.info("Copy data into dataset {}", newDatasetKey);
+    updateState(ImportState.INSERTING);
+    final EntityUpdater updater = new EntityUpdater(newDatasetKey);
+
+    updater.setSectors(
+      copyTableWithKeyMap(SectorMapper.class, Sector.class)
+    );
+    try (SqlSession session = factory.openSession(true)) {
+      int count = session.getMapper(DecisionMapper.class).copyDataset(datasetKey, newDatasetKey);
+      LOG.info("Copied {} {}s", count, EditorialDecision.class.getSimpleName());
+    }
+    //copyTable(DecisionMapper.class, EditorialDecision.class, updater::globalKey);
+    copyTable(EstimateMapper.class, SpeciesEstimate.class);
+
+    copyVerbatimTable();
+
+    copyTable(ReferenceMapper.class, Reference.class, updater::sectorEntity);
+    copyTable(NameMapper.class, Name.class, updater::sectorEntity);
+    copyTable(TaxonMapper.class, Taxon.class, updater::sectorEntity);
+    copyTable(SynonymMapper.class, Synonym.class, updater::sectorEntity);
+    copyTable(TypeMaterialMapper.class, TypeMaterial.class, updater::sectorEntity);
+
+    copyTable(NameRelationMapper.class, NameRelation.class);
+
+    copyExtTable(VernacularNameMapper.class, VernacularName.class);
+    copyExtTable(DistributionMapper.class, Distribution.class);
+    copyExtTable(DescriptionMapper.class, Description.class);
+    copyExtTable(MediaMapper.class, Media.class);
+  }
+
   void updateState(ImportState state) {
     metrics.setState(state);
     diDao.update(metrics);
@@ -168,13 +176,17 @@ public abstract class ProjectRunnable implements Runnable {
     copyTableInternal(VerbatimRecordMapper.class, VerbatimRecord.class, handler);
   }
 
+  private <V extends DSID<?>, M extends Create<V> & DatasetProcessable<V>> void copyTable(Class<M> mapperClass, Class<V> entity) {
+    TableCopyHandler<V,M> handler = new TableCopyHandler<>(newDatasetKey, factory, entity.getSimpleName(), mapperClass);
+    copyTableInternal(mapperClass, entity, handler);
+  }
   private <V extends DSID<?>, M extends Create<V> & DatasetProcessable<V>> void copyTable(Class<M> mapperClass, Class<V> entity, Consumer<V> updater) {
     TableCopyHandler<V,M> handler = new TableCopyHandler<>(newDatasetKey, factory, entity.getSimpleName(), mapperClass, updater);
     copyTableInternal(mapperClass, entity, handler);
   }
 
-  private <V extends DatasetScopedEntity<Integer>, M extends CRUD<DSID<Integer>, V> & DatasetProcessable<V>> Int2IntMap copyTableWithKeyMap(Class<M> mapperClass, Class<V> entity, Consumer<V> updater) {
-    TableCopyHandlerWithKeyMap<V,M> handler = new TableCopyHandlerWithKeyMap<>(newDatasetKey, factory, entity.getSimpleName(), mapperClass, updater);
+  private <V extends DatasetScopedEntity<Integer>, M extends CRUD<DSID<Integer>, V> & DatasetProcessable<V>> Int2IntMap copyTableWithKeyMap(Class<M> mapperClass, Class<V> entity) {
+    TableCopyHandlerWithKeyMap<V,M> handler = new TableCopyHandlerWithKeyMap<>(newDatasetKey, factory, entity.getSimpleName(), mapperClass);
     copyTableInternal(mapperClass, entity, handler);
     return handler.getKeyMap();
   }
@@ -191,10 +203,10 @@ public abstract class ProjectRunnable implements Runnable {
     }
   }
 
-  private <V extends DatasetScopedEntity<Integer>> void copyExtTable(Class<? extends TaxonExtensionMapper<V>> mapperClass, Class<V> entity, Consumer<TaxonExtension<V>> updater) {
+  private <V extends DatasetScopedEntity<Integer>> void copyExtTable(Class<? extends TaxonExtensionMapper<V>> mapperClass, Class<V> entity) {
     interruptIfCancelled();
     try (SqlSession session = factory.openSession(false);
-         ExtTableCopyHandler<V> handler = new ExtTableCopyHandler<>(factory, entity.getSimpleName(), mapperClass, updater)
+         ExtTableCopyHandler<V> handler = new ExtTableCopyHandler<>(factory, entity.getSimpleName(), mapperClass)
     ) {
       LOG.info("Copy {}s", entity.getSimpleName());
       TaxonExtensionMapper<V> mapper = session.getMapper(mapperClass);

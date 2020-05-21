@@ -9,7 +9,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class TableCopyHandlerWithKeyMap<T extends DatasetScopedEntity<Integer>, M extends Create<T> & DatasetProcessable<T>>
   extends TableCopyHandler<T, M> {
@@ -27,8 +26,8 @@ public class TableCopyHandlerWithKeyMap<T extends DatasetScopedEntity<Integer>, 
     }
   }
 
-  public TableCopyHandlerWithKeyMap(int datasetKey, SqlSessionFactory factory, String entityName, Class<M> mapperClass, Consumer<T> updater) {
-    super(datasetKey, factory, entityName, mapperClass, updater);
+  public TableCopyHandlerWithKeyMap(int datasetKey, SqlSessionFactory factory, String entityName, Class<M> mapperClass) {
+    super(datasetKey, factory, entityName, mapperClass);
     keyMap = new Int2IntOpenHashMap();
   }
 

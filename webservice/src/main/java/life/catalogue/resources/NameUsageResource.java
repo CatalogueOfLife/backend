@@ -25,6 +25,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -35,9 +36,12 @@ public class NameUsageResource {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageResource.class);
   private static final Joiner COMMA_CAT = Joiner.on(';').skipNulls();
-  private static final Object[][] NAME_HEADER = new Object[1][];
+  private static final Object[][] EXPORT_HEADERS = new Object[1][];
+  private static final Object[][] EXPORT_HEADERS_ISSUES = new Object[1][];
   static {
-    NAME_HEADER[0] = new Object[]{"ID", "parentID", "status", "rank", "scientificName", "authorship", "issues"};
+    EXPORT_HEADERS[0] = new Object[]{"ID", "parentID", "status", "rank", "scientificName", "authorship"};
+    EXPORT_HEADERS_ISSUES[0] = Arrays.copyOf(EXPORT_HEADERS[0], 7);
+    EXPORT_HEADERS_ISSUES[0][6] = "issues";
   }
   private final NameUsageSearchService searchService;
   private final NameUsageSuggestionService suggestService;
@@ -58,19 +62,23 @@ public class NameUsageResource {
   @GET
   @Produces({MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_TSV})
   public Stream<Object[]> exportCsv(@PathParam("datasetKey") int datasetKey,
-                                    @QueryParam("issue") boolean withIssueOnly,
+                                    @QueryParam("issue") boolean withIssues,
                                     @QueryParam("min") Rank min,
                                     @QueryParam("max") Rank max,
                                     @Context SqlSession session) {
-    Stream<Object[]> data;
-    if (withIssueOnly) {
+    if (withIssues) {
       NameUsageWrapperMapper nuwm = session.getMapper(NameUsageWrapperMapper.class);
-      data = Streams.stream(nuwm.processDatasetUsageWithIssuesOnly(datasetKey)).map(this::map);
+      return Stream.concat(
+        Stream.of(EXPORT_HEADERS_ISSUES),
+        Streams.stream(nuwm.processDatasetUsageWithIssues(datasetKey)).map(this::map)
+      );
     } else {
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-      data = Streams.stream(num.processDataset(datasetKey, min, max)).map(this::map);
+      return Stream.concat(
+        Stream.of(EXPORT_HEADERS),
+        Streams.stream(num.processDataset(datasetKey, min, max)).map(this::map)
+      );
     }
-    return Stream.concat( Stream.of(NAME_HEADER), data);
   }
 
   private Object[] map(NameUsageBase nu){
@@ -80,15 +88,21 @@ public class NameUsageResource {
       nu.getStatus(),
       nu.getName().getRank(),
       nu.getName().getScientificName(),
-      nu.getName().getAuthorship(),
-      null
+      nu.getName().getAuthorship()
     };
   }
 
   private Object[] map(NameUsageWrapper nuw){
-    Object[] row = map((NameUsageBase) nuw.getUsage());
-    row[6] = COMMA_CAT.join(nuw.getIssues());
-    return row;
+    NameUsageBase nu = (NameUsageBase) nuw.getUsage();
+    return new Object[]{
+      nu.getId(),
+      nu.getParentId(),
+      nu.getStatus(),
+      nu.getName().getRank(),
+      nu.getName().getScientificName(),
+      nu.getName().getAuthorship(),
+      COMMA_CAT.join(nuw.getIssues())
+    };
   }
 
   @GET

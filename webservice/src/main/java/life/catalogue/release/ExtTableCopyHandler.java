@@ -7,16 +7,13 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.function.Consumer;
-
 public class ExtTableCopyHandler<T extends DatasetScopedEntity<Integer>> extends TableCopyHandlerBase<TaxonExtension<T>> {
   
   private static final Logger LOG = LoggerFactory.getLogger(ExtTableCopyHandler.class);
   private final TaxonExtensionMapper<T> mapper;
   
-  public ExtTableCopyHandler(SqlSessionFactory factory, String entityName, Class<? extends TaxonExtensionMapper<T>> mapperClass,
-                             Consumer<TaxonExtension<T>> updater) {
-    super(factory, entityName, updater);
+  public ExtTableCopyHandler(SqlSessionFactory factory, String entityName, Class<? extends TaxonExtensionMapper<T>> mapperClass) {
+    super(factory, entityName);
     mapper = session.getMapper(mapperClass);
   }
   

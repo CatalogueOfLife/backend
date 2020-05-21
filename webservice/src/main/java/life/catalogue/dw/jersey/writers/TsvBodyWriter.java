@@ -33,6 +33,7 @@ public class TsvBodyWriter implements MessageBodyWriter<Stream<Object[]>> {
       rows.forEach(row -> {
         try {
           br.append(toTsv(row));
+          br.append('\n');
         } catch(Exception e) {
           Throwables.throwIfUnchecked(e);
           throw new RuntimeException(e);

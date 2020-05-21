@@ -102,7 +102,7 @@
     </if>
   </select>
 
-  <select id="processDatasetUsageWithIssuesOnly" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+  <select id="processDatasetUsageWithIssues" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT u.id AS uid, null AS ed_id, null AS v_id,
     <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT"/>,

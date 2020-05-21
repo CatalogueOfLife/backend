@@ -37,7 +37,7 @@ public interface NameUsageWrapperMapper {
    * Iterates over all usages for a given dataset.
    * The returned wrapper does only include the usage and issues related to name and usage, but no further information.
    */
-  Cursor<NameUsageWrapper> processDatasetUsageWithIssuesOnly(@Param("datasetKey") int datasetKey);
+  Cursor<NameUsageWrapper> processDatasetUsageWithIssues(@Param("datasetKey") int datasetKey);
   /**
    * Iterates over all bare names not linked to a synonym or taxon for a given dataset. This
    * allows a single query to efficiently stream all its values without keeping them in memory.

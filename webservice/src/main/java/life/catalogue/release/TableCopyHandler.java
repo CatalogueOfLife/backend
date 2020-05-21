@@ -12,7 +12,13 @@ public class TableCopyHandler<T extends DSID<?>, M extends Create<T> & DatasetPr
   private final int datasetKey;
   private final M mapper;
 
-  
+
+  public TableCopyHandler(int datasetKey, SqlSessionFactory factory, String entityName, Class<M> mapperClass) {
+    super(factory, entityName);
+    mapper = session.getMapper(mapperClass);
+    this.datasetKey = datasetKey;
+  }
+
   public TableCopyHandler(int datasetKey, SqlSessionFactory factory, String entityName, Class<M> mapperClass, Consumer<T> updater) {
     super(factory, entityName, updater);
     mapper = session.getMapper(mapperClass);
