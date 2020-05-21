@@ -48,17 +48,23 @@
   <sql id="COLS">
     dataset_key,
     sector_key,
-    verbatim_key,
-    parent_id,
-    name_id,
-    status,
-    is_synonym,
-    origin,
-    according_to,
-    reference_ids,
-    remarks,
-    created_by,
-    modified_by
+    <include refid="life.catalogue.db.mapper.NameUsageMapper.COLS_COPY">
+      <property name="alias" value=""/>
+    </include>
+  </sql>
+
+  <sql id="COLS_COPY">
+    ${alias}verbatim_key,
+    ${alias}parent_id,
+    ${alias}name_id,
+    ${alias}status,
+    ${alias}is_synonym,
+    ${alias}origin,
+    ${alias}according_to,
+    ${alias}reference_ids,
+    ${alias}remarks,
+    ${alias}created_by,
+    ${alias}modified_by
   </sql>
 
   <sql id="PROPS">
@@ -176,6 +182,12 @@
     SET (parent_id, modified, modified_by) = (#{newParentId}, now(), #{userKey})
     WHERE parent_id = #{parentId}
   </update>
+
+  <insert id="copyDataset" parameterType="map">
+    INSERT INTO name_usage_${newDatasetKey} (id, dataset_key, sector_key, <include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
+    SELECT n.id, #{newDatasetKey}, s.id, <include refid="COLS_COPY"><property name="alias" value="n."/></include>, n.created, n.modified
+    FROM name_usage_${datasetKey} n LEFT JOIN sector s ON s.copied_from_id=n.sector_key AND s.dataset_key=#{datasetKey}
+  </insert>
 
   <select id="processDataset" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>

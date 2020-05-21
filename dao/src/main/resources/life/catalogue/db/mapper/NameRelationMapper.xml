@@ -20,8 +20,12 @@
   </sql>
 
   <sql id="COLS">
-    verbatim_key,
     dataset_key,
+    <include refid="COLS_COPY"/>
+  </sql>
+
+  <sql id="COLS_COPY">
+    verbatim_key,
     type,
     name_id,
     related_name_id,
@@ -32,8 +36,8 @@
   </sql>
 
   <sql id="PROPS">
-    #{verbatimKey},
     #{datasetKey},
+    #{verbatimKey},
     #{type}::NOMRELTYPE,
     #{nameId},
     #{relatedNameId},
@@ -80,6 +84,12 @@
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     INSERT INTO name_rel_${partition} (<include refid="COLS"/>, created, modified )
     VALUES (<include refid="PROPS"/>, now(), now() )
+  </insert>
+
+  <insert id="copyDataset" parameterType="map">
+    INSERT INTO name_rel_${newDatasetKey} (dataset_key,<include refid="COLS_COPY"/>, created, modified)
+    SELECT #{newDatasetKey},<include refid="COLS_COPY"/>, created, modified
+    FROM name_rel_${datasetKey}
   </insert>
 
 </mapper>

@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.db.CopyDataset;
 import life.catalogue.db.Create;
 import life.catalogue.db.DatasetProcessable;
 import org.apache.ibatis.annotations.Param;
@@ -16,7 +17,7 @@ import java.util.Set;
 /**
  *
  */
-public interface VerbatimRecordMapper extends Create<VerbatimRecord>, DatasetProcessable<VerbatimRecord> {
+public interface VerbatimRecordMapper extends Create<VerbatimRecord>, DatasetProcessable<VerbatimRecord>, CopyDataset {
   
   /**
    * See list method for parameters
@@ -55,9 +56,5 @@ public interface VerbatimRecordMapper extends Create<VerbatimRecord>, DatasetPro
 
   void update(@Param("key") DSID<Integer> key, @Param("issues") Set<Issue> issues);
 
-  /**
-   * Creates a verbatim record with a preassigned key, not using a sequence
-   */
-  void createWithKey(VerbatimRecord obj);
 }
 

@@ -16,6 +16,10 @@
 
   <sql id="COLS">
     dataset_key,
+    <include refid="COLS_NO_DATASETKEY"/>
+  </sql>
+
+  <sql id="COLS_NO_DATASETKEY">
     line,
     file,
     type,
@@ -134,10 +138,10 @@
     VALUES (<include refid="PROPS"/>)
   </insert>
 
-  <insert id="createWithKey" parameterType="VerbatimRecord" useGeneratedKeys="false">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    INSERT INTO verbatim_${datasetKey} (id,<include refid="COLS"/>)
-    VALUES (#{id},<include refid="PROPS"/>)
+  <insert id="copyDataset" parameterType="map">
+    INSERT INTO verbatim_${newDatasetKey} (id,dataset_key,<include refid="COLS_NO_DATASETKEY"/>, doc)
+    SELECT id,#{newDatasetKey},<include refid="COLS_NO_DATASETKEY"/>, doc
+    FROM verbatim_${datasetKey}
   </insert>
 
   <update id="update" parameterType="VerbatimRecord" keyProperty="id">

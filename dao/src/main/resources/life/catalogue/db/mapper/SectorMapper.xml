@@ -42,6 +42,10 @@
 
   <sql id="COLS">
     dataset_key,
+    <include refid="COLS_NO_DATASETKEY"/>
+  </sql>
+
+  <sql id="COLS_NO_DATASETKEY">
     subject_dataset_key,
     subject_id,
     subject_name,
@@ -208,6 +212,13 @@
   <insert id="create" parameterType="Sector" useGeneratedKeys="true" keyProperty="id">
     INSERT INTO sector (<include refid="COLS"/>, original_subject_id, created_by )
     VALUES (<include refid="PROPS"/>, #{subject.id}, #{createdBy} )
+  </insert>
+
+  <insert id="copyDataset" parameterType="map">
+    INSERT INTO sector (copied_from_id,dataset_key,<include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by )
+    SELECT id,#{newDatasetKey},<include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by
+    FROM sector
+    WHERE dataset_key=#{datasetKey}
   </insert>
 
   <update id="update" parameterType="Sector">

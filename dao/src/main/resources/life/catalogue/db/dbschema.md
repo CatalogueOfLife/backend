@@ -10,6 +10,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2020-05-21 duplicate job sql
+```
+ALTER TABLE sector ADD COLUMN copied_from_id INTEGER;
+```
+
 #### 2020-05-18 duplication job
 - remove ImportState.RELEASED (update imports with FINISHED instead)
 ```

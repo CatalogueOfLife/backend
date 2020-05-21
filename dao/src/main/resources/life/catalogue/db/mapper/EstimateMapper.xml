@@ -31,6 +31,10 @@
 
   <sql id="COLS">
     dataset_key,
+    <include refid="COLS_NO_DATASETKEY"/>
+  </sql>
+
+  <sql id="COLS_NO_DATASETKEY">
     target_id,
     target_name,
     target_authorship,
@@ -121,6 +125,13 @@
   <insert id="create" parameterType="SpeciesEstimate" useGeneratedKeys="true" keyProperty="id">
     INSERT INTO estimate (<include refid="COLS"/>, created_by )
     VALUES (<include refid="PROPS"/>, #{createdBy} )
+  </insert>
+
+  <insert id="copyDataset" parameterType="map">
+    INSERT INTO estimate (dataset_key,<include refid="COLS_NO_DATASETKEY"/>, created, created_by )
+    SELECT #{newDatasetKey},<include refid="COLS_NO_DATASETKEY"/>, created, created_by
+    FROM estimate
+    WHERE dataset_key=#{datasetKey}
   </insert>
 
   <update id="update" parameterType="SpeciesEstimate">

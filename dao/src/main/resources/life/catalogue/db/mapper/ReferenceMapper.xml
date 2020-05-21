@@ -19,21 +19,27 @@
   </sql>
 
   <sql id="COLS">
-    id,
     dataset_key,
     sector_key,
-    verbatim_key,
-    csl,
-    citation,
-    year,
-    created_by,
-    modified_by
+    <include refid="COLS_COPY">
+      <property name="alias" value=""/>
+    </include>
+  </sql>
+
+  <sql id="COLS_COPY">
+    ${alias}id,
+    ${alias}verbatim_key,
+    ${alias}csl,
+    ${alias}citation,
+    ${alias}year,
+    ${alias}created_by,
+    ${alias}modified_by
   </sql>
 
   <sql id="PROPS">
-    #{id},
     #{datasetKey},
     #{sectorKey},
+    #{id},
     #{verbatimKey},
     #{csl, typeHandler=life.catalogue.db.type.CslJsonHandler}::jsonb,
     #{citation},
@@ -172,6 +178,12 @@
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     INSERT INTO reference_${partition} (<include refid="COLS"/>, created, modified)
     VALUES (<include refid="PROPS"/>, now(), now())
+  </insert>
+
+  <insert id="copyDataset" parameterType="map">
+    INSERT INTO reference_${newDatasetKey} (dataset_key, sector_key, <include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified, doc)
+    SELECT #{newDatasetKey}, s.id, <include refid="COLS_COPY"><property name="alias" value="r."/></include>, r.created, r.modified, doc
+    FROM reference_${datasetKey} r LEFT JOIN sector s ON s.copied_from_id=r.sector_key AND s.dataset_key=#{datasetKey}
   </insert>
 
   <update id="update" parameterType="Reference" keyProperty="id">

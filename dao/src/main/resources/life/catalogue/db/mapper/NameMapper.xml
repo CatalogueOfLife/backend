@@ -56,52 +56,57 @@
     </include>
   </sql>
 
-
   <sql id="COLS">
-    id,
     dataset_key,
     sector_key,
-    verbatim_key,
-    name_index_id,
-    name_index_match_type,
-    homotypic_name_id,
-    scientific_name,
-    scientific_name_normalized,
-    authorship,
-    authorship_normalized,
-    rank,
-    uninomial,
-    genus,
-    infrageneric_epithet,
-    specific_epithet,
-    infraspecific_epithet,
-    cultivar_epithet,
-    appended_phrase,
-    candidatus,
-    notho,
-    basionym_authors,
-    basionym_ex_authors,
-    basionym_year,
-    combination_authors,
-    combination_ex_authors,
-    combination_year,
-    sanctioning_author,
-    published_in_id,
-    published_in_page,
-    code,
-    nom_status,
-    origin,
-    type,
-    link,
-    remarks,
-    created_by,
-    modified_by
+    <include refid="COLS_COPY">
+      <property name="alias" value=""/>
+    </include>
+  </sql>
+
+  <sql id="COLS_COPY">
+    ${alias}id,
+    ${alias}verbatim_key,
+    ${alias}name_index_id,
+    ${alias}name_index_match_type,
+    ${alias}homotypic_name_id,
+    ${alias}scientific_name,
+    ${alias}scientific_name_normalized,
+    ${alias}authorship,
+    ${alias}authorship_normalized,
+    ${alias}rank,
+    ${alias}uninomial,
+    ${alias}genus,
+    ${alias}infrageneric_epithet,
+    ${alias}specific_epithet,
+    ${alias}infraspecific_epithet,
+    ${alias}cultivar_epithet,
+    ${alias}appended_phrase,
+    ${alias}candidatus,
+    ${alias}notho,
+    ${alias}basionym_authors,
+    ${alias}basionym_ex_authors,
+    ${alias}basionym_year,
+    ${alias}combination_authors,
+    ${alias}combination_ex_authors,
+    ${alias}combination_year,
+    ${alias}sanctioning_author,
+    ${alias}published_in_id,
+    ${alias}published_in_page,
+    ${alias}code,
+    ${alias}nom_status,
+    ${alias}origin,
+    ${alias}type,
+    ${alias}link,
+    ${alias}remarks,
+    ${alias}created_by,
+    ${alias}modified_by
   </sql>
 
   <sql id="PROPS">
-    #{id},
     #{datasetKey},
     #{sectorKey},
+    #{id},
     #{verbatimKey},
     #{nameIndexId},
     #{nameIndexMatchType}::MATCHTYPE,
@@ -241,6 +246,12 @@
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     INSERT INTO name_${partition} (<include refid="COLS"/>, created, modified)
     VALUES (<include refid="PROPS"/>, now(), now())
+  </insert>
+
+  <insert id="copyDataset" parameterType="map">
+    INSERT INTO name_${newDatasetKey} (dataset_key,sector_key,<include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
+    SELECT #{newDatasetKey},s.id,<include refid="COLS_COPY"><property name="alias" value="n."/></include>, n.created, n.modified
+    FROM name_${datasetKey} n LEFT JOIN sector s ON s.copied_from_id=n.sector_key AND s.dataset_key=#{datasetKey}
   </insert>
 
   <update id="update" parameterType="Name" keyProperty="id">

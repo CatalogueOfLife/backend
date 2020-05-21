@@ -21,8 +21,12 @@
   </sql>
 
   <sql id="COLS">
-    taxon_id,
     dataset_key,
+    <include refid="COLS_COPY"/>
+  </sql>
+
+  <sql id="COLS_COPY">
+    taxon_id,
     verbatim_key,
     category,
     format,
@@ -34,8 +38,8 @@
   </sql>
 
   <sql id="PROPS">
-    #{taxonId},
     #{obj.datasetKey},
+    #{taxonId},
     #{obj.verbatimKey},
     #{obj.category},
     #{obj.format}::TEXTFORMAT,
@@ -91,6 +95,12 @@
     <include refid="life.catalogue.db.Common.partitionByObj"/>
     INSERT INTO description_${partition} (<include refid="COLS"/>, created, modified )
     VALUES (<include refid="PROPS"/>, now(), now() )
+  </insert>
+
+  <insert id="copyDataset" parameterType="map">
+    INSERT INTO description_${newDatasetKey} (dataset_key,<include refid="COLS_COPY"/>, created, modified)
+    SELECT #{newDatasetKey},<include refid="COLS_COPY"/>, created, modified
+    FROM description_${datasetKey}
   </insert>
 
 </mapper>

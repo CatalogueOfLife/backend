@@ -4,6 +4,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.SimpleName;
+import life.catalogue.db.CopyDataset;
 import life.catalogue.db.SectorProcessable;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
@@ -19,7 +20,7 @@ import java.util.Set;
  * <p>
  * Mapper sql should be reusing sql fragments from the 3 concrete implementations as much as possible avoiding duplication.
  */
-public interface NameUsageMapper extends SectorProcessable<NameUsageBase> {
+public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyDataset {
 
   NameUsageBase get(@Param("key") DSID<String> key);
 

@@ -4,6 +4,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.NameRelation;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.db.CRUD;
+import life.catalogue.db.CopyDataset;
 import life.catalogue.db.DatasetProcessable;
 import org.apache.ibatis.annotations.Param;
 
@@ -13,7 +14,7 @@ import java.util.List;
  * WARNING!
  * Only Create from CRUD is implemented !!!
  */
-public interface NameRelationMapper extends CRUD<DSID<Integer>, NameRelation>, DatasetProcessable<NameRelation> {
+public interface NameRelationMapper extends CRUD<DSID<Integer>, NameRelation>, DatasetProcessable<NameRelation>, CopyDataset {
   
   /**
    * Returns the list of name relations for a single name,

@@ -2,10 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DatasetScopedEntity;
-import life.catalogue.db.CRUD;
-import life.catalogue.db.DatasetPageable;
-import life.catalogue.db.DatasetProcessable;
-import life.catalogue.db.Searchable;
+import life.catalogue.db.*;
 
 /**
  * Integer based dataset scoped entity mapper
@@ -15,7 +12,8 @@ import life.catalogue.db.Searchable;
 public interface BaseDecisionMapper<T extends DatasetScopedEntity<Integer>, R> extends CRUD<DSID<Integer>, T>,
   DatasetPageable<T>,
   DatasetProcessable<T>,
-  Searchable<T, R> {
+  Searchable<T, R>,
+  CopyDataset {
 
   default T get(Integer key) {
     return get(DSID.idOnly(key));

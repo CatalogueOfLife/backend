@@ -30,32 +30,38 @@
   </sql>
 
   <sql id="COLS">
-    id,
     dataset_key,
     sector_key,
-    verbatim_key,
-    name_id,
-    citation,
-    status,
-    locality,
-    country,
-    latitude,
-    longitude,
-    altitude,
-    host,
-    date,
-    collector,
-    reference_id,
-    link,
-    remarks,
-    created_by,
-    modified_by
+    <include refid="COLS_COPY">
+      <property name="alias" value=""/>
+    </include>
+  </sql>
+
+  <sql id="COLS_COPY">
+    ${alias}id,
+    ${alias}verbatim_key,
+    ${alias}name_id,
+    ${alias}citation,
+    ${alias}status,
+    ${alias}locality,
+    ${alias}country,
+    ${alias}latitude,
+    ${alias}longitude,
+    ${alias}altitude,
+    ${alias}host,
+    ${alias}date,
+    ${alias}collector,
+    ${alias}reference_id,
+    ${alias}link,
+    ${alias}remarks,
+    ${alias}created_by,
+    ${alias}modified_by
   </sql>
 
   <sql id="PROPS">
-    #{id},
     #{datasetKey},
     #{sectorKey},
+    #{id},
     #{verbatimKey},
     #{nameId},
     #{citation},
@@ -106,6 +112,12 @@
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     INSERT INTO type_material_${partition} (<include refid="COLS"/>, created, modified)
     VALUES (<include refid="PROPS"/>, now(), now())
+  </insert>
+
+  <insert id="copyDataset" parameterType="map">
+    INSERT INTO type_material_${newDatasetKey} (dataset_key,sector_key,<include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
+    SELECT #{newDatasetKey}, s.id, <include refid="COLS_COPY"><property name="alias" value="t."/></include>, t.created, t.modified
+    FROM type_material_${datasetKey} t LEFT JOIN sector s ON s.copied_from_id=t.sector_key AND s.dataset_key=#{datasetKey}
   </insert>
 
   <update id="update" parameterType="TypeMaterial" keyProperty="id">

@@ -1,23 +1,18 @@
 package life.catalogue.release;
 
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.Partitioner;
-import life.catalogue.db.CRUD;
-import life.catalogue.db.Create;
-import life.catalogue.db.DatasetProcessable;
+import life.catalogue.db.CopyDataset;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.function.Consumer;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 
@@ -125,32 +120,27 @@ public abstract class ProjectRunnable implements Runnable {
   private void copyData() {
     LOG.info("Copy data into dataset {}", newDatasetKey);
     updateState(ImportState.INSERTING);
-    final EntityUpdater updater = new EntityUpdater(newDatasetKey);
 
-    updater.setSectors(
-      copyTableWithKeyMap(SectorMapper.class, Sector.class)
-    );
     try (SqlSession session = factory.openSession(true)) {
-      int count = session.getMapper(DecisionMapper.class).copyDataset(datasetKey, newDatasetKey);
-      LOG.info("Copied {} {}s", count, EditorialDecision.class.getSimpleName());
+      copyTable(Sector.class, SectorMapper.class, session);
+      copyTable(EditorialDecision.class, DecisionMapper.class, session);
+      copyTable(SpeciesEstimate.class, EstimateMapper.class, session);
+
+      copyTable(VerbatimRecord.class, VerbatimRecordMapper.class, session);
+
+      copyTable(Reference.class, ReferenceMapper.class, session);
+
+      copyTable(Name.class, NameMapper.class, session);
+      copyTable(NameRelation.class, NameRelationMapper.class, session);
+      copyTable(TypeMaterial.class, TypeMaterialMapper.class, session);
+
+      copyTable(NameUsage.class, NameUsageMapper.class, session);
+
+      copyTable(VernacularName.class, VernacularNameMapper.class, session);
+      copyTable(Distribution.class, DistributionMapper.class, session);
+      copyTable(Description.class, DescriptionMapper.class, session);
+      copyTable(Media.class, MediaMapper.class, session);
     }
-    //copyTable(DecisionMapper.class, EditorialDecision.class, updater::globalKey);
-    copyTable(EstimateMapper.class, SpeciesEstimate.class);
-
-    copyVerbatimTable();
-
-    copyTable(ReferenceMapper.class, Reference.class, updater::sectorEntity);
-    copyTable(NameMapper.class, Name.class, updater::sectorEntity);
-    copyTable(TaxonMapper.class, Taxon.class, updater::sectorEntity);
-    copyTable(SynonymMapper.class, Synonym.class, updater::sectorEntity);
-    copyTable(TypeMaterialMapper.class, TypeMaterial.class, updater::sectorEntity);
-
-    copyTable(NameRelationMapper.class, NameRelation.class);
-
-    copyExtTable(VernacularNameMapper.class, VernacularName.class);
-    copyExtTable(DistributionMapper.class, Distribution.class);
-    copyExtTable(DescriptionMapper.class, Description.class);
-    copyExtTable(MediaMapper.class, Media.class);
   }
 
   void updateState(ImportState state) {
@@ -171,47 +161,9 @@ public abstract class ProjectRunnable implements Runnable {
     diDao.updateDatasetLastAttempt(metrics);
   }
 
-  private void copyVerbatimTable() {
-    VerbatimTableCopyHandler handler = new VerbatimTableCopyHandler(newDatasetKey, factory);
-    copyTableInternal(VerbatimRecordMapper.class, VerbatimRecord.class, handler);
+  private <M extends CopyDataset> void copyTable(Class entity, Class<M> mapperClass, SqlSession session){
+    int count = session.getMapper(mapperClass).copyDataset(datasetKey, newDatasetKey);
+    LOG.info("Copied {} {}s", count, entity.getSimpleName());
   }
 
-  private <V extends DSID<?>, M extends Create<V> & DatasetProcessable<V>> void copyTable(Class<M> mapperClass, Class<V> entity) {
-    TableCopyHandler<V,M> handler = new TableCopyHandler<>(newDatasetKey, factory, entity.getSimpleName(), mapperClass);
-    copyTableInternal(mapperClass, entity, handler);
-  }
-  private <V extends DSID<?>, M extends Create<V> & DatasetProcessable<V>> void copyTable(Class<M> mapperClass, Class<V> entity, Consumer<V> updater) {
-    TableCopyHandler<V,M> handler = new TableCopyHandler<>(newDatasetKey, factory, entity.getSimpleName(), mapperClass, updater);
-    copyTableInternal(mapperClass, entity, handler);
-  }
-
-  private <V extends DatasetScopedEntity<Integer>, M extends CRUD<DSID<Integer>, V> & DatasetProcessable<V>> Int2IntMap copyTableWithKeyMap(Class<M> mapperClass, Class<V> entity) {
-    TableCopyHandlerWithKeyMap<V,M> handler = new TableCopyHandlerWithKeyMap<>(newDatasetKey, factory, entity.getSimpleName(), mapperClass);
-    copyTableInternal(mapperClass, entity, handler);
-    return handler.getKeyMap();
-  }
-
-  private <V, M extends Create<V> & DatasetProcessable<V>> void copyTableInternal(Class<M> mapperClass, Class<V> entity, TableCopyHandlerBase<V> handler) {
-    interruptIfCancelled();
-    try (SqlSession session = factory.openSession(false)) {
-      LOG.info("Copy {}s", entity.getSimpleName());
-      DatasetProcessable<V> mapper = session.getMapper(mapperClass);
-      mapper.processDataset(datasetKey).forEach(handler);
-      LOG.info("Copied {} {}s", handler.getCounter(), entity.getSimpleName());
-    } finally {
-      handler.close();
-    }
-  }
-
-  private <V extends DatasetScopedEntity<Integer>> void copyExtTable(Class<? extends TaxonExtensionMapper<V>> mapperClass, Class<V> entity) {
-    interruptIfCancelled();
-    try (SqlSession session = factory.openSession(false);
-         ExtTableCopyHandler<V> handler = new ExtTableCopyHandler<>(factory, entity.getSimpleName(), mapperClass)
-    ) {
-      LOG.info("Copy {}s", entity.getSimpleName());
-      TaxonExtensionMapper<V> mapper = session.getMapper(mapperClass);
-      mapper.processDataset(datasetKey).forEach(handler);
-      LOG.info("Copied {} {}s", handler.getCounter(), entity.getSimpleName());
-    }
-  }
 }

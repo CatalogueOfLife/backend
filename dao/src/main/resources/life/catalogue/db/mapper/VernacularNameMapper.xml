@@ -23,8 +23,12 @@
   </sql>
 
   <sql id="COLS">
-    taxon_id,
     dataset_key,
+    <include refid="COLS_COPY"/>
+  </sql>
+
+  <sql id="COLS_COPY">
+    taxon_id,
     verbatim_key,
     name,
     latin,
@@ -38,8 +42,8 @@
   </sql>
 
   <sql id="PROPS">
-    #{taxonId},
     #{obj.datasetKey},
+    #{taxonId},
     #{obj.verbatimKey},
     #{obj.name},
     #{obj.latin},
@@ -97,6 +101,12 @@
     <include refid="life.catalogue.db.Common.partitionByObj"/>
     INSERT INTO vernacular_name_${partition} (<include refid="COLS"/>, created, modified)
     VALUES (<include refid="PROPS"/>, now(), now())
+  </insert>
+
+  <insert id="copyDataset" parameterType="map">
+    INSERT INTO vernacular_name_${newDatasetKey} (dataset_key,<include refid="COLS_COPY"/>, created, modified)
+    SELECT #{newDatasetKey},<include refid="COLS_COPY"/>, created, modified
+    FROM vernacular_name_${datasetKey}
   </insert>
 
 </mapper>

@@ -692,6 +692,7 @@ CREATE TABLE dataset_import (
 
 CREATE TABLE sector (
   id serial PRIMARY KEY,
+  copied_from_id INTEGER,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   subject_dataset_key INTEGER NOT NULL REFERENCES dataset,
   subject_rank RANK,
@@ -719,7 +720,8 @@ CREATE TABLE sector (
   ranks RANK[] DEFAULT '{}',
   entities ENTITYTYPE[] DEFAULT NULL,
   note TEXT,
-  UNIQUE (dataset_key, subject_dataset_key, subject_id)
+  UNIQUE (dataset_key, subject_dataset_key, subject_id),
+  UNIQUE (dataset_key, copied_from_id)
 );
 
 CREATE TABLE sector_import (
