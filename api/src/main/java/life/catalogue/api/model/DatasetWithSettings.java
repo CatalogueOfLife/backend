@@ -170,6 +170,11 @@ public class DatasetWithSettings {
     dataset.setOrganisations(organisations);
   }
 
+  public List<GContact> getContacts() { return dataset.getContacts(); }
+
+  public void setContacts(List<GContact> contacts) { dataset.setContacts(contacts); }
+
+
   public String getContact() {
     return dataset.getContact();
   }

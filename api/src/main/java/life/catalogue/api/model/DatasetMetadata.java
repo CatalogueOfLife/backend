@@ -35,6 +35,10 @@ public interface DatasetMetadata {
 
   void setOrganisations(List<String> organisations);
 
+  List<GContact> getContacts();
+
+  void setContacts(List<GContact> contacts);
+
   String getContact();
 
   void setContact(String contact);

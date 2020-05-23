@@ -47,6 +47,7 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
   private String description;
   private List<String> organisations = Lists.newArrayList();
   private String contact;
+  private List<GContact> contacts = Lists.newArrayList();
   private List<String> authorsAndEditors = Lists.newArrayList();
   private License license;
   private String version;
@@ -78,6 +79,7 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
     this.alias = other.alias;
     this.description = other.description;
     this.organisations = other.organisations;
+    this.contacts = other.contacts;
     this.contact = other.contact;
     this.authorsAndEditors = other.authorsAndEditors;
     this.license = other.license;
@@ -92,7 +94,6 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
     this.completeness = other.completeness;
     this.notes = other.notes;
   }
-
   /**
    * Applies a dataset metadata patch, setting all non null fields
    * @param patch
@@ -187,7 +188,13 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
   public void setOrganisations(List<String> organisations) {
     this.organisations = organisations;
   }
-  
+
+  @Override
+  public List<GContact> getContacts() { return contacts; }
+
+  @Override
+  public void setContacts(List<GContact> contacts) { this.contacts = contacts; }
+
   @Override
   public String getContact() {
     return contact;

@@ -4,6 +4,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.model.GContact;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -185,6 +186,7 @@ public class DatasetPager {
     d.setLicense(SafeParser.parse(LicenseParser.PARSER, g.license).orElse(License.UNSPECIFIED, License.OTHER));
     d.setGeographicScope(coverage(g.geographicCoverages));
     //TODO: convert contact and authors
+    d.setContacts(g.contacts);
     d.setContact(null);
     d.setAuthorsAndEditors(null);
     d.setNotes(null);
@@ -228,7 +230,7 @@ public class DatasetPager {
     public String license;
     public LocalDate pubDate;
     public List<GEndpoint> endpoints;
-    public List<GContact> contacts;
+    public List<life.catalogue.api.model.GContact> contacts;
   }
   
   static class GCitation {
@@ -259,7 +261,7 @@ public class DatasetPager {
     public String description;
     public String latitude;
     public String longitude;
-    public List<GContact> contacts;
+    public List<life.catalogue.api.model.GContact> contacts;
   }
   
   static abstract class GAgent {
