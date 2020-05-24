@@ -82,7 +82,7 @@ public abstract class ProjectRunnable implements Runnable {
       Partitioner.indexAndAttach(factory, newDatasetKey);
       // create metrics
       LOG.info("Build metrics for dataset {}", newDatasetKey);
-      updateState(ImportState.BUILDING_METRICS);
+      updateState(ImportState.ANALYZING);
       metrics();
       try {
         // ES index

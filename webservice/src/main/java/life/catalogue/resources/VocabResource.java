@@ -49,7 +49,6 @@ public class VocabResource {
           ImgConfig.Scale.class,
           EditorialDecision.Mode.class,
           Sector.Mode.class,
-          ImportState.class,
           NameUsageSearchParameter.class,
           TreeNode.Type.class)) {
         add(enums, clazz);

@@ -51,9 +51,9 @@ public enum ImportState {
   INDEXING(true),
 
   /**
-   * Indexing data into the Elastic Search index.
+   * Building metrics, preparing indices or doing other analytics.
    */
-  BUILDING_METRICS(true),
+  ANALYZING(true),
 
   /**
    * Exporting data to archives.
