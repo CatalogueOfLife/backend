@@ -6,6 +6,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
@@ -72,7 +73,7 @@ abstract class SectorRunnable implements Runnable {
       state.setSectorKey(sectorKey);
       state.setDatasetKey(datasetKey);
       state.setJob(getClass().getSimpleName());
-      state.setState(SectorImport.State.WAITING);
+      state.setState(ImportState.WAITING);
       state.setCreatedBy(user.getKey());
       session.getMapper(SectorImportMapper.class).create(state);
     }
@@ -95,13 +96,13 @@ abstract class SectorRunnable implements Runnable {
 
     } catch (InterruptedException e) {
       LOG.warn("Interrupted {}", this, e);
-      state.setState(SectorImport.State.CANCELED);
+      state.setState(ImportState.CANCELED);
       errorCallback.accept(this, e);
 
     } catch (Exception e) {
       LOG.error("Failed {}", this, e);
       state.setError(ExceptionUtils.getRootCauseMessage(e));
-      state.setState(SectorImport.State.FAILED);
+      state.setState(ImportState.FAILED);
       errorCallback.accept(this, e);
 
     } finally {
@@ -121,7 +122,7 @@ abstract class SectorRunnable implements Runnable {
   }
 
   void init() throws Exception {
-    state.setState( SectorImport.State.PREPARING);
+    state.setState( ImportState.PREPARING);
     // load latest version of the sector again to get the latest target ids
     sector = loadSector(validateSector);
     if (sector.getMode() == Sector.Mode.MERGE) {

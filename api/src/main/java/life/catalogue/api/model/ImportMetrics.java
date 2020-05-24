@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
 
-public class ImportMetrics<T extends Enum> implements ImportAttempt {
+public class ImportMetrics implements ImportAttempt {
 
   private Integer datasetKey;
 
@@ -26,7 +26,7 @@ public class ImportMetrics<T extends Enum> implements ImportAttempt {
   /**
    * State of the import, e.g. indicating if still running, success or failure.
    */
-  private T state;
+  private ImportState state;
   
   /**
    * Time the import command started
@@ -81,11 +81,11 @@ public class ImportMetrics<T extends Enum> implements ImportAttempt {
     this.attempt = attempt;
   }
   
-  public T getState() {
+  public ImportState getState() {
     return state;
   }
   
-  public void setState(T state) {
+  public void setState(ImportState state) {
     this.state = state;
   }
   
@@ -314,7 +314,7 @@ public class ImportMetrics<T extends Enum> implements ImportAttempt {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    ImportMetrics<?> that = (ImportMetrics<?>) o;
+    ImportMetrics that = (ImportMetrics) o;
     return attempt == that.attempt &&
         Objects.equals(datasetKey, that.datasetKey) &&
         Objects.equals(job, that.job) &&

@@ -24,7 +24,7 @@
   </sql>
 
   <sql id="PROPS">
-    #{imp.state}::SECTORIMPORT_STATE,
+    #{imp.state}::IMPORTSTATE,
     #{imp.sectorKey},
     #{imp.warnings, typeHandler=life.catalogue.db.type2.StringCollectionArrayTypeHandler},
     <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsProps"/>
@@ -51,7 +51,7 @@
       <if test="states != null &amp;&amp; !states.isEmpty()">
         AND si.state IN
         <foreach item="state" collection="states" open="(" separator="," close=")">
-          #{state}::SECTORIMPORT_STATE
+          #{state}::IMPORTSTATE
         </foreach>
       </if>
     </where>

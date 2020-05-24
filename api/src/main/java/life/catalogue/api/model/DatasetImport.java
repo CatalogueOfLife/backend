@@ -3,8 +3,6 @@ package life.catalogue.api.model;
 import com.google.common.collect.Maps;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.ImportState;
-import life.catalogue.common.io.UriUtils;
 import org.gbif.dwc.terms.Term;
 
 import java.net.URI;
@@ -15,7 +13,7 @@ import java.util.Objects;
 /**
  * Metrics and import details about a single dataset import event.
  */
-public class DatasetImport extends ImportMetrics<ImportState> {
+public class DatasetImport extends ImportMetrics {
 
 
   /**

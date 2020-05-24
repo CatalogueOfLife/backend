@@ -83,27 +83,27 @@ public class SectorSync extends SectorRunnable {
   
   private void sync() throws InterruptedException {
 
-    state.setState( SectorImport.State.DELETING);
+    state.setState( ImportState.DELETING);
     relinkForeignChildren();
     try {
       deleteOld();
       checkIfCancelled();
   
-      state.setState(SectorImport.State.COPYING);
+      state.setState(ImportState.INSERTING);
       processTree();
       checkIfCancelled();
 
     } finally {
       // run these even if we get errors in the main tree copying
-      state.setState( SectorImport.State.RELINKING);
+      state.setState( ImportState.MATCHING);
       rematchForeignChildren();
       relinkAttachedSectors();
       rematchEstimates();
-      state.setState( SectorImport.State.INDEXING);
+      state.setState( ImportState.INDEXING);
       indexService.indexSector(sector);
     }
   
-    state.setState( SectorImport.State.FINISHED);
+    state.setState( ImportState.FINISHED);
   }
 
   /**

@@ -1,20 +1,12 @@
 package life.catalogue.api.model;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.EvictingQueue;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Queue;
 
-public class SectorImport extends ImportMetrics<SectorImport.State> {
-  
-  public enum State {
-    WAITING, PREPARING, COPYING, DELETING, RELINKING, INDEXING, FINISHED, CANCELED, FAILED;
-    
-    public boolean isRunning() {
-      return this != FINISHED && this != FAILED && this != CANCELED;
-    }
-  }
+public class SectorImport extends ImportMetrics {
 
   private int sectorKey;
   private Integer ignoredUsageCount;
@@ -48,18 +40,6 @@ public class SectorImport extends ImportMetrics<SectorImport.State> {
   
   public void setIgnoredUsageCount(Integer ignoredUsageCount) {
     this.ignoredUsageCount = ignoredUsageCount;
-  }
-  
-  public static List<State> runningStates() {
-    return Arrays.stream(State.values())
-        .filter(State::isRunning)
-        .collect(Collectors.toList());
-  }
-  
-  public static List<State> finishedStates() {
-    return Arrays.stream(State.values())
-        .filter(Predicates.not(State::isRunning))
-        .collect(Collectors.toList());
   }
   
   @Override

@@ -74,7 +74,7 @@ public class DiffService {
       public List<? extends ImportAttempt> get() {
         try (SqlSession session = factory.openSession(true)) {
           return session.getMapper(SectorImportMapper.class)
-              .list(sectorKey, null, null, Lists.newArrayList(SectorImport.State.FINISHED), new Page(0, 2));
+              .list(sectorKey, null, null, Lists.newArrayList(ImportState.FINISHED), new Page(0, 2));
         }
       }
     });

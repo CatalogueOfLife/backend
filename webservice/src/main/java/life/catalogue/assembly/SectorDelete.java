@@ -2,8 +2,8 @@ package life.catalogue.assembly;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
-import life.catalogue.api.model.SectorImport;
 import life.catalogue.api.model.User;
+import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
@@ -33,14 +33,14 @@ public class SectorDelete extends SectorRunnable {
   
   @Override
   void doWork() {
-    state.setState( SectorImport.State.DELETING);
+    state.setState( ImportState.DELETING);
     deleteSector(sectorKey);
     LOG.info("Removed sector {}, keeping usages above {} level", sectorKey, cutoffRank);
     
-    state.setState( SectorImport.State.INDEXING);
+    state.setState( ImportState.INDEXING);
     updateSearchIndex();
     
-    state.setState( SectorImport.State.FINISHED);
+    state.setState( ImportState.FINISHED);
   }
 
   

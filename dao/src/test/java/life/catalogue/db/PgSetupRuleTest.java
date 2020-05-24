@@ -2,10 +2,9 @@ package life.catalogue.db;
 
 import com.google.common.base.Joiner;
 import com.google.common.reflect.ClassPath;
-import life.catalogue.api.model.User;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Sector;
-import life.catalogue.api.model.SectorImport;
+import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.*;
 import life.catalogue.db.type.BaseEnumSetTypeHandler;
 import org.gbif.nameparser.api.Rank;
@@ -67,7 +66,6 @@ public class PgSetupRuleTest {
     addPackageEnums(cp, enums, DatasetType.class.getPackage());
     addPackageEnums(cp, enums, Rank.class.getPackage());
     enums.add(Sector.Mode.class);
-    enums.add(SectorImport.State.class);
     enums.add(EditorialDecision.Mode.class);
     enums.add(User.Role.class);
     // not needed for persistency

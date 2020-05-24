@@ -1,12 +1,13 @@
 package life.catalogue.assembly;
 
+import life.catalogue.api.model.SectorImport;
+import life.catalogue.api.vocab.ImportState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import life.catalogue.api.model.SectorImport;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class AssemblyState {
   private static final Logger LOG = LoggerFactory.getLogger(AssemblyState.class);
@@ -19,7 +20,7 @@ public class AssemblyState {
   AssemblyState(Collection<AssemblyCoordinator.SectorFuture> syncs, int syncsFailed, int syncsCompleted) {
     SectorImport run = null;
     for (AssemblyCoordinator.SectorFuture sync : syncs) {
-      if (sync.state.getState() == SectorImport.State.WAITING) {
+      if (sync.state.getState() == ImportState.WAITING) {
         queued.add(sync.state);
       } else if(sync.state.getState().isRunning()) {
         if (run != null) {

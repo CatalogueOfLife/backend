@@ -1,8 +1,8 @@
 package life.catalogue.assembly;
 
-import life.catalogue.api.model.User;
 import life.catalogue.api.model.Sector;
-import life.catalogue.api.model.SectorImport;
+import life.catalogue.api.model.User;
+import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorImportMapper;
@@ -34,7 +34,7 @@ public class SectorDeleteFull extends SectorRunnable {
   
   @Override
   void doWork() {
-    state.setState( SectorImport.State.DELETING);
+    state.setState( ImportState.DELETING);
     // do a recursive delete to make sure we have no more children
     for (Sector cs : childSectors) {
       deleteSectorRecursively(cs.getDatasetKey(), cs.getId());
@@ -42,10 +42,10 @@ public class SectorDeleteFull extends SectorRunnable {
     deleteSector(sectorKey);
     LOG.info("Deleted {} sectors in total", visitedSectors.size());
     
-    state.setState( SectorImport.State.INDEXING);
+    state.setState( ImportState.INDEXING);
     updateSearchIndex();
     
-    state.setState( SectorImport.State.FINISHED);
+    state.setState( ImportState.FINISHED);
   }
   
   private void deleteSectorRecursively(final int catalogueKey, final int sectorKey) {

@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.SectorImport;
+import life.catalogue.api.vocab.ImportState;
 import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.type2.StringCount;
 import org.apache.ibatis.annotations.Param;
@@ -26,7 +27,7 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
   int count(@Param("sectorKey") @Nullable Integer sectorKey,
             @Param("datasetKey") @Nullable Integer datasetKey,
             @Param("subjectDatasetKey") @Nullable Integer subjectDatasetKey,
-            @Param("states") Collection<SectorImport.State> states);
+            @Param("states") Collection<ImportState> states);
   
   /**
    * List all imports optionally filtered by their sectorKey and state(s).
@@ -35,7 +36,7 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
   List<SectorImport> list(@Param("sectorKey") @Nullable Integer sectorKey,
                           @Param("datasetKey") @Nullable Integer datasetKey,
                           @Param("subjectDatasetKey") @Nullable Integer subjectDatasetKey,
-                          @Param("states") @Nullable Collection<SectorImport.State> states,
+                          @Param("states") @Nullable Collection<ImportState> states,
                           @Param("page") Page page);
   
   void create(@Param("imp") SectorImport sectorImport);

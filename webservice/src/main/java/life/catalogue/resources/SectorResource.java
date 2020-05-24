@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import io.dropwizard.auth.Auth;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.SectorSearchRequest;
+import life.catalogue.api.vocab.ImportState;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetImportDao;
@@ -79,14 +80,14 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   public ResultPage<SectorImport> list(@PathParam("datasetKey") int datasetKey,
                                        @QueryParam("sectorKey") Integer sectorKey,
                                        @QueryParam("datasetKey") Integer subjectDatasetKey,
-                                       @QueryParam("state") List<SectorImport.State> states,
+                                       @QueryParam("state") List<ImportState> states,
                                        @QueryParam("running") Boolean running,
                                        @Valid @BeanParam Page page,
                                        @Context SqlSession session) {
     if (running != null) {
-      states = running ? SectorImport.runningStates() : SectorImport.finishedStates();
+      states = running ? ImportState.runningStates() : ImportState.finishedStates();
     }
-    final List<SectorImport.State> immutableStates = ImmutableList.copyOf(states);
+    final List<ImportState> immutableStates = ImmutableList.copyOf(states);
     SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
     List<SectorImport> imports = sim.list(sectorKey, datasetKey, subjectDatasetKey, states, page);
     return new ResultPage<>(page, imports, () -> sim.count(sectorKey, datasetKey, subjectDatasetKey, immutableStates));

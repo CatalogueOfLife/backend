@@ -14,7 +14,12 @@ public enum ImportState {
    * Queued.
    */
   WAITING(false),
-  
+
+  /**
+   * Any steps need to prepare or initialize a job.
+   */
+  PREPARING(true),
+
   /**
    * Downloading the latest source data, the first step of a running import.
    */
@@ -24,21 +29,26 @@ public enum ImportState {
    * Normalization of the dataset without touching the previous data in Postgres.
    */
   PROCESSING(true),
-  
+
+  /**
+   * Deleting data in Postgres
+   */
+  DELETING(true),
+
   /**
    * Inserting data into Postgres, starts by wiping any previous edition.
    */
   INSERTING(true),
-  
+
+  /**
+   * Rematching ids, decisions, sectors, estimates or parent taxa
+   */
+  MATCHING(true),
+
   /**
    * Indexing data into the Elastic Search index.
    */
   INDEXING(true),
-
-  /**
-   * Rematching ids, decisions, sectors and/or estimates
-   */
-  MATCHING(true),
 
   /**
    * Indexing data into the Elastic Search index.
@@ -87,7 +97,10 @@ public enum ImportState {
   public boolean isQueued() {
     return this == WAITING;
   }
-  
+
+  /**
+   * @return true if its a final state after a job has ended.
+   */
   public boolean isFinished() {
     return !isQueued() && !isRunning();
   }

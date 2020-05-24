@@ -10,18 +10,48 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2020-05-25 merge import states
+```
+ALTER TABLE dataset_import ALTER COLUMN state TYPE text;
+ALTER TABLE sector_import ALTER COLUMN state TYPE text;
+DROP TYPE IMPORTSTATE;
+DROP TYPE SECTORIMPORT_STATE;
+
+CREATE TYPE IMPORTSTATE AS ENUM (
+  'WAITING',
+  'PREPARING',
+  'DOWNLOADING',
+  'PROCESSING',
+  'DELETING',
+  'INSERTING',
+  'MATCHING',
+  'INDEXING',
+  'BUILDING_METRICS',
+  'EXPORTING',
+  'UNCHANGED',
+  'FINISHED',
+  'CANCELED',
+  'FAILED'
+);
+
+UPDATE sector_import SET state='INSERTING' WHERE state='COPYING';
+UPDATE sector_import SET state='MATCHING' WHERE state='RELINKING';
+
+ALTER TABLE dataset_import ALTER COLUMN state TYPE IMPORTSTATE USING state::IMPORTSTATE;
+ALTER TABLE sector_import ALTER COLUMN state TYPE IMPORTSTATE USING state::IMPORTSTATE;
+```
+
 #### 2020-05-21 duplicate job sql
 ```
 ALTER TABLE sector ADD COLUMN copied_from_id INTEGER;
+ALTER TABLE sector ADD UNIQUE (dataset_key, copied_from_id);
 ```
 
 #### 2020-05-18 duplication job
-- remove ImportState.RELEASED (update imports with FINISHED instead)
 ```
 ALTER TABLE sector_import RENAME COLUMN type TO job;
 ALTER TABLE dataset_import ADD COLUMN job text;
 ```
-
 
 #### 2020-05-13 new order ranks
 ```

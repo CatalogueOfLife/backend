@@ -7,6 +7,7 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
 import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Users;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,7 +52,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     mapper(SectorMapper.class).create(s2);
   }
   
-  public static SectorImport create(SectorImport.State state, Sector s) {
+  public static SectorImport create(ImportState state, Sector s) {
     SectorImport d = new SectorImport();
     d.setJob("SectorImportTest");
     d.setSectorKey(s.getId());
@@ -78,7 +79,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
   
   @Test
   public void roundtrip() throws Exception {
-    SectorImport d1 = create(SectorImport.State.FINISHED, s);
+    SectorImport d1 = create(ImportState.FINISHED, s);
     mapper().create(d1);
     commit();
     assertEquals(1, d1.getAttempt());
@@ -89,22 +90,22 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
   
   @Test
   public void listCount() throws Exception {
-    mapper().create(create(SectorImport.State.FAILED, s));
-    mapper().create(create(SectorImport.State.FINISHED, s));
-    mapper().create(create(SectorImport.State.PREPARING, s));
-    mapper().create(create(SectorImport.State.FINISHED, s));
-    mapper().create(create(SectorImport.State.CANCELED, s));
-    mapper().create(create(SectorImport.State.COPYING, s2));
-    mapper().create(create(SectorImport.State.FINISHED, s2));
+    mapper().create(create(ImportState.FAILED, s));
+    mapper().create(create(ImportState.FINISHED, s));
+    mapper().create(create(ImportState.PREPARING, s));
+    mapper().create(create(ImportState.FINISHED, s));
+    mapper().create(create(ImportState.CANCELED, s));
+    mapper().create(create(ImportState.INSERTING, s2));
+    mapper().create(create(ImportState.FINISHED, s2));
     
     assertEquals(7, mapper().count(null, null, null, null));
     assertEquals(7, mapper().count(null, null,null, Lists.newArrayList()));
-    assertEquals(1, mapper().count(null, null,null, Lists.newArrayList(SectorImport.State.FAILED)));
-    assertEquals(3, mapper().count(null, null,null, Lists.newArrayList(SectorImport.State.FINISHED)));
-    assertEquals(2, mapper().count(null, null,null, Lists.newArrayList(SectorImport.State.COPYING, SectorImport.State.PREPARING)));
+    assertEquals(1, mapper().count(null, null,null, Lists.newArrayList(ImportState.FAILED)));
+    assertEquals(3, mapper().count(null, null,null, Lists.newArrayList(ImportState.FINISHED)));
+    assertEquals(2, mapper().count(null, null,null, Lists.newArrayList(ImportState.INSERTING, ImportState.PREPARING)));
     
-    assertEquals(2, mapper().list(null, null,null, Lists.newArrayList(SectorImport.State.COPYING, SectorImport.State.PREPARING), new Page()).size());
-    assertEquals(0, mapper().list(null, 100,null, Lists.newArrayList(SectorImport.State.COPYING, SectorImport.State.PREPARING), new Page()).size());
+    assertEquals(2, mapper().list(null, null,null, Lists.newArrayList(ImportState.INSERTING, ImportState.PREPARING), new Page()).size());
+    assertEquals(0, mapper().list(null, 100,null, Lists.newArrayList(ImportState.INSERTING, ImportState.PREPARING), new Page()).size());
 
     assertEquals(5, mapper().count(s.getId(), null, null, null));
     assertEquals(5, mapper().count(s.getId(), null, s.getSubjectDatasetKey(), null));

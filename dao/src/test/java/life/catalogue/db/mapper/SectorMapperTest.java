@@ -9,6 +9,7 @@ import life.catalogue.api.model.SectorImport;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.EntityType;
+import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.db.MybatisTestUtils;
 import org.apache.ibatis.exceptions.PersistenceException;
@@ -49,13 +50,13 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     commit();
   }
 
-  private void addImport(Sector s, SectorImport.State state, LocalDateTime finished) {
+  private void addImport(Sector s, ImportState state, LocalDateTime finished) {
     SectorImport si = SectorImportMapperTest.create(state, s);
     si.setFinished(finished);
     si.setCreatedBy(Users.TESTER);
     mapper(SectorImportMapper.class).create(si);
 
-    if (state == SectorImport.State.FINISHED) {
+    if (state == ImportState.FINISHED) {
       mapper().updateLastSync(s.getId(), si.getAttempt());
     }
   }
@@ -99,12 +100,12 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     add2Sectors();
 
 
-    addImport(s1, SectorImport.State.FINISHED, LocalDateTime.of(2019, 12, 24, 12, 0, 0));
-    addImport(s1, SectorImport.State.FINISHED, LocalDateTime.of(2020, 1, 10, 12, 0, 0));
-    addImport(s1, SectorImport.State.FAILED, LocalDateTime.of(2020, 2, 11, 12, 0, 0));
+    addImport(s1, ImportState.FINISHED, LocalDateTime.of(2019, 12, 24, 12, 0, 0));
+    addImport(s1, ImportState.FINISHED, LocalDateTime.of(2020, 1, 10, 12, 0, 0));
+    addImport(s1, ImportState.FAILED, LocalDateTime.of(2020, 2, 11, 12, 0, 0));
 
-    addImport(s2, SectorImport.State.FAILED, LocalDateTime.of(2018, 1, 10, 12, 0, 0));
-    addImport(s2, SectorImport.State.FINISHED, LocalDateTime.of(2020, 1, 21, 12, 0, 0));
+    addImport(s2, ImportState.FAILED, LocalDateTime.of(2018, 1, 10, 12, 0, 0));
+    addImport(s2, ImportState.FINISHED, LocalDateTime.of(2020, 1, 21, 12, 0, 0));
     commit();
 
     SectorSearchRequest req = SectorSearchRequest.byCatalogue(targetDatasetKey);
