@@ -76,13 +76,8 @@ public class NameTest extends SerdeTestBase<Name> {
     assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999", n.canonicalNameWithAuthorship());
     assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999", n.canonicalNameWithAuthorship());
     assertEquals("Abies × alba subsp. alpina", n.canonicalNameWithoutAuthorship());
-  
-    n.setAppendedPhrase("bla bla");
-    assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999 bla bla", n.canonicalNameWithAuthorship());
-    assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999 bla bla", n.canonicalNameWithAuthorship());
-    assertEquals("Abies × alba subsp. alpina bla bla", n.canonicalNameWithoutAuthorship());
   }
-  
+
   /**
    * https://github.com/Sp2000/colplus-backend/issues/478
    */

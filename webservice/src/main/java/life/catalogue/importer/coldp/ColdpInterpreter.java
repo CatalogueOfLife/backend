@@ -68,8 +68,8 @@ public class ColdpInterpreter extends InterpreterBase {
       // taxon
       Taxon t = u.getTaxon();
       t.setOrigin(Origin.SOURCE);
-      t.setAccordingTo(v.get(ColdpTerm.accordingTo));
-      t.setAccordingToDate(fuzzydate(v, Issue.ACCORDING_TO_DATE_INVALID, ColdpTerm.accordingToDate));
+      t.setAccordingToId(v.get(ColdpTerm.accordingTo));
+      t.setScrutinizerDate(fuzzydate(v, Issue.ACCORDING_TO_DATE_INVALID, ColdpTerm.accordingToDate));
       //TODO: ColTerm.accordingToDateID for ORCIDS
       t.setLink(uri(v, Issue.URL_INVALID, ColdpTerm.link));
       t.setExtinct(bool(v, Issue.IS_EXTINCT_INVALID, ColdpTerm.extinct));
@@ -121,7 +121,7 @@ public class ColdpInterpreter extends InterpreterBase {
   
       Synonym s = u.getSynonym();
       s.setRemarks(v.get(ColdpTerm.remarks));
-      s.setAccordingTo(n.accordingTo);
+      s.setAccordingToId(n.accordingTo);
       return u;
     });
   }
@@ -184,7 +184,7 @@ public class ColdpInterpreter extends InterpreterBase {
         ColdpTerm.status);
   }
   
-  List<Description> interpretDescription(VerbatimRecord rec) {
+  List<Treatment> interpretDescription(VerbatimRecord rec) {
     return interpretDescription(rec, this::setReference,
         ColdpTerm.description,
         ColdpTerm.category,

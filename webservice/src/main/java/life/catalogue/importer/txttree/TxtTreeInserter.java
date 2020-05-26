@@ -141,7 +141,7 @@ public class TxtTreeInserter implements NeoInserter {
         NeoUsage.createTaxon(Origin.SOURCE, nat.getName(), TaxonomicStatus.ACCEPTED);
     u.setId(String.valueOf(tn.id));
     u.setVerbatimKey(v.getId());
-    u.usage.setAccordingTo(nat.getAccordingTo());
+    u.usage.setAccordingToId(nat.getAccordingTo());
     return u;
   }
 

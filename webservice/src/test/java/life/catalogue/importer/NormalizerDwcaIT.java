@@ -314,15 +314,15 @@ public class NormalizerDwcaIT extends NormalizerITBase {
         if (u.usage.getName().getOrigin() == Origin.SOURCE) {
           System.out.println(u.usage.getStatus() + ": " + u.usage.getName().canonicalNameWithAuthorship());
           System.out.println("  " + u.usage.getName().getRemarks());
-          System.out.println("  " + u.usage.getAccordingTo());
-          assertNotNull(u.usage.getAccordingTo());
+          System.out.println("  " + u.usage.getAccordingToId());
+          assertNotNull(u.usage.getAccordingToId());
         }
       }
       
       u = usageByID("8");
       assertEquals("Anthurium lanceum Engl.", u.usage.getName().canonicalNameWithAuthorship());
       assertEquals("nom.illeg.", u.usage.getName().getRemarks());
-      assertEquals("Markus non. A.lancea.", u.usage.getAccordingTo());
+      assertEquals("Markus non. A.lancea.", u.usage.getAccordingToId());
       assertEquals(NomStatus.UNACCEPTABLE, u.usage.getName().getNomStatus());
       //assertTrue(store.getVerbatim(u.usage.getName().getVerbatimKey()).hasIssue(Issue.PARTIALLY_PARSABLE_NAME));
     }

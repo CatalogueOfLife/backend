@@ -47,7 +47,7 @@ public class PgImport implements Callable<Boolean> {
   private final AtomicInteger sCounter = new AtomicInteger(0);
   private final AtomicInteger rCounter = new AtomicInteger(0);
   private final AtomicInteger diCounter = new AtomicInteger(0);
-  private final AtomicInteger deCounter = new AtomicInteger(0);
+  private final AtomicInteger trCounter = new AtomicInteger(0);
   private final AtomicInteger mCounter = new AtomicInteger(0);
   private final AtomicInteger vCounter = new AtomicInteger(0);
   private final AtomicInteger tmCounter = new AtomicInteger(0);
@@ -79,9 +79,9 @@ public class PgImport implements Callable<Boolean> {
     
     updateMetadata();
 		LOG.info("Completed dataset {} insert with {} verbatim records, " +
-        "{} names, {} taxa, {} synonyms, {} references, {} vernaculars, {} distributions, {} descriptions and {} media items",
+        "{} names, {} taxa, {} synonyms, {} references, {} vernaculars, {} distributions, {} treatments and {} media items",
         dataset.getKey(), verbatimKeys.size(),
-        nCounter, tCounter, sCounter, rCounter, vCounter, diCounter, deCounter, mCounter);
+        nCounter, tCounter, sCounter, rCounter, vCounter, diCounter, trCounter, mCounter);
 		return true;
 	}
 
@@ -305,7 +305,7 @@ public class PgImport implements Callable<Boolean> {
   private void insertUsages() throws InterruptedException {
     try (SqlSession session = sessionFactory.openSession(ExecutorType.BATCH,false)) {
       LOG.info("Inserting remaining names and all taxa");
-      DescriptionMapper descriptionMapper = session.getMapper(DescriptionMapper.class);
+      TreatmentMapper treatmentMapper = session.getMapper(TreatmentMapper.class);
       DistributionMapper distributionMapper = session.getMapper(DistributionMapper.class);
       MediaMapper mediaMapper = session.getMapper(MediaMapper.class);
       TaxonMapper taxonMapper = session.getMapper(TaxonMapper.class);
@@ -328,6 +328,7 @@ public class PgImport implements Callable<Boolean> {
           NameUsageBase nu = u.usage;
           nu.setName(nn.name);
           nu.setDatasetKey(dataset.getKey());
+          updateReferenceKey(nu.getAccordingToId(), nu::setAccordingToId);
           updateReferenceKey(nu.getReferenceIds());
           updateUser(nu);
           if (!parentIds.empty()) {
@@ -377,14 +378,13 @@ public class PgImport implements Callable<Boolean> {
               diCounter.incrementAndGet();
             }
   
-            // insert descriptions
-            for (Description d : u.descriptions) {
-              updateVerbatimUserEntity(d);
-              updateReferenceKey(d);
-              descriptionMapper.create(d, acc.getId());
-              deCounter.incrementAndGet();
+            // insert treatments
+            if (u.treatment != null) {
+              u.treatment.setId(acc.getId());
+              treatmentMapper.create(u.treatment);
+              trCounter.incrementAndGet();
             }
-  
+
             // insert media
             for (Media m : u.media) {
               updateVerbatimUserEntity(m);

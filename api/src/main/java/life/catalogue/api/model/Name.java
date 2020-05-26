@@ -88,9 +88,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   private String infraspecificEpithet;
   
   private String cultivarEpithet;
-  
-  private String appendedPhrase;
-  
+
   /**
    * A bacterial candidate name. Candidatus is a provisional status for incompletely described
    * procaryotes (e.g. that cannot be maintained in a Bacteriology Culture Collection) which was
@@ -190,7 +188,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.specificEpithet = n.specificEpithet;
     this.infraspecificEpithet = n.infraspecificEpithet;
     this.cultivarEpithet = n.cultivarEpithet;
-    this.appendedPhrase = n.appendedPhrase;
     this.candidatus = n.candidatus;
     this.notho = n.notho;
     this.combinationAuthorship = n.combinationAuthorship;
@@ -218,7 +215,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     pn.setSpecificEpithet(n.getSpecificEpithet());
     pn.setInfraspecificEpithet(n.getInfraspecificEpithet());
     pn.setCultivarEpithet(n.getCultivarEpithet());
-    pn.setStrain(n.getAppendedPhrase());
     pn.setCombinationAuthorship(n.getCombinationAuthorship());
     pn.setBasionymAuthorship(n.getBasionymAuthorship());
     pn.setSanctioningAuthor(n.getSanctioningAuthor());
@@ -500,14 +496,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   public void setCultivarEpithet(String cultivarEpithet) {
     this.cultivarEpithet = cultivarEpithet;
   }
-  
-  public String getAppendedPhrase() {
-    return appendedPhrase;
-  }
-  
-  public void setAppendedPhrase(String appendedPhrase) {
-    this.appendedPhrase = appendedPhrase;
-  }
 
   @JsonInclude(value = JsonInclude.Include.NON_DEFAULT)
   public boolean isCandidatus() {
@@ -738,7 +726,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
         Objects.equals(specificEpithet, name.specificEpithet) &&
         Objects.equals(infraspecificEpithet, name.infraspecificEpithet) &&
         Objects.equals(cultivarEpithet, name.cultivarEpithet) &&
-        Objects.equals(appendedPhrase, name.appendedPhrase) &&
         notho == name.notho &&
         Objects.equals(combinationAuthorship, name.combinationAuthorship) &&
         Objects.equals(basionymAuthorship, name.basionymAuthorship) &&
@@ -756,7 +743,9 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, homotypicNameId, nameIndexId, nameIndexMatchType, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, appendedPhrase, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, publishedInYear, origin, type, link, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, homotypicNameId, nameIndexId, nameIndexMatchType, scientificName, authorship, rank,
+      uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho,
+      combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, publishedInYear, origin, type, link, remarks);
   }
   
   @Override
@@ -805,10 +794,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
       
       if (this.cultivarEpithet != null) {
         sb.append(" CV:").append(this.cultivarEpithet);
-      }
-      
-      if (this.appendedPhrase != null) {
-        sb.append(" AP:").append(this.appendedPhrase);
       }
       
       if (this.combinationAuthorship != null) {

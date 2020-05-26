@@ -113,8 +113,8 @@ public class AcefInterpreter extends InterpreterBase {
       u = NeoUsage.createTaxon(Origin.SOURCE, nat.get().getName(), status);
       Taxon t = u.getTaxon();
       t.setOrigin(Origin.SOURCE);
-      t.setAccordingTo(v.get(AcefTerm.LTSSpecialist));
-      t.setAccordingToDate(fuzzydate(v, Issue.ACCORDING_TO_DATE_INVALID, AcefTerm.LTSDate));
+      t.setAccordingToId(v.get(AcefTerm.LTSSpecialist));
+      t.setScrutinizerDate(fuzzydate(v, Issue.ACCORDING_TO_DATE_INVALID, AcefTerm.LTSDate));
       t.setExtinct(bool(v, Issue.IS_EXTINCT_INVALID, AcefTerm.IsExtinct));
       t.setRemarks(v.get(AcefTerm.AdditionalData));
   

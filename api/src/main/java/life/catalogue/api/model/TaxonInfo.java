@@ -8,11 +8,11 @@ import java.util.*;
 public class TaxonInfo {
   
   private Taxon taxon;
+  private Treatment treatment;
   private List<Synonym> synonyms;
   private List<Distribution> distributions;
   private List<VernacularName> vernacularNames;
   private List<Media> media;
-  private List<Description> descriptions;
 
   /**
    * Lookup of types for a given nameID
@@ -66,12 +66,12 @@ public class TaxonInfo {
     this.media = media;
   }
   
-  public List<Description> getDescriptions() {
-    return descriptions;
+  public Treatment getTreatment() {
+    return treatment;
   }
   
-  public void setDescriptions(List<Description> descriptions) {
-    this.descriptions = descriptions;
+  public void setTreatment(Treatment treatment) {
+    this.treatment = treatment;
   }
   
   public Reference getReference(String id) {
@@ -122,7 +122,7 @@ public class TaxonInfo {
         Objects.equals(distributions, taxonInfo.distributions) &&
         Objects.equals(vernacularNames, taxonInfo.vernacularNames) &&
         Objects.equals(media, taxonInfo.media) &&
-        Objects.equals(descriptions, taxonInfo.descriptions) &&
+        Objects.equals(treatment, taxonInfo.treatment) &&
         Objects.equals(typeMaterial, taxonInfo.typeMaterial) &&
         Objects.equals(references, taxonInfo.references);
   }
@@ -130,6 +130,6 @@ public class TaxonInfo {
   @Override
   public int hashCode() {
     
-    return Objects.hash(taxon, synonyms, distributions, vernacularNames, media, descriptions, typeMaterial, references);
+    return Objects.hash(taxon, synonyms, distributions, vernacularNames, media, treatment, typeMaterial, references);
   }
 }

@@ -27,7 +27,8 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   @Nonnull
   private Origin origin;
   private String parentId;
-  private String accordingTo;
+  private String appendedNamePhrase;
+  private String accordingToId;
   private URI link;
   private String remarks;
   /**
@@ -48,7 +49,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   @Override
   public ParsedName toParsedName() {
     ParsedName pn = Name.toParsedName(this.getName());
-    pn.setTaxonomicNote(accordingTo);
+    pn.setTaxonomicNote(accordingToId);
     return pn;
   }
 
@@ -77,7 +78,15 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
       this.status = Preconditions.checkNotNull(status);
     }
   }
-  
+
+  public String getAppendedNamePhrase() {
+    return appendedNamePhrase;
+  }
+
+  public void setAppendedNamePhrase(String appendedNamePhrase) {
+    this.appendedNamePhrase = appendedNamePhrase;
+  }
+
   @JsonIgnore
   public boolean isProvisional() {
     return status == TaxonomicStatus.PROVISIONALLY_ACCEPTED;
@@ -102,17 +111,17 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   }
   
   @Override
-  public String getAccordingTo() {
-    return accordingTo;
+  public String getAccordingToId() {
+    return accordingToId;
   }
   
-  public void setAccordingTo(String accordingTo) {
-    this.accordingTo = accordingTo;
+  public void setAccordingToId(String accordingToId) {
+    this.accordingToId = accordingToId;
   }
   
   public void addAccordingTo(String accordingTo) {
     if (!StringUtils.isBlank(accordingTo)) {
-      this.accordingTo = this.accordingTo == null ? accordingTo.trim() : this.accordingTo + " " + accordingTo.trim();
+      this.accordingToId = this.accordingToId == null ? accordingTo.trim() : this.accordingToId + " " + accordingTo.trim();
     }
   }
   
@@ -162,11 +171,12 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
     NameUsageBase that = (NameUsageBase) o;
     return Objects.equals(sectorKey, that.sectorKey) &&
       Objects.equals(verbatimKey, that.verbatimKey) &&
-      Objects.equals(name, that.name) &&
+      name.equals(that.name) &&
       status == that.status &&
       origin == that.origin &&
       Objects.equals(parentId, that.parentId) &&
-      Objects.equals(accordingTo, that.accordingTo) &&
+      Objects.equals(appendedNamePhrase, that.appendedNamePhrase) &&
+      Objects.equals(accordingToId, that.accordingToId) &&
       Objects.equals(link, that.link) &&
       Objects.equals(remarks, that.remarks) &&
       Objects.equals(referenceIds, that.referenceIds);
@@ -174,7 +184,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, name, status, origin, parentId, accordingTo, link, remarks, referenceIds);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, name, status, origin, parentId, appendedNamePhrase, accordingToId, link, remarks, referenceIds);
   }
 
   @Override

@@ -15,8 +15,9 @@ import java.util.Set;
  *
  */
 public class Taxon extends NameUsageBase {
-  
-  private FuzzyDate accordingToDate;
+
+  private String scrutinizer;
+  private FuzzyDate scrutinizerDate;
   private Boolean extinct;
   private String temporalRangeStart;
   private String temporalRangeEnd;
@@ -35,12 +36,12 @@ public class Taxon extends NameUsageBase {
     return getStatus() == TaxonomicStatus.PROVISIONALLY_ACCEPTED;
   }
   
-  public FuzzyDate getAccordingToDate() {
-    return accordingToDate;
+  public FuzzyDate getScrutinizerDate() {
+    return scrutinizerDate;
   }
   
-  public void setAccordingToDate(FuzzyDate accordingToDate) {
-    this.accordingToDate = accordingToDate;
+  public void setScrutinizerDate(FuzzyDate scrutinizerDate) {
+    this.scrutinizerDate = scrutinizerDate;
   }
   
   public Boolean isExtinct() {
@@ -89,7 +90,7 @@ public class Taxon extends NameUsageBase {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     Taxon taxon = (Taxon) o;
-    return Objects.equals(accordingToDate, taxon.accordingToDate) &&
+    return Objects.equals(scrutinizerDate, taxon.scrutinizerDate) &&
         Objects.equals(extinct, taxon.extinct) &&
         Objects.equals(temporalRangeStart, taxon.temporalRangeStart) &&
         Objects.equals(temporalRangeEnd, taxon.temporalRangeEnd) &&
@@ -98,6 +99,6 @@ public class Taxon extends NameUsageBase {
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), accordingToDate, extinct, temporalRangeStart, temporalRangeEnd, lifezones);
+    return Objects.hash(super.hashCode(), scrutinizerDate, extinct, temporalRangeStart, temporalRangeEnd, lifezones);
   }
 }

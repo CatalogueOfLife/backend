@@ -131,7 +131,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
       u.setOrigin(Origin.SOURCE);
       u.applyUser(Users.DB_INIT);
       u.setStatus(status);
-      u.setAccordingTo(nat.getAccordingTo());
+      u.setAccordingToId(nat.getAccordingTo());
       if (parent != null) {
         u.setParentId(String.valueOf(parent.id));
       }

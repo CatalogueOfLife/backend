@@ -94,7 +94,7 @@ public class ColdpInserter extends NeoCsvInserter {
     insertTaxonEntities(reader, ColdpTerm.Description,
         inter::interpretDescription,
         ColdpTerm.taxonID,
-        (t, d) -> t.descriptions.add(d)
+        (t, d) -> t.treatment.add(d)
     );
     insertTaxonEntities(reader, ColdpTerm.Distribution,
         inter::interpretDistribution,

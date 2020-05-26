@@ -59,7 +59,7 @@ public class DwcInterpreter extends InterpreterBase {
       // shared usage props
       u.setId(v.getFirstRaw(DwcTerm.taxonID, DwcaTerm.ID));
       u.setVerbatimKey(v.getId());
-      u.usage.setAccordingTo(v.get(DwcTerm.nameAccordingTo));
+      u.usage.setAccordingToId(v.get(DwcTerm.nameAccordingTo));
       u.usage.addAccordingTo(nat.get().getAccordingTo());
       u.homotypic = TaxonomicStatusParser.isHomotypic(status);
 
@@ -137,7 +137,7 @@ public class DwcInterpreter extends InterpreterBase {
     );
   }
   
-  List<Description> interpretDescription(VerbatimRecord rec) {
+  List<Treatment> interpretDescription(VerbatimRecord rec) {
     return interpretDescription(rec, this::setReference,
         DcTerm.description,
         DcTerm.type,

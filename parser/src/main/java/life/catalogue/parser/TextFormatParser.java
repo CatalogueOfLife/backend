@@ -1,16 +1,16 @@
 package life.catalogue.parser;
 
 
-import life.catalogue.api.vocab.TextFormat;
+import life.catalogue.api.vocab.TreatmentFormat;
 
 /**
  * Parses area standards
  */
-public class TextFormatParser extends EnumParser<TextFormat> {
+public class TextFormatParser extends EnumParser<TreatmentFormat> {
   public static final TextFormatParser PARSER = new TextFormatParser();
   
   public TextFormatParser() {
-    super("textformat.csv", TextFormat.class);
+    super("textformat.csv", TreatmentFormat.class);
   }
   
 }

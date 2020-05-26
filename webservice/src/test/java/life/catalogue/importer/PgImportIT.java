@@ -424,8 +424,8 @@ public class PgImportIT {
       }
       
       assertEquals(TaxonomicStatus.ACCEPTED, t.getStatus());
-      assertEquals("Tester", t.getAccordingTo());
-      assertEquals("2008", t.getAccordingToDate().toString());
+      assertEquals("Tester", t.getAccordingToId());
+      assertEquals("2008", t.getScrutinizerDate().toString());
       assertFalse(t.isExtinct());
       assertTrue(t.getLifezones().isEmpty());
       assertNull(t.getRemarks());

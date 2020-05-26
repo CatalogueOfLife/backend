@@ -51,7 +51,7 @@ public class TaxonDaoTest extends DaoTestBase {
     refKeys2.addAll(info.getTaxon().getReferenceIds());
     
     Stream.concat(
-        info.getDescriptions().stream(),
+        Stream.of(info.getTreatment()),
         Stream.concat(
             info.getDistributions().stream(),
             Stream.concat(

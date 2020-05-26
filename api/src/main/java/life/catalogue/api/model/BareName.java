@@ -49,12 +49,12 @@ public class BareName implements NameUsage {
   }
   
   @Override
-  public String getAccordingTo() {
+  public String getAccordingToId() {
     return null;
   }
   
   @Override
-  public void setAccordingTo(String according) {
+  public void setAccordingToId(String according) {
     // nothing, throw if new status is supposed to be non null
     if (according != null) throw new IllegalArgumentException("Bare names do not have an accordingTo");
   }

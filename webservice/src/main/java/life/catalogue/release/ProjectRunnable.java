@@ -82,7 +82,7 @@ public abstract class ProjectRunnable implements Runnable {
       Partitioner.indexAndAttach(factory, newDatasetKey);
       // create metrics
       LOG.info("Build metrics for dataset {}", newDatasetKey);
-      updateState(ImportState.BUILDING_METRICS);
+      updateState(ImportState.ANALYZING);
       metrics();
       try {
         // ES index
@@ -138,7 +138,7 @@ public abstract class ProjectRunnable implements Runnable {
 
       copyTable(VernacularName.class, VernacularNameMapper.class, session);
       copyTable(Distribution.class, DistributionMapper.class, session);
-      copyTable(Description.class, DescriptionMapper.class, session);
+      copyTable(Treatment.class, TreatmentMapper.class, session);
       copyTable(Media.class, MediaMapper.class, session);
     }
   }

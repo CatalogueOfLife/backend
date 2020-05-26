@@ -1,8 +1,5 @@
 package life.catalogue.importer.neo.model;
 
-import java.util.List;
-import java.util.Objects;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import life.catalogue.api.model.*;
@@ -10,6 +7,9 @@ import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Simple wrapper to hold a normalizer node together with all data for a record
@@ -32,7 +32,7 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
   public boolean homotypic = false;
 
   // supplementary infos for a taxon
-  public List<Description> descriptions = Lists.newArrayList();
+  public Treatment treatment;
   public List<Distribution> distributions = Lists.newArrayList();
   public List<Media> media = Lists.newArrayList();
   public List<VernacularName> vernacularNames = Lists.newArrayList();
@@ -148,7 +148,7 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
     syn.setId(t.getId());
     syn.setName(t.getName());
     syn.setOrigin(t.getOrigin());
-    syn.setAccordingTo(t.getAccordingTo());
+    syn.setAccordingToId(t.getAccordingToId());
     syn.setVerbatimKey(t.getVerbatimKey());
     syn.setStatus(status);
     usage = syn;
@@ -163,7 +163,7 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
     NeoUsage neoUsage = (NeoUsage) o;
     return this.equalNode(neoUsage) &&
         Objects.equals(usage, neoUsage.usage) &&
-        Objects.equals(descriptions, neoUsage.descriptions) &&
+        Objects.equals(treatment, neoUsage.treatment) &&
         Objects.equals(distributions, neoUsage.distributions) &&
         Objects.equals(media, neoUsage.media) &&
         Objects.equals(vernacularNames, neoUsage.vernacularNames) &&
@@ -174,6 +174,6 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
   @Override
   public int hashCode() {
     
-    return Objects.hash(node, usage, descriptions, distributions, media, vernacularNames, classification, remarks);
+    return Objects.hash(node, usage, treatment, distributions, media, vernacularNames, classification, remarks);
   }
 }

@@ -238,7 +238,7 @@ public class ImportJob implements Runnable {
         dao.updateDatasetLastAttempt(di);
 
         LOG.info("Build import metrics for dataset {}", datasetKey);
-        updateState(ImportState.BUILDING_METRICS);
+        updateState(ImportState.ANALYZING);
         dao.updateMetrics(di);
   
         LOG.info("Build search index for dataset {}", datasetKey);

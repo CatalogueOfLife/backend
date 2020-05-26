@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="life.catalogue.db.mapper.DescriptionMapper">
+<mapper namespace="life.catalogue.db.mapper.TreatmentMapper">
 
   <sql id="SELECT">
     d.id,
@@ -52,14 +52,14 @@
 
   <sql id="FROM">description_${partition} d</sql>
 
-  <resultMap id="descriptionResultMap" type="Description" autoMapping="true">
+  <resultMap id="descriptionResultMap" type="Treatment" autoMapping="true">
     <id property="id" column="id"/>
   </resultMap>
 
   <resultMap id="descriptionExtResultMap" type="TaxonExtension" autoMapping="true">
     <id column="id"/>
     <result property="taxonID" column="taxon_id"/>
-    <association property="obj" autoMapping="true" javaType="Description">
+    <association property="obj" autoMapping="true" javaType="Treatment">
       <id property="id" column="id"/>
     </association>
   </resultMap>

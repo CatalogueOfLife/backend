@@ -64,7 +64,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
       NeoUsage acc = accepted(t.node);
       assertEquals(1, acc.vernacularNames.size());
       assertEquals(2, acc.distributions.size());
-      assertEquals(0, acc.descriptions.size());
+      assertEquals(0, acc.treatment.size());
       assertEquals(0, acc.media.size());
       assertEquals(1, acc.usage.getReferenceIds().size());
       
@@ -189,8 +189,8 @@ public class NormalizerACEFIT extends NormalizerITBase {
         if (u.usage.getName().getOrigin() == Origin.SOURCE) {
           System.out.println(u.usage.getStatus() + ": " + u.usage.getName().canonicalNameWithAuthorship());
           System.out.println("  " + u.usage.getName().getRemarks());
-          System.out.println("  " + u.usage.getAccordingTo());
-          assertNotNull(u.usage.getAccordingTo());
+          System.out.println("  " + u.usage.getAccordingToId());
+          assertNotNull(u.usage.getAccordingToId());
         }
       }
       
@@ -198,14 +198,14 @@ public class NormalizerACEFIT extends NormalizerITBase {
       assertEquals("Anthurium lanceum", u.usage.getName().getScientificName());
       assertEquals("Engl.", u.usage.getName().authorshipComplete());
       assertEquals("nom.illeg.; superfluous at its time of publication", u.usage.getName().getRemarks());
-      assertEquals("Markus non. A.lancea.", u.usage.getAccordingTo());
+      assertEquals("Markus non. A.lancea.", u.usage.getAccordingToId());
       assertEquals(NomStatus.UNACCEPTABLE, u.usage.getName().getNomStatus());
   
       u = usageByID("11");
       assertEquals("Abies alba", u.usage.getName().getScientificName());
       assertEquals("Mill.", u.usage.getName().authorshipComplete());
       assertEquals("valid", u.usage.getName().getRemarks());
-      assertEquals("non Parolly", u.usage.getAccordingTo());
+      assertEquals("non Parolly", u.usage.getAccordingToId());
       assertEquals(NomStatus.ACCEPTABLE, u.usage.getName().getNomStatus());
     }
   }
@@ -386,7 +386,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
       syn = usageByID("S-55211");
       assertEquals("Hedysarum microphyllum", syn.usage.getName().getScientificName());
       assertNull(syn.usage.getName().getAuthorship());
-      assertEquals("sensu Turcz., p.p.", syn.usage.getAccordingTo());
+      assertEquals("sensu Turcz., p.p.", syn.usage.getAccordingToId());
       assertEquals(Rank.SPECIES, syn.usage.getName().getRank());
       assertEquals(TaxonomicStatus.MISAPPLIED, syn.usage.getStatus());
       assertProParte(syn, "Hedysarum truncatum", "Hedysarum turczaninovii");

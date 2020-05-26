@@ -215,7 +215,7 @@ public class TestEntityGenerator {
     SYN2.setName(NAME4);
     SYN2.setAccepted(TAXON2);
     SYN2.setStatus(TaxonomicStatus.SYNONYM);
-    SYN2.setAccordingTo("John Smith");
+    SYN2.setAccordingToId("John Smith");
     SYN2.setVerbatimKey(133);
     SYN2.setCreatedBy(Users.DB_INIT);
     SYN2.setModifiedBy(Users.DB_INIT);
@@ -275,8 +275,8 @@ public class TestEntityGenerator {
   public static Taxon newTaxon(Name n, String id, String parentID) {
     Taxon t = setUserDate(new Taxon());
     t.setStatus(TaxonomicStatus.ACCEPTED);
-    t.setAccordingTo("Foo");
-    t.setAccordingToDate(FuzzyDate.of(2010, 11, 24));
+    t.setAccordingToId("Foo");
+    t.setScrutinizerDate(FuzzyDate.of(2010, 11, 24));
     t.setDatasetKey(n.getDatasetKey());
     t.setLink(URI.create("http://foo.com"));
     t.setExtinct(false);
@@ -298,8 +298,8 @@ public class TestEntityGenerator {
   public static Taxon newTaxon(int datasetKey, String id, String scientificName) {
     Taxon t = setUserDate(new Taxon());
     t.setStatus(TaxonomicStatus.ACCEPTED);
-    t.setAccordingTo("Foo");
-    t.setAccordingToDate(FuzzyDate.of(2010, 11, 24));
+    t.setAccordingToId("Foo");
+    t.setScrutinizerDate(FuzzyDate.of(2010, 11, 24));
     t.setDatasetKey(datasetKey);
     t.setLink(URI.create("http://foo-bar.com"));
     t.setExtinct(true);
@@ -330,7 +330,7 @@ public class TestEntityGenerator {
     s.setDatasetKey(name.getDatasetKey());
     s.setId("syn" + ID_GEN.getAndIncrement());
     s.setName(name);
-    s.setAccordingTo("non Döring 1999");
+    s.setAccordingToId("non Döring 1999");
     s.setStatus(status);
     s.setParentId(acceptedID);
     s.setOrigin(Origin.SOURCE);
@@ -391,7 +391,6 @@ public class TestEntityGenerator {
     }
     n.setCandidatus(true);
     n.setCultivarEpithet("Red Rose");
-    n.setAppendedPhrase("ACTT 675213");
     n.setLink(URI.create("http://gbif.org"));
     n.setNotho(NamePart.SPECIFIC);
     n.setRank(rank);

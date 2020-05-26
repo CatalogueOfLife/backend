@@ -72,7 +72,7 @@ public class DwcaInserter extends NeoCsvInserter {
     insertTaxonEntities(reader, GbifTerm.Description,
         inter::interpretDescription,
         DwcaTerm.ID,
-        (t, d) -> t.descriptions.add(d)
+        (t, d) -> t.treatment.add(d)
     );
 
     insertTaxonEntities(reader, GbifTerm.Multimedia,

@@ -41,9 +41,9 @@ public interface NameUsage extends DSID<String>, VerbatimEntity {
   
   void setOrigin(Origin origin);
   
-  String getAccordingTo();
+  String getAccordingToId();
   
-  void setAccordingTo(String according);
+  void setAccordingToId(String according);
   
   default boolean isSynonym() {
     return getStatus() != null && getStatus().isSynonym();
@@ -59,7 +59,7 @@ public interface NameUsage extends DSID<String>, VerbatimEntity {
   
   default void addAccordingTo(String accordingTo) {
     if (!StringUtils.isBlank(accordingTo)) {
-      setAccordingTo( getAccordingTo() == null ? accordingTo.trim() : getAccordingTo() + " " + accordingTo.trim());
+      setAccordingToId( getAccordingToId() == null ? accordingTo.trim() : getAccordingToId() + " " + accordingTo.trim());
     }
   }
   
