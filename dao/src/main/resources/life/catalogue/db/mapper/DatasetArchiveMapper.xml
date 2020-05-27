@@ -15,13 +15,11 @@
 
   <sql id="COLS">
     notes,
-    source_key,
     <include refid="life.catalogue.db.mapper.DatasetPatchMapper.COLS"/>
   </sql>
 
   <sql id="PROPS">
     #{notes},
-    #{sourceKey},
     <!--
     PROPS_PATCH uses obj. prefix so we cannot share the list
     But we need to make sure we have the same order so the COLS match up!
@@ -97,15 +95,15 @@
   </select>
 
   <insert id="create" parameterType="map">
-    INSERT INTO dataset_archive (key, dataset_key, import_attempt, <include refid="COLS"/>, origin, created, modified)
-    SELECT key, NULL, import_attempt, <include refid="COLS"/>, origin, now(), now()
+    INSERT INTO dataset_archive (key, dataset_key, import_attempt, <include refid="COLS"/>, source_key, origin, created, modified)
+    SELECT key, NULL, import_attempt, <include refid="COLS"/>, source_key, origin, now(), now()
     FROM dataset d
     WHERE d.key = #{key}
   </insert>
 
   <insert id="createProjectSource" parameterType="ProjectSourceDataset">
-    INSERT INTO dataset_archive (key, dataset_key, import_attempt, <include refid="COLS"/>, origin,  created, modified)
-    VALUES (#{key}, #{datasetKey}, #{importAttempt}, <include refid="PROPS"/>, #{origin}::DATASETORIGIN, now(), now())
+    INSERT INTO dataset_archive (key, dataset_key, import_attempt, <include refid="COLS"/>, source_key, origin,  created, modified)
+    VALUES (#{key}, #{datasetKey}, #{importAttempt}, <include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, now(), now())
   </insert>
 
   <delete id="deleteByDataset" parameterType="map">

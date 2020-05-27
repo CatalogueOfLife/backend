@@ -255,14 +255,14 @@
 
   <!--  makes sure to add creator to editors -->
   <insert id="create" parameterType="Dataset" useGeneratedKeys="true" keyProperty="key">
-    INSERT INTO dataset (<include refid="COLS"/>, origin, editors, created, modified)
-    VALUES (<include refid="PROPS"/>, #{origin}::DATASETORIGIN, array[#{createdBy}::int], now(), now())
+    INSERT INTO dataset (<include refid="COLS"/>, source_key, origin, editors, created, modified)
+    VALUES (<include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, array[#{createdBy}::int], now(), now())
   </insert>
 
   <!--  makes sure to add creator to editors -->
   <insert id="createWithKey" parameterType="Dataset" useGeneratedKeys="false">
-    INSERT INTO dataset (key,<include refid="COLS"/>, origin, editors, created, modified)
-    VALUES (#{key},<include refid="PROPS"/>, #{origin}::DATASETORIGIN, array[#{createdBy}::int], now(), now())
+    INSERT INTO dataset (key,<include refid="COLS"/>, source_key, origin, editors, created, modified)
+    VALUES (#{key},<include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, array[#{createdBy}::int], now(), now())
   </insert>
 
   <select id="getSettings" resultMap="settingsResultMap">
