@@ -18,7 +18,8 @@ public class Language implements Comparable<Language> {
   
   private static final Comparator<Language> NATURAL_ORDER = Comparator.comparing(Language::getCode);
   public static String ISO_CODE_FILE = "vocab/language/iso-639-3_Name_Index_20190408.tab";
-  
+  public static String OVERRIDES = "vocab/language/iso-639-3-override.tsv";
+
   public static final Map<String, Language> LANGUAGES = ImmutableMap.copyOf(load());
 
   public static Collection<Language> values() {
@@ -43,6 +44,10 @@ public class Language implements Comparable<Language> {
         langs.put(l.code, l);
       }
     }
+    // allow for custom overrides in sensitive political areas
+    Resources.tabRows(OVERRIDES).forEach( row -> {
+      langs.put(row[0], new Language(row[0], row[1]));
+    });
     return langs;
   }
 
