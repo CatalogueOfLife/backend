@@ -2,7 +2,6 @@ package life.catalogue.parser;
 
 import com.google.common.collect.Maps;
 import life.catalogue.api.vocab.Language;
-import life.catalogue.common.io.Resources;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.utils.file.csv.CSVReader;
 import org.gbif.utils.file.csv.CSVReaderFactory;
@@ -61,27 +60,25 @@ public class LanguageParser extends ParserBase<Language> {
   }
   
   private void addMappings(){
-    // Id	Print_Name	Inverted_Name
     Language.LANGUAGES.values().forEach(l -> {
       add(l.getCode(), l.getCode(), true);
       add(l.getTitle(), l.getCode(), true);
     });
     try {
-      // we add the authority file again to also read duplicate titles and inverse titles
-      InputStream isoStream = Resources.stream(Language.ISO_CODE_FILE);
-      // Id	Print_Name	Inverted_Name
-      addMapping(isoStream , 0,  null, 0,1,2);
+      // we add the authority file again to also read 2 letter codes
+      // Id	Part2B	Part2T	Part1	Scope	Language_Type	Ref_Name	Comment
+      addMapping(Language.class.getResourceAsStream("/"+Language.ISO_CODE_FILE), 0, 3, 1,2,6);
     } catch (IOException e) {
       LOG.error("Failed to load {} mappings", Language.ISO_CODE_FILE, e);
     }
-    // Id	Part2B	Part2T	Part1	Scope	Language_Type	Ref_Name	Comment
-    addMapping("iso-639-3_20190408.tab", 0,  3,6);
+    // Id	Print_Name	Inverted_Name
+    addMapping("iso-639-3_Name_Index"+Language.ISO_VERSION, 0,  null,1,2);
     // Id	Ref_Name	Ret_Reason	Change_To	Ret_Remedy	Effective
-    addMapping("iso-639-3_Retirements_20190408.tab", 3,  null, 0,1);
+    addMapping("iso-639-3_Retirements"+Language.ISO_VERSION, 3,  null, 0,1);
     // ISO	english	native
     addMapping("language-native.tab", 0,  null, 1,2);
     // custom manually curated entries: ISO3	VALUE
-    addMapping("language-custom.tab", 0,  1);
+    addMapping("language-custom.tsv", 0,  1);
     // WikiData SPARQL download: url	iso	ietf	native	len	lde	lfr	les	lru	lzh	lpt	lit
     addMapping("query.tsv", 1,  null, 2,3,4,5,6,7,8,9,10,11);
   }

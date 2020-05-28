@@ -8,7 +8,7 @@ public class LanguageTest {
   
   @Test
   public void testBuild() {
-    assertTrue(Language.LANGUAGES.size() > 7800);
+    assertTrue(Language.LANGUAGES.size() > 7850);
     for (Language l : Language.LANGUAGES.values()) {
       assertNotNull(l.getCode());
       assertNotNull(l.getTitle());
