@@ -212,12 +212,14 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
       BareName b = (BareName) nuw.getUsage();
       b.setDatasetKey(doc.getDatasetKey());
     }
-    if (INCLUDE_VERNACLUAR_NAMES && notEmpty(doc.getVernacularNames())) {
-      for (int i = 0; i < doc.getVernacularNames().size(); ++i) {
-        nuw.getVernacularNames().get(i).setName(doc.getVernacularNames().get(i));
+    if (notEmpty(doc.getVernacularNames())) {
+      if (INCLUDE_VERNACLUAR_NAMES) {
+        for (int i = 0; i < doc.getVernacularNames().size(); ++i) {
+          nuw.getVernacularNames().get(i).setName(doc.getVernacularNames().get(i));
+        }
+      } else {
+        nuw.setVernacularNames(Collections.EMPTY_LIST);
       }
-    } else {
-      nuw.setVernacularNames(Collections.EMPTY_LIST);
     }
     if (notEmpty(doc.getDecisions())) {
       for (int i = 0; i < nuw.getDecisions().size(); ++i) {
