@@ -1,15 +1,16 @@
 package life.catalogue.db.mapper;
 
-import java.util.List;
-import java.util.Set;
-
-import org.apache.ibatis.annotations.Param;
 import life.catalogue.api.model.Duplicate;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.NameCategory;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import org.apache.ibatis.annotations.Param;
 import org.gbif.nameparser.api.Rank;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 public interface DuplicateMapper {
   
@@ -23,7 +24,7 @@ public interface DuplicateMapper {
                                  @Param("codeDifferent") Boolean codeDifferent,
                                  @Param("page") Page page);
   
-  List<Duplicate.UsageDecision> namesByIds(@Param("datasetKey") int datasetKey, @Param("ids") List<String> ids);
+  List<Duplicate.UsageDecision> namesByIds(@Param("datasetKey") int datasetKey, @Param("ids") Collection<String> ids);
   
   
   List<Duplicate.Mybatis> duplicates(@Param("mode") MatchingMode mode,
@@ -44,6 +45,6 @@ public interface DuplicateMapper {
   /**
    * @param ids usage ids to return usage decisions for
    */
-  List<Duplicate.UsageDecision> usagesByIds(@Param("datasetKey") int datasetKey, @Param("ids") List<String> ids);
+  List<Duplicate.UsageDecision> usagesByIds(@Param("datasetKey") int datasetKey, @Param("ids") Collection<String> ids);
   
 }

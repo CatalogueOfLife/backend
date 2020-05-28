@@ -398,6 +398,8 @@ public class TestEntityGenerator {
     n.setType(NameType.SCIENTIFIC);
     n.setCode(NomCode.BOTANICAL);
     n.setNomStatus(NomStatus.ACCEPTABLE);
+    n.setNomenclaturalNote("nom.illeg.");
+    n.setUnparsed("debnnj$&%%");
     n.updateNameCache();
     n.addRemark("my first note");
     n.addRemark("my second note");

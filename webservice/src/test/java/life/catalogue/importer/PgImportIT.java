@@ -329,7 +329,7 @@ public class PgImportIT {
       
       Name n = ndao.get(key(dataset.getKey(), "s7"));
       assertEquals("Astragalus nonexistus", n.getScientificName());
-      assertEquals("DC.", n.authorshipComplete());
+      assertEquals("DC.", n.buildAuthorship());
       assertEquals(Rank.SPECIES, n.getRank());
       assertIssue(n, Issue.ACCEPTED_ID_INVALID);
       
@@ -375,7 +375,7 @@ public class PgImportIT {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       Taxon t = tdao.get(key(dataset.getKey(), "14649"));
       assertEquals("Zapoteca formosa", t.getName().getScientificName());
-      assertEquals("(Kunth) H.M.Hern.", t.getName().authorshipComplete());
+      assertEquals("(Kunth) H.M.Hern.", t.getName().buildAuthorship());
       assertEquals(Rank.SPECIES, t.getName().getRank());
       
       TaxonInfo info = tdao.getTaxonInfo(t);
@@ -454,7 +454,7 @@ public class PgImportIT {
   
       Taxon t = tdao.get(key(dataset.getKey(), "MD2"));
       assertEquals("Latrodectus mactans", t.getName().getScientificName());
-      assertEquals("(Fabricius, 1775)", t.getName().authorshipComplete());
+      assertEquals("(Fabricius, 1775)", t.getName().buildAuthorship());
   
       TaxonInfo info = tdao.getTaxonInfo(t);
       // Walckenaer1805;Walckenaer, CA;1805;Table of the aranid or essential characters of the
@@ -575,7 +575,7 @@ public class PgImportIT {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       Name n = ndao.get(key(dataset.getKey(), "1000"));
       assertEquals("Platycarpha glomerata", n.getScientificName());
-      assertEquals("(Thunberg) A.P.de Candolle", n.authorshipComplete());
+      assertEquals("(Thunberg) A.P.de Candolle", n.buildAuthorship());
       assertEquals("1000", n.getId());
       assertEquals(Rank.SPECIES, n.getRank());
     

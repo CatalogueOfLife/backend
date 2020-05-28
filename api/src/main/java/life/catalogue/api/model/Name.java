@@ -20,7 +20,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 
-import static org.gbif.nameparser.util.NameFormatter.HYBRID_MARKER;
+import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
 
 /**
  *
@@ -52,8 +52,8 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   
   /**
    * Entire canonical name string with a rank marker for infragenerics and infraspecfics, but
-   * excluding the authorship. For uninomials, e.g. families or names at higher ranks, this is just
-   * the uninomial.
+   * excluding the authorship.
+   * For uninomials, e.g. families or names at higher ranks, this is just the uninomial.
    */
   @Nonnull
   private String scientificName;
@@ -160,7 +160,14 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   private NameType type;
   
   private URI link;
-  
+
+  /**
+   * Nomenclatural notes found in the authorship
+   */
+  private String nomenclaturalNote;
+
+  private String unparsed;
+
   /**
    * Any informal note about the nomenclature of the name
    */
@@ -181,6 +188,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.nameIndexId = n.nameIndexId;
     this.nameIndexMatchType = n.nameIndexMatchType;
     this.scientificName = n.scientificName;
+    this.authorship = n.authorship;
     this.rank = n.rank;
     this.uninomial = n.uninomial;
     this.genus = n.genus;
@@ -200,8 +208,14 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.publishedInYear = n.publishedInYear;
     this.origin = n.origin;
     this.type = n.type;
+    this.unparsed = n.unparsed;
+    this.nomenclaturalNote = n.nomenclaturalNote;
     this.link = n.link;
     this.remarks = n.remarks;
+    this.setCreatedBy(n.getCreatedBy());
+    this.setCreated(n.getCreated());
+    this.setModifiedBy(n.getModifiedBy());
+    this.setModified(n.getModified());
   }
   
   /**
@@ -266,7 +280,8 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   }
   
   /**
-   * @return a normalized version of the scientific name useful for matching. Only used on db level
+   * @return a normalized version of the scientific name useful for matching.
+   * Only used on db level from MyBatis
    */
   @JsonIgnore
   public String getScientificNameNormalized() {
@@ -311,7 +326,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   public void updateNameCache() {
     if (isParsed()) {
       this.scientificName = canonicalNameWithoutAuthorship();
-      this.authorship = authorshipComplete();
+      this.authorship = buildAuthorship();
     }
   }
   
@@ -535,7 +550,25 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   public void setType(NameType type) {
     this.type = type;
   }
-  
+
+  @JsonIgnore
+  public String getNomenclaturalNote() {
+    return nomenclaturalNote;
+  }
+
+  public void setNomenclaturalNote(String nomenclaturalNote) {
+    this.nomenclaturalNote = nomenclaturalNote;
+  }
+
+  @JsonIgnore
+  public String getUnparsed() {
+    return unparsed;
+  }
+
+  public void setUnparsed(String unparsed) {
+    this.unparsed = unparsed;
+  }
+
   /**
    * @return the terminal epithet. Infraspecific epithet if existing, the species epithet or null
    */
@@ -650,7 +683,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
    * @See NameFormatter.canonicalNameWithoutAuthorship()
    */
   public String canonicalNameWithoutAuthorship() {
-    return completeName(false, false, false);
+    return buildName(false, false, false);
   }
  
   /**
@@ -658,14 +691,14 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
    * @See NameFormatter.canonicalComplete()
    */
   public String canonicalNameWithAuthorship() {
-    return completeName(false, true, false);
+    return buildName(false, true, false);
   }
 
   /**
-   * Full name.
+   * Full name from parsed atoms.
    */
-  public String canonicalNameComplete() {
-    return completeName(false, true, true);
+  public String buildScientificNameAuthorship() {
+    return buildName(false, true, true);
   }
 
   /**
@@ -673,11 +706,11 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
    * @return same as canonicalNameComplete but formatted with basic html tags
    */
   @JsonProperty(value = "labelHtml", access = JsonProperty.Access.READ_ONLY)
-  public String canonicalNameCompleteHtml() {
-    return completeName(true, true, true);
+  public String labelHtml() {
+    return buildName(true, true, true);
   }
   
-  private String completeName(boolean html, boolean authorship, boolean nomNote) {
+  private String buildName(boolean html, boolean authorship, boolean nomNote) {
     return isParsed() ?
         NameFormatter.buildName(toParsedName(this), true, true, authorship, true, true, true, false, true, true, nomNote, true, true, true, html)
         : scientificNameAuthorship();
@@ -701,7 +734,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
    * @See NameFormatter.authorshipComplete()
    */
   @JsonIgnore
-  public String authorshipComplete() {
+  public String buildAuthorship() {
     return NameFormatter.authorshipComplete(toParsedName(this));
   }
   
@@ -737,6 +770,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
         Objects.equals(publishedInYear, name.publishedInYear) &&
         origin == name.origin &&
         type == name.type &&
+        Objects.equals(nomenclaturalNote, name.nomenclaturalNote) &&
         Objects.equals(link, name.link) &&
         Objects.equals(remarks, name.remarks);
   }
@@ -745,7 +779,8 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   public int hashCode() {
     return Objects.hash(super.hashCode(), sectorKey, verbatimKey, homotypicNameId, nameIndexId, nameIndexMatchType, scientificName, authorship, rank,
       uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho,
-      combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, publishedInYear, origin, type, link, remarks);
+      combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, publishedInYear, origin, type, link,
+      nomenclaturalNote, remarks);
   }
   
   @Override
@@ -820,11 +855,11 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     return sb.toString();
   }
 
-  public static String completeName(Name n, boolean html, boolean authorship, boolean nomNote) {
-    return n.isParsed() ? completeName(toParsedName(n), html, authorship, nomNote) : n.scientificNameAuthorship();
+  public static String buildName(Name n, boolean html, boolean authorship, boolean nomNote) {
+    return n.isParsed() ? buildName(toParsedName(n), html, authorship, nomNote) : n.scientificNameAuthorship();
   }
 
-  public static String completeName(ParsedName pn, boolean html, boolean authorship, boolean nomNote) {
+  public static String buildName(ParsedName pn, boolean html, boolean authorship, boolean nomNote) {
       return NameFormatter.buildName(pn, true, true, authorship, true, true, true, false, true, true, nomNote, true, true, true, html);
   }
 }

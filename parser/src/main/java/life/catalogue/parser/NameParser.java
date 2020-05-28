@@ -7,7 +7,6 @@ import com.google.common.collect.ImmutableMap;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameAccordingTo;
-import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
@@ -100,19 +99,17 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
     
       // we might have already parsed an authorship from the scientificName string which does not match up?
       if (nat.getName().hasAuthorship() &&
-          !nat.getName().authorshipComplete().equalsIgnoreCase(pnAuthorship.authorshipComplete())) {
+          !nat.getName().buildAuthorship().equalsIgnoreCase(pnAuthorship.authorshipComplete())) {
         v.addIssue(Issue.INCONSISTENT_AUTHORSHIP);
         LOG.info("Different authorship found in name {} than in parsed version: [{}] vs [{}]",
-            nat.getName(), nat.getName().authorshipComplete(), pnAuthorship.authorshipComplete());
+            nat.getName(), nat.getName().buildAuthorship(), pnAuthorship.authorshipComplete());
       }
       nat.getName().setCombinationAuthorship(pnAuthorship.getCombinationAuthorship());
       nat.getName().setSanctioningAuthor(pnAuthorship.getSanctioningAuthor());
       nat.getName().setBasionymAuthorship(pnAuthorship.getBasionymAuthorship());
       // propagate notes and unparsed bits found in authorship
-      nat.getName().addRemark(pnAuthorship.getNomenclaturalNote());
-      if (pnAuthorship.getUnparsed() != null) {
-        nat.getName().setAppendedPhrase(pnAuthorship.getUnparsed());
-      }
+      nat.getName().setNomenclaturalNote(pnAuthorship.getNomenclaturalNote());
+      nat.getName().setUnparsed(pnAuthorship.getUnparsed());
       nat.addAccordingTo(pnAuthorship.getTaxonomicNote());
     }
   }
@@ -177,13 +174,6 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
     }
   }
 
-  public static ParserConfig cfgFromParsedName(ParsedName pn) {
-    ParserConfig pc = new ParserConfig();
-    updateNamefromParsedName(pc, pn, IssueContainer.VOID);
-    pc.setTaxonomicNote(pn.getTaxonomicNote());
-    return pc;
-  }
-
   /**
    * Uses an existing name instance to populate from a ParsedName instance
    */
@@ -192,6 +182,7 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
     NameAccordingTo nat = new NameAccordingTo();
     nat.setName(n);
     nat.setAccordingTo(pn.getTaxonomicNote());
+    nat.setPublishedIn(pn.getPublishedIn());
     return nat;
   }
 
@@ -205,7 +196,6 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
     n.setSpecificEpithet(pn.getSpecificEpithet());
     n.setInfraspecificEpithet(pn.getInfraspecificEpithet());
     n.setCultivarEpithet(pn.getCultivarEpithet());
-    n.setAppendedPhrase(pn.getStrain());
     n.setCombinationAuthorship(pn.getCombinationAuthorship());
     n.setBasionymAuthorship(pn.getBasionymAuthorship());
     n.setSanctioningAuthor(pn.getSanctioningAuthor());
@@ -223,6 +213,9 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
         issues.addIssue(Issue.UNPARSABLE_NAME);
         break;
       case COMPLETE:
+        if (!StringUtils.isBlank(pn.getStrain())) {
+          issues.addIssue(Issue.PARTIALLY_PARSABLE_NAME);
+        }
         break;
     }
     if (pn.isDoubtful()) {

@@ -1,8 +1,8 @@
 package life.catalogue.api.model;
 
-import java.util.Objects;
-
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.Objects;
 
 /**
  *
@@ -10,13 +10,15 @@ import org.apache.commons.lang3.StringUtils;
 public class NameAccordingTo {
   private Name name;
   private String accordingTo;
-  
+  private String publishedIn;
+
   public NameAccordingTo() {
   }
   
-  public NameAccordingTo(Name name, String accordingTo) {
+  public NameAccordingTo(Name name, String accordingTo, String publishedIn) {
     this.name = name;
     this.accordingTo = accordingTo;
+    this.publishedIn = publishedIn;
   }
   
   public Name getName() {
@@ -40,19 +42,27 @@ public class NameAccordingTo {
       this.accordingTo = this.accordingTo == null ? accordingTo.trim() : this.accordingTo + " " + accordingTo.trim();
     }
   }
-  
+
+  public String getPublishedIn() {
+    return publishedIn;
+  }
+
+  public void setPublishedIn(String publishedIn) {
+    this.publishedIn = publishedIn;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof NameAccordingTo)) return false;
     NameAccordingTo that = (NameAccordingTo) o;
     return Objects.equals(name, that.name) &&
-        Objects.equals(accordingTo, that.accordingTo);
+      Objects.equals(accordingTo, that.accordingTo) &&
+      Objects.equals(publishedIn, that.publishedIn);
   }
-  
+
   @Override
   public int hashCode() {
-    return Objects.hash(name, accordingTo);
+    return Objects.hash(name, accordingTo, publishedIn);
   }
-  
 }

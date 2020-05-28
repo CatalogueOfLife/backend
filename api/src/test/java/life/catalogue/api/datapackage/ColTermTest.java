@@ -21,13 +21,13 @@ public class ColTermTest {
   public void find() {
     assertEquals(ColdpTerm.Taxon, ColdpTerm.find("taxon ", true));
     assertEquals(ColdpTerm.VernacularName, ColdpTerm.find("Vernacular-name", true));
-    assertEquals(ColdpTerm.Description, ColdpTerm.find("description ", true));
-    assertEquals(ColdpTerm.description, ColdpTerm.find("des_cription ", false));
+    assertEquals(ColdpTerm.Treatment, ColdpTerm.find("treatment ", true));
+    assertEquals(ColdpTerm.document, ColdpTerm.find("doc_ument ", false));
   }
   
   @Test
   public void higherRanks() {
-    for (ColdpTerm t : ColdpTerm.HIGHER_RANKS) {
+    for (ColdpTerm t : ColdpTerm.DENORMALIZED_RANKS) {
       assertFalse(t.isClass());
       assertTrue(ColdpTerm.RESOURCES.get(ColdpTerm.Taxon).contains(t));
     }

@@ -942,7 +942,7 @@ public class NeoDb {
     // store, which creates a new neo node
     Node nameNode = createNameAndUsage(u);
 
-    return new RankedUsage(u.node, nameNode, name.getScientificName(), name.authorshipComplete(), name.getRank());
+    return new RankedUsage(u.node, nameNode, name.getScientificName(), name.buildAuthorship(), name.getRank());
   }
   
   public void updateIdGenerators() {

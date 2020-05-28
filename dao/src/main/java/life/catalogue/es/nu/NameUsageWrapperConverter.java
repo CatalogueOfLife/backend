@@ -311,7 +311,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
 
   private static void saveAuthorship(NameUsageWrapper nuw, EsNameUsage doc) {
     Name name = nuw.getUsage().getName();
-    doc.setAuthorshipComplete(name.authorshipComplete());
+    doc.setAuthorshipComplete(name.buildAuthorship());
     Set<String> authorship = new TreeSet<>();
     Set<String> year = new TreeSet<>();
     if (name.getBasionymAuthorship() != null) {

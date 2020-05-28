@@ -42,7 +42,6 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(Classification.class);
     kryo.register(Dataset.class);
     kryo.register(DatasetImport.class);
-    kryo.register(Treatment.class);
     kryo.register(Distribution.class);
     kryo.register(Media.class);
     kryo.register(Name.class);
@@ -55,6 +54,8 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(Sector.class);
     kryo.register(Synonym.class);
     kryo.register(Taxon.class);
+    kryo.register(TaxonRelation.class);
+    kryo.register(Treatment.class);
     kryo.register(TypeMaterial.class);
     kryo.register(VerbatimRecord.class);
     kryo.register(VernacularName.class);
@@ -120,6 +121,7 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(Rank.class);
     kryo.register(Sex.class);
     kryo.register(TaxonomicStatus.class);
+    kryo.register(TaxRelType.class);
     kryo.register(TreatmentFormat.class);
     kryo.register(TypeStatus.class);
     

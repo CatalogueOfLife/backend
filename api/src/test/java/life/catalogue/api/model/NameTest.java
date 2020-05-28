@@ -26,7 +26,14 @@ public class NameTest extends SerdeTestBase<Name> {
     n.setNameIndexId(null);
     return n;
   }
-  
+
+  @Test
+  public void copy() throws Exception {
+    Name n1 = TestEntityGenerator.newName();
+    Name n2 = new Name(n1);
+    assertEquals(n1, n2);
+  }
+
   @Test
   public void equalsNull() throws Exception {
     Name n1 = new Name();

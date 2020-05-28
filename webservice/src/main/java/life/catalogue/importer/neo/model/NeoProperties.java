@@ -106,7 +106,7 @@ public class NeoProperties {
   public static RankedUsage getRankedUsage(NeoUsage u) {
     if (u.node != null && u.nameNode != null && u.usage.getName() != null) {
       return new RankedUsage(u.node, u.nameNode,
-          u.usage.getName().getScientificName(), u.usage.getName().authorshipComplete(), u.usage.getName().getRank());
+          u.usage.getName().getScientificName(), u.usage.getName().buildAuthorship(), u.usage.getName().getRank());
     } else {
       return getRankedUsage(u.node);
     }

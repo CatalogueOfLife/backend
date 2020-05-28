@@ -43,7 +43,7 @@ public class ClassificationTest {
   public void higherRanks() {
     Classification c = new Classification();
     int hash = c.hashCode();
-    for (ColdpTerm t : ColdpTerm.HIGHER_RANKS) {
+    for (ColdpTerm t : ColdpTerm.DENORMALIZED_RANKS) {
       assertTrue(c.setByTerm(t, "xyz"));
       assertNotEquals(hash, c.hashCode());
       hash = c.hashCode();

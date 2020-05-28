@@ -153,7 +153,7 @@ public class NameIndexImpl implements NameIndex {
     final boolean compareCode = query.getCode() != null;
     final String queryname = SciNameNormalizer.normalizedAscii(query.canonicalNameWithoutAuthorship());
     final String queryfullname = SciNameNormalizer.normalizedAscii(query.canonicalNameWithAuthorship());
-    final String queryauthorship = Strings.nullToEmpty(SciNameNormalizer.normalizedAscii(query.authorshipComplete()));
+    final String queryauthorship = Strings.nullToEmpty(SciNameNormalizer.normalizedAscii(query.buildAuthorship()));
     // calculate score by rank, nomCode & authorship
     // immediately filtering no matches with a negative score
     int bestScore = 0;
@@ -186,7 +186,7 @@ public class NameIndexImpl implements NameIndex {
           continue;
         }
         
-        if (queryauthorship.equalsIgnoreCase(SciNameNormalizer.normalizedAscii(n.authorshipComplete()))) {
+        if (queryauthorship.equalsIgnoreCase(SciNameNormalizer.normalizedAscii(n.buildAuthorship()))) {
           score += 2;
         } else if (aeq == Equality.EQUAL) {
           score += 1;

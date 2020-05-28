@@ -35,7 +35,15 @@ public class Taxon extends NameUsageBase {
   public boolean isProvisional() {
     return getStatus() == TaxonomicStatus.PROVISIONALLY_ACCEPTED;
   }
-  
+
+  public String getScrutinizer() {
+    return scrutinizer;
+  }
+
+  public void setScrutinizer(String scrutinizer) {
+    this.scrutinizer = scrutinizer;
+  }
+
   public FuzzyDate getScrutinizerDate() {
     return scrutinizerDate;
   }
@@ -91,6 +99,7 @@ public class Taxon extends NameUsageBase {
     if (!super.equals(o)) return false;
     Taxon taxon = (Taxon) o;
     return Objects.equals(scrutinizerDate, taxon.scrutinizerDate) &&
+        Objects.equals(scrutinizer, taxon.scrutinizer) &&
         Objects.equals(extinct, taxon.extinct) &&
         Objects.equals(temporalRangeStart, taxon.temporalRangeStart) &&
         Objects.equals(temporalRangeEnd, taxon.temporalRangeEnd) &&
@@ -99,6 +108,6 @@ public class Taxon extends NameUsageBase {
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), scrutinizerDate, extinct, temporalRangeStart, temporalRangeEnd, lifezones);
+    return Objects.hash(super.hashCode(), scrutinizer, scrutinizerDate, extinct, temporalRangeStart, temporalRangeEnd, lifezones);
   }
 }

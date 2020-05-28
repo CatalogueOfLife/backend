@@ -15,6 +15,8 @@
  */
 package life.catalogue.api.vocab;
 
+import org.gbif.nameparser.api.NomCode;
+
 import javax.annotation.Nullable;
 
 /**
@@ -181,7 +183,27 @@ public enum NomStatus {
   public String getZoologicalLabel() {
     return zoology;
   }
-  
+
+  /**
+   * Returns a label based on the nomenclatural code
+   * @param code
+   */
+  public String getLabel(NomCode code) {
+    if (code == null) {
+      return this.name().toLowerCase().replaceAll("_", " ");
+    }
+    switch (code) {
+      case BOTANICAL:
+      case BACTERIAL:
+      case CULTIVARS:
+      case VIRUS:
+        return botany;
+
+      default:
+        return zoology;
+    }
+  }
+
   /**
    * @return true if the name status indicates that it is validly published / available.
    */

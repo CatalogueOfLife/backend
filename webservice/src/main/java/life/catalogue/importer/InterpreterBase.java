@@ -331,13 +331,13 @@ public class InterpreterBase {
       }
 
       // parse the reconstructed name without authorship to detect name type and potential problems
-      Optional<NameAccordingTo> natFromAtom = NameParser.PARSER.parse(atom.canonicalNameComplete(), rank, code, v);
+      Optional<NameAccordingTo> natFromAtom = NameParser.PARSER.parse(atom.buildScientificNameAuthorship(), rank, code, v);
       if (natFromAtom.isPresent()) {
         final Name pn = natFromAtom.get().getName();
 
         // check name type if its parsable - otherwise we should not use name atoms
         if (!pn.getType().isParsable()) {
-          LOG.info("Atomized name {} appears to be of type {}. Use scientific name only", atom.canonicalNameComplete(), pn.getType());
+          LOG.info("Atomized name {} appears to be of type {}. Use scientific name only", atom.buildScientificNameAuthorship(), pn.getType());
           nat.setName(pn);
         } else if (pn.isParsed()) {
           // if parsed compare with original atoms
@@ -348,7 +348,7 @@ public class InterpreterBase {
                   !Objects.equals(atom.getSpecificEpithet(), pn.getSpecificEpithet()) ||
                   !Objects.equals(atom.getInfraspecificEpithet(), pn.getInfraspecificEpithet())
           ) {
-            LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", pn.canonicalNameComplete(), atom.canonicalNameComplete());
+            LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", pn.buildScientificNameAuthorship(), atom.buildScientificNameAuthorship());
             v.addIssue(Issue.PARSED_NAME_DIFFERS);
           }
         }

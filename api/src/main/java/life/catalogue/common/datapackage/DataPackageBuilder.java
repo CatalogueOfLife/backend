@@ -1,20 +1,20 @@
 package life.catalogue.common.datapackage;
 
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import org.apache.commons.io.FilenameUtils;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.datapackage.PackageDescriptor;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
-import life.catalogue.common.text.StringUtils;
 import life.catalogue.api.vocab.*;
+import life.catalogue.common.text.StringUtils;
 import life.catalogue.common.text.UnicodeUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
+
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class DataPackageBuilder {
   private static final String MONOMIAL_PATTERN = "[A-ZÏËÖÜÄÉÈČÁÀÆŒ](?:\\.|[a-zïëöüäåéèčáàæœ]+)(?:-[A-ZÏËÖÜÄÉÈČÁÀÆŒ]?[a-zïëöüäåéèčáàæœ]+)?";
@@ -22,7 +22,7 @@ public class DataPackageBuilder {
   // only non string data types here
   private static final Map<ColdpTerm, String> dataTypes = ImmutableMap.<ColdpTerm, String>builder()
       .put(ColdpTerm.year, Field.TYPE_YEAR)
-      .put(ColdpTerm.accordingToDate, Field.TYPE_DATE)
+      .put(ColdpTerm.scrutinizerDate, Field.TYPE_DATE)
       .put(ColdpTerm.created, Field.TYPE_DATETIME)
       .put(ColdpTerm.extinct, Field.TYPE_BOOLEAN)
       .build();
@@ -31,10 +31,10 @@ public class DataPackageBuilder {
       .put(ColdpTerm.link, Field.FORMAT_URI)
       .build();
   
-  private static final Set<ColdpTerm> monomials = ImmutableSet.of(
-      ColdpTerm.kingdom, ColdpTerm.phylum, ColdpTerm.class_, ColdpTerm.order, ColdpTerm.family,
-      ColdpTerm.subphylum, ColdpTerm.subclass, ColdpTerm.suborder, ColdpTerm.subfamily,
-      ColdpTerm.superfamily
+  private static final Set<ColdpTerm> monomials = ImmutableSet.copyOf(
+    Arrays.stream(ColdpTerm.DENORMALIZED_RANKS)
+      .filter(t -> t != ColdpTerm.species)
+      .collect(Collectors.toSet())
   );
 
   private static final Map<ColdpTerm, Class<? extends Enum>> enums = ImmutableMap.<ColdpTerm, Class<? extends Enum>>builder()

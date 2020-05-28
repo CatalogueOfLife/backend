@@ -19,7 +19,7 @@ public class ColdpReaderTest {
     assertTrue(reader.hasSchema(ColdpTerm.Distribution));
     assertTrue(reader.hasSchema(ColdpTerm.Media));
     assertTrue(reader.hasSchema(ColdpTerm.Name));
-    assertTrue(reader.hasSchema(ColdpTerm.NameRel));
+    assertTrue(reader.hasSchema(ColdpTerm.NameRelation));
     assertTrue(reader.hasSchema(ColdpTerm.Reference));
     assertTrue(reader.hasSchema(ColdpTerm.Synonym));
     assertTrue(reader.hasSchema(ColdpTerm.Taxon));

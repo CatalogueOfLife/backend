@@ -1,21 +1,21 @@
 package life.catalogue.dao;
 
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import com.google.common.base.Preconditions;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.model.Duplicate;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.NameCategory;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.DuplicateMapper;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class DuplicateDao {
   
@@ -59,10 +59,10 @@ public class DuplicateDao {
       return Collections.EMPTY_LIST;
     }
     
-    List<String> ids = dupsTmp.stream()
+    Set<String> ids = dupsTmp.stream()
         .map(Duplicate.Mybatis::getUsages)
         .flatMap(List::stream)
-        .collect(Collectors.toList());
+        .collect(Collectors.toSet());
     
     Map<String, Duplicate.UsageDecision> usages;
     if (compareNames) {

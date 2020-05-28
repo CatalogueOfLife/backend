@@ -31,25 +31,25 @@ public enum ColdpTerm implements Term, AlternativeNames {
   
   Name(true),
   //ID,
+  originalNameID,
   scientificName,
   authorship,
   rank,
+  uninomial,
   genus,
   specificEpithet,
   infragenericEpithet,
   infraspecificEpithet,
   cultivarEpithet,
-  appendedPhrase,
   publishedInID,
   publishedInPage,
   publishedInYear,
-  original,
   code,
   status,
   //link,
   remarks,
-  
-  NameRel(true),
+
+  NameRelation(true, "NameRel"),
   nameID,
   relatedNameID,
   type,
@@ -76,16 +76,16 @@ public enum ColdpTerm implements Term, AlternativeNames {
   // ID,
   parentID,
   //nameID,
-  //referenceID,
-  provisional,
-  accordingTo,
+  appendedPhrase,
   accordingToID,
-  accordingToDate,
+  provisional,
+  //referenceID,
+  scrutinizer,
+  scrutinizerDate,
   extinct,
   temporalRangeStart,
   temporalRangeEnd,
   lifezone,
-  //link,
   species,
   section,
   subgenus,
@@ -102,22 +102,36 @@ public enum ColdpTerm implements Term, AlternativeNames {
   subphylum,
   phylum,
   kingdom,
-  
-  Synonym(true),
-  taxonID,
-  //nameID,
-  //status,
+  //link
   //remarks
-  
-  
-  Description(true),
-  //taxonID,
-  category,
-  format,
-  description,
-  language,
+
+  Synonym(true),
+  //ID
+  taxonID,
+  //nameID
+  //appendedPhrase,
+  //accordingToID,
+  //status
   //referenceID,
-  
+  //link
+  //remarks
+
+  NameUsage(true),
+  nameStatus, // alternative term to Name.status
+  genericName, // alternative term to Name.genus
+
+  TaxonRelation(true, "TaxonRel"),
+  //taxonID,
+  relatedTaxonID,
+  //type,
+  //referenceID,
+  //remarks,
+
+  Treatment(true),
+  //taxonID,
+  document,
+  format,
+
   Distribution(true),
   //taxonID,
   area,
@@ -140,7 +154,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   //taxonID,
   name,
   transliteration,
-  //language,
+  language,
   //country,
   sex
   //referenceID
@@ -149,18 +163,19 @@ public enum ColdpTerm implements Term, AlternativeNames {
   private static Map<String, ColdpTerm> LOOKUP = Maps.uniqueIndex(Arrays.asList(values()), ColdpTerm::normalize);
   
   /**
-   * List of all higher rank terms in dwc, ordered by rank and starting with kingdom.
+   * List of all higher rank terms, ordered by rank and starting with kingdom.
    */
-  public static final ColdpTerm[] HIGHER_RANKS = {ColdpTerm.kingdom,
-      ColdpTerm.phylum, ColdpTerm.subphylum,
-      ColdpTerm.class_, ColdpTerm.subclass,
-      ColdpTerm.order, ColdpTerm.suborder,
-      ColdpTerm.superfamily, ColdpTerm.family, ColdpTerm.subfamily,
-      ColdpTerm.genus, ColdpTerm.subgenus,
-      ColdpTerm.section,
-      ColdpTerm.species
+  public static final ColdpTerm[] DENORMALIZED_RANKS = {ColdpTerm.kingdom,
+      phylum, subphylum,
+      class_, subclass,
+      order, suborder,
+      superfamily, family, subfamily,
+      tribe,subtribe,
+      genus, subgenus,
+      section,
+      species
   };
-  
+
   public static Map<ColdpTerm, List<ColdpTerm>> RESOURCES = ImmutableMap.<ColdpTerm, List<ColdpTerm>>builder()
       .put(Reference, ImmutableList.of(
           ID,
@@ -173,9 +188,11 @@ public enum ColdpTerm implements Term, AlternativeNames {
           link)
       ).put(Name, ImmutableList.of(
           ID,
+          originalNameID,
           scientificName,
           authorship,
           rank,
+          uninomial,
           genus,
           specificEpithet,
           infraspecificEpithet,
@@ -184,12 +201,11 @@ public enum ColdpTerm implements Term, AlternativeNames {
           publishedInID,
           publishedInPage,
           publishedInYear,
-          original,
           code,
           status,
           link,
           remarks)
-      ).put(NameRel, ImmutableList.of(
+      ).put(NameRelation, ImmutableList.of(
           nameID,
           relatedNameID,
           type,
@@ -206,18 +222,22 @@ public enum ColdpTerm implements Term, AlternativeNames {
           ID,
           parentID,
           nameID,
-          referenceID,
-          status,
-          accordingTo,
+          appendedPhrase,
           accordingToID,
-          accordingToDate,
+          provisional,
+          referenceID,
+          scrutinizer,
+          scrutinizerDate,
           extinct,
+          temporalRangeStart,
+          temporalRangeEnd,
           lifezone,
-          link,
           species,
           section,
           subgenus,
           genus,
+          subtribe,
+          tribe,
           subfamily,
           family,
           superfamily,
@@ -227,18 +247,75 @@ public enum ColdpTerm implements Term, AlternativeNames {
           class_,
           subphylum,
           phylum,
-          kingdom)
+          kingdom,
+          link,
+          remarks)
       ).put(Synonym, ImmutableList.of(
+          ID,
           taxonID,
           nameID,
+          appendedPhrase,
+          accordingToID,
           status,
+          referenceID,
+          link,
           remarks)
-      ).put(Description, ImmutableList.of(
+      ).put(NameUsage, ImmutableList.of(
+          ID,
+          parentID,
+          originalNameID,
+          scientificName,
+          authorship,
+          rank,
+          uninomial,
+          genericName,
+          specificEpithet,
+          infraspecificEpithet,
+          cultivarEpithet,
+          appendedPhrase,
+          publishedInID,
+          publishedInPage,
+          publishedInYear,
+          code,
+          nameStatus,
+          appendedPhrase,
+          accordingToID,
+          status,
+          referenceID,
+          scrutinizer,
+          scrutinizerDate,
+          extinct,
+          temporalRangeStart,
+          temporalRangeEnd,
+          lifezone,
+          species,
+          section,
+          subgenus,
+          genus,
+          subtribe,
+          tribe,
+          subfamily,
+          family,
+          superfamily,
+          suborder,
+          order,
+          subclass,
+          class_,
+          subphylum,
+          phylum,
+          kingdom,
+          link,
+          remarks)
+      ).put(TaxonRelation, ImmutableList.of(
           taxonID,
-          category,
-          description,
-          language,
-          referenceID)
+          relatedTaxonID,
+          type,
+          referenceID,
+          remarks)
+      ).put(Treatment, ImmutableList.of(
+          taxonID,
+          document,
+          format)
       ).put(Distribution, ImmutableList.of(
           taxonID,
           area,

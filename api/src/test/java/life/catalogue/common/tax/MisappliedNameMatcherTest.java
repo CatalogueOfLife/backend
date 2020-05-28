@@ -19,7 +19,7 @@ public class MisappliedNameMatcherTest {
     n.setRank(Rank.SPECIES);
     n.setGenus("Abies");
     n.setSpecificEpithet("alba");
-    nat = new NameAccordingTo(n, null);
+    nat = new NameAccordingTo(n, null, null);
   }
 
   @Test

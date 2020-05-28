@@ -228,7 +228,7 @@ public class ColdpInterpreter extends InterpreterBase {
   
   private Classification interpretClassification(VerbatimRecord v) {
     Classification cl = new Classification();
-    for (ColdpTerm term : ColdpTerm.HIGHER_RANKS) {
+    for (ColdpTerm term : ColdpTerm.DENORMALIZED_RANKS) {
       cl.setByTerm(term, v.get(term));
     }
     return cl;

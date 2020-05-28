@@ -69,7 +69,7 @@ public class ColdpInserter extends NeoCsvInserter {
         inter::interpretName,
         n -> store.names().create(n) != null
     );
-    insertNameRelations(reader, ColdpTerm.NameRel,
+    insertNameRelations(reader, ColdpTerm.NameRelation,
         inter::interpretNameRelations,
         ColdpTerm.nameID,
         ColdpTerm.relatedNameID

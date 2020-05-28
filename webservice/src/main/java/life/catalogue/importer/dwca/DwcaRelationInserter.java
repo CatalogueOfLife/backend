@@ -224,7 +224,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
           name.setOrigin(createdOrigin);
           NeoName nn = new NeoName((name));
           Node n2 = store.names().create(nn);
-          return new RankedName(n2, name.getScientificName(), name.authorshipComplete(), name.getRank());
+          return new RankedName(n2, name.getScientificName(), name.buildAuthorship(), name.getRank());
         }
     );
   }
@@ -280,7 +280,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
         List<Node> matches = store.names().nodesByName(name.getScientificName());
         // remove other authors, but allow names without authors
         if (name.hasAuthorship()) {
-          matches.removeIf(n -> !Strings.isNullOrEmpty(NeoProperties.getAuthorship(n)) && !NeoProperties.getAuthorship(n).equalsIgnoreCase(name.authorshipComplete()));
+          matches.removeIf(n -> !Strings.isNullOrEmpty(NeoProperties.getAuthorship(n)) && !NeoProperties.getAuthorship(n).equalsIgnoreCase(name.buildAuthorship()));
         }
         
         // transform to usage nodes if requested, preferring taxon nodes over synonyms

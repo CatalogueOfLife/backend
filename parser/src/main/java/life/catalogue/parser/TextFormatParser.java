@@ -6,11 +6,11 @@ import life.catalogue.api.vocab.TreatmentFormat;
 /**
  * Parses area standards
  */
-public class TextFormatParser extends EnumParser<TreatmentFormat> {
-  public static final TextFormatParser PARSER = new TextFormatParser();
+public class TreatmentFormatParser extends EnumParser<TreatmentFormat> {
+  public static final TreatmentFormatParser PARSER = new TreatmentFormatParser();
   
-  public TextFormatParser() {
-    super("textformat.csv", TreatmentFormat.class);
+  public TreatmentFormatParser() {
+    super("treatmentformat.csv", TreatmentFormat.class);
   }
   
 }

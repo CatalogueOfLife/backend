@@ -1,24 +1,24 @@
 package life.catalogue.parser;
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
 import life.catalogue.api.vocab.TreatmentFormat;
 import org.junit.Test;
 
+import java.util.List;
+
 public class TreatmentFormatParserTest extends ParserTestBase<TreatmentFormat> {
   
   public TreatmentFormatParserTest() {
-    super(TextFormatParser.PARSER);
+    super(TreatmentFormatParser.PARSER);
   }
   
   @Test
   public void parse() throws Exception {
-    assertParse(TreatmentFormat.XML, "text");
-    assertParse(TreatmentFormat.XML, "plain_text");
+    assertParse(TreatmentFormat.XML, "xml");
+    assertParse(TreatmentFormat.XML, "Text/XML");
     assertParse(TreatmentFormat.HTML, "html");
     assertParse(TreatmentFormat.HTML, "text/html");
-    assertParse(TreatmentFormat.TAXON_X, "md");
+    assertParse(TreatmentFormat.TAXON_X, "TaxonX");
   }
   
   @Override

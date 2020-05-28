@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 public class ColdpReader extends CsvReader {
   private static final Logger LOG = LoggerFactory.getLogger(ColdpReader.class);
   private static Set<ColdpTerm> ID_SCHEMAS = ImmutableSet.of(ColdpTerm.Reference, ColdpTerm.Name, ColdpTerm.Taxon);
-  private static Set<ColdpTerm> NAMEID_SCHEMAS = ImmutableSet.of(ColdpTerm.Synonym, ColdpTerm.Taxon, ColdpTerm.NameRel);
+  private static Set<ColdpTerm> NAMEID_SCHEMAS = ImmutableSet.of(ColdpTerm.Synonym, ColdpTerm.Taxon, ColdpTerm.NameRelation);
   private static Set<ColdpTerm> TAXID_SCHEMAS = ImmutableSet.of(
       ColdpTerm.Synonym, ColdpTerm.Description, ColdpTerm.Distribution, ColdpTerm.Media, ColdpTerm.VernacularName
   );
@@ -109,8 +109,8 @@ public class ColdpReader extends CsvReader {
       // genus & specificEpithet must exist otherwise!
       require(ColdpTerm.Name, ColdpTerm.genus, ColdpTerm.specificEpithet);
     }
-    require(ColdpTerm.NameRel, ColdpTerm.relatedNameID);
-    require(ColdpTerm.NameRel, ColdpTerm.type);
+    require(ColdpTerm.NameRelation, ColdpTerm.relatedNameID);
+    require(ColdpTerm.NameRelation, ColdpTerm.type);
   
     requireSchema(ColdpTerm.Name);
   
@@ -118,7 +118,7 @@ public class ColdpReader extends CsvReader {
     if (!hasReferences()) {
       LOG.warn("No Reference mapped! Disallow referenceIDs");
       disallow(ColdpTerm.Name, ColdpTerm.publishedInID);
-      disallow(ColdpTerm.NameRel, ColdpTerm.publishedInID);
+      disallow(ColdpTerm.NameRelation, ColdpTerm.publishedInID);
       for (ColdpTerm rt : REFID_SCHEMAS) {
         disallow(rt, ColdpTerm.referenceID);
       }
@@ -134,7 +134,7 @@ public class ColdpReader extends CsvReader {
         LOG.warn("No taxon parentID mapped");
       }
   
-      if (taxon.hasAnyTerm(ColdpTerm.HIGHER_RANKS)) {
+      if (taxon.hasAnyTerm(ColdpTerm.DENORMALIZED_RANKS)) {
         mappingFlags.setDenormedClassificationMapped(true);
         LOG.info("Use denormalized taxon classification");
       } else {
