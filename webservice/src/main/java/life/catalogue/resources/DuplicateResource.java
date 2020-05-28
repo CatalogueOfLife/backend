@@ -1,20 +1,23 @@
 package life.catalogue.resources;
 
-import java.util.List;
-import java.util.Set;
+import life.catalogue.api.model.Duplicate;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.vocab.EntityType;
+import life.catalogue.api.vocab.MatchingMode;
+import life.catalogue.api.vocab.NameCategory;
+import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.dao.DuplicateDao;
+import org.apache.ibatis.session.SqlSession;
+import org.gbif.nameparser.api.Rank;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-
-import life.catalogue.api.vocab.*;
-import org.apache.ibatis.session.SqlSession;
-import life.catalogue.api.model.Duplicate;
-import life.catalogue.api.model.Page;
-import life.catalogue.dao.DuplicateDao;
-import org.gbif.nameparser.api.Rank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.List;
+import java.util.Set;
 
 @Path("/dataset/{datasetKey}/duplicate")
 @Produces(MediaType.APPLICATION_JSON)
@@ -32,6 +35,7 @@ public class DuplicateResource {
                               @QueryParam("entity") EntityType entity,
                               @QueryParam("mode") MatchingMode mode,
                               @QueryParam("minSize") Integer minSize,
+                              @QueryParam("sourceDatasetKey") Integer sourceDatasetKey,
                               @QueryParam("sectorKey") Integer sectorKey,
                               @QueryParam("category") NameCategory category,
                               @QueryParam("rank") Set<Rank> ranks,
@@ -41,11 +45,11 @@ public class DuplicateResource {
                               @QueryParam("rankDifferent") Boolean rankDifferent,
                               @QueryParam("codeDifferent") Boolean codeDifferent,
                               @QueryParam("withDecision") Boolean withDecision,
-                              @QueryParam("catalogueKey") @DefaultValue(Datasets.DRAFT_COL+"") int catalogueKey,
+                              @QueryParam("catalogueKey") Integer catalogueKey,
                               @Valid @BeanParam Page page, @Context SqlSession session) {
     DuplicateDao dao = new DuplicateDao(session);
     if (entity == null || entity == EntityType.NAME_USAGE) {
-        return dao.findUsages(mode, minSize, datasetKey, sectorKey, category, ranks, status, authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, catalogueKey, page);
+        return dao.findUsages(mode, minSize, datasetKey, sourceDatasetKey, sectorKey, category, ranks, status, authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, catalogueKey, page);
       
     } else if (entity == EntityType.NAME) {
         return dao.findNames(mode, minSize, datasetKey, category, ranks, authorshipDifferent, rankDifferent, codeDifferent, page);

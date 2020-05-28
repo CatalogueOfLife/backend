@@ -30,6 +30,7 @@ public interface DuplicateMapper {
   List<Duplicate.Mybatis> duplicates(@Param("mode") MatchingMode mode,
                              @Param("minSize") Integer minSize,
                              @Param("datasetKey") int datasetKey,
+                             @Param("sourceDatasetKey") Integer sourceDatasetKey,
                              @Param("sectorKey") Integer sectorKey,
                              @Param("category") NameCategory category,
                              @Param("ranks") Set<Rank> ranks,

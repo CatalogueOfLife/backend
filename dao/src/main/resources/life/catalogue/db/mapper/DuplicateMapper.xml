@@ -162,6 +162,9 @@
       AND ed.subject_dataset_key=#{datasetKey}
       AND ed.dataset_key=#{catalogueKey}
     </if>
+    <if test="sourceDatasetKey != null">
+      LEFT JOIN sector s ON s.id=u.sector_key
+    </if>
     <where>
       <include refid="commonWhereClause"/>
       <if test="status != null and !status.isEmpty()">
@@ -179,6 +182,10 @@
     <if test="sectorKey != null">
       <!-- make sure at least one name comes from the requested sector -->
       AND array_agg(u.sector_key) @> array[${sectorKey}]
+    </if>
+    <if test="sourceDatasetKey != null">
+      <!-- make sure at least one name comes from the requested source dataset -->
+      AND array_agg(s.subject_dataset_key) @> array[${sourceDatasetKey}]
     </if>
     <if test="withDecision != null">
       AND count(DISTINCT ed.id)
