@@ -160,15 +160,23 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
             continue;
           }
           n.setUninomial(origName.getInfragenericEpithet());
-        
-        } else {
+
+        } else if (r == Rank.SPECIES) {
           n.setGenus(origName.getGenus());
           n.setSpecificEpithet(origName.getSpecificEpithet());
+        } else {
+          // just to make sure
+          throw new IllegalStateException("Unknown implicit rank " + r);
         }
         n.setRank(r);
         n.setType(NameType.SCIENTIFIC);
         n.setSectorKey(sector.getId());
         n.updateNameCache();
+        // make sure we have a name: https://github.com/CatalogueOfLife/backend/issues/735
+        if (n.getScientificName() == null) {
+          LOG.warn("Could not create implicit name for rank {} from {}: {}", r, origName.getScientificName(), n);
+          continue;
+        }
         RanKnName rnn = new RanKnName(r, n.getScientificName());
         // did we create that implicit name before?
         if (implicits.containsKey(rnn)) {
