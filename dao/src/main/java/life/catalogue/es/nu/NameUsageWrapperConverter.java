@@ -1,58 +1,23 @@
 package life.catalogue.es.nu;
 
+import life.catalogue.api.model.*;
+import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.vocab.NameField;
+import life.catalogue.common.tax.SciNameNormalizer;
+import life.catalogue.es.*;
+import org.apache.commons.io.IOUtils;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
-import org.apache.commons.io.IOUtils;
-import life.catalogue.api.model.BareName;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.model.SimpleNameClassification;
-import life.catalogue.api.model.Synonym;
-import life.catalogue.api.model.Taxon;
-import life.catalogue.api.model.VernacularName;
-import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.api.vocab.NameField;
-import life.catalogue.common.tax.SciNameNormalizer;
-import life.catalogue.es.DownwardConverter;
-import life.catalogue.es.EsDecision;
-import life.catalogue.es.EsModule;
-import life.catalogue.es.EsMonomial;
-import life.catalogue.es.EsNameUsage;
-import life.catalogue.es.NameStrings;
-import static life.catalogue.api.vocab.NameField.BASIONYM_AUTHORS;
-import static life.catalogue.api.vocab.NameField.BASIONYM_EX_AUTHORS;
-import static life.catalogue.api.vocab.NameField.BASIONYM_YEAR;
-import static life.catalogue.api.vocab.NameField.CANDIDATUS;
-import static life.catalogue.api.vocab.NameField.CODE;
-import static life.catalogue.api.vocab.NameField.COMBINATION_AUTHORS;
-import static life.catalogue.api.vocab.NameField.COMBINATION_EX_AUTHORS;
-import static life.catalogue.api.vocab.NameField.COMBINATION_YEAR;
-import static life.catalogue.api.vocab.NameField.CULTIVAR_EPITHET;
-import static life.catalogue.api.vocab.NameField.GENUS;
-import static life.catalogue.api.vocab.NameField.INFRAGENERIC_EPITHET;
-import static life.catalogue.api.vocab.NameField.INFRASPECIFIC_EPITHET;
-import static life.catalogue.api.vocab.NameField.LINK;
-import static life.catalogue.api.vocab.NameField.NOM_STATUS;
-import static life.catalogue.api.vocab.NameField.NOTHO;
-import static life.catalogue.api.vocab.NameField.PUBLISHED_IN_ID;
-import static life.catalogue.api.vocab.NameField.PUBLISHED_IN_PAGE;
-import static life.catalogue.api.vocab.NameField.REMARKS;
-import static life.catalogue.api.vocab.NameField.SANCTIONING_AUTHOR;
-import static life.catalogue.api.vocab.NameField.SPECIFIC_EPITHET;
-import static life.catalogue.api.vocab.NameField.UNINOMIAL;
+
+import static life.catalogue.api.vocab.NameField.*;
 import static life.catalogue.common.collection.CollectionUtils.notEmpty;
 
 /**
@@ -66,6 +31,8 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
    * Whether or not to zip the stringified NameUsageWrapper.
    */
   public static final boolean ZIP_PAYLOAD = true;
+  // See https://github.com/CatalogueOfLife/backend/issues/200
+  private static final boolean INCLUDE_VERNACLUAR_NAMES = false;
 
   /**
    * Serializes, deflates and base64-encodes a NameUsageWrapper. NB you can't store raw byte arrays in Elasticsearch. You must base64-encode
@@ -245,10 +212,12 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
       BareName b = (BareName) nuw.getUsage();
       b.setDatasetKey(doc.getDatasetKey());
     }
-    if (notEmpty(doc.getVernacularNames())) {
+    if (INCLUDE_VERNACLUAR_NAMES && notEmpty(doc.getVernacularNames())) {
       for (int i = 0; i < doc.getVernacularNames().size(); ++i) {
         nuw.getVernacularNames().get(i).setName(doc.getVernacularNames().get(i));
       }
+    } else {
+      nuw.setVernacularNames(Collections.EMPTY_LIST);
     }
     if (notEmpty(doc.getDecisions())) {
       for (int i = 0; i < nuw.getDecisions().size(); ++i) {
