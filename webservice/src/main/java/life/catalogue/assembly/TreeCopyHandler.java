@@ -374,6 +374,11 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
       case REVIEWED:
         // good. nothing to do
     }
+    // propagate all notes to usage remarks
+    // https://github.com/CatalogueOfLife/backend/issues/740
+    if (ed.getNote() != null) {
+      u.addRemarks(ed.getNote());
+    }
   }
   
   private String lookupReference(String refID) {
