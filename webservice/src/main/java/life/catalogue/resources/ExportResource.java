@@ -27,7 +27,6 @@ public class ExportResource {
   }
 
   @POST
-  @Path("export")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public boolean export(@PathParam("datasetKey") int datasetKey, @Auth User user) {
     return exportAC(datasetKey, user);
