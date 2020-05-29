@@ -117,7 +117,7 @@
   <insert id="copyDataset" parameterType="map">
     INSERT INTO type_material_${newDatasetKey} (dataset_key,sector_key,<include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
     SELECT #{newDatasetKey}, s.id, <include refid="COLS_COPY"><property name="alias" value="t."/></include>, t.created, t.modified
-    FROM type_material_${datasetKey} t LEFT JOIN sector s ON s.copied_from_id=t.sector_key AND s.dataset_key=#{datasetKey}
+    FROM type_material_${datasetKey} t LEFT JOIN sector s ON s.copied_from_id=t.sector_key AND s.dataset_key=#{newDatasetKey}
   </insert>
 
   <update id="update" parameterType="TypeMaterial" keyProperty="id">

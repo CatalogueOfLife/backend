@@ -183,7 +183,7 @@
   <insert id="copyDataset" parameterType="map">
     INSERT INTO reference_${newDatasetKey} (dataset_key, sector_key, <include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified, doc)
     SELECT #{newDatasetKey}, s.id, <include refid="COLS_COPY"><property name="alias" value="r."/></include>, r.created, r.modified, doc
-    FROM reference_${datasetKey} r LEFT JOIN sector s ON s.copied_from_id=r.sector_key AND s.dataset_key=#{datasetKey}
+    FROM reference_${datasetKey} r LEFT JOIN sector s ON s.copied_from_id=r.sector_key AND s.dataset_key=#{newDatasetKey}
   </insert>
 
   <update id="update" parameterType="Reference" keyProperty="id">

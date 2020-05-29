@@ -55,6 +55,9 @@ public class AcExporterTest {
     AcExporter exp = new AcExporter(cfg, PgSetupRule.getSqlSessionFactory());
     // prepare metadata
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+
+      LookupTables.recreateTables(session.getConnection());
+
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       Dataset d = dm.get(Datasets.DRAFT_COL);
       d.setAuthorsAndEditors(List.of("Röskøv Y.", "Ower G.", "Orrell T.", "Nicolson D."));

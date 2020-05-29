@@ -1,3 +1,7 @@
+-- recreate export schema exp{{datasetKey}}
+DROP SCHEMA IF EXISTS exp{{datasetKey}} CASCADE;
+CREATE SCHEMA exp{{datasetKey}};
+SET search_path TO exp{{datasetKey}},public;
 
 CREATE TABLE __coverage AS
     -- ATTACH MODE
@@ -17,7 +21,7 @@ CREATE TABLE __coverage2 AS
 CREATE INDEX ON __coverage2 (dataset_key);
 
 
-
+-- databases
 COPY (
 (
 SELECT DISTINCT ON (d.key)

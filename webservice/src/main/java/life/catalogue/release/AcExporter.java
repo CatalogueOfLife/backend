@@ -6,10 +6,7 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.DatasetSearchRequest;
-import life.catalogue.api.vocab.Country;
-import life.catalogue.api.vocab.Language;
 import life.catalogue.common.io.CompressionUtil;
-import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.img.ImgConfig;
@@ -18,7 +15,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.gbif.nameparser.api.Rank;
 import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +23,6 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
@@ -40,7 +35,6 @@ import java.util.regex.Pattern;
 public class AcExporter {
   private static final Logger LOG = LoggerFactory.getLogger(AcExporter.class);
   private static final String EXPORT_SQL = "/exporter/ac-export.sql";
-  private static final String CLEANUP_SQL = "exporter/ac-export-cleanup.sql";
   private static final String COPY_WITH = "CSV HEADER NULL '\\N' DELIMITER E'\\t' QUOTE E'\\f' ENCODING 'UTF8' ";
   private static final Pattern COPY_START = Pattern.compile("^\\s*COPY\\s*\\(");
   private static final Pattern COPY_END   = Pattern.compile("^\\s*\\)\\s*TO\\s*'(.+)'");
@@ -80,14 +74,19 @@ public class AcExporter {
     try {
       LOG.info("Export catalogue {} to {}", catalogueKey, expDir.getAbsolutePath());
       // create csv files
-      try (PgConnection c = cfg.db.connect()) {
-        c.setAutoCommit(false);
-        executeSql(c, Resources.toString(CLEANUP_SQL));
-        setupTables(c);
+      PgConnection c = cfg.db.connect();
+      c.setAutoCommit(false);
+      try {
         InputStream sql = AcExporter.class.getResourceAsStream(EXPORT_SQL);
         executeAcExportSql(catalogueKey, c, new BufferedReader(new InputStreamReader(sql, StandardCharsets.UTF_8)), expDir);
+
       } catch (UnsupportedEncodingException e) {
         throw new RuntimeException(e);
+
+      } finally {
+        dropSchema(catalogueKey, c);
+        c.commit();
+        c.close();
       }
       // include images
       exportLogos(catalogueKey, expDir);
@@ -112,19 +111,23 @@ public class AcExporter {
       return arch;
       
     } finally {
-      LOG.info("Clean up temp files");
-      LOG.debug("Remove temp export directory {}", expDir.getAbsolutePath());
+      LOG.info("Remove temp export directory {}", expDir.getAbsolutePath());
       FileUtils.deleteQuietly(expDir);
-      LOG.debug("Remove temp tables & sequences from postgres");
-      LOG.info("Clean up tables & sequences from postgres");
-      try (PgConnection c = cfg.db.connect()) {
-        c.setAutoCommit(false);
-        String sql = Resources.toString(CLEANUP_SQL);
-        executeSql(c, sql);
-      } finally {
-        releaseLock();
-      }
       LOG.info("Export completed");
+      releaseLock();
+    }
+  }
+
+  private static String exportSchema(int datasetKey){
+    return "exp_"+datasetKey;
+  }
+
+  private static void dropSchema(int datasetKey, Connection con) throws SQLException {
+    final String schema = exportSchema(datasetKey);
+    LOG.info("Remove export schema {} with all tables & sequences from postgres", schema);
+    try (Statement stmnt = con.createStatement()) {
+      stmnt.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE", schema));
+      con.commit();
     }
   }
 
@@ -194,39 +197,6 @@ public class AcExporter {
       }
     }
     LOG.info(counter + " logos exported");
-  }
-  
-  private static void setupTables(Connection c) throws SQLException, IOException {
-    try (Statement st = c.createStatement()) {
-      st.execute("CREATE TABLE __ranks (key rank PRIMARY KEY, marker TEXT)");
-      st.execute("CREATE TABLE __country (code text PRIMARY KEY, title TEXT)");
-      st.execute("CREATE TABLE __language (code text PRIMARY KEY, title TEXT)");
-    }
-    try (PreparedStatement pstR = c.prepareStatement("INSERT INTO __ranks (key, marker) values (?::rank, ?)");
-         PreparedStatement pstC = c.prepareStatement("INSERT INTO __country (code, title) values (?, ?)");
-         PreparedStatement pstL = c.prepareStatement("INSERT INTO __language (code, title) values (?, ?)")
-    ) {
-      for (Rank r : Rank.values()) {
-        // exclude infrasp., see https://github.com/Sp2000/colplus-backend/issues/478
-        if (r.isUncomparable()) continue;
-        pstR.setString(1, r.name());
-        pstR.setString(2, r.getMarker());
-        pstR.execute();
-      }
-      for (Country cn : Country.values()) {
-        pstC.setString(1, cn.getIso2LetterCode());
-        pstC.setString(2, cn.getTitle());
-        pstC.execute();
-
-      }
-      for (Language l : Language.values()) {
-        // exclude infrasp., see https://github.com/Sp2000/colplus-backend/issues/478
-        pstL.setString(1, l.getCode());
-        pstL.setString(2, l.getTitle());
-        pstL.execute();
-      }
-      c.commit();
-    }
   }
   
   /**

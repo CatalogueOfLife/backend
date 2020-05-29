@@ -49,6 +49,7 @@ import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.parser.NameParser;
 import life.catalogue.release.AcExporter;
+import life.catalogue.release.LookupTables;
 import life.catalogue.release.ReleaseManager;
 import life.catalogue.resources.*;
 import life.catalogue.resources.parser.NameParserResource;
@@ -68,6 +69,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import javax.ws.rs.client.Client;
 import java.io.IOException;
+import java.sql.Connection;
 
 public class WsServer extends Application<WsServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(WsServer.class);
@@ -232,6 +234,11 @@ public class WsServer extends Application<WsServerConfig> {
     // diff
     DiffService diff = new DiffService(getSqlSessionFactory(), diDao.getTreeDao());
     env.healthChecks().register("diff", new DiffHealthCheck(diff));
+
+    // update db lookups
+    try (Connection c = mybatis.getConnection()) {
+      LookupTables.recreateTables(c);
+    }
 
     // daos
     DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), new DownloadUtil(httpClient), imgService, diDao, indexService, cfg.normalizer::scratchFile, bus);
