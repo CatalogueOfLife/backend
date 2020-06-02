@@ -4,6 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameRelationMapper;
+import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -17,9 +18,11 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameDao.class);
+  private final NameUsageIndexService indexService;
 
-  public NameDao(SqlSessionFactory factory) {
+  public NameDao(SqlSessionFactory factory, NameUsageIndexService indexService) {
     super(false, factory, NameMapper.class);
+    this.indexService = indexService;
   }
   
   public Name getBasionym(DSID<String> did) {
@@ -49,8 +52,10 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
     try (SqlSession session = factory.openSession()) {
       int cnt = session.getMapper(NameMapper.class).deleteOrphans(datasetKey, before);
       session.commit();
-      LOG.info("Remove {} orphan names from dataset {} by user {}", cnt, datasetKey, user);
+      LOG.info("Removed {} orphan names from dataset {} by user {}", cnt, datasetKey, user);
       // also remove from ES
+      int cnt2 = indexService.deleteBareNames(datasetKey);
+      LOG.info("Removed {} bare names from ES index for dataset {}", cnt2, datasetKey);
       return cnt;
     }
   }

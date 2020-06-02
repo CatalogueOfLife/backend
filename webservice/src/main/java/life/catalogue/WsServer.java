@@ -244,7 +244,7 @@ public class WsServer extends Application<WsServerConfig> {
     DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), new DownloadUtil(httpClient), imgService, diDao, indexService, cfg.normalizer::scratchFile, bus);
     DecisionDao decdao = new DecisionDao(getSqlSessionFactory(), indexService);
     EstimateDao edao = new EstimateDao(getSqlSessionFactory());
-    NameDao ndao = new NameDao(getSqlSessionFactory());
+    NameDao ndao = new NameDao(getSqlSessionFactory(), indexService);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory());
     SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService);
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory());

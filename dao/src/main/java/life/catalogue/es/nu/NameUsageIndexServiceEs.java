@@ -136,6 +136,14 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
 
   @Override
+  public int deleteBareNames(int datasetKey) {
+    int cnt = EsUtil.deleteBareNames(client, esConfig.nameUsage.name, datasetKey);
+    LOG.info("Deleted all {} bare name documents from dataset {} from index {}", cnt, datasetKey, esConfig.nameUsage.name);
+    EsUtil.refreshIndex(client, esConfig.nameUsage.name);
+    return cnt;
+  }
+
+  @Override
   public void deleteSubtree(DSID<String> root) {
     int cnt = EsUtil.deleteSubtree(client, esConfig.nameUsage.name, root);
     LOG.info("Deleted {} documents for entire subtree of root taxon {} from index {}", cnt, root, esConfig.nameUsage.name);

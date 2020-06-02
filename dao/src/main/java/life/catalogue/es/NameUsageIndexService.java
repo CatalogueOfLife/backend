@@ -38,6 +38,12 @@ public interface NameUsageIndexService {
   void deleteSector(int sectorKey);
 
   /**
+   * Remove all bare name documents for the given dataset from the index.
+   * @return number of removed bare names
+   */
+  int deleteBareNames(int datasetKey);
+
+  /**
    * Removes a given root taxon and all its descendants (taxa & synonyms) from ElasticSearch.
    */
   void deleteSubtree(DSID<String> root);
@@ -106,6 +112,12 @@ public interface NameUsageIndexService {
       @Override
       public void deleteSubtree(DSID<String> root) {
         LOG.info("No Elastic Search configured, pass through deletion of subtree starting with taxon {}", root);
+      }
+
+      @Override
+      public int deleteBareNames(int datasetKey) {
+        LOG.info("No Elastic Search configured, pass through dataset {}", datasetKey);
+        return 0;
       }
 
       @Override

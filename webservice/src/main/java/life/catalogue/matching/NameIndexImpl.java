@@ -14,6 +14,7 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.dao.NameDao;
 import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.importer.IdGenerator;
 import life.catalogue.matching.authorship.AuthorComparator;
 import org.apache.ibatis.session.SqlSession;
@@ -56,27 +57,27 @@ public class NameIndexImpl implements NameIndex {
    * @throws IllegalStateException when db is in a bad state
    */
   public NameIndexImpl(NameIndexStore store, AuthorshipNormalizer normalizer, int datasetKey, SqlSessionFactory sqlFactory) {
-      this.store = store;
-      this.authComp = new AuthorComparator(normalizer);
-      this.datasetKey = datasetKey;
-      this.sqlFactory = Preconditions.checkNotNull(sqlFactory);
-      dao = new NameDao(sqlFactory);
-      int storeSize = store.count();
-      if (storeSize == 0) {
+    this.store = store;
+    this.authComp = new AuthorComparator(normalizer);
+    this.datasetKey = datasetKey;
+    this.sqlFactory = Preconditions.checkNotNull(sqlFactory);
+    dao = new NameDao(sqlFactory, NameUsageIndexService.passThru());
+    int storeSize = store.count();
+    if (storeSize == 0) {
+      loadFromPg();
+    } else {
+      // verify postgres and store match up - otherwise trust postgres
+      long pgCount = countPg();
+      if (pgCount != storeSize) {
+        LOG.warn("Existing name index contains {} names, but postgres has {}. Trust postgres", storeSize, pgCount);
         loadFromPg();
       } else {
-        // verify postgres and store match up - otherwise trust postgres
-        long pgCount = countPg();
-        if (pgCount != storeSize) {
-          LOG.warn("Existing name index contains {} names, but postgres has {}. Trust postgres", storeSize, pgCount);
-          loadFromPg();
-        } else {
-          counter.set(storeSize);
-        }
+        counter.set(storeSize);
       }
-      LOG.info("Started name index with {} names", counter.get());
-      idGen = new IdGenerator(counter::incrementAndGet);
     }
+    LOG.info("Started name index with {} names", counter.get());
+    idGen = new IdGenerator(counter::incrementAndGet);
+  }
   
   private int countPg() {
     try (SqlSession s = sqlFactory.openSession()) {

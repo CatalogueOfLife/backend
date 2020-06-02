@@ -28,7 +28,7 @@ import static life.catalogue.api.TestEntityGenerator.*;
 import static org.junit.Assert.*;
 
 public class TaxonDaoTest extends DaoTestBase {
-  NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory());
+  NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
   TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
   static int user = TestEntityGenerator.USER_EDITOR.getKey();
   
