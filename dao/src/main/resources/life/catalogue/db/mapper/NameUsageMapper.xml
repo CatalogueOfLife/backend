@@ -45,15 +45,26 @@
     </include>
   </sql>
 
+
   <sql id="COLS">
     dataset_key,
     sector_key,
-    <include refid="life.catalogue.db.mapper.NameUsageMapper.COLS_COPY">
-      <property name="alias" value=""/>
-    </include>
+    <!-- from COLS_COPY shared part -->
+    verbatim_key,
+    parent_id,
+    name_id,
+    status,
+    is_synonym,
+    origin,
+    according_to,
+    reference_ids,
+    remarks,
+    created_by,
+    modified_by
   </sql>
 
   <sql id="COLS_COPY">
+    <!-- shared -->
     ${alias}verbatim_key,
     ${alias}parent_id,
     ${alias}name_id,
@@ -64,7 +75,14 @@
     ${alias}reference_ids,
     ${alias}remarks,
     ${alias}created_by,
-    ${alias}modified_by
+    ${alias}modified_by,
+    <!-- from TAXON extras -->
+    ${alias}according_to_date,
+    ${alias}extinct,
+    ${alias}temporal_range_start,
+    ${alias}temporal_range_end,
+    ${alias}lifezones,
+    ${alias}link
   </sql>
 
   <sql id="PROPS">
@@ -185,8 +203,8 @@
 
   <insert id="copyDataset" parameterType="map">
     INSERT INTO name_usage_${newDatasetKey} (id, dataset_key, sector_key, <include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
-    SELECT n.id, #{newDatasetKey}, s.id, <include refid="COLS_COPY"><property name="alias" value="n."/></include>, n.created, n.modified
-    FROM name_usage_${datasetKey} n LEFT JOIN sector s ON s.copied_from_id=n.sector_key AND s.dataset_key=#{newDatasetKey}
+    SELECT u.id, #{newDatasetKey}, s.id, <include refid="COLS_COPY"><property name="alias" value="u."/></include>, u.created, u.modified
+    FROM name_usage_${datasetKey} u LEFT JOIN sector s ON s.copied_from_id=u.sector_key AND s.dataset_key=#{newDatasetKey}
   </insert>
 
   <select id="processDataset" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
