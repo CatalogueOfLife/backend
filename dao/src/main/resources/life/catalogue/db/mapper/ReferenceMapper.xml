@@ -223,26 +223,30 @@
     WHERE sector_key = #{sectorKey}
   </update>
 
+  <sql id="tmpRefIdTable">
+    CREATE TEMP TABLE IF NOT EXISTS ref_fks_${partition} AS
+    SELECT published_in_id AS id FROM name_${partition} WHERE published_in_id IS NOT NULL
+      UNION
+    SELECT published_in_id FROM name_rel_${partition} WHERE published_in_id IS NOT NULL
+      UNION
+    SELECT reference_id FROM type_material_${partition} WHERE reference_id IS NOT NULL
+      UNION
+    SELECT unnest(reference_ids) FROM name_usage_${partition} WHERE reference_ids IS NOT NULL
+      UNION
+    SELECT reference_id FROM vernacular_name_${partition} WHERE reference_id IS NOT NULL
+      UNION
+    SELECT reference_id FROM media_${partition} WHERE reference_id IS NOT NULL
+      UNION
+    SELECT reference_id FROM distribution_${partition} WHERE reference_id IS NOT NULL
+      UNION
+    SELECT reference_id FROM estimate WHERE dataset_key = #{datasetKey} AND reference_id IS NOT NULL;
+
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_ref_fks_${partition} ON ref_fks_${partition} (id);
+  </sql>
+
   <sql id="orphanWhere">
     WHERE NOT EXISTS (
-    SELECT NULL FROM name_${partition} WHERE r.id=published_in_id
-    UNION
-    SELECT NULL FROM name_rel_${partition} WHERE r.id = published_in_id
-    UNION
-    SELECT NULL FROM type_material_${partition} WHERE r.id=reference_id
-    UNION
-    SELECT NULL FROM name_usage_${partition} WHERE reference_ids @> ARRAY[r.id]
-    UNION
-    SELECT NULL FROM vernacular_name_${partition} WHERE r.id = reference_id
-    UNION
-    SELECT NULL FROM media_${partition} WHERE r.id = reference_id
-    UNION
-    SELECT NULL FROM distribution_${partition} WHERE r.id = reference_id
-    UNION
-    SELECT NULL FROM distribution_${partition} WHERE r.id = reference_id
-    UNION
-    SELECT NULL FROM estimate WHERE dataset_key = #{datasetKey} AND r.id = reference_id
-    LIMIT 1
+      SELECT NULL FROM ref_fks_${partition} rfk WHERE r.id=rfk.id
     )
     <if test="before!=null">
       AND r.modified &lt; #{before}
@@ -251,26 +255,24 @@
 
   <delete id="deleteOrphans" parameterType="map">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    <include refid="tmpRefIdTable"/>
     DELETE FROM reference_${partition} r
     <include refid="orphanWhere"/>
   </delete>
 
   <select id="listOrphans" parameterType="map" resultMap="referenceResultMap">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    <include refid="tmpRefIdTable"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     <include refid="orphanWhere"/>
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="processDataset" parameterType="map" resultMap="referenceResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
   </select>
 
 </mapper>
