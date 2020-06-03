@@ -1,21 +1,20 @@
 
 package life.catalogue.matching;
 
-import java.io.File;
-import java.io.IOException;
-
-import javax.annotation.Nullable;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.tax.AuthorshipNormalizer;
+import org.apache.commons.io.FileUtils;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.mapdb.DBException;
 import org.mapdb.DBMaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.IOException;
 
 public class NameIndexFactory {
   private static final Logger LOG = LoggerFactory.getLogger(NameIndexFactory.class);
@@ -78,7 +77,7 @@ public class NameIndexFactory {
     try {
       store = new NameIndexMapDBStore(maker);
     } catch (DBException.DataCorruption e) {
-      LOG.warn("NamesIndex mapdb was corrupt. Remove and rebuild index from scratch", e);
+      LOG.warn("NamesIndex mapdb was corrupt. Remove and rebuild index from scratch. {}", e.getMessage());
       location.delete();
       store = new NameIndexMapDBStore(maker);
     }

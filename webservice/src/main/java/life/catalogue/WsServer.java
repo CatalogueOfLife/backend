@@ -49,7 +49,6 @@ import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.parser.NameParser;
 import life.catalogue.release.AcExporter;
-import life.catalogue.release.LookupTables;
 import life.catalogue.release.ReleaseManager;
 import life.catalogue.resources.*;
 import life.catalogue.resources.parser.NameParserResource;
@@ -237,7 +236,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // update db lookups
     try (Connection c = mybatis.getConnection()) {
-      LookupTables.recreateTables(c);
+      //LookupTables.recreateTables(c);
     }
 
     // daos

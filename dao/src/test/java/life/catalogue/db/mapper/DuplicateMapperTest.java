@@ -80,7 +80,7 @@ public class DuplicateMapperTest {
   
   @Test
   public void usagesWithDecisions() {
-    List<Duplicate.UsageDecision> res = mapper.usagesByIds(datasetKey, Lists.immutableListOf("45", "46"));
+    List<Duplicate.UsageDecision> res = mapper.usagesByIds(datasetKey, Datasets.DRAFT_COL, Lists.immutableListOf("45", "46"));
     assertEquals(2, res.size());
     for (Duplicate.UsageDecision u : res) {
       assertFalse(u.getClassification().isEmpty());
@@ -97,7 +97,7 @@ public class DuplicateMapperTest {
     d1.setMode(EditorialDecision.Mode.UPDATE);
     dm.create(d1);
     
-    res = mapper.usagesByIds(datasetKey, Lists.immutableListOf("45", "46"));
+    res = mapper.usagesByIds(datasetKey, Datasets.DRAFT_COL, Lists.immutableListOf("45", "46"));
     assertEquals(2, res.size());
     for (Duplicate.UsageDecision u : res) {
       assertFalse(u.getClassification().isEmpty());
@@ -117,7 +117,7 @@ public class DuplicateMapperTest {
 
   @Test
   public void usagesByIds() {
-    List<Duplicate.UsageDecision> res = mapper.usagesByIds(datasetKey, Lists.immutableListOf("55", "46"));
+    List<Duplicate.UsageDecision> res = mapper.usagesByIds(datasetKey, Datasets.DRAFT_COL, Lists.immutableListOf("55", "46"));
     assertEquals(2, res.size());
     for (Duplicate.UsageDecision u : res) {
       assertFalse(u.getClassification().isEmpty());

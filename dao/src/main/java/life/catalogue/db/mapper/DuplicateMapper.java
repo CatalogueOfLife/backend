@@ -40,12 +40,12 @@ public interface DuplicateMapper {
                              @Param("rankDifferent") Boolean rankDifferent,
                              @Param("codeDifferent") Boolean codeDifferent,
                              @Param("withDecision") Boolean withDecision,
-                             @Param("catalogueKey") Integer catalogueKey,
+                             @Param("projectKey") Integer projectKey,
                              @Param("page") Page page);
   
   /**
    * @param ids usage ids to return usage decisions for
    */
-  List<Duplicate.UsageDecision> usagesByIds(@Param("datasetKey") int datasetKey, @Param("ids") Collection<String> ids);
+  List<Duplicate.UsageDecision> usagesByIds(@Param("datasetKey") int datasetKey, @Param("projectKey") Integer projectKey, @Param("ids") Collection<String> ids);
   
 }

@@ -49,22 +49,22 @@ public class DuplicateDao {
    * @param rankDifferent
    * @param codeDifferent
    * @param withDecision optionally filter duplicates to have or do not already have a decision
-   * @param catalogueKey the catalogue key the decisions are for. Required if withDecision is given
+   * @param projectKey the catalogue key the decisions are for. Required if withDecision is given
    */
   public List<Duplicate> findUsages(MatchingMode mode, Integer minSize, int datasetKey, Integer sourceDatasetKey, Integer sectorKey, NameCategory category, Set<Rank> ranks,
                               Set<TaxonomicStatus> status, Boolean authorshipDifferent, Boolean acceptedDifferent, Boolean rankDifferent,
-                                    Boolean codeDifferent, Boolean withDecision, Integer catalogueKey, Page page) {
-    return find(false, mode, minSize, datasetKey, sourceDatasetKey, sectorKey, category, ranks, status, authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, catalogueKey, page);
+                                    Boolean codeDifferent, Boolean withDecision, Integer projectKey, Page page) {
+    return find(false, mode, minSize, datasetKey, sourceDatasetKey, sectorKey, category, ranks, status, authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, projectKey, page);
   }
   
   private List<Duplicate> find(boolean compareNames, MatchingMode mode, Integer minSize, int datasetKey, Integer sourceDatasetKey, Integer sectorKey, NameCategory category, Set<Rank> ranks,
                               Set<TaxonomicStatus> status, Boolean authorshipDifferent, Boolean acceptedDifferent,
-                               Boolean rankDifferent, Boolean codeDifferent, Boolean withDecision, Integer catalogueKey, Page page) {
+                               Boolean rankDifferent, Boolean codeDifferent, Boolean withDecision, Integer projectKey, Page page) {
     mode = ObjectUtils.defaultIfNull(mode, MatchingMode.STRICT);
     minSize = ObjectUtils.defaultIfNull(minSize, 2);
     Preconditions.checkArgument(minSize > 1, "minimum group size must at least be 2");
     if (withDecision != null) {
-      Preconditions.checkArgument(catalogueKey != null, "catalogueKey is required if parameter withDecision is used");
+      Preconditions.checkArgument(projectKey != null, "projectKey is required if parameter withDecision is used");
     }
     page = ObjectUtils.defaultIfNull(page, new Page());
     // load all duplicate usages or names
@@ -72,7 +72,7 @@ public class DuplicateDao {
     if (compareNames) {
       dupsTmp = mapper.duplicateNames(mode, minSize, datasetKey, category, ranks, authorshipDifferent, rankDifferent, codeDifferent, page);
     } else {
-      dupsTmp = mapper.duplicates(mode, minSize, datasetKey, sourceDatasetKey, sectorKey, category, ranks, status, authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, catalogueKey, page);
+      dupsTmp = mapper.duplicates(mode, minSize, datasetKey, sourceDatasetKey, sectorKey, category, ranks, status, authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, projectKey, page);
     }
     if (dupsTmp.isEmpty()) {
       return Collections.EMPTY_LIST;
@@ -88,7 +88,7 @@ public class DuplicateDao {
       usages = mapper.namesByIds(datasetKey, ids).stream()
           .collect(Collectors.toMap(d -> d.getUsage().getName().getId(), Function.identity()));
     } else {
-      usages = mapper.usagesByIds(datasetKey, ids).stream()
+      usages = mapper.usagesByIds(datasetKey, projectKey, ids).stream()
           .collect(Collectors.toMap(d -> d.getUsage().getId(), Function.identity()));
     }
     
