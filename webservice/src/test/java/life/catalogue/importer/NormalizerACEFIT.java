@@ -64,7 +64,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
       NeoUsage acc = accepted(t.node);
       assertEquals(1, acc.vernacularNames.size());
       assertEquals(2, acc.distributions.size());
-      assertEquals(0, acc.treatment.size());
+      assertNull(acc.treatment);
       assertEquals(0, acc.media.size());
       assertEquals(1, acc.usage.getReferenceIds().size());
       

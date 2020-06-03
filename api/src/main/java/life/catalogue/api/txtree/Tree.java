@@ -18,11 +18,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Simple class to keep a taxonomy of names.
- * We use this to compare nub build outputs with a very simple text based tree format that is very easy to read.
+ * Simple class to keep a taxonomy of names as can be expressed with the text-tree format:
+ * https://github.com/gbif/text-tree
+ * It is a very simple text based tree format that is very easy to read.
  * Especially useful for larger tree snippets.
- *
- * Iterating over the tree goes in
  */
 public class Tree implements Iterable<TreeNode> {
   public static final String SYNONYM_SYMBOL = "*";

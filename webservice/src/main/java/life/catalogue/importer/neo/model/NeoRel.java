@@ -6,7 +6,7 @@ import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.Objects;
 
-public class NeoNameRel implements VerbatimEntity, Referenced {
+public class NeoRel implements VerbatimEntity, Referenced {
   private Integer verbatimKey;
   private RelType type;
   private String referenceId;
@@ -52,7 +52,7 @@ public class NeoNameRel implements VerbatimEntity, Referenced {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    NeoNameRel that = (NeoNameRel) o;
+    NeoRel that = (NeoRel) o;
     return Objects.equals(verbatimKey, that.verbatimKey) &&
         type == that.type &&
         Objects.equals(referenceId, that.referenceId) &&

@@ -110,7 +110,7 @@ public class NameParserResource {
     private Set<Issue> issues;
 
     public NATIssue(NameAccordingTo nat, Set<Issue> issues) {
-      super(nat.getName(), nat.getAccordingTo());
+      super(nat.getName(), nat.getAccordingTo(), nat.getPublishedIn());
       this.issues = issues;
     }
 

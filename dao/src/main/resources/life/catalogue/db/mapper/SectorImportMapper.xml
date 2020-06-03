@@ -130,13 +130,19 @@
   <select id="countMedia" resultType="integer">
     SELECT count(*)
     FROM media_${datasetKey} x
-    JOIN name_usage_${datasetKey} t ON t.id=x.taxon_id
+      JOIN name_usage_${datasetKey} t ON t.id=x.taxon_id
     WHERE t.sector_key=${sectorKey}
   </select>
   <select id="countVernacular" resultType="integer">
     SELECT count(*)
     FROM vernacular_name_${datasetKey} x
-    JOIN name_usage_${datasetKey} t ON t.id=x.taxon_id
+      JOIN name_usage_${datasetKey} t ON t.id=x.taxon_id
+    WHERE t.sector_key=${sectorKey}
+  </select>
+  <select id="countTreatment" resultType="integer">
+    SELECT count(*)
+    FROM treatment_${datasetKey} x
+      JOIN name_usage_${datasetKey} t ON t.id=x.taxon_id
     WHERE t.sector_key=${sectorKey}
   </select>
 
@@ -202,6 +208,13 @@
     FROM name_rel_${datasetKey} r
     JOIN name_${datasetKey} n ON r.name_id=n.id
     WHERE n.sector_key=${sectorKey}
+    GROUP BY r.type
+  </select>
+  <select id="countTaxonRelationsByType" resultType="StringCount">
+    SELECT r.type AS key, count(*) AS count
+    FROM taxon_rel_${datasetKey} r
+      JOIN name_usage_${datasetKey} u ON r.taxon_id=u.id
+    WHERE u.sector_key=${sectorKey}
     GROUP BY r.type
   </select>
   <select id="countNamesByStatus" resultType="StringCount">

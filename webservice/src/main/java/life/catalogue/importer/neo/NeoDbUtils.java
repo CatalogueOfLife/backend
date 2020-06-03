@@ -1,15 +1,15 @@
 package life.catalogue.importer.neo;
 
-import java.util.Map;
-
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
-import life.catalogue.importer.neo.model.Labels;
-import life.catalogue.importer.neo.model.NeoNameRel;
-import life.catalogue.importer.neo.model.NeoProperties;
-import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.api.model.Name;
+import life.catalogue.importer.neo.model.Labels;
+import life.catalogue.importer.neo.model.NeoProperties;
+import life.catalogue.importer.neo.model.NeoRel;
+import life.catalogue.importer.neo.model.RelType;
 import org.neo4j.graphdb.*;
+
+import java.util.Map;
 
 /**
  * Static utils for the NeoDb class
@@ -121,11 +121,11 @@ public class NeoDbUtils {
     return props;
   }
   
-  public static Map<String, Object> neo4jProps(NeoNameRel rel) {
+  public static Map<String, Object> neo4jProps(NeoRel rel) {
     return neo4jProps(rel, Maps.newHashMap());
   }
   
-  public static <T extends Map<String, Object>> T neo4jProps(NeoNameRel rel, T props) {
+  public static <T extends Map<String, Object>> T neo4jProps(NeoRel rel, T props) {
     putIfNotNull(props, NeoProperties.VERBATIM_KEY, rel.getVerbatimKey());
     putIfNotNull(props, NeoProperties.REF_ID, rel.getReferenceId());
     putIfNotNull(props, NeoProperties.NOTE, rel.getRemarks());

@@ -6,7 +6,7 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.importer.InterpreterBase;
 import life.catalogue.importer.MappingFlags;
 import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.model.NeoNameRel;
+import life.catalogue.importer.neo.model.NeoRel;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.reference.ReferenceFactory;
@@ -73,8 +73,8 @@ public class DwcInterpreter extends InterpreterBase {
     return Optional.empty();
   }
   
-  Optional<NeoNameRel> interpretNameRelations(VerbatimRecord rec) {
-    NeoNameRel rel = new NeoNameRel();
+  Optional<NeoRel> interpretNameRelations(VerbatimRecord rec) {
+    NeoRel rel = new NeoRel();
     SafeParser<NomRelType> type = SafeParser.parse(NomRelTypeParser.PARSER, rec.get(ColDwcTerm.relationType));
     if (type.isPresent()) {
       rel.setType(RelType.from(type.get()));
@@ -136,15 +136,7 @@ public class DwcInterpreter extends InterpreterBase {
         DwcTerm.countryCode, DwcTerm.country
     );
   }
-  
-  List<Treatment> interpretDescription(VerbatimRecord rec) {
-    return interpretDescription(rec, this::setReference,
-        DcTerm.description,
-        DcTerm.type,
-        DcTerm.format,
-        DcTerm.language);
-  }
-  
+
   List<Media> interpretMedia(VerbatimRecord rec) {
     return interpretMedia(rec, this::setReference,
         DcTerm.type,
@@ -192,9 +184,9 @@ public class DwcInterpreter extends InterpreterBase {
         v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), v.get(DwcTerm.scientificName),
         v.get(DwcTerm.scientificNameAuthorship),
         v.getFirst(GbifTerm.genericName, DwcTerm.genus), v.get(DwcTerm.subgenus),
-        v.get(DwcTerm.specificEpithet), v.get(DwcTerm.infraspecificEpithet), null, null,
+        v.get(DwcTerm.specificEpithet), v.get(DwcTerm.infraspecificEpithet), null,
         v.get(DwcTerm.nomenclaturalCode), v.get(DwcTerm.nomenclaturalStatus),
-        v.getRaw(DcTerm.references), v.get(DwcTerm.nomenclaturalStatus), v);
+        v.getRaw(DcTerm.references), null, v);
     
     // publishedIn
     if (opt.isPresent()) {

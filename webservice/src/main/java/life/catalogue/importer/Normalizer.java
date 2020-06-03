@@ -157,7 +157,7 @@ public class Normalizer implements Callable<Boolean> {
           require(s, s.getOrigin(), "origin");
 
           // no vernaculars, distribution etc
-          check(s, u.treatment.isEmpty(), "no descriptions");
+          check(s, u.treatment == null, "no treatments");
           check(s, u.distributions.isEmpty(), "no distributions");
           check(s, u.media.isEmpty(), "no media");
           check(s, u.vernacularNames.isEmpty(), "no vernacular names");
@@ -350,7 +350,7 @@ public class Normalizer implements Callable<Boolean> {
           Node n = store.getNeo().getNodeById(u.node.getId());
           Name name = store.names().objByNode(NeoProperties.getNameNode(n)).name;
           boolean ambigous = n.getDegree(RelType.SYNONYM_OF, Direction.OUTGOING) > 1;
-          boolean misapplied = MisappliedNameMatcher.isMisappliedName(new NameAccordingTo(name, syn.getAccordingToId()));
+          boolean misapplied = MisappliedNameMatcher.isMisappliedName(new NameAccordingTo(name, syn.getAccordingToId(), null));
           TaxonomicStatus status = syn.getStatus();
 
           if (status == TaxonomicStatus.MISAPPLIED) {
@@ -395,7 +395,6 @@ public class Normalizer implements Callable<Boolean> {
       store.usages().all().forEach(u -> {
         if (u.isSynonym()) {
           if (!u.distributions.isEmpty() ||
-              !u.treatment.isEmpty() ||
               !u.media.isEmpty() ||
               !u.vernacularNames.isEmpty()
           ) {
@@ -405,7 +404,6 @@ public class Normalizer implements Callable<Boolean> {
             Traversals.ACCEPTED.traverse(n).nodes().forEach( accNode -> {
               NeoUsage acc = store.usages().objByNode(accNode);
               acc.distributions.addAll(u.distributions);
-              acc.treatment.addAll(u.treatment);
               acc.media.addAll(u.media);
               acc.vernacularNames.addAll(u.vernacularNames);
               store.usages().update(acc);
@@ -413,7 +411,6 @@ public class Normalizer implements Callable<Boolean> {
             });
 
             u.distributions.clear();
-            u.treatment.clear();
             u.media.clear();
             u.vernacularNames.clear();
             store.addIssues(u.usage, Issue.SYNONYM_DATA_MOVED);

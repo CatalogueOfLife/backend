@@ -36,7 +36,6 @@ public interface DatasetImportMapper extends DatasetProcessable<DatasetImport> {
   
   void update(@Param("imp") DatasetImport datasetImport);
 
-  Integer countDescription(@Param("key") int datasetKey);
   Integer countDistribution(@Param("key") int datasetKey);
   Integer countMedia(@Param("key") int datasetKey);
   Integer countName(@Param("key") int datasetKey);
@@ -44,6 +43,7 @@ public interface DatasetImportMapper extends DatasetProcessable<DatasetImport> {
   Integer countReference(@Param("key") int datasetKey);
   Integer countTaxon(@Param("key") int datasetKey);
   Integer countSynonym(@Param("key") int datasetKey);
+  Integer countTreatment(@Param("key") int datasetKey);
   Integer countVerbatim(@Param("key") int datasetKey);
   Integer countVernacular(@Param("key") int datasetKey);
   
@@ -58,6 +58,7 @@ public interface DatasetImportMapper extends DatasetProcessable<DatasetImport> {
   List<StringCount> countNamesByRank(@Param("key") int datasetKey);
   List<StringCount> countTypeMaterialByStatus(@Param("key") int datasetKey);
   List<StringCount> countTaxaByRank(@Param("key") int datasetKey);
+  List<StringCount> countTaxonRelationsByType(@Param("key") int datasetKey);
   List<StringCount> countVerbatimByType(@Param("key") int datasetKey);
   List<StringCount> countVerbatimTerms(@Param("key") int datasetKey, @Param("rowType") Term rowType);
   List<StringCount> countVernacularsByLanguage(@Param("key") int datasetKey);

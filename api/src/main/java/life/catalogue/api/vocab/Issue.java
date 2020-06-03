@@ -219,7 +219,7 @@ public enum Issue {
   GEOTIME_INVALID(NAME_USAGE, Level.WARNING,
       "The geochronological time given cannot be interpreted"),
 
-  ACCORDING_TO_DATE_INVALID(NAME_USAGE, Level.ERROR,
+  SCRUTINIZER_DATE_INVALID(NAME_USAGE, Level.ERROR,
       "acef:LTSDate cannot be interpreted into a date"),
   
   CHAINED_SYNONYM(NAME_USAGE, Level.ERROR,

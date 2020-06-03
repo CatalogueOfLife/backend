@@ -27,9 +27,9 @@ public class InterpreterBaseTest {
   public void interpretName() throws Exception {
     InterpreterBase ib = new InterpreterBase(new DatasetSettings(), null, null);
     VerbatimRecord v = new VerbatimRecord();
-    Optional<NameAccordingTo> nat = ib.interpretName(true, "1", "species", "Picea arlba", "Mill. and Desbrochers de Loges, 1881", "Abies", null, "alba", null, null, "s.l.", null, null, null, null, v);
+    Optional<NameAccordingTo> nat = ib.interpretName(true, "1", "species", "Picea arlba", "Mill. and Desbrochers de Loges, 1881", "Abies", null, "alba", null, null, null, null, null, null, v);
     Name n = nat.get().getName();
-    assertEquals("Abies alba s.l.", n.getScientificName());
+    assertEquals("Abies alba", n.getScientificName());
     assertEquals("Abies", n.getGenus());
     assertEquals("alba", n.getSpecificEpithet());
     assertEquals("Mill. & Desbrochers de Loges, 1881", n.getAuthorship());

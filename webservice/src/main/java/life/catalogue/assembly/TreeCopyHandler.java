@@ -316,8 +316,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
             n.setCombinationAuthorship(nn.getCombinationAuthorship());
             n.setBasionymAuthorship(nn.getBasionymAuthorship());
             n.setSanctioningAuthor(nn.getSanctioningAuthor());
-            n.setAppendedPhrase(nn.getAppendedPhrase());
-            
+
           } else if (n2.getAuthorship() != null) {
             // no full name, just changing authorship
             n.setAuthorship(n2.getAuthorship());

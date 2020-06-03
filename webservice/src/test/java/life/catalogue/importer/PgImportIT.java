@@ -612,7 +612,7 @@ public class PgImportIT {
     }
   
     DatasetImport di = metrics();
-    assertEquals(3, (int) metrics().getDescriptionCount());
+    assertEquals(3, (int) metrics().getTreatmentCount());
     assertEquals(9, (int) metrics().getDistributionCount());
     assertEquals(1, (int) metrics().getMediaCount());
     assertEquals(4, (int) metrics().getReferenceCount());

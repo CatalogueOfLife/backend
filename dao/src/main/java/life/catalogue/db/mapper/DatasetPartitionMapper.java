@@ -15,16 +15,17 @@ public interface DatasetPartitionMapper {
       "name_rel",
       "type_material",
       "name_usage",
-      "description",
+      "taxon_rel",
       "distribution",
       "media",
+      "treatment",
       "vernacular_name"
   );
   
   List<String> SERIAL_TABLES = Lists.newArrayList(
       "verbatim",
       "name_rel",
-      "description",
+      "taxon_rel",
       "distribution",
       "media",
       "vernacular_name"

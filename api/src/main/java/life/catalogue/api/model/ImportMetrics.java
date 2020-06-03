@@ -46,9 +46,9 @@ public class ImportMetrics implements ImportAttempt {
   private Integer synonymCount;
   private Integer referenceCount;
   private Integer typeMaterialCount;
-  private Integer descriptionCount;
   private Integer distributionCount;
   private Integer mediaCount;
+  private Integer treatmentCount;
   private Integer vernacularCount;
   private Map<NameType, Integer> namesByTypeCount = Maps.newHashMap();
   private Map<NomStatus, Integer> namesByStatusCount = Maps.newHashMap();
@@ -61,6 +61,7 @@ public class ImportMetrics implements ImportAttempt {
   private Map<MediaType, Integer> mediaByTypeCount = Maps.newHashMap();
   private Map<TaxonomicStatus, Integer> usagesByStatusCount = Maps.newHashMap();
   private Map<Rank, Integer> taxaByRankCount = Maps.newHashMap();
+  private Map<TaxRelType, Integer> taxonRelationsByTypeCount = Maps.newHashMap();
   private Map<Issue, Integer> issuesCount = Maps.newHashMap();
   
   public Integer getDatasetKey() {
@@ -158,15 +159,7 @@ public class ImportMetrics implements ImportAttempt {
   public void setReferenceCount(Integer referenceCount) {
     this.referenceCount = referenceCount;
   }
-  
-  public Integer getDescriptionCount() {
-    return descriptionCount;
-  }
-  
-  public void setDescriptionCount(Integer descriptionCount) {
-    this.descriptionCount = descriptionCount;
-  }
-  
+
   public Integer getDistributionCount() {
     return distributionCount;
   }
@@ -182,7 +175,15 @@ public class ImportMetrics implements ImportAttempt {
   public void setMediaCount(Integer mediaCount) {
     this.mediaCount = mediaCount;
   }
-  
+
+  public Integer getTreatmentCount() {
+    return treatmentCount;
+  }
+
+  public void setTreatmentCount(Integer treatmentCount) {
+    this.treatmentCount = treatmentCount;
+  }
+
   public Integer getVernacularCount() {
     return vernacularCount;
   }
@@ -293,7 +294,15 @@ public class ImportMetrics implements ImportAttempt {
   public void setTaxaByRankCount(Map<Rank, Integer> taxaByRankCount) {
     this.taxaByRankCount = taxaByRankCount;
   }
-  
+
+  public Map<TaxRelType, Integer> getTaxonRelationsByTypeCount() {
+    return taxonRelationsByTypeCount;
+  }
+
+  public void setTaxonRelationsByTypeCount(Map<TaxRelType, Integer> taxonRelationsByTypeCount) {
+    this.taxonRelationsByTypeCount = taxonRelationsByTypeCount;
+  }
+
   public Map<Issue, Integer> getIssuesCount() {
     return issuesCount;
   }
@@ -313,42 +322,43 @@ public class ImportMetrics implements ImportAttempt {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof ImportMetrics)) return false;
     ImportMetrics that = (ImportMetrics) o;
     return attempt == that.attempt &&
-        Objects.equals(datasetKey, that.datasetKey) &&
-        Objects.equals(job, that.job) &&
-        Objects.equals(state, that.state) &&
-        Objects.equals(started, that.started) &&
-        Objects.equals(finished, that.finished) &&
-        Objects.equals(createdBy, that.createdBy) &&
-        Objects.equals(error, that.error) &&
-        Objects.equals(nameCount, that.nameCount) &&
-        Objects.equals(taxonCount, that.taxonCount) &&
-        Objects.equals(synonymCount, that.synonymCount) &&
-        Objects.equals(referenceCount, that.referenceCount) &&
-        Objects.equals(typeMaterialCount, that.typeMaterialCount) &&
-        Objects.equals(descriptionCount, that.descriptionCount) &&
-        Objects.equals(distributionCount, that.distributionCount) &&
-        Objects.equals(mediaCount, that.mediaCount) &&
-        Objects.equals(vernacularCount, that.vernacularCount) &&
-        Objects.equals(namesByTypeCount, that.namesByTypeCount) &&
-        Objects.equals(namesByStatusCount, that.namesByStatusCount) &&
-        Objects.equals(namesByOriginCount, that.namesByOriginCount) &&
-        Objects.equals(namesByRankCount, that.namesByRankCount) &&
-        Objects.equals(nameRelationsByTypeCount, that.nameRelationsByTypeCount) &&
-        Objects.equals(typeMaterialByStatusCount, that.typeMaterialByStatusCount) &&
-        Objects.equals(distributionsByGazetteerCount, that.distributionsByGazetteerCount) &&
-        Objects.equals(vernacularsByLanguageCount, that.vernacularsByLanguageCount) &&
-        Objects.equals(mediaByTypeCount, that.mediaByTypeCount) &&
-        Objects.equals(usagesByStatusCount, that.usagesByStatusCount) &&
-        Objects.equals(taxaByRankCount, that.taxaByRankCount) &&
-        Objects.equals(issuesCount, that.issuesCount);
+      Objects.equals(datasetKey, that.datasetKey) &&
+      Objects.equals(job, that.job) &&
+      state == that.state &&
+      Objects.equals(started, that.started) &&
+      Objects.equals(finished, that.finished) &&
+      Objects.equals(createdBy, that.createdBy) &&
+      Objects.equals(error, that.error) &&
+      Objects.equals(nameCount, that.nameCount) &&
+      Objects.equals(taxonCount, that.taxonCount) &&
+      Objects.equals(synonymCount, that.synonymCount) &&
+      Objects.equals(referenceCount, that.referenceCount) &&
+      Objects.equals(typeMaterialCount, that.typeMaterialCount) &&
+      Objects.equals(distributionCount, that.distributionCount) &&
+      Objects.equals(mediaCount, that.mediaCount) &&
+      Objects.equals(treatmentCount, that.treatmentCount) &&
+      Objects.equals(vernacularCount, that.vernacularCount) &&
+      Objects.equals(namesByTypeCount, that.namesByTypeCount) &&
+      Objects.equals(namesByStatusCount, that.namesByStatusCount) &&
+      Objects.equals(namesByOriginCount, that.namesByOriginCount) &&
+      Objects.equals(namesByRankCount, that.namesByRankCount) &&
+      Objects.equals(nameRelationsByTypeCount, that.nameRelationsByTypeCount) &&
+      Objects.equals(typeMaterialByStatusCount, that.typeMaterialByStatusCount) &&
+      Objects.equals(distributionsByGazetteerCount, that.distributionsByGazetteerCount) &&
+      Objects.equals(vernacularsByLanguageCount, that.vernacularsByLanguageCount) &&
+      Objects.equals(mediaByTypeCount, that.mediaByTypeCount) &&
+      Objects.equals(usagesByStatusCount, that.usagesByStatusCount) &&
+      Objects.equals(taxaByRankCount, that.taxaByRankCount) &&
+      Objects.equals(taxonRelationsByTypeCount, that.taxonRelationsByTypeCount) &&
+      Objects.equals(issuesCount, that.issuesCount);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, attempt, job, state, started, finished, createdBy, error, nameCount, taxonCount, synonymCount, referenceCount, typeMaterialCount, descriptionCount, distributionCount, mediaCount, vernacularCount, namesByTypeCount, namesByStatusCount, namesByOriginCount, namesByRankCount, nameRelationsByTypeCount, typeMaterialByStatusCount, distributionsByGazetteerCount, vernacularsByLanguageCount, mediaByTypeCount, usagesByStatusCount, taxaByRankCount, issuesCount);
+    return Objects.hash(datasetKey, attempt, job, state, started, finished, createdBy, error, nameCount, taxonCount, synonymCount, referenceCount, typeMaterialCount, distributionCount, mediaCount, treatmentCount, vernacularCount, namesByTypeCount, namesByStatusCount, namesByOriginCount, namesByRankCount, nameRelationsByTypeCount, typeMaterialByStatusCount, distributionsByGazetteerCount, vernacularsByLanguageCount, mediaByTypeCount, usagesByStatusCount, taxaByRankCount, taxonRelationsByTypeCount, issuesCount);
   }
 
   @Override

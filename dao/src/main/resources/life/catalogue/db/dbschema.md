@@ -10,6 +10,81 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2020-06-02 scrutiny changes 
+
+```
+ALTER TABLE dataset_import 
+    DROP COLUMN description_count,
+    ADD COLUMN treatment_count INTEGER,
+    ADD COLUMN taxon_relations_by_type_count HSTORE;
+
+ALTER TABLE sector_import 
+    DROP COLUMN description_count,
+    ADD COLUMN treatment_count INTEGER,
+    ADD COLUMN taxon_relations_by_type_count HSTORE;
+
+DROP TYPE DESCRIPTIONCATEGORY;
+
+ALTER TYPE ISSUE RENAME VALUE 'ACCORDING_TO_DATE_INVALID' to 'SCRUTINIZER_DATE_INVALID';
+ALTER TYPE ENTITYTYPE RENAME VALUE 'DESCRIPTION' to 'TREATMENT';
+ALTER TYPE ENTITYTYPE ADD VALUE 'TAXON_RELATION' after 'NAME_USAGE';
+
+UPDATE dataset_import SET issues_count = ((issues_count || ('SCRUTINIZER_DATE_INVALID=>' || (issues_count->'ACCORDING_TO_DATE_INVALID')::text)::hstore) - 'ACCORDING_TO_DATE_INVALID') WHERE issues_count ? 'ACCORDING_TO_DATE_INVALID';
+ 
+UPDATE sector_import ...
+
+
+CREATE TYPE TAXRELTYPE AS ENUM (
+  'EQUALS',
+  'INCLUDES',
+  'INCLUDED_IN',
+  'OVERLAPS',
+  'EXCLUDES',
+  'INTERACTS_WITH',
+  'VISITS',
+  'INHABITS',
+  'SYMBIONT_OF',
+  'ASSOCIATED_WITH',
+  'EATS',
+  'POLLINATES',
+  'PARASITE_OF',
+  'PATHOGEN_OF',
+  'HOST_OF'
+);
+
+CREATE TYPE TREATMENTFORMAT AS ENUM (
+  'XML',
+  'HTML',
+  'TAX_PUB',
+  'TAXON_X',
+  'RDF'
+);
+
+CREATE TABLE treatment (
+  taxon_id TEXT NOT NULL,
+  dataset_key INTEGER NOT NULL,
+  format TREATMENTFORMAT,
+  document TEXT NOT NULL,
+  reference_id TEXT
+) PARTITION BY LIST (dataset_key);
+
+CREATE TABLE taxon_rel (
+  id INTEGER NOT NULL,
+  verbatim_key INTEGER,
+  dataset_key INTEGER NOT NULL,
+  type TAXRELTYPE NOT NULL,
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  taxon_id TEXT NOT NULL,
+  related_taxon_id TEXT NULL,
+  reference_id TEXT,
+  remarks TEXT
+) PARTITION BY LIST (dataset_key);
+```
+
+
 #### 2020-05-25 merge import states
 ```
 ALTER TABLE dataset_import ALTER COLUMN state TYPE text;

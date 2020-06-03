@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.ParsedName;
 
 import javax.annotation.Nonnull;
@@ -27,7 +26,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   @Nonnull
   private Origin origin;
   private String parentId;
-  private String appendedNamePhrase;
+  private String namePhrase;
   private String accordingToId;
   private URI link;
   private String remarks;
@@ -79,12 +78,12 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
     }
   }
 
-  public String getAppendedNamePhrase() {
-    return appendedNamePhrase;
+  public String getNamePhrase() {
+    return namePhrase;
   }
 
-  public void setAppendedNamePhrase(String appendedNamePhrase) {
-    this.appendedNamePhrase = appendedNamePhrase;
+  public void setNamePhrase(String namePhrase) {
+    this.namePhrase = namePhrase;
   }
 
   @JsonIgnore
@@ -117,12 +116,6 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   
   public void setAccordingToId(String accordingToId) {
     this.accordingToId = accordingToId;
-  }
-  
-  public void addAccordingTo(String accordingTo) {
-    if (!StringUtils.isBlank(accordingTo)) {
-      this.accordingToId = this.accordingToId == null ? accordingTo.trim() : this.accordingToId + " " + accordingTo.trim();
-    }
   }
   
   @Override
@@ -175,7 +168,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
       status == that.status &&
       origin == that.origin &&
       Objects.equals(parentId, that.parentId) &&
-      Objects.equals(appendedNamePhrase, that.appendedNamePhrase) &&
+      Objects.equals(namePhrase, that.namePhrase) &&
       Objects.equals(accordingToId, that.accordingToId) &&
       Objects.equals(link, that.link) &&
       Objects.equals(remarks, that.remarks) &&
@@ -184,7 +177,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, name, status, origin, parentId, appendedNamePhrase, accordingToId, link, remarks, referenceIds);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, name, status, origin, parentId, namePhrase, accordingToId, link, remarks, referenceIds);
   }
 
   @Override

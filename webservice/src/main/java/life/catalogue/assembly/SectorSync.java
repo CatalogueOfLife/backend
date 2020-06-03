@@ -50,7 +50,6 @@ public class SectorSync extends SectorRunnable {
       // generate import metrics
       SectorImportMapper mapper = session.getMapper(SectorImportMapper.class);
       final int key = sector.getId();
-      state.setDescriptionCount(mapper.countDescription(catalogueKey, key));
       state.setDistributionCount(mapper.countDistribution(catalogueKey, key));
       state.setMediaCount(mapper.countMedia(catalogueKey, key));
       state.setNameCount(mapper.countName(catalogueKey, key));
@@ -58,6 +57,7 @@ public class SectorSync extends SectorRunnable {
       state.setTaxonCount(mapper.countTaxon(catalogueKey, key));
       state.setSynonymCount(mapper.countSynonym(catalogueKey, key));
       state.setVernacularCount(mapper.countVernacular(catalogueKey, key));
+      state.setTreatmentCount(mapper.countTreatment(catalogueKey, key));
       state.setIssuesCount(countMap(Issue.class, mapper.countIssues(catalogueKey, key)));
   
       state.setDistributionsByGazetteerCount(countMap(Gazetteer.class, mapper.countDistributionsByGazetteer(catalogueKey, key)));
@@ -69,6 +69,7 @@ public class SectorSync extends SectorRunnable {
       state.setNamesByStatusCount(countMap(NomStatus.class, mapper.countNamesByStatus(catalogueKey, key)));
       state.setNamesByTypeCount(countMap(NameType.class, mapper.countNamesByType(catalogueKey, key)));
       state.setTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(catalogueKey, key)));
+      state.setTaxonRelationsByTypeCount(countMap(TaxRelType.class, mapper.countTaxonRelationsByType(catalogueKey, key)));
       state.setUsagesByStatusCount(countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(catalogueKey, key)));
       state.setVernacularsByLanguageCount(countMap(mapper.countVernacularsByLanguage(catalogueKey, key)));
 

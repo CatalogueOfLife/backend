@@ -114,7 +114,7 @@ public class AcefInterpreter extends InterpreterBase {
       Taxon t = u.getTaxon();
       t.setOrigin(Origin.SOURCE);
       t.setAccordingToId(v.get(AcefTerm.LTSSpecialist));
-      t.setScrutinizerDate(fuzzydate(v, Issue.ACCORDING_TO_DATE_INVALID, AcefTerm.LTSDate));
+      t.setScrutinizerDate(fuzzydate(v, Issue.SCRUTINIZER_DATE_INVALID, AcefTerm.LTSDate));
       t.setExtinct(bool(v, Issue.IS_EXTINCT_INVALID, AcefTerm.IsExtinct));
       t.setRemarks(v.get(AcefTerm.AdditionalData));
   
@@ -225,8 +225,7 @@ public class AcefInterpreter extends InterpreterBase {
     } else {
       opt = interpretName(true, v.get(idTerm), rank, null, authorship,
           v.get(AcefTerm.Genus), v.get(AcefTerm.SubGenusName), v.get(AcefTerm.SpeciesEpithet), v.get(AcefTerm.InfraSpeciesEpithet),
-          null, null,
-          null, v.get(AcefTerm.GSDNameStatus), null,null, v);
+          null, null, v.get(AcefTerm.GSDNameStatus), null,null, v);
     }
     return opt;
   }

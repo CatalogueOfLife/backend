@@ -81,6 +81,25 @@ public class InterpreterBase {
     return ref;
   }
 
+  protected void setPublishedIn(Name n, String publishedIn, VerbatimRecord v) {
+    Reference ref = buildReference(publishedIn, v);
+    if (ref != null) {
+      n.setPublishedInId(ref.getId());
+      n.setPublishedInPage(ref.getPage());
+      n.setPublishedInYear(ref.getYear());
+    }
+  }
+
+  protected Reference buildReference(String citation, VerbatimRecord v) {
+    Reference ref = refFactory.fromCitation(null, citation, v);
+    if (ref.getVerbatimKey() == null) {
+      // create new reference with verbatim key, we've never seen this before!
+      ref.setVerbatimKey(v.getId());
+      store.references().create(ref);
+    }
+    return ref;
+  }
+
   protected List<VernacularName> interpretVernacular(VerbatimRecord rec, BiConsumer<VernacularName, VerbatimRecord> addReference,
                                                      Term name, Term translit, Term lang, Term sex, Term area, Term... countryTerms) {
     String vname = rec.get(name);
@@ -181,23 +200,6 @@ public class InterpreterBase {
     return words;
   }
 
-  protected List<Treatment> interpretDescription(VerbatimRecord rec, BiConsumer<Treatment, VerbatimRecord> addReference,
-                                                 Term description, Term category, Term format, Term lang) {
-    // require non empty description
-    if (rec.hasTerm(description)) {
-      Treatment d = new Treatment();
-      d.setVerbatimKey(rec.getId());
-      d.setCategory(rec.get(category));
-      d.setFormat(SafeParser.parse(TextFormatParser.PARSER, rec.get(format)).orNull());
-      d.setDescription(rec.get(description));
-      d.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(lang)).orNull());
-  
-      addReference.accept(d, rec);
-  
-      return Lists.newArrayList(d);
-    }
-    return Collections.emptyList();
-  }
   
   protected List<Media> interpretMedia(VerbatimRecord rec, BiConsumer<Media, VerbatimRecord> addReference,
                  Term type, Term url, Term link, Term license, Term creator, Term created, Term title, Term format) {
@@ -291,7 +293,7 @@ public class InterpreterBase {
 
   public Optional<NameAccordingTo> interpretName(final boolean preferAtoms, final String id, final String vrank, final String sciname, final String authorship,
                                                  final String genus, final String infraGenus, final String species, final String infraspecies,
-                                                 final String cultivar,final String phrase,
+                                                 final String cultivar,
                                                  String nomCode, String nomStatus,
                                                  String link, String remarks, VerbatimRecord v) {
     // this can be wrong in some cases, e.g. in DwC records often scientificName and just a genus is given
@@ -316,7 +318,6 @@ public class InterpreterBase {
       atom.setSpecificEpithet(lowercaseEpithet(species, v));
       atom.setInfraspecificEpithet(lowercaseEpithet(infraspecies, v));
       atom.setCultivarEpithet(cultivar);
-      atom.setAppendedPhrase(phrase);
       atom.setRank(rank);
       atom.setCode(code);
       setDefaultNameType(atom);

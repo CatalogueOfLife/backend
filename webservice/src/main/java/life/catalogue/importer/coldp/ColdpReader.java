@@ -1,11 +1,5 @@
 package life.catalogue.importer.coldp;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Optional;
-import java.util.Set;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import life.catalogue.api.datapackage.ColdpTerm;
@@ -19,6 +13,12 @@ import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.Set;
+
 /**
  *
  */
@@ -27,10 +27,10 @@ public class ColdpReader extends CsvReader {
   private static Set<ColdpTerm> ID_SCHEMAS = ImmutableSet.of(ColdpTerm.Reference, ColdpTerm.Name, ColdpTerm.Taxon);
   private static Set<ColdpTerm> NAMEID_SCHEMAS = ImmutableSet.of(ColdpTerm.Synonym, ColdpTerm.Taxon, ColdpTerm.NameRelation);
   private static Set<ColdpTerm> TAXID_SCHEMAS = ImmutableSet.of(
-      ColdpTerm.Synonym, ColdpTerm.Description, ColdpTerm.Distribution, ColdpTerm.Media, ColdpTerm.VernacularName
+      ColdpTerm.Synonym, ColdpTerm.Treatment, ColdpTerm.Distribution, ColdpTerm.Media, ColdpTerm.VernacularName
   );
   private static Set<ColdpTerm> REFID_SCHEMAS = ImmutableSet.of(
-      ColdpTerm.Description, ColdpTerm.Distribution, ColdpTerm.VernacularName
+      ColdpTerm.Treatment, ColdpTerm.Distribution, ColdpTerm.VernacularName
   );
   static {
     // make sure we are aware of ColTerms
@@ -145,7 +145,7 @@ public class ColdpReader extends CsvReader {
         require(t, ColdpTerm.taxonID);
       }
   
-      require(ColdpTerm.Description, ColdpTerm.description);
+      require(ColdpTerm.Treatment, ColdpTerm.document);
       require(ColdpTerm.Distribution, ColdpTerm.area);
       require(ColdpTerm.VernacularName, ColdpTerm.name);
       require(ColdpTerm.Media, ColdpTerm.url);

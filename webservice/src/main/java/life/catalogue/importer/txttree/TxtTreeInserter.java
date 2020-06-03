@@ -17,7 +17,7 @@ import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.importer.coldp.MetadataParser;
 import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.model.NeoNameRel;
+import life.catalogue.importer.neo.model.NeoRel;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.parser.NameParser;
@@ -122,10 +122,10 @@ public class TxtTreeInserter implements NeoInserter {
       store.createNameAndUsage(s);
       store.createSynonymRel(s.node, u.node);
       if (syn.basionym) {
-        NeoNameRel rel = new NeoNameRel();
+        NeoRel rel = new NeoRel();
         rel.setType(RelType.HAS_BASIONYM);
         rel.setVerbatimKey(line2verbatimKey.get(syn.id));
-        store.createNameRel(u.nameNode, s.nameNode, rel);
+        store.createNeoRel(u.nameNode, s.nameNode, rel);
       }
     }
     for (TreeNode c : t.children){

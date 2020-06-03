@@ -49,7 +49,7 @@ public class ParserResource<T> {
     parsers.put("referencetype", ReferenceTypeParser.PARSER);
     parsers.put("sex", SexParser.PARSER);
     parsers.put("taxonomicstatus", TaxonomicStatusParser.PARSER);
-    parsers.put("textformat", TextFormatParser.PARSER);
+    parsers.put("treatmentformat", TreatmentFormatParser.PARSER);
     parsers.put("typestatus", TypeStatusParser.PARSER);
     parsers.put("uri", UriParser.PARSER);
 

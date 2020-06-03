@@ -276,9 +276,9 @@
 
   <sql id="orphanWhere">
     WHERE NOT EXISTS (
-    SELECT NULL
-    FROM name_usage_${partition} u
-    WHERE n.id = u.name_id
+      SELECT NULL
+      FROM name_usage_${partition} u
+      WHERE n.id = u.name_id
     )
     <if test="before!=null">
       AND n.modified &lt; #{before}

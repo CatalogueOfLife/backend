@@ -1,16 +1,15 @@
 package life.catalogue.importer.dwca;
 
 import life.catalogue.api.model.DatasetSettings;
+import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.ColDwcTerm;
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
-import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.reference.ReferenceFactory;
-import org.gbif.dwc.terms.DwcTerm;
-import org.gbif.dwc.terms.DwcaTerm;
-import org.gbif.dwc.terms.GbifTerm;
+import org.gbif.dwc.terms.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +24,8 @@ import java.util.Optional;
 public class DwcaInserter extends NeoCsvInserter {
   private static final Logger LOG = LoggerFactory.getLogger(DwcaInserter.class);
   private DwcInterpreter inter;
-  
+  private static final Term EOL_DOCUMENT = TermFactory.instance().findClassTerm("http://eol.org/schema/media/Document");
+
   public DwcaInserter(NeoDb store, Path folder, DatasetSettings settings, ReferenceFactory refFactory) throws IOException {
     super(folder, DwcaReader.from(folder), store, settings, refFactory);
   }
@@ -51,10 +51,12 @@ public class DwcaInserter extends NeoCsvInserter {
     //    u -> store.createNameAndUsage(u) != null
     //);
 
-    insertNameRelations(reader, ColDwcTerm.NameRelations,
+    insertRelations(reader, ColDwcTerm.NameRelations,
         inter::interpretNameRelations,
+        store.names(),
         DwcaTerm.ID,
-        ColDwcTerm.relatedNameUsageID
+        ColDwcTerm.relatedNameUsageID,
+        Issue.NAME_ID_INVALID
     );
 
     insertTaxonEntities(reader, GbifTerm.Distribution,
@@ -67,12 +69,6 @@ public class DwcaInserter extends NeoCsvInserter {
         inter::interpretVernacularName,
         DwcaTerm.ID,
         (t, vn) -> t.vernacularNames.add(vn)
-    );
-
-    insertTaxonEntities(reader, GbifTerm.Description,
-        inter::interpretDescription,
-        DwcaTerm.ID,
-        (t, d) -> t.treatment.add(d)
     );
 
     insertTaxonEntities(reader, GbifTerm.Multimedia,
@@ -92,6 +88,8 @@ public class DwcaInserter extends NeoCsvInserter {
           }
         }
     );
+
+    //TODO: insert treatments via EOL Document extension !!!
   }
   
   @Override

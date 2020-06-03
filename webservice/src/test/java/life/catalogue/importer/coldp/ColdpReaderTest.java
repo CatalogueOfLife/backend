@@ -8,14 +8,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ColdpReaderTest {
-  
-  
+
   @Test
   public void pluralFilenames() throws Exception {
     ColdpReader reader = ColdpReader.from(FileUtils.getClasspathFile("coldp/1").toPath());
     
-    assertEquals(9, reader.schemas().size());
-    assertTrue(reader.hasSchema(ColdpTerm.Description));
+    assertEquals(8, reader.schemas().size());
     assertTrue(reader.hasSchema(ColdpTerm.Distribution));
     assertTrue(reader.hasSchema(ColdpTerm.Media));
     assertTrue(reader.hasSchema(ColdpTerm.Name));

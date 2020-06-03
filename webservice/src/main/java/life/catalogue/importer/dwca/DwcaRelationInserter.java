@@ -118,10 +118,10 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
     if (v != null && meta.isOriginalNameMapped()) {
       RankedName bas = nameByIdOrName(v, n, DwcTerm.originalNameUsageID, Issue.BASIONYM_ID_INVALID, DwcTerm.originalNameUsage, Origin.VERBATIM_BASIONYM);
       if (bas != null) {
-        NeoNameRel rel = new NeoNameRel();
+        NeoRel rel = new NeoRel();
         rel.setType(RelType.HAS_BASIONYM);
         rel.setVerbatimKey(v.getId());
-        store.createNameRel(n.node, bas.nameNode, rel);
+        store.createNeoRel(n.node, bas.nameNode, rel);
       }
     }
   }

@@ -69,10 +69,12 @@ public class ColdpInserter extends NeoCsvInserter {
         inter::interpretName,
         n -> store.names().create(n) != null
     );
-    insertNameRelations(reader, ColdpTerm.NameRelation,
+    insertRelations(reader, ColdpTerm.NameRelation,
         inter::interpretNameRelations,
+        store.names(),
         ColdpTerm.nameID,
-        ColdpTerm.relatedNameID
+        ColdpTerm.relatedNameID,
+        Issue.NAME_ID_INVALID
     );
     interpretTypeMaterial(reader, ColdpTerm.TypeMaterial,
             inter::interpretTypeMaterial
@@ -83,7 +85,14 @@ public class ColdpInserter extends NeoCsvInserter {
         inter::interpretTaxon,
         t -> store.usages().create(t) != null
     );
-
+    // taxon relations
+    insertRelations(reader, ColdpTerm.TaxonRelation,
+      inter::interpretTaxonRelations,
+      store.usages(),
+      ColdpTerm.taxonID,
+      ColdpTerm.relatedTaxonID,
+      Issue.TAXON_ID_INVALID
+    );
     // synonyms
     insertEntities(reader, ColdpTerm.Synonym,
         inter::interpretSynonym,
@@ -91,11 +100,6 @@ public class ColdpInserter extends NeoCsvInserter {
     );
 
     // supplementary
-    insertTaxonEntities(reader, ColdpTerm.Description,
-        inter::interpretDescription,
-        ColdpTerm.taxonID,
-        (t, d) -> t.treatment.add(d)
-    );
     insertTaxonEntities(reader, ColdpTerm.Distribution,
         inter::interpretDistribution,
         ColdpTerm.taxonID,
@@ -111,6 +115,7 @@ public class ColdpInserter extends NeoCsvInserter {
         ColdpTerm.taxonID,
         (t, d) -> t.vernacularNames.add(d)
     );
+    // TODO: treatments
   }
   
   private void insertExtendedReferences() {
@@ -207,7 +212,7 @@ public class ColdpInserter extends NeoCsvInserter {
 
   @Override
   protected NodeBatchProcessor relationProcessor() {
-    return new ColdpRelationInserter(store, inter);
+    return new ColdpRelationInserter(store);
   }
 
   /**

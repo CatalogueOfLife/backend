@@ -485,10 +485,10 @@ public class NeoDb {
   }
 
   /**
-   * Creates a new name relation linking the 2 given name nodes.
-   * The note and publishedInKey values are stored as relation propLabel
+   * Creates a new name or taxon relation linking the 2 given nodes.
+   * Additional NeoRel properties are stored as relation properties.
    */
-  public void createNameRel(Node n1, Node n2, NeoNameRel rel) {
+  public void createNeoRel(Node n1, Node n2, NeoRel rel) {
     Map<String, Object> props = NeoDbUtils.neo4jProps(rel);
     if (isBatchMode()) {
       inserter.createRelationship(n1.getId(), n2.getId(), rel.getType(), props);
@@ -497,7 +497,7 @@ public class NeoDb {
       NeoDbUtils.addProperties(r, props);
     }
   }
-  
+
   /**
    * @return the verbatim record belonging to the requested key as assigned from verbatimSequence
    */

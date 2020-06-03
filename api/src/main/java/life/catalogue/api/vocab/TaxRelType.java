@@ -29,30 +29,34 @@ public enum TaxRelType {
 
   /**
    * Taxon concept Relationship: The circumscription of this taxon is (essentially) identical to the related taxon.
+   * RCC5: equal (EQ)
    */
-  CONGRUENT,
+  EQUALS,
 
   /**
    * Taxon concept Relationship: The related taxon concept is a subset of this taxon concept.
+   * RCC5: proper part inverse (PPi)
    */
   INCLUDES,
 
   /**
+   * Taxon concept Relationship: This taxon concept is a subset of the related taxon concept.
+   * RCC5: proper part (PP)
+   */
+  INCLUDED_IN,
+
+  /**
    * Taxon concept Relationship: Concepts 1 and 2 share some members/children in common, and each contain some members not shared with the other.
+   * RCC5: partially overlapping (PO)
    */
   OVERLAPS,
 
   /**
    * Taxon concept Relationship: Concept 2 is not a subset of Concept 1.
+   * RCC5: disjoint (DR)
    */
   EXCLUDES,
 
-  /**
-   * Taxon concept Relationship: Concepts 1 and 2 have at least one member in common.
-   * The more general set relationship to: ‘includes’, ‘congruent’ and ‘overlaps.
-   * For use when the specific nature of the set intersection is not known or provided. The opposite of ‘excludes’
-   */
-  INTERSECTS,
 
 
   /**
@@ -84,7 +88,8 @@ public enum TaxRelType {
    */
   HOST_OF;
 
-  public static final Set<TaxRelType> CONCEPT_RELATION_TYPES = ImmutableSet.of(CONGRUENT, INCLUDES, OVERLAPS, EXCLUDES, INTERSECTS);
+  public static final Set<TaxRelType> CONCEPT_RELATION_TYPES = ImmutableSet.of(EQUALS, INCLUDES, INCLUDED_IN, OVERLAPS, EXCLUDES);
+
 
   public boolean isConceptRelation(){
     return CONCEPT_RELATION_TYPES.contains(this);

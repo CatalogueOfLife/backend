@@ -63,23 +63,6 @@ CREATE TYPE DATASETTYPE AS ENUM (
   'OTHER'
 );
 
-CREATE TYPE DESCRIPTIONCATEGORY AS ENUM (
-  'BIOLOGY',
-  'CONSERVATION',
-  'HABITAT',
-  'USE',
-  'DISTRIBUTION',
-  'DESCRIPTION',
-  'ETYMOLOGY',
-  'TREATMENT',
-  'MISCELLANEOUS',
-  'NOMENCLATURE',
-  'STRATIGRAPHY',
-  'TAXONOMY',
-  'TYPIFICATION',
-  'OTHER'
-);
-
 CREATE TYPE DISTRIBUTIONSTATUS AS ENUM (
   'NATIVE',
   'DOMESTICATED',
@@ -99,8 +82,9 @@ CREATE TYPE ENTITYTYPE AS ENUM (
   'NAME',
   'NAME_RELATION',
   'NAME_USAGE',
+  'TAXON_RELATION',
   'TYPE_MATERIAL',
-  'DESCRIPTION',
+  'TREATMENT',
   'DISTRIBUTION',
   'MEDIA',
   'VERNACULAR',
@@ -202,7 +186,7 @@ CREATE TYPE ISSUE AS ENUM (
   'LIFEZONE_INVALID',
   'IS_EXTINCT_INVALID',
   'GEOTIME_INVALID',
-  'ACCORDING_TO_DATE_INVALID',
+  'SCRUTINIZER_DATE_INVALID',
   'CHAINED_SYNONYM',
   'PARENT_CYCLE',
   'SYNONYM_PARENT',
@@ -488,10 +472,30 @@ CREATE TYPE TAXONOMICSTATUS AS ENUM (
   'MISAPPLIED'
 );
 
-CREATE TYPE TEXTFORMAT AS ENUM (
+CREATE TYPE TAXRELTYPE AS ENUM (
+  'EQUALS',
+  'INCLUDES',
+  'INCLUDED_IN',
+  'OVERLAPS',
+  'EXCLUDES',
+  'INTERACTS_WITH',
+  'VISITS',
+  'INHABITS',
+  'SYMBIONT_OF',
+  'ASSOCIATED_WITH',
+  'EATS',
+  'POLLINATES',
+  'PARASITE_OF',
+  'PATHOGEN_OF',
+  'HOST_OF'
+);
+
+CREATE TYPE TREATMENTFORMAT AS ENUM (
+  'XML',
   'HTML',
-  'MARKDOWN',
-  'PLAIN_TEXT'
+  'TAX_PUB',
+  'TAXON_X',
+  'RDF'
 );
 
 CREATE TYPE TYPESTATUS AS ENUM (
@@ -657,11 +661,12 @@ CREATE TABLE dataset_import (
   reference_count INTEGER,
   vernacular_count INTEGER,
   distribution_count INTEGER,
-  description_count INTEGER,
+  treatment_count INTEGER,
   media_count INTEGER,
   issues_count HSTORE,
   names_by_rank_count HSTORE,
   taxa_by_rank_count HSTORE,
+  taxon_relations_by_type_count HSTORE,
   names_by_type_count HSTORE,
   vernaculars_by_language_count HSTORE,
   distributions_by_gazetteer_count HSTORE,
@@ -727,12 +732,13 @@ CREATE TABLE sector_import (
   reference_count INTEGER,
   vernacular_count INTEGER,
   distribution_count INTEGER,
-  description_count INTEGER,
+  treatment_count INTEGER,
   media_count INTEGER,
   ignored_usage_count INTEGER,
   issues_count HSTORE,
   names_by_rank_count HSTORE,
   taxa_by_rank_count HSTORE,
+  taxon_relations_by_type_count HSTORE,
   names_by_type_count HSTORE,
   vernaculars_by_language_count HSTORE,
   distributions_by_gazetteer_count HSTORE,
@@ -870,7 +876,6 @@ CREATE TABLE name (
   specific_epithet TEXT,
   infraspecific_epithet TEXT,
   cultivar_epithet TEXT,
-  appended_phrase TEXT,
   basionym_authors TEXT[] DEFAULT '{}',
   basionym_ex_authors TEXT[] DEFAULT '{}',
   basionym_year TEXT,
@@ -949,8 +954,10 @@ CREATE TABLE name_usage (
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   parent_id TEXT,
   name_id TEXT NOT NULL,
-  according_to TEXT,
-  according_to_date TEXT,
+  name_phrase TEXT,
+  according_to_id TEXT,
+  scrutinizer TEXT,
+  scrutinizer_date TEXT,
   reference_ids TEXT[] DEFAULT '{}',
   temporal_range_start TEXT,
   temporal_range_end TEXT,
@@ -960,6 +967,20 @@ CREATE TABLE name_usage (
   dataset_sectors JSONB
 ) PARTITION BY LIST (dataset_key);
 
+CREATE TABLE taxon_rel (
+  id INTEGER NOT NULL,
+  verbatim_key INTEGER,
+  dataset_key INTEGER NOT NULL,
+  type TAXRELTYPE NOT NULL,
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  taxon_id TEXT NOT NULL,
+  related_taxon_id TEXT NULL,
+  reference_id TEXT,
+  remarks TEXT
+) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE vernacular_name (
   id serial,
@@ -994,19 +1015,11 @@ CREATE TABLE distribution (
   reference_id TEXT
 ) PARTITION BY LIST (dataset_key);
 
-CREATE TABLE description (
-  id INTEGER NOT NULL,
-  dataset_key INTEGER NOT NULL,
-  verbatim_key INTEGER,
-  format TEXTFORMAT,
-  created_by INTEGER NOT NULL,
-  modified_by INTEGER NOT NULL,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  language CHAR(3),
+CREATE TABLE treatment (
   taxon_id TEXT NOT NULL,
-  category TEXT,
-  description TEXT NOT NULL,
+  dataset_key INTEGER NOT NULL,
+  format TREATMENTFORMAT,
+  document TEXT NOT NULL,
   reference_id TEXT
 ) PARTITION BY LIST (dataset_key);
 

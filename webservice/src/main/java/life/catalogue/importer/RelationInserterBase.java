@@ -22,11 +22,13 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
   protected final NeoDb store;
   private final Term acceptedTerm;
   private final Term parentTerm;
-  
-  public RelationInserterBase(NeoDb store, Term acceptedTerm, Term parentTerm) {
+  private final Term originalNameTerm;
+
+  public RelationInserterBase(NeoDb store, Term acceptedTerm, Term parentTerm, Term originalNameTerm) {
     this.store = store;
     this.acceptedTerm = acceptedTerm;
     this.parentTerm = parentTerm;
+    this.originalNameTerm = originalNameTerm;
   }
   
   @Override
@@ -63,13 +65,12 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
       } catch (Exception e) {
         LOG.error("error processing explicit relations for usage {} {}", n, NeoProperties.getRankedUsage(n), e);
       }
-    } else if (n.hasLabel(Labels.NAME)){
 
+    } else if (originalNameTerm != null && n.hasLabel(Labels.NAME)){
       try {
         NeoName nn = store.names().objByNode(n);
         if (nn.getVerbatimKey() != null) {
           VerbatimRecord v = store.getVerbatim(nn.getVerbatimKey());
-          processVerbatimName(nn, v);
           store.put(v);
         }
       } catch (Exception e) {
@@ -86,14 +87,6 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
    */
   protected void processVerbatimUsage(NeoUsage u, VerbatimRecord v, Node p) {
     // override to do further processing per usage node
-  }
-  
-  /**
-   * @param n
-   * @param v
-   */
-  protected void processVerbatimName(NeoName n, VerbatimRecord v) {
-    // override to do further processing per name node
   }
 
   /**
