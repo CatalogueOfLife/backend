@@ -115,9 +115,13 @@ public class ColdpInserter extends NeoCsvInserter {
         ColdpTerm.taxonID,
         (t, d) -> t.vernacularNames.add(d)
     );
+    insertTreatments();
+  }
+
+  private void insertTreatments(){
     // TODO: treatments
   }
-  
+
   private void insertExtendedReferences() {
     ColdpReader coldp = (ColdpReader) reader;
     if (coldp.hasExtendedReferences()) {

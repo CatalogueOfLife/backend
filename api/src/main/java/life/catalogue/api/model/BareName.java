@@ -2,6 +2,7 @@ package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.common.tax.NameFormatter;
 
 import java.util.Objects;
 
@@ -18,7 +19,18 @@ public class BareName implements NameUsage {
   public BareName(Name name) {
     this.name = name;
   }
-  
+
+
+  @Override
+  public String getLabel() {
+    return NameFormatter.scientificName(name, false);
+  }
+
+  @Override
+  public String getLabelHtml() {
+    return NameFormatter.scientificName(name, true);
+  }
+
   @Override
   public String getId() {
     return null;

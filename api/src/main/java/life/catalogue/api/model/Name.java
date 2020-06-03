@@ -551,7 +551,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.type = type;
   }
 
-  @JsonIgnore
   public String getNomenclaturalNote() {
     return nomenclaturalNote;
   }
@@ -560,7 +559,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.nomenclaturalNote = nomenclaturalNote;
   }
 
-  @JsonIgnore
   public String getUnparsed() {
     return unparsed;
   }
@@ -722,14 +720,18 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   @JsonIgnore
   public String scientificNameAuthorship() {
     StringBuilder sb = new StringBuilder();
+    appendScientificNameAuthorship(sb);
+    return sb.toString();
+  }
+
+  public void appendScientificNameAuthorship(StringBuilder sb) {
     sb.append(scientificName);
     if (authorship != null) {
       sb.append(" ");
       sb.append(authorship);
     }
-    return sb.toString();
   }
-  
+
   /**
    * @See NameFormatter.authorshipComplete()
    */
@@ -855,11 +857,4 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     return sb.toString();
   }
 
-  public static String buildName(Name n, boolean html, boolean authorship, boolean nomNote) {
-    return n.isParsed() ? buildName(toParsedName(n), html, authorship, nomNote) : n.scientificNameAuthorship();
-  }
-
-  public static String buildName(ParsedName pn, boolean html, boolean authorship, boolean nomNote) {
-      return NameFormatter.buildName(pn, true, true, authorship, true, true, true, false, true, true, nomNote, true, true, true, html);
-  }
 }

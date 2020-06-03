@@ -32,17 +32,44 @@ public class NameFormatter {
   /**
    * A full scientific name without authorship from the individual properties in its canonical form.
    * Subspecies are using the subsp rank marker unless a name is assigned to the zoological code.
+   *
+   * Uses name parts for parsed names, but the single scientificName field in case of unparsed names.
    */
   public static String scientificName(Name n, boolean html) {
+    // make sure this is a parsed name, otherwise just return prebuilt name
+    if (!n.isParsed()) {
+      return n.getScientificName();
+    }
     // https://github.com/gbif/portal-feedback/issues/640
     // final char transformations
     String name = buildScientificName(n, html).toString().trim();
     return UnicodeUtils.decompose(name);
   }
 
-  public static String scientificName(NameUsageBase nu, boolean html) {
-    StringBuilder sb = buildScientificName(nu.getName(), html);
-    appendAuthorship(nu.getName(), sb);
+  /**
+   * A full scientific name with authorship including potential namePhrases from the usage.
+   * Otherwise identical to scientificName() method.
+   *
+   * Uses name parts for parsed names, but the single scientificName field in case of unparsed names.
+   */
+  public static String scientificNameAuthorship(NameUsageBase nu, boolean html) {
+    // make sure this is a parsed name, otherwise just return prebuilt name
+    StringBuilder sb;
+    if (!nu.getName().isParsed()) {
+      sb = new StringBuilder();
+      sb.append(nu.getName().getScientificName());
+      if (nu.getName().getAuthorship() != null) {
+        sb.append(" ");
+        sb.append(nu.getName().getAuthorship());
+      }
+
+    } else {
+      sb = buildScientificName(nu.getName(), html);
+      if (nu.getName().hasAuthorship()) {
+        sb.append(" ");
+        appendAuthorship(nu.getName(), sb);
+      }
+    }
     appendUsage(nu, sb);
     String name = sb.toString().trim();
     return UnicodeUtils.decompose(name);
@@ -351,8 +378,12 @@ public class NameFormatter {
   }
 
   private static void appendUsage(NameUsageBase nu, StringBuilder sb) {
-    //TODO:
+    if (nu.getNamePhrase() != null) {
+      sb.append(" ");
+      sb.append(nu.getNamePhrase());
+    }
   }
+
   private static void appendAuthorship(Name a, StringBuilder sb) {
     if (a.hasBasionymAuthorship()) {
       sb.append("(");

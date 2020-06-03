@@ -149,7 +149,7 @@ public enum Issue {
           "This might indicate that the name should rather be a recombination."),
   
   BASIONYM_ID_INVALID(NAME, Level.ERROR,
-      "The value for dwc:originalNameUsageID could not be resolved."),
+      "The name id pointing to a related original name could not be resolved."),
   
   RANK_INVALID(NAME, Level.ERROR,
       "dwc:taxonRank could not be interpreted"),

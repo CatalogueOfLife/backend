@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import org.gbif.nameparser.api.ParsedName;
+import life.catalogue.common.tax.NameFormatter;
 
 import javax.annotation.Nonnull;
 import java.net.URI;
@@ -46,10 +46,13 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   }
 
   @Override
-  public ParsedName toParsedName() {
-    ParsedName pn = Name.toParsedName(this.getName());
-    pn.setTaxonomicNote(accordingToId);
-    return pn;
+  public String getLabel() {
+    return NameFormatter.scientificNameAuthorship(this, false);
+  }
+
+  @Override
+  public String getLabelHtml() {
+    return NameFormatter.scientificNameAuthorship(this, true);
   }
 
   @Override
