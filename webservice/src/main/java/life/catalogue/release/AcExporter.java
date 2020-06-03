@@ -144,7 +144,7 @@ public class AcExporter {
   }
 
   private void exportCitations(int catalogueKey, File dir) throws IOException {
-    LOG.info("Export citations");
+    LOG.info("Export credits");
     File cf = new File(dir, "credits.ini");
   
     Map<String, Object> data = new HashMap<>();
@@ -167,8 +167,8 @@ public class AcExporter {
     }
   }
   
-  private void exportLogos(int catalogueKey, File expDir) throws IOException {
-    LOG.info("Export logos for sources of catalogue " + catalogueKey);
+  private void exportLogos(int projectKey, File expDir) throws IOException {
+    LOG.info("Export logos for sources of project " + projectKey);
     File logoDir = new File(expDir, "logos");
     logoDir.mkdir();
   
@@ -176,9 +176,9 @@ public class AcExporter {
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       DatasetSearchRequest req = new DatasetSearchRequest();
-      req.setContributesTo(catalogueKey);
+      req.setContributesTo(projectKey);
       List<Dataset> resp = dm.search(req, null, new Page(0,1000));
-      LOG.info("Found " +resp.size()+ " source datasets of catalogue " + catalogueKey);
+      LOG.info("Found " +resp.size()+ " source datasets of project " + projectKey);
       for (Dataset d : resp) {
         Path p = cfg.img.datasetLogo(d.getKey(), ImgConfig.Scale.MEDIUM);
         if (java.nio.file.Files.exists(p)) {
