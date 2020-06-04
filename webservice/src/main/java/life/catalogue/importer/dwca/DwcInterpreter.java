@@ -41,7 +41,7 @@ public class DwcInterpreter extends InterpreterBase {
 
   public Optional<NeoUsage> interpret(VerbatimRecord v) {
     // name
-    Optional<NameAccordingTo> nat = interpretName(v);
+    Optional<ParsedNameUsage> nat = interpretName(v);
     if (nat.isPresent()) {
       EnumNote<TaxonomicStatus> status = SafeParser.parse(TaxonomicStatusParser.PARSER, v.get(DwcTerm.taxonomicStatus)).orElse(NO_STATUS);
       // usage
@@ -60,7 +60,9 @@ public class DwcInterpreter extends InterpreterBase {
       u.setId(v.getFirstRaw(DwcTerm.taxonID, DwcaTerm.ID));
       u.setVerbatimKey(v.getId());
       u.usage.setAccordingToId(v.get(DwcTerm.nameAccordingTo));
-      u.usage.addAccordingTo(nat.get().getAccordingTo());
+      u.usage.addAccordingTo(nat.get().getTaxonomicNote());
+      setAccordingTo(u.usage, nat.get().getTaxonomicNote(), v);
+
       u.homotypic = TaxonomicStatusParser.isHomotypic(status);
 
       // flat classification
@@ -179,8 +181,8 @@ public class DwcInterpreter extends InterpreterBase {
     tax.setRemarks(v.get(DwcTerm.taxonRemarks));
   }
   
-  private Optional<NameAccordingTo> interpretName(VerbatimRecord v) {
-    Optional<NameAccordingTo> opt = interpretName(false, v.getFirstRaw(DwcTerm.taxonID, DwcaTerm.ID),
+  private Optional<ParsedNameUsage> interpretName(VerbatimRecord v) {
+    Optional<ParsedNameUsage> opt = interpretName(false, v.getFirstRaw(DwcTerm.taxonID, DwcaTerm.ID),
         v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), v.get(DwcTerm.scientificName),
         v.get(DwcTerm.scientificNameAuthorship),
         v.getFirst(GbifTerm.genericName, DwcTerm.genus), v.get(DwcTerm.subgenus),

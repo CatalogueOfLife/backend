@@ -4,10 +4,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
-import life.catalogue.api.model.NameAccordingTo;
+import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.vocab.NomStatus;
-import org.gbif.nameparser.ParserConfigs;
 import org.gbif.nameparser.api.*;
 import org.junit.Test;
 
@@ -292,7 +291,7 @@ public class NameParserTest {
   }
   
   static NameAssertion assertName(String rawName, Rank rank, NomCode code, String sciname, NameType type) throws UnparsableException {
-    NameAccordingTo n = parser.parse(rawName, rank, code, IssueContainer.VOID).get();
+    ParsedNameUsage n = parser.parse(rawName, rank, code, IssueContainer.VOID).get();
     assertEquals(sciname, n.getName().getScientificName());
     return new NameAssertion(n.getName()).type(type);
   }

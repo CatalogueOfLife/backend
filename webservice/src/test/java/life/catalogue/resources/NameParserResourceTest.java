@@ -3,14 +3,11 @@ package life.catalogue.resources;
 import java.util.List;
 import javax.ws.rs.core.GenericType;
 
-import io.dropwizard.testing.ResourceHelpers;
 import life.catalogue.api.model.Name;
-import life.catalogue.api.model.NameAccordingTo;
-import life.catalogue.WsServerRule;
+import life.catalogue.api.model.ParsedNameUsage;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.junit.ClassRule;
 import org.junit.Test;
 
 import static life.catalogue.ApiUtils.userCreds;
@@ -18,7 +15,7 @@ import static org.junit.Assert.assertEquals;
 
 public class NameParserResourceTest extends ResourceTestBase {
 
-  GenericType<List<NameAccordingTo>> PARSER_TYPE = new GenericType<List<NameAccordingTo>>() {
+  GenericType<List<ParsedNameUsage>> PARSER_TYPE = new GenericType<List<ParsedNameUsage>>() {
   };
 
   public NameParserResourceTest() {
@@ -27,7 +24,7 @@ public class NameParserResourceTest extends ResourceTestBase {
 
   @Test
   public void parseGet() {
-    List<NameAccordingTo> resp = userCreds(base.queryParam("name", "Abies alba Mill.")
+    List<ParsedNameUsage> resp = userCreds(base.queryParam("name", "Abies alba Mill.")
                                                .queryParam("code", "botanical")
     ).get(PARSER_TYPE);
     

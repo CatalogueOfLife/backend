@@ -135,13 +135,13 @@ public class TxtTreeInserter implements NeoInserter {
 
   private NeoUsage usage(TreeNode tn, boolean synonym) {
     VerbatimRecord v = store.getVerbatim(line2verbatimKey.get(tn.id));
-    NameAccordingTo nat = NameParser.PARSER.parse(tn.name, tn.rank, null, v).get();
+    ParsedNameUsage nat = NameParser.PARSER.parse(tn.name, tn.rank, null, v).get();
     NeoUsage u = synonym ?
         NeoUsage.createSynonym(Origin.SOURCE, nat.getName(), TaxonomicStatus.SYNONYM) :
         NeoUsage.createTaxon(Origin.SOURCE, nat.getName(), TaxonomicStatus.ACCEPTED);
     u.setId(String.valueOf(tn.id));
     u.setVerbatimKey(v.getId());
-    u.usage.setAccordingToId(nat.getAccordingTo());
+    u.usage.setAccordingToId(nat.getTaxonomicNote());
     return u;
   }
 

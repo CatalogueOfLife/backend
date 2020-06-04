@@ -1,6 +1,6 @@
 package life.catalogue.importer.acef;
 
-import life.catalogue.api.model.NameAccordingTo;
+import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.importer.RelationInserterBase;
@@ -34,7 +34,7 @@ public class AcefRelationInserter extends RelationInserterBase {
       // finally we have all pieces to also interpret infraspecific names
       // even with a missing parent, we will still try to build a name
       final NeoName nn = store.nameByUsage(u.node);
-      Optional<NameAccordingTo> opt = Optional.empty();
+      Optional<ParsedNameUsage> opt = Optional.empty();
       if (p != null) {
         NeoName sp = store.nameByUsage(p);
         if (sp.name.getRank() != Rank.GENUS) {

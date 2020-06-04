@@ -88,7 +88,7 @@ public class AcefInterpreter extends InterpreterBase {
   
   private Optional<NeoUsage> interpretUsage(Term idTerm, VerbatimRecord v, boolean synonym) {
     // name
-    Optional<NameAccordingTo> nat = interpretName(idTerm, v);
+    Optional<ParsedNameUsage> nat = interpretName(idTerm, v);
     if (!nat.isPresent()) {
       return Optional.empty();
     }
@@ -113,7 +113,7 @@ public class AcefInterpreter extends InterpreterBase {
       u = NeoUsage.createTaxon(Origin.SOURCE, nat.get().getName(), status);
       Taxon t = u.getTaxon();
       t.setOrigin(Origin.SOURCE);
-      t.setAccordingToId(v.get(AcefTerm.LTSSpecialist));
+      t.setScrutinizer(v.get(AcefTerm.LTSSpecialist));
       t.setScrutinizerDate(fuzzydate(v, Issue.SCRUTINIZER_DATE_INVALID, AcefTerm.LTSDate));
       t.setExtinct(bool(v, Issue.IS_EXTINCT_INVALID, AcefTerm.IsExtinct));
       t.setRemarks(v.get(AcefTerm.AdditionalData));
@@ -123,8 +123,8 @@ public class AcefInterpreter extends InterpreterBase {
     }
     // for both synonyms and taxa
     u.usage.setLink(uri(v, Issue.URL_INVALID, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));
-    u.usage.addAccordingTo(nat.get().getAccordingTo());
-  
+    setAccordingTo(u.usage, nat.get().getTaxonomicNote(), v);
+
     u.setId(v.get(idTerm));
     u.setVerbatimKey(v.getId());
     // flat classification for any usage
@@ -167,7 +167,7 @@ public class AcefInterpreter extends InterpreterBase {
   /**
    * @return a parsed name or in case of AcceptedInfraSpecificTaxa
    */
-  private Optional<NameAccordingTo> interpretName(Term idTerm, VerbatimRecord v) {
+  private Optional<ParsedNameUsage> interpretName(Term idTerm, VerbatimRecord v) {
     String authorship;
     String rank;
     if (v.hasTerm(AcefTerm.InfraSpeciesEpithet)) {
@@ -197,10 +197,10 @@ public class AcefInterpreter extends InterpreterBase {
       v.addIssue(Issue.TRUNCATED_NAME);
     }
     
-    Optional<NameAccordingTo> opt;
+    Optional<ParsedNameUsage> opt;
     if (v.getType() == AcefTerm.AcceptedInfraSpecificTaxa) {
       // preliminary name with just id and rank
-      NameAccordingTo nat = new NameAccordingTo();
+      ParsedNameUsage nat = new ParsedNameUsage();
       nat.setName(new Name());
       nat.getName().setId(v.get(idTerm));
       nat.getName().setRank(
@@ -210,7 +210,7 @@ public class AcefInterpreter extends InterpreterBase {
 
     } else if (settings.getEnum(Setting.NOMENCLATURAL_CODE) == NomCode.VIRUS) {
       // we shortcut building the ACEF virus name here as we don't want the genus classification to end up in the full name
-      NameAccordingTo nat = new NameAccordingTo();
+      ParsedNameUsage nat = new ParsedNameUsage();
       nat.setName(new Name());
       nat.getName().setId(v.get(idTerm));
       nat.getName().setType(NameType.VIRUS);

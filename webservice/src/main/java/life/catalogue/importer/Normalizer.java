@@ -350,7 +350,7 @@ public class Normalizer implements Callable<Boolean> {
           Node n = store.getNeo().getNodeById(u.node.getId());
           Name name = store.names().objByNode(NeoProperties.getNameNode(n)).name;
           boolean ambigous = n.getDegree(RelType.SYNONYM_OF, Direction.OUTGOING) > 1;
-          boolean misapplied = MisappliedNameMatcher.isMisappliedName(new NameAccordingTo(name, syn.getAccordingToId(), null));
+          boolean misapplied = MisappliedNameMatcher.isMisappliedName(new ParsedNameUsage(name, syn.getAccordingToId(), null));
           TaxonomicStatus status = syn.getStatus();
 
           if (status == TaxonomicStatus.MISAPPLIED) {

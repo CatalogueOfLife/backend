@@ -2,7 +2,6 @@ package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  *
@@ -40,13 +39,7 @@ public interface NameUsage extends DSID<String>, VerbatimEntity {
   default boolean isBareName() {
     return getStatus() == null;
   }
-  
-  default void addAccordingTo(String accordingTo) {
-    if (!StringUtils.isBlank(accordingTo)) {
-      setAccordingToId( getAccordingToId() == null ? accordingTo.trim() : getAccordingToId() + " " + accordingTo.trim());
-    }
-  }
-  
+
   String getRemarks();
   
   void setRemarks(String remarks);

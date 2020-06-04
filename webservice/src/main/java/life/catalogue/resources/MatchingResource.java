@@ -10,7 +10,7 @@ import javax.ws.rs.core.MediaType;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
-import life.catalogue.api.model.NameAccordingTo;
+import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.parser.NameParser;
 import org.gbif.nameparser.api.NomCode;
@@ -48,7 +48,7 @@ public class MatchingResource {
   }
   
   static Name name(String name, Rank rank, NomCode code) {
-    Optional<NameAccordingTo> opt = NameParser.PARSER.parse(name, rank, code, IssueContainer.VOID);
+    Optional<ParsedNameUsage> opt = NameParser.PARSER.parse(name, rank, code, IssueContainer.VOID);
     if (opt.isPresent()) {
       Name n = opt.get().getName();
       // use parser determined code and rank in case nothing was given explicitly

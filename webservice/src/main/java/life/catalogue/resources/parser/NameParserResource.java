@@ -106,11 +106,11 @@ public class NameParserResource {
     }
   }
 
-  static class NATIssue extends NameAccordingTo {
+  static class NATIssue extends ParsedNameUsage {
     private Set<Issue> issues;
 
-    public NATIssue(NameAccordingTo nat, Set<Issue> issues) {
-      super(nat.getName(), nat.getAccordingTo(), nat.getPublishedIn());
+    public NATIssue(ParsedNameUsage nat, Set<Issue> issues) {
+      super(nat.getName(), nat.getTaxonomicNote(), nat.getPublishedIn());
       this.issues = issues;
     }
 
@@ -183,7 +183,7 @@ public class NameParserResource {
     return names
         .peek(n -> LOG.debug("Parse: {}", n))
         .map(n -> {
-          Optional<NameAccordingTo> parsed = parser.parse(n.name, n.rank, n.code, n);
+          Optional<ParsedNameUsage> parsed = parser.parse(n.name, n.rank, n.code, n);
           return parsed.map(nat -> new NATIssue(nat, n.issues));
         })
         .filter(Optional::isPresent)

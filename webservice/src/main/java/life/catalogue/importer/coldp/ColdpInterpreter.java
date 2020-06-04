@@ -209,7 +209,7 @@ public class ColdpInterpreter extends InterpreterBase {
   }
 
   Optional<NeoName> interpretName(VerbatimRecord v) {
-    Optional<NameAccordingTo> opt = interpretName(true, v.get(ColdpTerm.ID),
+    Optional<ParsedNameUsage> opt = interpretName(true, v.get(ColdpTerm.ID),
         v.get(ColdpTerm.rank), v.get(ColdpTerm.scientificName), v.get(ColdpTerm.authorship),
         v.get(ColdpTerm.genus), v.get(ColdpTerm.infragenericEpithet), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet),
         v.get(ColdpTerm.cultivarEpithet),

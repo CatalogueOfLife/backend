@@ -70,7 +70,7 @@ public class NameFormatter {
         appendAuthorship(nu.getName(), sb);
       }
     }
-    appendUsage(nu, sb);
+    appendUsage(nu, sb, html);
     String name = sb.toString().trim();
     return UnicodeUtils.decompose(name);
   }
@@ -377,10 +377,22 @@ public class NameFormatter {
     }
   }
 
-  private static void appendUsage(NameUsageBase nu, StringBuilder sb) {
+  private static void appendUsage(NameUsageBase nu, StringBuilder sb, boolean html) {
     if (nu.getNamePhrase() != null) {
       sb.append(" ");
       sb.append(nu.getNamePhrase());
+    }
+    if (nu.getAccordingTo() != null) {
+      sb.append(" ");
+      if (html) {
+        openItalics(sb);
+      }
+      sb.append("sensu");
+      if (html) {
+        closeItalics(sb);
+      }
+      sb.append(" ");
+      sb.append(nu.getAccordingTo());
     }
   }
 

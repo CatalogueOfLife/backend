@@ -45,7 +45,7 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(Distribution.class);
     kryo.register(Media.class);
     kryo.register(Name.class);
-    kryo.register(NameAccordingTo.class);
+    kryo.register(ParsedNameUsage.class);
     kryo.register(NameRelation.class);
     kryo.register(Page.class);
     kryo.register(ParsedName.class);

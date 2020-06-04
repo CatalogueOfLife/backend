@@ -81,6 +81,13 @@ public class InterpreterBase {
     return ref;
   }
 
+  protected void setAccordingTo(NameUsageBase u, String accordingTo, VerbatimRecord v) {
+    Reference ref = buildReference(accordingTo, v);
+    if (ref != null) {
+      u.setAccordingToId(ref.getId());
+    }
+  }
+
   protected void setPublishedIn(Name n, String publishedIn, VerbatimRecord v) {
     Reference ref = buildReference(publishedIn, v);
     if (ref != null) {
@@ -91,11 +98,14 @@ public class InterpreterBase {
   }
 
   protected Reference buildReference(String citation, VerbatimRecord v) {
-    Reference ref = refFactory.fromCitation(null, citation, v);
-    if (ref.getVerbatimKey() == null) {
-      // create new reference with verbatim key, we've never seen this before!
-      ref.setVerbatimKey(v.getId());
-      store.references().create(ref);
+    Reference ref = null;
+    if (!StringUtils.isBlank(citation)){
+      ref = refFactory.fromCitation(null, citation, v);
+      if (ref.getVerbatimKey() == null) {
+        // create new reference with verbatim key, we've never seen this before!
+        ref.setVerbatimKey(v.getId());
+        store.references().create(ref);
+      }
     }
     return ref;
   }
@@ -291,7 +301,7 @@ public class InterpreterBase {
     }
   }
 
-  public Optional<NameAccordingTo> interpretName(final boolean preferAtoms, final String id, final String vrank, final String sciname, final String authorship,
+  public Optional<ParsedNameUsage> interpretName(final boolean preferAtoms, final String id, final String vrank, final String sciname, final String authorship,
                                                  final String genus, final String infraGenus, final String species, final String infraspecies,
                                                  final String cultivar,
                                                  String nomCode, String nomStatus,
@@ -304,12 +314,12 @@ public class InterpreterBase {
     Rank rank = SafeParser.parse(RankParser.PARSER, vrank).orElse(Rank.UNRANKED, Issue.RANK_INVALID, v);
     final NomCode code = SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse(settings.getEnum(Setting.NOMENCLATURAL_CODE), Issue.NOMENCLATURAL_CODE_INVALID, v);
 
-    NameAccordingTo nat;
+    ParsedNameUsage nat;
 
     // we can get the scientific name in various ways.
     // we prefer already atomized names as we want to trust humans more than machines
     if (useAtoms) {
-      nat = new NameAccordingTo();
+      nat = new ParsedNameUsage();
       Name atom = new Name();
       nat.setName(atom);
 
@@ -332,7 +342,7 @@ public class InterpreterBase {
       }
 
       // parse the reconstructed name without authorship to detect name type and potential problems
-      Optional<NameAccordingTo> natFromAtom = NameParser.PARSER.parse(atom.buildScientificNameAuthorship(), rank, code, v);
+      Optional<ParsedNameUsage> natFromAtom = NameParser.PARSER.parse(atom.buildScientificNameAuthorship(), rank, code, v);
       if (natFromAtom.isPresent()) {
         final Name pn = natFromAtom.get().getName();
 

@@ -6,7 +6,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
-import life.catalogue.api.model.NameAccordingTo;
+import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
@@ -23,7 +23,7 @@ import java.util.Optional;
 /**
  * Wrapper around the GBIF Name parser to deal with the col Name class and API.
  */
-public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
+public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   private static Logger LOG = LoggerFactory.getLogger(NameParser.class);
   public static final NameParser PARSER = new NameParser();
   private static final NameParserGBIF PARSER_INTERNAL = new NameParserGBIF();
@@ -62,7 +62,7 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
    * @deprecated use parse(name, rank, code, issues) instead!
    */
   @Deprecated
-  public Optional<NameAccordingTo> parse(String name) {
+  public Optional<ParsedNameUsage> parse(String name) {
     return parse(name, Rank.UNRANKED, null, IssueContainer.VOID);
   }
   
@@ -85,9 +85,9 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
    * Populates the parsed authorship of a given name instance by parsing a single authorship string.
    * Only parses the authorship if the name itself is already parsed.
    */
-  public void parseAuthorshipIntoName(NameAccordingTo nat, String authorship, IssueContainer v){
+  public void parseAuthorshipIntoName(ParsedNameUsage pnu, String authorship, IssueContainer v){
     // try to add an authorship if not yet there
-    if (nat.getName().isParsed() && !Strings.isNullOrEmpty(authorship)) {
+    if (pnu.getName().isParsed() && !Strings.isNullOrEmpty(authorship)) {
       ParsedAuthorship pnAuthorship = parseAuthorship(authorship).orElseGet(() -> {
         LOG.info("Unparsable authorship {}", authorship);
         v.addIssue(Issue.UNPARSABLE_AUTHORSHIP);
@@ -98,19 +98,19 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
       });
     
       // we might have already parsed an authorship from the scientificName string which does not match up?
-      if (nat.getName().hasAuthorship() &&
-          !nat.getName().buildAuthorship().equalsIgnoreCase(pnAuthorship.authorshipComplete())) {
+      if (pnu.getName().hasAuthorship() &&
+          !pnu.getName().buildAuthorship().equalsIgnoreCase(pnAuthorship.authorshipComplete())) {
         v.addIssue(Issue.INCONSISTENT_AUTHORSHIP);
         LOG.info("Different authorship found in name {} than in parsed version: [{}] vs [{}]",
-            nat.getName(), nat.getName().buildAuthorship(), pnAuthorship.authorshipComplete());
+            pnu.getName(), pnu.getName().buildAuthorship(), pnAuthorship.authorshipComplete());
       }
-      nat.getName().setCombinationAuthorship(pnAuthorship.getCombinationAuthorship());
-      nat.getName().setSanctioningAuthor(pnAuthorship.getSanctioningAuthor());
-      nat.getName().setBasionymAuthorship(pnAuthorship.getBasionymAuthorship());
+      pnu.getName().setCombinationAuthorship(pnAuthorship.getCombinationAuthorship());
+      pnu.getName().setSanctioningAuthor(pnAuthorship.getSanctioningAuthor());
+      pnu.getName().setBasionymAuthorship(pnAuthorship.getBasionymAuthorship());
       // propagate notes and unparsed bits found in authorship
-      nat.getName().setNomenclaturalNote(pnAuthorship.getNomenclaturalNote());
-      nat.getName().setUnparsed(pnAuthorship.getUnparsed());
-      nat.addAccordingTo(pnAuthorship.getTaxonomicNote());
+      pnu.getName().setNomenclaturalNote(pnAuthorship.getNomenclaturalNote());
+      pnu.getName().setUnparsed(pnAuthorship.getUnparsed());
+      pnu.addAccordingTo(pnAuthorship.getTaxonomicNote());
     }
   }
   
@@ -118,7 +118,7 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
    * Fully parses a name using #parse(String, Rank) but converts names that throw a UnparsableException
    * into ParsedName objects with the scientific name, rank and name type given.
    */
-  public Optional<NameAccordingTo> parse(String name, Rank rank, NomCode code, IssueContainer issues) {
+  public Optional<ParsedNameUsage> parse(String name, Rank rank, NomCode code, IssueContainer issues) {
     Name n = new Name();
     n.setScientificName(name);
     n.setRank(rank);
@@ -132,24 +132,24 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
    *
    * Populates a given name instance with the parsing results.
    */
-  public Optional<NameAccordingTo> parse(Name n, IssueContainer issues) {
+  public Optional<ParsedNameUsage> parse(Name n, IssueContainer issues) {
     if (StringUtils.isBlank(n.getScientificName())) {
       return Optional.empty();
     }
-    NameAccordingTo nat;
+    ParsedNameUsage pnu;
     Timer.Context ctx = timer == null ? null : timer.time();
     try {
-      nat = natFromParsedName(n, PARSER_INTERNAL.parse(n.getScientificName(), n.getRank(), n.getCode()), issues);
-      nat.getName().updateNameCache();
+      pnu = fromParsedName(n, PARSER_INTERNAL.parse(n.getScientificName(), n.getRank(), n.getCode()), issues);
+      pnu.getName().updateNameCache();
       
     } catch (UnparsableNameException e) {
-      nat = new NameAccordingTo();
-      nat.setName(n);
-      nat.getName().setRank(n.getRank());
-      nat.getName().setScientificName(e.getName());
-      nat.getName().setType(e.getType());
+      pnu = new ParsedNameUsage();
+      pnu.setName(n);
+      pnu.getName().setRank(n.getRank());
+      pnu.getName().setScientificName(e.getName());
+      pnu.getName().setType(e.getType());
       // adds an issue in case the type indicates a parsable name
-      if (nat.getName().getType().isParsable()) {
+      if (pnu.getName().getType().isParsable()) {
         issues.addIssue(Issue.UNPARSABLE_NAME);
       }
     } finally {
@@ -157,7 +157,7 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
         ctx.stop();
       }
     }
-    return Optional.of(nat);
+    return Optional.of(pnu);
   }
   
   public Optional<NameType> determineType(Name name) {
@@ -177,13 +177,13 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
   /**
    * Uses an existing name instance to populate from a ParsedName instance
    */
-  private static NameAccordingTo natFromParsedName(Name n, ParsedName pn, IssueContainer issues) {
+  private static ParsedNameUsage fromParsedName(Name n, ParsedName pn, IssueContainer issues) {
     updateNamefromParsedName(n, pn, issues);
-    NameAccordingTo nat = new NameAccordingTo();
-    nat.setName(n);
-    nat.setAccordingTo(pn.getTaxonomicNote());
-    nat.setPublishedIn(pn.getPublishedIn());
-    return nat;
+    ParsedNameUsage pnu = new ParsedNameUsage();
+    pnu.setName(n);
+    pnu.setTaxonomicNote(pn.getTaxonomicNote());
+    pnu.setPublishedIn(pn.getPublishedIn());
+    return pnu;
   }
 
   /**

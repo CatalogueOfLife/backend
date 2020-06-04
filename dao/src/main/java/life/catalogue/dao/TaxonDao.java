@@ -81,8 +81,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       List<Name> group = Lists.newArrayList();
       for (Synonym s : sm.listByTaxon(datasetKey, taxonId)) {
         if (TaxonomicStatus.MISAPPLIED == s.getStatus()) {
-          //TODO: should we lookup the reference ids???
-          syn.addMisapplied(new NameAccordingTo(s.getName(), s.getAccordingToId(), s.getName().getPublishedInId()));
+          syn.addMisapplied(s);
         } else {
           if (accName.getHomotypicNameId().equals(s.getName().getHomotypicNameId())) {
             syn.getHomotypic().add(s.getName());

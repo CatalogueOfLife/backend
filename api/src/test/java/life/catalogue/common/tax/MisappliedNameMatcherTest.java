@@ -1,7 +1,7 @@
 package life.catalogue.common.tax;
 
 import life.catalogue.api.model.Name;
-import life.catalogue.api.model.NameAccordingTo;
+import life.catalogue.api.model.ParsedNameUsage;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,7 +11,7 @@ import static org.junit.Assert.assertTrue;
 
 public class MisappliedNameMatcherTest {
   Name n;
-  NameAccordingTo nat;
+  ParsedNameUsage nat;
 
   @Before
   public void init() {
@@ -19,7 +19,7 @@ public class MisappliedNameMatcherTest {
     n.setRank(Rank.SPECIES);
     n.setGenus("Abies");
     n.setSpecificEpithet("alba");
-    nat = new NameAccordingTo(n, null, null);
+    nat = new ParsedNameUsage(n, null, null);
   }
 
   @Test
@@ -40,12 +40,12 @@ public class MisappliedNameMatcherTest {
   }
 
   private void nonMisapplied(String accordingTo) {
-    nat.setAccordingTo(accordingTo);
+    nat.setTaxonomicNote(accordingTo);
     assertFalse(MisappliedNameMatcher.isMisappliedName(nat));
   }
 
   private void misapplied(String accordingTo) {
-    nat.setAccordingTo(accordingTo);
+    nat.setTaxonomicNote(accordingTo);
     assertTrue(MisappliedNameMatcher.isMisappliedName(nat));
   }
 }

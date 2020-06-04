@@ -7,17 +7,17 @@ import java.util.Objects;
 /**
  *
  */
-public class NameAccordingTo {
+public class ParsedNameUsage {
   private Name name;
-  private String accordingTo;
+  private String taxonomicNote;
   private String publishedIn;
 
-  public NameAccordingTo() {
+  public ParsedNameUsage() {
   }
   
-  public NameAccordingTo(Name name, String accordingTo, String publishedIn) {
+  public ParsedNameUsage(Name name, String taxonomicNote, String publishedIn) {
     this.name = name;
-    this.accordingTo = accordingTo;
+    this.taxonomicNote = taxonomicNote;
     this.publishedIn = publishedIn;
   }
   
@@ -29,17 +29,17 @@ public class NameAccordingTo {
     this.name = name;
   }
   
-  public String getAccordingTo() {
-    return accordingTo;
+  public String getTaxonomicNote() {
+    return taxonomicNote;
   }
   
-  public void setAccordingTo(String accordingTo) {
-    this.accordingTo = accordingTo;
+  public void setTaxonomicNote(String taxonomicNote) {
+    this.taxonomicNote = taxonomicNote;
   }
   
   public void addAccordingTo(String accordingTo) {
     if (!StringUtils.isBlank(accordingTo)) {
-      this.accordingTo = this.accordingTo == null ? accordingTo.trim() : this.accordingTo + " " + accordingTo.trim();
+      this.taxonomicNote = this.taxonomicNote == null ? accordingTo.trim() : this.taxonomicNote + " " + accordingTo.trim();
     }
   }
 
@@ -54,15 +54,15 @@ public class NameAccordingTo {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof NameAccordingTo)) return false;
-    NameAccordingTo that = (NameAccordingTo) o;
+    if (!(o instanceof ParsedNameUsage)) return false;
+    ParsedNameUsage that = (ParsedNameUsage) o;
     return Objects.equals(name, that.name) &&
-      Objects.equals(accordingTo, that.accordingTo) &&
+      Objects.equals(taxonomicNote, that.taxonomicNote) &&
       Objects.equals(publishedIn, that.publishedIn);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, accordingTo, publishedIn);
+    return Objects.hash(name, taxonomicNote, publishedIn);
   }
 }

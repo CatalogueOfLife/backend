@@ -291,10 +291,10 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
             final String name = n2.getScientificName() + " " + coalesce(n2.getAuthorship(), "");
             NomCode code = coalesce(n2.getCode(), n.getCode());
             Rank rank = coalesce(n2.getRank(), n.getRank());
-            NameAccordingTo nat = NameParser.PARSER.parse(name, rank, code, IssueContainer.VOID).orElseGet(() -> {
+            ParsedNameUsage nat = NameParser.PARSER.parse(name, rank, code, IssueContainer.VOID).orElseGet(() -> {
               LOG.warn("Unparsable decision name {}", name);
               // add the full, unparsed authorship in this case to not lose it
-              NameAccordingTo nat2 = new NameAccordingTo();
+              ParsedNameUsage nat2 = new ParsedNameUsage();
               nat2.getName().setScientificName(n2.getScientificName());
               nat2.getName().setAuthorship(n2.getAuthorship());
               return nat2;

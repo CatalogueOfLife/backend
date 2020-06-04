@@ -2,7 +2,7 @@ package life.catalogue.common.tax;
 
 import java.util.regex.Pattern;
 
-import life.catalogue.api.model.NameAccordingTo;
+import life.catalogue.api.model.ParsedNameUsage;
 
 /**
  * Utility class that detects misapplied names mostly based on their taxonomic remarks.
@@ -23,9 +23,9 @@ public class MisappliedNameMatcher {
    *
    * @return true if a misapplied name format was detected
    */
-  public static boolean isMisappliedName(NameAccordingTo nat) {
-    if (nat != null && nat.getName() != null && nat.getAccordingTo() != null && nat.getName().getRank().isSpeciesOrBelow()) {
-      return MIS_PATTERN.matcher(nat.getAccordingTo()).find();
+  public static boolean isMisappliedName(ParsedNameUsage nat) {
+    if (nat != null && nat.getName() != null && nat.getTaxonomicNote() != null && nat.getName().getRank().isSpeciesOrBelow()) {
+      return MIS_PATTERN.matcher(nat.getTaxonomicNote()).find();
     }
     return false;
   }

@@ -21,9 +21,9 @@ public class NeoName implements NeoNode, DSID<String>, VerbatimEntity {
   public NeoName() {
   }
   
-  public NeoName(NameAccordingTo nat) {
+  public NeoName(ParsedNameUsage nat) {
     this.name = nat.getName();
-    this.accordingTo = nat.getAccordingTo();
+    this.accordingTo = nat.getTaxonomicNote();
   }
 
   public NeoName(Name name) {

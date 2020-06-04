@@ -1,6 +1,7 @@
 package life.catalogue.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -27,6 +28,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   private Origin origin;
   private String parentId;
   private String namePhrase;
+  private String accordingTo; // read-only
   private String accordingToId;
   private URI link;
   private String remarks;
@@ -111,7 +113,16 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   public void setParentId(String key) {
     this.parentId = key;
   }
-  
+
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  public String getAccordingTo() {
+    return accordingTo;
+  }
+
+  public void setAccordingTo(String accordingTo) {
+    this.accordingTo = accordingTo;
+  }
+
   @Override
   public String getAccordingToId() {
     return accordingToId;
