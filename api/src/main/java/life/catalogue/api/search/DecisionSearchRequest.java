@@ -15,7 +15,10 @@ public class DecisionSearchRequest {
   
   @QueryParam("subjectDatasetKey")
   private Integer subjectDatasetKey;
-  
+
+  @QueryParam("name")
+  private String name;
+
   @QueryParam("rank")
   private Rank rank;
   
@@ -80,7 +83,15 @@ public class DecisionSearchRequest {
   public void setMode(EditorialDecision.Mode mode) {
     this.mode = mode;
   }
-  
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
   public Rank getRank() {
     return rank;
   }
@@ -123,6 +134,7 @@ public class DecisionSearchRequest {
       Objects.equals(id, that.id) &&
       Objects.equals(datasetKey, that.datasetKey) &&
       Objects.equals(subjectDatasetKey, that.subjectDatasetKey) &&
+      Objects.equals(name, that.name) &&
       rank == that.rank &&
       mode == that.mode &&
       Objects.equals(modifiedBy, that.modifiedBy);
@@ -130,6 +142,6 @@ public class DecisionSearchRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, datasetKey, subjectDatasetKey, rank, mode, modifiedBy, subject, broken);
+    return Objects.hash(id, datasetKey, subjectDatasetKey, name, rank, mode, modifiedBy, subject, broken);
   }
 }

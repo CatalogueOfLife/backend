@@ -2,22 +2,19 @@ package life.catalogue.resources;
 
 import com.google.common.base.Preconditions;
 import io.dropwizard.auth.Auth;
-import life.catalogue.api.model.User;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
+import life.catalogue.api.model.User;
 import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.dao.DecisionDao;
 import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.dw.auth.Roles;
-import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -43,7 +40,6 @@ public class DecisionResource extends AbstractDatasetScopedResource<Integer, Edi
     } else {
       req.setDatasetKey(datasetKey);
     }
-    req.setDatasetKey(datasetKey);
     return dao.search(req, page);
   }
 
