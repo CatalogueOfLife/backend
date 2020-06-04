@@ -13,7 +13,6 @@ import life.catalogue.importer.reference.ReferenceFactory;
 import life.catalogue.parser.EnumNote;
 import life.catalogue.parser.NomRelTypeParser;
 import life.catalogue.parser.SafeParser;
-import life.catalogue.parser.TaxonomicStatusParser;
 import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.DwcaTerm;
@@ -39,40 +38,20 @@ public class DwcInterpreter extends InterpreterBase {
     this.mappingFlags = mappingFlags;
   }
 
-  public Optional<NeoUsage> interpret(VerbatimRecord v) {
+  public Optional<NeoUsage> interpretUsage(VerbatimRecord v) {
     // name
     Optional<ParsedNameUsage> nat = interpretName(v);
-    if (nat.isPresent()) {
-      EnumNote<TaxonomicStatus> status = SafeParser.parse(TaxonomicStatusParser.PARSER, v.get(DwcTerm.taxonomicStatus)).orElse(NO_STATUS);
-      // usage
-      NeoUsage u;
-      // a synonym by status?
-      // we deal with relations via DwcTerm.acceptedNameUsageID and DwcTerm.acceptedNameUsage
-      // during relation insertion
-      if (status.val.isSynonym()) {
-        u = NeoUsage.createSynonym(Origin.SOURCE, nat.get().getName(), status.val);
-      } else {
-        u = NeoUsage.createTaxon(Origin.SOURCE, nat.get().getName(), status.val);
-        interpretTaxon(u, v, status);
+    Optional<NeoUsage> optUsage = interpretUsage(nat, DwcTerm.taxonomicStatus, v, DwcTerm.taxonID, DwcaTerm.ID);
+    optUsage.ifPresent(u -> {
+      u.usage.setLink(uri(v, Issue.URL_INVALID, DcTerm.references));
+      u.usage.setRemarks(v.get(DwcTerm.taxonRemarks));
+      // explicit accordingTo & namePhrase - the authorship could already have set these properties!
+      if (v.hasTerm(DwcTerm.nameAccordingTo)) {
+        setAccordingTo(u.usage, v.get(DwcTerm.nameAccordingTo), v);
       }
-  
-      // shared usage props
-      u.setId(v.getFirstRaw(DwcTerm.taxonID, DwcaTerm.ID));
-      u.setVerbatimKey(v.getId());
-      u.usage.setAccordingToId(v.get(DwcTerm.nameAccordingTo));
-      u.usage.addAccordingTo(nat.get().getTaxonomicNote());
-      setAccordingTo(u.usage, nat.get().getTaxonomicNote(), v);
-
-      u.homotypic = TaxonomicStatusParser.isHomotypic(status);
-
-      // flat classification
-      u.classification = new Classification();
-      for (DwcTerm dwc : DwcTerm.HIGHER_RANKS) {
-        u.classification.setByTerm(dwc, v.get(dwc));
-      }
-      return Optional.of(u);
-    }
-    return Optional.empty();
+      interpretTaxon(u, v);
+    });
+    return optUsage;
   }
   
   Optional<NeoRel> interpretNameRelations(VerbatimRecord rec) {
@@ -171,14 +150,12 @@ public class DwcInterpreter extends InterpreterBase {
     }
   }
 
-  private void interpretTaxon(NeoUsage u, VerbatimRecord v, EnumNote<TaxonomicStatus> status) {
-    Taxon tax = u.getTaxon();
-    // this can be a synonym at this stage which the class does not accept
-    tax.setStatus(status.val.isSynonym() ? TaxonomicStatus.PROVISIONALLY_ACCEPTED : status.val);
-    tax.setLink(uri(v, Issue.URL_INVALID, DcTerm.references));
-    tax.setExtinct(null);
-    // t.setLifezones();
-    tax.setRemarks(v.get(DwcTerm.taxonRemarks));
+  private void interpretTaxon(NeoUsage u, VerbatimRecord v) {
+    if (!u.isSynonym()) {
+      Taxon tax = u.getTaxon();
+      tax.setExtinct(null);
+      // TODO: lifezones come through the species profile extension.
+    }
   }
   
   private Optional<ParsedNameUsage> interpretName(VerbatimRecord v) {

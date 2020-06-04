@@ -3,8 +3,10 @@ package life.catalogue.api.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.vocab.Issue;
 import org.apache.commons.text.StringEscapeUtils;
+import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -155,7 +157,31 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
   public boolean hasIssue(Issue issue) {
     return issues.contains(issue);
   }
-  
+
+  /**
+   * @return true if at least one term in the DwC namespace exists
+   */
+  public boolean hasDwcTerms() {
+    for (Term t : terms.keySet()) {
+      if (t instanceof DwcTerm) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * @return true if at least one term in the ColDP namespace exists
+   */
+  public boolean hasColdpTerms() {
+    for (Term t : terms.keySet()) {
+      if (t instanceof ColdpTerm) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   private String unescape(String x) {
     if (Strings.isNullOrEmpty(x)) {
       return null;

@@ -1,14 +1,17 @@
 package life.catalogue.importer;
 
 import com.google.common.collect.Lists;
+import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.importer.neo.NeoDb;
+import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.reference.ReferenceFactory;
 import life.catalogue.parser.*;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
@@ -39,7 +42,8 @@ public class InterpreterBase {
   private static final int MIN_YEAR = 1500;
   private static final int MAX_YEAR = Year.now().getValue() + 10;
   private static final Pattern YEAR_PATTERN = Pattern.compile("^(\\d{3,4})\\s*(\\?)?(?!\\d)");
-  
+  private static final EnumNote<TaxonomicStatus> NO_STATUS = new EnumNote<>(TaxonomicStatus.ACCEPTED, null);
+
   protected final NeoDb store;
   protected final DatasetSettings settings;
   private final Gazetteer distributionStandard;
@@ -406,6 +410,42 @@ public class InterpreterBase {
     nat.getName().updateNameCache();
 
     return Optional.of(nat);
+  }
+
+  public Optional<NeoUsage> interpretUsage(Optional<ParsedNameUsage> optName, Term taxStatusTerm, VerbatimRecord v, Term... idTerms) {
+    return optName.map(pnu -> {
+      NeoUsage u;
+      // a synonym by status?
+      EnumNote<TaxonomicStatus> status = SafeParser.parse(TaxonomicStatusParser.PARSER, v.get(taxStatusTerm)).orElse(NO_STATUS);
+      if (status.val.isSynonym()) {
+        u = NeoUsage.createSynonym(Origin.SOURCE, pnu.getName(), status.val);
+      } else {
+        u = NeoUsage.createTaxon(Origin.SOURCE, pnu.getName(), status.val);
+      }
+
+      // shared usage props
+      u.setId(v.getFirstRaw(idTerms));
+      u.setVerbatimKey(v.getId());
+      u.usage.setAccordingToId(null);
+      u.usage.setNamePhrase(pnu.getTaxonomicNote());
+      setAccordingTo(u.usage, pnu.getTaxonomicNote(), v);
+
+      u.homotypic = TaxonomicStatusParser.isHomotypic(status);
+
+      // flat classification via dwc or coldp
+      u.classification = new Classification();
+      if (v.hasDwcTerms()) {
+        for (DwcTerm t : DwcTerm.HIGHER_RANKS) {
+          u.classification.setByTerm(t, v.get(t));
+        }
+      }
+      if (v.hasColdpTerms()) {
+        for (ColdpTerm t : ColdpTerm.DENORMALIZED_RANKS) {
+          u.classification.setByTerm(t, v.get(t));
+        }
+      }
+      return u;
+    });
   }
 
   protected void setLifezones(Taxon t, VerbatimRecord v, Term lifezone) {

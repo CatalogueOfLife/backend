@@ -40,7 +40,7 @@ public class DwcaInserter extends NeoCsvInserter {
 
     // taxon core only, extensions are interpreted later
     insertEntities(reader, DwcTerm.Taxon,
-        inter::interpret,
+        inter::interpretUsage,
         u -> store.createNameAndUsage(u) != null
     );
 
