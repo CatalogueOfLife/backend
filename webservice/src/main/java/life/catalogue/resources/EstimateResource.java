@@ -42,8 +42,8 @@ public class EstimateResource extends AbstractDatasetScopedResource<Integer, Spe
 
   @POST
   @Path("/rematch")
-  public RematcherBase.MatchCounter rematch(@PathParam("key") int key, RematchRequest req, @Auth User user) {
-    req.setDatasetKey(key);
+  public RematcherBase.MatchCounter rematch(@PathParam("datasetKey") int projectKey, RematchRequest req, @Auth User user) {
+    req.setDatasetKey(projectKey);
     return EstimateRematcher.match(dao, req, user.getKey());
   }
 }

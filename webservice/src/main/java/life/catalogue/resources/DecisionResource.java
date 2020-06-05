@@ -45,23 +45,23 @@ public class DecisionResource extends AbstractDatasetScopedResource<Integer, Edi
 
   @DELETE
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void deleteByDataset(@PathParam("datasetKey") int catalogueKey,
+  public void deleteByDataset(@PathParam("datasetKey") int projectKey,
                               @QueryParam("datasetKey") Integer datasetKey,
                               @Context SqlSession session, @Auth User user) {
     Preconditions.checkNotNull(datasetKey, "datasetKey parameter is required");
     DecisionMapper mapper = session.getMapper(DecisionMapper.class);
     int counter = 0;
-    for (EditorialDecision d : mapper.processDecisions(catalogueKey, datasetKey)) {
+    for (EditorialDecision d : mapper.processDecisions(projectKey, datasetKey)) {
       dao.delete(d.getKey(), user.getKey());
       counter++;
     }
-    LOG.info("Deleted {} decisions for dataset {} in catalogue {}", counter, datasetKey, catalogueKey);
+    LOG.info("Deleted {} decisions for dataset {} in catalogue {}", counter, datasetKey, projectKey);
   }
 
   @POST
   @Path("/rematch")
-  public RematcherBase.MatchCounter rematch(@PathParam("key") int key, DecisionRematchRequest req, @Auth User user) {
-    req.setDatasetKey(key);
+  public RematcherBase.MatchCounter rematch(@PathParam("datasetKey") int projectKey, DecisionRematchRequest req, @Auth User user) {
+    req.setDatasetKey(projectKey);
     return DecisionRematcher.match(dao, req, user.getKey());
   }
 
