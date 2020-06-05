@@ -56,6 +56,18 @@ public enum Setting {
    */
   RELEASE_TITLE_TEMPLATE(String.class, MANAGED),
 
+  /**
+   * Template used to build a new release alias.
+   * See RELEASE_TITLE_TEMPLATE for usage.
+   */
+  RELEASE_ALIAS_TEMPLATE(String.class, MANAGED),
+
+  /**
+   * Template used to build a new release citation.
+   * See RELEASE_TITLE_TEMPLATE for usage.
+   */
+  RELEASE_CITATION_TEMPLATE(String.class, MANAGED),
+
   DATA_FORMAT(DataFormat.class, EXTERNAL, MANAGED),
 
   /**
