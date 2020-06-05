@@ -68,7 +68,7 @@ public class SectorRematcherTest {
     }
 
     req.setSubjectDatasetKey(null);
-    req.setMatchTarget(true);
+    req.setTarget(true);
     SectorRematcher.match(dao, req, Users.TESTER);
 
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {

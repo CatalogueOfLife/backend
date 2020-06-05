@@ -5,7 +5,7 @@ import java.util.Objects;
 public class RematchRequest {
   private Integer id;
   private int datasetKey; // project
-  private boolean brokenOnly;
+  private boolean broken;
 
   public RematchRequest() {
   }
@@ -14,9 +14,9 @@ public class RematchRequest {
     this.id = id;
   }
 
-  public RematchRequest(int datasetKey, boolean brokenOnly) {
+  public RematchRequest(int datasetKey, boolean broken) {
     this.datasetKey = datasetKey;
-    this.brokenOnly = brokenOnly;
+    this.broken = broken;
   }
 
 
@@ -36,12 +36,12 @@ public class RematchRequest {
     this.id = id;
   }
 
-  public boolean isBrokenOnly() {
-    return brokenOnly;
+  public boolean isBroken() {
+    return broken;
   }
 
-  public void setBrokenOnly(boolean brokenOnly) {
-    this.brokenOnly = brokenOnly;
+  public void setBroken(boolean broken) {
+    this.broken = broken;
   }
 
   @Override
@@ -50,12 +50,12 @@ public class RematchRequest {
     if (!(o instanceof RematchRequest)) return false;
     RematchRequest that = (RematchRequest) o;
     return datasetKey == that.datasetKey &&
-      brokenOnly == that.brokenOnly &&
+      broken == that.broken &&
       Objects.equals(id, that.id);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, id, brokenOnly);
+    return Objects.hash(datasetKey, id, broken);
   }
 }

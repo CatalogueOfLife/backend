@@ -32,7 +32,7 @@ public class SectorRematcher extends RematcherBase<Sector, SectorRematchRequest,
   void match(Sector obj) {
     final Sector old = new Sector(obj);
     // subject
-    if (req.isMatchSubject() && obj.getSubject() != null) {
+    if (req.isSubject() && obj.getSubject() != null) {
       NameUsage u = matchSubjectUniquely(obj.getSubjectDatasetKey(), obj, obj.getSubject());
       obj.getSubject().setId(null);
       if (u != null) {
@@ -46,7 +46,7 @@ public class SectorRematcher extends RematcherBase<Sector, SectorRematchRequest,
       }
     }
     // target can have multiple sectors
-    if (req.isMatchTarget() && obj.getTarget() != null) {
+    if (req.isTarget() && obj.getTarget() != null) {
       NameUsage u = matchTargetUniquely(obj, obj.getTarget());
       obj.getTarget().setId(null);
       if (u != null) {

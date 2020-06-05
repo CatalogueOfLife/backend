@@ -27,7 +27,7 @@ public class EstimateRematcher extends RematcherBase<SpeciesEstimate, RematchReq
   EstimateSearchRequest toSearchRequest(RematchRequest req) {
     EstimateSearchRequest sr = new EstimateSearchRequest();
     sr.setDatasetKey(req.getDatasetKey());
-    sr.setBroken(req.isBrokenOnly());
+    sr.setBroken(req.isBroken());
     return sr;
   }
 

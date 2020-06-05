@@ -6,8 +6,8 @@ import java.util.Objects;
 
 public class SectorRematchRequest extends RematchRequest {
   private Integer subjectDatasetKey;
-  private boolean matchTarget = false;
-  private boolean matchSubject = true;
+  private boolean target = false;
+  private boolean subject = true;
 
   public SectorRematchRequest() {
   }
@@ -34,25 +34,25 @@ public class SectorRematchRequest extends RematchRequest {
     this.subjectDatasetKey = subjectDatasetKey;
   }
 
-  public boolean isMatchTarget() {
-    return matchTarget;
+  public boolean isTarget() {
+    return target;
   }
 
-  public void setMatchTarget(boolean matchTarget) {
-    this.matchTarget = matchTarget;
+  public void setTarget(boolean target) {
+    this.target = target;
   }
 
-  public boolean isMatchSubject() {
-    return matchSubject;
+  public boolean isSubject() {
+    return subject;
   }
 
-  public void setMatchSubject(boolean matchSubject) {
-    this.matchSubject = matchSubject;
+  public void setSubject(boolean subject) {
+    this.subject = subject;
   }
 
   public SectorSearchRequest buildSearchRequest() {
     SectorSearchRequest search = SectorSearchRequest.byProject(getDatasetKey());
-    search.setBroken(isBrokenOnly());
+    search.setBroken(isBroken());
     if (getSubjectDatasetKey() != null) {
       search.setSubjectDatasetKey(getSubjectDatasetKey());
     }
@@ -65,13 +65,13 @@ public class SectorRematchRequest extends RematchRequest {
     if (!(o instanceof SectorRematchRequest)) return false;
     if (!super.equals(o)) return false;
     SectorRematchRequest that = (SectorRematchRequest) o;
-    return matchTarget == that.matchTarget &&
-      matchSubject == that.matchSubject &&
+    return target == that.target &&
+      subject == that.subject &&
       Objects.equals(subjectDatasetKey, that.subjectDatasetKey);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), subjectDatasetKey, matchTarget, matchSubject);
+    return Objects.hash(super.hashCode(), subjectDatasetKey, target, subject);
   }
 }

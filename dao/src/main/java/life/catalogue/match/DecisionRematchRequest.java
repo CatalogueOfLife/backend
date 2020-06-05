@@ -34,7 +34,7 @@ public class DecisionRematchRequest extends RematchRequest {
 
   public DecisionSearchRequest buildSearchRequest() {
     DecisionSearchRequest search = DecisionSearchRequest.byProject(getDatasetKey());
-    search.setBroken(isBrokenOnly());
+    search.setBroken(isBroken());
     if (getSubjectDatasetKey() != null) {
       search.setSubjectDatasetKey(getSubjectDatasetKey());
     }
