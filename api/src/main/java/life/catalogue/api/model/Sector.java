@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.EntityType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
+import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -51,6 +52,25 @@ public class Sector extends DatasetScopedEntity<Integer> {
      * This operation will only create new names and try to avoid the creation of duplicates automatically.
      */
     MERGE
+  }
+
+  public Sector() {
+  }
+
+  public Sector(Sector other) {
+    super(other);
+    this.target = new SimpleName(other.target);
+    this.subjectDatasetKey = other.subjectDatasetKey;
+    this.subject = new SimpleName(other.subject);
+    this.originalSubjectId = other.originalSubjectId;
+    this.mode = other.mode;
+    this.syncAttempt = other.syncAttempt;
+    this.datasetImportAttempt = other.datasetImportAttempt;
+    this.code = other.code;
+    this.placeholderRank = other.placeholderRank;
+    this.ranks = other.ranks == null ? null : EnumSet.copyOf(other.ranks);
+    this.entities = other.entities == null ? null : EnumSet.copyOf(other.entities);
+    this.note = other.note;
   }
 
   /**

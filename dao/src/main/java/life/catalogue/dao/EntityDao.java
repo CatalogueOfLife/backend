@@ -39,7 +39,11 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
     this.factory = factory;
     this.mapperClass = mapperClass;
   }
-  
+
+  public SqlSessionFactory getFactory() {
+    return factory;
+  }
+
   ResultPage<T> list(Class<? extends DatasetPageable<T>> mapperClass, int datasetKey, Page page) {
     Page p = page == null ? new Page() : page;
     try (SqlSession session = factory.openSession()) {
@@ -82,12 +86,21 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
     try (SqlSession session = factory.openSession(false)) {
       M mapper = session.getMapper(mapperClass);
       T old = offerChangedHook ? mapper.get(obj.getKey()) : null;
+      return update(obj, old, user, session);
+    }
+  }
+
+  /**
+   * Update method that takes the old version of the object so the before/after hooks can use them.
+   * Useful if the old object exists already and avoids reloading it from the database as update(obj, user) does.
+   */
+  public int update(T obj, T old, int user, SqlSession session) {
+      M mapper = session.getMapper(mapperClass);
       updateBefore(obj, old, user, mapper, session);
       int changed = mapper.update(obj);
       session.commit();
       updateAfter(obj, old, user, mapper, session);
       return changed;
-    }
   }
   
   protected void updateBefore(T obj, T old, int user, M mapper, SqlSession session) {

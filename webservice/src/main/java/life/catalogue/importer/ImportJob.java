@@ -4,10 +4,7 @@ import com.google.common.base.Preconditions;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.DatasetWithSettings;
-import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.ImportState;
-import life.catalogue.api.vocab.Setting;
+import life.catalogue.api.vocab.*;
 import life.catalogue.common.concurrent.StartNotifier;
 import life.catalogue.common.io.ChecksumUtils;
 import life.catalogue.common.io.CompressionUtil;
@@ -16,7 +13,8 @@ import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.SubjectRematcher;
+import life.catalogue.dao.DecisionDao;
+import life.catalogue.dao.SectorDao;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
@@ -24,6 +22,10 @@ import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
 import life.catalogue.importer.proxy.ArchiveDescriptor;
 import life.catalogue.importer.proxy.DistributedArchiveService;
+import life.catalogue.match.DecisionRematchRequest;
+import life.catalogue.match.DecisionRematcher;
+import life.catalogue.match.SectorRematchRequest;
+import life.catalogue.match.SectorRematcher;
 import life.catalogue.matching.NameIndex;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
@@ -247,8 +249,9 @@ public class ImportJob implements Runnable {
 
         if (rematchDecisions()) {
           updateState(ImportState.MATCHING);
-          LOG.info("Updating sectors and decisions for dataset {}", datasetKey);
-          new SubjectRematcher(factory, req.createdBy).matchDatasetSubjects(datasetKey);
+          LOG.info("Updating sector and decision subjects for dataset {}", datasetKey);
+          DecisionRematcher.match(new DecisionDao(factory, indexService), new DecisionRematchRequest(datasetKey, false), req.createdBy);
+          SectorRematcher.match(new SectorDao(factory, indexService), new SectorRematchRequest(datasetKey, false), req.createdBy);
         }
 
         LOG.info("Dataset import {} completed in {}", datasetKey,

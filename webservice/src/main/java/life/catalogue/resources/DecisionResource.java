@@ -2,14 +2,14 @@ package life.catalogue.resources;
 
 import com.google.common.base.Preconditions;
 import io.dropwizard.auth.Auth;
-import life.catalogue.api.model.EditorialDecision;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.ResultPage;
-import life.catalogue.api.model.User;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.dao.DecisionDao;
 import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.dw.auth.Roles;
+import life.catalogue.match.DecisionRematchRequest;
+import life.catalogue.match.DecisionRematcher;
+import life.catalogue.match.RematcherBase;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,4 +57,12 @@ public class DecisionResource extends AbstractDatasetScopedResource<Integer, Edi
     }
     LOG.info("Deleted {} decisions for dataset {} in catalogue {}", counter, datasetKey, catalogueKey);
   }
+
+  @POST
+  @Path("/rematch")
+  public RematcherBase.MatchCounter rematch(@PathParam("key") int key, DecisionRematchRequest req, @Auth User user) {
+    req.setDatasetKey(key);
+    return DecisionRematcher.match(dao, req, user.getKey());
+  }
+
 }

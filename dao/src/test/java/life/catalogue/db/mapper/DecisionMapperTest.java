@@ -40,7 +40,7 @@ public class DecisionMapperTest extends BaseDecisionMapperTest<EditorialDecision
     mapper().create(d2);
     commit();
   
-    DecisionSearchRequest req = DecisionSearchRequest.byCatalogue(catalogeKey);
+    DecisionSearchRequest req = DecisionSearchRequest.byProject(catalogeKey);
     assertEquals(2, mapper().search(req,null).size());
     
     req.setSubjectDatasetKey(subjectDatasetKey);
@@ -53,14 +53,14 @@ public class DecisionMapperTest extends BaseDecisionMapperTest<EditorialDecision
     req.setBroken(true);
     assertEquals(1, mapper().search(req,null).size());
   
-    req = DecisionSearchRequest.byCatalogue(catalogeKey);
+    req = DecisionSearchRequest.byProject(catalogeKey);
     req.setModifiedBy(d1.getCreatedBy());
     assertEquals(2, mapper().search(req,null).size());
   
     req.setModifiedBy(999);
     assertEquals(0, mapper().search(req,null).size());
 
-    req = DecisionSearchRequest.byCatalogue(catalogeKey);
+    req = DecisionSearchRequest.byProject(catalogeKey);
     req.setName("Harakiri");
     assertEquals(0, mapper().search(req,null).size());
 

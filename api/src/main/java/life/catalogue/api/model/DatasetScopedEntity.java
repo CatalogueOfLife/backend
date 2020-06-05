@@ -1,8 +1,8 @@
 package life.catalogue.api.model;
 
-import javax.annotation.Nonnull;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import javax.annotation.Nonnull;
 
 public class DatasetScopedEntity<T> extends DataEntity<DSID<T>> implements DSID<T> {
   
@@ -16,7 +16,16 @@ public class DatasetScopedEntity<T> extends DataEntity<DSID<T>> implements DSID<
    * Primary key of the entity scoped within a dataset and can follow any kind of schema.
    */
   private T id;
-  
+
+  public DatasetScopedEntity() {
+  }
+
+  public DatasetScopedEntity(DatasetScopedEntity<T> other) {
+    super(other);
+    this.datasetKey = other.datasetKey;
+    this.id = other.id;
+  }
+
   @Override
   @JsonIgnore
   public DSID<T> getKey() {

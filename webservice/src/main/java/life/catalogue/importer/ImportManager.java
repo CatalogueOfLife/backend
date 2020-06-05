@@ -22,6 +22,7 @@ import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.csv.ExcelCsvExtractor;
+import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
@@ -29,7 +30,6 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.release.ReleaseManager;
-import life.catalogue.task.TaskUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -326,7 +326,7 @@ public class ImportManager implements Managed {
       throw new IllegalArgumentException("Dataset " + datasetKey + " is the CoL working draft and cannot be imported");
     }
     try (SqlSession session = factory.openSession(true)) {
-      return TaskUtils.validDataset(session, datasetKey, "imported");
+      return DaoUtils.assertMutable(datasetKey, "imported", session);
     }
   }
 

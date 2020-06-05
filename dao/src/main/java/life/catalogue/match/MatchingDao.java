@@ -1,4 +1,4 @@
-package life.catalogue.dao;
+package life.catalogue.match;
 
 import life.catalogue.api.model.*;
 import life.catalogue.db.mapper.DatasetPartitionMapper;

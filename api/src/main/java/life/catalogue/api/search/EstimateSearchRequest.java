@@ -1,9 +1,9 @@
 package life.catalogue.api.search;
 
-import java.util.Objects;
-import javax.ws.rs.QueryParam;
-
 import org.gbif.nameparser.api.Rank;
+
+import javax.ws.rs.QueryParam;
+import java.util.Objects;
 
 public class EstimateSearchRequest {
   
@@ -27,7 +27,7 @@ public class EstimateSearchRequest {
   @QueryParam("broken")
   private boolean broken = false;
   
-  public static EstimateSearchRequest byCatalogue(int datasetKey){
+  public static EstimateSearchRequest byProject(int datasetKey){
     EstimateSearchRequest req = new EstimateSearchRequest();
     req.datasetKey = datasetKey;
     return req;

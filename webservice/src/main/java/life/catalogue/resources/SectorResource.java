@@ -15,6 +15,9 @@ import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.tree.DiffService;
 import life.catalogue.db.tree.NamesDiff;
 import life.catalogue.dw.auth.Roles;
+import life.catalogue.match.RematcherBase;
+import life.catalogue.match.SectorRematchRequest;
+import life.catalogue.match.SectorRematcher;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -165,6 +168,13 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
     tdao.updateAllSectorCounts(datasetKey);
     session.commit();
     return true;
+  }
+
+  @POST
+  @Path("/rematch")
+  public RematcherBase.MatchCounter rematch(@PathParam("key") int key, SectorRematchRequest req, @Auth User user) {
+    req.setDatasetKey(key);
+    return SectorRematcher.match(dao, req, user.getKey());
   }
 
 }

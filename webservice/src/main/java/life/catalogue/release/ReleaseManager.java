@@ -6,10 +6,10 @@ import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.concurrent.NamedThreadFactory;
+import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.task.TaskUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -111,7 +111,7 @@ public class ReleaseManager {
     Dataset copy;
     try (SqlSession session = factory.openSession(true)) {
       // validate project key
-      copy = TaskUtils.validDataset(session, projectKey, action+"d");
+      copy = DaoUtils.assertMutable(projectKey, action+"d", session);
       if (copy.getOrigin() != DatasetOrigin.MANAGED) {
         throw new IllegalArgumentException("Only managed datasets can be " + action + "d, but origin is " + copy.getOrigin());
       }

@@ -1,42 +1,31 @@
-package life.catalogue.dao;
+package life.catalogue.match;
 
-import life.catalogue.api.model.*;
-import life.catalogue.db.mapper.DecisionMapper;
-import life.catalogue.db.mapper.NameMapper;
-import life.catalogue.db.mapper.TaxonMapper;
-import org.apache.ibatis.session.SqlSession;
+import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.dao.SectorDao;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.TestDataRule;
+import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.es.NameUsageIndexService;
+import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.Rank;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
-public class SubjectRematcherTest {
-  
+public class SectorRematcherTest {
+
   @ClassRule
   public static PgSetupRule pg = new PgSetupRule();
-  
+
   @Rule
   public final TestDataRule importRule = TestDataRule.apple();
-
-  private void createBiota(){
-    Taxon t = new Taxon();
-    Name n = new Name();
-    t.setName(n);
-    n.setScientificName("Biota");
-    n.setRank(Rank.DOMAIN);
-
-    NameMapper nm = importRule.getSqlSession().getMapper(NameMapper.class);
-    TaxonMapper tm = importRule.getSqlSession().getMapper(TaxonMapper.class);
-    tm.create(t);
-  }
 
   @Test
   public void matchDataset() {
@@ -49,55 +38,38 @@ public class SubjectRematcherTest {
      */
     MybatisTestUtils.populateDraftTree(importRule.getSqlSession());
     final int datasetKey = 11;
-    
+
     int s1 = createSector(Sector.Mode.ATTACH, datasetKey,
-        new SimpleName(null, "Malus sylvestris", Rank.SPECIES),
-        new SimpleName(null, "Coleoptera", Rank.ORDER)
+      new SimpleName(null, "Malus sylvestris", Rank.SPECIES),
+      new SimpleName(null, "Coleoptera", Rank.ORDER)
     );
     int s2 = createSector(Sector.Mode.UNION, datasetKey,
-        new SimpleName(null, "Larus fuscus", Rank.SPECIES),
-        new SimpleName(null, "Lepidoptera", Rank.ORDER)
+      new SimpleName(null, "Larus fuscus", Rank.SPECIES),
+      new SimpleName(null, "Lepidoptera", Rank.ORDER)
     );
 
-    int d1 = createDecision(datasetKey,
-        new SimpleName("xyz", "Larus fuscus", Rank.SPECIES)
-    );
-    int d2 = createDecision(datasetKey,
-        new SimpleName(null, "Larus fuscus", Rank.SPECIES)
-    );
-    int d3 = createDecision(datasetKey,
-        new SimpleName("null", "Larus", Rank.GENUS)
-    );
+    SectorDao dao = new SectorDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
+    SectorRematchRequest req = new SectorRematchRequest(Datasets.DRAFT_COL, false);
+    req.setSubjectDatasetKey(datasetKey);
+    SectorRematcher.match(dao, req, Users.TESTER);
 
-    SubjectRematcher rem = new SubjectRematcher(PgSetupRule.getSqlSessionFactory(), Datasets.DRAFT_COL, Users.TESTER);
-    rem.matchDatasetSubjects(datasetKey);
-  
     Sector s1b;
     Sector s2b;
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
-      DecisionMapper dm = session.getMapper(DecisionMapper.class);
 
       s1b = sm.get(s1);
       assertEquals("root-1", s1b.getSubject().getId());
       assertNull(s1b.getTarget().getId());
-  
+
       s2b = sm.get(s2);
       assertEquals("root-2", s2b.getSubject().getId());
       assertNull(s2b.getTarget().getId());
-
-      // we order decisions in reverse order when searching, so last one gets matched
-      EditorialDecision d1b = dm.get(d1);
-      assertNull(d1b.getSubject().getId());
-
-      EditorialDecision d2b = dm.get(d2);
-      assertEquals("root-2", d2b.getSubject().getId());
-
-      EditorialDecision d3b = dm.get(d3);
-      assertNull(d3b.getSubject().getId());
     }
-  
-    rem.match(RematchRequest.all());
+
+    req.setSubjectDatasetKey(null);
+    req.setMatchTarget(true);
+    SectorRematcher.match(dao, req, Users.TESTER);
 
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
@@ -105,13 +77,13 @@ public class SubjectRematcherTest {
       Sector s1c = sm.get(s1);
       assertEquals("root-1", s1c.getSubject().getId());
       assertEquals("t4", s1c.getTarget().getId());
-  
+
       Sector s2c = sm.get(s2);
       assertEquals("root-2", s2c.getSubject().getId());
       assertEquals("t5", s2c.getTarget().getId());
     }
   }
-  
+
   static int createSector(Sector.Mode mode, int datasetKey, SimpleName src, SimpleName target) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       Sector sector = new Sector();
@@ -123,19 +95,6 @@ public class SubjectRematcherTest {
       sector.applyUser(TestDataRule.TEST_USER);
       session.getMapper(SectorMapper.class).create(sector);
       return sector.getId();
-    }
-  }
-
-  static int createDecision(int datasetKey, SimpleName src) {
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      EditorialDecision d = new EditorialDecision();
-      d.setMode(EditorialDecision.Mode.BLOCK);
-      d.setDatasetKey(Datasets.DRAFT_COL);
-      d.setSubjectDatasetKey(datasetKey);
-      d.setSubject(src);
-      d.applyUser(TestDataRule.TEST_USER);
-      session.getMapper(DecisionMapper.class).create(d);
-      return d.getId();
     }
   }
 

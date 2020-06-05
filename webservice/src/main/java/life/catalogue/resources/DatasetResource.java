@@ -6,10 +6,8 @@ import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.AssemblyState;
-import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.SubjectRematcher;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.db.tree.DiffService;
@@ -222,15 +220,6 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public Integer release(@PathParam("key") int key, @Auth User user) {
     return releaseManager.release(key, user);
-  }
-
-  @POST
-  @Path("/{key}/rematch")
-  public SubjectRematcher rematch(@PathParam("key") int key, RematchRequest req, @Auth User user) {
-    DaoUtils.requireManaged(key, factory);
-    SubjectRematcher matcher = new SubjectRematcher(factory, key, user.getKey());
-    matcher.match(req);
-    return matcher;
   }
 
   @GET

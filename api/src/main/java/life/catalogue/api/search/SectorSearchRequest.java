@@ -44,14 +44,14 @@ public class SectorSearchRequest {
   @QueryParam("broken")
   private boolean broken = false;
   
-  public static SectorSearchRequest byCatalogue(int datasetKey){
+  public static SectorSearchRequest byProject(int datasetKey){
     SectorSearchRequest req = new SectorSearchRequest();
     req.datasetKey = datasetKey;
     return req;
   }
 
   public static SectorSearchRequest byDataset(int datasetKey, int subjectDatasetKey){
-    SectorSearchRequest req = byCatalogue(datasetKey);
+    SectorSearchRequest req = byProject(datasetKey);
     req.subjectDatasetKey = subjectDatasetKey;
     return req;
   }

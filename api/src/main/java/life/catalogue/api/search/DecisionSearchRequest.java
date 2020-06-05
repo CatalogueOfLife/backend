@@ -34,7 +34,7 @@ public class DecisionSearchRequest {
   @QueryParam("broken")
   private boolean broken = false;
   
-  public static DecisionSearchRequest byCatalogue(int datasetKey){
+  public static DecisionSearchRequest byProject(int datasetKey){
     DecisionSearchRequest req = new DecisionSearchRequest();
     req.datasetKey = datasetKey;
     return req;
@@ -47,7 +47,7 @@ public class DecisionSearchRequest {
   }
 
   public static DecisionSearchRequest byDataset(int datasetKey, int subjectDatasetKey){
-    DecisionSearchRequest req = byCatalogue(datasetKey);
+    DecisionSearchRequest req = byProject(datasetKey);
     req.subjectDatasetKey = subjectDatasetKey;
     return req;
   }
