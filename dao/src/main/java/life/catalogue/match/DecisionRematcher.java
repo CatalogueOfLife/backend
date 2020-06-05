@@ -33,7 +33,7 @@ public class DecisionRematcher extends RematcherBase<EditorialDecision, Decision
     if (obj.getSubject() != null) {
       final EditorialDecision old = new EditorialDecision(obj);
       obj.getSubject().setId(null);
-      NameUsage u = matchSubjectUniquely(obj.getSubjectDatasetKey(), obj, obj.getSubject());
+      NameUsage u = matchSubjectUniquely(obj.getSubjectDatasetKey(), obj, obj.getSubject(), obj.getOriginalSubjectId());
       if (u != null) {
         // see if we already have another decision with the same subject ID
         EditorialDecision ed2 = mapper.getBySubject(projectKey, obj.getSubjectDatasetKey(), u.getId());

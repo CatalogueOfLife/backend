@@ -1,6 +1,5 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.api.vocab.EstimateType;
 
 import java.util.Objects;
@@ -22,14 +21,6 @@ public class SpeciesEstimate extends DatasetScopedEntity<Integer> {
     this.type = other.type;
     this.referenceId = other.referenceId;
     this.note = other.note;
-  }
-
-  /**
-   * @return the id in the old legacy property "key"
-   */
-  @JsonProperty("key")
-  public Integer getKeyLEGACAY(){
-    return getId();
   }
 
   public SimpleName getTarget() {

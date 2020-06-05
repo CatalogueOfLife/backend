@@ -1,7 +1,6 @@
 package life.catalogue.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.Lifezone;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -73,14 +72,6 @@ public class EditorialDecision extends DatasetScopedEntity<Integer> {
     this.temporalRangeEnd = other.temporalRangeEnd;
     this.lifezones = other.lifezones == null ? null : EnumSet.copyOf(other.lifezones);
     this.note = other.note;
-  }
-
-  /**
-   * @return the id in the old legacy property "key"
-   */
-  @JsonProperty("key")
-  public Integer getKeyLEGACAY(){
-    return getId();
   }
 
   public SimpleName getSubject() {

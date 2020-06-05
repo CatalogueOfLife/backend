@@ -138,12 +138,12 @@ public abstract class RematcherBase<
     return obj;
   }
 
-  NameUsage matchSubjectUniquely(int datasetKey, DatasetScopedEntity<Integer> obj, SimpleName sn){
-    return matchUniquely(datasetKey, obj, sn);
+  NameUsage matchSubjectUniquely(int datasetKey, DatasetScopedEntity<Integer> obj, SimpleName sn, String originalId){
+    return matchUniquely(datasetKey, obj, sn, originalId);
   }
 
   NameUsage matchTargetUniquely(DatasetScopedEntity<Integer> obj, SimpleName sn){
-    return matchUniquely(projectKey, obj, sn);
+    return matchUniquely(projectKey, obj, sn, null);
   }
 
   /**
@@ -154,21 +154,34 @@ public abstract class RematcherBase<
    * @param datasetKey the dataset to match the names against
    * @return the unique match or null
    */
-  private NameUsage matchUniquely(int datasetKey, DatasetScopedEntity<Integer> obj, SimpleName sn){
+  private NameUsage matchUniquely(int datasetKey, DatasetScopedEntity<Integer> obj, SimpleName sn, String originalId){
     List<? extends NameUsage> matches = mdao.matchDataset(sn, datasetKey);
     if (matches.isEmpty()) {
-      LOG.warn("{} {} from project {} cannot be rematched to dataset {} - lost {}", obj.getClass().getSimpleName(), obj.getKey(), projectKey, datasetKey, sn);
+      LOG.warn("{} {} from project {} cannot be rematched to dataset {} - lost {}",
+        obj.getClass().getSimpleName(), obj.getKey(), projectKey, datasetKey, sn);
     } else if (matches.size() > 1) {
       // keep the existing id if it still matches!
       if (sn.getId() != null) {
         for (NameUsage nu : matches){
           if (nu.getId().equals(sn.getId())) {
-            LOG.info("{} {} from project {} matches multiple usages in dataset {} - existing usage ID {} still matching", obj.getClass().getSimpleName(), obj.getKey(), projectKey, datasetKey, sn);
+            LOG.info("{} {} from project {} matches multiple usages in dataset {} - existing usage {} still matching",
+              obj.getClass().getSimpleName(), obj.getKey(), projectKey, datasetKey, sn);
             return nu;
           }
         }
       }
-      LOG.warn("{} {} from project {} cannot be uniquely rematched to dataset {} - multiple names like {}", obj.getClass().getSimpleName(), obj.getKey(), projectKey, datasetKey, sn);
+      // if we havent found the previous id, try with the original id
+      if (originalId != null) {
+        for (NameUsage nu : matches){
+          if (nu.getId().equals(originalId)) {
+            LOG.info("{} {} from project {} matches multiple usages in dataset {} - original usage ID {} still matching to {}",
+              obj.getClass().getSimpleName(), obj.getKey(), projectKey, datasetKey, originalId, nu.getName().scientificNameAuthorship());
+            return nu;
+          }
+        }
+      }
+      LOG.warn("{} {} from project {} cannot be uniquely rematched to dataset {} - multiple names like {}",
+        obj.getClass().getSimpleName(), obj.getKey(), projectKey, datasetKey, sn);
     } else {
       return matches.get(0);
     }

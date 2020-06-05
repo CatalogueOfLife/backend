@@ -33,7 +33,7 @@ public class SectorRematcher extends RematcherBase<Sector, SectorRematchRequest,
     final Sector old = new Sector(obj);
     // subject
     if (req.isSubject() && obj.getSubject() != null) {
-      NameUsage u = matchSubjectUniquely(obj.getSubjectDatasetKey(), obj, obj.getSubject());
+      NameUsage u = matchSubjectUniquely(obj.getSubjectDatasetKey(), obj, obj.getSubject(), obj.getOriginalSubjectId());
       obj.getSubject().setId(null);
       if (u != null) {
         // see if we already have another sector with the same subject ID
