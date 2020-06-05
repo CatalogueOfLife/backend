@@ -17,6 +17,8 @@ import java.time.LocalDate;
 
 public class ProjectRelease extends ProjectRunnable {
   private static final String DEFAULT_TITLE_TEMPLATE = "{title}, {date}";
+  private static final String DEFAULT_ALIAS_TEMPLATE = "{alias}-{date}";
+  private static final String DEFAULT_CITATION_TEMPLATE = "{citation} released on {date}";
 
   private final AcExporter exporter;
 
@@ -54,13 +56,24 @@ public class ProjectRelease extends ProjectRunnable {
     export();
   }
 
-  public static void releaseInit(Dataset d, DatasetSettings ds) {
-    String tmpl = DEFAULT_TITLE_TEMPLATE;
-    if (ds.has(Setting.RELEASE_TITLE_TEMPLATE)) {
-      tmpl = ds.getString(Setting.RELEASE_TITLE_TEMPLATE);
+  private static String procTemplate(Dataset d, DatasetSettings ds, Setting setting, String defaultTemplate){
+    String tmpl = defaultTemplate;
+    if (ds.has(setting)) {
+      tmpl = ds.getString(setting);
     }
-    String title = SimpleTemplate.render(tmpl, d);
+    return SimpleTemplate.render(tmpl, d);
+  }
+
+  public static void releaseInit(Dataset d, DatasetSettings ds) {
+    String title = procTemplate(d, ds, Setting.RELEASE_TITLE_TEMPLATE, DEFAULT_TITLE_TEMPLATE);
     d.setTitle(title);
+
+    String alias = procTemplate(d, ds, Setting.RELEASE_ALIAS_TEMPLATE, DEFAULT_ALIAS_TEMPLATE);
+    d.setAlias(alias);
+
+    String citation = procTemplate(d, ds, Setting.RELEASE_CITATION_TEMPLATE, DEFAULT_CITATION_TEMPLATE);
+    d.setCitation(citation);
+
     d.setOrigin(DatasetOrigin.RELEASED);
     final LocalDate today = LocalDate.now();
     d.setReleased(today);
