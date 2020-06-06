@@ -16,7 +16,6 @@ import life.catalogue.img.LogoUpdateJob;
 import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexImpl;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,12 +138,6 @@ public class AdminResource {
     } else {
       throw new IllegalArgumentException("Only all or datasetKey properties are supported");
     }
-  }
-  
-  @POST
-  @Path("/rematch")
-  public void rematch(RequestScope req, @Auth User user) {
-    throw new NotImplementedException("Rematching names is not implemented yet");
   }
   
   @POST
