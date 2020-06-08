@@ -48,34 +48,34 @@ class FiltersTranslator {
     return query;
   }
 
+  // See also RequestValidator class
+  /*
+   * Note: IS NULL queries on nested documents are tricky and cannot be left to the standard FilterTranslator. We cannot use an IsNullQuery.
+   * We must wrap an isNotNull into a NestedQuery and then wrap the NestedQuery into a mustNot query.
+   */
   private List<Query> processDecisionFilters() {
     final String path = "decisions";
     if (request.hasFilter(DECISION_MODE)) {
       if (request.hasFilter(CATALOGUE_KEY)) {
         FilterTranslator ft = new FilterTranslator(request);
-        BoolQuery boolQuery = BoolQuery.withFilters(ft.translate(CATALOGUE_KEY), ft.translate(DECISION_MODE));
+        BoolQuery boolQuery = BoolQuery.withFilters(
+            ft.translate(CATALOGUE_KEY),
+            ft.translate(DECISION_MODE));
         return List.of(new NestedQuery(path, boolQuery));
-      }
-      List<Object> decisionModes = request.getFilterValues(DECISION_MODE);
-      /*
-       * IS NULL queries on nested documents are very tricky and cannot be left to the standard FilterTranslator. We cannot simply use an
-       * IsNullQuery. Instead we wrap a NestedQuery around an is<b>Not</b>Null query and then wrap the NestedQuery within a mustNot query. If you
-       * do it the other way round it won't work. Strictly speaking we face the same problem above, when both catalog key and decision mode
-       * are present. But there clients deserve the punishment of asking for catalog key IS NULL and decision mode IS NULL.
-       */
-      if (decisionModes.contains(IS_NULL)) {
-        if (decisionModes.size() > 1) {
-          // This just gets way too complicated and there's probably no use case for it
-          throw new InvalidQueryException("IS NULL query on decision_mode must be the only query on that field");
-        }
+      } else if (request.getFilterValue(DECISION_MODE).equals(IS_NULL)) {
         String field = NameUsageFieldLookup.INSTANCE.lookup(DECISION_MODE);
         NestedQuery nestedQuery = new NestedQuery(path, new IsNotNullQuery(field));
         return List.of(new BoolQuery().mustNot(nestedQuery));
       }
-      // None of the values for DECISION_MODE is _IS_NULL, so we can use the FilterTranslator.
+      return List.of(new NestedQuery(path, new FilterTranslator(request).translate(DECISION_MODE)));
+    } else if (request.hasFilter(CATALOGUE_KEY)) {
+      if (request.getFilterValue(CATALOGUE_KEY).equals(IS_NULL)) {
+        String field = NameUsageFieldLookup.INSTANCE.lookup(CATALOGUE_KEY);
+        NestedQuery nestedQuery = new NestedQuery(path, new IsNotNullQuery(field));
+        return List.of(new BoolQuery().mustNot(nestedQuery));
+      }
       return List.of(new NestedQuery(path, new FilterTranslator(request).translate(DECISION_MODE)));
     }
-    // Catalog key alone is ignored. It's only going to be used later on, when post-processing the query result.
     return Collections.emptyList();
   }
 

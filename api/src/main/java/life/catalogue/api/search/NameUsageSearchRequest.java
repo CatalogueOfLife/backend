@@ -2,16 +2,7 @@
 package life.catalogue.api.search;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import javax.validation.constraints.Size;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MultivaluedMap;
@@ -60,7 +51,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
    */
   public static final String IS_NULL = "_NULL";
 
-  private EnumMap<NameUsageSearchParameter, @Size(max = 1000) List<Object>> filters;
+  private EnumMap<NameUsageSearchParameter, @Size(max = 1000) Set<Object>> filters;
 
   @QueryParam("facet")
   private Set<NameUsageSearchParameter> facets;
@@ -83,7 +74,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   public NameUsageSearchRequest() {}
 
   @JsonCreator
-  public NameUsageSearchRequest(@JsonProperty("filter") Map<NameUsageSearchParameter, @Size(max = 1000) List<Object>> filters,
+  public NameUsageSearchRequest(@JsonProperty("filter") Map<NameUsageSearchParameter, @Size(max = 1000) Set<Object>> filters,
       @JsonProperty("facet") Set<NameUsageSearchParameter> facets,
       @JsonProperty("content") Set<SearchContent> content,
       @JsonProperty("sortBy") SortBy sortBy,
@@ -218,18 +209,30 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   }
 
   private void addFilterValue(NameUsageSearchParameter param, Object value) {
-    getFilters().computeIfAbsent(param, k -> new ArrayList<>()).add(value);
+    getFilters().computeIfAbsent(param, k -> new LinkedHashSet<>()).add(value);
   }
 
+  /**
+   * Returns all values for the provided query parameter.
+   * @param <T>
+   * @param param
+   * @return
+   */
   @SuppressWarnings("unchecked")
-  public <T> List<T> getFilterValues(NameUsageSearchParameter param) {
-    return (List<T>) getFilters().get(param);
+  public <T> Set<T> getFilterValues(NameUsageSearchParameter param) {
+    return (Set<T>) getFilters().get(param);
   }
 
+  /**
+   * Retuns the first value of the provided query parameter.
+   * @param <T>
+   * @param param
+   * @return
+   */
   @SuppressWarnings("unchecked")
   public <T> T getFilterValue(NameUsageSearchParameter param) {
     if (hasFilter(param)) {
-      return (T) getFilters().get(param).get(0);
+      return (T) getFilters().get(param).iterator().next();
     }
     return null;
   }
@@ -252,23 +255,23 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     getFacets().add(facet);
   }
 
-  public EnumMap<NameUsageSearchParameter, List<Object>> getFilters() {
+  public EnumMap<NameUsageSearchParameter, Set<Object>> getFilters() {
     if (filters == null) {
-      return (filters = new EnumMap<>(NameUsageSearchParameter.class));
+      filters = new EnumMap<>(NameUsageSearchParameter.class);
     }
     return filters;
   }
 
   public Set<NameUsageSearchParameter> getFacets() {
     if (facets == null) {
-      return (facets = EnumSet.noneOf(NameUsageSearchParameter.class));
+      facets = EnumSet.noneOf(NameUsageSearchParameter.class);
     }
     return facets;
   }
 
   public Set<SearchContent> getContent() {
     if (content == null || content.isEmpty()) {
-      return (content = EnumSet.allOf(SearchContent.class));
+      content = EnumSet.allOf(SearchContent.class);
     }
     return content;
   }

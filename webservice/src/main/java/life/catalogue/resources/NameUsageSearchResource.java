@@ -1,6 +1,5 @@
 package life.catalogue.resources;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.validation.Valid;
@@ -71,7 +70,7 @@ public class NameUsageSearchResource {
     public final Page page;
 
     @JsonCreator
-    public SearchRequestBody(@JsonProperty("filter") Map<NameUsageSearchParameter, @Size(max = 1000) List<Object>> filter,
+    public SearchRequestBody(@JsonProperty("filter") Map<NameUsageSearchParameter, @Size(max = 1000) Set<Object>> filter,
         @JsonProperty("facet") Set<NameUsageSearchParameter> facet,
         @JsonProperty("content") Set<NameUsageSearchRequest.SearchContent> content,
         @JsonProperty("sortBy") NameUsageSearchRequest.SortBy sortBy,
