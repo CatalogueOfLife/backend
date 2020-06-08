@@ -25,8 +25,8 @@ public enum NameUsageSearchParameter {
   CATALOGUE_KEY(Integer.class),
 
   /**
-   * Allows to filter usages based on the existence of a decision with the matching MODE. NOT_NULL or NULL can be used here to filter usages
-   * to just the ones with or without any decision (from the requested DECISION_DATASET_KEY if given)
+   * Allows to filter usages based on the existence of a decision with the matching MODE.
+   * _NOT_NULL or _NULL can be used here to filter usages to just the ones with or without any decision (from the requested DECISION_DATASET_KEY if given)
    */
   DECISION_MODE(EditorialDecision.Mode.class),
 

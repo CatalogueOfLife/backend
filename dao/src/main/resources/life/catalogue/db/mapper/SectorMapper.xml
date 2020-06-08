@@ -127,7 +127,7 @@
           AND s.subject_rank = #{req.rank}::RANK
         </if>
         <if test="req.name != null">
-          AND (s.subject_name = #{req.name} OR s.target_name = #{req.name})
+          AND (s.subject_name ILIKE '%${req.name}%' OR s.target_name ILIKE '%${req.name}%')
         </if>
         <if test="req.lastSync != null">
           AND (si.finished IS NULL OR si.finished &lt; #{req.lastSync})
