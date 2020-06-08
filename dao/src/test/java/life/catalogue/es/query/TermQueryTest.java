@@ -1,12 +1,10 @@
 package life.catalogue.es.query;
 
 import java.util.List;
-import life.catalogue.es.EsNameUsage;
-import life.catalogue.es.EsReadTestBase;
-import life.catalogue.es.query.TermQuery;
 import org.junit.Before;
 import org.junit.Test;
-
+import life.catalogue.es.EsNameUsage;
+import life.catalogue.es.EsReadTestBase;
 import static org.junit.Assert.assertEquals;
 
 public class TermQueryTest extends EsReadTestBase {

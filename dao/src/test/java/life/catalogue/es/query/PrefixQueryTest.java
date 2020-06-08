@@ -1,14 +1,10 @@
 package life.catalogue.es.query;
 
 import java.util.List;
-import life.catalogue.es.EsNameUsage;
-import life.catalogue.es.EsReadTestBase;
-import life.catalogue.es.query.CaseInsensitivePrefixQuery;
-import life.catalogue.es.query.PrefixQuery;
-import life.catalogue.es.query.Query;
 import org.junit.Before;
 import org.junit.Test;
-
+import life.catalogue.es.EsNameUsage;
+import life.catalogue.es.EsReadTestBase;
 import static org.junit.Assert.assertEquals;
 
 public class PrefixQueryTest extends EsReadTestBase {

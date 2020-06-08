@@ -1,18 +1,17 @@
 package life.catalogue.es.query;
 
 import java.util.ArrayList;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-
-import life.catalogue.es.EsModule;
-import life.catalogue.es.query.CollapsibleList;
 import org.junit.Test;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import life.catalogue.es.EsModule;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 public class CollapsibleListTest {
 
+  /**
+   * @throws JsonProcessingException
+   */
   @Test
   public void test1() throws JsonProcessingException {
     CollapsibleList<String> list = new CollapsibleList<>();
@@ -22,7 +21,7 @@ public class CollapsibleListTest {
   }
 
   @Test
-  public void test2() throws JsonProcessingException {
+  public void test2() {
     CollapsibleList<String> list = new CollapsibleList<>();
     list.add("one");
     Object obj = list.collapse();
@@ -31,7 +30,7 @@ public class CollapsibleListTest {
   }
 
   @Test
-  public void test3() throws JsonProcessingException {
+  public void test3() {
     CollapsibleList<String> list = new CollapsibleList<>();
     list.add("one");
     list.add("two");
