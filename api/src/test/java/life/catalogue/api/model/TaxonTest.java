@@ -38,6 +38,7 @@ public class TaxonTest extends SerdeTestBase<Taxon> {
     n.setInfraspecificEpithet("alpina");
     n.setCombinationAuthorship(Authorship.yearAuthors("1999", "L.","DC."));
     n.setBasionymAuthorship(Authorship.yearAuthors("1899","Lin.","Deca."));
+    assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999", t.getName());
     assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999", t.getLabel());
 
     n.setRemarks("nom.illeg.");
