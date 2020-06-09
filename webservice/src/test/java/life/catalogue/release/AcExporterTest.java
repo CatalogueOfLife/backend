@@ -6,6 +6,7 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.io.CompressionUtil;
+import life.catalogue.db.LookupTables;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -30,7 +31,7 @@ public class AcExporterTest {
   
   @Rule
   public TestDataRule testDataRule = TestDataRule.draftWithSectors();
-  
+
   @Before
   public void initCfg()  {
     cfg = new WsServerConfig();

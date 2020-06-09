@@ -1,7 +1,7 @@
 package life.catalogue.api.search;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import life.catalogue.api.jackson.ApiModule;
@@ -58,12 +58,12 @@ public class NameUsageSearchRequestTest extends SerdeTestBase<NameUsageSearchReq
     NameUsageSearchRequest r = new NameUsageSearchRequest();
     r.addFilter(NameUsageSearchParameter.DATASET_KEY, "123");
     r.addFilter(NameUsageSearchParameter.DATASET_KEY, 1234);
-    assertEquals(ImmutableList.of(123, 1234), r.getFilterValues(NameUsageSearchParameter.DATASET_KEY));
+    assertEquals(ImmutableSet.of(123, 1234), r.getFilterValues(NameUsageSearchParameter.DATASET_KEY));
     r.addFilter(NameUsageSearchParameter.DATASET_KEY, Lists.newArrayList(1234, 12, 13, 14));
-    assertEquals(ImmutableList.of(123, 1234, 1234, 12, 13, 14), r.getFilterValues(NameUsageSearchParameter.DATASET_KEY));
+    assertEquals(ImmutableSet.of(123, 1234, 1234, 12, 13, 14), r.getFilterValues(NameUsageSearchParameter.DATASET_KEY));
 
     r.addFilter(NameUsageSearchParameter.DATASET_KEY, Lists.newArrayList("1", "2"));
-    assertEquals(ImmutableList.of(123, 1234, 1234, 12, 13, 14, 1, 2), r.getFilterValues(NameUsageSearchParameter.DATASET_KEY));
+    assertEquals(ImmutableSet.of(123, 1234, 1234, 12, 13, 14, 1, 2), r.getFilterValues(NameUsageSearchParameter.DATASET_KEY));
   }
 
   @Test

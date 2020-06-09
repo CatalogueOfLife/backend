@@ -1,4 +1,4 @@
-package life.catalogue.release;
+package life.catalogue.db;
 
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.Language;

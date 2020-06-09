@@ -1,10 +1,5 @@
 package life.catalogue.es.nu.search;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.es.InvalidQueryException;
@@ -13,6 +8,9 @@ import life.catalogue.es.query.BoolQuery;
 import life.catalogue.es.query.IsNotNullQuery;
 import life.catalogue.es.query.NestedQuery;
 import life.catalogue.es.query.Query;
+
+import java.util.*;
+
 import static life.catalogue.api.search.NameUsageSearchParameter.CATALOGUE_KEY;
 import static life.catalogue.api.search.NameUsageSearchParameter.DECISION_MODE;
 import static life.catalogue.api.search.NameUsageSearchRequest.IS_NULL;
@@ -56,12 +54,30 @@ class FiltersTranslator {
   private List<Query> processDecisionFilters() {
     final String path = "decisions";
     if (request.hasFilter(DECISION_MODE)) {
+      // only when a mode filter exists the catalogue key parameter also works as a filter
+      Query q;
       if (request.getFilterValue(DECISION_MODE).equals(IS_NULL)) {
         String field = NameUsageFieldLookup.INSTANCE.lookup(DECISION_MODE);
-        NestedQuery nestedQuery = new NestedQuery(path, new IsNotNullQuery(field));
+        if (request.hasFilter(CATALOGUE_KEY)) {
+          q = new BoolQuery()
+            .must(new IsNotNullQuery(field))
+            .must(new FilterTranslator(request).translate(CATALOGUE_KEY));
+        } else {
+          q = new IsNotNullQuery(field);
+        }
+        NestedQuery nestedQuery = new NestedQuery(path, q);
         return List.of(new BoolQuery().mustNot(nestedQuery));
+
+      } else {
+        if (request.hasFilter(CATALOGUE_KEY)) {
+          q = new BoolQuery()
+            .must(new FilterTranslator(request).translate(DECISION_MODE))
+            .must(new FilterTranslator(request).translate(CATALOGUE_KEY));
+        } else {
+          q = new FilterTranslator(request).translate(DECISION_MODE);
+        }
+        return List.of(new NestedQuery(path, q));
       }
-      return List.of(new NestedQuery(path, new FilterTranslator(request).translate(DECISION_MODE)));
     }
     return Collections.emptyList();
   }

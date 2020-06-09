@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.legacy.mapper.LNameMapper">
+
+
+  <resultMap id="usageResultMap" type="life.catalogue.db.legacy.model.LName" autoMapping="true">
+    <id column="id"/>
+    <discriminator column="java_class" javaType="integer">
+      <case value="1" resultType="LSynonym" resultMap="synonymResultMap"/>
+      <case value="2" resultType="LHigherName" resultMap="higherResultMap"/>
+      <case value="3" resultType="LSpeciesName" resultMap="speciesResultMap"/>
+    </discriminator>
+  </resultMap>
+
+  <resultMap id="synonymResultMap" type="life.catalogue.db.legacy.model.LSynonym" autoMapping="true">
+    <id property="id" column="id"/>
+  </resultMap>
+
+  <resultMap id="speciesResultMap" type="life.catalogue.db.legacy.model.LSpeciesName" autoMapping="true">
+    <id property="id" column="id"/>
+  </resultMap>
+
+  <resultMap id="higherResultMap" type="life.catalogue.db.legacy.model.LHigherName" autoMapping="true">
+    <id column="id"/>
+  </resultMap>
+
+
+  <sql id="SELECT">
+    CASE WHEN u.is_synonym THEN 1
+      WHEN n.rank &lt; 'SPECIES_AGGREGATE'::rank THEN 2
+      ELSE 3
+    END AS java_class,
+    <include refid="COLS"><property name="prefix" value=""/></include>
+  </sql>
+
+  <sql id="COLS">
+    u.id AS ${prefix}id,
+    n.scientific_name AS ${prefix}name,
+    n.authorship AS ${prefix}author,
+    n.rank AS ${prefix}rank,
+    u.status AS ${prefix}status,
+    u.extinct AS ${prefix}extinct
+  </sql>
+
+  <sql id="WHERE">
+    WHERE n.scientific_name ~*
+    <if test="prefix">'^${name}'</if>
+    <if test="!prefix">'^${name}$'</if>
+  </sql>
+
+  <sql id="FROM">
+    name_usage_${partition} u JOIN name_${partition} n on n.id=u.name_id
+  </sql>
+
+  <select id="count" resultType="integer">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT count(*)
+    FROM <include refid="FROM"/>
+    <include refid="WHERE"/>
+  </select>
+
+  <select id="search" resultMap="usageResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    <include refid="WHERE"/>
+  </select>
+
+  <select id="get" resultMap="usageResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE u.id = #{id}
+  </select>
+
+</mapper>
