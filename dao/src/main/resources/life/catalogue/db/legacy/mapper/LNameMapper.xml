@@ -45,7 +45,7 @@
   </sql>
 
   <sql id="WHERE">
-    WHERE lower(n.scientific_name) LIKE <if test="prefix">lower('${name}%')</if><if test="!prefix">lower('${name}')</if>
+    WHERE lower(n.scientific_name) LIKE lower(#{name}) <if test="prefix"> || '%'</if>
   </sql>
 
   <sql id="FROM">

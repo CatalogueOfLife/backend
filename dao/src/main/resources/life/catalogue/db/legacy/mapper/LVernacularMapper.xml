@@ -16,7 +16,7 @@
   </sql>
 
   <sql id="WHERE">
-    WHERE lower(v.name) LIKE <if test="prefix">lower('${name}%')</if><if test="!prefix">lower('${name}')</if>
+    WHERE lower(v.name) LIKE lower(#{name}) <if test="prefix">|| '%'</if>
   </sql>
 
   <select id="count" resultType="integer">
