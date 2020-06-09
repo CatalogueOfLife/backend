@@ -1,6 +1,8 @@
 package life.catalogue.es;
 
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.Name;
+import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.*;
@@ -126,8 +128,22 @@ public class EsReadTestBase {
   }
 
   protected NameUsageWrapper createNameUsage(int seqno) {
-    Taxon t = TestEntityGenerator.newTaxon(EsSetupRule.DATASET_KEY, "t" + seqno, "Abies alba"+seqno);
+    Taxon t = TestEntityGenerator.newTaxon(EsSetupRule.DATASET_KEY, "t" + seqno, "Abies alba" + seqno);
     return new NameUsageWrapper(t);
+  }
+
+  /**
+   * Creates a new Taxon instance with just enough fields set to be indexed straight away without NPEs. We should slowly move test code to
+   * using this methods in stead of the above. It's less murky.
+   * 
+   * @return
+   */
+  protected NameUsageWrapper minimalTaxon() {
+    NameUsage nu = new Taxon();
+    nu.setName(new Name());
+    NameUsageWrapper nuw = new NameUsageWrapper();
+    nuw.setUsage(nu);
+    return nuw;
   }
 
 }

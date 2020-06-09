@@ -56,21 +56,8 @@ class FiltersTranslator {
   private List<Query> processDecisionFilters() {
     final String path = "decisions";
     if (request.hasFilter(DECISION_MODE)) {
-      if (request.hasFilter(CATALOGUE_KEY)) {
-        FilterTranslator ft = new FilterTranslator(request);
-        BoolQuery boolQuery = BoolQuery.withFilters(
-            ft.translate(CATALOGUE_KEY),
-            ft.translate(DECISION_MODE));
-        return List.of(new NestedQuery(path, boolQuery));
-      } else if (request.getFilterValue(DECISION_MODE).equals(IS_NULL)) {
+      if (request.getFilterValue(DECISION_MODE).equals(IS_NULL)) {
         String field = NameUsageFieldLookup.INSTANCE.lookup(DECISION_MODE);
-        NestedQuery nestedQuery = new NestedQuery(path, new IsNotNullQuery(field));
-        return List.of(new BoolQuery().mustNot(nestedQuery));
-      }
-      return List.of(new NestedQuery(path, new FilterTranslator(request).translate(DECISION_MODE)));
-    } else if (request.hasFilter(CATALOGUE_KEY)) {
-      if (request.getFilterValue(CATALOGUE_KEY).equals(IS_NULL)) {
-        String field = NameUsageFieldLookup.INSTANCE.lookup(CATALOGUE_KEY);
         NestedQuery nestedQuery = new NestedQuery(path, new IsNotNullQuery(field));
         return List.of(new BoolQuery().mustNot(nestedQuery));
       }
