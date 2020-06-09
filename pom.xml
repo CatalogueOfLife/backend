@@ -281,7 +281,14 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- HK2 dependency injection - follow closely the version used by Jersey via Dropwizard -->
+          <!-- jackson additions to DW BOM -->
+          <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+            <version>2.10.2</version>
+          </dependency>
+
+          <!-- HK2 dependency injection - follow closely the version used by Jersey via Dropwizard -->
             <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>hk2-api</artifactId>

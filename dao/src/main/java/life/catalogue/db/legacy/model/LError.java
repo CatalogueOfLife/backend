@@ -1,6 +1,7 @@
 package life.catalogue.db.legacy.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
 /**
  * The legacy API always returns http 200 OK responses,
@@ -20,6 +21,7 @@ public class LError extends LResponse {
   }
 
   @JsonProperty("error_message")
+  @JacksonXmlProperty(isAttribute = true)
   public String getError() {
     return error;
   }

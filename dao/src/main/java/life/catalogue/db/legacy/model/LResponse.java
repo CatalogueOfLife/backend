@@ -1,17 +1,22 @@
 package life.catalogue.db.legacy.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
 import java.util.List;
 import java.util.Objects;
 
+@JacksonXmlRootElement(localName="results")
 public class LResponse {
   private final String version;
   private final String id;
   private final String name;
   private final int start;
   private final int total;
-  private final List<LName> results;
+  @JacksonXmlElementWrapper(useWrapping=false)
+  private final List<LName> result;
 
   public LResponse(String id, String name, int start, String version) {
     this.version = version;
@@ -19,7 +24,7 @@ public class LResponse {
     this.name = name;
     this.start = start;
     this.total = 0;
-    this.results = null;
+    this.result = null;
   }
 
   public LResponse(String id, LName result, String version) {
@@ -28,7 +33,7 @@ public class LResponse {
     this.name = null;
     this.start = 0;
     this.total = 1;
-    this.results = List.of(result);
+    this.result = List.of(result);
   }
 
   public LResponse(String name, int total, int start, List<LName> results, String version) {
@@ -37,29 +42,43 @@ public class LResponse {
     this.name = name;
     this.start = start;
     this.total = total;
-    this.results = results;
+    this.result = results;
   }
 
+  @JacksonXmlProperty(isAttribute = true)
   public String getVersion() {
     return version;
   }
 
+  @JacksonXmlProperty(isAttribute = true)
   public String getId() {
     return id;
   }
 
   @JsonProperty("total_number_of_results")
+  @JacksonXmlProperty(isAttribute = true)
   public int getTotal() {
     return total;
   }
 
   @JsonProperty("number_of_results_returned")
+  @JacksonXmlProperty(isAttribute = true)
   public int getNumberOfResultsReturned() {
-    return results == null ? 0 : results.size();
+    return result == null ? 0 : result.size();
   }
 
-  public List<?> getResults() {
-    return results;
+  @JacksonXmlProperty(isAttribute = true)
+  public String getName() {
+    return name;
+  }
+
+  @JacksonXmlProperty(isAttribute = true)
+  public int getStart() {
+    return start;
+  }
+
+  public List<?> getResult() {
+    return result;
   }
 
   @Override
@@ -71,11 +90,11 @@ public class LResponse {
       total == lResponse.total &&
       Objects.equals(id, lResponse.id) &&
       Objects.equals(name, lResponse.name) &&
-      Objects.equals(results, lResponse.results);
+      Objects.equals(result, lResponse.result);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, start, total, results);
+    return Objects.hash(id, name, start, total, result);
   }
 }

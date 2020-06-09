@@ -14,6 +14,7 @@ import life.catalogue.db.legacy.model.LResponse;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.dw.auth.Roles;
+import life.catalogue.dw.jersey.filter.ApplyFormatFilter;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -25,6 +26,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
+@ApplyFormatFilter
 @Produces({MediaType.TEXT_XML, MediaType.APPLICATION_JSON})
 @Path("/webservice")
 public class LegacyWebserviceResource {

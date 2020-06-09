@@ -1,5 +1,7 @@
 package life.catalogue.db.legacy.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 
 public class LCommonName implements LName {
@@ -20,6 +22,7 @@ public class LCommonName implements LName {
     this.name = name;
   }
 
+  @JsonProperty("name_status")
   public String getNameStatus() {
     return "common name";
   }
@@ -44,14 +47,17 @@ public class LCommonName implements LName {
     return acceptedName.getUrl();
   }
 
+  @JsonProperty("source_database")
   public String getSourceDatabase() {
     return acceptedName.getSourceDatabase();
   }
 
+  @JsonProperty("source_database_url")
   public String getSourceDatabaseUrl() {
     return acceptedName.getSourceDatabaseUrl();
   }
 
+  @JsonProperty("accepted_name")
   public LSpeciesName getAcceptedName() {
     return acceptedName;
   }

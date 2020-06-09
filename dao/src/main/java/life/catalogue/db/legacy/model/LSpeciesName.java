@@ -1,5 +1,7 @@
 package life.catalogue.db.legacy.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 
 public class LSpeciesName extends LHigherName {
@@ -18,6 +20,7 @@ public class LSpeciesName extends LHigherName {
     return html;
   }
 
+  @JsonProperty("online_resource")
   public String getOnlineResource() {
     return onlineResource;
   }
@@ -26,6 +29,7 @@ public class LSpeciesName extends LHigherName {
     this.onlineResource = onlineResource;
   }
 
+  @JsonProperty("source_database")
   public String getSourceDatabase() {
     return sourceDatabase;
   }
@@ -34,6 +38,7 @@ public class LSpeciesName extends LHigherName {
     this.sourceDatabase = sourceDatabase;
   }
 
+  @JsonProperty("source_database_url")
   public String getSourceDatabaseUrl() {
     return sourceDatabaseUrl;
   }
@@ -42,6 +47,7 @@ public class LSpeciesName extends LHigherName {
     this.sourceDatabaseUrl = sourceDatabaseUrl;
   }
 
+  @JsonProperty("bibliographic_citation")
   public String getBibliographicCitation() {
     return bibliographicCitation;
   }

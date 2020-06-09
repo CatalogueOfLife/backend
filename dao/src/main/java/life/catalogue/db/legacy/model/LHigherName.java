@@ -50,6 +50,7 @@ public class LHigherName implements LName {
     return name;
   }
 
+  @JsonProperty("name_html")
   public String getNameHtml() {
     if (rank != null && rank.ordinal() >= Rank.GENUS.ordinal()) {
       return inItalics(name);
@@ -79,6 +80,7 @@ public class LHigherName implements LName {
     this.rank = rank;
   }
 
+  @JsonProperty("name_status")
   public String getNameStatus() {
     switch (status) {
       case ACCEPTED: return "accepted name";
@@ -103,6 +105,7 @@ public class LHigherName implements LName {
     return BASE_URL + id;
   }
 
+  @JsonProperty("is_extinct")
   public Boolean getExtinct() {
     return extinct;
   }
