@@ -131,6 +131,7 @@
     ALTER TABLE vernacular_name_${key} ADD PRIMARY KEY (id);
     CREATE INDEX ON vernacular_name_${key} (taxon_id);
     CREATE INDEX ON vernacular_name_${key} (verbatim_key);
+    CREATE INDEX ON vernacular_name_${key} (lower(name));
     ALTER TABLE vernacular_name_${key} ADD CONSTRAINT vernacular_name_${key}_taxon_id_fk
     FOREIGN KEY (taxon_id) REFERENCES name_usage_${key} (id) ON DELETE CASCADE;
     ALTER TABLE vernacular_name_${key} ADD CONSTRAINT vernacular_name_${key}_verbatim_key_fk

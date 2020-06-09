@@ -27,6 +27,8 @@ public class LVernacularMapperTest extends MapperTestBase<LVernacularMapper> {
     // 2 Apfel
     // 3 Meeuw
     assertEquals(2, mapper().count(datasetKey, true, "Ap"));
+    assertEquals(2, mapper().count(datasetKey, true, "AP"));
+    assertEquals(2, mapper().count(datasetKey, true, "ap"));
     assertEquals(1, mapper().count(datasetKey, true, "mee"));
     assertEquals(0, mapper().count(datasetKey, false, "Apf"));
     assertEquals(1, mapper().count(datasetKey, false, "Apfel"));
