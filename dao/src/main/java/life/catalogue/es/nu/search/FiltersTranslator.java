@@ -57,13 +57,13 @@ class FiltersTranslator {
       // only when a mode filter exists the catalogue key parameter also works as a filter
       Query q;
       if (request.getFilterValue(DECISION_MODE).equals(IS_NULL)) {
-        String field = NameUsageFieldLookup.INSTANCE.lookup(DECISION_MODE);
+        final String dField = NameUsageFieldLookup.INSTANCE.lookup(DECISION_MODE);
         if (request.hasFilter(CATALOGUE_KEY)) {
           q = new BoolQuery()
-            .must(new IsNotNullQuery(field))
+            .must(new IsNotNullQuery(dField))
             .must(new FilterTranslator(request).translate(CATALOGUE_KEY));
         } else {
-          q = new IsNotNullQuery(field);
+          q = new IsNotNullQuery(dField);
         }
         NestedQuery nestedQuery = new NestedQuery(path, q);
         return List.of(new BoolQuery().mustNot(nestedQuery));

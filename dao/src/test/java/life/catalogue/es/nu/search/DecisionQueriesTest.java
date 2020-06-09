@@ -1,18 +1,19 @@
 package life.catalogue.es.nu.search;
 
-import java.util.Arrays;
-import java.util.List;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import life.catalogue.api.model.EditorialDecision.Mode;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.es.EsReadTestBase;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -240,10 +241,8 @@ public class DecisionQueriesTest extends EsReadTestBase {
 
     List<NameUsageWrapper> result = search(query).getResult();
 
-    assertEquals(3, result.size());
-    assertEquals("AAA", result.get(0).getId());
-    assertEquals("BBB", result.get(1).getId());
-    assertEquals("DDD", result.get(2).getId());
+    assertEquals(1, result.size());
+    assertEquals("DDD", result.get(0).getId());
   }
 
   @Test
@@ -255,8 +254,7 @@ public class DecisionQueriesTest extends EsReadTestBase {
 
     List<NameUsageWrapper> result = search(query).getResult();
 
-    assertEquals(1, result.size());
-    assertEquals("CCC", result.get(0).getId());
+    assertEquals(3, result.size());
   }
 
   @Test
@@ -264,22 +262,31 @@ public class DecisionQueriesTest extends EsReadTestBase {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(NameUsageSearchParameter.DECISION_MODE, "_NOT_NULL");
     
-    // Makes no difference - catalog key ignored when generating query
+    // Makes a difference - catalog key used for filtering with decision mode
     query.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, 1);
 
     index(test6_data());
 
     List<NameUsageWrapper> result = search(query).getResult();
+    assertEquals(0, result.size());
 
+    query.getFilters().remove(NameUsageSearchParameter.CATALOGUE_KEY);
+    query.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, 101);
+    result = search(query).getResult();
+    assertEquals(2, result.size());
+
+    query.getFilters().remove(NameUsageSearchParameter.DECISION_MODE);
+    query.addFilter(NameUsageSearchParameter.DECISION_MODE, Mode.BLOCK);
+    result = search(query).getResult();
     assertEquals(1, result.size());
-    assertEquals("CCC", result.get(0).getId());
+    assertEquals("AAA", result.get(0).getId());
   }
 
   public List<NameUsageWrapper> test6_data() {
     SimpleDecision sd1 = new SimpleDecision();
     sd1.setId(1);
     sd1.setDatasetKey(101);
-    sd1.setMode(null);
+    sd1.setMode(Mode.BLOCK);
     NameUsageWrapper nuw1 = minimalTaxon();
     nuw1.setId("AAA");
     nuw1.setDecisions(List.of(sd1));
@@ -287,18 +294,24 @@ public class DecisionQueriesTest extends EsReadTestBase {
     SimpleDecision sd2 = new SimpleDecision();
     sd2.setId(2);
     sd2.setDatasetKey(201);
-    sd2.setMode(null);
+    sd2.setMode(Mode.BLOCK);
     NameUsageWrapper nuw2 = minimalTaxon();
     nuw2.setId("BBB");
     nuw2.setDecisions(List.of(sd2));
 
     SimpleDecision sd3 = new SimpleDecision();
     sd3.setId(3);
-    sd3.setDatasetKey(103);
+    sd3.setDatasetKey(101);
     sd3.setMode(Mode.UPDATE);
+
+    SimpleDecision sd4 = new SimpleDecision();
+    sd4.setId(4);
+    sd4.setDatasetKey(103);
+    sd4.setMode(Mode.BLOCK);
+
     NameUsageWrapper nuw3 = minimalTaxon();
     nuw3.setId("CCC");
-    nuw3.setDecisions(List.of(sd3));
+    nuw3.setDecisions(List.of(sd3, sd4));
 
     NameUsageWrapper nuw4 = minimalTaxon();
     nuw4.setId("DDD");
