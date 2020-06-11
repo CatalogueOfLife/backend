@@ -1,13 +1,7 @@
 package life.catalogue.dao;
 
-import java.sql.Connection;
-import java.util.*;
-import java.util.function.Function;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-import org.apache.commons.lang3.time.StopWatch;
-import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
@@ -20,9 +14,18 @@ import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.postgres.AuthorshipNormFunc;
 import life.catalogue.postgres.PgCopyUtils;
+import org.apache.commons.lang3.time.StopWatch;
+import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.Rank;
 import org.junit.*;
 import org.postgresql.jdbc.PgConnection;
+
+import java.sql.Connection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
 
 import static org.junit.Assert.*;
 
@@ -285,7 +288,7 @@ public class DuplicateDaoTest {
       for (Duplicate d : dups) {
         System.out.println("\n#" + idx++ + "  " + d.getKey() + " ---");
         for (Duplicate.UsageDecision u : d.getUsages()) {
-          System.out.print(" " + u.getUsage().getId() + "  " + u.getUsage().getName().canonicalNameWithAuthorship() + "  " + u.getUsage().getStatus());
+          System.out.print(" " + u.getUsage().getId() + "  " + u.getUsage().getName().getLabel() + "  " + u.getUsage().getStatus());
           System.out.print(" -- " + u.getUsage().getName().getAuthorshipNormalized() + " -- ");
           if (u.getUsage().isSynonym()) {
             Synonym s = (Synonym) u.getUsage();

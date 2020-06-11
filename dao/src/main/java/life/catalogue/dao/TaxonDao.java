@@ -241,10 +241,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       //TODO: pass in real verbatim record
       VerbatimRecord v = new VerbatimRecord();
       final String authorship = n.getAuthorship();
-      NameParser.PARSER.parse(n, v).ifPresent(nat -> {
-        // try to add an authorship if not yet there
-        NameParser.PARSER.parseAuthorshipIntoName(nat, authorship, v);
-      });
+      NameParser.PARSER.parse(n, v);
       
     } else {
       if (n.getType() == null) {

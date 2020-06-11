@@ -679,9 +679,9 @@ public class Normalizer implements Callable<Boolean> {
     Name n = new Name();
     n.setUninomial(uninomial);
     n.setRank(rank);
+    n.updateNameCache();
     // determine type - can e.g. be placeholders
     n.setType(NameParser.PARSER.determineType(n).orElse(NameType.SCIENTIFIC));
-    n.updateNameCache();
     t.usage.setName(n);
     // store both, which creates a single new neo node
     store.createNameAndUsage(t);

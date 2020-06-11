@@ -886,6 +886,8 @@ CREATE TABLE name (
   published_in_id TEXT,
   published_in_page TEXT,
   link TEXT,
+  nomenclatural_note TEXT,
+  unparsed TEXT,
   remarks TEXT
 ) PARTITION BY LIST (dataset_key);
 
@@ -1016,9 +1018,13 @@ CREATE TABLE distribution (
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE treatment (
-  taxon_id TEXT NOT NULL,
+  id TEXT NOT NULL,
   dataset_key INTEGER NOT NULL,
   format TREATMENTFORMAT,
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   document TEXT NOT NULL,
   reference_id TEXT
 ) PARTITION BY LIST (dataset_key);
@@ -1062,7 +1068,7 @@ ALTER TABLE parser_config DROP COLUMN scientific_name;
 ALTER TABLE parser_config DROP COLUMN scientific_name_normalized;
 ALTER TABLE parser_config DROP COLUMN authorship;
 ALTER TABLE parser_config DROP COLUMN authorship_normalized;
-ALTER TABLE parser_config RENAME COLUMN remarks TO nomenclatural_note;
+ALTER TABLE parser_config DROP COLUMN remarks;
 ALTER TABLE parser_config ADD COLUMN taxonomic_note TEXT;
 ALTER TABLE parser_config ADD PRIMARY KEY (id);
 

@@ -1,12 +1,12 @@
 package life.catalogue.importer.neo.model;
 
-import java.util.Collection;
-import java.util.stream.Collectors;
-
 import com.google.common.base.Strings;
 import org.gbif.nameparser.api.Rank;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 /**
  * Property names of neo4j nodes and relations.
@@ -106,7 +106,7 @@ public class NeoProperties {
   public static RankedUsage getRankedUsage(NeoUsage u) {
     if (u.node != null && u.nameNode != null && u.usage.getName() != null) {
       return new RankedUsage(u.node, u.nameNode,
-          u.usage.getName().getScientificName(), u.usage.getName().buildAuthorship(), u.usage.getName().getRank());
+          u.usage.getName().getScientificName(), u.usage.getName().getAuthorship(), u.usage.getName().getRank());
     } else {
       return getRankedUsage(u.node);
     }

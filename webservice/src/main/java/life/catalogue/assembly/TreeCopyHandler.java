@@ -217,7 +217,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     if (skipUsage(u)) {
       state.setIgnoredUsageCount(++ignoredCounter);
       // skip this taxon, but include children
-      LOG.debug("Ignore {} {} [{}] type={}; status={}", u.getName().getRank(), u.getName().scientificNameAuthorship(), u.getId(), u.getName().getType(), u.getName().getNomStatus());
+      LOG.debug("Ignore {} {} [{}] type={}; status={}", u.getName().getRank(), u.getName().getLabel(), u.getId(), u.getName().getType(), u.getName().getNomStatus());
       // use taxons parent also as the parentID for this so children link one level up
       ids.put(u.getId(), ids.getOrDefault(u.getParentId(), target));
       return;
@@ -350,7 +350,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
           try {
             u.setStatus(ed.getStatus());
           } catch (IllegalArgumentException e) {
-            LOG.warn("Cannot convert {} {} {} into {}", u.getName().getRank(), u.getStatus(), u.getName().canonicalNameWithAuthorship(), ed.getStatus(), e);
+            LOG.warn("Cannot convert {} {} {} into {}", u.getName().getRank(), u.getStatus(), u.getName().getLabel(), ed.getStatus(), e);
           }
         }
         if (u.isTaxon()) {

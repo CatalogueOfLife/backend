@@ -696,6 +696,11 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     return getLabel(true);
   }
 
+  @JsonIgnore
+  public String getLabel() {
+    return getLabel(false);
+  }
+
   public String getLabel(boolean html) {
     return getLabelBuilder(html).toString();
   }

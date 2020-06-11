@@ -386,7 +386,7 @@ public class NeoDb {
       u.usage.setName(null);
       usages.create(u);
     } else {
-      LOG.debug("Skip usage {} as no name node was created for {}", u.getId(), nn.name.canonicalNameWithAuthorship());
+      LOG.debug("Skip usage {} as no name node was created for {}", u.getId(), nn.name.getLabel());
     }
     return u.nameNode;
   }
@@ -942,7 +942,7 @@ public class NeoDb {
     // store, which creates a new neo node
     Node nameNode = createNameAndUsage(u);
 
-    return new RankedUsage(u.node, nameNode, name.getScientificName(), name.buildAuthorship(), name.getRank());
+    return new RankedUsage(u.node, nameNode, name.getScientificName(), name.getAuthorship(), name.getRank());
   }
   
   public void updateIdGenerators() {

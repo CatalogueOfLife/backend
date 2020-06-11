@@ -12,7 +12,7 @@ public class RankedName {
   public RankedName(NeoName nn) {
     this.nameNode = nn.node;
     this.name = nn.name.getScientificName();
-    this.author = nn.name.buildAuthorship();
+    this.author = nn.name.getAuthorship();
     this.rank = nn.name.getRank();
   }
   

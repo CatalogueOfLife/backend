@@ -130,7 +130,7 @@ public class NameValidator {
     }
     
     // look for truncated authorship
-    if (hasUnmatchedBrackets(n.buildAuthorship())) {
+    if (hasUnmatchedBrackets(n.getAuthorship())) {
       issues.addIssue(Issue.UNMATCHED_NAME_BRACKETS);
     }
     

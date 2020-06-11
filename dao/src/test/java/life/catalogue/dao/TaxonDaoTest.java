@@ -33,7 +33,7 @@ public class TaxonDaoTest extends DaoTestBase {
   static int user = TestEntityGenerator.USER_EDITOR.getKey();
   
   @Test
-  public void testInfo() throws Exception {
+  public void testInfo() {
     final int datasetKey = DATASET11.getKey();
     TaxonInfo info = tDao.getTaxonInfo(datasetKey, TAXON1.getId());
     BeanPrinter.out(info);
@@ -46,9 +46,8 @@ public class TaxonDaoTest extends DaoTestBase {
     
     Set<String> refKeys1 = new HashSet<>();
     info.getReferences().values().forEach(r -> refKeys1.add(r.getId()));
-    
-    Set<String> refKeys2 = new HashSet<>();
-    refKeys2.addAll(info.getTaxon().getReferenceIds());
+
+    Set<String> refKeys2 = new HashSet<>(info.getTaxon().getReferenceIds());
     
     Stream.concat(
         Stream.of(info.getTreatment()),
@@ -86,7 +85,7 @@ public class TaxonDaoTest extends DaoTestBase {
   }
   
   @Test
-  public void synonyms() throws Exception {
+  public void synonyms() {
     try (SqlSession session = session()) {
       SynonymMapper sm = session.getMapper(SynonymMapper.class);
       
@@ -173,7 +172,8 @@ public class TaxonDaoTest extends DaoTestBase {
       assertEquals(1, synonymy.getMisapplied().size());
       
       synonymy = tDao.getSynonymy(TAXON2);
-      
+      //TODO: update test to real size
+      assertEquals(7, synonymy.size());
     }
   }
   
@@ -202,7 +202,7 @@ public class TaxonDaoTest extends DaoTestBase {
     t.setDatasetKey(datasetKey);
     t.setStatus(TaxonomicStatus.ACCEPTED);
     
-    DSID id = tDao.create(t, USER_EDITOR.getKey());
+    DSID<String> id = tDao.create(t, USER_EDITOR.getKey());
     
     Taxon t2 = tDao.get(id);
     assertNotNull(t2.getId());

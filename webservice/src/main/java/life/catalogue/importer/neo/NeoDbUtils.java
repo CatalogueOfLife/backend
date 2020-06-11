@@ -116,7 +116,7 @@ public class NeoDbUtils {
   
   public static <T extends Map<String, Object>> T neo4jProps(Name name, T props) {
     putIfNotNull(props, NeoProperties.SCIENTIFIC_NAME, name.getScientificName());
-    putIfNotNull(props, NeoProperties.AUTHORSHIP, name.buildAuthorship());
+    putIfNotNull(props, NeoProperties.AUTHORSHIP, name.getAuthorship());
     putIfNotNull(props, NeoProperties.RANK, name.getRank());
     return props;
   }

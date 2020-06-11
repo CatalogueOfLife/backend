@@ -60,6 +60,7 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
     // manually set the child count which is populated on read only
     t.setSectorKey(sector.getId());
     t.setDatasetKey(dkey);
+    t.setNamePhrase("sensu lato");
     return t;
   }
   

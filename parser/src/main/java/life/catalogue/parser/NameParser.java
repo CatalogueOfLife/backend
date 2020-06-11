@@ -10,6 +10,7 @@ import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
+import life.catalogue.common.tax.NameFormatter;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.NameParserGBIF;
 import org.gbif.nameparser.ParserConfigs;
@@ -96,21 +97,26 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
         pn.getCombinationAuthorship().getAuthors().add(authorship);
         return pn;
       });
-    
+
       // we might have already parsed an authorship from the scientificName string which does not match up?
-      if (pnu.getName().hasAuthorship() &&
-          !pnu.getName().buildAuthorship().equalsIgnoreCase(pnAuthorship.authorshipComplete())) {
-        v.addIssue(Issue.INCONSISTENT_AUTHORSHIP);
-        LOG.info("Different authorship found in name {} than in parsed version: [{}] vs [{}]",
-            pnu.getName(), pnu.getName().buildAuthorship(), pnAuthorship.authorshipComplete());
+      if (pnu.getName().hasAuthorship()) {
+        String prevAuthorship = NameFormatter.authorship(pnu.getName());
+        if (!prevAuthorship.equalsIgnoreCase(pnAuthorship.authorshipComplete())) {
+          v.addIssue(Issue.INCONSISTENT_AUTHORSHIP);
+          LOG.info("Different authorship found in name {} than in parsed version: [{}] vs [{}]",
+              pnu.getName(), prevAuthorship, pnAuthorship.authorshipComplete());
+        }
       }
+
       pnu.getName().setCombinationAuthorship(pnAuthorship.getCombinationAuthorship());
       pnu.getName().setSanctioningAuthor(pnAuthorship.getSanctioningAuthor());
       pnu.getName().setBasionymAuthorship(pnAuthorship.getBasionymAuthorship());
       // propagate notes and unparsed bits found in authorship
       pnu.getName().setNomenclaturalNote(pnAuthorship.getNomenclaturalNote());
       pnu.getName().setUnparsed(pnAuthorship.getUnparsed());
-      pnu.addAccordingTo(pnAuthorship.getTaxonomicNote());
+      pnu.setTaxonomicNote(pnAuthorship.getTaxonomicNote());
+      // use original authorship string
+      pnu.getName().setAuthorship(authorship);
     }
   }
   
@@ -140,6 +146,8 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     Timer.Context ctx = timer == null ? null : timer.time();
     try {
       pnu = fromParsedName(n, PARSER_INTERNAL.parse(n.getScientificName(), n.getRank(), n.getCode()), issues);
+      // try to add an authorship if not yet there
+      parseAuthorshipIntoName(pnu, n.getAuthorship(), issues);
       pnu.getName().updateNameCache();
       
     } catch (UnparsableNameException e) {
@@ -161,7 +169,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   }
   
   public Optional<NameType> determineType(Name name) {
-    String sciname = name.canonicalNameWithAuthorship();
+    String sciname = name.getScientificName();
     if (StringUtils.isBlank(sciname)) {
       return Optional.of(NameType.NO_NAME);
     }

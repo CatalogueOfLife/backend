@@ -41,7 +41,7 @@ public class MatchingDao {
       // https://github.com/Sp2000/colplus-backend/issues/283
       for (NameUsageBase t : uMapper.listByName(datasetKey, name.getName(), name.getRank())) {
         // take authorship, code, status and parent as optional filters, i.e. if null accept any value
-        if (StringUtils.trimToNull(name.getAuthorship()) != null && !name.getAuthorship().equalsIgnoreCase(t.getName().buildAuthorship())) {
+        if (StringUtils.trimToNull(name.getAuthorship()) != null && !name.getAuthorship().equalsIgnoreCase(t.getName().getAuthorship())) {
           continue;
         }
         if (name.getStatus() != null && !Objects.equals(name.getStatus(), t.getStatus())) {
@@ -92,7 +92,7 @@ public class MatchingDao {
       if (u.isTaxon()) {
         Taxon t = (Taxon) u;
         if (t.getSectorKey() != null && t.getSectorKey().equals(sector.getId())
-            && Objects.equals(StringUtils.trimToNull(authorship), StringUtils.trimToNull(u.getName().buildAuthorship()))) {
+            && Objects.equals(StringUtils.trimToNull(authorship), StringUtils.trimToNull(u.getName().getAuthorship()))) {
           matches.add(t);
         }
       }
