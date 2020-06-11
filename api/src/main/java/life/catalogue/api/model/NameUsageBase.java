@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.common.tax.NameFormatter;
 
 import javax.annotation.Nonnull;
 import java.net.URI;
@@ -49,12 +48,25 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
 
   @Override
   public String getLabel() {
-    return NameFormatter.scientificNameAuthorship(this, false);
+    return getLabel(false);
   }
 
   @Override
   public String getLabelHtml() {
-    return NameFormatter.scientificNameAuthorship(this, true);
+    return getLabel(true);
+  }
+
+  public String getLabel(boolean html) {
+    StringBuilder sb = name.getLabelBuilder(false);
+    if (namePhrase != null) {
+      sb.append(" ");
+      sb.append(namePhrase);
+    }
+    if (accordingTo != null) {
+      sb.append(" ");
+      sb.append(accordingTo);
+    }
+    return sb.toString();
   }
 
   @Override
@@ -196,6 +208,6 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
 
   @Override
   public String toString() {
-    return getClass().getSimpleName() + "{" + name.scientificNameAuthorship() + " [" + getId() + "]}";
+    return getClass().getSimpleName() + "{" + name.getLabel(false) + " [" + getId() + "]}";
   }
 }

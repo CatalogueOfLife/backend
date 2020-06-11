@@ -10,23 +10,34 @@ import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.common.tax.AuthorshipNormalizer;
+import life.catalogue.common.tax.NameFormatter;
 import life.catalogue.common.tax.SciNameNormalizer;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.*;
-import org.gbif.nameparser.util.NameFormatter;
 
 import javax.annotation.Nonnull;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
 
 /**
+ * A parsed or unparsed name with strictly nomenclatural properties.
+ * Any taxonomic information is kept with a NameUsage, toably a Taxon.
  *
+ * Rank and the scientificName are the only guaranteed properties to exist for any name.
+ * Only for parsed Names further atomised properties do exist, see {@link #isParsed()}.
+ * For parsed names the scientificName is reconstructed based on the parsed information to make sure they match up.
+ *
+ * The {@link #getAuthorship()} on the other hand contains the original value and is unaltered for parsed names.
+ * It is only reconstructed for record that did not contain the authorship separately from the bare scientific name.
  */
 public class Name extends DatasetScopedEntity<String> implements VerbatimEntity, SectorEntity, LinneanName {
-  
+
+  private static Pattern RANK_MATCHER = Pattern.compile("^(.+[a-z]) ((?:notho|infra)?(?:gx|natio|morph|[a-z]{3,6}var\\.?|chemoform|f\\. ?sp\\.|strain|[a-z]{1,7}\\.))( [a-z][^ ]*?)?(\\b.+)?$");
 
   private Integer sectorKey;
   private Integer verbatimKey;
@@ -325,8 +336,8 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
    */
   public void updateNameCache() {
     if (isParsed()) {
-      this.scientificName = canonicalNameWithoutAuthorship();
-      this.authorship = buildAuthorship();
+      this.scientificName = NameFormatter.scientificName(this);
+      this.authorship = NameFormatter.authorship(this);
     }
   }
   
@@ -675,29 +686,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     parts.removeIf(Objects::isNull);
     return parts;
   }
-  
-  /**
-   * Excludes remarks, authorship & sensu
-   * @See NameFormatter.canonicalNameWithoutAuthorship()
-   */
-  public String canonicalNameWithoutAuthorship() {
-    return buildName(false, false, false);
-  }
- 
-  /**
-   * Includes all but remarks
-   * @See NameFormatter.canonicalComplete()
-   */
-  public String canonicalNameWithAuthorship() {
-    return buildName(false, true, false);
-  }
-
-  /**
-   * Full name from parsed atoms.
-   */
-  public String buildScientificNameAuthorship() {
-    return buildName(false, true, true);
-  }
 
   /**
    * Full name.O
@@ -705,41 +693,61 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
    */
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   public String labelHtml() {
-    return buildName(true, true, true);
-  }
-  
-  private String buildName(boolean html, boolean authorship, boolean nomNote) {
-    return isParsed() ?
-        NameFormatter.buildName(toParsedName(this), true, true, authorship, true, true, true, false, true, true, nomNote, true, true, true, html)
-        : scientificNameAuthorship();
-  }
-  
-  /**
-   * @return the scientificName plus authorship from cached fields, not parsed ones.
-   */
-  @JsonIgnore
-  public String scientificNameAuthorship() {
-    StringBuilder sb = new StringBuilder();
-    appendScientificNameAuthorship(sb);
-    return sb.toString();
+    return getLabel(true);
   }
 
-  public void appendScientificNameAuthorship(StringBuilder sb) {
-    sb.append(scientificName);
+  public String getLabel(boolean html) {
+    return getLabelBuilder(html).toString();
+  }
+
+  StringBuilder getLabelBuilder(boolean html) {
+    StringBuilder sb = new StringBuilder();
+    sb.append(html ? scientificNameHtml() : scientificName);
     if (authorship != null) {
       sb.append(" ");
       sb.append(authorship);
     }
+    if (nomenclaturalNote != null) {
+      sb.append(" ");
+      sb.append(nomenclaturalNote);
+    }
+    return sb;
   }
 
   /**
-   * @See NameFormatter.authorshipComplete()
+   * Adds italics around the epithets but not rank markers or higher ranked names.
    */
-  @JsonIgnore
-  public String buildAuthorship() {
-    return NameFormatter.authorshipComplete(toParsedName(this));
+  String scientificNameHtml(){
+    // only genus names and below are shown in italics
+    if (rank != null && rank.ordinal() >= Rank.GENUS.ordinal()) {
+      Matcher m = RANK_MATCHER.matcher(scientificName);
+      if (m.find()) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(inItalics(m.group(1)));
+        sb.append(" ");
+        sb.append(m.group(2));
+        if (m.group(3) != null) {
+          sb.append(" ");
+          sb.append(inItalics(m.group(3).trim()));
+        }
+        if (m.group(4) != null) {
+          sb.append(" ");
+          sb.append(m.group(4).trim());
+        }
+        return sb.toString();
+
+      } else if(isParsed()) {
+        return inItalics(scientificName);
+      }
+    }
+    //TODO: Candidatus or Ca.
+    return scientificName;
   }
-  
+
+  private static String inItalics(String x) {
+    return "<i>" + x + "</i>";
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -787,7 +795,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   
   @Override
   public String toString() {
-    return getId() + " " + canonicalNameWithAuthorship();
+    return getId() + " " + getLabel(false);
   }
   
   public String toStringComplete() {
@@ -802,58 +810,16 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
         sb.append(" ");
       }
       sb.append("[");
+      if (isParsed()) {
+        sb.append("Parsed ");
+      }
       sb.append(this.type);
       sb.append("]");
     }
-    
-    if (isParsed()) {
-      if (this.uninomial != null) {
-        sb.append(" U:").append(this.uninomial);
-      }
-      
-      if (this.genus != null) {
-        sb.append(" G:").append(this.genus);
-      }
-      
-      if (this.infragenericEpithet != null) {
-        sb.append(" IG:").append(this.infragenericEpithet);
-      }
-      
-      if (this.specificEpithet != null) {
-        sb.append(" S:").append(this.specificEpithet);
-      }
-      
-      sb.append(" R:").append(this.rank);
-      
-      if (this.infraspecificEpithet != null) {
-        sb.append(" IS:").append(this.infraspecificEpithet);
-      }
-      
-      if (this.cultivarEpithet != null) {
-        sb.append(" CV:").append(this.cultivarEpithet);
-      }
-      
-      if (this.combinationAuthorship != null) {
-        sb.append(" A:").append(this.combinationAuthorship);
-      }
-      
-      if (this.basionymAuthorship != null) {
-        sb.append(" BA:").append(this.basionymAuthorship);
-      }
-      
-    } else {
-      sb.append(" SN:").append(this.scientificName);
-      sb.append(" AUTH:").append(this.authorship);
-  
+    if (sb.length() > 0) {
+      sb.append(" ");
     }
-    
-    if (this.publishedInId != null) {
-      sb.append(" PUB:").append(this.publishedInId);
-      if (this.publishedInPage != null) {
-        sb.append(" ").append(this.publishedInPage);
-      }
-    }
-    
+    sb.append(getLabel(false));
     return sb.toString();
   }
 

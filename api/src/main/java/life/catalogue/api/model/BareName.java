@@ -2,7 +2,6 @@ package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.common.tax.NameFormatter;
 
 import java.util.Objects;
 
@@ -23,12 +22,12 @@ public class BareName implements NameUsage {
 
   @Override
   public String getLabel() {
-    return NameFormatter.scientificName(name, false);
+    return name.getLabel(false);
   }
 
   @Override
   public String getLabelHtml() {
-    return NameFormatter.scientificName(name, true);
+    return name.getLabel(true);
   }
 
   @Override

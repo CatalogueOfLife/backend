@@ -1,10 +1,10 @@
 package life.catalogue.api.model;
 
-import java.util.List;
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.vocab.MatchType;
+
+import java.util.List;
+import java.util.Objects;
 
 
 public class NameMatch {
@@ -74,7 +74,7 @@ public class NameMatch {
         sb.append(": [");
         boolean first = true;
         for (Name a : alternatives) {
-          sb.append(a.canonicalNameWithAuthorship());
+          sb.append(a.getLabel(false));
           if (first) {
             first = false;
           } else {
@@ -85,7 +85,7 @@ public class NameMatch {
         break;
       default:
         sb.append(": ")
-            .append(name.canonicalNameWithAuthorship());
+            .append(name.getLabel(false));
     }
     
     return sb.toString();

@@ -3,7 +3,6 @@ package life.catalogue.common.tax;
 
 import com.google.common.base.Joiner;
 import life.catalogue.api.model.Name;
-import life.catalogue.api.model.NameUsageBase;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.NomCode;
@@ -21,8 +20,6 @@ public class NameFormatter {
   public static final char HYBRID_MARKER = '×';
   private static final String NOTHO_PREFIX = "notho";
   private static final Joiner AUTHORSHIP_JOINER = Joiner.on(", ").skipNulls();
-  private static final String ITALICS_OPEN = "<i>";
-  private static final String ITALICS_CLOSE = "</i>";
   private static final Pattern AL = Pattern.compile("^al\\.?$");
 
   private NameFormatter() {
@@ -35,43 +32,14 @@ public class NameFormatter {
    *
    * Uses name parts for parsed names, but the single scientificName field in case of unparsed names.
    */
-  public static String scientificName(Name n, boolean html) {
+  public static String scientificName(Name n) {
     // make sure this is a parsed name, otherwise just return prebuilt name
     if (!n.isParsed()) {
       return n.getScientificName();
     }
     // https://github.com/gbif/portal-feedback/issues/640
     // final char transformations
-    String name = buildScientificName(n, html).toString().trim();
-    return UnicodeUtils.decompose(name);
-  }
-
-  /**
-   * A full scientific name with authorship including potential namePhrases from the usage.
-   * Otherwise identical to scientificName() method.
-   *
-   * Uses name parts for parsed names, but the single scientificName field in case of unparsed names.
-   */
-  public static String scientificNameAuthorship(NameUsageBase nu, boolean html) {
-    // make sure this is a parsed name, otherwise just return prebuilt name
-    StringBuilder sb;
-    if (!nu.getName().isParsed()) {
-      sb = new StringBuilder();
-      sb.append(nu.getName().getScientificName());
-      if (nu.getName().getAuthorship() != null) {
-        sb.append(" ");
-        sb.append(nu.getName().getAuthorship());
-      }
-
-    } else {
-      sb = buildScientificName(nu.getName(), html);
-      if (nu.getName().hasAuthorship()) {
-        sb.append(" ");
-        appendAuthorship(nu.getName(), sb);
-      }
-    }
-    appendUsage(nu, sb, html);
-    String name = sb.toString().trim();
+    String name = buildScientificName(n).toString().trim();
     return UnicodeUtils.decompose(name);
   }
 
@@ -80,45 +48,35 @@ public class NameFormatter {
    */
   public static String authorship(Name n) {
     StringBuilder sb = new StringBuilder();
-    appendAuthorship(n, sb);
-    return sb.length() == 0 ? null : sb.toString();
-  }
-
-  private static void openItalics(StringBuilder sb) {
-    sb.append(ITALICS_OPEN);
-  }
-
-  private static void closeItalics(StringBuilder sb) {
-    sb.append(ITALICS_CLOSE);
-  }
-
-  private static void appendInItalics(StringBuilder sb, String x, boolean html) {
-    if (html) {
-      sb.append(ITALICS_OPEN)
-        .append(x)
-        .append(ITALICS_CLOSE);
-
-    } else {
-      sb.append(x);
+    if (n.hasBasionymAuthorship()) {
+      sb.append("(");
+      appendAuthorship(sb, n.getBasionymAuthorship(), true);
+      sb.append(")");
     }
+    if (n.hasCombinationAuthorship()) {
+      if (n.hasBasionymAuthorship()) {
+        sb.append(" ");
+      }
+      appendAuthorship(sb, n.getCombinationAuthorship(), true);
+      // Render sanctioning author via colon:
+      // http://www.iapt-taxon.org/nomen/main.php?page=r50E
+      //TODO: remove rendering of sanctioning author according to Paul Kirk!
+      if (n.getSanctioningAuthor() != null) {
+        sb.append(" : ");
+        sb.append(n.getSanctioningAuthor());
+      }
+    }
+    return sb.length() == 0 ? null : sb.toString();
   }
 
   /**
    * build a scientific name without authorship from a parsed Name instance.
-   * @param html                 add html markup
    */
-  private static StringBuilder buildScientificName(Name n, boolean html) {
+  private static StringBuilder buildScientificName(Name n) {
     StringBuilder sb = new StringBuilder();
 
-    boolean candidateItalics = false;
     if (n.isCandidatus()) {
       sb.append("\"");
-      if (html) {
-        openItalics(sb);
-        candidateItalics = true;
-        // we turn off html here cause the entire name should be in italics!
-        html = false;
-      }
       sb.append("Candidatus ");
     }
 
@@ -128,7 +86,7 @@ public class NameFormatter {
         sb.append(HYBRID_MARKER)
           .append(" ");
       }
-      appendInItalics(sb, n.getUninomial(), html);
+      sb.append(n.getUninomial());
 
     } else {
       // bi- or trinomials or infrageneric names
@@ -137,7 +95,7 @@ public class NameFormatter {
           boolean showInfraGen = true;
           // the infrageneric is the terminal rank. Always show it and wrap it with its genus if requested
           if (n.getGenus() != null) {
-            appendGenus(sb, n, html);
+            appendGenus(sb, n);
             sb.append(" ");
             // we show zoological infragenerics in brackets,
             // but use rank markers for botanical names (unless its no defined rank)
@@ -147,7 +105,7 @@ public class NameFormatter {
                 sb.append(HYBRID_MARKER)
                   .append(' ');
               }
-              appendInItalics(sb, n.getInfragenericEpithet(), html);
+              sb.append(n.getInfragenericEpithet());
               sb.append(")");
               showInfraGen = false;
             }
@@ -158,21 +116,21 @@ public class NameFormatter {
             if (appendRankMarker(sb, n.getRank(), NamePart.INFRAGENERIC == n.getNotho())) {
               sb.append(' ');
             }
-            appendInItalics(sb, n.getInfragenericEpithet(), html);
+            sb.append(n.getInfragenericEpithet());
           }
 
         } else {
           if (n.getGenus() != null) {
-            appendGenus(sb, n, html);
+            appendGenus(sb, n);
           }
           // additional subgenus shown for binomial. Always shown in brackets
           sb.append(" (");
-          appendInItalics(sb, n.getInfragenericEpithet(), html);
+          sb.append(n.getInfragenericEpithet());
           sb.append(")");
         }
 
       } else if (n.getGenus() != null) {
-        appendGenus(sb, n, html);
+        appendGenus(sb, n);
       }
 
       if (n.getSpecificEpithet() == null) {
@@ -181,14 +139,14 @@ public class NameFormatter {
             // no species epithet given, indetermined!
             if (n.getRank().isInfraspecific()) {
               // maybe we have an infraspecific epithet? force to show the rank marker
-              appendInfraspecific(sb, n, true, html);
+              appendInfraspecific(sb, n, true);
             } else {
               sb.append(" ");
               sb.append(n.getRank().getMarker());
             }
           }
         } else if (n.getInfraspecificEpithet() != null) {
-          appendInfraspecific(sb, n, false, html);
+          appendInfraspecific(sb, n, false);
         }
 
       } else {
@@ -198,7 +156,7 @@ public class NameFormatter {
           sb.append(HYBRID_MARKER)
             .append(" ");
         }
-        appendInItalics(sb, n.getSpecificEpithet(), html);
+        sb.append(n.getSpecificEpithet());
 
         if (n.getInfraspecificEpithet() == null) {
           // Indetermined infraspecies? Only show indet cultivar marker if no cultivar epithet exists
@@ -218,16 +176,13 @@ public class NameFormatter {
 
         } else {
           // infraspecific part
-          appendInfraspecific(sb, n, false, html);
+          appendInfraspecific(sb, n, false);
         }
       }
     }
 
     // closing quotes for Candidatus names
     if (n.isCandidatus()) {
-      if (candidateItalics) {
-        closeItalics(sb);
-      }
       sb.append("\"");
     }
 
@@ -258,7 +213,7 @@ public class NameFormatter {
     return sb;
   }
 
-  private static StringBuilder appendInfraspecific(StringBuilder sb, Name n, boolean forceRankMarker, boolean html) {
+  private static StringBuilder appendInfraspecific(StringBuilder sb, Name n, boolean forceRankMarker) {
     // infraspecific part
     sb.append(' ');
     if (NamePart.INFRASPECIFIC == n.getNotho()) {
@@ -276,14 +231,7 @@ public class NameFormatter {
       }
     }
     if (n.getInfraspecificEpithet() != null) {
-      appendInItalics(sb, n.getInfraspecificEpithet(), html);
-    }
-    return sb;
-  }
-
-  private static StringBuilder appendIfNotEmpty(StringBuilder sb, String toAppend) {
-    if (sb.length() > 0) {
-      sb.append(toAppend);
+      sb.append(n.getInfraspecificEpithet());
     }
     return sb;
   }
@@ -324,12 +272,12 @@ public class NameFormatter {
     return false;
   }
 
-  private static StringBuilder appendGenus(StringBuilder sb, Name n, boolean html) {
+  private static StringBuilder appendGenus(StringBuilder sb, Name n) {
     if (NamePart.GENERIC == n.getNotho()) {
       sb.append(HYBRID_MARKER)
         .append(" ");
     }
-    appendInItalics(sb, n.getGenus(), html);
+    sb.append(n.getGenus());
     return sb;
   }
 
@@ -373,46 +321,6 @@ public class NameFormatter {
           sb.append(", ");
         }
         sb.append(auth.getYear());
-      }
-    }
-  }
-
-  private static void appendUsage(NameUsageBase nu, StringBuilder sb, boolean html) {
-    if (nu.getNamePhrase() != null) {
-      sb.append(" ");
-      sb.append(nu.getNamePhrase());
-    }
-    if (nu.getAccordingTo() != null) {
-      sb.append(" ");
-      if (html) {
-        openItalics(sb);
-      }
-      sb.append("sensu");
-      if (html) {
-        closeItalics(sb);
-      }
-      sb.append(" ");
-      sb.append(nu.getAccordingTo());
-    }
-  }
-
-  private static void appendAuthorship(Name a, StringBuilder sb) {
-    if (a.hasBasionymAuthorship()) {
-      sb.append("(");
-      appendAuthorship(sb, a.getBasionymAuthorship(), true);
-      sb.append(")");
-    }
-    if (a.hasCombinationAuthorship()) {
-      if (a.hasBasionymAuthorship()) {
-        sb.append(" ");
-      }
-      appendAuthorship(sb, a.getCombinationAuthorship(), true);
-      // Render sanctioning author via colon:
-      // http://www.iapt-taxon.org/nomen/main.php?page=r50E
-      //TODO: remove rendering of sanctioning author according to Paul Kirk!
-      if (a.getSanctioningAuthor() != null) {
-        sb.append(" : ");
-        sb.append(a.getSanctioningAuthor());
       }
     }
   }

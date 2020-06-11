@@ -26,26 +26,23 @@ public class TaxonTest extends SerdeTestBase<Taxon> {
   @Test
   public void conversionAndFormatting() throws Exception {
     Name n = new Name();
-    Taxon t = new Taxon();
-    t.setName(n);
-
     n.setGenus("Abies");
     n.setSpecificEpithet("alba");
     n.setNotho(NamePart.SPECIFIC);
     n.setRank(Rank.SUBSPECIES);
-    assertEquals("Abies × alba ssp.", t.getLabel());
-
     n.setInfraspecificEpithet("alpina");
     n.setCombinationAuthorship(Authorship.yearAuthors("1999", "L.","DC."));
     n.setBasionymAuthorship(Authorship.yearAuthors("1899","Lin.","Deca."));
-    assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999", t.getName());
-    assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999", t.getLabel());
+    n.setNomenclaturalNote("nom.illeg.");
+    n.updateNameCache(); // first time we update authorship
 
-    n.setRemarks("nom.illeg.");
-    assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999, nom.illeg.", t.getLabel());
+    Taxon t = new Taxon();
+    t.setName(n);
 
-    t.setNamePhrase("bla bla");
-    assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999, nom.illeg. bla bla", t.getLabel());
+    assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999 nom.illeg.", t.getLabel());
+
+    t.setNamePhrase("sensu lato");
+    assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999 nom.illeg. sensu lato", t.getLabel());
   }
 }
 

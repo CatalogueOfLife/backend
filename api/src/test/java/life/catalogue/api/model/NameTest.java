@@ -66,37 +66,74 @@ public class NameTest extends SerdeTestBase<Name> {
   }
   
   @Test
-  public void conversionAndFormatting() throws Exception {
+  public void updateNameCacheLabel() throws Exception {
     Name n = new Name();
     n.setGenus("Abies");
     n.setSpecificEpithet("alba");
     n.setNotho(NamePart.SPECIFIC);
     n.setRank(Rank.SUBSPECIES);
-    assertEquals("Abies × alba ssp.", n.canonicalNameWithAuthorship());
+    n.updateNameCache();
+    assertEquals("Abies × alba ssp.", n.getScientificName());
     
     n.setInfraspecificEpithet("alpina");
     n.setCombinationAuthorship(Authorship.yearAuthors("1999", "L.","DC."));
     n.setBasionymAuthorship(Authorship.yearAuthors("1899","Lin.","Deca."));
-    assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999", n.canonicalNameWithAuthorship());
-    
-    n.setRemarks("nom.illeg.");
-    assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999", n.canonicalNameWithAuthorship());
-    assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999", n.canonicalNameWithAuthorship());
-    assertEquals("Abies × alba subsp. alpina", n.canonicalNameWithoutAuthorship());
+    n.setNomenclaturalNote("nom.illeg.");
+    n.updateNameCache(); // first time we update authorship
+    assertEquals("Abies × alba subsp. alpina", n.getScientificName());
+    assertEquals("(Lin. & Deca., 1899) L. & DC., 1999", n.getAuthorship());
   }
 
-  /**
-   * https://github.com/Sp2000/colplus-backend/issues/478
-   */
   @Test
-  public void bacterialInfraspec() throws Exception {
+  public void label() throws Exception {
     Name n = new Name();
-    n.setGenus("Spirulina");
-    n.setSpecificEpithet("subsalsa");
-    n.setInfraspecificEpithet("subsalsa");
-    n.setRank(Rank.INFRASPECIFIC_NAME);
-    assertEquals("Spirulina subsalsa subsalsa", n.canonicalNameWithAuthorship());
-    n.setCode(NomCode.BACTERIAL);
-    assertEquals("Spirulina subsalsa subsalsa", n.canonicalNameWithAuthorship());
+    n.setGenus("Abies");
+    n.setSpecificEpithet("alba");
+    n.setNotho(NamePart.SPECIFIC);
+    n.setRank(Rank.SUBSPECIES);
+    n.setInfraspecificEpithet("alpina");
+    n.setCombinationAuthorship(Authorship.yearAuthors("1999", "L.","DC."));
+    n.setBasionymAuthorship(Authorship.yearAuthors("1899","Lin.","Deca."));
+    n.setNomenclaturalNote("nom.illeg.");
+    n.updateNameCache(); // first time we update authorship
+
+    assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999 nom.illeg.", n.getLabel(false));
+    assertEquals("<i>Abies × alba</i> subsp. <i>alpina</i> (Lin. & Deca., 1899) L. & DC., 1999 nom.illeg.", n.getLabel(true));
   }
+
+  @Test
+  public void scientificNameHtml() throws Exception {
+    Name n = new Name();
+    n.setRank(Rank.SPECIES);
+    n.setGenus("Abies");
+    n.setScientificName("Abies alba");
+    assertEquals("<i>Abies alba</i>", n.scientificNameHtml());
+
+    n.setRank(Rank.SUBSPECIES);
+    n.setScientificName("Abies alba subsp. montana");
+    assertEquals("<i>Abies alba</i> subsp. <i>montana</i>", n.scientificNameHtml());
+
+    n.setScientificName("Abies alba nothosubsp. montana");
+    assertEquals("<i>Abies alba</i> nothosubsp. <i>montana</i>", n.scientificNameHtml());
+
+    n.setScientificName("Abies × alba subsp. montana");
+    assertEquals("<i>Abies × alba</i> subsp. <i>montana</i>", n.scientificNameHtml());
+
+    n.setRank(Rank.GENUS);
+    n.setScientificName(n.getGenus());
+    assertEquals("<i>Abies</i>", n.scientificNameHtml());
+
+    n.setRank(Rank.FAMILY);
+    n.setScientificName("Pinaceae");
+    assertEquals("Pinaceae", n.scientificNameHtml());
+
+    for (Rank r : Rank.values()) {
+      if (r.isSpeciesOrBelow() && r.getMarker() != null) {
+        n.setRank(r);
+        n.setScientificName("Abies alba "+r.getMarker()+" montana");
+        assertEquals("<i>Abies alba</i> "+r.getMarker()+" <i>montana</i>", n.scientificNameHtml());
+      }
+    }
+  }
+
 }
