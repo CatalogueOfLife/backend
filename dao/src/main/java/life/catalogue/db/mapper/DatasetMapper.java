@@ -49,7 +49,7 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   }
 
   /**
-   * Iterates over all datasets with a cursor.
+   * Iterates over all datasets with a cursor, ignoring deleted ones.
    * Includes private datasets.
    *
    * @param filter optional SQL where clause (without WHERE)
