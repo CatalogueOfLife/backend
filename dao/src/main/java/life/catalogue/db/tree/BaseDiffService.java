@@ -7,6 +7,8 @@ import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.dao.NamesTreeDao;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.HashSet;
@@ -18,6 +20,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class BaseDiffService {
+  private static final Logger LOG = LoggerFactory.getLogger(BaseDiffService.class);
+
   private final static Pattern ATTEMPTS = Pattern.compile("^(\\d+)\\.\\.(\\d+)$");
   protected final SqlSessionFactory factory;
   protected final NamesTreeDao dao;
@@ -34,9 +38,9 @@ public abstract class BaseDiffService {
     return udiff(atts, a -> dao.treeFile(context, datasetKey, a));
   }
 
-  public NamesDiff namesDiff(int datasetKey, String attempts) throws IOException {
+  public Reader namesDiff(int datasetKey, String attempts) throws IOException {
     int[] atts = parseAttempts(datasetKey, attempts);
-    return namesDiff(datasetKey, atts, a -> dao.namesFile(context, datasetKey, a));
+    return udiff(atts, a -> dao.namesFile(context, datasetKey, a));
   }
 
   public NamesDiff nameIdsDiff(int datasetKey, String attempts) throws IOException {
@@ -113,13 +117,29 @@ public abstract class BaseDiffService {
     return InputStreamUtils.readEntireStream(ps.getInputStream());
   }
 
+  /**
+   * Generates a unified diff from two gzipped files using a native unix process.
+   * @param atts
+   * @param getFile
+   */
   @VisibleForTesting
   protected BufferedReader udiff(int[] atts, Function<Integer, File> getFile) throws IOException {
     File[] files = attemptToFiles(atts, getFile);
-    Runtime rt = Runtime.getRuntime();
-    Process ps = rt.exec(String.format("diff -B -d -U 2 %s %s", files[0].getAbsolutePath(), files[1].getAbsolutePath()));
+    try {
+      String cmd = String.format("diff -B -d -U 2 <(gunzip -c %s) <(gunzip -c %s)", files[0].getAbsolutePath(), files[1].getAbsolutePath());
+      LOG.debug("Execute: {}", cmd);
+      ProcessBuilder pb = new ProcessBuilder("bash", "-c", cmd + "; exit 0");
+      Process ps = pb.start();
+      int status = ps.waitFor();
+      if (status != 0) {
+        String error = InputStreamUtils.readEntireStream(ps.getErrorStream());
+        throw new RuntimeException("Unix diff failed with status " + status + ": " + error);
+      }
+      return new BufferedReader(new InputStreamReader(ps.getInputStream()));
 
-    return new BufferedReader(new InputStreamReader(ps.getInputStream()));
+    } catch (InterruptedException e) {
+      throw new RuntimeException("Unix diff was interrupted", e);
+    }
   }
 
 }
