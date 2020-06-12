@@ -1,5 +1,6 @@
 package life.catalogue.dao;
 
+import life.catalogue.api.vocab.Users;
 import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.TestEntityGenerator;
@@ -11,12 +12,20 @@ import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.mapper.SectorMapperTest;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.mapper.TreeMapper;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
 public class SectorDaoTest extends DaoTestBase {
   static int user = TestEntityGenerator.USER_EDITOR.getKey();
+
+  SectorDao dao;
+
+  @Before
+  public void init(){
+    dao = new SectorDao(factory(), NameUsageIndexService.passThru());
+  }
 
   @Test
   public void resetCreate() {
@@ -30,7 +39,6 @@ public class SectorDaoTest extends DaoTestBase {
       session.commit();
     }
   
-    SectorDao dao = new SectorDao(factory(), NameUsageIndexService.passThru());
     Sector s = SectorMapperTest.create();
     s.setSubjectDatasetKey(11);
     s.getSubject().setId("root-1");
@@ -74,5 +82,9 @@ public class SectorDaoTest extends DaoTestBase {
       assertEquals(2, tn.getDatasetSectors().get(12));
     }
   }
-  
+
+  @Test(expected = UnsupportedOperationException.class)
+  public void delete() {
+    dao.delete(SectorMapperTest.create(), Users.TESTER);
+  }
 }

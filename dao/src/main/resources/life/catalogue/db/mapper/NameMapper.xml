@@ -207,10 +207,8 @@
 
   <select id="getByUsage" resultMap="nameResultMap">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     JOIN name_usage_${datasetKey} u ON u.name_id=n.id
     WHERE u.id = #{usageId}
   </select>
@@ -218,26 +216,32 @@
   <select id="processIndexIds" resultType="String">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT DISTINCT name_index_id
-    FROM
-    <include refid="FROM"/>
+    FROM <include refid="FROM"/>
     <if test="sectorKey != null">
       WHERE sector_key = #{sectorKey}
     </if>
   </select>
 
+  <select id="processNameStrings" resultType="String">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT concat_ws(' ', scientific_name, authorship)
+    FROM <include refid="FROM"/>
+    <if test="sectorKey != null">
+      WHERE sector_key = #{sectorKey}
+    </if>
+    ORDER BY scientific_name, authorship
+  </select>
+
   <select id="homotypicGroup" resultMap="nameResultMap">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     JOIN name_${partition} ns ON n.homotypic_name_id=ns.homotypic_name_id AND n.dataset_key=ns.dataset_key
     WHERE ns.id=#{id}
   </select>
 
   <select id="indexGroup" resultMap="nameResultMap">
-    SELECT
-    <include refid="SELECT"/>
+    SELECT <include refid="SELECT"/>
     FROM name n
     WHERE n.name_index_id=#{id}
   </select>

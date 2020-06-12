@@ -34,38 +34,42 @@ public class NamesTreeDao {
     this.repo = repo;
   }
   
-  public static Set<String> readNames(File nf) throws IOException{
-    try (BufferedReader br = UTF8IoUtils.readerFromFile(nf)) {
+  public static Set<String> readLines(File f) throws IOException{
+    try (BufferedReader br = UTF8IoUtils.readerFromFile(f)) {
       return br.lines().collect(Collectors.toSet());
     }
   }
   
-  public int updateDatasetNames(int datasetKey, int attempt) {
-    int count;
+  public void updateDatasetNames(int datasetKey, int attempt) {
     try (SqlSession session = factory.openSession(true);
-        NamesWriter handler = new NamesWriter(namesFile(datasetKey, attempt))
+        NamesWriter nHandler = new NamesWriter(namesFile(Context.DATASET, datasetKey, attempt));
+        NamesIdWriter idHandler = new NamesIdWriter(namesIdFile(Context.DATASET, datasetKey, attempt))
     ){
       NameMapper nm = session.getMapper(NameMapper.class);
-      nm.processIndexIds(datasetKey, null).forEach(handler);
-      count = handler.counter;
-      LOG.info("Written {} index names for dataset {}-{}", count, datasetKey, attempt);
+
+      nm.processNameStrings(datasetKey, null).forEach(nHandler);
+      LOG.info("Written {} name strings for dataset {}-{}", nHandler.counter, datasetKey, attempt);
+
+      nm.processIndexIds(datasetKey, null).forEach(idHandler);
+      LOG.info("Written {} names index ids for dataset {}-{}", idHandler.counter, datasetKey, attempt);
     }
-    return count;
   }
   
-  public int updateSectorNames(int sectorKey, int attempt) {
-    int count;
+  public void updateSectorNames(int sectorKey, int attempt) {
     try (SqlSession session = factory.openSession(true);
-         NamesWriter idConsumer = new NamesWriter(sectorNamesFile(sectorKey, attempt))
+         NamesWriter nHandler = new NamesWriter(namesFile(Context.SECTOR, sectorKey, attempt));
+         NamesIdWriter idHandler = new NamesIdWriter(namesIdFile(Context.SECTOR, sectorKey, attempt))
     ){
       SectorMapper sm = session.getMapper(SectorMapper.class);
       NameMapper nm = session.getMapper(NameMapper.class);
       Sector s = sm.get(DSID.idOnly(sectorKey));
-      nm.processIndexIds(s.getSubjectDatasetKey(), sectorKey).forEach(idConsumer);
-      count = idConsumer.counter;
-      LOG.info("Written {} index names for sector {}-{}", count, sectorKey, attempt);
+
+      nm.processNameStrings(s.getDatasetKey(), sectorKey).forEach(nHandler);
+      LOG.info("Written {} name strings for sector {}-{}", nHandler.counter, sectorKey, attempt);
+
+      nm.processIndexIds(s.getDatasetKey(), sectorKey).forEach(idHandler);
+      LOG.info("Written {} names index ids for sector {}-{}", idHandler.counter, sectorKey, attempt);
     }
-    return count;
   }
 
   static class NamesWriter implements Consumer<String>, AutoCloseable {
@@ -107,18 +111,58 @@ public class NamesTreeDao {
       }
     }
   }
-  
+
+  static class NamesIdWriter implements Consumer<String>, AutoCloseable {
+    public int counter = 0;
+    private final File f;
+    private final BufferedWriter w;
+
+    NamesIdWriter(File f) {
+      this.f=f;
+      try {
+        w = UTF8IoUtils.writerFromGzipFile(f);
+
+      } catch (IOException e) {
+        LOG.error("Failed to write to {}", f.getAbsolutePath());
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Override
+    public void close() {
+      try {
+        w.close();
+      } catch (IOException e) {
+        LOG.error("Failed to close {}", f.getAbsolutePath());
+      }
+    }
+
+    @Override
+    public void accept(String id) {
+      try {
+        if (id != null) {
+          counter++;
+          w.append(id);
+          w.append('\n');
+        }
+      } catch (IOException e) {
+        LOG.error("Failed to write to {}", f.getAbsolutePath());
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
   /**
-   * Deletes all metrics stored for the given dataset, incl tree and name index sets.
+   * Deletes all metrics stored for the given dataset or sector, incl tree and name index sets.
    */
-  public void deleteByDataset(int datasetKey) throws IOException {
-    File dir = datasetDir(datasetKey);
+  public void deleteAll(Context context, int key) throws IOException {
+    File dir = subdir(context, key);
     FileUtils.deleteDirectory(dir);
-    LOG.info("Deleted all file metrics for dataset {}", datasetKey);
+    LOG.info("Deleted all file metrics for {} {}", context.name().toLowerCase(), key);
   }
   
   public int updateDatasetTree(int datasetKey, int attempt) throws IOException {
-    try (Writer writer = UTF8IoUtils.writerFromGzipFile(treeFile(datasetKey, attempt))) {
+    try (Writer writer = UTF8IoUtils.writerFromGzipFile(treeFile(Context.DATASET, datasetKey, attempt))) {
       int count = TextTreePrinter.dataset(datasetKey, factory, writer).print();
       LOG.info("Written text tree with {} lines for dataset {}-{}", count, datasetKey, attempt);
       return count;
@@ -126,30 +170,31 @@ public class NamesTreeDao {
   }
   
   public int updateSectorTree(int sectorKey, int attempt) throws IOException {
-    try (Writer writer = UTF8IoUtils.writerFromGzipFile(sectorTreeFile(sectorKey, attempt));
-         SqlSession session = factory.openSession(true)
-    ){
-      Sector s = session.getMapper(SectorMapper.class).get(DSID.idOnly(sectorKey));
-      int count = TextTreePrinter.sector(s.getSubjectDatasetKey(), sectorKey, factory, writer).print();
+    Sector s;
+    try (SqlSession session = factory.openSession(true)){
+      s = session.getMapper(SectorMapper.class).get(DSID.idOnly(sectorKey));
+    }
+    try (Writer writer = UTF8IoUtils.writerFromGzipFile(treeFile(Context.SECTOR, sectorKey, attempt))){
+      int count = TextTreePrinter.sector(s.getDatasetKey(), sectorKey, factory, writer).print();
       LOG.info("Written text tree with {} lines for sector {}-{}", count, sectorKey, attempt);
       return count;
     }
   }
 
-  public Stream<String> getDatasetNames(int datasetKey, int attempt) {
-    return streamFile(namesFile(datasetKey, attempt));
+  /**
+   * @param context whether its a dataset or sector
+   * @param key the dataset or sector key
+   */
+  public Stream<String> getNames(Context context, int key, int attempt) {
+    return streamFile(namesFile(context, key, attempt));
   }
-  
-  public Stream<String> getDatasetTree(int datasetKey, int attempt) {
-    return streamFile(treeFile(datasetKey, attempt));
+
+  public Stream<String> getNameIds(Context context, int key, int attempt) {
+    return streamFile(namesIdFile(context, key, attempt));
   }
-  
-  public Stream<String> getSectorNames(int sectorKey, int attempt) {
-    return streamFile(sectorNamesFile(sectorKey, attempt));
-  }
-  
-  public Stream<String> getSectorTree(int sectorKey, int attempt) {
-    return streamFile(sectorTreeFile(sectorKey, attempt));
+
+  public Stream<String> getTree(Context context, int key, int attempt) {
+    return streamFile(treeFile(context, key, attempt));
   }
 
   private static Stream<String> streamFile(File f) {
@@ -161,31 +206,25 @@ public class NamesTreeDao {
       return Stream.empty();
     }
   }
-  
-  public File sectorTreeFile(int sectorKey, int attempt) {
-    return new File(sectorDir(sectorKey), "tree/"+attempt+".txt.gz");
+
+  public enum Context {DATASET, SECTOR}
+
+  public File treeFile(Context context, int key, int attempt) {
+    return new File(subdir(context, key), "tree/"+attempt+".txt.gz");
   }
   
-  public File sectorNamesFile(int sectorKey, int attempt) {
-    return new File(sectorDir(sectorKey), "names/"+attempt+".txt.gz");
+  public File namesFile(Context context, int key, int attempt) {
+    return new File(subdir(context, key), "names/"+attempt+"-strings.txt.gz");
   }
-  
-  public File treeFile(int datasetKey, int attempt) {
-    return new File(datasetDir(datasetKey), "tree/"+attempt+".txt.gz");
+
+  public File namesIdFile(Context context, int key, int attempt) {
+    return new File(subdir(context, key), "names/"+attempt+".txt.gz");
   }
-  
-  public File namesFile(int datasetKey, int attempt) {
-    return new File(datasetDir(datasetKey), "names/"+attempt+".txt.gz");
+
+  private File subdir(Context context, int key) {
+    return new File(repo, context.name().toLowerCase() + "/" + bucket(key) + "/" + key);
   }
-  
-  private File datasetDir(int datasetKey) {
-    return new File(repo, "dataset/" + bucket(datasetKey) + "/" + datasetKey);
-  }
-  
-  private File sectorDir(int sectorKey) {
-    return new File(repo, "sector/" + bucket(sectorKey) + "/" + sectorKey);
-  }
-  
+
   /**
    * Assigns a given evenly distributed integer to a bucket of max 1000 items so we do not overload the filesystem
    * @param x

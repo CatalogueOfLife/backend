@@ -3,15 +3,13 @@ package life.catalogue.resources;
 import io.dropwizard.auth.Auth;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
-import life.catalogue.api.vocab.ImportState;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.AssemblyState;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.dao.NamesTreeDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.UserMapper;
-import life.catalogue.db.tree.DiffService;
-import life.catalogue.db.tree.NamesDiff;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
@@ -39,7 +37,6 @@ import java.io.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static life.catalogue.api.model.User.userkey;
 
@@ -52,17 +49,14 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   private final DatasetDao dao;
   private final ImageService imgService;
   private final DatasetImportDao diDao;
-  private final DiffService diff;
   private final AssemblyCoordinator assembly;
   private final ReleaseManager releaseManager;
 
-  public DatasetResource(SqlSessionFactory factory, DatasetDao dao, ImageService imgService, DatasetImportDao diDao, DiffService diff,
-                         AssemblyCoordinator assembly, ReleaseManager releaseManager) {
+  public DatasetResource(SqlSessionFactory factory, DatasetDao dao, ImageService imgService, DatasetImportDao diDao, AssemblyCoordinator assembly, ReleaseManager releaseManager) {
     super(Dataset.class, dao, factory);
     this.dao = dao;
     this.imgService = imgService;
     this.diDao = diDao;
-    this.diff = diff;
     this.assembly = assembly;
     this.releaseManager = releaseManager;
   }
@@ -105,35 +99,6 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   }
 
   @GET
-  @Path("{key}/import")
-  public List<DatasetImport> getImports(@PathParam("key") int key,
-                                        @QueryParam("state") List<ImportState> states,
-                                        @QueryParam("limit") @DefaultValue("1") int limit) {
-    return diDao.list(key, states, new Page(0, limit)).getResult();
-  }
-  
-  @GET
-  @Path("{key}/import/{attempt}")
-  public DatasetImport getImportAttempt(@PathParam("key") int key,
-                                        @PathParam("attempt") int attempt) {
-    return diDao.getAttempt(key, attempt);
-  }
-  
-  @GET
-  @Path("{key}/import/{attempt}/tree")
-  public Stream<String> getImportAttemptTree(@PathParam("key") int key,
-                                     @PathParam("attempt") int attempt) throws IOException {
-    return diDao.getTreeDao().getDatasetTree(key, attempt);
-  }
-  
-  @GET
-  @Path("{key}/import/{attempt}/names")
-  public Stream<String> getImportAttemptNames(@PathParam("key") int key,
-                                              @PathParam("attempt") int attempt) {
-    return diDao.getTreeDao().getDatasetNames(key, attempt);
-  }
-  
-  @GET
   @Path("{key}/texttree")
   @Produces(MediaType.TEXT_PLAIN)
   public Response textTree(@PathParam("key") int key,
@@ -143,9 +108,9 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     StreamingOutput stream;
     Integer attempt = session.getMapper(DatasetMapper.class).lastImportAttempt(key);
     if (attempt != null && rootID == null && (ranks == null || ranks.isEmpty())) {
-      // stream from pregenerated file
+      // stream from pre-generated file
       stream = os -> {
-        InputStream in = new FileInputStream(diDao.getTreeDao().treeFile(key, attempt));
+        InputStream in = new FileInputStream(diDao.getTreeDao().treeFile(NamesTreeDao.Context.DATASET, key, attempt));
         IOUtils.copy(in, os);
         os.flush();
       };
@@ -162,23 +127,6 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
       };
     }
     return Response.ok(stream).build();
-  }
-
-  @GET
-  @Path("{key}/treediff")
-  @Produces(MediaType.TEXT_PLAIN)
-  public Reader diffTree(@PathParam("key") int key,
-                         @QueryParam("attempts") String attempts,
-                         @Context SqlSession session) throws IOException {
-    return diff.datasetTreeDiff(key, attempts);
-  }
-  
-  @GET
-  @Path("{key}/namesdiff")
-  public NamesDiff diffNames(@PathParam("key") int key,
-                             @QueryParam("attempts") String attempts,
-                             @Context SqlSession session) throws IOException {
-    return diff.datasetNamesDiff(key, attempts);
   }
   
   @GET

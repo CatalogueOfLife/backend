@@ -171,7 +171,7 @@ public class AssemblyCoordinator implements Managed {
   }
 
   public void deleteSector(int sectorKey, User user) throws IllegalArgumentException {
-    SectorDelete sd = new SectorDelete(sectorKey, factory, indexService, this::successCallBack, this::errorCallBack, user);
+    SectorDelete sd = new SectorDelete(sectorKey, factory, indexService, diDao.getTreeDao(), this::successCallBack, this::errorCallBack, user);
     queueJob(sd);
   }
   

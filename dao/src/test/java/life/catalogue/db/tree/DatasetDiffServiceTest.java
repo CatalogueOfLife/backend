@@ -1,30 +1,30 @@
 package life.catalogue.db.tree;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.util.Collections;
-
-import org.apache.commons.io.IOUtils;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.common.io.Resources;
 import life.catalogue.dao.DaoTestBase;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.TestDataRule;
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.util.Collections;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
-public class DiffServiceTest extends DaoTestBase {
+public class DatasetDiffServiceTest extends DaoTestBase {
   static int attemptCnt;
-  DiffService diff;
+  DatasetDiffService diff;
   DatasetImportDao dao;
   
-  public DiffServiceTest() {
+  public DatasetDiffServiceTest() {
     super(TestDataRule.tree());
     dao = new DatasetImportDao(factory(), treeRepoRule.getRepo());
-    diff = new DiffService(factory(), dao.getTreeDao());
+    diff = new DatasetDiffService(factory(), dao.getTreeDao());
   }
   
   
