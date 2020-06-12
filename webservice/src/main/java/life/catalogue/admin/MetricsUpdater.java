@@ -45,9 +45,9 @@ public class MetricsUpdater implements Runnable {
   }
 
   private void updateDataset(Dataset d) {
-    LOG.info("Update file metrics for dataset {}", d.getKey());
     if (d.getImportAttempt() != null) {
       int attempt = d.getImportAttempt();
+      LOG.info("Update file metrics for dataset {}, attempt {}", d.getKey(), attempt);
       try {
         treeDao.updateDatasetTree(d.getKey(), attempt);
       } catch (IOException e) {
@@ -58,6 +58,8 @@ public class MetricsUpdater implements Runnable {
       } catch (Exception e) {
         LOG.error("Failed to update name metrics for dataset {}", d.getKey(), e);
       }
+    } else {
+      LOG.info("No import existing for dataset {}", d.getKey());
     }
 
     try (SqlSession session = factory.openSession()) {
