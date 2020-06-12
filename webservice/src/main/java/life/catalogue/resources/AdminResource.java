@@ -120,8 +120,8 @@ public class AdminResource {
 
   @POST
   @Path("/metrics-update")
-  public String updateAllFileMetrics() {
-    return runJob("metrics-updater", () -> new MetricsUpdater(factory, cfg));
+  public String updateAllFileMetrics(@QueryParam("datasetKey") Integer datasetKey) {
+    return runJob("metrics-updater", () -> new MetricsUpdater(factory, cfg, datasetKey));
   }
 
   private String runJob(String threadName, Supplier<Runnable> supplier){

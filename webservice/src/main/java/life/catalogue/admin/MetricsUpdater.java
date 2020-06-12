@@ -18,21 +18,28 @@ public class MetricsUpdater implements Runnable {
 
   private final SqlSessionFactory factory;
   private final WsServerConfig cfg;
+  private Integer datasetKey;
   private int counter;
   private int sCounter;
   NamesTreeDao treeDao;
 
-  public MetricsUpdater(SqlSessionFactory factory, WsServerConfig cfg) {
+  public MetricsUpdater(SqlSessionFactory factory, WsServerConfig cfg, Integer datasetKey) {
     this.factory = factory;
     this.cfg = cfg;
+    this.datasetKey = datasetKey;
   }
 
   @Override
   public void run() {
     treeDao = new NamesTreeDao(factory, cfg.metricsRepo);
-    LOG.info("Start file metrics update for all datasets");
     try (SqlSession session = factory.openSession()) {
-      session.getMapper(DatasetMapper.class).process(null).forEach(this::updateDataset);
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      if (datasetKey != null){
+        updateDataset(dm.get(datasetKey));
+      } else {
+        LOG.info("Start file metrics update for all datasets");
+        dm.process(null).forEach(this::updateDataset);
+      }
     }
     LOG.info("Finished file metrics update updating {} datasets", counter);
   }
