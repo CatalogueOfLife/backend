@@ -18,7 +18,8 @@ public class MetricsUpdater implements Runnable {
 
   private final SqlSessionFactory factory;
   private final WsServerConfig cfg;
-
+  private int counter;
+  private int sCounter;
   NamesTreeDao treeDao;
 
   public MetricsUpdater(SqlSessionFactory factory, WsServerConfig cfg) {
@@ -29,9 +30,11 @@ public class MetricsUpdater implements Runnable {
   @Override
   public void run() {
     treeDao = new NamesTreeDao(factory, cfg.metricsRepo);
+    LOG.info("Start file metrics update for all datasets");
     try (SqlSession session = factory.openSession()) {
       session.getMapper(DatasetMapper.class).process(null).forEach(this::updateDataset);
     }
+    LOG.info("Finished file metrics update updating {} datasets", counter);
   }
 
   private void updateDataset(Dataset d) {
@@ -51,10 +54,15 @@ public class MetricsUpdater implements Runnable {
     }
 
     try (SqlSession session = factory.openSession()) {
+      sCounter = 0;
       session.getMapper(SectorMapper.class).processDataset(d.getKey()).forEach(this::updateSector);
+      if (sCounter > 0) {
+        LOG.info("Updated metrics for {} sectors from dataset {}", sCounter, d.getKey());
+      }
     } catch (Exception e) {
       LOG.error("Failed to update sector metrics for dataset {}", d.getKey(), e);
     }
+    counter++;
   }
 
   private void updateSector(Sector s) {
@@ -72,6 +80,7 @@ public class MetricsUpdater implements Runnable {
       } catch (Exception e) {
         LOG.error("Failed to update name metrics for sector {}", s.getId(), e);
       }
+      sCounter++;
     }
   }
 }
