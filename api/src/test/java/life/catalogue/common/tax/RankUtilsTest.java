@@ -3,7 +3,10 @@ package life.catalogue.common.tax;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.Assert.*;
 
 public class RankUtilsTest {
 
@@ -28,4 +31,49 @@ public class RankUtilsTest {
     assertEquals(null, RankUtils.nextHigherLinneanRank(Rank.DOMAIN));
     assertEquals(Rank.SPECIES, RankUtils.nextHigherLinneanRank(Rank.VARIETY));
   }
+
+  @Test
+  public void minRank() throws Exception {
+    List<Rank> ranks = RankUtils.minRanks(Rank.GENUS);
+    assertTrue(ranks.contains(Rank.GENUS));
+    assertTrue(ranks.contains(Rank.FAMILY));
+    assertTrue(ranks.contains(Rank.KINGDOM));
+    assertTrue(ranks.contains(Rank.INFRACOHORT));
+    assertFalse(ranks.contains(Rank.SUBGENUS));
+    assertFalse(ranks.contains(Rank.SPECIES));
+    assertEquals(49, ranks.size());
+  }
+
+  @Test
+  public void maxRank() throws Exception {
+    List<Rank> ranks = RankUtils.maxRanks(Rank.GENUS);
+    assertTrue(ranks.contains(Rank.GENUS));
+    assertFalse(ranks.contains(Rank.FAMILY));
+    assertFalse(ranks.contains(Rank.KINGDOM));
+    assertFalse(ranks.contains(Rank.INFRACOHORT));
+    assertTrue(ranks.contains(Rank.SUBGENUS));
+    assertTrue(ranks.contains(Rank.SPECIES));
+    assertTrue(ranks.contains(Rank.SUBSPECIES));
+    assertTrue(ranks.contains(Rank.NATIO));
+    assertEquals(38, ranks.size());
+  }
+
+  @Test
+  public void between() throws Exception {
+    Set<Rank> ranks = RankUtils.between(Rank.GENUS, Rank.FAMILY, true);
+    assertTrue(ranks.contains(Rank.GENUS));
+    assertTrue(ranks.contains(Rank.FAMILY));
+    assertTrue(ranks.contains(Rank.SUBFAMILY));
+    assertFalse(ranks.contains(Rank.SUPERFAMILY));
+    assertEquals(9, ranks.size());
+
+    ranks = RankUtils.between(Rank.GENUS, Rank.FAMILY, false);
+    assertFalse(ranks.contains(Rank.GENUS));
+    assertFalse(ranks.contains(Rank.FAMILY));
+    assertTrue(ranks.contains(Rank.SUBFAMILY));
+    assertFalse(ranks.contains(Rank.SUPERFAMILY));
+    assertEquals(7, ranks.size());
+  }
+
+
 }
