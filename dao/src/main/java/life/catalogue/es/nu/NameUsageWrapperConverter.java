@@ -348,6 +348,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
           .map(EsDecision::from)
           .collect(Collectors.toList());
       doc.setDecisions(decisions);
+      doc.setDecisionCount(nuw.getDecisions().size());
     }
   }
 
