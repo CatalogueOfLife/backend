@@ -277,7 +277,7 @@ SELECT
   CASE WHEN n.rank > 'SPECIES'::rank THEN r.marker ELSE NULL END AS infraspecies_marker,  -- uses __ranks table created in AcExporter java code!
   CASE
     WHEN n.type IN ('SCIENTIFIC','INFORMAL') THEN
-        repl_ws(coalesce(v.terms ->> 'col:authorship', concat_ws(', ', n.authorship, n.remarks, n.appended_phrase)))
+        repl_ws(coalesce(v.terms ->> 'col:authorship', n.authorship))
     -- unparsable ones
     ELSE NULL
   END AS author,

@@ -37,16 +37,16 @@ public class NormalizerTxtTreeIT extends NormalizerITBase {
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage s = usageByID("13");
       assertTrue(s.isSynonym());
-      assertEquals("Pardina", s.usage.getName().canonicalNameWithAuthorship());
+      assertEquals("Pardina", s.usage.getName().getLabel());
   
       NeoUsage t = usageByID("12");
       assertFalse(t.isSynonym());
-      assertEquals("Lynx", t.usage.getName().canonicalNameWithAuthorship());
+      assertEquals("Lynx", t.usage.getName().getLabel());
 
       List<RankedUsage> accs = store.accepted(s.node);
       assertEquals(1, accs.size());
       assertEquals(t.node, accs.get(0).usageNode);
-      assertEquals(t.usage.getName().canonicalNameWithAuthorship(), accs.get(0).name);
+      assertEquals(t.usage.getName().getLabel(), accs.get(0).name);
     }
   }
 
@@ -73,7 +73,7 @@ public class NormalizerTxtTreeIT extends NormalizerITBase {
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage u = usageByID("8");
       assertFalse(u.isSynonym());
-      assertEquals("Aspilota vector Belokobylskij, 2007", u.usage.getName().canonicalNameWithAuthorship());
+      assertEquals("Aspilota vector Belokobylskij, 2007", u.usage.getName().getLabel());
       assertEquals(NameType.SCIENTIFIC, u.usage.getName().getType());
       assertEquals("Aspilota", u.usage.getName().getGenus());
       assertEquals("vector", u.usage.getName().getSpecificEpithet());

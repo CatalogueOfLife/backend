@@ -18,8 +18,8 @@ include,INCLUDES
 including,INCLUDES
 interact,INTERACTS_WITH
 interacts,INTERACTS_WITH
-intersect,INTERSECTS
-intersecting,INTERSECTS
+intersect,OVERLAPS
+intersecting,OVERLAPS
 isincludedin,INCLUDED_IN
 overlapping,OVERLAPS
 overlapping,OVERLAPS

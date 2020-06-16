@@ -103,8 +103,8 @@
     ALTER TABLE taxon_rel_${key} ADD CONSTRAINT taxon_rel_${key}_reference_id_fk FOREIGN KEY (reference_id) REFERENCES reference_${key} (id) ON DELETE CASCADE;
     ALTER TABLE taxon_rel_${key} ADD CONSTRAINT taxon_rel_${key}_verbatim_key_fk FOREIGN KEY (verbatim_key) REFERENCES verbatim_${key} (id) ON DELETE CASCADE;
 
-    ALTER TABLE treatment_${key} ADD PRIMARY KEY (taxon_id);
-    ALTER TABLE treatment_${key} ADD CONSTRAINT treatment_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES name_usage_${key} (id) ON DELETE CASCADE;
+    ALTER TABLE treatment_${key} ADD PRIMARY KEY (id);
+    ALTER TABLE treatment_${key} ADD CONSTRAINT treatment_${key}_id_fk FOREIGN KEY (id) REFERENCES name_usage_${key} (id) ON DELETE CASCADE;
     ALTER TABLE treatment_${key} ADD CONSTRAINT treatment_${key}_reference_id_fk FOREIGN KEY (reference_id) REFERENCES reference_${key} (id) ON DELETE CASCADE;
 
     ALTER TABLE distribution_${key} ADD PRIMARY KEY (id);

@@ -1,8 +1,8 @@
 package life.catalogue.api.model;
 
-import javax.annotation.Nonnull;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import javax.annotation.Nonnull;
 
 public class DatasetScopedEntity<T> extends DataEntity<DSID<T>> implements DSID<T> {
   

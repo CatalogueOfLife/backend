@@ -9,10 +9,10 @@ import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.SectorMapperTest;
 import life.catalogue.db.mapper.SynonymMapper;
-import life.catalogue.db.TestDataRule;
 import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.NameType;
@@ -37,29 +37,31 @@ public class TaxonDaoTest extends DaoTestBase {
     final int datasetKey = DATASET11.getKey();
     TaxonInfo info = tDao.getTaxonInfo(datasetKey, TAXON1.getId());
     BeanPrinter.out(info);
-    
+
     // See apple.sql
     assertEquals("root-1", info.getTaxon().getId());
     assertEquals(1, info.getTaxon().getReferenceIds().size());
     assertEquals(3, info.getVernacularNames().size());
     assertEquals(2, info.getReferences().size());
-    
+
     Set<String> refKeys1 = new HashSet<>();
     info.getReferences().values().forEach(r -> refKeys1.add(r.getId()));
 
     Set<String> refKeys2 = new HashSet<>(info.getTaxon().getReferenceIds());
-    
-    Stream.concat(
-        Stream.of(info.getTreatment()),
+
+    Stream<Referenced> refStream = Stream.concat(
+      Stream.of(info.getTreatment()),
+      Stream.concat(
+        info.getDistributions().stream(),
         Stream.concat(
-            info.getDistributions().stream(),
-            Stream.concat(
-                info.getMedia().stream(),
-                info.getVernacularNames().stream()
-            )
+          info.getMedia().stream(),
+          info.getVernacularNames().stream()
         )
-    ).filter(r -> r.getReferenceId() != null)
-     .forEach(r -> refKeys2.add(r.getReferenceId()));
+      )
+    );
+    refStream
+      .filter(r -> r != null && r.getReferenceId() != null)
+      .forEach(r -> refKeys2.add(r.getReferenceId()));
 
 		assertEquals(refKeys1, refKeys2);
 
@@ -83,7 +85,7 @@ public class TaxonDaoTest extends DaoTestBase {
       }
     }
   }
-  
+
   @Test
   public void synonyms() {
     try (SqlSession session = session()) {
@@ -172,8 +174,7 @@ public class TaxonDaoTest extends DaoTestBase {
       assertEquals(1, synonymy.getMisapplied().size());
       
       synonymy = tDao.getSynonymy(TAXON2);
-      //TODO: update test to real size
-      assertEquals(7, synonymy.size());
+      assertEquals(2, synonymy.size());
     }
   }
   
