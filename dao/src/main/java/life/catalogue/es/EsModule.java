@@ -1,35 +1,25 @@
 package life.catalogue.es;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.util.Map;
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.BareName;
-import life.catalogue.api.model.NameUsage;
-import life.catalogue.api.model.Synonym;
-import life.catalogue.api.model.Taxon;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.es.ddl.IndexDefinition;
 import life.catalogue.es.query.EsSearchRequest;
 import life.catalogue.es.response.EsMultiResponse;
 import life.catalogue.es.response.EsResponse;
 import life.catalogue.es.response.SearchHit;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.util.Map;
 
 /**
  * Jackson module to configure object mappers required by ES code. Various categories of objects need to be (de)serialized:
@@ -217,6 +207,7 @@ public class EsModule extends SimpleModule {
     // required to properly register serdes
     super.setupModule(ctxt);
     ctxt.setMixInAnnotations(NameUsage.class, NameUsageMixIn.class);
+    ctxt.setMixInAnnotations(Name.class, NameMixIn.class);
   }
 
   @JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
@@ -224,6 +215,14 @@ public class EsModule extends SimpleModule {
       @JsonSubTypes.Type(value = BareName.class, name = "B"),
       @JsonSubTypes.Type(value = Synonym.class, name = "S")})
   abstract class NameUsageMixIn {
+    @JsonIgnore
+    abstract String getLabel();
+    @JsonIgnore
+    abstract String getLabelHtml();
+  }
+  abstract class NameMixIn {
+    @JsonIgnore
+    abstract String getLabelHtml();
   }
 
   private static ObjectMapper configureMapper(ObjectMapper mapper, boolean enumToInt) {

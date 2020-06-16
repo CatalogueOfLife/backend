@@ -707,7 +707,10 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
   StringBuilder getLabelBuilder(boolean html) {
     StringBuilder sb = new StringBuilder();
-    sb.append(html ? scientificNameHtml() : scientificName);
+    String name = html ? scientificNameHtml() : scientificName;
+    if (name != null) {
+      sb.append(name);
+    }
     if (authorship != null) {
       sb.append(" ");
       sb.append(authorship);
@@ -724,7 +727,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
    */
   String scientificNameHtml(){
     // only genus names and below are shown in italics
-    if (rank != null && rank.ordinal() >= Rank.GENUS.ordinal()) {
+    if (scientificName != null && rank != null && rank.ordinal() >= Rank.GENUS.ordinal()) {
       Matcher m = RANK_MATCHER.matcher(scientificName);
       if (m.find()) {
         StringBuilder sb = new StringBuilder();

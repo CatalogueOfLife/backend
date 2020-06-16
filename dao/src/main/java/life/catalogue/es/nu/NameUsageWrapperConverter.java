@@ -42,7 +42,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
       EsModule.write(dos, nuw);
     }
     byte[] bytes = Base64.getEncoder().encode(baos.toByteArray());
-    return new String(bytes, StandardCharsets.UTF_8);
+    return new String(bytes, StandardCharsets.US_ASCII);
   }
 
   /**
