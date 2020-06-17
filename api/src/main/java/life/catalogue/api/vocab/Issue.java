@@ -166,6 +166,9 @@ public enum Issue {
   NAME_VARIANT(NAME, Level.INFO,
       "Multiple variants of the same name appear several times in the dataset."),
 
+  TAXNOTES_IN_AUTHORSHIP(NAME, Level.INFO,
+    "The name authorship contains taxonomic notes that are transferred to the name usage"),
+
 
   //
   // TYPE MATERIAL ISSUES
@@ -261,7 +264,10 @@ public enum Issue {
 
   REFTYPE_INVALID(NAME_USAGE, Level.ERROR,
       "ACEF reference type values unparsable or missing"),
-  
+
+  ACCORDING_TO_CONFLICT(NAME_USAGE, Level.WARNING,
+    "The taxonomic concept reference was given explicitly and implicitly through the names authorship"),
+
   //
   // VERNACULAR ISSUES
   //

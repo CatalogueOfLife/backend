@@ -3,10 +3,7 @@ package life.catalogue.importer;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.io.Files;
-import life.catalogue.api.model.DatasetWithSettings;
-import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.VerbatimEntity;
-import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.config.NormalizerConfig;
@@ -165,7 +162,13 @@ abstract class NormalizerITBase {
   public VerbatimRecord vByUsageID(String id) {
     return store.getVerbatim(store.usages().objByID(id).getVerbatimKey());
   }
-  
+
+  public Reference accordingTo(NameUsageBase nu) {
+    if (nu.getAccordingToId() != null) {
+      return store.references().get(nu.getAccordingToId());
+    }
+    return null;
+  }
   
   public NeoUsage byName(String name) {
     return byName(name, null);

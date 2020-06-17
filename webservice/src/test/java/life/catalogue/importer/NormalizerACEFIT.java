@@ -20,6 +20,7 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.collection.Iterators;
 
 import java.net.URI;
+import java.time.Year;
 import java.util.List;
 import java.util.Set;
 
@@ -187,26 +188,65 @@ public class NormalizerACEFIT extends NormalizerITBase {
       for (Node n : Iterators.loop(store.getNeo().findNodes(Labels.USAGE))) {
         u = store.usageWithName(n);
         if (u.usage.getName().getOrigin() == Origin.SOURCE) {
-          System.out.println(u.usage.getStatus() + ": " + u.usage.getName().getLabel());
-          System.out.println("  " + u.usage.getName().getRemarks());
+          System.out.println(u.getId() + ": " + u.usage.getLabel());
+          System.out.println("  " + u.usage.getName().getNomenclaturalNote());
+          System.out.println("  " + u.usage.getNamePhrase());
           System.out.println("  " + u.usage.getAccordingToId());
-          assertNotNull(u.usage.getAccordingToId());
+          assertTrue(u.usage.getNamePhrase() != null || u.usage.getAccordingToId() != null);
         }
       }
       
       u = usageByID("8");
       assertEquals("Anthurium lanceum", u.usage.getName().getScientificName());
       assertEquals("Engl.", u.usage.getName().getAuthorship());
-      assertEquals("nom.illeg.; superfluous at its time of publication", u.usage.getName().getRemarks());
-      assertEquals("Markus non. A.lancea.", u.usage.getAccordingToId());
+      assertEquals("superfluous at its time of publication", u.usage.getName().getRemarks());
+      assertEquals("nom.illeg.", u.usage.getName().getNomenclaturalNote());
       assertEquals(NomStatus.UNACCEPTABLE, u.usage.getName().getNomStatus());
-  
+      assertNull(u.usage.getAccordingToId());
+      assertEquals("non. A.lancea.", u.usage.getNamePhrase());
+      assertTrue(u.usage.isTaxon());
+      Taxon t = (Taxon) u.usage;
+      assertEquals("Markus", t.getScrutinizer());
+      assertEquals(Year.of(2019), t.getScrutinizerDate().getDate());
+
       u = usageByID("11");
       assertEquals("Abies alba", u.usage.getName().getScientificName());
       assertEquals("Mill.", u.usage.getName().getAuthorship());
       assertEquals("valid", u.usage.getName().getRemarks());
-      assertEquals("non Parolly", u.usage.getAccordingToId());
+      assertNull(u.usage.getAccordingToId());
       assertEquals(NomStatus.ACCEPTABLE, u.usage.getName().getNomStatus());
+      assertNull(u.usage.getAccordingToId());
+      assertEquals("non Parolly", u.usage.getNamePhrase());
+
+      u = usageByID("3");
+      assertEquals("Placostegus crystallinus", u.usage.getName().getScientificName());
+      assertNull(u.usage.getName().getAuthorship());
+      assertNull(u.usage.getName().getNomenclaturalNote());
+      assertEquals("(non Scacchi, 1836)", u.usage.getNamePhrase());
+      assertNull(u.usage.getName().getRemarks());
+      Reference sec = accordingTo(u.usage);
+      assertEquals("Zibrowius, 1968", sec.getCitation());
+      assertEquals((Integer)1968, sec.getYear());
+      assertEquals("Zibrowius", sec.getCsl().getAuthor()[0].getFamily());
+
+      u = usageByID("9");
+      assertEquals("Strombidium striatum", u.usage.getName().getScientificName());
+      assertNull(u.usage.getName().getAuthorship());
+      assertNull(u.usage.getName().getNomenclaturalNote());
+      assertNull(u.usage.getNamePhrase());
+      assertNull(u.usage.getName().getRemarks());
+      sec = accordingTo(u.usage);
+      assertEquals("Busch, 1930", sec.getCitation());
+      assertEquals((Integer)1930, sec.getYear());
+      assertEquals("Busch", sec.getCsl().getAuthor()[0].getFamily());
+
+      u = usageByID("10");
+      assertEquals("Corydalis gigantea", u.usage.getName().getScientificName());
+      assertEquals("Trautv. & Meyer", u.usage.getName().getAuthorship());
+      assertNull(u.usage.getName().getNomenclaturalNote());
+      assertNull(u.usage.getName().getRemarks());
+      assertEquals("sensu lato", u.usage.getNamePhrase());
+      assertNull(u.usage.getAccordingToId());
     }
   }
   

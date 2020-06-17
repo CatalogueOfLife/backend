@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.regex.Matcher;
 
 import static org.junit.Assert.*;
 
@@ -22,6 +23,28 @@ public class InterpreterBaseTest {
   ReferenceStore refStore;
   IssueContainer issues = new VerbatimRecord();
   InterpreterBase inter = new InterpreterBase(new DatasetSettings(), new ReferenceFactory(1, refStore), null);
+
+  @Test
+  public void secRefPattern() throws Exception {
+    assertSecRef("sensu Busch, 1930", "Busch, 1930");
+    assertSecRef("Miller sensu Busch, 1930", "Busch, 1930");
+    assertNoSecRef("s.l.");
+    assertNoSecRef("s.str.");
+    assertNoSecRef("sensu latu");
+    assertNoSecRef("sensu lato");
+    assertNoSecRef("sensu strict");
+    assertNoSecRef("sensu stricto");
+  }
+
+  void assertSecRef(String authorship, String expected) {
+    Matcher m = InterpreterBase.SEC_REF.matcher(authorship);
+    assertTrue(m.find());
+    assertEquals(expected, m.group(2));
+  }
+
+  void assertNoSecRef(String authorship) {
+    assertFalse(InterpreterBase.SEC_REF.matcher(authorship).find());
+  }
 
   @Test
   public void interpretName() throws Exception {

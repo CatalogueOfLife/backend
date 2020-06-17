@@ -136,6 +136,19 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
   }
   
   /**
+   * Converts the current synonym usage into a taxon instance
+   * @param status new taxon status
+   * @return the replaced synonym usage
+   */
+  public Synonym convertToTaxon(TaxonomicStatus status) {
+    Preconditions.checkArgument(isSynonym(), "Usage needs to be a synonym");
+    Preconditions.checkArgument(!status.isSynonym(), "Status needs to be a taxon status");
+    final Synonym s = getSynonym();
+    usage = new Taxon(usage);
+    return s;
+  }
+
+  /**
    * Converts the current taxon usage into a synonym instance
    * @param status new synonym status
    * @return the replaced taxon usage
@@ -144,15 +157,7 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
     Preconditions.checkArgument(!isSynonym(), "Usage needs to be a taxon");
     Preconditions.checkArgument(status.isSynonym(), "Status needs to be a synonym status");
     final Taxon t = getTaxon();
-    final Synonym syn = new Synonym();
-    syn.setId(t.getId());
-    syn.setName(t.getName());
-    syn.setOrigin(t.getOrigin());
-    syn.setAccordingToId(t.getAccordingToId());
-    syn.setVerbatimKey(t.getVerbatimKey());
-    syn.setStatus(status);
-    usage = syn;
-    
+    usage = new Synonym(usage);
     return t;
   }
   

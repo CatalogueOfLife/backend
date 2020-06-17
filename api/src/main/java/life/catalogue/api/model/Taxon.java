@@ -22,7 +22,24 @@ public class Taxon extends NameUsageBase {
   private String temporalRangeStart;
   private String temporalRangeEnd;
   private Set<Lifezone> lifezones = EnumSet.noneOf(Lifezone.class);
-  
+
+  public Taxon() {
+  }
+
+  public Taxon(NameUsageBase other) {
+    super(other);
+  }
+
+  public Taxon(Taxon other) {
+    super(other);
+    this.scrutinizer = other.scrutinizer;
+    this.scrutinizerDate = other.scrutinizerDate;
+    this.extinct = other.extinct;
+    this.temporalRangeStart = other.temporalRangeStart;
+    this.temporalRangeEnd = other.temporalRangeEnd;
+    this.lifezones = other.lifezones;
+  }
+
   @Override
   public void setStatus(TaxonomicStatus status) {
     if (Preconditions.checkNotNull(status).isSynonym()) {

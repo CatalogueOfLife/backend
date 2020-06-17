@@ -35,7 +35,26 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
    * All bibliographic reference ids for the given name usage
    */
   private List<String> referenceIds = new ArrayList<>();
-  
+
+  public NameUsageBase() {
+  }
+
+  public NameUsageBase(NameUsageBase other) {
+    super(other);
+    this.sectorKey = other.sectorKey;
+    this.verbatimKey = other.verbatimKey;
+    this.name = other.name;
+    this.status = other.status;
+    this.origin = other.origin;
+    this.parentId = other.parentId;
+    this.namePhrase = other.namePhrase;
+    this.accordingTo = other.accordingTo;
+    this.accordingToId = other.accordingToId;
+    this.link = other.link;
+    this.remarks = other.remarks;
+    this.referenceIds = other.referenceIds;
+  }
+
   @Override
   public Integer getVerbatimKey() {
     return verbatimKey;

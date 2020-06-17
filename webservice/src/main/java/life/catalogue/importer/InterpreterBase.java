@@ -39,10 +39,10 @@ public class InterpreterBase {
   
   private static final Logger LOG = LoggerFactory.getLogger(InterpreterBase.class);
   protected static final Pattern AREA_VALUE_PATTERN = Pattern.compile("[\\w\\s:.-]+", Pattern.UNICODE_CHARACTER_CLASS);
+  static final Pattern SEC_REF = Pattern.compile("\\b(sensu|sec\\.?|fide|according to) (?!lat|str)(.{3,})$", Pattern.CASE_INSENSITIVE);
   private static final int MIN_YEAR = 1500;
   private static final int MAX_YEAR = Year.now().getValue() + 10;
   private static final Pattern YEAR_PATTERN = Pattern.compile("^(\\d{3,4})\\s*(\\?)?(?!\\d)");
-  private static final EnumNote<TaxonomicStatus> NO_STATUS = new EnumNote<>(TaxonomicStatus.ACCEPTED, null);
 
   protected final NeoDb store;
   protected final DatasetSettings settings;
@@ -85,9 +85,31 @@ public class InterpreterBase {
     return ref;
   }
 
+  /**
+   * Sets a taxonomic note to usage namePhrase or a proper accordingTo reference if parsable
+   */
+  protected void setTaxonomicNote(NameUsageBase u, String taxNote, VerbatimRecord v) {
+    if (!StringUtils.isBlank(taxNote)) {
+      v.addIssue(Issue.TAXNOTES_IN_AUTHORSHIP);
+      Matcher m = SEC_REF.matcher(taxNote);
+      if (m.find()) {
+        setAccordingTo(u, m.group(2).trim(), v);
+        String remainder = m.replaceFirst("");
+        if (!StringUtils.isBlank(remainder)) {
+          u.setNamePhrase(remainder.trim());
+        }
+      } else {
+        u.setNamePhrase(taxNote);
+      }
+    }
+  }
+
   protected void setAccordingTo(NameUsageBase u, String accordingTo, VerbatimRecord v) {
     Reference ref = buildReference(accordingTo, v);
     if (ref != null) {
+      if (u.getAccordingToId() != null) {
+        v.addIssue(Issue.ACCORDING_TO_CONFLICT);
+      }
       u.setAccordingToId(ref.getId());
     }
   }
@@ -316,7 +338,7 @@ public class InterpreterBase {
 
     // parse rank & code as they improve name parsing
     Rank rank = SafeParser.parse(RankParser.PARSER, vrank).orElse(Rank.UNRANKED, Issue.RANK_INVALID, v);
-    final NomCode code = SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse(settings.getEnum(Setting.NOMENCLATURAL_CODE), Issue.NOMENCLATURAL_CODE_INVALID, v);
+    final NomCode code = SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse((NomCode) settings.getEnum(Setting.NOMENCLATURAL_CODE), Issue.NOMENCLATURAL_CODE_INVALID, v);
 
     ParsedNameUsage nat;
 
@@ -390,15 +412,16 @@ public class InterpreterBase {
     nat.getName().setVerbatimKey(v.getId());
     nat.getName().setOrigin(Origin.SOURCE);
     nat.getName().setLink(parse(UriParser.PARSER, link).orNull());
-    // name status can be explicitly given or as part of the name remarks
+    // name status can be explicitly given or as part of the nom notes from the authorship
     nat.getName().setNomStatus(parse(NomStatusParser.PARSER, nomStatus).orElse(
-        parse(NomStatusParser.PARSER, nat.getName().getRemarks()).orNull(), Issue.NOMENCLATURAL_STATUS_INVALID, v)
+        parse(NomStatusParser.PARSER, nat.getName().getNomenclaturalNote()).orNull(), Issue.NOMENCLATURAL_STATUS_INVALID, v)
     );
     // applies default dataset code if we cannot find or parse any
     // Always make sure this happens BEFORE we update the canonical scientific name
     nat.getName().setCode(code);
-    // we add only to already parsed remarks
-    nat.getName().addRemark(remarks);
+    nat.getName().setRemarks(remarks);
+    // what to do with the explicit name status?
+    // see also https://github.com/CatalogueOfLife/backend/issues/760
     nat.getName().addRemark(nomStatus);
 
     // assign best rank
@@ -413,40 +436,37 @@ public class InterpreterBase {
     return Optional.of(nat);
   }
 
-  public Optional<NeoUsage> interpretUsage(Optional<ParsedNameUsage> optName, Term taxStatusTerm, VerbatimRecord v, Term... idTerms) {
-    return optName.map(pnu -> {
-      NeoUsage u;
-      // a synonym by status?
-      EnumNote<TaxonomicStatus> status = SafeParser.parse(TaxonomicStatusParser.PARSER, v.get(taxStatusTerm)).orElse(NO_STATUS);
-      if (status.val.isSynonym()) {
-        u = NeoUsage.createSynonym(Origin.SOURCE, pnu.getName(), status.val);
-      } else {
-        u = NeoUsage.createTaxon(Origin.SOURCE, pnu.getName(), status.val);
-      }
+  public NeoUsage interpretUsage(ParsedNameUsage pnu, Term taxStatusTerm, TaxonomicStatus defaultStatus, VerbatimRecord v, Term... idTerms) {
+    NeoUsage u;
+    // a synonym by status?
+    EnumNote<TaxonomicStatus> status = SafeParser.parse(TaxonomicStatusParser.PARSER, v.get(taxStatusTerm))
+      .orElse(()->new EnumNote<>(defaultStatus, null), Issue.TAXONOMIC_STATUS_INVALID, v);
+    if (status.val.isSynonym()) {
+      u = NeoUsage.createSynonym(Origin.SOURCE, pnu.getName(), status.val);
+    } else {
+      u = NeoUsage.createTaxon(Origin.SOURCE, pnu.getName(), status.val);
+    }
 
-      // shared usage props
-      u.setId(v.getFirstRaw(idTerms));
-      u.setVerbatimKey(v.getId());
-      u.usage.setAccordingToId(null);
-      u.usage.setNamePhrase(pnu.getTaxonomicNote());
-      setAccordingTo(u.usage, pnu.getTaxonomicNote(), v);
+    // shared usage props
+    u.setId(v.getFirstRaw(idTerms));
+    u.setVerbatimKey(v.getId());
+    setTaxonomicNote(u.usage, pnu.getTaxonomicNote(), v);
 
-      u.homotypic = TaxonomicStatusParser.isHomotypic(status);
+    u.homotypic = TaxonomicStatusParser.isHomotypic(status);
 
-      // flat classification via dwc or coldp
-      u.classification = new Classification();
-      if (v.hasDwcTerms()) {
-        for (DwcTerm t : DwcTerm.HIGHER_RANKS) {
-          u.classification.setByTerm(t, v.get(t));
-        }
+    // flat classification via dwc or coldp
+    u.classification = new Classification();
+    if (v.hasDwcTerms()) {
+      for (DwcTerm t : DwcTerm.HIGHER_RANKS) {
+        u.classification.setByTerm(t, v.get(t));
       }
-      if (v.hasColdpTerms()) {
-        for (ColdpTerm t : ColdpTerm.DENORMALIZED_RANKS) {
-          u.classification.setByTerm(t, v.get(t));
-        }
+    }
+    if (v.hasColdpTerms()) {
+      for (ColdpTerm t : ColdpTerm.DENORMALIZED_RANKS) {
+        u.classification.setByTerm(t, v.get(t));
       }
-      return u;
-    });
+    }
+    return u;
   }
 
   protected void setLifezones(Taxon t, VerbatimRecord v, Term lifezone) {

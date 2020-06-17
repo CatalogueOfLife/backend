@@ -550,7 +550,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   
   public void addRemark(String remark) {
     if (!StringUtils.isBlank(remark)) {
-      this.remarks = remarks == null ? remark.trim() : remarks + "; " + remark.trim();
+      this.remarks = remarks == null ? remark.trim() : remarks + ". " + remark.trim();
     }
   }
   
