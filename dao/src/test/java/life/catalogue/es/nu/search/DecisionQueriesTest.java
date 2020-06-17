@@ -7,6 +7,7 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.es.EsReadTestBase;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,13 +23,24 @@ public class DecisionQueriesTest extends EsReadTestBase {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchServiceTest.class);
 
-  @Before
-  public void before() {
+  
+  @BeforeClass
+  public static void beforeClass() {
     destroyAndCreateIndex();
   }
 
-  @Test
+  
+  @Before
+  public void before() {
+    truncate();
+  }
+
+  @Test // catalog key only used from pruning - not as a filter
   public void test1() {
+    
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, 77);
+
 
     SimpleDecision sd1 = new SimpleDecision();
     sd1.setId(100);
@@ -55,8 +67,6 @@ public class DecisionQueriesTest extends EsReadTestBase {
     nuws.get(1).setDecisions(Arrays.asList(sd1, sd2a, sd2b));
     index(nuws);
 
-    NameUsageSearchRequest query = new NameUsageSearchRequest();
-    query.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, 77);
     List<NameUsageWrapper> result = search(query).getResult();
 
     /*
@@ -70,6 +80,10 @@ public class DecisionQueriesTest extends EsReadTestBase {
 
   @Test
   public void test2() {
+    
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, 2);
+    
     SimpleDecision sd1 = new SimpleDecision();
     sd1.setDatasetKey(1);
     SimpleDecision sd2a = new SimpleDecision();
@@ -89,8 +103,6 @@ public class DecisionQueriesTest extends EsReadTestBase {
     nuws.get(1).setDecisions(Arrays.asList(sd2a, sd2b, sd2c));
     index(nuws);
 
-    NameUsageSearchRequest query = new NameUsageSearchRequest();
-    query.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, 2);
     List<NameUsageWrapper> result = search(query).getResult();
     // Make sure catalog key does NOT function as a document filter:
     assertEquals(2, result.size());
@@ -99,8 +111,14 @@ public class DecisionQueriesTest extends EsReadTestBase {
     assertEquals(Mode.BLOCK, result.get(1).getDecisions().get(0).getMode());
   }
 
-  @Test
-  public void test3() {
+  @Test // catalogue key used both as filter and prune
+  public void test3() {    
+
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.addFilter(NameUsageSearchParameter.DECISION_MODE, Mode.UPDATE);
+    query.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, 2);
+    query.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, 3);
+
     SimpleDecision sd1 = new SimpleDecision();
     sd1.setId(100);
     sd1.setDatasetKey(1);
@@ -129,13 +147,9 @@ public class DecisionQueriesTest extends EsReadTestBase {
     List<NameUsageWrapper> nuws = createNameUsages(3);
     nuws.get(0).setDecisions(Arrays.asList(sd1)); // no match
     nuws.get(1).setDecisions(Arrays.asList(sd2a, sd2b, sd2c)); // match
-    nuws.get(2).setDecisions(Arrays.asList(sd3)); // match
+    nuws.get(2).setDecisions(Arrays.asList(sd1, sd3)); // match
+    
     index(nuws);
-
-    NameUsageSearchRequest query = new NameUsageSearchRequest();
-    query.addFilter(NameUsageSearchParameter.DECISION_MODE, Mode.UPDATE);
-    query.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, 2);
-    query.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, 3);
     List<NameUsageWrapper> result = search(query).getResult();
 
     assertEquals(2, result.size());
@@ -241,7 +255,7 @@ public class DecisionQueriesTest extends EsReadTestBase {
 
     List<NameUsageWrapper> result = search(query).getResult();
 
-    assertEquals(1, result.size());
+    assertEquals(1, result.size()); // nuw4
     assertEquals("DDD", result.get(0).getId());
   }
 
@@ -260,26 +274,61 @@ public class DecisionQueriesTest extends EsReadTestBase {
   @Test
   public void test6c() {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
+    // Tests for the presence of at least one decision
+    query.addFilter(NameUsageSearchParameter.DECISION_MODE, "_NOT_NULL");
+
+    index(test6_data());
+
+    List<NameUsageWrapper> result = search(query).getResult();
+    assertEquals(3, result.size()); // nuw4 does not have any decisions at all
+
+  }
+
+  @Test
+  public void test6d() {
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    // Tests for the presence of at least one decision
     query.addFilter(NameUsageSearchParameter.DECISION_MODE, "_NOT_NULL");
     
-    // Makes a difference - catalog key used for filtering with decision mode
+    // Should not make a difference in number of decisions returned
     query.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, 1);
 
     index(test6_data());
 
     List<NameUsageWrapper> result = search(query).getResult();
-    assertEquals(0, result.size());
+    assertEquals(3, result.size()); // nuw4 does not have any decisions at all
 
-    query.getFilters().remove(NameUsageSearchParameter.CATALOGUE_KEY);
+  }
+
+  @Test // With mode null, search voor name usages NOT having the specified catalog key
+  public void test6e() {
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    // Tests for the presence of at least one decision
+    query.addFilter(NameUsageSearchParameter.DECISION_MODE, "_NULL");
+    
+    query.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, 102);
+
+    index(test6_data());
+
+    List<NameUsageWrapper> result = search(query).getResult();
+    assertEquals(3, result.size());
+
+  }
+
+  @Test // With mode null, search voor name usages NOT having the specified catalog key
+  public void test6f() {
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    // Tests for the presence of at least one decision
+    query.addFilter(NameUsageSearchParameter.DECISION_MODE, "_NULL");
+    
     query.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, 101);
-    result = search(query).getResult();
+    query.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, 102);
+
+    index(test6_data());
+
+    List<NameUsageWrapper> result = search(query).getResult();
     assertEquals(2, result.size());
 
-    query.getFilters().remove(NameUsageSearchParameter.DECISION_MODE);
-    query.addFilter(NameUsageSearchParameter.DECISION_MODE, Mode.BLOCK);
-    result = search(query).getResult();
-    assertEquals(1, result.size());
-    assertEquals("AAA", result.get(0).getId());
   }
 
   public List<NameUsageWrapper> test6_data() {
@@ -293,7 +342,7 @@ public class DecisionQueriesTest extends EsReadTestBase {
 
     SimpleDecision sd2 = new SimpleDecision();
     sd2.setId(2);
-    sd2.setDatasetKey(201);
+    sd2.setDatasetKey(102);
     sd2.setMode(Mode.BLOCK);
     NameUsageWrapper nuw2 = minimalTaxon();
     nuw2.setId("BBB");
@@ -301,12 +350,12 @@ public class DecisionQueriesTest extends EsReadTestBase {
 
     SimpleDecision sd3 = new SimpleDecision();
     sd3.setId(3);
-    sd3.setDatasetKey(101);
+    sd3.setDatasetKey(103);
     sd3.setMode(Mode.UPDATE);
 
     SimpleDecision sd4 = new SimpleDecision();
     sd4.setId(4);
-    sd4.setDatasetKey(103);
+    sd4.setDatasetKey(104);
     sd4.setMode(Mode.BLOCK);
 
     NameUsageWrapper nuw3 = minimalTaxon();
