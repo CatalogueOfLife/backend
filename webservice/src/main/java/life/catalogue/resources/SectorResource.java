@@ -129,6 +129,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
 
   @GET
   @Path("{id}/sync/{attempt}/tree")
+  @Produces({MediaType.TEXT_PLAIN})
   public Stream<String> getSyncAttemptTree(@PathParam("id") int id,
                                              @PathParam("attempt") int attempt) {
     return diDao.getTreeDao().getTree(SECTOR, id, attempt);
@@ -136,6 +137,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   
   @GET
   @Path("{id}/sync/{attempt}/names")
+  @Produces({MediaType.TEXT_PLAIN})
   public Stream<String> getSyncAttemptNames(@PathParam("id") int id,
                                               @PathParam("attempt") int attempt) {
     return diDao.getTreeDao().getNames(SECTOR, id, attempt);
@@ -143,6 +145,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
 
   @GET
   @Path("{id}/sync/{attempt}/ids")
+  @Produces({MediaType.TEXT_PLAIN})
   public Stream<String> getSyncAttemptNameIds(@PathParam("id") int id,
                                               @PathParam("attempt") int attempt) {
     return diDao.getTreeDao().getNameIds(SECTOR, id, attempt);

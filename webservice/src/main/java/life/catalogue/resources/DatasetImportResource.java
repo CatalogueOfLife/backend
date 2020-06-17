@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Stream;
@@ -43,6 +44,7 @@ public class DatasetImportResource {
   
   @GET
   @Path("{attempt}/tree")
+  @Produces({MediaType.TEXT_PLAIN})
   public Stream<String> getImportAttemptTree(@PathParam("key") int key,
                                      @PathParam("attempt") int attempt) throws IOException {
     return diDao.getTreeDao().getTree(Context.DATASET, key, attempt);
@@ -50,6 +52,7 @@ public class DatasetImportResource {
   
   @GET
   @Path("{attempt}/names")
+  @Produces({MediaType.TEXT_PLAIN})
   public Stream<String> getImportAttemptNames(@PathParam("key") int key,
                                               @PathParam("attempt") int attempt) {
     return diDao.getTreeDao().getNames(Context.DATASET, key, attempt);
@@ -57,6 +60,7 @@ public class DatasetImportResource {
 
   @GET
   @Path("{attempt}/ids")
+  @Produces({MediaType.TEXT_PLAIN})
   public Stream<String> getImportAttemptNameIds(@PathParam("key") int key,
                                                 @PathParam("attempt") int attempt) {
     return diDao.getTreeDao().getNameIds(Context.DATASET, key, attempt);
