@@ -13,6 +13,7 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Synonym;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.api.search.NameUsageSearchRequest.SortBy;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.api.search.NameUsageSuggestResponse;
@@ -112,6 +113,10 @@ public class EsReadTestBase {
   }
 
   protected NameUsageSearchResponse search(NameUsageSearchRequest query) {
+    if (query.getSortBy() == null) {
+      // Unless we're specifically interested in sorting, sort the way we inserted the documents
+      query.setSortBy(SortBy.NATIVE);
+    }
     return new NameUsageSearchServiceEs(indexName(), getEsClient()).search(query, new Page(0, 1000));
   }
 

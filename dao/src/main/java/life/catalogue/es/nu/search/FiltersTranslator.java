@@ -2,10 +2,7 @@ package life.catalogue.es.nu.search;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
-import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.es.InvalidQueryException;
 import life.catalogue.es.query.BoolQuery;
@@ -50,15 +47,16 @@ class FiltersTranslator {
   }
 
   Query translate() throws InvalidQueryException {
-    FilterTranslator ft = new FilterTranslator(request);
-    Set<NameUsageSearchParameter> params = EnumSet.copyOf(request.getFilters().keySet());
-    List<Query> subqueries = new ArrayList<>(params.size());
-    subqueries.addAll(processDecisionFilters());
+    List<Query> subqueries = new ArrayList<>();
+    if (request.hasFilters()) {
+      subqueries.addAll(processDecisionFilters());
+      FilterTranslator ft = new FilterTranslator(request);
+      request.getFilters().keySet().stream()
+          .filter(p -> p != DECISION_MODE && p != CATALOGUE_KEY)
+          .map(ft::translate)
+          .forEach(subqueries::add);
+    }
     subqueries.addAll(processMinMaxRank());
-    request.getFilters().keySet().stream()
-        .filter(p -> p != DECISION_MODE && p != CATALOGUE_KEY)
-        .map(ft::translate)
-        .forEach(subqueries::add);
     if (subqueries.size() == 1) {
       return subqueries.get(0);
     }
@@ -87,14 +85,17 @@ class FiltersTranslator {
     return Collections.emptyList();
   }
 
+  // Little gotcha here: the higher the rank, the lower the ordinal!
   private List<Query> processMinMaxRank() {
-    if (request.getMinRank() != null) { // NB not a NameUsageParameter, but still a filter
+    if (request.getMinRank() != null) {
       if (request.getMaxRank() != null) {
-        return List.of(RangeQuery.on(RANK).greaterOrEqual(request.getMinRank().ordinal()).lessOrEqual(request.getMaxRank().ordinal()));
+        return List.of(RangeQuery.on(RANK)
+            .lessOrEqual(request.getMinRank().ordinal())
+            .greaterOrEqual(request.getMaxRank().ordinal()));
       }
-      return List.of(RangeQuery.on(RANK).greaterOrEqual(request.getMinRank().ordinal()));
+      return List.of(RangeQuery.on(RANK).lessOrEqual(request.getMinRank().ordinal()));
     } else if (request.getMaxRank() != null) {
-      return List.of(RangeQuery.on(RANK).lessOrEqual(request.getMaxRank().ordinal()));
+      return List.of(RangeQuery.on(RANK).greaterOrEqual(request.getMaxRank().ordinal()));
     }
     return Collections.emptyList();
   }
