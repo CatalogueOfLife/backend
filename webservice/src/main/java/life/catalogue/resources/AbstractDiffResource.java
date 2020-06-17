@@ -32,8 +32,9 @@ public class AbstractDiffResource {
 
   @GET
   @Path("names")
+  @Produces(MediaType.TEXT_PLAIN)
   public Reader diffNames(@PathParam("key") int key,
-                             @QueryParam("attempts") String attempts) throws IOException {
+                          @QueryParam("attempts") String attempts) throws IOException {
     return diff.namesDiff(key, attempts);
   }
 
