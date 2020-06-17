@@ -3,7 +3,7 @@ package life.catalogue.api.model;
 import java.util.Objects;
 
 public class RequestScope {
-  private Boolean all;
+  private boolean all = false;
   private Integer sectorKey;
   private Integer datasetKey;
   
@@ -41,11 +41,11 @@ public class RequestScope {
     this.datasetKey = datasetKey;
   }
   
-  public Boolean getAll() {
+  public boolean getAll() {
     return all;
   }
   
-  public void setAll(Boolean all) {
+  public void setAll(boolean all) {
     this.all = all;
   }
   

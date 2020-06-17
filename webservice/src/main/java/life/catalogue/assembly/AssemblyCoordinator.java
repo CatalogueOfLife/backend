@@ -143,7 +143,7 @@ public class AssemblyCoordinator implements Managed {
   }
   
   public void sync(int catalogueKey, RequestScope request, User user) throws IllegalArgumentException {
-    if (request.getAll() != null && request.getAll()) {
+    if (request.getAll()) {
       syncAll(catalogueKey, user);
     } else {
       if (request.getSectorKey() != null) {

@@ -39,7 +39,6 @@ public class AdminResource {
   private final ImageService imgService;
   private final NameUsageIndexService indexService;
   private final NameIndex ni;
-  private Thread indexingThread;
   private Thread thread;
   // background processes
   private final ContinuousImporter continuousImporter;
@@ -126,7 +125,7 @@ public class AdminResource {
 
   private String runJob(String threadName, Supplier<Runnable> supplier){
     if (thread != null) {
-      throw new IllegalStateException("Some background thread is already running");
+      throw new IllegalStateException("A background thread " + thread.getName() + " is already running");
     }
     Runnable job = supplier.get();
     thread = new Thread(new JobWrapper(job), threadName);
@@ -137,19 +136,11 @@ public class AdminResource {
   
   @POST
   @Path("/reindex")
-  public void reindex(RequestScope req, @Auth User user) {
-    if (indexingThread != null) {
-      throw new IllegalStateException("Indexing is already running");
+  public String reindex(RequestScope req, @Auth User user) {
+    if (req == null || (req.getDatasetKey() == null && !req.getAll())) {
+      throw new IllegalArgumentException("Request parameter all or datasetKey must be provided");
     }
-    
-    if (req != null && (req.getDatasetKey() != null || req.getAll() != null && req.getAll())) {
-      IndexJob job = new IndexJob(req, user);
-      indexingThread = new Thread(job, "Es-Reindexer");
-      indexingThread.setDaemon(false);
-      indexingThread.start();
-    } else {
-      throw new IllegalArgumentException("Only all or datasetKey properties are supported");
-    }
+    return runJob("es-reindexer", () -> new IndexJob(req, user));
   }
   
   @POST
@@ -199,8 +190,6 @@ public class AdminResource {
         }
       } catch (Exception e){
         LOG.error("Error reindexing", e);
-      } finally {
-        indexingThread = null;
       }
     }
   }
