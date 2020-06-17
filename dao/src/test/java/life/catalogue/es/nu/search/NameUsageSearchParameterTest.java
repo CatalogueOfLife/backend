@@ -1,52 +1,30 @@
 package life.catalogue.es.nu.search;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import org.gbif.nameparser.api.Authorship;
-import org.junit.Before;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import life.catalogue.api.model.BareName;
 import life.catalogue.api.model.EditorialDecision.Mode;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.Taxon;
-import life.catalogue.api.search.FacetValue;
-import life.catalogue.api.search.NameUsageSearchParameter;
-import life.catalogue.api.search.NameUsageSearchRequest;
-import life.catalogue.api.search.NameUsageSearchResponse;
-import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.api.search.SimpleDecision;
+import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
+import org.gbif.nameparser.api.Authorship;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import static java.util.stream.Collectors.toList;
-import static org.junit.Assert.assertEquals;
-import static life.catalogue.api.search.NameUsageSearchParameter.ALPHAINDEX;
-import static life.catalogue.api.search.NameUsageSearchParameter.AUTHORSHIP;
-import static life.catalogue.api.search.NameUsageSearchParameter.AUTHORSHIP_YEAR;
-import static life.catalogue.api.search.NameUsageSearchParameter.CATALOGUE_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.DECISION_MODE;
-import static life.catalogue.api.search.NameUsageSearchParameter.NAME_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.NAME_INDEX_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.NOM_STATUS;
-import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHED_IN_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHER_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.SECTOR_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.TAXON_ID;
+import static life.catalogue.api.search.NameUsageSearchParameter.*;
 import static life.catalogue.api.search.NameUsageSearchRequest.IS_NOT_NULL;
 import static life.catalogue.api.search.NameUsageSearchRequest.IS_NULL;
+import static org.junit.Assert.assertEquals;
 
 /**
  * <p>
@@ -313,15 +291,37 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
     index(decisionTestData());
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(DECISION_MODE, Mode.REVIEWED);
-    assertEquals(decisionTestData().subList(1, 3), search(query).getResult());
+    query.addFilter(CATALOGUE_KEY, 100);
+    assertSearch(query, 100, 1, 2, decisionTestData());
+
     query = new NameUsageSearchRequest();
     query.addFilter(DECISION_MODE, IS_NULL);
-    assertEquals(decisionTestData().subList(4, 5), search(query).getResult());
+    query.addFilter(CATALOGUE_KEY, 100);
+    assertSearch(query, 100, 2, 5, decisionTestData());
+
     query = new NameUsageSearchRequest();
     query.addFilter(DECISION_MODE, IS_NOT_NULL);
-    assertEquals(decisionTestData().subList(0, 4), search(query).getResult());
+    query.addFilter(CATALOGUE_KEY, 100);
+    assertSearch(query, 100, 0, 2, decisionTestData());
     countdown(DECISION_MODE);
   }
+
+  void assertSearch(NameUsageSearchRequest req, Integer catKey, int startIdx, int endIdx, List<NameUsageWrapper> nuws) {
+    nuws.forEach(u -> {
+      if (u.getDecisions() != null) {
+        u.setDecisions(
+          u.getDecisions().stream()
+            .filter(d -> d.getDatasetKey().equals(catKey))
+            .collect(Collectors.toUnmodifiableList())
+        );
+        if (u.getDecisions().isEmpty()) {
+          u.setDecisions(null);
+        }
+      }
+    });
+    assertEquals(nuws.subList(startIdx, endIdx), search(req).getResult());
+  }
+
 
   private List<NameUsageWrapper> decisionTestData() {
     NameUsageWrapper nuw1 = minimalTaxon();

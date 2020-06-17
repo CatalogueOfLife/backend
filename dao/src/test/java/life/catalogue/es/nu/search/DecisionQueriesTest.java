@@ -6,6 +6,7 @@ import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.es.EsReadTestBase;
+import life.catalogue.es.InvalidQueryException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -22,6 +23,7 @@ public class DecisionQueriesTest extends EsReadTestBase {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchServiceTest.class);
+  NameUsageSearchRequest query;
 
   
   @BeforeClass
@@ -33,12 +35,11 @@ public class DecisionQueriesTest extends EsReadTestBase {
   @Before
   public void before() {
     truncate();
+    query = new NameUsageSearchRequest();
   }
 
   @Test // catalog key only used from pruning - not as a filter
   public void test1() {
-    
-    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, 77);
 
 
@@ -80,8 +81,6 @@ public class DecisionQueriesTest extends EsReadTestBase {
 
   @Test
   public void test2() {
-    
-    NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, 2);
     
     SimpleDecision sd1 = new SimpleDecision();
@@ -111,192 +110,108 @@ public class DecisionQueriesTest extends EsReadTestBase {
     assertEquals(Mode.BLOCK, result.get(1).getDecisions().get(0).getMode());
   }
 
+  List<NameUsageWrapper> test3Data() {
+    List<NameUsageWrapper> nuws = createNameUsages(3);
+
+    SimpleDecision sd1 = new SimpleDecision();
+    sd1.setId(100);
+    sd1.setDatasetKey(1);
+    sd1.setMode(Mode.UPDATE_RECURSIVE);
+
+    SimpleDecision sd2a = new SimpleDecision();
+    sd2a.setId(101);
+    sd2a.setDatasetKey(2);
+    sd2a.setMode(Mode.BLOCK);
+
+    SimpleDecision sd2b = new SimpleDecision();
+    sd2b.setId(102);
+    sd2b.setDatasetKey(2);
+    sd2b.setMode(Mode.REVIEWED);
+
+    SimpleDecision sd2c = new SimpleDecision();
+    sd2c.setId(103);
+    sd2c.setDatasetKey(2);
+    sd2c.setMode(Mode.UPDATE);
+
+    SimpleDecision sd3 = new SimpleDecision();
+    sd3.setId(104);
+    sd3.setDatasetKey(3);
+    sd3.setMode(Mode.UPDATE);
+
+    nuws.get(0).setDecisions(Arrays.asList(sd1, sd2a)); // no match
+    nuws.get(1).setDecisions(Arrays.asList(sd2b)); // match
+    nuws.get(2).setDecisions(Arrays.asList(sd2c, sd3)); // match
+
+    return nuws;
+  }
+
   @Test // catalogue key used both as filter and prune
-  public void test3() {    
+  public void test3() {
+    List<NameUsageWrapper> nuws = test3Data();
+    index(nuws);
 
-    NameUsageSearchRequest query = new NameUsageSearchRequest();
-    query.addFilter(NameUsageSearchParameter.DECISION_MODE, Mode.UPDATE);
+    query.addFilter(NameUsageSearchParameter.DECISION_MODE, NameUsageSearchRequest.IS_NOT_NULL);
     query.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, 2);
-    query.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, 3);
-
-    SimpleDecision sd1 = new SimpleDecision();
-    sd1.setId(100);
-    sd1.setDatasetKey(1);
-    sd1.setMode(Mode.UPDATE_RECURSIVE);
-
-    SimpleDecision sd2a = new SimpleDecision();
-    sd2a.setId(101);
-    sd2a.setDatasetKey(2);
-    sd2a.setMode(Mode.BLOCK);
-
-    SimpleDecision sd2b = new SimpleDecision();
-    sd2b.setId(102);
-    sd2b.setDatasetKey(2);
-    sd2b.setMode(Mode.REVIEWED);
-
-    SimpleDecision sd2c = new SimpleDecision();
-    sd2c.setId(103);
-    sd2c.setDatasetKey(2);
-    sd2c.setMode(Mode.UPDATE);
-
-    SimpleDecision sd3 = new SimpleDecision();
-    sd3.setId(104);
-    sd3.setDatasetKey(3);
-    sd3.setMode(Mode.UPDATE);
-
-    List<NameUsageWrapper> nuws = createNameUsages(3);
-    nuws.get(0).setDecisions(Arrays.asList(sd1)); // no match
-    nuws.get(1).setDecisions(Arrays.asList(sd2a, sd2b, sd2c)); // match
-    nuws.get(2).setDecisions(Arrays.asList(sd1, sd3)); // match
-    
-    index(nuws);
+    query.setSortBy(NameUsageSearchRequest.SortBy.NATIVE);
     List<NameUsageWrapper> result = search(query).getResult();
-
-    assertEquals(2, result.size());
-    assertEquals(1, result.get(0).getDecisions().size()); // Pruned to 1 decision
-    assertEquals(1, result.get(1).getDecisions().size());
-  }
-
-  @Test
-  public void test4() {
-
-    SimpleDecision sd1 = new SimpleDecision();
-    sd1.setId(100);
-    sd1.setDatasetKey(1);
-    sd1.setMode(Mode.UPDATE_RECURSIVE);
-
-    SimpleDecision sd2a = new SimpleDecision();
-    sd2a.setId(101);
-    sd2a.setDatasetKey(2);
-    sd2a.setMode(Mode.BLOCK);
-
-    SimpleDecision sd2b = new SimpleDecision();
-    sd2b.setId(102);
-    sd2b.setDatasetKey(2);
-    sd2b.setMode(Mode.REVIEWED);
-
-    SimpleDecision sd2c = new SimpleDecision();
-    sd2c.setId(103);
-    sd2c.setDatasetKey(2);
-    sd2c.setMode(Mode.UPDATE);
-
-    SimpleDecision sd3 = new SimpleDecision();
-    sd3.setId(104);
-    sd3.setDatasetKey(3);
-    sd3.setMode(Mode.UPDATE);
-
-    List<NameUsageWrapper> nuws = createNameUsages(3);
-    nuws.get(0).setDecisions(Arrays.asList(sd1));
-    nuws.get(1).setDecisions(Arrays.asList(sd2a, sd2b, sd2c)); // match
-    nuws.get(2).setDecisions(Arrays.asList(sd3)); // match
-    index(nuws);
-
-    NameUsageSearchRequest query = new NameUsageSearchRequest();
-    query.addFilter(NameUsageSearchParameter.DECISION_MODE, Mode.UPDATE);
-    query.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, 2);
-    query.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, 3);
-    List<NameUsageWrapper> result = search(query).getResult();
-
-    assertEquals(2, result.size());
-    assertEquals(1, result.get(0).getDecisions().size()); // Pruned to 1 decision
-    assertEquals(1, result.get(1).getDecisions().size());
-  }
-
-  @Test
-  public void test5() {
-
-    SimpleDecision sd1 = new SimpleDecision();
-    sd1.setId(100);
-    sd1.setDatasetKey(1);
-    sd1.setMode(Mode.UPDATE);
-
-    SimpleDecision sd2a = new SimpleDecision();
-    sd2a.setId(101);
-    sd2a.setDatasetKey(2);
-    sd2a.setMode(Mode.BLOCK);
-
-    SimpleDecision sd2b = new SimpleDecision();
-    sd2b.setId(102);
-    sd2b.setDatasetKey(2);
-    sd2b.setMode(Mode.REVIEWED);
-
-    SimpleDecision sd2c = new SimpleDecision();
-    sd2c.setId(103);
-    sd2c.setDatasetKey(2);
-    sd2c.setMode(Mode.UPDATE);
-
-    SimpleDecision sd3 = new SimpleDecision();
-    sd3.setId(104);
-    sd3.setDatasetKey(3);
-    sd3.setMode(Mode.UPDATE);
-
-    List<NameUsageWrapper> nuws = createNameUsages(3);
-    nuws.get(0).setDecisions(Arrays.asList(sd1));
-    nuws.get(1).setDecisions(Arrays.asList(sd2a, sd2b, sd2c)); // match
-    nuws.get(2).setDecisions(Arrays.asList(sd3)); // match
-    index(nuws);
-
-    NameUsageSearchRequest query = new NameUsageSearchRequest();
-    query.addFilter(NameUsageSearchParameter.DECISION_MODE, Mode.UPDATE);
-    List<NameUsageWrapper> result = search(query).getResult();
-
     assertEquals(3, result.size());
-    assertEquals(1, result.get(0).getDecisions().size());
-    assertEquals(3, result.get(1).getDecisions().size()); // no pruning
+    assertEquals(1, result.get(0).getDecisions().size()); // Pruned to 1 decision
+    assertEquals(1, result.get(1).getDecisions().size());
     assertEquals(1, result.get(2).getDecisions().size());
+
+    query.clearFilter(NameUsageSearchParameter.DECISION_MODE);
+    query.addFilter(NameUsageSearchParameter.DECISION_MODE, Mode.UPDATE);
+    result = search(query).getResult();
+    assertEquals(1, result.size());
+    assertEquals(1, result.get(0).getDecisions().size()); // Pruned to 1 decision
+    assertEquals(nuws.get(2).getId(), result.get(0).getUsage().getId());
+
+    query.clearFilter(NameUsageSearchParameter.CATALOGUE_KEY);
+    query.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, 3);
+    result = search(query).getResult();
+    assertEquals(1, result.size());
+    assertEquals(1, result.get(0).getDecisions().size()); // Pruned to 1 decision
   }
 
-  @Test
+  // catalogue key required
+  @Test(expected = InvalidQueryException.class)
   public void test6a() {
-    NameUsageSearchRequest query = new NameUsageSearchRequest();
-    query.addFilter(NameUsageSearchParameter.DECISION_MODE, "_NULL");
-
     index(test6_data());
-
-    List<NameUsageWrapper> result = search(query).getResult();
-
-    assertEquals(1, result.size()); // nuw4
-    assertEquals("DDD", result.get(0).getId());
+    query.addFilter(NameUsageSearchParameter.DECISION_MODE, "_NULL");
+    search(query);
   }
 
-  @Test
+  // catalogue key required
+  @Test(expected = InvalidQueryException.class)
   public void test6b() {
-    NameUsageSearchRequest query = new NameUsageSearchRequest();
-    query.addFilter(NameUsageSearchParameter.DECISION_MODE, "_NOT_NULL");
-
     index(test6_data());
-
-    List<NameUsageWrapper> result = search(query).getResult();
-
-    assertEquals(3, result.size());
+    query.addFilter(NameUsageSearchParameter.DECISION_MODE, "_NOT_NULL");
+    search(query);
   }
 
   @Test
   public void test6c() {
-    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    index(test6_data());
     // Tests for the presence of at least one decision
     query.addFilter(NameUsageSearchParameter.DECISION_MODE, "_NOT_NULL");
-
-    index(test6_data());
-
+    query.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, 101);
     List<NameUsageWrapper> result = search(query).getResult();
-    assertEquals(3, result.size()); // nuw4 does not have any decisions at all
-
+    assertEquals(1, result.size()); // nuw4 does not have any decisions at all
   }
 
   @Test
   public void test6d() {
+    index(test6_data());
+
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     // Tests for the presence of at least one decision
     query.addFilter(NameUsageSearchParameter.DECISION_MODE, "_NOT_NULL");
-    
-    // Should not make a difference in number of decisions returned
+    // no decisions at all in that catalogue
     query.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, 1);
 
-    index(test6_data());
 
     List<NameUsageWrapper> result = search(query).getResult();
-    assertEquals(3, result.size()); // nuw4 does not have any decisions at all
+    assertEquals(0, result.size());
 
   }
 
@@ -315,7 +230,8 @@ public class DecisionQueriesTest extends EsReadTestBase {
 
   }
 
-  @Test // With mode null, search voor name usages NOT having the specified catalog key
+  // multiple cat keys
+  @Test(expected = InvalidQueryException.class)
   public void test6f() {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     // Tests for the presence of at least one decision

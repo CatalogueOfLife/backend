@@ -1,27 +1,21 @@
 
 package life.catalogue.api.search;
 
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
-import javax.validation.constraints.Size;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MultivaluedMap;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
-import org.gbif.nameparser.api.Rank;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import life.catalogue.api.util.VocabularyUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.gbif.nameparser.api.Rank;
+
+import javax.validation.constraints.Size;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MultivaluedMap;
+import java.lang.reflect.Field;
+import java.util.*;
+
 import static life.catalogue.api.util.VocabularyUtils.lookupEnum;
 
 public class NameUsageSearchRequest extends NameUsageRequest {
@@ -216,6 +210,10 @@ public class NameUsageSearchRequest extends NameUsageRequest {
 
   private static void nonNull(Object value) {
     Preconditions.checkNotNull(value, "Null values not allowed for non-strings");
+  }
+
+  public void clearFilter(NameUsageSearchParameter param) {
+    getFilters().remove(param);
   }
 
   public void addFilter(NameUsageSearchParameter param, Integer value) {
