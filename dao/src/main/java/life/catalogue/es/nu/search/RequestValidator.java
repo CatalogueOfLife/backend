@@ -2,8 +2,8 @@ package life.catalogue.es.nu.search;
 
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.es.InvalidQueryException;
-import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.USAGE_ID;
+
+import static life.catalogue.api.search.NameUsageSearchParameter.*;
 
 class RequestValidator {
 
@@ -22,8 +22,12 @@ class RequestValidator {
         throw invalidSearchRequest("No filters besides dataset key allowed when specifying usage ID");
       }
     }
-
-    // More validations ...
+    if (request.hasFilter(DECISION_MODE)) {
+      // require a project key
+      if (!request.hasFilter(CATALOGUE_KEY) || request.getFilterValues(CATALOGUE_KEY).size() > 1) {
+        throw invalidSearchRequest("When specifying a decision mode, a single catalogue key must also be specified");
+      }
+    }
   }
 
   private static InvalidQueryException invalidSearchRequest(String msg, Object... msgArgs) {

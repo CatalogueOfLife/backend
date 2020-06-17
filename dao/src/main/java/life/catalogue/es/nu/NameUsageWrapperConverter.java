@@ -1,38 +1,22 @@
 package life.catalogue.es.nu;
 
+import life.catalogue.api.model.*;
+import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.vocab.NameField;
+import life.catalogue.common.tax.SciNameNormalizer;
+import life.catalogue.es.*;
+import org.apache.commons.io.IOUtils;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
-import org.apache.commons.io.IOUtils;
-import life.catalogue.api.model.BareName;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.model.SimpleNameClassification;
-import life.catalogue.api.model.Synonym;
-import life.catalogue.api.model.Taxon;
-import life.catalogue.api.model.VernacularName;
-import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.api.vocab.NameField;
-import life.catalogue.common.tax.SciNameNormalizer;
-import life.catalogue.es.DownwardConverter;
-import life.catalogue.es.EsDecision;
-import life.catalogue.es.EsModule;
-import life.catalogue.es.EsMonomial;
-import life.catalogue.es.EsNameUsage;
-import life.catalogue.es.NameStrings;
+
 import static life.catalogue.api.vocab.NameField.*;
 import static life.catalogue.common.collection.CollectionUtils.notEmpty;
 
@@ -348,7 +332,6 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
           .map(EsDecision::from)
           .collect(Collectors.toList());
       doc.setDecisions(decisions);
-      doc.setDecisionCount(nuw.getDecisions().size());
     }
   }
 

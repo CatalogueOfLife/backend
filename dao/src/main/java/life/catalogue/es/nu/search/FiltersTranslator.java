@@ -1,18 +1,14 @@
 package life.catalogue.es.nu.search;
 
+import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.es.InvalidQueryException;
+import life.catalogue.es.query.*;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import life.catalogue.api.search.NameUsageSearchRequest;
-import life.catalogue.es.InvalidQueryException;
-import life.catalogue.es.query.BoolQuery;
-import life.catalogue.es.query.NestedQuery;
-import life.catalogue.es.query.Query;
-import life.catalogue.es.query.RangeQuery;
-import life.catalogue.es.query.TermQuery;
-import static life.catalogue.api.search.NameUsageSearchParameter.CATALOGUE_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.DECISION_MODE;
-import static life.catalogue.api.search.NameUsageSearchParameter.RANK;
+
+import static life.catalogue.api.search.NameUsageSearchParameter.*;
 import static life.catalogue.api.search.NameUsageSearchRequest.IS_NOT_NULL;
 import static life.catalogue.api.search.NameUsageSearchRequest.IS_NULL;
 
@@ -68,19 +64,16 @@ class FiltersTranslator {
   private List<Query> processDecisionFilters() {
     final String path = "decisions";
     if (request.hasFilter(DECISION_MODE)) {
+      // the request validator mandates a single catalogue key in this case!
       FilterTranslator ft = new FilterTranslator(request);
       if (request.getFilterValue(DECISION_MODE).equals(IS_NULL)) {
-        if (request.hasFilter(CATALOGUE_KEY)) {
-          // The user wants nameusages which do *NOT* have a decision with the provided catalog key!
-          return List.of(new BoolQuery().mustNot(new NestedQuery(path, ft.translate(CATALOGUE_KEY))));
-        }
-        return List.of(new TermQuery("decisionCount", 0));
+        // The user wants nameusages which do *NOT* have a decision with the provided catalog key!
+        return List.of(new BoolQuery().mustNot(new NestedQuery(path, ft.translate(CATALOGUE_KEY))));
       } else if (request.getFilterValue(DECISION_MODE).equals(IS_NOT_NULL)) {
-        return List.of(new RangeQuery<Integer>("decisionCount").greaterThan(0));
-      } else if (request.hasFilter(CATALOGUE_KEY)) {
+        return List.of(new BoolQuery().must(new NestedQuery(path, ft.translate(CATALOGUE_KEY))));
+      } else {
         return List.of(new NestedQuery(path, BoolQuery.withFilters(ft.translate(DECISION_MODE), ft.translate(CATALOGUE_KEY))));
       }
-      return List.of(new NestedQuery(path, ft.translate(DECISION_MODE)));
     }
     return Collections.emptyList();
   }
