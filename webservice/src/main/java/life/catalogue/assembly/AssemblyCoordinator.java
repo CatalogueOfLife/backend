@@ -57,7 +57,6 @@ public class AssemblyCoordinator implements Managed {
       this.future = future;
       this.delete = job instanceof SectorDeleteFull;
     }
-
   }
   
   public AssemblyCoordinator(SqlSessionFactory factory, DatasetImportDao diDao, NameUsageIndexService indexService, MetricRegistry registry) {
