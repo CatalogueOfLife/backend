@@ -90,7 +90,7 @@ public class InterpreterBase {
    */
   protected void setTaxonomicNote(NameUsageBase u, String taxNote, VerbatimRecord v) {
     if (!StringUtils.isBlank(taxNote)) {
-      v.addIssue(Issue.TAXNOTES_IN_AUTHORSHIP);
+      v.addIssue(Issue.AUTHORSHIP_CONTAINS_TAXONOMIC_NOTE);
       Matcher m = SEC_REF.matcher(taxNote);
       if (m.find()) {
         setAccordingTo(u, m.group(2).trim(), v);
@@ -412,17 +412,32 @@ public class InterpreterBase {
     nat.getName().setVerbatimKey(v.getId());
     nat.getName().setOrigin(Origin.SOURCE);
     nat.getName().setLink(parse(UriParser.PARSER, link).orNull());
-    // name status can be explicitly given or as part of the nom notes from the authorship
-    nat.getName().setNomStatus(parse(NomStatusParser.PARSER, nomStatus).orElse(
-        parse(NomStatusParser.PARSER, nat.getName().getNomenclaturalNote()).orNull(), Issue.NOMENCLATURAL_STATUS_INVALID, v)
-    );
+    nat.getName().setRemarks(remarks);
     // applies default dataset code if we cannot find or parse any
     // Always make sure this happens BEFORE we update the canonical scientific name
     nat.getName().setCode(code);
-    nat.getName().setRemarks(remarks);
-    // what to do with the explicit name status?
-    // see also https://github.com/CatalogueOfLife/backend/issues/760
-    nat.getName().addRemark(nomStatus);
+
+    // name status can be explicitly given or as part of the nom notes from the authorship
+    // dont store the explicit name status, it only remains as verbatim and interpreted data
+    // see https://github.com/CatalogueOfLife/backend/issues/760
+    NomStatus status           = parse(NomStatusParser.PARSER, nomStatus).orNull(Issue.NOMENCLATURAL_STATUS_INVALID, v);
+    NomStatus statusAuthorship = parse(NomStatusParser.PARSER, nat.getName().getNomenclaturalNote()).orNull(Issue.NOMENCLATURAL_STATUS_INVALID, v);
+    if (statusAuthorship != null) {
+      v.addIssue(Issue.AUTHORSHIP_CONTAINS_NOMENCLATURAL_NOTE);
+    }
+    if (status != null && statusAuthorship != null) {
+      // both given! do they match up?
+      if (status != statusAuthorship) {
+        if (!status.isCompatible(statusAuthorship)) {
+          v.addIssue(Issue.CONFLICTING_NOMENCLATURAL_STATUS);
+        }
+        status = status.mostDetailed(statusAuthorship);
+        if (status.isAvailable() == statusAuthorship.isAvailable()) {
+
+        }
+      }
+    }
+    nat.getName().setNomStatus(life.catalogue.api.util.ObjectUtils.coalesce(status, statusAuthorship));
 
     // assign best rank
     if (rank.notOtherOrUnranked() || nat.getName().getRank() == null) {

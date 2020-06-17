@@ -109,8 +109,14 @@ public enum Issue {
       "Epithet without genus"),
   
   NOMENCLATURAL_STATUS_INVALID(NAME, Level.WARNING,
-      "dwc:nomenclaturalStatus could not be interpreted"),
-  
+      "The nomenclatural status could not be interpreted"),
+
+  AUTHORSHIP_CONTAINS_NOMENCLATURAL_NOTE(NAME, Level.INFO,
+    "The name authorship contains nomenclatural status notes that are transferred to the name"),
+
+  CONFLICTING_NOMENCLATURAL_STATUS(NAME, Level.WARNING,
+    "The name authorship contains nomenclatural status notes which conflict with the explicitly given status"),
+
   NOMENCLATURAL_CODE_INVALID(NAME, Level.ERROR,
       "dwc:nomenclaturalCode could not be interpreted"),
   
@@ -166,7 +172,7 @@ public enum Issue {
   NAME_VARIANT(NAME, Level.INFO,
       "Multiple variants of the same name appear several times in the dataset."),
 
-  TAXNOTES_IN_AUTHORSHIP(NAME, Level.INFO,
+  AUTHORSHIP_CONTAINS_TAXONOMIC_NOTE(NAME, Level.INFO,
     "The name authorship contains taxonomic notes that are transferred to the name usage"),
 
 
