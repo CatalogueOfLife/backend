@@ -33,35 +33,41 @@ public abstract class BaseDiffService {
     this.dao = dao;
   }
 
-  public Reader treeDiff(int datasetKey, String attempts) throws IOException {
-    int[] atts = parseAttempts(datasetKey, attempts);
-    return udiff(atts, a -> dao.treeFile(context, datasetKey, a));
+  public Reader treeDiff(int key, String attempts) {
+    int[] atts = parseAttempts(key, attempts);
+    return udiff(key, atts, a -> dao.treeFile(context, key, a));
   }
 
-  public Reader namesDiff(int datasetKey, String attempts) throws IOException {
-    int[] atts = parseAttempts(datasetKey, attempts);
-    return udiff(atts, a -> dao.namesFile(context, datasetKey, a));
+  public Reader namesDiff(int key, String attempts) {
+    int[] atts = parseAttempts(key, attempts);
+    return udiff(key, atts, a -> dao.namesFile(context, key, a));
   }
 
-  public NamesDiff nameIdsDiff(int datasetKey, String attempts) throws IOException {
-    int[] atts = parseAttempts(datasetKey, attempts);
-    return namesDiff(datasetKey, atts, a -> dao.namesIdFile(context, datasetKey, a));
+  public NamesDiff nameIdsDiff(int key, String attempts) {
+    int[] atts = parseAttempts(key, attempts);
+    return namesDiff(key, atts, a -> dao.namesIdFile(context, key, a));
   }
 
   abstract int[] parseAttempts(int key, String attempts);
 
-  private File[] attemptToFiles(int[] attempts, Function<Integer, File> getFile){
-    // verify the these exist!
+  private File[] attemptToFiles(int key, int[] attempts, Function<Integer, File> getFile) throws NamesTreeDao.AttemptMissingException{
+    // verify that these exist!
     File[] files = new File[attempts.length];
     int idx = 0;
     for (int at : attempts) {
       File f = getFile.apply(at);
-      if (!f.exists()) {
-        throw NotFoundException.notFound("Import attempt", at);
-      }
+      assertExists(f, context, key, at);
       files[idx++]=f;
     }
     return files;
+  }
+
+
+  private static File assertExists(File f, NamesTreeDao.Context context, int key, int attempt) throws NamesTreeDao.AttemptMissingException {
+    if (!f.exists() || f.isDirectory()) {
+      throw new NamesTreeDao.AttemptMissingException(context, key, attempt);
+    }
+    return f;
   }
 
   @VisibleForTesting
@@ -97,18 +103,23 @@ public abstract class BaseDiffService {
   }
 
   @VisibleForTesting
-  protected NamesDiff namesDiff(int key, int[] atts, Function<Integer, File> getFile) throws IOException {
-    File[] files = attemptToFiles(atts, getFile);
-    final NamesDiff diff = new NamesDiff(key, atts[0], atts[1]);
-    Set<String> n1 = NamesTreeDao.readLines(files[0]);
-    Set<String> n2 = NamesTreeDao.readLines(files[1]);
+  protected NamesDiff namesDiff(int key, int[] atts, Function<Integer, File> getFile) {
+    File[] files = attemptToFiles(key, atts, getFile);
+    try {
+      final NamesDiff diff = new NamesDiff(key, atts[0], atts[1]);
+      Set<String> n1 = NamesTreeDao.readLines(files[0]);
+      Set<String> n2 = NamesTreeDao.readLines(files[1]);
 
-    diff.setDeleted(new HashSet<>(n1));
-    diff.getDeleted().removeAll(n2);
+      diff.setDeleted(new HashSet<>(n1));
+      diff.getDeleted().removeAll(n2);
 
-    diff.setInserted(new HashSet<>(n2));
-    diff.getInserted().removeAll(n1);
-    return diff;
+      diff.setInserted(new HashSet<>(n2));
+      diff.getInserted().removeAll(n1);
+      return diff;
+
+    } catch (IOException e) {
+      throw new RuntimeException(String.format("Failed to read files for %s %s attempts %s-%s", context, key, atts[0], atts[1]));
+    }
   }
 
   public String diffBinaryVersion() throws IOException {
@@ -123,8 +134,8 @@ public abstract class BaseDiffService {
    * @param getFile
    */
   @VisibleForTesting
-  protected BufferedReader udiff(int[] atts, Function<Integer, File> getFile) throws IOException {
-    File[] files = attemptToFiles(atts, getFile);
+  protected BufferedReader udiff(int key, int[] atts, Function<Integer, File> getFile) {
+    File[] files = attemptToFiles(key, atts, getFile);
     try {
       String cmd = String.format("diff -B -d -U 2 <(gunzip -c %s) <(gunzip -c %s)", files[0].getAbsolutePath(), files[1].getAbsolutePath());
       LOG.debug("Execute: {}", cmd);
@@ -136,6 +147,9 @@ public abstract class BaseDiffService {
         throw new RuntimeException("Unix diff failed with status " + status + ": " + error);
       }
       return new BufferedReader(new InputStreamReader(ps.getInputStream()));
+
+    } catch (IOException e) {
+      throw new RuntimeException("Unix diff failed", e);
 
     } catch (InterruptedException e) {
       throw new RuntimeException("Unix diff was interrupted", e);

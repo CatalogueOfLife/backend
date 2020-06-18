@@ -1,6 +1,7 @@
 package life.catalogue.dao;
 
 import com.google.common.annotations.VisibleForTesting;
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.common.io.UTF8IoUtils;
@@ -186,28 +187,52 @@ public class NamesTreeDao {
    * @param key the dataset or sector key
    */
   public Stream<String> getNames(Context context, int key, int attempt) {
-    return streamFile(namesFile(context, key, attempt));
+    return streamFile(namesFile(context, key, attempt), context, key, attempt);
   }
 
   public Stream<String> getNameIds(Context context, int key, int attempt) {
-    return streamFile(namesIdFile(context, key, attempt));
+    return streamFile(namesIdFile(context, key, attempt), context, key, attempt);
   }
 
   public Stream<String> getTree(Context context, int key, int attempt) {
-    return streamFile(treeFile(context, key, attempt));
+    return streamFile(treeFile(context, key, attempt), context, key, attempt);
   }
 
-  private static Stream<String> streamFile(File f) {
+  private static Stream<String> streamFile(File f, Context context, int key, int attempt) {
     try {
       BufferedReader br = UTF8IoUtils.readerFromGzipFile(f);
       return br.lines();
+
+    } catch (FileNotFoundException e) {
+      throw new AttemptMissingException(context, key, attempt, e);
+
     } catch (IOException e) {
-      LOG.warn("Failed to stream file {}", f.getAbsolutePath());
-      return Stream.empty();
+      throw new RuntimeException("Failed to stream file " + f.getAbsolutePath(), e);
     }
   }
 
   public enum Context {DATASET, SECTOR}
+
+  public static class AttemptMissingException extends NotFoundException {
+    public final Context context;
+    public final int attempt;
+
+    public AttemptMissingException(Context context, int key, int attempt) {
+      super(key, buildMessage(context, key, attempt));
+      this.context = context;
+      this.attempt = attempt;
+    }
+
+    public AttemptMissingException(Context context, int key, int attempt, IOException cause) {
+      super(key, buildMessage(context, key, attempt), cause);
+      this.context = context;
+      this.attempt = attempt;
+    }
+
+    private static String buildMessage(Context context, int key, int attempt) {
+      return String.format("Import attempt %s for %s %s missing", attempt, context.name().toLowerCase(), key);
+    }
+  }
 
   public File treeFile(Context context, int key, int attempt) {
     return new File(subdir(context, key), "tree/"+attempt+".txt.gz");

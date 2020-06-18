@@ -48,7 +48,7 @@ public class BaseDiffServiceTest {
     final File f1 = Resources.toFile("trees/coldp.tree.gz");
     final File f2 = Resources.toFile("trees/coldp2.tree.gz");
 
-    BufferedReader br = diff.udiff(new int[]{1,2}, i -> {
+    BufferedReader br = diff.udiff(1, new int[]{1,2}, i -> {
       switch (i) {
         case 1: return f1;
         case 2: return f2;
@@ -61,5 +61,17 @@ public class BaseDiffServiceTest {
     System.out.println(version);
 
     Assert.assertTrue(version.startsWith("---"));
+  }
+
+  @Test(expected = NamesTreeDao.AttemptMissingException.class)
+  public void namesDiff() throws Exception {
+    final File bad = new File("/tmp/I do not exist");
+    diff.namesDiff(1, new int[]{1,2,3}, i -> {
+      switch (i) {
+        case 1: return bad;
+        case 2: return bad;
+      }
+      return null;
+    });
   }
 }

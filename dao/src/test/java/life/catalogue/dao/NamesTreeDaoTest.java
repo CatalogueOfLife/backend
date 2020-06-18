@@ -34,7 +34,12 @@ public class NamesTreeDaoTest extends DaoTestBase {
     Stream<String> lines = dao.getTreeDao().getTree(NamesTreeDao.Context.DATASET, 11, 1);
     assertEquals(expected.lines(), lines);
   }
-  
+
+  @Test(expected = NamesTreeDao.AttemptMissingException.class)
+  public void missingFile() throws Exception {
+    dao.getTreeDao().getTree(NamesTreeDao.Context.DATASET, 11, 77);
+  }
+
   @Test
   public void roundtripNames() throws Exception {
     dao.getTreeDao().updateDatasetNames(11, 1);
