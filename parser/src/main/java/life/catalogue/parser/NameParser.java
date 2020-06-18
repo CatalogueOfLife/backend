@@ -7,7 +7,6 @@ import com.google.common.collect.ImmutableMap;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameAccordingTo;
-import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
@@ -175,13 +174,6 @@ public class NameParser implements Parser<NameAccordingTo>, AutoCloseable {
     } catch (UnparsableNameException e) {
       return Optional.of(ObjectUtils.coalesce(e.getType(), NameType.SCIENTIFIC));
     }
-  }
-
-  public static ParserConfig cfgFromParsedName(ParsedName pn) {
-    ParserConfig pc = new ParserConfig();
-    updateNamefromParsedName(pc, pn, IssueContainer.VOID);
-    pc.setTaxonomicNote(pn.getTaxonomicNote());
-    return pc;
   }
 
   /**

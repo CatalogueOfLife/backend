@@ -90,6 +90,7 @@ public class ParserConfigDao {
     }
 
     ParsedName pn = Name.toParsedName(obj);
+    pn.setNomenclaturalNote(null);
     pn.setState(ParsedName.State.COMPLETE); // if we leave state None we get unparsed issues when parsing this name
     pn.setTaxonomicNote(obj.getTaxonomicNote());
     NameParser.configs().setName(concat(obj.getScientificName(), obj.getAuthorship()), pn);
