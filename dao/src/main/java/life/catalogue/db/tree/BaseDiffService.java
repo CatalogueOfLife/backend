@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -137,7 +138,7 @@ public abstract class BaseDiffService {
   protected BufferedReader udiff(int key, int[] atts, Function<Integer, File> getFile) {
     File[] files = attemptToFiles(key, atts, getFile);
     try {
-      String cmd = String.format("diff -B -d -U 2 <(gunzip -c %s) <(gunzip -c %s)", files[0].getAbsolutePath(), files[1].getAbsolutePath());
+      String cmd = String.format("export LC_CTYPE=en_US.UTF-8; diff -B -d -U 2 <(gunzip -c %s) <(gunzip -c %s)", files[0].getAbsolutePath(), files[1].getAbsolutePath());
       LOG.debug("Execute: {}", cmd);
       ProcessBuilder pb = new ProcessBuilder("bash", "-c", cmd + "; exit 0");
       Process ps = pb.start();
@@ -146,7 +147,7 @@ public abstract class BaseDiffService {
         String error = InputStreamUtils.readEntireStream(ps.getErrorStream());
         throw new RuntimeException("Unix diff failed with status " + status + ": " + error);
       }
-      return new BufferedReader(new InputStreamReader(ps.getInputStream()));
+      return new BufferedReader(new InputStreamReader(ps.getInputStream(), StandardCharsets.UTF_8));
 
     } catch (IOException e) {
       throw new RuntimeException("Unix diff failed", e);
