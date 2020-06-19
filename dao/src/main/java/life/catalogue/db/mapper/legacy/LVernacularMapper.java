@@ -1,6 +1,6 @@
-package life.catalogue.db.legacy.mapper;
+package life.catalogue.db.mapper.legacy;
 
-import life.catalogue.db.legacy.model.LName;
+import life.catalogue.db.mapper.legacy.model.LName;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;

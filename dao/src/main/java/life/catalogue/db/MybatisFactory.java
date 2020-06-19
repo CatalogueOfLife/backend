@@ -6,11 +6,10 @@ import life.catalogue.api.model.Duplicate;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.TreeNode;
 import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.db.legacy.mapper.LNameMapper;
-import life.catalogue.db.legacy.model.LName;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.ProjectSourceDataset;
 import life.catalogue.db.mapper.UsageNameID;
+import life.catalogue.db.mapper.legacy.model.LName;
 import life.catalogue.db.type.UuidTypeHandler;
 import life.catalogue.db.type2.StringCount;
 import org.apache.ibatis.binding.MapperRegistry;
@@ -130,8 +129,6 @@ public class MybatisFactory {
     registry.addMapper(Common.class);
     // register all mappers from the mapper subpackage
     registry.addMappers(NameMapper.class.getPackage().getName());
-    // legacy mappers
-    registry.addMappers(LNameMapper.class.getPackage().getName());
   }
   
   private static void registerTypeAliases(TypeAliasRegistry registry) {

@@ -1,4 +1,4 @@
-package life.catalogue.db.legacy.model;
+package life.catalogue.db.mapper.legacy.model;
 
 public interface LName {
 

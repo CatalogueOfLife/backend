@@ -2,10 +2,10 @@
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="life.catalogue.db.legacy.mapper.LNameMapper">
+<mapper namespace="life.catalogue.db.mapper.legacy.LNameMapper">
 
 
-  <resultMap id="usageResultMap" type="life.catalogue.db.legacy.model.LName" autoMapping="true">
+  <resultMap id="usageResultMap" type="life.catalogue.db.mapper.legacy.model.LName" autoMapping="true">
     <id column="id"/>
     <discriminator column="java_class" javaType="integer">
       <case value="1" resultType="LSynonym" resultMap="synonymResultMap"/>
@@ -14,15 +14,15 @@
     </discriminator>
   </resultMap>
 
-  <resultMap id="synonymResultMap" type="life.catalogue.db.legacy.model.LSynonym" autoMapping="true">
+  <resultMap id="synonymResultMap" type="life.catalogue.db.mapper.legacy.model.LSynonym" autoMapping="true">
     <id property="id" column="id"/>
   </resultMap>
 
-  <resultMap id="speciesResultMap" type="life.catalogue.db.legacy.model.LSpeciesName" autoMapping="true">
+  <resultMap id="speciesResultMap" type="life.catalogue.db.mapper.legacy.model.LSpeciesName" autoMapping="true">
     <id property="id" column="id"/>
   </resultMap>
 
-  <resultMap id="higherResultMap" type="life.catalogue.db.legacy.model.LHigherName" autoMapping="true">
+  <resultMap id="higherResultMap" type="life.catalogue.db.mapper.legacy.model.LHigherName" autoMapping="true">
     <id column="id"/>
   </resultMap>
 

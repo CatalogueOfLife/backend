@@ -1,8 +1,9 @@
-package life.catalogue.db.legacy.mapper;
+package life.catalogue.db.mapper.legacy.mapper;
 
 import life.catalogue.db.TestDataRule;
-import life.catalogue.db.legacy.model.LName;
-import life.catalogue.db.legacy.model.LSpeciesName;
+import life.catalogue.db.mapper.legacy.LNameMapper;
+import life.catalogue.db.mapper.legacy.model.LName;
+import life.catalogue.db.mapper.legacy.model.LSpeciesName;
 import life.catalogue.db.mapper.MapperTestBase;
 import org.junit.Test;
 

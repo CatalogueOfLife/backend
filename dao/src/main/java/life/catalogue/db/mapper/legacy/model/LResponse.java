@@ -1,4 +1,4 @@
-package life.catalogue.db.legacy.model;
+package life.catalogue.db.mapper.legacy.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
