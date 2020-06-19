@@ -102,8 +102,14 @@
         <if test="req.subjectDatasetKey != null">
           AND ed.subject_dataset_key = #{req.subjectDatasetKey}
         </if>
+        <if test="req.mode != null">
+          AND ed.mode = #{req.mode}::EDITORIALDECISION_MODE
+        </if>
         <if test="req.rank != null">
           AND ed.subject_rank = #{req.rank}::RANK
+        </if>
+        <if test="req.name != null">
+          AND ed.subject_name ILIKE '%${req.name}%'
         </if>
         <if test="req.modifiedBy != null">
           AND ed.modified_by = #{req.modifiedBy}

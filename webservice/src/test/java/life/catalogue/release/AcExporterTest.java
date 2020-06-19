@@ -6,6 +6,7 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.io.CompressionUtil;
+import life.catalogue.db.LookupTables;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -30,7 +31,7 @@ public class AcExporterTest {
   
   @Rule
   public TestDataRule testDataRule = TestDataRule.draftWithSectors();
-  
+
   @Before
   public void initCfg()  {
     cfg = new WsServerConfig();
@@ -55,6 +56,9 @@ public class AcExporterTest {
     AcExporter exp = new AcExporter(cfg, PgSetupRule.getSqlSessionFactory());
     // prepare metadata
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+
+      LookupTables.recreateTables(session.getConnection());
+
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       Dataset d = dm.get(Datasets.DRAFT_COL);
       d.setAuthorsAndEditors(List.of("Röskøv Y.", "Ower G.", "Orrell T.", "Nicolson D."));

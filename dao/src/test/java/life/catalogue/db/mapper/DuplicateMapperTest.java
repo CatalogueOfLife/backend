@@ -1,14 +1,7 @@
 package life.catalogue.db.mapper;
 
-import java.sql.Connection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Duplicate;
 import life.catalogue.api.model.EditorialDecision;
@@ -21,6 +14,7 @@ import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.postgres.AuthorshipNormFunc;
 import life.catalogue.postgres.PgCopyUtils;
+import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.Rank;
 import org.javers.common.collections.Lists;
 import org.javers.core.Javers;
@@ -28,6 +22,12 @@ import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
 import org.junit.*;
 import org.postgresql.jdbc.PgConnection;
+
+import java.sql.Connection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
 
 import static org.junit.Assert.*;
 
@@ -80,7 +80,7 @@ public class DuplicateMapperTest {
   
   @Test
   public void usagesWithDecisions() {
-    List<Duplicate.UsageDecision> res = mapper.usagesByIds(datasetKey, Lists.immutableListOf("45", "46"));
+    List<Duplicate.UsageDecision> res = mapper.usagesByIds(datasetKey, Datasets.DRAFT_COL, Lists.immutableListOf("45", "46"));
     assertEquals(2, res.size());
     for (Duplicate.UsageDecision u : res) {
       assertFalse(u.getClassification().isEmpty());
@@ -97,7 +97,7 @@ public class DuplicateMapperTest {
     d1.setMode(EditorialDecision.Mode.UPDATE);
     dm.create(d1);
     
-    res = mapper.usagesByIds(datasetKey, Lists.immutableListOf("45", "46"));
+    res = mapper.usagesByIds(datasetKey, Datasets.DRAFT_COL, Lists.immutableListOf("45", "46"));
     assertEquals(2, res.size());
     for (Duplicate.UsageDecision u : res) {
       assertFalse(u.getClassification().isEmpty());
@@ -117,7 +117,7 @@ public class DuplicateMapperTest {
 
   @Test
   public void usagesByIds() {
-    List<Duplicate.UsageDecision> res = mapper.usagesByIds(datasetKey, Lists.immutableListOf("55", "46"));
+    List<Duplicate.UsageDecision> res = mapper.usagesByIds(datasetKey, Datasets.DRAFT_COL, Lists.immutableListOf("55", "46"));
     assertEquals(2, res.size());
     for (Duplicate.UsageDecision u : res) {
       assertFalse(u.getClassification().isEmpty());
@@ -130,7 +130,7 @@ public class DuplicateMapperTest {
   public void duplicates() {
     Set<TaxonomicStatus> status = new HashSet<>();
     status.add(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
-    List<Duplicate.Mybatis> dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, NameCategory.BINOMIAL,
+    List<Duplicate.Mybatis> dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, null, NameCategory.BINOMIAL,
         Sets.newHashSet(Rank.SPECIES), status, false, null, null, null, false, Datasets.DRAFT_COL,
         new Page(0, 2));
     assertEquals(2, dups.size());
@@ -141,15 +141,15 @@ public class DuplicateMapperTest {
   
     // all accepted, so not different
     // https://github.com/Sp2000/colplus-backend/issues/456
-    dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, NameCategory.BINOMIAL,
+    dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, null, NameCategory.BINOMIAL,
         Sets.newHashSet(Rank.SPECIES), status, false, true, null, null, false, Datasets.DRAFT_COL,
         new Page(0, 2));
     assertEquals(2, dups.size());
-    dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, NameCategory.BINOMIAL,
+    dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, null, NameCategory.BINOMIAL,
         Sets.newHashSet(Rank.SPECIES), status, false, false, null, null, false, Datasets.DRAFT_COL,
         new Page(0, 2));
     assertEquals(0, dups.size());
-    dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, NameCategory.BINOMIAL,
+    dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, null, NameCategory.BINOMIAL,
         Sets.newHashSet(Rank.SPECIES), null, null, false, null, null, null, Datasets.DRAFT_COL,
         new Page(0, 2));
     assertEquals(1, dups.size());
@@ -157,11 +157,25 @@ public class DuplicateMapperTest {
     
     // https://github.com/Sp2000/colplus-backend/issues/457
     // Aspidoscelis deppii subsp. schizophorus
-    dups = mapper.duplicates(MatchingMode.STRICT, 3, datasetKey, null, NameCategory.TRINOMIAL,
+    dups = mapper.duplicates(MatchingMode.STRICT, 3, datasetKey, null, null, NameCategory.TRINOMIAL,
         Sets.newHashSet(Rank.SUBSPECIES), null, true, null, null, null, null, Datasets.DRAFT_COL,
         new Page(0, 5));
     assertEquals(1, dups.size());
-  }
+
+    dups = mapper.duplicates(MatchingMode.FUZZY, 2, datasetKey, 999, null, null,
+      null, null, true, null, null, null, null, null,
+      new Page(0, 5));
+    assertEquals(0, dups.size());
+
+    dups = mapper.duplicates(MatchingMode.FUZZY, 2, datasetKey, null, 999, null,
+      null, null, true, null, null, null, null, null,
+      new Page(0, 5));
+    assertEquals(0, dups.size());
+
+    dups = mapper.duplicates(MatchingMode.FUZZY, 2, datasetKey, 999, 999, null,
+      null, null, true, null, null, null, null, null,
+      new Page(0, 5));
+    assertEquals(0, dups.size());  }
   
   @Test
   public void duplicateNames() {
@@ -179,7 +193,7 @@ public class DuplicateMapperTest {
   
     // https://github.com/Sp2000/colplus-backend/issues/457
     // Achillea asplenifolia
-    dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, NameCategory.BINOMIAL,
+    dups = mapper.duplicates(MatchingMode.STRICT, 2, datasetKey, null, null, NameCategory.BINOMIAL,
         Sets.newHashSet(Rank.SPECIES_AGGREGATE), null, true, null, null, null, null, Datasets.DRAFT_COL,
         new Page(0, 5));
     assertEquals(1, dups.size());

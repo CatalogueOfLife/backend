@@ -316,8 +316,8 @@ public class EsNameUsage {
   @Override
   public int hashCode() {
     return Objects.hash(acceptedName, authorship, authorshipComplete, authorshipYear, classification, classificationIds, datasetKey,
-        decisions, documentId, fossil, issues, nameFields, nameId, nameIndexId, nameStrings, nomCode, nomStatus, payload, publishedInId,
-        publisherKey, rank, recent, scientificName, sectorDatasetKey, sectorKey, status, type, usageId, vernacularNames);
+        decisions, documentId, fossil, issues, nameFields, nameId, nameIndexId, nameStrings, nomCode, nomStatus, payload,
+        publishedInId, publisherKey, rank, recent, scientificName, sectorDatasetKey, sectorKey, status, type, usageId, vernacularNames);
   }
 
   @Override
@@ -335,11 +335,12 @@ public class EsNameUsage {
     return Objects.equals(acceptedName, other.acceptedName) && Objects.equals(authorship, other.authorship)
         && Objects.equals(authorshipComplete, other.authorshipComplete) && Objects.equals(authorshipYear, other.authorshipYear)
         && Objects.equals(classification, other.classification) && Objects.equals(classificationIds, other.classificationIds)
-        && Objects.equals(datasetKey, other.datasetKey) && Objects.equals(decisions, other.decisions)
-        && Objects.equals(documentId, other.documentId) && Objects.equals(fossil, other.fossil) && Objects.equals(issues, other.issues)
-        && Objects.equals(nameFields, other.nameFields) && Objects.equals(nameId, other.nameId)
-        && Objects.equals(nameIndexId, other.nameIndexId) && Objects.equals(nameStrings, other.nameStrings) && nomCode == other.nomCode
-        && nomStatus == other.nomStatus && Objects.equals(payload, other.payload) && Objects.equals(publishedInId, other.publishedInId)
+        && Objects.equals(datasetKey, other.datasetKey)
+        && Objects.equals(decisions, other.decisions) && Objects.equals(documentId, other.documentId)
+        && Objects.equals(fossil, other.fossil) && Objects.equals(issues, other.issues) && Objects.equals(nameFields, other.nameFields)
+        && Objects.equals(nameId, other.nameId) && Objects.equals(nameIndexId, other.nameIndexId)
+        && Objects.equals(nameStrings, other.nameStrings) && nomCode == other.nomCode && nomStatus == other.nomStatus
+        && Objects.equals(payload, other.payload) && Objects.equals(publishedInId, other.publishedInId)
         && Objects.equals(publisherKey, other.publisherKey) && rank == other.rank && Objects.equals(recent, other.recent)
         && Objects.equals(scientificName, other.scientificName) && Objects.equals(sectorDatasetKey, other.sectorDatasetKey)
         && Objects.equals(sectorKey, other.sectorKey) && status == other.status && type == other.type

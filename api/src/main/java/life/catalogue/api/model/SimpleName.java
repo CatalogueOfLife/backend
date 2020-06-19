@@ -1,13 +1,12 @@
 package life.catalogue.api.model;
 
-import java.util.Comparator;
-import java.util.Objects;
-
-import javax.validation.constraints.NotNull;
-
 import life.catalogue.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
+
+import javax.validation.constraints.NotNull;
+import java.util.Comparator;
+import java.util.Objects;
 
 /**
  * A small class representing a name with an id. It can act as a reference to a scientific name in a dataset. It combines the source ID with
@@ -55,6 +54,16 @@ public class SimpleName implements Comparable<SimpleName> {
   private String parent;
 
   public SimpleName() {}
+
+  public SimpleName(SimpleName other) {
+    this.id = other.id;
+    this.name = other.name;
+    this.authorship = other.authorship;
+    this.rank = other.rank;
+    this.code = other.code;
+    this.status = other.status;
+    this.parent = other.parent;
+  }
 
   public SimpleName(String id, String name, Rank rank) {
     this.id = id;

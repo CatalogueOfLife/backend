@@ -31,6 +31,8 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
    * Whether or not to zip the stringified NameUsageWrapper.
    */
   public static final boolean ZIP_PAYLOAD = true;
+  // See https://github.com/CatalogueOfLife/backend/issues/200
+  private static final boolean INCLUDE_VERNACLUAR_NAMES = false;
 
   /**
    * Serializes, deflates and base64-encodes a NameUsageWrapper. NB you can't store raw byte arrays in Elasticsearch. You must base64-encode
@@ -211,8 +213,12 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
       b.setDatasetKey(doc.getDatasetKey());
     }
     if (notEmpty(doc.getVernacularNames())) {
-      for (int i = 0; i < doc.getVernacularNames().size(); ++i) {
-        nuw.getVernacularNames().get(i).setName(doc.getVernacularNames().get(i));
+      if (INCLUDE_VERNACLUAR_NAMES) {
+        for (int i = 0; i < doc.getVernacularNames().size(); ++i) {
+          nuw.getVernacularNames().get(i).setName(doc.getVernacularNames().get(i));
+        }
+      } else {
+        nuw.setVernacularNames(Collections.EMPTY_LIST);
       }
     }
     if (notEmpty(doc.getDecisions())) {

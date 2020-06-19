@@ -4,6 +4,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.dao.NamesTreeDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
@@ -13,6 +14,7 @@ import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -24,11 +26,13 @@ import java.util.function.Consumer;
 public class SectorDelete extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorDelete.class);
   private Rank cutoffRank = Rank.SPECIES;
+  private final NamesTreeDao treeDao;
 
-  public SectorDelete(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService,
+  public SectorDelete(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, NamesTreeDao treeDao,
                       Consumer<SectorRunnable> successCallback,
                       BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     super(sectorKey, false, factory, indexService, successCallback, errorCallback, false, user);
+    this.treeDao = treeDao;
   }
   
   @Override
@@ -75,6 +79,13 @@ public class SectorDelete extends SectorRunnable {
       session.getMapper(SectorImportMapper.class).delete(sectorKey);
       session.getMapper(SectorMapper.class).delete(sectorKey);
       session.commit();
+      // remove metric files
+      try {
+        treeDao.deleteAll(NamesTreeDao.Context.SECTOR, sectorKey);
+      } catch (IOException e) {
+        LOG.error("Failed to delete metrics files for sector {}", sectorKey, e);
+      }
+
       LOG.info("Deleted sector {}", sectorKey);
     }
   }

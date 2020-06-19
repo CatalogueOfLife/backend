@@ -12,9 +12,10 @@ import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.db.tree.DiffService;
-import life.catalogue.db.tree.NamesDiff;
 import life.catalogue.dw.auth.Roles;
+import life.catalogue.match.RematcherBase;
+import life.catalogue.match.SectorRematchRequest;
+import life.catalogue.match.SectorRematcher;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,10 +25,10 @@ import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.io.IOException;
-import java.io.Reader;
 import java.util.List;
 import java.util.stream.Stream;
+
+import static life.catalogue.dao.NamesTreeDao.Context.SECTOR;
 
 @Path("/dataset/{datasetKey}/sector")
 @Produces(MediaType.APPLICATION_JSON)
@@ -39,15 +40,13 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   private final SectorDao dao;
   private final TaxonDao tdao;
   private final DatasetImportDao diDao;
-  private final DiffService diff;
   private final AssemblyCoordinator assembly;
 
-  public SectorResource(SectorDao dao, TaxonDao tdao, DatasetImportDao diDao, DiffService diffService, AssemblyCoordinator assembly) {
+  public SectorResource(SectorDao dao, TaxonDao tdao, DatasetImportDao diDao, AssemblyCoordinator assembly) {
     super(Sector.class, dao);
     this.dao = dao;
     this.diDao = diDao;
     this.tdao = tdao;
-    this.diff = diffService;
     this.assembly = assembly;
   }
 
@@ -130,32 +129,26 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
 
   @GET
   @Path("{id}/sync/{attempt}/tree")
+  @Produces({MediaType.TEXT_PLAIN})
   public Stream<String> getSyncAttemptTree(@PathParam("id") int id,
-                                             @PathParam("attempt") int attempt) throws IOException {
-    return diDao.getTreeDao().getSectorTree(id, attempt);
+                                             @PathParam("attempt") int attempt) {
+    return diDao.getTreeDao().getTree(SECTOR, id, attempt);
   }
   
   @GET
   @Path("{id}/sync/{attempt}/names")
+  @Produces({MediaType.TEXT_PLAIN})
   public Stream<String> getSyncAttemptNames(@PathParam("id") int id,
                                               @PathParam("attempt") int attempt) {
-    return diDao.getTreeDao().getSectorNames(id, attempt);
+    return diDao.getTreeDao().getNames(SECTOR, id, attempt);
   }
-  
+
   @GET
-  @Path("{id}/treediff")
-  public Reader diffTree(@PathParam("id") int id,
-                         @QueryParam("attempts") String attempts,
-                         @Context SqlSession session) throws IOException {
-    return diff.sectorTreeDiff(id, attempts);
-  }
-  
-  @GET
-  @Path("{id}/namesdiff")
-  public NamesDiff diffNames(@PathParam("id") int id,
-                             @QueryParam("attempts") String attempts,
-                             @Context SqlSession session) throws IOException {
-    return diff.sectorNamesDiff(id, attempts);
+  @Path("{id}/sync/{attempt}/ids")
+  @Produces({MediaType.TEXT_PLAIN})
+  public Stream<String> getSyncAttemptNameIds(@PathParam("id") int id,
+                                              @PathParam("attempt") int attempt) {
+    return diDao.getTreeDao().getNameIds(SECTOR, id, attempt);
   }
 
   @POST
@@ -165,6 +158,13 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
     tdao.updateAllSectorCounts(datasetKey);
     session.commit();
     return true;
+  }
+
+  @POST
+  @Path("/rematch")
+  public RematcherBase.MatchCounter rematch(@PathParam("datasetKey") int projectKey, SectorRematchRequest req, @Auth User user) {
+    req.setDatasetKey(projectKey);
+    return SectorRematcher.match(dao, req, user.getKey());
   }
 
 }

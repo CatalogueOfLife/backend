@@ -3,6 +3,7 @@ package life.catalogue.resources;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.lifecycle.Managed;
 import life.catalogue.WsServerConfig;
+import life.catalogue.admin.MetricsUpdater;
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
 import life.catalogue.assembly.AssemblyCoordinator;
@@ -16,7 +17,6 @@ import life.catalogue.img.LogoUpdateJob;
 import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexImpl;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.function.Supplier;
 
 @Path("/admin")
 @Produces(MediaType.APPLICATION_JSON)
@@ -38,8 +39,7 @@ public class AdminResource {
   private final ImageService imgService;
   private final NameUsageIndexService indexService;
   private final NameIndex ni;
-  private Thread indexingThread;
-  private Thread logoThread;
+  private Thread thread;
   // background processes
   private final ContinuousImporter continuousImporter;
   private final GbifSync gbifSync;
@@ -114,37 +114,33 @@ public class AdminResource {
   @POST
   @Path("/logo-update")
   public String updateAllLogos() {
-    if (logoThread != null) {
-      throw new IllegalStateException("Logo updater is already running");
+    return runJob("logo-updater", () -> LogoUpdateJob.updateAllAsync(factory, downloader, cfg.normalizer::scratchFile, imgService));
+  }
+
+  @POST
+  @Path("/metrics-update")
+  public String updateAllFileMetrics(@QueryParam("datasetKey") Integer datasetKey) {
+    return runJob("metrics-updater", () -> new MetricsUpdater(factory, cfg, datasetKey));
+  }
+
+  private String runJob(String threadName, Supplier<Runnable> supplier){
+    if (thread != null) {
+      throw new IllegalStateException("A background thread " + thread.getName() + " is already running");
     }
-    LogoUpdateJob job = LogoUpdateJob.updateAllAsync(factory, downloader, cfg.normalizer::scratchFile, imgService);
-    logoThread = new Thread(new LogoJob(job), "logo-updater");
-    logoThread.setDaemon(false);
-    logoThread.start();
-    return "Started Logo Updater";
+    Runnable job = supplier.get();
+    thread = new Thread(new JobWrapper(job), threadName);
+    thread.setDaemon(false);
+    thread.start();
+    return "Started " + job.getClass().getSimpleName();
   }
   
   @POST
   @Path("/reindex")
-  public void reindex(RequestScope req, @Auth User user) {
-    if (indexingThread != null) {
-      throw new IllegalStateException("Indexing is already running");
+  public String reindex(RequestScope req, @Auth User user) {
+    if (req == null || (req.getDatasetKey() == null && !req.getAll())) {
+      throw new IllegalArgumentException("Request parameter all or datasetKey must be provided");
     }
-    
-    if (req != null && (req.getDatasetKey() != null || req.getAll() != null && req.getAll())) {
-      IndexJob job = new IndexJob(req, user);
-      indexingThread = new Thread(job, "Es-Reindexer");
-      indexingThread.setDaemon(false);
-      indexingThread.start();
-    } else {
-      throw new IllegalArgumentException("Only all or datasetKey properties are supported");
-    }
-  }
-  
-  @POST
-  @Path("/rematch")
-  public void rematch(RequestScope req, @Auth User user) {
-    throw new NotImplementedException("Rematching names is not implemented yet");
+    return runJob("es-reindexer", () -> new IndexJob(req, user));
   }
   
   @POST
@@ -153,10 +149,10 @@ public class AdminResource {
     ((NameIndexImpl) ni).loadFromPgSinceStart();
   }
   
-  class LogoJob implements Runnable {
-    private final LogoUpdateJob job;
+  class JobWrapper implements Runnable {
+    private final Runnable job;
   
-    LogoJob(LogoUpdateJob job) {
+    JobWrapper(Runnable job) {
       this.job = job;
     }
   
@@ -165,9 +161,9 @@ public class AdminResource {
       try {
         job.run();
       } catch (Exception e){
-        LOG.error("Error updating all logos", e);
+        LOG.error("Error running job {}", job.getClass().getSimpleName(), e);
       } finally {
-        logoThread = null;
+        thread = null;
       }
     }
   }
@@ -194,8 +190,6 @@ public class AdminResource {
         }
       } catch (Exception e){
         LOG.error("Error reindexing", e);
-      } finally {
-        indexingThread = null;
       }
     }
   }

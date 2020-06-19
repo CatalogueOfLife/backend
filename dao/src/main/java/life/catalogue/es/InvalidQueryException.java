@@ -1,6 +1,6 @@
 package life.catalogue.es;
 
-public class InvalidQueryException extends EsException {
+public class InvalidQueryException extends IllegalArgumentException {
   
   public InvalidQueryException(String arg0) {
     super(arg0);

@@ -161,32 +161,27 @@ public class VocabResource {
 
   @GET
   @Path("{name}")
-  public List<Map<String, String>> values(@PathParam("name") String name) throws IllegalAccessException {
+  public List<Map<String, Object>> values(@PathParam("name") String name) throws IllegalAccessException {
     if (name != null && vocabs.containsKey(name.toLowerCase())) {
       return enumList(vocabs.get(name.toLowerCase()));
     }
     throw new NotFoundException();
   }
   
-  private static List<Map<String, String>> enumList(Class<Enum> clazz) throws IllegalAccessException {
-    List<Map<String, String>> values = new ArrayList<>();
+  private static List<Map<String, Object>> enumList(Class<Enum> clazz) throws IllegalAccessException {
+    List<Map<String, Object>> values = new ArrayList<>();
     for (Enum entry : clazz.getEnumConstants()) {
-      Map<String, String> map = new HashMap<>();
+      Map<String, Object> map = new HashMap<>();
       for (Field f : clazz.getDeclaredFields()) {
         if (!f.isEnumConstant() && !Modifier.isStatic(f.getModifiers()) && !f.getName().equals("$VALUES")) {
-          String sval = null;
           Object val = FieldUtils.readField(f, entry, true);
           if (val != null) {
-            if (f.getType().isEnum()) {
-              sval = PermissiveEnumSerde.enumValueName((Enum) val);
-            } else if (val instanceof Class) {
-                Class<?> cl = (Class<?>) val;
-                sval = cl.getSimpleName();
-            } else {
-              sval = val.toString();
+            if (val instanceof Class) {
+              Class<?> cl = (Class<?>) val;
+              val = cl.getSimpleName();
             }
           }
-          map.put(f.getName(), sval);
+          map.put(f.getName(), val);
         }
       }
       map.put("name", PermissiveEnumSerde.enumValueName(entry));

@@ -5,11 +5,14 @@ import com.zaxxer.hikari.HikariDataSource;
 import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.WsServerConfig;
 import life.catalogue.db.MybatisFactory;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public class MybatisBundle implements ConfiguredBundle<WsServerConfig> {
   
@@ -17,7 +20,8 @@ public class MybatisBundle implements ConfiguredBundle<WsServerConfig> {
   private static final String NAME = "mybatis";
   
   private SqlSessionFactory sqlSessionFactory = null;
-  
+  private HikariDataSource dataSource;
+
   /**
    * Creates the bundle's MyBatis session factory and registers health checks.
    *
@@ -36,14 +40,14 @@ public class MybatisBundle implements ConfiguredBundle<WsServerConfig> {
     // expose pool metrics
     hik.setMetricRegistry(environment.metrics());
     // create datasource
-    HikariDataSource ds = new HikariDataSource(hik);
+    dataSource = new HikariDataSource(hik);
     
     // manage datasource
-    ManagedHikariPool managedDs = new ManagedHikariPool(ds);
+    ManagedHikariPool managedDs = new ManagedHikariPool(dataSource);
     environment.lifecycle().manage(managedDs);
     
     // create mybatis sqlsessionfactory
-    sqlSessionFactory = MybatisFactory.configure(ds, environment.getName());
+    sqlSessionFactory = MybatisFactory.configure(dataSource, environment.getName());
     
     environment.healthChecks().register("db-ping",
         new SqlSessionFactoryHealthCheck(sqlSessionFactory));
@@ -57,6 +61,14 @@ public class MybatisBundle implements ConfiguredBundle<WsServerConfig> {
    */
   public SqlSessionFactory getSqlSessionFactory() {
     return sqlSessionFactory;
+  }
+
+  /**
+   * Returns a connection from the hikari pool.
+   * Make sure to close it to return it to the pool.
+   */
+  public Connection getConnection() throws SQLException {
+    return dataSource.getConnection();
   }
   
   /**

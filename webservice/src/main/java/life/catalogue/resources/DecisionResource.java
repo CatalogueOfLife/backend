@@ -2,22 +2,19 @@ package life.catalogue.resources;
 
 import com.google.common.base.Preconditions;
 import io.dropwizard.auth.Auth;
-import life.catalogue.api.model.User;
-import life.catalogue.api.model.EditorialDecision;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.ResultPage;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.dao.DecisionDao;
 import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.dw.auth.Roles;
-import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.match.DecisionRematchRequest;
+import life.catalogue.match.DecisionRematcher;
+import life.catalogue.match.RematcherBase;
 import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -43,22 +40,29 @@ public class DecisionResource extends AbstractDatasetScopedResource<Integer, Edi
     } else {
       req.setDatasetKey(datasetKey);
     }
-    req.setDatasetKey(datasetKey);
     return dao.search(req, page);
   }
 
   @DELETE
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void deleteByDataset(@PathParam("datasetKey") int catalogueKey,
+  public void deleteByDataset(@PathParam("datasetKey") int projectKey,
                               @QueryParam("datasetKey") Integer datasetKey,
                               @Context SqlSession session, @Auth User user) {
     Preconditions.checkNotNull(datasetKey, "datasetKey parameter is required");
     DecisionMapper mapper = session.getMapper(DecisionMapper.class);
     int counter = 0;
-    for (EditorialDecision d : mapper.processDecisions(catalogueKey, datasetKey)) {
+    for (EditorialDecision d : mapper.processDecisions(projectKey, datasetKey)) {
       dao.delete(d.getKey(), user.getKey());
       counter++;
     }
-    LOG.info("Deleted {} decisions for dataset {} in catalogue {}", counter, datasetKey, catalogueKey);
+    LOG.info("Deleted {} decisions for dataset {} in catalogue {}", counter, datasetKey, projectKey);
   }
+
+  @POST
+  @Path("/rematch")
+  public RematcherBase.MatchCounter rematch(@PathParam("datasetKey") int projectKey, DecisionRematchRequest req, @Auth User user) {
+    req.setDatasetKey(projectKey);
+    return DecisionRematcher.match(dao, req, user.getKey());
+  }
+
 }

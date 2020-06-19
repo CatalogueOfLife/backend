@@ -120,10 +120,10 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       incSectorCounts(session, old, -1);
     }
   }
-  
+
   @Override
-  protected void deleteAfter(DSID<Integer> key, Sector old, int user, SectorMapper mapper, SqlSession session) {
-    incSectorCounts(session, old, -1);
+  public int delete(DSID<Integer> key, int user) {
+    throw new UnsupportedOperationException("Sectors have to be deleted asynchronously through a SectorDelete job");
   }
   
   public static void incSectorCounts(SqlSession session, Sector s, int delta) {

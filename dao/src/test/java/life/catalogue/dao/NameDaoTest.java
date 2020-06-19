@@ -3,14 +3,14 @@ package life.catalogue.dao;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.es.NameUsageIndexService;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class NameDaoTest extends DaoTestBase {
 
-  NameDao dao = new NameDao(PgSetupRule.getSqlSessionFactory());
+  NameDao dao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
   
   @Test
   public void authorshipNormalization() throws Exception {

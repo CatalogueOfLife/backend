@@ -13,7 +13,6 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.util.PagingUtil;
-import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.assembly.AssemblyCoordinator;
@@ -23,6 +22,7 @@ import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.csv.ExcelCsvExtractor;
+import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
@@ -322,21 +322,11 @@ public class ImportManager implements Managed {
   }
 
   private Dataset validDataset(int datasetKey) {
+    if (datasetKey == Datasets.DRAFT_COL) {
+      throw new IllegalArgumentException("Dataset " + datasetKey + " is the CoL working draft and cannot be imported");
+    }
     try (SqlSession session = factory.openSession(true)) {
-      DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      Dataset d = dm.get(datasetKey);
-      if (d == null) {
-        throw NotFoundException.notFound(Dataset.class, datasetKey);
-      } else if (d.hasDeletedDate()) {
-        throw new IllegalArgumentException("Dataset " + datasetKey + " is deleted and cannot be imported");
-      } else if (d.getOrigin() == DatasetOrigin.RELEASED) {
-        throw new IllegalArgumentException("Dataset " + datasetKey + " is released and cannot be imported");
-      } else if (d.getKey() == Datasets.NAME_INDEX) {
-        throw new IllegalArgumentException("Dataset " + datasetKey + " is the names index and cannot be imported");
-      } else if (d.getKey() == Datasets.DRAFT_COL) {
-        throw new IllegalArgumentException("Dataset " + datasetKey + " is the CoL working draft and cannot be imported");
-      }
-      return d;
+      return DaoUtils.assertMutable(datasetKey, "imported", session);
     }
   }
 

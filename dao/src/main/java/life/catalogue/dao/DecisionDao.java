@@ -1,8 +1,5 @@
 package life.catalogue.dao;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.google.common.collect.Lists;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.EditorialDecision;
@@ -15,6 +12,9 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, DecisionMapper> {
 
@@ -40,12 +40,6 @@ public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, De
   @Override
   protected void createAfter(EditorialDecision obj, int user, DecisionMapper mapper, SqlSession session) {
     if (obj.getSubject().getId() != null) {
-      LOG.info("Starting ES sync on CREATE for {}: {} from dataset {} in catalogue {}",
-          obj.getMode(),
-          obj.getSubject(),
-          obj.getDatasetKey(),
-          obj.getSubjectDatasetKey()
-      );
       indexService.update(obj.getSubjectDatasetKey(), Lists.newArrayList(obj.getSubject().getId()));
     }
   }
@@ -56,12 +50,6 @@ public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, De
    */
   @Override
   protected void updateAfter(EditorialDecision obj, EditorialDecision old, int user, DecisionMapper mapper, SqlSession session) {
-    LOG.info("Starting ES sync on UPDATE for {}: {} from dataset {} in catalogue {}",
-        obj.getMode(),
-        obj.getSubject(),
-        obj.getDatasetKey(),
-        obj.getSubjectDatasetKey()
-    );
     final List<String> ids = new ArrayList<>();
     if (old != null && old.getSubject().getId() != null && !old.getSubject().getId().equals(obj.getSubject().getId())) {
       ids.add(old.getSubject().getId());
@@ -75,12 +63,6 @@ public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, De
   @Override
   protected void deleteAfter(DSID<Integer> key, EditorialDecision old, int user, DecisionMapper mapper, SqlSession session) {
     if (old != null && old.getSubject().getId() != null) {
-      LOG.info("Starting ES sync on DELETE for {}: {} from dataset {} in catalogue {}",
-          old.getMode(),
-          old.getSubject(),
-          old.getDatasetKey(),
-          old.getSubjectDatasetKey()
-      );
       indexService.update(old.getSubjectDatasetKey(), Lists.newArrayList(old.getSubject().getId()));
     }
   }

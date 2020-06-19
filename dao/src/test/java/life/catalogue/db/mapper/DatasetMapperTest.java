@@ -147,19 +147,24 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   }
 
   @Test
-  public void immutableOrigin() throws Exception {
+  public void immutableOriginAndSourceKey() throws Exception {
     Dataset d1 = create();
+    d1.setSourceKey(Datasets.DRAFT_COL);
+    d1.setOrigin(DatasetOrigin.RELEASED);
     mapper().create(d1);
     DatasetOrigin o = d1.getOrigin();
-    assertEquals(DatasetOrigin.EXTERNAL, o);
+    assertEquals(DatasetOrigin.RELEASED, o);
+    assertEquals((Integer)Datasets.DRAFT_COL, d1.getSourceKey());
 
     d1.setOrigin(DatasetOrigin.MANAGED);
+    d1.setSourceKey(null);
     mapper().update(d1);
 
     commit();
 
     Dataset d2 = mapper().get(d1.getKey());
-    assertEquals(DatasetOrigin.EXTERNAL, d2.getOrigin());
+    assertEquals(DatasetOrigin.RELEASED, d2.getOrigin());
+    assertEquals((Integer)Datasets.DRAFT_COL, d2.getSourceKey());
   }
 
   /**

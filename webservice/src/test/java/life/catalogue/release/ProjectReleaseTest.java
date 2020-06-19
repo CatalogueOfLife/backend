@@ -71,7 +71,7 @@ public class ProjectReleaseTest {
     try {
       buildRelease();
       fail("Parallel releases should not be allowed!");
-    } catch (IllegalStateException e) {
+    } catch (IllegalArgumentException e) {
       // expected
     }
     // wait for release to be done and run another one

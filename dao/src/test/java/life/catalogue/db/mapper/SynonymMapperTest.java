@@ -1,8 +1,5 @@
 package life.catalogue.db.mapper;
 
-import java.util.List;
-import java.util.UUID;
-
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Name;
@@ -12,8 +9,12 @@ import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.NameDao;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.es.NameUsageIndexService;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.*;
 
@@ -37,7 +38,7 @@ public class SynonymMapperTest extends CRUDDatasetScopedStringTestBase<Synonym, 
   
   @Before
   public void initMappers() {
-    nameDao = new NameDao(PgSetupRule.getSqlSessionFactory());
+    nameDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
     synonymMapper = testDataRule.getMapper(SynonymMapper.class);
     taxonMapper = testDataRule.getMapper(TaxonMapper.class);
     // prepare taxon to hook extensions to

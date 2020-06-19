@@ -6,6 +6,7 @@ import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.concurrent.NamedThreadFactory;
+import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
@@ -52,9 +53,9 @@ public class ReleaseManager {
     return execute(() -> duplicate(factory, indexService, diDao, datasetKey, user.getKey()));
   }
 
-  private Integer execute(Supplier<ProjectRunnable> jobSupplier) {
+  private Integer execute(Supplier<ProjectRunnable> jobSupplier) throws IllegalArgumentException {
     if (job != null) {
-      throw new IllegalStateException(job.getClass().getSimpleName() + " "+ job.getDatasetKey() + " to " + job.getNewDatasetKey() + " is already running");
+      throw new IllegalArgumentException(job.getClass().getSimpleName() + " "+ job.getDatasetKey() + " to " + job.getNewDatasetKey() + " is already running");
     }
 
     job = jobSupplier.get();
@@ -85,7 +86,7 @@ public class ReleaseManager {
    * @throws IllegalArgumentException if the dataset is not managed
    */
   public static ProjectRelease release(SqlSessionFactory factory, NameUsageIndexService indexService, AcExporter exporter, DatasetImportDao diDao, int projectKey, int userKey) {
-    Dataset release = createDataset(factory, projectKey, userKey, ProjectRelease::releaseInit);
+    Dataset release = createDataset(factory, projectKey, "release", userKey, ProjectRelease::releaseInit);
     return new ProjectRelease(factory, indexService, exporter, diDao, projectKey, release, userKey);
   }
 
@@ -96,32 +97,32 @@ public class ReleaseManager {
    * @throws IllegalArgumentException if the dataset is not managed
    */
   public static ProjectDuplication duplicate(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, int projectKey, int userKey) {
-    Dataset copy = createDataset(factory, projectKey, userKey, (d, ds) -> {
+    Dataset copy = createDataset(factory, projectKey, "duplicate", userKey, (d, ds) -> {
       d.setTitle(d.getTitle() + " copy");
     });
     return new ProjectDuplication(factory, indexService, diDao, projectKey, copy, userKey);
   }
 
-  private static Dataset createDataset(SqlSessionFactory factory, int projectKey, int userKey, BiConsumer<Dataset, DatasetSettings> modifier) {
+  private static Dataset createDataset(SqlSessionFactory factory, int projectKey, String action, int userKey, BiConsumer<Dataset, DatasetSettings> modifier) {
     if (!aquireLock()) {
-      throw new IllegalStateException("There is a running release already");
+      throw new IllegalArgumentException("There is a running " + action + " job already");
     }
 
     Dataset copy;
     try (SqlSession session = factory.openSession(true)) {
-      DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      // create new dataset based on current metadata
-      copy = dm.get(projectKey);
+      // validate project key
+      copy = DaoUtils.assertMutable(projectKey, action+"d", session);
       if (copy.getOrigin() != DatasetOrigin.MANAGED) {
-        throw new IllegalArgumentException("Only managed datasets can be duplicated, but origin is " + copy.getOrigin());
+        throw new IllegalArgumentException("Only managed datasets can be " + action + "d, but origin is " + copy.getOrigin());
       }
-
+      // create new dataset based on current metadata
       copy.setKey(null);
       copy.setSourceKey(projectKey);
       copy.setAlias(null);
       copy.setModifiedBy(userKey);
       copy.setCreatedBy(userKey);
 
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
       if (modifier != null) {
         DatasetSettings ds = dm.getSettings(projectKey);
         modifier.accept(copy, ds);
@@ -131,7 +132,7 @@ public class ReleaseManager {
       return copy;
 
     } catch (Exception e) {
-      LOG.error("Error creating new dataset for project {}", projectKey, e);
+      LOG.error("Error creating new {} dataset for project {}", action, projectKey, e);
       releaseLock();
       throw new RuntimeException(e);
     }

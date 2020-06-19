@@ -25,7 +25,13 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
    */
   Cursor<String> processIndexIds(@Param("datasetKey") int datasetKey,
                          @Nullable @Param("sectorKey") Integer sectorKey);
-  
+
+  /**
+   * Iterates over all names returning the concatenation of scientific name and authorship from the names table.
+   */
+  Cursor<String> processNameStrings(@Param("datasetKey") int datasetKey,
+                                 @Nullable @Param("sectorKey") Integer sectorKey);
+
   /**
    * Iterates over all names of a given dataset that have been modified since the given time and processes them with the supplied handler.
    */

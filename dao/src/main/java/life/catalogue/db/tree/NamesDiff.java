@@ -44,7 +44,11 @@ public class NamesDiff {
   public Set<String> getInserted() {
     return inserted;
   }
-  
+
+  public boolean isIdentical(){
+    return deleted.isEmpty() && inserted.isEmpty();
+  }
+
   @Override
   public String toString() {
     return "NamesDiff{" +

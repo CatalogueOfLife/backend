@@ -20,10 +20,20 @@
 			</resource>
 		</resources>
 		<testResources>
-			<testResource>
-				<directory>src/test/resources</directory>
-				<filtering>true</filtering>
-			</testResource>
+          <testResource>
+              <directory>src/test/resources</directory>
+              <filtering>true</filtering>
+              <includes>
+                <include>*.yaml</include>
+              </includes>
+          </testResource>
+          <testResource>
+            <directory>src/test/resources</directory>
+            <filtering>false</filtering>
+            <excludes>
+              <exclude>*.yaml</exclude>
+            </excludes>
+          </testResource>
 		</testResources>
 	</build>
 
@@ -83,6 +93,10 @@
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
 		</dependency>
+        <dependency>
+          <groupId>com.fasterxml.jackson.dataformat</groupId>
+          <artifactId>jackson-dataformat-xml</artifactId>
+        </dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>

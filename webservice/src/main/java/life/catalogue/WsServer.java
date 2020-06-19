@@ -25,7 +25,9 @@ import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.*;
-import life.catalogue.db.tree.DiffService;
+import life.catalogue.db.LookupTables;
+import life.catalogue.db.tree.DatasetDiffService;
+import life.catalogue.db.tree.SectorDiffService;
 import life.catalogue.dw.ManagedCloseable;
 import life.catalogue.dw.auth.AuthBundle;
 import life.catalogue.dw.cors.CorsBundle;
@@ -68,6 +70,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import javax.ws.rs.client.Client;
 import java.io.IOException;
+import java.sql.Connection;
 
 public class WsServer extends Application<WsServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(WsServer.class);
@@ -230,14 +233,21 @@ public class WsServer extends Application<WsServerConfig> {
     assembly.setImportManager(importManager);
 
     // diff
-    DiffService diff = new DiffService(getSqlSessionFactory(), diDao.getTreeDao());
-    env.healthChecks().register("diff", new DiffHealthCheck(diff));
+    DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), diDao.getTreeDao());
+    SectorDiffService sDiff = new SectorDiffService(getSqlSessionFactory(), diDao.getTreeDao());
+    env.healthChecks().register("dataset-diff", new DiffHealthCheck(dDiff));
+    env.healthChecks().register("sector-diff", new DiffHealthCheck(sDiff));
+
+    // update db lookups
+    try (Connection c = mybatis.getConnection()) {
+      LookupTables.recreateTables(c);
+    }
 
     // daos
     DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), new DownloadUtil(httpClient), imgService, diDao, indexService, cfg.normalizer::scratchFile, bus);
     DecisionDao decdao = new DecisionDao(getSqlSessionFactory(), indexService);
     EstimateDao edao = new EstimateDao(getSqlSessionFactory());
-    NameDao ndao = new NameDao(getSqlSessionFactory());
+    NameDao ndao = new NameDao(getSqlSessionFactory(), indexService);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory());
     SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService);
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory());
@@ -248,7 +258,9 @@ public class WsServer extends Application<WsServerConfig> {
     // resources
     j.register(new AdminResource(getSqlSessionFactory(), assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter, gbifSync));
     j.register(new DataPackageResource());
-    j.register(new DatasetResource(getSqlSessionFactory(), ddao, imgService, diDao, diff, assembly, releaseManager));
+    j.register(new DatasetResource(getSqlSessionFactory(), ddao, imgService, diDao, assembly, releaseManager));
+    j.register(new DatasetDiffResource(dDiff));
+    j.register(new DatasetImportResource(diDao));
     j.register(new DecisionResource(decdao));
     j.register(new DocsResource(cfg, OpenApiFactory.build(cfg, env)));
     j.register(new DuplicateResource());
@@ -259,13 +271,15 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new NameUsageResource(searchService, suggestService));
     j.register(new NameUsageSearchResource(searchService, suggestService));
     j.register(new ReferenceResource(rdao));
-    j.register(new SectorResource(secdao, tdao, diDao, diff, assembly));
+    j.register(new SectorResource(secdao, tdao, diDao, assembly));
+    j.register(new SectorDiffResource(sDiff));
     j.register(new SynonymResource(sdao));
     j.register(new TaxonResource(tdao));
     j.register(new TreeResource(tdao, trDao));
     j.register(new UserResource(auth.getJwtCodec(), udao));
     j.register(new VerbatimResource());
     j.register(new VocabResource());
+    j.register(new LegacyWebserviceResource(getSqlSessionFactory(), cfg));
 
     // parsers
     j.register(new NameParserResource(getSqlSessionFactory()));

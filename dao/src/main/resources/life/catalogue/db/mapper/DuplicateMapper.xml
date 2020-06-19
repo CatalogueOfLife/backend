@@ -69,13 +69,12 @@
       <property name="alias" value="ed."/>
       <property name="prefix" value="ed_"/>
     </include>
-    FROM
-    name_usage_${partition} u
-    JOIN name_${partition} n ON u.name_id=n.id
-    LEFT JOIN name_usage_${partition} a ON u.parent_id=a.id AND u.is_synonym
-    LEFT JOIN name_${partition} an ON a.name_id=an.id
-    LEFT JOIN reference_${partition} r ON n.published_in_id=r.id
-    LEFT JOIN decision ed ON ed.subject_id=u.id AND ed.subject_dataset_key=#{datasetKey}
+    FROM name_usage_${partition} u
+      JOIN name_${partition} n ON u.name_id=n.id
+      LEFT JOIN name_usage_${partition} a ON u.parent_id=a.id AND u.is_synonym
+      LEFT JOIN name_${partition} an ON a.name_id=an.id
+      LEFT JOIN reference_${partition} r ON n.published_in_id=r.id
+      LEFT JOIN decision ed ON ed.subject_id=u.id AND ed.subject_dataset_key=#{datasetKey} AND ed.dataset_key=#{projectKey}
     WHERE u.id IN (<foreach collection="ids" item="id" separator=",">#{id}</foreach>)
   </select>
 
@@ -160,7 +159,10 @@
     <if test="withDecision != null">
       LEFT JOIN decision ed ON ed.subject_id=u.id
       AND ed.subject_dataset_key=#{datasetKey}
-      AND ed.dataset_key=#{catalogueKey}
+      AND ed.dataset_key=#{projectKey}
+    </if>
+    <if test="sourceDatasetKey != null">
+      LEFT JOIN sector s ON s.id=u.sector_key
     </if>
     <where>
       <include refid="commonWhereClause"/>
@@ -179,6 +181,10 @@
     <if test="sectorKey != null">
       <!-- make sure at least one name comes from the requested sector -->
       AND array_agg(u.sector_key) @> array[${sectorKey}]
+    </if>
+    <if test="sourceDatasetKey != null">
+      <!-- make sure at least one name comes from the requested source dataset -->
+      AND array_agg(s.subject_dataset_key) @> array[${sourceDatasetKey}]
     </if>
     <if test="withDecision != null">
       AND count(DISTINCT ed.id)

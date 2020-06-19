@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchRequest> {
 
-    Sector getBySubject(@Param("datasetKey") int datasetKey,
+  Sector getBySubject(@Param("datasetKey") int datasetKey,
                       @Param("key") DSID<String> key);
   
   List<Sector> listByTarget(@Param("key") DSID<String> key);

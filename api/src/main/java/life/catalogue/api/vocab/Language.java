@@ -5,9 +5,12 @@ import life.catalogue.common.io.Resources;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.BufferedReader;
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -17,8 +20,10 @@ import java.util.stream.Collectors;
 public class Language implements Comparable<Language> {
   
   private static final Comparator<Language> NATURAL_ORDER = Comparator.comparing(Language::getCode);
-  public static String ISO_CODE_FILE = "vocab/language/iso-639-3_Name_Index_20190408.tab";
-  
+  public static String ISO_VERSION = "_20200130.tab";
+  public static String ISO_CODE_FILE = "vocab/language/iso-639-3"+ISO_VERSION;
+  public static String OVERRIDES = "vocab/language/iso-639-3-override.tsv";
+
   public static final Map<String, Language> LANGUAGES = ImmutableMap.copyOf(load());
 
   public static Collection<Language> values() {
@@ -27,22 +32,16 @@ public class Language implements Comparable<Language> {
 
   private static Map<String, Language> load() {
     // Id	Print_Name	Inverted_Name
-    BufferedReader br = Resources.reader(ISO_CODE_FILE);
-    // we first build a list of all languages as the ISO reference file contains duplicates with slightly different titles
     AtomicInteger num = new AtomicInteger();
-    List<Language> all = br.lines()
-        .filter(l -> num.incrementAndGet() > 1 && !l.startsWith("#") && !StringUtils.isBlank(l))
-        .map( line -> {
-          String[] row = line.split("\t");
-          return new Language(row[0], row[1]);
-        })
-        .collect(Collectors.toList());
-    Map<String, Language> langs = new HashMap<>();
-    for (Language l : all) {
-      if (!langs.containsKey(l.code)) {
-        langs.put(l.code, l);
-      }
-    }
+    Map<String, Language> langs = Resources.tabRows(ISO_CODE_FILE)
+        .filter(row -> num.incrementAndGet() > 1 && row != null && !StringUtils.isBlank(row[0]))
+        // Id	Part2B	Part2T	Part1	Scope	Language_Type	Ref_Name	Comment
+        .map(row -> new Language(row[0], row[6]))
+        .collect(Collectors.toMap(l -> l.code, Function.identity()));
+    // allow for custom overrides in sensitive political areas
+    Resources.tabRows(OVERRIDES).forEach( row -> {
+      langs.put(row[0], new Language(row[0], row[1]));
+    });
     return langs;
   }
 

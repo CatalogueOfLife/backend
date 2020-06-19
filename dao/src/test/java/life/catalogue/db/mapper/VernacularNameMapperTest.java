@@ -1,14 +1,13 @@
 package life.catalogue.db.mapper;
 
+import life.catalogue.api.RandomUtils;
+import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.VernacularName;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import life.catalogue.db.mapper.VernacularNameMapper;
-import life.catalogue.api.RandomUtils;
-import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.VernacularName;
 
 import static life.catalogue.api.TestEntityGenerator.newVernacularName;
 

@@ -1,27 +1,21 @@
 
 package life.catalogue.api.search;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
-import javax.validation.constraints.Size;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MultivaluedMap;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import life.catalogue.api.util.VocabularyUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.gbif.nameparser.api.Rank;
+
+import javax.validation.constraints.Size;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MultivaluedMap;
+import java.lang.reflect.Field;
+import java.util.*;
+
 import static life.catalogue.api.util.VocabularyUtils.lookupEnum;
 
 public class NameUsageSearchRequest extends NameUsageRequest {
@@ -47,7 +41,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   }
 
   public static enum SortBy {
-    NAME, TAXONOMIC, INDEX_NAME_ID
+    NAME, TAXONOMIC, INDEX_NAME_ID, NATIVE, RELEVANCE
   }
 
   /**
@@ -60,7 +54,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
    */
   public static final String IS_NULL = "_NULL";
 
-  private EnumMap<NameUsageSearchParameter, @Size(max = 1000) List<Object>> filters;
+  private EnumMap<NameUsageSearchParameter, @Size(max = 1000) Set<Object>> filters;
 
   @QueryParam("facet")
   private Set<NameUsageSearchParameter> facets;
@@ -69,7 +63,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   private Set<SearchContent> content;
 
   @QueryParam("sortBy")
-  private SortBy sortBy = SortBy.TAXONOMIC;
+  private SortBy sortBy;
 
   @QueryParam("highlight")
   private boolean highlight;
@@ -80,10 +74,16 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   @QueryParam("prefix")
   private boolean prefix;
 
+  @QueryParam("minRank")
+  private Rank minRank;
+
+  @QueryParam("maxRank")
+  private Rank maxRank;
+
   public NameUsageSearchRequest() {}
 
   @JsonCreator
-  public NameUsageSearchRequest(@JsonProperty("filter") Map<NameUsageSearchParameter, @Size(max = 1000) List<Object>> filters,
+  public NameUsageSearchRequest(@JsonProperty("filter") Map<NameUsageSearchParameter, @Size(max = 1000) Set<Object>> filters,
       @JsonProperty("facet") Set<NameUsageSearchParameter> facets,
       @JsonProperty("content") Set<SearchContent> content,
       @JsonProperty("sortBy") SortBy sortBy,
@@ -91,7 +91,9 @@ public class NameUsageSearchRequest extends NameUsageRequest {
       @JsonProperty("highlight") boolean highlight,
       @JsonProperty("reverse") boolean reverse,
       @JsonProperty("fuzzy") boolean fuzzy,
-      @JsonProperty("prefix") boolean prefix) {
+      @JsonProperty("prefix") boolean prefix,
+      @JsonProperty("minRank") Rank minRank,
+      @JsonProperty("maxRank") Rank maxRank) {
     this.filters = filters == null ? new EnumMap<>(NameUsageSearchParameter.class) : new EnumMap<>(filters);
     this.facets = facets == null ? EnumSet.noneOf(NameUsageSearchParameter.class) : EnumSet.copyOf(facets);
     this.content = content == null ? EnumSet.noneOf(SearchContent.class) : EnumSet.copyOf(content);
@@ -101,6 +103,8 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     this.reverse = reverse;
     this.fuzzy = fuzzy;
     this.prefix = prefix;
+    this.minRank = minRank;
+    this.maxRank = maxRank;
   }
 
   /**
@@ -128,6 +132,8 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     copy.reverse = reverse;
     copy.fuzzy = fuzzy;
     copy.prefix = prefix;
+    copy.minRank = minRank;
+    copy.maxRank = maxRank;
     return copy;
   }
 
@@ -202,34 +208,56 @@ public class NameUsageSearchRequest extends NameUsageRequest {
         && !prefix;
   }
 
-  public void addFilter(NameUsageSearchParameter param, Integer value) {
+  private static void nonNull(Object value) {
     Preconditions.checkNotNull(value, "Null values not allowed for non-strings");
+  }
+
+  public void clearFilter(NameUsageSearchParameter param) {
+    getFilters().remove(param);
+  }
+
+  public void addFilter(NameUsageSearchParameter param, Integer value) {
+    nonNull(value);
     addFilter(param, value.toString());
   }
 
   public void addFilter(NameUsageSearchParameter param, Enum<?> value) {
-    Preconditions.checkNotNull(value, "Null values not allowed for non-strings");
+    nonNull(value);
     addFilter(param, String.valueOf(value.ordinal()));
   }
 
   public void addFilter(NameUsageSearchParameter param, UUID value) {
-    Preconditions.checkNotNull(value, "Null values not allowed for non-strings");
+    nonNull(value);
     addFilter(param, String.valueOf(value));
   }
 
   private void addFilterValue(NameUsageSearchParameter param, Object value) {
-    getFilters().computeIfAbsent(param, k -> new ArrayList<>()).add(value);
+    getFilters().computeIfAbsent(param, k -> new LinkedHashSet<>()).add(value);
   }
 
+  /**
+   * Returns all values for the provided query parameter.
+   * 
+   * @param <T>
+   * @param param
+   * @return
+   */
   @SuppressWarnings("unchecked")
-  public <T> List<T> getFilterValues(NameUsageSearchParameter param) {
-    return (List<T>) getFilters().get(param);
+  public <T> Set<T> getFilterValues(NameUsageSearchParameter param) {
+    return (Set<T>) getFilters().get(param);
   }
 
+  /**
+   * Retuns the first value of the provided query parameter.
+   * 
+   * @param <T>
+   * @param param
+   * @return
+   */
   @SuppressWarnings("unchecked")
   public <T> T getFilterValue(NameUsageSearchParameter param) {
     if (hasFilter(param)) {
-      return (T) getFilters().get(param).get(0);
+      return (T) getFilters().get(param).iterator().next();
     }
     return null;
   }
@@ -252,23 +280,23 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     getFacets().add(facet);
   }
 
-  public EnumMap<NameUsageSearchParameter, List<Object>> getFilters() {
+  public EnumMap<NameUsageSearchParameter, Set<Object>> getFilters() {
     if (filters == null) {
-      return (filters = new EnumMap<>(NameUsageSearchParameter.class));
+      filters = new EnumMap<>(NameUsageSearchParameter.class);
     }
     return filters;
   }
 
   public Set<NameUsageSearchParameter> getFacets() {
     if (facets == null) {
-      return (facets = EnumSet.noneOf(NameUsageSearchParameter.class));
+      facets = EnumSet.noneOf(NameUsageSearchParameter.class);
     }
     return facets;
   }
 
   public Set<SearchContent> getContent() {
     if (content == null || content.isEmpty()) {
-      return (content = EnumSet.allOf(SearchContent.class));
+      content = EnumSet.allOf(SearchContent.class);
     }
     return content;
   }
@@ -316,6 +344,26 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     this.prefix = prefix;
   }
 
+  public Rank getMinRank() {
+    return minRank;
+  }
+
+  public void setMinRank(Rank minRank) {
+    this.minRank = minRank;
+  }
+
+  /**
+   * Filters usages by their rank, excluding all usages with a higher rank then the one given. E.g. maxRank=FAMILY will include usages of
+   * rank family and below (genus, species, etc), but exclude all orders and above.
+   */
+  public Rank getMaxRank() {
+    return maxRank;
+  }
+
+  public void setMaxRank(Rank maxRank) {
+    this.maxRank = maxRank;
+  }
+
   private static IllegalArgumentException illegalValueForParameter(NameUsageSearchParameter param, String value) {
     String err = String.format("Illegal value for parameter %s: %s", param, value);
     return new IllegalArgumentException(err);
@@ -325,7 +373,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result = prime * result + Objects.hash(content, facets, filters, highlight, reverse, sortBy, prefix);
+    result = prime * result + Objects.hash(content, facets, filters, highlight, reverse, sortBy, prefix, minRank, maxRank);
     return result;
   }
 
@@ -347,7 +395,9 @@ public class NameUsageSearchRequest extends NameUsageRequest {
         highlight == other.highlight &&
         reverse == other.reverse &&
         sortBy == other.sortBy &&
-        prefix == other.prefix;
+        prefix == other.prefix &&
+        minRank == other.minRank &&
+        maxRank == other.maxRank;
   }
 
 }

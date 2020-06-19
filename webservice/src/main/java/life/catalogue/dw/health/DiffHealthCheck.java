@@ -2,7 +2,7 @@ package life.catalogue.dw.health;
 
 
 import com.codahale.metrics.health.HealthCheck;
-import life.catalogue.db.tree.DiffService;
+import life.catalogue.db.tree.BaseDiffService;
 
 /**
  * Calls the name parser with a known binomial to check its health.
@@ -11,9 +11,9 @@ import life.catalogue.db.tree.DiffService;
  */
 public class DiffHealthCheck extends HealthCheck {
   
-  private final DiffService diff;
+  private final BaseDiffService diff;
   
-  public DiffHealthCheck(DiffService diff) {
+  public DiffHealthCheck(BaseDiffService diff) {
     this.diff = diff;
   }
   

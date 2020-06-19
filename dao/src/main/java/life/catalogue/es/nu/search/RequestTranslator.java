@@ -66,7 +66,10 @@ class RequestTranslator implements DownwardConverter<NameUsageSearchRequest, EsS
   }
 
   private static boolean mustGenerateFilters(NameUsageSearchRequest request) {
-    return request.getFilters().size() > 1 || (request.getFilters().size() == 1 && !request.hasFilter(CATALOGUE_KEY));
+    return request.getFilters().size() > 1 ||
+        request.getFilters().size() == 1 && !request.hasFilter(CATALOGUE_KEY) ||
+        request.getMinRank() != null ||
+        request.getMaxRank() != null;
   }
 
 }

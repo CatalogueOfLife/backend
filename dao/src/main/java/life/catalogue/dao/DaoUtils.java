@@ -1,7 +1,9 @@
 package life.catalogue.dao;
 
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.Datasets;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import org.apache.ibatis.session.SqlSession;
@@ -35,4 +37,25 @@ public class DaoUtils {
     session.getMapper(DatasetPartitionMapper.class).lockTables(datasetKey);
   }
 
+  /**
+   * Makes sure a given dataset key belongs to a dataset that can be modified,
+   * i.e. it exists, it is not deleted, released or the names index.
+   * @param datasetKey
+   * @param action for "cannot be xxx" for logging messages only
+   * @throws IllegalArgumentException if the dataset key should not be modified
+   */
+  public static Dataset assertMutable(int datasetKey, String action, SqlSession session) throws IllegalArgumentException {
+    DatasetMapper dm = session.getMapper(DatasetMapper.class);
+    Dataset d = dm.get(datasetKey);
+    if (d == null) {
+      throw NotFoundException.notFound(Dataset.class, datasetKey);
+    } else if (d.hasDeletedDate()) {
+      throw new IllegalArgumentException("Dataset " + datasetKey + " is deleted and cannot be " + action);
+    } else if (d.getOrigin() == DatasetOrigin.RELEASED) {
+      throw new IllegalArgumentException("Dataset " + datasetKey + " is released and cannot be " + action);
+    } else if (d.getKey() == Datasets.NAME_INDEX) {
+      throw new IllegalArgumentException("Dataset " + datasetKey + " is the names index and cannot be " + action);
+    }
+    return d;
+  }
 }

@@ -13,6 +13,7 @@ import life.catalogue.common.io.Resources;
 import org.junit.Test;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -39,7 +40,7 @@ public class DecisionMapperTest extends BaseDecisionMapperTest<EditorialDecision
     mapper().create(d2);
     commit();
   
-    DecisionSearchRequest req = DecisionSearchRequest.byCatalogue(catalogeKey);
+    DecisionSearchRequest req = DecisionSearchRequest.byProject(catalogeKey);
     assertEquals(2, mapper().search(req,null).size());
     
     req.setSubjectDatasetKey(subjectDatasetKey);
@@ -52,11 +53,23 @@ public class DecisionMapperTest extends BaseDecisionMapperTest<EditorialDecision
     req.setBroken(true);
     assertEquals(1, mapper().search(req,null).size());
   
-    req = DecisionSearchRequest.byCatalogue(catalogeKey);
+    req = DecisionSearchRequest.byProject(catalogeKey);
     req.setModifiedBy(d1.getCreatedBy());
     assertEquals(2, mapper().search(req,null).size());
   
     req.setModifiedBy(999);
+    assertEquals(0, mapper().search(req,null).size());
+
+    req = DecisionSearchRequest.byProject(catalogeKey);
+    req.setName("Harakiri");
+    assertEquals(0, mapper().search(req,null).size());
+
+    req.setName(d2.getSubject().getName().substring(0, 4).toUpperCase());
+    List<EditorialDecision> res = mapper().search(req,null);
+    assertEquals(1, res.size());
+    assertEquals(d2.getId(), res.get(0).getId());
+
+    req.setMode(EditorialDecision.Mode.REVIEWED);
     assertEquals(0, mapper().search(req,null).size());
   }
   

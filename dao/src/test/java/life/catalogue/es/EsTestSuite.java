@@ -12,14 +12,8 @@ import life.catalogue.es.nu.MultiValuedMapTest;
 import life.catalogue.es.nu.NameUsageIndexServiceIT;
 import life.catalogue.es.nu.NameUsageResponseConverterTest;
 import life.catalogue.es.nu.NameUsageWrapperConverterTest;
-import life.catalogue.es.nu.search.DecisionQueriesTest;
-import life.catalogue.es.nu.search.FacetsTranslatorTest;
-import life.catalogue.es.nu.search.NameUsageSearchHighlighterTest;
-import life.catalogue.es.nu.search.NameUsageSearchServiceFacetTest;
-import life.catalogue.es.nu.search.NameUsageSearchServiceTest;
-import life.catalogue.es.nu.search.NameUsageSearchParameterTest;
-import life.catalogue.es.nu.search.QSearchTests;
-import life.catalogue.es.nu.search.SortingTest;
+import life.catalogue.es.nu.QTranslationUtilsTest;
+import life.catalogue.es.nu.search.*;
 import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceTest;
 import life.catalogue.es.query.CollapsibleListTest;
 import life.catalogue.es.query.PrefixQueryTest;
@@ -39,6 +33,7 @@ import life.catalogue.es.query.TermQueryTest;
     Issue333.class,
     MappingFactoryTest.class,
     MappingUtilTest.class,
+    MinRankMaxRankTest.class,
     Misc.class,
     MultiValuedMapTest.class,
     NameUsageSearchHighlighterTest.class,
@@ -46,14 +41,17 @@ import life.catalogue.es.query.TermQueryTest;
     NameUsageSearchHighlighterTest.class,
     NameUsageSearchParameterTest.class,
     NameUsageIndexServiceIT.class,
+    NameUsageResponseConverterTest.class,
     NameUsageSearchServiceTest.class,
     NameUsageSearchServiceFacetTest.class,
     NameUsageSuggestionServiceTest.class,
     NameUsageWrapperConverterTest.class,
     PrefixQueryTest.class,
     QSearchTests.class,
+    QTranslationUtilsTest.class,
     QueryTest.class,
     RangeQueryTest.class,
+    RequestTranslatorTest.class,
     SortingTest.class,
     TermQueryTest.class
 })

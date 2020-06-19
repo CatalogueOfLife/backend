@@ -70,17 +70,15 @@
       </if>
       <if test="req.contributesTo != null">
         AND exists(
-        SELECT 1 FROM sector s JOIN dataset pr ON pr.key=s.dataset_key
-        WHERE s.dataset_key=#{req.contributesTo} AND s.subject_dataset_key=d.key AND pr.origin='MANAGED'::DATASETORIGIN
-        <include refid="PRIVATE">
-          <property name="alias" value="pr"/>
-        </include>
+          SELECT 1 FROM sector s JOIN dataset pr ON pr.key=s.dataset_key
+          WHERE s.dataset_key=#{req.contributesTo} AND s.subject_dataset_key=d.key
+          <include refid="PRIVATE"><property name="alias" value="pr"/></include>
         )
       </if>
       <if test="req.hasSourceDataset != null">
         AND exists(
-        SELECT 1 FROM sector s JOIN dataset pr ON pr.key=s.dataset_key
-        WHERE subject_dataset_key=#{req.hasSourceDataset} AND s.dataset_key=d.key AND pr.origin='MANAGED'::DATASETORIGIN
+          SELECT 1 FROM sector s JOIN dataset pr ON pr.key=s.dataset_key
+          WHERE subject_dataset_key=#{req.hasSourceDataset} AND s.dataset_key=d.key
         )
       </if>
       <if test="req.releasedFrom != null">
@@ -255,14 +253,14 @@
 
   <!--  makes sure to add creator to editors -->
   <insert id="create" parameterType="Dataset" useGeneratedKeys="true" keyProperty="key">
-    INSERT INTO dataset (<include refid="COLS"/>, origin, editors, created, modified)
-    VALUES (<include refid="PROPS"/>, #{origin}::DATASETORIGIN, array[#{createdBy}::int], now(), now())
+    INSERT INTO dataset (<include refid="COLS"/>, source_key, origin, editors, created, modified)
+    VALUES (<include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, array[#{createdBy}::int], now(), now())
   </insert>
 
   <!--  makes sure to add creator to editors -->
   <insert id="createWithKey" parameterType="Dataset" useGeneratedKeys="false">
-    INSERT INTO dataset (key,<include refid="COLS"/>, origin, editors, created, modified)
-    VALUES (#{key},<include refid="PROPS"/>, #{origin}::DATASETORIGIN, array[#{createdBy}::int], now(), now())
+    INSERT INTO dataset (key,<include refid="COLS"/>, source_key, origin, editors, created, modified)
+    VALUES (#{key},<include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, array[#{createdBy}::int], now(), now())
   </insert>
 
   <select id="getSettings" resultMap="settingsResultMap">

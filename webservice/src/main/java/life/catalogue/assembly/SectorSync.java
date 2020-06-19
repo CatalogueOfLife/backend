@@ -3,11 +3,13 @@ package life.catalogue.assembly;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.MatchingDao;
+import life.catalogue.dao.EstimateDao;
 import life.catalogue.dao.NamesTreeDao;
-import life.catalogue.dao.SubjectRematcher;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.match.EstimateRematcher;
+import life.catalogue.match.MatchingDao;
+import life.catalogue.match.RematchRequest;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
@@ -111,8 +113,8 @@ public class SectorSync extends SectorRunnable {
    * Rematch all broken estimates that fall into this sector
    */
   private void rematchEstimates() {
-    final SubjectRematcher rematcher = new SubjectRematcher(factory, catalogueKey, user.getKey());
-    rematcher.matchBrokenEstimates(catalogueKey);
+    RematchRequest req = new RematchRequest(catalogueKey, true);
+    EstimateRematcher.match(new EstimateDao(factory), req, user.getKey());
   }
 
   /**

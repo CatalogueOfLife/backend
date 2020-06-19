@@ -108,7 +108,7 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     addImport(s2, ImportState.FINISHED, LocalDateTime.of(2020, 1, 21, 12, 0, 0));
     commit();
 
-    SectorSearchRequest req = SectorSearchRequest.byCatalogue(targetDatasetKey);
+    SectorSearchRequest req = SectorSearchRequest.byProject(targetDatasetKey);
     req.setLastSync(LocalDate.of(2020, 1, 1));
     assertEquals(0, mapper().search(req, new Page()).size());
 

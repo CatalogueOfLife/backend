@@ -1,14 +1,13 @@
 package life.catalogue.api.model;
 
-import java.util.EnumSet;
-import java.util.Objects;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.Lifezone;
 import life.catalogue.api.vocab.TaxonomicStatus;
+
+import java.util.EnumSet;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * A single, persisted editorial decision about a single name/taxon
@@ -57,12 +56,22 @@ public class EditorialDecision extends DatasetScopedEntity<Integer> {
     UPDATE_RECURSIVE
   }
 
-  /**
-   * @return the id in the old legacy property "key"
-   */
-  @JsonProperty("key")
-  public Integer getKeyLEGACAY(){
-    return getId();
+  public EditorialDecision() {
+  }
+
+  public EditorialDecision(EditorialDecision other) {
+    super(other);
+    this.subject = new SimpleName(other.subject);
+    this.originalSubjectId = other.originalSubjectId;
+    this.subjectDatasetKey = other.subjectDatasetKey;
+    this.mode = other.mode;
+    this.name = other.name; // should we need to deep copy this too???
+    this.status = other.status;
+    this.extinct = other.extinct;
+    this.temporalRangeStart = other.temporalRangeStart;
+    this.temporalRangeEnd = other.temporalRangeEnd;
+    this.lifezones = other.lifezones == null ? null : EnumSet.copyOf(other.lifezones);
+    this.note = other.note;
   }
 
   public SimpleName getSubject() {

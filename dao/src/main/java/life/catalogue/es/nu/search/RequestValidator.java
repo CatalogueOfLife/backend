@@ -1,8 +1,9 @@
 package life.catalogue.es.nu.search;
 
-import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.USAGE_ID;
 import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.es.InvalidQueryException;
+
+import static life.catalogue.api.search.NameUsageSearchParameter.*;
 
 class RequestValidator {
 
@@ -13,23 +14,25 @@ class RequestValidator {
   }
 
   void validateRequest() {
-    NameUsageSearchRequest copy = request.copy();
-    if (copy.hasFilter(USAGE_ID)) {
-      if (!copy.hasFilter(DATASET_KEY)) {
+
+    if (request.hasFilter(USAGE_ID)) {
+      if (!request.hasFilter(DATASET_KEY)) {
         throw invalidSearchRequest("When specifying a usage ID, the dataset key must also be specified");
-      }
-      copy.removeFilter(DATASET_KEY);
-      copy.removeFilter(USAGE_ID);
-      if (!copy.getFilters().isEmpty()) {
+      } else if (request.getFilters().size() != 2) {
         throw invalidSearchRequest("No filters besides dataset key allowed when specifying usage ID");
       }
     }
-    // TODO: More validations ...
+    if (request.hasFilter(DECISION_MODE)) {
+      // require a project key
+      if (!request.hasFilter(CATALOGUE_KEY) || request.getFilterValues(CATALOGUE_KEY).size() > 1) {
+        throw invalidSearchRequest("When specifying a decision mode, a single catalogue key must also be specified");
+      }
+    }
   }
 
-  private static IllegalArgumentException invalidSearchRequest(String msg, Object... msgArgs) {
-    msg = "Bad search request. " + String.format(msg, msgArgs);
-    return new IllegalArgumentException(msg);
+  private static InvalidQueryException invalidSearchRequest(String msg, Object... msgArgs) {
+    msg = "Invalid search request. " + String.format(msg, msgArgs);
+    return new InvalidQueryException(msg);
   }
 
 }

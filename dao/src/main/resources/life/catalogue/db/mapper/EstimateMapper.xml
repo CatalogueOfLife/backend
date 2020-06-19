@@ -88,6 +88,9 @@
         <if test="req.rank != null">
           AND est.target_rank = #{req.rank}::RANK
         </if>
+        <if test="req.name != null">
+          AND est.target_name ILIKE '%${req.name}%'
+        </if>
         <if test="req.min != null">
           AND est.estimate &gt;= #{req.min}
         </if>

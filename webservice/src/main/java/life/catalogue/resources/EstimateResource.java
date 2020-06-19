@@ -1,19 +1,23 @@
 package life.catalogue.resources;
 
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-
-import life.catalogue.api.model.EditorialDecision;
+import io.dropwizard.auth.Auth;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.SpeciesEstimate;
-import life.catalogue.api.search.DecisionSearchRequest;
+import life.catalogue.api.model.User;
 import life.catalogue.api.search.EstimateSearchRequest;
 import life.catalogue.dao.EstimateDao;
-import org.apache.ibatis.session.SqlSessionFactory;
+import life.catalogue.match.EstimateRematcher;
+import life.catalogue.match.RematchRequest;
+import life.catalogue.match.RematcherBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 @Path("/dataset/{datasetKey}/estimate")
 @Produces(MediaType.APPLICATION_JSON)
@@ -34,5 +38,12 @@ public class EstimateResource extends AbstractDatasetScopedResource<Integer, Spe
   ResultPage<SpeciesEstimate> searchImpl(int datasetKey, EstimateSearchRequest req, Page page) {
     req.setDatasetKey(datasetKey);
     return dao.search(req, page);
+  }
+
+  @POST
+  @Path("/rematch")
+  public RematcherBase.MatchCounter rematch(@PathParam("datasetKey") int projectKey, RematchRequest req, @Auth User user) {
+    req.setDatasetKey(projectKey);
+    return EstimateRematcher.match(dao, req, user.getKey());
   }
 }

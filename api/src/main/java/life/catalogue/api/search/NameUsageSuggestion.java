@@ -1,12 +1,11 @@
 package life.catalogue.api.search;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import life.catalogue.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
+
+import java.util.Objects;
 
 /**
  * Represents a single suggestion coming back from the NameSuggestionService.
@@ -33,9 +32,9 @@ public class NameUsageSuggestion {
     if (vernacularName) {
       return String.format("%s (vernacular name of %s)", match, acceptedName);
     } else if (status == null) {
-      return match + " (nomen nudum)";
+      return match + " (bare name)";
     } else if (status.isSynonym()) {
-      return String.format("%s (synonym of %s)", match, acceptedName);
+      return String.format("%s (%s of %s)", match, status.name().toLowerCase(), acceptedName);
     }
     return match;
   }

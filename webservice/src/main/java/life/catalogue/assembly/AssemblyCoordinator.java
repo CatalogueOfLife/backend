@@ -57,7 +57,6 @@ public class AssemblyCoordinator implements Managed {
       this.future = future;
       this.delete = job instanceof SectorDeleteFull;
     }
-
   }
   
   public AssemblyCoordinator(SqlSessionFactory factory, DatasetImportDao diDao, NameUsageIndexService indexService, MetricRegistry registry) {
@@ -143,7 +142,7 @@ public class AssemblyCoordinator implements Managed {
   }
   
   public void sync(int catalogueKey, RequestScope request, User user) throws IllegalArgumentException {
-    if (request.getAll() != null && request.getAll()) {
+    if (request.getAll()) {
       syncAll(catalogueKey, user);
     } else {
       if (request.getSectorKey() != null) {
@@ -171,7 +170,7 @@ public class AssemblyCoordinator implements Managed {
   }
 
   public void deleteSector(int sectorKey, User user) throws IllegalArgumentException {
-    SectorDelete sd = new SectorDelete(sectorKey, factory, indexService, this::successCallBack, this::errorCallBack, user);
+    SectorDelete sd = new SectorDelete(sectorKey, factory, indexService, diDao.getTreeDao(), this::successCallBack, this::errorCallBack, user);
     queueJob(sd);
   }
   

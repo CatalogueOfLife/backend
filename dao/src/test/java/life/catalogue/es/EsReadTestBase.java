@@ -1,24 +1,28 @@
 package life.catalogue.es;
 
-import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.Taxon;
-import life.catalogue.api.search.*;
-import life.catalogue.es.nu.NameUsageWrapperConverter;
-import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
-import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
-import life.catalogue.es.query.EsSearchRequest;
-import life.catalogue.es.query.Query;
-import org.elasticsearch.client.RestClient;
-import org.junit.ClassRule;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
+import org.elasticsearch.client.RestClient;
+import org.junit.ClassRule;
+import life.catalogue.api.model.Name;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.Synonym;
+import life.catalogue.api.model.Taxon;
+import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.api.search.NameUsageSearchRequest.SortBy;
+import life.catalogue.api.search.NameUsageSearchResponse;
+import life.catalogue.api.search.NameUsageSuggestRequest;
+import life.catalogue.api.search.NameUsageSuggestResponse;
+import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.es.nu.NameUsageWrapperConverter;
+import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
+import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
+import life.catalogue.es.query.EsSearchRequest;
+import life.catalogue.es.query.Query;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -37,11 +41,11 @@ public class EsReadTestBase {
     return esSetupRule.getClient();
   }
 
-  // Useful for @Before methods
-  protected void destroyAndCreateIndex() {
+  // Useful for @Before or @BeforeClass methods
+  protected static void destroyAndCreateIndex() {
     try {
-      EsUtil.deleteIndex(getEsClient(), esSetupRule.getEsConfig().nameUsage);
-      EsUtil.createIndex(getEsClient(), EsNameUsage.class, getEsConfig().nameUsage);
+      EsUtil.deleteIndex(esSetupRule.getClient(), esSetupRule.getEsConfig().nameUsage);
+      EsUtil.createIndex(esSetupRule.getClient(), EsNameUsage.class, esSetupRule.getEsConfig().nameUsage);
     } catch (IOException e) {
       throw new EsException(e);
     }
@@ -55,6 +59,7 @@ public class EsReadTestBase {
     return index().name;
   }
 
+  // Useful for @Before methods
   protected void truncate() {
     EsUtil.truncate(getEsClient(), indexName());
   }
@@ -108,6 +113,10 @@ public class EsReadTestBase {
   }
 
   protected NameUsageSearchResponse search(NameUsageSearchRequest query) {
+    if (query.getSortBy() == null) {
+      // Unless we're specifically interested in sorting, sort the way we inserted the documents
+      query.setSortBy(SortBy.NATIVE);
+    }
     return new NameUsageSearchServiceEs(indexName(), getEsClient()).search(query, new Page(0, 1000));
   }
 
@@ -116,18 +125,35 @@ public class EsReadTestBase {
   }
 
   /**
-   * Creates the requested number of name usages with all fields required to allow them to be indexed without NPEs and other errors.
+   * Creates the requested number of name usages (all taxa) with just enough fields set to be indexed straight away without NPEs.
    * 
    * @param howmany
    * @return
    */
   protected List<NameUsageWrapper> createNameUsages(int howmany) {
-    return IntStream.rangeClosed(1, howmany).mapToObj(this::createNameUsage).collect(toList());
+    return IntStream.rangeClosed(1, howmany).mapToObj(i -> minimalTaxon()).collect(toList());
   }
 
-  protected NameUsageWrapper createNameUsage(int seqno) {
-    Taxon t = TestEntityGenerator.newTaxon(EsSetupRule.DATASET_KEY, "t" + seqno, "Abies alba"+seqno);
-    return new NameUsageWrapper(t);
+  /**
+   * Creates a new Taxon instance with just enough fields set to be indexed straight away without NPEs.
+   * 
+   * @return
+   */
+  protected NameUsageWrapper minimalTaxon() {
+    Taxon t = new Taxon();
+    t.setName(new Name());
+    NameUsageWrapper nuw = new NameUsageWrapper();
+    nuw.setUsage(t);
+    return nuw;
+  }
+
+  protected NameUsageWrapper minimalSynonym() {
+    Synonym s = new Synonym();
+    s.setName(new Name());
+    s.setAccepted((Taxon) minimalTaxon().getUsage());
+    NameUsageWrapper nuw = new NameUsageWrapper();
+    nuw.setUsage(s);
+    return nuw;
   }
 
 }

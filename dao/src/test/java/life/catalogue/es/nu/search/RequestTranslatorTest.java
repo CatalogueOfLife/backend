@@ -2,11 +2,13 @@ package life.catalogue.es.nu.search;
 
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.api.vocab.Datasets;
+import life.catalogue.es.query.Query;
 import org.junit.Test;
 
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 public class RequestTranslatorTest {
 
@@ -41,5 +43,19 @@ public class RequestTranslatorTest {
 
     req.addFilter(NameUsageSearchParameter.USAGE_ID, "abcdef");
     assertNotNull(RequestTranslator.generateQuery(req));
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/729
+   */
+  @Test
+  public void generateWithoutDecision() {
+    NameUsageSearchRequest req = new NameUsageSearchRequest();
+    req.addFilter(NameUsageSearchParameter.DATASET_KEY, 1010);
+    req.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, Datasets.DRAFT_COL);
+    req.addFilter(NameUsageSearchParameter.DECISION_MODE, NameUsageSearchRequest.IS_NULL);
+
+    Query q = RequestTranslator.generateQuery(req);
+    assertNotNull(q);
   }
 }

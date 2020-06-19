@@ -1,20 +1,5 @@
 package life.catalogue.es;
 
-import java.io.IOException;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.client.Request;
-import org.elasticsearch.client.Response;
-import org.elasticsearch.client.ResponseException;
-import org.elasticsearch.client.ResponseListener;
-import org.elasticsearch.client.RestClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.search.NameUsageSearchParameter;
@@ -23,13 +8,20 @@ import life.catalogue.es.ddl.IndexDefinition;
 import life.catalogue.es.ddl.MappingsFactory;
 import life.catalogue.es.ddl.MultiField;
 import life.catalogue.es.nu.NameUsageFieldLookup;
-import life.catalogue.es.query.BoolQuery;
-import life.catalogue.es.query.EsSearchRequest;
-import life.catalogue.es.query.MatchAllQuery;
-import life.catalogue.es.query.Query;
-import life.catalogue.es.query.SortField;
-import life.catalogue.es.query.TermQuery;
-import life.catalogue.es.query.TermsQuery;
+import life.catalogue.es.query.*;
+import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.client.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 import static life.catalogue.common.text.StringUtils.EMPTY_STRING_ARRAY;
 
 /**
@@ -170,8 +162,21 @@ public class EsUtil {
   }
 
   /**
+   * Removes the dataset corresponding to the provided key. You must still refresh the index for the changes to become visible.
+   *
+   * @throws IOException
+   */
+  public static int deleteBareNames(RestClient client, String index, int datasetKey) {
+    String statusField = NameUsageFieldLookup.INSTANCE.lookup(NameUsageSearchParameter.STATUS);
+    BoolQuery query = BoolQuery.withFilters(
+      new TermQuery("datasetKey", datasetKey),
+      new IsNullQuery(statusField));
+    return deleteByQuery(client, index, query);
+  }
+
+  /**
    * Removes the sector corresponding to the provided key. You must still refresh the index for the changes to become visible.
-   * 
+   *
    * @throws IOException
    */
   public static int deleteSector(RestClient client, String index, int sectorKey) {

@@ -10,6 +10,7 @@ import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.vocab.Datasets;
 import life.catalogue.dao.DecisionDao;
 import life.catalogue.dao.NameDao;
 import life.catalogue.dao.TaxonDao;
@@ -38,7 +39,7 @@ import static org.junit.Assert.assertNull;
  * them to be compared, but not much. (For example the recursive query we execute in Postgres, and the resulting sort order, cannot be
  * emulated with Elasticsearch.)
  */
-//@Ignore
+// @Ignore
 public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
 
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageIndexServiceIT.class);
@@ -57,7 +58,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
   }
 
   @Test
-  public void indexAll() throws IOException {
+  public void indexAll() {
     NameUsageIndexService.Stats stats = createIndexService().indexAll();
     assertEquals(4, stats.usages);
     assertEquals(1, stats.names);
@@ -75,18 +76,19 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     EditorialDecision decision = new EditorialDecision();
     decision.setSubject(SimpleName.of(edited));
     decision.setMode(Mode.UPDATE);
-    decision.setDatasetKey(edited.getDatasetKey());
+    decision.setDatasetKey(Datasets.DRAFT_COL);
     decision.setSubjectDatasetKey(edited.getDatasetKey());
     decision.setCreatedBy(edited.getCreatedBy());
     decision.setModifiedBy(edited.getCreatedBy());
     // Save the decision to postgres: triggers sync() on the index service
     DecisionDao dao = new DecisionDao(getSqlSessionFactory(), svc);
     dao.create(decision, 0);
-    
+
     NameUsageSearchRequest request = new NameUsageSearchRequest();
     request.addFilter(NameUsageSearchParameter.DECISION_MODE, Mode.UPDATE);
+    request.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, Datasets.DRAFT_COL);
     NameUsageSearchResponse res = search(request);
-    
+
     assertEquals(1, res.getResult().size());
     assertEquals(edited.getId(), res.getResult().get(0).getUsage().getId());
   }
@@ -107,7 +109,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     Taxon taxon = (Taxon) nuw.getUsage();
 
     // Insert that taxon into Postgres
-    NameDao ndao = new NameDao(getSqlSessionFactory());
+    NameDao ndao = new NameDao(getSqlSessionFactory(), NameUsageIndexService.passThru());
     DSID<String> dsid = ndao.create(taxon.getName(), USER_ID);
     LOG.info(">>>>>>> Name inserted into database. ID: {}\n", dsid.getId());
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, NameUsageIndexService.passThru());
@@ -155,27 +157,27 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     EditorialDecision decision = new EditorialDecision();
     decision.setSubject(SimpleName.of(edited));
     decision.setMode(Mode.UPDATE);
-    decision.setDatasetKey(edited.getDatasetKey());
+    decision.setDatasetKey(Datasets.DRAFT_COL);
     decision.setSubjectDatasetKey(edited.getDatasetKey());
     decision.setCreatedBy(edited.getCreatedBy());
     decision.setModifiedBy(edited.getCreatedBy());
     // Save the decision to postgres: triggers sync() on the index service
     DecisionDao dao = new DecisionDao(getSqlSessionFactory(), svc);
     int key = dao.create(decision, edited.getCreatedBy()).getId();
-    
+
     NameUsageSearchRequest request = new NameUsageSearchRequest();
     request.addFilter(NameUsageSearchParameter.DECISION_MODE, Mode.UPDATE);
+    request.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, Datasets.DRAFT_COL);
     NameUsageSearchResponse res = search(request);
-    
-    
+
     assertEquals(pgTaxa.get(0).getId(), res.getResult().get(0).getUsage().getId());
     decision.setId(key);
     // Change subject of the decision so now 2 taxa should be deleted first and then re-indexed.
     decision.setSubject(SimpleName.of(pgTaxa.get(1)));
     dao.update(decision, edited.getCreatedBy());
-    
-    res = search(request);   
-    
+
+    res = search(request);
+
     assertEquals(1, res.getResult().size()); // Still only 1 document with this decision key
     assertEquals(pgTaxa.get(1).getId(), res.getResult().get(0).getUsage().getId()); // But it's another document now
   }
@@ -191,19 +193,19 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     EditorialDecision decision = new EditorialDecision();
     decision.setSubject(SimpleName.of(edited));
     decision.setMode(Mode.UPDATE);
-    decision.setDatasetKey(edited.getDatasetKey());
+    decision.setDatasetKey(Datasets.DRAFT_COL);
     decision.setSubjectDatasetKey(edited.getDatasetKey());
     decision.setCreatedBy(edited.getCreatedBy());
     decision.setModifiedBy(edited.getCreatedBy());
     // Save the decision to postgres: triggers sync() on the index service
     DecisionDao dao = new DecisionDao(getSqlSessionFactory(), svc);
     DSID<Integer> key = dao.create(decision, edited.getCreatedBy());
-    
+
     NameUsageSearchRequest request = new NameUsageSearchRequest();
     request.addFilter(NameUsageSearchParameter.DECISION_MODE, Mode.UPDATE);
+    request.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, Datasets.DRAFT_COL);
     NameUsageSearchResponse res = search(request);
-    
-    
+
     assertEquals(pgTaxa.get(2).getId(), res.getResult().get(0).getUsage().getId());
     dao.delete(key, 0);
     res = query(new TermQuery("usageId", pgTaxa.get(2).getId()));

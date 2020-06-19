@@ -1,12 +1,9 @@
 package life.catalogue.es.query;
 
 import java.time.LocalDate;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-
-import life.catalogue.es.EsModule;
 import org.junit.Before;
 import org.junit.Test;
+import life.catalogue.es.EsModule;
 
 /*
  * Not real tests here; just to see whether or not the various types of queries are serialized as expected.
@@ -21,7 +18,7 @@ public class QueryTest {
   }
 
   @Test
-  public void testConstantScore() throws JsonProcessingException {
+  public void testConstantScore() {
     EsSearchRequest esr = new EsSearchRequest();
     ConstantScoreQuery csq = new ConstantScoreQuery(new TermQuery("genus", "Parus").withBoost(8.1));
     esr.setQuery(csq);
@@ -29,21 +26,21 @@ public class QueryTest {
   }
 
   @Test
-  public void testIsNotNull() throws JsonProcessingException {
+  public void testIsNotNull() {
     EsSearchRequest esr = new EsSearchRequest();
     esr.setQuery(new IsNotNullQuery("genus"));
     System.out.println(EsModule.writeDebug(esr));
   }
 
   @Test
-  public void testIsNull() throws JsonProcessingException {
+  public void testIsNull() {
     EsSearchRequest esr = new EsSearchRequest();
     esr.setQuery(new IsNullQuery("genus"));
     System.out.println(EsModule.writeDebug(esr));
   }
 
   @Test
-  public void testBool() throws JsonProcessingException {
+  public void testBool() {
     EsSearchRequest esr = new EsSearchRequest();
     BoolQuery bq = new BoolQuery().must(new IsNullQuery("genus"))
         .must(new EdgeNgramQuery("area", "Amsterdam"))
@@ -53,7 +50,7 @@ public class QueryTest {
   }
 
   @Test
-  public void testTerms() throws JsonProcessingException {
+  public void testTerms() {
     EsSearchRequest esr = new EsSearchRequest();
     BoolQuery bq = new BoolQuery().should(new TermsQuery("age", 1, 2, 3, 4, 5))
         .should(new TermsQuery("genus", "a", "b", "c", "d", "e"));
@@ -62,14 +59,14 @@ public class QueryTest {
   }
 
   @Test
-  public void testPrefix() throws JsonProcessingException {
+  public void testPrefix() {
     EsSearchRequest esr = new EsSearchRequest();
     esr.setQuery(new PrefixQuery("genus", "Parus"));
     System.out.println(EsModule.writeDebug(esr));
   }
 
   @Test
-  public void testMatchAll() throws JsonProcessingException {
+  public void testMatchAll() {
     EsSearchRequest esr = new EsSearchRequest();
     esr.setQuery(new MatchAllQuery());
     System.out.println(EsModule.writeDebug(esr));

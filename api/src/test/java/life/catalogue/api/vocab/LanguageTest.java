@@ -8,7 +8,7 @@ public class LanguageTest {
   
   @Test
   public void testBuild() {
-    assertTrue(Language.LANGUAGES.size() > 7800);
+    assertTrue(Language.LANGUAGES.size() > 7850);
     for (Language l : Language.LANGUAGES.values()) {
       assertNotNull(l.getCode());
       assertNotNull(l.getTitle());
@@ -18,5 +18,8 @@ public class LanguageTest {
     // check first and last code exists
     assertNotNull(Language.byCode("aaa"));
     assertNotNull(Language.byCode("zzj"));
+
+    // custom titles
+    assertEquals("Spanish", Language.byCode("spa").getTitle());
   }
 }

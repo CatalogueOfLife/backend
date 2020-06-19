@@ -172,7 +172,13 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   public void setRemarks(String remarks) {
     this.remarks = remarks;
   }
-  
+
+  public void addRemarks(String remarks) {
+    if (!StringUtils.isBlank(remarks)) {
+      this.remarks = this.remarks == null ? remarks.trim() : this.remarks + "; " + remarks.trim();
+    }
+  }
+
   public Integer getSectorKey() {
     return sectorKey;
   }

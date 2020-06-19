@@ -1,14 +1,14 @@
 package life.catalogue.dao;
 
-import java.io.BufferedReader;
-import java.util.Iterator;
-import java.util.stream.Stream;
-
 import life.catalogue.db.TestDataRule;
 import org.gbif.utils.file.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.BufferedReader;
+import java.util.Iterator;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertFalse;
 
@@ -31,15 +31,47 @@ public class NamesTreeDaoTest extends DaoTestBase {
     
     dao.getTreeDao().updateDatasetTree(11, 1);
   
-    Stream<String> lines = dao.getTreeDao().getDatasetTree(11, 1);
+    Stream<String> lines = dao.getTreeDao().getTree(NamesTreeDao.Context.DATASET, 11, 1);
     assertEquals(expected.lines(), lines);
   }
-  
+
+  @Test(expected = NamesTreeDao.AttemptMissingException.class)
+  public void missingFile() throws Exception {
+    dao.getTreeDao().getTree(NamesTreeDao.Context.DATASET, 11, 77);
+  }
+
   @Test
   public void roundtripNames() throws Exception {
     dao.getTreeDao().updateDatasetNames(11, 1);
-    
-    Stream<String> lines = dao.getTreeDao().getDatasetNames(11, 1);
+
+    Stream<String> lines = dao.getTreeDao().getNames(NamesTreeDao.Context.DATASET, 11, 1);
+    //lines.forEach(System.out::println);
+    assertEquals(("Alopsis\n" +
+      "Animalia\n" +
+      "Canidae\n" +
+      "Canis\n" +
+      "Canis adustus\n" +
+      "Canis argentinus\n" +
+      "Canis aureus\n" +
+      "Carnivora\n" +
+      "Chordata\n" +
+      "Felidae\n" +
+      "Felis rufus\n" +
+      "Lupulus\n" +
+      "Lynx\n" +
+      "Lynx lynx\n" +
+      "Lynx rufus\n" +
+      "Lynx rufus baileyi\n" +
+      "Lynx rufus gigas\n" +
+      "Mammalia\n" +
+      "Pardina\n" +
+      "Urocyon\n" +
+      "Urocyon citrinus\n" +
+      "Urocyon littoralis\n" +
+      "Urocyon minicephalus\n" +
+      "Urocyon webbi").lines(), lines);
+
+    lines = dao.getTreeDao().getNameIds(NamesTreeDao.Context.DATASET, 11, 1);
     // we have only NULL index ids in this test dataset :)
     assertFalse(lines.findFirst().isPresent());
   }
@@ -59,7 +91,13 @@ public class NamesTreeDaoTest extends DaoTestBase {
   
   public static <T> void assertEquals(Stream<T> expected, Stream<T> toTest) {
     Iterator<T> iter = expected.iterator();
-    toTest.forEach(x -> Assert.assertEquals(iter.next(), x));
+    toTest.forEach(x -> {
+      if (!iter.hasNext()) {
+        System.out.println("Unexpected extra content:");
+        System.out.println(x);
+      }
+      Assert.assertEquals(iter.next(), x);
+    });
     assertFalse(iter.hasNext());
   }
 }

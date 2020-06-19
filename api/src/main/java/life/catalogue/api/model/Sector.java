@@ -1,11 +1,11 @@
 package life.catalogue.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.api.vocab.EntityType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
+import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -53,12 +53,23 @@ public class Sector extends DatasetScopedEntity<Integer> {
     MERGE
   }
 
-  /**
-   * @return the id in the old legacy property "key"
-   */
-  @JsonProperty("key")
-  public Integer getKeyLEGACAY(){
-    return getId();
+  public Sector() {
+  }
+
+  public Sector(Sector other) {
+    super(other);
+    this.target = new SimpleName(other.target);
+    this.subjectDatasetKey = other.subjectDatasetKey;
+    this.subject = new SimpleName(other.subject);
+    this.originalSubjectId = other.originalSubjectId;
+    this.mode = other.mode;
+    this.syncAttempt = other.syncAttempt;
+    this.datasetImportAttempt = other.datasetImportAttempt;
+    this.code = other.code;
+    this.placeholderRank = other.placeholderRank;
+    this.ranks = other.ranks == null ? null : EnumSet.copyOf(other.ranks);
+    this.entities = other.entities == null ? null : EnumSet.copyOf(other.entities);
+    this.note = other.note;
   }
 
   public Integer getSubjectDatasetKey() {

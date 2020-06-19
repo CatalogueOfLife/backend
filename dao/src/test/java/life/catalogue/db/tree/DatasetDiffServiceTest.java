@@ -1,30 +1,27 @@
 package life.catalogue.db.tree;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.util.Collections;
-
-import org.apache.commons.io.IOUtils;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.common.io.Resources;
 import life.catalogue.dao.DaoTestBase;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.TestDataRule;
-import org.junit.Assert;
 import org.junit.Test;
+
+import java.io.File;
+import java.util.Collections;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
-public class DiffServiceTest extends DaoTestBase {
+public class DatasetDiffServiceTest extends DaoTestBase {
   static int attemptCnt;
-  DiffService diff;
+  DatasetDiffService diff;
   DatasetImportDao dao;
   
-  public DiffServiceTest() {
+  public DatasetDiffServiceTest() {
     super(TestDataRule.tree());
     dao = new DatasetImportDao(factory(), treeRepoRule.getRepo());
-    diff = new DiffService(factory(), dao.getTreeDao());
+    diff = new DatasetDiffService(factory(), dao.getTreeDao());
   }
   
   
@@ -47,26 +44,6 @@ public class DiffServiceTest extends DaoTestBase {
   @Test(expected = IllegalArgumentException.class)
   public void attemptParsingFailBadSequence() throws Exception {
     diff.parseAttempts("5..3", ()-> Collections.EMPTY_LIST);
-  }
-  
-  @Test
-  public void udiff() throws Exception {
-    final File f1 = Resources.toFile("trees/coldp.tree");
-    final File f2 = Resources.toFile("trees/coldp2.tree");
-    
-    BufferedReader br = diff.udiff(new int[]{1,2}, i -> {
-      switch (i) {
-        case 1: return f1;
-        case 2: return f2;
-      }
-      return null;
-    });
-  
-  
-    String version = IOUtils.toString(br);
-    System.out.println(version);
-    
-    Assert.assertTrue(version.startsWith("---"));
   }
   
   @Test

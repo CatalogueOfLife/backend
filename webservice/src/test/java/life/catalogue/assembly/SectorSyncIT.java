@@ -71,7 +71,7 @@ public class SectorSyncIT {
     // reset draft
     dataRule.truncateDraft();
     dataRule.loadData(true);
-    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory());
+    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
   }
   
@@ -174,7 +174,7 @@ public class SectorSyncIT {
   }
 
   private void delete(Sector s) {
-    SectorDelete sd = new SectorDelete(s.getId(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(),
+    SectorDelete sd = new SectorDelete(s.getId(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), treeDao,
       SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     System.out.println("\n*** SECTOR DELETION " + s.getKey() + " ***");
     sd.run();

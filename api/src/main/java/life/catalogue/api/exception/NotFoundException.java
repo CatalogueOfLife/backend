@@ -19,6 +19,11 @@ public class NotFoundException extends RuntimeException {
     this.key = key;
   }
 
+  public NotFoundException(Object key, String message, Throwable cause) {
+    super(message, cause);
+    this.key = key;
+  }
+
   public static NotFoundException notFound(String entityName, Object key) {
     return new NotFoundException(key, createMessage(entityName, key.toString()));
   }

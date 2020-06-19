@@ -84,6 +84,10 @@ public abstract class ProjectRunnable implements Runnable {
       LOG.info("Build metrics for dataset {}", newDatasetKey);
       updateState(ImportState.ANALYZING);
       metrics();
+
+      // subclass specifics
+      finalWork();
+
       try {
         // ES index
         LOG.info("Index dataset {} into ES", newDatasetKey);
@@ -93,8 +97,6 @@ public abstract class ProjectRunnable implements Runnable {
         // allow indexing to fail - sth we can do afterwards again
         LOG.error("Error indexing new dataset {} into ES. Source dataset={}", newDatasetKey, datasetKey, e);
       }
-
-      finalWork();
 
       updateState(ImportState.FINISHED);
       LOG.info("Successfully finished {} project {} into dataset {}", actionName,  datasetKey, newDatasetKey);
