@@ -15,6 +15,7 @@ import life.catalogue.db.mapper.SectorMapperTest;
 import life.catalogue.db.mapper.SynonymMapper;
 import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
+import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
@@ -193,10 +194,10 @@ public class TaxonDaoTest extends DaoTestBase {
   @Test
   public void create() {
     final int datasetKey = DATASET11.getKey();
-    // try minimal atomized version
+    // parsed
     Name n = new Name();
     n.setUninomial("Abies");
-    n.setScientificName("Abies Miller");
+    n.setCombinationAuthorship(Authorship.authors("Miller"));
     n.setRank(Rank.GENUS);
     Taxon t = new Taxon();
     t.setName(n);
@@ -214,15 +215,17 @@ public class TaxonDaoTest extends DaoTestBase {
     assertEquals(Rank.GENUS, t2.getName().getRank());
     assertEquals("Abies", t2.getName().getScientificName());
     assertEquals("Abies", t2.getName().getUninomial());
+    assertEquals("Miller", t2.getName().getAuthorship());
+    assertEquals(Authorship.authors("Miller"), t2.getName().getCombinationAuthorship());
+    assertTrue(t2.getName().getBasionymAuthorship().isEmpty());
     assertNull(t2.getName().getGenus());
     assertNull(t2.getName().getSpecificEpithet());
     assertEquals(t2.getName().getId(), t2.getName().getHomotypicNameId());
     assertNotNull(t2.getName().getId());
-    assertNull(t2.getName().getAuthorship());
     assertEquals(NameType.SCIENTIFIC, t2.getName().getType());
 
 
-    // try minimal atomized version
+    // unparsed
     n = new Name();
     n.setRank(Rank.SPECIES);
     n.setScientificName("Abies alba");
@@ -242,12 +245,13 @@ public class TaxonDaoTest extends DaoTestBase {
     assertEquals(USER_EDITOR.getKey(), t2.getName().getModifiedBy());
     assertEquals(Rank.SPECIES, t2.getName().getRank());
     assertEquals("Abies alba", t2.getName().getScientificName());
-    assertEquals("Miller, 1999", t2.getName().getAuthorship());
-    assertEquals("Miller", t2.getName().getCombinationAuthorship().getAuthors().get(0));
-    assertEquals("1999", t2.getName().getCombinationAuthorship().getYear());
+    assertEquals("Miller 1999", t2.getName().getAuthorship());
+    assertEquals(Authorship.yearAuthors("1999", "Miller"), t2.getName().getCombinationAuthorship());
+    assertTrue(t2.getName().getBasionymAuthorship().isEmpty());
     assertNull(t2.getName().getUninomial());
     assertEquals("Abies", t2.getName().getGenus());
     assertEquals("alba", t2.getName().getSpecificEpithet());
+    assertNull(t2.getName().getInfraspecificEpithet());
     assertEquals(t2.getName().getId(), t2.getName().getHomotypicNameId());
     assertNotNull(t2.getName().getId());
     assertEquals(NameType.SCIENTIFIC, t2.getName().getType());

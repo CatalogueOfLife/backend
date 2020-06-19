@@ -243,6 +243,10 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       if (n.getType() == null) {
         n.setType(NameType.SCIENTIFIC);
       }
+      n.rebuildScientificName();
+      if (n.getAuthorship() == null) {
+        n.rebuildAuthorship();
+      }
     }
   }
   
