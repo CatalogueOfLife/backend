@@ -23,7 +23,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -157,7 +157,7 @@ public class NameParserResource {
       LOG.debug("No names file uploaded");
       return Lists.newArrayList();
     }
-    BufferedReader reader = new BufferedReader(new InputStreamReader(file, Charset.forName("UTF8")));
+    BufferedReader reader = new BufferedReader(new InputStreamReader(file, StandardCharsets.UTF_8));
     return parse(code, rank, reader.lines());
   }
   

@@ -14,6 +14,30 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * Stream dataset exports to the user.
+ * If existing it uses preprepared files from the filesystem.
+ * For yet non existing files we should generate and store them for later reuse.
+ * If no format is given the original source is returned.
+ *
+ * Managed datasets can change data continously and we will need to:
+ *  a) never store any version and dynamically recreate them each time
+ *  b) keep a "dirty" flag that indicates the currently stored archive is not valid anymore because data has changed.
+ *     Any edit would have to raise the dirty flag which therefore must be kept in memory and only persisted if it has changed.
+ *     Creating an export would remove the flag - we will need a flag for each supported output format.
+ *
+ * Formats currently supported for the entire dataset and which are archived for reuse:
+ *  - ColDP
+ *  - ColDP simple (single TSV file)
+ *  - DwCA
+ *  - DwC simple (single TSV file)
+ *  - TextTree
+ *
+ *  Single file formats for dynamic exports using some filter (e.g. rank, rootID, etc)
+ *  - ColDP simple (single TSV file)
+ *  - DwC simple (single TSV file)
+ *  - TextTree
+ */
 @Path("/dataset/{datasetKey}/export")
 @Produces(MediaType.APPLICATION_JSON)
 public class ExportResource {
