@@ -175,7 +175,7 @@ public abstract class RematcherBase<
         for (NameUsage nu : matches){
           if (nu.getId().equals(originalId)) {
             LOG.info("{} {} from project {} matches multiple usages in dataset {} - original usage ID {} still matching to {}",
-              obj.getClass().getSimpleName(), obj.getKey(), projectKey, datasetKey, originalId, nu.getName().scientificNameAuthorship());
+              obj.getClass().getSimpleName(), obj.getKey(), projectKey, datasetKey, originalId, nu.getLabel());
             return nu;
           }
         }

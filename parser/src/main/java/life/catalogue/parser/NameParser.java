@@ -113,6 +113,12 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     }
   }
 
+  /**
+   * Copies all authorship properties but the full authorship "cache"
+   * @param pn
+   * @param pnu
+   * @param issues
+   */
   private static void copyToPNU(ParsedAuthorship pn, ParsedNameUsage pnu, IssueContainer issues){
     pnu.getName().setCombinationAuthorship(pn.getCombinationAuthorship());
     pnu.getName().setSanctioningAuthor(pn.getSanctioningAuthor());
@@ -178,7 +184,6 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       pnu = fromParsedName(n, PARSER_INTERNAL.parse(n.getScientificName(), n.getRank(), n.getCode()), issues);
       // try to add an authorship if not yet there
       parseAuthorshipIntoName(pnu, n.getAuthorship(), issues);
-      pnu.getName().rebuildScientificName();
 
     } catch (UnparsableNameException e) {
       pnu = new ParsedNameUsage();
@@ -243,6 +248,10 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     if (pn.isIncomplete()) {
       issues.addIssue(Issue.INCONSISTENT_NAME);
     }
+
+    // we rebuilt the caches as we dont have any original authorship yet - it all came in through the single scientificName
+    n.rebuildScientificName();
+    n.rebuildAuthorship();
     return pnu;
   }
 
