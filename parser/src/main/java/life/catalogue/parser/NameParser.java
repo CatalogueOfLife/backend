@@ -20,6 +20,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Wrapper around the GBIF Name parser to deal with the col Name class and API.
@@ -113,6 +115,12 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     }
   }
 
+  static <T> void setIfNull(T val, Supplier<T> getter, Consumer<T> setter) {
+    if (val != null && getter.get() == null) {
+      setter.accept(val);
+    }
+  }
+
   /**
    * Copies all authorship properties but the full authorship "cache"
    * @param pn
@@ -123,12 +131,16 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     pnu.getName().setCombinationAuthorship(pn.getCombinationAuthorship());
     pnu.getName().setSanctioningAuthor(pn.getSanctioningAuthor());
     pnu.getName().setBasionymAuthorship(pn.getBasionymAuthorship());
-    // propagate notes and unparsed bits found in authorship
-    pnu.getName().setNomenclaturalNote(pn.getNomenclaturalNote());
-    pnu.setExtinct(pn.isExtinct());
-    pnu.setPublishedIn(pn.getPublishedIn());
-    pnu.setTaxonomicNote(pn.getTaxonomicNote());
-    pnu.getName().setUnparsed(pn.getUnparsed());
+    // propagate notes and unparsed bits found in authorship if not already existing
+    setIfNull(pn.getNomenclaturalNote(), pnu.getName()::getNomenclaturalNote, pnu.getName()::setNomenclaturalNote);
+    setIfNull(pn.getPublishedIn(), pnu::getPublishedIn, pnu::setPublishedIn);
+    setIfNull(pn.getTaxonomicNote(), pnu::getTaxonomicNote, pnu::setTaxonomicNote);
+    if (pn.getUnparsed() != null) {
+      pnu.getName().setUnparsed(pn.getUnparsed());
+    }
+    if (pn.isExtinct()) {
+      pnu.setExtinct(pn.isExtinct());
+    }
     if (pn.isManuscript()) {
       pnu.getName().setNomStatus(NomStatus.MANUSCRIPT);
     }
