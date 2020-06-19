@@ -9,14 +9,16 @@ import java.util.Objects;
  */
 public class ParsedNameUsage {
   private Name name;
+  private boolean extinct;
   private String taxonomicNote;
   private String publishedIn;
 
   public ParsedNameUsage() {
   }
   
-  public ParsedNameUsage(Name name, String taxonomicNote, String publishedIn) {
+  public ParsedNameUsage(Name name, boolean extinct, String taxonomicNote, String publishedIn) {
     this.name = name;
+    this.extinct = extinct;
     this.taxonomicNote = taxonomicNote;
     this.publishedIn = publishedIn;
   }
@@ -28,7 +30,15 @@ public class ParsedNameUsage {
   public void setName(Name name) {
     this.name = name;
   }
-  
+
+  public boolean isExtinct() {
+    return extinct;
+  }
+
+  public void setExtinct(boolean extinct) {
+    this.extinct = extinct;
+  }
+
   public String getTaxonomicNote() {
     return taxonomicNote;
   }
@@ -56,13 +66,14 @@ public class ParsedNameUsage {
     if (this == o) return true;
     if (!(o instanceof ParsedNameUsage)) return false;
     ParsedNameUsage that = (ParsedNameUsage) o;
-    return Objects.equals(name, that.name) &&
+    return extinct == that.extinct &&
+      Objects.equals(name, that.name) &&
       Objects.equals(taxonomicNote, that.taxonomicNote) &&
       Objects.equals(publishedIn, that.publishedIn);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, taxonomicNote, publishedIn);
+    return Objects.hash(name, extinct, taxonomicNote, publishedIn);
   }
 }

@@ -340,14 +340,14 @@ public class InterpreterBase {
     Rank rank = SafeParser.parse(RankParser.PARSER, vrank).orElse(Rank.UNRANKED, Issue.RANK_INVALID, v);
     final NomCode code = SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse((NomCode) settings.getEnum(Setting.NOMENCLATURAL_CODE), Issue.NOMENCLATURAL_CODE_INVALID, v);
 
-    ParsedNameUsage nat;
+    ParsedNameUsage pnu;
 
     // we can get the scientific name in various ways.
     // we prefer already atomized names as we want to trust humans more than machines
     if (useAtoms) {
-      nat = new ParsedNameUsage();
+      pnu = new ParsedNameUsage();
       Name atom = new Name();
-      nat.setName(atom);
+      pnu.setName(atom);
 
       atom.setGenus(genus);
       atom.setInfragenericEpithet(infraGenus);
@@ -366,17 +366,17 @@ public class InterpreterBase {
       if (rank.otherOrUnranked()) {
         atom.setRank(RankUtils.inferRank(atom));
       }
-      atom.updateNameCache();
+      atom.rebuildScientificName();
 
       // parse the reconstructed name without authorship to detect name type and potential problems
-      Optional<ParsedNameUsage> natFromAtom = NameParser.PARSER.parse(atom.getLabel(), rank, code, v);
-      if (natFromAtom.isPresent()) {
-        final Name pn = natFromAtom.get().getName();
+      Optional<ParsedNameUsage> pnuFromAtom = NameParser.PARSER.parse(atom.getLabel(), rank, code, v);
+      if (pnuFromAtom.isPresent()) {
+        final Name pn = pnuFromAtom.get().getName();
 
         // check name type if its parsable - otherwise we should not use name atoms
         if (!pn.getType().isParsable()) {
           LOG.info("Atomized name {} appears to be of type {}. Use scientific name only", atom.getLabel(), pn.getType());
-          nat.setName(pn);
+          pnu.setName(pn);
         } else if (pn.isParsed()) {
           // if parsed compare with original atoms
           if (
@@ -397,7 +397,7 @@ public class InterpreterBase {
       }
 
     } else if (sciname != null) {
-      nat = NameParser.PARSER.parse(sciname, rank, code, v).get();
+      pnu = NameParser.PARSER.parse(sciname, rank, code, v).get();
 
     } else {
       LOG.info("No name given for {}", id);
@@ -405,50 +405,44 @@ public class InterpreterBase {
     }
 
     // try to add an authorship if not yet there
-    NameParser.PARSER.parseAuthorshipIntoName(nat, authorship, v);
+    NameParser.PARSER.parseAuthorshipIntoName(pnu, authorship, v);
 
     // common basics
-    nat.getName().setId(id);
-    nat.getName().setVerbatimKey(v.getId());
-    nat.getName().setOrigin(Origin.SOURCE);
-    nat.getName().setLink(parse(UriParser.PARSER, link).orNull());
-    nat.getName().setRemarks(remarks);
+    pnu.getName().setId(id);
+    pnu.getName().setVerbatimKey(v.getId());
+    pnu.getName().setOrigin(Origin.SOURCE);
+    pnu.getName().setLink(parse(UriParser.PARSER, link).orNull());
+    pnu.getName().setRemarks(remarks);
     // applies default dataset code if we cannot find or parse any
     // Always make sure this happens BEFORE we update the canonical scientific name
-    nat.getName().setCode(code);
+    pnu.getName().setCode(code);
 
     // name status can be explicitly given or as part of the nom notes from the authorship
     // dont store the explicit name status, it only remains as verbatim and interpreted data
     // see https://github.com/CatalogueOfLife/backend/issues/760
     NomStatus status           = parse(NomStatusParser.PARSER, nomStatus).orNull(Issue.NOMENCLATURAL_STATUS_INVALID, v);
-    NomStatus statusAuthorship = parse(NomStatusParser.PARSER, nat.getName().getNomenclaturalNote()).orNull(Issue.NOMENCLATURAL_STATUS_INVALID, v);
+    NomStatus statusAuthorship = parse(NomStatusParser.PARSER, pnu.getName().getNomenclaturalNote()).orNull(Issue.NOMENCLATURAL_STATUS_INVALID, v);
     if (statusAuthorship != null) {
       v.addIssue(Issue.AUTHORSHIP_CONTAINS_NOMENCLATURAL_NOTE);
     }
+    // both given? do they match up?
     if (status != null && statusAuthorship != null) {
-      // both given! do they match up?
-      if (status != statusAuthorship) {
-        if (!status.isCompatible(statusAuthorship)) {
-          v.addIssue(Issue.CONFLICTING_NOMENCLATURAL_STATUS);
-        }
-        status = status.mostDetailed(statusAuthorship);
-        if (status.isAvailable() == statusAuthorship.isAvailable()) {
-
-        }
+      if (status != statusAuthorship && !status.isCompatible(statusAuthorship)) {
+        v.addIssue(Issue.CONFLICTING_NOMENCLATURAL_STATUS);
       }
     }
-    nat.getName().setNomStatus(life.catalogue.api.util.ObjectUtils.coalesce(status, statusAuthorship));
+    pnu.getName().setNomStatus(life.catalogue.api.util.ObjectUtils.coalesce(status, statusAuthorship));
 
     // assign best rank
-    if (rank.notOtherOrUnranked() || nat.getName().getRank() == null) {
+    if (rank.notOtherOrUnranked() || pnu.getName().getRank() == null) {
       // TODO: check ACEF ranks...
-      nat.getName().setRank(rank);
+      pnu.getName().setRank(rank);
     }
 
     // finally update the scientificName with the canonical form if we can
-    nat.getName().updateNameCache();
+    pnu.getName().rebuildScientificName();
 
-    return Optional.of(nat);
+    return Optional.of(pnu);
   }
 
   public NeoUsage interpretUsage(ParsedNameUsage pnu, Term taxStatusTerm, TaxonomicStatus defaultStatus, VerbatimRecord v, Term... idTerms) {

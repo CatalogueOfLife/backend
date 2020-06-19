@@ -72,14 +72,15 @@ public class NameTest extends SerdeTestBase<Name> {
     n.setSpecificEpithet("alba");
     n.setNotho(NamePart.SPECIFIC);
     n.setRank(Rank.SUBSPECIES);
-    n.updateNameCache();
+    n.rebuildScientificName();
     assertEquals("Abies × alba ssp.", n.getScientificName());
     
     n.setInfraspecificEpithet("alpina");
     n.setCombinationAuthorship(Authorship.yearAuthors("1999", "L.","DC."));
     n.setBasionymAuthorship(Authorship.yearAuthors("1899","Lin.","Deca."));
     n.setNomenclaturalNote("nom.illeg.");
-    n.updateNameCache(); // first time we update authorship
+    n.rebuildScientificName();
+    n.rebuildAuthorship();
     assertEquals("Abies × alba subsp. alpina", n.getScientificName());
     assertEquals("(Lin. & Deca., 1899) L. & DC., 1999", n.getAuthorship());
   }
@@ -95,7 +96,8 @@ public class NameTest extends SerdeTestBase<Name> {
     n.setCombinationAuthorship(Authorship.yearAuthors("1999", "L.","DC."));
     n.setBasionymAuthorship(Authorship.yearAuthors("1899","Lin.","Deca."));
     n.setNomenclaturalNote("nom.illeg.");
-    n.updateNameCache(); // first time we update authorship
+    n.rebuildScientificName();
+    n.rebuildAuthorship();
 
     assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999 nom.illeg.", n.getLabel(false));
     assertEquals("<i>Abies × alba</i> subsp. <i>alpina</i> (Lin. & Deca., 1899) L. & DC., 1999 nom.illeg.", n.getLabel(true));

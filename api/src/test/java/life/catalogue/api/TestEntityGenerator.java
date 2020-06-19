@@ -135,7 +135,8 @@ public class TestEntityGenerator {
     NAME1.setRank(Rank.SPECIES);
     NAME1.setOrigin(Origin.SOURCE);
     NAME1.setType(NameType.SCIENTIFIC);
-    NAME1.updateNameCache();
+    NAME1.rebuildScientificName();
+    NAME1.rebuildAuthorship();
     NAME1.setPublishedInId(REF1.getId());
     NAME1.setPublishedInPage("712");
     NAME1.setCreatedBy(Users.DB_INIT);
@@ -149,7 +150,8 @@ public class TestEntityGenerator {
     NAME2.setRank(Rank.SPECIES);
     NAME2.setOrigin(Origin.SOURCE);
     NAME2.setType(NameType.SCIENTIFIC);
-    NAME2.updateNameCache();
+    NAME2.rebuildScientificName();
+    NAME2.rebuildAuthorship();
     NAME2.setPublishedInId(null);
     NAME2.setPublishedInPage(null);
     NAME2.setCreatedBy(Users.DB_INIT);
@@ -163,7 +165,8 @@ public class TestEntityGenerator {
     NAME3.setRank(Rank.SPECIES);
     NAME3.setOrigin(Origin.SOURCE);
     NAME3.setType(NameType.SCIENTIFIC);
-    NAME3.updateNameCache();
+    NAME3.rebuildScientificName();
+    NAME3.rebuildAuthorship();
     NAME3.setPublishedInId(null);
     NAME3.setPublishedInPage(null);
     NAME3.setCreatedBy(Users.DB_INIT);
@@ -177,7 +180,8 @@ public class TestEntityGenerator {
     NAME4.setRank(Rank.SPECIES);
     NAME4.setOrigin(Origin.SOURCE);
     NAME4.setType(NameType.SCIENTIFIC);
-    NAME4.updateNameCache();
+    NAME4.rebuildScientificName();
+    NAME4.rebuildAuthorship();
     NAME4.setPublishedInId(null);
     NAME4.setPublishedInPage(null);
     NAME4.setCreatedBy(Users.DB_INIT);
@@ -400,9 +404,11 @@ public class TestEntityGenerator {
     n.setNomStatus(NomStatus.ACCEPTABLE);
     n.setNomenclaturalNote("nom.illeg.");
     n.setUnparsed("debnnj$&%%");
-    n.updateNameCache();
     n.addRemark("my first note");
     n.addRemark("my second note");
+
+    n.rebuildScientificName();
+    n.rebuildAuthorship();
     return n;
   }
 
@@ -427,8 +433,10 @@ public class TestEntityGenerator {
     n.setType(NameType.SCIENTIFIC);
     n.setOrigin(Origin.SOURCE);
     n.setDatasetKey(datasetKey);
-    n.updateNameCache();
     n.applyUser(Users.TESTER);
+
+    n.rebuildScientificName();
+    n.rebuildAuthorship();
     return n;
   }
 

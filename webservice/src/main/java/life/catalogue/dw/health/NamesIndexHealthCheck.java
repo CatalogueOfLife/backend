@@ -23,7 +23,7 @@ public class NamesIndexHealthCheck extends HealthCheck {
     name.setUninomial("Animalia");
     name.setRank(Rank.KINGDOM);
     name.setType(NameType.SCIENTIFIC);
-    name.updateNameCache();
+    name.rebuildScientificName();
   }
   
   @Override

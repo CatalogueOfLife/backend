@@ -63,7 +63,7 @@ public class NameParserTest {
           .species("Acranthera", "virescens")
           .basAuthors(null, "Ridl.")
           .type(NameType.SCIENTIFIC)
-          .remarks("ined.")
+          .nomNote("ined.")
           .status(NomStatus.MANUSCRIPT)
           .nothingElse();
   }
@@ -96,7 +96,7 @@ public class NameParserTest {
         .species("Acranthera", "virescens")
         .basAuthors(null, "Ridl.")
         .status(NomStatus.MANUSCRIPT)
-        .remarks("ined.")
+        .nomNote("ined.")
         .nothingElse();
 
     assertName("Alstonia vieillardii Van Heurck & Müll.Arg.", "Alstonia vieillardii")
@@ -132,7 +132,7 @@ public class NameParserTest {
         .infraSpecies("Baccharis", "microphylla", Rank.VARIETY, "rhomboidea")
         .combAuthors(null, "Sch.Bip.")
         .combExAuthors("Wedd.")
-        .remarks("nom.nud.")
+        .nomNote("nom.nud.")
         .nothingElse();
     
     assertName("Achillea millefolium subsp. pallidotegula B. Boivin var. pallidotegula", "Achillea millefolium var. pallidotegula")
@@ -311,6 +311,8 @@ public class NameParserTest {
       RANK,
       TYPE,
       STATUS,
+      NOMNOTE,
+      UNPARSED,
       REMARKS
     }
     
@@ -357,8 +359,14 @@ public class NameParserTest {
             case STATUS:
               assertNull(n.getNomStatus());
               break;
+            case NOMNOTE:
+              assertNull(n.getNomenclaturalNote());
+              break;
+            case UNPARSED:
+              assertNull(n.getUnparsed());
+              break;
             case REMARKS:
-              assertNull(n.getRemarks());
+              assertNull(n.getUnparsed());
           }
         }
       }
@@ -439,7 +447,7 @@ public class NameParserTest {
       assertEquals(Lists.newArrayList(authors), n.getBasionymAuthorship().getExAuthors());
       return add(NP.EXBAS);
     }
-  
+
     NameAssertion type(NameType type) {
       assertEquals(type, n.getType());
       return add(NP.TYPE);
@@ -454,6 +462,15 @@ public class NameParserTest {
       assertEquals(remarks, n.getRemarks());
       return add(NP.REMARKS);
     }
-  
+
+    NameAssertion nomNote(String nomNote) {
+      assertEquals(nomNote, n.getNomenclaturalNote());
+      return add(NP.NOMNOTE);
+    }
+
+    NameAssertion unparsed(String unparsed) {
+      assertEquals(unparsed, n.getUnparsed());
+      return add(NP.UNPARSED);
+    }
   }
 }

@@ -34,7 +34,8 @@ public class TaxonTest extends SerdeTestBase<Taxon> {
     n.setCombinationAuthorship(Authorship.yearAuthors("1999", "L.","DC."));
     n.setBasionymAuthorship(Authorship.yearAuthors("1899","Lin.","Deca."));
     n.setNomenclaturalNote("nom.illeg.");
-    n.updateNameCache(); // first time we update authorship
+    n.rebuildScientificName();
+    n.rebuildAuthorship();
 
     Taxon t = new Taxon();
     t.setName(n);

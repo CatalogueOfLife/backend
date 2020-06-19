@@ -238,17 +238,12 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   
   static void parseName(Name n) {
     if (!n.isParsed()) {
-      //TODO: pass in real verbatim record
-      VerbatimRecord v = new VerbatimRecord();
-      final String authorship = n.getAuthorship();
-      NameParser.PARSER.parse(n, v);
-      
+      NameParser.PARSER.parse(n, IssueContainer.VOID);
     } else {
       if (n.getType() == null) {
         n.setType(NameType.SCIENTIFIC);
       }
     }
-    n.updateNameCache();
   }
   
   @Override

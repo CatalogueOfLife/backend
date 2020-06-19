@@ -168,7 +168,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
         n.setRank(r);
         n.setType(NameType.SCIENTIFIC);
         n.setSectorKey(sector.getId());
-        n.updateNameCache();
+        n.rebuildScientificName();
         RanKnName rnn = new RanKnName(r, n.getScientificName());
         // did we create that implicit name before?
         if (implicits.containsKey(rnn)) {

@@ -107,19 +107,49 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
               pnu.getName(), prevAuthorship, pnAuthorship.authorshipComplete());
         }
       }
-
-      pnu.getName().setCombinationAuthorship(pnAuthorship.getCombinationAuthorship());
-      pnu.getName().setSanctioningAuthor(pnAuthorship.getSanctioningAuthor());
-      pnu.getName().setBasionymAuthorship(pnAuthorship.getBasionymAuthorship());
-      // propagate notes and unparsed bits found in authorship
-      pnu.getName().setNomenclaturalNote(pnAuthorship.getNomenclaturalNote());
-      pnu.getName().setUnparsed(pnAuthorship.getUnparsed());
-      pnu.setTaxonomicNote(pnAuthorship.getTaxonomicNote());
+      copyToPNU(pnAuthorship, pnu, v);
       // use original authorship string
       pnu.getName().setAuthorship(authorship);
     }
   }
-  
+
+  private static void copyToPNU(ParsedAuthorship pn, ParsedNameUsage pnu, IssueContainer issues){
+    pnu.getName().setCombinationAuthorship(pn.getCombinationAuthorship());
+    pnu.getName().setSanctioningAuthor(pn.getSanctioningAuthor());
+    pnu.getName().setBasionymAuthorship(pn.getBasionymAuthorship());
+    // propagate notes and unparsed bits found in authorship
+    pnu.getName().setNomenclaturalNote(pn.getNomenclaturalNote());
+    pnu.setExtinct(pn.isExtinct());
+    pnu.setPublishedIn(pn.getPublishedIn());
+    pnu.setTaxonomicNote(pn.getTaxonomicNote());
+    pnu.getName().setUnparsed(pn.getUnparsed());
+    if (pn.isManuscript()) {
+      pnu.getName().setNomStatus(NomStatus.MANUSCRIPT);
+    }
+
+    // issues
+    switch (pn.getState()) {
+      case PARTIAL:
+        issues.addIssue(Issue.PARTIALLY_PARSABLE_NAME);
+        break;
+      case NONE:
+        issues.addIssue(Issue.UNPARSABLE_NAME);
+        break;
+    }
+
+    if (pn.isDoubtful()) {
+      issues.addIssue(Issue.DOUBTFUL_NAME);
+    }
+    // translate warnings into issues
+    for (String warn : pn.getWarnings()) {
+      if (WARN_TO_ISSUE.containsKey(warn)) {
+        issues.addIssue(WARN_TO_ISSUE.get(warn));
+      } else {
+        LOG.debug("Unknown parser warning: {}", warn);
+      }
+    }
+  }
+
   /**
    * Fully parses a name using #parse(String, Rank) but converts names that throw a UnparsableException
    * into ParsedName objects with the scientific name, rank and name type given.
@@ -148,8 +178,8 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       pnu = fromParsedName(n, PARSER_INTERNAL.parse(n.getScientificName(), n.getRank(), n.getCode()), issues);
       // try to add an authorship if not yet there
       parseAuthorshipIntoName(pnu, n.getAuthorship(), issues);
-      pnu.getName().updateNameCache();
-      
+      pnu.getName().rebuildScientificName();
+
     } catch (UnparsableNameException e) {
       pnu = new ParsedNameUsage();
       pnu.setName(n);
@@ -186,68 +216,36 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    * Uses an existing name instance to populate from a ParsedName instance
    */
   private static ParsedNameUsage fromParsedName(Name n, ParsedName pn, IssueContainer issues) {
-    updateNamefromParsedName(n, pn, issues);
+    // if we parsed strains we do not keep them in the Name class
+    if (!StringUtils.isBlank(pn.getStrain())) {
+      if (pn.getUnparsed() == null) {
+        pn.setState(ParsedName.State.PARTIAL);
+        pn.setUnparsed(pn.getStrain());
+      }
+    }
+
     ParsedNameUsage pnu = new ParsedNameUsage();
     pnu.setName(n);
-    pnu.setTaxonomicNote(pn.getTaxonomicNote());
-    pnu.setPublishedIn(pn.getPublishedIn());
-    return pnu;
-  }
-
-  /**
-   * Uses an existing name instance and populates it from a ParsedName instance
-   */
-  private static void updateNamefromParsedName(Name n, ParsedName pn, IssueContainer issues) {
+    copyToPNU(pn, pnu, issues);
+    // name specifics
     n.setUninomial(pn.getUninomial());
     n.setGenus(pn.getGenus());
     n.setInfragenericEpithet(pn.getInfragenericEpithet());
     n.setSpecificEpithet(pn.getSpecificEpithet());
     n.setInfraspecificEpithet(pn.getInfraspecificEpithet());
     n.setCultivarEpithet(pn.getCultivarEpithet());
-    n.setCombinationAuthorship(pn.getCombinationAuthorship());
-    n.setBasionymAuthorship(pn.getBasionymAuthorship());
-    n.setSanctioningAuthor(pn.getSanctioningAuthor());
     n.setRank(pn.getRank());
     n.setCode(pn.getCode());
     n.setCandidatus(pn.isCandidatus());
     n.setNotho(pn.getNotho());
     n.setType(pn.getType());
-    // issues
-    switch (pn.getState()) {
-      case PARTIAL:
-        issues.addIssue(Issue.PARTIALLY_PARSABLE_NAME);
-        break;
-      case NONE:
-        issues.addIssue(Issue.UNPARSABLE_NAME);
-        break;
-      case COMPLETE:
-        if (!StringUtils.isBlank(pn.getStrain())) {
-          issues.addIssue(Issue.PARTIALLY_PARSABLE_NAME);
-        }
-        break;
-    }
-    if (pn.isDoubtful()) {
-      issues.addIssue(Issue.DOUBTFUL_NAME);
-    }
+
     if (pn.isIncomplete()) {
       issues.addIssue(Issue.INCONSISTENT_NAME);
     }
-    // translate warnings into issues
-    for (String warn : pn.getWarnings()) {
-      if (WARN_TO_ISSUE.containsKey(warn)) {
-        issues.addIssue(WARN_TO_ISSUE.get(warn));
-      } else {
-        LOG.debug("Unknown parser warning: {}", warn);
-      }
-    }
-    if (pn.isManuscript()) {
-      n.setNomStatus(NomStatus.MANUSCRIPT);
-    }
-    //TODO: try to convert nom notes to enumeration. Only add to remarks for now
-    // can be sth like: nom.illeg., in Döring et all  reference
-    n.setRemarks(pn.getNomenclaturalNote());
+    return pnu;
   }
-  
+
   @Override
   public void close() throws Exception {
     if (PARSER_INTERNAL != null) {

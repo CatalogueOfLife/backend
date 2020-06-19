@@ -331,16 +331,24 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   }
   
   /**
-   * Updates the scientific name and authorship properties
-   * based on the parsed properties for parsed names only.
+   * Updates the scientific name based on the parsed properties for parsed names only.
    */
-  public void updateNameCache() {
+  public void rebuildScientificName() {
     if (isParsed()) {
       this.scientificName = NameFormatter.scientificName(this);
+    }
+  }
+
+  /**
+   * Updates the authorship based on the parsed properties for parsed names only.
+   * Use this with care as we want to keep the original authorship.
+   */
+  public void rebuildAuthorship() {
+    if (isParsed()) {
       this.authorship = NameFormatter.authorship(this);
     }
   }
-  
+
   public String getPublishedInId() {
     return publishedInId;
   }
