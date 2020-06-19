@@ -46,45 +46,44 @@
     </include>
   </sql>
 
-
-  <sql id="COLS">
-    dataset_key,
-    sector_key,
-    <!-- from COLS_COPY shared part -->
+  <sql id="COLS_COPY">
     verbatim_key,
     parent_id,
     name_id,
     status,
     is_synonym,
     origin,
-    according_to,
+    name_phrase,
+    according_to_id,
+    reference_ids,
+    remarks,
+    created_by,
+    modified_by,
+    <!-- from TAXON -->
+    scrutinizer,
+    scrutinizer_date,
+    extinct,
+    temporal_range_start,
+    temporal_range_end,
+    lifezones,
+    link
+  </sql>
+
+  <sql id="COLS">
+    dataset_key,
+    sector_key,
+    verbatim_key,
+    parent_id,
+    name_id,
+    status,
+    is_synonym,
+    origin,
+    name_phrase,
+    according_to_id,
     reference_ids,
     remarks,
     created_by,
     modified_by
-  </sql>
-
-  <sql id="COLS_COPY">
-    <!-- shared -->
-    ${alias}verbatim_key,
-    ${alias}parent_id,
-    ${alias}name_id,
-    ${alias}status,
-    ${alias}is_synonym,
-    ${alias}origin,
-    ${alias}name_phrase,
-    ${alias}according_to_id,
-    ${alias}reference_ids,
-    ${alias}remarks,
-    ${alias}created_by,
-    ${alias}modified_by,
-    <!-- from TAXON extras -->
-    ${alias}according_to_date,
-    ${alias}extinct,
-    ${alias}temporal_range_start,
-    ${alias}temporal_range_end,
-    ${alias}lifezones,
-    ${alias}link
   </sql>
 
   <sql id="PROPS">
