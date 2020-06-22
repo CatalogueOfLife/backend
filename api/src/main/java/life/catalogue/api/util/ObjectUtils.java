@@ -1,5 +1,7 @@
 package life.catalogue.api.util;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  *
  */
@@ -51,5 +53,16 @@ public class ObjectUtils {
     }
     return obj;
   }
-  
+
+  public static boolean anyNonBlank(final String... values) {
+    if (values != null) {
+      for (final String val : values) {
+        if (!StringUtils.isBlank(val)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
 }

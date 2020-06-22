@@ -142,7 +142,7 @@
   <select id="countTreatment" resultType="integer">
     SELECT count(*)
     FROM treatment_${datasetKey} x
-      JOIN name_usage_${datasetKey} t ON t.id=x.taxon_id
+      JOIN name_usage_${datasetKey} t ON t.id=x.id
     WHERE t.sector_key=${sectorKey}
   </select>
 

@@ -1,11 +1,13 @@
 package life.catalogue.common.tax;
 
 import life.catalogue.api.model.Name;
+import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class NameFormatterTest {
 
@@ -24,6 +26,16 @@ public class NameFormatterTest {
     assertEquals("Spirulina subsalsa subsalsa", NameFormatter.scientificName(n));
     n.setCode(NomCode.BACTERIAL);
     assertEquals("Spirulina subsalsa subsalsa", NameFormatter.scientificName(n));
+  }
+
+  @Test
+  public void authors() throws Exception {
+    Name n = new Name();
+    n.setCombinationAuthorship(Authorship.yearAuthors("1967", "Morrison", "Hendrix"));
+    n.setBasionymAuthorship(Authorship.yearAuthors("1923", "D.Reinhardt"));
+
+    assertNull(n.getAuthorship());
+    assertEquals("(D.Reinhardt, 1923) Morrison & Hendrix, 1967", NameFormatter.authorship(n));
   }
 
 }

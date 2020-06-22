@@ -88,15 +88,15 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    * Populates the parsed authorship of a given name instance by parsing a single authorship string.
    * Only parses the authorship if the name itself is already parsed.
    */
-  public void parseAuthorshipIntoName(ParsedNameUsage pnu, String authorship, IssueContainer v){
+  public void parseAuthorshipIntoName(ParsedNameUsage pnu, final String originalAuthorship, IssueContainer v){
     // try to add an authorship if not yet there
-    if (pnu.getName().isParsed() && !Strings.isNullOrEmpty(authorship)) {
-      ParsedAuthorship pnAuthorship = parseAuthorship(authorship).orElseGet(() -> {
-        LOG.info("Unparsable authorship {}", authorship);
+    if (pnu.getName().isParsed() && !Strings.isNullOrEmpty(originalAuthorship)) {
+      ParsedAuthorship pnAuthorship = parseAuthorship(originalAuthorship).orElseGet(() -> {
+        LOG.info("Unparsable authorship {}", originalAuthorship);
         v.addIssue(Issue.UNPARSABLE_AUTHORSHIP);
         // add the full, unparsed authorship in this case to not lose it
         ParsedName pn = new ParsedName();
-        pn.getCombinationAuthorship().getAuthors().add(authorship);
+        pn.getCombinationAuthorship().getAuthors().add(originalAuthorship);
         return pn;
       });
 
@@ -111,6 +111,26 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       }
       copyToPNU(pnAuthorship, pnu, v);
       // use original authorship string
+      String authorship = originalAuthorship;
+      if (pnAuthorship.getTaxonomicNote() != null) {
+        // we need to exclude the taxonomic bits from the authorship, otherwise we render them twice
+        int start = originalAuthorship.toLowerCase().indexOf(pnAuthorship.getTaxonomicNote().toLowerCase());
+        if (start > 0) {
+          StringBuilder sb = new StringBuilder();
+          String s1 = originalAuthorship.substring(0, start).trim();
+          if (!Strings.isNullOrEmpty(s1)) {
+            sb.append(s1);
+          }
+          String s2 = originalAuthorship.substring(start+pnAuthorship.getTaxonomicNote().length()).trim();
+          if (!Strings.isNullOrEmpty(s2)) {
+            if (sb.length()>0) {
+              sb.append(" ");
+            }
+            sb.append(s2);
+          }
+          authorship = sb.toString();
+        }
+      }
       pnu.getName().setAuthorship(authorship);
     }
   }
@@ -193,9 +213,10 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     ParsedNameUsage pnu;
     Timer.Context ctx = timer == null ? null : timer.time();
     try {
+      final String authorship = n.getAuthorship();
       pnu = fromParsedName(n, PARSER_INTERNAL.parse(n.getScientificName(), n.getRank(), n.getCode()), issues);
       // try to add an authorship if not yet there
-      parseAuthorshipIntoName(pnu, n.getAuthorship(), issues);
+      parseAuthorshipIntoName(pnu, authorship, issues);
 
     } catch (UnparsableNameException e) {
       pnu = new ParsedNameUsage();

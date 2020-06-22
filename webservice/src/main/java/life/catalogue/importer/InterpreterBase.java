@@ -3,13 +3,13 @@ package life.catalogue.importer;
 import com.google.common.collect.Lists;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.*;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.reference.ReferenceFactory;
 import life.catalogue.parser.*;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
@@ -333,7 +333,7 @@ public class InterpreterBase {
                                                  String nomCode, String nomStatus,
                                                  String link, String remarks, VerbatimRecord v) {
     // this can be wrong in some cases, e.g. in DwC records often scientificName and just a genus is given
-    final boolean isAtomized = ObjectUtils.anyNotNull(genus, infraGenus, species, infraspecies);
+    final boolean isAtomized = ObjectUtils.anyNonBlank(genus, infraGenus, species, infraspecies);
     final boolean useAtoms   = isAtomized && (preferAtoms || sciname == null);
 
     // parse rank & code as they improve name parsing
