@@ -34,8 +34,10 @@ class SearchHitConverter implements UpwardConverter<SearchHit<EsNameUsage>, Name
     } else {
       suggestion.setMatch(doc.getScientificName());
     }
-    if (doc.getStatus() != null && doc.getStatus().isSynonym()) {
+    if (doc.getAcceptedName() != null) {
       suggestion.setAcceptedName(doc.getAcceptedName());
+    } else {
+      suggestion.setAcceptedName(doc.getScientificName());
     }
     suggestion.setUsageId(doc.getUsageId());
     suggestion.setNomCode(doc.getNomCode());
