@@ -145,6 +145,7 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
     Preconditions.checkArgument(!status.isSynonym(), "Status needs to be a taxon status");
     final Synonym s = getSynonym();
     usage = new Taxon(usage);
+    usage.setStatus(status);
     return s;
   }
 
@@ -158,6 +159,7 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
     Preconditions.checkArgument(status.isSynonym(), "Status needs to be a synonym status");
     final Taxon t = getTaxon();
     usage = new Synonym(usage);
+    usage.setStatus(status);
     return t;
   }
   

@@ -318,11 +318,19 @@ public class NormalizerDwcaIT extends NormalizerITBase {
           assertNotNull(u.usage.getAccordingToId());
         }
       }
-      
+
+      // 8	Phylata	Anthurium lanceum Engl., nom. illeg., non. A. lancea.	Markus
       u = usageByID("8");
-      assertEquals("Anthurium lanceum Engl.", u.usage.getName().getLabel());
-      assertEquals("nom.illeg.", u.usage.getName().getRemarks());
-      assertEquals("Markus non. A.lancea.", u.usage.getAccordingToId());
+      assertEquals("Anthurium lanceum", u.usage.getName().getScientificName());
+      assertEquals("Engl.", u.usage.getName().getAuthorship());
+      assertEquals("nom.illeg.", u.usage.getName().getNomenclaturalNote());
+      assertNull(u.usage.getName().getRemarks());
+
+      assertEquals("non. A.lancea.", u.usage.getNamePhrase());
+      assertNull(u.usage.getName().getRemarks());
+      assertNotNull(u.usage.getAccordingToId());
+      Reference sec = accordingTo(u.usage);
+      assertEquals("Markus", sec.getCitation());
       assertEquals(NomStatus.UNACCEPTABLE, u.usage.getName().getNomStatus());
       //assertTrue(store.getVerbatim(u.usage.getName().getVerbatimKey()).hasIssue(Issue.PARTIALLY_PARSABLE_NAME));
     }

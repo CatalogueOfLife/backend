@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Wrapper around the GBIF Name parser to deal with the col Name class and API.
@@ -30,6 +32,19 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   private static Logger LOG = LoggerFactory.getLogger(NameParser.class);
   public static final NameParser PARSER = new NameParser();
   private static final NameParserGBIF PARSER_INTERNAL = new NameParserGBIF();
+
+  private static final Pattern NORM_PUNCTUATION_WS = Pattern.compile("\\s*([.,;:)}\\]])\\s*\\1*\\s*");
+  private static final Pattern NORM_DOT_WS = Pattern.compile("\\s*\\.\\s+(?!&)");
+  private static final Pattern NORM_OPENING_BRACKET_WS = Pattern.compile("\\s*([({\\[])\\s*");
+  private static final Pattern NORM_AND = Pattern.compile("(?:\\b|\\s*)(and|et|und|\\+|(?:,\\s*)?&)\\b\\s*");
+  private static final Pattern NORM_AND2 = Pattern.compile("\\s*(and|et|(?:,\\s*)?&)\\s*");
+  private static final Pattern NORM_ET_AL = Pattern.compile("(&|et) al\\.?(?:[^.]|$)");
+  private static final Pattern NORM_ANON = Pattern.compile("\\b(anon\\.?)(\\b|\\s|$)");
+  private static final String YEAR = "[12][0-9][0-9][0-9?]";
+  private static final Pattern COMMA_BEFORE_YEAR = Pattern.compile("(?<!,)\\s+("+YEAR+")");
+  private static final Pattern COMMA_AT_END = Pattern.compile("\\s*[,;:]\\s*$");
+  private static final Pattern NORM_WHITESPACE = Pattern.compile("(?:\\\\[nr]|\\s)+");
+
   private static final Map<String, Issue> WARN_TO_ISSUE = ImmutableMap.<String, Issue>builder()
       .put(Warnings.NULL_EPITHET, Issue.NULL_EPITHET)
       .put(Warnings.UNUSUAL_CHARACTERS, Issue.UNUSUAL_NAME_CHARACTERS)
@@ -88,15 +103,15 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    * Populates the parsed authorship of a given name instance by parsing a single authorship string.
    * Only parses the authorship if the name itself is already parsed.
    */
-  public void parseAuthorshipIntoName(ParsedNameUsage pnu, final String originalAuthorship, IssueContainer v){
+  public void parseAuthorshipIntoName(ParsedNameUsage pnu, final String authorship, IssueContainer v){
     // try to add an authorship if not yet there
-    if (pnu.getName().isParsed() && !Strings.isNullOrEmpty(originalAuthorship)) {
-      ParsedAuthorship pnAuthorship = parseAuthorship(originalAuthorship).orElseGet(() -> {
-        LOG.info("Unparsable authorship {}", originalAuthorship);
+    if (pnu.getName().isParsed() && !Strings.isNullOrEmpty(authorship)) {
+      ParsedAuthorship pnAuthorship = parseAuthorship(authorship).orElseGet(() -> {
+        LOG.info("Unparsable authorship {}", authorship);
         v.addIssue(Issue.UNPARSABLE_AUTHORSHIP);
         // add the full, unparsed authorship in this case to not lose it
         ParsedName pn = new ParsedName();
-        pn.getCombinationAuthorship().getAuthors().add(originalAuthorship);
+        pn.getCombinationAuthorship().getAuthors().add(authorship);
         return pn;
       });
 
@@ -110,29 +125,60 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
         }
       }
       copyToPNU(pnAuthorship, pnu, v);
-      // use original authorship string
-      String authorship = originalAuthorship;
-      if (pnAuthorship.getTaxonomicNote() != null) {
-        // we need to exclude the taxonomic bits from the authorship, otherwise we render them twice
-        int start = originalAuthorship.toLowerCase().indexOf(pnAuthorship.getTaxonomicNote().toLowerCase());
-        if (start > 0) {
-          StringBuilder sb = new StringBuilder();
-          String s1 = originalAuthorship.substring(0, start).trim();
-          if (!Strings.isNullOrEmpty(s1)) {
-            sb.append(s1);
-          }
-          String s2 = originalAuthorship.substring(start+pnAuthorship.getTaxonomicNote().length()).trim();
-          if (!Strings.isNullOrEmpty(s2)) {
-            if (sb.length()>0) {
-              sb.append(" ");
-            }
-            sb.append(s2);
-          }
-          authorship = sb.toString();
-        }
-      }
-      pnu.getName().setAuthorship(authorship);
+      // use original authorship string but normalize whitespace
+      pnu.getName().setAuthorship( normalizeAuthorship(authorship, pnAuthorship.getTaxonomicNote()) );
     }
+  }
+
+  static String note2pattern(String x) {
+    return x
+      .replaceAll(" +", " *")
+      .replaceAll("\\.", "\\. *")
+      .replace("(", "\\(")
+      .replace(")", "\\)");
+  }
+
+  static String normalizeAuthorship(final String authorship, String taxNote) {
+    String name = authorship;
+    // we need to exclude the taxonomic bits from the authorship, otherwise we render them twice
+    if (taxNote != null) {
+      // this is more tricky than it sounds as we altered the taxNote and it may have more/less whitespace in particular
+      Pattern noteP = Pattern.compile("^(.*)" + note2pattern(taxNote) + "(.*)$", Pattern.CASE_INSENSITIVE);
+      Matcher m = noteP.matcher(authorship);
+      if (m.find()) {
+        name = m.replaceFirst("$1 $2");
+        // remove final comma
+        name = COMMA_AT_END.matcher(name).replaceFirst("");
+      }
+    }
+
+    // normalise punctuations removing any prefixed space, but leave the space afterwards
+    name = NORM_PUNCTUATION_WS.matcher(name).replaceAll("$1 ");
+
+    // use no space after dots, e.g. L.
+    name = NORM_DOT_WS.matcher(name).replaceAll(".");
+
+    // normalise different usages of ampersand, and, et &amp; to always use &
+    name = NORM_AND.matcher(name).replaceAll(" & ");
+    name = NORM_ET_AL.matcher(name).replaceAll("et al.");
+
+    // put a comma before any year
+    Matcher m = COMMA_BEFORE_YEAR.matcher(name);
+    if (m.find()) {
+      name = m.replaceFirst(", $1");
+    }
+
+    // capitalize Anonumous author
+    m = NORM_ANON.matcher(name);
+    if (m.find()) {
+      name = m.replaceFirst("Anon.");
+    }
+
+    name = NORM_OPENING_BRACKET_WS.matcher(name).replaceAll(" $1");
+
+    // finally whitespace and trimming
+    name = NORM_WHITESPACE.matcher(name).replaceAll(" ");
+    return StringUtils.trimToNull(name);
   }
 
   static <T> void setIfNull(T val, Supplier<T> getter, Consumer<T> setter) {

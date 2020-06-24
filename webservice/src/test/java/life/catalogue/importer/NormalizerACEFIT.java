@@ -198,7 +198,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
       
       u = usageByID("8");
       assertEquals("Anthurium lanceum", u.usage.getName().getScientificName());
-      assertEquals("Engl.", u.usage.getName().getAuthorship());
+      assertEquals("Engl., nom.illeg.", u.usage.getName().getAuthorship());
       assertEquals("nom.illeg.", u.usage.getName().getNomenclaturalNote());
       assertEquals(NomStatus.UNACCEPTABLE, u.usage.getName().getNomStatus());
       assertNull(u.usage.getAccordingToId());
@@ -430,7 +430,10 @@ public class NormalizerACEFIT extends NormalizerITBase {
       syn = usageByID("S-55211");
       assertEquals("Hedysarum microphyllum", syn.usage.getName().getScientificName());
       assertNull(syn.usage.getName().getAuthorship());
-      assertEquals("sensu Turcz., p.p.", syn.usage.getAccordingToId());
+      Reference r = accordingTo(syn.usage);
+      assertNotNull(r);
+      assertEquals("Turcz., p.p.", r.getCitation());
+      assertNull(r.getCsl());
       assertEquals(Rank.SPECIES, syn.usage.getName().getRank());
       assertEquals(TaxonomicStatus.MISAPPLIED, syn.usage.getStatus());
       assertProParte(syn, "Hedysarum truncatum", "Hedysarum turczaninovii");

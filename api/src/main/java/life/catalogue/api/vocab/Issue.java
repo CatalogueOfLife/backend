@@ -224,7 +224,10 @@ public enum Issue {
   
   IS_EXTINCT_INVALID(NAME_USAGE, Level.WARNING,
       "acef:IsExtinct contains values that cannot be interpreted"),
-  
+
+  NAME_CONTAINS_EXTINCT_SYMBOL(NAME_USAGE, Level.INFO,
+    "The usage extinct flag was set because the name contained an extinct symbol"),
+
   GEOTIME_INVALID(NAME_USAGE, Level.WARNING,
       "The geochronological time given cannot be interpreted"),
 

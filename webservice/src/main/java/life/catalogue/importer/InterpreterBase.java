@@ -39,7 +39,7 @@ public class InterpreterBase {
   
   private static final Logger LOG = LoggerFactory.getLogger(InterpreterBase.class);
   protected static final Pattern AREA_VALUE_PATTERN = Pattern.compile("[\\w\\s:.-]+", Pattern.UNICODE_CHARACTER_CLASS);
-  static final Pattern SEC_REF = Pattern.compile("\\b(sensu|sec\\.?|fide|according to) (?!lat|str)(.{3,})$", Pattern.CASE_INSENSITIVE);
+  static final Pattern SEC_REF = Pattern.compile("\\b(sensu|sec\\.?|fide|auct\\.?|according to) (?!lat|str|non|nec|auct(?:orum)?)(.{3,})$", Pattern.CASE_INSENSITIVE);
   private static final int MIN_YEAR = 1500;
   private static final int MAX_YEAR = Year.now().getValue() + 10;
   private static final Pattern YEAR_PATTERN = Pattern.compile("^(\\d{3,4})\\s*(\\?)?(?!\\d)");
@@ -454,14 +454,20 @@ public class InterpreterBase {
       u = NeoUsage.createSynonym(Origin.SOURCE, pnu.getName(), status.val);
     } else {
       u = NeoUsage.createTaxon(Origin.SOURCE, pnu.getName(), status.val);
+      if (pnu.isExtinct()) {
+        ((Taxon) u.usage).setExtinct(true);
+      }
     }
 
     // shared usage props
     u.setId(v.getFirstRaw(idTerms));
     u.setVerbatimKey(v.getId());
     setTaxonomicNote(u.usage, pnu.getTaxonomicNote(), v);
-
     u.homotypic = TaxonomicStatusParser.isHomotypic(status);
+    if (pnu.isExtinct()) {
+      // flag this also for synonyms which cannot have the extinct flag
+      v.addIssue(Issue.NAME_CONTAINS_EXTINCT_SYMBOL);
+    }
 
     // flat classification via dwc or coldp
     u.classification = new Classification();
