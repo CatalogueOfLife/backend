@@ -198,7 +198,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
       
       u = usageByID("8");
       assertEquals("Anthurium lanceum", u.usage.getName().getScientificName());
-      assertEquals("Engl., nom.illeg.", u.usage.getName().getAuthorship());
+      assertEquals("Engl., nom. illeg.", u.usage.getName().getAuthorship());
       assertEquals("nom.illeg.", u.usage.getName().getNomenclaturalNote());
       assertEquals(NomStatus.UNACCEPTABLE, u.usage.getName().getNomStatus());
       assertNull(u.usage.getAccordingToId());

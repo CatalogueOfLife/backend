@@ -32,7 +32,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage t = usageByID("1000");
       assertFalse(t.isSynonym());
-      assertEquals("Platycarpha glomerata (Thunberg) A.P.de Candolle", t.usage.getName().getLabel());
+      assertEquals("Platycarpha glomerata (Thunberg) A. P. de Candolle", t.usage.getName().getLabel());
   
       t = usageByNameID("1006-s3");
       assertTrue(t.isSynonym());
