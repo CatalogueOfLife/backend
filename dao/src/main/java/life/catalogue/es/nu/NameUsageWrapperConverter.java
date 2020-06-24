@@ -26,6 +26,7 @@ import life.catalogue.api.model.VernacularName;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.NameField;
 import life.catalogue.common.tax.SciNameNormalizer;
+import life.catalogue.dao.CatCopy;
 import life.catalogue.es.DownwardConverter;
 import life.catalogue.es.EsDecision;
 import life.catalogue.es.EsModule;
@@ -321,7 +322,8 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     if (notEmpty(nuw.getVernacularNames())) {
       List<String> names = nuw.getVernacularNames()
           .stream()
-          .map(VernacularName::getLatin)
+          .map(VernacularName::getName)
+          .map(CatCopy.transLatin::transform)
           .collect(Collectors.toList());
       doc.setVernacularNames(names);
     }

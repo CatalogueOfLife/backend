@@ -1,12 +1,19 @@
 package life.catalogue.es.nu.suggest;
 
 import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
+import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Name;
+import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.Taxon;
+import life.catalogue.api.model.VernacularName;
+import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.api.search.NameUsageSuggestResponse;
 import life.catalogue.api.search.NameUsageSuggestion;
@@ -297,10 +304,106 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
     // assertTrue(score5 > score6);
   }
 
+  @Test
+  public void autocomplete1() {
+
+    // Define search
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.setHighlight(false);
+    query.setQ("UNLIKE");
+
+    // Match
+    NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    List<String> vernaculars = Arrays.asList("AN UNLIKELY NAME");
+    nuw1.setVernacularNames(create(vernaculars));
+    index(nuw1);
+
+    // Match
+    NameUsageWrapper nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    vernaculars = Arrays.asList("ANOTHER NAME", "AN UNLIKELY NAME");
+    nuw2.setVernacularNames(create(vernaculars));
+    index(nuw2);
+
+    // Match
+    NameUsageWrapper nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    vernaculars = Arrays.asList("YET ANOTHER NAME", "ANOTHER NAME", "AN UNLIKELY NAME");
+    nuw3.setVernacularNames(create(vernaculars));
+    index(nuw3);
+
+    // Match
+    NameUsageWrapper nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    vernaculars = Arrays.asList("it's unlike capital case");
+    nuw4.setVernacularNames(create(vernaculars));
+    index(nuw4);
+
+    // No match
+    NameUsageWrapper nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    vernaculars = Arrays.asList("LIKE IT OR NOT");
+    nuw5.setVernacularNames(create(vernaculars));
+    index(nuw5);
+
+    ResultPage<NameUsageWrapper> result = search(query);
+
+    assertEquals(4, result.getResult().size());
+  }
+
+  @Test
+  public void autocomplete2() {
+
+    // Define search
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.setHighlight(false);
+    // Only search in authorship field
+    query.setContent(EnumSet.of(NameUsageSearchRequest.SearchContent.AUTHORSHIP));
+    query.setQ("UNLIKE");
+
+    // No match
+    NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    List<String> vernaculars = Arrays.asList("AN UNLIKELY NAME");
+    nuw1.setVernacularNames(create(vernaculars));
+    index(nuw1);
+
+    // No match
+    NameUsageWrapper nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    vernaculars = Arrays.asList("ANOTHER NAME", "AN UNLIKELY NAME");
+    nuw2.setVernacularNames(create(vernaculars));
+    index(nuw2);
+
+    // No match
+    NameUsageWrapper nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    vernaculars = Arrays.asList("YET ANOTHER NAME", "ANOTHER NAME", "AN UNLIKELY NAME");
+    nuw3.setVernacularNames(create(vernaculars));
+    index(nuw3);
+
+    // No match
+    NameUsageWrapper nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    vernaculars = Arrays.asList("it's unlike capital case");
+    nuw4.setVernacularNames(create(vernaculars));
+    index(nuw4);
+
+    // No match
+    NameUsageWrapper nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    vernaculars = Arrays.asList("LIKE IT OR NOT");
+    nuw5.setVernacularNames(create(vernaculars));
+    index(nuw5);
+
+    ResultPage<NameUsageWrapper> result = search(query);
+
+    assertEquals(0, result.getResult().size());
+  }
+
   private static boolean containsUsageIds(NameUsageSuggestResponse response, EsNameUsage... docs) {
     Set<String> expected = Arrays.stream(docs).map(EsNameUsage::getUsageId).collect(toSet());
     Set<String> actual = response.getSuggestions().stream().map(NameUsageSuggestion::getUsageId).collect(toSet());
     return expected.equals(actual);
+  }
+
+  private static List<VernacularName> create(List<String> names) {
+    return names.stream().map(n -> {
+      VernacularName vn = new VernacularName();
+      vn.setName(n);
+      return vn;
+    }).collect(Collectors.toList());
   }
 
 }

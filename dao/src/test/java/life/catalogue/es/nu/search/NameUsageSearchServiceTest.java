@@ -5,9 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import life.catalogue.api.model.*;
 import org.elasticsearch.client.RestClient;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -16,6 +13,12 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.BareName;
+import life.catalogue.api.model.Name;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.ResultPage;
+import life.catalogue.api.model.Taxon;
+import life.catalogue.api.model.VernacularName;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
@@ -23,7 +26,6 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
-
 import static org.junit.Assert.assertEquals;
 import static life.catalogue.es.EsUtil.insert;
 import static life.catalogue.es.EsUtil.refreshIndex;
@@ -208,99 +210,6 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     assertEquals(4, result.getResult().size());
   }
 
-  @Test
-  public void autocomplete1() throws IOException {
-    NameUsageWrapperConverter converter = new NameUsageWrapperConverter();
-
-    // Define search
-    NameUsageSearchRequest query = new NameUsageSearchRequest();
-    query.setHighlight(false);
-    query.setQ("UNLIKE");
-
-    // Match
-    NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
-    List<String> vernaculars = Arrays.asList("AN UNLIKELY NAME");
-    nuw1.setVernacularNames(create(vernaculars));
-    insert(client, indexName(), converter.toDocument(nuw1));
-
-    // Match
-    NameUsageWrapper nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
-    vernaculars = Arrays.asList("ANOTHER NAME", "AN UNLIKELY NAME");
-    nuw2.setVernacularNames(create(vernaculars));
-    insert(client, indexName(), converter.toDocument(nuw2));
-
-    // Match
-    NameUsageWrapper nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
-    vernaculars = Arrays.asList("YET ANOTHER NAME", "ANOTHER NAME", "AN UNLIKELY NAME");
-    nuw3.setVernacularNames(create(vernaculars));
-    insert(client, indexName(), converter.toDocument(nuw3));
-
-    // Match
-    NameUsageWrapper nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
-    vernaculars = Arrays.asList("it's unlike capital case");
-    nuw4.setVernacularNames(create(vernaculars));
-    insert(client, indexName(), converter.toDocument(nuw4));
-
-    // No match
-    NameUsageWrapper nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
-    vernaculars = Arrays.asList("LIKE IT OR NOT");
-    nuw5.setVernacularNames(create(vernaculars));
-    insert(client, indexName(), converter.toDocument(nuw5));
-
-    refreshIndex(client, indexName());
-
-    ResultPage<NameUsageWrapper> result = svc.search(indexName(), query, new Page());
-
-    assertEquals(4, result.getResult().size());
-  }
-
-  @Test
-  public void autocomplete2() throws IOException {
-    NameUsageWrapperConverter converter = new NameUsageWrapperConverter();
-
-    // Define search
-    NameUsageSearchRequest nsr = new NameUsageSearchRequest();
-    nsr.setHighlight(false);
-    // Only search in authorship field
-    nsr.setContent(EnumSet.of(NameUsageSearchRequest.SearchContent.AUTHORSHIP));
-    nsr.setQ("UNLIKE");
-
-    // No match
-    NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
-    List<String> vernaculars = Arrays.asList("AN UNLIKELY NAME");
-    nuw1.setVernacularNames(create(vernaculars));
-    insert(client, indexName(), converter.toDocument(nuw1));
-
-    // No match
-    NameUsageWrapper nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
-    vernaculars = Arrays.asList("ANOTHER NAME", "AN UNLIKELY NAME");
-    nuw2.setVernacularNames(create(vernaculars));
-    insert(client, indexName(), converter.toDocument(nuw2));
-
-    // No match
-    NameUsageWrapper nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
-    vernaculars = Arrays.asList("YET ANOTHER NAME", "ANOTHER NAME", "AN UNLIKELY NAME");
-    nuw3.setVernacularNames(create(vernaculars));
-    insert(client, indexName(), converter.toDocument(nuw3));
-
-    // No match
-    NameUsageWrapper nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
-    vernaculars = Arrays.asList("it's unlike capital case");
-    nuw4.setVernacularNames(create(vernaculars));
-    insert(client, indexName(), converter.toDocument(nuw4));
-
-    // No match
-    NameUsageWrapper nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
-    vernaculars = Arrays.asList("LIKE IT OR NOT");
-    nuw5.setVernacularNames(create(vernaculars));
-    insert(client, indexName(), converter.toDocument(nuw5));
-
-    refreshIndex(client, indexName());
-
-    ResultPage<NameUsageWrapper> result = svc.search(indexName(), nsr, new Page());
-
-    assertEquals(0, result.getResult().size());
-  }
 
   @Test
   public void testIsNull() throws IOException {
@@ -663,11 +572,4 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     return Arrays.asList(nuw1, nuw2, nuw3, nuw4);
   }
 
-  private static List<VernacularName> create(List<String> names) {
-    return names.stream().map(n -> {
-      VernacularName vn = new VernacularName();
-      vn.setName(n);
-      return vn;
-    }).collect(Collectors.toList());
-  }
 }
