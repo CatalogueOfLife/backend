@@ -245,7 +245,7 @@ public class TaxonDaoTest extends DaoTestBase {
     assertEquals(USER_EDITOR.getKey(), t2.getName().getModifiedBy());
     assertEquals(Rank.SPECIES, t2.getName().getRank());
     assertEquals("Abies alba", t2.getName().getScientificName());
-    assertEquals("Miller 1999", t2.getName().getAuthorship());
+    assertEquals("Miller, 1999", t2.getName().getAuthorship());
     assertEquals(Authorship.yearAuthors("1999", "Miller"), t2.getName().getCombinationAuthorship());
     assertTrue(t2.getName().getBasionymAuthorship().isEmpty());
     assertNull(t2.getName().getUninomial());
