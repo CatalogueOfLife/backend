@@ -8,8 +8,15 @@ import static org.junit.Assert.*;
  *
  */
 public class StringUtilsTest {
-  
-  
+
+
+  @Test
+  public void equalsIgnoreSPace() {
+    assertTrue(StringUtils.equalsIgnoreCaseAndSpace("gdu23", "gdu23"));
+    assertTrue(StringUtils.equalsIgnoreCaseAndSpace("gDU23", "G du 23"));
+    assertFalse(StringUtils.equalsIgnoreCaseAndSpace("gDU23", "G-du 23"));
+  }
+
   @Test
   public void testRihtSplit() {
     assertArrayEquals(new String[]{"Carl", "s"}, StringUtils.splitRight("Carlas", 'a'));

@@ -159,7 +159,23 @@ public class NormalizerTreeIT {
       
       String neotree = PrinterUtils.textTree(store.getNeo());
       assertFalse("Empty tree, probably no root node found", neotree.isEmpty());
-      
+
+      // debug all usages
+      //store.verbatimList().forEach(v -> {
+      //  System.out.println(v.getId());
+      //  for (Map.Entry<Term, String> tv : v.getTerms().entrySet()) {
+      //    System.out.println("  " + tv.getKey().prefixedName() + "  ->  " + tv.getValue());
+      //  }
+      //  System.out.print("  Issues: ");
+      //  for (Issue i : v.getIssues()) {
+      //    System.out.print(i + " ");
+      //  }
+      //  System.out.println("\n\n");
+      //});
+      //store.usages().all().forEach(u -> {
+      //  System.out.println(u.getId() + " " + u.usage.getOrigin() + "  vk="+u.usage.getVerbatimKey());
+      //});
+
       // compare trees
       assertEquals("Taxon tree not as expected", expected, neotree);
 

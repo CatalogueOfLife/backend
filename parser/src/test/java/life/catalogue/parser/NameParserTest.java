@@ -59,6 +59,8 @@ public class NameParserTest {
 
   @Test
   public void normalizeAuthorship() throws Exception {
+    assertEquals("Brouss. ex Willd.", NameParser.normalizeAuthorship("Brouss. ex Willd.", null));
+    assertEquals("(St.John) Sachet", NameParser.normalizeAuthorship("(St.John) Sachet", null));
     assertEquals("Trautv. & Meyer", NameParser.normalizeAuthorship("Trautv.&Meyer", null));
     assertEquals("Trautv. & Meyer", NameParser.normalizeAuthorship("Trautv. & Meyer", null));
     assertEquals("Rossi, 1988", NameParser.normalizeAuthorship("Rossi 1988 non DC.1988", "non DC. 1988"));
@@ -72,7 +74,7 @@ public class NameParserTest {
 
     assertNull(NameParser.normalizeAuthorship("(non Scacchi, 1836) sensu Zibrowius, 1968", "(non Scacchi, 1836) sensu Zibrowius, 1968"));
     assertEquals("Fischer-Le Saux et al., 1999", NameParser.normalizeAuthorship("Fischer-Le Saux et al., 1999 emend. Akhurst et al., 2004", "emend. Akhurst et al. , 2004"));
-    assertEquals("Engl., nom.illeg.", NameParser.normalizeAuthorship("Engl., nom. illeg., non. A. lancea.", "non. A.lancea."));
+    assertEquals("Engl., nom. illeg.", NameParser.normalizeAuthorship("Engl., nom. illeg., non. A. lancea.", "non. A.lancea."));
   }
 
   @Test

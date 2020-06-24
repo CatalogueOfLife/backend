@@ -1,16 +1,17 @@
 package life.catalogue.common.text;
 
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Charsets;
+import com.google.common.base.Strings;
+
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.text.Normalizer;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
-
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Charsets;
-import com.google.common.base.Strings;
 
 /**
  * Utils class adding specific string methods to existing guava {@link Strings} and commons {@link org.apache.commons.lang3.StringUtils}.
@@ -37,6 +38,15 @@ public class StringUtils {
       }
     }
     return false;
+  }
+
+  public static boolean equalsIgnoreCaseAndSpace(String s1, String s2) {
+    if (s1 == null || s2 == null) {
+      return Objects.equals(s1, s2);
+    }
+    String n1 = s1.replaceAll("\\s+", "").toLowerCase();
+    String n2 = s2.replaceAll("\\s+", "").toLowerCase();
+    return n1.equals(n2);
   }
 
   /**

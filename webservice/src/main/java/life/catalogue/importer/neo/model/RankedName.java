@@ -7,12 +7,14 @@ public class RankedName {
   public final Node nameNode;
   public final String name;
   public final String author;
+  public final String sensu;
   public final Rank rank;
   
   public RankedName(NeoName nn) {
     this.nameNode = nn.node;
     this.name = nn.name.getScientificName();
     this.author = nn.name.getAuthorship();
+    this.sensu = null;
     this.rank = nn.name.getRank();
   }
   
@@ -20,6 +22,7 @@ public class RankedName {
     this.nameNode = n;
     this.name = name;
     this.author = author;
+    this.sensu = null;
     this.rank = rank;
   }
   

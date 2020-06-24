@@ -33,11 +33,9 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   public static final NameParser PARSER = new NameParser();
   private static final NameParserGBIF PARSER_INTERNAL = new NameParserGBIF();
 
-  private static final Pattern NORM_PUNCTUATION_WS = Pattern.compile("\\s*([.,;:)}\\]])\\s*\\1*\\s*");
-  private static final Pattern NORM_DOT_WS = Pattern.compile("\\s*\\.\\s+(?!&)");
-  private static final Pattern NORM_OPENING_BRACKET_WS = Pattern.compile("\\s*([({\\[])\\s*");
-  private static final Pattern NORM_AND = Pattern.compile("(?:\\b|\\s*)(and|et|und|\\+|(?:,\\s*)?&)\\b\\s*");
-  private static final Pattern NORM_AND2 = Pattern.compile("\\s*(and|et|(?:,\\s*)?&)\\s*");
+  private static final Pattern NORM_PUNCT_WS = Pattern.compile("\\s*([)}\\],;:])\\s*");
+  private static final Pattern NORM_WS_PUNCT = Pattern.compile("\\s*([({\\[])\\s*");
+  private static final Pattern NORM_AND = Pattern.compile("\\s*(\\b(?:and|et|und)\\b|(?:,\\s*)?&)\\s*");
   private static final Pattern NORM_ET_AL = Pattern.compile("(&|et) al\\.?(?:[^.]|$)");
   private static final Pattern NORM_ANON = Pattern.compile("\\b(anon\\.?)(\\b|\\s|$)");
   private static final String YEAR = "[12][0-9][0-9][0-9?]";
@@ -152,12 +150,6 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       }
     }
 
-    // normalise punctuations removing any prefixed space, but leave the space afterwards
-    name = NORM_PUNCTUATION_WS.matcher(name).replaceAll("$1 ");
-
-    // use no space after dots, e.g. L.
-    name = NORM_DOT_WS.matcher(name).replaceAll(".");
-
     // normalise different usages of ampersand, and, et &amp; to always use &
     name = NORM_AND.matcher(name).replaceAll(" & ");
     name = NORM_ET_AL.matcher(name).replaceAll("et al.");
@@ -174,7 +166,8 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       name = m.replaceFirst("Anon.");
     }
 
-    name = NORM_OPENING_BRACKET_WS.matcher(name).replaceAll(" $1");
+    name = NORM_WS_PUNCT.matcher(name).replaceAll(" $1");
+    name = NORM_PUNCT_WS.matcher(name).replaceAll("$1 ");
 
     // finally whitespace and trimming
     name = NORM_WHITESPACE.matcher(name).replaceAll(" ");

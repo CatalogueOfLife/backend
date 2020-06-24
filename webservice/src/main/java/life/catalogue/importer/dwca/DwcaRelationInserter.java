@@ -9,6 +9,7 @@ import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.common.text.StringUtils;
 import life.catalogue.importer.MappingFlags;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.NeoDb;
@@ -279,8 +280,10 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
       if (!name.getScientificName().equalsIgnoreCase(source.name)) {
         List<Node> matches = store.names().nodesByName(name.getScientificName());
         // remove other authors, but allow names without authors
-        if (name.hasAuthorship()) {
-          matches.removeIf(n -> !Strings.isNullOrEmpty(NeoProperties.getAuthorship(n)) && !NeoProperties.getAuthorship(n).equalsIgnoreCase(name.getAuthorship()));
+        if (!matches.isEmpty() && name.hasAuthorship()) {
+          matches.removeIf(n -> !Strings.isNullOrEmpty(NeoProperties.getAuthorship(n))
+            && !StringUtils.equalsIgnoreCaseAndSpace(NeoProperties.getAuthorship(n), name.getAuthorship())
+          );
         }
         
         // transform to usage nodes if requested, preferring taxon nodes over synonyms

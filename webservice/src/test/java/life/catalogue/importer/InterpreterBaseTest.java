@@ -66,9 +66,6 @@ public class InterpreterBaseTest {
     assertSecRef("sensu Turcz., p.p.", "Turcz., p.p.");
     assertSecRef("auct. Jurtzev, p.p.", "Jurtzev, p.p.");
     assertSecRef("auct. Whittaker 1981", "Whittaker 1981");
-
-
-
   }
 
   void assertSecRef(String authorship, String expected) {
