@@ -1,6 +1,7 @@
 package life.catalogue.es.nu;
 
 import life.catalogue.api.search.NameUsageRequest;
+import life.catalogue.dao.CatCopy;
 import life.catalogue.es.ddl.MultiField;
 import life.catalogue.es.query.EdgeNgramQuery;
 import life.catalogue.es.query.CaseInsensitiveQuery;
@@ -49,7 +50,7 @@ public abstract class QMatcher {
    */
 
   public Query getVernacularNameQuery() {
-    String q = request.getQ();
+    String q = CatCopy.transLatin.transliterate(request.getQ());
     return new DisMaxQuery()
         .subquery(new CaseInsensitiveQuery(FLD_VERNACULAR, q).withBoost(100.0))
         .subquery(new EdgeNgramQuery(FLD_VERNACULAR, q).withOperator(AND));

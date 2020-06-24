@@ -23,9 +23,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class CatCopy {
+  
+  // Public so that the ES QMatcher class can us it and be guranteed it transliterates the Q exactly alike.
+  public static final Transliterator transLatin = Transliterator.getInstance("Any-Latin; de-ascii; Latin-ASCII");
+  
   private static final Logger LOG = LoggerFactory.getLogger(CatCopy.class);
   
-  private static final Transliterator transLatin = Transliterator.getInstance("Any-Latin; de-ascii; Latin-ASCII");
   
   private static final Map<EntityType, Class<? extends TaxonExtensionMapper<? extends DatasetScopedEntity<Integer>>>> extMapper = new HashMap<>();
   static {

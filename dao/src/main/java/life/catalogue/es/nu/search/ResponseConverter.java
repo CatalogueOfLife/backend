@@ -29,6 +29,9 @@ import life.catalogue.es.response.SearchHit;
  */
 class ResponseConverter implements UpwardConverter<EsResponse<EsNameUsage>, NameUsageSearchResponse> {
 
+  // See https://github.com/CatalogueOfLife/backend/issues/200
+  private static final boolean INCLUDE_VERNACLUAR_NAMES = false;
+
   private final EsResponse<EsNameUsage> esResponse;
 
   ResponseConverter(EsResponse<EsNameUsage> esResponse) {
@@ -61,6 +64,9 @@ class ResponseConverter implements UpwardConverter<EsResponse<EsNameUsage>, Name
         nuw = EsModule.readNameUsageWrapper(payload);
       }
       NameUsageWrapperConverter.enrichPayload(nuw, hit.getSource());
+      if (!INCLUDE_VERNACLUAR_NAMES) {
+        nuw.setVernacularNames(null);
+      }
       nuws.add(nuw);
     }
     return nuws;
