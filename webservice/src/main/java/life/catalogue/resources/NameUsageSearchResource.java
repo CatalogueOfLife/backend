@@ -76,7 +76,7 @@ public class NameUsageSearchResource {
         @JsonProperty("prefix") @DefaultValue("false") boolean prefix,
         @JsonProperty("minRank") Rank minRank,
         @JsonProperty("maxRank") Rank maxRank) {
-      request = new NameUsageSearchRequest(filter, facet, content, sortBy, q, highlight, reverse, fuzzy, prefix, minRank, maxRank);
+      request = new NameUsageSearchRequest(filter, facet, content, false, sortBy, q, highlight, reverse, fuzzy, prefix, minRank, maxRank);
       page = new Page(offset, limit);
     }
   }
