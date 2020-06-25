@@ -66,10 +66,21 @@ public class BareName implements NameUsage {
   
   @Override
   public void setAccordingToId(String according) {
-    // nothing, throw if new status is supposed to be non null
+    // nothing, throw if according is supposed to be non null
     if (according != null) throw new IllegalArgumentException("Bare names do not have an accordingTo");
   }
-  
+
+  @Override
+  public String getNamePhrase() {
+    return null;
+  }
+
+  @Override
+  public void setNamePhrase(String namePhrase) {
+    // nothing, throw if namePhrase is supposed to be non null
+    if (namePhrase != null) throw new IllegalArgumentException("Bare names do not have a usage namePhrase");
+  }
+
   @Override
   public String getRemarks() {
     return name.getRemarks();

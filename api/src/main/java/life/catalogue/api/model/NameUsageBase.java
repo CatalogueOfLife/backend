@@ -121,10 +121,12 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
     }
   }
 
+  @Override
   public String getNamePhrase() {
     return namePhrase;
   }
 
+  @Override
   public void setNamePhrase(String namePhrase) {
     this.namePhrase = namePhrase;
   }

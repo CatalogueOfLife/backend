@@ -1,49 +1,36 @@
 package life.catalogue.api.vocab;
 
 /**
- * Explicit list of available Name fields that can be searched on.
- * The enum provides the database field name for the property to be used by mybatis.
+ * Explicit list of available Name(Usage) fields that can be searched on.
  * <p>
- * Remember to update this enum when the db name table or Name class changes!
+ * Remember to update this enum when the Name(Usage) class changes!
  */
 public enum NameField {
+  // Name fields
   UNINOMIAL,
   GENUS,
   INFRAGENERIC_EPITHET,
   SPECIFIC_EPITHET,
   INFRASPECIFIC_EPITHET,
   CULTIVAR_EPITHET,
-  APPENDED_PHRASE,
   CANDIDATUS,
   NOTHO,
-  BASIONYM_AUTHORS(true),
-  BASIONYM_EX_AUTHORS(true),
+  BASIONYM_AUTHORS,
+  BASIONYM_EX_AUTHORS,
   BASIONYM_YEAR,
-  COMBINATION_AUTHORS(true),
-  COMBINATION_EX_AUTHORS(true),
+  COMBINATION_AUTHORS,
+  COMBINATION_EX_AUTHORS,
   COMBINATION_YEAR,
   SANCTIONING_AUTHOR,
-  NOM_STATUS,
-  PUBLISHED_IN_ID,
-  PUBLISHED_IN_PAGE,
   CODE,
-  LINK,
-  REMARKS;
-  
-  private boolean array;
-  
-  NameField() {
-    this(false);
-  }
-  
-  NameField(boolean array) {
-    this.array = array;
-  }
-  
-  public String notNull(String alias) {
-    if (array) {
-      return "array_length(" + alias + '.' + this.name().toLowerCase() + ", 1) IS NOT NULL";
-    }
-    return alias + '.' + this.name().toLowerCase() + " IS NOT NULL";
-  }
+  NOM_STATUS,
+  PUBLISHED_IN,
+  PUBLISHED_IN_PAGE,
+  NOMENCLATURAL_NOTE,
+  UNPARSED,
+  REMARKS,
+  // NameUsage fields
+  NAME_PHRASE,
+  ACCORDING_TO;
+
 }

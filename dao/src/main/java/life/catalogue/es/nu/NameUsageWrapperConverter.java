@@ -257,7 +257,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     doc.setStatus(nuw.getUsage().getStatus());
     doc.setUsageId(nuw.getUsage().getId());
     doc.setType(name.getType());
-    doc.setNameFields(getNonNullNameFields(name));
+    doc.setNameFields(getNonNullNameFields(nuw.getUsage()));
     if (nuw.getUsage().getClass() == Taxon.class) {
       Taxon t = (Taxon) nuw.getUsage();
       doc.setSectorKey(t.getSectorKey());
@@ -335,8 +335,19 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     }
   }
 
-  private static Set<NameField> getNonNullNameFields(Name name) {
+  private static Set<NameField> getNonNullNameFields(NameUsage usage) {
     Set<NameField> fields = EnumSet.noneOf(NameField.class);
+    Name name = usage.getName();
+    addIfSet(fields, UNINOMIAL, name.getUninomial());
+    addIfSet(fields, GENUS, name.getGenus());
+    addIfSet(fields, INFRAGENERIC_EPITHET, name.getInfragenericEpithet());
+    addIfSet(fields, SPECIFIC_EPITHET, name.getSpecificEpithet());
+    addIfSet(fields, INFRASPECIFIC_EPITHET, name.getInfraspecificEpithet());
+    addIfSet(fields, CULTIVAR_EPITHET, name.getCultivarEpithet());
+    if (name.isCandidatus()) {
+      fields.add(CANDIDATUS);
+    }
+    addIfSet(fields, NOTHO, name.getNotho());
     if (name.getBasionymAuthorship() != null) {
       addIfSet(fields, BASIONYM_AUTHORS, name.getBasionymAuthorship().getAuthors());
       addIfSet(fields, BASIONYM_EX_AUTHORS, name.getBasionymAuthorship().getExAuthors());
@@ -347,23 +358,18 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
       addIfSet(fields, COMBINATION_EX_AUTHORS, name.getCombinationAuthorship().getExAuthors());
       addIfSet(fields, COMBINATION_YEAR, name.getCombinationAuthorship().getYear());
     }
-    addIfSet(fields, CODE, name.getCode());
-    addIfSet(fields, CULTIVAR_EPITHET, name.getCultivarEpithet());
-    addIfSet(fields, GENUS, name.getGenus());
-    addIfSet(fields, INFRAGENERIC_EPITHET, name.getInfragenericEpithet());
-    addIfSet(fields, INFRASPECIFIC_EPITHET, name.getInfraspecificEpithet());
-    addIfSet(fields, LINK, name.getLink());
-    addIfSet(fields, NOM_STATUS, name.getNomStatus());
-    addIfSet(fields, NOTHO, name.getNotho());
-    addIfSet(fields, PUBLISHED_IN_ID, name.getPublishedInId());
-    addIfSet(fields, PUBLISHED_IN_PAGE, name.getPublishedInPage());
-    addIfSet(fields, REMARKS, name.getRemarks());
     addIfSet(fields, SANCTIONING_AUTHOR, name.getSanctioningAuthor());
-    addIfSet(fields, SPECIFIC_EPITHET, name.getSpecificEpithet());
-    addIfSet(fields, UNINOMIAL, name.getUninomial());
-    if (name.isCandidatus()) {
-      fields.add(CANDIDATUS);
-    }
+    addIfSet(fields, CODE, name.getCode());
+    addIfSet(fields, NOM_STATUS, name.getNomStatus());
+    addIfSet(fields, PUBLISHED_IN, name.getPublishedInId());
+    addIfSet(fields, PUBLISHED_IN_PAGE, name.getPublishedInPage());
+    addIfSet(fields, NOMENCLATURAL_NOTE, name.getNomenclaturalNote());
+    addIfSet(fields, UNPARSED, name.getUnparsed());
+    addIfSet(fields, REMARKS, name.getRemarks());
+  // NameUsage fields
+    addIfSet(fields, REMARKS, usage.getRemarks());
+    addIfSet(fields, NAME_PHRASE, usage.getNamePhrase());
+    addIfSet(fields, ACCORDING_TO, usage.getAccordingToId());
     return fields;
   }
 

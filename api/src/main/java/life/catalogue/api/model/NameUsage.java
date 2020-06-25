@@ -19,7 +19,11 @@ public interface NameUsage extends DSID<String>, VerbatimEntity {
   TaxonomicStatus getStatus();
   
   void setStatus(TaxonomicStatus status);
-  
+
+  String getNamePhrase();
+
+  void setNamePhrase(String namePhrase);
+
   Origin getOrigin();
   
   void setOrigin(Origin origin);
