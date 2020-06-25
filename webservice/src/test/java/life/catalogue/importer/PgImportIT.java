@@ -424,7 +424,7 @@ public class PgImportIT {
       }
       
       assertEquals(TaxonomicStatus.ACCEPTED, t.getStatus());
-      assertEquals("Tester", t.getAccordingToId());
+      assertEquals("Tester", t.getScrutinizer());
       assertEquals("2008", t.getScrutinizerDate().toString());
       assertFalse(t.isExtinct());
       assertTrue(t.getLifezones().isEmpty());
@@ -575,7 +575,7 @@ public class PgImportIT {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       Name n = ndao.get(key(dataset.getKey(), "1000"));
       assertEquals("Platycarpha glomerata", n.getScientificName());
-      assertEquals("(Thunberg) A.P.de Candolle", n.getAuthorship());
+      assertEquals("(Thunberg) A. P. de Candolle", n.getAuthorship());
       assertEquals("1000", n.getId());
       assertEquals(Rank.SPECIES, n.getRank());
     
@@ -594,7 +594,7 @@ public class PgImportIT {
       VerbatimRecordMapper vm = session.getMapper(VerbatimRecordMapper.class);
       for (VerbatimRecord v : vm.list(dataset.getKey(), null, null, LogicalOperator.AND, null, null, new Page(0, 100))) {
         for (Term t : v.terms()) {
-          assertFalse(t instanceof UnknownTerm);
+          assertFalse(t.qualifiedName(), t instanceof UnknownTerm);
         }
       }
 
@@ -612,26 +612,27 @@ public class PgImportIT {
     }
   
     DatasetImport di = metrics();
-    assertEquals(3, (int) metrics().getTreatmentCount());
-    assertEquals(9, (int) metrics().getDistributionCount());
-    assertEquals(1, (int) metrics().getMediaCount());
-    assertEquals(4, (int) metrics().getReferenceCount());
-    assertEquals(1, (int) metrics().getVernacularCount());
-    assertEquals(19, (int) metrics().getTaxonCount());
-    assertEquals(3, (int) metrics().getTypeMaterialCount());
-    assertEquals(24, (int) metrics().getNameCount());
-    assertEquals(70, (int) metrics().getVerbatimCount());
+    //assertEquals(2, (int) metrics().getTreatmentCount());
+    assertEquals(9, (int) di.getDistributionCount());
+    assertEquals(1, (int) di.getMediaCount());
+    assertEquals(9, (int) di.getReferenceCount());
+    assertEquals(2, (int) di.getVernacularCount());
+    assertEquals(23, (int) di.getTaxonCount());
+    assertEquals(3, (int) di.getTypeMaterialCount());
+    assertEquals(28, (int) di.getNameCount());
+    assertEquals(87, (int) di.getVerbatimCount());
     
     //assertFalse(metrics().getIssuesCount().containsKey(Issue.PARENT_ID_INVALID));
-    assertEquals(5, (int) metrics().getUsagesByStatusCount().get(TaxonomicStatus.SYNONYM));
-    assertEquals(metrics().getTaxonCount(), metrics().getUsagesByStatusCount().get(TaxonomicStatus.ACCEPTED));
-    assertEquals(1, (int) metrics().getMediaByTypeCount().get(MediaType.IMAGE));
-    assertEquals(2, (int) metrics().getNamesByRankCount().get(Rank.FAMILY));
-    assertEquals(4, (int) metrics().getNamesByRankCount().get(Rank.GENUS));
-    assertEquals(10, (int) metrics().getNamesByRankCount().get(Rank.SPECIES));
-    assertEquals(3, (int) metrics().getNamesByRankCount().get(Rank.SUBSPECIES));
-    assertEquals(9, (int) metrics().getDistributionsByGazetteerCount().get(Gazetteer.ISO));
-    assertEquals(2, (int) metrics().getTypeMaterialByStatusCount().get(TypeStatus.HOLOTYPE));
+    assertEquals(5, (int) di.getUsagesByStatusCount().get(TaxonomicStatus.SYNONYM));
+    // 1 provisional status taxon
+    assertEquals((int) metrics().getTaxonCount(), 1 + di.getUsagesByStatusCount().get(TaxonomicStatus.ACCEPTED));
+    assertEquals(1, (int) di.getMediaByTypeCount().get(MediaType.IMAGE));
+    assertEquals(2, (int) di.getNamesByRankCount().get(Rank.FAMILY));
+    assertEquals(4, (int) di.getNamesByRankCount().get(Rank.GENUS));
+    assertEquals(12, (int) di.getNamesByRankCount().get(Rank.SPECIES));
+    assertEquals(3, (int) di.getNamesByRankCount().get(Rank.SUBSPECIES));
+    assertEquals(9, (int) di.getDistributionsByGazetteerCount().get(Gazetteer.ISO));
+    assertEquals(2, (int) di.getTypeMaterialByStatusCount().get(TypeStatus.HOLOTYPE));
   }
   
   /**

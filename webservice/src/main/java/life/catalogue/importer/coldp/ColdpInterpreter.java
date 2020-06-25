@@ -144,7 +144,12 @@ public class ColdpInterpreter extends InterpreterBase {
     if (type.isPresent()) {
       rel.setType(typeFunction.apply(type.get()));
       rel.setRemarks(rec.get(ColdpTerm.remarks));
-      setReference(rel, rec);
+      // nomRel uses publishedInID while taxRel uses referenceID. We simply allow both
+      if (rec.hasTerm(ColdpTerm.publishedInID)) {
+        super.setReference(rec, ColdpTerm.publishedInID, rel::setReferenceId);
+      } else {
+        setReference(rel, rec);
+      }
       return Optional.of(rel);
     }
     return Optional.empty();

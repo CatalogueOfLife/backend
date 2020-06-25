@@ -24,13 +24,20 @@ import java.util.Set;
  */
 public class ColdpReader extends CsvReader {
   private static final Logger LOG = LoggerFactory.getLogger(ColdpReader.class);
+  // Synonym and TypeMaterial also have IDs but do not require them as there is no foreign key to them
   private static Set<ColdpTerm> ID_SCHEMAS = ImmutableSet.of(ColdpTerm.Reference, ColdpTerm.Name, ColdpTerm.Taxon);
-  private static Set<ColdpTerm> NAMEID_SCHEMAS = ImmutableSet.of(ColdpTerm.Synonym, ColdpTerm.Taxon, ColdpTerm.NameRelation);
+  private static Set<ColdpTerm> NAMEID_SCHEMAS = ImmutableSet.of(ColdpTerm.Synonym, ColdpTerm.Taxon, ColdpTerm.NameRelation, ColdpTerm.TypeMaterial);
   private static Set<ColdpTerm> TAXID_SCHEMAS = ImmutableSet.of(
-      ColdpTerm.Synonym, ColdpTerm.Treatment, ColdpTerm.Distribution, ColdpTerm.Media, ColdpTerm.VernacularName
+    ColdpTerm.Treatment, ColdpTerm.Synonym, ColdpTerm.Distribution, ColdpTerm.Media, ColdpTerm.VernacularName, ColdpTerm.TaxonRelation
   );
   private static Set<ColdpTerm> REFID_SCHEMAS = ImmutableSet.of(
-      ColdpTerm.Treatment, ColdpTerm.Distribution, ColdpTerm.VernacularName
+    ColdpTerm.Distribution,
+    ColdpTerm.Synonym,
+    ColdpTerm.Taxon,
+    ColdpTerm.TaxonRelation,
+    ColdpTerm.Treatment,
+    ColdpTerm.TypeMaterial,
+    ColdpTerm.VernacularName
   );
   static {
     // make sure we are aware of ColTerms
@@ -111,12 +118,15 @@ public class ColdpReader extends CsvReader {
     }
     require(ColdpTerm.NameRelation, ColdpTerm.relatedNameID);
     require(ColdpTerm.NameRelation, ColdpTerm.type);
-  
+
+    require(ColdpTerm.TaxonRelation, ColdpTerm.relatedTaxonID);
+    require(ColdpTerm.TaxonRelation, ColdpTerm.type);
+
     requireSchema(ColdpTerm.Name);
   
     // reference dependencies
     if (!hasReferences()) {
-      LOG.warn("No Reference mapped! Disallow referenceIDs");
+      LOG.warn("No Reference mapped! Disallow all referenceIDs");
       disallow(ColdpTerm.Name, ColdpTerm.publishedInID);
       disallow(ColdpTerm.NameRelation, ColdpTerm.publishedInID);
       for (ColdpTerm rt : REFID_SCHEMAS) {
