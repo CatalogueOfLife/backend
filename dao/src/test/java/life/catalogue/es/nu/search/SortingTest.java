@@ -164,7 +164,8 @@ public class SortingTest extends EsReadTestBase {
     assertEquals(expected, result);
 
     // Let's just do this one more time.
-    truncate();
+    destroyAndCreateIndex();
+    
     docs = new ArrayList<EsNameUsage>(expected);
     Collections.shuffle(docs);
     indexRaw(docs);
@@ -243,7 +244,8 @@ public class SortingTest extends EsReadTestBase {
     assertEquals(expected, result);
 
     // Let's just do this one more time.
-    truncate();
+    destroyAndCreateIndex();
+    
     docs = new ArrayList<EsNameUsage>(expected);
     Collections.shuffle(docs);
     indexRaw(docs);

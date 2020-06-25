@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.elasticsearch.client.RestClient;
 import org.junit.ClassRule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Synonym;
@@ -29,6 +31,9 @@ import static java.util.stream.Collectors.toList;
  * Base class for tests that only read from ES. Does not provide postgres functionality and saves setup/initialization time accordingly.
  */
 public class EsReadTestBase {
+
+  @SuppressWarnings("unused")
+  private static final Logger LOG = LoggerFactory.getLogger(EsReadTestBase.class);
 
   @ClassRule
   public static EsSetupRule esSetupRule = new EsSetupRule();
@@ -57,11 +62,6 @@ public class EsReadTestBase {
 
   public String indexName() {
     return index().name;
-  }
-
-  // Useful for @Before methods
-  protected void truncate() {
-    EsUtil.truncate(getEsClient(), indexName());
   }
 
   protected void indexRaw(Collection<EsNameUsage> documents) {

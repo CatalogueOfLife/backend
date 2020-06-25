@@ -1,5 +1,6 @@
 package life.catalogue.es.nu.suggest;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -8,7 +9,6 @@ import java.util.stream.Collectors;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
-import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.Taxon;
@@ -111,13 +111,13 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
     doc1.setUsageId("1");
     doc1.setRank(Rank.SPECIES);
     Name n = new Name();
-    n.setGenus(THE_NAME);
+    n.setGenus(THE_NAME); // 3: genus
     doc1.setNameStrings(new NameStrings(n));
 
     EsNameUsage doc2 = new EsNameUsage();
     doc2.setDatasetKey(1);
     doc2.setUsageId("2");
-    doc2.setRank(Rank.SPECIES);
+    doc2.setRank(Rank.SPECIES); // 2: species
     n = new Name();
     n.setSpecificEpithet(THE_NAME);
     doc2.setNameStrings(new NameStrings(n));
@@ -125,7 +125,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
     EsNameUsage doc3 = new EsNameUsage();
     doc3.setDatasetKey(1);
     doc3.setUsageId("3");
-    doc3.setRank(Rank.SUBSPECIES);
+    doc3.setRank(Rank.SUBSPECIES); // 1: subspecies
     n = new Name();
     n.setInfraspecificEpithet(THE_NAME);
     doc3.setNameStrings(new NameStrings(n));
@@ -134,7 +134,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
     doc4.setDatasetKey(1);
     doc4.setUsageId("4");
     doc4.setRank(Rank.SUBSPECIES);
-    doc4.setVernacularNames(Arrays.asList(THE_NAME));
+    doc4.setVernacularNames(Arrays.asList(THE_NAME)); // 4: vernacular
 
     indexRaw(doc1, doc2, doc3, doc4);
 
@@ -305,7 +305,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void autocomplete1() {
+  public void test05() {
 
     // Define search
     NameUsageSearchRequest query = new NameUsageSearchRequest();
@@ -313,31 +313,31 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
     query.setQ("UNLIKE");
 
     // Match
-    NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw1 = minimalTaxon();
     List<String> vernaculars = Arrays.asList("AN UNLIKELY NAME");
     nuw1.setVernacularNames(create(vernaculars));
     index(nuw1);
 
     // Match
-    NameUsageWrapper nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw2 = minimalTaxon();
     vernaculars = Arrays.asList("ANOTHER NAME", "AN UNLIKELY NAME");
     nuw2.setVernacularNames(create(vernaculars));
     index(nuw2);
 
     // Match
-    NameUsageWrapper nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw3 = minimalTaxon();
     vernaculars = Arrays.asList("YET ANOTHER NAME", "ANOTHER NAME", "AN UNLIKELY NAME");
     nuw3.setVernacularNames(create(vernaculars));
     index(nuw3);
 
     // Match
-    NameUsageWrapper nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw4 = minimalTaxon();
     vernaculars = Arrays.asList("it's unlike capital case");
     nuw4.setVernacularNames(create(vernaculars));
     index(nuw4);
 
     // No match
-    NameUsageWrapper nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw5 = minimalTaxon();
     vernaculars = Arrays.asList("LIKE IT OR NOT");
     nuw5.setVernacularNames(create(vernaculars));
     index(nuw5);
@@ -348,7 +348,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void autocomplete2() {
+  public void test06() {
 
     // Define search
     NameUsageSearchRequest query = new NameUsageSearchRequest();
@@ -358,31 +358,31 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
     query.setQ("UNLIKE");
 
     // No match
-    NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw1 = minimalTaxon();
     List<String> vernaculars = Arrays.asList("AN UNLIKELY NAME");
     nuw1.setVernacularNames(create(vernaculars));
     index(nuw1);
 
     // No match
-    NameUsageWrapper nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw2 = minimalTaxon();
     vernaculars = Arrays.asList("ANOTHER NAME", "AN UNLIKELY NAME");
     nuw2.setVernacularNames(create(vernaculars));
     index(nuw2);
 
     // No match
-    NameUsageWrapper nuw3 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw3 = minimalTaxon();
     vernaculars = Arrays.asList("YET ANOTHER NAME", "ANOTHER NAME", "AN UNLIKELY NAME");
     nuw3.setVernacularNames(create(vernaculars));
     index(nuw3);
 
     // No match
-    NameUsageWrapper nuw4 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw4 = minimalTaxon();
     vernaculars = Arrays.asList("it's unlike capital case");
     nuw4.setVernacularNames(create(vernaculars));
     index(nuw4);
 
     // No match
-    NameUsageWrapper nuw5 = TestEntityGenerator.newNameUsageTaxonWrapper();
+    NameUsageWrapper nuw5 = minimalTaxon();
     vernaculars = Arrays.asList("LIKE IT OR NOT");
     nuw5.setVernacularNames(create(vernaculars));
     index(nuw5);
@@ -390,6 +390,61 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
     ResultPage<NameUsageWrapper> result = search(query);
 
     assertEquals(0, result.getResult().size());
+  }
+
+  @Test
+  public void vernacularNameTransliterationTest01() {
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.setHighlight(false);
+    query.setQ("Hier");
+    index(vernacularNameTransliterationTest_data());
+    ResultPage<NameUsageWrapper> result = search(query);
+    assertEquals(1, result.getResult().size());
+    assertEquals("1", result.getResult().iterator().next().getId());
+  }
+
+  @Test
+  public void vernacularNameTransliterationTest02() {
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.setHighlight(false);
+    query.setQ("hIEr");
+    index(vernacularNameTransliterationTest_data());
+    ResultPage<NameUsageWrapper> result = search(query);
+    assertEquals(1, result.getResult().size());
+    assertEquals("1", result.getResult().iterator().next().getId());
+  }
+
+  @Test
+  public void vernacularNameTransliterationTest03() {
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.setHighlight(false);
+    query.setQ("ȞȋȆr");
+    index(vernacularNameTransliterationTest_data());
+    ResultPage<NameUsageWrapper> result = search(query);
+    assertEquals(1, result.getResult().size());
+    assertEquals("1", result.getResult().iterator().next().getId());
+  }
+
+  public List<NameUsageWrapper> vernacularNameTransliterationTest_data() {
+
+    List<NameUsageWrapper> data = new ArrayList<>();
+
+    NameUsageWrapper nuw = minimalTaxon();
+    nuw.setId("1");
+    VernacularName vn = new VernacularName();
+    vn.setName("Hiërogliefen heersbeestje");
+    nuw.setVernacularNames(List.of(vn));
+    data.add(nuw);
+
+    nuw = minimalTaxon();
+    nuw.setId("2");
+    vn = new VernacularName();
+    vn.setName("Ăäuũîèçrōcō");
+    nuw.setVernacularNames(List.of(vn));
+    data.add(nuw);
+
+    return data;
+
   }
 
   private static boolean containsUsageIds(NameUsageSuggestResponse response, EsNameUsage... docs) {

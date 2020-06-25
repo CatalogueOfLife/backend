@@ -18,7 +18,7 @@ import static life.catalogue.es.nu.search.RequestTranslator.generateQuery;
  * take place within the current execution context (the document set produced by the main query). However we wilfully incur some performance
  * overhead by still making it take place within a separate execution context with exactly the same query as the main query. This allows for
  * huge streamlining of the code because the response from Elasticsearch will now always look the same. Besides, it's an unlikely scenario
- * (there will probably alsway be more than one facet). And also, since everything takes place in a filter context, Elasticsearch will
+ * (there will probably always be more than one facet). And also, since everything takes place in a filter context, Elasticsearch will
  * probably cache the filter, thus reducing the performance overhead.
  */
 public class FacetsTranslator {

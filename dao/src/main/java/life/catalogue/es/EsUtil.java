@@ -169,8 +169,8 @@ public class EsUtil {
   public static int deleteBareNames(RestClient client, String index, int datasetKey) {
     String statusField = NameUsageFieldLookup.INSTANCE.lookup(NameUsageSearchParameter.STATUS);
     BoolQuery query = BoolQuery.withFilters(
-      new TermQuery("datasetKey", datasetKey),
-      new IsNullQuery(statusField));
+        new TermQuery("datasetKey", datasetKey),
+        new IsNullQuery(statusField));
     return deleteByQuery(client, index, query);
   }
 
@@ -219,8 +219,8 @@ public class EsUtil {
   }
 
   /**
-   * Deletes all documents from the index, but leaves the index itself intact. Very impractical for production code, but nice for testing
-   * code.
+   * Deletes all documents from the index, but leaves the index itself intact. Impractical for production code, but nice for testing. Watch
+   * out with unit tests though. One test method may execute a query that allows ES to cache some filters!
    * 
    * @param client
    * @param index
