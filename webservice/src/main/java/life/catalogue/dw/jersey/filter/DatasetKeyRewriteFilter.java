@@ -44,7 +44,7 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
   private static final String LATEST_RELEASE_SUFFIX  = "LR";
   private static final Pattern LR_PATH  = Pattern.compile("dataset/(\\d+)" + LATEST_RELEASE_SUFFIX);
   // all parameters that contain dataset keys and which we check if they need to be rewritten
-  private static final Set<String> QUERY_PARAMS  = Set.of("datasetKey", "catalogueKey", "projectKey", "subjectDatasetKey");
+  private static final Set<String> QUERY_PARAMS  = Set.of("datasetkey", "cataloguekey", "projectkey", "subjectdatasetkey");
   private static final Set<String> METHODS  = Set.of(HttpMethod.GET, HttpMethod.OPTIONS, HttpMethod.HEAD);
 
   private SqlSessionFactory factory;
@@ -71,13 +71,12 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     // rewrite query params
     MultivaluedMap<String, String> params = req.getUriInfo().getQueryParameters();
     for( Map.Entry<String, List<String>> query : params.entrySet() ) {
-      String key = query.getKey();
-      if (QUERY_PARAMS.contains(key)) {
+      if (QUERY_PARAMS.contains(query.getKey().toLowerCase())) {
         Object[] values = query.getValue().stream()
           .map(this::rewriteDatasetKey)
           .toArray(String[]::new);
         if (!CollectionUtils.equals(query.getValue(), values)) {
-          builder.replaceQueryParam(key, values);
+          builder.replaceQueryParam(query.getKey(), values);
         }
       }
     }
