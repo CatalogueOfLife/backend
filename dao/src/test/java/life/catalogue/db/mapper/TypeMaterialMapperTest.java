@@ -4,6 +4,8 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.TypeMaterial;
 import life.catalogue.api.vocab.TypeStatus;
+import life.catalogue.dao.Partitioner;
+import life.catalogue.db.PgSetupRule;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -27,7 +29,13 @@ public class TypeMaterialMapperTest extends CRUDTestBase<DSID<String>, TypeMater
         return TestEntityGenerator.nullifyUserDate(obj);
     }
 
-    @Test
+  @Test
+  public void copyDataset() throws Exception {
+    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
+    mapper().copyDataset(datasetKey, 999);
+  }
+
+  @Test
     public void roundtrip2() throws Exception {
         TypeMaterial u1 = createTestEntity(datasetKey);
         mapper().create(u1);

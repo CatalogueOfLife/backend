@@ -1,20 +1,22 @@
 package life.catalogue.db.mapper;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.dao.Partitioner;
+import life.catalogue.db.PgSetupRule;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static life.catalogue.api.TestEntityGenerator.TAXON1;
@@ -32,7 +34,13 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
   public VerbatimRecordMapperTest() {
     super(VerbatimRecordMapper.class);
   }
-  
+
+  @Test
+  public void copyDataset() throws Exception {
+    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
+    mapper().copyDataset(datasetKey, 999);
+  }
+
   @Test
   public void roundtrip() {
     VerbatimRecord r1 = TestEntityGenerator.createVerbatim();
