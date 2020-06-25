@@ -62,6 +62,13 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   @QueryParam("content")
   private Set<SearchContent> content;
 
+  /**
+   * Whether to include vernacular names in the response.
+   * Defaults to false
+   */
+  @QueryParam("vernacular")
+  private boolean vernacular = false;
+
   @QueryParam("sortBy")
   private SortBy sortBy;
 
@@ -86,6 +93,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   public NameUsageSearchRequest(@JsonProperty("filter") Map<NameUsageSearchParameter, @Size(max = 1000) Set<Object>> filters,
       @JsonProperty("facet") Set<NameUsageSearchParameter> facets,
       @JsonProperty("content") Set<SearchContent> content,
+      @JsonProperty("vernacular") boolean vernacular,
       @JsonProperty("sortBy") SortBy sortBy,
       @JsonProperty("q") String q,
       @JsonProperty("highlight") boolean highlight,
@@ -97,6 +105,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     this.filters = filters == null ? new EnumMap<>(NameUsageSearchParameter.class) : new EnumMap<>(filters);
     this.facets = facets == null ? EnumSet.noneOf(NameUsageSearchParameter.class) : EnumSet.copyOf(facets);
     this.content = content == null ? EnumSet.noneOf(SearchContent.class) : EnumSet.copyOf(content);
+    this.vernacular = vernacular;
     setQ(q); // see comments there
     this.sortBy = sortBy;
     this.highlight = highlight;
@@ -126,6 +135,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
       copy.content = EnumSet.noneOf(SearchContent.class);
       copy.content.addAll(content);
     }
+    copy.vernacular = vernacular;
     copy.q = q;
     copy.sortBy = sortBy;
     copy.highlight = highlight;
@@ -201,6 +211,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
         (content == null || content.isEmpty())
         && (facets == null || facets.isEmpty())
         && (filters == null || filters.isEmpty())
+        && !vernacular
         && sortBy == null
         && !highlight
         && !reverse
@@ -309,6 +320,14 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     }
   }
 
+  public boolean isVernacular() {
+    return vernacular;
+  }
+
+  public void setVernacular(boolean vernacular) {
+    this.vernacular = vernacular;
+  }
+
   public SortBy getSortBy() {
     return sortBy;
   }
@@ -373,7 +392,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result = prime * result + Objects.hash(content, facets, filters, highlight, reverse, sortBy, prefix, minRank, maxRank);
+    result = prime * result + Objects.hash(content, vernacular, facets, filters, highlight, reverse, sortBy, prefix, minRank, maxRank);
     return result;
   }
 
@@ -392,6 +411,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     return Objects.equals(content, other.content) &&
         Objects.equals(facets, other.facets) &&
         Objects.equals(filters, other.filters) &&
+        vernacular == other.vernacular &&
         highlight == other.highlight &&
         reverse == other.reverse &&
         sortBy == other.sortBy &&

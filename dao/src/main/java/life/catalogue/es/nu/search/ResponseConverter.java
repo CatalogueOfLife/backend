@@ -1,14 +1,5 @@
 package life.catalogue.es.nu.search;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.UUID;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.FacetValue;
 import life.catalogue.api.search.NameUsageSearchParameter;
@@ -18,19 +9,15 @@ import life.catalogue.es.EsModule;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.UpwardConverter;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
-import life.catalogue.es.response.Bucket;
-import life.catalogue.es.response.EsFacet;
-import life.catalogue.es.response.EsResponse;
-import life.catalogue.es.response.FacetsContainer;
-import life.catalogue.es.response.SearchHit;
+import life.catalogue.es.response.*;
+
+import java.io.IOException;
+import java.util.*;
 
 /**
  * Converts the Elasticsearch response to a NameSearchResponse instance.
  */
 class ResponseConverter implements UpwardConverter<EsResponse<EsNameUsage>, NameUsageSearchResponse> {
-
-  // See https://github.com/CatalogueOfLife/backend/issues/200
-  private static final boolean INCLUDE_VERNACLUAR_NAMES = false;
 
   private final EsResponse<EsNameUsage> esResponse;
 
@@ -45,14 +32,17 @@ class ResponseConverter implements UpwardConverter<EsResponse<EsNameUsage>, Name
    * @return
    * @throws IOException
    */
-  NameUsageSearchResponse convertEsResponse(Page page) throws IOException {
+  NameUsageSearchResponse convertEsResponse(Page page, boolean inclVernaculars) throws IOException {
     int total = esResponse.getHits().getTotalNumHits();
-    List<NameUsageWrapper> nameUsages = convertNameUsageDocuments();
+    List<NameUsageWrapper> nameUsages = convertNameUsageDocuments(inclVernaculars);
     Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets = generateFacets();
     return new NameUsageSearchResponse(page, total, nameUsages, facets);
   }
 
-  private List<NameUsageWrapper> convertNameUsageDocuments() throws IOException {
+  /**
+   * @param inclVernaculars See https://github.com/CatalogueOfLife/backend/issues/200
+   */
+  private List<NameUsageWrapper> convertNameUsageDocuments(boolean inclVernaculars) throws IOException {
     List<SearchHit<EsNameUsage>> hits = esResponse.getHits().getHits();
     List<NameUsageWrapper> nuws = new ArrayList<>(hits.size());
     for (SearchHit<EsNameUsage> hit : hits) {
@@ -64,7 +54,7 @@ class ResponseConverter implements UpwardConverter<EsResponse<EsNameUsage>, Name
         nuw = EsModule.readNameUsageWrapper(payload);
       }
       NameUsageWrapperConverter.enrichPayload(nuw, hit.getSource());
-      if (!INCLUDE_VERNACLUAR_NAMES) {
+      if (!inclVernaculars) {
         nuw.setVernacularNames(null);
       }
       nuws.add(nuw);
