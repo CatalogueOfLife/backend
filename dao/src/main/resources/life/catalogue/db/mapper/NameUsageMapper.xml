@@ -59,7 +59,7 @@
     ${alias}remarks,
     ${alias}created_by,
     ${alias}modified_by,
-    ${alias}<!-- from TAXON -->
+    <!-- from TAXON -->
     ${alias}scrutinizer,
     ${alias}scrutinizer_date,
     ${alias}extinct,
