@@ -23,12 +23,13 @@ ALTER TABLE sector_import
     ADD COLUMN treatment_count INTEGER,
     ADD COLUMN taxon_relations_by_type_count HSTORE;
 
-//UPDATE dataset_import SET issues_count = ((issues_count || ('SCRUTINIZER_DATE_INVALID=>' || (issues_count->'ACCORDING_TO_DATE_INVALID')::text)::hstore) - 'ACCORDING_TO_DATE_INVALID') WHERE issues_count ? 'ACCORDING_TO_DATE_INVALID';
-//UPDATE sector_import ...
-
 ALTER TABLE name DROP COLUMN appended_phrase;
 ALTER TABLE name ADD COLUMN nomenclatural_note TEXT;
 ALTER TABLE name ADD COLUMN unparsed TEXT;
+
+ALTER TABLE parser_config DROP COLUMN appended_phrase;
+ALTER TABLE parser_config ADD COLUMN unparsed TEXT;
+ALTER TABLE parser_config ADD COLUMN remarks TEXT;
 
 ALTER TABLE name_usage RENAME COLUMN according_to TO scrutinizer;
 ALTER TABLE name_usage RENAME COLUMN according_to_date TO scrutinizer_date;
