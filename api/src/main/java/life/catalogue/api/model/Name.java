@@ -739,12 +739,12 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
       Matcher m = RANK_MATCHER.matcher(scientificName);
       if (m.find()) {
         StringBuilder sb = new StringBuilder();
-        sb.append(inItalics(m.group(1)));
+        sb.append(NameFormatter.inItalics(m.group(1)));
         sb.append(" ");
         sb.append(m.group(2));
         if (m.group(3) != null) {
           sb.append(" ");
-          sb.append(inItalics(m.group(3).trim()));
+          sb.append(NameFormatter.inItalics(m.group(3).trim()));
         }
         if (m.group(4) != null) {
           sb.append(" ");
@@ -753,15 +753,11 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
         return sb.toString();
 
       } else if(isParsed()) {
-        return inItalics(scientificName);
+        return NameFormatter.inItalics(scientificName);
       }
     }
     //TODO: Candidatus or Ca.
     return scientificName;
-  }
-
-  private static String inItalics(String x) {
-    return "<i>" + x + "</i>";
   }
 
   @Override

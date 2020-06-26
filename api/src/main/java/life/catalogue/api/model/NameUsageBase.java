@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.common.tax.NameFormatter;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -89,6 +90,12 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
       sb.append(namePhrase);
     }
     if (accordingTo != null) {
+      sb.append(" ");
+      if (html) {
+        sb.append(NameFormatter.inItalics("sensu"));
+      } else {
+        sb.append("sensu");
+      }
       sb.append(" ");
       sb.append(accordingTo);
     }

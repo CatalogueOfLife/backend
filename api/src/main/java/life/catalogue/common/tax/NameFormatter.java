@@ -69,6 +69,10 @@ public class NameFormatter {
     return sb.length() == 0 ? null : sb.toString();
   }
 
+  public static String inItalics(String x) {
+    return "<i>" + x + "</i>";
+  }
+
   /**
    * build a scientific name without authorship from a parsed Name instance.
    */
