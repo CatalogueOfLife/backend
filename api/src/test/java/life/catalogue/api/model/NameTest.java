@@ -106,6 +106,7 @@ public class NameTest extends SerdeTestBase<Name> {
   @Test
   public void scientificNameHtml() throws Exception {
     Name n = new Name();
+    n.setType(NameType.SCIENTIFIC);
     n.setRank(Rank.SPECIES);
     n.setGenus("Abies");
     n.setScientificName("Abies alba");
@@ -136,6 +137,12 @@ public class NameTest extends SerdeTestBase<Name> {
         assertEquals("<i>Abies alba</i> "+r.getMarker()+" <i>montana</i>", n.scientificNameHtml());
       }
     }
+
+    n = new Name();
+    n.setRank(Rank.SPECIES);
+    n.setScientificName("Abutilon yellows virus ICTV");
+    n.setType(NameType.VIRUS);
+    assertEquals("Abutilon yellows virus ICTV", n.scientificNameHtml());
   }
 
 }

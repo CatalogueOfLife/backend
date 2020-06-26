@@ -80,10 +80,10 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   public String getLabel(boolean html) {
     StringBuilder sb;
     if (name != null) {
-      sb = name.getLabelBuilder(false);
+      sb = name.getLabelBuilder(html);
     } else {
       sb = new StringBuilder();
-      sb.append("NULL-NAME");
+      sb.append("NO-NAME");
     }
     if (namePhrase != null) {
       sb.append(" ");
