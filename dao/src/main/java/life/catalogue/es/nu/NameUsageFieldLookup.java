@@ -1,33 +1,15 @@
 package life.catalogue.es.nu;
 
+import life.catalogue.api.search.NameUsageSearchParameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import life.catalogue.api.search.NameUsageSearchParameter;
-import static life.catalogue.api.search.NameUsageSearchParameter.ALPHAINDEX;
-import static life.catalogue.api.search.NameUsageSearchParameter.CATALOGUE_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.DECISION_MODE;
-import static life.catalogue.api.search.NameUsageSearchParameter.FIELD;
-import static life.catalogue.api.search.NameUsageSearchParameter.FOSSIL;
-import static life.catalogue.api.search.NameUsageSearchParameter.ISSUE;
-import static life.catalogue.api.search.NameUsageSearchParameter.NAME_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.NAME_INDEX_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.NOM_CODE;
-import static life.catalogue.api.search.NameUsageSearchParameter.NOM_STATUS;
-import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHED_IN_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.PUBLISHER_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.RANK;
-import static life.catalogue.api.search.NameUsageSearchParameter.RECENT;
-import static life.catalogue.api.search.NameUsageSearchParameter.SECTOR_DATASET_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.SECTOR_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.STATUS;
-import static life.catalogue.api.search.NameUsageSearchParameter.TAXON_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.TYPE;
+
 import static life.catalogue.api.search.NameUsageSearchParameter.*;
 
 /**
@@ -52,6 +34,7 @@ public class NameUsageFieldLookup extends EnumMap<NameUsageSearchParameter, Stri
     putSingle(FIELD, "nameFields");
     putSingle(FOSSIL, "fossil");
     putSingle(ISSUE, "issues");
+    putSingle(LIFEZONE, "lifezone");
     putSingle(NAME_ID, "nameId");
     putSingle(NAME_INDEX_ID, "nameIndexId");
     putSingle(NOM_CODE, "nomCode");
