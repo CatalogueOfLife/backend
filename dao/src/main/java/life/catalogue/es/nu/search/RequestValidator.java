@@ -28,6 +28,9 @@ class RequestValidator {
         throw invalidSearchRequest("When specifying a decision mode, a single catalogue key must also be specified");
       }
     }
+    if (request.hasFilter(LIFEZONE)) {
+      throw invalidSearchRequest("Searching by lifezones is not implemented yet");
+    }
   }
 
   private static InvalidQueryException invalidSearchRequest(String msg, Object... msgArgs) {
