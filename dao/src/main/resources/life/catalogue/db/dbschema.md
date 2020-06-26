@@ -71,9 +71,6 @@ CREATE TABLE taxon_rel (
   remarks TEXT
 ) PARTITION BY LIST (dataset_key);
 
-DROP TABLE description;
-DROP TYPE DESCRIPTIONCATEGORY;
-DROP TYPE TEXTFORMAT;
 
 CREATE TYPE TREATMENTFORMAT AS ENUM (
   'XML',
@@ -136,9 +133,37 @@ CREATE TYPE NAMEFIELD AS ENUM (
   'NAME_PHRASE',
   'ACCORDING_TO'
 );
-
 ```
 
+It is also required to run the `execSql --sql` command using the following sql template
+in order to drop all description partitions and update existing name & name_usage partitions: 
+```
+DROP TABLE description_{KEY}; 
+
+CREATE TABLE treatment_{KEY} (LIKE treatment INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+ALTER TABLE treatment ATTACH PARTITION treatment_{KEY} FOR VALUES IN ( {KEY} )
+
+CREATE TABLE taxon_rel_{KEY} (LIKE taxon_rel INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+ALTER TABLE taxon_rel ATTACH PARTITION taxon_rel_{KEY} FOR VALUES IN ( {KEY} )
+CREATE SEQUENCE taxon_rel_{KEY}_id_seq START 1;
+ALTER TABLE taxon_rel_{KEY} ALTER COLUMN id SET DEFAULT nextval('taxon_rel_{KEY}_id_seq');
+
+ALTER TABLE treatment_{KEY} ADD PRIMARY KEY (id);
+ALTER TABLE treatment_{KEY} ADD CONSTRAINT treatment_{KEY}_id_fk FOREIGN KEY (id) REFERENCES name_usage_{KEY} (id) ON DELETE CASCADE;
+ALTER TABLE treatment_{KEY} ADD CONSTRAINT treatment_{KEY}_reference_id_fk FOREIGN KEY (reference_id) REFERENCES reference_{KEY} (id) ON DELETE CASCADE;
+
+ALTER TABLE name_rel_{KEY} ADD CONSTRAINT name_rel_{KEY}_published_in_id_fk FOREIGN KEY (published_in_id) REFERENCES reference_{KEY} (id) ON DELETE CASCADE;
+ALTER TABLE name_rel_{KEY} ADD CONSTRAINT name_rel_{KEY}_verbatim_key_fk FOREIGN KEY (verbatim_key) REFERENCES verbatim_{KEY} (id) ON DELETE CASCADE; 
+ALTER TABLE media_{KEY} ADD CONSTRAINT media_{KEY}_reference_id_fk FOREIGN KEY (reference_id) REFERENCES reference_{KEY} (id) ON DELETE CASCADE;
+ALTER TABLE vernacular_name_{KEY} ADD CONSTRAINT vernacular_name_{KEY}_reference_id_fk FOREIGN KEY (reference_id) REFERENCES reference_{KEY} (id) ON DELETE CASCADE;
+```
+
+Then finally run this:
+```
+DROP TABLE description;
+DROP TYPE DESCRIPTIONCATEGORY;
+DROP TYPE TEXTFORMAT;
+```
 
 #### 2020-05-25 merge import states
 ```
@@ -478,5 +503,5 @@ CREATE TABLE type_material (
 ) PARTITION BY LIST (dataset_key);
 ```
 
-Afterwards it is required to run the `AddTableCmd -t type_material` using the cli tools
+Afterwards it is required to run the `AddTableCmd`` -t type_material` using the cli tools
 in order to create partitions for all existing datasets. 
