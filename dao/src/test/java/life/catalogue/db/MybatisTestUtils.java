@@ -86,7 +86,7 @@ public class MybatisTestUtils {
     n.setRank(rank);
     n.setOrigin(Origin.SOURCE);
     n.setType(NameType.SCIENTIFIC);
-    n.updateNameCache();
+    n.rebuildScientificName();
     nm.create(n);
     return n;
   }

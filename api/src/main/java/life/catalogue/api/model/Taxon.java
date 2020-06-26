@@ -15,13 +15,31 @@ import java.util.Set;
  *
  */
 public class Taxon extends NameUsageBase {
-  
-  private FuzzyDate accordingToDate;
+
+  private String scrutinizer;
+  private FuzzyDate scrutinizerDate;
   private Boolean extinct;
   private String temporalRangeStart;
   private String temporalRangeEnd;
   private Set<Lifezone> lifezones = EnumSet.noneOf(Lifezone.class);
-  
+
+  public Taxon() {
+  }
+
+  public Taxon(NameUsageBase other) {
+    super(other);
+  }
+
+  public Taxon(Taxon other) {
+    super(other);
+    this.scrutinizer = other.scrutinizer;
+    this.scrutinizerDate = other.scrutinizerDate;
+    this.extinct = other.extinct;
+    this.temporalRangeStart = other.temporalRangeStart;
+    this.temporalRangeEnd = other.temporalRangeEnd;
+    this.lifezones = other.lifezones;
+  }
+
   @Override
   public void setStatus(TaxonomicStatus status) {
     if (Preconditions.checkNotNull(status).isSynonym()) {
@@ -34,13 +52,21 @@ public class Taxon extends NameUsageBase {
   public boolean isProvisional() {
     return getStatus() == TaxonomicStatus.PROVISIONALLY_ACCEPTED;
   }
-  
-  public FuzzyDate getAccordingToDate() {
-    return accordingToDate;
+
+  public String getScrutinizer() {
+    return scrutinizer;
+  }
+
+  public void setScrutinizer(String scrutinizer) {
+    this.scrutinizer = scrutinizer;
+  }
+
+  public FuzzyDate getScrutinizerDate() {
+    return scrutinizerDate;
   }
   
-  public void setAccordingToDate(FuzzyDate accordingToDate) {
-    this.accordingToDate = accordingToDate;
+  public void setScrutinizerDate(FuzzyDate scrutinizerDate) {
+    this.scrutinizerDate = scrutinizerDate;
   }
   
   public Boolean isExtinct() {
@@ -89,7 +115,8 @@ public class Taxon extends NameUsageBase {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     Taxon taxon = (Taxon) o;
-    return Objects.equals(accordingToDate, taxon.accordingToDate) &&
+    return Objects.equals(scrutinizerDate, taxon.scrutinizerDate) &&
+        Objects.equals(scrutinizer, taxon.scrutinizer) &&
         Objects.equals(extinct, taxon.extinct) &&
         Objects.equals(temporalRangeStart, taxon.temporalRangeStart) &&
         Objects.equals(temporalRangeEnd, taxon.temporalRangeEnd) &&
@@ -98,6 +125,6 @@ public class Taxon extends NameUsageBase {
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), accordingToDate, extinct, temporalRangeStart, temporalRangeEnd, lifezones);
+    return Objects.hash(super.hashCode(), scrutinizer, scrutinizerDate, extinct, temporalRangeStart, temporalRangeEnd, lifezones);
   }
 }

@@ -1,9 +1,0 @@
-html5,HTML
-md,MARKDOWN
-plain,PLAIN_TEXT
-text,PLAIN_TEXT
-text/html,HTML
-text/markdown,MARKDOWN
-text/plain,PLAIN_TEXT
-text/x-markdown,MARKDOWN
-txt,PLAIN_TEXT

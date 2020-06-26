@@ -139,10 +139,10 @@ INSERT INTO __tax_keys (id) SELECT id FROM name_usage_{{datasetKey}};
 -- specialists aka scrutinizer
 CREATE TABLE __scrutinizer (key serial, dataset_key int, name text, unique(dataset_key, name));
 INSERT INTO __scrutinizer (name, dataset_key)
-    SELECT DISTINCT t.according_to, s.subject_dataset_key
+    SELECT DISTINCT t.scrutinizer, s.subject_dataset_key
         FROM name_usage_{{datasetKey}} t
             LEFT JOIN sector s ON t.sector_key=s.id
-        WHERE t.according_to IS NOT NULL;
+        WHERE t.scrutinizer IS NOT NULL;
 COPY (
     SELECT key AS record_id, name AS specialist_name, null AS specialist_code, coalesce(dataset_key, 1500) - 1000 AS database_id FROM __scrutinizer
 ) TO 'specialists.csv';
@@ -281,13 +281,13 @@ SELECT
   CASE WHEN n.rank > 'SPECIES'::rank THEN r.marker ELSE NULL END AS infraspecies_marker,  -- uses __ranks table created in AcExporter java code!
   CASE
     WHEN n.type IN ('SCIENTIFIC','INFORMAL') THEN
-        repl_ws(coalesce(v.terms ->> 'col:authorship', concat_ws(', ', n.authorship, n.remarks, n.appended_phrase)))
+        repl_ws(n.authorship)
     -- unparsable ones
     ELSE NULL
   END AS author,
   CASE WHEN t.is_synonym THEN t.parent_id ELSE t.id END AS accepted_name_code,
   t.remarks AS comment,
-  t.according_to_date AS scrutiny_date,
+  t.scrutinizer_date AS scrutiny_date,
   CASE WHEN t.status='ACCEPTED' THEN 1
        WHEN t.status='PROVISIONALLY_ACCEPTED' THEN 4
        WHEN t.status='SYNONYM' THEN 5
@@ -308,12 +308,11 @@ SELECT
   0 AS has_modern
 FROM name_{{datasetKey}} n
     JOIN name_usage_{{datasetKey}} t ON n.id=t.name_id
-    LEFT JOIN verbatim_{{datasetKey}} v  ON v.id=n.verbatim_key
     LEFT JOIN __classification c  ON t.id=c.id
     LEFT JOIN __classification cs ON t.parent_id=cs.id
     LEFT JOIN __classification cf ON c.family_id=cf.id
     LEFT JOIN __ranks r ON n.rank=r.key
-    LEFT JOIN __scrutinizer sc ON t.according_to=sc.name AND c.dataset_key=sc.dataset_key
+    LEFT JOIN __scrutinizer sc ON t.scrutinizer=sc.name AND c.dataset_key=sc.dataset_key
     LEFT JOIN __tax_keys tk ON t.id=tk.id
 WHERE n.rank >= 'SPECIES'::rank
 
@@ -332,7 +331,7 @@ SELECT
   NULL AS author,
   CASE WHEN t.is_synonym THEN t.parent_id ELSE t.id END AS accepted_name_code,
   t.remarks AS comment,
-  t.according_to_date AS scrutiny_date,
+  t.scrutinizer_date AS scrutiny_date,
   1 AS sp2000_status_id, -- 1=ACCEPTED
   coalesce(c.dataset_key, 1500) - 1000 AS database_id,
   sc.key AS specialist_id,
@@ -350,7 +349,7 @@ FROM name_{{datasetKey}} n
     LEFT JOIN name_usage_{{datasetKey}} tc ON tc.parent_id=t.id AND NOT t.is_synonym
     LEFT JOIN __classification c  ON t.id=c.id
     LEFT JOIN __classification cf ON c.family_id=cf.id
-    LEFT JOIN __scrutinizer sc ON t.according_to=sc.name AND c.dataset_key=sc.dataset_key
+    LEFT JOIN __scrutinizer sc ON t.scrutinizer=sc.name AND c.dataset_key=sc.dataset_key
     LEFT JOIN __tax_keys tk ON t.id=tk.id
 
 WHERE n.rank = 'GENUS'::rank

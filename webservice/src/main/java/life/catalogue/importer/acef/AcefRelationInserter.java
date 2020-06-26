@@ -1,6 +1,6 @@
 package life.catalogue.importer.acef;
 
-import life.catalogue.api.model.NameAccordingTo;
+import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.importer.RelationInserterBase;
@@ -24,7 +24,7 @@ public class AcefRelationInserter extends RelationInserterBase {
   private final AcefInterpreter inter;
   
   public AcefRelationInserter(NeoDb store, AcefInterpreter inter) {
-    super(store, AcefTerm.AcceptedTaxonID, AcefTerm.ParentSpeciesID);
+    super(store, AcefTerm.AcceptedTaxonID, AcefTerm.ParentSpeciesID, null);
     this.inter = inter;
   }
   
@@ -34,13 +34,13 @@ public class AcefRelationInserter extends RelationInserterBase {
       // finally we have all pieces to also interpret infraspecific names
       // even with a missing parent, we will still try to build a name
       final NeoName nn = store.nameByUsage(u.node);
-      Optional<NameAccordingTo> opt = Optional.empty();
+      Optional<ParsedNameUsage> opt = Optional.empty();
       if (p != null) {
         NeoName sp = store.nameByUsage(p);
         if (sp.name.getRank() != Rank.GENUS) {
           opt = inter.interpretName(true, u.getId(), v.get(AcefTerm.InfraSpeciesMarker), null, v.get(AcefTerm.InfraSpeciesAuthorString),
               sp.name.getGenus(), sp.name.getInfragenericEpithet(), sp.name.getSpecificEpithet(), v.get(AcefTerm.InfraSpeciesEpithet),
-              null,null, null, v.get(AcefTerm.GSDNameStatus), null, null, v);
+              null, null, v.get(AcefTerm.GSDNameStatus), null, null, v);
         }
       }
     

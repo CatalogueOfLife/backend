@@ -158,9 +158,6 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
-  <select id="countDescription" resultType="integer">
-    SELECT count(*) FROM description_${key}
-  </select>
   <select id="countDistribution" resultType="integer">
     SELECT count(*) FROM distribution_${key}
   </select>
@@ -181,6 +178,9 @@
   </select>
   <select id="countSynonym" resultType="integer">
     SELECT count(*) FROM name_usage_${key} WHERE is_synonym
+  </select>
+  <select id="countTreatment" resultType="integer">
+    SELECT count(*) FROM treatment_${key}
   </select>
   <select id="countVerbatim" resultType="integer">
     SELECT count(*) FROM verbatim_${key}
@@ -240,6 +240,11 @@
     FROM name_usage_${key} t JOIN name_${key} n ON t.name_id=n.id
     WHERE NOT t.is_synonym
     GROUP BY n.rank
+  </select>
+  <select id="countTaxonRelationsByType" resultType="StringCount">
+    SELECT type AS key, count(*) AS count
+    FROM taxon_rel_${key}
+    GROUP BY type
   </select>
   <select id="countUsagesByStatus" resultType="StringCount">
     SELECT status AS key, count(*) AS count

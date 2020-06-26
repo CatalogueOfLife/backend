@@ -34,7 +34,6 @@ public class CatCopy {
   static {
     extMapper.put(EntityType.DISTRIBUTION, DistributionMapper.class);
     extMapper.put(EntityType.VERNACULAR, VernacularNameMapper.class);
-    extMapper.put(EntityType.DESCRIPTION, DescriptionMapper.class);
     extMapper.put(EntityType.MEDIA, MediaMapper.class);
   }
 
@@ -105,7 +104,9 @@ public class CatCopy {
           }
           mapper.create(e, t.getId());
         });
-        
+
+      } else if (EntityType.TREATMENT == type) {
+        // TODO copy treatment
       } else if (EntityType.NAME_RELATION == type) {
         // TODO copy name rels
       }

@@ -1,8 +1,5 @@
 package life.catalogue.importer.neo;
 
-import java.util.Map;
-import java.util.stream.Stream;
-
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
 import com.google.common.base.Preconditions;
@@ -19,6 +16,9 @@ import org.mapdb.Serializer;
 import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+import java.util.stream.Stream;
 
 public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
   private static final Logger LOG = LoggerFactory.getLogger(NeoCRUDStore.class);
@@ -155,7 +155,7 @@ public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
   public void update(T obj) {
     Preconditions.checkNotNull(obj.getNode());
     if (!(obj.getNode() instanceof NodeMock)) {
-      Map<String,Object> props = obj.propLabel();
+      PropLabel props = obj.propLabel();
       if (props != null && !props.isEmpty()) {
         NeoDbUtils.addProperties(obj.getNode(), props);
       }

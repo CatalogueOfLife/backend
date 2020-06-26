@@ -1,11 +1,11 @@
 package life.catalogue.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import org.apache.commons.lang3.StringUtils;
-import org.gbif.nameparser.api.ParsedName;
 
 import javax.annotation.Nonnull;
 import java.net.URI;
@@ -27,14 +27,35 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   @Nonnull
   private Origin origin;
   private String parentId;
-  private String accordingTo;
+  private String namePhrase;
+  private String accordingTo; // read-only
+  private String accordingToId;
   private URI link;
   private String remarks;
   /**
    * All bibliographic reference ids for the given name usage
    */
   private List<String> referenceIds = new ArrayList<>();
-  
+
+  public NameUsageBase() {
+  }
+
+  public NameUsageBase(NameUsageBase other) {
+    super(other);
+    this.sectorKey = other.sectorKey;
+    this.verbatimKey = other.verbatimKey;
+    this.name = other.name;
+    this.status = other.status;
+    this.origin = other.origin;
+    this.parentId = other.parentId;
+    this.namePhrase = other.namePhrase;
+    this.accordingTo = other.accordingTo;
+    this.accordingToId = other.accordingToId;
+    this.link = other.link;
+    this.remarks = other.remarks;
+    this.referenceIds = other.referenceIds;
+  }
+
   @Override
   public Integer getVerbatimKey() {
     return verbatimKey;
@@ -46,10 +67,32 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   }
 
   @Override
-  public ParsedName toParsedName() {
-    ParsedName pn = Name.toParsedName(this.getName());
-    pn.setTaxonomicNote(accordingTo);
-    return pn;
+  public String getLabel() {
+    return getLabel(false);
+  }
+
+  @Override
+  public String getLabelHtml() {
+    return getLabel(true);
+  }
+
+  public String getLabel(boolean html) {
+    StringBuilder sb;
+    if (name != null) {
+      sb = name.getLabelBuilder(false);
+    } else {
+      sb = new StringBuilder();
+      sb.append("NULL-NAME");
+    }
+    if (namePhrase != null) {
+      sb.append(" ");
+      sb.append(namePhrase);
+    }
+    if (accordingTo != null) {
+      sb.append(" ");
+      sb.append(accordingTo);
+    }
+    return sb.toString();
   }
 
   @Override
@@ -77,7 +120,17 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
       this.status = Preconditions.checkNotNull(status);
     }
   }
-  
+
+  @Override
+  public String getNamePhrase() {
+    return namePhrase;
+  }
+
+  @Override
+  public void setNamePhrase(String namePhrase) {
+    this.namePhrase = namePhrase;
+  }
+
   @JsonIgnore
   public boolean isProvisional() {
     return status == TaxonomicStatus.PROVISIONALLY_ACCEPTED;
@@ -100,20 +153,23 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   public void setParentId(String key) {
     this.parentId = key;
   }
-  
-  @Override
+
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   public String getAccordingTo() {
     return accordingTo;
   }
-  
+
   public void setAccordingTo(String accordingTo) {
     this.accordingTo = accordingTo;
   }
+
+  @Override
+  public String getAccordingToId() {
+    return accordingToId;
+  }
   
-  public void addAccordingTo(String accordingTo) {
-    if (!StringUtils.isBlank(accordingTo)) {
-      this.accordingTo = this.accordingTo == null ? accordingTo.trim() : this.accordingTo + " " + accordingTo.trim();
-    }
+  public void setAccordingToId(String accordingToId) {
+    this.accordingToId = accordingToId;
   }
   
   @Override
@@ -172,7 +228,8 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
       status == that.status &&
       origin == that.origin &&
       Objects.equals(parentId, that.parentId) &&
-      Objects.equals(accordingTo, that.accordingTo) &&
+      Objects.equals(namePhrase, that.namePhrase) &&
+      Objects.equals(accordingToId, that.accordingToId) &&
       Objects.equals(link, that.link) &&
       Objects.equals(remarks, that.remarks) &&
       Objects.equals(referenceIds, that.referenceIds);
@@ -180,11 +237,11 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, name, status, origin, parentId, accordingTo, link, remarks, referenceIds);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, name, status, origin, parentId, namePhrase, accordingToId, link, remarks, referenceIds);
   }
 
   @Override
   public String toString() {
-    return getClass().getSimpleName() + "{" + name.canonicalNameComplete() + " [" + getId() + "]}";
+    return getClass().getSimpleName() + "{" + name.getLabel(false) + " [" + getId() + "]}";
   }
 }

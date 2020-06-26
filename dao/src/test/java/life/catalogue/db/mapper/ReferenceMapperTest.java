@@ -8,6 +8,8 @@ import life.catalogue.api.model.Reference;
 import life.catalogue.api.search.ReferenceSearchRequest;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.dao.Partitioner;
+import life.catalogue.db.PgSetupRule;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
@@ -43,7 +45,13 @@ public class ReferenceMapperTest extends CRUDDatasetScopedStringTestBase<Referen
     obj.setYear(983);
     obj.setPage("p.19735");
   }
-  
+
+  @Test
+  public void copyDataset() throws Exception {
+    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
+    mapper().copyDataset(datasetKey, 999);
+  }
+
   @Test
   public void count2() throws Exception {
     // we start with 3 records in reference table, inserted through

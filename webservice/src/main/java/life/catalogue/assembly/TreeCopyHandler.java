@@ -171,7 +171,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
         n.setRank(r);
         n.setType(NameType.SCIENTIFIC);
         n.setSectorKey(sector.getId());
-        n.updateNameCache();
+        n.rebuildScientificName();
         // make sure we have a name: https://github.com/CatalogueOfLife/backend/issues/735
         if (n.getScientificName() == null) {
           LOG.warn("Could not create implicit name for rank {} from {}: {}", r, origName.getScientificName(), n);
@@ -225,7 +225,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     if (skipUsage(u)) {
       state.setIgnoredUsageCount(++ignoredCounter);
       // skip this taxon, but include children
-      LOG.debug("Ignore {} {} [{}] type={}; status={}", u.getName().getRank(), u.getName().scientificNameAuthorship(), u.getId(), u.getName().getType(), u.getName().getNomStatus());
+      LOG.debug("Ignore {} {} [{}] type={}; status={}", u.getName().getRank(), u.getName().getLabel(), u.getId(), u.getName().getType(), u.getName().getNomStatus());
       // use taxons parent also as the parentID for this so children link one level up
       ids.put(u.getId(), ids.getOrDefault(u.getParentId(), target));
       return;
@@ -299,10 +299,10 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
             final String name = n2.getScientificName() + " " + coalesce(n2.getAuthorship(), "");
             NomCode code = coalesce(n2.getCode(), n.getCode());
             Rank rank = coalesce(n2.getRank(), n.getRank());
-            NameAccordingTo nat = NameParser.PARSER.parse(name, rank, code, IssueContainer.VOID).orElseGet(() -> {
+            ParsedNameUsage nat = NameParser.PARSER.parse(name, rank, code, IssueContainer.VOID).orElseGet(() -> {
               LOG.warn("Unparsable decision name {}", name);
               // add the full, unparsed authorship in this case to not lose it
-              NameAccordingTo nat2 = new NameAccordingTo();
+              ParsedNameUsage nat2 = new ParsedNameUsage();
               nat2.getName().setScientificName(n2.getScientificName());
               nat2.getName().setAuthorship(n2.getAuthorship());
               return nat2;
@@ -324,8 +324,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
             n.setCombinationAuthorship(nn.getCombinationAuthorship());
             n.setBasionymAuthorship(nn.getBasionymAuthorship());
             n.setSanctioningAuthor(nn.getSanctioningAuthor());
-            n.setAppendedPhrase(nn.getAppendedPhrase());
-            
+
           } else if (n2.getAuthorship() != null) {
             // no full name, just changing authorship
             n.setAuthorship(n2.getAuthorship());
@@ -359,7 +358,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
           try {
             u.setStatus(ed.getStatus());
           } catch (IllegalArgumentException e) {
-            LOG.warn("Cannot convert {} {} {} into {}", u.getName().getRank(), u.getStatus(), u.getName().canonicalNameWithAuthorship(), ed.getStatus(), e);
+            LOG.warn("Cannot convert {} {} {} into {}", u.getName().getRank(), u.getStatus(), u.getName().getLabel(), ed.getStatus(), e);
           }
         }
         if (u.isTaxon()) {

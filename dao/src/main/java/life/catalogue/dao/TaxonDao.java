@@ -81,7 +81,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       List<Name> group = Lists.newArrayList();
       for (Synonym s : sm.listByTaxon(datasetKey, taxonId)) {
         if (TaxonomicStatus.MISAPPLIED == s.getStatus()) {
-          syn.addMisapplied(new NameAccordingTo(s.getName(), s.getAccordingTo()));
+          syn.addMisapplied(s);
         } else {
           if (accName.getHomotypicNameId().equals(s.getName().getHomotypicNameId())) {
             syn.getHomotypic().add(s.getName());
@@ -136,9 +136,9 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     SynonymMapper sm = session.getMapper(SynonymMapper.class);
     DistributionMapper dim = session.getMapper(DistributionMapper.class);
     VernacularNameMapper vm = session.getMapper(VernacularNameMapper.class);
-    DescriptionMapper dem = session.getMapper(DescriptionMapper.class);
     MediaMapper mm = session.getMapper(MediaMapper.class);
     ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
+    TreatmentMapper trm = session.getMapper(TreatmentMapper.class);
     TypeMaterialMapper tmm = session.getMapper(TypeMaterialMapper.class);
 
     TaxonInfo info = new TaxonInfo();
@@ -151,10 +151,13 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     info.setSynonyms(sm.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
     info.getSynonyms().forEach(s -> refIds.addAll(s.getReferenceIds()));
 
+    // treatment
+    info.setTreatment(trm.get(taxon));
+    if (info.getTreatment() != null && info.getTreatment().getReferenceId() != null) {
+      refIds.add(info.getTreatment().getReferenceId());
+    }
+
     // add all supplementary taxon infos
-    info.setDescriptions(dem.listByTaxon(taxon));
-    info.getDescriptions().forEach(d -> refIds.add(d.getReferenceId()));
-    
     info.setDistributions(dim.listByTaxon(taxon));
     info.getDistributions().forEach(d -> refIds.add(d.getReferenceId()));
     
@@ -235,20 +238,16 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   
   static void parseName(Name n) {
     if (!n.isParsed()) {
-      //TODO: pass in real verbatim record
-      VerbatimRecord v = new VerbatimRecord();
-      final String authorship = n.getAuthorship();
-      NameParser.PARSER.parse(n, v).ifPresent(nat -> {
-        // try to add an authorship if not yet there
-        NameParser.PARSER.parseAuthorshipIntoName(nat, authorship, v);
-      });
-      
+      NameParser.PARSER.parse(n, IssueContainer.VOID);
     } else {
       if (n.getType() == null) {
         n.setType(NameType.SCIENTIFIC);
       }
+      n.rebuildScientificName();
+      if (n.getAuthorship() == null) {
+        n.rebuildAuthorship();
+      }
     }
-    n.updateNameCache();
   }
   
   @Override

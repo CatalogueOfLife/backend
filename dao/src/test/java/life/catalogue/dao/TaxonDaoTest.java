@@ -9,12 +9,13 @@ import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.SectorMapperTest;
 import life.catalogue.db.mapper.SynonymMapper;
-import life.catalogue.db.TestDataRule;
 import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
+import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
@@ -33,34 +34,35 @@ public class TaxonDaoTest extends DaoTestBase {
   static int user = TestEntityGenerator.USER_EDITOR.getKey();
   
   @Test
-  public void testInfo() throws Exception {
+  public void testInfo() {
     final int datasetKey = DATASET11.getKey();
     TaxonInfo info = tDao.getTaxonInfo(datasetKey, TAXON1.getId());
     BeanPrinter.out(info);
-    
+
     // See apple.sql
     assertEquals("root-1", info.getTaxon().getId());
     assertEquals(1, info.getTaxon().getReferenceIds().size());
     assertEquals(3, info.getVernacularNames().size());
     assertEquals(2, info.getReferences().size());
-    
+
     Set<String> refKeys1 = new HashSet<>();
     info.getReferences().values().forEach(r -> refKeys1.add(r.getId()));
-    
-    Set<String> refKeys2 = new HashSet<>();
-    refKeys2.addAll(info.getTaxon().getReferenceIds());
-    
-    Stream.concat(
-        info.getDescriptions().stream(),
+
+    Set<String> refKeys2 = new HashSet<>(info.getTaxon().getReferenceIds());
+
+    Stream<Referenced> refStream = Stream.concat(
+      Stream.of(info.getTreatment()),
+      Stream.concat(
+        info.getDistributions().stream(),
         Stream.concat(
-            info.getDistributions().stream(),
-            Stream.concat(
-                info.getMedia().stream(),
-                info.getVernacularNames().stream()
-            )
+          info.getMedia().stream(),
+          info.getVernacularNames().stream()
         )
-    ).filter(r -> r.getReferenceId() != null)
-     .forEach(r -> refKeys2.add(r.getReferenceId()));
+      )
+    );
+    refStream
+      .filter(r -> r != null && r.getReferenceId() != null)
+      .forEach(r -> refKeys2.add(r.getReferenceId()));
 
 		assertEquals(refKeys1, refKeys2);
 
@@ -84,9 +86,9 @@ public class TaxonDaoTest extends DaoTestBase {
       }
     }
   }
-  
+
   @Test
-  public void synonyms() throws Exception {
+  public void synonyms() {
     try (SqlSession session = session()) {
       SynonymMapper sm = session.getMapper(SynonymMapper.class);
       
@@ -173,7 +175,7 @@ public class TaxonDaoTest extends DaoTestBase {
       assertEquals(1, synonymy.getMisapplied().size());
       
       synonymy = tDao.getSynonymy(TAXON2);
-      
+      assertEquals(2, synonymy.size());
     }
   }
   
@@ -192,17 +194,17 @@ public class TaxonDaoTest extends DaoTestBase {
   @Test
   public void create() {
     final int datasetKey = DATASET11.getKey();
-    // try minimal atomized version
+    // parsed
     Name n = new Name();
     n.setUninomial("Abies");
-    n.setScientificName("Abies Miller");
+    n.setCombinationAuthorship(Authorship.authors("Miller"));
     n.setRank(Rank.GENUS);
     Taxon t = new Taxon();
     t.setName(n);
     t.setDatasetKey(datasetKey);
     t.setStatus(TaxonomicStatus.ACCEPTED);
     
-    DSID id = tDao.create(t, USER_EDITOR.getKey());
+    DSID<String> id = tDao.create(t, USER_EDITOR.getKey());
     
     Taxon t2 = tDao.get(id);
     assertNotNull(t2.getId());
@@ -213,15 +215,17 @@ public class TaxonDaoTest extends DaoTestBase {
     assertEquals(Rank.GENUS, t2.getName().getRank());
     assertEquals("Abies", t2.getName().getScientificName());
     assertEquals("Abies", t2.getName().getUninomial());
+    assertEquals("Miller", t2.getName().getAuthorship());
+    assertEquals(Authorship.authors("Miller"), t2.getName().getCombinationAuthorship());
+    assertTrue(t2.getName().getBasionymAuthorship().isEmpty());
     assertNull(t2.getName().getGenus());
     assertNull(t2.getName().getSpecificEpithet());
     assertEquals(t2.getName().getId(), t2.getName().getHomotypicNameId());
     assertNotNull(t2.getName().getId());
-    assertNull(t2.getName().getAuthorship());
     assertEquals(NameType.SCIENTIFIC, t2.getName().getType());
 
 
-    // try minimal atomized version
+    // unparsed
     n = new Name();
     n.setRank(Rank.SPECIES);
     n.setScientificName("Abies alba");
@@ -242,11 +246,12 @@ public class TaxonDaoTest extends DaoTestBase {
     assertEquals(Rank.SPECIES, t2.getName().getRank());
     assertEquals("Abies alba", t2.getName().getScientificName());
     assertEquals("Miller, 1999", t2.getName().getAuthorship());
-    assertEquals("Miller", t2.getName().getCombinationAuthorship().getAuthors().get(0));
-    assertEquals("1999", t2.getName().getCombinationAuthorship().getYear());
+    assertEquals(Authorship.yearAuthors("1999", "Miller"), t2.getName().getCombinationAuthorship());
+    assertTrue(t2.getName().getBasionymAuthorship().isEmpty());
     assertNull(t2.getName().getUninomial());
     assertEquals("Abies", t2.getName().getGenus());
     assertEquals("alba", t2.getName().getSpecificEpithet());
+    assertNull(t2.getName().getInfraspecificEpithet());
     assertEquals(t2.getName().getId(), t2.getName().getHomotypicNameId());
     assertNotNull(t2.getName().getId());
     assertEquals(NameType.SCIENTIFIC, t2.getName().getType());

@@ -1,8 +1,5 @@
 package life.catalogue.importer.neo.model;
 
-import java.util.List;
-import java.util.Objects;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import life.catalogue.api.model.*;
@@ -10,6 +7,9 @@ import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Simple wrapper to hold a normalizer node together with all data for a record
@@ -32,7 +32,7 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
   public boolean homotypic = false;
 
   // supplementary infos for a taxon
-  public List<Description> descriptions = Lists.newArrayList();
+  public Treatment treatment;
   public List<Distribution> distributions = Lists.newArrayList();
   public List<Media> media = Lists.newArrayList();
   public List<VernacularName> vernacularNames = Lists.newArrayList();
@@ -136,6 +136,20 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
   }
   
   /**
+   * Converts the current synonym usage into a taxon instance
+   * @param status new taxon status
+   * @return the replaced synonym usage
+   */
+  public Synonym convertToTaxon(TaxonomicStatus status) {
+    Preconditions.checkArgument(isSynonym(), "Usage needs to be a synonym");
+    Preconditions.checkArgument(!status.isSynonym(), "Status needs to be a taxon status");
+    final Synonym s = getSynonym();
+    usage = new Taxon(usage);
+    usage.setStatus(status);
+    return s;
+  }
+
+  /**
    * Converts the current taxon usage into a synonym instance
    * @param status new synonym status
    * @return the replaced taxon usage
@@ -144,15 +158,8 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
     Preconditions.checkArgument(!isSynonym(), "Usage needs to be a taxon");
     Preconditions.checkArgument(status.isSynonym(), "Status needs to be a synonym status");
     final Taxon t = getTaxon();
-    final Synonym syn = new Synonym();
-    syn.setId(t.getId());
-    syn.setName(t.getName());
-    syn.setOrigin(t.getOrigin());
-    syn.setAccordingTo(t.getAccordingTo());
-    syn.setVerbatimKey(t.getVerbatimKey());
-    syn.setStatus(status);
-    usage = syn;
-    
+    usage = new Synonym(usage);
+    usage.setStatus(status);
     return t;
   }
   
@@ -163,7 +170,7 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
     NeoUsage neoUsage = (NeoUsage) o;
     return this.equalNode(neoUsage) &&
         Objects.equals(usage, neoUsage.usage) &&
-        Objects.equals(descriptions, neoUsage.descriptions) &&
+        Objects.equals(treatment, neoUsage.treatment) &&
         Objects.equals(distributions, neoUsage.distributions) &&
         Objects.equals(media, neoUsage.media) &&
         Objects.equals(vernacularNames, neoUsage.vernacularNames) &&
@@ -174,6 +181,6 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
   @Override
   public int hashCode() {
     
-    return Objects.hash(node, usage, descriptions, distributions, media, vernacularNames, classification, remarks);
+    return Objects.hash(node, usage, treatment, distributions, media, vernacularNames, classification, remarks);
   }
 }

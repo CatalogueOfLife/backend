@@ -66,7 +66,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     // Match
     NameUsageWrapper nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
-    nuw2.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID));
+    nuw2.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.SCRUTINIZER_DATE_INVALID));
     insert(client, indexName(), converter.toDocument(nuw2));
 
     // Match
@@ -107,7 +107,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     // Find all documents with an issue of either ACCEPTED_NAME_MISSING or ACCORDING_TO_DATE_INVALID
     NameUsageSearchRequest nsr = new NameUsageSearchRequest();
-    nsr.addFilter(NameUsageSearchParameter.ISSUE, EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID));
+    nsr.addFilter(NameUsageSearchParameter.ISSUE, EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.SCRUTINIZER_DATE_INVALID));
 
     // Match
     NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
@@ -116,7 +116,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     // Match
     NameUsageWrapper nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
-    nuw2.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID));
+    nuw2.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.SCRUTINIZER_DATE_INVALID));
     insert(client, indexName(), converter.toDocument(nuw2));
 
     // Match
@@ -165,7 +165,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     nsr.setHighlight(false);
     nsr.addFilter(NameUsageSearchParameter.ISSUE,
         Issue.ACCEPTED_NAME_MISSING,
-        Issue.ACCORDING_TO_DATE_INVALID,
+        Issue.SCRUTINIZER_DATE_INVALID,
         Issue.BASIONYM_ID_INVALID);
 
     // Match
@@ -175,7 +175,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     // Match
     NameUsageWrapper nuw2 = TestEntityGenerator.newNameUsageTaxonWrapper();
-    nuw2.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.ACCORDING_TO_DATE_INVALID));
+    nuw2.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.SCRUTINIZER_DATE_INVALID));
     insert(client, indexName(), converter.toDocument(nuw2));
 
     // Match

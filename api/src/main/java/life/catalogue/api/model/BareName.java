@@ -18,7 +18,18 @@ public class BareName implements NameUsage {
   public BareName(Name name) {
     this.name = name;
   }
-  
+
+
+  @Override
+  public String getLabel() {
+    return name.getLabel(false);
+  }
+
+  @Override
+  public String getLabelHtml() {
+    return name.getLabel(true);
+  }
+
   @Override
   public String getId() {
     return null;
@@ -49,16 +60,27 @@ public class BareName implements NameUsage {
   }
   
   @Override
-  public String getAccordingTo() {
+  public String getAccordingToId() {
     return null;
   }
   
   @Override
-  public void setAccordingTo(String according) {
-    // nothing, throw if new status is supposed to be non null
+  public void setAccordingToId(String according) {
+    // nothing, throw if according is supposed to be non null
     if (according != null) throw new IllegalArgumentException("Bare names do not have an accordingTo");
   }
-  
+
+  @Override
+  public String getNamePhrase() {
+    return null;
+  }
+
+  @Override
+  public void setNamePhrase(String namePhrase) {
+    // nothing, throw if namePhrase is supposed to be non null
+    if (namePhrase != null) throw new IllegalArgumentException("Bare names do not have a usage namePhrase");
+  }
+
   @Override
   public String getRemarks() {
     return name.getRemarks();

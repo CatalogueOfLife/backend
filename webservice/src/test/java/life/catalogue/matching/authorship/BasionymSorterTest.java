@@ -164,7 +164,7 @@ public class BasionymSorterTest {
     assertFalse(g.getRecombinations().isEmpty());
     assertEquals(6, g.getRecombinations().size());
     assertNotNull(g.getBasionym());
-    assertEquals("G.Kirchn.", g.getBasionym().authorshipComplete());
+    assertEquals("G.Kirchn.", g.getBasionym().getAuthorship());
   }
 
   @Test

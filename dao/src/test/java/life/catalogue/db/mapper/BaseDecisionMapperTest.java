@@ -1,13 +1,10 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DatasetScopedEntity;
-import life.catalogue.db.CRUD;
-import life.catalogue.db.DatasetPageable;
+import life.catalogue.dao.Partitioner;
+import life.catalogue.db.PgSetupRule;
 import org.junit.Test;
-
-import static org.junit.Assert.assertNull;
 
 /**
  *
@@ -17,6 +14,12 @@ abstract class BaseDecisionMapperTest<T extends DatasetScopedEntity<Integer>, R,
 
   public BaseDecisionMapperTest(Class<M> mapperClazz) {
     super(mapperClazz);
+  }
+
+  @Test
+  public void copyDataset() throws Exception {
+    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
+    mapper().copyDataset(datasetKey, 999);
   }
 
   T createTestEntityIncId(int datasetKey) {

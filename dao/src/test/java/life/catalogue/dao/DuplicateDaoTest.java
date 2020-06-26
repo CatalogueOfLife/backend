@@ -296,14 +296,14 @@ public class DuplicateDaoTest {
     for (Duplicate d : dups) {
       System.out.println("\n#" + idx++ + "  " + d.getKey() + " ---");
       for (Duplicate.UsageDecision u : d.getUsages()) {
-        System.out.print(" " + u.getUsage().getId() + "  " + u.getUsage().getName().canonicalNameWithAuthorship() + "  " + u.getUsage().getStatus());
+        System.out.print(" " + u.getUsage().getId() + "  " + u.getUsage().getName().getLabel() + "  " + u.getUsage().getStatus());
         System.out.print(" -- " + u.getUsage().getName().getAuthorshipNormalized() + " -- ");
         if (u.getUsage().isSynonym()) {
           Synonym s = (Synonym) u.getUsage();
-          System.out.println(", pid=" + s.getParentId() + ", acc=" + s.getAccepted().getName().getScientificName());
-        } else if (u.getUsage().isTaxon()) {
+          System.out.println(", pid="+s.getParentId() + ", acc="+s.getAccepted().getName().getScientificName());
+        } else if (u.getUsage().isTaxon()){
           Taxon t = (Taxon) u.getUsage();
-          System.out.println(", pid=" + t.getParentId());
+          System.out.println(", pid="+t.getParentId());
         }
       }
     }

@@ -1,14 +1,17 @@
 package life.catalogue.importer;
 
 import com.google.common.collect.Lists;
+import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.*;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.importer.neo.NeoDb;
+import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.reference.ReferenceFactory;
 import life.catalogue.parser.*;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
@@ -36,10 +39,11 @@ public class InterpreterBase {
   
   private static final Logger LOG = LoggerFactory.getLogger(InterpreterBase.class);
   protected static final Pattern AREA_VALUE_PATTERN = Pattern.compile("[\\w\\s:.-]+", Pattern.UNICODE_CHARACTER_CLASS);
+  static final Pattern SEC_REF = Pattern.compile("\\b(sensu|sec\\.?|fide|auct\\.?|according to) (?!lat|str|non|nec|auct(?:orum)?)(.{3,})$", Pattern.CASE_INSENSITIVE);
   private static final int MIN_YEAR = 1500;
   private static final int MAX_YEAR = Year.now().getValue() + 10;
   private static final Pattern YEAR_PATTERN = Pattern.compile("^(\\d{3,4})\\s*(\\?)?(?!\\d)");
-  
+
   protected final NeoDb store;
   protected final DatasetSettings settings;
   private final Gazetteer distributionStandard;
@@ -76,6 +80,57 @@ public class InterpreterBase {
         v.addIssue(Issue.REFERENCE_ID_INVALID);
       } else {
         refIdConsumer.accept(ref.getId());
+      }
+    }
+    return ref;
+  }
+
+  /**
+   * Sets a taxonomic note to usage namePhrase or a proper accordingTo reference if parsable
+   */
+  protected void setTaxonomicNote(NameUsageBase u, String taxNote, VerbatimRecord v) {
+    if (!StringUtils.isBlank(taxNote)) {
+      v.addIssue(Issue.AUTHORSHIP_CONTAINS_TAXONOMIC_NOTE);
+      Matcher m = SEC_REF.matcher(taxNote);
+      if (m.find()) {
+        setAccordingTo(u, m.group(2).trim(), v);
+        String remainder = m.replaceFirst("");
+        if (!StringUtils.isBlank(remainder)) {
+          u.setNamePhrase(remainder.trim());
+        }
+      } else {
+        u.setNamePhrase(taxNote);
+      }
+    }
+  }
+
+  protected void setAccordingTo(NameUsageBase u, String accordingTo, VerbatimRecord v) {
+    Reference ref = buildReference(accordingTo, v);
+    if (ref != null) {
+      if (u.getAccordingToId() != null) {
+        v.addIssue(Issue.ACCORDING_TO_CONFLICT);
+      }
+      u.setAccordingToId(ref.getId());
+    }
+  }
+
+  protected void setPublishedIn(Name n, String publishedIn, VerbatimRecord v) {
+    Reference ref = buildReference(publishedIn, v);
+    if (ref != null) {
+      n.setPublishedInId(ref.getId());
+      n.setPublishedInPage(ref.getPage());
+      n.setPublishedInYear(ref.getYear());
+    }
+  }
+
+  protected Reference buildReference(String citation, VerbatimRecord v) {
+    Reference ref = null;
+    if (!StringUtils.isBlank(citation)){
+      ref = refFactory.fromCitation(null, citation, v);
+      if (ref.getVerbatimKey() == null) {
+        // create new reference with verbatim key, we've never seen this before!
+        ref.setVerbatimKey(v.getId());
+        store.references().create(ref);
       }
     }
     return ref;
@@ -181,23 +236,6 @@ public class InterpreterBase {
     return words;
   }
 
-  protected List<Description> interpretDescription(VerbatimRecord rec, BiConsumer<Description, VerbatimRecord> addReference,
-                                                   Term description, Term category, Term format, Term lang) {
-    // require non empty description
-    if (rec.hasTerm(description)) {
-      Description d = new Description();
-      d.setVerbatimKey(rec.getId());
-      d.setCategory(rec.get(category));
-      d.setFormat(SafeParser.parse(TextFormatParser.PARSER, rec.get(format)).orNull());
-      d.setDescription(rec.get(description));
-      d.setLanguage(SafeParser.parse(LanguageParser.PARSER, rec.get(lang)).orNull());
-  
-      addReference.accept(d, rec);
-  
-      return Lists.newArrayList(d);
-    }
-    return Collections.emptyList();
-  }
   
   protected List<Media> interpretMedia(VerbatimRecord rec, BiConsumer<Media, VerbatimRecord> addReference,
                  Term type, Term url, Term link, Term license, Term creator, Term created, Term title, Term format) {
@@ -289,34 +327,33 @@ public class InterpreterBase {
     }
   }
 
-  public Optional<NameAccordingTo> interpretName(final boolean preferAtoms, final String id, final String vrank, final String sciname, final String authorship,
+  public Optional<ParsedNameUsage> interpretName(final boolean preferAtoms, final String id, final String vrank, final String sciname, final String authorship,
                                                  final String genus, final String infraGenus, final String species, final String infraspecies,
-                                                 final String cultivar,final String phrase,
+                                                 final String cultivar,
                                                  String nomCode, String nomStatus,
                                                  String link, String remarks, VerbatimRecord v) {
     // this can be wrong in some cases, e.g. in DwC records often scientificName and just a genus is given
-    final boolean isAtomized = ObjectUtils.anyNotNull(genus, infraGenus, species, infraspecies);
+    final boolean isAtomized = ObjectUtils.anyNonBlank(genus, infraGenus, species, infraspecies);
     final boolean useAtoms   = isAtomized && (preferAtoms || sciname == null);
 
     // parse rank & code as they improve name parsing
     Rank rank = SafeParser.parse(RankParser.PARSER, vrank).orElse(Rank.UNRANKED, Issue.RANK_INVALID, v);
-    final NomCode code = SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse(settings.getEnum(Setting.NOMENCLATURAL_CODE), Issue.NOMENCLATURAL_CODE_INVALID, v);
+    final NomCode code = SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse((NomCode) settings.getEnum(Setting.NOMENCLATURAL_CODE), Issue.NOMENCLATURAL_CODE_INVALID, v);
 
-    NameAccordingTo nat;
+    ParsedNameUsage pnu;
 
     // we can get the scientific name in various ways.
     // we prefer already atomized names as we want to trust humans more than machines
     if (useAtoms) {
-      nat = new NameAccordingTo();
+      pnu = new ParsedNameUsage();
       Name atom = new Name();
-      nat.setName(atom);
+      pnu.setName(atom);
 
       atom.setGenus(genus);
       atom.setInfragenericEpithet(infraGenus);
       atom.setSpecificEpithet(lowercaseEpithet(species, v));
       atom.setInfraspecificEpithet(lowercaseEpithet(infraspecies, v));
       atom.setCultivarEpithet(cultivar);
-      atom.setAppendedPhrase(phrase);
       atom.setRank(rank);
       atom.setCode(code);
       setDefaultNameType(atom);
@@ -329,16 +366,17 @@ public class InterpreterBase {
       if (rank.otherOrUnranked()) {
         atom.setRank(RankUtils.inferRank(atom));
       }
+      atom.rebuildScientificName();
 
       // parse the reconstructed name without authorship to detect name type and potential problems
-      Optional<NameAccordingTo> natFromAtom = NameParser.PARSER.parse(atom.canonicalNameComplete(), rank, code, v);
-      if (natFromAtom.isPresent()) {
-        final Name pn = natFromAtom.get().getName();
+      Optional<ParsedNameUsage> pnuFromAtom = NameParser.PARSER.parse(atom.getLabel(), rank, code, v);
+      if (pnuFromAtom.isPresent()) {
+        final Name pn = pnuFromAtom.get().getName();
 
         // check name type if its parsable - otherwise we should not use name atoms
         if (!pn.getType().isParsable()) {
-          LOG.info("Atomized name {} appears to be of type {}. Use scientific name only", atom.canonicalNameComplete(), pn.getType());
-          nat.setName(pn);
+          LOG.info("Atomized name {} appears to be of type {}. Use scientific name only", atom.getLabel(), pn.getType());
+          pnu.setName(pn);
         } else if (pn.isParsed()) {
           // if parsed compare with original atoms
           if (
@@ -348,7 +386,7 @@ public class InterpreterBase {
                   !Objects.equals(atom.getSpecificEpithet(), pn.getSpecificEpithet()) ||
                   !Objects.equals(atom.getInfraspecificEpithet(), pn.getInfraspecificEpithet())
           ) {
-            LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", pn.canonicalNameComplete(), atom.canonicalNameComplete());
+            LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", pn.getLabel(), atom.getLabel());
             v.addIssue(Issue.PARSED_NAME_DIFFERS);
           }
         }
@@ -359,7 +397,7 @@ public class InterpreterBase {
       }
 
     } else if (sciname != null) {
-      nat = NameParser.PARSER.parse(sciname, rank, code, v).get();
+      pnu = NameParser.PARSER.parse(sciname, rank, code, v).get();
 
     } else {
       LOG.info("No name given for {}", id);
@@ -367,34 +405,83 @@ public class InterpreterBase {
     }
 
     // try to add an authorship if not yet there
-    NameParser.PARSER.parseAuthorshipIntoName(nat, authorship, v);
+    NameParser.PARSER.parseAuthorshipIntoName(pnu, authorship, v);
 
     // common basics
-    nat.getName().setId(id);
-    nat.getName().setVerbatimKey(v.getId());
-    nat.getName().setOrigin(Origin.SOURCE);
-    nat.getName().setLink(parse(UriParser.PARSER, link).orNull());
-    // name status can be explicitly given or as part of the name remarks
-    nat.getName().setNomStatus(parse(NomStatusParser.PARSER, nomStatus).orElse(
-        parse(NomStatusParser.PARSER, nat.getName().getRemarks()).orNull(), Issue.NOMENCLATURAL_STATUS_INVALID, v)
-    );
+    pnu.getName().setId(id);
+    pnu.getName().setVerbatimKey(v.getId());
+    pnu.getName().setOrigin(Origin.SOURCE);
+    pnu.getName().setLink(parse(UriParser.PARSER, link).orNull());
+    pnu.getName().setRemarks(remarks);
     // applies default dataset code if we cannot find or parse any
     // Always make sure this happens BEFORE we update the canonical scientific name
-    nat.getName().setCode(code);
-    // we add only to already parsed remarks
-    nat.getName().addRemark(remarks);
-    nat.getName().addRemark(nomStatus);
+    pnu.getName().setCode(code);
+
+    // name status can be explicitly given or as part of the nom notes from the authorship
+    // dont store the explicit name status, it only remains as verbatim and interpreted data
+    // see https://github.com/CatalogueOfLife/backend/issues/760
+    NomStatus status           = parse(NomStatusParser.PARSER, nomStatus).orNull(Issue.NOMENCLATURAL_STATUS_INVALID, v);
+    NomStatus statusAuthorship = parse(NomStatusParser.PARSER, pnu.getName().getNomenclaturalNote()).orNull(Issue.NOMENCLATURAL_STATUS_INVALID, v);
+    if (statusAuthorship != null) {
+      v.addIssue(Issue.AUTHORSHIP_CONTAINS_NOMENCLATURAL_NOTE);
+    }
+    // both given? do they match up?
+    if (status != null && statusAuthorship != null) {
+      if (status != statusAuthorship && !status.isCompatible(statusAuthorship)) {
+        v.addIssue(Issue.CONFLICTING_NOMENCLATURAL_STATUS);
+      }
+    }
+    pnu.getName().setNomStatus(life.catalogue.api.util.ObjectUtils.coalesce(status, statusAuthorship));
 
     // assign best rank
-    if (rank.notOtherOrUnranked() || nat.getName().getRank() == null) {
+    if (rank.notOtherOrUnranked() || pnu.getName().getRank() == null) {
       // TODO: check ACEF ranks...
-      nat.getName().setRank(rank);
+      pnu.getName().setRank(rank);
     }
 
     // finally update the scientificName with the canonical form if we can
-    nat.getName().updateNameCache();
+    pnu.getName().rebuildScientificName();
 
-    return Optional.of(nat);
+    return Optional.of(pnu);
+  }
+
+  public NeoUsage interpretUsage(ParsedNameUsage pnu, Term taxStatusTerm, TaxonomicStatus defaultStatus, VerbatimRecord v, Term... idTerms) {
+    NeoUsage u;
+    // a synonym by status?
+    EnumNote<TaxonomicStatus> status = SafeParser.parse(TaxonomicStatusParser.PARSER, v.get(taxStatusTerm))
+      .orElse(()->new EnumNote<>(defaultStatus, null), Issue.TAXONOMIC_STATUS_INVALID, v);
+    if (status.val.isSynonym()) {
+      u = NeoUsage.createSynonym(Origin.SOURCE, pnu.getName(), status.val);
+    } else {
+      u = NeoUsage.createTaxon(Origin.SOURCE, pnu.getName(), status.val);
+      if (pnu.isExtinct()) {
+        ((Taxon) u.usage).setExtinct(true);
+      }
+    }
+
+    // shared usage props
+    u.setId(v.getFirstRaw(idTerms));
+    u.setVerbatimKey(v.getId());
+    setTaxonomicNote(u.usage, pnu.getTaxonomicNote(), v);
+    u.homotypic = TaxonomicStatusParser.isHomotypic(status);
+    if (pnu.isExtinct()) {
+      // flag this also for synonyms which cannot have the extinct flag
+      v.addIssue(Issue.NAME_CONTAINS_EXTINCT_SYMBOL);
+    }
+
+    // flat classification via dwc or coldp
+    u.classification = new Classification();
+    if (v.hasDwcTerms()) {
+      for (DwcTerm t : DwcTerm.HIGHER_RANKS) {
+        u.classification.setByTerm(t, v.get(t));
+      }
+    }
+    if (v.hasColdpTerms()) {
+      for (ColdpTerm t : ColdpTerm.DENORMALIZED_RANKS) {
+        u.classification.setByTerm(t, v.get(t));
+      }
+    }
+    return u;
   }
 
   protected void setLifezones(Taxon t, VerbatimRecord v, Term lifezone) {

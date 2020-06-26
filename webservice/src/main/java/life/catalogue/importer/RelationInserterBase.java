@@ -1,13 +1,10 @@
 package life.catalogue.importer;
 
-import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.NodeBatchProcessor;
-import life.catalogue.importer.neo.model.Labels;
-import life.catalogue.importer.neo.model.NeoName;
-import life.catalogue.importer.neo.model.NeoProperties;
-import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.importer.neo.NeoDb;
+import life.catalogue.importer.neo.NodeBatchProcessor;
+import life.catalogue.importer.neo.model.*;
 import org.gbif.dwc.terms.Term;
 import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
@@ -22,11 +19,13 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
   protected final NeoDb store;
   private final Term acceptedTerm;
   private final Term parentTerm;
-  
-  public RelationInserterBase(NeoDb store, Term acceptedTerm, Term parentTerm) {
+  private final Term originalNameTerm;
+
+  public RelationInserterBase(NeoDb store, Term acceptedTerm, Term parentTerm, Term originalNameTerm) {
     this.store = store;
     this.acceptedTerm = acceptedTerm;
     this.parentTerm = parentTerm;
+    this.originalNameTerm = originalNameTerm;
   }
   
   @Override
@@ -63,13 +62,19 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
       } catch (Exception e) {
         LOG.error("error processing explicit relations for usage {} {}", n, NeoProperties.getRankedUsage(n), e);
       }
-    } else if (n.hasLabel(Labels.NAME)){
 
+    } else if (originalNameTerm != null && n.hasLabel(Labels.NAME)){
       try {
         NeoName nn = store.names().objByNode(n);
         if (nn.getVerbatimKey() != null) {
           VerbatimRecord v = store.getVerbatim(nn.getVerbatimKey());
-          processVerbatimName(nn, v);
+          Node o = nameByID(originalNameTerm, v, nn, Issue.BASIONYM_ID_INVALID);
+          if (o != null) {
+            NeoRel rel = new NeoRel();
+            rel.setType(RelType.HAS_BASIONYM);
+            rel.setVerbatimKey(nn.getVerbatimKey());
+            store.createNeoRel(nn.node, o, rel);
+          }
           store.put(v);
         }
       } catch (Exception e) {
@@ -87,14 +92,6 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
   protected void processVerbatimUsage(NeoUsage u, VerbatimRecord v, Node p) {
     // override to do further processing per usage node
   }
-  
-  /**
-   * @param n
-   * @param v
-   */
-  protected void processVerbatimName(NeoName n, VerbatimRecord v) {
-    // override to do further processing per name node
-  }
 
   /**
    * Reads a verbatim idTerm that should represent a foreign key to another record via the taxonID.
@@ -109,6 +106,18 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
     final String id = v.getRaw(idTerm);
     if (id != null && !id.equals(u.getId())) {
       n = store.usages().nodeByID(id);
+      if (n == null) {
+        v.addIssue(invalidIssue);
+      }
+    }
+    return n;
+  }
+
+  protected Node nameByID(Term idTerm, VerbatimRecord v, NeoName nn, Issue invalidIssue) {
+    Node n = null;
+    final String id = v.getRaw(idTerm);
+    if (id != null && !id.equals(nn.getId())) {
+      n = store.names().nodeByID(id);
       if (n == null) {
         v.addIssue(invalidIssue);
       }

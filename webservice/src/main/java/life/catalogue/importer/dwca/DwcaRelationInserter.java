@@ -9,6 +9,7 @@ import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.common.text.StringUtils;
 import life.catalogue.importer.MappingFlags;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.NeoDb;
@@ -118,10 +119,10 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
     if (v != null && meta.isOriginalNameMapped()) {
       RankedName bas = nameByIdOrName(v, n, DwcTerm.originalNameUsageID, Issue.BASIONYM_ID_INVALID, DwcTerm.originalNameUsage, Origin.VERBATIM_BASIONYM);
       if (bas != null) {
-        NeoNameRel rel = new NeoNameRel();
+        NeoRel rel = new NeoRel();
         rel.setType(RelType.HAS_BASIONYM);
         rel.setVerbatimKey(v.getId());
-        store.createNameRel(n.node, bas.nameNode, rel);
+        store.createNeoRel(n.node, bas.nameNode, rel);
       }
     }
   }
@@ -224,7 +225,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
           name.setOrigin(createdOrigin);
           NeoName nn = new NeoName((name));
           Node n2 = store.names().create(nn);
-          return new RankedName(n2, name.getScientificName(), name.authorshipComplete(), name.getRank());
+          return new RankedName(n2, name.getScientificName(), name.getAuthorship(), name.getRank());
         }
     );
   }
@@ -279,8 +280,10 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
       if (!name.getScientificName().equalsIgnoreCase(source.name)) {
         List<Node> matches = store.names().nodesByName(name.getScientificName());
         // remove other authors, but allow names without authors
-        if (name.hasAuthorship()) {
-          matches.removeIf(n -> !Strings.isNullOrEmpty(NeoProperties.getAuthorship(n)) && !NeoProperties.getAuthorship(n).equalsIgnoreCase(name.authorshipComplete()));
+        if (!matches.isEmpty() && name.hasAuthorship()) {
+          matches.removeIf(n -> !Strings.isNullOrEmpty(NeoProperties.getAuthorship(n))
+            && !StringUtils.equalsIgnoreCaseAndSpace(NeoProperties.getAuthorship(n), name.getAuthorship())
+          );
         }
         
         // transform to usage nodes if requested, preferring taxon nodes over synonyms

@@ -109,8 +109,14 @@ public enum Issue {
       "Epithet without genus"),
   
   NOMENCLATURAL_STATUS_INVALID(NAME, Level.WARNING,
-      "dwc:nomenclaturalStatus could not be interpreted"),
-  
+      "The nomenclatural status could not be interpreted"),
+
+  AUTHORSHIP_CONTAINS_NOMENCLATURAL_NOTE(NAME, Level.INFO,
+    "The name authorship contains nomenclatural status notes that are transferred to the name"),
+
+  CONFLICTING_NOMENCLATURAL_STATUS(NAME, Level.WARNING,
+    "The name authorship contains nomenclatural status notes which conflict with the explicitly given status"),
+
   NOMENCLATURAL_CODE_INVALID(NAME, Level.ERROR,
       "dwc:nomenclaturalCode could not be interpreted"),
   
@@ -149,7 +155,7 @@ public enum Issue {
           "This might indicate that the name should rather be a recombination."),
   
   BASIONYM_ID_INVALID(NAME, Level.ERROR,
-      "The value for dwc:originalNameUsageID could not be resolved."),
+      "The name id pointing to a related original name could not be resolved."),
   
   RANK_INVALID(NAME, Level.ERROR,
       "dwc:taxonRank could not be interpreted"),
@@ -165,6 +171,9 @@ public enum Issue {
   
   NAME_VARIANT(NAME, Level.INFO,
       "Multiple variants of the same name appear several times in the dataset."),
+
+  AUTHORSHIP_CONTAINS_TAXONOMIC_NOTE(NAME, Level.INFO,
+    "The name authorship contains taxonomic notes that are transferred to the name usage"),
 
 
   //
@@ -215,11 +224,14 @@ public enum Issue {
   
   IS_EXTINCT_INVALID(NAME_USAGE, Level.WARNING,
       "acef:IsExtinct contains values that cannot be interpreted"),
-  
+
+  NAME_CONTAINS_EXTINCT_SYMBOL(NAME_USAGE, Level.INFO,
+    "The usage extinct flag was set because the name contained an extinct symbol"),
+
   GEOTIME_INVALID(NAME_USAGE, Level.WARNING,
       "The geochronological time given cannot be interpreted"),
 
-  ACCORDING_TO_DATE_INVALID(NAME_USAGE, Level.ERROR,
+  SCRUTINIZER_DATE_INVALID(NAME_USAGE, Level.ERROR,
       "acef:LTSDate cannot be interpreted into a date"),
   
   CHAINED_SYNONYM(NAME_USAGE, Level.ERROR,
@@ -261,7 +273,10 @@ public enum Issue {
 
   REFTYPE_INVALID(NAME_USAGE, Level.ERROR,
       "ACEF reference type values unparsable or missing"),
-  
+
+  ACCORDING_TO_CONFLICT(NAME_USAGE, Level.WARNING,
+    "The taxonomic concept reference was given explicitly and implicitly through the names authorship"),
+
   //
   // VERNACULAR ISSUES
   //

@@ -40,7 +40,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage t = usageByID("1099-sp16");
       assertFalse(t.isSynonym());
-      assertEquals("Pinus palustris Mill.", t.usage.getName().canonicalNameWithAuthorship());
+      assertEquals("Pinus palustris Mill.", t.usage.getName().getLabel());
       assertEquals(URI.create("http://dx.doi.org/10.3897/BDJ.2.e1099"), t.getTaxon().getLink());
     }
   }
@@ -312,17 +312,25 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       for (Node n : Iterators.loop(store.getNeo().findNodes(Labels.USAGE))) {
         u = store.usageWithName(n);
         if (u.usage.getName().getOrigin() == Origin.SOURCE) {
-          System.out.println(u.usage.getStatus() + ": " + u.usage.getName().canonicalNameWithAuthorship());
+          System.out.println(u.usage.getStatus() + ": " + u.usage.getName().getLabel());
           System.out.println("  " + u.usage.getName().getRemarks());
-          System.out.println("  " + u.usage.getAccordingTo());
-          assertNotNull(u.usage.getAccordingTo());
+          System.out.println("  " + u.usage.getAccordingToId());
+          assertNotNull(u.usage.getAccordingToId());
         }
       }
-      
+
+      // 8	Phylata	Anthurium lanceum Engl., nom. illeg., non. A. lancea.	Markus
       u = usageByID("8");
-      assertEquals("Anthurium lanceum Engl.", u.usage.getName().canonicalNameWithAuthorship());
-      assertEquals("nom.illeg.", u.usage.getName().getRemarks());
-      assertEquals("Markus non. A.lancea.", u.usage.getAccordingTo());
+      assertEquals("Anthurium lanceum", u.usage.getName().getScientificName());
+      assertEquals("Engl.", u.usage.getName().getAuthorship());
+      assertEquals("nom.illeg.", u.usage.getName().getNomenclaturalNote());
+      assertNull(u.usage.getName().getRemarks());
+
+      assertEquals("non. A.lancea.", u.usage.getNamePhrase());
+      assertNull(u.usage.getName().getRemarks());
+      assertNotNull(u.usage.getAccordingToId());
+      Reference sec = accordingTo(u.usage);
+      assertEquals("Markus", sec.getCitation());
       assertEquals(NomStatus.UNACCEPTABLE, u.usage.getName().getNomStatus());
       //assertTrue(store.getVerbatim(u.usage.getName().getVerbatimKey()).hasIssue(Issue.PARTIALLY_PARSABLE_NAME));
     }

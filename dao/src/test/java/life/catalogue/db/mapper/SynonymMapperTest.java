@@ -71,7 +71,7 @@ public class SynonymMapperTest extends CRUDDatasetScopedStringTestBase<Synonym, 
   @Override
   void updateTestObj(Synonym obj) {
     obj.setOrigin(Origin.IMPLICIT_NAME);
-    obj.setAccordingTo("traralala");
+    obj.setAccordingToId("traralala");
   }
   
   @Test
@@ -161,7 +161,7 @@ public class SynonymMapperTest extends CRUDDatasetScopedStringTestBase<Synonym, 
     syn.setId(UUID.randomUUID().toString());
     syn.setParentId(TestEntityGenerator.TAXON2.getId());
     syn.setStatus(TaxonomicStatus.MISAPPLIED);
-    syn.setAccordingTo("auct. Döring");
+    syn.setAccordingToId("auct. Döring");
     synonymMapper.create(syn);
     commit();
     

@@ -5,6 +5,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.NameDao;
+import life.catalogue.dao.Partitioner;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.es.NameUsageIndexService;
@@ -36,6 +37,12 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
     tm = mapper(TaxonMapper.class);
     sm = mapper(SynonymMapper.class);
     nm = mapper(NameMapper.class);
+  }
+
+  @Test
+  public void copyDataset() throws Exception {
+    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
+    mapper().copyDataset(datasetKey, 999);
   }
 
   @Test

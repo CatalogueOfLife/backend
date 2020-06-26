@@ -4,6 +4,9 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DatasetScopedEntity;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.TaxonExtension;
+import life.catalogue.api.vocab.Datasets;
+import life.catalogue.dao.Partitioner;
+import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import org.junit.Test;
 
@@ -28,7 +31,13 @@ abstract class TaxonExtensionMapperTest<T extends DatasetScopedEntity<Integer>, 
    * @return at least 3 entities, more allowed !
    */
   abstract List<T> createTestEntities();
-  
+
+  @Test
+  public void copyDataset() throws Exception {
+    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
+    mapper().copyDataset(Datasets.DRAFT_COL, 999);
+  }
+
   @Test
   public void roundtrip() throws Exception {
     // prepare taxon to hook extensions to

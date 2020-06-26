@@ -1,9 +1,9 @@
 package life.catalogue.api.model;
 
-import java.util.Objects;
-
 import com.google.common.base.Preconditions;
 import life.catalogue.api.vocab.TaxonomicStatus;
+
+import java.util.Objects;
 
 /**
  * A taxonomic synonym, linking a name to potentially multiple taxa.
@@ -12,7 +12,19 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 public class Synonym extends NameUsageBase {
   
   private Taxon accepted;
-  
+
+  public Synonym() {
+  }
+
+  public Synonym(NameUsageBase other) {
+    super(other);
+  }
+
+  public Synonym(Synonym other) {
+    super(other);
+    this.accepted = other.accepted;
+  }
+
   @Override
   public void setStatus(TaxonomicStatus status) {
     if (!Preconditions.checkNotNull(status).isSynonym()) {

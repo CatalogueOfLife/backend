@@ -4,6 +4,7 @@ import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.vocab.Issue;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * A parsing utility class wrapping a Parser<T> instance so that no UnparsableException is thrown.
@@ -88,7 +89,7 @@ public class SafeParser<T> {
    * @return the parsed value if present, null if empty or unparsable
    */
   public T orNull(Issue unparsableIssue, IssueContainer issueCollector) {
-    return orElse(null, unparsableIssue, issueCollector);
+    return orElse(() -> null, unparsableIssue, issueCollector);
   }
 
   /**
@@ -98,12 +99,19 @@ public class SafeParser<T> {
    * @return the parsed value if present, other if empty or unparsable
    */
   public T orElse(T other, Issue unparsableIssue, IssueContainer issueCollector) {
+    return orElse(()->other, unparsableIssue, issueCollector);
+  }
+
+  /**
+   * Same as orElse but using the supplier syntax
+   */
+  public T orElse(Supplier<T> other, Issue unparsableIssue, IssueContainer issueCollector) {
     if (isParsable()) {
-      return result.orElse(other);
+      return result.orElse(other.get());
 
     } else {
       issueCollector.addIssue(unparsableIssue);
-      return other;
+      return other.get();
     }
   }
 }

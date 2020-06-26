@@ -4,10 +4,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
-import life.catalogue.api.model.NameAccordingTo;
+import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.vocab.NomStatus;
-import org.gbif.nameparser.ParserConfigs;
 import org.gbif.nameparser.api.*;
 import org.junit.Test;
 
@@ -59,12 +58,32 @@ public class NameParserTest {
   }
 
   @Test
+  public void normalizeAuthorship() throws Exception {
+    assertEquals("Brouss. ex Willd.", NameParser.normalizeAuthorship("Brouss. ex Willd.", null));
+    assertEquals("(St.John) Sachet", NameParser.normalizeAuthorship("(St.John) Sachet", null));
+    assertEquals("Trautv. & Meyer", NameParser.normalizeAuthorship("Trautv.&Meyer", null));
+    assertEquals("Trautv. & Meyer", NameParser.normalizeAuthorship("Trautv. & Meyer", null));
+    assertEquals("Rossi, 1988", NameParser.normalizeAuthorship("Rossi 1988 non DC.1988", "non DC. 1988"));
+    assertEquals("Rossi, 1790", NameParser.normalizeAuthorship("Rossi, 1790", null));
+    assertEquals("Rossi, 1790", NameParser.normalizeAuthorship("Rossi 1790", null));
+    assertEquals("(Rossi, 1790)", NameParser.normalizeAuthorship("(Rossi 1790)", null));
+    assertEquals("(Ridl.) ined.", NameParser.normalizeAuthorship("(Ridl.) ined.", null));
+    assertEquals("(L.) DC", NameParser.normalizeAuthorship("( L.)DC ", null));
+    assertEquals("(Walther & Rück) van der Damme & Resorbin, 1999", NameParser.normalizeAuthorship("( Walther&Rück ) van der Damme and Resorbin 1999", null));
+    assertEquals("Miller, 1989", NameParser.normalizeAuthorship("Miller 1989 sensu Carol 2001", "sensu Carol 2001"));
+
+    assertNull(NameParser.normalizeAuthorship("(non Scacchi, 1836) sensu Zibrowius, 1968", "(non Scacchi, 1836) sensu Zibrowius, 1968"));
+    assertEquals("Fischer-Le Saux et al., 1999", NameParser.normalizeAuthorship("Fischer-Le Saux et al., 1999 emend. Akhurst et al., 2004", "emend. Akhurst et al. , 2004"));
+    assertEquals("Engl., nom. illeg.", NameParser.normalizeAuthorship("Engl., nom. illeg., non. A. lancea.", "non. A.lancea."));
+  }
+
+  @Test
   public void parseManuscript() throws Exception {
     assertName("Acranthera virescens (Ridl.) ined.", "Acranthera virescens")
           .species("Acranthera", "virescens")
           .basAuthors(null, "Ridl.")
           .type(NameType.SCIENTIFIC)
-          .remarks("ined.")
+          .nomNote("ined.")
           .status(NomStatus.MANUSCRIPT)
           .nothingElse();
   }
@@ -97,7 +116,7 @@ public class NameParserTest {
         .species("Acranthera", "virescens")
         .basAuthors(null, "Ridl.")
         .status(NomStatus.MANUSCRIPT)
-        .remarks("ined.")
+        .nomNote("ined.")
         .nothingElse();
 
     assertName("Alstonia vieillardii Van Heurck & Müll.Arg.", "Alstonia vieillardii")
@@ -133,7 +152,7 @@ public class NameParserTest {
         .infraSpecies("Baccharis", "microphylla", Rank.VARIETY, "rhomboidea")
         .combAuthors(null, "Sch.Bip.")
         .combExAuthors("Wedd.")
-        .remarks("nom.nud.")
+        .nomNote("nom.nud.")
         .nothingElse();
     
     assertName("Achillea millefolium subsp. pallidotegula B. Boivin var. pallidotegula", "Achillea millefolium var. pallidotegula")
@@ -292,7 +311,7 @@ public class NameParserTest {
   }
   
   static NameAssertion assertName(String rawName, Rank rank, NomCode code, String sciname, NameType type) throws UnparsableException {
-    NameAccordingTo n = parser.parse(rawName, rank, code, IssueContainer.VOID).get();
+    ParsedNameUsage n = parser.parse(rawName, rank, code, IssueContainer.VOID).get();
     assertEquals(sciname, n.getName().getScientificName());
     return new NameAssertion(n.getName()).type(type);
   }
@@ -312,6 +331,8 @@ public class NameParserTest {
       RANK,
       TYPE,
       STATUS,
+      NOMNOTE,
+      UNPARSED,
       REMARKS
     }
     
@@ -358,8 +379,14 @@ public class NameParserTest {
             case STATUS:
               assertNull(n.getNomStatus());
               break;
+            case NOMNOTE:
+              assertNull(n.getNomenclaturalNote());
+              break;
+            case UNPARSED:
+              assertNull(n.getUnparsed());
+              break;
             case REMARKS:
-              assertNull(n.getRemarks());
+              assertNull(n.getUnparsed());
           }
         }
       }
@@ -440,7 +467,7 @@ public class NameParserTest {
       assertEquals(Lists.newArrayList(authors), n.getBasionymAuthorship().getExAuthors());
       return add(NP.EXBAS);
     }
-  
+
     NameAssertion type(NameType type) {
       assertEquals(type, n.getType());
       return add(NP.TYPE);
@@ -455,6 +482,15 @@ public class NameParserTest {
       assertEquals(remarks, n.getRemarks());
       return add(NP.REMARKS);
     }
-  
+
+    NameAssertion nomNote(String nomNote) {
+      assertEquals(nomNote, n.getNomenclaturalNote());
+      return add(NP.NOMNOTE);
+    }
+
+    NameAssertion unparsed(String unparsed) {
+      assertEquals(unparsed, n.getUnparsed());
+      return add(NP.UNPARSED);
+    }
   }
 }

@@ -1,13 +1,13 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Lists;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.Lists;
 
 /**
  * A taxonomic synonymy list, ordering names in homotypic groups.
@@ -16,7 +16,7 @@ import com.google.common.collect.Lists;
 public class Synonymy implements Iterable<Name> {
   private final List<Name> homotypic = Lists.newArrayList();
   private final List<List<Name>> heterotypic = Lists.newArrayList();
-  private final List<NameAccordingTo> misapplied = Lists.newArrayList();
+  private final List<NameUsageBase> misapplied = Lists.newArrayList();
   
   @JsonIgnore
   public boolean isEmpty() {
@@ -31,11 +31,11 @@ public class Synonymy implements Iterable<Name> {
     return heterotypic;
   }
   
-  public List<NameAccordingTo> getMisapplied() {
+  public List<NameUsageBase> getMisapplied() {
     return misapplied;
   }
   
-  public void addMisapplied(NameAccordingTo misapplied) {
+  public void addMisapplied(NameUsageBase misapplied) {
     this.misapplied.add(misapplied);
   }
   

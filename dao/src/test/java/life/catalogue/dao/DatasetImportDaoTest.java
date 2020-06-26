@@ -27,7 +27,7 @@ public class DatasetImportDaoTest extends DaoTestBase {
     
     DatasetImport d = dao.generateMetrics(TestEntityGenerator.DATASET11.getKey(), Users.TESTER);
   
-    assertEquals((Integer) 0, d.getDescriptionCount());
+    assertEquals((Integer) 0, d.getTreatmentCount());
     assertEquals((Integer) 0, d.getMediaCount());
     assertEquals((Integer) 3, d.getReferenceCount());
     assertEquals((Integer) 2, d.getTaxonCount());
@@ -74,7 +74,9 @@ public class DatasetImportDaoTest extends DaoTestBase {
     
     assertEquals(1, d.getNameRelationsByTypeCount().size());
     assertEquals((Integer) 1, d.getNameRelationsByTypeCount().get(NomRelType.SPELLING_CORRECTION));
-    
+
+    assertEquals( 0, d.getTaxonRelationsByTypeCount().size());
+
     assertEquals(2, d.getVerbatimByTypeCount().size());
     assertEquals((Integer) 3, d.getVerbatimByTypeCount().get(AcefTerm.AcceptedSpecies));
     assertEquals(2, d.getVerbatimByTermCount().size());

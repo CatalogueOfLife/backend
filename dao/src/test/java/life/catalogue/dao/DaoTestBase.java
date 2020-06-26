@@ -6,10 +6,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DSIDValue;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
+import org.junit.*;
 
 public abstract class DaoTestBase {
   

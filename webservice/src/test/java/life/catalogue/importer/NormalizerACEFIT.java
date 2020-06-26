@@ -20,6 +20,7 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.collection.Iterators;
 
 import java.net.URI;
+import java.time.Year;
 import java.util.List;
 import java.util.Set;
 
@@ -44,7 +45,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
       
       NeoName n = nameByID("s7");
       assertEquals("Astragalus nonexistus", n.name.getScientificName());
-      assertEquals("DC.", n.name.authorshipComplete());
+      assertEquals("DC.", n.name.getAuthorship());
       assertEquals(Rank.SPECIES, n.name.getRank());
 
       assertTrue(hasIssues(n, Issue.SYNONYM_DATA_MOVED));
@@ -64,7 +65,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
       NeoUsage acc = accepted(t.node);
       assertEquals(1, acc.vernacularNames.size());
       assertEquals(2, acc.distributions.size());
-      assertEquals(0, acc.descriptions.size());
+      assertNull(acc.treatment);
       assertEquals(0, acc.media.size());
       assertEquals(1, acc.usage.getReferenceIds().size());
       
@@ -80,7 +81,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
       NeoUsage u = usageByID("14649");
       Taxon t = (Taxon) u.usage;
       assertEquals("Zapoteca formosa", u.usage.getName().getScientificName());
-      assertEquals("(Kunth) H.M.Hern.", u.usage.getName().authorshipComplete());
+      assertEquals("(Kunth) H.M.Hern.", u.usage.getName().getAuthorship());
       assertEquals(Rank.SPECIES, u.usage.getName().getRank());
       assertEquals("Fabaceae", u.classification.getFamily());
       assertEquals(Sets.newHashSet(Lifezone.values()), t.getLifezones());
@@ -105,8 +106,8 @@ public class NormalizerACEFIT extends NormalizerITBase {
       // denormed family
       u = byName("Fabaceae", null);
       assertEquals("Fabaceae", u.usage.getName().getScientificName());
-      assertEquals("Fabaceae", u.usage.getName().canonicalNameWithAuthorship());
-      assertNull(u.usage.getName().authorshipComplete());
+      assertEquals("Fabaceae", u.usage.getName().getLabel());
+      assertNull(u.usage.getName().getAuthorship());
       assertEquals(Rank.FAMILY, u.usage.getName().getRank());
     }
   }
@@ -117,7 +118,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage t = usageByID("1");
       assertEquals("Inga vera", t.usage.getName().getScientificName());
-      assertEquals("Willd.", t.usage.getName().authorshipComplete());
+      assertEquals("Willd.", t.usage.getName().getAuthorship());
       assertEquals(Rank.SPECIES, t.usage.getName().getRank());
       assertTrue(hasIssues(t, Issue.ID_NOT_UNIQUE));
       assertEquals("Fabaceae", t.classification.getFamily());
@@ -140,7 +141,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage t = usageByID("MD1");
       assertEquals("Latrodectus tredecimguttatus", t.usage.getName().getScientificName());
-      assertEquals("(Rossi, 1790)", t.usage.getName().authorshipComplete());
+      assertEquals("(Rossi, 1790)", t.usage.getName().getAuthorship());
 
       Set<String> nonMisappliedIds = Sets.newHashSet("s17", "s18");
       int counter = 0;
@@ -170,7 +171,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
 
       t = usageByID("2");
       assertEquals("Latrodectus", t.usage.getName().getScientificName());
-      assertEquals("(Fabricius, 1775)", t.usage.getName().authorshipComplete().trim());
+      assertEquals("(Fabricius, 1775)", t.usage.getName().getAuthorship().trim());
       assertEquals(Rank.GENUS, t.usage.getName().getRank());
 
       t = usageByID("3");
@@ -187,26 +188,69 @@ public class NormalizerACEFIT extends NormalizerITBase {
       for (Node n : Iterators.loop(store.getNeo().findNodes(Labels.USAGE))) {
         u = store.usageWithName(n);
         if (u.usage.getName().getOrigin() == Origin.SOURCE) {
-          System.out.println(u.usage.getStatus() + ": " + u.usage.getName().canonicalNameWithAuthorship());
-          System.out.println("  " + u.usage.getName().getRemarks());
-          System.out.println("  " + u.usage.getAccordingTo());
-          assertNotNull(u.usage.getAccordingTo());
+          System.out.println(u.getId() + ": " + u.usage.getLabel());
+          //System.out.println("  " + u.usage.getName().getNomenclaturalNote());
+          //System.out.println("  " + u.usage.getNamePhrase());
+          //System.out.println("  " + u.usage.getAccordingToId());
+          assertTrue(u.usage.getNamePhrase() != null || u.usage.getAccordingToId() != null);
         }
       }
       
       u = usageByID("8");
       assertEquals("Anthurium lanceum", u.usage.getName().getScientificName());
-      assertEquals("Engl.", u.usage.getName().authorshipComplete());
-      assertEquals("nom.illeg.; superfluous at its time of publication", u.usage.getName().getRemarks());
-      assertEquals("Markus non. A.lancea.", u.usage.getAccordingTo());
+      assertEquals("Engl., nom. illeg.", u.usage.getName().getAuthorship());
+      assertEquals("nom.illeg.", u.usage.getName().getNomenclaturalNote());
       assertEquals(NomStatus.UNACCEPTABLE, u.usage.getName().getNomStatus());
-  
+      assertNull(u.usage.getAccordingToId());
+      assertNull(u.usage.getName().getRemarks());
+      assertEquals("non. A.lancea.", u.usage.getNamePhrase());
+      assertTrue(u.usage.isTaxon());
+      Taxon t = (Taxon) u.usage;
+      assertEquals("Markus", t.getScrutinizer());
+      assertEquals(Year.of(2019), t.getScrutinizerDate().getDate());
+      VerbatimRecord v = store.getVerbatim(u.usage.getVerbatimKey());
+      assertEquals("superfluous at its time of publication", v.get(AcefTerm.GSDNameStatus));
+
       u = usageByID("11");
       assertEquals("Abies alba", u.usage.getName().getScientificName());
-      assertEquals("Mill.", u.usage.getName().authorshipComplete());
-      assertEquals("valid", u.usage.getName().getRemarks());
-      assertEquals("non Parolly", u.usage.getAccordingTo());
+      assertEquals("Mill.", u.usage.getName().getAuthorship());
+      assertNull(u.usage.getName().getRemarks());
+      assertNull(u.usage.getAccordingToId());
       assertEquals(NomStatus.ACCEPTABLE, u.usage.getName().getNomStatus());
+      assertNull(u.usage.getAccordingToId());
+      assertEquals("non Parolly", u.usage.getNamePhrase());
+      v = store.getVerbatim(u.usage.getVerbatimKey());
+      assertEquals("valid", v.get(AcefTerm.GSDNameStatus));
+
+      u = usageByID("3");
+      assertEquals("Placostegus crystallinus", u.usage.getName().getScientificName());
+      assertNull(u.usage.getName().getAuthorship());
+      assertNull(u.usage.getName().getNomenclaturalNote());
+      assertEquals("(non Scacchi, 1836)", u.usage.getNamePhrase());
+      assertNull(u.usage.getName().getRemarks());
+      Reference sec = accordingTo(u.usage);
+      assertEquals("Zibrowius, 1968", sec.getCitation());
+      assertEquals((Integer)1968, sec.getYear());
+      assertEquals("Zibrowius", sec.getCsl().getAuthor()[0].getFamily());
+
+      u = usageByID("9");
+      assertEquals("Strombidium striatum", u.usage.getName().getScientificName());
+      assertNull(u.usage.getName().getAuthorship());
+      assertNull(u.usage.getName().getNomenclaturalNote());
+      assertNull(u.usage.getNamePhrase());
+      assertNull(u.usage.getName().getRemarks());
+      sec = accordingTo(u.usage);
+      assertEquals("Busch, 1930", sec.getCitation());
+      assertEquals((Integer)1930, sec.getYear());
+      assertEquals("Busch", sec.getCsl().getAuthor()[0].getFamily());
+
+      u = usageByID("10");
+      assertEquals("Corydalis gigantea", u.usage.getName().getScientificName());
+      assertEquals("Trautv. & Meyer", u.usage.getName().getAuthorship());
+      assertNull(u.usage.getName().getNomenclaturalNote());
+      assertNull(u.usage.getName().getRemarks());
+      assertEquals("sensu lato", u.usage.getNamePhrase());
+      assertNull(u.usage.getAccordingToId());
     }
   }
   
@@ -216,7 +260,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage u = usageByID("Lamprostiba_pu!chra");
       assertEquals("Lamprostiba pu!chra", u.usage.getName().getScientificName());
-      assertEquals("Pace, 2014", u.usage.getName().authorshipComplete());
+      assertEquals("Pace, 2014", u.usage.getName().getAuthorship());
       VerbatimRecord v = verbatim(u.usage.getName());
       assertTrue(v.hasIssue(Issue.UNUSUAL_NAME_CHARACTERS));
       assertTrue(v.hasIssue(Issue.PARTIALLY_PARSABLE_NAME));
@@ -251,13 +295,13 @@ public class NormalizerACEFIT extends NormalizerITBase {
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage u = usageByID("Scr-13-.01-.01-.00-.001-.001-.014-.b");
       assertEquals("Odontotrypes (Thorectomimus) farkaci habaensis", u.usage.getName().getScientificName());
-      assertEquals("Ochi, Kon & Bai, 2018", u.usage.getName().authorshipComplete());
+      assertEquals("Ochi, Kon & Bai, 2018", u.usage.getName().getAuthorship());
       assertEquals(Rank.INFRASPECIFIC_NAME, u.usage.getName().getRank());
 
       // this is a duplicate ID and we expect the subspecies to be dropped in favor of the species
       u = usageByID("Scr-04-.01-.01-.00-.002-.000-.009-.b");
       assertEquals("Aegialia conferta", u.usage.getName().getScientificName());
-      assertEquals("Brown, 1931", u.usage.getName().authorshipComplete());
+      assertEquals("Brown, 1931", u.usage.getName().getAuthorship());
       assertEquals(Rank.SPECIES, u.usage.getName().getRank());
 
       VerbatimRecord v = verbatim(u.usage.getName());
@@ -386,7 +430,10 @@ public class NormalizerACEFIT extends NormalizerITBase {
       syn = usageByID("S-55211");
       assertEquals("Hedysarum microphyllum", syn.usage.getName().getScientificName());
       assertNull(syn.usage.getName().getAuthorship());
-      assertEquals("sensu Turcz., p.p.", syn.usage.getAccordingTo());
+      Reference r = accordingTo(syn.usage);
+      assertNotNull(r);
+      assertEquals("Turcz., p.p.", r.getCitation());
+      assertNull(r.getCsl());
       assertEquals(Rank.SPECIES, syn.usage.getName().getRank());
       assertEquals(TaxonomicStatus.MISAPPLIED, syn.usage.getStatus());
       assertProParte(syn, "Hedysarum truncatum", "Hedysarum turczaninovii");
@@ -404,7 +451,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage u = usageByID("1");
       assertFalse(u.isSynonym());
-      assertEquals("Aspilota vector Belokobylskij, 2007", u.usage.getName().canonicalNameWithAuthorship());
+      assertEquals("Aspilota vector Belokobylskij, 2007", u.usage.getName().getLabel());
       assertEquals(NameType.SCIENTIFIC, u.usage.getName().getType());
       assertEquals("Aspilota", u.usage.getName().getGenus());
       assertEquals("vector", u.usage.getName().getSpecificEpithet());

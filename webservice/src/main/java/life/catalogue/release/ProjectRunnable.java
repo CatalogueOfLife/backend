@@ -140,7 +140,7 @@ public abstract class ProjectRunnable implements Runnable {
 
       copyTable(VernacularName.class, VernacularNameMapper.class, session);
       copyTable(Distribution.class, DistributionMapper.class, session);
-      copyTable(Description.class, DescriptionMapper.class, session);
+      copyTable(Treatment.class, TreatmentMapper.class, session);
       copyTable(Media.class, MediaMapper.class, session);
     }
   }

@@ -47,5 +47,5 @@ public interface DuplicateMapper {
    * @param ids usage ids to return usage decisions for
    */
   List<Duplicate.UsageDecision> usagesByIds(@Param("datasetKey") int datasetKey, @Param("projectKey") Integer projectKey, @Param("ids") Collection<String> ids);
-  
+
 }

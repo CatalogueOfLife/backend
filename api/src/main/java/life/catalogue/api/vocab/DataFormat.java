@@ -17,7 +17,9 @@ public enum DataFormat {
   ACEF,
   
   /**
-   * Indented text trees for very simple but readable classifications
+   * Indented plain text trees for very simple but readable classifications without structured names,
+   * but supporting synonyms and basionyms.
+   * https://github.com/gbif/text-tree
    */
   TEXT_TREE,
   
@@ -28,7 +30,8 @@ public enum DataFormat {
   COLDP,
   
   /**
-   * YAML based distributed archive descriptor that proxies remote data files.
+   * YAML based distributed archive descriptor that proxies individual remote data files into a single archive
+   * and allows to semantically map columns and delimiter formats.
    * See https://github.com/Sp2000/colplus-backend/issues/518
    */
   PROXY

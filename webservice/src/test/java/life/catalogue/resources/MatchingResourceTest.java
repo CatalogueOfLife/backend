@@ -1,13 +1,10 @@
 package life.catalogue.resources;
 
-import io.dropwizard.testing.ResourceHelpers;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.MatchType;
-import life.catalogue.WsServerRule;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
-import org.junit.ClassRule;
 import org.junit.Test;
 
 import static life.catalogue.ApiUtils.userCreds;
@@ -31,8 +28,9 @@ public class MatchingResourceTest extends ResourceTestBase {
     abies.getCombinationAuthorship().getAuthors().add("Mill.");
     abies.setType(NameType.SCIENTIFIC);
     abies.setRank(Rank.SPECIES);
-    abies.updateNameCache();
-    
+    abies.rebuildScientificName();
+    abies.rebuildAuthorship();
+
     assertNotNull(match);
     assertEquals(MatchType.NONE, match.getType());
   }

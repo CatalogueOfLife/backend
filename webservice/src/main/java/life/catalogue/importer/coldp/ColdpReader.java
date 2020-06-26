@@ -1,11 +1,5 @@
 package life.catalogue.importer.coldp;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Optional;
-import java.util.Set;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import life.catalogue.api.datapackage.ColdpTerm;
@@ -19,18 +13,31 @@ import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.Set;
+
 /**
  *
  */
 public class ColdpReader extends CsvReader {
   private static final Logger LOG = LoggerFactory.getLogger(ColdpReader.class);
+  // Synonym and TypeMaterial also have IDs but do not require them as there is no foreign key to them
   private static Set<ColdpTerm> ID_SCHEMAS = ImmutableSet.of(ColdpTerm.Reference, ColdpTerm.Name, ColdpTerm.Taxon);
-  private static Set<ColdpTerm> NAMEID_SCHEMAS = ImmutableSet.of(ColdpTerm.Synonym, ColdpTerm.Taxon, ColdpTerm.NameRel);
+  private static Set<ColdpTerm> NAMEID_SCHEMAS = ImmutableSet.of(ColdpTerm.Synonym, ColdpTerm.Taxon, ColdpTerm.NameRelation, ColdpTerm.TypeMaterial);
   private static Set<ColdpTerm> TAXID_SCHEMAS = ImmutableSet.of(
-      ColdpTerm.Synonym, ColdpTerm.Description, ColdpTerm.Distribution, ColdpTerm.Media, ColdpTerm.VernacularName
+    ColdpTerm.Treatment, ColdpTerm.Synonym, ColdpTerm.Distribution, ColdpTerm.Media, ColdpTerm.VernacularName, ColdpTerm.TaxonRelation
   );
   private static Set<ColdpTerm> REFID_SCHEMAS = ImmutableSet.of(
-      ColdpTerm.Description, ColdpTerm.Distribution, ColdpTerm.VernacularName
+    ColdpTerm.Distribution,
+    ColdpTerm.Synonym,
+    ColdpTerm.Taxon,
+    ColdpTerm.TaxonRelation,
+    ColdpTerm.Treatment,
+    ColdpTerm.TypeMaterial,
+    ColdpTerm.VernacularName
   );
   static {
     // make sure we are aware of ColTerms
@@ -109,16 +116,19 @@ public class ColdpReader extends CsvReader {
       // genus & specificEpithet must exist otherwise!
       require(ColdpTerm.Name, ColdpTerm.genus, ColdpTerm.specificEpithet);
     }
-    require(ColdpTerm.NameRel, ColdpTerm.relatedNameID);
-    require(ColdpTerm.NameRel, ColdpTerm.type);
-  
+    require(ColdpTerm.NameRelation, ColdpTerm.relatedNameID);
+    require(ColdpTerm.NameRelation, ColdpTerm.type);
+
+    require(ColdpTerm.TaxonRelation, ColdpTerm.relatedTaxonID);
+    require(ColdpTerm.TaxonRelation, ColdpTerm.type);
+
     requireSchema(ColdpTerm.Name);
   
     // reference dependencies
     if (!hasReferences()) {
-      LOG.warn("No Reference mapped! Disallow referenceIDs");
+      LOG.warn("No Reference mapped! Disallow all referenceIDs");
       disallow(ColdpTerm.Name, ColdpTerm.publishedInID);
-      disallow(ColdpTerm.NameRel, ColdpTerm.publishedInID);
+      disallow(ColdpTerm.NameRelation, ColdpTerm.publishedInID);
       for (ColdpTerm rt : REFID_SCHEMAS) {
         disallow(rt, ColdpTerm.referenceID);
       }
@@ -134,7 +144,7 @@ public class ColdpReader extends CsvReader {
         LOG.warn("No taxon parentID mapped");
       }
   
-      if (taxon.hasAnyTerm(ColdpTerm.HIGHER_RANKS)) {
+      if (taxon.hasAnyTerm(ColdpTerm.DENORMALIZED_RANKS)) {
         mappingFlags.setDenormedClassificationMapped(true);
         LOG.info("Use denormalized taxon classification");
       } else {
@@ -145,7 +155,7 @@ public class ColdpReader extends CsvReader {
         require(t, ColdpTerm.taxonID);
       }
   
-      require(ColdpTerm.Description, ColdpTerm.description);
+      require(ColdpTerm.Treatment, ColdpTerm.document);
       require(ColdpTerm.Distribution, ColdpTerm.area);
       require(ColdpTerm.VernacularName, ColdpTerm.name);
       require(ColdpTerm.Media, ColdpTerm.url);

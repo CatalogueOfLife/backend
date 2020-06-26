@@ -1,10 +1,12 @@
 package life.catalogue.db.mapper;
 
-import com.google.common.collect.Lists;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.MatchType;
+import life.catalogue.dao.Partitioner;
+import life.catalogue.db.PgSetupRule;
 import org.gbif.nameparser.api.Authorship;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,10 +39,21 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
     n.setHomotypicNameId(basionym.getId());
     return n;
   }
-  
+
+  @Test
+  public void copyDataset() throws Exception {
+    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
+    mapper().copyDataset(datasetKey, 999);
+  }
+
   @Override
   Name createTestEntity(int dkey) {
-    return TestEntityGenerator.newName(dkey, "sk1");
+    Name n = TestEntityGenerator.newName(dkey, "sk1");
+    n.setNomenclaturalNote("nom. illeg.");
+    n.setUnparsed("bla bli blub");
+    n.setNameIndexMatchType(MatchType.AMBIGUOUS);
+    n.setNameIndexId("234567");
+    return n;
   }
   
   @Override

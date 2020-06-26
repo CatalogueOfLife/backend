@@ -1,0 +1,38 @@
+associated,ASSOCIATED_WITH
+association,ASSOCIATED_WITH
+congruent,EQUALS
+disjoint,EXCLUDES
+dr,EXCLUDES
+eq,EQUALS
+equal,EQUALS
+equals,EQUALS
+exclude,EXCLUDES
+exclude,EXCLUDES
+excluding,EXCLUDES
+feeds,EATS
+feeds_on,EATS
+host,HOST_OF
+ident,EQUALS
+identical,EQUALS
+include,INCLUDES
+including,INCLUDES
+interact,INTERACTS_WITH
+interacts,INTERACTS_WITH
+intersect,OVERLAPS
+intersecting,OVERLAPS
+isincludedin,INCLUDED_IN
+overlapping,OVERLAPS
+overlapping,OVERLAPS
+parasite,PARASITE_OF
+partially overlapping,OVERLAPS
+pathogen,PATHOGEN_OF
+po,OVERLAPS
+pp,INCLUDED_IN
+ppi,INCLUDES
+preys,EATS
+preys_on,EATS
+proper part inverse,INCLUDES
+proper part,INCLUDED_IN
+same,EQUALS
+sameas,EQUALS
+symbiont,SYMBIONT_OF

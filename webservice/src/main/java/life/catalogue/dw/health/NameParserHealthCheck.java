@@ -4,7 +4,7 @@ package life.catalogue.dw.health;
 import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.Lists;
 import life.catalogue.api.model.Name;
-import life.catalogue.api.model.NameAccordingTo;
+import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.parser.NameParser;
 
 import java.util.Optional;
@@ -21,7 +21,7 @@ public class NameParserHealthCheck extends HealthCheck {
   @Override
   protected Result check() throws Exception {
     try {
-      Optional<NameAccordingTo> result = parser.parse("Abies alba (L.) Mill. sec Döring 1999");
+      Optional<ParsedNameUsage> result = parser.parse("Abies alba (L.) Mill. sec Döring 1999");
       if (result.isPresent()) {
         Name name = result.get().getName();
         if (name.isBinomial() &&
@@ -29,7 +29,7 @@ public class NameParserHealthCheck extends HealthCheck {
             name.getSpecificEpithet().equals("alba") &&
             name.getBasionymAuthorship().getAuthors().equals(Lists.newArrayList("L.")) &&
             name.getCombinationAuthorship().getAuthors().equals(Lists.newArrayList("Mill.")) &&
-            result.get().getAccordingTo().equals("sec Döring 1999")
+            result.get().getTaxonomicNote().equals("sec Döring 1999")
             ) {
           return Result.healthy();
         }

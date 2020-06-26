@@ -36,7 +36,7 @@ public class ReferenceFactory {
   
   private static final Logger LOG = LoggerFactory.getLogger(ReferenceFactory.class);
 
-  private static final Pattern YEAR_PATTERN = Pattern.compile("(^|\\D+)(\\d{4})($|\\D+)");
+  private static final Pattern YEAR_PATTERN = Pattern.compile("(^|\\D+)([12]\\d{3})($|\\D+)");
   private static final CharSet PUNCTUATIONS = CharSet.getInstance(".?!;:,");
   private static final Pattern NORM_WHITESPACE = Pattern.compile("\\s{2,}");
   private static final String name     = "[\\p{L} -]+";
@@ -51,6 +51,8 @@ public class ReferenceFactory {
   private static final Pattern AUTHORS_PATTERN_SEMI = Pattern.compile("^("+ name +")(?:, ?("+initials+"|"+name+"))?$");
   // author parsing
   private static final Pattern AUTHOR_PREFIX = Pattern.compile("^((?:\\p{Ll}{1,5} ){1,2})(\\p{Lu})");
+  // author year citation (e.g. sensu Miller, 1973)
+  private static final Pattern AUTHOR_YEAR = Pattern.compile("^([\\p{L} -.,]+)\\s*,?\\s*([12]\\d{3})?\\s*$");
 
   private final Integer datasetKey;
   private final ReferenceStore store;
@@ -244,6 +246,24 @@ public class ReferenceFactory {
       ref = newReference(datasetKey, id);
       if (!StringUtils.isEmpty(citation)) {
         ref.setCitation(citation);
+        // try to extract year and authors
+        Matcher matcher = YEAR_PATTERN.matcher(citation);
+        if (matcher.find()) {
+          ref.setYear(Integer.valueOf(matcher.group(2)));
+          CslData csl = new CslData();
+          ref.setCsl(csl);
+          csl.setIssued(yearToDate(ref.getYear(), null));
+          // see if leftovers are authors
+          String leftover = (matcher.group(1) + matcher.group(3)).trim();
+          if (!StringUtils.isBlank(leftover)) {
+            IssueContainer authorIssues = new VerbatimRecord();
+            CslName[] authors = parseAuthors(StringUtils.removeEnd(leftover, ",").trim(), authorIssues);
+            if (!authorIssues.hasIssue(Issue.CITATION_AUTHORS_UNPARSED)) {
+              // parsed authors
+              csl.setAuthor(authors);
+            }
+          }
+        }
         issues.addIssue(Issue.CITATION_UNPARSED);
       }
     }

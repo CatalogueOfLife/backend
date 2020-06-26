@@ -329,7 +329,7 @@ public class PgImportIT {
       
       Name n = ndao.get(key(dataset.getKey(), "s7"));
       assertEquals("Astragalus nonexistus", n.getScientificName());
-      assertEquals("DC.", n.authorshipComplete());
+      assertEquals("DC.", n.getAuthorship());
       assertEquals(Rank.SPECIES, n.getRank());
       assertIssue(n, Issue.ACCEPTED_ID_INVALID);
       
@@ -375,7 +375,7 @@ public class PgImportIT {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       Taxon t = tdao.get(key(dataset.getKey(), "14649"));
       assertEquals("Zapoteca formosa", t.getName().getScientificName());
-      assertEquals("(Kunth) H.M.Hern.", t.getName().authorshipComplete());
+      assertEquals("(Kunth) H.M.Hern.", t.getName().getAuthorship());
       assertEquals(Rank.SPECIES, t.getName().getRank());
       
       TaxonInfo info = tdao.getTaxonInfo(t);
@@ -407,7 +407,7 @@ public class PgImportIT {
       SynonymMapper synMapper = session.getMapper(SynonymMapper.class);
       
       Taxon t = tdao.get(key(dataset.getKey(), "Rho-144"));
-      assertEquals("Afrogamasellus lokelei Daele, 1976", t.getName().canonicalNameWithAuthorship());
+      assertEquals("Afrogamasellus lokelei Daele, 1976", t.getName().getLabel());
       
       List<Taxon> classific = taxMapper.classification(t);
       LinkedList<RankedName> expected =
@@ -420,12 +420,12 @@ public class PgImportIT {
       for (Taxon ht : classific) {
         RankedName expect = expected.removeLast();
         assertEquals(expect.rank, ht.getName().getRank());
-        assertEquals(expect.name, ht.getName().canonicalNameWithAuthorship());
+        assertEquals(expect.name, ht.getName().getLabel());
       }
       
       assertEquals(TaxonomicStatus.ACCEPTED, t.getStatus());
-      assertEquals("Tester", t.getAccordingTo());
-      assertEquals("2008", t.getAccordingToDate().toString());
+      assertEquals("Tester", t.getScrutinizer());
+      assertEquals("2008", t.getScrutinizerDate().toString());
       assertFalse(t.isExtinct());
       assertTrue(t.getLifezones().isEmpty());
       assertNull(t.getRemarks());
@@ -433,14 +433,14 @@ public class PgImportIT {
       
       // test synonym
       Name sn = ndao.get(key(dataset.getKey(), "Rho-140"));
-      assertEquals("Rhodacarus guevarai Guevara-Benitez, 1974", sn.canonicalNameWithAuthorship());
+      assertEquals("Rhodacarus guevarai Guevara-Benitez, 1974", sn.getLabel());
       
       // in acef name & taxon ids are the same
       Synonym syn = synMapper.get(key(dataset.getKey(), sn.getId()));
       assertNotNull(syn);
       
       t = tdao.get(key(dataset.getKey(), "Rho-61"));
-      assertEquals("Multidentorhodacarus denticulatus (Berlese, 1920)", t.getName().canonicalNameWithAuthorship());
+      assertEquals("Multidentorhodacarus denticulatus (Berlese, 1920)", t.getName().getLabel());
       assertEquals(t, syn.getAccepted());
     }
   }
@@ -454,7 +454,7 @@ public class PgImportIT {
   
       Taxon t = tdao.get(key(dataset.getKey(), "MD2"));
       assertEquals("Latrodectus mactans", t.getName().getScientificName());
-      assertEquals("(Fabricius, 1775)", t.getName().authorshipComplete());
+      assertEquals("(Fabricius, 1775)", t.getName().getAuthorship());
   
       TaxonInfo info = tdao.getTaxonInfo(t);
       // Walckenaer1805;Walckenaer, CA;1805;Table of the aranid or essential characters of the
@@ -496,7 +496,7 @@ public class PgImportIT {
     
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       Taxon annua = tdao.get(key(dataset.getKey(), "4"));
-      assertEquals("Poa annua L.", annua.getName().canonicalNameWithAuthorship());
+      assertEquals("Poa annua L.", annua.getName().getLabel());
       
       TaxonInfo info = tdao.getTaxonInfo(annua);
       Reference pubIn = info.getReference(annua.getName().getPublishedInId());
@@ -575,7 +575,7 @@ public class PgImportIT {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       Name n = ndao.get(key(dataset.getKey(), "1000"));
       assertEquals("Platycarpha glomerata", n.getScientificName());
-      assertEquals("(Thunberg) A.P.de Candolle", n.authorshipComplete());
+      assertEquals("(Thunberg) A. P. de Candolle", n.getAuthorship());
       assertEquals("1000", n.getId());
       assertEquals(Rank.SPECIES, n.getRank());
     
@@ -586,15 +586,15 @@ public class PgImportIT {
       List<NameUsageBase> syns = um.listByNameID(dataset.getKey(), "1006-s3");
       assertEquals(1, syns.size());
       Synonym s3 = (Synonym) syns.get(0);
-      assertEquals("Leonida taraxacoida Vill.", s3.getName().canonicalNameWithAuthorship());
+      assertEquals("Leonida taraxacoida Vill.", s3.getName().getLabel());
       assertEquals("1006", s3.getAccepted().getId());
-      assertEquals("Leontodon taraxacoides (Vill.) Mérat", s3.getAccepted().getName().canonicalNameWithAuthorship());
+      assertEquals("Leontodon taraxacoides (Vill.) Mérat", s3.getAccepted().getName().getLabel());
       
       // https://github.com/Sp2000/colplus-backend/issues/237
       VerbatimRecordMapper vm = session.getMapper(VerbatimRecordMapper.class);
       for (VerbatimRecord v : vm.list(dataset.getKey(), null, null, LogicalOperator.AND, null, null, new Page(0, 100))) {
         for (Term t : v.terms()) {
-          assertFalse(t instanceof UnknownTerm);
+          assertFalse(t.qualifiedName(), t instanceof UnknownTerm);
         }
       }
 
@@ -612,26 +612,27 @@ public class PgImportIT {
     }
   
     DatasetImport di = metrics();
-    assertEquals(3, (int) metrics().getDescriptionCount());
-    assertEquals(9, (int) metrics().getDistributionCount());
-    assertEquals(1, (int) metrics().getMediaCount());
-    assertEquals(4, (int) metrics().getReferenceCount());
-    assertEquals(1, (int) metrics().getVernacularCount());
-    assertEquals(19, (int) metrics().getTaxonCount());
-    assertEquals(3, (int) metrics().getTypeMaterialCount());
-    assertEquals(24, (int) metrics().getNameCount());
-    assertEquals(70, (int) metrics().getVerbatimCount());
+    //assertEquals(2, (int) metrics().getTreatmentCount());
+    assertEquals(9, (int) di.getDistributionCount());
+    assertEquals(1, (int) di.getMediaCount());
+    assertEquals(9, (int) di.getReferenceCount());
+    assertEquals(2, (int) di.getVernacularCount());
+    assertEquals(23, (int) di.getTaxonCount());
+    assertEquals(3, (int) di.getTypeMaterialCount());
+    assertEquals(28, (int) di.getNameCount());
+    assertEquals(87, (int) di.getVerbatimCount());
     
     //assertFalse(metrics().getIssuesCount().containsKey(Issue.PARENT_ID_INVALID));
-    assertEquals(5, (int) metrics().getUsagesByStatusCount().get(TaxonomicStatus.SYNONYM));
-    assertEquals(metrics().getTaxonCount(), metrics().getUsagesByStatusCount().get(TaxonomicStatus.ACCEPTED));
-    assertEquals(1, (int) metrics().getMediaByTypeCount().get(MediaType.IMAGE));
-    assertEquals(2, (int) metrics().getNamesByRankCount().get(Rank.FAMILY));
-    assertEquals(4, (int) metrics().getNamesByRankCount().get(Rank.GENUS));
-    assertEquals(10, (int) metrics().getNamesByRankCount().get(Rank.SPECIES));
-    assertEquals(3, (int) metrics().getNamesByRankCount().get(Rank.SUBSPECIES));
-    assertEquals(9, (int) metrics().getDistributionsByGazetteerCount().get(Gazetteer.ISO));
-    assertEquals(2, (int) metrics().getTypeMaterialByStatusCount().get(TypeStatus.HOLOTYPE));
+    assertEquals(5, (int) di.getUsagesByStatusCount().get(TaxonomicStatus.SYNONYM));
+    // 1 provisional status taxon
+    assertEquals((int) metrics().getTaxonCount(), 1 + di.getUsagesByStatusCount().get(TaxonomicStatus.ACCEPTED));
+    assertEquals(1, (int) di.getMediaByTypeCount().get(MediaType.IMAGE));
+    assertEquals(2, (int) di.getNamesByRankCount().get(Rank.FAMILY));
+    assertEquals(4, (int) di.getNamesByRankCount().get(Rank.GENUS));
+    assertEquals(12, (int) di.getNamesByRankCount().get(Rank.SPECIES));
+    assertEquals(3, (int) di.getNamesByRankCount().get(Rank.SUBSPECIES));
+    assertEquals(9, (int) di.getDistributionsByGazetteerCount().get(Gazetteer.ISO));
+    assertEquals(2, (int) di.getTypeMaterialByStatusCount().get(TypeStatus.HOLOTYPE));
   }
   
   /**

@@ -105,7 +105,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
   }
 
   private void insertNode(int datasetKey, TreeNode parent, TreeNode tn, boolean synonym) {
-    NameAccordingTo nat = NameParser.PARSER.parse(tn.name, tn.rank, null, IssueContainer.VOID).get();
+    ParsedNameUsage nat = NameParser.PARSER.parse(tn.name, tn.rank, null, IssueContainer.VOID).get();
     Name n = nat.getName();
     n.setDatasetKey(datasetKey);
     n.setId(String.valueOf(tn.id));
@@ -124,14 +124,14 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     }
   }
 
-  private static void prepUsage(NameUsageBase u, int datasetKey, NameAccordingTo nat, TaxonomicStatus status, TreeNode parent) {
+  private static void prepUsage(NameUsageBase u, int datasetKey, ParsedNameUsage nat, TaxonomicStatus status, TreeNode parent) {
       u.setDatasetKey(datasetKey);
       u.setId(String.valueOf(nat.getName().getId()));
       u.setName(nat.getName());
       u.setOrigin(Origin.SOURCE);
       u.applyUser(Users.DB_INIT);
       u.setStatus(status);
-      u.setAccordingTo(nat.getAccordingTo());
+      u.setAccordingToId(nat.getTaxonomicNote());
       if (parent != null) {
         u.setParentId(String.valueOf(parent.id));
       }

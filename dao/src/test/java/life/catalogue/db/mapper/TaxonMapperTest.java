@@ -49,8 +49,8 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
   @Override
   void updateTestObj(Taxon obj) {
     obj.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
-    obj.setAccordingToDate(FuzzyDate.now());
-    obj.setAccordingTo("me and the mary janes");
+    obj.setScrutinizerDate(FuzzyDate.now());
+    obj.setAccordingToId("me and the mary janes");
   }
   
   @Override
@@ -61,6 +61,7 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
     // manually set the child count which is populated on read only
     t.setSectorKey(sector.getId());
     t.setDatasetKey(dkey);
+    t.setNamePhrase("sensu lato");
     return t;
   }
   

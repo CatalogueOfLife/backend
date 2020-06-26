@@ -16,7 +16,6 @@
     specific_epithet,
     infraspecific_epithet,
     cultivar_epithet,
-    appended_phrase,
     candidatus,
     notho,
     basionym_authors,
@@ -42,7 +41,6 @@
     #{specificEpithet},
     #{infraspecificEpithet},
     #{cultivarEpithet},
-    #{appendedPhrase},
     #{candidatus},
     #{notho}::NAMEPART,
     #{basionymAuthorship.authors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
@@ -54,7 +52,7 @@
     #{sanctioningAuthor},
     #{code}::NOMCODE,
     #{type}::NAMETYPE,
-    #{remarks},
+    #{nomenclaturalNote},
     #{taxonomicNote},
     #{createdBy}
   </sql>
@@ -72,48 +70,38 @@
   <!-- A mapping to Name, mostly auto mapped -->
   <resultMap id="parserConfigResultMap" type="ParserConfig" autoMapping="true" extends="life.catalogue.db.mapper.NameMapper.nameResultMap">
     <id property="id" column="id"/>
-    <id property="remarks" column="nomenclatural_note"/>
   </resultMap>
 
   <select id="countSearch" resultType="integer">
     SELECT count(*)
-    FROM
-    <include refid="FROM"/>
+    FROM <include refid="FROM"/>
     <include refid="WHERE"/>
   </select>
 
   <select id="search" resultMap="parserConfigResultMap">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     <include refid="WHERE"/>
     ORDER BY id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="processSearch" resultMap="parserConfigResultMap">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     <include refid="WHERE"/>
     ORDER BY id
   </select>
 
   <select id="get" resultMap="parserConfigResultMap">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE id = #{id}
   </select>
 
   <select id="process" parameterType="map" resultMap="parserConfigResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
   </select>
 
   <insert id="create" parameterType="ParserConfig" useGeneratedKeys="false" keyProperty="id">
@@ -123,8 +111,7 @@
 
   <delete id="delete" parameterType="map">
     DELETE
-    FROM
-    <include refid="FROM"/>
+    FROM <include refid="FROM"/>
     WHERE id = #{id}
   </delete>
 

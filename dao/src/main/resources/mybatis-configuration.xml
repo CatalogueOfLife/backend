@@ -20,11 +20,11 @@
         <package name="org.gbif.nameparser.api" />
         <package name="life.catalogue.db.type2" />
         <package name="life.catalogue.db.mapper" />
-        <package name="life.catalogue.db.legacy.model" />
+        <package name="life.catalogue.db.mapper.legacy.model" />
     </typeAliases>
     <mappers>
         <mapper class="life.catalogue.db.Common" />
         <package name="life.catalogue.db.mapper" />
-        <package name="life.catalogue.db.legacy.mapper" />
+        <package name="life.catalogue.db.mapper.legacy.mapper" />
     </mappers>
 </configuration>

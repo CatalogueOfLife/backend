@@ -7,7 +7,8 @@
 
   <sql id="taxonCols">
     <include refid="life.catalogue.db.mapper.NameUsageMapper.usageCols"/>,
-    ${alias}.according_to_date AS ${prefix}according_to_date,
+    ${alias}.scrutinizer AS ${prefix}scrutinizer,
+    ${alias}.scrutinizer_date AS ${prefix}scrutinizer_date,
     ${alias}.extinct AS ${prefix}extinct,
     ${alias}.temporal_range_start AS ${prefix}temporal_range_start,
     ${alias}.temporal_range_end AS ${prefix}temporal_range_end,
@@ -19,19 +20,19 @@
     <include refid="taxonCols">
       <property name="alias" value="u"/>
       <property name="prefix" value=""/>
-    </include>
-    ,
+    </include>,
+    r.citation AS according_to,
     <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
       <property name="alias" value="n"/>
       <property name="prefix" value="n_"/>
-    </include>
-    ,
+    </include>,
     (SELECT count(*) FROM name_usage_${partition} WHERE parent_id=u.id) AS child_count
   </sql>
 
   <sql id="COLS">
     <include refid="life.catalogue.db.mapper.NameUsageMapper.COLS"/>,
-    according_to_date,
+    scrutinizer,
+    scrutinizer_date,
     extinct,
     temporal_range_start,
     temporal_range_end,
@@ -41,7 +42,8 @@
 
   <sql id="PROPS">
     <include refid="life.catalogue.db.mapper.NameUsageMapper.PROPS"/>,
-    #{accordingToDate},
+    #{scrutinizer},
+    #{scrutinizerDate},
     #{extinct},
     #{temporalRangeStart},
     #{temporalRangeEnd},
@@ -51,6 +53,7 @@
 
   <sql id="FROM">
     name_usage_${partition} u JOIN name_${partition} n ON u.name_id=n.id
+    LEFT JOIN reference_${partition} r ON u.according_to_id=r.id
   </sql>
 
   <resultMap id="taxonResultMap" type="Taxon" autoMapping="true">

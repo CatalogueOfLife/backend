@@ -10,9 +10,10 @@ import life.catalogue.common.collection.DefaultMap;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.csv.CsvReader;
 import life.catalogue.csv.Schema;
+import life.catalogue.importer.neo.NeoCRUDStore;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
-import life.catalogue.importer.neo.model.NeoNameRel;
+import life.catalogue.importer.neo.model.NeoRel;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.reference.ReferenceFactory;
 import org.gbif.dwc.terms.Term;
@@ -178,20 +179,21 @@ public abstract class NeoCsvInserter implements NeoInserter {
     }
   }
   
-  protected void insertNameRelations(final CsvReader reader, final Term classTerm,
-                                     Function<VerbatimRecord, Optional<NeoNameRel>> interpret,
-                                     Term nameIdTerm, Term relatedNameIdTerm
+  protected void insertRelations(final CsvReader reader, final Term classTerm,
+                                 Function<VerbatimRecord, Optional<NeoRel>> interpret,
+                                 NeoCRUDStore<?> entityStore, Term idTerm, Term relatedIdTerm,
+                                 Issue invalidIdIssue
   ) {
     processVerbatim(reader, classTerm, rec -> {
-      Optional<NeoNameRel> opt = interpret.apply(rec);
+      Optional<NeoRel> opt = interpret.apply(rec);
       if (opt.isPresent()) {
-        Node n1 = store.names().nodeByID(rec.getRaw(nameIdTerm));
-        Node n2 = store.names().nodeByID(rec.getRaw(relatedNameIdTerm));
+        Node n1 = entityStore.nodeByID(rec.getRaw(idTerm));
+        Node n2 = entityStore.nodeByID(rec.getRaw(relatedIdTerm));
         if (n1 != null && n2 != null) {
-          store.createNameRel(n1, n2, opt.get());
+          store.createNeoRel(n1, n2, opt.get());
           return true;
         }
-        rec.addIssue(Issue.NAME_ID_INVALID);
+        rec.addIssue(invalidIdIssue);
       }
       return false;
     });

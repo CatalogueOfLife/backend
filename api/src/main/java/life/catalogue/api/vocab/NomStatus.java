@@ -15,6 +15,8 @@
  */
 package life.catalogue.api.vocab;
 
+import org.gbif.nameparser.api.NomCode;
+
 import javax.annotation.Nullable;
 
 /**
@@ -66,7 +68,7 @@ public enum NomStatus {
    * Zoology: Available name and potentially valid, i.e. not otherwise invalid
    * for any other objective reason, such as being a junior homonym.
    */
-  ACCEPTABLE("nomen legitimum", null, "potentially valid"),
+  ACCEPTABLE(ESTABLISHED, "nomen legitimum", null, "potentially valid"),
   
   /**
    * An established name and thus has nomenclatural standing.
@@ -82,7 +84,7 @@ public enum NomStatus {
    * <li>Zoology: suppressed name</li>
    * </ul>
    */
-  UNACCEPTABLE("nomen illegitimum", "nom. illeg.", "objectively invalid"),
+  UNACCEPTABLE(ESTABLISHED,"nomen illegitimum", "nom. illeg.", "objectively invalid"),
   
   /**
    * A scientific name that enjoys special nomenclatural protection,
@@ -99,12 +101,12 @@ public enum NomStatus {
    * which is specifically a conserved name that is either a junior synonym or homonym that is in use
    * because the senior synonym or homonym has been made an available, but invalid nomen oblitum ("forgotten name").
    */
-  CONSERVED("nomen conservandum", "nom. cons.", "conserved name"),
+  CONSERVED(ACCEPTABLE, "nomen conservandum", "nom. cons.", "conserved name"),
   
   /**
    * Rejected / suppressed name. Inverse of conserved. Outright rejection is possible for a name at any rank.
    */
-  REJECTED("nomen rejiciendum", "nom. rej.", "rejected"),
+  REJECTED(UNACCEPTABLE,"nomen rejiciendum", "nom. rej.", "rejected"),
   
   /**
    * A name of uncertain sense, of doubtful validity.
@@ -145,20 +147,26 @@ public enum NomStatus {
    * <p>
    * Some zoologists use a similar convention, but it is not done so universally.
    */
-  MANUSCRIPT("manuscript name", "ms.", "manuscript name"),
+  MANUSCRIPT(NOT_ESTABLISHED, "manuscript name", "ms.", "manuscript name"),
   
   /**
    * A name usage erroneously cited without a sec/sensu indication so it appears to be a published homonym with a different authority.
    * See https://en.wikipedia.org/wiki/Chresonym
    */
   CHRESONYM("chresonym", null, "chresonym");
-  
-  
+
+
+  private final NomStatus parent;
   private final String botany;
   private final String abbreviated;
   private final String zoology;
-  
-  private NomStatus(String botany, String abbreviated, String zoology) {
+
+  NomStatus(String botany, String abbreviated, String zoology) {
+    this(null, botany, abbreviated, zoology);
+  }
+
+  NomStatus(NomStatus parent, String botany, String abbreviated, String zoology) {
+    this.parent = parent;
     this.botany = botany;
     this.abbreviated = abbreviated;
     this.zoology = zoology;
@@ -181,7 +189,27 @@ public enum NomStatus {
   public String getZoologicalLabel() {
     return zoology;
   }
-  
+
+  /**
+   * Returns a label based on the nomenclatural code
+   * @param code
+   */
+  public String getLabel(NomCode code) {
+    if (code == null) {
+      return this.name().toLowerCase().replaceAll("_", " ");
+    }
+    switch (code) {
+      case BOTANICAL:
+      case BACTERIAL:
+      case CULTIVARS:
+      case VIRUS:
+        return botany;
+
+      default:
+        return zoology;
+    }
+  }
+
   /**
    * @return true if the name status indicates that it is validly published / available.
    */
@@ -195,5 +223,38 @@ public enum NomStatus {
    */
   public boolean isLegitimate() {
     return this == ACCEPTABLE || this == CONSERVED;
+  }
+
+  /**
+   * @return true if the other status does not conflict with this status
+   */
+  public boolean isCompatible(NomStatus other) {
+    if (this == other) {
+      return true;
+    }
+    // does one of the statuses have the other in its parent ancestry?
+    if (this.hasParent(other) || other.hasParent(this)) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * @return if compatible return the status that has most details i.e. has the other one as a parent.
+   * For example ACCEPTABLE over ESTABLISHED.
+   */
+  public NomStatus mostDetailed(NomStatus other) {
+    if (other.hasParent(this)) {
+      return other;
+    }
+    return this;
+  }
+
+  private boolean hasParent(NomStatus status) {
+    if (parent != null) {
+      if (parent == status) return true;
+      return parent.hasParent(status);
+    }
+    return false;
   }
 }

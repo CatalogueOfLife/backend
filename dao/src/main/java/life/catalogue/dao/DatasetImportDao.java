@@ -131,7 +131,6 @@ public class DatasetImportDao {
   private void updateMetrics(DatasetImportMapper mapper, DatasetImport di) {
     final int key = di.getDatasetKey();
   
-    di.setDescriptionCount(mapper.countDescription(key));
     di.setDistributionCount(mapper.countDistribution(key));
     di.setMediaCount(mapper.countMedia(key));
     di.setNameCount(mapper.countName(key));
@@ -139,6 +138,7 @@ public class DatasetImportDao {
     di.setReferenceCount(mapper.countReference(key));
     di.setSynonymCount(mapper.countSynonym(key));
     di.setTaxonCount(mapper.countTaxon(key));
+    di.setTreatmentCount(mapper.countTreatment(key));
     di.setVerbatimCount(mapper.countVerbatim(key));
     di.setVernacularCount(mapper.countVernacular(key));
   
@@ -152,6 +152,7 @@ public class DatasetImportDao {
     di.setNamesByTypeCount(DatasetImportDao.countMap(NameType.class, mapper.countNamesByType(key)));
     di.setTypeMaterialByStatusCount(DatasetImportDao.countMap(TypeStatus.class, mapper.countTypeMaterialByStatus(key)));
     di.setTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(key)));
+    di.setTaxonRelationsByTypeCount(DatasetImportDao.countMap(TaxRelType.class, mapper.countTaxonRelationsByType(key)));
     di.setUsagesByStatusCount(DatasetImportDao.countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(key)));
     di.setVerbatimByTypeCount(countMap(DatasetImportDao::parseRowType, mapper.countVerbatimByType(key)));
     di.setVernacularsByLanguageCount(countMap(mapper.countVernacularsByLanguage(key)));

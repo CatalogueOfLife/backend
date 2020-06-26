@@ -3,9 +3,7 @@ package life.catalogue.api.model;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.ImportState;
-import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.*;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
@@ -28,7 +26,7 @@ public class DatasetImportTest extends SerdeTestBase<DatasetImport> {
     d.setAttempt(12);
     d.setDatasetKey(Datasets.DRAFT_COL);
     d.setState(ImportState.FINISHED);
-    d.setDescriptionCount(231456);
+    d.setTreatmentCount(231456);
     d.setDistributionCount(232456);
     d.setNameCount(2314453);
     d.setMediaCount(2314);
@@ -45,6 +43,11 @@ public class DatasetImportTest extends SerdeTestBase<DatasetImport> {
     d.getVerbatimByTypeCount().put(DwcTerm.Taxon, 12342);
     d.getVerbatimByTypeCount().put(AcefTerm.AcceptedSpecies, 78);
     d.getVerbatimByTypeCount().put(ColdpTerm.Name, 641723);
+    d.getNameRelationsByTypeCount().put(NomRelType.BASIONYM, 12);
+    d.getNameRelationsByTypeCount().put(NomRelType.LATER_HOMONYM, 3);
+    d.getTaxonRelationsByTypeCount().put(TaxRelType.EQUALS, 121);
+    d.getTaxonRelationsByTypeCount().put(TaxRelType.INCLUDES, 7);
+    d.getTaxonRelationsByTypeCount().put(TaxRelType.POLLINATES, 34);
     return d;
   }
   

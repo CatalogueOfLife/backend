@@ -1,40 +1,177 @@
 package life.catalogue.importer;
 
+import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.ReferenceStore;
+import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.reference.ReferenceFactory;
+import org.gbif.nameparser.api.Authorship;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.regex.Matcher;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
 
+@RunWith(MockitoJUnitRunner.class)
 public class InterpreterBaseTest {
   
   @Mock
   ReferenceStore refStore;
+
+  @Mock
+  NeoDb store;
+
   IssueContainer issues = new VerbatimRecord();
-  InterpreterBase inter = new InterpreterBase(new DatasetSettings(), new ReferenceFactory(1, refStore), null);
+  InterpreterBase ib;
+
+  @Before
+  public void init() {
+    //MockitoAnnotations.initMocks(this);
+    when(store.references()).thenReturn(refStore);
+    ib = new InterpreterBase(new DatasetSettings(), new ReferenceFactory(1, refStore), store);
+  }
+
+  @Test
+  public void secRefPattern() throws Exception {
+    assertSecRef("sensu Busch, 1930", "Busch, 1930");
+    assertSecRef("Miller sensu Busch, 1930", "Busch, 1930");
+    assertNoSecRef("s.l.");
+    assertNoSecRef("s.str.");
+    assertNoSecRef("sensu latu");
+    assertNoSecRef("sensu lato");
+    assertNoSecRef("sensu strict");
+    assertNoSecRef("sensu stricto");
+
+    assertNoSecRef("sensu auct.,  non (L.)Mart.");
+    assertNoSecRef("sensu auct.,  non Durazz.");
+    assertNoSecRef("sensu auctorum");
+    assertNoSecRef("sensu auct. non Whittaker");
+    assertNoSecRef("auct. nec Whittaker");
+    assertNoSecRef("Jurtzev, p.p.");
+
+    assertSecRef("sensu Turcz., p.p.", "Turcz., p.p.");
+    assertSecRef("auct. Jurtzev, p.p.", "Jurtzev, p.p.");
+    assertSecRef("auct. Whittaker 1981", "Whittaker 1981");
+  }
+
+  void assertSecRef(String authorship, String expected) {
+    Matcher m = InterpreterBase.SEC_REF.matcher(authorship);
+    assertTrue(m.find());
+    assertEquals(expected, m.group(2));
+  }
+
+  void assertNoSecRef(String authorship) {
+    assertFalse(InterpreterBase.SEC_REF.matcher(authorship).find());
+  }
 
   @Test
   public void interpretName() throws Exception {
-    InterpreterBase ib = new InterpreterBase(new DatasetSettings(), null, null);
     VerbatimRecord v = new VerbatimRecord();
-    Optional<NameAccordingTo> nat = ib.interpretName(true, "1", "species", "Picea arlba", "Mill. and Desbrochers de Loges, 1881", "Abies", null, "alba", null, null, "s.l.", null, null, null, null, v);
+    Optional<ParsedNameUsage> nat = ib.interpretName(true, "1", "species", "Picea arlba", "Mill. and Desbrochers de Loges, 1881", "Abies", null, "alba", null, null, null, null, null, null, v);
     Name n = nat.get().getName();
-    assertEquals("Abies alba s.l.", n.getScientificName());
+    assertEquals("Abies alba", n.getScientificName());
     assertEquals("Abies", n.getGenus());
     assertEquals("alba", n.getSpecificEpithet());
     assertEquals("Mill. & Desbrochers de Loges, 1881", n.getAuthorship());
     assertEquals(List.of("Mill.", "Desbrochers de Loges"), n.getCombinationAuthorship().getAuthors());
     assertEquals("1881", n.getCombinationAuthorship().getYear());
+
+    // if atoms are given they take precedence over the full name
+    nat = ib.interpretName(true, "1", "species", "Picea arlba Mill. 2121", "", "Abies", null, "alba", null, null, null, null, null, null, v);
+    n = nat.get().getName();
+    assertEquals("Abies alba", n.getScientificName());
+    assertEquals("Abies", n.getGenus());
+    assertEquals("alba", n.getSpecificEpithet());
+    assertNull(n.getAuthorship());
+    assertTrue(n.getCombinationAuthorship().isEmpty());
+    assertNull(n.getCombinationAuthorship().getYear());
+
+    // if no authorahip is given it needs to be rebuild
+    nat = ib.interpretName(true, "1", "species", "Abies alba Mill. and Desbrochers de Loges, 1881", "", "", null, null, null, null, null, null, null, null, v);
+    n = nat.get().getName();
+    assertEquals("Abies alba", n.getScientificName());
+    assertEquals("Abies", n.getGenus());
+    assertEquals("alba", n.getSpecificEpithet());
+    assertEquals("Mill. & Desbrochers de Loges, 1881", n.getAuthorship());
+    assertEquals(List.of("Mill.", "Desbrochers de Loges"), n.getCombinationAuthorship().getAuthors());
+    assertEquals("1881", n.getCombinationAuthorship().getYear());
+
+    // if no authorahip is given it needs to be rebuild
+    nat = ib.interpretName(true, "1", "species", "Abies alba Mill. and Desbrochers de Loges, 1881", "", "", null, null, null, null, null, null, null, null, v);
+    n = nat.get().getName();
+    assertEquals("Abies alba", n.getScientificName());
+    assertEquals("Abies", n.getGenus());
+    assertEquals("alba", n.getSpecificEpithet());
+    assertEquals("Mill. & Desbrochers de Loges, 1881", n.getAuthorship());
+    assertEquals(List.of("Mill.", "Desbrochers de Loges"), n.getCombinationAuthorship().getAuthors());
+    assertEquals("1881", n.getCombinationAuthorship().getYear());
+
+    // exclude taxon notes from authorship
+    nat = ib.interpretName(true, "1", "species", "Abies alba Mill. and Desbrochers de Loges, 1881 sensu Döring 1999", "", "", null, null, null, null, null, null, null, null, v);
+    assertEquals("sensu Döring 1999", nat.get().getTaxonomicNote());
+    n = nat.get().getName();
+    assertEquals("Abies alba", n.getScientificName());
+    assertEquals("Abies", n.getGenus());
+    assertEquals("alba", n.getSpecificEpithet());
+    assertEquals("Mill. & Desbrochers de Loges, 1881", n.getAuthorship());
+    assertEquals(List.of("Mill.", "Desbrochers de Loges"), n.getCombinationAuthorship().getAuthors());
+    assertEquals("1881", n.getCombinationAuthorship().getYear());
+
+    nat = ib.interpretName(true, "1", "species", "Abies alba", "Mill. and Desbrochers de Loges, 1881 sensu Döring 1999","", null, null, null, null, null, null, null, null, v);
+    assertEquals("sensu Döring 1999", nat.get().getTaxonomicNote());
+    n = nat.get().getName();
+    assertEquals("Abies alba", n.getScientificName());
+    assertEquals("Abies", n.getGenus());
+    assertEquals("alba", n.getSpecificEpithet());
+    assertEquals("Mill. & Desbrochers de Loges, 1881", n.getAuthorship());
+    assertEquals(List.of("Mill.", "Desbrochers de Loges"), n.getCombinationAuthorship().getAuthors());
+    assertEquals("1881", n.getCombinationAuthorship().getYear());
+  }
+
+  @Test
+  public void interpretUsage() throws Exception {
+    VerbatimRecord v = new VerbatimRecord();
+
+    Name n = new Name();
+    n.setGenus("Abies");
+    n.setSpecificEpithet("alba");
+    n.setAuthorship("Miller 1876");
+    n.setCombinationAuthorship(Authorship.yearAuthors("1876", "Miller"));
+    n.rebuildScientificName();
+
+    ParsedNameUsage pnu = new ParsedNameUsage(n, true, "sensu Döring 1999", "Döring 1999. Travels through the Middle East");
+
+    NeoUsage u = ib.interpretUsage(pnu, ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, ColdpTerm.ID);
+
+    assertTrue(u.usage.isTaxon());
+    Taxon t = u.getTaxon();
+
+    assertTrue(t.isExtinct());
+    assertNull(t.getNamePhrase());
+    // stubbed refstore does assign ids
+    //assertNotNull(t.getAccordingToId());
+
+    assertNull(t.getNamePhrase());
+
+    n = t.getName();
+    assertEquals("Abies alba", n.getScientificName());
+    assertEquals("Abies", n.getGenus());
+    assertEquals("alba", n.getSpecificEpithet());
+    assertEquals("Miller 1876", n.getAuthorship());
   }
 
   @Test

@@ -10,6 +10,152 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2020-06-02 scrutiny changes 
+
+```
+ALTER TABLE dataset_import 
+    DROP COLUMN description_count,
+    ADD COLUMN treatment_count INTEGER,
+    ADD COLUMN taxon_relations_by_type_count HSTORE;
+
+ALTER TABLE sector_import 
+    DROP COLUMN description_count,
+    ADD COLUMN treatment_count INTEGER,
+    ADD COLUMN taxon_relations_by_type_count HSTORE;
+
+ALTER TABLE name DROP COLUMN appended_phrase;
+ALTER TABLE name ADD COLUMN nomenclatural_note TEXT;
+ALTER TABLE name ADD COLUMN unparsed TEXT;
+
+ALTER TABLE parser_config DROP COLUMN appended_phrase;
+ALTER TABLE parser_config ADD COLUMN unparsed TEXT;
+ALTER TABLE parser_config ADD COLUMN remarks TEXT;
+
+ALTER TABLE name_usage RENAME COLUMN according_to TO scrutinizer;
+ALTER TABLE name_usage RENAME COLUMN according_to_date TO scrutinizer_date;
+ALTER TABLE name_usage ADD COLUMN name_phrase TEXT;
+ALTER TABLE name_usage ADD COLUMN according_to_id TEXT;
+
+CREATE TYPE TAXRELTYPE AS ENUM (
+  'EQUALS',
+  'INCLUDES',
+  'INCLUDED_IN',
+  'OVERLAPS',
+  'EXCLUDES',
+  'INTERACTS_WITH',
+  'VISITS',
+  'INHABITS',
+  'SYMBIONT_OF',
+  'ASSOCIATED_WITH',
+  'EATS',
+  'POLLINATES',
+  'PARASITE_OF',
+  'PATHOGEN_OF',
+  'HOST_OF'
+);
+
+CREATE TABLE taxon_rel (
+  id INTEGER NOT NULL,
+  verbatim_key INTEGER,
+  dataset_key INTEGER NOT NULL,
+  type TAXRELTYPE NOT NULL,
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  taxon_id TEXT NOT NULL,
+  related_taxon_id TEXT NULL,
+  reference_id TEXT,
+  remarks TEXT
+) PARTITION BY LIST (dataset_key);
+
+DROP TABLE description;
+DROP TYPE DESCRIPTIONCATEGORY;
+DROP TYPE TEXTFORMAT;
+
+CREATE TYPE TREATMENTFORMAT AS ENUM (
+  'XML',
+  'HTML',
+  'TAX_PUB',
+  'TAXON_X',
+  'RDF'
+);
+
+CREATE TABLE treatment (
+  id TEXT NOT NULL,
+  dataset_key INTEGER NOT NULL,
+  format TREATMENTFORMAT,
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  document TEXT NOT NULL,
+  reference_id TEXT
+) PARTITION BY LIST (dataset_key);
+
+ALTER TABLE parser_config ADD COLUMN published_in TEXT;
+ALTER TABLE parser_config ADD COLUMN extinct BOOLEAN;
+
+
+ALTER TYPE ENTITYTYPE ADD VALUE 'TAXON_RELATION' after 'NAME_USAGE';
+ALTER TYPE ENTITYTYPE RENAME VALUE 'DESCRIPTION' to 'TREATMENT';
+
+ALTER TYPE ISSUE ADD VALUE 'AUTHORSHIP_CONTAINS_NOMENCLATURAL_NOTE' after 'NOMENCLATURAL_STATUS_INVALID';
+ALTER TYPE ISSUE ADD VALUE 'CONFLICTING_NOMENCLATURAL_STATUS' after 'AUTHORSHIP_CONTAINS_NOMENCLATURAL_NOTE';
+ALTER TYPE ISSUE ADD VALUE 'AUTHORSHIP_CONTAINS_TAXONOMIC_NOTE' after 'NAME_VARIANT';
+ALTER TYPE ISSUE ADD VALUE 'NAME_CONTAINS_EXTINCT_SYMBOL' after 'IS_EXTINCT_INVALID';
+ALTER TYPE ISSUE RENAME VALUE 'ACCORDING_TO_DATE_INVALID' to 'SCRUTINIZER_DATE_INVALID';
+ALTER TYPE ISSUE ADD VALUE 'ACCORDING_TO_CONFLICT' after 'REFTYPE_INVALID';
+
+DROP TYPE NAMEFIELD;
+CREATE TYPE NAMEFIELD AS ENUM (
+  'UNINOMIAL',
+  'GENUS',
+  'INFRAGENERIC_EPITHET',
+  'SPECIFIC_EPITHET',
+  'INFRASPECIFIC_EPITHET',
+  'CULTIVAR_EPITHET',
+  'CANDIDATUS',
+  'NOTHO',
+  'BASIONYM_AUTHORS',
+  'BASIONYM_EX_AUTHORS',
+  'BASIONYM_YEAR',
+  'COMBINATION_AUTHORS',
+  'COMBINATION_EX_AUTHORS',
+  'COMBINATION_YEAR',
+  'SANCTIONING_AUTHOR',
+  'CODE',
+  'NOM_STATUS',
+  'PUBLISHED_IN',
+  'PUBLISHED_IN_PAGE',
+  'NOMENCLATURAL_NOTE',
+  'UNPARSED',
+  'REMARKS',
+  'NAME_PHRASE',
+  'ACCORDING_TO'
+);
+```
+
+It is also required to run the `execSql --sql` command using the following sql template
+in order to drop all description partitions and update existing name & name_usage partitions: 
+```
+CREATE TABLE treatment_{KEY} (LIKE treatment INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+ALTER TABLE treatment ATTACH PARTITION treatment_{KEY} FOR VALUES IN ( {KEY} )
+ALTER TABLE treatment_{KEY} ADD PRIMARY KEY (id);
+ALTER TABLE treatment_{KEY} ADD CONSTRAINT treatment_{KEY}_id_fk FOREIGN KEY (id) REFERENCES name_usage_{KEY} (id) ON DELETE CASCADE;
+ALTER TABLE treatment_{KEY} ADD CONSTRAINT treatment_{KEY}_reference_id_fk FOREIGN KEY (reference_id) REFERENCES reference_{KEY} (id) ON DELETE CASCADE;
+
+CREATE TABLE taxon_rel_{KEY} (LIKE taxon_rel INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+ALTER TABLE taxon_rel ATTACH PARTITION taxon_rel_{KEY} FOR VALUES IN ( {KEY} )
+CREATE SEQUENCE taxon_rel_{KEY}_id_seq START 1;
+ALTER TABLE taxon_rel_{KEY} ALTER COLUMN id SET DEFAULT nextval('taxon_rel_{KEY}_id_seq');
+
+ALTER TABLE name_rel_{KEY} ADD CONSTRAINT name_rel_{KEY}_published_in_id_fk FOREIGN KEY (published_in_id) REFERENCES reference_{KEY} (id) ON DELETE CASCADE;
+ALTER TABLE name_rel_{KEY} ADD CONSTRAINT name_rel_{KEY}_verbatim_key_fk FOREIGN KEY (verbatim_key) REFERENCES verbatim_{KEY} (id) ON DELETE CASCADE; 
+ALTER TABLE media_{KEY} ADD CONSTRAINT media_{KEY}_reference_id_fk FOREIGN KEY (reference_id) REFERENCES reference_{KEY} (id) ON DELETE CASCADE;
+ALTER TABLE vernacular_name_{KEY} ADD CONSTRAINT vernacular_name_{KEY}_reference_id_fk FOREIGN KEY (reference_id) REFERENCES reference_{KEY} (id) ON DELETE CASCADE;
+```
+
 #### 2020-05-25 merge import states
 ```
 ALTER TABLE dataset_import ALTER COLUMN state TYPE text;
@@ -348,5 +494,5 @@ CREATE TABLE type_material (
 ) PARTITION BY LIST (dataset_key);
 ```
 
-Afterwards it is required to run the `AddTableCmd -t type_material` using the cli tools
+Afterwards it is required to run the `AddTableCmd`` -t type_material` using the cli tools
 in order to create partitions for all existing datasets. 

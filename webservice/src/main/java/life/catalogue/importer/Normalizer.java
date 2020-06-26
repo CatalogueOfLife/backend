@@ -157,7 +157,7 @@ public class Normalizer implements Callable<Boolean> {
           require(s, s.getOrigin(), "origin");
 
           // no vernaculars, distribution etc
-          check(s, u.descriptions.isEmpty(), "no descriptions");
+          check(s, u.treatment == null, "no treatments");
           check(s, u.distributions.isEmpty(), "no distributions");
           check(s, u.media.isEmpty(), "no media");
           check(s, u.vernacularNames.isEmpty(), "no vernacular names");
@@ -350,7 +350,7 @@ public class Normalizer implements Callable<Boolean> {
           Node n = store.getNeo().getNodeById(u.node.getId());
           Name name = store.names().objByNode(NeoProperties.getNameNode(n)).name;
           boolean ambigous = n.getDegree(RelType.SYNONYM_OF, Direction.OUTGOING) > 1;
-          boolean misapplied = MisappliedNameMatcher.isMisappliedName(new NameAccordingTo(name, syn.getAccordingTo()));
+          boolean misapplied = MisappliedNameMatcher.isMisappliedName(new ParsedNameUsage(name, false, syn.getAccordingToId(), null));
           TaxonomicStatus status = syn.getStatus();
 
           if (status == TaxonomicStatus.MISAPPLIED) {
@@ -395,7 +395,6 @@ public class Normalizer implements Callable<Boolean> {
       store.usages().all().forEach(u -> {
         if (u.isSynonym()) {
           if (!u.distributions.isEmpty() ||
-              !u.descriptions.isEmpty() ||
               !u.media.isEmpty() ||
               !u.vernacularNames.isEmpty()
           ) {
@@ -405,7 +404,6 @@ public class Normalizer implements Callable<Boolean> {
             Traversals.ACCEPTED.traverse(n).nodes().forEach( accNode -> {
               NeoUsage acc = store.usages().objByNode(accNode);
               acc.distributions.addAll(u.distributions);
-              acc.descriptions.addAll(u.descriptions);
               acc.media.addAll(u.media);
               acc.vernacularNames.addAll(u.vernacularNames);
               store.usages().update(acc);
@@ -413,7 +411,6 @@ public class Normalizer implements Callable<Boolean> {
             });
 
             u.distributions.clear();
-            u.descriptions.clear();
             u.media.clear();
             u.vernacularNames.clear();
             store.addIssues(u.usage, Issue.SYNONYM_DATA_MOVED);
@@ -682,9 +679,9 @@ public class Normalizer implements Callable<Boolean> {
     Name n = new Name();
     n.setUninomial(uninomial);
     n.setRank(rank);
+    n.rebuildScientificName();
     // determine type - can e.g. be placeholders
     n.setType(NameParser.PARSER.determineType(n).orElse(NameType.SCIENTIFIC));
-    n.updateNameCache();
     t.usage.setName(n);
     // store both, which creates a single new neo node
     store.createNameAndUsage(t);

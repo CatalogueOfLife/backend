@@ -187,10 +187,8 @@ public class InitDbCmd extends AbstractPromptCmd {
     PgCopyUtils.copy(pgc, "name_usage_"+Datasets.DRAFT_COL, "/life/catalogue/db/draft/taxon.csv", ImmutableMap.<String, Object>builder()
         .put("dataset_key", Datasets.DRAFT_COL)
         .put("origin", Origin.SOURCE)
-        .put("according_to", "CoL")
         .put("status", TaxonomicStatus.ACCEPTED)
         .put("is_synonym", false)
-        //.put("according_to_date", Year.now().getValue())
         .put("created_by", Users.DB_INIT)
         .put("modified_by", Users.DB_INIT)
         .build());
