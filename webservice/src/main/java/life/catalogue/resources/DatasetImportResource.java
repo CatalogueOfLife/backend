@@ -17,6 +17,8 @@ import static life.catalogue.dao.NamesTreeDao.Context;
 
 @Path("/dataset/{key}/import")
 @SuppressWarnings("static-method")
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class DatasetImportResource {
 
   @SuppressWarnings("unused")

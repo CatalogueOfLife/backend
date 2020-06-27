@@ -22,6 +22,7 @@ import javax.ws.rs.core.MediaType;
 @Path("/dataset/{datasetKey}/patch")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
+@Consumes(MediaType.APPLICATION_JSON)
 public class DatasetPatchResource {
 
   private static final Logger LOG = LoggerFactory.getLogger(DatasetPatchResource.class);

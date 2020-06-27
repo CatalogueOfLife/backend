@@ -32,6 +32,7 @@ import static life.catalogue.dao.NamesTreeDao.Context.SECTOR;
 
 @Path("/dataset/{datasetKey}/sector")
 @Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class SectorResource extends AbstractDatasetScopedResource<Integer, Sector, SectorSearchRequest> {
   
