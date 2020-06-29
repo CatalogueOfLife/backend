@@ -9,6 +9,7 @@ import life.catalogue.es.nu.ClassificationUpdaterTest;
 import life.catalogue.es.nu.EsNameUsageSerde;
 import life.catalogue.es.nu.Issue333;
 import life.catalogue.es.nu.MultiValuedMapTest;
+import life.catalogue.es.nu.NameUsageFieldLookupTest;
 import life.catalogue.es.nu.NameUsageIndexServiceIT;
 import life.catalogue.es.nu.NameUsageResponseConverterTest;
 import life.catalogue.es.nu.NameUsageWrapperConverterTest;
@@ -31,11 +32,13 @@ import life.catalogue.es.query.TermQueryTest;
     EsUtilTest.class,
     FacetsTranslatorTest.class,
     Issue333.class,
+    Issue541_SearchForUnparsedNames.class,
     MappingFactoryTest.class,
     MappingUtilTest.class,
     MinRankMaxRankTest.class,
     Misc.class,
     MultiValuedMapTest.class,
+    NameUsageFieldLookupTest.class,
     NameUsageSearchHighlighterTest.class,
     NameUsageResponseConverterTest.class,
     NameUsageSearchHighlighterTest.class,
@@ -55,7 +58,6 @@ import life.catalogue.es.query.TermQueryTest;
     SortingTest.class,
     TermQueryTest.class
 })
-// @SuppressWarnings("unused")
 public class EsTestSuite {
 
 }

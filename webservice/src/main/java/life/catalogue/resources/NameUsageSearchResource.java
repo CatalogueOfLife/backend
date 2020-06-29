@@ -68,6 +68,7 @@ public class NameUsageSearchResource {
         @JsonProperty("content") Set<NameUsageSearchRequest.SearchContent> content,
         @JsonProperty("sortBy") NameUsageSearchRequest.SortBy sortBy,
         @JsonProperty("q") String q,
+        @JsonProperty("vernacular") @DefaultValue("false") boolean vernacular,
         @JsonProperty("highlight") @DefaultValue("false") boolean highlight,
         @JsonProperty("reverse") @DefaultValue("false") boolean reverse,
         @JsonProperty("fuzzy") @DefaultValue("false") boolean fuzzy,
@@ -76,7 +77,7 @@ public class NameUsageSearchResource {
         @JsonProperty("prefix") @DefaultValue("false") boolean prefix,
         @JsonProperty("minRank") Rank minRank,
         @JsonProperty("maxRank") Rank maxRank) {
-      request = new NameUsageSearchRequest(filter, facet, content, false, sortBy, q, highlight, reverse, fuzzy, prefix, minRank, maxRank);
+      request = new NameUsageSearchRequest(filter, facet, content, vernacular, sortBy, q, highlight, reverse, fuzzy, prefix, minRank, maxRank);
       page = new Page(offset, limit);
     }
   }

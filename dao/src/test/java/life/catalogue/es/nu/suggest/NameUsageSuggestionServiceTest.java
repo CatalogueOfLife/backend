@@ -395,8 +395,4 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
     Set<String> actual = response.getSuggestions().stream().map(NameUsageSuggestion::getUsageId).collect(toSet());
     assertTrue(expected.equals(actual));
   }
-
-  private static void assertNoMatch(NameUsageSuggestResponse response) {
-    assertTrue(response.getSuggestions().isEmpty());
-  }
 }

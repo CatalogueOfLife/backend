@@ -65,7 +65,6 @@ public class Issue541_SearchForUnparsedNames extends EsReadTestBase {
   }
 
   @Test
-  //@Ignore("ES throws exception: json_parse_exception\",\"reason\":\"Illegal unquoted character ((CTRL-CHAR, code 10)): has to be escaped using backslash to be included in string value\\n at [Source: org.elasticsearch.transport.netty4.ByteBufStreamInput@10600e5d; line: 1, column: 66]\"}},\"status\":400}")
   public void test2() {
     String q = "H(eterodon)\n\n  \tlichtensteinii Jan, 1859";
 

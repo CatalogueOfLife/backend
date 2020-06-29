@@ -6,8 +6,8 @@ import java.util.Map;
 
 /**
  * The heart of an index definition: its analyzers, tokenizers and character filters. However we currently just define them as raw maps
- * since we don't do anything with (except passing them on to Elasticsearch). Also, we currently don't use token filters, so they are not
- * defined here either yet.
+ * since we don't do anything with them (except passing them on to Elasticsearch). Also, we currently don't use token filters, so they are
+ * not defined here either yet.
  */
 public class Analysis {
 
