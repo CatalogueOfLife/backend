@@ -250,7 +250,7 @@ public class ColdpInterpreter extends InterpreterBase {
 
     Optional<ParsedNameUsage> opt = interpretName(true, v.get(ColdpTerm.ID),
         v.get(ColdpTerm.rank), v.get(ColdpTerm.scientificName), v.get(ColdpTerm.authorship),
-        v.get(genusNameTerm), v.get(ColdpTerm.infragenericEpithet), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet),
+        v.get(ColdpTerm.uninomial), v.get(genusNameTerm), v.get(ColdpTerm.infragenericEpithet), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet),
         v.get(ColdpTerm.cultivarEpithet),
         v.get(ColdpTerm.code), v.get(nomStatusTerm),
         v.get(ColdpTerm.link), v.get(ColdpTerm.remarks), v);

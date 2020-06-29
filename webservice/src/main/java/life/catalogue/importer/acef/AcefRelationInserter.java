@@ -39,7 +39,7 @@ public class AcefRelationInserter extends RelationInserterBase {
         NeoName sp = store.nameByUsage(p);
         if (sp.name.getRank() != Rank.GENUS) {
           opt = inter.interpretName(true, u.getId(), v.get(AcefTerm.InfraSpeciesMarker), null, v.get(AcefTerm.InfraSpeciesAuthorString),
-              sp.name.getGenus(), sp.name.getInfragenericEpithet(), sp.name.getSpecificEpithet(), v.get(AcefTerm.InfraSpeciesEpithet),
+              null, sp.name.getGenus(), sp.name.getInfragenericEpithet(), sp.name.getSpecificEpithet(), v.get(AcefTerm.InfraSpeciesEpithet),
               null, null, v.get(AcefTerm.GSDNameStatus), null, null, v);
         }
       }

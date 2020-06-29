@@ -31,6 +31,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static life.catalogue.parser.SafeParser.parse;
+import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 /**
  * Base interpreter providing common methods for both ACEF and DWC
@@ -316,7 +317,7 @@ public class InterpreterBase {
         return epithet.toLowerCase();
       }
     }
-    return epithet;
+    return trimToNull(epithet);
   }
   
   private static void setDefaultNameType(Name n) {
@@ -328,13 +329,13 @@ public class InterpreterBase {
   }
 
   public Optional<ParsedNameUsage> interpretName(final boolean preferAtoms, final String id, final String vrank, final String sciname, final String authorship,
-                                                 final String genus, final String infraGenus, final String species, final String infraspecies,
+                                                 final String uninomial, final String genus, final String infraGenus, final String species, final String infraspecies,
                                                  final String cultivar,
                                                  String nomCode, String nomStatus,
                                                  String link, String remarks, VerbatimRecord v) {
     // this can be wrong in some cases, e.g. in DwC records often scientificName and just a genus is given
-    final boolean isAtomized = ObjectUtils.anyNonBlank(genus, infraGenus, species, infraspecies);
-    final boolean useAtoms   = isAtomized && (preferAtoms || sciname == null);
+    final boolean isAtomized = ObjectUtils.anyNonBlank(uninomial, genus, infraGenus, species, infraspecies);
+    final boolean useAtoms   = isAtomized && (preferAtoms || StringUtils.isNotBlank(sciname));
 
     // parse rank & code as they improve name parsing
     Rank rank = SafeParser.parse(RankParser.PARSER, vrank).orElse(Rank.UNRANKED, Issue.RANK_INVALID, v);
@@ -349,16 +350,17 @@ public class InterpreterBase {
       Name atom = new Name();
       pnu.setName(atom);
 
-      atom.setGenus(genus);
-      atom.setInfragenericEpithet(infraGenus);
+      atom.setUninomial(trimToNull(uninomial));
+      atom.setGenus(trimToNull(genus));
+      atom.setInfragenericEpithet(trimToNull(infraGenus));
       atom.setSpecificEpithet(lowercaseEpithet(species, v));
       atom.setInfraspecificEpithet(lowercaseEpithet(infraspecies, v));
-      atom.setCultivarEpithet(cultivar);
+      atom.setCultivarEpithet(trimToNull(cultivar));
       atom.setRank(rank);
       atom.setCode(code);
       setDefaultNameType(atom);
-      // populate uninomial instead of genus?
-      if (!atom.isBinomial() && rank.isGenusOrSuprageneric() && atom.getGenus() != null && atom.getInfragenericEpithet() == null) {
+      // misplaced uninomial in genus field
+      if (!atom.isBinomial() && rank.isGenusOrSuprageneric() && atom.getGenus() != null && atom.getInfragenericEpithet() == null && atom.getUninomial() == null) {
         atom.setUninomial(atom.getGenus());
         atom.setGenus(null);
       }
@@ -396,7 +398,7 @@ public class InterpreterBase {
         return Optional.empty();
       }
 
-    } else if (sciname != null) {
+    } else if (StringUtils.isNotBlank(sciname)) {
       pnu = NameParser.PARSER.parse(sciname, rank, code, v).get();
 
     } else {

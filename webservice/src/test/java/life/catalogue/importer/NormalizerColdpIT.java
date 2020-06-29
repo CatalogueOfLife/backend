@@ -9,6 +9,7 @@ import life.catalogue.dao.ParserConfigDao;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 
@@ -87,62 +88,6 @@ public class NormalizerColdpIT extends NormalizerITBase {
     }
   }
 
-  @Test
-  public void testSpecsNameUsage() throws Exception {
-    normalize(7);
-    store.dump();
-    try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t = usageByID("1000");
-      assertFalse(t.isSynonym());
-      assertEquals("Platycarpha glomerata (Thunberg) A. P. de Candolle", t.usage.getName().getLabel());
-
-      t = usageByID("1006-s3");
-      assertTrue(t.isSynonym());
-      assertEquals("1006-s3", t.getId());
-      assertEquals("1006-s3", t.usage.getName().getId());
-      assertEquals("Leonida taraxacoida Vill.", t.usage.getName().getLabel());
-
-      List<NameRelation> rels = store.relations(t.nameNode);
-      assertEquals(1, rels.size());
-      assertEquals(NomRelType.BASIONYM, rels.get(0).getType());
-
-      t = accepted(t.node);
-      assertFalse(t.isSynonym());
-      assertEquals("1006", t.getId());
-      assertEquals("Leontodon taraxacoides (Vill.) Mérat", t.usage.getName().getLabel());
-
-      parents(t.node, "102", "30", "20", "10", "1");
-
-      store.usages().all().forEach(u -> {
-        VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
-        assertNotNull(v);
-        if (u.getId().equals("fake")) {
-          assertEquals(2, v.getIssues().size());
-          assertTrue(v.hasIssue(Issue.PARTIAL_DATE));
-
-        } else if(u.getId().equals("cult")) {
-          assertEquals(2, v.getIssues().size());
-          assertTrue(v.hasIssue(Issue.INCONSISTENT_NAME));
-
-        } else {
-          assertEquals(1, v.getIssues().size());
-        }
-        assertTrue(v.hasIssue(Issue.NAME_MATCH_NONE));
-      });
-
-      store.references().forEach(r -> {
-        assertNotNull(r.getCitation());
-        assertNotNull(r.getCsl().getTitle());
-      });
-
-      t = usageByNameID("1001c");
-      assertFalse(t.isSynonym());
-      assertEquals("1001c", t.getId());
-
-      assertEquals(3, store.typeMaterial().size());
-    }
-  }
-
   /**
    * https://github.com/Sp2000/colplus-backend/issues/307
    */
@@ -203,20 +148,87 @@ public class NormalizerColdpIT extends NormalizerITBase {
 
   /**
    * https://github.com/CatalogueOfLife/backend/issues/760
+   *
+   * And testing uninomial vs scientificName as sole name input
    */
   @Test
   public void nomStatus() throws Exception {
     normalize(6);
     store.dump();
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoName n = nameByID("846548");
-      assertEquals("Rosanae", n.name.getLabel());
-      assertEquals(NameType.SCIENTIFIC, n.name.getType());
-      assertEquals("Rosanae", n.name.getUninomial());
-      assertNull(n.name.getNomenclaturalNote());
-      assertNull(n.name.getUnparsed());
-      assertNull(n.name.getGenus());
-      assertNull(n.name.getAuthorship());
+      assertRosanae("846548");
+      assertRosanae("846548b");
+      assertRosanae("846548c");
     }
   }
+
+  private void assertRosanae(String id){
+    NeoName n = nameByID(id);
+    assertEquals("Rosanae", n.name.getLabel());
+    assertEquals("Rosanae", n.name.getUninomial());
+    assertEquals("Rosanae", n.name.getScientificName());
+    assertEquals(NameType.SCIENTIFIC, n.name.getType());
+    assertEquals(Rank.SUPERORDER, n.name.getRank());
+    assertNull(n.name.getNomenclaturalNote());
+    assertNull(n.name.getUnparsed());
+    assertNull(n.name.getGenus());
+    assertNull(n.name.getAuthorship());
+  }
+
+  @Test
+  public void testSpecsNameUsage() throws Exception {
+    normalize(7);
+    store.dump();
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoUsage t = usageByID("1000");
+      assertFalse(t.isSynonym());
+      assertEquals("Platycarpha glomerata (Thunberg) A. P. de Candolle", t.usage.getName().getLabel());
+
+      t = usageByID("1006-s3");
+      assertTrue(t.isSynonym());
+      assertEquals("1006-s3", t.getId());
+      assertEquals("1006-s3", t.usage.getName().getId());
+      assertEquals("Leonida taraxacoida Vill.", t.usage.getName().getLabel());
+
+      List<NameRelation> rels = store.relations(t.nameNode);
+      assertEquals(1, rels.size());
+      assertEquals(NomRelType.BASIONYM, rels.get(0).getType());
+
+      t = accepted(t.node);
+      assertFalse(t.isSynonym());
+      assertEquals("1006", t.getId());
+      assertEquals("Leontodon taraxacoides (Vill.) Mérat", t.usage.getName().getLabel());
+
+      parents(t.node, "102", "30", "20", "10", "1");
+
+      store.usages().all().forEach(u -> {
+        VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
+        assertNotNull(v);
+        if (u.getId().equals("fake")) {
+          assertEquals(2, v.getIssues().size());
+          assertTrue(v.hasIssue(Issue.PARTIAL_DATE));
+
+        } else if(u.getId().equals("cult")) {
+          assertEquals(2, v.getIssues().size());
+          assertTrue(v.hasIssue(Issue.INCONSISTENT_NAME));
+
+        } else {
+          assertEquals(1, v.getIssues().size());
+        }
+        assertTrue(v.hasIssue(Issue.NAME_MATCH_NONE));
+      });
+
+      store.references().forEach(r -> {
+        assertNotNull(r.getCitation());
+        assertNotNull(r.getCsl().getTitle());
+      });
+
+      t = usageByNameID("1001c");
+      assertFalse(t.isSynonym());
+      assertEquals("1001c", t.getId());
+
+      assertEquals(3, store.typeMaterial().size());
+    }
+  }
+
 }
