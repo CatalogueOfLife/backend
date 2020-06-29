@@ -125,7 +125,10 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   public int delete(DSID<Integer> key, int user) {
     throw new UnsupportedOperationException("Sectors have to be deleted asynchronously through a SectorDelete job");
   }
-  
+
+  /**
+   * Recursively updates the sector count for a given sectors target taxon and all its parents.
+   */
   public static void incSectorCounts(SqlSession session, Sector s, int delta) {
     if (s != null && s.getTarget() != null) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);

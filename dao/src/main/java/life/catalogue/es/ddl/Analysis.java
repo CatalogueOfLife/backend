@@ -1,7 +1,8 @@
 package life.catalogue.es.ddl;
 
-import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.Map;
 
 /**
  * The heart of an index definition: its analyzers, tokenizers and character filters. However we currently just define them as raw maps
@@ -11,12 +12,21 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Analysis {
 
   private Map<String, Object> analyzer;
+  private Map<String, Object> filter;
   @JsonProperty("char_filter")
   private Map<String, Object> charFilter;
   private Map<String, Object> tokenizer;
 
   public Map<String, Object> getAnalyzer() {
     return analyzer;
+  }
+
+  public Map<String, Object> getFilter() {
+    return filter;
+  }
+
+  public void setFilter(Map<String, Object> filter) {
+    this.filter = filter;
   }
 
   public Map<String, Object> getCharFilter() {

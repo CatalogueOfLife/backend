@@ -1,30 +1,25 @@
 package life.catalogue.es;
 
+import life.catalogue.api.model.*;
+import life.catalogue.api.search.*;
+import life.catalogue.api.search.NameUsageSearchRequest.SortBy;
+import life.catalogue.es.nu.NameUsageWrapperConverter;
+import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
+import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
+import life.catalogue.es.query.EsSearchRequest;
+import life.catalogue.es.query.Query;
+import org.elasticsearch.client.RestClient;
+import org.junit.ClassRule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import org.elasticsearch.client.RestClient;
-import org.junit.ClassRule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.Synonym;
-import life.catalogue.api.model.Taxon;
-import life.catalogue.api.search.NameUsageSearchRequest;
-import life.catalogue.api.search.NameUsageSearchRequest.SortBy;
-import life.catalogue.api.search.NameUsageSearchResponse;
-import life.catalogue.api.search.NameUsageSuggestRequest;
-import life.catalogue.api.search.NameUsageSuggestResponse;
-import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.es.nu.NameUsageWrapperConverter;
-import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
-import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
-import life.catalogue.es.query.EsSearchRequest;
-import life.catalogue.es.query.Query;
+
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -156,4 +151,11 @@ public class EsReadTestBase {
     return nuw;
   }
 
+  protected List<VernacularName> create(List<String> names) {
+    return names.stream().map(n -> {
+      VernacularName vn = new VernacularName();
+      vn.setName(n);
+      return vn;
+    }).collect(Collectors.toList());
+  }
 }

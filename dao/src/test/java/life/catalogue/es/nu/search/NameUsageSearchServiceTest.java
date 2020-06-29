@@ -1,24 +1,7 @@
 package life.catalogue.es.nu.search;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
-import org.elasticsearch.client.RestClient;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.BareName;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.ResultPage;
-import life.catalogue.api.model.Taxon;
-import life.catalogue.api.model.VernacularName;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
@@ -26,9 +9,23 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
-import static org.junit.Assert.assertEquals;
+import org.elasticsearch.client.RestClient;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.List;
+
 import static life.catalogue.es.EsUtil.insert;
 import static life.catalogue.es.EsUtil.refreshIndex;
+import static org.junit.Assert.assertEquals;
 
 public class NameUsageSearchServiceTest extends EsReadTestBase {
 
@@ -570,6 +567,149 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     NameUsageWrapper nuw4 = new NameUsageWrapper(bn);
 
     return Arrays.asList(nuw1, nuw2, nuw3, nuw4);
+  }
+
+  @Test
+  public void test05() {
+
+    // Define search
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.setHighlight(false);
+    query.setQ("UNLIKE");
+
+    // Match
+    NameUsageWrapper nuw1 = minimalTaxon();
+    List<String> vernaculars = Arrays.asList("AN UNLIKELY NAME");
+    nuw1.setVernacularNames(create(vernaculars));
+    index(nuw1);
+
+    // Match
+    NameUsageWrapper nuw2 = minimalTaxon();
+    vernaculars = Arrays.asList("ANOTHER NAME", "AN UNLIKELY NAME");
+    nuw2.setVernacularNames(create(vernaculars));
+    index(nuw2);
+
+    // Match
+    NameUsageWrapper nuw3 = minimalTaxon();
+    vernaculars = Arrays.asList("YET ANOTHER NAME", "ANOTHER NAME", "AN UNLIKELY NAME");
+    nuw3.setVernacularNames(create(vernaculars));
+    index(nuw3);
+
+    // Match
+    NameUsageWrapper nuw4 = minimalTaxon();
+    vernaculars = Arrays.asList("it's unlike capital case");
+    nuw4.setVernacularNames(create(vernaculars));
+    index(nuw4);
+
+    // No match
+    NameUsageWrapper nuw5 = minimalTaxon();
+    vernaculars = Arrays.asList("LIKE IT OR NOT");
+    nuw5.setVernacularNames(create(vernaculars));
+    index(nuw5);
+
+    ResultPage<NameUsageWrapper> result = search(query);
+
+    assertEquals(4, result.getResult().size());
+  }
+
+  @Test
+  public void authorshipOnlySearch() {
+
+    // Define search
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.setHighlight(false);
+    // Only search in authorship field
+    query.setContent(EnumSet.of(NameUsageSearchRequest.SearchContent.AUTHORSHIP));
+    query.setQ("UNLIKE");
+
+    // No match
+    NameUsageWrapper nuw1 = minimalTaxon();
+    List<String> vernaculars = Arrays.asList("AN UNLIKELY NAME");
+    nuw1.setVernacularNames(create(vernaculars));
+    index(nuw1);
+
+    // No match
+    NameUsageWrapper nuw2 = minimalTaxon();
+    vernaculars = Arrays.asList("ANOTHER NAME", "AN UNLIKELY NAME");
+    nuw2.setVernacularNames(create(vernaculars));
+    index(nuw2);
+
+    // No match
+    NameUsageWrapper nuw3 = minimalTaxon();
+    vernaculars = Arrays.asList("YET ANOTHER NAME", "ANOTHER NAME", "AN UNLIKELY NAME");
+    nuw3.setVernacularNames(create(vernaculars));
+    index(nuw3);
+
+    // No match
+    NameUsageWrapper nuw4 = minimalTaxon();
+    vernaculars = Arrays.asList("it's unlike capital case");
+    nuw4.setVernacularNames(create(vernaculars));
+    index(nuw4);
+
+    // No match
+    NameUsageWrapper nuw5 = minimalTaxon();
+    vernaculars = Arrays.asList("LIKE IT OR NOT");
+    nuw5.setVernacularNames(create(vernaculars));
+    index(nuw5);
+
+    ResultPage<NameUsageWrapper> result = search(query);
+
+    assertEquals(0, result.getResult().size());
+  }
+
+  @Test
+  public void vernacularNameTransliterationTest01() {
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.setHighlight(false);
+    query.setQ("Hier");
+    index(vernacularNameTransliterationTest_data());
+    ResultPage<NameUsageWrapper> result = search(query);
+    assertEquals(1, result.getResult().size());
+    assertEquals("1", result.getResult().iterator().next().getId());
+  }
+
+  @Test
+  public void vernacularNameTransliterationTest02() {
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.setHighlight(false);
+    query.setQ("hIEr");
+    index(vernacularNameTransliterationTest_data());
+    ResultPage<NameUsageWrapper> result = search(query);
+    assertEquals(1, result.getResult().size());
+    assertEquals("1", result.getResult().iterator().next().getId());
+  }
+
+  @Test
+  public void vernacularNameTransliterationTest03() {
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.setHighlight(false);
+    query.setQ("ȞȋȆr");
+    index(vernacularNameTransliterationTest_data());
+    ResultPage<NameUsageWrapper> result = search(query);
+    assertEquals(1, result.getResult().size());
+    assertEquals("1", result.getResult().iterator().next().getId());
+  }
+
+  public List<NameUsageWrapper> vernacularNameTransliterationTest_data() {
+
+    List<NameUsageWrapper> data = new ArrayList<>();
+
+    NameUsageWrapper nuw = minimalTaxon();
+    nuw.setId("1");
+    VernacularName vn = new VernacularName();
+    vn.setName("Hiërogliefen heersbeestje");
+    nuw.setVernacularNames(List.of(vn));
+    data.add(nuw);
+
+    nuw = minimalTaxon();
+    nuw.setId("2");
+    vn = new VernacularName();
+    vn.setName("Ăäuũîèçrōcō");
+    nuw.setVernacularNames(List.of(vn));
+    data.add(nuw);
+
+    return data;
+
   }
 
 }
