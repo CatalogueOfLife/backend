@@ -64,6 +64,12 @@ public class ColdpInserter extends NeoCsvInserter {
     // insert BibTex references
     insertExtendedReferences();
 
+    // name_usage combination
+    insertEntities(reader, ColdpTerm.NameUsage,
+      inter::interpretNameUsage,
+      u -> store.createNameAndUsage(u) != null
+    );
+
     // name & relations
     insertEntities(reader, ColdpTerm.Name,
         inter::interpretName,

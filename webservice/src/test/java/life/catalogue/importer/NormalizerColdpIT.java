@@ -69,8 +69,6 @@ public class NormalizerColdpIT extends NormalizerITBase {
         if (u.getId().equals("fake")) {
           assertEquals(1, v.getIssues().size());
           assertTrue(v.hasIssue(Issue.PARTIAL_DATE));
-        } else if(!v.getIssues().isEmpty()) {
-          int x=4;
         } else {
           assertTrue(v.getIssues().isEmpty());
         }
@@ -88,7 +86,63 @@ public class NormalizerColdpIT extends NormalizerITBase {
       assertEquals(3, store.typeMaterial().size());
     }
   }
-  
+
+  @Test
+  public void testSpecsNameUsage() throws Exception {
+    normalize(7);
+    store.dump();
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoUsage t = usageByID("1000");
+      assertFalse(t.isSynonym());
+      assertEquals("Platycarpha glomerata (Thunberg) A. P. de Candolle", t.usage.getName().getLabel());
+
+      t = usageByID("1006-s3");
+      assertTrue(t.isSynonym());
+      assertEquals("1006-s3", t.getId());
+      assertEquals("1006-s3", t.usage.getName().getId());
+      assertEquals("Leonida taraxacoida Vill.", t.usage.getName().getLabel());
+
+      List<NameRelation> rels = store.relations(t.nameNode);
+      assertEquals(1, rels.size());
+      assertEquals(NomRelType.BASIONYM, rels.get(0).getType());
+
+      t = accepted(t.node);
+      assertFalse(t.isSynonym());
+      assertEquals("1006", t.getId());
+      assertEquals("Leontodon taraxacoides (Vill.) Mérat", t.usage.getName().getLabel());
+
+      parents(t.node, "102", "30", "20", "10", "1");
+
+      store.usages().all().forEach(u -> {
+        VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
+        assertNotNull(v);
+        if (u.getId().equals("fake")) {
+          assertEquals(2, v.getIssues().size());
+          assertTrue(v.hasIssue(Issue.PARTIAL_DATE));
+
+        } else if(u.getId().equals("cult")) {
+          assertEquals(2, v.getIssues().size());
+          assertTrue(v.hasIssue(Issue.INCONSISTENT_NAME));
+
+        } else {
+          assertEquals(1, v.getIssues().size());
+        }
+        assertTrue(v.hasIssue(Issue.NAME_MATCH_NONE));
+      });
+
+      store.references().forEach(r -> {
+        assertNotNull(r.getCitation());
+        assertNotNull(r.getCsl().getTitle());
+      });
+
+      t = usageByNameID("1001c");
+      assertFalse(t.isSynonym());
+      assertEquals("1001c", t.getId());
+
+      assertEquals(3, store.typeMaterial().size());
+    }
+  }
+
   /**
    * https://github.com/Sp2000/colplus-backend/issues/307
    */

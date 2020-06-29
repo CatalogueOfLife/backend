@@ -32,6 +32,7 @@ import static life.catalogue.parser.SafeParser.parse;
 public class ColdpInterpreter extends InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(ColdpInterpreter.class);
   private static final EnumNote<TaxonomicStatus> SYN_NOTE = new EnumNote<>(TaxonomicStatus.SYNONYM, null);
+  private static final EnumNote<TaxonomicStatus> ACC_NOTE = new EnumNote<>(TaxonomicStatus.ACCEPTED, null);
 
   ColdpInterpreter(DatasetSettings settings, MappingFlags metadata, ReferenceFactory refFactory, NeoDb store) {
     super(settings, refFactory, store);
@@ -57,19 +58,48 @@ public class ColdpInterpreter extends InterpreterBase {
         v
     ));
   }
-  
+
+  Optional<NeoUsage> interpretNameUsage(VerbatimRecord v) {
+    // name
+    return interpretName(v).map(nn -> {
+      if (!v.hasTerm(ColdpTerm.ID)) {
+        return null;
+      }
+
+      TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(ColdpTerm.status)).orElse(ACC_NOTE, Issue.TAXONOMIC_STATUS_INVALID, v).val;
+
+      NeoUsage u;
+      if (status.isSynonym()) {
+        u = NeoUsage.createSynonym(Origin.SOURCE, status);
+      } else {
+        u = NeoUsage.createTaxon(Origin.SOURCE, TaxonomicStatus.ACCEPTED);
+        interpretTaxonInfos(v, u);
+      }
+      interpretUsageBase(u, nn, v);
+      u.usage.setName(nn.name);
+      return u;
+    });
+  }
+
   Optional<NeoUsage> interpretTaxon(VerbatimRecord v) {
     return findName(v, ColdpTerm.nameID).map(n -> {
       if (!v.hasTerm(ColdpTerm.ID)) {
         return null;
       }
-      //TODO: make sure no TAXON label already exists!!!
       NeoUsage u = NeoUsage.createTaxon(Origin.SOURCE, TaxonomicStatus.ACCEPTED);
 
       // shared usage base
       interpretUsageBase(u, n, v);
 
       // taxon
+      interpretTaxonInfos(v, u);
+
+      return u;
+    });
+  }
+
+  private void interpretTaxonInfos(VerbatimRecord v, NeoUsage u){
+    if (!u.isSynonym()) {
       Taxon t = u.getTaxon();
       t.setScrutinizer(v.get(ColdpTerm.scrutinizer));
       t.setScrutinizerDate(fuzzydate(v, Issue.SCRUTINIZER_DATE_INVALID, ColdpTerm.scrutinizerDate));
@@ -83,14 +113,11 @@ public class ColdpInterpreter extends InterpreterBase {
       }
       // lifezones
       setLifezones(t, v, ColdpTerm.lifezone);
-    
-      // flat classification for any usage
-      u.classification = interpretClassification(v);
-    
-      return u;
-    });
+    }
+    // flat classification for any usage
+    u.classification = interpretClassification(v);
   }
-  
+
   Optional<NeoUsage> interpretSynonym(VerbatimRecord v) {
     return findName(v, ColdpTerm.nameID).map(n -> {
       TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(ColdpTerm.status)).orElse(SYN_NOTE).val;
@@ -214,11 +241,18 @@ public class ColdpInterpreter extends InterpreterBase {
   }
 
   Optional<NeoName> interpretName(VerbatimRecord v) {
+    Term nomStatusTerm = ColdpTerm.status;
+    Term genusNameTerm = ColdpTerm.genus;
+    if (ColdpTerm.NameUsage.equals(v.getType())) {
+      nomStatusTerm = ColdpTerm.nameStatus;
+      genusNameTerm = ColdpTerm.genericName;
+    }
+
     Optional<ParsedNameUsage> opt = interpretName(true, v.get(ColdpTerm.ID),
         v.get(ColdpTerm.rank), v.get(ColdpTerm.scientificName), v.get(ColdpTerm.authorship),
-        v.get(ColdpTerm.genus), v.get(ColdpTerm.infragenericEpithet), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet),
+        v.get(genusNameTerm), v.get(ColdpTerm.infragenericEpithet), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet),
         v.get(ColdpTerm.cultivarEpithet),
-        v.get(ColdpTerm.code), v.get(ColdpTerm.status),
+        v.get(ColdpTerm.code), v.get(nomStatusTerm),
         v.get(ColdpTerm.link), v.get(ColdpTerm.remarks), v);
     if (opt.isPresent()) {
       // publishedIn

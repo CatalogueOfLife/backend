@@ -40,8 +40,8 @@ public class DwcInterpreter extends InterpreterBase {
 
   public Optional<NeoUsage> interpretUsage(VerbatimRecord v) {
     // name
-    return interpretName(v).map(nat -> {
-      NeoUsage u = interpretUsage(nat, DwcTerm.taxonomicStatus, TaxonomicStatus.ACCEPTED, v, DwcTerm.taxonID, DwcaTerm.ID);
+    return interpretName(v).map(pnu -> {
+      NeoUsage u = interpretUsage(pnu, DwcTerm.taxonomicStatus, TaxonomicStatus.ACCEPTED, v, DwcTerm.taxonID, DwcaTerm.ID);
       u.usage.setLink(uri(v, Issue.URL_INVALID, DcTerm.references));
       u.usage.setRemarks(v.get(DwcTerm.taxonRemarks));
       // explicit accordingTo & namePhrase - the authorship could already have set these properties!
