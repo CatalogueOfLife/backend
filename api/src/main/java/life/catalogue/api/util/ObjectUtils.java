@@ -65,4 +65,16 @@ public class ObjectUtils {
     return false;
   }
 
+  public static boolean allNonBlank(final String... values) {
+    if (values != null) {
+      for (final String val : values) {
+        if (StringUtils.isBlank(val)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
 }

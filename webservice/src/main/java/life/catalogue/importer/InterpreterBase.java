@@ -333,14 +333,26 @@ public class InterpreterBase {
                                                  final String cultivar,
                                                  String nomCode, String nomStatus,
                                                  String link, String remarks, VerbatimRecord v) {
-    // this can be wrong in some cases, e.g. in DwC records often scientificName and just a genus is given
-    final boolean isAtomized = ObjectUtils.anyNonBlank(uninomial, genus, infraGenus, species, infraspecies);
-    final boolean useAtoms   = isAtomized && (preferAtoms || StringUtils.isNotBlank(sciname));
-
     // parse rank & code as they improve name parsing
     Rank rank = SafeParser.parse(RankParser.PARSER, vrank).orElse(Rank.UNRANKED, Issue.RANK_INVALID, v);
     final NomCode code = SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse((NomCode) settings.getEnum(Setting.NOMENCLATURAL_CODE), Issue.NOMENCLATURAL_CODE_INVALID, v);
 
+    // this can be wrong in some cases, e.g. in DwC records often scientificName and just a genus is given
+    boolean isAtomized;
+    if (rank.isSupraspecific()) {
+      // require uninomial, genus or infragenus
+      isAtomized = ObjectUtils.anyNonBlank(uninomial, genus, infraGenus);
+    } else if (rank.isInfraspecific()) {
+      // require genus, species and one lower level epithet
+      isAtomized = ObjectUtils.allNonBlank(genus, species) && ObjectUtils.anyNonBlank(infraspecies, cultivar);
+    } else if (rank.isSpeciesOrBelow()) {
+      // require genus and species
+      isAtomized = ObjectUtils.allNonBlank(genus, species);
+    } else {
+      isAtomized = ObjectUtils.anyNonBlank(uninomial, genus, infraGenus, species, infraspecies);
+    }
+
+    final boolean useAtoms   = isAtomized && (preferAtoms || StringUtils.isBlank(sciname));
     ParsedNameUsage pnu;
 
     // we can get the scientific name in various ways.
