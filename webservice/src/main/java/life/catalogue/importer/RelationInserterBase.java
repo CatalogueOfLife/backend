@@ -10,6 +10,8 @@ import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
+
 /**
  *
  */
@@ -27,7 +29,36 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
     this.parentTerm = parentTerm;
     this.originalNameTerm = originalNameTerm;
   }
-  
+
+  /**
+   *
+   * @param u
+   * @param v
+   * @return the parent node
+   */
+  protected Node processUsage(NeoUsage u, VerbatimRecord v) {
+    Node p;
+    if (u.isSynonym()) {
+      p = usageByID(acceptedTerm, v, u, Issue.ACCEPTED_ID_INVALID);
+      if (p != null) {
+        if (!store.createSynonymRel(u.node, p)) {
+          v.addIssue(Issue.ACCEPTED_ID_INVALID);
+        }
+      } else {
+        // if we ain't got no idea of the accepted flag it
+        // the orphan synonym usage will be removed later by the normalizer
+        v.addIssues(Issue.ACCEPTED_NAME_MISSING);
+      }
+
+    } else {
+      p = usageByID(parentTerm, v, u, Issue.PARENT_ID_INVALID);
+      if (p != null && !p.equals(u.node)) {
+        store.assignParent(p, u.node);
+      }
+    }
+    return p;
+  }
+
   @Override
   public void process(Node n) {
     if (n.hasLabel(Labels.USAGE)) {
@@ -35,28 +66,8 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
         NeoUsage u = store.usages().objByNode(n);
         if (u.getVerbatimKey() != null) {
           VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
-          Node p;
-          if (u.isSynonym()) {
-            p = usageByID(acceptedTerm, v, u, Issue.ACCEPTED_ID_INVALID);
-            if (p != null) {
-              if (!store.createSynonymRel(u.node, p)) {
-                v.addIssue(Issue.ACCEPTED_ID_INVALID);
-              }
-            } else {
-              // if we ain't got no idea of the accepted flag it
-              // the orphan synonym usage will be removed later by the normalizer
-              v.addIssues(Issue.ACCEPTED_NAME_MISSING);
-            }
-            
-          } else {
-            p = usageByID(parentTerm, v, u, Issue.PARENT_ID_INVALID);
-            if (p != null && !p.equals(u.node)) {
-              store.assignParent(p, u.node);
-            }
-          }
-          
+          Node p = processUsage(u, v);
           processVerbatimUsage(u, v, p);
-          
           store.put(v);
         }
       } catch (Exception e) {
@@ -93,6 +104,10 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
     // override to do further processing per usage node
   }
 
+  protected Node usageByID(Term idTerm, VerbatimRecord v, NeoUsage u) {
+    return usageByID(idTerm, v, u, null);
+  }
+
   /**
    * Reads a verbatim idTerm that should represent a foreign key to another record via the taxonID.
    * If the value is not the same as the original records taxonID it tries to lookup the matching node.
@@ -101,12 +116,12 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
    *
    * @return queue of potentially split ids with their matching neo node if found, otherwise null
    */
-  protected Node usageByID(Term idTerm, VerbatimRecord v, NeoUsage u, Issue invalidIssue) {
+  protected Node usageByID(Term idTerm, VerbatimRecord v, NeoUsage u, @Nullable Issue invalidIssue) {
     Node n = null;
     final String id = v.getRaw(idTerm);
     if (id != null && !id.equals(u.getId())) {
       n = store.usages().nodeByID(id);
-      if (n == null) {
+      if (n == null && invalidIssue != null) {
         v.addIssue(invalidIssue);
       }
     }

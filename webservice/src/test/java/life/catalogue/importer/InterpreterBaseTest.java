@@ -11,6 +11,7 @@ import life.catalogue.importer.neo.ReferenceStore;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.reference.ReferenceFactory;
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -81,8 +82,9 @@ public class InterpreterBaseTest {
   @Test
   public void interpretName() throws Exception {
     VerbatimRecord v = new VerbatimRecord();
-    Optional<ParsedNameUsage> nat = ib.interpretName(true, "1", "species", "Picea arlba", "Mill. and Desbrochers de Loges, 1881", "Abies", null, "alba", null, null, null, null, null, null, v);
-    Name n = nat.get().getName();
+    Optional<ParsedNameUsage> pnu = ib.interpretName(true, "1", "species", "Picea arlba", "Mill. and Desbrochers de Loges, 1881",
+      null, "Abies", null, "alba", null, null, null, null, null, null, v);
+    Name n = pnu.get().getName();
     assertEquals("Abies alba", n.getScientificName());
     assertEquals("Abies", n.getGenus());
     assertEquals("alba", n.getSpecificEpithet());
@@ -91,8 +93,9 @@ public class InterpreterBaseTest {
     assertEquals("1881", n.getCombinationAuthorship().getYear());
 
     // if atoms are given they take precedence over the full name
-    nat = ib.interpretName(true, "1", "species", "Picea arlba Mill. 2121", "", "Abies", null, "alba", null, null, null, null, null, null, v);
-    n = nat.get().getName();
+    pnu = ib.interpretName(true, "1", "species", "Picea arlba Mill. 2121", "",
+      null, "Abies", null, "alba", null, null, null, null, null, null, v);
+    n = pnu.get().getName();
     assertEquals("Abies alba", n.getScientificName());
     assertEquals("Abies", n.getGenus());
     assertEquals("alba", n.getSpecificEpithet());
@@ -101,8 +104,9 @@ public class InterpreterBaseTest {
     assertNull(n.getCombinationAuthorship().getYear());
 
     // if no authorahip is given it needs to be rebuild
-    nat = ib.interpretName(true, "1", "species", "Abies alba Mill. and Desbrochers de Loges, 1881", "", "", null, null, null, null, null, null, null, null, v);
-    n = nat.get().getName();
+    pnu = ib.interpretName(true, "1", "species", "Abies alba Mill. and Desbrochers de Loges, 1881", "",
+      "", "", null, null, null, null, null, null, null, null, v);
+    n = pnu.get().getName();
     assertEquals("Abies alba", n.getScientificName());
     assertEquals("Abies", n.getGenus());
     assertEquals("alba", n.getSpecificEpithet());
@@ -111,8 +115,9 @@ public class InterpreterBaseTest {
     assertEquals("1881", n.getCombinationAuthorship().getYear());
 
     // if no authorahip is given it needs to be rebuild
-    nat = ib.interpretName(true, "1", "species", "Abies alba Mill. and Desbrochers de Loges, 1881", "", "", null, null, null, null, null, null, null, null, v);
-    n = nat.get().getName();
+    pnu = ib.interpretName(true, "1", "species", "Abies alba Mill. and Desbrochers de Loges, 1881", "",
+      "", "", null, null, null, null, null, null, null, null, v);
+    n = pnu.get().getName();
     assertEquals("Abies alba", n.getScientificName());
     assertEquals("Abies", n.getGenus());
     assertEquals("alba", n.getSpecificEpithet());
@@ -121,9 +126,10 @@ public class InterpreterBaseTest {
     assertEquals("1881", n.getCombinationAuthorship().getYear());
 
     // exclude taxon notes from authorship
-    nat = ib.interpretName(true, "1", "species", "Abies alba Mill. and Desbrochers de Loges, 1881 sensu Döring 1999", "", "", null, null, null, null, null, null, null, null, v);
-    assertEquals("sensu Döring 1999", nat.get().getTaxonomicNote());
-    n = nat.get().getName();
+    pnu = ib.interpretName(true, "1", "species", "Abies alba Mill. and Desbrochers de Loges, 1881 sensu Döring 1999", "",
+      null, "", null, null, null, null, null, null, null, null, v);
+    assertEquals("sensu Döring 1999", pnu.get().getTaxonomicNote());
+    n = pnu.get().getName();
     assertEquals("Abies alba", n.getScientificName());
     assertEquals("Abies", n.getGenus());
     assertEquals("alba", n.getSpecificEpithet());
@@ -131,15 +137,29 @@ public class InterpreterBaseTest {
     assertEquals(List.of("Mill.", "Desbrochers de Loges"), n.getCombinationAuthorship().getAuthors());
     assertEquals("1881", n.getCombinationAuthorship().getYear());
 
-    nat = ib.interpretName(true, "1", "species", "Abies alba", "Mill. and Desbrochers de Loges, 1881 sensu Döring 1999","", null, null, null, null, null, null, null, null, v);
-    assertEquals("sensu Döring 1999", nat.get().getTaxonomicNote());
-    n = nat.get().getName();
+    pnu = ib.interpretName(true, "1", "species", "Abies alba", "Mill. and Desbrochers de Loges, 1881 sensu Döring 1999",
+      null, "", null, null, null, null, null, null, null, null, v);
+    assertEquals("sensu Döring 1999", pnu.get().getTaxonomicNote());
+    n = pnu.get().getName();
     assertEquals("Abies alba", n.getScientificName());
     assertEquals("Abies", n.getGenus());
     assertEquals("alba", n.getSpecificEpithet());
     assertEquals("Mill. & Desbrochers de Loges, 1881", n.getAuthorship());
     assertEquals(List.of("Mill.", "Desbrochers de Loges"), n.getCombinationAuthorship().getAuthors());
     assertEquals("1881", n.getCombinationAuthorship().getYear());
+
+    pnu = ib.interpretName(true, "1", "family", "", "Miller",
+      "Asteraceae", "", null, null, null, null, null, null, null, null, v);
+    assertNull(pnu.get().getTaxonomicNote());
+    n = pnu.get().getName();
+    assertEquals("Asteraceae", n.getScientificName());
+    assertEquals("Asteraceae", n.getUninomial());
+    assertEquals(Rank.FAMILY, n.getRank());
+    assertNull(n.getGenus());
+    assertNull(n.getSpecificEpithet());
+    assertEquals("Miller", n.getAuthorship());
+    assertEquals(List.of("Miller"), n.getCombinationAuthorship().getAuthors());
+    assertNull(n.getCombinationAuthorship().getYear());
   }
 
   @Test

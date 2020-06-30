@@ -1,0 +1,31 @@
+ID	parentID	originalNameID	status	accordingToID	scrutinizer	scrutinizerDate	extinct	lifezone	scientificName	authorship	rank	genericName	specificEpithet	infraspecificEpithet	cultivarEpithet	publishedInID	publishedInPage	code	nameStatus	link	remarks
+1			accepted				false	terrestrial	Plantae		kingdom							botanical			
+2	1		synonym						Viridae		kingdom							botanical			
+10	1						false	terrestrial	Asteraceae		family							botanical			
+11	10		synonym						Compositae		family							botanical			
+20	10						false	terrestrial	Cichorioideae		subfamily							botanical			
+30	20						false	terrestrial	Cichorieae		tribe							botanical			
+31	20						false	terrestrial	Gundelieae		tribe							botanical			
+100	20						false	terrestrial	Platycarpha		genus							botanical			
+101	30						false	terrestrial	Crepis	L.	genus							botanical			
+102	30						false	terrestrial	Leontodon		genus							botanical			
+110	31						false	terrestrial	Gundelia	L.	genus							botanical			
+1000	100						false	terrestrial	Platycarpha glomerata	(Thunberg) A. P. de Candolle	species	Platycarpha	glomerata					botanical			
+1001	101						false	terrestrial	Crepis bakeri	Greene	species	Crepis	bakeri			greene1895	73	botanical		https://beta.ipni.org/n/69325-2	
+1002	101						false	terrestrial	Crepis occidentalis	Nutt.	species	Crepis	occidentalis					botanical			
+1005	102						false	terrestrial	Leontodon anomalus		species	Leontodon	anomalus					botanical			
+1006	102		accepted				false	terrestrial	Leontodon taraxacoides	(Vill.) Mérat	species	Leontodon	taraxacoides					botanical			
+1006-s1	1006		synonym						Leontodon leysseri		species	Leontodon	leysseri					botanical			
+1006-s2	1006		synonym						Leontodon saxatilis		species	Leontodon	saxatilis					botanical			
+1006-s3	1006		synonym						Leonida taraxacoida	Vill.	species	Leonida	taraxacoida					botanical			
+1010	110						false	terrestrial	Gundelia rosea	L.	species	Gundelia	rosea					botanical			
+1011	110						false	terrestrial	Gundelia tournefortii	L.	species	Gundelia	tournefortii					botanical			
+Hind2013	110			Hind2013			false	terrestrial	Gundelia tournefortii	L.	species	Gundelia	tournefortii					botanical		https://www.jstor.org/stable/45066252	
+Jarvis2007	110			Jarvis2007			false	terrestrial	Gundelia tournefortii	L.	species	Gundelia	tournefortii					botanical		http://tb.plazi.org/GgServer/html/24BF99B096BF897134A192EB740A13F7	
+1001a	1001								Crepis bakeri subsp. bakeri		subspecies	Crepis	bakeri	bakeri				botanical		https://en.wikipedia.org/wiki/Crepis_bakeri	
+1001b	1001								Crepis bakeri subsp. cusickii	(Eastw.) Babc. & Stebbins	subspecies	Crepis	bakeri	cusickii				botanical		https://en.wikipedia.org/wiki/Crepis_bakeri	
+1001c	1001								Crepis bakeri subsp. idahoensis	Babc. & Stebbins	subspecies	Crepis	bakeri	idahoensis				botanical		https://en.wikipedia.org/wiki/Crepis_bakeri	
+fake	1		doubtful		M.Döring	2018	false	terrestrial,brackish	Paulownia × tomentosa subsp. tella f. pasta	(Carl & Ruth) Frankenstein ex Semmelrogge	forma					frank	87	botanical	conserved	https://herbaria.plants.ox.ac.uk/bol/plants400/profiles/OP/Paulownia	Unclear name origin
+hybrid	1				Shin Vac	2003-03-21	false	terrestrial,freshwater	Quercus robur x Q. macrocarpa		species							botanical	LEGITIMATE	http://www.heritageseedlings.com/page_608_40/quercus-heritage-q.-robur-x-q.-macrocarpa-clemons	my favorite hybrid
+virus									Acanthocystis turfacea chlorella virus 1									virus			
+cult									Clematis 'Sapphire Indigo'		species	Clematis			Sapphire Indigo					http://plants.thegrowingplace.com/12120014/Plant/6164/Sapphire_Indigo_Clematis/	

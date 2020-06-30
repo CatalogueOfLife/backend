@@ -1,2 +1,4 @@
 ID	scientificName	authorship	rank	uninomial	genus	infragenericEpithet	specificEpithet	infraspeciesEpithet	code	status	link
 846548	Rosanae	NULL	superorder	Rosanae	NULL	NULL	NULL	NULL	botanical	http://purl.obolibrary.org/obo/NOMEN_0000383	https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=846548
+846548b	Rosanae	NULL	superorder	NULL	NULL	NULL	NULL	NULL	botanical	http://purl.obolibrary.org/obo/NOMEN_0000383	https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=846548
+846548c	NULL	NULL	superorder	Rosanae	NULL	NULL	NULL	NULL	botanical	http://purl.obolibrary.org/obo/NOMEN_0000383	https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=846548

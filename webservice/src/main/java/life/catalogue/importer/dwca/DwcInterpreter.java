@@ -40,8 +40,8 @@ public class DwcInterpreter extends InterpreterBase {
 
   public Optional<NeoUsage> interpretUsage(VerbatimRecord v) {
     // name
-    return interpretName(v).map(nat -> {
-      NeoUsage u = interpretUsage(nat, DwcTerm.taxonomicStatus, TaxonomicStatus.ACCEPTED, v, DwcTerm.taxonID, DwcaTerm.ID);
+    return interpretName(v).map(pnu -> {
+      NeoUsage u = interpretUsage(pnu, DwcTerm.taxonomicStatus, TaxonomicStatus.ACCEPTED, v, DwcTerm.taxonID, DwcaTerm.ID);
       u.usage.setLink(uri(v, Issue.URL_INVALID, DcTerm.references));
       u.usage.setRemarks(v.get(DwcTerm.taxonRemarks));
       // explicit accordingTo & namePhrase - the authorship could already have set these properties!
@@ -161,7 +161,7 @@ public class DwcInterpreter extends InterpreterBase {
     Optional<ParsedNameUsage> opt = interpretName(false, v.getFirstRaw(DwcTerm.taxonID, DwcaTerm.ID),
         v.getFirst(DwcTerm.taxonRank, DwcTerm.verbatimTaxonRank), v.get(DwcTerm.scientificName),
         v.get(DwcTerm.scientificNameAuthorship),
-        v.getFirst(GbifTerm.genericName, DwcTerm.genus), v.get(DwcTerm.subgenus),
+        null, v.getFirst(GbifTerm.genericName, DwcTerm.genus), v.get(DwcTerm.subgenus),
         v.get(DwcTerm.specificEpithet), v.get(DwcTerm.infraspecificEpithet), null,
         v.get(DwcTerm.nomenclaturalCode), v.get(DwcTerm.nomenclaturalStatus),
         v.getRaw(DcTerm.references), null, v);

@@ -39,6 +39,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -196,6 +197,15 @@ public class CsvReader {
     }
   }
 
+  protected Term requireOneSchema(Term... rowTypes) {
+    for (Term rt : rowTypes) {
+      if (hasData(rt)) {
+        return rt;
+      }
+    }
+    throw new NormalizationFailedException.SourceInvalidException("One of " + concat(rowTypes) + " files required but all are missing from " + folder);
+  }
+
   protected void require(Term rowType, Term... term) {
     for (Term t : term) {
       if (hasData(rowType) && !hasData(rowType, t)) {
@@ -204,7 +214,27 @@ public class CsvReader {
       }
     }
   }
-  
+
+  /**
+   * Makes sure at least one of the given terms is mapped
+   */
+  protected void requireOne(Term rowType, Term... terms) {
+    if (hasData(rowType)) {
+      for (Term t : terms) {
+        if (hasData(rowType, t)) {
+          // found at least one, good!
+          return;
+        }
+      }
+    }
+    Schema s = schemas.remove(rowType);
+    LOG.warn("One term required from {} but all missing. Ignore file {}!", concat(terms), s.file);
+  }
+
+  private static String concat(Term... terms){
+    return Arrays.stream(terms).map(Term::prefixedName).collect(Collectors.joining(", "));
+  }
+
   protected void disallow(Term rowType, Term term) {
     if (hasData(rowType) && hasData(rowType, term)) {
       LOG.warn("Removing disallowed term {} in {}", term, rowType);

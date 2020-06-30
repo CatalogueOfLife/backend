@@ -230,7 +230,7 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
   }
   
   /**
-   * @return the potentially unescaped value
+   * @return the potentially unescaped value, replacing empty strings with true nulls
    */
   public String get(Term term) {
     checkNotNull(term, "term can't be null");

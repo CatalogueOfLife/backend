@@ -25,12 +25,13 @@ import java.util.Set;
 public class ColdpReader extends CsvReader {
   private static final Logger LOG = LoggerFactory.getLogger(ColdpReader.class);
   // Synonym and TypeMaterial also have IDs but do not require them as there is no foreign key to them
-  private static Set<ColdpTerm> ID_SCHEMAS = ImmutableSet.of(ColdpTerm.Reference, ColdpTerm.Name, ColdpTerm.Taxon);
+  private static Set<ColdpTerm> ID_SCHEMAS = ImmutableSet.of(ColdpTerm.NameUsage, ColdpTerm.Reference, ColdpTerm.Name, ColdpTerm.Taxon);
   private static Set<ColdpTerm> NAMEID_SCHEMAS = ImmutableSet.of(ColdpTerm.Synonym, ColdpTerm.Taxon, ColdpTerm.NameRelation, ColdpTerm.TypeMaterial);
   private static Set<ColdpTerm> TAXID_SCHEMAS = ImmutableSet.of(
     ColdpTerm.Treatment, ColdpTerm.Synonym, ColdpTerm.Distribution, ColdpTerm.Media, ColdpTerm.VernacularName, ColdpTerm.TaxonRelation
   );
   private static Set<ColdpTerm> REFID_SCHEMAS = ImmutableSet.of(
+    ColdpTerm.NameUsage,
     ColdpTerm.Distribution,
     ColdpTerm.Synonym,
     ColdpTerm.Taxon,
@@ -110,31 +111,39 @@ public class ColdpReader extends CsvReader {
     for (ColdpTerm t : NAMEID_SCHEMAS) {
       require(t, ColdpTerm.nameID);
     }
-    // either require the scientificName or at least some parsed field
-    if (!hasData(ColdpTerm.Name, ColdpTerm.scientificName)) {
-      LOG.warn("No scientificName mapped! Require parsed name fields");
-      // genus & specificEpithet must exist otherwise!
-      require(ColdpTerm.Name, ColdpTerm.genus, ColdpTerm.specificEpithet);
-    }
+    Term nameRowType = requireOneSchema(ColdpTerm.Name, ColdpTerm.NameUsage);
+
     require(ColdpTerm.NameRelation, ColdpTerm.relatedNameID);
     require(ColdpTerm.NameRelation, ColdpTerm.type);
 
     require(ColdpTerm.TaxonRelation, ColdpTerm.relatedTaxonID);
     require(ColdpTerm.TaxonRelation, ColdpTerm.type);
 
-    requireSchema(ColdpTerm.Name);
-  
+    // either require the scientificName or at least some parsed field
+    if (!hasData(nameRowType, ColdpTerm.scientificName)) {
+      LOG.warn("No scientificName mapped! Require parsed name fields");
+      // genus & specificEpithet must exist otherwise!
+      if (nameRowType.equals(ColdpTerm.NameUsage)) {
+        requireOne(nameRowType, ColdpTerm.uninomial, ColdpTerm.genericName);
+      } else {
+        requireOne(nameRowType, ColdpTerm.uninomial, ColdpTerm.genus);
+      }
+    }
+
     // reference dependencies
     if (!hasReferences()) {
       LOG.warn("No Reference mapped! Disallow all referenceIDs");
       disallow(ColdpTerm.Name, ColdpTerm.publishedInID);
+      disallow(ColdpTerm.NameUsage, ColdpTerm.publishedInID);
       disallow(ColdpTerm.NameRelation, ColdpTerm.publishedInID);
       for (ColdpTerm rt : REFID_SCHEMAS) {
         disallow(rt, ColdpTerm.referenceID);
       }
     }
 
-    Optional<Schema> taxonOpt = schema(ColdpTerm.Taxon);
+    Optional<Schema> taxonOpt = schema(ColdpTerm.Taxon)
+      .or(() -> schema(ColdpTerm.NameUsage));
+
     if (taxonOpt.isPresent()) {
       Schema taxon = taxonOpt.get();
       if (taxon.hasTerm(ColdpTerm.parentID)) {
@@ -155,7 +164,6 @@ public class ColdpReader extends CsvReader {
         require(t, ColdpTerm.taxonID);
       }
   
-      require(ColdpTerm.Treatment, ColdpTerm.document);
       require(ColdpTerm.Distribution, ColdpTerm.area);
       require(ColdpTerm.VernacularName, ColdpTerm.name);
       require(ColdpTerm.Media, ColdpTerm.url);
