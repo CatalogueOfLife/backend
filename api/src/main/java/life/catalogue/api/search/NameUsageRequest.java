@@ -30,12 +30,18 @@ public abstract class NameUsageRequest {
     return q == null && !fuzzy;
   }
 
-  @JsonIgnore // These are derived & set (if necessary) after the request comes in
-  public String[] getSearchTerms() {
+  /**
+   * The search terms analyzed as appropriate for scientific name searches. Should not be used for vernacular name and authorship searches.
+   * The search terms are derived from the Q and are set programmatically.
+   * 
+   * @return
+   */
+  @JsonIgnore
+  public String[] getSciNameSearchTerms() {
     return searchTerms;
   }
 
-  public void setSearchTerms(String[] searchTerms) {
+  public void setSciNameSearchTerms(String[] searchTerms) {
     this.searchTerms = searchTerms;
   }
 
@@ -49,11 +55,11 @@ public abstract class NameUsageRequest {
 
   public void setQ(String q) {
     /*
-     * BEWARE: currently ALL analyzers involved in q matching (whether on scientific name, verbacular name or authorship) churn out
+     * BEWARE: currently ALL analyzers involved in q matching (whether on scientific name, vernacular name or authorship) churn out
      * all-lowercase tokens. Therefore, we might as well be done with it and lowercase the Q as well as soon as possible (i.e. here).
      * Otherwise it's easy to forget (issue #697). If case-sensitive matching is introduced for some reason, we must change this setter into
-     * a regular setter and be very careful to check all the classes that implicitly assume the Q to be lowercase (the QMatcher classes, the
-     * Highlighter classes, etc.)
+     * a regular setter and be **very** careful to check **all** classes that implicitly assume the Q to be lowercase (the QMatcher classes,
+     * the Highlighter classes, etc.) In other words check all references to NameUsageRequest.getQ()
      */
     if (q != null) {
       this.q = q.toLowerCase();

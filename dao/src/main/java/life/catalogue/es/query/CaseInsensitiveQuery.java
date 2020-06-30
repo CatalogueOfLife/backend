@@ -1,17 +1,16 @@
 package life.catalogue.es.query;
 
 import life.catalogue.es.ddl.Analyzer;
-import life.catalogue.es.ddl.MultiField;
 
-public class CaseInsensitiveQuery extends TermQuery {
+public class CaseInsensitiveQuery extends AbstractMatchQuery {
 
   public CaseInsensitiveQuery(String field, Object value) {
-    super(field, value);
+    super(field, value.toString());
   }
 
   @Override
-  protected MultiField getMultiField() {
-    return Analyzer.IGNORE_CASE.getMultiField();
+  protected Analyzer getAnalyzer() {
+    return Analyzer.IGNORE_CASE;
   }
 
 }

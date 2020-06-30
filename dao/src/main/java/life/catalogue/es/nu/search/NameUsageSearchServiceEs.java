@@ -42,7 +42,7 @@ public class NameUsageSearchServiceEs extends NameUsageQueryService implements N
     RequestValidator validator = new RequestValidator(request);
     validator.validateRequest();
     if (request.hasQ() && request.getContent().contains(SCIENTIFIC_NAME)) {
-      request.setSearchTerms(getSearchTerms(client, index, Analyzer.SCINAME_WHOLE_WORDS, request.getQ()));
+      request.setSciNameSearchTerms(getSearchTerms(client, index, Analyzer.SCINAME_WHOLE_WORDS, request.getQ()));
     }
     RequestTranslator translator = new RequestTranslator(request, page);
     EsSearchRequest esSearchRequest = translator.translateRequest();

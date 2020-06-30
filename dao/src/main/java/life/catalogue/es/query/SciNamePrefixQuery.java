@@ -2,15 +2,15 @@ package life.catalogue.es.query;
 
 import life.catalogue.es.ddl.Analyzer;
 
-public class EdgeNgramQuery extends AbstractMatchQuery {
+public class SciNamePrefixQuery extends PrefixQuery {
 
-  public EdgeNgramQuery(String field, String value) {
+  public SciNamePrefixQuery(String field, Object value) {
     super(field, value);
   }
 
   @Override
   protected Analyzer getAnalyzer() {
-    return Analyzer.AUTO_COMPLETE;
+    return Analyzer.SCINAME_IGNORE_CASE;
   }
 
 }

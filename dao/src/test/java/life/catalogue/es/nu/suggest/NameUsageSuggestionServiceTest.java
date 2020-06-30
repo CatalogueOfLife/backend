@@ -1,5 +1,10 @@
 package life.catalogue.es.nu.suggest;
 
+import java.util.Arrays;
+import java.util.Set;
+import org.gbif.nameparser.api.Rank;
+import org.junit.Before;
+import org.junit.Test;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.NameUsageSuggestRequest;
@@ -9,14 +14,6 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.NameStrings;
-import org.gbif.nameparser.api.Rank;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.util.Arrays;
-import java.util.Set;
-
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -258,9 +255,11 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
 
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetKey(1);
+    
+    NameUsageSuggestResponse response ;
 
     query.setQ("Larus argentatus argenteus");
-    NameUsageSuggestResponse response = suggest(query);
+    response = suggest(query);
     float score1 = response.getSuggestions().get(0).getScore();
 
     // User mixed up specific and infraspecific epithet (still good score)
@@ -309,8 +308,15 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
    * Suggest with a query larger than ngram max should still match
    */
   @Test
-  @Ignore("Suggest not working as expected yet")
-  public void testTruncate() {
+  public void testTruncateNotFuzzy() {
+    
+    
+    // query
+    NameUsageSuggestRequest query = new NameUsageSuggestRequest();
+    query.setDatasetKey(1);
+    query.setFuzzy(false);
+
+
     EsNameUsage doc1 = new EsNameUsage(); // match 1
     doc1.setDatasetKey(1);
     doc1.setUsageId("1");
@@ -354,12 +360,8 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
 
     indexRaw(doc1, doc2, doc3, doc4);
 
-    // query
-    NameUsageSuggestRequest query = new NameUsageSuggestRequest();
-    query.setDatasetKey(1);
     query.setQ("abcde");
-    query.setFuzzy(true);
-
+    
     NameUsageSuggestResponse response = suggest(query);
     assertMatch(response, doc3, doc4);
 
@@ -381,7 +383,86 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
 
     query.setQ("altobrasiliensis");
     response = suggest(query);
+    assertMatch(response, doc2);
+  }
+
+  @Test
+  public void testTruncateFuzzy() {
+    
+    
+    // query
+    NameUsageSuggestRequest query = new NameUsageSuggestRequest();
+    query.setDatasetKey(1);
+    query.setFuzzy(true);
+
+
+    EsNameUsage doc1 = new EsNameUsage(); // match 1
+    doc1.setDatasetKey(1);
+    doc1.setUsageId("1");
+    doc1.setRank(Rank.SPECIES);
+    Name n = new Name();
+    // genus has 13 chars - more than the 12 max ngram limit - but it gets transformed into Tiranosaura which is smaller
+    n.setScientificName("Tyrannosaurus rex");
+    n.setGenus("Tyrannosaurus");
+    n.setSpecificEpithet("rex");
+    n.setRank(Rank.SPECIES);
+    doc1.setNameStrings(new NameStrings(n));
+
+    EsNameUsage doc2 = new EsNameUsage(); // match 2
+    doc2.setDatasetKey(1);
+    doc2.setUsageId("2");
+    doc2.setRank(Rank.SUBSPECIES);
+    n = new Name();
+    // subspecies has more than the 12 max ngram limit
+    n.setScientificName("Tyrannosaurus rex altobrasiliensis");
+    n.setGenus("Tyrannosaurus");
+    n.setSpecificEpithet("rex");
+    n.setInfraspecificEpithet("altobrasiliensis");
+    n.setRank(Rank.SUBSPECIES);
+    doc2.setNameStrings(new NameStrings(n));
+
+    EsNameUsage doc3 = new EsNameUsage(); // match 3
+    doc3.setDatasetKey(1);
+    doc3.setUsageId("3");
+    doc3.setRank(Rank.SPECIES);
+    n = new Name();
+    n.setSpecificEpithet("   AbCdE  ");
+    doc3.setNameStrings(new NameStrings(n));
+
+    EsNameUsage doc4 = new EsNameUsage(); // match 1
+    doc4.setDatasetKey(1);
+    doc4.setUsageId("1");
+    doc4.setRank(Rank.SPECIES);
+    n = new Name();
+    n.setSpecificEpithet("AbCdEfGhIjK");
+    doc4.setNameStrings(new NameStrings(n));
+
+    indexRaw(doc1, doc2, doc3, doc4);
+
+    query.setQ("abcde");
+    
+    NameUsageSuggestResponse response = suggest(query);
+    assertMatch(response, doc3, doc4);
+
+    query.setQ("rex");
+    response = suggest(query);
     assertMatch(response, doc1, doc2);
+
+    query.setQ("Tyran");
+    response = suggest(query);
+    assertMatch(response, doc1, doc2);
+
+    query.setQ("Tyrannosaurus");
+    response = suggest(query);
+    assertMatch(response, doc1, doc2);
+
+    query.setQ("Tyrannosaurus re");
+    response = suggest(query);
+    assertMatch(response, doc1, doc2);
+
+    query.setQ("altobrasiliensis");
+    response = suggest(query);
+    assertMatch(response, doc2);
   }
 
   private static boolean containsUsageIds(NameUsageSuggestResponse response, EsNameUsage... docs) {

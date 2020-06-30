@@ -76,6 +76,8 @@ public class QTranslationUtilsTest extends EsReadTestBase {
     searchQuery.addFilter(NameUsageSearchParameter.DATASET_KEY, 2020);
     searchQuery.setPrefix(true);
     NameUsageSearchResponse nsr = search(searchQuery);
+    // Match-type queries currently use operator AND (all search terms must occur in the target field). Therefore:
+    assertEquals(0, nsr.getTotal());
 
     NameUsageSuggestRequest suggestQuery = new NameUsageSuggestRequest();
     suggestQuery.setDatasetKey(2020);
@@ -83,8 +85,7 @@ public class QTranslationUtilsTest extends EsReadTestBase {
     suggestQuery.setLimit(1000);
     NameUsageSuggestResponse nur = suggest(suggestQuery);
 
-    assertEquals(4, nsr.getTotal());
-    assertEquals(4, nur.getSuggestions().size());
+    assertEquals(0, nur.getSuggestions().size());
   }
 
   @Test

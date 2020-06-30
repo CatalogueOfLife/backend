@@ -2,7 +2,8 @@ package life.catalogue.es.query;
 
 import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonValue;
-import life.catalogue.es.ddl.MultiField;
+import com.google.common.base.Preconditions;
+import life.catalogue.es.ddl.Analyzer;
 import static java.util.Collections.singletonMap;
 
 /**
@@ -27,9 +28,8 @@ public abstract class AbstractMatchQuery extends ConstraintQuery<MatchConstraint
   private final Map<String, MatchConstraint> match;
 
   public AbstractMatchQuery(String field, String value) {
-    if (getMultiField() != null) {
-      field += "." + getMultiField().getName();
-    }
+    Preconditions.checkNotNull(getAnalyzer(), "Analyzer must be specified for match queries");
+    field += "." + getAnalyzer().getMultiField().getName();
     match = singletonMap(field, new MatchConstraint(value));
   }
 
@@ -44,11 +44,11 @@ public abstract class AbstractMatchQuery extends ConstraintQuery<MatchConstraint
   }
 
   /**
-   * Returns the "multifield" field underneath the main field that specifies the index to be accessed (e.g. the full-text index, the edge
-   * ngram index, etc.). Note that the straight as-is keyword index for term queries is always accessed via the main field.
+   * Returns the {@link Analyzer} whose "multifield"specifies the index to be accessed (e.g. the full-text index, the edge ngram index,
+   * etc.).
    * 
    * @return
    */
-  protected abstract MultiField getMultiField();
+  protected abstract Analyzer getAnalyzer();
 
 }

@@ -61,9 +61,11 @@ public enum Analyzer {
   Analyzer() {
     this.mf = null;
   }
+  
   Analyzer(String name, String analyzer) {
     this(name, analyzer, null);
   }
+  
   Analyzer(String name, String analyzer, String searchAnalyzer) {
     this.mf = new MultiField(name, analyzer, searchAnalyzer);
   }

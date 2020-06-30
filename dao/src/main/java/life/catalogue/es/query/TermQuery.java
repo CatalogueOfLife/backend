@@ -1,7 +1,7 @@
 package life.catalogue.es.query;
 
 import java.util.Map;
-import life.catalogue.es.ddl.MultiField;
+import life.catalogue.es.ddl.Analyzer;
 import static java.util.Collections.singletonMap;
 
 public class TermQuery extends ConstraintQuery<TermConstraint> {
@@ -9,8 +9,8 @@ public class TermQuery extends ConstraintQuery<TermConstraint> {
   private final Map<String, TermConstraint> term;
 
   public TermQuery(String field, Object value) {
-    if (getMultiField() != null) {
-      field += "." + getMultiField().getName();
+    if (getAnalyzer().getMultiField() != null) {
+      field += "." + getAnalyzer().getMultiField().getName();
     }
     term = singletonMap(field, new TermConstraint(value));
   }
@@ -21,16 +21,16 @@ public class TermQuery extends ConstraintQuery<TermConstraint> {
   }
 
   /**
-   * Returns the "multifield" to be accessed by the term query.
+   * Returns the analyzer whose "multifield" must be accessed by the term query.
    * 
    * @return The "multifield" to be accessed by the term query
    * 
-   * @implNote The default term query (this one) accesses the field itself rather than any multifield underneath it and therefore returns
-   *           <code>null</code>. Subclasses <code>should</code> override this method even though an implementation is provided here,
-   *           because it's pointless to have multiple classes doing term queries against the main field or against the same multifield.
+   * @implNote The default term query (this one) accesses the field itself rather than any multifield underneath it. Subclasses
+   *           <code>should</code> override this method, because it's pointless to have other classes doing term queries against the main
+   *           field.
    */
-  protected MultiField getMultiField() {
-    return null;
+  protected Analyzer getAnalyzer() {
+    return Analyzer.KEYWORD;
   }
 
 }

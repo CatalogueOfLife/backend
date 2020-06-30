@@ -42,7 +42,7 @@ public class NameUsageSuggestionServiceEs extends NameUsageQueryService implemen
   public NameUsageSuggestResponse suggest(String index, NameUsageSuggestRequest request) throws IOException {
     validateRequest(request);
     String[] terms = EsUtil.getSearchTerms(client, index, Analyzer.SCINAME_AUTO_COMPLETE, request.getQ());
-    request.setSearchTerms(terms);
+    request.setSciNameSearchTerms(terms);
     RequestTranslator translator = new RequestTranslator(request);
     EsSearchRequest query = translator.translate();
     EsResponse<EsNameUsage> esResponse = executeSearchRequest(index, query);

@@ -71,7 +71,7 @@ public abstract class MappingsFactory {
   protected Class<?> getMappedType(Field f) {
     Class<?> declaredType = f.getType();
     if (declaredType.isArray()) {
-      getMappedType(declaredType.getComponentType());
+      return getMappedType(declaredType.getComponentType());
     } else if (isA(declaredType, Collection.class)) {
       return getMappedType(getTypeArgument(f));
     }
@@ -81,7 +81,7 @@ public abstract class MappingsFactory {
   protected Class<?> getMappedType(Method m) {
     Class<?> declaredType = m.getReturnType();
     if (declaredType.isArray()) {
-      getMappedType(declaredType.getComponentType());
+      return getMappedType(declaredType.getComponentType());
     } else if (isA(declaredType, Collection.class)) {
       return getMappedType(getTypeArgument(m));
     }
