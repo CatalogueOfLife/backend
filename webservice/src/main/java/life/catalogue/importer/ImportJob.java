@@ -189,7 +189,7 @@ public class ImportJob implements Runnable {
       throw new IllegalStateException("Dataset " + datasetKey + " is not external and there are no uploads to be imported");
     }
 
-    boolean isModified = lastMD5IsDifferent(source);
+    boolean isModified = lastMD5IsDifferent(source); // this also sets md5 on di
     di.setDownload(downloader.lastModified(source));
     dao.update(di);
 

@@ -9,14 +9,18 @@ import life.catalogue.api.model.User;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.AssemblyState;
 import life.catalogue.common.io.DownloadUtil;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.gbifsync.GbifSync;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
 import life.catalogue.importer.ContinuousImporter;
+import life.catalogue.importer.ImportManager;
+import life.catalogue.importer.ImportRequest;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexImpl;
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +28,9 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.io.File;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 @Path("/admin")
@@ -44,10 +51,11 @@ public class AdminResource {
   private final ContinuousImporter continuousImporter;
   private final GbifSync gbifSync;
   private final AssemblyCoordinator assembly;
+  private final ImportManager manager;
 
 
   public AdminResource(SqlSessionFactory factory, AssemblyCoordinator assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
-                       NameUsageIndexService indexService, ContinuousImporter continuousImporter, GbifSync gbifSync) {
+                       NameUsageIndexService indexService, ContinuousImporter continuousImporter, ImportManager manager, GbifSync gbifSync) {
     this.factory = factory;
     this.assembly = assembly;
     this.imgService = imgService;
@@ -57,6 +65,7 @@ public class AdminResource {
     this.indexService = indexService;
     this.gbifSync = gbifSync;
     this.continuousImporter = continuousImporter;
+    this.manager = manager;
   }
   
   public static class BackgroundProcesses {
@@ -142,6 +151,12 @@ public class AdminResource {
     }
     return runJob("es-reindexer", () -> new IndexJob(req, user));
   }
+
+  @POST
+  @Path("/reimport")
+  public String reimport(@Auth User user) {
+    return runJob("reimporter", () -> new ReimportJob(user));
+  }
   
   @POST
   @Path("/loadNamesIndexSinceStart")
@@ -190,6 +205,49 @@ public class AdminResource {
         }
       } catch (Exception e){
         LOG.error("Error reindexing", e);
+      }
+    }
+  }
+
+  /**
+   * Submits import jobs for all existing archives.
+   * Throttles the submission so the import manager does not exceed its queue
+   */
+  class ReimportJob implements Runnable {
+    private final User user;
+
+    public ReimportJob(User user) {
+      this.user = user;
+    }
+
+    @Override
+    public void run() {
+      final List<Integer> keys;
+      try (SqlSession session = factory.openSession()) {
+        DatasetMapper dm = session.getMapper(DatasetMapper.class);
+        keys = dm.keys();
+      }
+      LOG.warn("Reimporting all {} datasets from their last local copy", keys.size());
+      for (int key : keys) {
+        try {
+          while (manager.queueSize() + 5 > cfg.importer.maxQueue) {
+            TimeUnit.MINUTES.sleep(1);
+          }
+          // does a local archive exist?
+          File f = cfg.normalizer.source(key);
+          if (f.exists()) {
+            ImportRequest req = new ImportRequest(key, user.getKey(), true, false,true);
+            manager.submit(req);
+          } else {
+            LOG.warn("No local archive exists for dataset {}. Do not reimport", key);
+          }
+
+        } catch (IllegalArgumentException e) {
+          LOG.warn("Cannot reimport dataset {}", key, e);
+
+        } catch (InterruptedException e) {
+          LOG.warn("Reimporting interrupted", e);
+        }
       }
     }
   }
