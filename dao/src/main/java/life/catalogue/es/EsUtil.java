@@ -107,19 +107,21 @@ public class EsUtil {
    * @param index
    * @throws IOException
    */
-  public static void deleteIndex(RestClient client, IndexConfig index) throws IOException {
+  public static int deleteIndex(RestClient client, IndexConfig index) throws IOException {
     LOG.warn("Deleting Elasticsearch Index {}", index.name);
     Response response = null;
+    int code;
     try {
       response = client.performRequest(new Request("DELETE", index.name));
+      code = response.getStatusLine().getStatusCode();
     } catch (ResponseException e) {
-      if (e.getResponse().getStatusLine().getStatusCode() == 404) { // That's OK
-        return;
-      }
+      code = e.getResponse().getStatusLine().getStatusCode();
     }
-    if (response.getStatusLine().getStatusCode() >= 400) {
+
+    if (code != 404 && code >= 400) { // 404 is ok if the index does not exist
       throw new EsException(response.getStatusLine().getReasonPhrase());
     }
+    return code;
   }
 
   /**

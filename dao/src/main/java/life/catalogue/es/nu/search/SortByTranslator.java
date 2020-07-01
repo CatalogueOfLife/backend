@@ -20,7 +20,7 @@ class SortByTranslator {
     if (request.getSortBy() == null) {
       request.setSortBy(TAXONOMIC);
     }
-    
+
     switch (request.getSortBy()) {
       case INDEX_NAME_ID:
         return CollapsibleList.of(new SortField("nameIndexId", !request.isReverse()));

@@ -154,6 +154,13 @@ public class AdminResource {
     return runJob("es-reindexer", () -> new IndexJob(req, user));
   }
 
+  @DELETE
+  @Path("/reindex")
+  public int deleteIndex(@Auth User user) {
+    LOG.warn("Drop and recreate empty search index by {}", user);
+    return indexService.deleteIndex();
+  }
+
   @POST
   @Path("/reimport")
   public String reimport(@Auth User user) {

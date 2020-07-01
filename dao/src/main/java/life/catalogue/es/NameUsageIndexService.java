@@ -27,6 +27,8 @@ public interface NameUsageIndexService {
     }
   }
 
+  int deleteIndex();
+
   /**
    * Indexes all CoL usages from an entire sector from postgres into ElasticSearch using the bulk API.
    */
@@ -97,6 +99,12 @@ public interface NameUsageIndexService {
    */
   static NameUsageIndexService passThru() {
     return new NameUsageIndexService() {
+
+      @Override
+      public int deleteIndex() {
+        LOG.info("No Elastic Search configured, pass through index deletion");
+        return 404;
+      }
 
       @Override
       public Stats indexSector(Sector sector) {

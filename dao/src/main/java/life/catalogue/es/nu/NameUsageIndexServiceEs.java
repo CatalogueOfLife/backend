@@ -202,6 +202,15 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
 
   @Override
+  public int deleteIndex() {
+    try {
+      return EsUtil.deleteIndex(client, esConfig.nameUsage);
+    } catch (IOException e) {
+      throw new EsException(e);
+    }
+  }
+
+  @Override
   public Stats indexAll() {
     final Stats total = new Stats();
     try {
