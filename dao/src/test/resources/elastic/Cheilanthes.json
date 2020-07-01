@@ -8,46 +8,47 @@
 			"classification": [
 				{
 					"id": "0",
-					"name": "Biota",
-					"rank": "unranked"
+					"name": "biota",
+					"rank": "UNRANKED"
 				},
 				{
 					"id": "fc995438-b561-4616-a896-f479fca6e3d4",
 					"name": "Plantae",
-					"rank": "kingdom"
+					"rank": "KINGDOM"
 				},
 				{
 					"id": "bfb709db-491c-48b6-80f5-32ef14f63e4f",
 					"name": "Tracheophyta",
-					"rank": "phylum"
+					"rank": "PHYLUM"
 				},
 				{
 					"id": "79e2c83c-bb0c-4e7f-ada9-dcb5135cf5b7",
 					"name": "Polypodiopsida",
-					"rank": "class"
+					"rank": "CLASS"
 				},
 				{
 					"id": "e030449d-942b-4c78-bfbc-60dc544b9c11",
 					"name": "Polypodiales",
-					"rank": "order"
+					"rank": "ORDER"
 				},
 				{
 					"id": "9525caf6-8b2c-4c9d-955b-4332e45eb6e6",
 					"name": "Pteridaceae",
-					"rank": "family"
+					"rank": "FAMILY"
 				},
 				{
 					"id": "3244ec45-bf81-44e8-a86c-6efe4f2eb277",
 					"name": "Cheilanthoideae",
-					"rank": "subfamily"
+					"rank": "SUBFAMILY"
 				},
 				{
 					"id": "37fad12d-b6e4-44a1-9ef4-7b3fb332ee09",
 					"name": "Cheilanthes",
-					"rank": "genus"
+					"rank": "GENUS"
 				}
 			],
 			"usage": {
+				"@type": "T",
 				"created": "2020-06-26T13:30:40.673867",
 				"createdBy": 102,
 				"modified": "2020-06-26T13:30:40.673867",
@@ -66,26 +67,26 @@
 					"verbatimKey": 11329233,
 					"homotypicNameId": "48aa5d19-5be7-4916-984e-412c62db7bdb",
 					"nameIndexId": "QXG",
-					"nameIndexMatchType": "variant",
+					"nameIndexMatchType": "VARIANT",
 					"scientificName": "Cheilanthes",
 					"authorship": "Sw.",
-					"rank": "genus",
+					"rank": "GENUS",
 					"uninomial": "Cheilanthes",
 					"combinationAuthorship": {
 						"authors": [
 							"Sw."
 						]
 					},
-					"code": "botanical",
+					"code": "BOTANICAL",
 					"publishedInId": "3a497b02-44ed-4ec7-bb73-7051e7182980",
 					"publishedInPage": "126",
-					"origin": "source",
-					"type": "scientific",
+					"origin": "SOURCE",
+					"type": "SCIENTIFIC",
 					"parsed": true,
 					"labelHtml": "<i>Cheilanthes</i> Sw."
 				},
-				"status": "accepted",
-				"origin": "source",
+				"status": "ACCEPTED",
+				"origin": "SOURCE",
 				"parentId": "3244ec45-bf81-44e8-a86c-6efe4f2eb277",
 				"label": "Cheilanthes Sw.",
 				"labelHtml": "<i>Cheilanthes</i> Sw.",
