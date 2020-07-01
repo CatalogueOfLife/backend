@@ -29,7 +29,7 @@ public class SectorDeleteFull extends SectorRunnable {
   public SectorDeleteFull(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService,
                           Consumer<SectorRunnable> successCallback,
                           BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    super(sectorKey, false, factory, indexService, successCallback, errorCallback, false, user);
+    super(sectorKey, false, factory, indexService, successCallback, errorCallback, user);
   }
   
   @Override

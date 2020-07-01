@@ -31,7 +31,7 @@ public class SectorDelete extends SectorRunnable {
   public SectorDelete(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, NamesTreeDao treeDao,
                       Consumer<SectorRunnable> successCallback,
                       BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    super(sectorKey, false, factory, indexService, successCallback, errorCallback, false, user);
+    super(sectorKey, false, factory, indexService, successCallback, errorCallback, user);
     this.treeDao = treeDao;
   }
   

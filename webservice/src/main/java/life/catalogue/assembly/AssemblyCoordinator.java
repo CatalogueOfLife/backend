@@ -73,8 +73,7 @@ public class AssemblyCoordinator implements Managed {
     LOG.info("Starting assembly coordinator");
     exec = Executors.newSingleThreadExecutor(new NamedThreadFactory(THREAD_NAME, Thread.MAX_PRIORITY, true));
 
-    //TODO: reschedule existing syncs
-    // read hanging imports in db, truncate if half inserted and add as new requests to the queue
+    // cancel all existing syncs/deletions
     try (SqlSession session = factory.openSession(true)) {
       SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
       // list all imports with running states & waiting
@@ -82,19 +81,11 @@ public class AssemblyCoordinator implements Managed {
       states.add(ImportState.WAITING);
       List<SectorImport> sims = sim.list(null, null, null, ImportState.runningStates(), new Page(0, 10000));
       for (SectorImport si : sims) {
-        if (si.getState().isQueued()) {
-          // reload
-
-        } else {
-          // cancel & reschedule
-          cancelAndReschedule(si);
-        }
+        si.setState(ImportState.CANCELED);
+        si.setFinished(LocalDateTime.now());
+        sim.update(si);
       }
     }
-  }
-
-  private void cancelAndReschedule(SectorImport si){
-
   }
 
   @Override

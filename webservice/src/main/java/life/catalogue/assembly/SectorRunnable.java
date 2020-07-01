@@ -44,21 +44,21 @@ abstract class SectorRunnable implements Runnable {
   private final Consumer<SectorRunnable> successCallback;
   private final BiConsumer<SectorRunnable, Exception> errorCallback;
   private final LocalDateTime created = LocalDateTime.now();
-  private final boolean persistSync;
   final User user;
   final SectorImport state;
 
   /**
-   * @param persistSync if true the sync import is persisted on success and the last sync attempt is updated on the sector
    * @throws IllegalArgumentException if the sectors dataset is not of MANAGED origin
    */
   SectorRunnable(int sectorKey, boolean validateSector, SqlSessionFactory factory, NameUsageIndexService indexService,
                  Consumer<SectorRunnable> successCallback,
-                 BiConsumer<SectorRunnable, Exception> errorCallback, boolean persistSync, User user) throws IllegalArgumentException {
-    this.persistSync = persistSync;
+                 BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     this.user = Preconditions.checkNotNull(user);
     this.validateSector = validateSector;
     this.factory = factory;
+    this.indexService = indexService;
+    this.successCallback = successCallback;
+    this.errorCallback = errorCallback;
     this.sectorKey = sectorKey;
     // check for existance and datasetKey - we will load the real thing for processing only when we get executed!
     sector = loadSector(false);
@@ -77,38 +77,6 @@ abstract class SectorRunnable implements Runnable {
       state.setState(ImportState.WAITING);
       state.setCreatedBy(user.getKey());
       session.getMapper(SectorImportMapper.class).create(state);
-    }
-    this.indexService = indexService;
-    this.successCallback = successCallback;
-    this.errorCallback = errorCallback;
-  }
-
-  SectorRunnable(SectorImport state, boolean validateSector, SqlSessionFactory factory, NameUsageIndexService indexService,
-                 Consumer<SectorRunnable> successCallback,
-                 BiConsumer<SectorRunnable, Exception> errorCallback, boolean persistSync, User user) throws IllegalArgumentException {
-    this.persistSync = persistSync;
-    this.user = Preconditions.checkNotNull(user);
-    this.validateSector = validateSector;
-    this.factory = factory;
-    this.indexService = indexService;
-    this.successCallback = successCallback;
-    this.errorCallback = errorCallback;
-
-    this.state = state;
-    this.sectorKey = state.getSectorKey();
-    // check for existance and datasetKey - we will load the real thing for processing only when we get executed!
-    sector = loadSector(false);
-    this.catalogueKey = sector.getDatasetKey();
-    this.datasetKey = sector.getSubjectDatasetKey();
-
-    try (SqlSession session = factory.openSession(true)) {
-      state.setDatasetKey(datasetKey);
-      state.setJob(getClass().getSimpleName());
-      state.setState(ImportState.WAITING);
-      state.setCreatedBy(user.getKey());
-      if (persistSync || failed) {
-        session.getMapper(SectorImportMapper.class).update(state);
-      }
     }
   }
   
@@ -139,11 +107,9 @@ abstract class SectorRunnable implements Runnable {
       state.setFinished(LocalDateTime.now());
       // persist sector import
       try (SqlSession session = factory.openSession(true)) {
-        if (persistSync || failed) {
-          session.getMapper(SectorImportMapper.class).update(state);
-        }
-        // update sector with latest attempt on success only
-        if (persistSync && !failed) {
+        session.getMapper(SectorImportMapper.class).update(state);
+        // update sector with latest attempt on success only for true syncs
+        if (!failed && this instanceof SectorSync) {
           session.getMapper(SectorMapper.class).updateLastSync(sectorKey, state.getAttempt());
         }
       }
