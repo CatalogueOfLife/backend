@@ -10,6 +10,7 @@ import life.catalogue.es.ddl.MultiField;
 import life.catalogue.es.nu.NameUsageFieldLookup;
 import life.catalogue.es.query.*;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.StatusLine;
 import org.elasticsearch.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,18 +111,18 @@ public class EsUtil {
   public static int deleteIndex(RestClient client, IndexConfig index) throws IOException {
     LOG.warn("Deleting Elasticsearch Index {}", index.name);
     Response response = null;
-    int code;
+    StatusLine status;
     try {
       response = client.performRequest(new Request("DELETE", index.name));
-      code = response.getStatusLine().getStatusCode();
+      status = response.getStatusLine();
     } catch (ResponseException e) {
-      code = e.getResponse().getStatusLine().getStatusCode();
+      status = e.getResponse().getStatusLine();
     }
 
-    if (code != 404 && code >= 400) { // 404 is ok if the index does not exist
-      throw new EsException(response.getStatusLine().getReasonPhrase());
+    if (status.getStatusCode() != 404 && status.getStatusCode() >= 400) { // 404 is ok if the index does not exist
+      throw new EsException(status.getReasonPhrase());
     }
-    return code;
+    return status.getStatusCode();
   }
 
   /**
