@@ -79,7 +79,7 @@ public class AssemblyCoordinator implements Managed {
       // list all imports with running states & waiting
       Set<ImportState> states = new HashSet<>(ImportState.runningStates());
       states.add(ImportState.WAITING);
-      Page page = new Page(0, 1000);
+      Page page = new Page(0, Page.MAX_LIMIT);
       List<SectorImport> sims = null;
       while (sims == null || sims.size() == page.getLimit()) {
         sims = sim.list(null, null, null, ImportState.runningStates(), page);
