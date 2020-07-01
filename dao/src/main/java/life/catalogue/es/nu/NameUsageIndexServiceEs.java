@@ -202,9 +202,10 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
 
   @Override
-  public int deleteIndex() {
+  public int createEmptyIndex() {
     try {
-      return EsUtil.deleteIndex(client, esConfig.nameUsage);
+      EsUtil.deleteIndex(client, esConfig.nameUsage);
+      return EsUtil.createIndex(client, EsNameUsage.class, esConfig.nameUsage);
     } catch (IOException e) {
       throw new EsException(e);
     }
@@ -212,40 +213,36 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
   @Override
   public Stats indexAll() {
+    createEmptyIndex();
+
     final Stats total = new Stats();
-    try {
-      EsUtil.deleteIndex(client, esConfig.nameUsage);
-      EsUtil.createIndex(client, EsNameUsage.class, esConfig.nameUsage);
-      List<Integer> keys;
-      try (SqlSession session = factory.openSession(true)) {
-        keys = session.getMapper(DatasetMapper.class).keys();
-        int allDatasets = keys.size();
-        // first check if we have data partitions - otherwise all queries below throw
-        DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
-        keys.removeIf(key -> !dpm.exists(key));
-        LOG.info("Index {} datasets with data partitions out of all {} datasets", keys.size(), allDatasets);
-      }
-
-      final AtomicInteger counter = new AtomicInteger(1);
-      ExecutorService exec = Executors.newFixedThreadPool(esConfig.indexingThreads, new NamedThreadFactory("ES-Indexer"));
-      for (Integer datasetKey : keys) {
-        CompletableFuture.supplyAsync(() -> indexDatasetInternal(datasetKey, false), exec)
-            .exceptionally(ex -> {
-              counter.incrementAndGet();
-              LOG.error("Error indexing dataset {}", datasetKey, ex.getCause());
-              return null;
-            }).thenAccept(st -> {
-              total.add(st);
-              LOG.info("Indexed {}/{} dataset {}. Total usages {}", counter.incrementAndGet(), keys.size(), datasetKey, total.usages);
-            });
-      }
-      ExecutorUtils.shutdown(exec);
-
-      LOG.info("Successfully indexed all {} datasets. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
-        counter, esConfig.nameUsage.name, total.usages, total.names, total.total());
-    } catch (IOException e) {
-      throw new EsException(e);
+    List<Integer> keys;
+    try (SqlSession session = factory.openSession(true)) {
+      keys = session.getMapper(DatasetMapper.class).keys();
+      int allDatasets = keys.size();
+      // first check if we have data partitions - otherwise all queries below throw
+      DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
+      keys.removeIf(key -> !dpm.exists(key));
+      LOG.info("Index {} datasets with data partitions out of all {} datasets", keys.size(), allDatasets);
     }
+
+    final AtomicInteger counter = new AtomicInteger(1);
+    ExecutorService exec = Executors.newFixedThreadPool(esConfig.indexingThreads, new NamedThreadFactory("ES-Indexer"));
+    for (Integer datasetKey : keys) {
+      CompletableFuture.supplyAsync(() -> indexDatasetInternal(datasetKey, false), exec)
+          .exceptionally(ex -> {
+            counter.incrementAndGet();
+            LOG.error("Error indexing dataset {}", datasetKey, ex.getCause());
+            return null;
+          }).thenAccept(st -> {
+            total.add(st);
+            LOG.info("Indexed {}/{} dataset {}. Total usages {}", counter.incrementAndGet(), keys.size(), datasetKey, total.usages);
+          });
+    }
+    ExecutorUtils.shutdown(exec);
+
+    LOG.info("Successfully indexed all {} datasets. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
+      counter, esConfig.nameUsage.name, total.usages, total.names, total.total());
     return total;
   }
 

@@ -156,9 +156,9 @@ public class AdminResource {
 
   @DELETE
   @Path("/reindex")
-  public int deleteIndex(@Auth User user) {
+  public int createEmptyIndex(@Auth User user) {
     LOG.warn("Drop and recreate empty search index by {}", user);
-    return indexService.deleteIndex();
+    return indexService.createEmptyIndex();
   }
 
   @POST

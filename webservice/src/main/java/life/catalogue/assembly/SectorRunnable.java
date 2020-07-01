@@ -46,7 +46,7 @@ abstract class SectorRunnable implements Runnable {
   private final LocalDateTime created = LocalDateTime.now();
   private final boolean persistSync;
   final User user;
-  final SectorImport state = new SectorImport();
+  final SectorImport state;
 
   /**
    * @param persistSync if true the sync import is persisted on success and the last sync attempt is updated on the sector
@@ -70,6 +70,7 @@ abstract class SectorRunnable implements Runnable {
       if (d.getOrigin() != DatasetOrigin.MANAGED) {
         throw new IllegalArgumentException("Cannot run a " + getClass().getSimpleName() + " against a " + d.getOrigin() + " dataset");
       }
+      state = new SectorImport();
       state.setSectorKey(sectorKey);
       state.setDatasetKey(datasetKey);
       state.setJob(getClass().getSimpleName());
@@ -80,6 +81,35 @@ abstract class SectorRunnable implements Runnable {
     this.indexService = indexService;
     this.successCallback = successCallback;
     this.errorCallback = errorCallback;
+  }
+
+  SectorRunnable(SectorImport state, boolean validateSector, SqlSessionFactory factory, NameUsageIndexService indexService,
+                 Consumer<SectorRunnable> successCallback,
+                 BiConsumer<SectorRunnable, Exception> errorCallback, boolean persistSync, User user) throws IllegalArgumentException {
+    this.persistSync = persistSync;
+    this.user = Preconditions.checkNotNull(user);
+    this.validateSector = validateSector;
+    this.factory = factory;
+    this.indexService = indexService;
+    this.successCallback = successCallback;
+    this.errorCallback = errorCallback;
+
+    this.state = state;
+    this.sectorKey = state.getSectorKey();
+    // check for existance and datasetKey - we will load the real thing for processing only when we get executed!
+    sector = loadSector(false);
+    this.catalogueKey = sector.getDatasetKey();
+    this.datasetKey = sector.getSubjectDatasetKey();
+
+    try (SqlSession session = factory.openSession(true)) {
+      state.setDatasetKey(datasetKey);
+      state.setJob(getClass().getSimpleName());
+      state.setState(ImportState.WAITING);
+      state.setCreatedBy(user.getKey());
+      if (persistSync || failed) {
+        session.getMapper(SectorImportMapper.class).update(state);
+      }
+    }
   }
   
   @Override

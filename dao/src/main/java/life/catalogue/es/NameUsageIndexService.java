@@ -27,7 +27,10 @@ public interface NameUsageIndexService {
     }
   }
 
-  int deleteIndex();
+  /**
+   * Creates an empty name usage index, dropping any potentially existing index under the same name.
+   */
+  int createEmptyIndex();
 
   /**
    * Indexes all CoL usages from an entire sector from postgres into ElasticSearch using the bulk API.
@@ -101,9 +104,9 @@ public interface NameUsageIndexService {
     return new NameUsageIndexService() {
 
       @Override
-      public int deleteIndex() {
+      public int createEmptyIndex() {
         LOG.info("No Elastic Search configured, pass through index deletion");
-        return 404;
+        return 204;
       }
 
       @Override

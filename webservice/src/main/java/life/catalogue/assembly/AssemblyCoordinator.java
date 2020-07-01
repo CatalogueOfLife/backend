@@ -4,9 +4,11 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import io.dropwizard.lifecycle.Managed;
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.concurrent.ExecutorUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.importer.ImportManager;
@@ -70,8 +72,31 @@ public class AssemblyCoordinator implements Managed {
   public void start() throws Exception {
     LOG.info("Starting assembly coordinator");
     exec = Executors.newSingleThreadExecutor(new NamedThreadFactory(THREAD_NAME, Thread.MAX_PRIORITY, true));
+
+    //TODO: reschedule existing syncs
+    // read hanging imports in db, truncate if half inserted and add as new requests to the queue
+    try (SqlSession session = factory.openSession(true)) {
+      SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
+      // list all imports with running states & waiting
+      Set<ImportState> states = new HashSet<>(ImportState.runningStates());
+      states.add(ImportState.WAITING);
+      List<SectorImport> sims = sim.list(null, null, null, ImportState.runningStates(), new Page(0, 10000));
+      for (SectorImport si : sims) {
+        if (si.getState().isQueued()) {
+          // reload
+
+        } else {
+          // cancel & reschedule
+          cancelAndReschedule(si);
+        }
+      }
+    }
   }
-  
+
+  private void cancelAndReschedule(SectorImport si){
+
+  }
+
   @Override
   public void stop() throws Exception {
     // orderly shutdown running imports
