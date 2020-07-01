@@ -1,9 +1,12 @@
 package life.catalogue.es.nu.search;
 
-import java.util.List;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.es.query.CollapsibleList;
 import life.catalogue.es.query.SortField;
+
+import java.util.List;
+
+import static life.catalogue.api.search.NameUsageSearchRequest.SortBy.TAXONOMIC;
 
 class SortByTranslator {
 
@@ -15,8 +18,9 @@ class SortByTranslator {
 
   List<SortField> translate() {
     if (request.getSortBy() == null) {
-      return CollapsibleList.of(new SortField("rank", !request.isReverse()), new SortField("scientificName"));
+      request.setSortBy(TAXONOMIC);
     }
+    
     switch (request.getSortBy()) {
       case INDEX_NAME_ID:
         return CollapsibleList.of(new SortField("nameIndexId", !request.isReverse()));
