@@ -1,12 +1,16 @@
 package life.catalogue.es.nu;
 
 import life.catalogue.api.search.NameUsageRequest;
+import life.catalogue.es.NameStrings;
 import life.catalogue.es.query.BoolQuery;
 import life.catalogue.es.query.Query;
 import static life.catalogue.es.nu.NameUsageWrapperConverter.normalizeWeakly;
 
 /**
- * Abstract base class for non-fuzzy matching.
+ * Abstract base class for non-fuzzy matching. Search terms are not normalized, so they can only hit the non-normalized versions of the
+ * epithets in the {@link NameStrings} object inside a nameusage document. Note though that they still go through the Elasticsearch analysis
+ * phase, even for a relative simple "equals ignore case" comparison. This is relevant because this comparison is in fact not so trivial: a
+ * lot of characters a filtered out before the comparison takes place. Se es-settings.json.
  */
 abstract class SimpleMatcher extends QMatcher implements MatcherMixIn {
 

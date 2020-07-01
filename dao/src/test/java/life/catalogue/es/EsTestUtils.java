@@ -15,4 +15,13 @@ public class EsTestUtils {
     return EsModule.readObject(is, NameUsageSearchResponse.class);
   }
 
+  public static void indexCheilanthes(EsReadTestBase testClass) throws IOException {
+    testClass.index(getCheilanthes().getResult());
+  }
+
+  public static NameUsageSearchResponse getCheilanthes() throws IOException {
+    InputStream is = EsTestUtils.class.getResourceAsStream("/elastic/Cheilanthes.json");
+    return EsModule.readObject(is, NameUsageSearchResponse.class);
+  }
+
 }

@@ -18,7 +18,7 @@ import static org.junit.Assert.assertEquals;
  * Tests the NameUsageSearchService and the NameUsageSyggestionService for queries on higher taxa using and combinations of fuzzy/exact and
  * prefix/whole-word matching.
  */
-public class QTranslationUtilsTest extends EsReadTestBase {
+public class QMatchingTest extends EsReadTestBase {
 
   @Before
   public void before() {

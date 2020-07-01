@@ -13,7 +13,7 @@ import life.catalogue.es.nu.NameUsageFieldLookupTest;
 import life.catalogue.es.nu.NameUsageIndexServiceIT;
 import life.catalogue.es.nu.NameUsageResponseConverterTest;
 import life.catalogue.es.nu.NameUsageWrapperConverterTest;
-import life.catalogue.es.nu.QTranslationUtilsTest;
+import life.catalogue.es.nu.QMatchingTest;
 import life.catalogue.es.nu.search.*;
 import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceTest;
 import life.catalogue.es.query.CollapsibleListTest;
@@ -51,7 +51,7 @@ import life.catalogue.es.query.TermQueryTest;
     NameUsageWrapperConverterTest.class,
     PrefixQueryTest.class,
     QSearchTests.class,
-    QTranslationUtilsTest.class,
+    QMatchingTest.class,
     QueryTest.class,
     RangeQueryTest.class,
     RequestTranslatorTest.class,
