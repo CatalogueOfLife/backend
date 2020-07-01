@@ -1,5 +1,6 @@
 package life.catalogue.resources;
 
+import com.google.common.base.Joiner;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.lifecycle.Managed;
 import life.catalogue.WsServerConfig;
@@ -29,6 +30,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -227,7 +229,10 @@ public class AdminResource {
         DatasetMapper dm = session.getMapper(DatasetMapper.class);
         keys = dm.keys();
       }
+
       LOG.warn("Reimporting all {} datasets from their last local copy", keys.size());
+      final List<Integer> missed = new ArrayList<>();
+      int counter = 0;
       for (int key : keys) {
         try {
           while (manager.queueSize() + 5 > cfg.importer.maxQueue) {
@@ -238,17 +243,23 @@ public class AdminResource {
           if (f.exists()) {
             ImportRequest req = new ImportRequest(key, user.getKey(), true, false,true);
             manager.submit(req);
+            counter++;
           } else {
+            missed.add(key);
             LOG.warn("No local archive exists for dataset {}. Do not reimport", key);
           }
 
         } catch (IllegalArgumentException e) {
+          missed.add(key);
           LOG.warn("Cannot reimport dataset {}", key, e);
 
         } catch (InterruptedException e) {
           LOG.warn("Reimporting interrupted", e);
+          break;
         }
       }
+      LOG.info("Scheduled {} datasets out of {} for reimporting. Missed {} datasets without an archive or other reasons", counter, keys.size(),  missed.size());
+      LOG.info("Missed keys: {}", Joiner.on(", ").join(missed));
     }
   }
 }
