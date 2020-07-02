@@ -49,11 +49,6 @@
     dataset_archive d LEFT JOIN dataset_import di ON d.import_attempt=di.attempt AND d.key=di.dataset_key
   </sql>
 
-
-  <resultMap id="datasetProjectResultMap" type="ProjectSourceDataset" autoMapping="true" extends="archiveResultMap">
-    <id property="key" column="key"/>
-  </resultMap>
-
   <resultMap id="archiveResultMap" type="ArchivedDataset" autoMapping="true">
     <id property="key" column="key"/>
     <result property="organisations" column="organisations" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
@@ -61,54 +56,21 @@
   </resultMap>
 
 
-  <select id="processSources" parameterType="map" resultMap="datasetProjectResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
-    WITH src AS (
-      SELECT s.subject_dataset_key AS key, max(s.dataset_import_attempt) AS attempt, d.import_attempt AS curr_attempt
-      FROM sector s
-        JOIN dataset d ON d.key=s.subject_dataset_key
-      WHERE s.dataset_key=#{datasetKey}
-      GROUP BY s.subject_dataset_key, d.import_attempt
-    )
-    <!-- current dataset metadata -->
-    SELECT #{datasetKey} AS dataset_key, <include refid="SELECT"/>
-    FROM src, <include refid="life.catalogue.db.mapper.DatasetMapper.FROM"/>
-    WHERE src.key=d.key AND src.attempt=src.curr_attempt
-
-    UNION
-
-    <!-- archived dataset metadata for the source (dataset_key IS NULL), not a project -->
-    SELECT #{datasetKey} AS dataset_key, <include refid="SELECT"/>
-    FROM src, <include refid="FROM"/>
-    WHERE d.key=src.key AND d.dataset_key IS NULL AND d.import_attempt=src.attempt AND src.attempt!=src.curr_attempt
-  </select>
-
   <select id="get" resultMap="archiveResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE d.key = #{key} AND d.dataset_key IS NULL AND d.import_attempt = #{attempt}
-  </select>
-
-  <select id="getProjectSource" resultMap="datasetProjectResultMap">
-    SELECT d.dataset_key, <include refid="SELECT"/>
-    FROM <include refid="FROM"/>
-    WHERE d.key = #{key} AND d.dataset_key = #{datasetKey} AND d.import_attempt = #{attempt}
+    WHERE d.key = #{key} AND d.import_attempt = #{attempt}
   </select>
 
   <insert id="create" parameterType="map">
-    INSERT INTO dataset_archive (key, dataset_key, import_attempt, <include refid="COLS"/>, source_key, origin, created, modified)
-    SELECT key, NULL, import_attempt, <include refid="COLS"/>, source_key, origin, now(), now()
+    INSERT INTO dataset_archive (key, import_attempt, <include refid="COLS"/>, source_key, origin, created, modified)
+    SELECT key, import_attempt, <include refid="COLS"/>, source_key, origin, now(), now()
     FROM dataset d
     WHERE d.key = #{key}
   </insert>
 
-  <insert id="createProjectSource" parameterType="ProjectSourceDataset">
-    INSERT INTO dataset_archive (key, dataset_key, import_attempt, <include refid="COLS"/>, source_key, origin,  created, modified)
-    VALUES (#{key}, #{datasetKey}, #{importAttempt}, <include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, now(), now())
-  </insert>
-
   <delete id="deleteByDataset" parameterType="map">
-    DELETE FROM dataset_archive WHERE dataset_key = #{datasetKey};
-    DELETE FROM dataset_archive WHERE dataset_key IS NULL AND key = #{datasetKey};
+    DELETE FROM dataset_archive WHERE key = #{datasetKey};
   </delete>
 
 </mapper>

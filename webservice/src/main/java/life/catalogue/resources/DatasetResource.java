@@ -1,5 +1,6 @@
 package life.catalogue.resources;
 
+import com.google.common.collect.Lists;
 import io.dropwizard.auth.Auth;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
@@ -9,6 +10,8 @@ import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.NamesTreeDao;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.ProjectSourceDataset;
+import life.catalogue.db.mapper.ProjectSourceMapper;
 import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.dw.auth.Roles;
@@ -189,6 +192,18 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void removeEditor(@PathParam("key") int key, @PathParam("editorKey") int editorKey, @Auth User user) {
     dao.removeEditor(key, editorKey, user);
+  }
+
+  @GET
+  @Path("/{datasetKey}/source")
+  public List<ProjectSourceDataset> projectSources(@PathParam("datasetKey") int datasetKey, @Context SqlSession session) {
+    return Lists.newArrayList(session.getMapper(ProjectSourceMapper.class).processDataset(datasetKey));
+  }
+
+  @GET
+  @Path("/{datasetKey}/source/{key}")
+  public ProjectSourceDataset projectSource(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @Context SqlSession session) {
+    return session.getMapper(ProjectSourceMapper.class).get(key, datasetKey);
   }
 
 }

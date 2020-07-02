@@ -16,16 +16,9 @@ public class DatasetArchiveMapperTest extends MapperTestBase<DatasetArchiveMappe
     super(DatasetArchiveMapper.class);
   }
 
-  public static ProjectSourceDataset createProjectSource() {
-    ProjectSourceDataset d = new ProjectSourceDataset();
-    DatasetMapperTest.populate(d);
-    return d;
-  }
-
   private DatasetMapper dmapper(){
     return mapper(DatasetMapper.class);
   }
-
   
   @Test
   public void archive() throws Exception {
@@ -46,31 +39,6 @@ public class DatasetArchiveMapperTest extends MapperTestBase<DatasetArchiveMappe
   @Test
   public void deleteByDataset() throws Exception {
     mapper().deleteByDataset(Datasets.DRAFT_COL);
-  }
-
-  @Test
-  public void projectArchive() throws Exception {
-    ProjectSourceDataset d1 = createProjectSource();
-    d1.setDatasetKey(Datasets.DRAFT_COL);
-    d1.setImportAttempt(3);
-    createDataset(d1);
-
-    mapper().createProjectSource(d1);
-    ArchivedDataset d2 = mapper().getProjectSource(d1.getKey(), d1.getImportAttempt(), Datasets.DRAFT_COL);
-
-    assertTrue(d2.equals(d1));
-  }
-
-
-  /**
-   * @return created dataset key
-   */
-  private int createDataset(ProjectSourceDataset psd){
-    Dataset d = new Dataset(psd);
-    d.setSourceKey(psd.getSourceKey());
-    dmapper().create(d);
-    psd.setKey(d.getKey());
-    return d.getKey();
   }
 
 }

@@ -14,6 +14,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProjectRelease extends ProjectRunnable {
   private static final String DEFAULT_TITLE_TEMPLATE = "{title}, {date}";
@@ -33,10 +34,11 @@ public class ProjectRelease extends ProjectRunnable {
     updateState(ImportState.MATCHING);
     mapIds();
     // archive dataset metadata
-    try (SqlSession session = factory.openSession(false)) {
-      DatasetArchiveMapper dam = session.getMapper(DatasetArchiveMapper.class);
+    try (SqlSession session = factory.openSession(true)) {
+      ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
       DatasetPatchMapper dpm = session.getMapper(DatasetPatchMapper.class);
-      dam.processSources(datasetKey).forEach(d -> {
+      final AtomicInteger counter = new AtomicInteger(0);
+      psm.processDataset(datasetKey).forEach(d -> {
         DatasetMetadata patch = dpm.get(datasetKey, d.getKey());
         if (patch != null) {
           LOG.debug("Apply dataset patch from project {} to {}: {}", datasetKey, d.getKey(), d.getTitle());
@@ -44,8 +46,10 @@ public class ProjectRelease extends ProjectRunnable {
         }
         d.setDatasetKey(newDatasetKey);
         LOG.debug("Archive dataset {}: {} for release {}", d.getKey(), d.getTitle(), newDatasetKey);
-        dam.createProjectSource(d);
+        psm.create(d);
+        counter.incrementAndGet();
       });
+      LOG.info("Archived metadata for {} source datasets of release {}", counter.get(), newDatasetKey);
     }
   }
 

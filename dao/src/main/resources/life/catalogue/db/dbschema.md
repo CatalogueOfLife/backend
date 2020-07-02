@@ -10,7 +10,20 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-#### 2020-06-02 scrutiny changes 
+#### 2020-07-02 project sources 
+```
+ALTER TABLE dataset_archive DROP CONSTRAINT dataset_archive_key_import_attempt_dataset_key_key; 
+ALTER TABLE dataset_archive DROP COLUMN dataset_key;
+
+CREATE TABLE project_source (LIKE dataset_archive);
+ALTER TABLE project_source
+  ADD COLUMN dataset_key INTEGER REFERENCES dataset,
+  ADD UNIQUE (key, dataset_key);
+
+ALTER TABLE dataset_archive ADD UNIQUE (key, import_attempt);
+```
+
+#### 2020-06-22 scrutiny changes 
 
 ```
 ALTER TABLE dataset_import 

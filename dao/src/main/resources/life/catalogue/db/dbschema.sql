@@ -613,9 +613,16 @@ ALTER TABLE dataset_archive
   DROP COLUMN gbif_key,
   DROP COLUMN gbif_publisher_key,
   DROP COLUMN private,
-  DROP COLUMN settings,
+  DROP COLUMN settings;
+
+
+CREATE TABLE project_source (LIKE dataset_archive);
+ALTER TABLE project_source
   ADD COLUMN dataset_key INTEGER REFERENCES dataset;
-ALTER TABLE dataset_archive ADD UNIQUE (key, import_attempt, dataset_key);
+ALTER TABLE project_source ADD UNIQUE (key, dataset_key);
+
+
+ALTER TABLE dataset_archive ADD UNIQUE (key, import_attempt);
 
 CREATE INDEX ON dataset USING gin (f_unaccent(title) gin_trgm_ops);
 CREATE INDEX ON dataset USING gin (f_unaccent(alias) gin_trgm_ops);
@@ -645,7 +652,6 @@ ALTER TABLE dataset_patch
   DROP COLUMN import_attempt,
   DROP COLUMN notes,
   DROP COLUMN origin,
-  DROP COLUMN dataset_key,
   ADD COLUMN dataset_key INTEGER NOT NULL REFERENCES dataset;
 ALTER TABLE dataset_patch ADD PRIMARY KEY (key, dataset_key);
 
