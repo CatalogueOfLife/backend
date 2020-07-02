@@ -287,6 +287,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // attach listeners to event bus
     bus.register(auth);
+    bus.register(coljersey);
   }
 
   @Override

@@ -122,6 +122,9 @@
     SELECT key
     FROM dataset
     WHERE deleted IS NULL
+    <if test="origin != null and origin.length > 0">
+      AND origin IN <foreach item="o" collection="origin" open="(" separator="," close=")">#{o}::DATASETORIGIN</foreach>
+    </if>
   </select>
 
   <select id="process" parameterType="map" resultMap="datasetResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">

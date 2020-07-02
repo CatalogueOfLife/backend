@@ -1,29 +1,37 @@
 package life.catalogue.dw.jersey;
 
-import io.dropwizard.Bundle;
+import com.google.common.eventbus.Subscribe;
+import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import life.catalogue.WsServerConfig;
+import life.catalogue.api.event.DatasetChanged;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.jersey.exception.IllegalArgumentExceptionMapper;
+import life.catalogue.dw.jersey.filter.CacheControlResponseFilter;
 import life.catalogue.dw.jersey.filter.CreatedResponseFilter;
 import life.catalogue.dw.jersey.filter.DatasetKeyRewriteFilter;
 import life.catalogue.dw.jersey.provider.EnumParamConverterProvider;
 import life.catalogue.dw.jersey.writers.BufferedImageBodyWriter;
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 /**
  * Various custom jersey providers bundled together for CoL.
  */
-public class ColJerseyBundle implements Bundle {
+public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
 
   DatasetKeyRewriteFilter filter;
+  CacheControlResponseFilter ccFilter;
 
   @Override
   public void initialize(Bootstrap<?> bootstrap) {
   
   }
-  
+
   @Override
-  public void run(Environment env) {
+  public void run(WsServerConfig configuration, Environment env) throws Exception {
     // param converters
     env.jersey().packages(EnumParamConverterProvider.class.getPackage().getName());
     
@@ -31,6 +39,8 @@ public class ColJerseyBundle implements Bundle {
     env.jersey().packages(CreatedResponseFilter.class.getPackage().getName());
     filter = new DatasetKeyRewriteFilter();
     env.jersey().register(filter);
+    ccFilter = new CacheControlResponseFilter();
+    env.jersey().register(ccFilter);
 
     // exception mappers
     env.jersey().packages(IllegalArgumentExceptionMapper.class.getPackage().getName());
@@ -40,7 +50,17 @@ public class ColJerseyBundle implements Bundle {
   }
 
   // needed to populate the session factory in some filters
-  public void setSqlSessionFactory(SqlSessionFactory sqlSessionFactory) {
-    filter.setSqlSessionFactory(sqlSessionFactory);
+  public void setSqlSessionFactory(SqlSessionFactory factory) {
+    filter.setSqlSessionFactory(factory);
+    try (SqlSession session = factory.openSession()){
+      ccFilter.addAll(session.getMapper(DatasetMapper.class).keys(DatasetOrigin.RELEASED));
+    }
+  }
+
+  @Subscribe
+  public void datasetChanged(DatasetChanged d){
+    if (d.obj!=null && d.obj.getOrigin() == DatasetOrigin.RELEASED) {
+      ccFilter.addRelease((int)d.key);
+    }
   }
 }

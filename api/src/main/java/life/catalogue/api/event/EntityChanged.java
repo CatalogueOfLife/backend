@@ -3,6 +3,13 @@ package life.catalogue.api.event;
 import com.google.common.base.Preconditions;
 import life.catalogue.api.model.DataEntity;
 
+/**
+ * A changed entity message for the bus system.
+ * Creation or updates result in a changed message with an existing key and obj,
+ * deletions result in a change message with a key but a null obj.
+ * @param <K> key type
+ * @param <T> entity type
+ */
 public class EntityChanged<K, T> {
   public final K key;
   public final T obj;

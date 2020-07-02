@@ -6,6 +6,7 @@ import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.DatasetSearchRequest;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.GlobalPageable;
 import org.apache.ibatis.annotations.Param;
@@ -71,7 +72,7 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   /**
    * @return list of all dataset keys which have not been deleted
    */
-  List<Integer> keys();
+  List<Integer> keys(@Param("origin") DatasetOrigin... origin);
 
   /**
    * list datasets which have not been imported before, ordered by date created.

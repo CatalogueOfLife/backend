@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -205,23 +206,43 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
 
   @Test
   public void keys() throws Exception {
-    List<Integer> expected = mapper().list(new Page(100)).stream().map(Dataset::getKey).collect(Collectors.toList());
+    List<Integer> external = new ArrayList<>();
     Dataset d = create();
     mapper().create(d);
     commit();
-    expected.add(d.getKey());
+    external.add(d.getKey());
     d = create();
     mapper().create(d);
     commit();
-    expected.add(d.getKey());
+    external.add(d.getKey());
     d = create();
     mapper().create(d);
     commit();
-    expected.add(d.getKey());
-    Collections.sort(expected);
+    external.add(d.getKey());
+    external.add(12); // this is a preexsting dataset
+    Collections.sort(external);
+
+    List<Integer> all = mapper().list(new Page(100)).stream().map(Dataset::getKey).collect(Collectors.toList());
+    Collections.sort(all);
+
     List<Integer> actual = mapper().keys();
     Collections.sort(actual);
-    assertEquals(expected, actual);
+    assertEquals(all, actual);
+
+    actual = mapper().keys(DatasetOrigin.EXTERNAL);
+    Collections.sort(actual);
+    assertEquals(external, actual);
+
+    actual = mapper().keys(DatasetOrigin.EXTERNAL, DatasetOrigin.RELEASED);
+    Collections.sort(actual);
+    assertEquals(external, actual);
+
+    actual = mapper().keys(DatasetOrigin.RELEASED);
+    assertTrue(actual.isEmpty());
+
+    actual = mapper().keys(DatasetOrigin.EXTERNAL, DatasetOrigin.MANAGED);
+    Collections.sort(actual);
+    assertEquals(all, actual);
   }
 
   private List<Dataset> createExpected() throws Exception {
