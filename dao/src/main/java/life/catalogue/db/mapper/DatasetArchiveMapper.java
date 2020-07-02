@@ -33,9 +33,9 @@ public interface DatasetArchiveMapper extends DatasetProcessable<ProjectSourceDa
 
   /**
    * Retrieves a projects source dataset from the archive by its key, import attempt and the projects datasetKey.
-   * @param key
+   * @param key the source dataset key
    * @param attempt
-   * @param datasetKey
+   * @param datasetKey the project key
    */
   ProjectSourceDataset getProjectSource(@Param("key") int key, @Param("attempt") int attempt, @Param("datasetKey") int datasetKey);
 

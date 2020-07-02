@@ -67,15 +67,15 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   }
 
   @GET
-  @Path("{key}/settings")
-  public DatasetSettings getSettings(@PathParam("key") int key) {
+  @Path("{datasetKey}/settings")
+  public DatasetSettings getSettings(@PathParam("datasetKey") int key) {
     return dao.getSettings(key);
   }
 
   @PUT
-  @Path("{key}/settings")
+  @Path("{datasetKey}/settings")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void putSettings(@PathParam("key") int key, DatasetSettings settings, @Auth User user) {
+  public void putSettings(@PathParam("datasetKey") int key, DatasetSettings settings, @Auth User user) {
     dao.putSettings(key, settings, user.getKey());
   }
 
@@ -87,21 +87,21 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
    * @param key
    */
   @GET
-  @Path("{key}/latest")
-  public Dataset getLatestRelease(@PathParam("key") int key) {
+  @Path("{datasetKey}/latest")
+  public Dataset getLatestRelease(@PathParam("datasetKey") int key) {
     return dao.latestRelease(key);
   }
 
   @GET
-  @Path("{key}/assembly")
-  public AssemblyState assemblyState(@PathParam("key") int key) {
+  @Path("{datasetKey}/assembly")
+  public AssemblyState assemblyState(@PathParam("datasetKey") int key) {
     return assembly.getState(key);
   }
 
   @GET
-  @Path("{key}/texttree")
+  @Path("{datasetKey}/texttree")
   @Produces(MediaType.TEXT_PLAIN)
-  public Response textTree(@PathParam("key") int key,
+  public Response textTree(@PathParam("datasetKey") int key,
                          @QueryParam("root") String rootID,
                          @QueryParam("rank") Set<Rank> ranks,
                          @Context SqlSession session) {
@@ -130,62 +130,62 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   }
   
   @GET
-  @Path("{key}/logo")
+  @Path("{datasetKey}/logo")
   @Produces("image/png")
-  public BufferedImage logo(@PathParam("key") int key, @QueryParam("size") @DefaultValue("small") ImgConfig.Scale scale) {
+  public BufferedImage logo(@PathParam("datasetKey") int key, @QueryParam("size") @DefaultValue("small") ImgConfig.Scale scale) {
     return imgService.datasetLogo(key, scale);
   }
   
   @POST
-  @Path("{key}/logo")
+  @Path("{datasetKey}/logo")
   @Consumes({MediaType.APPLICATION_OCTET_STREAM,
       MoreMediaTypes.IMG_BMP, MoreMediaTypes.IMG_PNG, MoreMediaTypes.IMG_GIF,
       MoreMediaTypes.IMG_JPG, MoreMediaTypes.IMG_PSD, MoreMediaTypes.IMG_TIFF
   })
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public Response uploadLogo(@PathParam("key") int key, InputStream img) throws IOException {
+  public Response uploadLogo(@PathParam("datasetKey") int key, InputStream img) throws IOException {
     imgService.putDatasetLogo(key, ImageServiceFS.read(img));
     return Response.ok().build();
   }
   
   @DELETE
-  @Path("{key}/logo")
+  @Path("{datasetKey}/logo")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public Response deleteLogo(@PathParam("key") int key) throws IOException {
+  public Response deleteLogo(@PathParam("datasetKey") int key) throws IOException {
     imgService.putDatasetLogo(key, null);
     return Response.ok().build();
   }
 
   @POST
-  @Path("/{key}/copy")
+  @Path("/{datasetKey}/copy")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public Integer copy(@PathParam("key") int key, @Auth User user) {
+  public Integer copy(@PathParam("datasetKey") int key, @Auth User user) {
     return releaseManager.duplicate(key, user);
   }
 
   @POST
-  @Path("/{key}/release")
+  @Path("/{datasetKey}/release")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public Integer release(@PathParam("key") int key, @Auth User user) {
+  public Integer release(@PathParam("datasetKey") int key, @Auth User user) {
     return releaseManager.release(key, user);
   }
 
   @GET
-  @Path("{key}/editor")
+  @Path("{datasetKey}/editor")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public List<User> editors(@PathParam("key") int key, @Auth User user, @Context SqlSession session) {
+  public List<User> editors(@PathParam("datasetKey") int key, @Auth User user, @Context SqlSession session) {
     return session.getMapper(UserMapper.class).datasetEditors(key);
   }
 
   @POST
-  @Path("/{key}/editor")
+  @Path("/{datasetKey}/editor")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void addEditor(@PathParam("key") int key, int editorKey, @Auth User user) {
+  public void addEditor(@PathParam("datasetKey") int key, int editorKey, @Auth User user) {
     dao.addEditor(key, editorKey, user);
   }
 
   @DELETE
-  @Path("/{key}/editor/{editorKey}")
+  @Path("/{datasetKey}/editor/{editorKey}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void removeEditor(@PathParam("key") int key, @PathParam("editorKey") int editorKey, @Auth User user) {
     dao.removeEditor(key, editorKey, user);
