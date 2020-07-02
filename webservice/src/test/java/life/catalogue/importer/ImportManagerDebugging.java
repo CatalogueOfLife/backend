@@ -91,9 +91,9 @@ public class ImportManagerDebugging {
    */
   @Test
   public void debugParallel() throws Exception {
-    importManager.submit(new ImportRequest(1000, Users.IMPORTER));
-    importManager.submit(new ImportRequest(1006, Users.IMPORTER));
-    importManager.submit(new ImportRequest(1007, Users.IMPORTER));
+    importManager.submit(ImportRequest.external(1000, Users.IMPORTER));
+    importManager.submit(ImportRequest.external(1006, Users.IMPORTER));
+    importManager.submit(ImportRequest.external(1007, Users.IMPORTER));
     
     Thread.sleep(1000);
     while (importManager.hasRunning()) {
@@ -104,7 +104,7 @@ public class ImportManagerDebugging {
   @Test
   public void debugTaxonworks() throws Exception {
     DatasetWithSettings d = create(DataFormat.COLDP, "https://sfg.taxonworks.org/downloads/15/download_file", "TW Test");
-    importManager.submit(new ImportRequest(d.getKey(), Users.IMPORTER));
+    importManager.submit(ImportRequest.external(d.getKey(), Users.IMPORTER));
     Thread.sleep(1000);
     while (importManager.hasRunning()) {
       Thread.sleep(1000);
@@ -115,7 +115,7 @@ public class ImportManagerDebugging {
   @Test
   public void debugDsmz() throws Exception {
     DatasetWithSettings d = create(DataFormat.DWCA, "http://rs.gbif.org/datasets/dsmz.zip", "DSMZ");
-    importManager.submit(new ImportRequest(d.getKey(), Users.IMPORTER));
+    importManager.submit(ImportRequest.external(d.getKey(), Users.IMPORTER));
     Thread.sleep(1000);
     while (importManager.hasRunning()) {
       Thread.sleep(1000);

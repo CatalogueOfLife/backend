@@ -1,11 +1,11 @@
 package life.catalogue.importer;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.Objects;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  *
@@ -19,14 +19,21 @@ public class ImportRequest implements Comparable<ImportRequest> {
   public final LocalDateTime created = LocalDateTime.now();
   public LocalDateTime started;
 
+  public static ImportRequest reimport(int datasetKey, int createdBy){
+    return new ImportRequest(datasetKey, createdBy, true, false, true);
+  }
+
   public static ImportRequest upload(int datasetKey, int createdBy){
     return new ImportRequest(datasetKey, createdBy, true, true, true);
   }
 
-  public static ImportRequest trigger(int datasetKey, int createdBy){
+  public static ImportRequest external(int datasetKey, int createdBy){
     return new ImportRequest(datasetKey, createdBy, false, false, false);
   }
 
+  /**
+   * We exclude the upload flag from JSON so it cannot be triggered accidently from the API
+   */
   @JsonCreator
   public ImportRequest(@JsonProperty("datasetKey") int datasetKey,
                        @JsonProperty("force") boolean force,
@@ -35,10 +42,6 @@ public class ImportRequest implements Comparable<ImportRequest> {
    this(datasetKey, null, force, priority, false);
   }
 
-  public ImportRequest(int datasetKey, int createdBy) {
-    this(datasetKey, createdBy, false, false, false);
-  }
-  
   public ImportRequest(int datasetKey, Integer createdBy, boolean force, boolean priority, boolean upload) {
     this.datasetKey = datasetKey;
     this.upload = upload;

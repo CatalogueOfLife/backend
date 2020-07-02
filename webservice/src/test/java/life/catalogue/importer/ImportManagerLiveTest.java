@@ -118,7 +118,7 @@ public class ImportManagerLiveTest {
     final DatasetWithSettings d1 = createExternal();
   
     LOG.warn("SUBMIT");
-    importManager.submit(new ImportRequest(d1.getKey(), Users.IMPORTER));
+    importManager.submit(ImportRequest.external(d1.getKey(), Users.IMPORTER));
     Thread.sleep(50);
     
     LOG.warn("CHECK");
@@ -143,7 +143,7 @@ public class ImportManagerLiveTest {
     final DatasetWithSettings d3 = createExternal();
     final DatasetWithSettings d4 = createExternal();
   
-    importManager.submit(new ImportRequest(d1.getKey(), Users.IMPORTER));
+    importManager.submit(ImportRequest.external(d1.getKey(), Users.IMPORTER));
     Thread.sleep(50);
     assertTrue(importManager.hasEmptyQueue());
     assertTrue(importManager.hasRunning());
@@ -155,8 +155,8 @@ public class ImportManagerLiveTest {
   
     assertTrue(runningStates.contains( imports.getResult().get(0).getState() ));
 
-    importManager.submit(new ImportRequest(d2.getKey(), Users.IMPORTER));
-    importManager.submit(new ImportRequest(d3.getKey(), Users.IMPORTER));
+    importManager.submit(ImportRequest.external(d2.getKey(), Users.IMPORTER));
+    importManager.submit(ImportRequest.external(d3.getKey(), Users.IMPORTER));
     importManager.submit(new ImportRequest(d4.getKey(), Users.IMPORTER, false, true, false));
     importManager.hasRunning();
     Thread.sleep(50);

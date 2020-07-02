@@ -263,7 +263,7 @@ public class ImportManager implements Managed {
   public ImportRequest upload(final int datasetKey, final InputStream content, boolean zip, @Nullable String suffix, User user) throws IOException {
     Dataset d = validDataset(datasetKey);
     uploadArchive(d, content, zip, suffix);
-    return submitValidDataset(new ImportRequest(datasetKey, user.getKey(), true, true, true));
+    return submitValidDataset(ImportRequest.upload(datasetKey, user.getKey()));
   }
 
   public ImportRequest uploadXls(final int datasetKey, final InputStream content, User user) throws IOException {
@@ -283,7 +283,7 @@ public class ImportManager implements Managed {
       Files.delete(source);
     }
     CompressionUtil.zipDir(tmpDir, source.toFile());
-    return submitValidDataset(new ImportRequest(datasetKey, user.getKey(), true, true, true));
+    return submitValidDataset(ImportRequest.upload(datasetKey, user.getKey()));
   }
 
   /**

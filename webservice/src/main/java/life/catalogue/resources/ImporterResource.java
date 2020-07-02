@@ -1,18 +1,11 @@
 package life.catalogue.resources;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-
 import com.google.common.base.Strings;
 import io.dropwizard.auth.Auth;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DatasetImport;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.ResultPage;
+import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dw.auth.Roles;
@@ -21,6 +14,16 @@ import life.catalogue.importer.ImportManager;
 import life.catalogue.importer.ImportRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.security.RolesAllowed;
+import javax.validation.Valid;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 
 @Path("/importer")
 @Produces(MediaType.APPLICATION_JSON)
@@ -68,7 +71,15 @@ public class ImporterResource {
   public DatasetImport get(@PathParam("key") int datasetKey){
     return dao.getLast(datasetKey);
   }
-  
+
+  @POST
+  @Path("{key}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public ImportRequest reimport(@PathParam("key") int datasetKey, @Auth User user) throws IOException {
+    return importManager.submit(ImportRequest.reimport(datasetKey, user.getKey()));
+  }
+
   @POST
   @Path("{key}")
   @Consumes({MoreMediaTypes.APP_GZIP, MoreMediaTypes.APP_ZIP, MediaType.APPLICATION_OCTET_STREAM})
