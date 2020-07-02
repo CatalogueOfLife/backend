@@ -131,9 +131,12 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   static String note2pattern(String x) {
     return x
       .replaceAll(" +", " *")
-      .replaceAll("\\.", "\\. *")
-      .replace("(", "\\(")
-      .replace(")", "\\)");
+      .replace(".", "\\. *")
+      .replace("-", " *\\- *")
+      .replace("(", " *\\( *")
+      .replace(")", " *\\) *")
+      .replace("[", " *\\[ *")
+      .replace("]", " *\\] *");
   }
 
   static String normalizeAuthorship(final String authorship, String taxNote) {

@@ -59,6 +59,7 @@ public class NameParserTest {
 
   @Test
   public void normalizeAuthorship() throws Exception {
+    assertNull(NameParser.normalizeAuthorship("sensu Wilson & Henderson [Brit. Rust Fungi:47-48 (1966) ]; fide Checklist of Basidiomycota of Great", "sensu Wilson & Henderson[Brit. Rust Fungi:47-48 (1966) ]; fide Checklist of Basidiomycota of Great"));
     assertEquals("Brouss. ex Willd.", NameParser.normalizeAuthorship("Brouss. ex Willd.", null));
     assertEquals("(St.John) Sachet", NameParser.normalizeAuthorship("(St.John) Sachet", null));
     assertEquals("Trautv. & Meyer", NameParser.normalizeAuthorship("Trautv.&Meyer", null));
