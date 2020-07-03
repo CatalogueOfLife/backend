@@ -1,13 +1,14 @@
 package life.catalogue.api.jackson;
 
-import java.io.IOException;
-import java.util.Set;
-
 import life.catalogue.api.model.DSIDValue;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.vocab.Lifezone;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -24,6 +25,15 @@ public class ApiModuleTest {
     String json = ApiModule.MAPPER.writeValueAsString(did1);
     DSIDValue did2 = ApiModule.MAPPER.readValue(json, DSIDValue.class);
     assertEquals(did1, did2);
+  }
+
+  @Test
+  public void localDate() throws IOException {
+    LocalDate date = LocalDate.now();
+    String json = ApiModule.MAPPER.writeValueAsString(date);
+    System.out.println(json);
+    LocalDate date2 = ApiModule.MAPPER.readValue(json, LocalDate.class);
+    assertEquals(date2, date);
   }
   
   @Test

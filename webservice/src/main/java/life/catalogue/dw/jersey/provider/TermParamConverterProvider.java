@@ -1,16 +1,16 @@
 package life.catalogue.dw.jersey.provider;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import javax.ws.rs.ext.ParamConverter;
-import javax.ws.rs.ext.ParamConverterProvider;
-import javax.ws.rs.ext.Provider;
-
 import com.google.common.base.Strings;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.ext.ParamConverter;
+import javax.ws.rs.ext.ParamConverterProvider;
+import javax.ws.rs.ext.Provider;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 
 /**
  * Jersey parameter converter & provider that uses our jackson Mapper
@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 @Provider
 public class TermParamConverterProvider implements ParamConverterProvider {
   private final static TermFactory TF = TermFactory.instance();
-  
+
   @Override
   public <T> ParamConverter<T> getConverter(Class<T> rawType, Type genericType, Annotation[] antns) {
     if (rawType == Term.class) {

@@ -152,37 +152,29 @@
 
 
   <select id="get" resultMap="sectorResultMap">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE id = #{key.id}
   </select>
 
   <select id="getBySubject" resultMap="sectorResultMap">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE subject_dataset_key = #{key.datasetKey}
     AND dataset_key = #{datasetKey}
     AND subject_id = #{key.id}
   </select>
 
   <select id="listByTarget" resultMap="sectorResultMap">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE target_id = #{key.id}
     AND dataset_key = #{key.datasetKey}
   </select>
 
   <select id="listByDataset" resultMap="sectorResultMap">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE subject_dataset_key = #{subjectDatasetKey}
     <if test="datasetKey != null">
       AND dataset_key = #{datasetKey}
@@ -194,10 +186,8 @@
   </delete>
 
   <select id="processSectors" parameterType="map" resultMap="sectorResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE subject_dataset_key = #{subjectDatasetKey}
     AND dataset_key = #{datasetKey}
     ORDER BY target_rank
@@ -205,8 +195,7 @@
 
   <select id="listTargetDatasetKeys" resultType="integer">
     SELECT DISTINCT dataset_key
-    FROM
-    <include refid="FROM"/>
+    FROM <include refid="FROM"/>
   </select>
 
   <insert id="create" parameterType="Sector" useGeneratedKeys="true" keyProperty="id">
@@ -233,20 +222,16 @@
   </delete>
 
   <select id="list" resultMap="sectorResultMap">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE dataset_key=#{datasetKey}
     ORDER BY target_rank, id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="listChildSectors" resultMap="sectorResultMap">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     JOIN name_usage_${datasetKey} t ON t.id=s.target_id
     WHERE t.sector_key=#{key} AND s.dataset_key=#{datasetKey}
     ORDER BY id
@@ -270,42 +255,34 @@
 
   <select id="count" resultType="integer">
     SELECT count(*)
-    FROM
-    <include refid="FROM"/>
+    FROM <include refid="FROM"/>
     WHERE dataset_key=#{datasetKey}
   </select>
 
   <select id="countSearch" resultType="integer">
     SELECT count(*)
-    FROM
-    <include refid="FROM"/>
+    FROM <include refid="FROM"/>
     <include refid="WHERE"/>
   </select>
 
   <select id="search" resultMap="sectorResultMap">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     <include refid="WHERE"/>
     ORDER BY id desc
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="processSearch" resultMap="sectorResultMap">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     <include refid="WHERE"/>
     ORDER BY id desc
   </select>
 
   <select id="processDataset" parameterType="map" resultMap="sectorResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE dataset_key=#{datasetKey}
   </select>
 
