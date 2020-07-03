@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import io.dropwizard.lifecycle.Managed;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.MatchType;
@@ -62,20 +63,6 @@ public class NameIndexImpl implements NameIndex {
     this.datasetKey = datasetKey;
     this.sqlFactory = Preconditions.checkNotNull(sqlFactory);
     dao = new NameDao(sqlFactory, NameUsageIndexService.passThru());
-    int storeSize = store.count();
-    if (storeSize == 0) {
-      loadFromPg();
-    } else {
-      // verify postgres and store match up - otherwise trust postgres
-      long pgCount = countPg();
-      if (pgCount != storeSize) {
-        LOG.warn("Existing name index contains {} names, but postgres has {}. Trust postgres", storeSize, pgCount);
-        loadFromPg();
-      } else {
-        counter.set(storeSize);
-      }
-    }
-    LOG.info("Started name index with {} names", counter.get());
     idGen = new IdGenerator(counter::incrementAndGet);
   }
   
@@ -347,10 +334,29 @@ public class NameIndexImpl implements NameIndex {
   }
   
   @Override
-  public void close() throws Exception {
-    LOG.info("Closing names index ...");
-    store.close();
-    LOG.info("Names index db closed");
+  public void start() throws Exception {
+    LOG.info("Start names index ...");
+    store.start();
+    int storeSize = store.count();
+    if (storeSize == 0) {
+      loadFromPg();
+    } else {
+      // verify postgres and store match up - otherwise trust postgres
+      long pgCount = countPg();
+      if (pgCount != storeSize) {
+        LOG.warn("Existing name index contains {} names, but postgres has {}. Trust postgres", storeSize, pgCount);
+        loadFromPg();
+      } else {
+        counter.set(storeSize);
+      }
+    }
+    LOG.info("Started name index with {} names", counter.get());
   }
-  
+
+  @Override
+  public void stop() throws Exception {
+    LOG.info("Stopping names index ...");
+    store.stop();
+    LOG.info("Names index db stopped");
+  }
 }

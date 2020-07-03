@@ -47,8 +47,8 @@ import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.importer.ImportManager;
-import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.matching.NameIndexImpl;
 import life.catalogue.parser.NameParser;
 import life.catalogue.release.AcExporter;
 import life.catalogue.release.ReleaseManager;
@@ -81,7 +81,7 @@ public class WsServer extends Application<WsServerConfig> {
   private final EventBus bus = new EventBus("bus");
   protected CloseableHttpClient httpClient;
   protected Client jerseyClient;
-  private NameIndex ni;
+  private NameIndexImpl ni;
   
   public static void main(final String[] args) throws Exception {
     SLF4JBridgeHandler.install();
@@ -195,7 +195,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // name index
     ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE);
-    env.lifecycle().manage(new ManagedCloseable(ni));
+    env.lifecycle().manage(ni);
     env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));
 
     final DatasetImportDao diDao = new DatasetImportDao(getSqlSessionFactory(), cfg.metricsRepo);
@@ -256,7 +256,7 @@ public class WsServer extends Application<WsServerConfig> {
     UserDao udao = new UserDao(getSqlSessionFactory(), bus);
 
     // resources
-    j.register(new AdminResource(getSqlSessionFactory(), assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter, importManager, gbifSync));
+    j.register(new AdminResource(getSqlSessionFactory(), assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter, importManager, gbifSync, ni));
     j.register(new DataPackageResource());
     j.register(new DatasetResource(getSqlSessionFactory(), ddao, imgService, diDao, assembly, releaseManager));
     j.register(new DatasetDiffResource(dDiff));

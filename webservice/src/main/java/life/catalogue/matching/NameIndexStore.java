@@ -1,10 +1,11 @@
 package life.catalogue.matching;
 
-import java.util.ArrayList;
-
+import io.dropwizard.lifecycle.Managed;
 import life.catalogue.api.model.Name;
 
-public interface NameIndexStore extends AutoCloseable {
+import java.util.ArrayList;
+
+public interface NameIndexStore extends Managed {
   
   /**
    * Counts all name usages. Potentially an expensive operation.

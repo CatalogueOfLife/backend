@@ -1,12 +1,12 @@
 package life.catalogue.matching;
 
-import java.io.File;
-import java.util.ArrayList;
-
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Name;
 import org.junit.Test;
 import org.mapdb.DBMaker;
+
+import java.io.File;
+import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
 
@@ -35,7 +35,7 @@ public class NameIndexMapDBStoreTest {
       assertEquals(8, db.count());
 
       // now shutdown and reopen
-      db.close();
+      db.stop();
       db = new NameIndexMapDBStore(maker);
   
       assertEquals(8, db.count());

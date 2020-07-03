@@ -1,13 +1,14 @@
 package life.catalogue.matching;
 
-import java.util.Collection;
-
+import io.dropwizard.lifecycle.Managed;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public interface NameIndex extends AutoCloseable {
+import java.util.Collection;
+
+public interface NameIndex extends Managed, AutoCloseable {
   
   Logger LOG = LoggerFactory.getLogger(NameIndex.class);
   
@@ -42,8 +43,9 @@ public interface NameIndex extends AutoCloseable {
       add(n);
     }
   }
-  
+
+  @Override
   default void close() throws Exception {
-    // nothing
+    stop();
   }
 }

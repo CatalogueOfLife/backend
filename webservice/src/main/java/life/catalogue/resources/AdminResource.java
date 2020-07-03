@@ -26,7 +26,9 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.annotation.security.RolesAllowed;
+import javax.validation.constraints.Min;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.File;
@@ -49,15 +51,17 @@ public class AdminResource {
   private final NameUsageIndexService indexService;
   private final NameIndex ni;
   private Thread thread;
-  // background processes
+  // managed background processes
+  private final ImportManager importManager;
   private final ContinuousImporter continuousImporter;
   private final GbifSync gbifSync;
   private final AssemblyCoordinator assembly;
-  private final ImportManager manager;
+  private final NameIndexImpl namesIndex;
+
 
 
   public AdminResource(SqlSessionFactory factory, AssemblyCoordinator assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
-                       NameUsageIndexService indexService, ContinuousImporter continuousImporter, ImportManager manager, GbifSync gbifSync) {
+                       NameUsageIndexService indexService, ContinuousImporter continuousImporter, ImportManager importManager, GbifSync gbifSync, NameIndexImpl namesIndex) {
     this.factory = factory;
     this.assembly = assembly;
     this.imgService = imgService;
@@ -67,12 +71,17 @@ public class AdminResource {
     this.indexService = indexService;
     this.gbifSync = gbifSync;
     this.continuousImporter = continuousImporter;
-    this.manager = manager;
+    this.importManager = importManager;
+    this.namesIndex = namesIndex;
   }
   
   public static class BackgroundProcesses {
     public boolean gbifSync;
+    public boolean scheduler;
     public boolean importer;
+    @Nullable
+    @Min(1)
+    public Integer importerThreads;
   }
 
   @GET
@@ -85,6 +94,7 @@ public class AdminResource {
   @Path("/background")
   public BackgroundProcesses getBackground() {
     BackgroundProcesses back = new BackgroundProcesses();
+    back.scheduler = continuousImporter.isActive();
     back.importer = continuousImporter.isActive();
     back.gbifSync = gbifSync.isActive();
     return back;
@@ -104,13 +114,28 @@ public class AdminResource {
       startStopManaged(gbifSync, back.gbifSync);
     }
     
-    if (curr.importer != back.importer) {
+    if (curr.scheduler != back.scheduler) {
       if (cfg.importer.continousImportPolling < 1) {
         // we started the server with no polling, give it a reasonable default
         cfg.importer.continousImportPolling = 10;
       }
-      LOG.info("Set continuous importer to active={}", back.importer);
-      startStopManaged(continuousImporter, back.importer);
+      LOG.info("Set continuous importer to active={}", back.scheduler);
+      startStopManaged(continuousImporter, back.scheduler);
+    }
+
+    if (curr.importer != back.importer) {
+      if (back.importerThreads != null && back.importerThreads > 0) {
+        cfg.importer.threads = back.importerThreads;
+      }
+      LOG.info("Set import manager with {} threads & names index to active={}", cfg.importer.threads, back.importer);
+      // order is important
+      if (back.importer) {
+        namesIndex.start();
+        importManager.start();
+      } else {
+        importManager.stop();
+        namesIndex.stop();
+      }
     }
   }
   
@@ -242,14 +267,14 @@ public class AdminResource {
       int counter = 0;
       for (int key : keys) {
         try {
-          while (manager.queueSize() + 5 > cfg.importer.maxQueue) {
+          while (importManager.queueSize() + 5 > cfg.importer.maxQueue) {
             TimeUnit.MINUTES.sleep(1);
           }
           // does a local archive exist?
           File f = cfg.normalizer.source(key);
           if (f.exists()) {
             ImportRequest req = new ImportRequest(key, user.getKey(), true, false,true);
-            manager.submit(req);
+            importManager.submit(req);
             counter++;
           } else {
             missed.add(key);

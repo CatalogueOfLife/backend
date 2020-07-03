@@ -1,9 +1,5 @@
 package life.catalogue.matching;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
 import life.catalogue.api.model.Name;
@@ -16,16 +12,21 @@ import org.mapdb.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * NameIndexStore implementation that is backed by a mapdb using kryo serialization.
  */
 public class NameIndexMapDBStore implements NameIndexStore {
   private static final Logger LOG = LoggerFactory.getLogger(NameIndexMapDBStore.class);
   
-  private final DB db;
+  private final DBMaker.Maker dbMaker;
   private final Pool<Kryo> pool;
-  private final Map<String, NameList> names;
-  
+  private DB db;
+  private Map<String, NameList> names;
+
   static class NameList extends ArrayList<Name> {
     NameList() {
       super(1);
@@ -55,17 +56,28 @@ public class NameIndexMapDBStore implements NameIndexStore {
   }
   
   public NameIndexMapDBStore(DBMaker.Maker dbMaker) throws DBException.DataCorruption {
-      this.db = dbMaker.make();
-      pool = new NameIndexKryoPool(4);
-      names = db.hashMap("names")
-          .keySerializer(Serializer.STRING_ASCII)
-          .valueSerializer(new MapDbObjectSerializer<>(NameList.class, pool, 128))
-          //.counterEnable()
-          //.valueInline()
-          //.valuesOutsideNodesEnable()
-          .createOrOpen();
-    }
-  
+    this.dbMaker = dbMaker;
+    pool = new NameIndexKryoPool(4);
+    start();
+  }
+
+  @Override
+  public void start() {
+    this.db = dbMaker.make();
+    names = db.hashMap("names")
+      .keySerializer(Serializer.STRING_ASCII)
+      .valueSerializer(new MapDbObjectSerializer<>(NameList.class, pool, 128))
+      //.counterEnable()
+      //.valueInline()
+      //.valuesOutsideNodesEnable()
+      .createOrOpen();
+  }
+
+  @Override
+  public void stop() {
+    db.close();
+  }
+
   @Override
   public int count() {
     AtomicInteger counter = new AtomicInteger(0);
@@ -89,10 +101,5 @@ public class NameIndexMapDBStore implements NameIndexStore {
   public void put(String key, ArrayList<Name> group) {
     names.put(key, new NameList(group));
   }
-  
-  @Override
-  public void close() throws Exception {
-    db.close();
-  }
-  
+
 }

@@ -25,6 +25,14 @@ public class NameIndexFactory {
   public static NameIndex passThru() {
     return new NameIndex() {
       @Override
+      public void start() throws Exception {
+      }
+
+      @Override
+      public void stop() throws Exception {
+      }
+
+      @Override
       public NameMatch match(Name name, boolean allowInserts, boolean verbose) {
         return NameMatch.noMatch();
       }
@@ -44,8 +52,8 @@ public class NameIndexFactory {
   /**
    * Returns a persistent index if location is given, otherwise an in memory one
    */
-  public static NameIndex persistentOrMemory(@Nullable File location, SqlSessionFactory sqlFactory, AuthorshipNormalizer aNormalizer) throws IOException {
-    NameIndex ni;
+  public static NameIndexImpl persistentOrMemory(@Nullable File location, SqlSessionFactory sqlFactory, AuthorshipNormalizer aNormalizer) throws IOException {
+    NameIndexImpl ni;
     if (location == null) {
       ni = memory(sqlFactory, aNormalizer);
     } else {
@@ -54,7 +62,7 @@ public class NameIndexFactory {
     return ni;
   }
   
-  public static NameIndex memory(SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) {
+  public static NameIndexImpl memory(SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) {
     LOG.info("Use volatile in memory names index");
     NameIndexStore store = new NameIndexMapDBStore(DBMaker.memoryDB());
     return new NameIndexImpl(store, authorshipNormalizer, Datasets.NAME_INDEX, sqlFactory);
@@ -63,7 +71,7 @@ public class NameIndexFactory {
   /**
    * Creates or opens a persistent mapdb names index.
    */
-  public static NameIndex persistent(File location, SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) throws IOException {
+  public static NameIndexImpl persistent(File location, SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) throws IOException {
     if (!location.exists()) {
       FileUtils.forceMkdirParent(location);
       LOG.info("Create persistent names index at {}", location.getAbsolutePath());
