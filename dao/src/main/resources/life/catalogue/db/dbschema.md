@@ -14,6 +14,8 @@ and done it manually. So we can as well log changes here.
 ```
 ALTER TABLE dataset_archive DROP CONSTRAINT dataset_archive_key_import_attempt_dataset_key_key; 
 ALTER TABLE dataset_archive DROP COLUMN dataset_key;
+DELETE FROM dataset_archive WHERE import_attempt IS NULL;
+ALTER TABLE dataset_archive ALTER COLUMN import_attempt set not null;
 
 CREATE TABLE project_source (LIKE dataset_archive);
 ALTER TABLE project_source

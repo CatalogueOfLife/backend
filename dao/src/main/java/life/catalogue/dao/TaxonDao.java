@@ -38,7 +38,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
 
   /**
    * Copies the given source taxon into the dataset and under the given target parent.
-   * The taxon and name source instance will be modified to represent the newly generated taxon and finally persisted.
+   * The taxon and name source instance will be modified to represent the newly generated and finally persisted taxon.
    * The original id is retained and finally returned.
    * An optional set of associated entity types can be indicated to be copied too.
    *

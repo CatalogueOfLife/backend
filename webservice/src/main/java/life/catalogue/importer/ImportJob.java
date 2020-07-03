@@ -235,7 +235,7 @@ public class ImportJob implements Runnable {
         LOG.info("Writing {} to Postgres!", datasetKey);
         updateState(ImportState.INSERTING);
         store = NeoDbFactory.open(datasetKey, getAttempt(), cfg.normalizer);
-        new PgImport(dataset, store, factory, cfg.importer).call();
+        new PgImport(di.getAttempt(), dataset, store, factory, cfg.importer).call();
         // update dataset with latest success attempt now that all data is in postgres - even if we fail further down
         dao.updateDatasetLastAttempt(di);
 

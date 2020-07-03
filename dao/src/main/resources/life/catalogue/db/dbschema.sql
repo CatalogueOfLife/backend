@@ -614,6 +614,7 @@ ALTER TABLE dataset_archive
   DROP COLUMN gbif_publisher_key,
   DROP COLUMN private,
   DROP COLUMN settings;
+ALTER TABLE dataset_archive ALTER COLUMN import_attempt set not null;
 
 
 CREATE TABLE project_source (LIKE dataset_archive);

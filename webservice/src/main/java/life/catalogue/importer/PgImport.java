@@ -39,6 +39,7 @@ public class PgImport implements Callable<Boolean> {
   private final NeoDb store;
   private final int batchSize;
   private final SqlSessionFactory sessionFactory;
+  private final int attempt;
   private final DatasetWithSettings dataset;
   private final Map<Integer, Integer> verbatimKeys = new HashMap<>();
   private final Set<String> proParteIds = new HashSet<>();
@@ -52,7 +53,8 @@ public class PgImport implements Callable<Boolean> {
   private final AtomicInteger vCounter = new AtomicInteger(0);
   private final AtomicInteger tmCounter = new AtomicInteger(0);
 
-  public PgImport(DatasetWithSettings dataset, NeoDb store, SqlSessionFactory sessionFactory, ImporterConfig cfg) {
+  public PgImport(int attempt, DatasetWithSettings dataset, NeoDb store, SqlSessionFactory sessionFactory, ImporterConfig cfg) {
+    this.attempt = attempt;
     this.dataset = dataset;
     this.store = store;
     this.batchSize = cfg.batchSize;
@@ -87,11 +89,15 @@ public class PgImport implements Callable<Boolean> {
 
   private void updateMetadata() {
     try (SqlSession session = sessionFactory.openSession(false)) {
-      LOG.info("Updating dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
       // archive the previous attempt before we update the current metadata and tie it to a new attempt
-      DatasetArchiveMapper dam = session.getMapper(DatasetArchiveMapper.class);
-      dam.create(dataset.getKey());
+      // if attempt is 1 this is the first import, so no need to archive it (attempt is required in the archive)
+      if (attempt > 1) {
+        LOG.info("Archive previous dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
+        DatasetArchiveMapper dam = session.getMapper(DatasetArchiveMapper.class);
+        dam.create(dataset.getKey());
+      }
       // update current
+      LOG.info("Updating dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       DatasetWithSettings old = new DatasetWithSettings(
         dm.get(dataset.getKey()),

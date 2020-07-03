@@ -1,5 +1,6 @@
 package life.catalogue.api.search;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.SimpleNameClassification;
@@ -10,7 +11,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class NameUsageWrapper extends SimpleNameClassification {
 
@@ -33,6 +33,7 @@ public class NameUsageWrapper extends SimpleNameClassification {
 
   public NameUsageWrapper(NameUsage usage) {
     this.usage = usage;
+    this.setId(usage.getId());
   }
 
   public NameUsage getUsage() {
