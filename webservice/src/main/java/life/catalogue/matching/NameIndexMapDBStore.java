@@ -58,7 +58,6 @@ public class NameIndexMapDBStore implements NameIndexStore {
   public NameIndexMapDBStore(DBMaker.Maker dbMaker) throws DBException.DataCorruption {
     this.dbMaker = dbMaker;
     pool = new NameIndexKryoPool(4);
-    start();
   }
 
   @Override

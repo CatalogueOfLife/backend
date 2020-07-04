@@ -61,22 +61,27 @@ public class NameIndexFactory {
     }
     return ni;
   }
-  
-  public static NameIndexImpl memory(SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) {
-    LOG.info("Use volatile in memory names index");
+
+  public static NameIndexImpl memory(int datasetKey, SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) {
+    LOG.info("Use volatile in memory names index for dataset {}", datasetKey);
     NameIndexStore store = new NameIndexMapDBStore(DBMaker.memoryDB());
-    return new NameIndexImpl(store, authorshipNormalizer, Datasets.NAME_INDEX, sqlFactory);
+    return new NameIndexImpl(store, authorshipNormalizer, datasetKey, sqlFactory);
+  }
+
+  public static NameIndexImpl memory(SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) {
+    return memory(Datasets.NAME_INDEX, sqlFactory, authorshipNormalizer);
   }
 
   /**
-   * Creates or opens a persistent mapdb names index.
+   * Creates or opens a persistent mapdb names index for a given names index dataset.
+   * @param datasetKey the dataset key to the names index in postgres
    */
-  public static NameIndexImpl persistent(File location, SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) throws IOException {
+  public static NameIndexImpl persistent(File location, int datasetKey, SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) throws IOException {
     if (!location.exists()) {
       FileUtils.forceMkdirParent(location);
-      LOG.info("Create persistent names index at {}", location.getAbsolutePath());
+      LOG.info("Create persistent names index at {} for dataset {}", location.getAbsolutePath(), datasetKey);
     } else {
-      LOG.info("Open persistent names index at {}", location.getAbsolutePath());
+      LOG.info("Open persistent names index at {} for dataset {}", location.getAbsolutePath(), datasetKey);
     }
     DBMaker.Maker maker = DBMaker
         .fileDB(location)
@@ -89,8 +94,15 @@ public class NameIndexFactory {
       location.delete();
       store = new NameIndexMapDBStore(maker);
     }
-    LOG.info("Opened names index");
-    return new NameIndexImpl(store, authorshipNormalizer, Datasets.NAME_INDEX, sqlFactory);
+    LOG.info("Opened names index for dataset {}", datasetKey);
+    return new NameIndexImpl(store, authorshipNormalizer, datasetKey, sqlFactory);
+  }
+
+  /**
+   * Creates or opens a persistent mapdb names index.
+   */
+  public static NameIndexImpl persistent(File location, SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) throws IOException {
+    return persistent(location, Datasets.NAME_INDEX, sqlFactory, authorshipNormalizer);
   }
   
 }

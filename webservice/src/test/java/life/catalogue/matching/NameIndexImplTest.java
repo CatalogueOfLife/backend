@@ -9,11 +9,9 @@ import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.importer.IdGenerator;
 import life.catalogue.parser.NameParser;
-import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.junit.After;
@@ -47,16 +45,12 @@ public class NameIndexImplTest {
   }
 
   void setupApple() throws Exception {
-    setupApple(NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer));
+    ni = NameIndexFactory.memory(11, PgSetupRule.getSqlSessionFactory(), aNormalizer).started();
+    assertEquals(5, ni.size());
   }
-
-  void setupApple(NameIndex nidx) throws Exception {
-    ni = nidx;
-    assertEquals(0, ni.size());
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()) {
-      NameMapper nm = session.getMapper(NameMapper.class);
-      nm.processDataset(11).forEach(ni::add);
-    }
+  void setupApple(File location) throws Exception {
+    ni = NameIndexFactory.persistent(location, 11, PgSetupRule.getSqlSessionFactory(), aNormalizer).started();
+    assertEquals(5, ni.size());
   }
   
   void setupTest() throws Exception {
@@ -101,24 +95,27 @@ public class NameIndexImplTest {
     setupApple();
     assertEquals(5, ni.size());
     
-    assertMatch(5, "Larus erfundus", Rank.SPECIES, null);
-    assertMatch(5, "Larus erfunda", Rank.SPECIES, null);
-    assertMatch(4, "Larus fusca", Rank.SPECIES, null);
-    assertMatch(3, "Larus fuscus", Rank.SPECIES, null);
+    assertMatch("name-4", "Larus erfundus", Rank.SPECIES, null);
+    assertMatch("name-4", "Larus erfunda", Rank.SPECIES, null);
+    assertMatch("name-3", "Larus fusca", Rank.SPECIES, null);
+    assertMatch("name-2", "Larus fuscus", Rank.SPECIES, null);
   }
 
   @Test
   public void restart() throws Exception {
     File fIdx = File.createTempFile("col", ".nidx");
+    if (fIdx.exists()) {
+      fIdx.delete();
+    }
     try {
-      setupApple(NameIndexFactory.persistent(fIdx, PgSetupRule.getSqlSessionFactory(), aNormalizer));
-      assertEquals(5, ni.size());
-      assertMatch(5, "Larus erfundus", Rank.SPECIES, null);
+      setupApple(fIdx);
+      assertMatch("name-4", "Larus erfundus", Rank.SPECIES, null);
 
+      System.out.println("RESTART");
       ni.stop();
       ni.start();
       assertEquals(5, ni.size());
-      assertMatch(5, "Larus erfundus", Rank.SPECIES, null);
+      assertMatch("name-4", "Larus erfundus", Rank.SPECIES, null);
 
       ni.stop();
       try {
@@ -203,7 +200,7 @@ public class NameIndexImplTest {
    */
   @Test
   public void testSubgenusLookup() throws Exception {
-    ni = NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer);
+    ni = NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer).started();
     Collection<Name> names = Lists.newArrayList(
         name(1, "Animalia", Rank.KINGDOM, NomCode.ZOOLOGICAL),
         
@@ -265,9 +262,12 @@ public class NameIndexImplTest {
     );
     return m;
   }
-  
+
   private NameMatch assertMatch(int key, String name, Rank rank, NomCode code) {
-    final String id = idGen.id(key);
+    return assertMatch(idGen.id(key), name, rank, code);
+  }
+
+  private NameMatch assertMatch(String id, String name, Rank rank, NomCode code) {
     NameMatch m = match(name, rank, code);
     if (!m.hasMatch() || !id.equals(m.getName().getId())) {
       System.out.println(m);
