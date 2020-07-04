@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.constraints.Min;
 import javax.ws.rs.*;
@@ -92,6 +93,7 @@ public class AdminResource {
 
   @GET
   @Path("/background")
+  @PermitAll
   public BackgroundProcesses getBackground() {
     BackgroundProcesses back = new BackgroundProcesses();
     back.scheduler = continuousImporter.hasStarted();
