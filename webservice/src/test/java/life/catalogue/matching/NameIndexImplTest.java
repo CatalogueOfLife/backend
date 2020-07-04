@@ -21,6 +21,7 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Set;
 
@@ -44,9 +45,13 @@ public class NameIndexImplTest {
       ni.close();
     }
   }
-  
+
   void setupApple() throws Exception {
-    ni = NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer);
+    setupApple(NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer));
+  }
+
+  void setupApple(NameIndex nidx) throws Exception {
+    ni = nidx;
     assertEquals(0, ni.size());
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()) {
       NameMapper nm = session.getMapper(NameMapper.class);
@@ -55,7 +60,7 @@ public class NameIndexImplTest {
   }
   
   void setupTest() throws Exception {
-    ni = NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer);
+    ni = NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer).started();
     Collection<Name> names = Lists.newArrayList(
         name(1, "Animalia", Rank.KINGDOM, NomCode.ZOOLOGICAL),
         
@@ -100,6 +105,34 @@ public class NameIndexImplTest {
     assertMatch(5, "Larus erfunda", Rank.SPECIES, null);
     assertMatch(4, "Larus fusca", Rank.SPECIES, null);
     assertMatch(3, "Larus fuscus", Rank.SPECIES, null);
+  }
+
+  @Test
+  public void restart() throws Exception {
+    File fIdx = File.createTempFile("col", ".nidx");
+    try {
+      setupApple(NameIndexFactory.persistent(fIdx, PgSetupRule.getSqlSessionFactory(), aNormalizer));
+      assertEquals(5, ni.size());
+      assertMatch(5, "Larus erfundus", Rank.SPECIES, null);
+
+      ni.stop();
+      ni.start();
+      assertEquals(5, ni.size());
+      assertMatch(5, "Larus erfundus", Rank.SPECIES, null);
+
+      ni.stop();
+      try {
+        match("Larus erfundus", Rank.SPECIES, null);
+        fail("Names index is closed and should not return");
+      } catch (IllegalAccessError e) {
+        // expected!
+      } catch (Throwable e) {
+        fail("Names index is closed and should throw IllegalAccessError");
+      }
+
+    } finally {
+      fIdx.delete();
+    }
   }
   
   @Test

@@ -118,7 +118,7 @@ public class ContinuousImporter implements Managed {
     }
   }
   
-  public boolean isActive() {
+  public boolean hasStarted() {
     return job != null && job.running;
   }
   

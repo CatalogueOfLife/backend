@@ -94,9 +94,9 @@ public class AdminResource {
   @Path("/background")
   public BackgroundProcesses getBackground() {
     BackgroundProcesses back = new BackgroundProcesses();
-    back.scheduler = continuousImporter.isActive();
-    back.importer = continuousImporter.isActive();
-    back.gbifSync = gbifSync.isActive();
+    back.scheduler = continuousImporter.hasStarted();
+    back.importer = importManager.hasStarted();
+    back.gbifSync = gbifSync.hasStarted();
     return back;
   }
   

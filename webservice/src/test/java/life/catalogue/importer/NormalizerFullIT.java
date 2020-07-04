@@ -32,7 +32,7 @@ public class NormalizerFullIT extends NormalizerITBase {
   }
   
   static NameIndex newIndex() {
-    return NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE);
+    return NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE).started();
   }
   
   @Test

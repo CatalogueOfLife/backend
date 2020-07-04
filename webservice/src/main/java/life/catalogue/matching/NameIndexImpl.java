@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import io.dropwizard.lifecycle.Managed;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.MatchType;
@@ -351,6 +350,18 @@ public class NameIndexImpl implements NameIndex {
       }
     }
     LOG.info("Started name index with {} names", counter.get());
+  }
+
+  /**
+   * Convenience method that starts the index and returns it to be used in fluent code
+   */
+  public NameIndexImpl started() {
+    try {
+      start();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+    return this;
   }
 
   @Override

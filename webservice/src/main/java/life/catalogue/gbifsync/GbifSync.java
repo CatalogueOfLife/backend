@@ -147,7 +147,7 @@ public class GbifSync implements Managed {
     }
   }
   
-  public boolean isActive() {
+  public boolean hasStarted() {
     return job != null;
   }
   
