@@ -121,10 +121,8 @@ public class NameIndexImplTest {
       try {
         match("Larus erfundus", Rank.SPECIES, null);
         fail("Names index is closed and should not return");
-      } catch (IllegalAccessError e) {
+      } catch (UnavailableException e) {
         // expected!
-      } catch (Throwable e) {
-        fail("Names index is closed and should throw IllegalAccessError");
       }
 
     } finally {
