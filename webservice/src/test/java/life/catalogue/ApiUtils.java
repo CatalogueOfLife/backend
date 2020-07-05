@@ -1,14 +1,14 @@
 package life.catalogue;
 
-import java.util.Collection;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.search.DatasetSearchRequest;
+import life.catalogue.api.search.NameUsageSearchRequest;
+
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
-
-import life.catalogue.api.model.Page;
-import life.catalogue.api.search.DatasetSearchRequest;
-import life.catalogue.api.search.NameUsageSearchRequest;
+import java.util.Collection;
 
 import static org.glassfish.jersey.client.authentication.HttpAuthenticationFeature.HTTP_AUTHENTICATION_BASIC_PASSWORD;
 import static org.glassfish.jersey.client.authentication.HttpAuthenticationFeature.HTTP_AUTHENTICATION_BASIC_USERNAME;
@@ -41,6 +41,12 @@ public class ApiUtils {
     return wt.request()
         .property(HTTP_AUTHENTICATION_BASIC_USERNAME, "editor")
         .property(HTTP_AUTHENTICATION_BASIC_PASSWORD, "123456");
+  }
+
+  public static Invocation.Builder adminCreds(WebTarget wt) {
+    return wt.request()
+      .property(HTTP_AUTHENTICATION_BASIC_USERNAME, "admin")
+      .property(HTTP_AUTHENTICATION_BASIC_PASSWORD, "12345678");
   }
 
   public static WebTarget applySearch(WebTarget wt, DatasetSearchRequest search, Page page) {

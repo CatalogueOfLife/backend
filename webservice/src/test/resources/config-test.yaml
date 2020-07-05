@@ -38,12 +38,6 @@ client:
     verifyHostname: false
     trustSelfSignedCertificates: true
 es:
-  hosts: ${es.hosts}
-  ports: ${es.ports}
-  nameUsage:
-    name: test-nu
-    numShards: 1
-    numReplicas: 0
 auth:
   type: map
   users:

@@ -84,7 +84,8 @@ public class WsServer extends Application<WsServerConfig> {
   protected CloseableHttpClient httpClient;
   protected Client jerseyClient;
   private NameIndexImpl ni;
-  
+  private ImportManager importManager;
+
   public static void main(final String[] args) throws Exception {
     SLF4JBridgeHandler.install();
     new WsServer().run(args);
@@ -136,6 +137,14 @@ public class WsServer extends Application<WsServerConfig> {
     return bus;
   }
 
+  public NameIndexImpl getNamesIndex() {
+    return ni;
+  }
+
+  public ImportManager getImportManager() {
+    return importManager;
+  }
+
   @Override
   public void run(WsServerConfig cfg, Environment env) throws Exception {
     final JerseyEnvironment j = env.jersey();
@@ -178,7 +187,7 @@ public class WsServer extends Application<WsServerConfig> {
     NameUsageIndexService indexService;
     NameUsageSearchService searchService;
     NameUsageSuggestionService suggestService;
-    if (cfg.es.hosts == null) {
+    if (cfg.es == null) {
       LOG.warn("No Elastic Search configured, use pass through indexing & searching");
       indexService = NameUsageIndexService.passThru();
       searchService = NameUsageSearchService.passThru();
@@ -209,7 +218,7 @@ public class WsServer extends Application<WsServerConfig> {
     final ReleaseManager releaseManager = new ReleaseManager(exporter, diDao, indexService, getSqlSessionFactory());
 
     // importer
-    final ImportManager importManager = new ImportManager(cfg,
+    importManager = new ImportManager(cfg,
         env.metrics(),
         httpClient,
         getSqlSessionFactory(),

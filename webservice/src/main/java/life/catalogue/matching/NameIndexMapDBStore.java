@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -99,8 +98,10 @@ public class NameIndexMapDBStore implements NameIndexStore {
 
   @Override
   public void stop() {
-    db.close();
-    names = new HashMap<>();
+    if (db != null) {
+      db.close();
+      db = null;
+    }
   }
 
   @Override
@@ -114,17 +115,23 @@ public class NameIndexMapDBStore implements NameIndexStore {
   
   @Override
   public ArrayList<Name> get(String key) {
+    avail();
     return names.get(key);
   }
   
   @Override
   public boolean containsKey(String key) {
+    avail();
     return names.containsKey(key);
   }
   
   @Override
   public void put(String key, ArrayList<Name> group) {
+    avail();
     names.put(key, new NameList(group));
   }
 
+  private void avail() throws UnavailableException {
+    if (db == null) throw new UnavailableException("Names Index is offline");
+  }
 }

@@ -454,8 +454,10 @@ public class ImportManager implements Managed {
       f.cancel(true);
     }
     // fully shutdown threadpool within given time
-    exec.stop();
-    exec = null;
+    if (exec != null) {
+      exec.stop();
+      exec = null;
+    }
   }
 
   public boolean hasStarted() {

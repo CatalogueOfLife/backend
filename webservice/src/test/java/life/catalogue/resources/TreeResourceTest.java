@@ -66,5 +66,17 @@ public class TreeResourceTest extends ResourceTestBase {
     assertEquals("Larus fuscus", root.getResult().get(0).getName());
     assertEquals("<i>Larus fuscus</i>", root.getResult().get(0).getLabelHtml());
   }
+
+  @Test
+  public void get2() {
+    ResultPage<TreeNodeProps> root = userCreds(base.path("/11/tree")
+      .queryParam("insertPlaceholder", true)
+      .queryParam("type", TreeNode.Type.SOURCE.name())
+    ).get(RESP_TYPE);
+    assertEquals(2, root.size());
+    // make sure we get the html markup
+    assertEquals("Larus fuscus", root.getResult().get(0).getName());
+    assertEquals("<i>Larus fuscus</i>", root.getResult().get(0).getLabelHtml());
+  }
   
 }

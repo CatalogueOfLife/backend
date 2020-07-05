@@ -7,6 +7,8 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
+import javax.ws.rs.ServiceUnavailableException;
+
 import static life.catalogue.ApiUtils.userCreds;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -17,11 +19,17 @@ public class MatchingResourceTest extends ResourceTestBase {
     super("/name/matching");
   }
 
-  @Test
+  @Test(expected = ServiceUnavailableException.class)
   public void match() {
+    userCreds(base.queryParam("q", "Abies alba Mill.")).get(NameMatch.class);
+  }
+
+  @Test
+  public void matchWorks() throws Exception {
+    RULE.startNamesIndex();
     NameMatch match = userCreds(base.queryParam("q", "Abies alba Mill."))
       .get(NameMatch.class);
-    
+
     Name abies = new Name();
     abies.setGenus("Abies");
     abies.setSpecificEpithet("alba");

@@ -1,27 +1,21 @@
  package life.catalogue;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
 import com.google.common.collect.Lists;
 import io.dropwizard.testing.ConfigOverride;
 import io.dropwizard.testing.junit.DropwizardAppRule;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.User;
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.UserMapper;
-import life.catalogue.dw.auth.AuthBundle;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.common.io.PortUtils;
 import life.catalogue.common.util.YamlUtils;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.dw.auth.BasicAuthClientFilter;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 /**
  * An adaptation of the generic DropwizardAppRule that can be used as a junit class rule
@@ -49,6 +43,14 @@ public class WsServerRule extends DropwizardAppRule<WsServerConfig> {
   
   static class PgConfigInApp {
     public PgConfig db = new PgConfig();
+  }
+
+  public void startNamesIndex() throws Exception {
+    getServer().getNamesIndex().start();
+  }
+
+  public void startImporter() throws Exception {
+    getServer().getImportManager().start();
   }
 
   static ConfigOverride[] setupPg(String configPath, ConfigOverride... configOverrides) {

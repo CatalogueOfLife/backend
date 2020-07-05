@@ -33,7 +33,6 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   public PgConfig db = new PgConfig();
   
   @Valid
-  @NotNull
   public EsConfig es = new EsConfig();
   
   @Valid
