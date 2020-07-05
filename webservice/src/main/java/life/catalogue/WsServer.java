@@ -11,6 +11,7 @@ import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
+import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import life.catalogue.api.datapackage.ColdpTerm;
@@ -29,6 +30,7 @@ import life.catalogue.db.LookupTables;
 import life.catalogue.db.tree.DatasetDiffService;
 import life.catalogue.db.tree.SectorDiffService;
 import life.catalogue.dw.ManagedCloseable;
+import life.catalogue.dw.ManagedStopOnly;
 import life.catalogue.dw.auth.AuthBundle;
 import life.catalogue.dw.cors.CorsBundle;
 import life.catalogue.dw.db.MybatisBundle;
@@ -195,7 +197,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // name index
     ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE);
-    env.lifecycle().manage(ni);
+    env.lifecycle().manage(stopOnly(ni));
     env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));
 
     final DatasetImportDao diDao = new DatasetImportDao(getSqlSessionFactory(), cfg.metricsRepo);
@@ -206,7 +208,7 @@ public class WsServer extends Application<WsServerConfig> {
     // release
     final ReleaseManager releaseManager = new ReleaseManager(exporter, diDao, indexService, getSqlSessionFactory());
 
-    // async importer
+    // importer
     final ImportManager importManager = new ImportManager(cfg,
         env.metrics(),
         httpClient,
@@ -215,14 +217,14 @@ public class WsServer extends Application<WsServerConfig> {
         indexService,
         imgService,
         releaseManager);
-    env.lifecycle().manage(importManager);
+    env.lifecycle().manage(stopOnly(importManager));
     j.register(new ImporterResource(importManager, diDao));
     ContinuousImporter cImporter = new ContinuousImporter(cfg.importer, importManager, getSqlSessionFactory());
-    env.lifecycle().manage(cImporter);
+    env.lifecycle().manage(stopOnly(cImporter));
 
     // gbif sync
     GbifSync gbifSync = new GbifSync(cfg.gbif, getSqlSessionFactory(), jerseyClient);
-    env.lifecycle().manage(gbifSync);
+    env.lifecycle().manage(stopOnly(gbifSync));
 
     // assembly
     AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), diDao, indexService, env.metrics());
@@ -288,6 +290,10 @@ public class WsServer extends Application<WsServerConfig> {
     // attach listeners to event bus
     bus.register(auth);
     bus.register(coljersey);
+  }
+
+  static Managed stopOnly(Managed managed){
+    return new ManagedStopOnly(managed);
   }
 
   @Override

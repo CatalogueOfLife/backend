@@ -7,7 +7,6 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.mapdb.DBException;
 import org.mapdb.DBMaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,20 +80,12 @@ public class NameIndexFactory {
       FileUtils.forceMkdirParent(location);
       LOG.info("Create persistent names index at {} for dataset {}", location.getAbsolutePath(), datasetKey);
     } else {
-      LOG.info("Open persistent names index at {} for dataset {}", location.getAbsolutePath(), datasetKey);
+      LOG.info("Use persistent names index at {} for dataset {}", location.getAbsolutePath(), datasetKey);
     }
     DBMaker.Maker maker = DBMaker
         .fileDB(location)
         .fileMmapEnableIfSupported();
-    NameIndexStore store;
-    try {
-      store = new NameIndexMapDBStore(maker);
-    } catch (DBException.DataCorruption e) {
-      LOG.warn("NamesIndex mapdb was corrupt. Remove and rebuild index from scratch. {}", e.getMessage());
-      location.delete();
-      store = new NameIndexMapDBStore(maker);
-    }
-    LOG.info("Opened names index for dataset {}", datasetKey);
+    NameIndexStore store = new NameIndexMapDBStore(maker, location);
     return new NameIndexImpl(store, authorshipNormalizer, datasetKey, sqlFactory);
   }
 

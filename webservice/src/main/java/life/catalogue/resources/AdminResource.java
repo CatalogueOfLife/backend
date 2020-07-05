@@ -79,7 +79,7 @@ public class AdminResource {
   public static class BackgroundProcesses {
     public boolean gbifSync;
     public boolean scheduler;
-    public boolean importer;
+    public boolean importer; // import manager & names index
     @Nullable
     @Min(1)
     public Integer importerThreads;

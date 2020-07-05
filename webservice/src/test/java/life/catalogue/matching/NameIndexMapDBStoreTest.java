@@ -18,7 +18,7 @@ public class NameIndexMapDBStoreTest {
     dbf.delete();
     try {
       DBMaker.Maker maker = DBMaker.fileDB(dbf).fileMmapEnableIfSupported();
-      NameIndexMapDBStore db = new NameIndexMapDBStore(maker);
+      NameIndexMapDBStore db = new NameIndexMapDBStore(maker, dbf);
       db.start();
       assertEquals(0, db.count());
 
@@ -36,7 +36,7 @@ public class NameIndexMapDBStoreTest {
 
       // now shutdown and reopen
       db.stop();
-      db = new NameIndexMapDBStore(maker);
+      db = new NameIndexMapDBStore(maker, dbf);
       db.start();
 
       assertEquals(8, db.count());

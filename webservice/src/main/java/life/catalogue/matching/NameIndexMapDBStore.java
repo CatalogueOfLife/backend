@@ -12,7 +12,10 @@ import org.mapdb.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -21,7 +24,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class NameIndexMapDBStore implements NameIndexStore {
   private static final Logger LOG = LoggerFactory.getLogger(NameIndexMapDBStore.class);
-  
+
+  private File dbFIle;
   private final DBMaker.Maker dbMaker;
   private final Pool<Kryo> pool;
   private DB db;
@@ -56,13 +60,33 @@ public class NameIndexMapDBStore implements NameIndexStore {
   }
   
   public NameIndexMapDBStore(DBMaker.Maker dbMaker) throws DBException.DataCorruption {
+    this(dbMaker, null);
+  }
+
+  /**
+   * @param dbMaker
+   * @param dbFIle the db file if the maker creates a file based db. Slightly defeats the purpose, but we wanna deal with coruppted db files
+   */
+  public NameIndexMapDBStore(DBMaker.Maker dbMaker, @Nullable File dbFIle) {
+    this.dbFIle = dbFIle;
     this.dbMaker = dbMaker;
     pool = new NameIndexKryoPool(4);
   }
 
   @Override
   public void start() {
-    this.db = dbMaker.make();
+    try {
+      db = dbMaker.make();
+    } catch (DBException.DataCorruption e) {
+      if (dbFIle != null) {
+        LOG.warn("NamesIndex mapdb was corrupt. Remove and rebuild index from scratch. {}", e.getMessage());
+        dbFIle.delete();
+        db = dbMaker.make();
+      } else {
+        throw e;
+      }
+    }
+
     names = db.hashMap("names")
       .keySerializer(Serializer.STRING_ASCII)
       .valueSerializer(new MapDbObjectSerializer<>(NameList.class, pool, 128))
@@ -72,9 +96,11 @@ public class NameIndexMapDBStore implements NameIndexStore {
       .createOrOpen();
   }
 
+
   @Override
   public void stop() {
     db.close();
+    names = new HashMap<>();
   }
 
   @Override
