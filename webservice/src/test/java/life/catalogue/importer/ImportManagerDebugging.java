@@ -76,7 +76,8 @@ public class ImportManagerDebugging {
     
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
-        NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer), NameUsageIndexService.passThru(), new ImageServiceFS(cfg.img), releaseManager);
+        NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer).started(),
+        NameUsageIndexService.passThru(), new ImageServiceFS(cfg.img), releaseManager);
     importManager.start();
   }
   

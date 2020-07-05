@@ -195,8 +195,7 @@ public class InitDbCmd extends AbstractPromptCmd {
   
     LOG.info("Match draft CoL to names index");
     // we create a new names index de novo to write new hierarchy names into the names index dataset
-    try (NameIndex ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, factory, AuthorshipNormalizer.INSTANCE)) {
-      ni.start();
+    try (NameIndex ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, factory, AuthorshipNormalizer.INSTANCE).started()) {
       DatasetMatcher matcher = new DatasetMatcher(factory, ni, false);
       matcher.match(Datasets.DRAFT_COL, true);
     }

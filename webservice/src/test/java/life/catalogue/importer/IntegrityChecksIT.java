@@ -85,7 +85,9 @@ public class IntegrityChecksIT {
       
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
-      Normalizer norm = new Normalizer(dataset, store, Paths.get(url.toURI()), NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE), ImageService.passThru());
+      Normalizer norm = new Normalizer(dataset, store, Paths.get(url.toURI()),
+        NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE).started(),
+        ImageService.passThru());
       norm.call();
       
       // import into postgres
