@@ -227,7 +227,6 @@ public class WsServer extends Application<WsServerConfig> {
         imgService,
         releaseManager);
     env.lifecycle().manage(stopOnly(importManager));
-    j.register(new ImporterResource(importManager, diDao));
     ContinuousImporter cImporter = new ContinuousImporter(cfg.importer, importManager, getSqlSessionFactory());
     env.lifecycle().manage(stopOnly(cImporter));
 
@@ -269,28 +268,30 @@ public class WsServer extends Application<WsServerConfig> {
     // resources
     j.register(new AdminResource(getSqlSessionFactory(), assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter, importManager, gbifSync, ni));
     j.register(new DataPackageResource());
-    j.register(new DatasetResource(getSqlSessionFactory(), ddao, imgService, diDao, assembly, releaseManager));
     j.register(new DatasetDiffResource(dDiff));
     j.register(new DatasetImportResource(diDao));
+    j.register(new DatasetPatchResource());
+    j.register(new DatasetResource(getSqlSessionFactory(), ddao, imgService, diDao, assembly, releaseManager));
     j.register(new DecisionResource(decdao));
     j.register(new DocsResource(cfg, OpenApiFactory.build(cfg, env)));
     j.register(new DuplicateResource());
     j.register(new EstimateResource(edao));
     j.register(new ExportResource(exporter));
+    j.register(new ImporterResource(importManager, diDao));
+    j.register(new LegacyWebserviceResource(getSqlSessionFactory(), cfg));
     j.register(new MatchingResource(ni));
     j.register(new NameResource(ndao));
     j.register(new NameUsageResource(searchService, suggestService));
     j.register(new NameUsageSearchResource(searchService, suggestService));
     j.register(new ReferenceResource(rdao));
-    j.register(new SectorResource(secdao, tdao, diDao, assembly));
     j.register(new SectorDiffResource(sDiff));
+    j.register(new SectorResource(secdao, tdao, diDao, assembly));
     j.register(new SynonymResource(sdao));
     j.register(new TaxonResource(tdao));
     j.register(new TreeResource(tdao, trDao));
     j.register(new UserResource(auth.getJwtCodec(), udao));
     j.register(new VerbatimResource());
     j.register(new VocabResource());
-    j.register(new LegacyWebserviceResource(getSqlSessionFactory(), cfg));
 
     // parsers
     j.register(new NameParserResource(getSqlSessionFactory()));
