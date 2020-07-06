@@ -18,16 +18,11 @@ public class DiffHealthCheck extends HealthCheck {
   }
   
   @Override
-  protected Result check() {
-    try {
-      String version = diff.diffBinaryVersion();
-      if (version != null && version.startsWith("diff")) {
-        return Result.healthy();
-      }
-      return Result.unhealthy("Bad version:\n" + version);
-      
-    } catch (Exception e) {
-      return Result.unhealthy(e);
+  protected Result check() throws Exception {
+    String version = diff.diffBinaryVersion();
+    if (version != null && version.startsWith("diff")) {
+      return Result.healthy();
     }
+    return Result.unhealthy("Bad version:\n" + version);
   }
 }

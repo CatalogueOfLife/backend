@@ -62,7 +62,7 @@ public class CacheControlResponseFilter implements ContainerResponseFilter {
   }
 
   private void preventCaching(ContainerResponseContext resp){
-    resp.getHeaders().putSingle("Cache-Control", "no-store");
+    resp.getHeaders().putSingle("Cache-Control", "must-revalidate,no-cache,no-store");
   }
 
   public void addRelease(int datasetKey){

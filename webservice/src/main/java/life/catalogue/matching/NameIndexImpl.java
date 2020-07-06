@@ -352,6 +352,15 @@ public class NameIndexImpl implements NameIndex {
     LOG.info("Started name index with {} names", counter.get());
   }
 
+  public boolean hasStarted() {
+    try {
+      store.get("something");
+    } catch (UnavailableException e) {
+      return false;
+    }
+    return true;
+  }
+
   /**
    * Convenience method that starts the index and returns it to be used in fluent code
    */

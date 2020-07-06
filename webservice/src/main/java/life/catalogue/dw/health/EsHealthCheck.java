@@ -22,19 +22,14 @@ public class EsHealthCheck extends HealthCheck {
   
   
   @Override
-  protected Result check() {
-    try {
-      String idxName = cfg.nameUsage.name;
-      Request req = new Request("HEAD", idxName);
-      Response resp = client.performRequest(req);
-  
-      if (resp.getStatusLine().getStatusCode() == 200) {
-        return Result.healthy("ES index %s exists on %s", idxName, cfg.hosts);
-      }
-      return Result.unhealthy("Cannot contact ES index %s on %s", idxName, cfg.hosts);
-      
-    } catch (Exception e) {
-      return Result.unhealthy(e);
+  protected Result check() throws Exception {
+    String idxName = cfg.nameUsage.name;
+    Request req = new Request("HEAD", idxName);
+    Response resp = client.performRequest(req);
+
+    if (resp.getStatusLine().getStatusCode() == 200) {
+      return Result.healthy("ES index %s exists on %s", idxName, cfg.hosts);
     }
+    return Result.unhealthy("Cannot contact ES index %s on %s", idxName, cfg.hosts);
   }
 }

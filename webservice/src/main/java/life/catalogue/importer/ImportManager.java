@@ -6,7 +6,6 @@ import com.codahale.metrics.Timer;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import io.dropwizard.lifecycle.Managed;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
@@ -414,22 +413,20 @@ public class ImportManager implements Managed {
         new PriorityBlockingQueue<>(cfg.importer.maxQueue),
         new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true),
         new ThreadPoolExecutor.AbortPolicy());
-
-    // read hanging imports in db, truncate if half inserted and add as new requests to the queue
-    for (ImportState state : ImportState.runningStates()) {
-      if (state == ImportState.WAITING) continue;
-      cancelAndReschedule(state, state != ImportState.DOWNLOADING && state != ImportState.PROCESSING);
-    }
+    cancelAndReschedule();
   }
 
-  private void cancelAndReschedule(ImportState state, boolean truncate) {
-    int counter = 0;
-    Iterator<DatasetImport> iter = PagingUtil.pageAll(p -> dao.list(null, Lists.newArrayList(state), p));
+  /**
+   * Read hanging imports in db, truncate if half inserted and add as new requests to the queue
+   */
+  private void cancelAndReschedule() {
+    List<ImportRequest> requests = new ArrayList<>();
+    Iterator<DatasetImport> iter = PagingUtil.pageAll(p -> dao.list(null, ImportState.runningStates(), p));
     while (iter.hasNext()) {
       DatasetImport di = iter.next();
       dao.updateImportCancelled(di);
       // truncate data?
-      if (truncate) {
+      if (di.getState() != ImportState.DOWNLOADING && di.getState() != ImportState.PROCESSING) {
         try (SqlSession session = factory.openSession(true)) {
           DatasetPartitionMapper dm = session.getMapper(DatasetPartitionMapper.class);
           LOG.info("Drop partially imported data for dataset {}", di.getDatasetKey());
@@ -438,13 +435,14 @@ public class ImportManager implements Managed {
       }
       // add back to queue
       try {
-        submit(new ImportRequest(di.getDatasetKey(), di.getCreatedBy(), true, false, di.isUpload()));
-        counter++;
+        requests.add(new ImportRequest(di.getDatasetKey(), di.getCreatedBy(), true, false, di.isUpload()));
       } catch (IllegalArgumentException e) {
         // swallow
       }
     }
-    LOG.info("Cancelled and resubmitted {} {} imports.", counter, state);
+    // finally submit all request. We don't do this earlier to not disturb the paging which would yield the newly scheduled imports again and cancel them
+    requests.forEach(this::submit);
+    LOG.info("Cancelled and resubmitted {} imports.", requests.size());
   }
 
   @Override

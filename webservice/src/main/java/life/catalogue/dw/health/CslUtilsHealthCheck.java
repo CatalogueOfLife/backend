@@ -27,15 +27,10 @@ public class CslUtilsHealthCheck extends HealthCheck {
   
   @Override
   protected Result check() throws Exception {
-    try {
-      String cite = CslUtil.buildCitation(csl);
-      if (cite != null) {
-          return Result.healthy();
-      }
-      return Result.unhealthy("Missing citation result");
-      
-    } catch (Exception e) {
-      return Result.unhealthy(e);
+    String cite = CslUtil.buildCitation(csl);
+    if (cite != null) {
+        return Result.healthy();
     }
+    return Result.unhealthy("Missing citation result");
   }
 }

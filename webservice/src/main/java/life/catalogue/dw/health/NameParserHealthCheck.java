@@ -20,26 +20,21 @@ public class NameParserHealthCheck extends HealthCheck {
   
   @Override
   protected Result check() throws Exception {
-    try {
-      Optional<ParsedNameUsage> result = parser.parse("Abies alba (L.) Mill. sec Döring 1999");
-      if (result.isPresent()) {
-        Name name = result.get().getName();
-        if (name.isBinomial() &&
-            name.getGenus().equals("Abies") &&
-            name.getSpecificEpithet().equals("alba") &&
-            name.getBasionymAuthorship().getAuthors().equals(Lists.newArrayList("L.")) &&
-            name.getCombinationAuthorship().getAuthors().equals(Lists.newArrayList("Mill.")) &&
-            result.get().getTaxonomicNote().equals("sec Döring 1999")
-            ) {
-          return Result.healthy();
-        }
-        return Result.unhealthy("Wrong result: " + name.toStringComplete());
-        
+    Optional<ParsedNameUsage> result = parser.parse("Abies alba (L.) Mill. sec Döring 1999");
+    if (result.isPresent()) {
+      Name name = result.get().getName();
+      if (name.isBinomial() &&
+          name.getGenus().equals("Abies") &&
+          name.getSpecificEpithet().equals("alba") &&
+          name.getBasionymAuthorship().getAuthors().equals(Lists.newArrayList("L.")) &&
+          name.getCombinationAuthorship().getAuthors().equals(Lists.newArrayList("Mill.")) &&
+          result.get().getTaxonomicNote().equals("sec Döring 1999")
+          ) {
+        return Result.healthy();
       }
-      return Result.unhealthy("Missing result");
-      
-    } catch (Exception e) {
-      return Result.unhealthy(e);
+      return Result.unhealthy("Wrong result: " + name.toStringComplete());
+
     }
+    return Result.unhealthy("Missing result");
   }
 }
