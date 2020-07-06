@@ -1,9 +1,10 @@
 package life.catalogue.img;
 
-import java.nio.file.Path;
-import javax.validation.constraints.NotNull;
-
 import life.catalogue.db.PgDbConfig;
+
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import java.nio.file.Path;
 
 /**
  * A configuration for the postgres database connection pool as used by the mybatis layer.
@@ -20,7 +21,10 @@ public class ImgConfig extends PgDbConfig {
   
   @NotNull
   public Path repo;
-  
+
+  @Nullable
+  public Path archive;
+
   @NotNull
   public Size small = new Size(30, 90);
   
@@ -41,7 +45,14 @@ public class ImgConfig extends PgDbConfig {
     }
     throw new IllegalArgumentException("No raw size supported");
   }
-  
+
+  /**
+   * @return path to the original source dataset logo at the time the given release was created.
+   */
+  public Path datasetLogoArchived(int releaseKey, int datasetKey) {
+    return archive == null ? null : archive.resolve("release/"+releaseKey+"/dataset").resolve(filename(datasetKey + "-logo", Scale.ORIGINAL));
+  }
+
   public Path datasetLogo(int datasetKey, Scale scale) {
     return repo.resolve("dataset").resolve(filename(datasetKey + "-logo", scale));
   }

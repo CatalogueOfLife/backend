@@ -11,6 +11,7 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.img.ImageService;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -60,7 +61,7 @@ public class ProjectReleaseTest {
   }
   
   private ProjectRelease buildRelease() {
-    return ReleaseManager.release(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), exp, diDao, d.getKey(), Users.TESTER);
+    return ReleaseManager.release(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), exp, diDao, ImageService.passThru(), d.getKey(), Users.TESTER);
   }
   
   @Test

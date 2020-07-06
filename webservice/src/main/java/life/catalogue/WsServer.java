@@ -215,7 +215,7 @@ public class WsServer extends Application<WsServerConfig> {
     AcExporter exporter = new AcExporter(cfg, getSqlSessionFactory());
 
     // release
-    final ReleaseManager releaseManager = new ReleaseManager(exporter, diDao, indexService, getSqlSessionFactory());
+    final ReleaseManager releaseManager = new ReleaseManager(exporter, diDao, indexService, imgService, getSqlSessionFactory());
 
     // importer
     importManager = new ImportManager(cfg,

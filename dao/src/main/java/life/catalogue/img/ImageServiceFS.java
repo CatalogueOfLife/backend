@@ -1,17 +1,17 @@
 package life.catalogue.img;
 
+import life.catalogue.api.exception.NotFoundException;
+import org.imgscalr.Scalr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Function;
-import javax.imageio.ImageIO;
-
-import life.catalogue.api.exception.NotFoundException;
-import org.imgscalr.Scalr;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ImageServiceFS implements ImageService {
   public static final String IMAGE_FORMAT = "png";
@@ -38,6 +38,17 @@ public class ImageServiceFS implements ImageService {
   public void putDatasetLogo(int datasetKey, BufferedImage img) throws IOException {
     LOG.info("{} logo for dataset {}", img == null ? "Delete" : "Change", datasetKey);
     storeAllImageSizes(img, s -> cfg.datasetLogo(datasetKey, s));
+  }
+
+  @Override
+  public void archiveDatasetLogo(int releaseKey, int datasetKey) throws IOException {
+    Path src = cfg.datasetLogo(datasetKey, ImgConfig.Scale.ORIGINAL);
+    if (Files.exists(src)) {
+      LOG.info("Archive logo for dataset {} in release {}", datasetKey, releaseKey);
+      Files.copy(src, cfg.datasetLogoArchived(releaseKey, datasetKey));
+    } else {
+      LOG.debug("No logo existing for dataset {} to archive in release {}", datasetKey, releaseKey);
+    }
   }
 
   private void storeAllImageSizes(BufferedImage img, Function<ImgConfig.Scale, Path> locator) throws IOException {
@@ -82,7 +93,15 @@ public class ImageServiceFS implements ImageService {
     Path p = cfg.datasetLogo(datasetKey, scale);
     return readImage(p, "Dataset " + datasetKey + " has no logo");
   }
-  
+
+  @Override
+  public BufferedImage archiveDatasetLogo(int datasetKey, int releaseKey, ImgConfig.Scale scale) {
+    Path p = cfg.datasetLogoArchived(releaseKey, datasetKey);
+    BufferedImage img = readImage(p, "Dataset " + datasetKey + " has no logo in release " + releaseKey);
+    // we only archive originals, we need to scale now on the fly
+    return scale(img, scale);
+  }
+
   private BufferedImage readImage(Path p, String notFoundMsg) throws NotFoundException {
     try {
       if (!Files.exists(p)) {

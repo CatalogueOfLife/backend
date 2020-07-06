@@ -135,8 +135,12 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @GET
   @Path("{datasetKey}/logo")
   @Produces("image/png")
-  public BufferedImage logo(@PathParam("datasetKey") int key, @QueryParam("size") @DefaultValue("small") ImgConfig.Scale scale) {
-    return imgService.datasetLogo(key, scale);
+  public BufferedImage logo(@PathParam("datasetKey") int key, @QueryParam("releaseKey") Integer releaseKey, @QueryParam("size") @DefaultValue("small") ImgConfig.Scale scale) {
+    if (releaseKey != null) {
+      return imgService.archiveDatasetLogo(releaseKey, key, scale);
+    } else {
+      return imgService.datasetLogo(key, scale);
+    }
   }
   
   @POST

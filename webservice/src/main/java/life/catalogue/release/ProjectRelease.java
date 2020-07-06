@@ -9,6 +9,7 @@ import life.catalogue.common.text.SimpleTemplate;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.img.ImageService;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
@@ -22,10 +23,13 @@ public class ProjectRelease extends ProjectRunnable {
   private static final String DEFAULT_CITATION_TEMPLATE = "{citation} released on {date}";
 
   private final AcExporter exporter;
+  private final ImageService imageService;
 
-  ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, AcExporter exporter, DatasetImportDao diDao, int datasetKey, Dataset release, int userKey) {
+  ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, AcExporter exporter, DatasetImportDao diDao, ImageService imageService,
+                 int datasetKey, Dataset release, int userKey) {
     super("releasing", factory, diDao, indexService, userKey, datasetKey, release);
     this.exporter = exporter;
+    this.imageService = imageService;
   }
 
   @Override
@@ -33,7 +37,7 @@ public class ProjectRelease extends ProjectRunnable {
     // map ids
     updateState(ImportState.MATCHING);
     mapIds();
-    // archive dataset metadata
+    // archive dataset metadata & logos
     try (SqlSession session = factory.openSession(true)) {
       ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
       DatasetPatchMapper dpm = session.getMapper(DatasetPatchMapper.class);
@@ -47,6 +51,12 @@ public class ProjectRelease extends ProjectRunnable {
         d.setDatasetKey(newDatasetKey);
         LOG.debug("Archive dataset {}: {} for release {}", d.getKey(), d.getTitle(), newDatasetKey);
         psm.create(d);
+        // archive logos
+        try {
+          imageService.archiveDatasetLogo(newDatasetKey, d.getKey());
+        } catch (IOException e) {
+          LOG.warn("Failed to archive logo for source dataset {} of release {}", d.getKey(), newDatasetKey);
+        }
         counter.incrementAndGet();
       });
       LOG.info("Archived metadata for {} source datasets of release {}", counter.get(), newDatasetKey);

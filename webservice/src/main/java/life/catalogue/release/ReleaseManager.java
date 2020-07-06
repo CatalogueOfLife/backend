@@ -10,6 +10,7 @@ import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.img.ImageService;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -35,18 +36,20 @@ public class ReleaseManager {
   private final DatasetImportDao diDao;
   private final NameUsageIndexService indexService;
   private final SqlSessionFactory factory;
+  private final ImageService imageService;
 
   private ProjectRunnable job;
 
-  public ReleaseManager(AcExporter exporter, DatasetImportDao diDao, NameUsageIndexService indexService, SqlSessionFactory factory) {
+  public ReleaseManager(AcExporter exporter, DatasetImportDao diDao, NameUsageIndexService indexService, ImageService imageService, SqlSessionFactory factory) {
     this.exporter = exporter;
     this.diDao = diDao;
     this.indexService = indexService;
+    this.imageService = imageService;
     this.factory = factory;
   }
 
   public Integer release(int datasetKey, User user) {
-    return execute(() -> release(factory, indexService, exporter, diDao, datasetKey, user.getKey()));
+    return execute(() -> release(factory, indexService, exporter, diDao, imageService, datasetKey, user.getKey()));
   }
 
   public Integer duplicate(int datasetKey, User user) {
@@ -85,9 +88,10 @@ public class ReleaseManager {
    *
    * @throws IllegalArgumentException if the dataset is not managed
    */
-  public static ProjectRelease release(SqlSessionFactory factory, NameUsageIndexService indexService, AcExporter exporter, DatasetImportDao diDao, int projectKey, int userKey) {
+  public static ProjectRelease release(SqlSessionFactory factory, NameUsageIndexService indexService, AcExporter exporter, DatasetImportDao diDao, ImageService imageService,
+                                       int projectKey, int userKey) {
     Dataset release = createDataset(factory, projectKey, "release", userKey, ProjectRelease::releaseInit);
-    return new ProjectRelease(factory, indexService, exporter, diDao, projectKey, release, userKey);
+    return new ProjectRelease(factory, indexService, exporter, diDao, imageService, projectKey, release, userKey);
   }
 
   /**
