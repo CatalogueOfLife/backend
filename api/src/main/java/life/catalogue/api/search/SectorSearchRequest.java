@@ -26,6 +26,9 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
   @QueryParam("subject")
   private boolean subject = false;
 
+  @QueryParam("withoutData")
+  private boolean withoutData = false;
+
   public static SectorSearchRequest byProject(int datasetKey){
     SectorSearchRequest req = new SectorSearchRequest();
     req.datasetKey = datasetKey;
@@ -86,6 +89,14 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
     this.subject = subject;
   }
 
+  public boolean isWithoutData() {
+    return withoutData;
+  }
+
+  public void setWithoutData(boolean withoutData) {
+    this.withoutData = withoutData;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -96,11 +107,12 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
       Objects.equals(subjectId, that.subjectId) &&
       Objects.equals(subjectDatasetKey, that.subjectDatasetKey) &&
       Objects.equals(lastSync, that.lastSync) &&
-      mode == that.mode;
+      mode == that.mode &&
+      withoutData == that.withoutData;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(targetId, subjectId, subjectDatasetKey, lastSync, mode, subject);
+    return Objects.hash(targetId, subjectId, subjectDatasetKey, lastSync, mode, subject, withoutData);
   }
 }

@@ -1,17 +1,19 @@
 package life.catalogue.dao;
 
-import life.catalogue.api.vocab.Users;
-import life.catalogue.es.NameUsageIndexService;
-import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.TreeNode;
+import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.Users;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.mapper.SectorMapperTest;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.mapper.TreeMapper;
+import life.catalogue.es.NameUsageIndexService;
+import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -81,6 +83,13 @@ public class SectorDaoTest extends DaoTestBase {
       assertEquals(1, tn.getDatasetSectors().get(11));
       assertEquals(2, tn.getDatasetSectors().get(12));
     }
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void validate() {
+    SectorSearchRequest req = new SectorSearchRequest();
+    req.setWithoutData(true);
+    dao.search(req, new Page()).size();
   }
 
   @Test(expected = UnsupportedOperationException.class)

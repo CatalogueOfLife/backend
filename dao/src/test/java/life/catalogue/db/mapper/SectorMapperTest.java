@@ -123,8 +123,12 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
 
     req.setLastSync(LocalDate.of(2019, 1, 1));
     assertEquals(0, mapper().search(req, new Page()).size());
+
+    req = SectorSearchRequest.byProject(targetDatasetKey);
+    req.setWithoutData(true);
+    assertEquals(2, mapper().search(req, new Page()).size());
   }
-  
+
   @Test
   public void listTargetDatasetKeys() {
     assertEquals(0, mapper().listTargetDatasetKeys().size());

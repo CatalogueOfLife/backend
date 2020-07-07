@@ -29,6 +29,7 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   }
   
   public ResultPage<Sector> search(SectorSearchRequest request, Page page) {
+    validate(request);
     Page p = page == null ? new Page() : page;
     try (SqlSession session = factory.openSession()) {
       SectorMapper mapper = session.getMapper(SectorMapper.class);
@@ -36,7 +37,13 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       return new ResultPage<>(p, result, () -> mapper.countSearch(request));
     }
   }
-  
+
+  static void validate(SectorSearchRequest req) {
+    if (req.isWithoutData() && req.getDatasetKey() == null) {
+      throw new IllegalArgumentException("DatasetKey must be given if withoutData filter is requested");
+    }
+  }
+
   @Override
   public DSID<Integer> create(Sector s, int user) {
     s.applyUser(user);

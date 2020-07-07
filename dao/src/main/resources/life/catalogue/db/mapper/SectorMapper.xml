@@ -138,6 +138,9 @@
         <if test="req.modifiedBy != null">
           AND s.modified_by = #{req.modifiedBy}
         </if>
+        <if test="req.withoutData">
+          AND NOT EXISTS (SELECT id FROM name_usage_${req.datasetKey} WHERE sector_key=s.id)
+        </if>
       </where>
     </if>
   </sql>
