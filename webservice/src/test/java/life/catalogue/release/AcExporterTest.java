@@ -36,14 +36,14 @@ public class AcExporterTest {
   public void initCfg()  {
     cfg = new WsServerConfig();
     cfg.db = PgSetupRule.getCfg();
-    cfg.downloadDir = Files.createTempDir();
+    cfg.exportDir = Files.createTempDir();
     cfg.normalizer.scratchDir  = Files.createTempDir();
     cfg.img.repo = cfg.normalizer.scratchDir.toPath();
   }
   
   @After
   public void cleanup()  {
-    FileUtils.deleteQuietly(cfg.downloadDir);
+    FileUtils.deleteQuietly(cfg.exportDir);
     FileUtils.deleteQuietly(cfg.normalizer.scratchDir);
     if (arch != null) {
       System.out.println(arch.getAbsolutePath());

@@ -22,13 +22,11 @@ public class ProjectRelease extends ProjectRunnable {
   private static final String DEFAULT_ALIAS_TEMPLATE = "{alias}-{date}";
   private static final String DEFAULT_CITATION_TEMPLATE = "{citation} released on {date}";
 
-  private final AcExporter exporter;
   private final ImageService imageService;
 
-  ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, AcExporter exporter, DatasetImportDao diDao, ImageService imageService,
+  ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, ImageService imageService,
                  int datasetKey, Dataset release, int userKey) {
     super("releasing", factory, diDao, indexService, userKey, datasetKey, release);
-    this.exporter = exporter;
     this.imageService = imageService;
   }
 
@@ -61,13 +59,6 @@ public class ProjectRelease extends ProjectRunnable {
       });
       LOG.info("Archived metadata for {} source datasets of release {}", counter.get(), newDatasetKey);
     }
-  }
-
-  @Override
-  void finalWork() throws Exception {
-    // ac-export
-    updateState(ImportState.EXPORTING);
-    export();
   }
 
   private static String procTemplate(Dataset d, DatasetSettings ds, Setting setting, String defaultTemplate){
@@ -120,12 +111,4 @@ public class ProjectRelease extends ProjectRunnable {
     //TODO: match & generate ids
   }
 
-  public void export() throws IOException {
-    try {
-      exporter.export(newDatasetKey);
-    } catch (Throwable e) {
-      LOG.error("Error exporting release {}", newDatasetKey, e);
-    }
-  }
-  
 }

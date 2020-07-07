@@ -41,7 +41,7 @@ public class ProjectReleaseTest {
   public void init()  {
     cfg = new WsServerConfig();
     cfg.db = PgSetupRule.getCfg();
-    cfg.downloadDir = Files.createTempDir();
+    cfg.exportDir = Files.createTempDir();
     cfg.normalizer.scratchDir  = Files.createTempDir();
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     exp = new AcExporter(cfg, PgSetupRule.getSqlSessionFactory());
@@ -61,7 +61,7 @@ public class ProjectReleaseTest {
   }
   
   private ProjectRelease buildRelease() {
-    return ReleaseManager.release(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), exp, diDao, ImageService.passThru(), d.getKey(), Users.TESTER);
+    return ReleaseManager.release(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao, ImageService.passThru(), d.getKey(), Users.TESTER);
   }
   
   @Test

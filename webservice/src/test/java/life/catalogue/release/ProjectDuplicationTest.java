@@ -39,7 +39,7 @@ public class ProjectDuplicationTest {
   public void init()  {
     cfg = new WsServerConfig();
     cfg.db = PgSetupRule.getCfg();
-    cfg.downloadDir = Files.createTempDir();
+    cfg.exportDir = Files.createTempDir();
     cfg.normalizer.scratchDir  = Files.createTempDir();
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
 

@@ -65,49 +65,43 @@ public class AcExporter {
   /**
    * @return final archive
    */
-  public File export(int catalogueKey) throws IOException, SQLException, IllegalStateException {
-    File expDir = new File(cfg.normalizer.scratchDir(catalogueKey), "exports");
+  public File export(int datasetKey) throws IOException, SQLException, IllegalStateException {
+    File expDir = new File(cfg.normalizer.scratchDir(datasetKey), "export");
     if (!aquireLock()) {
       throw new IllegalStateException("There is a running export already");
     }
 
     try {
-      LOG.info("Export catalogue {} to {}", catalogueKey, expDir.getAbsolutePath());
+      LOG.info("Export catalogue {} to {}", datasetKey, expDir.getAbsolutePath());
       // create csv files
       PgConnection c = cfg.db.connect();
       c.setAutoCommit(false);
       try {
         InputStream sql = AcExporter.class.getResourceAsStream(EXPORT_SQL);
-        executeAcExportSql(catalogueKey, c, new BufferedReader(new InputStreamReader(sql, StandardCharsets.UTF_8)), expDir);
+        executeAcExportSql(datasetKey, c, new BufferedReader(new InputStreamReader(sql, StandardCharsets.UTF_8)), expDir);
 
       } catch (UnsupportedEncodingException e) {
         throw new RuntimeException(e);
 
       } finally {
-        dropSchema(catalogueKey, c);
+        dropSchema(datasetKey, c);
         c.commit();
         c.close();
       }
       // include images
-      exportLogos(catalogueKey, expDir);
+      exportLogos(datasetKey, expDir);
   
       // export citation.ini
-      exportCitations(catalogueKey, expDir);
+      exportCitations(datasetKey, expDir);
       
-      // zip up archive in download directory
-      File arch = new File(cfg.downloadDir, "export-"+catalogueKey+".zip");
-      LOG.info("Zip up archive and move to download");
+      // zip up archive in exports directory
+      File arch = new File(cfg.exportDir, datasetKey+"-ac-export.zip");
+      LOG.info("Zip up archive and move to exports dir");
       if (arch.exists()) {
         LOG.debug("Remove previous export file {}", arch.getAbsolutePath());
       }
       LOG.info("Creating final export archive {}", arch.getAbsolutePath());
       CompressionUtil.zipDir(expDir, arch, true);
-      // create sym link to point to latest export
-      File symlink = new File(cfg.downloadDir, "ac-export.zip");
-      if (symlink.exists()) {
-        symlink.delete();
-      }
-      java.nio.file.Files.createSymbolicLink(symlink.toPath(), arch.toPath());
       return arch;
       
     } finally {

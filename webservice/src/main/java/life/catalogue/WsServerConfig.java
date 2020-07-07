@@ -95,7 +95,7 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
    * Directory to store export archives
    */
   @NotNull
-  public File downloadDir = new File("/tmp");
+  public File exportDir = new File("/tmp");
   
   @Override
   @JsonIgnore
@@ -119,7 +119,7 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
    * @return true if at least one dir was newly created
    */
   public boolean mkdirs() {
-    boolean created = downloadDir.mkdirs();
+    boolean created = exportDir.mkdirs();
     created = metricsRepo.mkdirs() || created;
     created = normalizer.mkdirs() || created;
     created = importer.mkdirs() || created;

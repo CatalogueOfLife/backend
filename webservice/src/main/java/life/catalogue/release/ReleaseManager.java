@@ -32,7 +32,6 @@ public class ReleaseManager {
   // we only allow a single release to run at a time
   private static boolean LOCK = false;
 
-  private final AcExporter exporter;
   private final DatasetImportDao diDao;
   private final NameUsageIndexService indexService;
   private final SqlSessionFactory factory;
@@ -40,8 +39,7 @@ public class ReleaseManager {
 
   private ProjectRunnable job;
 
-  public ReleaseManager(AcExporter exporter, DatasetImportDao diDao, NameUsageIndexService indexService, ImageService imageService, SqlSessionFactory factory) {
-    this.exporter = exporter;
+  public ReleaseManager(DatasetImportDao diDao, NameUsageIndexService indexService, ImageService imageService, SqlSessionFactory factory) {
     this.diDao = diDao;
     this.indexService = indexService;
     this.imageService = imageService;
@@ -49,7 +47,7 @@ public class ReleaseManager {
   }
 
   public Integer release(int datasetKey, User user) {
-    return execute(() -> release(factory, indexService, exporter, diDao, imageService, datasetKey, user.getKey()));
+    return execute(() -> release(factory, indexService, diDao, imageService, datasetKey, user.getKey()));
   }
 
   public Integer duplicate(int datasetKey, User user) {
@@ -88,10 +86,10 @@ public class ReleaseManager {
    *
    * @throws IllegalArgumentException if the dataset is not managed
    */
-  public static ProjectRelease release(SqlSessionFactory factory, NameUsageIndexService indexService, AcExporter exporter, DatasetImportDao diDao, ImageService imageService,
+  public static ProjectRelease release(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, ImageService imageService,
                                        int projectKey, int userKey) {
     Dataset release = createDataset(factory, projectKey, "release", userKey, ProjectRelease::releaseInit);
-    return new ProjectRelease(factory, indexService, exporter, diDao, imageService, projectKey, release, userKey);
+    return new ProjectRelease(factory, indexService, diDao, imageService, projectKey, release, userKey);
   }
 
   /**
