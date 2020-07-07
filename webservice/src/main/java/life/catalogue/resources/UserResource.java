@@ -110,7 +110,7 @@ public class UserResource {
   @PUT
   @Path("/{key}/role")
   @RolesAllowed({Roles.ADMIN})
-  public void changeRole(@PathParam("key") int key, @Auth User admin, List<User.Role> roles, @Context SqlSession session) {
+  public void changeRole(@PathParam("key") int key, @Auth User admin, List<User.Role> roles) {
     dao.changeRole(key, admin, roles);
   }
 

@@ -36,6 +36,7 @@ public class DatasetPatchResource {
   public DSID<Integer> create(@PathParam("datasetKey") int datasetKey, Dataset obj, @Auth User user, @Context SqlSession session) {
     obj.applyUser(user);
     session.getMapper(DatasetPatchMapper.class).create(datasetKey, obj);
+    session.commit();
     return DSID.of(datasetKey, obj.getKey());
   }
 
@@ -58,6 +59,7 @@ public class DatasetPatchResource {
     if (i == 0) {
       throw NotFoundException.notFound("DatasetPatch", new DSIDValue<>(datasetKey, id));
     }
+    session.commit();
   }
 
   @DELETE
@@ -68,6 +70,7 @@ public class DatasetPatchResource {
     if (i == 0) {
       throw NotFoundException.notFound("DatasetPatch", new DSIDValue<>(datasetKey, id));
     }
+    session.commit();
   }
 
 }
