@@ -31,6 +31,7 @@ public class SettingsDeserializer extends JsonDeserializer {
   public static void convertFromJSON(Map<Setting, Object> map){
     if (map != null) {
       for (Map.Entry<Setting, Object> e : map.entrySet()) {
+        if (e.getValue() == null) continue;
         Setting s = e.getKey();
         try {
           if (s.getType().equals(LocalDate.class)) {
