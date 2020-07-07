@@ -611,10 +611,16 @@ public class PgImportIT {
         assertNotNull(tm.getCitation());
       }
 
+      // treatments
+      TreatmentMapper trm = session.getMapper(TreatmentMapper.class);
+      Treatment t = trm.get(DSID.of(dataset.getKey(), "Jarvis2007"));
+      assertEquals(TreatmentFormat.HTML, t.getFormat());
+      assertTrue(t.getDocument().startsWith("<div>"));
+      assertEquals("Jarvis2007", t.getId());
     }
   
     DatasetImport di = metrics();
-    //assertEquals(2, (int) metrics().getTreatmentCount());
+    assertEquals(2, (int) metrics().getTreatmentCount());
     assertEquals(9, (int) di.getDistributionCount());
     assertEquals(1, (int) di.getMediaCount());
     assertEquals(9, (int) di.getReferenceCount());
@@ -622,7 +628,7 @@ public class PgImportIT {
     assertEquals(23, (int) di.getTaxonCount());
     assertEquals(3, (int) di.getTypeMaterialCount());
     assertEquals(28, (int) di.getNameCount());
-    assertEquals(87, (int) di.getVerbatimCount());
+    assertEquals(89, (int) di.getVerbatimCount());
     
     //assertFalse(metrics().getIssuesCount().containsKey(Issue.PARENT_ID_INVALID));
     assertEquals(5, (int) di.getUsagesByStatusCount().get(TaxonomicStatus.SYNONYM));

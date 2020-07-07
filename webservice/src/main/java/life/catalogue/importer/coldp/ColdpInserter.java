@@ -152,19 +152,23 @@ public class ColdpInserter extends NeoCsvInserter {
     v.setType(ColdpTerm.Treatment);
     v.setDatasetKey(datasetKey);
     v.setFile(tp.toString());
+
+    String filename = tp.getFileName().toString();
+    String suffix = FilenameUtils.getExtension(filename);
+    String taxonid = FilenameUtils.getBaseName(filename);
+
+    v.put(ColdpTerm.taxonID, taxonid);
+    v.put(ColdpTerm.format, suffix);
     store.put(v);
 
     try {
       Treatment t = new Treatment();
       t.setDatasetKey(datasetKey);
       t.setVerbatimKey(v.getId());
-
-      String filename = tp.getFileName().toString();
-      t.setId(FilenameUtils.getBaseName(filename));
-
-      String suffix = FilenameUtils.getExtension(filename);
-      SafeParser.parse(TreatmentFormatParser.PARSER, suffix).orNull(Issue.UNPARSABLE_TREAMENT_FORMAT, v);
-
+      t.setId(taxonid);
+      t.setFormat(
+        SafeParser.parse(TreatmentFormatParser.PARSER, suffix).orNull(Issue.UNPARSABLE_TREAMENT_FORMAT, v)
+      );
       t.setDocument(InputStreamUtils.readEntireStream(Files.newInputStream(tp)));
 
       if (t.getFormat() != null && t.getDocument() != null && t.getId() != null) {
