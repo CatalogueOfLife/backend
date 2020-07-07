@@ -393,6 +393,7 @@ public class PgImport implements Callable<Boolean> {
             // insert treatments
             if (u.treatment != null) {
               u.treatment.setId(acc.getId());
+              updateVerbatimUserEntity(u.treatment);
               treatmentMapper.create(u.treatment);
               trCounter.incrementAndGet();
             }

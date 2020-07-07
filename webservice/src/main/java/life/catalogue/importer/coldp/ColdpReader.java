@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
@@ -47,6 +48,7 @@ public class ColdpReader extends CsvReader {
   
   private File bibtex;
   private File cslJson;
+  private Path treatments;
 
   private ColdpReader(Path folder) throws IOException {
     super(folder, "col", "coldp");
@@ -87,10 +89,19 @@ public class ColdpReader extends CsvReader {
         LOG.info("CSL-JSON file found: {}", cslJson.getAbsolutePath());
       }
     }
+    Path treat = dir.resolve("treatments");
+    if (Files.isDirectory(treat)) {
+      treatments = treat;
+      LOG.info("Treatments folder found: {}", treatments);
+    }
   }
   
   public boolean hasExtendedReferences() {
     return bibtex != null || cslJson != null;
+  }
+
+  public boolean hasTreatments() {
+    return treatments != null;
   }
 
   private boolean hasReferences() {
@@ -190,5 +201,9 @@ public class ColdpReader extends CsvReader {
   
   public File getCslJsonFile() {
     return cslJson;
+  }
+
+  public Iterable<Path> getTreatments() throws IOException {
+    return PathUtils.listFiles(treatments, Set.of("txt", "html", "xml"));
   }
 }

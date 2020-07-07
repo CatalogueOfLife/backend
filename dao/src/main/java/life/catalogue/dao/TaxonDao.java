@@ -153,9 +153,6 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
 
     // treatment
     info.setTreatment(trm.get(taxon));
-    if (info.getTreatment() != null && info.getTreatment().getReferenceId() != null) {
-      refIds.add(info.getTreatment().getReferenceId());
-    }
 
     // add all supplementary taxon infos
     info.setDistributions(dim.listByTaxon(taxon));

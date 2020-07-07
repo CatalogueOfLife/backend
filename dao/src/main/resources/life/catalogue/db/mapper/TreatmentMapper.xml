@@ -7,9 +7,9 @@
   <sql id="SELECT">
     id,
     dataset_key,
+    verbatim_key,
     format,
     document,
-    reference_id,
     created,
     created_by,
     modified,
@@ -23,9 +23,9 @@
 
   <sql id="COLS_COPY">
     id,
+    verbatim_key,
     format,
     document,
-    reference_id,
     created_by,
     modified_by
   </sql>
@@ -33,9 +33,9 @@
   <sql id="PROPS">
     #{obj.datasetKey},
     #{obj.id},
+    #{obj.verbatimKey},
     #{obj.format}::TREATMENTFORMAT,
     #{obj.document},
-    #{obj.referenceId},
     #{obj.createdBy},
     #{obj.modifiedBy}
   </sql>

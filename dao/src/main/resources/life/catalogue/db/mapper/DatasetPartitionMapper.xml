@@ -105,7 +105,7 @@
 
     ALTER TABLE treatment_${key} ADD PRIMARY KEY (id);
     ALTER TABLE treatment_${key} ADD CONSTRAINT treatment_${key}_id_fk FOREIGN KEY (id) REFERENCES name_usage_${key} (id) ON DELETE CASCADE;
-    ALTER TABLE treatment_${key} ADD CONSTRAINT treatment_${key}_reference_id_fk FOREIGN KEY (reference_id) REFERENCES reference_${key} (id) ON DELETE CASCADE;
+    ALTER TABLE treatment_${key} ADD CONSTRAINT treatment_${key}_verbatim_key_fk FOREIGN KEY (verbatim_key) REFERENCES verbatim_${key} (id) ON DELETE CASCADE;
 
     ALTER TABLE distribution_${key} ADD PRIMARY KEY (id);
     CREATE INDEX ON distribution_${key} (taxon_id);

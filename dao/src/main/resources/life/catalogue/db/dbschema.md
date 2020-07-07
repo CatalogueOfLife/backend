@@ -10,6 +10,18 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2020-07-07 treatment imports 
+```
+ALTER TABLE treatment DROP COLUMN reference_id; 
+ALTER TABLE treatment ADD COLUMN verbatim_key INTEGER NOT NULL;
+
+ALTER TYPE TREATMENTFORMAT ADD VALUE 'MARKDOWN' before 'XML';
+ALTER TYPE TREATMENTFORMAT ADD VALUE 'PLAIN_TEXT' before 'MARKDOWN'; 
+
+ALTER TYPE ISSUE ADD VALUE 'UNPARSABLE_TREATMENT' after 'CITATION_UNPARSED'; 
+ALTER TYPE ISSUE ADD VALUE 'UNPARSABLE_TREAMENT_FORMAT' after 'UNPARSABLE_TREATMENT'; 
+```
+
 #### 2020-07-02 project sources 
 ```
 ALTER TABLE dataset_archive DROP CONSTRAINT dataset_archive_key_import_attempt_dataset_key_key; 

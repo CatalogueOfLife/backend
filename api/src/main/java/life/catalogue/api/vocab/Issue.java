@@ -352,9 +352,17 @@ public enum Issue {
       "Value for reference authors was stored literally and not broken down into individual authors"),
 
   CITATION_UNPARSED(REFERENCE, Level.INFO,
-      "Value for citation was accepted as-is");
-  
-  
+      "Value for citation was accepted as-is"),
+
+  //
+  // TREATMENT ISSUES
+  //
+  UNPARSABLE_TREATMENT(TREATMENT, Level.ERROR,
+      "The treatment document could not be read."),
+  UNPARSABLE_TREAMENT_FORMAT(TREATMENT, Level.ERROR,
+    "The required treatment format could not be parsed.");
+
+
   /**
    * Level of importance.
    */

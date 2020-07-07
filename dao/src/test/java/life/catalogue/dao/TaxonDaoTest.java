@@ -51,13 +51,10 @@ public class TaxonDaoTest extends DaoTestBase {
     Set<String> refKeys2 = new HashSet<>(info.getTaxon().getReferenceIds());
 
     Stream<Referenced> refStream = Stream.concat(
-      Stream.of(info.getTreatment()),
+      info.getDistributions().stream(),
       Stream.concat(
-        info.getDistributions().stream(),
-        Stream.concat(
-          info.getMedia().stream(),
-          info.getVernacularNames().stream()
-        )
+        info.getMedia().stream(),
+        info.getVernacularNames().stream()
       )
     );
     refStream

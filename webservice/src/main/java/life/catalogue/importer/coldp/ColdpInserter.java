@@ -8,11 +8,16 @@ import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.csl.CslDataConverter;
+import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
+import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.reference.ReferenceFactory;
+import life.catalogue.parser.SafeParser;
+import life.catalogue.parser.TreatmentFormatParser;
+import org.apache.commons.io.FilenameUtils;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.dwc.terms.UnknownTerm;
@@ -25,9 +30,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+
+import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 
 /**
  *
@@ -125,7 +133,56 @@ public class ColdpInserter extends NeoCsvInserter {
   }
 
   private void insertTreatments(){
-    // TODO: treatments
+    ColdpReader coldp = (ColdpReader) reader;
+    if (coldp.hasTreatments()) {
+      try {
+        final int datasetKey = store.getDatasetKey();
+        for (Path tp : coldp.getTreatments()) {
+          interruptIfCancelled("NeoInserter interrupted, exit early");
+          insertTreatment(datasetKey, tp);
+        }
+      } catch (IOException e) {
+        LOG.error("Failed to read treatments", e);
+      }
+    }
+  }
+
+  private void insertTreatment(int datasetKey, Path tp) {
+    VerbatimRecord v = new VerbatimRecord();
+    v.setType(ColdpTerm.Treatment);
+    v.setDatasetKey(datasetKey);
+    v.setFile(tp.toString());
+    store.put(v);
+
+    try {
+      Treatment t = new Treatment();
+      t.setDatasetKey(datasetKey);
+      t.setVerbatimKey(v.getId());
+
+      String filename = tp.getFileName().toString();
+      t.setId(FilenameUtils.getBaseName(filename));
+
+      String suffix = FilenameUtils.getExtension(filename);
+      SafeParser.parse(TreatmentFormatParser.PARSER, suffix).orNull(Issue.UNPARSABLE_TREAMENT_FORMAT, v);
+
+      t.setDocument(InputStreamUtils.readEntireStream(Files.newInputStream(tp)));
+
+      if (t.getFormat() != null && t.getDocument() != null && t.getId() != null) {
+        NeoUsage nu = store.usages().objByID(t.getId());
+        if (nu != null) {
+          nu.treatment = t;
+          store.usages().update(nu);
+        } else {
+          v.addIssue(Issue.TAXON_ID_INVALID);
+        }
+      } else {
+        v.addIssue(Issue.UNPARSABLE_TREATMENT);
+      }
+    } catch (IOException | RuntimeException e) {
+      LOG.warn("Failed to read treatment {}", e.getMessage(), e);
+      v.addIssue(Issue.UNPARSABLE_TREATMENT);
+    }
+    store.put(v);
   }
 
   private void insertExtendedReferences() {
