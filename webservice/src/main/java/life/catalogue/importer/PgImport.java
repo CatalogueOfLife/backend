@@ -89,22 +89,28 @@ public class PgImport implements Callable<Boolean> {
 
   private void updateMetadata() {
     try (SqlSession session = sessionFactory.openSession(false)) {
-      // archive the previous attempt before we update the current metadata and tie it to a new attempt
-      // if attempt is 1 this is the first import, so no need to archive it (attempt is required in the archive)
-      if (attempt > 1) {
-        LOG.info("Archive previous dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
-        DatasetArchiveMapper dam = session.getMapper(DatasetArchiveMapper.class);
-        dam.create(dataset.getKey());
-      }
-      // update current
-      LOG.info("Updating dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       DatasetWithSettings old = new DatasetWithSettings(
         dm.get(dataset.getKey()),
         dm.getSettings(dataset.getKey())
       );
+      // archive the previous attempt if existing before we update the current metadata and tie it to a new attempt
+      if (old.getDataset().getImportAttempt() != null) {
+        int attempt = old.getDataset().getImportAttempt();
+        DatasetArchiveMapper dam = session.getMapper(DatasetArchiveMapper.class);
+        LOG.info("Archive previous dataset metadata with import attempt {} for {}: {}", attempt, dataset.getKey(), dataset.getTitle());
+        ArchivedDataset archived = dam.get(dataset.getKey(), attempt);
+        if (archived == null) {
+          // we do not yet have an archived version for given attempt
+          dam.create(dataset.getKey());
+        }
+      }
+      // update current
+      LOG.info("Updating dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
       updateMetadata(old, dataset);
       dm.updateAll(old);
+      dm.updateLastImport(dataset.getKey(), attempt);
+      LOG.info("Updated last successful import attempt {} for dataset {}: {}", attempt, dataset.getKey(), dataset.getTitle());
       session.commit();
     }
   }
