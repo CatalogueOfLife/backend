@@ -46,6 +46,10 @@
     </include>
   </sql>
 
+  <sql id="SELECT_SIMPLE">
+    u.id, n.scientific_name, n.authorship, n.rank, n.code, u.status, u.parent_id
+  </sql>
+
   <sql id="COLS_COPY">
     ${alias}verbatim_key,
     ${alias}parent_id,
@@ -103,6 +107,10 @@
     #{modifiedBy}
   </sql>
 
+  <sql id="FROM_SIMPLE">
+    name_usage_${partition} u JOIN name_${partition} n ON u.name_id=n.id
+  </sql>
+
   <sql id="FROM">
     name_usage_${partition} u JOIN name_${partition} n ON u.name_id=n.id
     LEFT JOIN reference_${partition} r ON u.according_to_id=r.id
@@ -120,6 +128,8 @@
 
   <resultMap id="simpleResultMap" type="SimpleName" autoMapping="true">
     <id property="id" column="id"/>
+    <result property="parent" column="parent_id"/>
+    <result property="name" column="scientific_name"/>
   </resultMap>
 
   <resultMap id="idResultMap" type="UsageNameID" autoMapping="false">
@@ -135,49 +145,46 @@
 
   <select id="get" resultMap="usageResultMap">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE u.id = #{key.id}
+  </select>
+
+  <select id="getSimple" resultMap="simpleResultMap">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    SELECT <include refid="SELECT_SIMPLE"/>
+    FROM <include refid="FROM_SIMPLE"/>
     WHERE u.id = #{key.id}
   </select>
 
   <select id="list" resultMap="usageResultMap">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     ORDER BY u.id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="listByNameID" resultMap="usageResultMap">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE u.name_id=#{nameId}
     ORDER BY u.id
   </select>
 
   <select id="listByNameIndexID" resultMap="usageResultMap">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE u.name_index_id IN (<foreach collection="nameIdxIds" item="nidx" separator=",">#{nidx}</foreach>)
     ORDER BY u.id
   </select>
 
   <select id="listByName" resultMap="usageResultMap">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE lower(n.scientific_name) = lower(#{name})
     <if test="rank != null">
       AND n.rank=#{rank}::rank
@@ -187,21 +194,26 @@
 
   <select id="children" resultMap="usageResultMap">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE u.parent_id = #{key.id}
     <if test="rank != null">
       AND n.rank > #{rank}::rank
     </if>
   </select>
 
-  <update id="updateParentId" parameterType="map">
+  <update id="updateParentIds" parameterType="map">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     UPDATE name_usage_${partition}
     SET (parent_id, modified, modified_by) = (#{newParentId}, now(), #{userKey})
     WHERE parent_id = #{parentId}
+  </update>
+
+  <update id="updateParentId" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    UPDATE name_usage_${partition}
+    SET (parent_id, modified, modified_by) = (#{parentId}, now(), #{userKey})
+    WHERE id = #{key.id}
   </update>
 
   <insert id="copyDataset" parameterType="map">
@@ -333,22 +345,27 @@
     </if>
   </select>
 
+  <select id="foreignChildren" resultMap="simpleResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT <include refid="SELECT_SIMPLE"/>
+    FROM <include refid="FROM_SIMPLE"/>
+    JOIN name_usage_${partition} p ON p.id=u.parent_id
+    WHERE p.sector_key=#{sectorKey}
+    AND u.sector_key!=#{sectorKey}
+  </select>
+
   <select id="processTreeSimple" parameterType="map" resultMap="simpleResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     WITH RECURSIVE x AS(
-    SELECT u.id, n.scientific_name, n.authorship, n.rank, n.code, u.status, u.parent_id,
-    concat_ws('|', n.scientific_name, u.id) AS path
-    FROM name_usage_${partition} u JOIN name_${partition} n ON u.name_id=n.id
-    WHERE
-    <include refid="WHERE_START"/>
+      SELECT <include refid="SELECT_SIMPLE"/>, concat_ws('|', n.scientific_name, u.id) AS path
+      FROM <include refid="FROM_SIMPLE"/>
+      WHERE <include refid="WHERE_START"/>
     UNION
-    SELECT u.id, n.scientific_name, n.authorship, n.rank, n.code, u.status, u.parent_id,
-    concat_ws('|', x.path, not u.is_synonym, n.scientific_name, u.id)
-    FROM name_usage_${partition} u JOIN name_${partition} n ON u.name_id=n.id
-    JOIN x ON x.id = u.parent_id
-    <include refid="WHERE_UNION"/>
+      SELECT <include refid="SELECT_SIMPLE"/>, concat_ws('|', x.path, not u.is_synonym, n.scientific_name, u.id)
+      FROM <include refid="FROM_SIMPLE"/> JOIN x ON x.id = u.parent_id
+      <include refid="WHERE_UNION"/>
     )
-    SELECT id, scientific_name AS name, authorship, rank, code, status, parent_id AS parent
+    SELECT id, scientific_name, authorship, rank, code, status, parent_id
     FROM x ORDER BY x.path
   </select>
 

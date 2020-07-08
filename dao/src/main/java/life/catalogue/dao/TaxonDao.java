@@ -293,7 +293,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   protected void deleteBefore(DSID<String> did, Taxon old, int user, TaxonMapper tMapper, SqlSession session) {
     Taxon t = tMapper.get(did);
 
-    int cnt = session.getMapper(NameUsageMapper.class).updateParentId(did.getDatasetKey(), did.getId(), t.getParentId(), user);
+    int cnt = session.getMapper(NameUsageMapper.class).updateParentIds(did.getDatasetKey(), did.getId(), t.getParentId(), user);
     LOG.debug("Moved {} children of {} to {}", cnt, t.getId(), t.getParentId());
     
     // if this taxon had a sector we need to adjust parental counts

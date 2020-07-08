@@ -123,13 +123,12 @@ public class SectorSync extends SectorRunnable {
    */
   private void relinkForeignChildren() {
     final String newParentID = sector.getTarget().getId();
-    processForeignChildren((tm, t) -> {
+    processForeignChildren((num, sn) -> {
         // remember original parent
-        Taxon parent = tm.get(DSID.of(catalogueKey, t.getParentId()));
-        foreignChildrenParents.put(t.getId(), parent.getName());
+        NameUsage parent = num.get(DSID.of(catalogueKey, sn.getParent()));
+        foreignChildrenParents.put(sn.getId(), parent.getName());
         // update to new parent
-        t.setParentId(newParentID);
-        tm.update(t);
+        num.updateParentId(DSID.of(catalogueKey, sn.getId()), newParentID, user.getKey());
     });
   }
   
@@ -141,28 +140,27 @@ public class SectorSync extends SectorRunnable {
     try (SqlSession session = factory.openSession(false)) {
       final MatchingDao mdao = new MatchingDao(session);
       
-      processForeignChildren((tm, t) -> {
-        Name parent = foreignChildrenParents.get(t.getId());
+      processForeignChildren((num, sn) -> {
+        Name parent = foreignChildrenParents.get(sn.getId());
         List<Taxon> matches = mdao.matchSector(parent, sector);
         if (matches.isEmpty()) {
-          LOG.warn("{} with parent {} in sector {} cannot be rematched", t.getName(), parent, sector.getKey());
+          LOG.warn("{} with parent {} in sector {} cannot be rematched", sn.getName(), parent, sector.getKey());
         } else {
           if (matches.size() > 1) {
-            LOG.warn("{} with parent {} in sector {} matches {} times - pick first {}", t.getName(), parent, sector.getKey(), matches.size(), matches.get(0));
+            LOG.warn("{} with parent {} in sector {} matches {} times - pick first {}", sn.getName(), parent, sector.getKey(), matches.size(), matches.get(0));
           }
-          t.setParentId(matches.get(0).getId());
-          tm.update(t);
+          num.updateParentId(DSID.of(catalogueKey, sn.getId()), matches.get(0).getId(), user.getKey());
         }
       });
     }
   }
   
-  private void processForeignChildren(BiConsumer<TaxonMapper, Taxon> processor) {
+  private void processForeignChildren(BiConsumer<NameUsageMapper, SimpleName> processor) {
     int counter = 0;
     try (SqlSession session = factory.openSession(ExecutorType.BATCH, false)) {
-      TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      for (Taxon t : foreignChildren) {
-        processor.accept(tm, t);
+      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+      for (SimpleName u : foreignChildren) {
+        processor.accept(num, u);
         if (counter++ % 10000 == 0) {
           session.commit();
         }

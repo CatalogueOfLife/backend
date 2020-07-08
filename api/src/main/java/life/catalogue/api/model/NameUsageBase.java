@@ -212,7 +212,11 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   }
   
   public SimpleName toSimpleName() {
-    return new SimpleName(getId(), name.getScientificName(), name.getAuthorship(), name.getRank());
+    SimpleName sn = new SimpleName(getId(), name.getScientificName(), name.getAuthorship(), name.getRank());
+    sn.setStatus(status);
+    sn.setCode(name.getCode());
+    sn.setParent(parentId);
+    return sn;
   }
   
   public URI getLink() {

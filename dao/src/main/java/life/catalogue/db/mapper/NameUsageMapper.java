@@ -1,9 +1,6 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.NameUsageBase;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.*;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.SectorProcessable;
 import org.apache.ibatis.annotations.Param;
@@ -23,6 +20,8 @@ import java.util.Set;
 public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyDataset {
 
   NameUsageBase get(@Param("key") DSID<String> key);
+
+  SimpleName getSimple(@Param("key") DSID<String> key);
 
   int delete(@Param("key") DSID<String> key);
 
@@ -59,11 +58,19 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * @param newParentId the new parentId
    * @return number of changed usages
    */
-  int updateParentId(@Param("datasetKey") int datasetKey,
-                     @Param("parentId") String parentId,
-                     @Param("newParentId") String newParentId,
-                     @Param("userKey") int userKey);
-  
+  int updateParentIds(@Param("datasetKey") int datasetKey,
+                      @Param("parentId") String parentId,
+                      @Param("newParentId") String newParentId,
+                      @Param("userKey") int userKey);
+
+  /**
+   * Move all children including synonyms of a given taxon to a new parent.
+   * @param key the usage to update
+   * @param parentId the new parentId
+   */
+  void updateParentId(@Param("key") DSID<String> key,
+                      @Param("parentId") String parentId,
+                      @Param("userKey") int userKey);
   /**
    * Deletes usages by sector key and a max rank to be included.
    * It returns the deleted name ids, so names can also be removed if needed.
@@ -103,7 +110,18 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                      @Param("lowestRank") @Nullable Rank lowestRank,
                      @Param("includeSynonyms") boolean includeSynonyms,
                      @Param("depthFirst") boolean depthFirst);
-  
+
+  /**
+   * List all usages from a sector differetn to the one given,
+   * that are direct children of a taxon from the given sector key.
+   *
+   * Returned SimpleName instances have the parentID as their parent property, not a scientificName!
+   *
+   * @param datasetKey the project being assembled
+   * @param sectorKey sector that foreign children should point into
+   */
+  List<SimpleName> foreignChildren(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+
   /**
    * Depth first only implementation using a much lighter object then above.
    *
@@ -112,6 +130,8 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    *
    * An optional exclusion filter can be used to prevent traversal of subtrees.
    * Synonyms are also traversed if includeSynonyms is true.
+   *
+   * Processed SimpleName instances have the parentID as their parent property, not a scientificName!
    *
    * @param sectorKey optional sector key to limit the traversal to
    * @param startID taxon id to start the traversal. Will be included in the result. If null start with all root taxa

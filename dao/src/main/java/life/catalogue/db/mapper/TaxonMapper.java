@@ -56,13 +56,6 @@ public interface TaxonMapper extends CRUD<DSID<String>, Taxon>, DatasetProcessab
   List<Taxon> children(@Param("key") DSID<String> key, @Nullable @Param("rank") Rank rank, @Param("page") Page page);
 
   /**
-   * @param datasetKey the catalogue being assembled
-   * @param sectorKey sector that foreign children should point into
-   * @return
-   */
-  List<Taxon> foreignChildren(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
-  
-  /**
    * Recursively updates the sector count for a given taxon and all its parents.
    * @param key the taxon datasetKey & id, pointing to a catalogue
    * @param dkey the datasetKey that sectors are counted for

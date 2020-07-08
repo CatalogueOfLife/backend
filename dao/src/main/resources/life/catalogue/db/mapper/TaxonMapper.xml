@@ -246,17 +246,6 @@
     DELETE FROM name_usage_${partition}
   </delete>
 
-  <select id="foreignChildren" resultMap="taxonResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
-    JOIN name_usage_${partition} p ON p.id=u.parent_id
-    WHERE p.sector_key=#{sectorKey}
-    AND u.sector_key!=#{sectorKey}
-  </select>
-
   <update id="incDatasetSectorCount">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
     WITH RECURSIVE x AS (

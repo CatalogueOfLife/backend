@@ -46,6 +46,18 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   }
 
   @Test
+  public void getSimple() throws Exception {
+    Taxon t = TestEntityGenerator.TAXON1;
+    SimpleName sn = mapper().getSimple(t);
+    assertEquals(t.getId(), sn.getId());
+    assertEquals(t.getParentId(), sn.getParent());
+    assertEquals(t.getStatus(), sn.getStatus());
+    assertEquals(t.getName().getRank(), sn.getRank());
+    assertEquals(t.getName().getScientificName(), sn.getName());
+    assertEquals(t.getName().getAuthorship(), sn.getAuthorship());
+  }
+
+  @Test
   public void list() throws Exception {
     NameDao nameDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
   

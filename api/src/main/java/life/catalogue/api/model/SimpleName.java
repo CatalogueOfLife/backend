@@ -9,8 +9,8 @@ import java.util.Comparator;
 import java.util.Objects;
 
 /**
- * A small class representing a name with an id. It can act as a reference to a scientific name in a dataset. It combines the source ID with
- * the full scientific name in order to best deal with changing identifiers in sources.
+ * A small class representing a name usage with an id. It can act as a reference to a scientific name in a dataset.
+ * It combines the source usage ID with the full scientific name in order to best deal with changing identifiers in sources.
  */
 public class SimpleName implements Comparable<SimpleName> {
   private static Comparator<String> nullSafeStringComparator = Comparator
@@ -25,9 +25,7 @@ public class SimpleName implements Comparable<SimpleName> {
           .thenComparing(SimpleName::getStatus, nullSafeEnumComparator);
 
   public static SimpleName of(Taxon t) {
-    Name n = t.getName();
-    SimpleName sn = new SimpleName(t.getId(), n.getScientificName(), n.getAuthorship(), n.getRank());
-    return sn;
+    return t.toSimpleName();
   }
 
   public static SimpleName of(String id) {
