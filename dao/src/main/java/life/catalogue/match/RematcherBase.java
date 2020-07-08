@@ -150,7 +150,9 @@ public abstract class RematcherBase<
    * Tries to strictly and uniquely match a simple name instance to a given dataset.
    * If multiple matches exist it tries to select the previously matched usage, if that does not exist the originally assigned usage.
    * If both do not exist and we have multiple matches do not match to any of them and return null.
-   * 
+   *
+   * @param obj the object (sector,decision) containing the SimpleName sn
+   * @param sn the name (sector,decision) to match
    * @param datasetKey the dataset to match the names against
    * @return the unique match or null
    */

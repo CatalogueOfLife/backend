@@ -7,12 +7,6 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 public class SectorSearchRequest extends BaseDecisionSearchRequest {
-  
-  @QueryParam("targetId")
-  private String targetId;
-
-  @QueryParam("subjectId")
-  private String subjectId;
 
   @QueryParam("subjectDatasetKey")
   private Integer subjectDatasetKey;
@@ -39,22 +33,6 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
     SectorSearchRequest req = byProject(datasetKey);
     req.subjectDatasetKey = subjectDatasetKey;
     return req;
-  }
-
-  public String getTargetId() {
-    return targetId;
-  }
-
-  public void setTargetId(String targetId) {
-    this.targetId = targetId;
-  }
-
-  public String getSubjectId() {
-    return subjectId;
-  }
-
-  public void setSubjectId(String subjectId) {
-    this.subjectId = subjectId;
   }
 
   public Integer getSubjectDatasetKey() {
@@ -103,8 +81,6 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
     if (!(o instanceof SectorSearchRequest)) return false;
     SectorSearchRequest that = (SectorSearchRequest) o;
     return subject == that.subject &&
-      Objects.equals(targetId, that.targetId) &&
-      Objects.equals(subjectId, that.subjectId) &&
       Objects.equals(subjectDatasetKey, that.subjectDatasetKey) &&
       Objects.equals(lastSync, that.lastSync) &&
       mode == that.mode &&
@@ -113,6 +89,6 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(targetId, subjectId, subjectDatasetKey, lastSync, mode, subject, withoutData);
+    return Objects.hash(id, subjectDatasetKey, lastSync, mode, subject, withoutData);
   }
 }

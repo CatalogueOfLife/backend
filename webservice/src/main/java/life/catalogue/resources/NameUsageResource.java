@@ -11,6 +11,7 @@ import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.*;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.NameUsageWrapperMapper;
+import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.es.InvalidQueryException;
 import life.catalogue.es.NameUsageSearchService;
@@ -20,6 +21,7 @@ import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -27,6 +29,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 @Produces(MediaType.APPLICATION_JSON)
@@ -52,14 +55,27 @@ public class NameUsageResource {
   }
 
   @GET
-  public ResultPage<NameUsageBase> list(@PathParam("datasetKey") int datasetKey, @Valid Page page, @Context SqlSession session) {
+  public ResultPage<NameUsageBase> list(@PathParam("datasetKey") int datasetKey,
+                                        @QueryParam("q") String q,
+                                        @QueryParam("rank") Rank rank,
+                                        @Valid Page page,
+                                        @Context SqlSession session) {
     Page p = page == null ? new Page() : page;
     NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
-    List<NameUsageBase> result = mapper.list(datasetKey, p);
-    return new ResultPage<>(p, result, () -> mapper.count(datasetKey));
+    List<NameUsageBase> result;
+    Supplier<Integer> count;
+    if (q != null) {
+      result = mapper.listByName(datasetKey, q, rank);
+      count = () -> result.size();
+    } else {
+      result = mapper.list(datasetKey, p);
+      count = () -> mapper.count(datasetKey);
+    }
+    return new ResultPage<>(p, result, count);
   }
 
   @GET
+  @RolesAllowed({Roles.ADMIN})
   @Produces({MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_TSV})
   public Stream<Object[]> exportCsv(@PathParam("datasetKey") int datasetKey,
                                     @QueryParam("issue") boolean withIssues,
