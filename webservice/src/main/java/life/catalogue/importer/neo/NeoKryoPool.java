@@ -1,14 +1,14 @@
 package life.catalogue.importer.neo;
 
 import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.util.Pool;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import life.catalogue.api.model.IndexName;
 import life.catalogue.common.kryo.ApiKryoPool;
+import life.catalogue.common.kryo.NullSerializer;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.NodeMock;
 import life.catalogue.importer.neo.model.RankedName;
-import life.catalogue.common.kryo.NullSerializer;
 import org.neo4j.kernel.impl.core.NodeProxy;
 
 
@@ -31,7 +31,7 @@ public class NeoKryoPool extends ApiKryoPool {
     kryo.register(NeoUsage.class);
     kryo.register(NeoName.class);
     kryo.register(RankedName.class);
-    
+
     // fastutil
     kryo.register(IntArrayList.class);
     

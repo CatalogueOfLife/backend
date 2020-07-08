@@ -194,12 +194,6 @@ public class AdminResource {
     return runJob("reimporter", () -> new ReimportJob(user));
   }
   
-  @POST
-  @Path("/loadNamesIndexSinceStart")
-  public void loadNidxSince(@Auth User user) {
-    ((NameIndexImpl) ni).loadFromPgSinceStart();
-  }
-  
   class JobWrapper implements Runnable {
     private final Runnable job;
   

@@ -6,6 +6,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.vocab.Origin;
+import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.TaxonMapper;
@@ -79,7 +80,7 @@ public class MybatisTestUtils {
     Name n = new Name();
     n.applyUser(TestDataRule.TEST_USER);
     n.setId(id);
-    n.setNameIndexId(RandomUtils.randomLatinString(10));
+    n.setNameIndexIds(CollectionUtils.intSetOf(RandomUtils.randomInt()));
     n.setHomotypicNameId(id);
     n.setDatasetKey(datasetKey);
     n.setUninomial(name);

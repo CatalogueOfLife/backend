@@ -1,7 +1,7 @@
 package life.catalogue.matching;
 
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.Name;
+import life.catalogue.api.model.IndexName;
 import org.junit.Test;
 import org.mapdb.DBMaker;
 
@@ -48,10 +48,10 @@ public class NameIndexMapDBStoreTest {
       dbf.delete();
     }
   }
-  private ArrayList<Name> newNameList(int size) {
-    ArrayList<Name> names = new ArrayList<>(size);
+  private ArrayList<IndexName> newNameList(int size) {
+    ArrayList<IndexName> names = new ArrayList<>(size);
     for (int idx = 0; idx<size; idx++) {
-      names.add(TestEntityGenerator.newName());
+      names.add(new IndexName(TestEntityGenerator.newName()));
     }
     return names;
   }

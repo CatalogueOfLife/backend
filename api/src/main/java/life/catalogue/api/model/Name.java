@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.jackson.IsEmptyFilter;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.MatchType;
@@ -35,7 +36,7 @@ import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
  * The {@link #getAuthorship()} on the other hand contains the original value and is unaltered for parsed names.
  * It is only reconstructed for record that did not contain the authorship separately from the bare scientific name.
  */
-public class Name extends DatasetScopedEntity<String> implements VerbatimEntity, SectorEntity, LinneanName {
+public class Name extends DatasetScopedEntity<String> implements VerbatimEntity, SectorEntity, LinneanName, ScientificName {
 
   private static Pattern RANK_MATCHER = Pattern.compile("^(.+[a-z]) ((?:notho|infra)?(?:gx|natio|morph|[a-z]{3,6}var\\.?|chemoform|f\\. ?sp\\.|strain|[a-z]{1,7}\\.))( [a-z][^ ]*?)?(\\b.+)?$");
 
@@ -50,15 +51,13 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   private String homotypicNameId;
   
   /**
-   * Id from the names index grouping all distinct scientific names
+   * Keys from the names index grouping all distinct scientific names
    */
-  //@JsonIgnore
-  private String nameIndexId;
+  private IntSet nameIndexIds;
   
   /**
    * Match type that resulted in the nameIndexId.
    */
-  //@JsonIgnore
   private MatchType nameIndexMatchType;
   
   /**
@@ -196,7 +195,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.setKey(n);
     this.sectorKey = n.sectorKey;
     this.homotypicNameId = n.homotypicNameId;
-    this.nameIndexId = n.nameIndexId;
+    this.nameIndexIds = n.nameIndexIds;
     this.nameIndexMatchType = n.nameIndexMatchType;
     this.scientificName = n.scientificName;
     this.authorship = n.authorship;
@@ -269,15 +268,15 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   public void setVerbatimKey(Integer verbatimKey) {
     this.verbatimKey = verbatimKey;
   }
-  
-  public String getNameIndexId() {
-    return nameIndexId;
+
+  public void setNameIndexIds(IntSet nameIndexIds) {
+    this.nameIndexIds = nameIndexIds;
   }
-  
-  public void setNameIndexId(String nameIndexId) {
-    this.nameIndexId = nameIndexId;
+
+  public IntSet getNameIndexIds() {
+    return nameIndexIds;
   }
-  
+
   public MatchType getNameIndexMatchType() {
     return nameIndexMatchType;
   }
@@ -285,7 +284,8 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   public void setNameIndexMatchType(MatchType nameIndexMatchType) {
     this.nameIndexMatchType = nameIndexMatchType;
   }
-  
+
+  @Override
   public String getScientificName() {
     return scientificName;
   }
@@ -310,6 +310,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   /**
    * Cached complete authorship
    */
+  @Override
   public String getAuthorship() {
     return authorship;
   }
@@ -733,7 +734,14 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   /**
    * Adds italics around the epithets but not rank markers or higher ranked names.
    */
-  String scientificNameHtml(){
+  String scientificNameHtml() {
+    return scientificNameHtml(scientificName, rank, isParsed());
+  }
+
+  /**
+   * Adds italics around the epithets but not rank markers or higher ranked names.
+   */
+  public static String scientificNameHtml(String scientificName, Rank rank, boolean isParsed){
     // only genus names and below are shown in italics
     if (scientificName != null && rank != null && rank.ordinal() >= Rank.GENUS.ordinal()) {
       Matcher m = RANK_MATCHER.matcher(scientificName);
@@ -752,7 +760,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
         }
         return sb.toString();
 
-      } else if(isParsed()) {
+      } else if(isParsed) {
         return NameFormatter.inItalics(scientificName);
       }
     }
@@ -770,7 +778,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
         Objects.equals(sectorKey, name.sectorKey) &&
         Objects.equals(verbatimKey, name.verbatimKey) &&
         Objects.equals(homotypicNameId, name.homotypicNameId) &&
-        Objects.equals(nameIndexId, name.nameIndexId) &&
+        Objects.equals(nameIndexIds, name.nameIndexIds) &&
         nameIndexMatchType == name.nameIndexMatchType &&
         Objects.equals(scientificName, name.scientificName) &&
         Objects.equals(authorship, name.authorship) &&
@@ -799,7 +807,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, homotypicNameId, nameIndexId, nameIndexMatchType, scientificName, authorship, rank,
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, homotypicNameId, nameIndexIds, nameIndexMatchType, scientificName, authorship, rank,
       uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho,
       combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, publishedInYear, origin, type, link,
       nomenclaturalNote, remarks);

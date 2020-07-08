@@ -3,7 +3,6 @@ package life.catalogue.dao;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.Datasets;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import org.apache.ibatis.session.SqlSession;
@@ -53,8 +52,6 @@ public class DaoUtils {
       throw new IllegalArgumentException("Dataset " + datasetKey + " is deleted and cannot be " + action);
     } else if (d.getOrigin() == DatasetOrigin.RELEASED) {
       throw new IllegalArgumentException("Dataset " + datasetKey + " is released and cannot be " + action);
-    } else if (d.getKey() == Datasets.NAME_INDEX) {
-      throw new IllegalArgumentException("Dataset " + datasetKey + " is the names index and cannot be " + action);
     }
     return d;
   }

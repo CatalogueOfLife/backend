@@ -1,9 +1,5 @@
 package life.catalogue.es.nu;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.EnumSet;
-
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.NameField;
@@ -16,6 +12,11 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -89,7 +90,7 @@ public class EsNameUsageSerde extends EsReadTestBase {
     docIn.setDatasetKey(472);
     docIn.setNameFields(EnumSet.of(NameField.COMBINATION_EX_AUTHORS, NameField.UNINOMIAL));
     docIn.setNameId("16");
-    docIn.setNameIndexId("afd56770af");
+    docIn.setNameIndexIds(Set.of(56770));
     docIn.setPublishedInId("AMO333");
     docIn.setRank(Rank.SPECIES);
     docIn.setStatus(TaxonomicStatus.ACCEPTED);
@@ -114,7 +115,7 @@ public class EsNameUsageSerde extends EsReadTestBase {
     docIn.setDatasetKey(472);
     docIn.setNameFields(EnumSet.of(NameField.COMBINATION_EX_AUTHORS, NameField.UNINOMIAL));
     docIn.setNameId("16");
-    docIn.setNameIndexId("afd56770af");
+    docIn.setNameIndexIds(Set.of(56770));
     docIn.setPublishedInId("AMO333");
     docIn.setRank(Rank.SPECIES);
     docIn.setStatus(TaxonomicStatus.ACCEPTED);

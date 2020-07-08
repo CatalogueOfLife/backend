@@ -1,7 +1,7 @@
 package life.catalogue.matching;
 
 import io.dropwizard.lifecycle.Managed;
-import life.catalogue.api.model.Name;
+import life.catalogue.api.model.IndexName;
 
 import java.util.ArrayList;
 
@@ -12,9 +12,9 @@ public interface NameIndexStore extends Managed {
    */
   int count();
   
-  ArrayList<Name> get(String key);
+  ArrayList<IndexName> get(String key);
   
   boolean containsKey(String key);
   
-  void put(String key, ArrayList<Name> group);
+  void put(String key, ArrayList<IndexName> group);
 }

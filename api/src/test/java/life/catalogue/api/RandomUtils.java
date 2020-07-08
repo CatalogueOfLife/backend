@@ -1,17 +1,17 @@
 package life.catalogue.api;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+import life.catalogue.api.model.Name;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.text.WordUtils;
+import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.Rank;
+
 import java.net.URI;
 import java.util.Calendar;
 import java.util.Random;
 import java.util.regex.Pattern;
-
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.text.WordUtils;
-import life.catalogue.api.model.Name;
-import org.gbif.nameparser.api.Authorship;
-import org.gbif.nameparser.api.Rank;
 
 
 /**
@@ -164,7 +164,11 @@ public class RandomUtils {
     int maxYear = Calendar.getInstance().get(Calendar.YEAR);
     return String.valueOf(LINNEAN_YEAR + rnd.nextInt(maxYear - LINNEAN_YEAR + 1));
   }
-  
+
+  public static int randomInt() {
+    return rnd.nextInt();
+  }
+
   public static <T> T populate(T instance) {
     Class<T> c = (Class<T>) instance.getClass();
     

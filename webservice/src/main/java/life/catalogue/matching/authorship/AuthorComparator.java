@@ -1,15 +1,15 @@
 package life.catalogue.matching.authorship;
 
-import java.util.List;
-import javax.annotation.Nullable;
-
-import org.apache.commons.lang3.StringUtils;
-import life.catalogue.api.model.Name;
+import life.catalogue.api.model.ScientificName;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.Equality;
+import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.Authorship;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 import static life.catalogue.common.tax.AuthorshipNormalizer.Author;
 
@@ -54,7 +54,7 @@ public class AuthorComparator {
   /**
    * Does a comparison of recombination and basionym authorship using the author compare method once for the recombination authorship and once for the basionym.
    */
-  public Equality compare(Name n1, Name n2) {
+  public Equality compare(ScientificName n1, ScientificName n2) {
     Equality recomb = compare(n1.getCombinationAuthorship(), n2.getCombinationAuthorship());
     if (recomb != Equality.UNKNOWN) {
       // in case the recomb author differs or is the same we are done, no need for basionym authorship comparison

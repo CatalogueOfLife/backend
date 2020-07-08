@@ -1,5 +1,6 @@
 package life.catalogue.db.mapper;
 
+import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
@@ -61,10 +62,10 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
    *
    * @param datasetKey
    * @param id
-   * @param nameIndexID
+   * @param nameIndexIds
    */
   void updateMatch(@Param("datasetKey") int datasetKey, @Param("id") String id,
-                   @Param("nameIndexID") String nameIndexID,
+                   @Param("nameIndexIds") IntSet nameIndexIds,
                    @Param("matchType") MatchType matchType
   );
 

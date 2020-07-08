@@ -1,6 +1,7 @@
 package life.catalogue.matching;
 
 import io.dropwizard.lifecycle.Managed;
+import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import org.slf4j.Logger;
@@ -32,14 +33,14 @@ public interface NameIndex extends Managed, AutoCloseable {
    *
    * @param name
    */
-  void add(Name name);
+  void add(IndexName name);
   
   /**
    * Adds a batch of names to the index
    */
-  default void addAll(Collection<Name> names) {
+  default void addAll(Collection<IndexName> names) {
     LOG.info("Adding {} names", names.size());
-    for (Name n : names) {
+    for (IndexName n : names) {
       add(n);
     }
   }

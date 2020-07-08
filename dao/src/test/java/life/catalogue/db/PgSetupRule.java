@@ -1,22 +1,22 @@
 package life.catalogue.db;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import life.catalogue.api.vocab.Datasets;
+import life.catalogue.common.util.YamlUtils;
+import life.catalogue.db.mapper.DatasetPartitionMapper;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.common.util.YamlUtils;
-import life.catalogue.db.mapper.DatasetPartitionMapper;
 import org.junit.rules.ExternalResource;
 import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * A junit test rule that creates a {@link HikariDataSource} and SqlSessionFactory for the colplus postgres db and stops it the end.
@@ -107,7 +107,6 @@ public class PgSetupRule extends ExternalResource {
     setupMybatis(cfg);
     
     // setup draft/names index partition
-    partition(Datasets.NAME_INDEX);
     partition(Datasets.DRAFT_COL);
   }
   

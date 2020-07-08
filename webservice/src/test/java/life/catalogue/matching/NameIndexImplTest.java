@@ -3,6 +3,7 @@ package life.catalogue.matching;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
@@ -10,18 +11,19 @@ import life.catalogue.api.vocab.MatchType;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
-import life.catalogue.importer.IdGenerator;
+import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.parser.NameParser;
+import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.junit.After;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
 
@@ -35,8 +37,7 @@ public class NameIndexImplTest {
   
   @Rule
   public TestDataRule testDataRule = TestDataRule.apple();
-  private final IdGenerator idGen = new IdGenerator("");
-  
+
   @After
   public void stop() throws Exception {
     if (ni != null) {
@@ -44,61 +45,83 @@ public class NameIndexImplTest {
     }
   }
 
-  void setupApple() throws Exception {
-    ni = NameIndexFactory.memory(11, PgSetupRule.getSqlSessionFactory(), aNormalizer).started();
+
+  void addTestNames() throws Exception {
+    List.of(
+      name(1, "Animalia", Rank.KINGDOM, NomCode.ZOOLOGICAL),
+
+      name(2, "Oenanthe Vieillot, 1816", Rank.GENUS, NomCode.ZOOLOGICAL),
+      name(3, "Oenanthe Pallas, 1771", Rank.GENUS, NomCode.ZOOLOGICAL),
+      name(4, "Oenanthe L.", Rank.GENUS, NomCode.BOTANICAL),
+
+      name(5, "Oenanthe aquatica", Rank.SPECIES, NomCode.BOTANICAL),
+      name(6, "Oenanthe aquatica Poir.", Rank.SPECIES, NomCode.BOTANICAL),
+      name(7, "Oenanthe aquatica Senser, 1957", Rank.SPECIES, NomCode.BOTANICAL),
+
+      name(8, "Natting tosee", Rank.SPECIES, NomCode.BOTANICAL),
+
+      name(9, "Abies alba", Rank.SPECIES, NomCode.BOTANICAL),
+      name(10, "Abies alba Mumpf.", Rank.SPECIES, NomCode.BOTANICAL),
+      name(11, "Abies alba 1778", Rank.SPECIES, NomCode.BOTANICAL),
+
+      name(12, "Picea alba 1778", Rank.SPECIES, NomCode.BOTANICAL),
+      name(13, "Picea", Rank.GENUS, NomCode.BOTANICAL),
+      name(14, "Carex cayouettei", Rank.SPECIES, NomCode.BOTANICAL),
+      name(15, "Carex comosa × Carex lupulina", Rank.SPECIES, NomCode.BOTANICAL),
+
+      name(16, "Natting tosee2", Rank.SPECIES, NomCode.BOTANICAL),
+      name(17, "Natting tosee3", Rank.SPECIES, NomCode.BOTANICAL),
+      name(18, "Natting tosee4", Rank.SPECIES, NomCode.BOTANICAL),
+      name(19, "Natting tosee5", Rank.SPECIES, NomCode.BOTANICAL),
+
+      name(20, "Rodentia", Rank.GENUS, NomCode.ZOOLOGICAL),
+      name(21, "Rodentia Bowdich, 1821", Rank.ORDER, NomCode.ZOOLOGICAL),
+
+      name(22, "Aeropyrum coil-shaped virus", Rank.UNRANKED, NomCode.VIRUS)
+    ).forEach(n -> {
+      ni.add(n);
+    });
+    assertEquals(22, ni.size());
+  }
+
+  void addApples(boolean persist) {
+    try (SqlSession s = PgSetupRule.getSqlSessionFactory().openSession()) {
+      NameMapper nm = s.getMapper(NameMapper.class);
+      NamesIndexMapper nim = s.getMapper(NamesIndexMapper.class);
+      // add all apple records to names index
+      AtomicInteger counter = new AtomicInteger(1);
+      nm.processDataset(TestDataRule.TestData.APPLE.key).forEach(n -> {
+        IndexName in = new IndexName(n);
+        in.setKey(counter.getAndIncrement());
+        if (persist) {
+          nim.create(in);
+        }
+        ni.add(in);
+      });
+      if (persist) {
+        s.commit();
+      }
+    }
     assertEquals(5, ni.size());
   }
-  void setupApple(File location) throws Exception {
-    ni = NameIndexFactory.persistent(location, 11, PgSetupRule.getSqlSessionFactory(), aNormalizer).started();
-    assertEquals(5, ni.size());
-  }
-  
-  void setupTest() throws Exception {
+
+  void setupMemory() throws Exception {
     ni = NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer).started();
-    Collection<Name> names = Lists.newArrayList(
-        name(1, "Animalia", Rank.KINGDOM, NomCode.ZOOLOGICAL),
-        
-        name(2, "Oenanthe Vieillot, 1816", Rank.GENUS, NomCode.ZOOLOGICAL),
-        name(3, "Oenanthe Pallas, 1771", Rank.GENUS, NomCode.ZOOLOGICAL),
-        name(4, "Oenanthe L.", Rank.GENUS, NomCode.BOTANICAL),
-        
-        name(5, "Oenanthe aquatica", Rank.SPECIES, NomCode.BOTANICAL),
-        name(6, "Oenanthe aquatica Poir.", Rank.SPECIES, NomCode.BOTANICAL),
-        name(7, "Oenanthe aquatica Senser, 1957", Rank.SPECIES, NomCode.BOTANICAL),
-        
-        name(8, "Natting tosee", Rank.SPECIES, NomCode.BOTANICAL),
-        
-        name(9, "Abies alba", Rank.SPECIES, NomCode.BOTANICAL),
-        name(10, "Abies alba Mumpf.", Rank.SPECIES, NomCode.BOTANICAL),
-        name(11, "Abies alba 1778", Rank.SPECIES, NomCode.BOTANICAL),
-        
-        name(12, "Picea alba 1778", Rank.SPECIES, NomCode.BOTANICAL),
-        name(13, "Picea", Rank.GENUS, NomCode.BOTANICAL),
-        name(14, "Carex cayouettei", Rank.SPECIES, NomCode.BOTANICAL),
-        name(15, "Carex comosa × Carex lupulina", Rank.SPECIES, NomCode.BOTANICAL),
-        
-        name(16, "Natting tosee2", Rank.SPECIES, NomCode.BOTANICAL),
-        name(17, "Natting tosee3", Rank.SPECIES, NomCode.BOTANICAL),
-        name(18, "Natting tosee4", Rank.SPECIES, NomCode.BOTANICAL),
-        name(19, "Natting tosee5", Rank.SPECIES, NomCode.BOTANICAL),
-        
-        name(20, "Rodentia", Rank.GENUS, NomCode.ZOOLOGICAL),
-        name(21, "Rodentia Bowdich, 1821", Rank.ORDER, NomCode.ZOOLOGICAL),
-        
-        name(22, "Aeropyrum coil-shaped virus", Rank.UNRANKED, NomCode.VIRUS)
-    );
-    ni.addAll(names);
   }
-  
+
+  void setupPersistent(File location) throws Exception {
+    ni = NameIndexFactory.persistent(location, PgSetupRule.getSqlSessionFactory(), aNormalizer).started();
+  }
+
   @Test
   public void loadApple() throws Exception {
-    setupApple();
-    assertEquals(5, ni.size());
-    
-    assertMatch("name-4", "Larus erfundus", Rank.SPECIES, null);
-    assertMatch("name-4", "Larus erfunda", Rank.SPECIES, null);
-    assertMatch("name-3", "Larus fusca", Rank.SPECIES, null);
-    assertMatch("name-2", "Larus fuscus", Rank.SPECIES, null);
+    setupMemory();
+    addApples(false);
+
+    assertMatch(5, "Larus erfundus", Rank.SPECIES, null);
+    assertMatch(5, "Larus erfunda", Rank.SPECIES, null);
+    assertMatch(4, "Larus fusca", Rank.SPECIES, null);
+    assertMatch(3, "Larus fuscus", Rank.SPECIES, null);
   }
 
   @Test
@@ -107,15 +130,19 @@ public class NameIndexImplTest {
     if (fIdx.exists()) {
       fIdx.delete();
     }
+
     try {
-      setupApple(fIdx);
-      assertMatch("name-4", "Larus erfundus", Rank.SPECIES, null);
+      setupPersistent(fIdx);
+      addApples(true);
+
+      assertMatch(5, "Larus erfundus", Rank.SPECIES, null);
 
       System.out.println("RESTART");
+      assertEquals(5, ni.size());
       ni.stop();
       ni.start();
       assertEquals(5, ni.size());
-      assertMatch("name-4", "Larus erfundus", Rank.SPECIES, null);
+      assertMatch(5, "Larus erfundus", Rank.SPECIES, null);
 
       ni.stop();
       try {
@@ -132,15 +159,16 @@ public class NameIndexImplTest {
   
   @Test
   public void insertNewNames() throws Exception {
-    setupApple();
+    setupMemory();
     assertInsert("Larus fundatus", Rank.SPECIES, null);
     assertInsert("Puma concolor", Rank.SPECIES, NomCode.ZOOLOGICAL);
   }
   
   @Test
   public void testLookup() throws Exception {
-    setupTest();
-    
+    setupMemory();
+    addTestNames();
+
     assertMatch(3, "Œnanthe 1771", Rank.GENUS, null);
     
     assertEquals(22, ni.size());
@@ -180,9 +208,9 @@ public class NameIndexImplTest {
     assertMatch(9, "Abies alba", Rank.SPECIES, NomCode.BOTANICAL);
     assertMatch(11, "Abies alba Döring, 1778", Rank.SPECIES, NomCode.BOTANICAL);
     assertMatch(10, "Abies alba Mumpf.", Rank.SPECIES, NomCode.BOTANICAL);
-    assertAmbiguousMatch("Abies alba Mill.", Rank.SPECIES, NomCode.BOTANICAL);
-    assertAmbiguousMatch("Abies alba Miller", Rank.SPECIES, NomCode.BOTANICAL);
-    assertAmbiguousMatch("Abies alba 1789", Rank.SPECIES, NomCode.BOTANICAL);
+    assertAmbiguousMatch("Abies alba Mill.", Rank.SPECIES, NomCode.BOTANICAL, 9,11);
+    assertAmbiguousMatch("Abies alba Miller", Rank.SPECIES, NomCode.BOTANICAL, 9,11);
+    assertAmbiguousMatch("Abies alba 1789", Rank.SPECIES, NomCode.BOTANICAL, 9,10);
     
     // try unparsable names
     assertMatch(14, "Carex cayouettei", Rank.SPECIES, NomCode.BOTANICAL);
@@ -198,8 +226,8 @@ public class NameIndexImplTest {
    */
   @Test
   public void testSubgenusLookup() throws Exception {
-    ni = NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer).started();
-    Collection<Name> names = Lists.newArrayList(
+    setupMemory();
+    Collection<IndexName> names = Lists.newArrayList(
         name(1, "Animalia", Rank.KINGDOM, NomCode.ZOOLOGICAL),
         
         name(2, "Zyras", Rank.GENUS, NomCode.ZOOLOGICAL),
@@ -225,20 +253,26 @@ public class NameIndexImplTest {
   
     assertEquals(12, ni.size());
   }
-  
-  static Name name(Integer key, String name, Rank rank, NomCode code) {
-    Name n = NameParser.PARSER.parse(name, rank, code, IssueContainer.VOID).get().getName();
+
+  static Name name(String name, Rank rank, NomCode code) {
+    Name n = TestEntityGenerator.setUserDate(NameParser.PARSER.parse(name, rank, code, IssueContainer.VOID).get().getName());
     n.setRank(rank);
     n.setCode(code);
-    return TestEntityGenerator.setUserDate(n);
+    return n;
+  }
+
+  static IndexName name(Integer key, String name, Rank rank, NomCode code) {
+    IndexName n = new IndexName(name(name, rank, code));
+    n.setKey(key);
+    return n;
   }
   
   private NameMatch assertAmbiguousMatch(String name, Rank rank, NomCode code, Integer... keys) {
     NameMatch m = assertMatchType(MatchType.AMBIGUOUS, name, rank, code);
-    assertFalse(m.hasMatch());
+    assertTrue(m.hasMatch());
     Set<Integer> expected = Sets.newHashSet(keys);
-    for (Integer k : keys) {
-      assertTrue("Missing alt key " + k, expected.remove(k));
+    for (Integer k : m.getNameIds()) {
+      assertTrue("Missing match " + k, expected.remove(k));
     }
     assertTrue(expected.isEmpty());
     return m;
@@ -262,27 +296,23 @@ public class NameIndexImplTest {
   }
 
   private NameMatch assertMatch(int key, String name, Rank rank, NomCode code) {
-    return assertMatch(idGen.id(key), name, rank, code);
-  }
-
-  private NameMatch assertMatch(String id, String name, Rank rank, NomCode code) {
     NameMatch m = match(name, rank, code);
-    if (!m.hasMatch() || !id.equals(m.getName().getId())) {
+    if (!m.hasMatch() || m.getNames().size() != 1 || key != m.getNames().get(0).getKey()) {
       System.out.println(m);
     }
-    assertEquals("Expected " + id + " but got " + m.getType(), id, m.getName().getId()
-    );
+    assertTrue("Expected single match but got " + m.getNames().size(), m.hasSingleMatch());
+    assertEquals("Expected " + key + " but got " + m.getType(), key, (int) m.getNames().get(0).getKey());
     return m;
   }
   
   private NameMatch assertInsert(String name, Rank rank, NomCode code) {
-    NameMatch m = ni.match(name(null, name, rank, code), true, false);
+    NameMatch m = ni.match(name(name, rank, code), true, false);
     assertEquals(MatchType.INSERTED, m.getType());
     return m;
   }
   
   private NameMatch match(String name, Rank rank, NomCode code) {
-    NameMatch m = ni.match(name(null, name, rank, code), false, true);
+    NameMatch m = ni.match(name(name, rank, code), false, true);
     return m;
   }
   

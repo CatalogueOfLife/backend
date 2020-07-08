@@ -7,6 +7,7 @@ import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.NomStatus;
+import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
@@ -393,26 +394,26 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
 
   @Test
   public void testNameIndexId1() {
-    String key1 = "100XyA";
-    String key2 = "101_@xx";
+    Integer key1 = 100;
+    Integer key2 = 101;
     NameUsageWrapper nuw1 = minimalTaxon();
-    nuw1.getUsage().getName().setNameIndexId(key1);
+    nuw1.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key1));
     NameUsageWrapper nuw2 = minimalTaxon();
-    nuw2.getUsage().getName().setNameIndexId(key1);
+    nuw2.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key1));
     NameUsageWrapper nuw3 = minimalTaxon();
-    nuw3.getUsage().getName().setNameIndexId(key2);
+    nuw3.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key2));
     NameUsageWrapper nuw4 = minimalTaxon();
-    nuw4.getUsage().getName().setNameIndexId(null);
+    nuw4.getUsage().getName().setNameIndexIds(null);
 
     index(nuw1, nuw2, nuw3, nuw4);
 
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(NAME_INDEX_ID, key2);
 
-    nuw1.getUsage().getName().setNameIndexId(key1);
-    nuw2.getUsage().getName().setNameIndexId(key1);
-    nuw3.getUsage().getName().setNameIndexId(key2);
-    nuw4.getUsage().getName().setNameIndexId(null);
+    nuw1.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key1));
+    nuw2.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key1));
+    nuw3.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key2));
+    nuw4.getUsage().getName().setNameIndexIds(null);
     List<NameUsageWrapper> expected = Arrays.asList(nuw3);
 
     assertEquals(expected, search(query).getResult());
@@ -422,26 +423,26 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
 
   @Test
   public void testNameIndexId2() {
-    String key1 = "aB#100z";
-    String key2 = "x$-020";
+    Integer key1 = 100;
+    Integer key2 = 020;
     NameUsageWrapper nuw1 = minimalTaxon();
-    nuw1.getUsage().getName().setNameIndexId(key1);
+    nuw1.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key1));
     NameUsageWrapper nuw2 = minimalTaxon();
-    nuw2.getUsage().getName().setNameIndexId(key1);
+    nuw2.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key1));
     NameUsageWrapper nuw3 = minimalTaxon();
-    nuw3.getUsage().getName().setNameIndexId(key2);
+    nuw3.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key2));
     NameUsageWrapper nuw4 = minimalTaxon();
-    nuw4.getUsage().getName().setNameIndexId(null);
+    nuw4.getUsage().getName().setNameIndexIds(null);
 
     index(nuw1, nuw2, nuw3, nuw4);
 
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(NAME_INDEX_ID, IS_NULL);
 
-    nuw1.getUsage().getName().setNameIndexId(key1);
-    nuw2.getUsage().getName().setNameIndexId(key1);
-    nuw3.getUsage().getName().setNameIndexId(key2);
-    nuw4.getUsage().getName().setNameIndexId(null);
+    nuw1.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key1));
+    nuw2.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key1));
+    nuw3.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key2));
+    nuw4.getUsage().getName().setNameIndexIds(null);
     List<NameUsageWrapper> expected = Arrays.asList(nuw4);
 
     assertEquals(expected, search(query).getResult());
@@ -452,26 +453,26 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
 
   @Test
   public void testNameIndexId3() {
-    String key1 = "100";
-    String key2 = "101";
+    Integer key1 = 100;
+    Integer key2 = 101;
     NameUsageWrapper nuw1 = minimalTaxon();
-    nuw1.getUsage().getName().setNameIndexId(key1);
+    nuw1.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key1));
     NameUsageWrapper nuw2 = minimalTaxon();
-    nuw2.getUsage().getName().setNameIndexId(key1);
+    nuw2.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key1));
     NameUsageWrapper nuw3 = minimalTaxon();
-    nuw3.getUsage().getName().setNameIndexId(key2);
+    nuw3.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key2));
     NameUsageWrapper nuw4 = minimalTaxon();
-    nuw4.getUsage().getName().setNameIndexId(null);
+    nuw4.getUsage().getName().setNameIndexIds(null);
 
     index(nuw1, nuw2, nuw3, nuw4);
 
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(NAME_INDEX_ID, IS_NOT_NULL);
 
-    nuw1.getUsage().getName().setNameIndexId(key1);
-    nuw2.getUsage().getName().setNameIndexId(key1);
-    nuw3.getUsage().getName().setNameIndexId(key2);
-    nuw4.getUsage().getName().setNameIndexId(null);
+    nuw1.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key1));
+    nuw2.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key1));
+    nuw3.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key2));
+    nuw4.getUsage().getName().setNameIndexIds(null);
     List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw3);
 
     assertEquals(expected, search(query).getResult());
@@ -501,7 +502,7 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
     nuw1.getUsage().getName().setPublishedInId(key1);
     nuw2.getUsage().getName().setPublishedInId(key1);
     nuw3.getUsage().getName().setPublishedInId(key2);
-    nuw4.getUsage().getName().setNameIndexId(null);
+    nuw4.getUsage().getName().setNameIndexIds(null);
     List<NameUsageWrapper> expected = Arrays.asList(nuw3);
 
     assertEquals(expected, search(query).getResult());
@@ -531,7 +532,7 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
     nuw1.getUsage().getName().setPublishedInId(key1);
     nuw2.getUsage().getName().setPublishedInId(key1);
     nuw3.getUsage().getName().setPublishedInId(key2);
-    nuw4.getUsage().getName().setNameIndexId(null);
+    nuw4.getUsage().getName().setNameIndexIds(null);
     List<NameUsageWrapper> expected = Arrays.asList(nuw3, nuw4);
 
     assertEquals(expected, search(query).getResult());
@@ -560,7 +561,7 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
     nuw1.getUsage().getName().setPublishedInId(key1);
     nuw2.getUsage().getName().setPublishedInId(key1);
     nuw3.getUsage().getName().setPublishedInId(key2);
-    nuw4.getUsage().getName().setNameIndexId(null);
+    nuw4.getUsage().getName().setNameIndexIds(null);
     List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw3);
 
     assertEquals(expected, search(query).getResult());

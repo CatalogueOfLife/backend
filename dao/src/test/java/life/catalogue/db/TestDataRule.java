@@ -195,11 +195,15 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     }
   }
 
-  public void updateSequences() {
+  public void updateSequences() throws Exception {
     if (testData.key != null) {
       try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
         DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
         pm.updateIdSequences(testData.key);
+        // names index keys
+        try (java.sql.Statement st = session.getConnection().createStatement()) {
+          st.execute("ALTER SEQUENCE names_index_id_seq RESTART WITH 1");
+        }
         session.commit();
       }
     }
@@ -213,6 +217,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       st.execute("TRUNCATE sector CASCADE");
       st.execute("TRUNCATE estimate CASCADE");
       st.execute("TRUNCATE decision CASCADE");
+      st.execute("TRUNCATE names_index");
       session.getConnection().commit();
     }
   }

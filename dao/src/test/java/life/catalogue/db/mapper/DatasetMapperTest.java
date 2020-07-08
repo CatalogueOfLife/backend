@@ -247,7 +247,6 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
 
   private List<Dataset> createExpected() throws Exception {
     List<Dataset> ds = Lists.newArrayList();
-    ds.add(mapper().get(Datasets.NAME_INDEX));
     ds.add(mapper().get(Datasets.DRAFT_COL));
     ds.add(mapper().get(TestEntityGenerator.DATASET11.getKey()));
     ds.add(mapper().get(TestEntityGenerator.DATASET12.getKey()));

@@ -104,5 +104,14 @@ public class IdGenerator {
   public String next() {
     return id(intIdSupplier.get());
   }
-  
+
+  /**
+   * @return the integer representation of the given id
+   */
+  public int decode(String id) {
+    if (!id.startsWith(prefix)) {
+      throw new IllegalArgumentException("ID " +id+ " has no prefix " + prefix);
+    }
+    return idConverter.decode(id.substring(prefix.length()));
+  }
 }

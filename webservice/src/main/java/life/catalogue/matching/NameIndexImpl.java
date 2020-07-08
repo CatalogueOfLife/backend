@@ -4,18 +4,15 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
+import life.catalogue.api.model.ScientificName;
 import life.catalogue.api.vocab.MatchType;
-import life.catalogue.api.vocab.NomStatus;
-import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
-import life.catalogue.dao.NameDao;
-import life.catalogue.db.mapper.NameMapper;
-import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.importer.IdGenerator;
+import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.matching.authorship.AuthorComparator;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -25,7 +22,6 @@ import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -41,73 +37,50 @@ public class NameIndexImpl implements NameIndex {
       NameType.SCIENTIFIC, NameType.HYBRID_FORMULA, NameType.VIRUS, NameType.OTU
   );
   
-  private final AtomicInteger counter = new AtomicInteger(0);
-  private final IdGenerator idGen;
   private final NameIndexStore store;
   private final AuthorComparator authComp;
-  private final int datasetKey;
   private final SqlSessionFactory sqlFactory;
-  private final NameDao dao;
-  private LocalDateTime startedLoading;
-  
-  
+  private final AtomicInteger counter = new AtomicInteger();
+
+
   /**
-   * @param datasetKey the dataset the names index is stored in
    * @param sqlFactory sql session factory to talk to the data store backend if needed for inserts or initial loading
    * @throws IllegalStateException when db is in a bad state
    */
-  public NameIndexImpl(NameIndexStore store, AuthorshipNormalizer normalizer, int datasetKey, SqlSessionFactory sqlFactory) {
+  public NameIndexImpl(NameIndexStore store, AuthorshipNormalizer normalizer, SqlSessionFactory sqlFactory) {
     this.store = store;
     this.authComp = new AuthorComparator(normalizer);
-    this.datasetKey = datasetKey;
     this.sqlFactory = Preconditions.checkNotNull(sqlFactory);
-    dao = new NameDao(sqlFactory, NameUsageIndexService.passThru());
-    idGen = new IdGenerator(counter::incrementAndGet);
   }
   
   private int countPg() {
     try (SqlSession s = sqlFactory.openSession()) {
-      return s.getMapper(NameMapper.class).count(datasetKey);
+      return s.getMapper(NamesIndexMapper.class).count();
     }
   }
   
   private void loadFromPg() {
-    LOG.info("Loading names from postgres into names index");
-    startedLoading = LocalDateTime.now();
     counter.set(0);
+    LOG.info("Loading names from postgres into names index");
     try (SqlSession s = sqlFactory.openSession()) {
-      NameMapper mapper = s.getMapper(NameMapper.class);
-      mapper.processDataset(datasetKey).forEach(n -> {
-        addWithID(n);
+      NamesIndexMapper mapper = s.getMapper(NamesIndexMapper.class);
+      mapper.processAll().forEach(n -> {
+        add(n);
         counter.incrementAndGet();
       });
       LOG.info("Loaded {} names from postgres into names index", counter);
     }
   }
-  
-  public void loadFromPgSinceStart() {
-    LOG.info("Loading names from postgres into names index");
-    final AtomicInteger newCnt = new AtomicInteger();
-    try (SqlSession s = sqlFactory.openSession()) {
-      NameMapper mapper = s.getMapper(NameMapper.class);
-      mapper.processSince(datasetKey, startedLoading).forEach(n -> {
-        addWithID(n);
-        counter.incrementAndGet();
-        newCnt.incrementAndGet();
-      });
-      LOG.info("Loaded {} additional names since start {} from postgres into names index", newCnt, startedLoading);
-    }
-  }
-  
+
   @Override
   public NameMatch match(Name name, boolean allowInserts, boolean verbose) {
     NameMatch m;
-    List<Name> candidates = store.get(key(name));
+    List<IndexName> candidates = store.get(key(name));
     if (candidates != null) {
       m = matchCandidates(name, candidates);
       if (verbose) {
         if (m.hasMatch()) {
-          candidates.remove(m.getName());
+          candidates.removeAll(m.getNames());
         }
         m.setAlternatives(candidates);
       }
@@ -117,12 +90,10 @@ public class NameIndexImpl implements NameIndex {
     }
     
     if (!m.hasMatch() && allowInserts) {
-      if (MatchType.AMBIGUOUS == m.getType()) {
-        LOG.debug("Do not insert ambiguous name match: {}", name.getLabel());
-      } else if (INDEX_NAME_TYPES.contains(name.getType())) {
-        m.setName(insert(name));
+      if (INDEX_NAME_TYPES.contains(name.getType())) {
+        m.addName(insert(name));
         m.setType(MatchType.INSERTED);
-        LOG.debug("Inserted: {}", m.getName().getLabel());
+        LOG.debug("Inserted: {}", m.getNames().get(0).getLabel());
       } else {
         LOG.debug("Do not insert {} name: {}", name.getType(), name.getLabel());
       }
@@ -134,7 +105,7 @@ public class NameIndexImpl implements NameIndex {
   /**
    * Does comparison by rank, author and nom code to pick real match from candidates
    */
-  private NameMatch matchCandidates(Name query, final List<Name> candidates) {
+  private NameMatch matchCandidates(Name query, final List<IndexName> candidates) {
     final boolean compareRank = query.getRank() != null && query.getRank() != Rank.UNRANKED;
     final boolean compareAuthorship = query.hasAuthorship();
     final boolean compareCode = query.getCode() != null;
@@ -144,8 +115,8 @@ public class NameIndexImpl implements NameIndex {
     // calculate score by rank, nomCode & authorship
     // immediately filtering no matches with a negative score
     int bestScore = 0;
-    final List<Name> matches = Lists.newArrayList();
-    for (Name n : candidates) {
+    final List<IndexName> matches = Lists.newArrayList();
+    for (IndexName n : candidates) {
       // 0 to 5
       int score = 0;
       
@@ -186,27 +157,34 @@ public class NameIndexImpl implements NameIndex {
       }
       bestScore = addOrRemove(score, n, bestScore, matches);
     }
-    
+
+    NameMatch m = new NameMatch();
     if (matches.isEmpty()) {
-      return NameMatch.noMatch();
-      
+      m.setType(MatchType.NONE);
+
     } else if (matches.size() == 1) {
-      return buildMatch(query, matches.get(0));
-      
+      m.addName(matches.get(0));
+      if (query.getLabel().equalsIgnoreCase(matches.get(0).getLabel())) {
+        m.setType(MatchType.EXACT);
+      } else {
+        m.setType(MatchType.VARIANT);
+      }
+
     } else {
       // multiple, ambiguous matches
       LOG.debug("Ambiguous match ({} hits) for {}", matches.size(), query.getLabel());
-      NameMatch m = new NameMatch();
+      m.getNames().addAll(matches);
       m.setType(MatchType.AMBIGUOUS);
-      m.setAlternatives(matches);
       return m;
     }
+    m.setAlternatives(candidates);
+    return m;
   }
   
   /**
    * @return new best score
    */
-  private int addOrRemove(int score, Name n, int bestScore, List<Name> matches) {
+  private int addOrRemove(int score, IndexName n, int bestScore, List<IndexName> matches) {
     if (score < bestScore) {
       //LOG.debug("Worse match {}<{}: {}", score, bestScore, n.canonicalNameComplete());
       return bestScore;
@@ -223,34 +201,17 @@ public class NameIndexImpl implements NameIndex {
   }
   
   
-  private static NameMatch buildMatch(Name query, Name match) {
-    NameMatch m = new NameMatch();
-    m.setName(match);
-    if (query.getLabel().equalsIgnoreCase(match.getLabel())) {
-      m.setType(MatchType.EXACT);
-    } else {
-      m.setType(MatchType.VARIANT);
-    }
-    return m;
-  }
-  
-  private Name insert(Name orig) {
-    Name name = new Name(orig);
-    // reset all other keys
-    name.setVerbatimKey(null);
-    name.setHomotypicNameId(null);
-    name.setNameIndexId(null);
-    name.setDatasetKey(datasetKey);
-    name.setOrigin(Origin.NAME_MATCHING);
-    name.setNomStatus(NomStatus.DOUBTFUL);
-    name.setPublishedInId(null);
-    name.setPublishedInPage(null);
+  private IndexName insert(Name orig) {
+    IndexName name = new IndexName(orig);
     name.setCreatedBy(Users.MATCHER);
     name.setModifiedBy(Users.MATCHER);
     // add to index map, assigning a new NI id
     add(name);
     // insert into postgres dataset
-    dao.create(name, Users.MATCHER);
+    try (SqlSession s = sqlFactory.openSession()) {
+      NamesIndexMapper nim = s.getMapper(NamesIndexMapper.class);
+      nim.create(name);
+    }
     return name;
   }
   
@@ -260,28 +221,25 @@ public class NameIndexImpl implements NameIndex {
   }
   
   @Override
-  public void add(Name name) {
-    // generate new id
-    name.setId(idGen.next());
-    addWithID(name);
-  }
-  
-  private synchronized void addWithID(Name name) {
+  public synchronized void add(IndexName name) {
     String key = key(name);
-    ArrayList<Name> group;
+    ArrayList<IndexName> group;
+    int oldGroupSize = 0;
     if (store.containsKey(key)) {
       group = store.get(key);
-      // remove previous version if itt already existed.
+      oldGroupSize = group.size();
+      // remove previous version if it already existed.
       // Note that if the scientificName changed the key is likely different !!!
-      group.removeIf(ex -> ex.getId().equals(name.getId()));
+      group.removeIf(ex -> ex.getKey().equals(name.getKey()));
     } else {
       group = new ArrayList<>(1);
     }
     group.add(name);
     store.put(key, group);
+    counter.set(counter.get() + group.size() - oldGroupSize);
   }
   
-  private static String key(Name n) {
+  private static String key(ScientificName n) {
     return SciNameNormalizer.normalize(n.getScientificName());
   }
   
@@ -341,12 +299,10 @@ public class NameIndexImpl implements NameIndex {
       loadFromPg();
     } else {
       // verify postgres and store match up - otherwise trust postgres
-      long pgCount = countPg();
+      int pgCount = countPg();
       if (pgCount != storeSize) {
         LOG.warn("Existing name index contains {} names, but postgres has {}. Trust postgres", storeSize, pgCount);
         loadFromPg();
-      } else {
-        counter.set(storeSize);
       }
     }
     LOG.info("Started name index with {} names", counter.get());

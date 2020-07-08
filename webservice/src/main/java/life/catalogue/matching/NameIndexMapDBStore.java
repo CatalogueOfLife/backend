@@ -2,7 +2,7 @@ package life.catalogue.matching;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
-import life.catalogue.api.model.Name;
+import life.catalogue.api.model.IndexName;
 import life.catalogue.common.kryo.ApiKryoPool;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
 import org.mapdb.DB;
@@ -30,7 +30,7 @@ public class NameIndexMapDBStore implements NameIndexStore {
   private DB db;
   private Map<String, NameList> names;
 
-  static class NameList extends ArrayList<Name> {
+  static class NameList extends ArrayList<IndexName> {
     NameList() {
       super(1);
     }
@@ -39,7 +39,7 @@ public class NameIndexMapDBStore implements NameIndexStore {
       super(initialCapacity);
     }
     
-    NameList(ArrayList<Name> names) {
+    NameList(ArrayList<IndexName> names) {
       super(names);
     }
   }
@@ -114,7 +114,7 @@ public class NameIndexMapDBStore implements NameIndexStore {
   }
   
   @Override
-  public ArrayList<Name> get(String key) {
+  public ArrayList<IndexName> get(String key) {
     avail();
     return names.get(key);
   }
@@ -126,7 +126,7 @@ public class NameIndexMapDBStore implements NameIndexStore {
   }
   
   @Override
-  public void put(String key, ArrayList<Name> group) {
+  public void put(String key, ArrayList<IndexName> group) {
     avail();
     names.put(key, new NameList(group));
   }

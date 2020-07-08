@@ -62,7 +62,7 @@
     ALTER TABLE name_${key} ADD PRIMARY KEY (id);
     CREATE INDEX ON name_${key} (verbatim_key);
     CREATE INDEX ON name_${key} (homotypic_name_id);
-    CREATE INDEX ON name_${key} (name_index_id);
+    CREATE INDEX ON name_${key} USING GIN(name_index_ids);
     CREATE INDEX ON name_${key} (published_in_id);
     CREATE INDEX ON name_${key} (sector_key);
     CREATE INDEX ON name_${key} (lower(scientific_name));

@@ -883,7 +883,7 @@ CREATE TABLE name (
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   homotypic_name_id TEXT NOT NULL,
-  name_index_id TEXT,
+  name_index_ids INTEGER[],
   scientific_name TEXT NOT NULL,
   scientific_name_normalized TEXT NOT NULL,
   authorship TEXT,
@@ -909,7 +909,6 @@ CREATE TABLE name (
   remarks TEXT
 ) PARTITION BY LIST (dataset_key);
 
-
 CREATE OR REPLACE FUNCTION homotypic_name_id_default() RETURNS trigger AS $$
 BEGIN
     NEW.homotypic_name_id := NEW.id;
@@ -918,6 +917,32 @@ END
 $$
 LANGUAGE plpgsql;
 
+CREATE TABLE names_index (
+  id SERIAL PRIMARY KEY,
+  candidatus BOOLEAN DEFAULT FALSE,
+  rank RANK NOT NULL,
+  notho NAMEPART,
+  code NOMCODE,
+  type NAMETYPE NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  scientific_name TEXT NOT NULL,
+  authorship TEXT,
+  uninomial TEXT,
+  genus TEXT,
+  infrageneric_epithet TEXT,
+  specific_epithet TEXT,
+  infraspecific_epithet TEXT,
+  cultivar_epithet TEXT,
+  basionym_authors TEXT[] DEFAULT '{}',
+  basionym_ex_authors TEXT[] DEFAULT '{}',
+  basionym_year TEXT,
+  combination_authors TEXT[] DEFAULT '{}',
+  combination_ex_authors TEXT[] DEFAULT '{}',
+  combination_year TEXT,
+  sanctioning_author TEXT,
+  remarks TEXT
+);
 
 CREATE TABLE name_rel (
   id INTEGER NOT NULL,
@@ -1068,29 +1093,36 @@ CREATE TABLE media (
 ) PARTITION BY LIST (dataset_key);
 
 
-CREATE TABLE parser_config (LIKE name INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
-ALTER TABLE parser_config DROP COLUMN dataset_key;
-ALTER TABLE parser_config DROP COLUMN sector_key;
-ALTER TABLE parser_config DROP COLUMN verbatim_key;
-ALTER TABLE parser_config DROP COLUMN name_index_match_type;
-ALTER TABLE parser_config DROP COLUMN nom_status;
-ALTER TABLE parser_config DROP COLUMN origin;
-ALTER TABLE parser_config DROP COLUMN modified_by;
-ALTER TABLE parser_config DROP COLUMN modified;
-ALTER TABLE parser_config DROP COLUMN homotypic_name_id;
-ALTER TABLE parser_config DROP COLUMN name_index_id;
-ALTER TABLE parser_config DROP COLUMN published_in_id;
-ALTER TABLE parser_config DROP COLUMN published_in_page;
-ALTER TABLE parser_config DROP COLUMN link;
-ALTER TABLE parser_config DROP COLUMN scientific_name;
-ALTER TABLE parser_config DROP COLUMN scientific_name_normalized;
-ALTER TABLE parser_config DROP COLUMN authorship;
-ALTER TABLE parser_config DROP COLUMN authorship_normalized;
-ALTER TABLE parser_config ADD COLUMN taxonomic_note TEXT;
-ALTER TABLE parser_config ADD COLUMN published_in TEXT;
-ALTER TABLE parser_config ADD COLUMN extinct BOOLEAN;
-ALTER TABLE parser_config ADD PRIMARY KEY (id);
 
+CREATE TABLE parser_config (
+  id TEXT PRIMARY KEY,
+  candidatus BOOLEAN DEFAULT FALSE,
+  extinct BOOLEAN DEFAULT FALSE,
+  rank RANK NOT NULL,
+  notho NAMEPART,
+  code NOMCODE,
+  type NAMETYPE NOT NULL,
+  created_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  uninomial TEXT,
+  genus TEXT,
+  infrageneric_epithet TEXT,
+  specific_epithet TEXT,
+  infraspecific_epithet TEXT,
+  cultivar_epithet TEXT,
+  basionym_authors TEXT[] DEFAULT '{}',
+  basionym_ex_authors TEXT[] DEFAULT '{}',
+  basionym_year TEXT,
+  combination_authors TEXT[] DEFAULT '{}',
+  combination_ex_authors TEXT[] DEFAULT '{}',
+  combination_year TEXT,
+  sanctioning_author TEXT,
+  published_in TEXT,
+  nomenclatural_note TEXT,
+  taxonomic_note TEXT,
+  unparsed TEXT,
+  remarks TEXT
+);
 
 -- FUNCTIONS
 CREATE FUNCTION plaziGbifKey() RETURNS UUID AS $$
@@ -1235,16 +1267,18 @@ $$ LANGUAGE plpgsql;
 
 -- INDICES for non partitioned tables
 CREATE index ON dataset (gbif_key);
-CREATE index ON dataset_import (started);
 CREATE index ON dataset_import (dataset_key);
-CREATE index ON sector_import (sector_key);
-CREATE index ON sector (dataset_key);
-CREATE index ON sector (dataset_key, target_id);
-CREATE index ON sector (dataset_key, subject_dataset_key, subject_id);
-CREATE index ON estimate (dataset_key);
-CREATE index ON estimate (dataset_key, target_id);
+CREATE index ON dataset_import (started);
 CREATE index ON decision (dataset_key);
 CREATE index ON decision (dataset_key, subject_dataset_key, subject_id);
+CREATE index ON estimate (dataset_key);
+CREATE index ON estimate (dataset_key, target_id);
+CREATE INDEX ON names_index (lower(scientific_name));
+CREATE INDEX ON names_index (rank);
+CREATE index ON sector (dataset_key);
+CREATE index ON sector (dataset_key, subject_dataset_key, subject_id);
+CREATE index ON sector (dataset_key, target_id);
+CREATE index ON sector_import (sector_key);
 
 
 -- useful views

@@ -1,27 +1,22 @@
 package life.catalogue.es.nu;
 
+import it.unimi.dsi.fastutil.ints.IntSet;
+import life.catalogue.api.model.*;
+import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.api.search.NameUsageSearchRequest.SortBy;
+import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.common.collection.CollectionUtils;
+import life.catalogue.es.EsReadTestBase;
+import life.catalogue.es.EsUtil;
+import org.gbif.nameparser.api.Rank;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.gbif.nameparser.api.Rank;
-import org.junit.Before;
-import org.junit.Test;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.NameUsage;
-import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.model.Synonym;
-import life.catalogue.api.model.Taxon;
-import life.catalogue.api.search.NameUsageSearchRequest;
-import life.catalogue.api.search.NameUsageSearchRequest.SortBy;
-import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.es.EsReadTestBase;
-import life.catalogue.es.EsUtil;
-
-import static org.gbif.nameparser.api.Rank.FAMILY;
-import static org.gbif.nameparser.api.Rank.GENUS;
-import static org.gbif.nameparser.api.Rank.ORDER;
-import static org.gbif.nameparser.api.Rank.SPECIES;
+import static org.gbif.nameparser.api.Rank.*;
 import static org.junit.Assert.assertEquals;
 
 public class ClassificationUpdaterTest extends EsReadTestBase {
@@ -61,7 +56,7 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
   }
 
   private static List<NameUsageWrapper> createTestObjects() {
-
+    final IntSet DUMMY_NIDX = CollectionUtils.intSetOf(13, 23456789);
     NameUsageWrapper nuw1 = new NameUsageWrapper();
     nuw1.setClassification(createClassification(
       "7",
@@ -81,7 +76,7 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     nuw1.setId("10");
     Name name = new Name();
     name.setDatasetKey(DATASET_KEY);
-    name.setNameIndexId("A control value that should survive the update process unchanged");
+    name.setNameIndexIds(DUMMY_NIDX);
     nu.setName(name);
     nuw1.setUsage(nu);
 
@@ -104,7 +99,7 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     nuw2.setId("20");
     name = new Name();
     name.setDatasetKey(DATASET_KEY);
-    name.setNameIndexId("A control value that should survive the update process unchanged");
+    name.setNameIndexIds(DUMMY_NIDX);
     nu.setName(name);
     nuw2.setUsage(nu);
 
@@ -134,7 +129,7 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     nuw3.setId("777");
     name = new Name();
     name.setDatasetKey(DATASET_KEY);
-    name.setNameIndexId("A control value that should survive the update process unchanged");
+    name.setNameIndexIds(DUMMY_NIDX);
     nu.setName(name);
     nuw3.setUsage(nu);
 

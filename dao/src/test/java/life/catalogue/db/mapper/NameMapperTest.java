@@ -5,6 +5,7 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.MatchType;
+import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.dao.Partitioner;
 import life.catalogue.db.PgSetupRule;
 import org.gbif.nameparser.api.Authorship;
@@ -52,7 +53,7 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
     n.setNomenclaturalNote("nom. illeg.");
     n.setUnparsed("bla bli blub");
     n.setNameIndexMatchType(MatchType.AMBIGUOUS);
-    n.setNameIndexId("234567");
+    n.setNameIndexIds(CollectionUtils.intSetOf(13, 234567));
     return n;
   }
   
@@ -176,7 +177,7 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
   @Test
   public void hasData() throws Exception {
     assertTrue(nameMapper.hasData(DATASET11.getKey()));
-    assertFalse(nameMapper.hasData(Datasets.NAME_INDEX));
+    assertFalse(nameMapper.hasData(Datasets.NAME_PARSER));
   }
   
   @Test

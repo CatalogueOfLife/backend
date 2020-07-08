@@ -1,5 +1,6 @@
 package life.catalogue.matching;
 
+import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.db.mapper.NameMapper;
@@ -67,12 +68,12 @@ public class DatasetMatcher {
     @Override
     public void accept(Name n) {
       counter++;
-      String oldId = n.getNameIndexId();
+      IntSet oldIds = n.getNameIndexIds();
       NameMatch m = ni.match(n, allowInserts, false);
       
-      if (!Objects.equals(oldId, m.hasMatch() ? m.getName().getId() : null)) {
+      if (!Objects.equals(oldIds, m.hasMatch() ? m.getNameIds() : null)) {
         if (m.hasMatch()) {
-          nm.updateMatch(datasetKey, n.getId(), m.getName().getId(), m.getType());
+          nm.updateMatch(datasetKey, n.getId(), m.getNameIds(), m.getType());
         } else {
           nm.updateMatch(datasetKey, n.getId(), null, null);
         }

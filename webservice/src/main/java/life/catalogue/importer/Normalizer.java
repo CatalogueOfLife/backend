@@ -3,6 +3,8 @@ package life.catalogue.importer;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.collection.IterUtils;
@@ -11,7 +13,6 @@ import life.catalogue.common.tax.MisappliedNameMatcher;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.importer.acef.AcefInserter;
-import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.importer.coldp.ColdpInserter;
 import life.catalogue.importer.dwca.DwcaInserter;
 import life.catalogue.importer.neo.NeoDb;
@@ -34,7 +35,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -267,20 +270,22 @@ public class Normalizer implements Callable<Boolean> {
       counts.put(mt, new AtomicInteger(0));
     }
     // track duplicates, map index name ids to first verbatim key
-    final Map<String, Integer> nameIds = new HashMap<>();
+    final Int2IntMap nameIds = new Int2IntOpenHashMap();
     store.names().all().forEach(nn -> {
       NameMatch m = index.match(nn.name, true, false);
+      nn.name.setNameIndexMatchType(m.getType());
       if (m.hasMatch()) {
-        nn.name.setNameIndexId(m.getName().getId());
-        nn.name.setNameIndexMatchType(m.getType());
+        nn.name.setNameIndexIds(m.getNameIds());
         store.names().update(nn);
         // track duplicates regardless of status - but only for verbatim records!
         if (nn.name.getVerbatimKey() != null) {
-          if (nameIds.containsKey(m.getName().getId())) {
-            store.addIssues(nameIds.get(m.getName().getId()), Issue.DUPLICATE_NAME);
-            store.addIssues(nn.name, Issue.DUPLICATE_NAME);
-          } else {
-            nameIds.put(m.getName().getId(), nn.name.getVerbatimKey());
+          for (IndexName n : m.getNames()) {
+            if (nameIds.containsKey(n.getKey())) {
+              store.addIssues(nameIds.get(n.getKey()), Issue.DUPLICATE_NAME);
+              store.addIssues(nn.name, Issue.DUPLICATE_NAME);
+            } else {
+              nameIds.put(n.getKey(), nn.name.getVerbatimKey());
+            }
           }
         }
       }

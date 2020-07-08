@@ -1,26 +1,20 @@
 package life.catalogue.es;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
-import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NameField;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.es.ddl.Analyzers;
-import life.catalogue.es.ddl.ESDataType;
-import life.catalogue.es.ddl.MapToType;
-import life.catalogue.es.ddl.NotIndexed;
-import life.catalogue.es.ddl.NotMapped;
-import static life.catalogue.es.ddl.Analyzer.AUTO_COMPLETE;
-import static life.catalogue.es.ddl.Analyzer.IGNORE_CASE;
-import static life.catalogue.es.ddl.Analyzer.SCINAME_AUTO_COMPLETE;
-import static life.catalogue.es.ddl.Analyzer.SCINAME_IGNORE_CASE;
-import static life.catalogue.es.ddl.Analyzer.SCINAME_WHOLE_WORDS;
+import life.catalogue.es.ddl.*;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+
+import static life.catalogue.es.ddl.Analyzer.*;
 
 /**
  * Class modeling the Elasticsearch document type used to store NameUsageWrapper instances.
@@ -46,7 +40,7 @@ public class EsNameUsage {
   @Analyzers({IGNORE_CASE, AUTO_COMPLETE})
   private String authorshipComplete;
   private String nameId;
-  private String nameIndexId;
+  private Set<Integer> nameIndexIds;
   private String publishedInId;
   @MapToType(ESDataType.KEYWORD)
   private UUID publisherKey;
@@ -167,12 +161,12 @@ public class EsNameUsage {
     this.nameId = nameId;
   }
 
-  public String getNameIndexId() {
-    return nameIndexId;
+  public Set<Integer> getNameIndexIds() {
+    return nameIndexIds;
   }
 
-  public void setNameIndexId(String nameIndexId) {
-    this.nameIndexId = nameIndexId;
+  public void setNameIndexIds(Set<Integer> nameIndexIds) {
+    this.nameIndexIds = nameIndexIds;
   }
 
   public String getPublishedInId() {
@@ -322,7 +316,7 @@ public class EsNameUsage {
   @Override
   public int hashCode() {
     return Objects.hash(acceptedName, authorship, authorshipComplete, authorshipYear, classification, classificationIds, datasetKey,
-        decisions, documentId, fossil, issues, nameFields, nameId, nameIndexId, nameStrings, nomCode, nomStatus, payload,
+        decisions, documentId, fossil, issues, nameFields, nameId, nameIndexIds, nameStrings, nomCode, nomStatus, payload,
         publishedInId, publisherKey, rank, recent, scientificName, sectorDatasetKey, sectorKey, status, type, usageId, vernacularNames);
   }
 
@@ -344,7 +338,7 @@ public class EsNameUsage {
         && Objects.equals(datasetKey, other.datasetKey)
         && Objects.equals(decisions, other.decisions) && Objects.equals(documentId, other.documentId)
         && Objects.equals(fossil, other.fossil) && Objects.equals(issues, other.issues) && Objects.equals(nameFields, other.nameFields)
-        && Objects.equals(nameId, other.nameId) && Objects.equals(nameIndexId, other.nameIndexId)
+        && Objects.equals(nameId, other.nameId) && Objects.equals(nameIndexIds, other.nameIndexIds)
         && Objects.equals(nameStrings, other.nameStrings) && nomCode == other.nomCode && nomStatus == other.nomStatus
         && Objects.equals(payload, other.payload) && Objects.equals(publishedInId, other.publishedInId)
         && Objects.equals(publisherKey, other.publisherKey) && rank == other.rank && Objects.equals(recent, other.recent)

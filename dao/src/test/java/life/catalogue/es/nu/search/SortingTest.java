@@ -10,10 +10,7 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
@@ -258,15 +255,15 @@ public class SortingTest extends EsReadTestBase {
   @Test
   public void testSortByIndexNameId_01() {
     EsNameUsage docA = new EsNameUsage();
-    docA.setNameIndexId("A");
+    docA.setNameIndexIds(Set.of(1));
     EsNameUsage docB = new EsNameUsage();
-    docB.setNameIndexId("B");
+    docB.setNameIndexIds(Set.of(2));
     EsNameUsage docC = new EsNameUsage();
-    docC.setNameIndexId("C");
+    docC.setNameIndexIds(Set.of(3));
     EsNameUsage docD = new EsNameUsage();
-    docD.setNameIndexId("D");
+    docD.setNameIndexIds(Set.of(4));
     EsNameUsage docE = new EsNameUsage();
-    docE.setNameIndexId("E");
+    docE.setNameIndexIds(Set.of(5));
 
     indexRaw(docB, docA, docD, docE, docC);
 
@@ -282,15 +279,15 @@ public class SortingTest extends EsReadTestBase {
   @Test
   public void testSortByIndexNameIdDescending_01() {
     EsNameUsage docA = new EsNameUsage();
-    docA.setNameIndexId("A");
+    docA.setNameIndexIds(Set.of(1));
     EsNameUsage docB = new EsNameUsage();
-    docB.setNameIndexId("B");
+    docB.setNameIndexIds(Set.of(2));
     EsNameUsage docC = new EsNameUsage();
-    docC.setNameIndexId("C");
+    docC.setNameIndexIds(Set.of(3));
     EsNameUsage docD = new EsNameUsage();
-    docD.setNameIndexId("D");
+    docD.setNameIndexIds(Set.of(4));
     EsNameUsage docE = new EsNameUsage();
-    docE.setNameIndexId("E");
+    docE.setNameIndexIds(Set.of(5));
 
     indexRaw(docB, docA, docD, docE, docC);
 

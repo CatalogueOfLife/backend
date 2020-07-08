@@ -1,5 +1,8 @@
 package life.catalogue.common.collection;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -107,6 +110,24 @@ public class CollectionUtils {
     }
 
     return result;
+  }
+
+  public static IntSet intSetOf(Collection<Integer> values) {
+    IntSet is = new IntOpenHashSet();
+    if (values != null) {
+      is.addAll(values);
+    }
+    return is;
+  }
+
+  public static IntSet intSetOf(int... values) {
+    IntSet is = new IntOpenHashSet();
+    if (values != null) {
+      for (int i : values) {
+        is.add(i);
+      }
+    }
+    return is;
   }
 
   private CollectionUtils() {
