@@ -59,24 +59,24 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   private final Supplier<SqlSessionFactory> sqlSessionFactorySupplier;
 
   public enum TestData {
-    NONE(null, null, null, 1, 3),
+    NONE(null, null, null, 3),
 
     // apple datasetKey=11
-    APPLE(11, 3, 2, 1, 3, 11, 12),
+    APPLE(11, 3, 2, 3, 11, 12),
 
     // tree datasetKey=11
-    TREE(11, 2, 2, 1, 3, 11),
+    TREE(11, 2, 2, 3, 11),
 
     // basic draft hierarchy
-    DRAFT(3, 1, 2, 1, 3),
+    DRAFT(3, 1, 2, 3),
 
     // basic draft hierarchy
-    DRAFT_WITH_SECTORS(3, 2, 3, 1, 3),
+    DRAFT_WITH_SECTORS(3, 2, 3, 3),
 
     /**
      * Inits the datasets table with real col data from colplus-repo
      */
-    DATASETS(1, 3, null);
+    DATASETS(null, 3, null);
 
     public final Integer key;
     public final Integer sciNameColumn;
