@@ -2,6 +2,7 @@ package life.catalogue.resources;
 
 import io.dropwizard.auth.Auth;
 import life.catalogue.api.model.*;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.dao.TreeDao;
@@ -10,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
@@ -31,16 +31,21 @@ public class TreeResource {
     this.tree = tree;
   }
 
-  private static Page defaultPage(Page page){
-    return page == null ? new Page(0, DEFAULT_PAGE_SIZE) : page;
+  private static Page page(Integer limit, Integer offset){
+    Page p = new Page(ObjectUtils.coalesce(offset, 0), DEFAULT_PAGE_SIZE);
+    // we set the limit here and not in the constructor to bypass the max argument exception
+    // we want to allow higher limits than 1000 for the tree API only !!!
+    p.setLimit(ObjectUtils.coalesce(limit, DEFAULT_PAGE_SIZE));
+    return p;
   }
 
   @GET
   public ResultPage<TreeNode> root(@PathParam("datasetKey") int datasetKey,
                                    @QueryParam("catalogueKey") @DefaultValue(Datasets.DRAFT_COL+"") int catalogueKey,
                                    @QueryParam("type") TreeNode.Type type,
-                                   @Valid @BeanParam Page page) {
-    return tree.root(datasetKey, catalogueKey, type, defaultPage(page));
+                                   @QueryParam("limit") Integer limit,
+                                   @QueryParam("offset") Integer offset) {
+    return tree.root(datasetKey, catalogueKey, type, page(limit, offset));
   }
   
   @GET
@@ -69,7 +74,8 @@ public class TreeResource {
                                        @QueryParam("catalogueKey") @DefaultValue(Datasets.DRAFT_COL+"") int catalogueKey,
                                        @QueryParam("insertPlaceholder") boolean placeholder,
                                        @QueryParam("type") TreeNode.Type type,
-                                       @Valid @BeanParam Page page) {
-    return tree.children(DSID.of(datasetKey, id), catalogueKey, placeholder, type, defaultPage(page));
+                                       @QueryParam("limit") Integer limit,
+                                       @QueryParam("offset") Integer offset) {
+    return tree.children(DSID.of(datasetKey, id), catalogueKey, placeholder, type, page(limit, offset));
   }
 }
