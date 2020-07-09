@@ -113,7 +113,7 @@ public class NamesTreeDao {
     }
   }
 
-  static class NamesIdWriter implements Consumer<String>, AutoCloseable {
+  static class NamesIdWriter implements Consumer<Integer>, AutoCloseable {
     public int counter = 0;
     private final File f;
     private final BufferedWriter w;
@@ -139,11 +139,11 @@ public class NamesTreeDao {
     }
 
     @Override
-    public void accept(String id) {
+    public void accept(Integer id) {
       try {
         if (id != null) {
           counter++;
-          w.append(id);
+          w.append(id.toString());
           w.append('\n');
         }
       } catch (IOException e) {

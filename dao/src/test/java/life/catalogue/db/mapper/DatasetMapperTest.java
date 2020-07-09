@@ -286,10 +286,9 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     assertEquals(4, res.size());
     assertEquals(ds.subList(4, 8), res);
 
-    // next page (d9)
     p.next();
     res = removeDbCreatedProps(mapper().list(p));
-    assertEquals(1, res.size());
+    assertTrue(res.isEmpty());
   }
 
   @Test

@@ -56,7 +56,7 @@ public class NameResource extends AbstractDatasetScopedResource<String, Name, Pa
 
   @GET
   @Path("{id}/group")
-  public List<Name> getIndexGroup(@PathParam("id") String id, @Context SqlSession session) {
+  public List<Name> getIndexGroup(@PathParam("id") int id, @Context SqlSession session) {
     return session.getMapper(NameMapper.class).indexGroup(id);
   }
 

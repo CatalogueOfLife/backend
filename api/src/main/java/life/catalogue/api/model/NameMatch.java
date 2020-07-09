@@ -1,6 +1,7 @@
 package life.catalogue.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.vocab.MatchType;
@@ -34,6 +35,7 @@ public class NameMatch {
   }
 
   public void addName(IndexName n) {
+    Preconditions.checkNotNull(n.getKey());
     names.add(n);
   }
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.jackson.IsEmptyFilter;
 import life.catalogue.api.util.ObjectUtils;
@@ -53,7 +54,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   /**
    * Keys from the names index grouping all distinct scientific names
    */
-  private IntSet nameIndexIds;
+  private IntSet nameIndexIds = new IntOpenHashSet();
   
   /**
    * Match type that resulted in the nameIndexId.

@@ -24,7 +24,7 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
   /**
    * Lists all distinct name index ids from the names table.
    */
-  Cursor<String> processIndexIds(@Param("datasetKey") int datasetKey,
+  Cursor<Integer> processIndexIds(@Param("datasetKey") int datasetKey,
                          @Nullable @Param("sectorKey") Integer sectorKey);
 
   /**
@@ -56,7 +56,7 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
    *
    * @param nameId from the names index!
    */
-  List<Name> indexGroup(@Param("id") String nameId);
+  List<Name> indexGroup(@Param("id") int nameId);
   
   /**
    *

@@ -3,7 +3,6 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
-import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.dao.Partitioner;
@@ -177,7 +176,7 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
   @Test
   public void hasData() throws Exception {
     assertTrue(nameMapper.hasData(DATASET11.getKey()));
-    assertFalse(nameMapper.hasData(Datasets.NAME_PARSER));
+    assertFalse(nameMapper.hasData(3));
   }
   
   @Test

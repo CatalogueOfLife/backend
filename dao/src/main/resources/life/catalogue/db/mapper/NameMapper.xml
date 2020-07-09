@@ -214,7 +214,7 @@
 
   <select id="processIndexIds" resultType="String">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT DISTINCT name_index_id
+    SELECT DISTINCT unnest(name_index_ids)
     FROM <include refid="FROM"/>
     <if test="sectorKey != null">
       WHERE sector_key = #{sectorKey}
@@ -242,7 +242,7 @@
   <select id="indexGroup" resultMap="nameResultMap">
     SELECT <include refid="SELECT"/>
     FROM name n
-    WHERE n.name_index_id=#{id}
+    WHERE n.name_index_ids @> array[${id}]
   </select>
 
   <insert id="create" parameterType="Name" useGeneratedKeys="false" keyProperty="id">

@@ -2,16 +2,18 @@ package life.catalogue.db.type;
 
 import life.catalogue.db.type2.AbstractArrayTypeHandler;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.type.BaseTypeHandler;
-import org.apache.ibatis.type.JdbcType;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.Array;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
  * Base class for type handlers that need to convert between columns of enum array type and fields of type Set&lt;Enum&gt;.
- * Avoids nulls and uses empty arrays instead.
+ * Avoids nulls and uses empty enum sets instead.
  *
  * @param <T> enum class
  */
