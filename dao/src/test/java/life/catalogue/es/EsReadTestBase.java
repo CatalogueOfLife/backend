@@ -94,13 +94,15 @@ public class EsReadTestBase {
   protected EsNameUsage toDocument(NameUsageWrapper nu) {
     try {
       // create copy of content as the converter modifies the original instance
-      NameUsageWrapper nu2 = kryo.copy(nu);
-      return new NameUsageWrapperConverter().toDocument(nu2);
+      return new NameUsageWrapperConverter().toDocument(deepCopy(nu));
     } catch (Exception e) {
       throw new EsException(e);
     }
   }
 
+  public static <T> T deepCopy(T obj) {
+    return kryo.copy(obj);
+  }
   protected List<EsNameUsage> toDocuments(Collection<NameUsageWrapper> nameUsages) {
     return nameUsages.stream().map(this::toDocument).collect(Collectors.toList());
   }

@@ -331,7 +331,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setUninomial("laridae");
     BareName bn = new BareName(n);
     NameUsageWrapper nuw1 = new NameUsageWrapper(bn);
-    insert(client, indexName(), converter.toDocument(nuw1));
+    insert(client, indexName(), converter.toDocument(deepCopy(nuw1)));
 
     // Match
     n = new Name();
@@ -339,7 +339,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setGenus("parus");
     bn = new BareName(n);
     NameUsageWrapper nuw2 = new NameUsageWrapper(bn);
-    insert(client, indexName(), converter.toDocument(nuw2));
+    insert(client, indexName(), converter.toDocument(deepCopy(nuw2)));
 
     // No match
     n = new Name();
@@ -347,7 +347,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setGenus("parus");
     bn = new BareName(n);
     NameUsageWrapper nuw3 = new NameUsageWrapper(bn);
-    insert(client, indexName(), converter.toDocument(nuw3));
+    insert(client, indexName(), converter.toDocument(deepCopy(nuw3)));
 
     // Match
     n = new Name();
@@ -355,16 +355,14 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setGenus("parus");
     bn = new BareName(n);
     NameUsageWrapper nuw4 = new NameUsageWrapper(bn);
-    insert(client, indexName(), converter.toDocument(nuw4));
+    insert(client, indexName(), converter.toDocument(deepCopy(nuw4)));
 
     refreshIndex(client, indexName());
 
     List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw4);
 
     ResultPage<NameUsageWrapper> result = svc.search(indexName(), nsr, new Page());
-
     assertEquals(expected, result.getResult());
-
   }
 
   @Test
@@ -381,7 +379,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setUninomial("laridae");
     BareName bn = new BareName(n);
     NameUsageWrapper nuw1 = new NameUsageWrapper(bn);
-    insert(client, indexName(), converter.toDocument(nuw1));
+    insert(client, indexName(), converter.toDocument(deepCopy(nuw1)));
 
     // Match
     n = new Name();
@@ -389,7 +387,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setGenus("parus");
     bn = new BareName(n);
     NameUsageWrapper nuw2 = new NameUsageWrapper(bn);
-    insert(client, indexName(), converter.toDocument(nuw2));
+    insert(client, indexName(), converter.toDocument(deepCopy(nuw2)));
 
     // No match
     n = new Name();
@@ -397,7 +395,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setGenus("parus");
     bn = new BareName(n);
     NameUsageWrapper nuw3 = new NameUsageWrapper(bn);
-    insert(client, indexName(), converter.toDocument(nuw3));
+    insert(client, indexName(), converter.toDocument(deepCopy(nuw3)));
 
     // Match
     n = new Name();
@@ -405,16 +403,13 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setGenus("parus");
     bn = new BareName(n);
     NameUsageWrapper nuw4 = new NameUsageWrapper(bn);
-    insert(client, indexName(), converter.toDocument(nuw4));
+    insert(client, indexName(), converter.toDocument(deepCopy(nuw4)));
 
     refreshIndex(client, indexName());
 
     List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw4);
-
     ResultPage<NameUsageWrapper> result = svc.search(indexName(), nsr, new Page());
-
     assertEquals(expected, result.getResult());
-
   }
 
   @Test

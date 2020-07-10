@@ -62,6 +62,7 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(Sector.class);
     kryo.register(Sector.Mode.class);
     kryo.register(SimpleDecision.class);
+    kryo.register(SimpleName.class);
     kryo.register(Synonym.class);
     kryo.register(Taxon.class);
     kryo.register(TaxonRelation.class);
