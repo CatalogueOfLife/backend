@@ -201,6 +201,7 @@ public class EsModule extends SimpleModule {
 
   public EsModule() {
     super("Elasticsearch");
+    FastutilsSerde.register(this);
   }
 
   @Override
@@ -209,11 +210,9 @@ public class EsModule extends SimpleModule {
     super.setupModule(ctxt);
     ctxt.setMixInAnnotations(NameUsage.class, NameUsageMixIn.class);
     ctxt.setMixInAnnotations(Name.class, NameMixIn.class);
-    // fastutils primitive collection
-    FastutilsSerde.register(this);
   }
 
-  @JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
+  @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "@")
   @JsonSubTypes({@JsonSubTypes.Type(value = Taxon.class, name = "T"),
       @JsonSubTypes.Type(value = BareName.class, name = "B"),
       @JsonSubTypes.Type(value = Synonym.class, name = "S")})
@@ -236,8 +235,8 @@ public class EsModule extends SimpleModule {
     } else {
       mapper.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
     }
-    mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
-    mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+    //mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
+    //mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
     mapper.registerModule(new JavaTimeModule());
     mapper.registerModule(new EsModule());
     return mapper;

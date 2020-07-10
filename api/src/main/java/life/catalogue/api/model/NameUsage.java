@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
@@ -31,15 +32,18 @@ public interface NameUsage extends DSID<String>, VerbatimEntity {
   String getAccordingToId();
   
   void setAccordingToId(String according);
-  
+
+  @JsonIgnore
   default boolean isSynonym() {
     return getStatus() != null && getStatus().isSynonym();
   }
-  
+
+  @JsonIgnore
   default boolean isTaxon() {
     return getStatus() != null && !getStatus().isSynonym();
   }
-  
+
+  @JsonIgnore
   default boolean isBareName() {
     return getStatus() == null;
   }

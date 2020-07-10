@@ -702,7 +702,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
    * @return same as canonicalNameComplete but formatted with basic html tags
    */
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-  public String labelHtml() {
+  public String getLabelHtml() {
     return getLabel(true);
   }
 
