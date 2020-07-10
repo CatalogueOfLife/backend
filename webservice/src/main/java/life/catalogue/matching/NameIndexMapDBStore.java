@@ -2,6 +2,7 @@ package life.catalogue.matching;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
+import com.google.common.base.Preconditions;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.common.kryo.ApiKryoPool;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
@@ -128,7 +129,12 @@ public class NameIndexMapDBStore implements NameIndexStore {
   @Override
   public void put(String key, ArrayList<IndexName> group) {
     avail();
+    group.forEach(this::check);
     names.put(key, new NameList(group));
+  }
+
+  void check(IndexName n){
+    Preconditions.checkNotNull(n.getKey());
   }
 
   private void avail() throws UnavailableException {

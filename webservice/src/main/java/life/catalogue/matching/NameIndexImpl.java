@@ -205,13 +205,13 @@ public class NameIndexImpl implements NameIndex {
     IndexName name = new IndexName(orig);
     name.setCreatedBy(Users.MATCHER);
     name.setModifiedBy(Users.MATCHER);
-    // add to index map, assigning a new NI id
-    add(name);
-    // insert into postgres dataset
-    try (SqlSession s = sqlFactory.openSession()) {
+    // insert into postgres assigning a key
+    try (SqlSession s = sqlFactory.openSession(true)) {
       NamesIndexMapper nim = s.getMapper(NamesIndexMapper.class);
       nim.create(name);
     }
+    // add to index map, assigning a new NI id
+    add(name);
     return name;
   }
   
