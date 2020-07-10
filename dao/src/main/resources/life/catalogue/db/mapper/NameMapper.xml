@@ -110,7 +110,7 @@
     #{sectorKey},
     #{id},
     #{verbatimKey},
-    #{nameIndexIds},
+    #{nameIndexIds, typeHandler=life.catalogue.db.type.IntSetTypeHandler},
     #{nameIndexMatchType}::MATCHTYPE,
     #{homotypicNameId},
     #{scientificName},
@@ -130,8 +130,7 @@
     #{basionymAuthorship.exAuthors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
     #{basionymAuthorship.year},
     #{combinationAuthorship.authors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
-    #{combinationAuthorship.exAuthors,
-    typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
+    #{combinationAuthorship.exAuthors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
     #{combinationAuthorship.year},
     #{sanctioningAuthor},
     #{publishedInId},
@@ -267,7 +266,7 @@
   <update id="updateMatch" parameterType="map" keyProperty="id">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     UPDATE name_${partition}
-    SET (name_index_ids, name_index_match_type, modified) = (#{nameIndexIds}, #{matchType}::MATCHTYPE, now())
+    SET (name_index_ids, name_index_match_type, modified) = (#{nameIndexIds, typeHandler=life.catalogue.db.type.IntSetTypeHandler}, #{matchType}::MATCHTYPE, now())
     WHERE id = #{id} AND dataset_key=#{datasetKey}
   </update>
 

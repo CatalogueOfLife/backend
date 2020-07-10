@@ -1,5 +1,7 @@
 package life.catalogue.db.mapper;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
@@ -244,7 +246,35 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
     assertEquals(1, nameMapper.listByReference(REF1.getDatasetKey(), REF1.getId()).size());
     assertEquals(2, nameMapper.listByReference(REF1b.getDatasetKey(), REF1b.getId()).size());
   }
-  
+
+  @Test
+  public void updateMatches() throws Exception {
+    IntSet ints = new IntOpenHashSet();
+    ints.add(1);
+    mapper().updateMatch(datasetKey, NAME1.getId(), ints, MatchType.EXACT);
+    Name n = mapper().get(NAME1);
+    assertEquals(MatchType.EXACT, n.getNameIndexMatchType());
+    assertEquals(ints, n.getNameIndexIds());
+
+    ints.add(13);
+    ints.add(42213);
+    mapper().updateMatch(datasetKey, NAME1.getId(), ints, MatchType.AMBIGUOUS);
+    n = mapper().get(NAME1);
+    assertEquals(MatchType.AMBIGUOUS, n.getNameIndexMatchType());
+    assertEquals(ints, n.getNameIndexIds());
+
+    ints.clear();
+    mapper().updateMatch(datasetKey, NAME1.getId(), ints, MatchType.NONE);
+    n = mapper().get(NAME1);
+    assertEquals(MatchType.NONE, n.getNameIndexMatchType());
+    assertEquals(ints, n.getNameIndexIds());
+
+    mapper().updateMatch(datasetKey, NAME1.getId(), null, null);
+    n = mapper().get(NAME1);
+    assertNull(n.getNameIndexMatchType());
+    assertEquals(ints, n.getNameIndexIds());
+  }
+
   private static Name newAcceptedName(String scientificName) {
     return newName(DATASET11.getKey(), scientificName.toLowerCase().replace(' ', '-'), scientificName);
   }
