@@ -51,7 +51,9 @@ public class NameIndexMapDBStoreTest {
   private ArrayList<IndexName> newNameList(int size) {
     ArrayList<IndexName> names = new ArrayList<>(size);
     for (int idx = 0; idx<size; idx++) {
-      names.add(new IndexName(TestEntityGenerator.newName()));
+      IndexName n = new IndexName(TestEntityGenerator.newName());
+      n.setKey(idx);
+      names.add(n);
     }
     return names;
   }
