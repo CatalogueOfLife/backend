@@ -816,6 +816,36 @@ CREATE TABLE estimate (
   reference_id TEXT,
   note TEXT
 );
+
+CREATE TABLE names_index (
+  id SERIAL PRIMARY KEY,
+  candidatus BOOLEAN DEFAULT FALSE,
+  rank RANK NOT NULL,
+  notho NAMEPART,
+  code NOMCODE,
+  type NAMETYPE NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  scientific_name TEXT NOT NULL,
+  authorship TEXT,
+  uninomial TEXT,
+  genus TEXT,
+  infrageneric_epithet TEXT,
+  specific_epithet TEXT,
+  infraspecific_epithet TEXT,
+  cultivar_epithet TEXT,
+  basionym_authors TEXT[] DEFAULT '{}',
+  basionym_ex_authors TEXT[] DEFAULT '{}',
+  basionym_year TEXT,
+  combination_authors TEXT[] DEFAULT '{}',
+  combination_ex_authors TEXT[] DEFAULT '{}',
+  combination_year TEXT,
+  sanctioning_author TEXT,
+  remarks TEXT
+);
+
+
+
 --
 -- PARTITIONED DATA TABLES
 --
@@ -916,33 +946,6 @@ BEGIN
 END
 $$
 LANGUAGE plpgsql;
-
-CREATE TABLE names_index (
-  id SERIAL PRIMARY KEY,
-  candidatus BOOLEAN DEFAULT FALSE,
-  rank RANK NOT NULL,
-  notho NAMEPART,
-  code NOMCODE,
-  type NAMETYPE NOT NULL,
-  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  scientific_name TEXT NOT NULL,
-  authorship TEXT,
-  uninomial TEXT,
-  genus TEXT,
-  infrageneric_epithet TEXT,
-  specific_epithet TEXT,
-  infraspecific_epithet TEXT,
-  cultivar_epithet TEXT,
-  basionym_authors TEXT[] DEFAULT '{}',
-  basionym_ex_authors TEXT[] DEFAULT '{}',
-  basionym_year TEXT,
-  combination_authors TEXT[] DEFAULT '{}',
-  combination_ex_authors TEXT[] DEFAULT '{}',
-  combination_year TEXT,
-  sanctioning_author TEXT,
-  remarks TEXT
-);
 
 CREATE TABLE name_rel (
   id INTEGER NOT NULL,
@@ -1274,7 +1277,6 @@ CREATE index ON decision (dataset_key, subject_dataset_key, subject_id);
 CREATE index ON estimate (dataset_key);
 CREATE index ON estimate (dataset_key, target_id);
 CREATE INDEX ON names_index (lower(scientific_name));
-CREATE INDEX ON names_index (rank);
 CREATE index ON sector (dataset_key);
 CREATE index ON sector (dataset_key, subject_dataset_key, subject_id);
 CREATE index ON sector (dataset_key, target_id);

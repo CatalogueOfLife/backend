@@ -68,8 +68,8 @@ public class EsModule extends SimpleModule {
    * written, and which reader/writer to use. Before we had code fabricating readers and writers (and even mappers) all over the place.
    */
 
-  private static final ObjectMapper esObjectMapper = configureMapper(new ObjectMapper(), false);
-  private static final ObjectMapper contentMapper = configureMapper(new ObjectMapper(), true);
+  private static final ObjectMapper esObjectMapper = configureEsMapper(new ObjectMapper());
+  private static final ObjectMapper contentMapper = configureContentMapper(new ObjectMapper());
 
   private static final ObjectWriter ddlWriter = esObjectMapper.writerFor(IndexDefinition.class);
   private static final ObjectWriter queryWriter = esObjectMapper.writerFor(EsSearchRequest.class);
@@ -195,7 +195,7 @@ public class EsModule extends SimpleModule {
     }
   }
 
-  private static final ObjectWriter DEBUG_WRITER = configureMapper(new ObjectMapper(), false)
+  private static final ObjectWriter DEBUG_WRITER = configureEsMapper(new ObjectMapper())
       .writer()
       .withDefaultPrettyPrinter();
 
@@ -227,16 +227,23 @@ public class EsModule extends SimpleModule {
     abstract String getLabelHtml();
   }
 
-  private static ObjectMapper configureMapper(ObjectMapper mapper, boolean enumToInt) {
+  private static ObjectMapper configureContentMapper(ObjectMapper mapper) {
+    configureMapper(mapper);
+    mapper.enable(SerializationFeature.WRITE_ENUMS_USING_INDEX);
+    return mapper;
+  }
+
+  private static ObjectMapper configureEsMapper(ObjectMapper mapper) {
+    configureMapper(mapper);
+    mapper.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
+    mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
+    mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+    return mapper;
+  }
+
+  private static ObjectMapper configureMapper(ObjectMapper mapper) {
     mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
     mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-    if (enumToInt) {
-      mapper.enable(SerializationFeature.WRITE_ENUMS_USING_INDEX);
-    } else {
-      mapper.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
-    }
-    //mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
-    //mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
     mapper.registerModule(new JavaTimeModule());
     mapper.registerModule(new EsModule());
     return mapper;

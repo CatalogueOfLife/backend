@@ -10,6 +10,41 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2020-07-10 names index intset 
+```
+ALTER TABLE name DROP COLUMN name_index_id; 
+ALTER TABLE name ADD COLUMN name_index_ids INTEGER[];
+
+CREATE TABLE names_index (
+  id SERIAL PRIMARY KEY,
+  candidatus BOOLEAN DEFAULT FALSE,
+  rank RANK NOT NULL,
+  notho NAMEPART,
+  code NOMCODE,
+  type NAMETYPE NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  scientific_name TEXT NOT NULL,
+  authorship TEXT,
+  uninomial TEXT,
+  genus TEXT,
+  infrageneric_epithet TEXT,
+  specific_epithet TEXT,
+  infraspecific_epithet TEXT,
+  cultivar_epithet TEXT,
+  basionym_authors TEXT[] DEFAULT '{}',
+  basionym_ex_authors TEXT[] DEFAULT '{}',
+  basionym_year TEXT,
+  combination_authors TEXT[] DEFAULT '{}',
+  combination_ex_authors TEXT[] DEFAULT '{}',
+  combination_year TEXT,
+  sanctioning_author TEXT,
+  remarks TEXT
+);
+
+CREATE INDEX ON names_index (lower(scientific_name));
+```
+
 #### 2020-07-07 treatment imports 
 ```
 ALTER TABLE treatment DROP COLUMN reference_id; 
