@@ -1,8 +1,10 @@
 package life.catalogue.es;
 
+import com.esotericsoftware.kryo.Kryo;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
 import life.catalogue.api.search.NameUsageSearchRequest.SortBy;
+import life.catalogue.common.kryo.ApiKryoPool;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
 import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
 import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
@@ -26,6 +28,12 @@ import static java.util.stream.Collectors.toList;
  * Base class for tests that only read from ES. Does not provide postgres functionality and saves setup/initialization time accordingly.
  */
 public class EsReadTestBase {
+
+  final static Kryo kryo = ApiKryoPool.configure(new Kryo());
+  static {
+    kryo.register(NameUsageWrapper.class);
+  }
+
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(EsReadTestBase.class);
@@ -83,10 +91,12 @@ public class EsReadTestBase {
     return new NameUsageSearchServiceEs(indexName(), getEsClient()).getDocuments(rawRequest);
   }
 
-  protected EsNameUsage toDocument(NameUsageWrapper nameUsage) {
+  protected EsNameUsage toDocument(NameUsageWrapper nu) {
     try {
-      return new NameUsageWrapperConverter().toDocument(nameUsage);
-    } catch (IOException e) {
+      // create copy of content as the converter modifies the original instance
+      NameUsageWrapper nu2 = kryo.copy(nu);
+      return new NameUsageWrapperConverter().toDocument(nu2);
+    } catch (Exception e) {
       throw new EsException(e);
     }
   }

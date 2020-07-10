@@ -212,19 +212,21 @@ public class EsModule extends SimpleModule {
     ctxt.setMixInAnnotations(Name.class, NameMixIn.class);
   }
 
+  /**
+   * We ignore many NameUsageWrapper fields that are already indexed separately so as to make the payload (and the entire document)
+   * as small as possible and to cut down as much as possible on JSON processing. It's not necessary to prune away everything that can be
+   * pruned away, as long as this mirrors NameUsageWrapperConverter.enrichPayload().
+   */
   @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "@")
   @JsonSubTypes({@JsonSubTypes.Type(value = Taxon.class, name = "T"),
       @JsonSubTypes.Type(value = BareName.class, name = "B"),
       @JsonSubTypes.Type(value = Synonym.class, name = "S")})
   abstract class NameUsageMixIn {
-    @JsonIgnore
-    abstract String getLabel();
-    @JsonIgnore
-    abstract String getLabelHtml();
+    @JsonIgnore abstract String getLabel();
+    @JsonIgnore abstract String getLabelHtml();
   }
   abstract class NameMixIn {
-    @JsonIgnore
-    abstract String getLabelHtml();
+    @JsonIgnore abstract String getLabelHtml();
   }
 
   private static ObjectMapper configureContentMapper(ObjectMapper mapper) {

@@ -6,6 +6,7 @@ import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer;
 import de.javakaffee.kryoserializers.guava.ImmutableListSerializer;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.*;
+import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.kryo.jdk.JdkImmutableListSerializer;
@@ -34,15 +35,21 @@ public class ApiKryoPool extends Pool<Kryo> {
 
   @Override
   public Kryo create() {
-    Kryo kryo = new Kryo();
+    return configure(new Kryo());
+  }
+
+  public static Kryo configure(Kryo kryo) {
     kryo.setRegistrationRequired(true);
-    
+
     // col core
     kryo.register(Authorship.class);
+    kryo.register(BareName.class);
     kryo.register(Classification.class);
     kryo.register(Dataset.class);
     kryo.register(DatasetImport.class);
     kryo.register(Distribution.class);
+    kryo.register(EditorialDecision.class);
+    kryo.register(EditorialDecision.Mode.class);
     kryo.register(IndexName.class);
     kryo.register(Media.class);
     kryo.register(Name.class);
@@ -53,6 +60,8 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(ParsedName.State.class);
     kryo.register(Reference.class);
     kryo.register(Sector.class);
+    kryo.register(Sector.Mode.class);
+    kryo.register(SimpleDecision.class);
     kryo.register(Synonym.class);
     kryo.register(Taxon.class);
     kryo.register(TaxonRelation.class);
@@ -84,6 +93,13 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(LinkedList.class);
     kryo.register(URI.class, new URISerializer());
     kryo.register(UUID.class, new UUIDSerializer());
+    // private class, special registration
+    try {
+      Class clazz = Class.forName("java.util.Arrays$ArrayList");
+      kryo.register(clazz);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
     // guave collections
     UnmodifiableCollectionsSerializer.registerSerializers( kryo );
     // pre java9 immutable collections
@@ -125,7 +141,7 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(TaxRelType.class);
     kryo.register(TreatmentFormat.class);
     kryo.register(TypeStatus.class);
-    
+
     // term enums
     TermFactory.instance().registerTermEnum(ColdpTerm.class);
     TermFactory.instance().registerTermEnum(ColDwcTerm.class);
@@ -134,7 +150,6 @@ public class ApiKryoPool extends Pool<Kryo> {
       kryo.register(cl);
     }
     kryo.register(UnknownTerm.class, new TermSerializer());
-    
     return kryo;
   }
 }

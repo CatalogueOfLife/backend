@@ -5,7 +5,6 @@ import life.catalogue.api.search.FacetValue;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.es.EsModule;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.UpwardConverter;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
@@ -47,12 +46,7 @@ class ResponseConverter implements UpwardConverter<EsResponse<EsNameUsage>, Name
     List<NameUsageWrapper> nuws = new ArrayList<>(hits.size());
     for (SearchHit<EsNameUsage> hit : hits) {
       String payload = hit.getSource().getPayload();
-      NameUsageWrapper nuw;
-      if (NameUsageWrapperConverter.ZIP_PAYLOAD) {
-        nuw = NameUsageWrapperConverter.inflate(payload);
-      } else {
-        nuw = EsModule.readNameUsageWrapper(payload);
-      }
+      NameUsageWrapper nuw = NameUsageWrapperConverter.inflate(payload);
       NameUsageWrapperConverter.enrichPayload(nuw, hit.getSource());
       if (!inclVernaculars) {
         nuw.setVernacularNames(null);

@@ -4,14 +4,9 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.minlog.Log;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.common.kryo.jdk.JdkImmutableSetSerializer;
-
-import java.lang.reflect.Field;
-import java.util.EnumSet;
-import java.util.Set;
 
 /**
  * We only need IntSet so far, so we create an efficient manual class here.
@@ -56,4 +51,8 @@ public class FastUtilsSerializer extends Serializer<IntSet> {
     kryo.register(IntOpenHashSet.class, serializer);
   }
 
+  @Override
+  public IntSet copy(Kryo kryo, IntSet original) {
+    return new IntOpenHashSet(original);
+  }
 }

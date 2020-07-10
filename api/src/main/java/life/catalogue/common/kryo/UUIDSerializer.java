@@ -1,11 +1,11 @@
 package life.catalogue.common.kryo;
 
-import java.util.UUID;
-
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+
+import java.util.UUID;
 
 public class UUIDSerializer extends Serializer<UUID> {
 
@@ -18,5 +18,10 @@ public class UUIDSerializer extends Serializer<UUID> {
   @Override
   public UUID read(final Kryo kryo, final Input input, final Class<? extends UUID> uuidClass) {
     return new UUID(input.readLong(false), input.readLong(false));
+  }
+
+  @Override
+  public UUID copy(Kryo kryo, UUID original) {
+    return UUID.fromString(original.toString());
   }
 }

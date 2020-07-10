@@ -23,7 +23,7 @@ class SortByTranslator {
 
     switch (request.getSortBy()) {
       case INDEX_NAME_ID:
-        return CollapsibleList.of(new SortField("nameIndexId", !request.isReverse()));
+        return CollapsibleList.of(new SortField("nameIndexIds", !request.isReverse()));
       case NAME:
         return CollapsibleList.of(new SortField("scientificName", !request.isReverse()));
       case NATIVE:

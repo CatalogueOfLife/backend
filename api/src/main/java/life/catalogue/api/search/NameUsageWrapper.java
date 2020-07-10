@@ -98,7 +98,7 @@ public class NameUsageWrapper extends SimpleNameClassification {
   @Override
   public String toString() {
     try {
-      return "\n" + ApiModule.MAPPER.writeValueAsString(this);
+      return ApiModule.MAPPER.writeValueAsString(this);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }

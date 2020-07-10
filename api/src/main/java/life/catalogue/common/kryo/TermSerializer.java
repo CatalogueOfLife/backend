@@ -24,4 +24,9 @@ public class TermSerializer extends Serializer<Term> {
   public Term read(Kryo kryo, Input input, Class<? extends Term> aClass) {
     return TF.findTerm(input.readString());
   }
+
+  @Override
+  public Term copy(Kryo kryo, Term original) {
+    return TermFactory.instance().findTerm(original.qualifiedName(), original.isClass());
+  }
 }

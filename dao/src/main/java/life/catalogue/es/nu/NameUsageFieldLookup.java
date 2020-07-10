@@ -36,7 +36,7 @@ public class NameUsageFieldLookup extends EnumMap<NameUsageSearchParameter, Stri
     putSingle(ISSUE, "issues");
     putSingle(LIFEZONE, "lifezone");
     putSingle(NAME_ID, "nameId");
-    putSingle(NAME_INDEX_ID, "nameIndexId");
+    putSingle(NAME_INDEX_ID, "nameIndexIds");
     putSingle(NOM_CODE, "nomCode");
     putSingle(NOM_STATUS, "nomStatus");
     putSingle(PUBLISHED_IN_ID, "publishedInId");

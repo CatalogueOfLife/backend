@@ -30,12 +30,6 @@ import static life.catalogue.common.collection.CollectionUtils.notEmpty;
 public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWrapper, EsNameUsage> {
 
   /**
-   * Whether or not to zip the stringified NameUsageWrapper.
-   */
-  public static final boolean ZIP_PAYLOAD = true;
-
-
-  /**
    * Serializes, deflates and base64-encodes a NameUsageWrapper. NB you can't store raw byte arrays in Elasticsearch. You must base64-encode
    * them.
    */
@@ -63,7 +57,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
 
   /**
    * Base64-decodes and unzips the provided payload string. For testing purposes only.
-   * 
+   *
    * @param payload
    * @return
    * @throws IOException
@@ -139,11 +133,13 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
    * Nullifies fields in the NameUsageWrapper object that are already indexed separately so as to make the payload (and the entire document)
    * as small as possible and to cut down as much as possible on JSON processing. It's not necessary to prune away everything that can be
    * pruned away, as long as this method mirrors enrichPayload().
-   * 
+   *
    * @param nuw
    */
   public static void prunePayload(NameUsageWrapper nuw) {
-    nuw.getUsage().setId(null);
+    NameUsage u = nuw.getUsage();
+    u.setId(null);
+    u.setDatasetKey(null);
     nuw.setPublisherKey(null);
     nuw.setIssues(null);
     nuw.setClassification(null);
@@ -184,7 +180,9 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
    * @param doc
    */
   public static void enrichPayload(NameUsageWrapper nuw, EsNameUsage doc) {
-    nuw.getUsage().setId(doc.getUsageId());
+    NameUsage u = nuw.getUsage();
+    u.setId(doc.getUsageId());
+    u.setDatasetKey(doc.getDatasetKey());
     nuw.setPublisherKey(doc.getPublisherKey());
     nuw.setIssues(doc.getIssues());
     nuw.setClassification(extractClassifiction(doc));
@@ -198,17 +196,12 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     name.setType(doc.getType());
     if (nuw.getUsage().getClass() == Taxon.class) {
       Taxon t = (Taxon) nuw.getUsage();
-      t.setDatasetKey(doc.getDatasetKey());
       t.setSectorKey(doc.getSectorKey());
     } else if (nuw.getUsage().getClass() == Synonym.class) {
       Synonym s = (Synonym) nuw.getUsage();
-      s.setDatasetKey(doc.getDatasetKey());
       s.getAccepted().setDatasetKey(doc.getDatasetKey());
       s.getAccepted().setSectorKey(doc.getSectorKey());
       s.getAccepted().getName().setScientificName(doc.getAcceptedName());
-    } else {
-      BareName b = (BareName) nuw.getUsage();
-      b.setDatasetKey(doc.getDatasetKey());
     }
     if (notEmpty(doc.getDecisions())) {
       for (int i = 0; i < nuw.getDecisions().size(); ++i) {
@@ -256,11 +249,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
       doc.setAcceptedName(s.getAccepted().getName().getScientificName());
     }
     prunePayload(nuw);
-    if (ZIP_PAYLOAD) {
-      doc.setPayload(deflate(nuw));
-    } else {
-      doc.setPayload(EsModule.write(nuw));
-    }
+    doc.setPayload(deflate(nuw));
     return doc;
   }
 

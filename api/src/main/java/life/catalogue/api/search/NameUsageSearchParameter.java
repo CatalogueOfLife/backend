@@ -36,7 +36,7 @@ public enum NameUsageSearchParameter {
   /**
    * Searches on the name index id property of the Name which allows to share for same names across and within datasets.
    */
-  NAME_INDEX_ID(String.class),
+  NAME_INDEX_ID(Integer.class),
 
   /**
    * Nomenclatural code.

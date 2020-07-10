@@ -29,61 +29,29 @@ public class EsNameUsageSerde extends EsReadTestBase {
   static Logger LOG = LoggerFactory.getLogger(EsNameUsageSerde.class);
 
   @Test
-  public void testTaxon1() throws IOException {
-    NameUsageWrapper nuwIn = TestEntityGenerator.newNameUsageTaxonWrapper();
+  public void testTaxon() throws IOException {
+    roundtrip(TestEntityGenerator.newNameUsageTaxonWrapper());
+  }
+
+  @Test
+  public void testSynonym() throws IOException {
+    roundtrip(TestEntityGenerator.newNameUsageSynonymWrapper());
+  }
+
+  @Test
+  public void testBareName() throws IOException {
+    roundtrip(TestEntityGenerator.newNameUsageBareNameWrapper());
+  }
+
+  static void roundtrip(NameUsageWrapper nuwIn) throws IOException {
     String json = EsModule.write(nuwIn);
-    LOG.debug(json);
+    System.out.println(json);
     NameUsageWrapper nuwOut = EsModule.readNameUsageWrapper(json);
     assertEquals(nuwIn, nuwOut);
   }
 
   @Test
-  public void testTaxon2() throws IOException {
-    NameUsageWrapper nuwIn = TestEntityGenerator.newNameUsageTaxonWrapper();
-    String json = EsModule.write(nuwIn);
-    LOG.debug(json);
-    NameUsageWrapper nuwOut = EsModule.readNameUsageWrapper(json);
-    assertEquals(nuwIn, nuwOut);
-  }
-
-  @Test
-  public void testSynonym1() throws IOException {
-    NameUsageWrapper nuwIn = TestEntityGenerator.newNameUsageSynonymWrapper();
-    String json = EsModule.write(nuwIn);
-    LOG.debug(json);
-    NameUsageWrapper nuwOut = EsModule.readNameUsageWrapper(json);
-    assertEquals(nuwIn, nuwOut);
-  }
-
-  @Test
-  public void testSynonym2() throws IOException {
-    NameUsageWrapper nuwIn = TestEntityGenerator.newNameUsageSynonymWrapper();
-    String json = EsModule.write(nuwIn);
-    LOG.debug(json);
-    NameUsageWrapper nuwOut = EsModule.readNameUsageWrapper(json);
-    assertEquals(nuwIn, nuwOut);
-  }
-
-  @Test
-  public void testBareName1() throws IOException {
-    NameUsageWrapper nuwIn = TestEntityGenerator.newNameUsageBareNameWrapper();
-    String json = EsModule.write(nuwIn);
-    LOG.debug(json);
-    NameUsageWrapper nuwOut = EsModule.readNameUsageWrapper(json);
-    assertEquals(nuwIn, nuwOut);
-  }
-
-  @Test
-  public void testBareName2() throws IOException {
-    NameUsageWrapper nuwIn = TestEntityGenerator.newNameUsageBareNameWrapper();
-    String json = EsModule.write(nuwIn);
-    LOG.debug(json);
-    NameUsageWrapper nuwOut = EsModule.readNameUsageWrapper(json);
-    assertEquals(nuwIn, nuwOut);
-  }
-
-  @Test
-  public void testEsNameUsage1() throws IOException {
+  public void testEsNameUsage() throws IOException {
     EsNameUsage docIn = new EsNameUsage();
     docIn.setPayload(EsModule.write(TestEntityGenerator.newNameUsageTaxonWrapper()));
     docIn.setAuthorshipComplete("John Smith");
@@ -100,36 +68,5 @@ public class EsNameUsageSerde extends EsReadTestBase {
     String json = EsModule.write(docIn);
     EsNameUsage docOut = EsModule.readDocument(json);
     assertEquals(docIn, docOut);
-
-    NameUsageWrapper nuw = EsModule.readNameUsageWrapper(docOut.getPayload());
-    assertEquals(TestEntityGenerator.newNameUsageTaxonWrapper(), nuw);
-
   }
-
-  @Test
-  public void testEsNameUsage2() throws IOException {
-    EsNameUsage docIn = new EsNameUsage();
-    docIn.setPayload(
-        EsModule.write(TestEntityGenerator.newNameUsageTaxonWrapper()));
-    docIn.setAuthorshipComplete("John Smith");
-    docIn.setDatasetKey(472);
-    docIn.setNameFields(EnumSet.of(NameField.COMBINATION_EX_AUTHORS, NameField.UNINOMIAL));
-    docIn.setNameId("16");
-    docIn.setNameIndexIds(Set.of(56770));
-    docIn.setPublishedInId("AMO333");
-    docIn.setRank(Rank.SPECIES);
-    docIn.setStatus(TaxonomicStatus.ACCEPTED);
-    docIn.setType(NameType.SCIENTIFIC);
-    docIn.setVernacularNames(Arrays.asList("Apple tree"));
-
-    String json = EsModule.write(docIn);
-    LOG.debug(json);
-
-    EsNameUsage docOut = EsModule.readDocument(json);
-    assertEquals(docIn, docOut);
-
-    NameUsageWrapper nuw = EsModule.readNameUsageWrapper(docOut.getPayload());
-    assertEquals(TestEntityGenerator.newNameUsageTaxonWrapper(), nuw);
-  }
-
 }
