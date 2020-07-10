@@ -22,8 +22,6 @@ public class NameTest extends SerdeTestBase<Name> {
   @Override
   public Name genTestValue() throws Exception {
     Name n = TestEntityGenerator.newName();
-    // being ignored in json
-    n.setNameIndexIds(null);
     return n;
   }
 
