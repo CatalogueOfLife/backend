@@ -110,8 +110,8 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                      @Param("depthFirst") boolean depthFirst);
 
   /**
-   * List all usages from a sector differetn to the one given,
-   * that are direct children of a taxon from the given sector key.
+   * List all usages from a sector different to the one given including nulls,
+   * which are direct children of a taxon from the given sector key.
    *
    * Returned SimpleName instances have the parentID as their parent property, not a scientificName!
    *
