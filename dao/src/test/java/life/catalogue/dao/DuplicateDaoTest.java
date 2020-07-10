@@ -48,7 +48,7 @@ public class DuplicateDaoTest {
       session.commit();
     }
 
-    final AuthorshipNormFunc aFunc = new AuthorshipNormFunc(18);
+    final AuthorshipNormFunc aFunc = new AuthorshipNormFunc(17);
 
     try (Connection c = pgSetupRule.connect()) {
       PgConnection pgc = (PgConnection) c;
@@ -56,10 +56,12 @@ public class DuplicateDaoTest {
       PgCopyUtils.copy(pgc, "dataset", "/duplicates/dataset.csv");
       PgCopyUtils.copy(pgc, "verbatim_1000", "/duplicates/verbatim.csv");
       PgCopyUtils.copy(pgc, "name_1000", "/duplicates/name.csv", null, ImmutableMap.<String, Function<String[], String>>of(
-        "scientific_name_normalized", row -> SciNameNormalizer.normalize(row[6]),
+        "scientific_name_normalized", row -> SciNameNormalizer.normalize(row[5]),
         "authorship_normalized", aFunc::normAuthorship
         )
       );
+      // id,dataset_key,sector_key,verbatim_key,homotypic_name_id,scientific_name,authorship,rank,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,nomenclatural_note,candidatus,notho,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,published_in_id,published_in_page,code,nom_status,origin,type,link,remarks,created,created_by,modified,modified_by
+      // id,dataset_ke1,sector_key,verbatim_key,homotypic_name_id,scientific_nam5,6uthorship,rank,uninomial,genus,10frageneric_epithet,specific_epithet,infraspecific_epithet,13ltivar_epithet,nomenclatural_note,15ndidatus,notho,17sionym_authors,18sionym_ex_authors,basionym_year,20mbination_authors,combination_ex_authors,combination_year,sanctioning_author,published_in_id,published_in_page,code,nom_status,origin,type,link,remarks,created,created_by,modified,modified_by
       PgCopyUtils.copy(pgc, "name_usage_1000", "/duplicates/name_usage.csv");
 
       c.commit();

@@ -8,8 +8,6 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import com.google.common.collect.ImmutableSet;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.vocab.CSLRefType;
 import life.catalogue.api.vocab.ColDwcTerm;
@@ -69,8 +67,6 @@ public class ApiModule extends SimpleModule {
     addDeserializer(Term.class, new TermSerde.Deserializer());
     addDeserializer(CSLRefType.class, new CSLRefTypeSerde.Deserializer());
     addDeserializer(URI.class, new URIDeserializer());
-    addDeserializer(Int2IntMap.class, new FastutilsSerde.MapDeserializer());
-    addDeserializer(IntSet.class, new FastutilsSerde.SetDeserializer());
     // override the JavaTimeModule to use a permissive localdate deserializer catching parsing exceptions
     addDeserializer(LocalDateTime.class, new PermissiveJavaDateSerde.LocalDateTimeDeserializer());
     addDeserializer(LocalDate.class, new PermissiveJavaDateSerde.LocalDateDeserializer());
@@ -79,18 +75,19 @@ public class ApiModule extends SimpleModule {
     addSerializer(Country.class, new CountrySerde.Serializer());
     addSerializer(Term.class, new TermSerde.ValueSerializer());
     addSerializer(CSLRefType.class, new CSLRefTypeSerde.Serializer());
-    addSerializer(Int2IntMap.class, new FastutilsSerde.MapSerializer());
-    addSerializer(IntSet.class, new FastutilsSerde.SetSerializer());
 
     // then key deserializers
     addKeyDeserializer(Term.class, new TermSerde.TermKeyDeserializer());
     addKeyDeserializer(Country.class, new CountrySerde.KeyDeserializer());
-    
+
     // then key serializers
     addKeySerializer(Term.class, new TermSerde.FieldSerializer());
     addKeySerializer(Country.class, new CountrySerde.FieldSerializer());
+
+    // fastutils primitive collection
+    FastutilsSerde.register(this);
   }
-  
+
   @Override
   public void setupModule(SetupContext ctxt) {
     // default enum serde

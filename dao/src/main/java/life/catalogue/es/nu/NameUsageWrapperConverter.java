@@ -237,7 +237,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     doc.setDatasetKey(name.getDatasetKey());
     doc.setSectorDatasetKey(nuw.getSectorDatasetKey());
     doc.setNameId(name.getId());
-    doc.setNameIndexIds(Set.copyOf(name.getNameIndexIds()));
+    doc.setNameIndexIds(name.getNameIndexIds() == null ? null : Set.copyOf(name.getNameIndexIds()));
     doc.setNomCode(name.getCode());
     doc.setNomStatus(name.getNomStatus());
     doc.setPublishedInId(name.getPublishedInId());

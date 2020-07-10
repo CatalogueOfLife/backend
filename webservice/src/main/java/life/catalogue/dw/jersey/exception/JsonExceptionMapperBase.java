@@ -1,13 +1,15 @@
 package life.catalogue.dw.jersey.exception;
 
 
+import io.dropwizard.jersey.errors.ErrorMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 
-import io.dropwizard.jersey.errors.ErrorMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 /**
  * Base class to write exception mappers that return json error messages
@@ -30,19 +32,27 @@ public class JsonExceptionMapperBase<T extends Throwable> implements ExceptionMa
     this.stacktrace = stacktrace;
   }
 
-  public static Response.ResponseBuilder jsonErrorResponseBuilder(Response.StatusType errorCode, String message) {
+  private static Response.ResponseBuilder jsonErrorResponseBuilder(Response.StatusType errorCode, String message, String details) {
     return Response
         .status(errorCode)
         .type(MediaType.APPLICATION_JSON_TYPE)
-        .entity(new ErrorMessage(errorCode.getStatusCode(), message));
+        .entity(new ErrorMessage(errorCode.getStatusCode(), trimToNull(message), trimToNull(details)));
   }
   
-  static Response jsonErrorResponse(Response.StatusType errorCode, String message) {
-    return jsonErrorResponseBuilder(errorCode, message).build();
+  public static Response jsonErrorResponse(Response.StatusType errorCode, String message) {
+    return jsonErrorResponse(errorCode, message, null);
   }
-  
+
+  public static Response jsonErrorResponse(Response.StatusType errorCode, String message, String details) {
+    return jsonErrorResponseBuilder(errorCode, message, details).build();
+  }
+
   @Override
   public Response toResponse(T ex) {
+    return toResponse(null, ex);
+  }
+
+  protected Response toResponse(String message, T ex) {
     if (debug) {
       if (stacktrace) {
         LOG.debug("{}: {}", ex.getClass().getSimpleName(), ex.getMessage(), ex);
@@ -56,11 +66,15 @@ public class JsonExceptionMapperBase<T extends Throwable> implements ExceptionMa
         LOG.info("{}: {}", ex.getClass().getSimpleName(), ex.getMessage());
       }
     }
-    return jsonErrorResponse(errorCode, message(ex));
+
+    if (message == null) {
+      return jsonErrorResponse(errorCode, message(ex));
+    }
+    return jsonErrorResponse(errorCode, message, message(ex));
   }
   
   String message(T e) {
     return e.getMessage();
   }
-  
+
 }

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import life.catalogue.api.jackson.ApiModule;
+import life.catalogue.api.jackson.FastutilsSerde;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.es.ddl.IndexDefinition;
@@ -208,6 +209,8 @@ public class EsModule extends SimpleModule {
     super.setupModule(ctxt);
     ctxt.setMixInAnnotations(NameUsage.class, NameUsageMixIn.class);
     ctxt.setMixInAnnotations(Name.class, NameMixIn.class);
+    // fastutils primitive collection
+    FastutilsSerde.register(this);
   }
 
   @JsonTypeInfo(use = JsonTypeInfo.Id.NAME)

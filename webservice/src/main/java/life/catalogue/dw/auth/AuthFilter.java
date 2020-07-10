@@ -149,7 +149,7 @@ public class AuthFilter implements ContainerRequestFilter {
   }
 
   static WebApplicationException authenticationError(String msg) {
-    Response resp = JsonExceptionMapperBase.jsonErrorResponseBuilder(Response.Status.UNAUTHORIZED, msg).build();
+    Response resp = JsonExceptionMapperBase.jsonErrorResponse(Response.Status.UNAUTHORIZED, msg);
     return new WebApplicationException(resp);
   }
 

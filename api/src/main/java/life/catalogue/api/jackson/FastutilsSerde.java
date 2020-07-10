@@ -1,7 +1,5 @@
 package life.catalogue.api.jackson;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -12,12 +10,14 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.ContainerSerializer;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import life.catalogue.api.vocab.Country;
+
+import java.io.IOException;
 
 public class FastutilsSerde {
   
@@ -151,4 +151,10 @@ public class FastutilsSerde {
     }
   }
 
+  public static void register(SimpleModule mod){
+    mod.addSerializer(Int2IntMap.class, new FastutilsSerde.MapSerializer());
+    mod.addSerializer(IntSet.class, new FastutilsSerde.SetSerializer());
+    mod.addDeserializer(Int2IntMap.class, new FastutilsSerde.MapDeserializer());
+    mod.addDeserializer(IntSet.class, new FastutilsSerde.SetDeserializer());
+  }
 }
