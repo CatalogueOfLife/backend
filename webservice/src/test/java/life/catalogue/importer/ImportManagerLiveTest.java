@@ -33,8 +33,7 @@ import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertFalse;
 
 /**
- * This test needs access to github !!!
- * It downloads the test coldp archive file sitting in the test resources from github!!!
+ * This test needs access to http://rs.gbif.org/datasets/dsmz.zip !!!
  */
 //@Ignore
 @RunWith(MockitoJUnitRunner.class)
