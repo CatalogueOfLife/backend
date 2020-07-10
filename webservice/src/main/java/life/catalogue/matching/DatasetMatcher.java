@@ -19,7 +19,10 @@ public class DatasetMatcher {
   private final SqlSessionFactory factory;
   private final NameIndex ni;
   private final boolean updateIssues;
-  
+
+  /**
+   * @param updateIssues if true also updates matching issues in the linked verbatim records
+   */
   public DatasetMatcher(SqlSessionFactory factory, NameIndex ni, boolean updateIssues) {
     this.factory = factory;
     this.ni = ni;

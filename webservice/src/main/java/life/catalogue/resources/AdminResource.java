@@ -11,6 +11,7 @@ import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.AssemblyState;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.gbifsync.GbifSync;
@@ -19,6 +20,7 @@ import life.catalogue.img.LogoUpdateJob;
 import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.importer.ImportRequest;
+import life.catalogue.matching.DatasetMatcher;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexImpl;
 import org.apache.ibatis.session.SqlSession;
@@ -181,6 +183,14 @@ public class AdminResource {
     return runJob("es-reindexer", () -> new IndexJob(req, user));
   }
 
+  @POST
+  @Path("/rematch")
+  public String reindex(@QueryParam("datasetKey") Integer datasetKey, @Auth User user) {
+    if (datasetKey != null) {
+    }
+    return runJob("rematcher", () -> new RematchJob(datasetKey, user));
+  }
+
   @DELETE
   @Path("/reindex")
   public int createEmptyIndex(@Auth User user) {
@@ -288,6 +298,39 @@ public class AdminResource {
       }
       LOG.info("Scheduled {} datasets out of {} for reimporting. Missed {} datasets without an archive or other reasons", counter, keys.size(),  missed.size());
       LOG.info("Missed keys: {}", Joiner.on(", ").join(missed));
+    }
+  }
+
+  class RematchJob implements Runnable {
+    private final User user;
+    private final Integer datasetKey;
+
+    public RematchJob(Integer datasetKey, User user) {
+      this.user = user;
+      this.datasetKey = datasetKey;
+    }
+
+    @Override
+    public void run() {
+      final List<Integer> keys;
+      if (datasetKey != null) {
+        keys = List.of(datasetKey);
+      } else {
+        try (SqlSession session = factory.openSession()) {
+          DatasetMapper dm = session.getMapper(DatasetMapper.class);
+          DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
+          keys = dm.keys();
+          keys.removeIf(key -> !dpm.exists(key));
+        }
+      }
+
+      LOG.warn("Rematching {} datasets with data. Triggered by {}", keys.size(), user);
+      int totalUpdated = 0;
+      for (int key : keys) {
+        DatasetMatcher matcher = new DatasetMatcher(factory, ni, true);
+        totalUpdated += matcher.match(key, true);
+      }
+      LOG.info("Rematched {} datasets and updated {} names in total", keys.size(), totalUpdated);
     }
   }
 }
