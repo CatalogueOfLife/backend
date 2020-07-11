@@ -51,10 +51,12 @@ public class DatasetMatcher {
     private final boolean updateIssues;
     private final int datasetKey;
     private final boolean allowInserts;
+    private final SqlSession batchSession;
     private final SqlSession session;
     private final NameIndex ni;
     private final NameMapper nm;
     private final VerbatimRecordMapper vm;
+    private final VerbatimRecordMapper vmGet;
     private final DSIDValue<Integer> key;
   
     BulkMatchHandler(boolean updateIssues, NameIndex ni, SqlSessionFactory factory, int datasetKey, boolean allowInserts) {
@@ -62,9 +64,11 @@ public class DatasetMatcher {
       this.datasetKey = datasetKey;
       this.allowInserts = allowInserts;
       this.ni = ni;
-      this.session = factory.openSession(ExecutorType.BATCH, false);
-      this.nm = session.getMapper(NameMapper.class);
-      this.vm = session.getMapper(VerbatimRecordMapper.class);
+      this.batchSession = factory.openSession(ExecutorType.BATCH, false);
+      this.session = factory.openSession(true);
+      this.nm = batchSession.getMapper(NameMapper.class);
+      this.vm = batchSession.getMapper(VerbatimRecordMapper.class);
+      this.vmGet = session.getMapper(VerbatimRecordMapper.class);
       key = DSID.of(datasetKey, -1);
     }
   
@@ -75,14 +79,9 @@ public class DatasetMatcher {
       NameMatch m = ni.match(n, allowInserts, false);
       
       if (!Objects.equals(oldIds, m.hasMatch() ? m.getNameIds() : null)) {
-        if (m.hasMatch()) {
-          nm.updateMatch(datasetKey, n.getId(), m.getNameIds(), m.getType());
-        } else {
-          nm.updateMatch(datasetKey, n.getId(), null, null);
-        }
-
+        nm.updateMatch(datasetKey, n.getId(), m.getNameIds(), m.getType());
         if (updateIssues) {
-          IssueContainer v = n.getVerbatimKey() != null ? vm.getIssues(key.id(n.getVerbatimKey())) : null;
+          IssueContainer v = n.getVerbatimKey() != null ? vmGet.getIssues(key.id(n.getVerbatimKey())) : null;
           if (v != null) {
             int hash = v.getIssues().hashCode();
             clearMatchIssues(v);
@@ -101,7 +100,7 @@ public class DatasetMatcher {
         }
         
         if (updates++ % 10000 == 0) {
-          session.commit();
+          batchSession.commit();
           LOG.debug("Updated {} out of {} name matches for dataset {}", updates, counter, datasetKey);
         }
       }
@@ -116,7 +115,8 @@ public class DatasetMatcher {
   
     @Override
     public void close() throws Exception {
-      session.commit();
+      batchSession.commit();
+      batchSession.close();
       session.close();
     }
   }

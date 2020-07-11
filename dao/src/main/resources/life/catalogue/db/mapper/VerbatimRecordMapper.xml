@@ -146,7 +146,7 @@
 
   <update id="update" parameterType="VerbatimRecord" keyProperty="id">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
-    UPDATE verbatim_${datasetKey}
+    UPDATE verbatim_${partition}
     SET issues = #{issues, typeHandler=life.catalogue.db.type.IssueSetTypeHandler}::ISSUE[]
     WHERE id = #{key.id}
   </update>

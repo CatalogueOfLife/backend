@@ -45,6 +45,11 @@ CREATE TABLE names_index (
 CREATE INDEX ON names_index (lower(scientific_name));
 ```
 
+Then run this script against all datasets with the `execSql --sql` command using the following sql template
+```
+CREATE INDEX ON name_{KEY} USING GIN(name_index_ids);
+```
+
 #### 2020-07-07 treatment imports 
 ```
 ALTER TABLE treatment DROP COLUMN reference_id; 
