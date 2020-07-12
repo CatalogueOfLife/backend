@@ -243,7 +243,7 @@ public class NameIndexImpl implements NameIndex {
    * @return A pure ASCII key based on the scientific name
    */
   private static String key(ScientificName n) {
-    return StringUtils.removeNonAscii(SciNameNormalizer.normalize(n.getScientificName()));
+    return StringUtils.replaceNonAscii(SciNameNormalizer.normalize(n.getScientificName()), '*');
   }
   
   private static boolean match(NomCode c1, NomCode c2) {

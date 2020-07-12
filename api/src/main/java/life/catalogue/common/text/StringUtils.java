@@ -117,6 +117,20 @@ public class StringUtils {
   }
 
   /**
+   * Replaces all characters that are not ASCII chars, i.e. above the first 7 bits, with the given replacement char
+   */
+  public static String replaceNonAscii(String x, char replacement) {
+    if (x == null) return null;
+    char[] out = new char[x.length()];
+    int j = 0;
+    for (int i = 0, n = x.length(); i < n; ++i) {
+      char c = x.charAt(i);
+      out[j++] = c <= '\u007F' ? c : replacement;
+    }
+    return new String(out);
+  }
+
+  /**
    * The Normalizer misses a few cases and 2 char ligatures which we deal with here
    */
   private static String replaceSpecialCases(String x) {
