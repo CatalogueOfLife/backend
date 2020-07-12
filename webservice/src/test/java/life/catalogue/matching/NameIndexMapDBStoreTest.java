@@ -57,7 +57,7 @@ public class NameIndexMapDBStoreTest {
     }
     return names;
   }
-  
+
   @Test
   public void close() {
   }

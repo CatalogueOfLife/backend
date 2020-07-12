@@ -86,6 +86,9 @@ public class StringUtils {
   /**
    * Removes accents & diacretics and converts ligatures into several chars
    *
+   * There are still a few unicode characters which are not captured by the java Normalizer and this method,
+   * so if you rely on true ASCII to be generated make sure to call the removeNonAscii(x) method afterwards!
+   *
    * @param x string to fold into ASCII
    * @return string converted to ASCII equivalent, expanding common ligatures
    */
@@ -97,6 +100,20 @@ public class StringUtils {
     // use java unicode normalizer to remove accents
     x = Normalizer.normalize(x, Normalizer.Form.NFD);
     return MARKER.matcher(x).replaceAll("");
+  }
+
+  /**
+   * Removes all characters that are not ASCII chars, i.e. above the first 7 bits
+   */
+  public static String removeNonAscii(String x) {
+    if (x == null) return null;
+    char[] out = new char[x.length()];
+    int j = 0;
+    for (int i = 0, n = x.length(); i < n; ++i) {
+      char c = x.charAt(i);
+      if (c <= '\u007F') out[j++] = c;
+    }
+    return new String(out);
   }
 
   /**

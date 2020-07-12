@@ -125,7 +125,10 @@ public class NameIndexMapDBStore implements NameIndexStore {
     avail();
     return names.containsKey(key);
   }
-  
+
+  /**
+   * @param key make sure this is a pure ASCII key, no carhs above 7 bits allowed!!!
+   */
   @Override
   public void put(String key, ArrayList<IndexName> group) {
     avail();

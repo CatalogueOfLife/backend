@@ -1,18 +1,29 @@
 package life.catalogue.common.tax;
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
 import life.catalogue.api.model.Name;
 import org.gbif.nameparser.api.Authorship;
+import org.junit.Ignore;
 import org.junit.Test;
+
+import java.util.List;
 
 import static life.catalogue.common.tax.AuthorshipNormalizer.Author;
 import static org.junit.Assert.*;
 
   public class AuthorshipNormalizerTest {
     AuthorshipNormalizer comp = AuthorshipNormalizer.INSTANCE;
-    
+
+    @Test
+    @Ignore("To be implmented still, found in Clearinghouse data logs")
+    public void testNormalizeFailures() throws Exception {
+      assertEquals("", AuthorshipNormalizer.normalize("epling, nom kudo, 1931"));
+      assertEquals("", AuthorshipNormalizer.normalize("rothm ,p p 11233"));
+      assertEquals("", AuthorshipNormalizer.normalize(""));
+      assertEquals("", AuthorshipNormalizer.normalize(""));
+      assertEquals("", AuthorshipNormalizer.normalize(""));
+    }
+
     @Test
     public void testNormalize() throws Exception {
       assertNull(AuthorshipNormalizer.normalize((String) null));

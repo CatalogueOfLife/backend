@@ -15,9 +15,13 @@ import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.parser.NameParser;
 import org.apache.ibatis.session.SqlSession;
+import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.junit.*;
+import org.junit.After;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
 
 import java.io.File;
 import java.util.Collection;
@@ -29,9 +33,9 @@ import static org.junit.Assert.*;
 
 public class NameIndexImplTest {
   static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.INSTANCE;
+  static int keyGen = 1000;
 
   NameIndex ni;
-  
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
   
@@ -122,6 +126,53 @@ public class NameIndexImplTest {
     assertMatch(5, "Larus erfunda", Rank.SPECIES, null);
     assertMatch(4, "Larus fusca", Rank.SPECIES, null);
     assertMatch(3, "Larus fuscus", Rank.SPECIES, null);
+  }
+
+  /**
+   * Try to add the same name again and multiple names with the same key
+   */
+  @Test
+  public void add() throws Exception {
+    setupMemory();
+    ni.add(create("Abies", "krösus-4-par∂atœs"));
+    ni.add(create("Abies", "alba"));
+
+    IndexName n = create("Abies", "alba", "1873");
+    ni.add(n);
+
+    n = create("Abies", "alba", "1873");
+    final int key = n.getKey();
+    ni.add(n);
+    assertEquals(4, ni.size());
+
+    n = create("Abies", "alba", "1873", "Miller");
+    n.setKey(key);
+    ni.add(n);
+    assertEquals(4, ni.size());
+
+    n = create("Abies", "alba", "1873", "Mill.");
+    n.setKey(key);
+    ni.add(n);
+    assertEquals(4, ni.size());
+  }
+
+  private static IndexName create(String genus, String species){
+    return create(genus, species, null);
+  }
+  private static IndexName create(String genus, String species, String year, String... authors){
+    Name n = new Name();
+    if (authors != null || year != null) {
+      n.setCombinationAuthorship(Authorship.yearAuthors(year, authors));
+    }
+    n.setGenus(genus);
+    n.setSpecificEpithet(species);
+    n.setRank(Rank.SPECIES);
+    n.rebuildScientificName();
+    n.rebuildAuthorship();
+
+    IndexName in = new IndexName(n);
+    in.setKey(keyGen++);
+    return in;
   }
 
   @Test

@@ -12,6 +12,7 @@ import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
+import life.catalogue.common.text.StringUtils;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.matching.authorship.AuthorComparator;
 import org.apache.ibatis.session.SqlSession;
@@ -41,7 +42,6 @@ public class NameIndexImpl implements NameIndex {
   private final AuthorComparator authComp;
   private final SqlSessionFactory sqlFactory;
   private final AtomicInteger counter = new AtomicInteger();
-
 
   /**
    * @param sqlFactory sql session factory to talk to the data store backend if needed for inserts or initial loading
@@ -222,7 +222,7 @@ public class NameIndexImpl implements NameIndex {
   
   @Override
   public synchronized void add(IndexName name) {
-    String key = key(name);
+    final String key = key(name);
     ArrayList<IndexName> group;
     int oldGroupSize = 0;
     if (store.containsKey(key)) {
@@ -238,9 +238,12 @@ public class NameIndexImpl implements NameIndex {
     store.put(key, group);
     counter.set(counter.get() + group.size() - oldGroupSize);
   }
-  
+
+  /**
+   * @return A pure ASCII key based on the scientific name
+   */
   private static String key(ScientificName n) {
-    return SciNameNormalizer.normalize(n.getScientificName());
+    return StringUtils.removeNonAscii(SciNameNormalizer.normalize(n.getScientificName()));
   }
   
   private static boolean match(NomCode c1, NomCode c2) {
@@ -300,7 +303,9 @@ public class NameIndexImpl implements NameIndex {
     } else {
       // verify postgres and store match up - otherwise trust postgres
       int pgCount = countPg();
-      if (pgCount != storeSize) {
+      if (pgCount == storeSize) {
+        counter.set(storeSize);
+      } else {
         LOG.warn("Existing name index contains {} names, but postgres has {}. Trust postgres", storeSize, pgCount);
         loadFromPg();
       }
