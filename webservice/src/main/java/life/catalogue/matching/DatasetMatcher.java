@@ -19,6 +19,9 @@ public class DatasetMatcher {
   private final SqlSessionFactory factory;
   private final NameIndex ni;
   private final boolean updateIssues;
+  private int total = 0;
+  private int updated = 0;
+  private int datasets = 0;
 
   /**
    * @param updateIssues if true also updates matching issues in the linked verbatim records
@@ -34,38 +37,52 @@ public class DatasetMatcher {
    * @param allowInserts if true allows inserts into the names index
    * @return number of names which have a changed match to before
    */
-  public int match(int datasetKey, boolean allowInserts) {
-    try (SqlSession session = factory.openSession(false)){
+  public void match(int datasetKey, boolean allowInserts) {
+    try (SqlSession session = factory.openSession(false);
+         BulkMatchHandler h = new BulkMatchHandler(datasetKey, allowInserts)
+    ){
       NameMapper nm = session.getMapper(NameMapper.class);
-      BulkMatchHandler h = new BulkMatchHandler(updateIssues, ni, factory, datasetKey, allowInserts);
+      int totalBefore = total;
+      int updatedBefore = updated;
       nm.processDataset(datasetKey).forEach(h);
-      LOG.info("Updated {} out of {} name matches for dataset {}", h.updates, h.counter, datasetKey);
-      return h.updates;
+      LOG.info("Updated {} out of {} name matches for dataset {}", updated-updatedBefore, total-totalBefore, datasetKey);
+      datasets++;
+    } catch (Exception e) {
+      LOG.error("Failed to rematch dataset {}", datasetKey, e);
     }
   }
-  
-  
-  static class BulkMatchHandler implements Consumer<Name>, AutoCloseable {
-    int counter = 0;
-    int updates = 0;
-    private final boolean updateIssues;
+
+  public int getTotal() {
+    return total;
+  }
+
+  public int getUpdated() {
+    return updated;
+  }
+
+  public int getDatasets() {
+    return datasets;
+  }
+
+  class BulkMatchHandler implements Consumer<Name>, AutoCloseable {
     private final int datasetKey;
+    private final int updatedStart;
+    private final int totalStart;
     private final boolean allowInserts;
     private final SqlSession batchSession;
     private final SqlSession session;
-    private final NameIndex ni;
     private final NameMapper nm;
     private final VerbatimRecordMapper vm;
     private final VerbatimRecordMapper vmGet;
     private final DSIDValue<Integer> key;
   
-    BulkMatchHandler(boolean updateIssues, NameIndex ni, SqlSessionFactory factory, int datasetKey, boolean allowInserts) {
-      this.updateIssues = updateIssues;
+    BulkMatchHandler(int datasetKey, boolean allowInserts) {
       this.datasetKey = datasetKey;
       this.allowInserts = allowInserts;
-      this.ni = ni;
+      this.updatedStart = updated;
+      this.totalStart = total;
       this.batchSession = factory.openSession(ExecutorType.BATCH, false);
-      this.session = factory.openSession(true);
+      this.session = factory.openSession(false);
       this.nm = batchSession.getMapper(NameMapper.class);
       this.vm = batchSession.getMapper(VerbatimRecordMapper.class);
       this.vmGet = session.getMapper(VerbatimRecordMapper.class);
@@ -74,7 +91,7 @@ public class DatasetMatcher {
   
     @Override
     public void accept(Name n) {
-      counter++;
+      total++;
       IntSet oldIds = n.getNameIndexIds();
       NameMatch m = ni.match(n, allowInserts, false);
       
@@ -99,14 +116,14 @@ public class DatasetMatcher {
           }
         }
         
-        if (updates++ % 10000 == 0) {
+        if ( (updated++ - updatedStart) % 10000 == 0) {
           batchSession.commit();
-          LOG.debug("Updated {} out of {} name matches for dataset {}", updates, counter, datasetKey);
+          LOG.debug("Updated {} out of {} name matches for dataset {}", updated - updatedStart, total-totalStart, datasetKey);
         }
       }
     }
     
-    static void clearMatchIssues(IssueContainer issues){
+    void clearMatchIssues(IssueContainer issues){
       issues.removeIssue(Issue.NAME_MATCH_NONE);
       issues.removeIssue(Issue.NAME_MATCH_AMBIGUOUS);
       issues.removeIssue(Issue.NAME_MATCH_VARIANT);

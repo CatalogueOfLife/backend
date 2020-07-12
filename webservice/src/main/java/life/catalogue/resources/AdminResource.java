@@ -325,12 +325,16 @@ public class AdminResource {
       }
 
       LOG.warn("Rematching {} datasets with data. Triggered by {}", keys.size(), user);
-      int totalUpdated = 0;
+      DatasetMatcher matcher = new DatasetMatcher(factory, ni, true);
       for (int key : keys) {
-        DatasetMatcher matcher = new DatasetMatcher(factory, ni, true);
-        totalUpdated += matcher.match(key, true);
+        matcher.match(key, true);
       }
-      LOG.info("Rematched {} datasets and updated {} names in total", keys.size(), totalUpdated);
+      LOG.info("Rematched {} datasets ({} failed), updating {} names from {} in total",
+        matcher.getDatasets(),
+        keys.size() - matcher.getDatasets(),
+        matcher.getUpdated(),
+        matcher.getTotal()
+      );
     }
   }
 }
