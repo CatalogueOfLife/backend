@@ -89,7 +89,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
     }
     final List<ImportState> immutableStates = ImmutableList.copyOf(states);
     SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
-    List<SectorImport> imports = sim.list(sectorKey, datasetKey, subjectDatasetKey, states, page);
+    List<SectorImport> imports = sim.list(sectorKey, datasetKey, subjectDatasetKey, states, null, page);
     return new ResultPage<>(page, imports, () -> sim.count(sectorKey, datasetKey, subjectDatasetKey, immutableStates));
   }
 

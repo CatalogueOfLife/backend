@@ -319,6 +319,45 @@ public class ImportMetrics implements ImportAttempt {
     this.job = job;
   }
 
+  public void add(ImportMetrics m) {
+    nameCount += m.nameCount;
+    taxonCount += m.taxonCount;
+    synonymCount += m.synonymCount;
+    referenceCount += m.referenceCount;
+    typeMaterialCount += m.typeMaterialCount;
+    distributionCount += m.distributionCount;
+    mediaCount += m.mediaCount;
+    treatmentCount += m.treatmentCount;
+    vernacularCount += m.vernacularCount;
+
+    namesByTypeCount = sum(namesByTypeCount, m.namesByTypeCount);
+    namesByStatusCount = sum(namesByStatusCount, m.namesByStatusCount);
+    namesByOriginCount = sum(namesByOriginCount, m.namesByOriginCount);
+    namesByRankCount = sum(namesByRankCount, m.namesByRankCount);
+    nameRelationsByTypeCount = sum(nameRelationsByTypeCount, m.nameRelationsByTypeCount);
+    typeMaterialByStatusCount = sum(typeMaterialByStatusCount, m.typeMaterialByStatusCount);
+    distributionsByGazetteerCount = sum(distributionsByGazetteerCount, m.distributionsByGazetteerCount);
+    vernacularsByLanguageCount = sum(vernacularsByLanguageCount, m.vernacularsByLanguageCount);
+    mediaByTypeCount = sum(mediaByTypeCount, m.mediaByTypeCount);
+    usagesByStatusCount = sum(usagesByStatusCount, m.usagesByStatusCount);
+    taxaByRankCount = sum(taxaByRankCount, m.taxaByRankCount);
+    taxonRelationsByTypeCount = sum(taxonRelationsByTypeCount, m.taxonRelationsByTypeCount);
+    issuesCount = sum(issuesCount, m.issuesCount);
+  }
+
+  private static <T> Map<T, Integer> sum(Map<T, Integer> cnt1, Map<T, Integer> cnt2) {
+    Map<T, Integer> sum = Map.copyOf(cnt1);
+    for (Map.Entry<T, Integer> x : cnt2.entrySet()) {
+      if (sum.containsKey(x.getKey())) {
+        Integer cnt = sum.get(x.getKey());
+        sum.put(x.getKey(), cnt + x.getValue());
+      } else {
+        sum.put(x.getKey(), x.getValue());
+      }
+    }
+    return sum;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

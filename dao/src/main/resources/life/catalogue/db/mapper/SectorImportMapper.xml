@@ -54,6 +54,9 @@
           #{state}::IMPORTSTATE
         </foreach>
       </if>
+      <if test="current != null &amp;&amp; current">
+        AND si.attempt=s.sync_attempt
+      </if>
     </where>
   </sql>
 
@@ -73,16 +76,13 @@
 
   <select id="count" resultType="integer">
     SELECT count(*)
-    FROM
-    <include refid="FROM"/>
+    FROM <include refid="FROM"/>
     <include refid="WHERE"/>
   </select>
 
   <select id="list" resultMap="sectorImportResultMap">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     <include refid="WHERE"/>
     ORDER BY started DESC, sector_key ASC, attempt DESC
     <include refid="life.catalogue.db.Common.limit"/>

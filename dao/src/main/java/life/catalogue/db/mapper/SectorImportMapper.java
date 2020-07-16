@@ -1,5 +1,6 @@
 package life.catalogue.db.mapper;
 
+import life.catalogue.api.model.ImportMetrics;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.SectorImport;
 import life.catalogue.api.vocab.ImportState;
@@ -20,7 +21,15 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
    * Retrieves the full import with the entire potentially very large text tree and names id set.
    */
   SectorImport get(@Param("sectorKey") int sectorKey, @Param("attempt") int attempt);
-  
+
+  /**
+   * Get aggregated metrics for all sectors that share the same subjectDatasetKey within a given project
+   * @param datasetKey the project key
+   * @param subjectDatasetKey
+   * @return aggregated sector metrics
+   */
+  ImportMetrics getBySourceDataset(@Param("datasetKey") int datasetKey, @Param("subjectDatasetKey") int subjectDatasetKey);
+
   /**
    * Count all imports by their state
    */
@@ -32,12 +41,15 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
   /**
    * List all imports optionally filtered by their sectorKey and state(s).
    * Ordered by starting date from latest to historical.
+   *
+   * @param current if true only lists the attempt that was last successful and is currently referred to from the sector.
    */
   List<SectorImport> list(@Param("sectorKey") @Nullable Integer sectorKey,
                           @Param("datasetKey") @Nullable Integer datasetKey,
                           @Param("subjectDatasetKey") @Nullable Integer subjectDatasetKey,
                           @Param("states") @Nullable Collection<ImportState> states,
-                          @Param("page") Page page);
+                          @Param("current") @Nullable Boolean current,
+                          @Param("page") @Nullable Page page);
   
   void create(@Param("imp") SectorImport sectorImport);
 

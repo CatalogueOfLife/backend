@@ -5,7 +5,9 @@
 <mapper namespace="life.catalogue.db.Common">
 
     <sql id="limit">
+      <if test="page != null">
         LIMIT #{page.limit} OFFSET #{page.offset}
+      </if>
     </sql>
 
     <!-- derive the partition index from a dataset key -->

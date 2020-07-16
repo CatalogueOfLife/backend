@@ -82,7 +82,7 @@ public class AssemblyCoordinator implements Managed {
       Page page = new Page(0, Page.MAX_LIMIT);
       List<SectorImport> sims = null;
       while (sims == null || sims.size() == page.getLimit()) {
-        sims = sim.list(null, null, null, ImportState.runningStates(), page);
+        sims = sim.list(null, null, null, ImportState.runningStates(), null, page);
         for (SectorImport si : sims) {
           si.setState(ImportState.CANCELED);
           si.setFinished(LocalDateTime.now());

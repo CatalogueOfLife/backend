@@ -9,10 +9,7 @@ import life.catalogue.assembly.AssemblyState;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.NamesTreeDao;
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.ProjectSourceDataset;
-import life.catalogue.db.mapper.ProjectSourceMapper;
-import life.catalogue.db.mapper.UserMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
@@ -210,4 +207,15 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     return session.getMapper(ProjectSourceMapper.class).get(key, datasetKey);
   }
 
+  @GET
+  @Path("/{datasetKey}/source/{key}/metrics")
+  public ImportMetrics projectSourceMetrics(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @Context SqlSession session) {
+    ImportMetrics metrics = new ImportMetrics();
+    metrics.setAttempt(-1);
+    metrics.setDatasetKey(datasetKey);
+    for (ImportMetrics m : session.getMapper(SectorImportMapper.class).list(null, datasetKey, key, null, true, null)) {
+      metrics.add(m);
+    }
+    return metrics;
+  }
 }
