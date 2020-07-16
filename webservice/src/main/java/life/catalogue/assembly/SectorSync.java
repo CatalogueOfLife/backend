@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -33,7 +34,7 @@ import static life.catalogue.dao.DatasetImportDao.countMap;
 public class SectorSync extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorSync.class);
   private NamesTreeDao treeDao;
-  
+
   public SectorSync(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao,
                     Consumer<SectorRunnable> successCallback,
                     BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
@@ -45,6 +46,28 @@ public class SectorSync extends SectorRunnable {
   void doWork() throws Exception {
     sync();
     metrics();
+  }
+
+  @Override
+  void init() throws Exception {
+    super.init();
+    // also load all sector subject to auto block them
+    try (SqlSession session = factory.openSession()) {
+      AtomicInteger counter = new AtomicInteger();
+      session.getMapper(SectorMapper.class).processSectors(catalogueKey, datasetKey).forEach(s -> {
+        if (!s.getId().equals(sectorKey) && s.getSubject().getId() != null) {
+          EditorialDecision d = new EditorialDecision();
+          d.setSubject(s.getSubject());
+          d.setDatasetKey(catalogueKey);
+          d.setSubjectDatasetKey(datasetKey);
+          d.setMode(EditorialDecision.Mode.BLOCK);
+          d.setNote("Auto blocked subject of sector " + s.getId());
+          decisions.put(s.getSubject().getId(), d);
+          counter.incrementAndGet();
+        }
+      });
+      LOG.info("Loaded {} sector subjects for auto blocking", counter);
+    }
   }
 
   private void metrics() {
@@ -85,7 +108,6 @@ public class SectorSync extends SectorRunnable {
   }
   
   private void sync() throws InterruptedException {
-
     state.setState( ImportState.DELETING);
     relinkForeignChildren();
     try {
