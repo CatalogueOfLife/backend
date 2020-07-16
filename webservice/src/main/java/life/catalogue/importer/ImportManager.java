@@ -184,12 +184,14 @@ public class ImportManager implements Managed {
     running.sort(DI_STARTED_COMPARATOR);
 
     // then add the priority queue from the executor, filtered for queued imports only keeping the queues priority order
-    running.addAll(
-        exec.getQueue()
-            .stream()
-            .map(ImportManager::fromImportJob)
-            .filter(di -> di.getState().isQueued())
-            .collect(Collectors.toList()));
+    if (exec != null) {
+      running.addAll(
+          exec.getQueue()
+              .stream()
+              .map(ImportManager::fromImportJob)
+              .filter(di -> di.getState().isQueued())
+              .collect(Collectors.toList()));
+    }
 
     // finally filter by dataset & state
     return running.stream()
