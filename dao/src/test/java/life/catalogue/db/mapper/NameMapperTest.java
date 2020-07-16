@@ -48,6 +48,11 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
     mapper().copyDataset(datasetKey, 999);
   }
 
+  @Test
+  public void processIndexIds() throws Exception {
+    mapper().processIndexIds(datasetKey, null).forEach(System.out::println);
+  }
+
   @Override
   Name createTestEntity(int dkey) {
     Name n = TestEntityGenerator.newName(dkey, "sk1");

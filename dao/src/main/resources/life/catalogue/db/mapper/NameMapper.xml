@@ -211,7 +211,7 @@
     WHERE u.id = #{usageId}
   </select>
 
-  <select id="processIndexIds" resultType="String">
+  <select id="processIndexIds" resultType="Integer">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT DISTINCT unnest(name_index_ids)
     FROM <include refid="FROM"/>
