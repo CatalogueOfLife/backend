@@ -32,7 +32,7 @@
 
   <sql id="FROM">
     sector_import si
-    <if test="subjectDatasetKey != null or datasetKey != null">
+    <if test="subjectDatasetKey != null or datasetKey != null or _parameter.containsKey('current')">
       JOIN sector s ON s.id=si.sector_key
     </if>
   </sql>
@@ -48,13 +48,13 @@
       <if test="subjectDatasetKey != null">
         AND s.subject_dataset_key = #{subjectDatasetKey}
       </if>
-      <if test="states != null &amp;&amp; !states.isEmpty()">
+      <if test="states != null and !states.isEmpty()">
         AND si.state IN
         <foreach item="state" collection="states" open="(" separator="," close=")">
           #{state}::IMPORTSTATE
         </foreach>
       </if>
-      <if test="current != null &amp;&amp; current">
+      <if test="_parameter.containsKey('current') and current != null and current">
         AND si.attempt=s.sync_attempt
       </if>
     </where>

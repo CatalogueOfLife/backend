@@ -106,7 +106,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     
     assertEquals(2, mapper().list(null, null,null, Lists.newArrayList(ImportState.INSERTING, ImportState.PREPARING), null, new Page()).size());
     assertEquals(0, mapper().list(null, 100,null, Lists.newArrayList(ImportState.INSERTING, ImportState.PREPARING), false, new Page()).size());
-    assertEquals(2, mapper().list(null, null,null, Lists.newArrayList(ImportState.INSERTING, ImportState.PREPARING), true, new Page()).size());
+    assertEquals(0, mapper().list(null, null,null, Lists.newArrayList(ImportState.INSERTING, ImportState.PREPARING), true, new Page()).size());
 
     assertEquals(5, mapper().count(s.getId(), null, null, null));
     assertEquals(5, mapper().count(s.getId(), null, s.getSubjectDatasetKey(), null));
