@@ -2,7 +2,6 @@ package life.catalogue.assembly;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Origin;
@@ -29,12 +28,6 @@ import static life.catalogue.api.util.ObjectUtils.coalesce;
 
 public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(TreeCopyHandler.class);
-  private static final Set<EntityType> ALL_DATA = ImmutableSet.of(
-      EntityType.REFERENCE,
-      EntityType.VERNACULAR,
-      EntityType.DISTRIBUTION,
-      EntityType.REFERENCE
-  );
   private static List<Rank> IMPLICITS = ImmutableList.of(Rank.GENUS,Rank.SUBGENUS, Rank.SPECIES);
 
   private final Set<EntityType> entities;
@@ -69,7 +62,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     // we open up a separate batch session that we can write to so we do not disturb the open main cursor for processing with this handler
     batchSession = factory.openSession(ExecutorType.BATCH, false);
     session = factory.openSession(true);
-    this.entities = sector.getEntities() == null ? TreeCopyHandler.ALL_DATA : Set.copyOf(sector.getEntities());
+    this.entities = sector.getEntities() == null ? Collections.EMPTY_SET : Set.copyOf(sector.getEntities());
     LOG.info("Copy taxon extensions: {}", Joiner.on(", ").join(entities));
     if (sector.getRanks() == null || sector.getRanks().isEmpty()) {
       this.ranks = Set.of(Rank.values());
