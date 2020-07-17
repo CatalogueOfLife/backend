@@ -27,5 +27,9 @@ public class SimpleTemplateTest {
     assertEquals("Catalogue of Life, "+sdf.format(new Date()), SimpleTemplate.render("{title}, {date}", d, Locale.UK));
     sdf = new SimpleDateFormat("MMMM yyyy");
     assertEquals("Catalogue of Life, "+sdf.format(new Date()), SimpleTemplate.render("{title}, {date,MMMM yyyy}", d, Locale.UK));
+
+    sdf = new SimpleDateFormat("yy.M");
+    assertEquals("20.5", sdf.format(new Date(2020, 04, 21)));
+    assertEquals(sdf.format(new Date()), SimpleTemplate.render("{date,yy.M}", d));
   }
 }

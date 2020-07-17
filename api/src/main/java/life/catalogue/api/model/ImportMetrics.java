@@ -6,8 +6,11 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+
+import static life.catalogue.api.util.ObjectUtils.coalesce;
 
 public class ImportMetrics implements ImportAttempt {
 
@@ -320,15 +323,15 @@ public class ImportMetrics implements ImportAttempt {
   }
 
   public void add(ImportMetrics m) {
-    nameCount += m.nameCount;
-    taxonCount += m.taxonCount;
-    synonymCount += m.synonymCount;
-    referenceCount += m.referenceCount;
-    typeMaterialCount += m.typeMaterialCount;
-    distributionCount += m.distributionCount;
-    mediaCount += m.mediaCount;
-    treatmentCount += m.treatmentCount;
-    vernacularCount += m.vernacularCount;
+    nameCount = sum(nameCount, m.nameCount);
+    taxonCount = sum(taxonCount, m.taxonCount);
+    synonymCount = sum(synonymCount, m.synonymCount);
+    referenceCount = sum(referenceCount, m.referenceCount);
+    typeMaterialCount = sum(typeMaterialCount, m.typeMaterialCount);
+    distributionCount = sum(distributionCount, m.distributionCount);
+    mediaCount = sum(mediaCount, m.mediaCount);
+    treatmentCount = sum(treatmentCount, m.treatmentCount);
+    vernacularCount = sum(vernacularCount, m.vernacularCount);
 
     namesByTypeCount = sum(namesByTypeCount, m.namesByTypeCount);
     namesByStatusCount = sum(namesByStatusCount, m.namesByStatusCount);
@@ -345,14 +348,23 @@ public class ImportMetrics implements ImportAttempt {
     issuesCount = sum(issuesCount, m.issuesCount);
   }
 
+  private static Integer sum(Integer cnt1, Integer cnt2) {
+    if (cnt1 == null && cnt2 == null) return null;
+    return coalesce(cnt1,0) + coalesce(cnt2,0);
+  }
+
   private static <T> Map<T, Integer> sum(Map<T, Integer> cnt1, Map<T, Integer> cnt2) {
-    Map<T, Integer> sum = Map.copyOf(cnt1);
-    for (Map.Entry<T, Integer> x : cnt2.entrySet()) {
-      if (sum.containsKey(x.getKey())) {
-        Integer cnt = sum.get(x.getKey());
-        sum.put(x.getKey(), cnt + x.getValue());
-      } else {
-        sum.put(x.getKey(), x.getValue());
+    Map<T, Integer> sum = cnt1 == null ? new HashMap<>() : new HashMap<>(cnt1);
+    if (cnt2 != null) {
+      for (Map.Entry<T, Integer> x : cnt2.entrySet()) {
+        if (x.getValue() != null) {
+          if (sum.containsKey(x.getKey())) {
+            Integer cnt = sum.get(x.getKey());
+            sum.put(x.getKey(), cnt + x.getValue());
+          } else {
+            sum.put(x.getKey(), x.getValue());
+          }
+        }
       }
     }
     return sum;
