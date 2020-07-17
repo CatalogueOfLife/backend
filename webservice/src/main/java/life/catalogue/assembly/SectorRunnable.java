@@ -140,7 +140,10 @@ abstract class SectorRunnable implements Runnable {
       }
       // apply dataset defaults if needed
       if (s.getEntities() == null || s.getEntities().isEmpty() || s.getRanks() == null || s.getRanks().isEmpty()) {
-        DatasetSettings ds = session.getMapper(DatasetMapper.class).getSettings(catalogueKey);
+        DatasetSettings ds = ObjectUtils.coalesce(
+          session.getMapper(DatasetMapper.class).getSettings(catalogueKey),
+          new DatasetSettings()
+        );
 
         if (s.getEntities() == null || s.getEntities().isEmpty()) {
           if (ds.has(Setting.SECTOR_ENTITIES)) {

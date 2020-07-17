@@ -20,6 +20,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.*;
@@ -78,6 +79,7 @@ public class SectorSyncTest {
       sector.setSubjectDatasetKey(datasetKey);
       sector.setSubject(new SimpleName("t2", "name", Rank.ORDER));
       sector.setTarget(new SimpleName("cole", "Coleoptera", Rank.ORDER));
+      sector.setEntities(Set.of(EntityType.VERNACULAR, EntityType.DISTRIBUTION, EntityType.REFERENCE, EntityType.MEDIA));
       sector.applyUser(TestEntityGenerator.USER_EDITOR);
       session.getMapper(SectorMapper.class).create(sector);
       
