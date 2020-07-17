@@ -7,6 +7,7 @@ import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
@@ -15,13 +16,12 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -138,7 +138,26 @@ abstract class SectorRunnable implements Runnable {
       if (s == null) {
         throw new NotFoundException("Sector "+sectorKey+" does not exist");
       }
+      // apply dataset defaults if needed
+      if (s.getEntities() == null || s.getEntities().isEmpty() || s.getRanks() == null || s.getRanks().isEmpty()) {
+        DatasetSettings ds = session.getMapper(DatasetMapper.class).getSettings(catalogueKey);
 
+        if (s.getEntities() == null || s.getEntities().isEmpty()) {
+          if (ds.has(Setting.SECTOR_ENTITIES)) {
+            s.setEntities(Set.copyOf(ds.getEnumList(Setting.SECTOR_ENTITIES)));
+          } else {
+            s.setEntities(Collections.emptySet());
+          }
+        }
+
+        if (s.getRanks() == null || s.getRanks().isEmpty()) {
+          if (ds.has(Setting.SECTOR_RANKS)) {
+            s.setRanks(Set.copyOf(ds.getEnumList(Setting.SECTOR_RANKS)));
+          } else {
+            s.setRanks(Set.of(Rank.values()));
+          }
+        }
+      }
       if (validate) {
         // assert that target actually exists. Subject might be bad - not needed for deletes!
         TaxonMapper tm = session.getMapper(TaxonMapper.class);

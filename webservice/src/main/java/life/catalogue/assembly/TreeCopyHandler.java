@@ -1,6 +1,7 @@
 package life.catalogue.assembly;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.EntityType;
@@ -62,14 +63,15 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     // we open up a separate batch session that we can write to so we do not disturb the open main cursor for processing with this handler
     batchSession = factory.openSession(ExecutorType.BATCH, false);
     session = factory.openSession(true);
-    this.entities = sector.getEntities() == null ? Collections.EMPTY_SET : Set.copyOf(sector.getEntities());
+
+    this.entities = Preconditions.checkNotNull(sector.getEntities(), "Sector entities required");
     LOG.info("Copy taxon extensions: {}", Joiner.on(", ").join(entities));
-    if (sector.getRanks() == null || sector.getRanks().isEmpty()) {
-      this.ranks = Set.of(Rank.values());
-    } else {
-      this.ranks = Set.copyOf(sector.getRanks());
-      LOG.info("Filter only ranks {}", Joiner.on(", ").join(ranks));
+
+    this.ranks = Preconditions.checkNotNull(sector.getRanks(), "Sector ranks required");
+    if (ranks.size() < Rank.values().length) {
+      LOG.info("Copy only ranks: {}", Joiner.on(", ").join(ranks));
     }
+
     for (Rank r : IMPLICITS) {
       if (!ranks.isEmpty() && ranks.contains(r)) {
         implicitRanks.add(r);

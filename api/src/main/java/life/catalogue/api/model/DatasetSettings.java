@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @JsonDeserialize(using = SettingsDeserializer.class)
@@ -76,15 +77,34 @@ public class DatasetSettings extends HashMap<Setting, Object> {
     }
   }
 
+  public <T extends Enum> List<T> getEnumList(Setting key) {
+    try {
+      return (List<T>) get(key);
+    } catch (Exception e) {
+      LOG.warn("Failed to convert setting {}={} to enum", key, get(key), e);
+      return null;
+    }
+  }
+
   @Override
   public Object put(Setting key, Object value) {
     if (value == null) {
       return remove(key);
-    } else if (!key.getType().isInstance(value)){
-      throw new IllegalArgumentException("value not of expected type " + key.getType());
+    } else if (key.isMultiple()){
+      if (!(value instanceof List)){
+        throw new IllegalArgumentException("value must be a list of type " + key.getType());
+      }
+      List<?> list = (List) value;
+      if (!list.isEmpty() && !key.getType().isInstance(list.get(0))){
+        throw new IllegalArgumentException("list value not of expected type " + key.getType());
+      }
+
     } else {
-      return super.put(key, value);
+      if (!key.getType().isInstance(value)){
+        throw new IllegalArgumentException("value not of expected type " + key.getType());
+      }
     }
+    return super.put(key, value);
   }
 
   public boolean has(Setting key) {

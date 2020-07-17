@@ -46,11 +46,6 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   @Override
   public DSID<Integer> create(Sector s, int user) {
     s.applyUser(user);
-    if (s.getEntities() == null || s.getEntities().isEmpty()) {
-      // apply defaults until UI issue is solved:
-      // https://github.com/CatalogueOfLife/clearinghouse-ui/issues/673
-      s.setEntities(DEFAULT_ENTITIES);
-    }
     try (SqlSession session = factory.openSession(ExecutorType.SIMPLE, false)) {
       SectorMapper mapper = session.getMapper(SectorMapper.class);
   
@@ -89,7 +84,7 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   
       for (Taxon t : toCopy) {
         t.setSectorKey(s.getId());
-        TaxonDao.copyTaxon(session, t, did, user, Collections.emptySet());
+        TaxonDao.copyTaxon(session, t, did, user);
       }
       indexService.add(toCopy.stream()
         .map(t -> {

@@ -2,12 +2,18 @@ package life.catalogue.api.vocab;
 
 import com.google.common.base.Preconditions;
 import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
 import java.time.LocalDate;
-import static life.catalogue.api.vocab.DatasetOrigin.*;
+
+import static life.catalogue.api.vocab.DatasetOrigin.EXTERNAL;
+import static life.catalogue.api.vocab.DatasetOrigin.MANAGED;
 
 
+/**
+ * Dataset settings
+ */
 public enum Setting {
 
   /**
@@ -75,10 +81,21 @@ public enum Setting {
    */
   IMPORT_FREQUENCY(Frequency.class, EXTERNAL),
 
-  DATA_ACCESS(URI.class, EXTERNAL);
+  DATA_ACCESS(URI.class, EXTERNAL),
+
+  /**
+   * Project defaults to be used for the sector.entities property
+   */
+  SECTOR_ENTITIES(EntityType.class, true, MANAGED),
+
+  /**
+   * Project defaults to be used for the sector.ranks property
+   */
+  SECTOR_RANKS(Rank.class, true, MANAGED);
 
   private final Class type;
   private final DatasetOrigin[] origin;
+  private final boolean multiple;
 
   public Class getType() {
     return type;
@@ -92,17 +109,21 @@ public enum Setting {
     return type.isEnum();
   }
 
-  Setting(Class type) {
-    this(type, null);
+  public boolean isMultiple() {
+    return multiple;
   }
 
+  Setting(Class type, DatasetOrigin... origin) {
+    this(type, false, origin);
+  }
   /**
    * Use String, Integer, Boolean, LocalDate, URI or a custom col enumeration class
    *
    * @param type
    * @param origin
    */
-  Setting(Class type, DatasetOrigin... origin) {
+  Setting(Class type, boolean multiple, DatasetOrigin... origin) {
+    this.multiple = multiple;
     this.origin = origin;
     Preconditions.checkArgument(type.equals(String.class)
       || type.equals(Integer.class)

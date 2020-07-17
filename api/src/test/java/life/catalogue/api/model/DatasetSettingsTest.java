@@ -1,13 +1,16 @@
 package life.catalogue.api.model;
 
 import life.catalogue.api.jackson.SerdeTestBase;
+import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Frequency;
 import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.Setting;
 import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -36,7 +39,9 @@ public class DatasetSettingsTest extends SerdeTestBase<DatasetSettings> {
       Setting.CSV_QUOTE_ESCAPE, "\\",
       Setting.NOMENCLATURAL_CODE, NomCode.BOTANICAL,
       Setting.IMPORT_FREQUENCY, Frequency.MONTHLY,
-      Setting.DATA_ACCESS, URI.create("www.gbif.org")
+      Setting.DATA_ACCESS, URI.create("www.gbif.org"),
+      Setting.SECTOR_ENTITIES, List.of(EntityType.VERNACULAR),
+      Setting.SECTOR_RANKS, List.of(Rank.GENUS, Rank.SPECIES, Rank.SUBGENUS, Rank.TRIBE)
     ));
     return ds;
   }
