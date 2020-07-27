@@ -1,23 +1,25 @@
 package life.catalogue.matching.authorship;
 
-import java.util.List;
-
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import life.catalogue.api.model.Name;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.Equality;
-import life.catalogue.api.model.Name;
 import life.catalogue.parser.NameParser;
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.ParsedAuthorship;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class AuthorComparatorTest {
   AuthorComparator comp = new AuthorComparator(AuthorshipNormalizer.INSTANCE);
   
   public static Authorship parse(String x) {
-    return NameParser.PARSER.parseAuthorship(x).get().getCombinationAuthorship();
+    return NameParser.PARSER.parseAuthorship(x).orElse(new ParsedAuthorship()).getCombinationAuthorship();
   }
   
   public static Authorship parse(String x, String year) {

@@ -83,10 +83,10 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   }
   
   /**
-   * @return a name instance with just the parsed authorship, i.e. combination & original year & author list
+   * @return a parsed authorship instance only, i.e. combination & original year & author list
    */
   public Optional<ParsedAuthorship> parseAuthorship(String authorship) {
-    if (Strings.isNullOrEmpty(authorship)) return Optional.of(new ParsedName());
+    if (Strings.isNullOrEmpty(authorship)) return Optional.of(new ParsedAuthorship());
     try {
       ParsedAuthorship pa = PARSER_INTERNAL.parseAuthorship(authorship);
       if (pa.getState() == ParsedName.State.COMPLETE) {
