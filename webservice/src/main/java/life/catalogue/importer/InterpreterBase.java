@@ -352,7 +352,7 @@ public class InterpreterBase {
       isAtomized = ObjectUtils.anyNonBlank(uninomial, genus, infraGenus, species, infraspecies);
     }
 
-    final boolean useAtoms   = isAtomized && (preferAtoms || StringUtils.isBlank(sciname));
+    final boolean useAtoms = isAtomized && (preferAtoms || StringUtils.isBlank(sciname));
     ParsedNameUsage pnu;
 
     // we can get the scientific name in various ways.

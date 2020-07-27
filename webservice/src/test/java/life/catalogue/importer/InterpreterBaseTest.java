@@ -160,6 +160,24 @@ public class InterpreterBaseTest {
     assertEquals("Miller", n.getAuthorship());
     assertEquals(List.of("Miller"), n.getCombinationAuthorship().getAuthors());
     assertNull(n.getCombinationAuthorship().getYear());
+
+    // https://github.com/CatalogueOfLife/backend/issues/788
+    pnu = ib.interpretName(true, "CIP-82", "species", "Lutzomyia (Helcocyrtomyia) osornoi", "(Ristorcelli & Van ty, 1941)",
+      null, "Lutzomyia", "Helcocyrtomyia", "osornoi", null, null, null, null, null, null, v);
+    assertNull(pnu.get().getTaxonomicNote());
+    n = pnu.get().getName();
+    assertEquals("Lutzomyia (Helcocyrtomyia) osornoi", n.getScientificName());
+    assertNull(n.getUninomial());
+    assertEquals(Rank.SPECIES, n.getRank());
+    assertEquals("Lutzomyia", n.getGenus());
+    assertEquals("Helcocyrtomyia", n.getInfragenericEpithet());
+    assertEquals("osornoi", n.getSpecificEpithet());
+    assertEquals("(Ristorcelli & Van ty, 1941)", n.getAuthorship());
+    assertTrue(n.getCombinationAuthorship().isEmpty());
+    assertEquals("1941", n.getBasionymAuthorship().getYear());
+    assertEquals("Ristorcelli", n.getBasionymAuthorship().getAuthors().get(0));
+    assertEquals("Van ty", n.getBasionymAuthorship().getAuthors().get(1));
+    assertTrue(n.getBasionymAuthorship().getExAuthors().isEmpty());
   }
 
   @Test

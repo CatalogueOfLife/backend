@@ -1,11 +1,12 @@
 package life.catalogue.api.model;
 
-import java.util.Collections;
-import java.util.Set;
-
 import life.catalogue.api.vocab.Issue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public interface IssueContainer {
   
@@ -24,7 +25,40 @@ public interface IssueContainer {
   default boolean hasIssues() {
     return !getIssues().isEmpty();
   }
-  
+
+  /**
+   * Simple hash map based issue container.
+   */
+  class Simple implements IssueContainer {
+    private Set<Issue> issues = new HashSet<>();
+
+    @Override
+    public Set<Issue> getIssues() {
+      return issues;
+    }
+
+    @Override
+    public void setIssues(Set<Issue> issues) {
+      this.issues.clear();
+      this.issues.addAll(issues);
+    }
+
+    @Override
+    public void addIssue(Issue issue) {
+      issues.add(issue);
+    }
+
+    @Override
+    public boolean removeIssue(Issue issue) {
+      return issues.remove(issue);
+    }
+
+    @Override
+    public boolean hasIssue(Issue issue) {
+      return issues.contains(issue);
+    }
+  }
+
   /**
    * Reusable issue container that does not store anything.
    */

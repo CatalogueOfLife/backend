@@ -122,10 +122,29 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
               pnu.getName(), prevAuthorship, pnAuthorship.authorshipComplete());
         }
       }
-      copyToPNU(pnAuthorship, pnu, v);
+
+      // keep authorship issues in a separate container
+      // so we can filter out non authorship related issues before we add them to the verbatim record
+      IssueContainer ic = new IssueContainer.Simple();
+      copyToPNU(pnAuthorship, pnu, ic);
+      // ignore issues related to the epithet - we only parse authorships here
+      removeEpithetIssues(ic);
+      ic.getIssues().forEach(v::addIssue);
+
       // use original authorship string but normalize whitespace
       pnu.getName().setAuthorship( normalizeAuthorship(authorship, pnAuthorship.getTaxonomicNote()) );
     }
+  }
+
+  private static void removeEpithetIssues(IssueContainer v) {
+    v.removeIssue(Issue.NULL_EPITHET);
+    v.removeIssue(Issue.SUBSPECIES_ASSIGNED);
+    v.removeIssue(Issue.LC_MONOMIAL);
+    v.removeIssue(Issue.QUESTION_MARKS_REMOVED);
+    v.removeIssue(Issue.REPL_ENCLOSING_QUOTE);
+    v.removeIssue(Issue.ESCAPED_CHARACTERS);
+    v.removeIssue(Issue.ESCAPED_CHARACTERS);
+    v.removeIssue(Issue.CONTAINS_REFERENCE);
   }
 
   static String note2pattern(String x) {
