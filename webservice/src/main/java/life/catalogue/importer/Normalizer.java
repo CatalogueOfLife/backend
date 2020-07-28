@@ -305,6 +305,7 @@ public class Normalizer implements Callable<Boolean> {
 
     // cleanup basionym rels
     cutBasionymChains();
+    reduceRedundantBasionymRels();
 
     // rectify taxonomic status
     rectifyTaxonomicStatus();
@@ -319,6 +320,36 @@ public class Normalizer implements Callable<Boolean> {
     removeOrphanSynonyms();
 
     LOG.info("Normalization completed.");
+  }
+
+  private void reduceRedundantBasionymRels() {
+    LOG.info("Remove redundant basionym relations");
+
+    final String query = "MATCH (n:NAME)-[r1:HAS_BASIONYM]->(b:NAME)<-[r2:HAS_BASIONYM]-(n:NAME)" +
+      "RETURN r1, r2 " +
+      "LIMIT 1";
+
+    int counter = 0;
+    try (Transaction tx = store.getNeo().beginTx()) {
+      Result result = store.getNeo().execute(query);
+      while (result.hasNext()) {
+        Map<String, Object> row = result.next();
+        Relationship r1 = (Relationship) row.get("r1");
+        Relationship r2 = (Relationship) row.get("r2");
+
+        NameRelation nr1 = store.toRelation(r1);
+
+        // delete the relation with the least info
+        Relationship del = nr1.isRich() ? r2 : r1;
+        del.delete();
+        counter++;
+        LOG.debug("Deleted redundant basionym relation {}", del);
+
+        result = store.getNeo().execute(query);
+      }
+      tx.success();
+    }
+    LOG.info("{} redundant basionym relation removed", counter);
   }
 
   private void removeOrphanSynonyms() {

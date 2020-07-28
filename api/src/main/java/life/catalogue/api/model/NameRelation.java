@@ -73,7 +73,14 @@ public class NameRelation extends DatasetScopedEntity<Integer> implements Verbat
   public void setRemarks(String remarks) {
     this.remarks = remarks;
   }
-  
+
+  /**
+   * @return true if publishedIn or remarks are present
+   */
+  public boolean isRich() {
+    return publishedInId != null || remarks != null;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

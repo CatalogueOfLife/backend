@@ -191,7 +191,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
       assertEquals("Leonida taraxacoida Vill.", t.usage.getName().getLabel());
 
       List<NameRelation> rels = store.relations(t.nameNode);
-      assertEquals(1, rels.size());
+      assertEquals(1, rels.size()); // 2 redundant basionym relations (originalNameID & NameRel) should become just one!
       assertEquals(NomRelType.BASIONYM, rels.get(0).getType());
 
       t = accepted(t.node);

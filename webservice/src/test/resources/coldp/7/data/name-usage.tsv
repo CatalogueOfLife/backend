@@ -14,7 +14,7 @@ ID	parentID	originalNameID	status	accordingToID	scrutinizer	scrutinizerDate	exti
 1001	101						false	terrestrial	Crepis bakeri	Greene	species	Crepis	bakeri			greene1895	73	botanical		https://beta.ipni.org/n/69325-2	
 1002	101						false	terrestrial	Crepis occidentalis	Nutt.	species	Crepis	occidentalis					botanical			
 1005	102						false	terrestrial	Leontodon anomalus		species	Leontodon	anomalus					botanical			
-1006	102		accepted				false	terrestrial	Leontodon taraxacoides	(Vill.) Mérat	species	Leontodon	taraxacoides					botanical			
+1006	102	1006-s3	accepted				false	terrestrial	Leontodon taraxacoides	(Vill.) Mérat	species	Leontodon	taraxacoides					botanical			
 1006-s1	1006		synonym						Leontodon leysseri		species	Leontodon	leysseri					botanical			
 1006-s2	1006		synonym						Leontodon saxatilis		species	Leontodon	saxatilis					botanical			
 1006-s3	1006		synonym						Leonida taraxacoida	Vill.	species	Leonida	taraxacoida					botanical			
