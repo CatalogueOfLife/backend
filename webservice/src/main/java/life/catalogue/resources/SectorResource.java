@@ -28,7 +28,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static life.catalogue.dao.NamesTreeDao.Context.SECTOR;
+import static life.catalogue.dao.FileMetricsDao.Context.SECTOR;
 
 @Path("/dataset/{datasetKey}/sector")
 @Produces(MediaType.APPLICATION_JSON)
@@ -133,7 +133,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @Produces({MediaType.TEXT_PLAIN})
   public Stream<String> getSyncAttemptTree(@PathParam("id") int id,
                                              @PathParam("attempt") int attempt) {
-    return diDao.getTreeDao().getTree(SECTOR, id, attempt);
+    return diDao.getFileMetricsDao().getTree(SECTOR, id, attempt);
   }
   
   @GET
@@ -141,7 +141,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @Produces({MediaType.TEXT_PLAIN})
   public Stream<String> getSyncAttemptNames(@PathParam("id") int id,
                                               @PathParam("attempt") int attempt) {
-    return diDao.getTreeDao().getNames(SECTOR, id, attempt);
+    return diDao.getFileMetricsDao().getNames(SECTOR, id, attempt);
   }
 
   @GET
@@ -149,7 +149,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @Produces({MediaType.TEXT_PLAIN})
   public Stream<String> getSyncAttemptNameIds(@PathParam("id") int id,
                                               @PathParam("attempt") int attempt) {
-    return diDao.getTreeDao().getNameIds(SECTOR, id, attempt);
+    return diDao.getFileMetricsDao().getNameIds(SECTOR, id, attempt);
   }
 
   @POST

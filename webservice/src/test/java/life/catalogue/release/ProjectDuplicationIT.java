@@ -49,13 +49,13 @@ public class ProjectDuplicationIT {
     .around(importRule);
 
   DatasetImportDao diDao;
-  NamesTreeDao treeDao;
+  FileMetricsDao treeDao;
   TaxonDao tdao;
 
   @Before
   public void init () throws IOException, SQLException {
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    treeDao = new NamesTreeDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
+    treeDao = new FileMetricsDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
     // reset draft

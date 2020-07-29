@@ -704,8 +704,7 @@ CREATE TABLE dataset_import (
 );
 
 CREATE TABLE sector (
-  id serial PRIMARY KEY,
-  copied_from_id INTEGER,
+  id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   subject_dataset_key INTEGER NOT NULL REFERENCES dataset,
   subject_rank RANK,
@@ -734,10 +733,11 @@ CREATE TABLE sector (
   entities ENTITYTYPE[] DEFAULT NULL,
   note TEXT,
   UNIQUE (dataset_key, subject_dataset_key, subject_id),
-  UNIQUE (dataset_key, copied_from_id)
+  PRIMARY KEY (dataset_key, id)
 );
 
 CREATE TABLE sector_import (
+  dataset_key INTEGER NOT NULL REFERENCES dataset,
   sector_key INTEGER NOT NULL REFERENCES sector ON DELETE CASCADE,
   attempt INTEGER NOT NULL,
   started TIMESTAMP WITHOUT TIME ZONE,
@@ -769,7 +769,7 @@ CREATE TABLE sector_import (
   job TEXT NOT NULL,
   warnings TEXT[],
   error TEXT,
-  PRIMARY KEY (sector_key, attempt)
+  PRIMARY KEY (dataset_key, sector_key, attempt)
 );
 
 CREATE TABLE decision (

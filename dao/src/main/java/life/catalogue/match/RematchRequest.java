@@ -1,10 +1,12 @@
 package life.catalogue.match;
 
+import life.catalogue.api.model.DSID;
+
 import java.util.Objects;
 
-public class RematchRequest {
+public class RematchRequest implements DSID<Integer> {
   private Integer id;
-  private int datasetKey; // project
+  private Integer datasetKey; // project
   private boolean broken;
 
   public RematchRequest() {
@@ -20,11 +22,11 @@ public class RematchRequest {
   }
 
 
-  public int getDatasetKey() {
+  public Integer getDatasetKey() {
     return datasetKey;
   }
 
-  public void setDatasetKey(int datasetKey) {
+  public void setDatasetKey(Integer datasetKey) {
     this.datasetKey = datasetKey;
   }
 

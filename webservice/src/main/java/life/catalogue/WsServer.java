@@ -243,8 +243,8 @@ public class WsServer extends Application<WsServerConfig> {
     assembly.setImportManager(importManager);
 
     // diff
-    DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), diDao.getTreeDao());
-    SectorDiffService sDiff = new SectorDiffService(getSqlSessionFactory(), diDao.getTreeDao());
+    DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), diDao.getFileMetricsDao());
+    SectorDiffService sDiff = new SectorDiffService(getSqlSessionFactory(), diDao.getFileMetricsDao());
     env.healthChecks().register("dataset-diff", new DiffHealthCheck(dDiff));
     env.healthChecks().register("sector-diff", new DiffHealthCheck(sDiff));
 

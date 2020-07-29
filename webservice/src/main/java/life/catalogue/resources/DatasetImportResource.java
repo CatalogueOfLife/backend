@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static life.catalogue.dao.NamesTreeDao.Context;
+import static life.catalogue.dao.FileMetricsDao.Context;
 
 @Path("/dataset/{key}/import")
 @SuppressWarnings("static-method")
@@ -49,7 +49,7 @@ public class DatasetImportResource {
   @Produces({MediaType.TEXT_PLAIN})
   public Stream<String> getImportAttemptTree(@PathParam("key") int key,
                                      @PathParam("attempt") int attempt) throws IOException {
-    return diDao.getTreeDao().getTree(Context.DATASET, key, attempt);
+    return diDao.getFileMetricsDao().getTree(Context.DATASET, key, attempt);
   }
   
   @GET
@@ -57,7 +57,7 @@ public class DatasetImportResource {
   @Produces({MediaType.TEXT_PLAIN})
   public Stream<String> getImportAttemptNames(@PathParam("key") int key,
                                               @PathParam("attempt") int attempt) {
-    return diDao.getTreeDao().getNames(Context.DATASET, key, attempt);
+    return diDao.getFileMetricsDao().getNames(Context.DATASET, key, attempt);
   }
 
   @GET
@@ -65,7 +65,7 @@ public class DatasetImportResource {
   @Produces({MediaType.TEXT_PLAIN})
   public Stream<String> getImportAttemptNameIds(@PathParam("key") int key,
                                                 @PathParam("attempt") int attempt) {
-    return diDao.getTreeDao().getNameIds(Context.DATASET, key, attempt);
+    return diDao.getFileMetricsDao().getNameIds(Context.DATASET, key, attempt);
   }
 
 }

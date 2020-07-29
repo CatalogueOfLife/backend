@@ -1,5 +1,6 @@
 package life.catalogue.db.tree;
 
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.util.ObjectUtils;
@@ -86,10 +87,10 @@ public class TextTreePrinter implements Consumer<SimpleName> {
   /**
    * Prints a sector from the given catalogue.
    */
-  public static TextTreePrinter sector(int catalogueKey, final int sectorKey, SqlSessionFactory factory, Writer writer) {
+  public static TextTreePrinter sector(final DSID<Integer> sectorKey, SqlSessionFactory factory, Writer writer) {
     try (SqlSession session = factory.openSession(true)) {
       Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
-      return new TextTreePrinter(catalogueKey, sectorKey, s.getTarget().getId(), null, factory, writer);
+      return new TextTreePrinter(sectorKey.getDatasetKey(), sectorKey.getId(), s.getTarget().getId(), null, factory, writer);
     }
   }
   

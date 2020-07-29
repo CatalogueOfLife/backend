@@ -4,7 +4,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.ImportState;
-import life.catalogue.dao.NamesTreeDao;
+import life.catalogue.dao.FileMetricsDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
@@ -26,9 +26,9 @@ import java.util.function.Consumer;
 public class SectorDelete extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorDelete.class);
   private Rank cutoffRank = Rank.SPECIES;
-  private final NamesTreeDao treeDao;
+  private final FileMetricsDao treeDao;
 
-  public SectorDelete(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, NamesTreeDao treeDao,
+  public SectorDelete(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, FileMetricsDao treeDao,
                       Consumer<SectorRunnable> successCallback,
                       BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     super(sectorKey, false, factory, indexService, successCallback, errorCallback, user);
@@ -81,7 +81,7 @@ public class SectorDelete extends SectorRunnable {
       session.commit();
       // remove metric files
       try {
-        treeDao.deleteAll(NamesTreeDao.Context.SECTOR, sectorKey);
+        treeDao.deleteAll(FileMetricsDao.Context.SECTOR, sectorKey);
       } catch (IOException e) {
         LOG.error("Failed to delete metrics files for sector {}", sectorKey, e);
       }

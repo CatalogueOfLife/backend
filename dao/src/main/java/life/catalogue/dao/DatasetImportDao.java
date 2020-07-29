@@ -31,16 +31,16 @@ public class DatasetImportDao {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetImportDao.class);
   
   private final SqlSessionFactory factory;
-  private final NamesTreeDao treeDao;
+  private final FileMetricsDatasetDao fileMetricsDao;
   
   
   public DatasetImportDao(SqlSessionFactory factory, File repo) {
     this.factory = factory;
-    this.treeDao = new NamesTreeDao(factory, repo);
+    this.fileMetricsDao = new FileMetricsDatasetDao(factory, repo);
   }
   
-  public NamesTreeDao getTreeDao() {
-    return treeDao;
+  public FileMetricsDatasetDao getFileMetricsDao() {
+    return fileMetricsDao;
   }
   
   /**
@@ -120,8 +120,8 @@ public class DatasetImportDao {
       DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
       updateMetrics(mapper, di);
   
-      treeDao.updateDatasetTree(di.getDatasetKey(), di.getAttempt());
-      treeDao.updateDatasetNames(di.getDatasetKey(), di.getAttempt());
+      fileMetricsDao.updateTree(di.getDatasetKey(), di.getAttempt());
+      fileMetricsDao.updateNames(di.getDatasetKey(), di.getAttempt());
       
     } catch (IOException e) {
       LOG.error("Failed to print text tree for dataset {}", di.getDatasetKey(), e);
@@ -246,7 +246,7 @@ public class DatasetImportDao {
     try (SqlSession session = factory.openSession(true)) {
       DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
       mapper.deleteByDataset(datasetKey);
-      treeDao.deleteAll(NamesTreeDao.Context.DATASET, datasetKey);
+      fileMetricsDao.deleteAll(FileMetricsDao.Context.DATASET, datasetKey);
       
     } catch (IOException e) {
       LOG.error("Failed to remove all metrics for dataset {}", datasetKey, e);

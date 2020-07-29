@@ -14,13 +14,4 @@ public interface BaseDecisionMapper<T extends DatasetScopedEntity<Integer>, R> e
   DatasetProcessable<T>,
   Searchable<T, R>,
   CopyDataset {
-
-  default T get(Integer key) {
-    return get(DSID.idOnly(key));
-  }
-
-  default int delete(Integer key) {
-    return delete(DSID.idOnly(key));
-  }
-
 }

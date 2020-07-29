@@ -21,7 +21,7 @@ public class DatasetDiffServiceTest extends DaoTestBase {
   public DatasetDiffServiceTest() {
     super(TestDataRule.tree());
     dao = new DatasetImportDao(factory(), treeRepoRule.getRepo());
-    diff = new DatasetDiffService(factory(), dao.getTreeDao());
+    diff = new DatasetDiffService(factory(), dao.getFileMetricsDao());
   }
   
   

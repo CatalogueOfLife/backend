@@ -6,7 +6,6 @@ import life.catalogue.api.model.DatasetScopedEntity;
 import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.dao.DaoUtils;
-import life.catalogue.db.CRUD;
 import life.catalogue.db.mapper.BaseDecisionMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -45,12 +44,9 @@ public abstract class RematcherBase<
 
   abstract S toSearchRequest(R req);
 
-  T verify(Integer id, T obj) {
+  T verify(DSID<Integer> key, T obj) {
     if (obj == null) {
-      throw new NotFoundException(type + " " + id + " does not exist in project " + projectKey);
-    }
-    if (obj.getDatasetKey() != projectKey) {
-      throw new IllegalArgumentException(type + " " + obj.getId() + " is not from project " + projectKey);
+      throw new NotFoundException(type + " " + key.getId() + " does not exist in project " + projectKey);
     }
     return obj;
   }
@@ -84,7 +80,7 @@ public abstract class RematcherBase<
       mdao = new MatchingDao(session);
       mapper = session.getMapper(mapperClass);
       if (req.getId() != null){
-        T ed = verify(req.getId(), mapper.get(req.getId()));
+        T ed = verify(req, mapper.get(req));
         LOG.info("Match {} {} from project {}", type, req.getId(), projectKey);
         match(ed);
 
@@ -128,14 +124,6 @@ public abstract class RematcherBase<
       counter.unchanged++;
     }
     return changed;
-  }
-  
-  static <T extends DatasetScopedEntity<Integer>> T getNotNull(CRUD<DSID<Integer>, T> mapper, int key) throws NotFoundException {
-    T obj = mapper.get(DSID.idOnly(key));
-    if (obj == null) {
-      throw NotFoundException.notFound(Object.class, key);
-    }
-    return obj;
   }
 
   NameUsage matchSubjectUniquely(int datasetKey, DatasetScopedEntity<Integer> obj, SimpleName sn, String originalId){

@@ -1,7 +1,7 @@
 package life.catalogue.db.tree;
 
 import life.catalogue.common.io.Resources;
-import life.catalogue.dao.NamesTreeDao;
+import life.catalogue.dao.FileMetricsDao;
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.Assert;
@@ -20,8 +20,8 @@ public class BaseDiffServiceTest {
 
   static class Diff extends BaseDiffService {
 
-    public Diff(NamesTreeDao dao, SqlSessionFactory factory) {
-      super(NamesTreeDao.Context.DATASET, dao, factory);
+    public Diff(FileMetricsDao dao, SqlSessionFactory factory) {
+      super(FileMetricsDao.Context.DATASET, dao, factory);
     }
 
     @Override
@@ -63,7 +63,7 @@ public class BaseDiffServiceTest {
     Assert.assertTrue(version.startsWith("---"));
   }
 
-  @Test(expected = NamesTreeDao.AttemptMissingException.class)
+  @Test(expected = FileMetricsDao.AttemptMissingException.class)
   public void namesDiff() throws Exception {
     final File bad = new File("/tmp/I do not exist");
     diff.namesDiff(1, new int[]{1,2,3}, i -> {

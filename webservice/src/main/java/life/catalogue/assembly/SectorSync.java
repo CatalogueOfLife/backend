@@ -4,7 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.EstimateDao;
-import life.catalogue.dao.NamesTreeDao;
+import life.catalogue.dao.FileMetricsDao;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.match.EstimateRematcher;
@@ -33,13 +33,13 @@ import static life.catalogue.dao.DatasetImportDao.countMap;
  */
 public class SectorSync extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorSync.class);
-  private NamesTreeDao treeDao;
+  private FileMetricsDao treeDao;
 
   public SectorSync(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao,
                     Consumer<SectorRunnable> successCallback,
                     BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     super(sectorKey, true, factory, indexService, successCallback, errorCallback, user);
-    treeDao = diDao.getTreeDao();
+    treeDao = diDao.getFileMetricsDao();
   }
   
   @Override

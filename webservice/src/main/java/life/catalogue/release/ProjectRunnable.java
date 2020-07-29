@@ -80,7 +80,7 @@ public abstract class ProjectRunnable implements Runnable {
       // build indices and attach partition
       LOG.info("Attach and index partitions for dataset {}", newDatasetKey);
       Partitioner.indexAndAttach(factory, newDatasetKey);
-      // create metrics
+      // create dataset metrics
       LOG.info("Build metrics for dataset {}", newDatasetKey);
       updateState(ImportState.ANALYZING);
       metrics();

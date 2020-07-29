@@ -65,13 +65,13 @@ public class SectorSyncIT {
       .around(importRule);
 
   DatasetImportDao diDao;
-  NamesTreeDao treeDao;
+  FileMetricsDao treeDao;
   TaxonDao tdao;
   
   @Before
   public void init () throws IOException, SQLException {
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    treeDao = new NamesTreeDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
+    treeDao = new FileMetricsDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     // reset draft
     dataRule.truncateDraft();
     dataRule.loadData(true);

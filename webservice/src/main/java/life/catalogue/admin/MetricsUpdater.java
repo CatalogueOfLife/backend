@@ -3,7 +3,7 @@ package life.catalogue.admin;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Sector;
-import life.catalogue.dao.NamesTreeDao;
+import life.catalogue.dao.FileMetricsDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import org.apache.ibatis.session.SqlSession;
@@ -21,7 +21,7 @@ public class MetricsUpdater implements Runnable {
   private Integer datasetKey;
   private int counter;
   private int sCounter;
-  NamesTreeDao treeDao;
+  FileMetricsDao treeDao;
 
   public MetricsUpdater(SqlSessionFactory factory, WsServerConfig cfg, Integer datasetKey) {
     this.factory = factory;
@@ -31,7 +31,7 @@ public class MetricsUpdater implements Runnable {
 
   @Override
   public void run() {
-    treeDao = new NamesTreeDao(factory, cfg.metricsRepo);
+    treeDao = new FileMetricsDao(factory, cfg.metricsRepo);
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       if (datasetKey != null){

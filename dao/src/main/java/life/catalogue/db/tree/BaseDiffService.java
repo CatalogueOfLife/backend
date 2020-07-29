@@ -4,7 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.ImportAttempt;
 import life.catalogue.common.io.InputStreamUtils;
-import life.catalogue.dao.NamesTreeDao;
+import life.catalogue.dao.FileMetricsDao;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -20,53 +20,51 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public abstract class BaseDiffService {
+public abstract class BaseDiffService<K> {
   private static final Logger LOG = LoggerFactory.getLogger(BaseDiffService.class);
 
   private final static Pattern ATTEMPTS = Pattern.compile("^(\\d+)\\.\\.(\\d+)$");
   protected final SqlSessionFactory factory;
-  protected final NamesTreeDao dao;
-  private final NamesTreeDao.Context context;
+  protected final FileMetricsDao<K> dao;
 
-  public BaseDiffService(NamesTreeDao.Context context, NamesTreeDao dao, SqlSessionFactory factory) {
-    this.context = context;
+  public BaseDiffService(FileMetricsDao<K> dao, SqlSessionFactory factory) {
     this.factory = factory;
     this.dao = dao;
   }
 
-  public Reader treeDiff(int key, String attempts) {
+  public Reader treeDiff(K key, String attempts) {
     int[] atts = parseAttempts(key, attempts);
-    return udiff(key, atts, a -> dao.treeFile(context, key, a));
+    return udiff(key, atts, a -> dao.treeFile(key, a));
   }
 
-  public Reader namesDiff(int key, String attempts) {
+  public Reader namesDiff(K key, String attempts) {
     int[] atts = parseAttempts(key, attempts);
-    return udiff(key, atts, a -> dao.namesFile(context, key, a));
+    return udiff(key, atts, a -> dao.namesFile(key, a));
   }
 
-  public NamesDiff nameIdsDiff(int key, String attempts) {
+  public NamesDiff nameIdsDiff(K key, String attempts) {
     int[] atts = parseAttempts(key, attempts);
-    return namesDiff(key, atts, a -> dao.namesIdFile(context, key, a));
+    return namesDiff(key, atts, a -> dao.namesIdFile(key, a));
   }
 
-  abstract int[] parseAttempts(int key, String attempts);
+  abstract int[] parseAttempts(K key, String attempts);
 
-  private File[] attemptToFiles(int key, int[] attempts, Function<Integer, File> getFile) throws NamesTreeDao.AttemptMissingException{
+  private File[] attemptToFiles(K key, int[] attempts, Function<Integer, File> getFile) throws FileMetricsDao.AttemptMissingException{
     // verify that these exist!
     File[] files = new File[attempts.length];
     int idx = 0;
     for (int at : attempts) {
       File f = getFile.apply(at);
-      assertExists(f, context, key, at);
+      assertExists(f, key, at);
       files[idx++]=f;
     }
     return files;
   }
 
 
-  private static File assertExists(File f, NamesTreeDao.Context context, int key, int attempt) throws NamesTreeDao.AttemptMissingException {
+  private File assertExists(File f, K key, int attempt) throws FileMetricsDao.AttemptMissingException {
     if (!f.exists() || f.isDirectory()) {
-      throw new NamesTreeDao.AttemptMissingException(context, key, attempt);
+      throw new FileMetricsDao.AttemptMissingException(dao.getType(), key, attempt);
     }
     return f;
   }
@@ -104,12 +102,12 @@ public abstract class BaseDiffService {
   }
 
   @VisibleForTesting
-  protected NamesDiff namesDiff(int key, int[] atts, Function<Integer, File> getFile) {
+  protected NamesDiff namesDiff(K key, int[] atts, Function<Integer, File> getFile) {
     File[] files = attemptToFiles(key, atts, getFile);
     try {
       final NamesDiff diff = new NamesDiff(key, atts[0], atts[1]);
-      Set<String> n1 = NamesTreeDao.readLines(files[0]);
-      Set<String> n2 = NamesTreeDao.readLines(files[1]);
+      Set<String> n1 = FileMetricsDao.readLines(files[0]);
+      Set<String> n2 = FileMetricsDao.readLines(files[1]);
 
       diff.setDeleted(new HashSet<>(n1));
       diff.getDeleted().removeAll(n2);
@@ -119,7 +117,7 @@ public abstract class BaseDiffService {
       return diff;
 
     } catch (IOException e) {
-      throw new RuntimeException(String.format("Failed to read files for %s %s attempts %s-%s", context, key, atts[0], atts[1]));
+      throw new RuntimeException(String.format("Failed to read files for %s %s attempts %s-%s", dao.getType(), key, atts[0], atts[1]));
     }
   }
 
@@ -135,7 +133,7 @@ public abstract class BaseDiffService {
    * @param getFile
    */
   @VisibleForTesting
-  protected BufferedReader udiff(int key, int[] atts, Function<Integer, File> getFile) {
+  protected BufferedReader udiff(K key, int[] atts, Function<Integer, File> getFile) {
     File[] files = attemptToFiles(key, atts, getFile);
     try {
       String cmd = String.format("export LC_CTYPE=en_US.UTF-8; diff -B -d -U 2 <(gunzip -c %s) <(gunzip -c %s)", files[0].getAbsolutePath(), files[1].getAbsolutePath());

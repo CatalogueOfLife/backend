@@ -10,6 +10,10 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2020-07-29 sector truely dataset scoped 
+```
+```
+
 #### 2020-07-10 names index intset 
 ```
 ALTER TABLE name DROP COLUMN name_index_id; 

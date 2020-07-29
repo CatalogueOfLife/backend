@@ -155,6 +155,10 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     d.setSubjectDatasetKey(subject.getDatasetKey());
     d.setSubject(TestEntityGenerator.newSimpleName());
     d.getSubject().setId(subject.getId());
+    d.setOriginalSubjectId("12345678");
+
+    d.setDatasetImportAttempt(2);
+    d.setSyncAttempt(7);
 
     d.setMode(Sector.Mode.ATTACH);
     d.setCode(NomCode.ZOOLOGICAL);
