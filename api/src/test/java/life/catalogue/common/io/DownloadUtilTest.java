@@ -1,15 +1,15 @@
 package life.catalogue.common.io;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
 
 public class DownloadUtilTest {
   CloseableHttpClient hc;
@@ -36,8 +36,11 @@ public class DownloadUtilTest {
   @Ignore
   public void downloadWithToken() throws IOException {
     File f = File.createTempFile("download", ".zip");
-    DownloadUtil d = new DownloadUtil(hc, "ghToken", "gdToken");
+    DownloadUtil d = new DownloadUtil(hc, "6cafe68818f0cdbcf9f28ed47953c1b671a64eaa", "gdToken");
     // a private repo should be accessible with the right API token
-    d.download(URI.create("https://github.com/gdower/data-cycads/archive/master.zip"), f);
+    d.download(URI.create("https://github.com/CatalogueOfLife/data-scarabs/archive/master.zip"), f);
+    d.download(URI.create("https://github.com/CatalogueOfLife/data-world-spider-catalog/archive/master.zip"), f);
+
+    //d.download(URI.create("https://github.com/gdower/data-cycads/archive/master.zip"), f);
   }
 }

@@ -237,11 +237,14 @@ public class SectorSync extends SectorRunnable {
         // if we have a placeholder rank configured ignore children of that rank or higher
         // see https://github.com/CatalogueOfLife/clearinghouse-ui/issues/518
         for (NameUsageBase child : um.children(DSID.of(datasetKey, sector.getSubject().getId()), sector.getPlaceholderRank())){
+          if (blockedIds.contains(child.getId())) {
+            LOG.info("Skip blocked child {}", child);
+            continue;
+          }
+
           if (child.isSynonym()) {
-            if (!blockedIds.contains(child.getId())) {
-              LOG.info("Add synonym child {}", child);
-              treeHandler.accept(child);
-            }
+            LOG.info("Add synonym child {}", child);
+            treeHandler.accept(child);
           } else {
             LOG.info("Traverse child {}", child);
             um.processTree(datasetKey, null, child.getId(), blockedIds, null, true,false)
