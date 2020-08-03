@@ -214,7 +214,6 @@ public class Sector extends DatasetScopedEntity<Integer> {
     return "Sector{" + getId() +
         ", datasetKey=" + getDatasetKey() +
         ", mode=" + mode +
-        ", code=" + code +
         ", subjectDatasetKey=" + getSubjectDatasetKey() +
         ", subject=" + getSubject() +
         '}';

@@ -32,7 +32,7 @@ public class TaxonDaoTest extends DaoTestBase {
   NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
   TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
   static int user = TestEntityGenerator.USER_EDITOR.getKey();
-  
+
   @Test
   public void testInfo() {
     final int datasetKey = DATASET11.getKey();
@@ -268,7 +268,7 @@ public class TaxonDaoTest extends DaoTestBase {
     t5.setParentId("t4");
     tDao.update(t5, USER_EDITOR.getKey());
   }
-  
+
   @Test
   public void deleteRecursively() throws Exception {
     final DSIDValue<String> key = DSID.of(TestDataRule.TestData.TREE.key, null);
@@ -286,15 +286,15 @@ public class TaxonDaoTest extends DaoTestBase {
     commit();
 
     assertNotNull(tDao.get(key.id("t10")));
-    assertNotNull(sm.get(s1.getId()));
-    assertNotNull(sm.get(s2.getId()));
-    assertNotNull(sm.get(s3.getId()));
+    assertNotNull(sm.get(s1));
+    assertNotNull(sm.get(s2));
+    assertNotNull(sm.get(s3));
     tDao.deleteRecursively(key.id("t4"), USER_EDITOR);
   
     assertNull(tDao.get(key.id("t4")));
     assertNull(tDao.get(key.id("t10")));
-    assertNotNull(sm.get(s1.getId()));
-    assertNull(sm.get(s2.getId()));
-    assertNull(sm.get(s3.getId()));
+    assertNotNull(sm.get(s1));
+    assertNull(sm.get(s2));
+    assertNull(sm.get(s3));
   }
 }

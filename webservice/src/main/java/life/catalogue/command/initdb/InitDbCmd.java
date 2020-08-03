@@ -121,20 +121,13 @@ public class InitDbCmd extends AbstractPromptCmd {
       // configure single mybatis session factory
       final SqlSessionFactory factory = MybatisFactory.configure(dataSource, "init");
     
-      // add col & names index partitions
+      // add col dataset and partitions
       try (SqlSession session = factory.openSession()) {
-        setupStandardPartitions(session);
-        session.commit();
+        setupColPartition(session);
       }
     
       try (Connection con = cfg.db.connect()) {
-        ScriptRunner runner = PgConfig.scriptRunner(con);
-      
-        LOG.info("Add known manually curated sectors");
-        exec(PgConfig.SECTORS_FILE, runner, con, Resources.getResourceAsReader(PgConfig.SECTORS_FILE));
-      
         loadDraftHierarchy(con, factory, cfg);
-      
       } catch (Exception e) {
         LOG.error("Failed to insert initdb data", e);
         throw e;
@@ -217,15 +210,14 @@ public class InitDbCmd extends AbstractPromptCmd {
     }
   }
 
-  public static void setupStandardPartitions(SqlSession session) {
+  public static void setupColPartition(SqlSession session) {
     DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
-    for (int key : new int[]{Datasets.DRAFT_COL}) {
-      LOG.info("Create catalogue partition {}", key);
-      pm.delete(key);
-      pm.create(key);
-      pm.buildIndices(key);
-      pm.attach(key);
-    }
+    LOG.info("Create CoL project partitions");
+    pm.delete(Datasets.DRAFT_COL);
+    pm.create(Datasets.DRAFT_COL);
+    pm.buildIndices(Datasets.DRAFT_COL);
+    pm.attach(Datasets.DRAFT_COL);
+    session.commit();
   }
   
   public static void exec(String name, ScriptRunner runner, Connection con, Reader reader) {

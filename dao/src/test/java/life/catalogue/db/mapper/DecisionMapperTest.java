@@ -125,7 +125,7 @@ public class DecisionMapperTest extends BaseDecisionMapperTest<EditorialDecision
     d.applyUser(TestEntityGenerator.USER_USER);
     mapper().create(d);
 
-    EditorialDecision d2 = mapper().get(d.getKey());
+    EditorialDecision d2 = mapper().get(d);
 
     assertEquals(removeDbCreatedProps(d2), removeDbCreatedProps(d));
   }

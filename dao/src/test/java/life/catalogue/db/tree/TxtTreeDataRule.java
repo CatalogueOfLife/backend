@@ -7,6 +7,7 @@ import life.catalogue.api.txtree.TreeNode;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.*;
 import life.catalogue.parser.NameParser;
@@ -19,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Map;
 import java.util.function.Supplier;
 
 /**
@@ -68,7 +69,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
       final int datasetKey = x.getKey();
       LOG.info("Loading dataset {} from tree {}", datasetKey, tree);
       // create required partitions to load data
-      PgSetupRule.partition(datasetKey);
+      MybatisTestUtils.partition(session, datasetKey);
       createDataset(datasetKey);
       loadTree(datasetKey, tree);
       updateSequences(datasetKey);
@@ -160,6 +161,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
   public void updateSequences(int datasetKey) {
     DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
     pm.updateIdSequences(datasetKey);
+    pm.createManagedSequences(datasetKey);
     session.commit();
   }
 

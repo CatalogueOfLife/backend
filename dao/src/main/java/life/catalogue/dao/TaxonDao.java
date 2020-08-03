@@ -365,8 +365,9 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       // remove included sectors
       for (int skey : sectorKeys) {
         LOG.info("Delete sector {} from project {} and its imports by user {}", skey, id.getDatasetKey(), user);
-        sim.delete(skey);
-        sm.delete(DSID.of(id.getDatasetKey(), skey));
+        DSID<Integer> sectorKey = DSID.of(id.getDatasetKey(), skey);
+        sim.delete(sectorKey);
+        sm.delete(sectorKey);
       }
       session.commit();
     }

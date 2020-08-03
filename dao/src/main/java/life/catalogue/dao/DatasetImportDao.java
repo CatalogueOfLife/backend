@@ -246,7 +246,7 @@ public class DatasetImportDao {
     try (SqlSession session = factory.openSession(true)) {
       DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
       mapper.deleteByDataset(datasetKey);
-      fileMetricsDao.deleteAll(FileMetricsDao.Context.DATASET, datasetKey);
+      fileMetricsDao.deleteAll(datasetKey);
       
     } catch (IOException e) {
       LOG.error("Failed to remove all metrics for dataset {}", datasetKey, e);

@@ -28,9 +28,8 @@ import java.util.function.Consumer;
 abstract class SectorRunnable implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorRunnable.class);
 
-  final int catalogueKey;
-  protected final int datasetKey;
-  protected final int sectorKey;
+  protected final DSID<Integer> sectorKey;
+  protected final int subjectDatasetKey;
   protected Sector sector;
   final boolean validateSector;
   final SqlSessionFactory factory;
@@ -50,7 +49,7 @@ abstract class SectorRunnable implements Runnable {
   /**
    * @throws IllegalArgumentException if the sectors dataset is not of MANAGED origin
    */
-  SectorRunnable(int sectorKey, boolean validateSector, SqlSessionFactory factory, NameUsageIndexService indexService,
+  SectorRunnable(DSID<Integer> sectorKey, boolean validateSector, SqlSessionFactory factory, NameUsageIndexService indexService,
                  Consumer<SectorRunnable> successCallback,
                  BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     this.user = Preconditions.checkNotNull(user);
@@ -62,17 +61,16 @@ abstract class SectorRunnable implements Runnable {
     this.sectorKey = sectorKey;
     // check for existance and datasetKey - we will load the real thing for processing only when we get executed!
     sector = loadSector(false);
-    this.catalogueKey = sector.getDatasetKey();
-    this.datasetKey = sector.getSubjectDatasetKey();
+    this.subjectDatasetKey = sector.getSubjectDatasetKey();
     try (SqlSession session = factory.openSession(true)) {
       // make sure the target catalogue is MANAGED and not RELEASED!
-      Dataset d = session.getMapper(DatasetMapper.class).get(catalogueKey);
+      Dataset d = session.getMapper(DatasetMapper.class).get(sectorKey.getDatasetKey());
       if (d.getOrigin() != DatasetOrigin.MANAGED) {
         throw new IllegalArgumentException("Cannot run a " + getClass().getSimpleName() + " against a " + d.getOrigin() + " dataset");
       }
       state = new SectorImport();
-      state.setSectorKey(sectorKey);
-      state.setDatasetKey(datasetKey);
+      state.setSectorKey(sectorKey.getId());
+      state.setDatasetKey(sectorKey.getDatasetKey());
       state.setJob(getClass().getSimpleName());
       state.setState(ImportState.WAITING);
       state.setCreatedBy(user.getKey());
@@ -141,7 +139,7 @@ abstract class SectorRunnable implements Runnable {
       // apply dataset defaults if needed
       if (s.getEntities() == null || s.getEntities().isEmpty() || s.getRanks() == null || s.getRanks().isEmpty()) {
         DatasetSettings ds = ObjectUtils.coalesce(
-          session.getMapper(DatasetMapper.class).getSettings(catalogueKey),
+          session.getMapper(DatasetMapper.class).getSettings(sectorKey.getDatasetKey()),
           new DatasetSettings()
         );
 
@@ -166,7 +164,7 @@ abstract class SectorRunnable implements Runnable {
         TaxonMapper tm = session.getMapper(TaxonMapper.class);
         
         // check if target actually exists
-        String msg = "Sector " + s.getKey() + " does have a non existing target " + s.getTarget() + " for dataset " + catalogueKey;
+        String msg = "Sector " + s.getKey() + " does have a non existing target " + s.getTarget() + " for dataset " + sectorKey.getDatasetKey();
         try {
           ObjectUtils.checkNotNull(s.getTarget(), s + " does not have any target");
           ObjectUtils.checkNotNull(tm.get(s.getTargetAsDSID()), "Sector " + s.getKey() + " does have a non existing target id");
@@ -175,7 +173,7 @@ abstract class SectorRunnable implements Runnable {
         }
   
         // also validate the subject for syncs
-        msg = "Sector " + s.getKey() + " does have a non existing subject " + s.getSubject() + " for dataset " + datasetKey;
+        msg = "Sector " + s.getKey() + " does have a non existing subject " + s.getSubject() + " for dataset " + subjectDatasetKey;
         try {
           ObjectUtils.checkNotNull(s.getSubject(), s + " does not have any subject");
           ObjectUtils.checkNotNull(tm.get(s.getSubjectAsDSID()), msg);
@@ -189,7 +187,7 @@ abstract class SectorRunnable implements Runnable {
   
   private void loadDecisions() {
     try (SqlSession session = factory.openSession(true)) {
-      session.getMapper(DecisionMapper.class).processSearch(DecisionSearchRequest.byDataset(catalogueKey, datasetKey)).forEach(ed -> {
+      session.getMapper(DecisionMapper.class).processSearch(DecisionSearchRequest.byDataset(sectorKey.getDatasetKey(), subjectDatasetKey)).forEach(ed -> {
         decisions.put(ed.getSubject().getId(), ed);
       });
     }
@@ -199,7 +197,7 @@ abstract class SectorRunnable implements Runnable {
   private void loadForeignChildren() {
     try (SqlSession session = factory.openSession(true)) {
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-      foreignChildren = num.foreignChildren(catalogueKey, sectorKey);
+      foreignChildren = num.foreignChildren(sectorKey);
     }
     LOG.info("Loaded {} children from other sectors with a parent from sector {}", foreignChildren.size(), sectorKey);
   }
@@ -207,7 +205,7 @@ abstract class SectorRunnable implements Runnable {
   private void loadAttachedSectors() {
     try (SqlSession session = factory.openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
-      childSectors=sm.listChildSectors(catalogueKey, sectorKey);
+      childSectors=sm.listChildSectors(sectorKey);
     }
     LOG.info("Loaded {} sectors targeting taxa from sector {}", childSectors.size(), sectorKey);
   }
@@ -218,7 +216,7 @@ abstract class SectorRunnable implements Runnable {
     return state;
   }
   
-  public Integer getSectorKey() {
+  public DSID<Integer> getSectorKey() {
     return sectorKey;
   }
   
@@ -240,7 +238,7 @@ abstract class SectorRunnable implements Runnable {
   public String toString() {
     return this.getClass().getSimpleName() + "{" +
         "sectorKey=" + sectorKey +
-        "datasetKey=" + datasetKey +
+        ", subjectDatasetKey=" + subjectDatasetKey +
         ", sector=" + sector +
         ", created=" + created +
         " by " + (user == null ? "?" : user.getUsername()) +

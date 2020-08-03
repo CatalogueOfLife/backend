@@ -8,7 +8,6 @@ import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.AssemblyState;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.FileMetricsDao;
 import life.catalogue.db.mapper.*;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.dw.auth.Roles;
@@ -110,7 +109,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     if (attempt != null && rootID == null && (ranks == null || ranks.isEmpty())) {
       // stream from pre-generated file
       stream = os -> {
-        InputStream in = new FileInputStream(diDao.getFileMetricsDao().treeFile(FileMetricsDao.Context.DATASET, key, attempt));
+        InputStream in = new FileInputStream(diDao.getFileMetricsDao().treeFile(key, attempt));
         IOUtils.copy(in, os);
         os.flush();
       };

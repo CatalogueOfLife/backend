@@ -13,9 +13,10 @@ public class RequestScope {
     return req;
   }
   
-  public static RequestScope sector(int sectorKey) {
+  public static RequestScope sector(DSID<Integer> sectorKey) {
     RequestScope req = new RequestScope();
-    req.setSectorKey(sectorKey);
+    req.setDatasetKey(sectorKey.getDatasetKey());
+    req.setSectorKey(sectorKey.getId());
     return req;
   }
   
@@ -24,7 +25,11 @@ public class RequestScope {
     req.setDatasetKey(datasetKey);
     return req;
   }
-  
+
+  public DSID<Integer> getSectorDSID() {
+    return DSID.of(datasetKey, sectorKey);
+  }
+
   public Integer getSectorKey() {
     return sectorKey;
   }

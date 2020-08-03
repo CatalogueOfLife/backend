@@ -6,6 +6,7 @@
 
   <sql id="SELECT">
     si.state,
+    si.dataset_key,
     si.sector_key,
     si.attempt,
     si.warnings,
@@ -16,6 +17,7 @@
 
   <sql id="COLS">
     state,
+    dataset_key,
     sector_key,
     warnings,
     <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsCols">
@@ -25,6 +27,7 @@
 
   <sql id="PROPS">
     #{imp.state}::IMPORTSTATE,
+    #{imp.datasetKey},
     #{imp.sectorKey},
     #{imp.warnings, typeHandler=life.catalogue.db.type2.StringCollectionArrayTypeHandler},
     <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsProps"/>
@@ -106,7 +109,7 @@
 
   <delete id="delete" parameterType="map">
     DELETE FROM sector_import
-    WHERE sector_key=#{key}
+    WHERE sector_key=#{key.id} AND dataset_key=#{key.datasetKey}
   </delete>
 
   <delete id="deleteByDataset" parameterType="map">

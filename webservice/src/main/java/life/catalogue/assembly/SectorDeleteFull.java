@@ -1,5 +1,7 @@
 package life.catalogue.assembly;
 
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.DSIDValue;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.ImportState;
@@ -26,7 +28,7 @@ public class SectorDeleteFull extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorDeleteFull.class);
   private Set<Integer> visitedSectors = new HashSet<>();
   
-  public SectorDeleteFull(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService,
+  public SectorDeleteFull(DSID<Integer> sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService,
                           Consumer<SectorRunnable> successCallback,
                           BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     super(sectorKey, false, factory, indexService, successCallback, errorCallback, user);
@@ -37,7 +39,7 @@ public class SectorDeleteFull extends SectorRunnable {
     state.setState( ImportState.DELETING);
     // do a recursive delete to make sure we have no more children
     for (Sector cs : childSectors) {
-      deleteSectorRecursively(cs.getDatasetKey(), cs.getId());
+      deleteSectorRecursively(cs);
     }
     deleteSector(sectorKey);
     LOG.info("Deleted {} sectors in total", visitedSectors.size());
@@ -48,17 +50,18 @@ public class SectorDeleteFull extends SectorRunnable {
     state.setState( ImportState.FINISHED);
   }
   
-  private void deleteSectorRecursively(final int catalogueKey, final int sectorKey) {
-    if (!visitedSectors.contains(sectorKey)) {
+  private void deleteSectorRecursively(final DSID<Integer> sectorKey) {
+    if (!visitedSectors.contains(sectorKey.getId())) {
       Set<Integer> childSectors;
       try (SqlSession session = factory.openSession(true)) {
         SectorMapper sm = session.getMapper(SectorMapper.class);
-        childSectors = sm.listChildSectors(catalogueKey, sectorKey).stream()
+        childSectors = sm.listChildSectors(sectorKey).stream()
             .map(Sector::getId)
             .collect(Collectors.toSet());
       }
+      final DSIDValue<Integer> key = DSID.copy(sectorKey);
       for (Integer sk : childSectors) {
-        deleteSectorRecursively(catalogueKey, sk);
+        deleteSectorRecursively(key.id(sk));
       }
   
       // ready for deletion.
@@ -67,16 +70,16 @@ public class SectorDeleteFull extends SectorRunnable {
     }
   }
   
-  private void deleteSector(int sectorKey) {
-    if (!visitedSectors.contains(sectorKey)) {
-      visitedSectors.add(sectorKey);
+  private void deleteSector(DSID<Integer> sectorKey) {
+    if (!visitedSectors.contains(sectorKey.getId())) {
+      visitedSectors.add(sectorKey.getId());
       try (SqlSession session = factory.openSession(true)) {
         Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
         if (s == null) {
           throw new IllegalArgumentException("Sector "+sectorKey+" does not exist");
         }
         NameUsageMapper um = session.getMapper(NameUsageMapper.class);
-        int count = um.deleteBySector(catalogueKey, sectorKey);
+        int count = um.deleteBySector(sectorKey);
         String sectorType = sectorKey == this.sectorKey ? "sector" : "subsector";
         LOG.info("Deleted {} existing taxa with their synonyms and related information from {} {}", count, sectorType, sectorKey);
       
@@ -91,9 +94,10 @@ public class SectorDeleteFull extends SectorRunnable {
   }
 
   private void updateSearchIndex() {
+    final DSIDValue<Integer> key = DSID.copy(sectorKey);
     for (int sKey : visitedSectors) {
-      indexService.deleteSector(sectorKey);
-      LOG.info("Removed sector {} from search index", sKey);
+      indexService.deleteSector(key.id(sKey));
+      LOG.info("Removed sector {} from search index", key);
     }
     LOG.info("Removed {} sectors from the search index", visitedSectors.size());
   }

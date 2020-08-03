@@ -57,7 +57,7 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     mapper(SectorImportMapper.class).create(si);
 
     if (state == ImportState.FINISHED) {
-      mapper().updateLastSync(s.getId(), si.getAttempt());
+      mapper().updateLastSync(s, si.getAttempt());
     }
   }
 
@@ -98,7 +98,6 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
   @Test
   public void search() {
     add2Sectors();
-
 
     addImport(s1, ImportState.FINISHED, LocalDateTime.of(2019, 12, 24, 12, 0, 0));
     addImport(s1, ImportState.FINISHED, LocalDateTime.of(2020, 1, 10, 12, 0, 0));
@@ -157,8 +156,7 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     d.getSubject().setId(subject.getId());
     d.setOriginalSubjectId("12345678");
 
-    d.setDatasetImportAttempt(2);
-    d.setSyncAttempt(7);
+    // syncAttempt and datasetImportAttempt is only set separately not via create!
 
     d.setMode(Sector.Mode.ATTACH);
     d.setCode(NomCode.ZOOLOGICAL);
@@ -188,8 +186,8 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     Sector d1 = create();
     mapper().create(d1);
     commit();
-    
-    d1.setKey(null);
+
+    // now it has a id that already exists
     mapper().create(d1);
     commit();
   }

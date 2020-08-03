@@ -40,7 +40,7 @@ public interface NameUsageIndexService {
   /**
    * Removed all CoL usage docs of the given sector from ElasticSearch, i.e. taxa and synonyms.
    */
-  void deleteSector(int sectorKey);
+  void deleteSector(DSID<Integer> sectorKey);
 
   /**
    * Remove all bare name documents for the given dataset from the index.
@@ -116,7 +116,7 @@ public interface NameUsageIndexService {
       }
 
       @Override
-      public void deleteSector(int sectorKey) {
+      public void deleteSector(DSID<Integer> sectorKey) {
         LOG.info("No Elastic Search configured, pass through deletion of sector {}", sectorKey);
       }
 

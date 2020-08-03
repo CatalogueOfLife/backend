@@ -55,6 +55,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
   public static SectorImport create(ImportState state, Sector s) {
     SectorImport d = new SectorImport();
     d.setJob("SectorImportTest");
+    d.setDatasetKey(s.getDatasetKey());
     d.setSectorKey(s.getId());
     d.setCreatedBy(Users.TESTER);
     d.setAttempt(attempts++);

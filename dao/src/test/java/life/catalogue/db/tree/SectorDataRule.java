@@ -1,7 +1,7 @@
 package life.catalogue.db.tree;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.*;

@@ -2,12 +2,9 @@ package life.catalogue.db;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.util.YamlUtils;
-import life.catalogue.db.mapper.DatasetPartitionMapper;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
-import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.rules.ExternalResource;
 import org.postgresql.jdbc.PgConnection;
@@ -105,22 +102,8 @@ public class PgSetupRule extends ExternalResource {
     }
   
     setupMybatis(cfg);
-    
-    // setup draft/names index partition
-    partition(Datasets.DRAFT_COL);
   }
-  
-  public static void partition(int key) {
-    try (SqlSession session = sqlSessionFactory.openSession(true)) {
-      DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
-      pm.delete(key);
-      pm.create(key);
-      pm.buildIndices(key);
-      pm.attach(key);
-      session.commit();
-    }
-  }
-  
+
   @Override
   public void after() {
     shutdown();

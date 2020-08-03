@@ -6,10 +6,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.assembly.AssemblyCoordinator;
-import life.catalogue.dao.DaoUtils;
-import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.SectorDao;
-import life.catalogue.dao.TaxonDao;
+import life.catalogue.dao.*;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.dw.auth.Roles;
@@ -28,8 +25,6 @@ import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static life.catalogue.dao.FileMetricsDao.Context.SECTOR;
-
 @Path("/dataset/{datasetKey}/sector")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -40,13 +35,13 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   private static final Logger LOG = LoggerFactory.getLogger(SectorResource.class);
   private final SectorDao dao;
   private final TaxonDao tdao;
-  private final DatasetImportDao diDao;
+  private final FileMetricsSectorDao fmsDao;
   private final AssemblyCoordinator assembly;
 
-  public SectorResource(SectorDao dao, TaxonDao tdao, DatasetImportDao diDao, AssemblyCoordinator assembly) {
+  public SectorResource(SectorDao dao, TaxonDao tdao, FileMetricsSectorDao fmsDao, AssemblyCoordinator assembly) {
     super(Sector.class, dao);
     this.dao = dao;
-    this.diDao = diDao;
+    this.fmsDao = fmsDao;
     this.tdao = tdao;
     this.assembly = assembly;
   }
@@ -69,7 +64,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
     SectorMapper sm = session.getMapper(SectorMapper.class);
     int counter = 0;
     for (Sector s : sm.listByDataset(catalogueKey, datasetKey)) {
-      assembly.deleteSector(s.getId(), user);
+      assembly.deleteSector(s, user);
       counter++;
     }
     LOG.info("Scheduled deletion of all {} sectors for dataset {} in catalogue {}", counter, datasetKey, catalogueKey);
@@ -107,7 +102,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void delete(@PathParam("datasetKey") int datasetKey, @PathParam("id") Integer id, @Auth User user) {
     // an asynchroneous sector deletion will be triggered which also removes catalogue data
-    assembly.deleteSector(id, user);
+    assembly.deleteSector(DSID.of(datasetKey, id), user);
   }
 
   @DELETE
@@ -115,7 +110,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void deleteSync(@PathParam("datasetKey") int datasetKey, @PathParam("id") int id, @Auth User user, @Context SqlSession session) {
     DaoUtils.requireManaged(datasetKey, session);
-    assembly.cancel(id, user);
+    assembly.cancel(DSID.of(datasetKey, id), user);
   }
 
   @GET
@@ -131,25 +126,28 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @GET
   @Path("{id}/sync/{attempt}/tree")
   @Produces({MediaType.TEXT_PLAIN})
-  public Stream<String> getSyncAttemptTree(@PathParam("id") int id,
-                                             @PathParam("attempt") int attempt) {
-    return diDao.getFileMetricsDao().getTree(SECTOR, id, attempt);
+  public Stream<String> getSyncAttemptTree(@PathParam("datasetKey") int datasetKey,
+                                           @PathParam("id") int id,
+                                           @PathParam("attempt") int attempt) {
+    return fmsDao.getTree(DSID.of(datasetKey, id), attempt);
   }
   
   @GET
   @Path("{id}/sync/{attempt}/names")
   @Produces({MediaType.TEXT_PLAIN})
-  public Stream<String> getSyncAttemptNames(@PathParam("id") int id,
-                                              @PathParam("attempt") int attempt) {
-    return diDao.getFileMetricsDao().getNames(SECTOR, id, attempt);
+  public Stream<String> getSyncAttemptNames(@PathParam("datasetKey") int datasetKey,
+                                            @PathParam("id") int id,
+                                            @PathParam("attempt") int attempt) {
+    return fmsDao.getNames(DSID.of(datasetKey, id), attempt);
   }
 
   @GET
   @Path("{id}/sync/{attempt}/ids")
   @Produces({MediaType.TEXT_PLAIN})
-  public Stream<String> getSyncAttemptNameIds(@PathParam("id") int id,
+  public Stream<String> getSyncAttemptNameIds(@PathParam("datasetKey") int datasetKey,
+                                              @PathParam("id") int id,
                                               @PathParam("attempt") int attempt) {
-    return diDao.getFileMetricsDao().getNameIds(SECTOR, id, attempt);
+    return fmsDao.getNameIds(DSID.of(datasetKey, id), attempt);
   }
 
   @POST

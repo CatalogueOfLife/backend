@@ -116,8 +116,8 @@
 
   <insert id="copyDataset" parameterType="map">
     INSERT INTO type_material_${newDatasetKey} (dataset_key,sector_key,<include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
-    SELECT #{newDatasetKey}, s.id, <include refid="COLS_COPY"><property name="alias" value="t."/></include>, t.created, t.modified
-    FROM type_material_${datasetKey} t LEFT JOIN sector s ON s.copied_from_id=t.sector_key AND s.dataset_key=#{newDatasetKey}
+    SELECT #{newDatasetKey}, t.sector_key, <include refid="COLS_COPY"><property name="alias" value="t."/></include>, t.created, t.modified
+    FROM type_material_${datasetKey} t
   </insert>
 
   <update id="update" parameterType="TypeMaterial" keyProperty="id">
@@ -140,22 +140,22 @@
   </select>
 
   <select id="processSector" parameterType="map" resultMap="typeResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE sector_key = #{sectorKey}
+    WHERE sector_key = #{key.id}
   </select>
 
   <delete id="deleteBySector" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
     DELETE FROM type_material_${partition}
-    WHERE sector_key=#{sectorKey} AND dataset_key=#{datasetKey}
+    WHERE sector_key=#{key.id} AND dataset_key=#{key.datasetKey}
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
     UPDATE type_material_${partition} SET sector_key = NULL
-    WHERE sector_key = #{sectorKey}
+    WHERE sector_key = #{key.id}
   </update>
 
 </mapper>

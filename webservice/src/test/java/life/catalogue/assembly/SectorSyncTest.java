@@ -4,13 +4,14 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.dao.FileMetricsSectorDao;
 import life.catalogue.dao.TreeRepoRule;
+import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
-import org.gbif.common.shaded.com.google.common.collect.Lists;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
@@ -23,7 +24,8 @@ import java.util.List;
 import java.util.Set;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class SectorSyncTest {
   
@@ -37,22 +39,19 @@ public class SectorSyncTest {
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
 
   DatasetImportDao diDao;
-  
+  FileMetricsSectorDao fmsDao;
+
   final int datasetKey = DATASET11.getKey();
   Sector sector;
   Taxon colAttachment;
   
   @Before
   public void init() {
+    fmsDao = new FileMetricsSectorDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       // draft partition
-      final DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
-      for (int datasetKey : Lists.newArrayList(Datasets.DRAFT_COL)) {
-        pm.delete(datasetKey);
-        pm.create(datasetKey);
-        pm.attach(datasetKey);
-      }
-  
+      MybatisTestUtils.partition(session, Datasets.DRAFT_COL);
+
       Name n = new Name();
       n.setDatasetKey(Datasets.DRAFT_COL);
       n.setUninomial("Coleoptera");
@@ -110,7 +109,7 @@ public class SectorSyncTest {
     }
 
     // this should fail
-    SectorSync ss = new SectorSync(s.getId(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao,
+    SectorSync ss = new SectorSync(s, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), fmsDao,
       SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
 
   }
@@ -122,7 +121,7 @@ public class SectorSyncTest {
       assertEquals(1, nm.count(Datasets.DRAFT_COL));
     }
 
-    SectorSync ss = new SectorSync(sector.getId(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao,
+    SectorSync ss = new SectorSync(sector, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), fmsDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
     ss.run();
 
@@ -165,7 +164,7 @@ public class SectorSyncTest {
       sm.update(sector);
     }
 
-    ss = new SectorSync(sector.getId(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao,
+    ss = new SectorSync(sector, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), fmsDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
     ss.run();
 

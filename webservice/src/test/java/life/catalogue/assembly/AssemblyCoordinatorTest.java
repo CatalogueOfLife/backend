@@ -9,10 +9,14 @@ import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.dao.FileMetricsSectorDao;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
-import life.catalogue.db.mapper.*;
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.DatasetMapperTest;
+import life.catalogue.db.mapper.MapperTestBase;
+import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.Rank;
@@ -32,13 +36,14 @@ public class AssemblyCoordinatorTest {
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
   
   AssemblyCoordinator coord;
-  DatasetImportDao diDao;
-  
+
   @Before
   public void init() {
-    diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
+    DatasetImportDao diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     MapperTestBase.createSuccess(Datasets.DRAFT_COL, Users.TESTER, diDao);
-    coord = new AssemblyCoordinator(PgSetupRule.getSqlSessionFactory(), diDao, NameUsageIndexService.passThru(), new MetricRegistry());
+
+    FileMetricsSectorDao fmsDao = new FileMetricsSectorDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
+    coord = new AssemblyCoordinator(PgSetupRule.getSqlSessionFactory(), fmsDao, NameUsageIndexService.passThru(), new MetricRegistry());
   }
   
   @Test(expected = IllegalArgumentException.class)
@@ -61,7 +66,7 @@ public class AssemblyCoordinatorTest {
       sm.create(sector);
     }
 
-    coord.sync(Datasets.DRAFT_COL, RequestScope.sector(sector.getId()), TestEntityGenerator.USER_EDITOR);
+    coord.sync(Datasets.DRAFT_COL, RequestScope.sector(sector), TestEntityGenerator.USER_EDITOR);
   }
   
   @Test

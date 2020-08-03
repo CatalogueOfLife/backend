@@ -30,6 +30,12 @@ public interface DatasetPartitionMapper {
       "media",
       "vernacular_name"
   );
+
+  List<String> MANAGED_SERIAL_TABLES = Lists.newArrayList(
+    "sector",
+    "decision",
+    "estimate"
+  );
   
   /**
    * Creates a new dataset partition for all data tables if not already existing.
@@ -43,9 +49,25 @@ public interface DatasetPartitionMapper {
   }
   
   void createTable(@Param("table") String table, @Param("key") int key);
-  
+
+  default void createManagedSequences(@Param("key") int key) {
+    MANAGED_SERIAL_TABLES.forEach(t -> createIdSequence(t, key));
+  }
+
+  /**
+   * Creates a new id sequence and uses it as the default value (serial) for the given tables id column.
+   * @param table
+   * @param key
+   */
   void createSerial(@Param("table") String table, @Param("key") int key);
-  
+
+  /**
+   * Creates a new standalone id sequence named after the table and dataset key
+   * @param table
+   * @param key
+   */
+  void createIdSequence(@Param("table") String table, @Param("key") int key);
+
   /**
    * Updates the sequences for a given datasetKey to the current max of existing keys.
    * @param key datasetKey
@@ -55,6 +77,12 @@ public interface DatasetPartitionMapper {
   }
   
   void updateIdSequence(@Param("table") String table, @Param("key") int key);
+
+  void deleteIdSequence(@Param("table") String table, @Param("key") int key);
+
+  default void deleteManagedSequences(@Param("key") int key) {
+    MANAGED_SERIAL_TABLES.forEach(t -> deleteIdSequence(t, key));
+  }
 
   /**
    * Deletes a dataset partition from all data tables if existing, but leaves the dataset itself untouched
@@ -66,7 +94,7 @@ public interface DatasetPartitionMapper {
   }
  
   void deleteTable(@Param("table") String table, @Param("key") int key);
-  
+
   /**
    * Creates indices on a all partition tables for a given datasetKey.
    *

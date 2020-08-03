@@ -251,7 +251,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     pn.setType(n.getType());
     return pn;
   }
-  
+
   public Integer getSectorKey() {
     return sectorKey;
   }

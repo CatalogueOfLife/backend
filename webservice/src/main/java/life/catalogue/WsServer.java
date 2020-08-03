@@ -210,6 +210,8 @@ public class WsServer extends Application<WsServerConfig> {
     env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));
 
     final DatasetImportDao diDao = new DatasetImportDao(getSqlSessionFactory(), cfg.metricsRepo);
+    final FileMetricsDatasetDao fmdDao = new FileMetricsDatasetDao(getSqlSessionFactory(), cfg.metricsRepo);
+    final FileMetricsSectorDao fmsDao = new FileMetricsSectorDao(getSqlSessionFactory(), cfg.metricsRepo);
 
     // exporter
     AcExporter exporter = new AcExporter(cfg, getSqlSessionFactory());
@@ -235,7 +237,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.lifecycle().manage(stopOnly(gbifSync));
 
     // assembly
-    AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), diDao, indexService, env.metrics());
+    AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), fmsDao, indexService, env.metrics());
     env.lifecycle().manage(assembly);
 
     // link assembly and import manager so they are aware of each other
@@ -243,8 +245,8 @@ public class WsServer extends Application<WsServerConfig> {
     assembly.setImportManager(importManager);
 
     // diff
-    DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), diDao.getFileMetricsDao());
-    SectorDiffService sDiff = new SectorDiffService(getSqlSessionFactory(), diDao.getFileMetricsDao());
+    DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), fmdDao);
+    SectorDiffService sDiff = new SectorDiffService(getSqlSessionFactory(), fmsDao);
     env.healthChecks().register("dataset-diff", new DiffHealthCheck(dDiff));
     env.healthChecks().register("sector-diff", new DiffHealthCheck(sDiff));
 
@@ -285,7 +287,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new NameUsageSearchResource(searchService, suggestService));
     j.register(new ReferenceResource(rdao));
     j.register(new SectorDiffResource(sDiff));
-    j.register(new SectorResource(secdao, tdao, diDao, assembly));
+    j.register(new SectorResource(secdao, tdao, fmsDao, assembly));
     j.register(new SynonymResource(sdao));
     j.register(new TaxonResource(tdao));
     j.register(new TreeResource(tdao, trDao));

@@ -134,6 +134,10 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   @Override
   protected void deleteAfter(Integer key, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
+    // drop managed id sequences
+    if (old.getOrigin() == DatasetOrigin.MANAGED) {
+      session.getMapper(DatasetPartitionMapper.class).deleteManagedSequences(key);
+    }
     // clear search index asnychroneously
     CompletableFuture.supplyAsync(() -> indexService.deleteDataset(key))
             .exceptionally(e -> {
@@ -149,6 +153,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     pullLogo(obj);
     if (obj.getOrigin() == DatasetOrigin.MANAGED) {
       recreatePartition(obj.getKey());
+      Partitioner.createManagedSequences(factory, obj.getKey());
     }
     bus.post(DatasetChanged.change(obj));
     session.commit();
@@ -172,6 +177,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     Partitioner.partition(factory, datasetKey);
     Partitioner.indexAndAttach(factory, datasetKey);
   }
+
   private void pullLogo(Dataset d) {
     LogoUpdateJob.updateDatasetAsync(d, factory, downloader, scratchFileFunc, imgService);
   }

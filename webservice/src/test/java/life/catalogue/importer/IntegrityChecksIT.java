@@ -57,7 +57,7 @@ public class IntegrityChecksIT {
     dataset.setCreatedBy(TestDataRule.TEST_USER.getKey());
     dataset.setModifiedBy(TestDataRule.TEST_USER.getKey());
 
-    InitDbCmd.setupStandardPartitions(testDataRule.getSqlSession());
+    InitDbCmd.setupColPartition(testDataRule.getSqlSession());
     testDataRule.commit();
  }
   

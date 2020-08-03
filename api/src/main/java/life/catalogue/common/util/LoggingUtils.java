@@ -1,5 +1,6 @@
 package life.catalogue.common.util;
 
+import life.catalogue.api.model.DSID;
 import org.slf4j.MDC;
 
 public class LoggingUtils {
@@ -21,9 +22,10 @@ public class LoggingUtils {
     MDC.put(MDC_KEY_DATASET, String.valueOf(datasetKey));
   }
 
-  public static void setSectorMDC(int sectorKey, Integer attempt, Class<?> source) {
+  public static void setSectorMDC(DSID<Integer> sectorKey, Integer attempt, Class<?> source) {
     MDC.put(MDC_KEY_TASK, source.getSimpleName());
-    MDC.put(MDC_KEY_SECTOR, String.valueOf(sectorKey));
+    MDC.put(MDC_KEY_DATASET, String.valueOf(sectorKey.getDatasetKey()));
+    MDC.put(MDC_KEY_SECTOR, String.valueOf(sectorKey.getId()));
     if (attempt != null) {
       MDC.put(MDC_KEY_ATTEMPT, String.valueOf(attempt));
     }
@@ -37,6 +39,7 @@ public class LoggingUtils {
   
   public static void removeSectorMDC() {
     MDC.remove(MDC_KEY_TASK);
+    MDC.remove(MDC_KEY_DATASET);
     MDC.remove(MDC_KEY_SECTOR);
     MDC.remove(MDC_KEY_ATTEMPT);
   }

@@ -36,6 +36,8 @@ abstract class CRUDPageableTestBase<K, T extends DatasetScopedEntity<K>, M exten
     d.setOrigin(DatasetOrigin.MANAGED);
     d.applyUser(Users.TESTER);
     mapper(DatasetMapper.class).create(d);
+    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), d.getKey());
+    Partitioner.createManagedSequences(PgSetupRule.getSqlSessionFactory(), d.getKey());
     return d.getKey();
   }
 
@@ -48,8 +50,6 @@ abstract class CRUDPageableTestBase<K, T extends DatasetScopedEntity<K>, M exten
   public void countAndList() throws Exception {
     final int dkey = newDataset();
     
-    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), dkey);
-  
     List<T> in = new ArrayList<>();
     in.add(createTestEntityIncId(dkey));
     in.add(createTestEntityIncId(dkey));

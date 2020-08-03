@@ -29,10 +29,18 @@
     ALTER TABLE ${table}_${key} ALTER COLUMN id SET DEFAULT nextval('${table}_${key}_id_seq');
   </update>
 
+  <update id="createIdSequence" parameterType="map">
+    CREATE SEQUENCE ${table}_${key}_id_seq START 1;
+  </update>
+
   <update id="updateIdSequence" parameterType="map">
     WITH start AS (SELECT COALESCE(max(id),1) AS id FROM ${table}_${key})
     SELECT setval('${table}_${key}_id_seq', start.id) FROM start;
   </update>
+
+  <delete id="deleteIdSequence" parameterType="map">
+    DROP SEQUENCE IF EXISTS ${table}_${key}_id_seq;
+  </delete>
 
   <update id="attachTable" parameterType="map">
     ALTER TABLE ${table} ATTACH PARTITION ${table}_${key} FOR VALUES IN ( ${key} )

@@ -3,7 +3,8 @@ package life.catalogue.admin;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Sector;
-import life.catalogue.dao.FileMetricsDao;
+import life.catalogue.dao.FileMetricsDatasetDao;
+import life.catalogue.dao.FileMetricsSectorDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import org.apache.ibatis.session.SqlSession;
@@ -21,7 +22,8 @@ public class MetricsUpdater implements Runnable {
   private Integer datasetKey;
   private int counter;
   private int sCounter;
-  FileMetricsDao treeDao;
+  FileMetricsDatasetDao fmdDao;
+  FileMetricsSectorDao fmsDao;
 
   public MetricsUpdater(SqlSessionFactory factory, WsServerConfig cfg, Integer datasetKey) {
     this.factory = factory;
@@ -31,7 +33,8 @@ public class MetricsUpdater implements Runnable {
 
   @Override
   public void run() {
-    treeDao = new FileMetricsDao(factory, cfg.metricsRepo);
+    fmdDao = new FileMetricsDatasetDao(factory, cfg.metricsRepo);
+    fmsDao = new FileMetricsSectorDao(factory, cfg.metricsRepo);
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       if (datasetKey != null){
@@ -49,12 +52,12 @@ public class MetricsUpdater implements Runnable {
       int attempt = d.getImportAttempt();
       LOG.info("Update file metrics for dataset {}, attempt {}", d.getKey(), attempt);
       try {
-        treeDao.updateDatasetTree(d.getKey(), attempt);
+        fmdDao.updateTree(d.getKey(), attempt);
       } catch (IOException e) {
         LOG.error("Failed to update text tree for dataset {}", d.getKey(), e);
       }
       try {
-        treeDao.updateDatasetNames(d.getKey(), attempt);
+        fmdDao.updateNames(d.getKey(), attempt);
       } catch (Exception e) {
         LOG.error("Failed to update name metrics for dataset {}", d.getKey(), e);
       }
@@ -79,13 +82,13 @@ public class MetricsUpdater implements Runnable {
     if (s.getSyncAttempt() != null) {
       int attempt = s.getSyncAttempt();
       try {
-        treeDao.updateSectorTree(s.getId(), attempt);
+        fmsDao.updateTree(s, attempt);
       } catch (IOException e) {
         LOG.error("Failed to update text tree for sector {}", s.getId(), e);
       }
 
       try {
-        treeDao.updateSectorNames(s.getId(), attempt);
+        fmsDao.updateNames(s, attempt);
       } catch (Exception e) {
         LOG.error("Failed to update name metrics for sector {}", s.getId(), e);
       }

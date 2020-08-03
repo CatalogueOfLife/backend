@@ -1,6 +1,7 @@
 package life.catalogue.release;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.util.LoggingUtils;
@@ -30,6 +31,7 @@ public abstract class ProjectRunnable implements Runnable {
   protected final DatasetImport metrics;
   protected final String actionName;
   protected final int newDatasetKey;
+  private final DatasetOrigin newDatasetOrigin;
 
   public ProjectRunnable(String actionName, SqlSessionFactory factory, DatasetImportDao diDao, NameUsageIndexService indexService, int userKey, int datasetKey, Dataset newDataset) {
     this.actionName = actionName;
@@ -41,6 +43,7 @@ public abstract class ProjectRunnable implements Runnable {
     metrics = diDao.createWaiting(newDataset, this, userKey);
     metrics.setJob(getClass().getSimpleName());
     newDatasetKey = newDataset.getKey();
+    newDatasetOrigin = newDataset.getOrigin();
   }
 
   public int getDatasetKey() {
@@ -71,7 +74,9 @@ public abstract class ProjectRunnable implements Runnable {
       // prepare new tables
       updateState(ImportState.PROCESSING);
       Partitioner.partition(factory, newDatasetKey);
-
+      if (newDatasetOrigin == DatasetOrigin.MANAGED) {
+        Partitioner.createManagedSequences(factory, newDatasetKey);
+      }
       prepWork();
 
       // copy data

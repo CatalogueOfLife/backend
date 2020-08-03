@@ -25,10 +25,11 @@ public class MybatisTestUtils {
     final DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
     pm.delete(datasetKey);
     pm.create(datasetKey);
+    pm.buildIndices(datasetKey);
     pm.attach(datasetKey);
     session.commit();
   }
-  
+
   /**
    * t1
    *   t2
@@ -69,10 +70,13 @@ public class MybatisTestUtils {
   }
   
   public static void populateTestData(TestDataRule.TestData data, boolean skipGlobalTables) throws IOException, SQLException {
-    try (TestDataRule rule = new TestDataRule(data)) {
-      rule.initSession();
+    TestDataRule rule = new TestDataRule(data);
+    rule.initSession();
+    try {
       rule.partition();
       rule.loadData(skipGlobalTables);
+    } finally {
+      rule.getSqlSession().close();
     }
   }
   

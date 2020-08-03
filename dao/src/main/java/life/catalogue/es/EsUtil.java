@@ -182,7 +182,8 @@ public class EsUtil {
    *
    * @throws IOException
    */
-  public static int deleteSector(RestClient client, String index, int sectorKey) {
+  public static int deleteSector(RestClient client, String index, DSID<Integer> sectorKey) {
+    //TODO: adapt to DSID<Integer>
     return deleteByQuery(client, index, new TermQuery("sectorKey", sectorKey));
   }
 

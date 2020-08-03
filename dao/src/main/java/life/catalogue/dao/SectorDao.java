@@ -3,7 +3,6 @@ package life.catalogue.dao;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SectorSearchRequest;
-import life.catalogue.api.vocab.EntityType;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.es.NameUsageIndexService;
@@ -13,13 +12,14 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorDao.class);
-  private static final Set<EntityType> DEFAULT_ENTITIES = Set.of(EntityType.VERNACULAR, EntityType.DISTRIBUTION, EntityType.REFERENCE);
   private final NameUsageIndexService indexService;
 
   public SectorDao(SqlSessionFactory factory, NameUsageIndexService indexService) {

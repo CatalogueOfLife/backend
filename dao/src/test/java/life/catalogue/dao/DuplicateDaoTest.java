@@ -9,8 +9,8 @@ import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.NameCategory;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.tax.SciNameNormalizer;
+import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.postgres.AuthorshipNormFunc;
 import life.catalogue.postgres.PgCopyUtils;
@@ -41,11 +41,7 @@ public class DuplicateDaoTest {
   @BeforeClass
   public static void setup() throws Exception {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      final DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
-      pm.create(datasetKey);
-      pm.buildIndices(datasetKey);
-      pm.attach(datasetKey);
-      session.commit();
+      MybatisTestUtils.partition(session, datasetKey);
     }
 
     final AuthorshipNormFunc aFunc = new AuthorshipNormFunc(17);

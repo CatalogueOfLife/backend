@@ -72,10 +72,9 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   /**
    * Deletes usages by sector key and a max rank to be included.
    * It returns the deleted name ids, so names can also be removed if needed.
+   * @param key the sector key
    */
-  List<String> deleteBySectorAndRank(@Param("datasetKey") int datasetKey,
-                              @Param("sectorKey") int sectorKey,
-                              @Param("rank") Rank rank);
+  List<String> deleteBySectorAndRank(@Param("key") DSID<Integer> key, @Param("rank") Rank rank);
 
   /**
    * Does a recursive delete to remove an entire subtree including synonyms and cascading to all associated data.
@@ -115,10 +114,9 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    *
    * Returned SimpleName instances have the parentID as their parent property, not a scientificName!
    *
-   * @param datasetKey the project being assembled
    * @param sectorKey sector that foreign children should point into
    */
-  List<SimpleName> foreignChildren(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+  List<SimpleName> foreignChildren(@Param("key") DSID<Integer> sectorKey);
 
   /**
    * Depth first only implementation using a much lighter object then above.

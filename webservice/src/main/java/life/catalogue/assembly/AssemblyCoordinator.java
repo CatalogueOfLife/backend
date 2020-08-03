@@ -6,7 +6,7 @@ import io.dropwizard.lifecycle.Managed;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.concurrent.ExecutorUtils;
-import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.dao.FileMetricsSectorDao;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
@@ -39,31 +39,29 @@ public class AssemblyCoordinator implements Managed {
   private ImportManager importManager;
   private final SqlSessionFactory factory;
   private final NameUsageIndexService indexService;
-  private final DatasetImportDao diDao;
-  private final Map<Integer, SectorFuture> syncs = Collections.synchronizedMap(new LinkedHashMap<Integer, SectorFuture>());
+  private final FileMetricsSectorDao fmsDao;
+  private final Map<DSID<Integer>, SectorFuture> syncs = Collections.synchronizedMap(new LinkedHashMap<>());
   private final Timer timer;
-  private final Map<Integer, AtomicInteger> counter = new HashMap<>();
-  private final Map<Integer, AtomicInteger> failed = new HashMap<>();
+  private final Map<Integer, AtomicInteger> counter = new HashMap<>(); // by dataset (project) key
+  private final Map<Integer, AtomicInteger> failed = new HashMap<>();  // by dataset (project) key
 
   static class SectorFuture {
-    public final int sectorKey;
-    public final int datasetKey;
+    public final DSID<Integer> sectorKey;
     public final Future future;
     public final SectorImport state;
     public final boolean delete;
     
     private SectorFuture(SectorRunnable job, Future future) {
-      this.sectorKey = job.sectorKey;
-      this.datasetKey = job.sector.getDatasetKey();
+      this.sectorKey = DSID.copy(job.sectorKey);
       this.state = job.getState();
       this.future = future;
       this.delete = job instanceof SectorDeleteFull;
     }
   }
   
-  public AssemblyCoordinator(SqlSessionFactory factory, DatasetImportDao diDao, NameUsageIndexService indexService, MetricRegistry registry) {
+  public AssemblyCoordinator(SqlSessionFactory factory, FileMetricsSectorDao fmsDao, NameUsageIndexService indexService, MetricRegistry registry) {
     this.factory = factory;
-    this.diDao = diDao;
+    this.fmsDao = fmsDao;
     this.indexService = indexService;
     timer = registry.timer("life.catalogue.assembly.timer");
   }
@@ -117,7 +115,7 @@ public class AssemblyCoordinator implements Managed {
 
   public AssemblyState getState(int datasetKey) {
     List<SectorFuture> vals = syncs.values().stream()
-        .filter(sf -> sf.datasetKey == datasetKey)
+        .filter(sf -> sf.sectorKey.getDatasetKey() == datasetKey)
         .collect(Collectors.toList());
     return new AssemblyState(vals, valOrZero(failed, datasetKey), valOrZero(counter, datasetKey));
   }
@@ -129,9 +127,9 @@ public class AssemblyCoordinator implements Managed {
   /**
    * Check if any sector from a given dataset is currently syncing and return the sector key. Otherwise null
    */
-  public Integer hasSyncingSector(int datasetKey){
+  public DSID<Integer> hasSyncingSector(int datasetKey){
     for (SectorFuture df : syncs.values()) {
-      if (df.datasetKey == datasetKey) {
+      if (df.sectorKey.getDatasetKey() == datasetKey) {
         return df.sectorKey;
       }
     }
@@ -167,7 +165,7 @@ public class AssemblyCoordinator implements Managed {
       syncAll(catalogueKey, user);
     } else {
       if (request.getSectorKey() != null) {
-        syncSector(request.getSectorKey(), user);
+        syncSector(request.getSectorDSID(), user);
       }
       if (request.getDatasetKey() != null) {
         LOG.info("Sync all sectors in dataset {}", request.getDatasetKey());
@@ -175,7 +173,7 @@ public class AssemblyCoordinator implements Managed {
         try (SqlSession session = factory.openSession(true)) {
           SectorMapper sm = session.getMapper(SectorMapper.class);
           sm.processSectors(catalogueKey, request.getDatasetKey()).forEach(s -> {
-            syncSector(s.getId(), user);
+            syncSector(s, user);
             cnt.getAndIncrement();
           });
         }
@@ -185,13 +183,13 @@ public class AssemblyCoordinator implements Managed {
     }
   }
   
-  private synchronized void syncSector(int sectorKey, User user) throws IllegalArgumentException {
-    SectorSync ss = new SectorSync(sectorKey, factory, indexService, diDao, this::successCallBack, this::errorCallBack, user);
+  private synchronized void syncSector(DSID<Integer> sectorKey, User user) throws IllegalArgumentException {
+    SectorSync ss = new SectorSync(sectorKey, factory, indexService, fmsDao, this::successCallBack, this::errorCallBack, user);
     queueJob(ss);
   }
 
-  public void deleteSector(int sectorKey, User user) throws IllegalArgumentException {
-    SectorDelete sd = new SectorDelete(sectorKey, factory, indexService, diDao.getFileMetricsDao(), this::successCallBack, this::errorCallBack, user);
+  public void deleteSector(DSID<Integer> sectorKey, User user) throws IllegalArgumentException {
+    SectorDelete sd = new SectorDelete(sectorKey, factory, indexService, fmsDao, this::successCallBack, this::errorCallBack, user);
     queueJob(sd);
   }
   
@@ -216,8 +214,8 @@ public class AssemblyCoordinator implements Managed {
     Duration durQueued = Duration.between(sync.getCreated(), sync.getStarted());
     Duration durRun = Duration.between(sync.getStarted(), LocalDateTime.now());
     LOG.info("Sector Sync {} finished. {} min queued, {} min to execute", sync.getSectorKey(), durQueued.toMinutes(), durRun.toMinutes());
-    counter.putIfAbsent(sync.catalogueKey, new AtomicInteger(0));
-    counter.get(sync.catalogueKey).incrementAndGet();
+    counter.putIfAbsent(sync.sectorKey.getDatasetKey(), new AtomicInteger(0));
+    counter.get(sync.sectorKey.getDatasetKey()).incrementAndGet();
     timer.update(durRun.getSeconds(), TimeUnit.SECONDS);
   }
   
@@ -227,11 +225,11 @@ public class AssemblyCoordinator implements Managed {
   private void errorCallBack(SectorRunnable sync, Exception err) {
     syncs.remove(sync.getSectorKey());
     LOG.error("Sector Sync {} failed: {}", sync.getSectorKey(), err.getCause().getMessage(), err.getCause());
-    failed.putIfAbsent(sync.catalogueKey, new AtomicInteger(0));
-    failed.get(sync.catalogueKey).incrementAndGet();
+    failed.putIfAbsent(sync.sectorKey.getDatasetKey(), new AtomicInteger(0));
+    failed.get(sync.sectorKey.getDatasetKey()).incrementAndGet();
   }
   
-  public synchronized void cancel(int sectorKey, User user) {
+  public synchronized void cancel(DSID<Integer> sectorKey, User user) {
     if (syncs.containsKey(sectorKey)) {
       LOG.info("Sync of sector {} cancelled by user {}", sectorKey, user);
       syncs.remove(sectorKey).future.cancel(true);
@@ -249,7 +247,7 @@ public class AssemblyCoordinator implements Managed {
     int failed = 0;
     for (Sector s : sectors) {
       try {
-        syncSector(s.getId(), user);
+        syncSector(s, user);
       } catch (RuntimeException e) {
         LOG.error("Fail to sync {}: {}", s, e.getMessage());
         failed++;

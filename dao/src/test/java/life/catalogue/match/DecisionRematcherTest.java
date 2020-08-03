@@ -1,5 +1,6 @@
 package life.catalogue.match;
 
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.Datasets;
@@ -39,13 +40,13 @@ public class DecisionRematcherTest {
     MybatisTestUtils.populateDraftTree(importRule.getSqlSession());
     final int datasetKey = 11;
 
-    int d1 = createDecision(datasetKey,
+    DSID<Integer> d1 = createDecision(datasetKey,
       new SimpleName("xyz", "Larus fuscus", Rank.SPECIES)
     );
-    int d2 = createDecision(datasetKey,
+    DSID<Integer> d2 = createDecision(datasetKey,
       new SimpleName(null, "Larus fuscus", Rank.SPECIES)
     );
-    int d3 = createDecision(datasetKey,
+    DSID<Integer> d3 = createDecision(datasetKey,
       new SimpleName("null", "Larus", Rank.GENUS)
     );
 
@@ -86,7 +87,7 @@ public class DecisionRematcherTest {
     }
   }
 
-  static int createDecision(int datasetKey, SimpleName src) {
+  static DSID<Integer> createDecision(int datasetKey, SimpleName src) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       EditorialDecision d = new EditorialDecision();
       d.setMode(EditorialDecision.Mode.BLOCK);
@@ -95,7 +96,7 @@ public class DecisionRematcherTest {
       d.setSubject(src);
       d.applyUser(TestDataRule.TEST_USER);
       session.getMapper(DecisionMapper.class).create(d);
-      return d.getId();
+      return d;
     }
   }
 

@@ -1,5 +1,6 @@
 package life.catalogue.db.mapper;
 
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.ImportMetrics;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.SectorImport;
@@ -58,7 +59,7 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
   /**
    * Deletes all imports for the given sector
    */
-  int delete(@Param("key") int sectorKey);
+  int delete(@Param("key") DSID<Integer> sectorKey);
   
   
   Integer countDistribution(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);

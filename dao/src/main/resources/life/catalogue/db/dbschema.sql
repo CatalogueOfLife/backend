@@ -738,7 +738,7 @@ CREATE TABLE sector (
 
 CREATE TABLE sector_import (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
-  sector_key INTEGER NOT NULL REFERENCES sector ON DELETE CASCADE,
+  sector_key INTEGER NOT NULL,
   attempt INTEGER NOT NULL,
   started TIMESTAMP WITHOUT TIME ZONE,
   finished TIMESTAMP WITHOUT TIME ZONE,
@@ -769,7 +769,8 @@ CREATE TABLE sector_import (
   job TEXT NOT NULL,
   warnings TEXT[],
   error TEXT,
-  PRIMARY KEY (dataset_key, sector_key, attempt)
+  PRIMARY KEY (dataset_key, sector_key, attempt),
+  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector ON DELETE CASCADE
 );
 
 CREATE TABLE decision (
@@ -1285,13 +1286,13 @@ CREATE index ON sector_import (sector_key);
 
 -- useful views
 CREATE VIEW table_size AS (
-    SELECT *, pg_size_pretty(total_bytes) AS total
+    SELECT oid, TABLE_NAME, row_estimate, pg_size_pretty(total_bytes) AS total
         , pg_size_pretty(index_bytes) AS INDEX
         , pg_size_pretty(toast_bytes) AS toast
         , pg_size_pretty(table_bytes) AS TABLE
       FROM (
       SELECT *, total_bytes-index_bytes-COALESCE(toast_bytes,0) AS table_bytes FROM (
-          SELECT c.oid,nspname AS table_schema, relname AS TABLE_NAME
+          SELECT c.oid, relname AS TABLE_NAME
                   , c.reltuples AS row_estimate
                   , pg_total_relation_size(c.oid) AS total_bytes
                   , pg_indexes_size(c.oid) AS index_bytes
