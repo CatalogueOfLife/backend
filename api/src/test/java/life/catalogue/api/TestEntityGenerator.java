@@ -604,8 +604,15 @@ public class TestEntityGenerator {
     return copy(nuw);
   }
 
-  public static NameUsageWrapper copy(NameUsageWrapper nuw) {
-    return kryo.copy(nuw);
+  /**
+   * Deep copies objects using Kryo.
+   * Object classes to be copied need to be registered with the ApiKryoPool.
+   * @param obj
+   * @param <T>
+   * @return a deep copy of obj
+   */
+  public static <T> T copy(T obj) {
+    return kryo.copy(obj);
   }
 
   public static NameUsageWrapper newNameUsageBareNameWrapper() {

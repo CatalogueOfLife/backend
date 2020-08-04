@@ -338,7 +338,7 @@
   </select>
 
   <select id="foreignChildren" resultMap="simpleResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT_SIMPLE"/>
     FROM <include refid="FROM_SIMPLE"/> JOIN name_usage_${partition} p ON p.id=u.parent_id
     WHERE p.sector_key=#{key.id}

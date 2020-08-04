@@ -38,7 +38,7 @@ public class PgImportTest {
     public Boolean call() throws Exception {
       System.out.println("START " + datasetKey);
       System.out.println("PARTITION " + datasetKey);
-      Partitioner.partition(PgSetupRule.getSqlSessionFactory(), datasetKey, false);
+      Partitioner.partition(PgSetupRule.getSqlSessionFactory(), datasetKey);
 
       System.out.println("INDEX & ATTACH " + datasetKey);
       Partitioner.indexAndAttach(PgSetupRule.getSqlSessionFactory(), datasetKey);

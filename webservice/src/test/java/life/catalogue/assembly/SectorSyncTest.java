@@ -89,31 +89,6 @@ public class SectorSyncTest {
     MapperTestBase.createSuccess(Datasets.DRAFT_COL, Users.TESTER, diDao);
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void failNotManaged() throws Exception {
-    Sector s = new Sector();
-    s.setSubjectDatasetKey(datasetKey);
-    s.setSubject(sector.getSubject());
-    s.setTarget(sector.getTarget());
-    s.applyUser(TestEntityGenerator.USER_EDITOR);
-
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      Dataset d = TestEntityGenerator.newDataset("grr");
-      d.setOrigin(DatasetOrigin.RELEASED);
-      d.setSourceKey(Datasets.DRAFT_COL);
-      d.applyUser(Users.TESTER);
-      session.getMapper(DatasetMapper.class).create(d);
-
-      s.setDatasetKey(d.getKey());
-      session.getMapper(SectorMapper.class).create(s);
-    }
-
-    // this should fail
-    SectorSync ss = new SectorSync(s, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), fmsDao,
-      SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
-
-  }
-
   @Test
   public void sync() throws Exception {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {

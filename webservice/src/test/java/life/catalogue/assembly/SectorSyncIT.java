@@ -235,7 +235,7 @@ public class SectorSyncIT {
     assertTree("cat1_5_6.txt");
   
     Taxon vogelii = (Taxon) getByName(Datasets.DRAFT_COL, Rank.SUBSPECIES, "Astragalus vogelii subsp. vogelii");
-    assertEquals(s1, (int) vogelii.getSectorKey());
+    assertEquals(s1, vogelii.getSectorDSID());
     assertHasVerbatimName(vogelii);
 
     Taxon sp = (Taxon) getByID(vogelii.getParentId());
@@ -337,7 +337,7 @@ public class SectorSyncIT {
 
       NameUsageBase u = getByName(Datasets.DRAFT_COL, Rank.SPECIES, "Dectus mascha");
       assertNotNull(u);
-      assertEquals((int)u.getSectorKey(), s2);
+      assertEquals(u.getSectorDSID(), s2);
       assertTree("cat6_11.txt");
       
       // make sure that we can resync and still get the same results with the nested sector
