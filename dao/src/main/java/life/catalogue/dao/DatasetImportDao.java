@@ -2,7 +2,6 @@ package life.catalogue.dao;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
@@ -65,14 +64,14 @@ public class DatasetImportDao {
   /**
    * Create a new waiting dataset import with the next attempt
    */
-  public DatasetImport createWaiting(Dataset d, Runnable job, int user) {
+  public DatasetImport createWaiting(int datasetKey, Runnable job, int user) {
     // build new import
     DatasetImport di = new DatasetImport();
-    di.setDatasetKey(d.getKey());
+    di.setDatasetKey(datasetKey);
     di.setCreatedBy(user);
     di.setStarted(LocalDateTime.now());
     di.setDownloadUri(null);
-    di.setOrigin(d.getOrigin());
+    di.setOrigin(DatasetInfoCache.CACHE.origin(datasetKey));
     di.setJob(job.getClass().getSimpleName());
     di.setState(ImportState.WAITING);
     try (SqlSession session = factory.openSession(true)) {

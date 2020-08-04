@@ -38,13 +38,13 @@ public class DatasetInfoCache {
     final int key;
     final DatasetOrigin origin;
     final Integer sourceKey;
-    final Integer releaseAttempt;
+    final Integer importAttempt;
 
-    DatasetInfo(int key, DatasetOrigin origin, Integer sourceKey, Integer releaseAttempt) {
+    DatasetInfo(int key, DatasetOrigin origin, Integer sourceKey, Integer importAttempt) {
       this.key = key;
       this.origin = origin;
       this.sourceKey = sourceKey;
-      this.releaseAttempt = releaseAttempt;
+      this.importAttempt = importAttempt;
     }
   }
 
@@ -62,7 +62,7 @@ public class DatasetInfoCache {
   private DatasetInfo convert(int key, Dataset d) {
     if (d != null) {
       if (!d.hasDeletedDate()) {
-        return new DatasetInfo(key, d.getOrigin(), d.getSourceKey(), 1);
+        return new DatasetInfo(key, d.getOrigin(), d.getSourceKey(), d.getImportAttempt());
       }
       deleted.add(key);
     }
@@ -77,8 +77,8 @@ public class DatasetInfoCache {
     return get(datasetKey).sourceKey;
   }
 
-  public Integer releaseAttempt(int datasetKey) throws NotFoundException {
-    return get(datasetKey).releaseAttempt;
+  public Integer importAttempt(int datasetKey) throws NotFoundException {
+    return get(datasetKey).importAttempt;
   }
 
   /**

@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ProjectRelease extends ProjectRunnable {
+public class ProjectRelease extends AbstractProjectCopy {
   private static final String DEFAULT_TITLE_TEMPLATE = "{title}, {date}";
   private static final String DEFAULT_ALIAS_TEMPLATE = "{alias}-{date}";
   private static final String DEFAULT_CITATION_TEMPLATE = "{citation} released on {date}";
@@ -58,6 +58,22 @@ public class ProjectRelease extends ProjectRunnable {
         counter.incrementAndGet();
       });
       LOG.info("Archived metadata for {} source datasets of release {}", counter.get(), newDatasetKey);
+    }
+
+    // create new dataset "import" metrics in mother project
+    updateState(ImportState.ANALYZING);
+    metrics();
+  }
+
+  private void metrics() {
+    LOG.info("Build import metrics for dataset " + datasetKey);
+    diDao.updateMetrics(metrics);
+    diDao.update(metrics);
+    diDao.updateDatasetLastAttempt(metrics);
+
+    // also update release datasets import attempt pointer
+    try (SqlSession session = factory.openSession(true)) {
+      session.getMapper(DatasetMapper.class).updateLastImport(newDatasetKey, metrics.getAttempt());
     }
   }
 

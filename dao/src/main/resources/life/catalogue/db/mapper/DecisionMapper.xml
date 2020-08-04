@@ -216,8 +216,8 @@
   </select>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO decision (dataset_key,<include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by )
-    SELECT #{newDatasetKey},<include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by
+    INSERT INTO decision (id, dataset_key, <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by )
+    SELECT id, #{newDatasetKey}, <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by
     FROM decision
     WHERE dataset_key=#{datasetKey}
   </insert>

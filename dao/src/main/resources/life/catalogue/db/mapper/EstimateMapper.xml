@@ -131,8 +131,8 @@
   </insert>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO estimate (dataset_key,<include refid="COLS_NO_DATASETKEY"/>, created, created_by )
-    SELECT #{newDatasetKey},<include refid="COLS_NO_DATASETKEY"/>, created, created_by
+    INSERT INTO estimate (id, dataset_key, <include refid="COLS_NO_DATASETKEY"/>, created, created_by )
+    SELECT id, #{newDatasetKey}, <include refid="COLS_NO_DATASETKEY"/>, created, created_by
     FROM estimate
     WHERE dataset_key=#{datasetKey}
   </insert>

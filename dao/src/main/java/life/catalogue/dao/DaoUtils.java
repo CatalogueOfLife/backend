@@ -35,10 +35,8 @@ public class DaoUtils {
   public static Dataset assertMutable(int datasetKey, String action, SqlSession session) throws IllegalArgumentException {
     DatasetMapper dm = session.getMapper(DatasetMapper.class);
     Dataset d = dm.get(datasetKey);
-    if (d == null) {
+    if (d == null || d.hasDeletedDate()) {
       throw NotFoundException.notFound(Dataset.class, datasetKey);
-    } else if (d.hasDeletedDate()) {
-      throw new IllegalArgumentException("Dataset " + datasetKey + " is deleted and cannot be " + action);
     } else if (d.getOrigin() == DatasetOrigin.RELEASED) {
       throw new IllegalArgumentException("Dataset " + datasetKey + " is released and cannot be " + action);
     }

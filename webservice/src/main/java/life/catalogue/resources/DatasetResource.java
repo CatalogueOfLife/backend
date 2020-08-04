@@ -111,7 +111,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     Integer attempt;
     // a release?
     if (DatasetInfoCache.CACHE.origin(key) == DatasetOrigin.RELEASED) {
-      attempt = DatasetInfoCache.CACHE.releaseAttempt(key);
+      attempt = DatasetInfoCache.CACHE.importAttempt(key);
       projectKey = DatasetInfoCache.CACHE.sourceProject(key);
     } else {
       attempt = session.getMapper(DatasetMapper.class).lastImportAttempt(key);

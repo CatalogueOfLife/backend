@@ -8,7 +8,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 /**
  * Job to duplicate a managed project with all its data, decisions and metadata
  */
-public class ProjectDuplication extends ProjectRunnable {
+public class ProjectDuplication extends AbstractProjectCopy {
 
   ProjectDuplication(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, int datasetKey, Dataset copy, int userKey) {
     super("duplicating", factory, diDao, indexService, userKey, datasetKey, copy);
