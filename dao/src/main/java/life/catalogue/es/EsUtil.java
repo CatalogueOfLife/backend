@@ -183,8 +183,11 @@ public class EsUtil {
    * @throws IOException
    */
   public static int deleteSector(RestClient client, String index, DSID<Integer> sectorKey) {
-    //TODO: adapt to DSID<Integer>
-    return deleteByQuery(client, index, new TermQuery("sectorKey", sectorKey));
+    BoolQuery query = BoolQuery.withFilters(
+      new TermQuery("datasetKey", sectorKey.getDatasetKey()),
+      new TermQuery("sectorKey", sectorKey.getId())
+    );
+    return deleteByQuery(client, index, query);
   }
 
   /**

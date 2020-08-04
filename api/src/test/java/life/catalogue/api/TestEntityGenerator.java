@@ -1,5 +1,6 @@
 package life.catalogue.api;
 
+import com.esotericsoftware.kryo.Kryo;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import life.catalogue.api.model.*;
@@ -8,6 +9,7 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
+import life.catalogue.common.kryo.ApiKryoPool;
 import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.*;
 
@@ -21,6 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class TestEntityGenerator {
   private final static Random RND = new Random();
+  private final static Kryo kryo = new ApiKryoPool(1).create();
   private final static RandomInstance random = new RandomInstance();
   private static final Splitter SPACE_SPLITTER = Splitter.on(" ").trimResults();
   public static final AtomicInteger ID_GEN = new AtomicInteger(10000);
@@ -589,7 +592,7 @@ public class TestEntityGenerator {
     nuw.setIssues(issues);
     nuw.setVernacularNames(
         Arrays.asList(newVernacularName("zeemeeuw", "nel"), newVernacularName("seagull")));
-    return nuw;
+    return copy(nuw);
   }
 
   public static NameUsageWrapper newNameUsageSynonymWrapper() {
@@ -598,7 +601,11 @@ public class TestEntityGenerator {
     EnumSet<Issue> issues = EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.NAME_VARIANT,
         Issue.DISTRIBUTION_AREA_INVALID);
     nuw.setIssues(issues);
-    return nuw;
+    return copy(nuw);
+  }
+
+  public static NameUsageWrapper copy(NameUsageWrapper nuw) {
+    return kryo.copy(nuw);
   }
 
   public static NameUsageWrapper newNameUsageBareNameWrapper() {
@@ -608,7 +615,7 @@ public class TestEntityGenerator {
     nuw.setUsage(bn);
     EnumSet<Issue> issues = EnumSet.of(Issue.ID_NOT_UNIQUE);
     nuw.setIssues(issues);
-    return nuw;
+    return copy(nuw);
   }
   
   public static EditorialDecision newDecision(int datasetKey, int subjectDatasetKey, String id) {
