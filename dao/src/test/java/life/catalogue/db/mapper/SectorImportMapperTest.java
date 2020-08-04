@@ -85,7 +85,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     commit();
     assertEquals(1, d1.getAttempt());
   
-    SectorImport d2 = mapper().get(d1.getSectorKey(), d1.getAttempt());
+    SectorImport d2 = mapper().get(d1.getSectorDSID(), d1.getAttempt());
     assertEquals(d1, d2);
   }
   

@@ -6,9 +6,9 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Queue;
 
-public class SectorImport extends ImportMetrics {
+public class SectorImport extends ImportMetrics implements SectorEntity {
 
-  private int sectorKey;
+  private Integer sectorKey;
   private Integer ignoredUsageCount;
   
   private final Queue<String> warnings = EvictingQueue.create(25);
@@ -26,11 +26,11 @@ public class SectorImport extends ImportMetrics {
     warnings.add(warning);
   }
 
-  public int getSectorKey() {
+  public Integer getSectorKey() {
     return sectorKey;
   }
   
-  public void setSectorKey(int sectorKey) {
+  public void setSectorKey(Integer sectorKey) {
     this.sectorKey = sectorKey;
   }
   
