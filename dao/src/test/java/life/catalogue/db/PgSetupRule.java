@@ -3,6 +3,7 @@ package life.catalogue.db;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import life.catalogue.common.util.YamlUtils;
+import life.catalogue.dao.DatasetInfoCache;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -90,6 +91,7 @@ public class PgSetupRule extends ExternalResource {
     // configure single mybatis session factory
     LOG.info("Configure MyBatis session factory");
     sqlSessionFactory = MybatisFactory.configure(dataSource, "test");
+    DatasetInfoCache.CACHE.setFactory(sqlSessionFactory);
   }
   
   public static void initDb(PgConfig cfg) throws Exception {
