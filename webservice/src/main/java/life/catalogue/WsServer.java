@@ -172,6 +172,8 @@ public class WsServer extends Application<WsServerConfig> {
     auth.setSqlSessionFactory(mybatis.getSqlSessionFactory());
     auth.setClient(httpClient);
 
+    DatasetInfoCache.CACHE.setFactory(mybatis.getSqlSessionFactory());
+
     // name parser
     ParserConfigDao dao = new ParserConfigDao(getSqlSessionFactory());
     dao.loadParserConfigs();

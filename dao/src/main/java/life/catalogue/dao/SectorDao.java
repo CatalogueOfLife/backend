@@ -4,7 +4,6 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.es.NameUsageIndexService;
@@ -52,11 +51,11 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       SectorMapper mapper = session.getMapper(SectorMapper.class);
 
       // make sure we have a managed dataset - otherwise sectors cannot be created and we lack a id sequence to generate a key!
-      Dataset d = session.getMapper(DatasetMapper.class).get(s.getDatasetKey());
-      if (d == null) {
+      DatasetOrigin origin = DatasetInfoCache.CACHE.origin(s.getDatasetKey());
+      if (origin == null) {
         throw new IllegalArgumentException("dataset " + s.getDatasetKey() + " does not exist");
-      } else if (d.getOrigin() != DatasetOrigin.MANAGED) {
-        throw new IllegalArgumentException("dataset " + s.getDatasetKey() + " is not managed but of origin " + d.getOrigin());
+      } else if (origin != DatasetOrigin.MANAGED) {
+        throw new IllegalArgumentException("dataset " + s.getDatasetKey() + " is not managed but of origin " + origin);
       }
 
       final DSID<String> did = s.getTargetAsDSID();

@@ -135,7 +135,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   @Override
   protected void deleteAfter(Integer key, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
     // drop managed id sequences
-    if (old.getOrigin() == DatasetOrigin.MANAGED) {
+    if (DatasetInfoCache.CACHE.origin(key) == DatasetOrigin.MANAGED) {
       session.getMapper(DatasetPartitionMapper.class).deleteManagedSequences(key);
     }
     // clear search index asnychroneously

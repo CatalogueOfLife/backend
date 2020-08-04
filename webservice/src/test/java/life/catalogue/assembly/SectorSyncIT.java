@@ -221,15 +221,15 @@ public class SectorSyncIT {
   
     NameUsageBase src = getByName(datasetKey(1, DataFormat.ACEF), Rank.ORDER, "Fabales");
     NameUsageBase trg = getByName(Datasets.DRAFT_COL, Rank.PHYLUM, "Tracheophyta");
-    DSID<Integer> s1 = createSector(Sector.Mode.ATTACH, src, trg);
+    DSID<Integer> s1 = DSID.copy(createSector(Sector.Mode.ATTACH, src, trg));
   
     src = getByName(datasetKey(5, DataFormat.ACEF), Rank.CLASS, "Insecta");
     trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
-    DSID<Integer> s2 = createSector(Sector.Mode.UNION, src, trg);
+    createSector(Sector.Mode.UNION, src, trg);
   
     src = getByName(datasetKey(6, DataFormat.ACEF), Rank.FAMILY, "Theridiidae");
     trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
-    DSID<Integer> s3 = createSector(Sector.Mode.ATTACH, src, trg);
+    createSector(Sector.Mode.ATTACH, src, trg);
 
     syncAll();
     assertTree("cat1_5_6.txt");
@@ -317,9 +317,9 @@ public class SectorSyncIT {
     
     src = getByName(datasetKey(11, DataFormat.ACEF), Rank.GENUS, "Dectus");
     // target without id so far
-    final DSID<Integer> s2 = createSector(Sector.Mode.ATTACH, src.getDatasetKey(), simple(src),
+    final DSID<Integer> s2 = DSID.copy(createSector(Sector.Mode.ATTACH, src.getDatasetKey(), simple(src),
         new SimpleName(null, "Theridiidae", Rank.FAMILY)
-    );
+    ));
   
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
