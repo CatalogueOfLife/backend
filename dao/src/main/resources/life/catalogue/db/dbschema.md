@@ -10,8 +10,33 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-#### 2020-07-29 sector truely dataset scoped 
+#### 2020-08-05 sector truely dataset scoped 
+
+We have 7 releases currently:
 ```
+ 2079 | Catalogue of Life - February 2020
+ 2081 | Catalogue of Life - February 2020 Rev2
+ 2083 | Catalogue of Life - March 2020
+ 2123 | Catalogue of Life - April 2020
+ 2140 | Catalogue of Life - June 2020
+ 2165 | Catalogue of Life - July 2020
+ 2166 | Catalogue of Life - August 2020
+```
+
+```
+DELETE FROM "user" WHERE key=-1;
+DELETE FROM "user" WHERE key=13;
+
+SELECT unnest(array[2079,2081,2083,2123,2140,2165,2166]) AS key INTO TABLE __releases;
+
+UPDATE name n SET sector_key = s.copied_from_id FROM sector s WHERE n.sector_key=s.id AND n.sector_key IS NOT NULL; 
+UPDATE name_usage n SET sector_key = s.copied_from_id FROM sector s WHERE n.sector_key=s.id AND n.sector_key IS NOT NULL; 
+UPDATE reference n SET sector_key = s.copied_from_id FROM sector s WHERE n.sector_key=s.id AND n.sector_key IS NOT NULL; 
+UPDATE type_material n SET sector_key = s.copied_from_id FROM sector s WHERE n.sector_key=s.id AND n.sector_key IS NOT NULL; 
+
+ALTER TABLE sector DROP PRIMARY KEY;
+UPDATE sector SET id=copied_from_id WHERE copied_from_id IS NOT NULL;
+ALTER TABLE sector DROP COLUMN copied_from_id;
 ```
 
 #### 2020-07-10 names index intset 
