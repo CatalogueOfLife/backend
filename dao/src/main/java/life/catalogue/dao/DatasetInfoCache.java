@@ -1,6 +1,9 @@
 package life.catalogue.dao;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import com.google.common.eventbus.Subscribe;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -8,17 +11,20 @@ import life.catalogue.db.mapper.DatasetMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Cache for Immutable dataset infos that is loaded on demand and never release as the data is immutable
  * and we do not have large amounts of datasets that do not fit into memory.
+ *
+ * All methods throw a NotFoundException in case the datasetKey does not exist or refers to a deleted dataset.
+ * We use the GuavaBus to listen to newly deleted datasets.
  */
 public class DatasetInfoCache {
-  private final DatasetInfo EMPTY = new DatasetInfo(-1, null, null, null);
   private SqlSessionFactory factory;
-  private final Map<Integer, DatasetInfo> infos = new Int2ObjectOpenHashMap<>();
+  private final Map<Integer, DatasetInfo> infos = new HashMap<>();
+  private final IntSet deleted = new IntOpenHashSet();
 
   public final static DatasetInfoCache CACHE = new DatasetInfoCache();
 
@@ -42,28 +48,54 @@ public class DatasetInfoCache {
     }
   }
 
-  private Optional<DatasetInfo> get(int datasetKey) {
-    return Optional.ofNullable(infos.computeIfAbsent(datasetKey, key -> {
+  private DatasetInfo get(int datasetKey) throws NotFoundException {
+    if (deleted.contains(datasetKey)) {
+      throw NotFoundException.notFound(Dataset.class, datasetKey);
+    }
+    return infos.computeIfAbsent(datasetKey, key -> {
       try (SqlSession session = factory.openSession()) {
-        DatasetInfo info = null;
-        Dataset d = session.getMapper(DatasetMapper.class).get(key);
-        if (d != null) {
-          info = new DatasetInfo(d.getKey(), d.getOrigin(), d.getSourceKey(), 1);
-        }
-        return info;
+        return convert(datasetKey, session.getMapper(DatasetMapper.class).get(key));
       }
-    }));
+    });
+  }
+
+  private DatasetInfo convert(int key, Dataset d) {
+    if (d != null) {
+      if (!d.hasDeletedDate()) {
+        return new DatasetInfo(key, d.getOrigin(), d.getSourceKey(), 1);
+      }
+      deleted.add(key);
+    }
+    throw NotFoundException.notFound(Dataset.class, key);
   }
 
   public DatasetOrigin origin(int datasetKey) throws NotFoundException {
-    return get(datasetKey).orElse(EMPTY).origin;
+    return get(datasetKey).origin;
   }
 
   public Integer sourceProject(int datasetKey) throws NotFoundException {
-    return get(datasetKey).orElse(EMPTY).sourceKey;
+    return get(datasetKey).sourceKey;
   }
 
   public Integer releaseAttempt(int datasetKey) throws NotFoundException {
-    return get(datasetKey).orElse(EMPTY).releaseAttempt;
+    return get(datasetKey).releaseAttempt;
   }
+
+  /**
+   * Makes sure the dataset key exists and is not deleted.
+   * @param datasetKey
+   * @throws NotFoundException
+   */
+  public void exists(int datasetKey) throws NotFoundException {
+    get(datasetKey);
+  }
+
+  @Subscribe
+  public void datasetChanged(DatasetChanged event){
+    if (event.isDeletion()) {
+      deleted.add((int)event.key);
+      infos.remove(event.key);
+    }
+  }
+
 }

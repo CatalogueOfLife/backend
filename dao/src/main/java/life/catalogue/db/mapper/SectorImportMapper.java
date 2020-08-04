@@ -21,7 +21,7 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
   /**
    * Retrieves the full import with the entire potentially very large text tree and names id set.
    */
-  SectorImport get(@Param("sectorKey") int sectorKey, @Param("attempt") int attempt);
+  SectorImport get(@Param("key") DSID<Integer> sectorKey, @Param("attempt") int attempt);
 
   /**
    * Get aggregated metrics for all sectors that share the same subjectDatasetKey within a given project

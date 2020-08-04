@@ -304,6 +304,7 @@ public class WsServer extends Application<WsServerConfig> {
     // attach listeners to event bus
     bus.register(auth);
     bus.register(coljersey);
+    bus.register(DatasetInfoCache.CACHE);
   }
 
   static Managed stopOnly(Managed managed){

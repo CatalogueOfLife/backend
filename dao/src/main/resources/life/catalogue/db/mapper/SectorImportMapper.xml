@@ -74,7 +74,7 @@
     SELECT
     <include refid="SELECT"/>
     FROM sector_import si
-    WHERE sector_key=#{sectorKey} AND attempt=#{attempt}
+    WHERE dataset_key=#{key.datasetKey} AND sector_key=#{key.id} AND attempt=#{attempt}
   </select>
 
   <select id="count" resultType="integer">
@@ -104,7 +104,7 @@
   <update id="update" parameterType="SectorImport">
     UPDATE sector_import
     SET (<include refid="COLS"/>) = (<include refid="PROPS"/>)
-    WHERE sector_key=#{imp.sectorKey} AND attempt=#{imp.attempt}
+    WHERE dataset_key=#{imp.datasetKey} AND sector_key=#{imp.sectorKey} AND attempt=#{imp.attempt}
   </update>
 
   <delete id="delete" parameterType="map">

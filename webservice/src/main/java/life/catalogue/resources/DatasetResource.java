@@ -4,10 +4,12 @@ import com.google.common.collect.Lists;
 import io.dropwizard.auth.Auth;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.AssemblyState;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.*;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.dw.auth.Roles;
@@ -105,11 +107,21 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
                          @QueryParam("rank") Set<Rank> ranks,
                          @Context SqlSession session) {
     StreamingOutput stream;
-    Integer attempt = session.getMapper(DatasetMapper.class).lastImportAttempt(key);
+    final Integer projectKey;
+    Integer attempt;
+    // a release?
+    if (DatasetInfoCache.CACHE.origin(key) == DatasetOrigin.RELEASED) {
+      attempt = DatasetInfoCache.CACHE.releaseAttempt(key);
+      projectKey = DatasetInfoCache.CACHE.sourceProject(key);
+    } else {
+      attempt = session.getMapper(DatasetMapper.class).lastImportAttempt(key);
+      projectKey = key;
+    }
+
     if (attempt != null && rootID == null && (ranks == null || ranks.isEmpty())) {
       // stream from pre-generated file
       stream = os -> {
-        InputStream in = new FileInputStream(diDao.getFileMetricsDao().treeFile(key, attempt));
+        InputStream in = new FileInputStream(diDao.getFileMetricsDao().treeFile(projectKey, attempt));
         IOUtils.copy(in, os);
         os.flush();
       };
@@ -212,9 +224,22 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     ImportMetrics metrics = new ImportMetrics();
     metrics.setAttempt(-1);
     metrics.setDatasetKey(datasetKey);
-    for (ImportMetrics m : session.getMapper(SectorImportMapper.class).list(null, datasetKey, key, null, true, null)) {
-      metrics.add(m);
+
+    SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
+    // a release? use mother project in that case
+    if (DatasetInfoCache.CACHE.origin(key) == DatasetOrigin.RELEASED) {
+      Integer projectKey = DatasetInfoCache.CACHE.sourceProject(key);
+      session.getMapper(SectorMapper.class).processDataset(datasetKey).forEach(s -> {
+        ImportMetrics m = sim.get(DSID.of(projectKey, key), s.getSyncAttempt());
+        metrics.add(m);
+      });
+
+    } else {
+      for (ImportMetrics m : sim.list(null, datasetKey, key, null, true, null)) {
+        metrics.add(m);
+      }
     }
+
     return metrics;
   }
 }

@@ -2,8 +2,10 @@ package life.catalogue.resources;
 
 import com.google.common.collect.ImmutableList;
 import io.dropwizard.auth.Auth;
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.SectorSearchRequest;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.dao.*;
@@ -92,7 +94,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @Path("sync")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void sync(@PathParam("datasetKey") int datasetKey, RequestScope request, @Auth User user, @Context SqlSession session) {
-    DaoUtils.requireManaged(datasetKey, session);
+    DaoUtils.requireManaged(datasetKey);
     assembly.sync(datasetKey, request, user);
   }
 
@@ -108,19 +110,38 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @DELETE
   @Path("{id}/sync")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void deleteSync(@PathParam("datasetKey") int datasetKey, @PathParam("id") int id, @Auth User user, @Context SqlSession session) {
-    DaoUtils.requireManaged(datasetKey, session);
+  public void deleteSync(@PathParam("datasetKey") int datasetKey, @PathParam("id") int id, @Auth User user) {
+    DaoUtils.requireManaged(datasetKey);
     assembly.cancel(DSID.of(datasetKey, id), user);
   }
 
   @GET
+  @Path("{id}/sync")
+  public SectorImport getLastSyncAttempt(@PathParam("datasetKey") int datasetKey, @PathParam("id") int id,
+                                     @Context SqlSession session) {
+    // a release? use mother project in that case
+    // this also checks for presence & deletion of the dataset key
+    DatasetOrigin origin = DatasetInfoCache.CACHE.origin(datasetKey);
+    DSID<Integer> skey = DSID.of(datasetKey, id);
+    Sector s = session.getMapper(SectorMapper.class).get(skey);
+    if (s == null) {
+      throw NotFoundException.notFound(Sector.class, skey);
+    }
+    if (origin == DatasetOrigin.RELEASED) {
+      Integer projectKey = DatasetInfoCache.CACHE.sourceProject(datasetKey);
+      skey = DSID.of(projectKey, id);
+    }
+
+    return session.getMapper(SectorImportMapper.class).get(skey, s.getSyncAttempt());
+  }
+
+  @GET
   @Path("{id}/sync/{attempt}")
-  public SectorImport getSyncAttempt(@PathParam("datasetKey") int datasetKey,
-                                       @PathParam("id") int id,
+  public SectorImport getSyncAttempt(@PathParam("datasetKey") int datasetKey, @PathParam("id") int id,
                                        @PathParam("attempt") int attempt,
                                        @Context SqlSession session) {
-    DaoUtils.requireManaged(datasetKey, session);
-    return session.getMapper(SectorImportMapper.class).get(id, attempt);
+    DaoUtils.requireManaged(datasetKey);
+    return session.getMapper(SectorImportMapper.class).get(DSID.of(datasetKey, id), attempt);
   }
 
   @GET
@@ -152,10 +173,9 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
 
   @POST
   @Path("count-update")
-  public boolean updateAllSectorCounts(@PathParam("datasetKey") int datasetKey, @Context SqlSession session) {
-    DaoUtils.requireManaged(datasetKey, session);
+  public boolean updateAllSectorCounts(@PathParam("datasetKey") int datasetKey) {
+    DaoUtils.requireManaged(datasetKey);
     tdao.updateAllSectorCounts(datasetKey);
-    session.commit();
     return true;
   }
 
