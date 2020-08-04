@@ -38,6 +38,7 @@ import java.io.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static life.catalogue.api.model.User.userkey;
 
@@ -226,20 +227,23 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     metrics.setDatasetKey(datasetKey);
 
     SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
+    AtomicInteger sectorCounter = new AtomicInteger(0);
     // a release? use mother project in that case
     if (DatasetInfoCache.CACHE.origin(key) == DatasetOrigin.RELEASED) {
       Integer projectKey = DatasetInfoCache.CACHE.sourceProject(key);
       session.getMapper(SectorMapper.class).processDataset(datasetKey).forEach(s -> {
         ImportMetrics m = sim.get(DSID.of(projectKey, key), s.getSyncAttempt());
         metrics.add(m);
+        sectorCounter.incrementAndGet();
       });
 
     } else {
       for (ImportMetrics m : sim.list(null, datasetKey, key, null, true, null)) {
         metrics.add(m);
+        sectorCounter.incrementAndGet();
       }
     }
-
+    metrics.setSectorCount(sectorCounter.get());
     return metrics;
   }
 }
