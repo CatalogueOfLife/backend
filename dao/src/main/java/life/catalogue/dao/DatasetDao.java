@@ -128,22 +128,22 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     // delete data partitions
     Partitioner.delete(session, key);
     session.commit();
+    // drop managed id sequences
+    if (DatasetInfoCache.CACHE.origin(key) == DatasetOrigin.MANAGED) {
+      session.getMapper(DatasetPartitionMapper.class).deleteManagedSequences(key);
+    }
     // now also clear filesystem
     diDao.removeMetrics(key);
   }
 
   @Override
   protected void deleteAfter(Integer key, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
-    // drop managed id sequences
-    if (DatasetInfoCache.CACHE.origin(key) == DatasetOrigin.MANAGED) {
-      session.getMapper(DatasetPartitionMapper.class).deleteManagedSequences(key);
-    }
     // clear search index asnychroneously
     CompletableFuture.supplyAsync(() -> indexService.deleteDataset(key))
-            .exceptionally(e -> {
-              LOG.error("Failed to delete ES docs for dataset {}", key, e.getCause());
-              return 0;
-            });
+      .exceptionally(e -> {
+        LOG.error("Failed to delete ES docs for dataset {}", key, e.getCause());
+        return 0;
+      });
     // notify event bus
     bus.post(DatasetChanged.delete(key));
   }
