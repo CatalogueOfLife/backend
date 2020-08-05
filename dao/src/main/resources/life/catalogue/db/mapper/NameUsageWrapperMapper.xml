@@ -22,6 +22,7 @@
     </collection>
     <collection property="decisions" ofType="SimpleDecision" autoMapping="true" columnPrefix="ed_" notNullColumn="id">
       <id property="id" column="id"/>
+      <id property="datasetKey" column="dataset_key"/>
     </collection>
   </resultMap>
 

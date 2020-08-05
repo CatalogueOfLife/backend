@@ -55,16 +55,16 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
     assertFalse(tax.getClassification().isEmpty());
     assertEquals(cl, tax.getClassification());
     assertEquals(2, tax.getDecisions().size());
-    Set<Integer> keys = new HashSet<>();
+    Set<DSID<Integer>> keys = new HashSet<>();
     for (SimpleDecision sd : tax.getDecisions()) {
-      keys.add(sd.getId());
-      if (sd.getId().equals(ed1.getId())) {
+      keys.add(sd.getKey());
+      if (sd.getKey().equals(DSID.copy(ed1.getKey()))) {
         assertEquals(ed1.asSimpleDecision(), sd);
         
-      } else if (sd.getId().equals(ed2.getId())) {
+      } else if (sd.getKey().equals(DSID.copy(ed2.getKey()))) {
         fail("broken decision");
   
-      } else if (sd.getId().equals(ed3.getId())) {
+      } else if (sd.getKey().equals(DSID.copy(ed3.getKey()))) {
         assertEquals(ed3.asSimpleDecision(), sd);
 
       } else {

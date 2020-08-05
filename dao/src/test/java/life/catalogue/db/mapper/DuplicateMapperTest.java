@@ -47,6 +47,8 @@ public class DuplicateMapperTest {
       pm.create(datasetKey);
       pm.buildIndices(datasetKey);
       pm.attach(datasetKey);
+      pm.createManagedSequences(datasetKey);
+      pm.createManagedSequences(Datasets.DRAFT_COL);
       session.commit();
     }
   

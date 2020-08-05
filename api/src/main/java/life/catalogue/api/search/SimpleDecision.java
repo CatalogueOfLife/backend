@@ -1,8 +1,10 @@
 package life.catalogue.api.search;
 
-import java.util.Objects;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.EditorialDecision;
+
+import java.util.Objects;
 
 public class SimpleDecision {
   private Integer id;
@@ -24,7 +26,12 @@ public class SimpleDecision {
   public void setDatasetKey(Integer datasetKey) {
     this.datasetKey = datasetKey;
   }
-  
+
+  @JsonIgnore
+  public DSID<Integer> getKey() {
+    return DSID.of(datasetKey, id);
+  }
+
   public EditorialDecision.Mode getMode() {
     return mode;
   }

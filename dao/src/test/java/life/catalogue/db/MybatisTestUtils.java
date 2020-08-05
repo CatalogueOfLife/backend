@@ -59,7 +59,11 @@ public class MybatisTestUtils {
     
     session.commit();
   }
-  
+
+  public static void createManagedSequences(SqlSession session, int datasetKey) {
+    session.getMapper(DatasetPartitionMapper.class).createManagedSequences(datasetKey);
+  }
+
   public static void populateDraftTree(SqlSession session) {
     populateTestTree(DRAFT_COL, session);
   

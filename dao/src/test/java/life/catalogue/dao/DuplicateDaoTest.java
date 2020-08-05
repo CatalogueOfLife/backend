@@ -42,9 +42,9 @@ public class DuplicateDaoTest {
   public static void setup() throws Exception {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       MybatisTestUtils.partition(session, datasetKey);
+      MybatisTestUtils.createManagedSequences(session, datasetKey);
+      MybatisTestUtils.createManagedSequences(session, Datasets.DRAFT_COL);
     }
-    Partitioner.createManagedSequences(PgSetupRule.getSqlSessionFactory(), datasetKey);
-    Partitioner.createManagedSequences(PgSetupRule.getSqlSessionFactory(), Datasets.DRAFT_COL);
 
     final AuthorshipNormFunc aFunc = new AuthorshipNormFunc(17);
 
@@ -58,8 +58,6 @@ public class DuplicateDaoTest {
         "authorship_normalized", aFunc::normAuthorship
         )
       );
-      // id,dataset_key,sector_key,verbatim_key,homotypic_name_id,scientific_name,authorship,rank,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,nomenclatural_note,candidatus,notho,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,published_in_id,published_in_page,code,nom_status,origin,type,link,remarks,created,created_by,modified,modified_by
-      // id,dataset_ke1,sector_key,verbatim_key,homotypic_name_id,scientific_nam5,6uthorship,rank,uninomial,genus,10frageneric_epithet,specific_epithet,infraspecific_epithet,13ltivar_epithet,nomenclatural_note,15ndidatus,notho,17sionym_authors,18sionym_ex_authors,basionym_year,20mbination_authors,combination_ex_authors,combination_year,sanctioning_author,published_in_id,published_in_page,code,nom_status,origin,type,link,remarks,created,created_by,modified,modified_by
       PgCopyUtils.copy(pgc, "name_usage_1000", "/duplicates/name_usage.csv");
 
       c.commit();
