@@ -1034,7 +1034,7 @@ CREATE TABLE taxon_rel (
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE vernacular_name (
-  id serial,
+  id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL,
   verbatim_key INTEGER,
   created_by INTEGER NOT NULL,

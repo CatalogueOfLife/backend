@@ -50,10 +50,6 @@ public interface DatasetPartitionMapper {
   
   void createTable(@Param("table") String table, @Param("key") int key);
 
-  default void createManagedSequences(@Param("key") int key) {
-    MANAGED_SERIAL_TABLES.forEach(t -> createIdSequence(t, key));
-  }
-
   /**
    * Creates a new id sequence and uses it as the default value (serial) for the given tables id column.
    * @param table
@@ -79,6 +75,20 @@ public interface DatasetPartitionMapper {
   void updateIdSequence(@Param("table") String table, @Param("key") int key);
 
   void deleteIdSequence(@Param("table") String table, @Param("key") int key);
+
+  default void createManagedSequences(@Param("key") int key) {
+    MANAGED_SERIAL_TABLES.forEach(t -> createIdSequence(t, key));
+  }
+
+  void updateManagedSequence(@Param("table") String table, @Param("key") int key);
+
+  /**
+   * Updates the managed sequences for a given datasetKey to the current max of existing keys.
+   * @param key datasetKey
+   */
+  default void updateManagedSequences(int key) {
+    MANAGED_SERIAL_TABLES.forEach(t -> updateManagedSequence(t, key));
+  }
 
   default void deleteManagedSequences(@Param("key") int key) {
     MANAGED_SERIAL_TABLES.forEach(t -> deleteIdSequence(t, key));

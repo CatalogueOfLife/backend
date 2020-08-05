@@ -34,13 +34,16 @@
   </update>
 
   <update id="updateIdSequence" parameterType="map">
-    WITH start AS (SELECT COALESCE(max(id),1) AS id FROM ${table}_${key})
-    SELECT setval('${table}_${key}_id_seq', start.id) FROM start;
+    SELECT setval('${table}_${key}_id_seq', (SELECT COALESCE(max(id),1) AS id FROM ${table}_${key}));
   </update>
 
   <delete id="deleteIdSequence" parameterType="map">
     DROP SEQUENCE IF EXISTS ${table}_${key}_id_seq;
   </delete>
+
+  <update id="updateManagedSequence" parameterType="map">
+    SELECT setval('${table}_${key}_id_seq', (SELECT COALESCE(max(id),1) AS id FROM ${table} WHERE dataset_key = #{key}));
+  </update>
 
   <update id="attachTable" parameterType="map">
     ALTER TABLE ${table} ATTACH PARTITION ${table}_${key} FOR VALUES IN ( ${key} )

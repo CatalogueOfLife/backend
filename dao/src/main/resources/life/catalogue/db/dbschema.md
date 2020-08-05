@@ -75,6 +75,8 @@ UPDATE dataset_import di SET attempt=r.attempt FROM _release_attempts r WHERE r.
 DROP TABLE _release_attempts;
 DROP SEQUENCE dataset_import_col3_seq;
 
+ALTER TABLE vernacular_name ALTER COLUMN id DROP DEFAULT;
+
 DROP VIEW table_size;
 CREATE VIEW table_size AS (
     SELECT oid, TABLE_NAME, row_estimate, pg_size_pretty(total_bytes) AS total

@@ -23,6 +23,7 @@ import life.catalogue.es.nu.NameUsageIndexServiceEs;
 import life.catalogue.matching.DatasetMatcher;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.postgres.IntSerial;
 import life.catalogue.postgres.PgCopyUtils;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.apache.commons.io.FileUtils;
@@ -162,7 +163,11 @@ public class InitDbCmd extends AbstractPromptCmd {
         .put("dataset_key", Datasets.DRAFT_COL)
         .put("created_by", Users.DB_INIT)
         .put("modified_by", Users.DB_INIT)
-        .build());
+        .build(),
+      ImmutableMap.<String, Function<String[], String>>of(
+        "id", new IntSerial()
+      )
+    );
     // id,homotypic_name_id,rank,scientific_name,uninomial
     PgCopyUtils.copy(pgc, "name_"+Datasets.DRAFT_COL, "/life/catalogue/db/draft/name.csv", ImmutableMap.<String, Object>builder()
           .put("dataset_key", Datasets.DRAFT_COL)
@@ -185,7 +190,13 @@ public class InitDbCmd extends AbstractPromptCmd {
         .put("created_by", Users.DB_INIT)
         .put("modified_by", Users.DB_INIT)
         .build());
-  
+
+    LOG.info("Update managed sequence values");
+    try (SqlSession session = factory.openSession()) {
+      DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
+      dpm.updateManagedSequences(Datasets.DRAFT_COL);
+    }
+
     LOG.info("Match draft CoL to names index");
     // we create a new names index de novo to write new hierarchy names into the names index dataset
     try (NameIndex ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, factory, AuthorshipNormalizer.INSTANCE).started()) {
@@ -217,6 +228,7 @@ public class InitDbCmd extends AbstractPromptCmd {
     pm.create(Datasets.DRAFT_COL);
     pm.buildIndices(Datasets.DRAFT_COL);
     pm.attach(Datasets.DRAFT_COL);
+    pm.createManagedSequences(Datasets.DRAFT_COL);
     session.commit();
   }
   
