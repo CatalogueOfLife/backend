@@ -43,6 +43,8 @@ public class DuplicateDaoTest {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       MybatisTestUtils.partition(session, datasetKey);
     }
+    Partitioner.createManagedSequences(PgSetupRule.getSqlSessionFactory(), datasetKey);
+    Partitioner.createManagedSequences(PgSetupRule.getSqlSessionFactory(), Datasets.DRAFT_COL);
 
     final AuthorshipNormFunc aFunc = new AuthorshipNormFunc(17);
 
