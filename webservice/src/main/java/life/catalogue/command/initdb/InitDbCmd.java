@@ -125,6 +125,7 @@ public class InitDbCmd extends AbstractPromptCmd {
       // add col dataset and partitions
       try (SqlSession session = factory.openSession()) {
         setupColPartition(session);
+        session.getMapper(DatasetPartitionMapper.class).createManagedSequences(Datasets.DRAFT_COL);
       }
     
       try (Connection con = cfg.db.connect()) {
@@ -228,7 +229,6 @@ public class InitDbCmd extends AbstractPromptCmd {
     pm.create(Datasets.DRAFT_COL);
     pm.buildIndices(Datasets.DRAFT_COL);
     pm.attach(Datasets.DRAFT_COL);
-    pm.createManagedSequences(Datasets.DRAFT_COL);
     session.commit();
   }
   
