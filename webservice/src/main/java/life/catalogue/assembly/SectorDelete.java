@@ -4,7 +4,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.ImportState;
-import life.catalogue.dao.NamesTreeDao;
+import life.catalogue.dao.FileMetricsSectorDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
@@ -26,13 +26,13 @@ import java.util.function.Consumer;
 public class SectorDelete extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorDelete.class);
   private Rank cutoffRank = Rank.SPECIES;
-  private final NamesTreeDao treeDao;
+  private final FileMetricsSectorDao fmDao;
 
-  public SectorDelete(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, NamesTreeDao treeDao,
+  public SectorDelete(DSID<Integer> sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, FileMetricsSectorDao fmDao,
                       Consumer<SectorRunnable> successCallback,
                       BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     super(sectorKey, false, factory, indexService, successCallback, errorCallback, user);
-    this.treeDao = treeDao;
+    this.fmDao = fmDao;
   }
   
   @Override
@@ -48,7 +48,7 @@ public class SectorDelete extends SectorRunnable {
   }
 
   
-  private void deleteSector(int sectorKey) {
+  private void deleteSector(DSID<Integer> sectorKey) {
     try (SqlSession session = factory.openSession(false)) {
       Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
       if (s == null) {
@@ -57,21 +57,21 @@ public class SectorDelete extends SectorRunnable {
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
       NameMapper nm = session.getMapper(NameMapper.class);
       // cascading delete removes vernacular, distributions, descriptions, media
-      List<String> ids = um.deleteBySectorAndRank(catalogueKey, sectorKey, Rank.SUBGENUS);
+      List<String> ids = um.deleteBySectorAndRank(sectorKey, Rank.SUBGENUS);
       int delTaxa = ids.size();
       // now also remove the names
-      final DSID<String> key = DSID.of(catalogueKey, "");
+      final DSID<String> key = DSID.of(sectorKey.getDatasetKey(), "");
       ids.forEach(nid -> nm.delete(key.id(nid)));
       session.commit();
       // TODO: remove refs and name rels
-      LOG.info("Deleted {} taxa and synonyms below genus level from sector {} of dataset {}", delTaxa, sectorKey, catalogueKey);
+      LOG.info("Deleted {} taxa and synonyms below genus level from sector {}", delTaxa, sectorKey);
 
       // remove sector from usages, names, refs & type_material
-      int count = um.removeSectorKey(catalogueKey, sectorKey);
-      session.getMapper(NameMapper.class).removeSectorKey(catalogueKey, sectorKey);
-      session.getMapper(ReferenceMapper.class).removeSectorKey(catalogueKey, sectorKey);
-      session.getMapper(TypeMaterialMapper.class).removeSectorKey(catalogueKey, sectorKey);
-      LOG.info("Mark {} existing taxa with their synonyms and related information to not belong to sector {} of dataset {} anymore", count, sectorKey, catalogueKey);
+      int count = um.removeSectorKey(sectorKey);
+      session.getMapper(NameMapper.class).removeSectorKey(sectorKey);
+      session.getMapper(ReferenceMapper.class).removeSectorKey(sectorKey);
+      session.getMapper(TypeMaterialMapper.class).removeSectorKey(sectorKey);
+      LOG.info("Mark {} existing taxa with their synonyms and related information to not belong to sector {} anymore", count, sectorKey);
 
       // update datasetSectors counts
       SectorDao.incSectorCounts(session, s, -1);
@@ -81,7 +81,7 @@ public class SectorDelete extends SectorRunnable {
       session.commit();
       // remove metric files
       try {
-        treeDao.deleteAll(NamesTreeDao.Context.SECTOR, sectorKey);
+        fmDao.deleteAll(sectorKey);
       } catch (IOException e) {
         LOG.error("Failed to delete metrics files for sector {}", sectorKey, e);
       }

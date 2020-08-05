@@ -6,6 +6,7 @@ import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer;
 import de.javakaffee.kryoserializers.guava.ImmutableListSerializer;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.*;
+import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.date.FuzzyDate;
@@ -70,6 +71,10 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(TypeMaterial.class);
     kryo.register(VerbatimRecord.class);
     kryo.register(VernacularName.class);
+
+    // search
+    kryo.register(NameUsageWrapper.class);
+    kryo.register(SimpleDecision.class);
 
     // CSL classes & enums
     kryo.register(CslData.class);

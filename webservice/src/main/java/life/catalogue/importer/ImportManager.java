@@ -310,7 +310,7 @@ public class ImportManager implements Managed {
 
     // is a sector from this dataset currently being synced?
     if (assemblyCoordinator != null) {
-      Integer sectorKey = assemblyCoordinator.hasSyncingSector(req.datasetKey);
+      DSID<Integer> sectorKey = assemblyCoordinator.hasSyncingSector(req.datasetKey);
       if (sectorKey != null) {
         LOG.warn("Dataset {} used in running sync of sector {}", req.datasetKey, sectorKey);
         throw new IllegalArgumentException("Dataset used in running sync of sector " + sectorKey);

@@ -6,6 +6,7 @@ import com.esotericsoftware.kryo.io.Output;
 import com.google.common.collect.Lists;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
+import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.Issue;
 import org.gbif.dwc.terms.*;
 import org.junit.Test;
@@ -58,6 +59,18 @@ public class ApiKryoPoolTest {
 
     Synonym s = TestEntityGenerator.newSynonym(t);
     assertSerde(s);
+  }
+
+  @Test
+  public void testUsageWrappers() throws Exception {
+    NameUsageWrapper nuw = TestEntityGenerator.newNameUsageSynonymWrapper();
+    assertSerde(nuw);
+
+    nuw = TestEntityGenerator.newNameUsageTaxonWrapper();
+    assertSerde(nuw);
+
+    nuw = TestEntityGenerator.newNameUsageBareNameWrapper();
+    assertSerde(nuw);
   }
 
   @Test

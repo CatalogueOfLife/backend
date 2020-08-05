@@ -55,6 +55,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
   public static SectorImport create(ImportState state, Sector s) {
     SectorImport d = new SectorImport();
     d.setJob("SectorImportTest");
+    d.setDatasetKey(s.getDatasetKey());
     d.setSectorKey(s.getId());
     d.setCreatedBy(Users.TESTER);
     d.setAttempt(attempts++);
@@ -84,7 +85,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     commit();
     assertEquals(1, d1.getAttempt());
   
-    SectorImport d2 = mapper().get(d1.getSectorKey(), d1.getAttempt());
+    SectorImport d2 = mapper().get(d1.getSectorDSID(), d1.getAttempt());
     assertEquals(d1, d2);
   }
   

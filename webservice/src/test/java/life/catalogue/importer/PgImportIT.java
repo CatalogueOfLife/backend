@@ -77,7 +77,7 @@ public class PgImportIT {
     dataset.setModifiedBy(TestDataRule.TEST_USER.getKey());
 
     if (fullInit) {
-      InitDbCmd.setupStandardPartitions(testDataRule.getSqlSession());
+      InitDbCmd.setupColPartition(testDataRule.getSqlSession());
       testDataRule.commit();
     }
   

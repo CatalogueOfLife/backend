@@ -3,11 +3,13 @@ package life.catalogue.db;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.zaxxer.hikari.pool.HikariProxyConnection;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.tax.SciNameNormalizer;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.postgres.PgCopyUtils;
@@ -160,9 +162,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   @Override
   protected void before() throws Throwable {
     LOG.info("Loading {} test data", testData);
-    super.before();
     initSession();
-    truncate();
     // create required partitions to load data
     partition();
     loadData(false);
@@ -174,8 +174,20 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   @Override
   protected void after() {
-    super.after();
     session.close();
+
+    try (SqlSession session = sqlSessionFactorySupplier.get().openSession(false)) {
+      LOG.info("remove managed sequences not bound to a table");
+      DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
+      for (Dataset d : session.getMapper(DatasetMapper.class).process(null)) {
+        LOG.debug("Remove managed sequences for dataset {}", d.getKey());
+        pm.deleteManagedSequences(d.getKey());
+      }
+      truncate(session);
+      session.commit();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -191,26 +203,27 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   public void partition() {
     for (Integer dk : testData.datasetKeys) {
-      PgSetupRule.partition(dk);
+      MybatisTestUtils.partition(session, dk);
     }
   }
 
   public void updateSequences() throws Exception {
+    DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
+    for (int dk : testData.datasetKeys) {
+      pm.createManagedSequences(dk);
+    }
     if (testData.key != null) {
-      try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-        DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
-        pm.updateIdSequences(testData.key);
-        // names index keys
-        try (java.sql.Statement st = session.getConnection().createStatement()) {
-          st.execute("ALTER SEQUENCE names_index_id_seq RESTART WITH 1");
-        }
-        session.commit();
+      pm.updateIdSequences(testData.key);
+      // names index keys
+      try (java.sql.Statement st = session.getConnection().createStatement()) {
+        st.execute("ALTER SEQUENCE names_index_id_seq RESTART WITH 1");
       }
     }
+    session.commit();
   }
 
-  private void truncate() throws SQLException {
-    System.out.println("Truncate tables");
+  private void truncate(SqlSession session) throws SQLException {
+    LOG.info("Truncate global tables");
     try (java.sql.Statement st = session.getConnection().createStatement()) {
       st.execute("TRUNCATE \"user\" CASCADE");
       st.execute("TRUNCATE dataset CASCADE");
@@ -223,7 +236,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   }
 
   public void truncateDraft() throws SQLException {
-    System.out.println("Truncate draft partition tables");
+    LOG.info("Truncate draft partition tables");
     try (java.sql.Statement st = session.getConnection().createStatement()) {
       st.execute("TRUNCATE sector CASCADE");
       for (String table : new String[]{"name", "name_usage"}) {
@@ -257,7 +270,6 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
       } else {
         try (Connection c = sqlSessionFactorySupplier.get().openSession(false).getConnection()) {
-          String resData = "/test-data/" + testData.name().toLowerCase();
           PgConnection pgc;
           if (c instanceof HikariProxyConnection) {
             HikariProxyConnection hpc = (HikariProxyConnection) c;

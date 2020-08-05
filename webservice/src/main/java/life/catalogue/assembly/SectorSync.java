@@ -4,7 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.EstimateDao;
-import life.catalogue.dao.NamesTreeDao;
+import life.catalogue.dao.FileMetricsSectorDao;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.match.EstimateRematcher;
@@ -33,13 +33,13 @@ import static life.catalogue.dao.DatasetImportDao.countMap;
  */
 public class SectorSync extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorSync.class);
-  private NamesTreeDao treeDao;
+  private final FileMetricsSectorDao fmDao;
 
-  public SectorSync(int sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao,
+  public SectorSync(DSID<Integer> sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, FileMetricsSectorDao fmDao,
                     Consumer<SectorRunnable> successCallback,
                     BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     super(sectorKey, true, factory, indexService, successCallback, errorCallback, user);
-    treeDao = diDao.getTreeDao();
+    this.fmDao = fmDao;
   }
   
   @Override
@@ -54,12 +54,12 @@ public class SectorSync extends SectorRunnable {
     // also load all sector subject to auto block them
     try (SqlSession session = factory.openSession()) {
       AtomicInteger counter = new AtomicInteger();
-      session.getMapper(SectorMapper.class).processSectors(catalogueKey, datasetKey).forEach(s -> {
-        if (!s.getId().equals(sectorKey) && s.getSubject().getId() != null) {
+      session.getMapper(SectorMapper.class).processSectors(sectorKey.getDatasetKey(), subjectDatasetKey).forEach(s -> {
+        if (!s.getId().equals(sectorKey.getId()) && s.getSubject().getId() != null) {
           EditorialDecision d = new EditorialDecision();
           d.setSubject(s.getSubject());
-          d.setDatasetKey(catalogueKey);
-          d.setSubjectDatasetKey(datasetKey);
+          d.setDatasetKey(sectorKey.getDatasetKey());
+          d.setSubjectDatasetKey(subjectDatasetKey);
           d.setMode(EditorialDecision.Mode.BLOCK);
           d.setNote("Auto blocked subject of sector " + s.getId());
           decisions.put(s.getSubject().getId(), d);
@@ -75,34 +75,34 @@ public class SectorSync extends SectorRunnable {
       // generate import metrics
       SectorImportMapper mapper = session.getMapper(SectorImportMapper.class);
       final int key = sector.getId();
-      state.setDistributionCount(mapper.countDistribution(catalogueKey, key));
-      state.setMediaCount(mapper.countMedia(catalogueKey, key));
-      state.setNameCount(mapper.countName(catalogueKey, key));
-      state.setReferenceCount(mapper.countReference(catalogueKey, key));
-      state.setTaxonCount(mapper.countTaxon(catalogueKey, key));
-      state.setSynonymCount(mapper.countSynonym(catalogueKey, key));
-      state.setVernacularCount(mapper.countVernacular(catalogueKey, key));
-      state.setTreatmentCount(mapper.countTreatment(catalogueKey, key));
-      state.setIssuesCount(countMap(Issue.class, mapper.countIssues(catalogueKey, key)));
+      state.setDistributionCount(mapper.countDistribution(sectorKey.getDatasetKey(), key));
+      state.setMediaCount(mapper.countMedia(sectorKey.getDatasetKey(), key));
+      state.setNameCount(mapper.countName(sectorKey.getDatasetKey(), key));
+      state.setReferenceCount(mapper.countReference(sectorKey.getDatasetKey(), key));
+      state.setTaxonCount(mapper.countTaxon(sectorKey.getDatasetKey(), key));
+      state.setSynonymCount(mapper.countSynonym(sectorKey.getDatasetKey(), key));
+      state.setVernacularCount(mapper.countVernacular(sectorKey.getDatasetKey(), key));
+      state.setTreatmentCount(mapper.countTreatment(sectorKey.getDatasetKey(), key));
+      state.setIssuesCount(countMap(Issue.class, mapper.countIssues(sectorKey.getDatasetKey(), key)));
   
-      state.setDistributionsByGazetteerCount(countMap(Gazetteer.class, mapper.countDistributionsByGazetteer(catalogueKey, key)));
-      state.setIssuesCount(countMap(Issue.class, mapper.countIssues(catalogueKey, key)));
-      state.setMediaByTypeCount(countMap(MediaType.class, mapper.countMediaByType(catalogueKey, key)));
-      state.setNameRelationsByTypeCount(countMap(NomRelType.class, mapper.countNameRelationsByType(catalogueKey, key)));
-      state.setNamesByOriginCount(countMap(Origin.class, mapper.countNamesByOrigin(catalogueKey, key)));
-      state.setNamesByRankCount(countMap(DatasetImportDao::parseRank, mapper.countNamesByRank(catalogueKey, key)));
-      state.setNamesByStatusCount(countMap(NomStatus.class, mapper.countNamesByStatus(catalogueKey, key)));
-      state.setNamesByTypeCount(countMap(NameType.class, mapper.countNamesByType(catalogueKey, key)));
-      state.setTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(catalogueKey, key)));
-      state.setTaxonRelationsByTypeCount(countMap(TaxRelType.class, mapper.countTaxonRelationsByType(catalogueKey, key)));
-      state.setUsagesByStatusCount(countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(catalogueKey, key)));
-      state.setVernacularsByLanguageCount(countMap(mapper.countVernacularsByLanguage(catalogueKey, key)));
+      state.setDistributionsByGazetteerCount(countMap(Gazetteer.class, mapper.countDistributionsByGazetteer(sectorKey.getDatasetKey(), key)));
+      state.setIssuesCount(countMap(Issue.class, mapper.countIssues(sectorKey.getDatasetKey(), key)));
+      state.setMediaByTypeCount(countMap(MediaType.class, mapper.countMediaByType(sectorKey.getDatasetKey(), key)));
+      state.setNameRelationsByTypeCount(countMap(NomRelType.class, mapper.countNameRelationsByType(sectorKey.getDatasetKey(), key)));
+      state.setNamesByOriginCount(countMap(Origin.class, mapper.countNamesByOrigin(sectorKey.getDatasetKey(), key)));
+      state.setNamesByRankCount(countMap(DatasetImportDao::parseRank, mapper.countNamesByRank(sectorKey.getDatasetKey(), key)));
+      state.setNamesByStatusCount(countMap(NomStatus.class, mapper.countNamesByStatus(sectorKey.getDatasetKey(), key)));
+      state.setNamesByTypeCount(countMap(NameType.class, mapper.countNamesByType(sectorKey.getDatasetKey(), key)));
+      state.setTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(sectorKey.getDatasetKey(), key)));
+      state.setTaxonRelationsByTypeCount(countMap(TaxRelType.class, mapper.countTaxonRelationsByType(sectorKey.getDatasetKey(), key)));
+      state.setUsagesByStatusCount(countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(sectorKey.getDatasetKey(), key)));
+      state.setVernacularsByLanguageCount(countMap(mapper.countVernacularsByLanguage(sectorKey.getDatasetKey(), key)));
 
       try {
-        treeDao.updateSectorTree(sector.getId(), state.getAttempt());
-        treeDao.updateSectorNames(sector.getId(), state.getAttempt());
+        fmDao.updateTree(sector, state.getAttempt());
+        fmDao.updateNames(sector, state.getAttempt());
       } catch (IOException e) {
-        LOG.error("Failed to print sector {} of catalogue {}", sector.getKey(), catalogueKey, e);
+        LOG.error("Failed to print sector {} of catalogue {}", sector.getKey(), sectorKey.getDatasetKey(), e);
       }
     }
   }
@@ -135,7 +135,7 @@ public class SectorSync extends SectorRunnable {
    * Rematch all broken estimates that fall into this sector
    */
   private void rematchEstimates() {
-    RematchRequest req = new RematchRequest(catalogueKey, true);
+    RematchRequest req = new RematchRequest(sectorKey.getDatasetKey(), true);
     EstimateRematcher.match(new EstimateDao(factory), req, user.getKey());
   }
 
@@ -147,10 +147,10 @@ public class SectorSync extends SectorRunnable {
     final String newParentID = sector.getTarget().getId();
     processForeignChildren((num, sn) -> {
         // remember original parent
-        NameUsage parent = num.get(DSID.of(catalogueKey, sn.getParent()));
+        NameUsage parent = num.get(DSID.of(sectorKey.getDatasetKey(), sn.getParent()));
         foreignChildrenParents.put(sn.getId(), parent.getName());
         // update to new parent
-        num.updateParentId(DSID.of(catalogueKey, sn.getId()), newParentID, user.getKey());
+        num.updateParentId(DSID.of(sectorKey.getDatasetKey(), sn.getId()), newParentID, user.getKey());
     });
   }
   
@@ -171,7 +171,7 @@ public class SectorSync extends SectorRunnable {
           if (matches.size() > 1) {
             LOG.warn("{} with parent {} in sector {} matches {} times - pick first {}", sn.getName(), parent, sector.getKey(), matches.size(), matches.get(0));
           }
-          num.updateParentId(DSID.of(catalogueKey, sn.getId()), matches.get(0).getId(), user.getKey());
+          num.updateParentId(DSID.of(sectorKey.getDatasetKey(), sn.getId()), matches.get(0).getId(), user.getKey());
         }
       });
     }
@@ -228,7 +228,7 @@ public class SectorSync extends SectorRunnable {
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
       LOG.info("{} taxon tree {} to {}. Blocking {} nodes", sector.getMode(), sector.getSubject(), sector.getTarget(), blockedIds.size());
       if (sector.getMode() == Sector.Mode.ATTACH) {
-        um.processTree(datasetKey, null, sector.getSubject().getId(), blockedIds, null, true,false)
+        um.processTree(subjectDatasetKey, null, sector.getSubject().getId(), blockedIds, null, true,false)
             .forEach(treeHandler);
 
       } else if (sector.getMode() == Sector.Mode.UNION) {
@@ -236,22 +236,22 @@ public class SectorSync extends SectorRunnable {
         // in UNION mode do not attach the subject itself, just its children
         // if we have a placeholder rank configured ignore children of that rank or higher
         // see https://github.com/CatalogueOfLife/clearinghouse-ui/issues/518
-        for (NameUsageBase child : um.children(DSID.of(datasetKey, sector.getSubject().getId()), sector.getPlaceholderRank())){
+        for (NameUsageBase child : um.children(DSID.of(subjectDatasetKey, sector.getSubject().getId()), sector.getPlaceholderRank())){
           if (blockedIds.contains(child.getId())) {
             LOG.info("Skip blocked child {}", child);
             continue;
           }
-
           if (child.isSynonym()) {
             LOG.info("Add synonym child {}", child);
             treeHandler.accept(child);
           } else {
             LOG.info("Traverse child {}", child);
-            um.processTree(datasetKey, null, child.getId(), blockedIds, null, true,false)
+            um.processTree(subjectDatasetKey, null, child.getId(), blockedIds, null, true,false)
                 .forEach(treeHandler);
           }
           treeHandler.reset();
         }
+
       } else {
         throw new NotImplementedException("Only attach and union sectors are implemented");
       }
@@ -262,16 +262,16 @@ public class SectorSync extends SectorRunnable {
     int count;
     try (SqlSession session = factory.openSession(true)) {
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
-      count = um.deleteBySector(catalogueKey, sector.getId());
-      LOG.info("Deleted {} existing taxa with their synonyms and related information from sector {}", count, sector.getKey());
+      count = um.deleteBySector(sector);
+      LOG.info("Deleted {} existing taxa with their synonyms and related information from sector {}", count, sector);
   
       NameMapper nm = session.getMapper(NameMapper.class);
-      count = nm.deleteBySector(catalogueKey, sector.getId());
-      LOG.info("Deleted {} names from sector {}", count, sector.getKey());
+      count = nm.deleteBySector(sector);
+      LOG.info("Deleted {} names from sector {}", count, sector);
   
       ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
-      count = rm.deleteBySector(catalogueKey, sector.getId());
-      LOG.info("Deleted {} references from sector {}", count, sector.getKey());
+      count = rm.deleteBySector(sector);
+      LOG.info("Deleted {} references from sector {}", count, sector);
     }
   }
   

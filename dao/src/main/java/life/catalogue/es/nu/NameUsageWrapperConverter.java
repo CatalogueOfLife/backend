@@ -213,6 +213,9 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
 
   /**
    * Converts a NameUsageWrapper to an Elasticsearch document. Main method of this class.
+   * Warning !!!
+   * This method modifies the original NameUsageWrapper instance and nullifies some values.
+   * Be sure to make a defensive copy if you don't want that!
    * 
    * @param nuw
    * @return

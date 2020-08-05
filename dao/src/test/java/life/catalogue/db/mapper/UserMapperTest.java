@@ -52,7 +52,7 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
     assertEquals(20, mapper().search("user", page).size());
     assertEquals(11, mapper().search("user1", page).size());
     assertEquals(2, mapper().search("user2", page).size());
-    assertEquals(27, mapper().search("", page).size());
+    assertEquals(26, mapper().search("", page).size());
   }
 
   @Test

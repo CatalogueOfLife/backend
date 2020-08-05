@@ -37,7 +37,7 @@ public class ReleaseManager {
   private final SqlSessionFactory factory;
   private final ImageService imageService;
 
-  private ProjectRunnable job;
+  private AbstractProjectCopy job;
 
   public ReleaseManager(DatasetImportDao diDao, NameUsageIndexService indexService, ImageService imageService, SqlSessionFactory factory) {
     this.diDao = diDao;
@@ -54,7 +54,7 @@ public class ReleaseManager {
     return execute(() -> duplicate(factory, indexService, diDao, datasetKey, user.getKey()));
   }
 
-  private Integer execute(Supplier<ProjectRunnable> jobSupplier) throws IllegalArgumentException {
+  private Integer execute(Supplier<AbstractProjectCopy> jobSupplier) throws IllegalArgumentException {
     if (job != null) {
       throw new IllegalArgumentException(job.getClass().getSimpleName() + " "+ job.getDatasetKey() + " to " + job.getNewDatasetKey() + " is already running");
     }

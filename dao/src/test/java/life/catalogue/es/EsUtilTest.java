@@ -1,6 +1,8 @@
 package life.catalogue.es;
 
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.DSIDValue;
 import life.catalogue.es.ddl.Analyzer;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
 import org.elasticsearch.client.RestClient;
@@ -91,17 +93,18 @@ public class EsUtilTest extends EsReadTestBase {
     refreshIndex(client, indexName());
     assertEquals(3, EsUtil.count(client, indexName()));
 
-    int i = EsUtil.deleteSector(client, indexName(), 1);
+    DSIDValue<Integer> secKey = DSID.of(doc.getDatasetKey(), 1);
+    int i = EsUtil.deleteSector(client, indexName(), secKey);
     assertEquals(2, i);
     refreshIndex(client, indexName());
     assertEquals(1, EsUtil.count(client, indexName()));
 
-    i = EsUtil.deleteSector(client, indexName(), 2);
+    i = EsUtil.deleteSector(client, indexName(), secKey.id(2));
     assertEquals(1, i);
     refreshIndex(client, indexName());
     assertEquals(0, EsUtil.count(client, indexName()));
 
-    i = EsUtil.deleteSector(client, indexName(), 3);
+    i = EsUtil.deleteSector(client, indexName(), secKey.id(3));
     assertEquals(0, i);
   }
 

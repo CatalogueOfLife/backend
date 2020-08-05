@@ -1,5 +1,6 @@
 package life.catalogue.release;
 
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.Sector;
@@ -49,13 +50,13 @@ public class ProjectDuplicationIT {
     .around(importRule);
 
   DatasetImportDao diDao;
-  NamesTreeDao treeDao;
+  FileMetricsSectorDao fmsDao;
   TaxonDao tdao;
 
   @Before
   public void init () throws IOException, SQLException {
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    treeDao = new NamesTreeDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
+    fmsDao = new FileMetricsSectorDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
     // reset draft
@@ -72,17 +73,17 @@ public class ProjectDuplicationIT {
     // prepare a sync
     NameUsageBase src = SectorSyncIT.getByName(datasetKey(1, DataFormat.ACEF), Rank.ORDER, "Fabales");
     NameUsageBase trg = SectorSyncIT.getByName(Datasets.DRAFT_COL, Rank.PHYLUM, "Tracheophyta");
-    int s1 = SectorSyncIT.createSector(Sector.Mode.ATTACH, src, trg);
+    DSID<Integer> s1 = SectorSyncIT.createSector(Sector.Mode.ATTACH, src, trg);
 
     src = SectorSyncIT.getByName(datasetKey(5, DataFormat.ACEF), Rank.CLASS, "Insecta");
     trg = SectorSyncIT.getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
-    int s2 = SectorSyncIT.createSector(Sector.Mode.UNION, src, trg);
+    DSID<Integer> s2 = SectorSyncIT.createSector(Sector.Mode.UNION, src, trg);
 
     src = SectorSyncIT.getByName(datasetKey(6, DataFormat.ACEF), Rank.FAMILY, "Theridiidae");
     trg = SectorSyncIT.getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
-    int s3 = SectorSyncIT.createSector(Sector.Mode.ATTACH, src, trg);
+    DSID<Integer> s3 = SectorSyncIT.createSector(Sector.Mode.ATTACH, src, trg);
 
-    SectorSyncIT.syncAll(diDao);
+    SectorSyncIT.syncAll(fmsDao);
 
     // test ProjectDuplication
     Dataset d;

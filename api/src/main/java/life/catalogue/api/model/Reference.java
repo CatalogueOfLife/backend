@@ -33,7 +33,7 @@ public class Reference extends DatasetScopedEntity<String> implements VerbatimEn
    * Any informal note about the reference.
    */
   private String remarks;
-  
+
   public Integer getSectorKey() {
     return sectorKey;
   }

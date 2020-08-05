@@ -106,7 +106,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
     Stats stats = new Stats();
     try (SqlSession session = factory.openSession()) {
-      deleteSector(s.getId());
+      deleteSector(s);
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
 
       try (BatchConsumer<NameUsageWrapper> handler = new BatchConsumer<>(indexer, BATCH_SIZE)) {
@@ -129,7 +129,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
 
   @Override
-  public void deleteSector(int sectorKey) {
+  public void deleteSector(DSID<Integer> sectorKey) {
     int cnt = EsUtil.deleteSector(client, esConfig.nameUsage.name, sectorKey);
     LOG.info("Deleted all {} documents from sector {} from index {}", cnt, sectorKey, esConfig.nameUsage.name);
     EsUtil.refreshIndex(client, esConfig.nameUsage.name);

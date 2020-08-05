@@ -1,5 +1,6 @@
 package life.catalogue.db.mapper;
 
+import life.catalogue.api.model.DSID;
 import life.catalogue.db.SectorProcessable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,6 +12,8 @@ import java.util.stream.Collectors;
 
 @RunWith(Parameterized.class)
 public class ProcessableSectorTest extends MapperTestBase<NameUsageMapper> {
+
+  DSID<Integer> secKey = DSID.of(3,1);
 
   final Class<? extends SectorProcessable<?>> mapperClass;
 
@@ -33,16 +36,17 @@ public class ProcessableSectorTest extends MapperTestBase<NameUsageMapper> {
 
   @Test
   public void deleteBySector() {
-    mapper(mapperClass).deleteBySector(3,1);
+    System.out.println(mapperClass);
+    mapper(mapperClass).deleteBySector(secKey);
   }
 
   @Test
   public void removeSectorKey() {
-    mapper(mapperClass).removeSectorKey(3,1);
+    mapper(mapperClass).removeSectorKey(secKey);
   }
 
   @Test
   public void processSector() {
-    mapper(mapperClass).processSector(3,1).forEach(System.out::println);
+    mapper(mapperClass).processSector(secKey).forEach(System.out::println);
   }
 }

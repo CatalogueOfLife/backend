@@ -6,6 +6,7 @@
 
   <sql id="SELECT">
     si.state,
+    si.dataset_key,
     si.sector_key,
     si.attempt,
     si.warnings,
@@ -16,6 +17,7 @@
 
   <sql id="COLS">
     state,
+    dataset_key,
     sector_key,
     warnings,
     <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsCols">
@@ -25,6 +27,7 @@
 
   <sql id="PROPS">
     #{imp.state}::IMPORTSTATE,
+    #{imp.datasetKey},
     #{imp.sectorKey},
     #{imp.warnings, typeHandler=life.catalogue.db.type2.StringCollectionArrayTypeHandler},
     <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsProps"/>
@@ -71,7 +74,7 @@
     SELECT
     <include refid="SELECT"/>
     FROM sector_import si
-    WHERE sector_key=#{sectorKey} AND attempt=#{attempt}
+    WHERE dataset_key=#{key.datasetKey} AND sector_key=#{key.id} AND attempt=#{attempt}
   </select>
 
   <select id="count" resultType="integer">
@@ -101,12 +104,12 @@
   <update id="update" parameterType="SectorImport">
     UPDATE sector_import
     SET (<include refid="COLS"/>) = (<include refid="PROPS"/>)
-    WHERE sector_key=#{imp.sectorKey} AND attempt=#{imp.attempt}
+    WHERE dataset_key=#{imp.datasetKey} AND sector_key=#{imp.sectorKey} AND attempt=#{imp.attempt}
   </update>
 
   <delete id="delete" parameterType="map">
     DELETE FROM sector_import
-    WHERE sector_key=#{key}
+    WHERE sector_key=#{key.id} AND dataset_key=#{key.datasetKey}
   </delete>
 
   <delete id="deleteByDataset" parameterType="map">

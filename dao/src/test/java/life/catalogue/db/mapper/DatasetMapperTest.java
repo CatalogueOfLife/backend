@@ -12,10 +12,7 @@ import org.junit.Test;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
@@ -471,6 +468,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     Dataset cat = TestEntityGenerator.newDataset("cat2");
     TestEntityGenerator.setUser(cat);
     mapper(DatasetMapper.class).create(cat);
+    mapper(DatasetPartitionMapper.class).createManagedSequences(cat.getKey());
     // new sectors
     createSector(cat.getKey(), d1);
     createSector(cat.getKey(), d5);
@@ -527,6 +525,8 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     ds.setType(DatasetType.TAXONOMIC);
     ds.setOrigin(DatasetOrigin.MANAGED);
     mapper().create(TestEntityGenerator.setUserDate(ds));
+
+    mapper(DatasetPartitionMapper.class).createManagedSequences(ds.getKey());
     return ds.getKey();
   }
   

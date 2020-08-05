@@ -1,17 +1,13 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.Sector;
-import life.catalogue.api.model.TreeNode;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.SectorSearchRequest;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.db.MybatisTestUtils;
-import life.catalogue.db.mapper.SectorMapperTest;
-import life.catalogue.db.mapper.TaxonMapper;
-import life.catalogue.db.mapper.TreeMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
@@ -21,6 +17,8 @@ import static org.junit.Assert.assertEquals;
 
 public class SectorDaoTest extends DaoTestBase {
   static int user = TestEntityGenerator.USER_EDITOR.getKey();
+
+  final int subjectDatasetKey = TestEntityGenerator.DATASET11.getKey();
 
   SectorDao dao;
 
@@ -90,6 +88,36 @@ public class SectorDaoTest extends DaoTestBase {
     SectorSearchRequest req = new SectorSearchRequest();
     req.setWithoutData(true);
     dao.search(req, new Page()).size();
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void failNotManaged() {
+    Dataset d = TestEntityGenerator.newDataset("grr");
+    try (SqlSession session = factory().openSession(true)) {
+      // create a dataset which is not managed
+      d.setOrigin(DatasetOrigin.EXTERNAL);
+      d.applyUser(Users.TESTER);
+      session.getMapper(DatasetMapper.class).create(d);
+    }
+
+    Sector s = new Sector();
+    s.setDatasetKey(d.getKey());
+    s.setTarget(TestEntityGenerator.newSimpleName("x"));
+    s.setSubjectDatasetKey(subjectDatasetKey);
+    s.setSubject(TestEntityGenerator.newSimpleName("root-1"));
+    // this should fail with IAE!
+    dao.create(s, Users.TESTER);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void failBadTarget() {
+    Sector s = new Sector();
+    s.setDatasetKey(Datasets.DRAFT_COL);
+    s.setTarget(TestEntityGenerator.newSimpleName("x"));
+    s.setSubjectDatasetKey(subjectDatasetKey);
+    s.setSubject(TestEntityGenerator.newSimpleName("x"));
+    // this should fail with IAE!
+    dao.create(s, Users.TESTER);
   }
 
   @Test(expected = UnsupportedOperationException.class)

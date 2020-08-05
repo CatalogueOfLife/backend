@@ -22,8 +22,7 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
   /**
    * List all sectors which have a targetID within the given sector.
    */
-  List<Sector> listChildSectors(@Param("datasetKey") int datasetKey,
-                                @Param("key") int sectorKey);
+  List<Sector> listChildSectors(@Param("key") DSID<Integer> sectorKey);
 
   /**
    * List all sector keys which have a targetID within the given subtree starting with ad including the given key.
@@ -46,9 +45,9 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
   /**
    * Updates the last sync attempt column of the given sector
    * and the dataset_import_attempt column using the current last attempt from the source dataset.
-   * @param key
+   * @param key sector key to update
    * @param attempt
    */
-  int updateLastSync(@Param("key") int key, @Param("attempt") int attempt);
+  int updateLastSync(@Param("key") DSID<Integer> key, @Param("attempt") int attempt);
 
 }

@@ -1,13 +1,13 @@
 package life.catalogue.db;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 @RunWith(Parameterized.class)
 public class TestDataRuleTest {
@@ -34,5 +34,10 @@ public class TestDataRuleTest {
   @Test
   public void insertData() {
     System.out.println("rule has run fine");
+  }
+
+  @Test
+  public void insertDataAgain() {
+    System.out.println("rule has run fine before the 2nd test");
   }
 }

@@ -1,13 +1,13 @@
 package life.catalogue.dao;
 
-import java.util.Map;
-
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.model.DatasetScoped;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 
@@ -46,6 +46,19 @@ public class Partitioner {
       // then create
       mapper.create(datasetKey);
       session.commit();
+    }
+  }
+
+  /**
+   * Creates dataset specific sequences for the global non partitioned tables like sector.
+   * @param factory
+   * @param datasetKey
+   */
+  public static void createManagedSequences(SqlSessionFactory factory, int datasetKey) {
+    interruptIfCancelled();
+    LOG.info("Create global sequences for managed dataset {}", datasetKey);
+    try (SqlSession session = factory.openSession(true)) {
+      session.getMapper(DatasetPartitionMapper.class).createManagedSequences(datasetKey);
     }
   }
   

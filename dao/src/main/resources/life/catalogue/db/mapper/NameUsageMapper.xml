@@ -210,8 +210,8 @@
 
   <insert id="copyDataset" parameterType="map">
     INSERT INTO name_usage_${newDatasetKey} (id, dataset_key, sector_key, <include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
-    SELECT u.id, #{newDatasetKey}, s.id, <include refid="COLS_COPY"><property name="alias" value="u."/></include>, u.created, u.modified
-    FROM name_usage_${datasetKey} u LEFT JOIN sector s ON s.copied_from_id=u.sector_key AND s.dataset_key=#{newDatasetKey}
+    SELECT u.id, #{newDatasetKey}, u.sector_key, <include refid="COLS_COPY"><property name="alias" value="u."/></include>, u.created, u.modified
+    FROM name_usage_${datasetKey} u
   </insert>
 
   <select id="processDataset" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
@@ -229,29 +229,29 @@
   </select>
 
   <select id="processSector" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE u.sector_key = #{sectorKey}
+    WHERE u.sector_key = #{key.id}
   </select>
 
   <delete id="deleteBySector" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    DELETE FROM name_usage_${partition} WHERE sector_key = #{sectorKey}
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    DELETE FROM name_usage_${partition} WHERE sector_key = #{key.id}
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
     UPDATE name_usage_${partition} SET sector_key = NULL
-    WHERE sector_key = #{sectorKey}
+    WHERE sector_key = #{key.id}
   </update>
 
   <select id="deleteBySectorAndRank" parameterType="map" resultType="String">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
     DELETE FROM name_usage_${partition} u
     USING name_${partition} n
     WHERE u.name_id=n.id
-      AND u.sector_key = #{sectorKey}
+      AND u.sector_key = #{key.id}
       AND n.rank >= #{rank}::rank
     RETURNING u.name_id
   </select>
@@ -338,11 +338,11 @@
   </select>
 
   <select id="foreignChildren" resultMap="simpleResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT_SIMPLE"/>
     FROM <include refid="FROM_SIMPLE"/> JOIN name_usage_${partition} p ON p.id=u.parent_id
-    WHERE p.sector_key=#{sectorKey}
-    AND (u.sector_key IS NULL OR u.sector_key!=#{sectorKey})
+    WHERE p.sector_key=#{key.id}
+    AND (u.sector_key IS NULL OR u.sector_key!=#{key.id})
   </select>
 
   <select id="processTreeSimple" parameterType="map" resultMap="simpleResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">

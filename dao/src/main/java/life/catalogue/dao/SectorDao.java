@@ -3,7 +3,7 @@ package life.catalogue.dao;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SectorSearchRequest;
-import life.catalogue.api.vocab.EntityType;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.es.NameUsageIndexService;
@@ -13,13 +13,14 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorDao.class);
-  private static final Set<EntityType> DEFAULT_ENTITIES = Set.of(EntityType.VERNACULAR, EntityType.DISTRIBUTION, EntityType.REFERENCE);
   private final NameUsageIndexService indexService;
 
   public SectorDao(SqlSessionFactory factory, NameUsageIndexService indexService) {
@@ -48,7 +49,15 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     s.applyUser(user);
     try (SqlSession session = factory.openSession(ExecutorType.SIMPLE, false)) {
       SectorMapper mapper = session.getMapper(SectorMapper.class);
-  
+
+      // make sure we have a managed dataset - otherwise sectors cannot be created and we lack a id sequence to generate a key!
+      DatasetOrigin origin = DatasetInfoCache.CACHE.origin(s.getDatasetKey());
+      if (origin == null) {
+        throw new IllegalArgumentException("dataset " + s.getDatasetKey() + " does not exist");
+      } else if (origin != DatasetOrigin.MANAGED) {
+        throw new IllegalArgumentException("dataset " + s.getDatasetKey() + " is not managed but of origin " + origin);
+      }
+
       final DSID<String> did = s.getTargetAsDSID();
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
 

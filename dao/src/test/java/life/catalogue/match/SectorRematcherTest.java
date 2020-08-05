@@ -1,5 +1,6 @@
 package life.catalogue.match;
 
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.Datasets;
@@ -39,11 +40,11 @@ public class SectorRematcherTest {
     MybatisTestUtils.populateDraftTree(importRule.getSqlSession());
     final int datasetKey = 11;
 
-    int s1 = createSector(Sector.Mode.ATTACH, datasetKey,
+    DSID<Integer> s1 = createSector(Sector.Mode.ATTACH, datasetKey,
       new SimpleName(null, "Malus sylvestris", Rank.SPECIES),
       new SimpleName(null, "Coleoptera", Rank.ORDER)
     );
-    int s2 = createSector(Sector.Mode.UNION, datasetKey,
+    DSID<Integer> s2 = createSector(Sector.Mode.UNION, datasetKey,
       new SimpleName(null, "Larus fuscus", Rank.SPECIES),
       new SimpleName(null, "Lepidoptera", Rank.ORDER)
     );
@@ -84,7 +85,7 @@ public class SectorRematcherTest {
     }
   }
 
-  static int createSector(Sector.Mode mode, int datasetKey, SimpleName src, SimpleName target) {
+  static DSID<Integer> createSector(Sector.Mode mode, int datasetKey, SimpleName src, SimpleName target) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       Sector sector = new Sector();
       sector.setMode(mode);
@@ -94,7 +95,7 @@ public class SectorRematcherTest {
       sector.setTarget(target);
       sector.applyUser(TestDataRule.TEST_USER);
       session.getMapper(SectorMapper.class).create(sector);
-      return sector.getId();
+      return sector;
     }
   }
 

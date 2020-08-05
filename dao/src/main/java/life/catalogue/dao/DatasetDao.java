@@ -128,6 +128,10 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     // delete data partitions
     Partitioner.delete(session, key);
     session.commit();
+    // drop managed id sequences
+    if (DatasetInfoCache.CACHE.origin(key) == DatasetOrigin.MANAGED) {
+      session.getMapper(DatasetPartitionMapper.class).deleteManagedSequences(key);
+    }
     // now also clear filesystem
     diDao.removeMetrics(key);
   }
@@ -136,10 +140,10 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   protected void deleteAfter(Integer key, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
     // clear search index asnychroneously
     CompletableFuture.supplyAsync(() -> indexService.deleteDataset(key))
-            .exceptionally(e -> {
-              LOG.error("Failed to delete ES docs for dataset {}", key, e.getCause());
-              return 0;
-            });
+      .exceptionally(e -> {
+        LOG.error("Failed to delete ES docs for dataset {}", key, e.getCause());
+        return 0;
+      });
     // notify event bus
     bus.post(DatasetChanged.delete(key));
   }
@@ -149,6 +153,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     pullLogo(obj);
     if (obj.getOrigin() == DatasetOrigin.MANAGED) {
       recreatePartition(obj.getKey());
+      Partitioner.createManagedSequences(factory, obj.getKey());
     }
     bus.post(DatasetChanged.change(obj));
     session.commit();
@@ -172,6 +177,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     Partitioner.partition(factory, datasetKey);
     Partitioner.indexAndAttach(factory, datasetKey);
   }
+
   private void pullLogo(Dataset d) {
     LogoUpdateJob.updateDatasetAsync(d, factory, downloader, scratchFileFunc, imgService);
   }

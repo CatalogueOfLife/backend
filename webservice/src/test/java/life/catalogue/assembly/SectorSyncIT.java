@@ -65,13 +65,13 @@ public class SectorSyncIT {
       .around(importRule);
 
   DatasetImportDao diDao;
-  NamesTreeDao treeDao;
+  FileMetricsSectorDao fmsDao;
   TaxonDao tdao;
   
   @Before
   public void init () throws IOException, SQLException {
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    treeDao = new NamesTreeDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
+    fmsDao = new FileMetricsSectorDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     // reset draft
     dataRule.truncateDraft();
     dataRule.loadData(true);
@@ -115,11 +115,11 @@ public class SectorSyncIT {
     return new SimpleName(nu.getId(), nu.getName().getLabel(), nu.getName().getRank());
   }
   
-  public static int createSector(Sector.Mode mode, NameUsageBase src, NameUsageBase target) {
+  public static DSID<Integer> createSector(Sector.Mode mode, NameUsageBase src, NameUsageBase target) {
     return createSector(mode, src.getDatasetKey(), simple(src), simple(target));
   }
 
-  public static int createSector(Sector.Mode mode, int datasetKey, SimpleName src, SimpleName target) {
+  public static DSID<Integer> createSector(Sector.Mode mode, int datasetKey, SimpleName src, SimpleName target) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       Sector sector = new Sector();
       sector.setMode(mode);
@@ -130,7 +130,7 @@ public class SectorSyncIT {
       sector.setEntities(Set.of(EntityType.VERNACULAR, EntityType.DISTRIBUTION, EntityType.REFERENCE));
       sector.applyUser(TestDataRule.TEST_USER);
       session.getMapper(SectorMapper.class).create(sector);
-      return sector.getId();
+      return sector;
     }
   }
 
@@ -149,37 +149,37 @@ public class SectorSyncIT {
   }
 
   public void syncAll() {
-    syncAll(diDao);
+    syncAll(fmsDao);
   }
 
-  public static void syncAll(DatasetImportDao diDao) {
+  public static void syncAll(FileMetricsSectorDao fmsDao) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       for (Sector s : session.getMapper(SectorMapper.class).list(Datasets.DRAFT_COL, null)) {
-        sync(s, diDao);
+        sync(s, fmsDao);
       }
     }
   }
 
   void sync(Sector s) {
-    sync(s, diDao);
+    sync(s, fmsDao);
   }
 
-  static void sync(Sector s, DatasetImportDao diDao) {
-    SectorSync ss = new SectorSync(s.getId(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao,
+  static void sync(Sector s, FileMetricsSectorDao fmsDao) {
+    SectorSync ss = new SectorSync(s, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), fmsDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     System.out.println("\n*** SECTOR SYNC " + s.getKey() + " ***");
     ss.run();
   }
   
   private void deleteFull(Sector s) {
-    SectorDeleteFull sd = new SectorDeleteFull(s.getId(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(),
+    SectorDeleteFull sd = new SectorDeleteFull(s, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(),
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     System.out.println("\n*** SECTOR FULL DELETION " + s.getKey() + " ***");
     sd.run();
   }
 
   private void delete(Sector s) {
-    SectorDelete sd = new SectorDelete(s.getId(), PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), treeDao,
+    SectorDelete sd = new SectorDelete(s, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), fmsDao,
       SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     System.out.println("\n*** SECTOR DELETION " + s.getKey() + " ***");
     sd.run();
@@ -221,21 +221,21 @@ public class SectorSyncIT {
   
     NameUsageBase src = getByName(datasetKey(1, DataFormat.ACEF), Rank.ORDER, "Fabales");
     NameUsageBase trg = getByName(Datasets.DRAFT_COL, Rank.PHYLUM, "Tracheophyta");
-    int s1 = createSector(Sector.Mode.ATTACH, src, trg);
+    DSID<Integer> s1 = DSID.copy(createSector(Sector.Mode.ATTACH, src, trg));
   
     src = getByName(datasetKey(5, DataFormat.ACEF), Rank.CLASS, "Insecta");
     trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
-    int s2 = createSector(Sector.Mode.UNION, src, trg);
+    createSector(Sector.Mode.UNION, src, trg);
   
     src = getByName(datasetKey(6, DataFormat.ACEF), Rank.FAMILY, "Theridiidae");
     trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
-    int s3 = createSector(Sector.Mode.ATTACH, src, trg);
+    createSector(Sector.Mode.ATTACH, src, trg);
 
     syncAll();
     assertTree("cat1_5_6.txt");
   
     Taxon vogelii = (Taxon) getByName(Datasets.DRAFT_COL, Rank.SUBSPECIES, "Astragalus vogelii subsp. vogelii");
-    assertEquals(s1, (int) vogelii.getSectorKey());
+    assertEquals(s1, vogelii.getSectorDSID());
     assertHasVerbatimName(vogelii);
 
     Taxon sp = (Taxon) getByID(vogelii.getParentId());
@@ -313,13 +313,13 @@ public class SectorSyncIT {
     
     NameUsageBase src = getByName(datasetKey(6, DataFormat.ACEF), Rank.FAMILY, "Theridiidae");
     NameUsageBase trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
-    final int s1 = createSector(Sector.Mode.ATTACH, src, trg);
+    final DSID<Integer> s1 = createSector(Sector.Mode.ATTACH, src, trg);
     
     src = getByName(datasetKey(11, DataFormat.ACEF), Rank.GENUS, "Dectus");
     // target without id so far
-    final int s2 = createSector(Sector.Mode.ATTACH, src.getDatasetKey(), simple(src),
+    final DSID<Integer> s2 = DSID.copy(createSector(Sector.Mode.ATTACH, src.getDatasetKey(), simple(src),
         new SimpleName(null, "Theridiidae", Rank.FAMILY)
-    );
+    ));
   
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
@@ -337,7 +337,7 @@ public class SectorSyncIT {
 
       NameUsageBase u = getByName(Datasets.DRAFT_COL, Rank.SPECIES, "Dectus mascha");
       assertNotNull(u);
-      assertEquals((int)u.getSectorKey(), s2);
+      assertEquals(u.getSectorDSID(), s2);
       assertTree("cat6_11.txt");
       
       // make sure that we can resync and still get the same results with the nested sector
@@ -359,15 +359,15 @@ public class SectorSyncIT {
   
     NameUsageBase src = getByName(datasetKey(5, DataFormat.ACEF), Rank.CLASS, "Insecta");
     NameUsageBase trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
-    final int s5 = createSector(Sector.Mode.UNION, src, trg);
+    final DSID<Integer> s5 = createSector(Sector.Mode.UNION, src, trg);
 
     src = getByName(datasetKey(6, DataFormat.ACEF), Rank.FAMILY, "Theridiidae");
     trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
-    final int s6 = createSector(Sector.Mode.ATTACH, src, trg);
+    final DSID<Integer> s6 = createSector(Sector.Mode.ATTACH, src, trg);
     
     src = getByName(datasetKey(11, DataFormat.ACEF), Rank.GENUS, "Dectus");
     // target without id so far
-    final int s11 = createSector(Sector.Mode.ATTACH, src.getDatasetKey(), simple(src),
+    final DSID<Integer> s11 = createSector(Sector.Mode.ATTACH, src.getDatasetKey(), simple(src),
         new SimpleName(null, "Theridiidae", Rank.FAMILY)
     );
     
@@ -407,15 +407,15 @@ public class SectorSyncIT {
 
     NameUsageBase src = getByName(datasetKey(5, DataFormat.ACEF), Rank.CLASS, "Insecta");
     NameUsageBase trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
-    final int s5 = createSector(Sector.Mode.UNION, src, trg);
+    final DSID<Integer> s5 = createSector(Sector.Mode.UNION, src, trg);
 
     src = getByName(datasetKey(6, DataFormat.ACEF), Rank.FAMILY, "Theridiidae");
     trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
-    final int s6 = createSector(Sector.Mode.ATTACH, src, trg);
+    final DSID<Integer> s6 = createSector(Sector.Mode.ATTACH, src, trg);
 
     src = getByName(datasetKey(11, DataFormat.ACEF), Rank.GENUS, "Dectus");
     // target without id so far
-    final int s11 = createSector(Sector.Mode.ATTACH, src.getDatasetKey(), simple(src),
+    final DSID<Integer> s11 = createSector(Sector.Mode.ATTACH, src.getDatasetKey(), simple(src),
       new SimpleName(null, "Theridiidae", Rank.FAMILY)
     );
 

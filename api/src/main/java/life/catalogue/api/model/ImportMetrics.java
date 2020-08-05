@@ -53,6 +53,7 @@ public class ImportMetrics implements ImportAttempt {
   private Integer mediaCount;
   private Integer treatmentCount;
   private Integer vernacularCount;
+  private Integer sectorCount;
   private Map<NameType, Integer> namesByTypeCount = Maps.newHashMap();
   private Map<NomStatus, Integer> namesByStatusCount = Maps.newHashMap();
   private Map<Origin, Integer> namesByOriginCount = Maps.newHashMap();
@@ -194,7 +195,15 @@ public class ImportMetrics implements ImportAttempt {
   public void setVernacularCount(Integer vernacularCount) {
     this.vernacularCount = vernacularCount;
   }
-  
+
+  public Integer getSectorCount() {
+    return sectorCount;
+  }
+
+  public void setSectorCount(Integer sectorCount) {
+    this.sectorCount = sectorCount;
+  }
+
   public Map<NameType, Integer> getNamesByTypeCount() {
     return namesByTypeCount;
   }
@@ -392,6 +401,7 @@ public class ImportMetrics implements ImportAttempt {
       Objects.equals(mediaCount, that.mediaCount) &&
       Objects.equals(treatmentCount, that.treatmentCount) &&
       Objects.equals(vernacularCount, that.vernacularCount) &&
+      Objects.equals(sectorCount, that.sectorCount) &&
       Objects.equals(namesByTypeCount, that.namesByTypeCount) &&
       Objects.equals(namesByStatusCount, that.namesByStatusCount) &&
       Objects.equals(namesByOriginCount, that.namesByOriginCount) &&
@@ -409,7 +419,9 @@ public class ImportMetrics implements ImportAttempt {
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, attempt, job, state, started, finished, createdBy, error, nameCount, taxonCount, synonymCount, referenceCount, typeMaterialCount, distributionCount, mediaCount, treatmentCount, vernacularCount, namesByTypeCount, namesByStatusCount, namesByOriginCount, namesByRankCount, nameRelationsByTypeCount, typeMaterialByStatusCount, distributionsByGazetteerCount, vernacularsByLanguageCount, mediaByTypeCount, usagesByStatusCount, taxaByRankCount, taxonRelationsByTypeCount, issuesCount);
+    return Objects.hash(datasetKey, attempt, job, state, started, finished, createdBy, error,
+      nameCount, taxonCount, synonymCount, referenceCount, typeMaterialCount, distributionCount, mediaCount, treatmentCount, vernacularCount, sectorCount,
+      namesByTypeCount, namesByStatusCount, namesByOriginCount, namesByRankCount, nameRelationsByTypeCount, typeMaterialByStatusCount, distributionsByGazetteerCount, vernacularsByLanguageCount, mediaByTypeCount, usagesByStatusCount, taxaByRankCount, taxonRelationsByTypeCount, issuesCount);
   }
 
   @Override

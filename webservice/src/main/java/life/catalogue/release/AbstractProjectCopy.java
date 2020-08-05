@@ -1,6 +1,7 @@
 package life.catalogue.release;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.util.LoggingUtils;
@@ -20,7 +21,7 @@ import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
  * Abstract Runnable that copies a project with all its data into a new dataset
  * and allows for custom pre/post work to be done.
  */
-public abstract class ProjectRunnable implements Runnable {
+public abstract class AbstractProjectCopy implements Runnable {
   protected final Logger LOG = LoggerFactory.getLogger(getClass());
   protected final SqlSessionFactory factory;
   protected final DatasetImportDao diDao;
@@ -30,17 +31,19 @@ public abstract class ProjectRunnable implements Runnable {
   protected final DatasetImport metrics;
   protected final String actionName;
   protected final int newDatasetKey;
+  private final DatasetOrigin newDatasetOrigin;
 
-  public ProjectRunnable(String actionName, SqlSessionFactory factory, DatasetImportDao diDao, NameUsageIndexService indexService, int userKey, int datasetKey, Dataset newDataset) {
+  public AbstractProjectCopy(String actionName, SqlSessionFactory factory, DatasetImportDao diDao, NameUsageIndexService indexService, int userKey, int datasetKey, Dataset newDataset) {
     this.actionName = actionName;
     this.factory = factory;
     this.diDao = diDao;
     this.indexService = indexService;
     this.user = userKey;
     this.datasetKey = datasetKey;
-    metrics = diDao.createWaiting(newDataset, this, userKey);
+    metrics = diDao.createWaiting(datasetKey, this, userKey);
     metrics.setJob(getClass().getSimpleName());
     newDatasetKey = newDataset.getKey();
+    newDatasetOrigin = newDataset.getOrigin();
   }
 
   public int getDatasetKey() {
@@ -71,7 +74,9 @@ public abstract class ProjectRunnable implements Runnable {
       // prepare new tables
       updateState(ImportState.PROCESSING);
       Partitioner.partition(factory, newDatasetKey);
-
+      if (newDatasetOrigin == DatasetOrigin.MANAGED) {
+        Partitioner.createManagedSequences(factory, newDatasetKey);
+      }
       prepWork();
 
       // copy data
@@ -80,10 +85,6 @@ public abstract class ProjectRunnable implements Runnable {
       // build indices and attach partition
       LOG.info("Attach and index partitions for dataset {}", newDatasetKey);
       Partitioner.indexAndAttach(factory, newDatasetKey);
-      // create metrics
-      LOG.info("Build metrics for dataset {}", newDatasetKey);
-      updateState(ImportState.ANALYZING);
-      metrics();
 
       // subclass specifics
       finalWork();
@@ -154,13 +155,6 @@ public abstract class ProjectRunnable implements Runnable {
   private void index() {
     LOG.info("Build search index for dataset " + newDatasetKey);
     indexService.indexDataset(newDatasetKey);
-  }
-
-  private void metrics() {
-    LOG.info("Build import metrics for dataset " + newDatasetKey);
-    diDao.updateMetrics(metrics);
-    diDao.update(metrics);
-    diDao.updateDatasetLastAttempt(metrics);
   }
 
   private <M extends CopyDataset> void copyTable(Class entity, Class<M> mapperClass, SqlSession session){
