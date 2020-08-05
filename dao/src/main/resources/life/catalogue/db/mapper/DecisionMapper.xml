@@ -182,8 +182,8 @@
   </select>
 
   <insert id="create" parameterType="EditorialDecision" useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO decision (<include refid="COLS"/>, original_subject_id, created_by )
-    VALUES (<include refid="PROPS"/>, #{subject.id}, #{createdBy} )
+    INSERT INTO decision (id, <include refid="COLS"/>, original_subject_id, created_by )
+    VALUES (nextval('estimate_${datasetKey}_id_seq'), <include refid="PROPS"/>, #{subject.id}, #{createdBy} )
   </insert>
 
   <update id="update" parameterType="EditorialDecision">

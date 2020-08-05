@@ -126,8 +126,8 @@
   </select>
 
   <insert id="create" parameterType="SpeciesEstimate" useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO estimate (<include refid="COLS"/>, created_by )
-    VALUES (<include refid="PROPS"/>, #{createdBy} )
+    INSERT INTO estimate (id, <include refid="COLS"/>, created_by )
+    VALUES (nextval('estimate_${datasetKey}_id_seq'), <include refid="PROPS"/>, #{createdBy} )
   </insert>
 
   <insert id="copyDataset" parameterType="map">
