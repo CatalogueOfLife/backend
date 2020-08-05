@@ -27,16 +27,73 @@ We have 7 releases currently:
 DELETE FROM "user" WHERE key=-1;
 DELETE FROM "user" WHERE key=13;
 
-SELECT unnest(array[2079,2081,2083,2123,2140,2165,2166]) AS key INTO TABLE __releases;
-
 UPDATE name n SET sector_key = s.copied_from_id FROM sector s WHERE n.sector_key=s.id AND n.sector_key IS NOT NULL; 
 UPDATE name_usage n SET sector_key = s.copied_from_id FROM sector s WHERE n.sector_key=s.id AND n.sector_key IS NOT NULL; 
 UPDATE reference n SET sector_key = s.copied_from_id FROM sector s WHERE n.sector_key=s.id AND n.sector_key IS NOT NULL; 
 UPDATE type_material n SET sector_key = s.copied_from_id FROM sector s WHERE n.sector_key=s.id AND n.sector_key IS NOT NULL; 
 
-ALTER TABLE sector DROP PRIMARY KEY;
+ALTER TABLE sector_import DROP CONSTRAINT sector_import_pkey;
+ALTER TABLE sector_import ADD COLUMN dataset_key INTEGER;
+UPDATE sector_import i SET dataset_key=s.dataset_key, sector_key=s.copied_from_id  FROM sector s WHERE i.sector_key=s.id;
+ALTER TABLE sector_import ALTER COLUMN dataset_key SET NOT NULL;
+ALTER TABLE sector_import ADD PRIMARY KEY (dataset_key, sector_key, attempt);
+DROP INDEX sector_import_sector_key_idx;
+
+ALTER TABLE sector DROP CONSTRAINT sector_pkey CASCADE;
+DROP SEQUENCE sector_id_seq CASCADE;
 UPDATE sector SET id=copied_from_id WHERE copied_from_id IS NOT NULL;
 ALTER TABLE sector DROP COLUMN copied_from_id;
+ALTER TABLE sector ADD PRIMARY KEY (dataset_key, id);
+DROP INDEX sector_dataset_key_subject_dataset_key_subject_id_idx;
+
+ALTER TABLE sector_import ADD FOREIGN KEY (dataset_key, sector_key) REFERENCES sector ON DELETE CASCADE
+
+ALTER TABLE DROP CONSTRAINT decision_pkey CASCADE;
+DROP SEQUENCE decision_id_seq CASCADE;
+ALTER TABLE decision ADD PRIMARY KEY (dataset_key, id);
+DROP INDEX decision_dataset_key_subject_dataset_key_subject_id_idx;
+
+ALTER TABLE DROP CONSTRAINT estimate_pkey CASCADE;
+DROP SEQUENCE estimate_id_seq CASCADE;
+ALTER TABLE estimate ADD PRIMARY KEY (dataset_key, id);
+
+-- managed
+--   new sequences
+CREATE SEQUENCE sector_3_id_seq START 1;
+CREATE SEQUENCE decision_3_id_seq START 1;
+CREATE SEQUENCE estimate_3_id_seq START 1;
+SELECT setval('sector_3_id_seq',   (SELECT MAX(id)+1 FROM sector   WHERE dataset_key=3));
+SELECT setval('decision_3_id_seq', (SELECT MAX(id)+1 FROM decision WHERE dataset_key=3));
+SELECT setval('estimate_3_id_seq', (SELECT MAX(id)+1 FROM estimate WHERE dataset_key=3));
+
+-- releases
+CREATE SEQUENCE dataset_import_col3_seq START 1;
+CREATE TABLE _release_attempts AS SELECT di.dataset_key, nextval('dataset_import_col3_seq') as attempt FROM dataset d JOIN dataset_import di ON di.dataset_key=d.key 
+    WHERE d.source_key=3;
+ALTER TABLE _release_attempts ADD PRIMARY KEY dataset_key;
+UPDATE dataset_import di SET attempt=r.attempt FROM _release_attempts r WHERE r.dataset_key=di.dataset_key; 
+DROP TABLE _release_attempts;
+DROP SEQUENCE dataset_import_col3_seq;
+
+DROP VIEW table_size;
+CREATE VIEW table_size AS (
+    SELECT oid, TABLE_NAME, row_estimate, pg_size_pretty(total_bytes) AS total
+        , pg_size_pretty(index_bytes) AS INDEX
+        , pg_size_pretty(toast_bytes) AS toast
+        , pg_size_pretty(table_bytes) AS TABLE
+      FROM (
+      SELECT *, total_bytes-index_bytes-COALESCE(toast_bytes,0) AS table_bytes FROM (
+          SELECT c.oid, relname AS TABLE_NAME
+                  , c.reltuples AS row_estimate
+                  , pg_total_relation_size(c.oid) AS total_bytes
+                  , pg_indexes_size(c.oid) AS index_bytes
+                  , pg_total_relation_size(reltoastrelid) AS toast_bytes
+              FROM pg_class c
+              LEFT JOIN pg_namespace n ON n.oid = c.relnamespace
+              WHERE relkind = 'r' AND nspname='public'
+      ) a
+    ) a
+);
 ```
 
 #### 2020-07-10 names index intset 

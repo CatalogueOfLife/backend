@@ -737,7 +737,7 @@ CREATE TABLE sector (
 );
 
 CREATE TABLE sector_import (
-  dataset_key INTEGER NOT NULL REFERENCES dataset,
+  dataset_key INTEGER NOT NULL,
   sector_key INTEGER NOT NULL,
   attempt INTEGER NOT NULL,
   started TIMESTAMP WITHOUT TIME ZONE,
@@ -774,7 +774,7 @@ CREATE TABLE sector_import (
 );
 
 CREATE TABLE decision (
-  id serial PRIMARY KEY,
+  id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   subject_dataset_key INTEGER NOT NULL REFERENCES dataset,
   subject_rank rank,
@@ -797,11 +797,12 @@ CREATE TABLE decision (
   temporal_range_end TEXT,
   name JSONB,
   note TEXT,
-  UNIQUE (dataset_key, subject_dataset_key, subject_id)
+  UNIQUE (dataset_key, subject_dataset_key, subject_id),
+  PRIMARY KEY (dataset_key, id)
 );
 
 CREATE TABLE estimate (
-  id serial PRIMARY KEY,
+  id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   target_rank RANK,
   target_code NOMCODE,
@@ -815,7 +816,8 @@ CREATE TABLE estimate (
   target_name TEXT NOT NULL,
   target_authorship TEXT,
   reference_id TEXT,
-  note TEXT
+  note TEXT,
+  PRIMARY KEY (dataset_key, id)
 );
 
 CREATE TABLE names_index (
@@ -1274,14 +1276,12 @@ CREATE index ON dataset (gbif_key);
 CREATE index ON dataset_import (dataset_key);
 CREATE index ON dataset_import (started);
 CREATE index ON decision (dataset_key);
-CREATE index ON decision (dataset_key, subject_dataset_key, subject_id);
 CREATE index ON estimate (dataset_key);
 CREATE index ON estimate (dataset_key, target_id);
 CREATE INDEX ON names_index (lower(scientific_name));
 CREATE index ON sector (dataset_key);
 CREATE index ON sector (dataset_key, subject_dataset_key, subject_id);
 CREATE index ON sector (dataset_key, target_id);
-CREATE index ON sector_import (sector_key);
 
 
 -- useful views
