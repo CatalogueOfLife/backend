@@ -41,7 +41,6 @@ public class DownloadUtilTest {
     d.download(URI.create("https://github.com/CatalogueOfLife/data/raw/master/ACEF/10.tar.gz"), f);
     //d.download(URI.create("https://github.com/CatalogueOfLife/data-scarabs/archive/master.zip"), f);
     //d.download(URI.create("https://github.com/CatalogueOfLife/data-world-spider-catalog/archive/master.zip"), f);
-
     //d.download(URI.create("https://github.com/gdower/data-cycads/archive/master.zip"), f);
   }
 }

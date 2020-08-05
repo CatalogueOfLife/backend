@@ -486,5 +486,5 @@ INSERT INTO dataset (gbif_key, type, created_by, modified_by, origin, settings, 
     ('de8934f4-a136-481c-a87a-b0b202b80a31', 'TAXONOMIC',     12, 12,'EXTERNAL', jsonb_build_object('NOMENCLATURAL_CODE', null, 'DATA_FORMAT', 'DWCA', 'DATA_ACCESS', 'http://www.gbif.se/ipt/archive.do?r=test'), 'Dyntaxa. Svensk taxonomisk databas', 'Dyntaxa'),
     ('e1c9e885-9d8c-45b5-9f7d-b710ac2b303b', 'TAXONOMIC',     12, 12,'EXTERNAL', jsonb_build_object('NOMENCLATURAL_CODE', null, 'DATA_FORMAT', 'DWCA', 'DATA_ACCESS', 'http://ipt.taibif.tw/archive.do?r=taibnet_endemic'), 'Endemic species in Taiwan', null);
 
-UPDATE dataset SET settings = settings || jsonb_build_object('IMPORT_FREQUENCY', 'weekly')
+UPDATE dataset SET settings = settings || jsonb_build_object('IMPORT_FREQUENCY', 7)
 WHERE key >= 2000;
