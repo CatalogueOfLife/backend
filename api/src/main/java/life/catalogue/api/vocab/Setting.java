@@ -91,7 +91,12 @@ public enum Setting {
   /**
    * Project defaults to be used for the sector.ranks property
    */
-  SECTOR_RANKS(Rank.class, true, MANAGED);
+  SECTOR_RANKS(Rank.class, true, MANAGED),
+
+  /**
+   * If set to true the dataset metadata is locked and the gbif registry sync will not be applied to the dataset.
+   */
+  GBIF_SYNC_LOCK(Boolean.class, false, EXTERNAL, MANAGED);
 
   private final Class type;
   private final DatasetOrigin[] origin;

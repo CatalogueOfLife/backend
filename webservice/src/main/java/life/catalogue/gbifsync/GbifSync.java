@@ -5,6 +5,7 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Page;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.concurrent.ExecutorUtils;
 import life.catalogue.common.util.LoggingUtils;
@@ -125,7 +126,10 @@ public class GbifSync implements Managed {
         mapper.updateSettings(gbif.getKey(), gbif.getSettings(), Users.GBIF_SYNC);
         created++;
         LOG.info("New dataset {} added from GBIF: {}", gbif.getKey(), gbif.getTitle());
-        
+
+      } else if (curr.has(Setting.GBIF_SYNC_LOCK) && curr.getBool(Setting.GBIF_SYNC_LOCK)) {
+        LOG.info("Dataset {} is locked for GBIF updates: {}", gbif.getKey(), gbif.getTitle());
+
       } else if (!Objects.equals(gbif.getDataAccess(), curr.getDataAccess()) ||
           !Objects.equals(gbif.getLicense(), curr.getLicense()) ||
           !Objects.equals(gbif.getOrganisations(), curr.getOrganisations()) ||
