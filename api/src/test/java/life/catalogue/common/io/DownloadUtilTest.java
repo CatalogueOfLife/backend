@@ -38,7 +38,8 @@ public class DownloadUtilTest {
     File f = File.createTempFile("download", ".zip");
     DownloadUtil d = new DownloadUtil(hc, "xxx", "gdToken");
     // a private repo should be accessible with the right API token
-    d.download(URI.create("https://github.com/CatalogueOfLife/data/raw/master/ACEF/10.tar.gz"), f);
+    d.download(URI.create("https://github.com/gbif/algae/archive/master.zip"), f);
+    //d.download(URI.create("https://github.com/CatalogueOfLife/data/raw/master/ACEF/10.tar.gz"), f);
     //d.download(URI.create("https://github.com/CatalogueOfLife/data-scarabs/archive/master.zip"), f);
     //d.download(URI.create("https://github.com/CatalogueOfLife/data-world-spider-catalog/archive/master.zip"), f);
     //d.download(URI.create("https://github.com/gdower/data-cycads/archive/master.zip"), f);
