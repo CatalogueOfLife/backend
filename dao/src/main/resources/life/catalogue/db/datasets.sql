@@ -13,7 +13,7 @@
 
 INSERT INTO dataset (key, origin, type, title, created_by, modified_by, settings)
 SELECT x.id+1000, 'EXTERNAL', 'TAXONOMIC', 'GSD ' || x.id, 0, 0,
-   jsonb_build_object('DATA_FORMAT', 'ACEF', 'DATA_ACCESS', 'https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/' || x.id || '.tar.gz')
+   jsonb_build_object('DATA_FORMAT', 'ACEF', 'DATA_ACCESS', 'https://github.com/CatalogueOfLife/data/raw/master/ACEF/' || x.id || '.tar.gz')
 FROM (SELECT unnest(array[
 10,
 100,
@@ -387,7 +387,7 @@ UPDATE dataset SET alias='IRMNG', title='Interim Register of Marine and Nonmarin
 UPDATE dataset SET alias='Animal biodiversity', title='An Outline of Higher-level Classification and Survey of Taxonomic Richness (Addenda 2013)1' WHERE key=1502;
 
 -- take logos from repo
-UPDATE dataset SET logo='https://github.com/Sp2000/colplus-repo/raw/master/logos/' || replace(alias,' ','_') || '.png' WHERE alias IS NOT NULL AND key > 999 AND key < 2000;
+UPDATE dataset SET logo='https://github.com/CatalogueOfLife/data/raw/master/logos/' || replace(alias,' ','_') || '.png' WHERE alias IS NOT NULL AND key > 999 AND key < 2000;
 
 --------------------------
 -- NEW DATASETS
@@ -401,7 +401,7 @@ INSERT INTO dataset (key, origin, type, title, created_by, modified_by, settings
 UPDATE dataset set alias=title WHERE key < 2000 and alias IS NULL;
 
 INSERT INTO dataset (key, origin, type, title, alias, created_by, modified_by, settings)
-VALUES ('1000', 'EXTERNAL', 'TAXONOMIC', 'Col Hierarchy', 'ColH', 0, 0, jsonb_build_object('DATA_FORMAT','COLDP', 'DATA_ACCESS','https://github.com/Sp2000/col-hierarchy/archive/master.zip') );
+VALUES ('1000', 'EXTERNAL', 'TAXONOMIC', 'Col Hierarchy', 'ColH', 0, 0, jsonb_build_object('DATA_FORMAT','COLDP', 'DATA_ACCESS','https://github.com/CatalogueOfLife/data-col-hierarchy/archive/master.zip') );
 
 
 --------------------------
@@ -421,10 +421,7 @@ ALTER SEQUENCE dataset_key_seq RESTART WITH 1700;
 -- data_format:  http://api.col.plus/vocab/dataformat
 --          DWCA, ACEF, TCS, COLDP, PROXY
 INSERT INTO dataset (origin, type, settings, title, created_by, modified_by) VALUES
-('EXTERNAL', 'OTHER', jsonb_build_object('NOMENCLATURAL_CODE', 'BOTANICAL' , 'DATA_FORMAT','COLDP', 'DATA_ACCESS', 'https://github.com/Sp2000/coldp/archive/master.zip'),  'ColDP Example',          0, 0),
-('EXTERNAL', 'OTHER', jsonb_build_object('NOMENCLATURAL_CODE', 'ZOOLOGICAL', 'DATA_FORMAT','ACEF',  'DATA_ACCESS', 'https://github.com/Sp2000/data-testing/archive/master.zip'), 'Testing Data ACEF',       0, 0),
-('EXTERNAL', 'OTHER', jsonb_build_object('NOMENCLATURAL_CODE', 'ZOOLOGICAL', 'DATA_FORMAT','COLDP', 'DATA_ACCESS', 'https://raw.githubusercontent.com/Sp2000/data-unit-tests/master/duplicates.zip'), 'Duplicates Testing Data', 0, 0),
-('EXTERNAL', 'OTHER', jsonb_build_object('NOMENCLATURAL_CODE', 'ZOOLOGICAL', 'DATA_FORMAT','COLDP', 'DATA_ACCESS', 'https://github.com/Sp2000/data-testing/archive/master.zip'), 'Testing Data ColDP',      0, 0);
+('EXTERNAL', 'OTHER', jsonb_build_object('NOMENCLATURAL_CODE', 'BOTANICAL' , 'DATA_FORMAT','COLDP', 'DATA_ACCESS', 'https://github.com/CatalogueOfLife/coldp/archive/master.zip'),  'ColDP Example',          0, 0);
 
 
 
