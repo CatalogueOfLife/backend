@@ -129,9 +129,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     Partitioner.delete(session, key);
     session.commit();
     // drop managed id sequences
-    if (DatasetInfoCache.CACHE.origin(key) == DatasetOrigin.MANAGED) {
-      session.getMapper(DatasetPartitionMapper.class).deleteManagedSequences(key);
-    }
+    session.getMapper(DatasetPartitionMapper.class).deleteManagedSequences(key);
     // now also clear filesystem
     diDao.removeMetrics(key);
   }
