@@ -126,6 +126,7 @@ public class InitDbCmd extends AbstractPromptCmd {
       try (SqlSession session = factory.openSession()) {
         setupColPartition(session);
         session.getMapper(DatasetPartitionMapper.class).createManagedSequences(Datasets.DRAFT_COL);
+        session.commit();
       }
     
       try (Connection con = cfg.db.connect()) {
@@ -193,7 +194,7 @@ public class InitDbCmd extends AbstractPromptCmd {
         .build());
 
     LOG.info("Update managed sequence values");
-    try (SqlSession session = factory.openSession()) {
+    try (SqlSession session = factory.openSession(true)) {
       DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
       dpm.updateManagedSequences(Datasets.DRAFT_COL);
     }
