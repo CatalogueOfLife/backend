@@ -26,10 +26,6 @@ public class RequestScope {
     return req;
   }
 
-  public DSID<Integer> getSectorDSID() {
-    return DSID.of(datasetKey, sectorKey);
-  }
-
   public Integer getSectorKey() {
     return sectorKey;
   }

@@ -165,10 +165,10 @@ public class AssemblyCoordinator implements Managed {
       syncAll(catalogueKey, user);
     } else {
       if (request.getSectorKey() != null) {
-        syncSector(request.getSectorDSID(), user);
+        syncSector(DSID.of(catalogueKey, request.getSectorKey()), user);
       }
       if (request.getDatasetKey() != null) {
-        LOG.info("Sync all sectors in dataset {}", request.getDatasetKey());
+        LOG.info("Sync all sectors in source dataset {}", request.getDatasetKey());
         final AtomicInteger cnt = new AtomicInteger();
         try (SqlSession session = factory.openSession(true)) {
           SectorMapper sm = session.getMapper(SectorMapper.class);

@@ -95,6 +95,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void sync(@PathParam("datasetKey") int datasetKey, RequestScope request, @Auth User user, @Context SqlSession session) {
     DaoUtils.requireManaged(datasetKey);
+    request.setDatasetKey(datasetKey);
     assembly.sync(datasetKey, request, user);
   }
 
