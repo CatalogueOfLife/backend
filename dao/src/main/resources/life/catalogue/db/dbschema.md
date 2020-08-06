@@ -9,6 +9,65 @@ We could have used Liquibase, but we would not have trusted the automatic update
 and done it manually. So we can as well log changes here.
 
 ### PROD changes
+### 2020-08-06 sector key compression for CoL
+Turned out to be more difficult and initial statements failed, so the solution became much longer 
+but is documented here. The June release 2140 now has a few bad sectors wrongly linked to data and import metrics.
+The latest releases and the CoL draft itself are fine.
+```
+CREATE SEQUENCE sector_3NG_id_seq START 1;
+ALTER TABLE sector ADD COLUMN id2 integer;
+UPDATE sector SET id2=nextval('sector_3NG_id_seq'::regclass) WHERE dataset_key=3;
+UPDATE sector s SET id2=s2.id2 FROM sector s2 WHERE s.dataset_key IN (2079,2081,2083,2123,2140,2165,2166) AND s2.dataset_key=3 AND s.id=s2.id;
+DROP SEQUENCE sector_3ng_id_seq;
+
+UPDATE name n SET sector_key = s.id2 FROM sector s WHERE n.sector_key=s.id AND n.dataset_key=s.dataset_key AND n.sector_key IS NOT NULL AND s.id2 IS NOT NULL; 
+UPDATE name_usage n SET sector_key = s.id2 FROM sector s WHERE n.sector_key=s.id AND n.dataset_key=s.dataset_key AND n.sector_key IS NOT NULL AND s.id2 IS NOT NULL;
+UPDATE reference n SET sector_key = s.id2 FROM sector s WHERE n.sector_key=s.id AND n.dataset_key=s.dataset_key AND n.sector_key IS NOT NULL AND s.id2 IS NOT NULL;
+UPDATE type_material n SET sector_key = s.id2 FROM sector s WHERE n.sector_key=s.id AND n.dataset_key=s.dataset_key AND n.sector_key IS NOT NULL AND s.id2 IS NOT NULL;
+
+ALTER TABLE sector_import ADD COLUMN id2 integer;
+UPDATE sector_import i SET id2=s.id2 FROM sector s WHERE i.sector_key=s.id AND i.dataset_key=s.dataset_key;
+ALTER TABLE sector_import ADD CONSTRAINT sector_import_id2_unique UNIQUE (dataset_key, id2, attempt);
+
+ALTER TABLE sector_import ADD COLUMN id3 integer;
+UPDATE sector_import SET id3=coalesce(id2,sector_key);
+ALTER TABLE sector_import ALTER COLUMN id3 SET NOT NULL;
+ALTER TABLE sector_import ADD CONSTRAINT sector_import_id3_unique UNIQUE (dataset_key, id3, attempt);
+
+ALTER TABLE sector_import DROP CONSTRAINT sector_import_pkey;
+ALTER TABLE sector_import DROP CONSTRAINT sector_import_dataset_key_sector_key_fkey;
+UPDATE sector_import SET sector_key=id3;
+ALTER TABLE sector_import DROP COLUMN id2;
+ALTER TABLE sector_import DROP COLUMN id3;
+ALTER TABLE sector_import ADD PRIMARY KEY(dataset_key, sector_key, attempt);
+
+
+ALTER TABLE sector DROP CONSTRAINT sector_pkey;
+ALTER TABLE sector ADD COLUMN id_orig integer;
+UPDATE sector SET id_orig=id;
+UPDATE sector SET id=coalesce(id2,id);
+ALTER TABLE sector ADD PRIMARY KEY(dataset_key, id);
+-- failed !!!
+
+SELECT s1.dataset_key, s1.id, s1.id2, s1.id_orig, s2.id2 as id2_b, s2.id_orig AS id_orig_B FROM sector s1, sector s2 WHERE s1.dataset_key=s2.dataset_key AND s1.id=s2.id AND s1.id_orig!=s2.id_orig AND s1.id2 IS NULL ORDER BY s1.dataset_key, s1.id;
+select max(id) from sector where dataset_key =2140;
+-- 77766
+select max(id_orig) from sector where dataset_key =2140;
+-- 101780
+select max(id2) from sector where dataset_key =2140;
+-- 672
+SELECT id,id2,id_orig FROM sector s1 WHERE dataset_key=2140 AND id_orig <= 672 AND EXISTS (SELECT 1 FROM sector s2 WHERE s1.dataset_key=s2.dataset_key AND s1.id=s2.id AND s1.id_orig!=s2.id_orig AND s1.id2 IS NOT NULL) order by id;
+
+UPDATE sector SET id=1000000+id_orig WHERE dataset_key=2140 AND id2 IS NULL AND id_orig <= 672 AND id<=672;
+UPDATE sector s1 SET id=1000000+id_orig  WHERE dataset_key=2140 AND id_orig <= 672 AND EXISTS (SELECT 1 FROM sector s2 WHERE s1.dataset_key=s2.dataset_key AND s1.id=s2.id AND s1.id_orig!=s2.id_orig AND s1.id2 IS NOT NULL);
+ALTER TABLE sector ADD PRIMARY KEY(dataset_key, id);
+ALTER TABLE sector_import ADD FOREIGN KEY (dataset_key, sector_key) REFERENCES sector ON DELETE CASCADE;
+SELECT setval('sector_3_id_seq',   (SELECT MAX(id)+1 FROM sector   WHERE dataset_key=3));
+
+ALTER TABLE sector DROP COLUMN id2;
+ALTER TABLE sector DROP COLUMN id_orig;
+```
+
 
 #### 2020-08-05 sector truely dataset scoped 
 
