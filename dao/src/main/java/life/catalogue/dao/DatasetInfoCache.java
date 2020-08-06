@@ -1,8 +1,6 @@
 package life.catalogue.dao;
 
 import com.google.common.eventbus.Subscribe;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
@@ -11,8 +9,9 @@ import life.catalogue.db.mapper.DatasetMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Cache for Immutable dataset infos that is loaded on demand and never release as the data is immutable
@@ -23,8 +22,8 @@ import java.util.Map;
  */
 public class DatasetInfoCache {
   private SqlSessionFactory factory;
-  private final Map<Integer, DatasetInfo> infos = new HashMap<>();
-  private final IntSet deleted = new IntOpenHashSet();
+  private final Map<Integer, DatasetInfo> infos = new ConcurrentHashMap<>();
+  private final Set<Integer> deleted = ConcurrentHashMap.newKeySet();
 
   public final static DatasetInfoCache CACHE = new DatasetInfoCache();
 
@@ -93,7 +92,7 @@ public class DatasetInfoCache {
   @Subscribe
   public void datasetChanged(DatasetChanged event){
     if (event.isDeletion()) {
-      deleted.add((int)event.key);
+      deleted.add(event.key);
       infos.remove(event.key);
     }
   }
