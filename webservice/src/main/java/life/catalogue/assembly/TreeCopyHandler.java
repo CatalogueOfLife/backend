@@ -13,7 +13,6 @@ import life.catalogue.dao.ReferenceDao;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.ReferenceMapper;
 import life.catalogue.db.mapper.TaxonMapper;
-import life.catalogue.db.mapper.VerbatimRecordMapper;
 import life.catalogue.parser.NameParser;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
@@ -45,7 +44,6 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   private final ReferenceMapper rm;
   private final TaxonMapper tm;
   private final NameMapper nm;
-  private final VerbatimRecordMapper vm;
   private int sCounter = 0;
   private int tCounter = 0;
   private int ignoredCounter = 0;
@@ -82,7 +80,6 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     rm = batchSession.getMapper(ReferenceMapper.class);
     tm = batchSession.getMapper(TaxonMapper.class);
     nm = batchSession.getMapper(NameMapper.class);
-    vm = batchSession.getMapper(VerbatimRecordMapper.class);
     // load target taxon
     Taxon t = tm.get(sector.getTargetAsDSID());
     target = new Usage(t.getId(), t.getName().getRank(), t.getStatus());

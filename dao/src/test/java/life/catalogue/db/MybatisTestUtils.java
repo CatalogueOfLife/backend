@@ -3,14 +3,18 @@ package life.catalogue.db;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Taxon;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.common.collection.CollectionUtils;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
@@ -27,7 +31,6 @@ public class MybatisTestUtils {
     pm.create(datasetKey);
     pm.buildIndices(datasetKey);
     pm.attach(datasetKey);
-    session.commit();
   }
 
   /**
@@ -62,6 +65,23 @@ public class MybatisTestUtils {
 
   public static void createManagedSequences(SqlSession session, int datasetKey) {
     session.getMapper(DatasetPartitionMapper.class).createManagedSequences(datasetKey);
+  }
+
+  public static Dataset createDataset(SqlSessionFactory factor, int key, DatasetOrigin origin) {
+    try (SqlSession session = factor.openSession(true)) {
+      return createDataset(session, key, origin);
+    }
+  }
+
+  public static Dataset createDataset(SqlSession session, int key, DatasetOrigin origin) {
+    Dataset d = TestEntityGenerator.newDataset("test dataset "+key);
+    d.setOrigin(origin);
+    d.setKey(key);
+    d.applyUser(TestEntityGenerator.USER_USER);
+    session.getMapper(DatasetMapper.class).createWithKey(d);
+    partition(session, key);
+    session.getMapper(DatasetPartitionMapper.class).createManagedSequences(key);
+    return d;
   }
 
   public static void populateDraftTree(SqlSession session) {
