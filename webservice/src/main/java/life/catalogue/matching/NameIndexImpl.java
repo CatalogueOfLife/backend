@@ -23,10 +23,8 @@ import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * NameMatching implementation that is backed by a generic store with a list of names keyed to their normalised
@@ -41,7 +39,6 @@ public class NameIndexImpl implements NameIndex {
   private final NameIndexStore store;
   private final AuthorComparator authComp;
   private final SqlSessionFactory sqlFactory;
-  private final AtomicInteger counter = new AtomicInteger();
 
   /**
    * @param sqlFactory sql session factory to talk to the data store backend if needed for inserts or initial loading
@@ -60,15 +57,12 @@ public class NameIndexImpl implements NameIndex {
   }
   
   private void loadFromPg() {
-    counter.set(0);
+    store.clear();
     LOG.info("Loading names from postgres into names index");
     try (SqlSession s = sqlFactory.openSession()) {
       NamesIndexMapper mapper = s.getMapper(NamesIndexMapper.class);
-      mapper.processAll().forEach(n -> {
-        add(n);
-        counter.incrementAndGet();
-      });
-      LOG.info("Loaded {} names from postgres into names index", counter);
+      mapper.processAll().forEach(this::add);
+      LOG.info("Loaded {} names from postgres into names index", store.count());
     }
   }
 
@@ -101,7 +95,12 @@ public class NameIndexImpl implements NameIndex {
     LOG.debug("Matched {} => {}", name.getLabel(), m);
     return m;
   }
-  
+
+  @Override
+  public IndexName get(Integer key) {
+    return store.get(key);
+  }
+
   /**
    * Does comparison by rank, author and nom code to pick real match from candidates
    */
@@ -217,26 +216,18 @@ public class NameIndexImpl implements NameIndex {
   
   @Override
   public int size() {
-    return counter.get();
+    return store.count();
   }
-  
+
+  @Override
+  public Iterable<IndexName> all() {
+    return store.all();
+  }
+
   @Override
   public synchronized void add(IndexName name) {
     final String key = key(name);
-    ArrayList<IndexName> group;
-    int oldGroupSize = 0;
-    if (store.containsKey(key)) {
-      group = store.get(key);
-      oldGroupSize = group.size();
-      // remove previous version if it already existed.
-      // Note that if the scientificName changed the key is likely different !!!
-      group.removeIf(ex -> ex.getKey().equals(name.getKey()));
-    } else {
-      group = new ArrayList<>(1);
-    }
-    group.add(name);
-    store.put(key, group);
-    counter.set(counter.get() + group.size() - oldGroupSize);
+    store.add(key, name);
   }
 
   /**
@@ -303,14 +294,12 @@ public class NameIndexImpl implements NameIndex {
     } else {
       // verify postgres and store match up - otherwise trust postgres
       int pgCount = countPg();
-      if (pgCount == storeSize) {
-        counter.set(storeSize);
-      } else {
+      if (pgCount != storeSize) {
         LOG.warn("Existing name index contains {} names, but postgres has {}. Trust postgres", storeSize, pgCount);
         loadFromPg();
       }
     }
-    LOG.info("Started name index with {} names", counter.get());
+    LOG.info("Started name index with {} names", store.count());
   }
 
   public boolean hasStarted() {

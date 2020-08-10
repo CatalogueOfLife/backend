@@ -2,60 +2,82 @@ package life.catalogue.matching;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.IndexName;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.mapdb.DBMaker;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
 
 public class NameIndexMapDBStoreTest {
-  
+  AtomicInteger keyGen = new AtomicInteger();
+  File dbf;
+  DBMaker.Maker maker;
+  NameIndexMapDBStore db;
+
+  @Before
+  public void init() throws Exception {
+    dbf = File.createTempFile("colNidxStore",".db");
+    dbf.delete();
+    maker = DBMaker.fileDB(dbf).fileMmapEnableIfSupported();
+    db = new NameIndexMapDBStore(maker, dbf);
+    db.start();
+  }
+
+  @After
+  public void cleanup() throws Exception {
+    db.stop();
+    dbf.delete();
+  }
+
   @Test
   public void size() throws Exception {
-    File dbf = File.createTempFile("colNidxStore",".db");
-    dbf.delete();
     try {
-      DBMaker.Maker maker = DBMaker.fileDB(dbf).fileMmapEnableIfSupported();
-      NameIndexMapDBStore db = new NameIndexMapDBStore(maker, dbf);
-      db.start();
       assertEquals(0, db.count());
 
-      db.put("a", newNameList(1));
+      addNameList("a", 1);
       assertEquals(1, db.count());
 
-      db.put("b", newNameList(2));
+      addNameList("b", 2); // 2,3
       assertEquals(3, db.count());
 
-      db.put("c", newNameList(3));
+      addNameList("c", 3); // 4,5,6
       assertEquals(6, db.count());
   
-      db.put("a", newNameList(3));
-      assertEquals(8, db.count());
+      addNameList("a", 3); // 7,8,9
+      assertEquals(9, db.count());
+
+      // add the same id, this should not increase the size
+      addName("a", 1);
+      assertEquals(9, db.count());
 
       // now shutdown and reopen
       db.stop();
       db = new NameIndexMapDBStore(maker, dbf);
       db.start();
 
-      assertEquals(8, db.count());
-  
-      db.put("a", newNameList(2));
-      assertEquals(7, db.count());
-      
+      assertEquals(9, db.count());
+
     } finally {
       dbf.delete();
     }
   }
-  private ArrayList<IndexName> newNameList(int size) {
-    ArrayList<IndexName> names = new ArrayList<>(size);
+
+  private void addName(String key, int id) {
+    IndexName n = new IndexName(TestEntityGenerator.newName());
+    n.setKey(id);
+    db.add(key, n);
+  }
+
+  private void addNameList(String key, int size) {
     for (int idx = 0; idx<size; idx++) {
       IndexName n = new IndexName(TestEntityGenerator.newName());
-      n.setKey(idx);
-      names.add(n);
+      n.setKey(keyGen.incrementAndGet());
+      db.add(key, n);
     }
-    return names;
   }
 
   @Test

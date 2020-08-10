@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 
 public class NameIndexFactory {
   private static final Logger LOG = LoggerFactory.getLogger(NameIndexFactory.class);
@@ -35,7 +36,17 @@ public class NameIndexFactory {
       public NameMatch match(Name name, boolean allowInserts, boolean verbose) {
         return NameMatch.noMatch();
       }
-      
+
+      @Override
+      public IndexName get(Integer key) {
+        return null;
+      }
+
+      @Override
+      public Iterable<IndexName> all() {
+        return Collections.emptyList();
+      }
+
       @Override
       public int size() {
         return 0;

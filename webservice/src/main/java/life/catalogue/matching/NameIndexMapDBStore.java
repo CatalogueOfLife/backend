@@ -6,6 +6,7 @@ import com.google.common.base.Preconditions;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.common.kryo.ApiKryoPool;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
+import org.apache.commons.lang3.ArrayUtils;
 import org.mapdb.DB;
 import org.mapdb.DBException;
 import org.mapdb.DBMaker;
@@ -16,8 +17,8 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * NameIndexStore implementation that is backed by a mapdb using kryo serialization.
@@ -29,22 +30,9 @@ public class NameIndexMapDBStore implements NameIndexStore {
   private final DBMaker.Maker dbMaker;
   private final Pool<Kryo> pool;
   private DB db;
-  private Map<String, NameList> names;
+  private Map<String, int[]> names;
+  private Map<Integer, IndexName> keys;
 
-  static class NameList extends ArrayList<IndexName> {
-    NameList() {
-      super(1);
-    }
-    
-    NameList(int initialCapacity) {
-      super(initialCapacity);
-    }
-    
-    NameList(ArrayList<IndexName> names) {
-      super(names);
-    }
-  }
-  
   static class NameIndexKryoPool extends ApiKryoPool {
 
     public NameIndexKryoPool(int maximumCapacity) {
@@ -54,7 +42,6 @@ public class NameIndexMapDBStore implements NameIndexStore {
     @Override
     public Kryo create() {
       Kryo kryo = super.create();
-      kryo.register(NameList.class);
       return kryo;
     }
   }
@@ -87,10 +74,16 @@ public class NameIndexMapDBStore implements NameIndexStore {
       }
     }
 
+    keys = db.hashMap("keys")
+      .keySerializer(Serializer.INTEGER)
+      .valueSerializer(new MapDbObjectSerializer<>(IndexName.class, pool, 128))
+      .counterEnable()
+      //.valueInline()
+      //.valuesOutsideNodesEnable()
+      .createOrOpen();
     names = db.hashMap("names")
       .keySerializer(Serializer.STRING_ASCII)
-      .valueSerializer(new MapDbObjectSerializer<>(NameList.class, pool, 128))
-      //.counterEnable()
+      .valueSerializer(Serializer.INT_ARRAY)
       //.valueInline()
       //.valuesOutsideNodesEnable()
       .createOrOpen();
@@ -106,18 +99,37 @@ public class NameIndexMapDBStore implements NameIndexStore {
   }
 
   @Override
-  public int count() {
-    AtomicInteger counter = new AtomicInteger(0);
-    names.values().forEach(vl -> {
-      counter.addAndGet(vl.size());
-    });
-    return counter.get();
-  }
-  
-  @Override
-  public ArrayList<IndexName> get(String key) {
+  public IndexName get(Integer key) {
     avail();
-    return names.get(key);
+    return keys.get(key);
+  }
+
+  @Override
+  public Iterable<IndexName> all() {
+    return keys.values();
+  }
+
+  @Override
+  public int count() {
+    return keys.size();
+  }
+
+  @Override
+  public void clear() {
+    keys.clear();
+    names.clear();
+  }
+
+  @Override
+  public List<IndexName> get(String key) {
+    avail();
+    List<IndexName> matches = new ArrayList<>();
+    if (names.containsKey(key)) {
+      for (int k : names.get(key)) {
+        matches.add(keys.get(k));
+      }
+    }
+    return matches;
   }
   
   @Override
@@ -127,13 +139,27 @@ public class NameIndexMapDBStore implements NameIndexStore {
   }
 
   /**
-   * @param key make sure this is a pure ASCII key, no carhs above 7 bits allowed!!!
+   * @param key make sure this is a pure ASCII key, no chars above 7 bits allowed !!!
    */
   @Override
-  public void put(String key, ArrayList<IndexName> group) {
+  public void add(String key, IndexName name) {
     avail();
-    group.forEach(this::check);
-    names.put(key, new NameList(group));
+    check(name);
+
+    keys.put(name.getKey(), name);
+    int[] group;
+    if (names.containsKey(key)) {
+      group = names.get(key);
+      // remove previous version if it already existed.
+      final int index = ArrayUtils.indexOf(group, name.getKey());
+      if (index != ArrayUtils.INDEX_NOT_FOUND) {
+        group = ArrayUtils.remove(group, index);
+      }
+      group = ArrayUtils.add(group, name.getKey());
+    } else {
+      group = new int[]{name.getKey()};
+    }
+    names.put(key, group);
   }
 
   void check(IndexName n){

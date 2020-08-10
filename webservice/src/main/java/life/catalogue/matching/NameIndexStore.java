@@ -3,18 +3,30 @@ package life.catalogue.matching;
 import io.dropwizard.lifecycle.Managed;
 import life.catalogue.api.model.IndexName;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public interface NameIndexStore extends Managed {
-  
+
+  /**
+   * Lookup IndexName by its key
+   */
+  IndexName get(Integer key);
+
+  Iterable<IndexName> all();
+
   /**
    * Counts all name usages. Potentially an expensive operation.
    */
   int count();
-  
-  ArrayList<IndexName> get(String key);
+
+  /**
+   * Remove all entries of the names index store
+   */
+  void clear();
+
+  List<IndexName> get(String key);
   
   boolean containsKey(String key);
   
-  void put(String key, ArrayList<IndexName> group);
+  void add(String key, IndexName name);
 }
