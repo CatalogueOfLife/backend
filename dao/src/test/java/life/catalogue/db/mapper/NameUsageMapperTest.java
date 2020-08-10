@@ -9,6 +9,7 @@ import life.catalogue.dao.Partitioner;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.matching.NameIndexFactory;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,7 +60,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
 
   @Test
   public void list() throws Exception {
-    NameDao nameDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
+    NameDao nameDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
   
     List<Taxon> taxa = new ArrayList<>();
     taxa.add(TestEntityGenerator.newTaxon("t1"));

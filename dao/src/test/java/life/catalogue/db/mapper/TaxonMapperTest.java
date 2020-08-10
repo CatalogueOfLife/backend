@@ -10,6 +10,7 @@ import life.catalogue.dao.NameDao;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.matching.NameIndexFactory;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
@@ -172,7 +173,7 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
     Taxon parent = TestEntityGenerator.newTaxon("parent-1");
     mapper().create(parent);
   
-    NameDao nameDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
+    NameDao nameDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
     
     Name n1 = TestEntityGenerator.newName("XXX");
     n1.setScientificName("XXX");

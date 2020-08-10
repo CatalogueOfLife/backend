@@ -15,6 +15,7 @@ import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.importer.PgImportRule;
+import life.catalogue.matching.NameIndexFactory;
 import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -57,7 +58,7 @@ public class ProjectDuplicationIT {
   public void init () throws IOException, SQLException {
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     fmsDao = new FileMetricsSectorDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
+    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
     // reset draft
     dataRule.truncateDraft();

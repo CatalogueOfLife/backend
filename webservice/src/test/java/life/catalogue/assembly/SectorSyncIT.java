@@ -16,6 +16,7 @@ import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.importer.PgImportRule;
+import life.catalogue.matching.NameIndexFactory;
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.NameType;
@@ -75,7 +76,7 @@ public class SectorSyncIT {
     // reset draft
     dataRule.truncateDraft();
     dataRule.loadData(true);
-    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
+    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
   }
   

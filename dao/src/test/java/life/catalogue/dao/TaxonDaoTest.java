@@ -14,6 +14,7 @@ import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.SectorMapperTest;
 import life.catalogue.db.mapper.SynonymMapper;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.matching.NameIndexFactory;
 import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
@@ -29,7 +30,7 @@ import static life.catalogue.api.TestEntityGenerator.*;
 import static org.junit.Assert.*;
 
 public class TaxonDaoTest extends DaoTestBase {
-  NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
+  NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
   TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
   static int user = TestEntityGenerator.USER_EDITOR.getKey();
 

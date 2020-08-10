@@ -1,7 +1,7 @@
 package life.catalogue.matching;
 
-import io.dropwizard.lifecycle.Managed;
 import life.catalogue.api.model.IndexName;
+import life.catalogue.common.Managed;
 
 import java.util.List;
 

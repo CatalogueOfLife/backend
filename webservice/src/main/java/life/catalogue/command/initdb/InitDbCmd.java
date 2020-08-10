@@ -137,7 +137,7 @@ public class InitDbCmd extends AbstractPromptCmd {
       }
   
       LOG.info("Update dataset sector counts");
-      NameDao nd = new NameDao(factory, NameUsageIndexService.passThru());
+      NameDao nd = new NameDao(factory, NameUsageIndexService.passThru(), NameIndexFactory.passThru());
       new TaxonDao(factory, nd, NameUsageIndexService.passThru()).updateAllSectorCounts(Datasets.DRAFT_COL);
       
       updateSearchIndex(cfg, factory);

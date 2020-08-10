@@ -1,9 +1,9 @@
 package life.catalogue.matching;
 
-import io.dropwizard.lifecycle.Managed;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
+import life.catalogue.common.Managed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

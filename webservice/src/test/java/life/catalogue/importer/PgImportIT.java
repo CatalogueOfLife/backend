@@ -82,7 +82,7 @@ public class PgImportIT {
     }
   
     sdao = new SynonymDao(PgSetupRule.getSqlSessionFactory());
-    ndao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
+    ndao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), ndao, NameUsageIndexService.passThru());
     rdao = new ReferenceDao(PgSetupRule.getSqlSessionFactory());
   }
