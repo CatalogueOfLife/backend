@@ -26,7 +26,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   int delete(@Param("key") DSID<String> key);
 
   int count(@Param("datasetKey") int datasetKey);
-  
+
   List<NameUsageBase> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
   
   List<NameUsageBase> listByNameID(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
@@ -48,6 +48,14 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   Cursor<NameUsageBase> processDataset(@Param("datasetKey") int datasetKey,
                                        @Nullable @Param("minRank") Rank minRank,
                                        @Nullable @Param("maxRank") Rank maxRank);
+
+  /**
+   * Updates the primary key. By using on update cascade triggers the related entities will be updated too.
+   * @param key the usage to update
+   * @param newId the new id to be used
+   */
+  void updateId(@Param("key") DSID<String> key,
+                @Param("newId") String newId);
 
   /**
    * Move all children including synonyms of a given taxon to a new parent.
@@ -148,5 +156,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * @param key taxon to start the traversal. Will be included in the result
    */
   Cursor<UsageNameID> processTreeIds(@Param("key") DSID<String> key);
+
+  /**
+   * Iterates over all name usages with a temporary UUID id of a given dataset
+   * and returns their names index ids.
+   */
+  Cursor<SimpleNameWithNidx> processTemporary(@Param("datasetKey") int datasetKey);
 
 }

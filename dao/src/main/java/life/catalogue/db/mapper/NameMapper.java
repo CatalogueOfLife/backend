@@ -38,7 +38,12 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
    */
   Cursor<Name> processSince(@Param("datasetKey") int datasetKey,
                     @Param("since") LocalDateTime since);
-  
+
+  /**
+   * Iterates over all names of a given dataset that have no index name match id.
+   */
+  Cursor<Name> processUnmatched(@Param("datasetKey") int datasetKey);
+
   /**
    * Lists all homotypic names based on the same homotypic name key
    *

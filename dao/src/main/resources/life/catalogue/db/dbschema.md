@@ -9,6 +9,15 @@ We could have used Liquibase, but we would not have trusted the automatic update
 and done it manually. So we can as well log changes here.
 
 ### PROD changes
+### 2020-08-11 names index canonical
+```
+```
+
+Run the following to update all foreign keys to on update cascade:
+```
+TODO !!!
+``` 
+
 ### 2020-08-06 sector key compression for CoL
 Turned out to be more difficult and initial statements failed, so the solution became much longer 
 but is documented here. The June release 2140 now has a few bad sectors wrongly linked to data and import metrics.

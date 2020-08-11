@@ -339,4 +339,12 @@
     FROM <include refid="FROM"/>
     WHERE modified &gt; #{since}
   </select>
+
+  <select id="processUnmatched" parameterType="map" resultMap="nameResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE name_index_ids IS NULL OR array_length(name_index_ids,1)=0
+  </select>
+
 </mapper>
