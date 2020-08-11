@@ -56,6 +56,11 @@ public enum ImportState {
   ANALYZING(true),
 
   /**
+   * Archive dataset metadata or metrics
+   */
+  ARCHIVING(true),
+
+  /**
    * Exporting data to archives.
    */
   EXPORTING(true),

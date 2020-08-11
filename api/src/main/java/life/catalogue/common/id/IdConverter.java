@@ -1,5 +1,6 @@
 package life.catalogue.common.id;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,19 +8,33 @@ public class IdConverter {
   private static final Logger LOG = LoggerFactory.getLogger(IdConverter.class);
   public static final IdConverter HEX = new IdConverter("0123456789ABCDEF");
   // remove 0O and 1I as they can be ambiguous in some fonts
-  public static final IdConverter LATIN32 = new IdConverter("23456789ABCDEFGHJKLMNPQRSTUVWXYZ");
+  public static final IdConverter LATIN32 = new IdConverter("23456789ABCDEFGHJKLMNPQRSTUVWXYZ"); // same as BASE32
   public static final IdConverter LATIN36 = new IdConverter("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
   public static final IdConverter BASE64 = new IdConverter("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
-  
+
   private final char[] chars;
+  private final byte[] values; // lookup matrix of char byte -> real byte value
   private final int radix;
   
   public IdConverter(String chars) {
     this.chars = chars.toCharArray();
+    int max = 0;
+    for (char c : this.chars) {
+      max = max>c ? max : c;
+    }
+    values = new byte[max+1];
+    byte val = 0;
+    for (char c : this.chars) {
+      values[c] = val++;
+    }
     radix = chars.length();
     LOG.debug("Created new IdConverter with base {} and chars {}", radix, chars);
   }
-  
+
+  public char[] getChars() {
+    return ArrayUtils.clone(chars);
+  }
+
   /**
    * @param id unsigned integer, zero to Integer.MAX_VALUE
    */
@@ -42,9 +57,18 @@ public class IdConverter {
   }
   
   public int decode(String id) {
-    int num = 0;
-    
-    return num;
+    try {
+      int num = 0;
+      char[] chars = id.toCharArray();
+      int power = (int) Math.pow(radix, chars.length-1);
+      for (char c : chars) {
+        num += values[c] * power;
+        power = power / radix;
+      }
+      return num;
+    } catch (ArrayIndexOutOfBoundsException e) {
+      throw new IllegalArgumentException("Cannot decode invalid ID " + id);
+    }
   }
   
   /**

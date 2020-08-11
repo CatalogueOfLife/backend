@@ -394,6 +394,11 @@
     WHERE char_length(u.id)=36 AND u.id ~ '-'
   </select>
 
+  <select id="processIds" parameterType="map" resultType="string" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT id FROM name_usage_${partition}
+  </select>
+
   <delete id="delete" parameterType="map">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
     DELETE FROM name_usage_${partition}
