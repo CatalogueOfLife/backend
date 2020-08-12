@@ -241,7 +241,7 @@ public class NameIndexImpl implements NameIndex {
           canonical.setModifiedBy(Users.MATCHER);
           nim.create(name);
         }
-        name.setCanonicalKey(canonical.getKey());
+        name.setCanonicalId(canonical.getKey());
       }
       // insert into postgres assigning a key
       nim.create(name);

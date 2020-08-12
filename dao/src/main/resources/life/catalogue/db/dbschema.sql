@@ -823,6 +823,7 @@ CREATE TABLE estimate (
 
 CREATE TABLE names_index (
   id SERIAL PRIMARY KEY,
+  canonical_id INTEGER REFERENCES names_index,
   candidatus BOOLEAN DEFAULT FALSE,
   rank RANK NOT NULL,
   notho NAMEPART,

@@ -9,6 +9,7 @@
   </sql>
 
   <sql id="COLS">
+    canonical_id,
     scientific_name,
     authorship,
     rank,
@@ -32,6 +33,7 @@
   </sql>
 
   <sql id="PROPS">
+    #{canonicalId},
     #{scientificName},
     #{authorship},
     #{rank}::RANK,

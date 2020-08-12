@@ -19,7 +19,7 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
 
   @JsonProperty("id")
   private Integer key;
-  private Integer canonicalKey;
+  private Integer canonicalId;
   @Nonnull
   private String scientificName;
   private String authorship;
@@ -77,12 +77,12 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
     this.key = key;
   }
 
-  public Integer getCanonicalKey() {
-    return canonicalKey;
+  public Integer getCanonicalId() {
+    return canonicalId;
   }
 
-  public void setCanonicalKey(Integer canonicalKey) {
-    this.canonicalKey = canonicalKey;
+  public void setCanonicalId(Integer canonicalId) {
+    this.canonicalId = canonicalId;
   }
 
   @Override
@@ -328,7 +328,7 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
     IndexName indexName = (IndexName) o;
     return candidatus == indexName.candidatus &&
       Objects.equals(key, indexName.key) &&
-      Objects.equals(canonicalKey, indexName.canonicalKey) &&
+      Objects.equals(canonicalId, indexName.canonicalId) &&
       scientificName.equals(indexName.scientificName) &&
       Objects.equals(authorship, indexName.authorship) &&
       rank == indexName.rank &&
@@ -348,7 +348,7 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, canonicalKey, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, type);
+    return Objects.hash(super.hashCode(), key, canonicalId, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, type);
   }
 
   @Override
