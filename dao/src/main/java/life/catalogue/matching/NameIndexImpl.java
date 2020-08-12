@@ -199,14 +199,51 @@ public class NameIndexImpl implements NameIndex {
     return score;
   }
   
-  
+  private IndexName getCanonical(ScientificName name) {
+    List<IndexName> matches = store.get(key(name));
+    // make sure name has no authorship and code is matching if it was part of the "query"
+    matches.removeIf(n -> (n.hasAuthorship() || n.getAuthorship() != null) || (name.getCode() != null && !name.getCode().equals(n.getCode())));
+    // just in case we have multiple results make sure to have a stable return by selecting the lowest, i.e. oldes key
+    IndexName lowest = null;
+    for (IndexName n : matches) {
+      if (lowest == null || lowest.getKey() > n.getKey()) {
+        lowest = n;
+      }
+    }
+    return lowest;
+  }
+
   private IndexName insert(Name orig) {
     IndexName name = new IndexName(orig);
-    name.setCreatedBy(Users.MATCHER);
-    name.setModifiedBy(Users.MATCHER);
-    // insert into postgres assigning a key
+
     try (SqlSession s = sqlFactory.openSession(true)) {
       NamesIndexMapper nim = s.getMapper(NamesIndexMapper.class);
+
+      name.setCreatedBy(Users.MATCHER);
+      name.setModifiedBy(Users.MATCHER);
+      if (name.hasAuthorship()) {
+        // make sure there exists a canonical name without authorship already
+        IndexName canonical = getCanonical(name);
+        if (canonical == null) {
+          // insert new canonical
+          canonical = new IndexName();
+          canonical.setScientificName(name.getScientificName());
+          canonical.setRank(name.getRank());
+          canonical.setCode(name.getCode());
+          canonical.setUninomial(name.getUninomial());
+          canonical.setGenus(name.getGenus());
+          canonical.setSpecificEpithet(name.getSpecificEpithet());
+          canonical.setInfragenericEpithet(name.getInfragenericEpithet());
+          canonical.setInfraspecificEpithet(name.getInfraspecificEpithet());
+          canonical.setCultivarEpithet(name.getCultivarEpithet());
+          canonical.setType(name.getType());
+          canonical.setCreatedBy(Users.MATCHER);
+          canonical.setModifiedBy(Users.MATCHER);
+          nim.create(name);
+        }
+        name.setCanonicalKey(canonical.getKey());
+      }
+      // insert into postgres assigning a key
       nim.create(name);
     }
     // add to index map, assigning a new NI id
