@@ -21,7 +21,7 @@ package life.catalogue.api.vocab;
 public enum NomRelType {
   
   /**
-   * The current name is a spelling correction, called emendation in zoology, of the related name having the same type.
+   * This name is a spelling correction, called emendation in zoology, of the related name having the same type.
    * Intentional changes in the original spelling of an available name, whether justified or unjustified.
    * The binomial authority remains unchanged.
    * Valid emendations include changes made to correct:
@@ -45,7 +45,7 @@ public enum NomRelType {
   SPELLING_CORRECTION(true, null, null),
   
   /**
-   * The current name has a basionym and therefore is either
+   * This name has a basionym and therefore is either
    * a recombination (combinatio nova, comb. nov.) of the name pointed to
    * (and the name pointed to is not, itself, a recombination),
    * or a change in rank (status novus, stat. nov.).
@@ -53,7 +53,7 @@ public enum NomRelType {
   BASIONYM(true, NomStatus.ESTABLISHED, NomStatus.ESTABLISHED),
   
   /**
-   * The current name is the validation of a name that was not fully published before.
+   * This name is the validation of a name that was not fully published before.
    * Covers the use of ex in botanical author strings.
    * <p>
    * ICN Art. 46.4: e.g. if this name object represents G. tomentosum Nutt. ex Seem.
@@ -62,7 +62,7 @@ public enum NomRelType {
   BASED_ON(true, NomStatus.ESTABLISHED, NomStatus.NOT_ESTABLISHED),
   
   /**
-   * Current name is replacement for the homotypic related name.
+   * This name is a replacement for the homotypic related name.
    * Also called 'Nomen Novum' or 'avowed substitute'
    *
    * In zoology this is called a "new replacement name" or "new substitute name"
@@ -75,7 +75,7 @@ public enum NomRelType {
   REPLACEMENT_NAME(true, NomStatus.ESTABLISHED, NomStatus.UNACCEPTABLE),
   
   /**
-   * The current name or spelling is conserved / protected against the related name
+   * This name or spelling is conserved / protected against the related name
    * or the related name is suppressed / rejected in favor of the current name.
    * <p>
    * A spelling which has been conserved relates two homotypic names, otherwise
@@ -91,7 +91,7 @@ public enum NomRelType {
   CONSERVED(null, NomStatus.CONSERVED, NomStatus.REJECTED),
   
   /**
-   * Current name has same spelling as related name
+   * This name has the same spelling as the related name
    * but was published later and has priority over it (unless conserved or sanctioned)
    * and is based on a different type. Called a junior homonym in zoology.
    * <p>
@@ -110,9 +110,9 @@ public enum NomRelType {
   LATER_HOMONYM(false, NomStatus.UNACCEPTABLE, NomStatus.ESTABLISHED),
   
   /**
-   * Current name was superfluous at its time of publication,
+   * This name was superfluous at its time of publication,
    * i. e. it was based on the same type as the related, previously published name (ICN article 52).
-   * The current, superfluous name is available but illegitimate.
+   * The superfluous name is available but illegitimate.
    * <p>
    * Includes the special case of isonyms which are identical names.
    * Zoology: unnecessary substitute name
@@ -125,7 +125,8 @@ public enum NomRelType {
   HOMOTYPIC(true, null, null),
   
   /**
-   * Current name is the type name (species/genus) for the related higher ranked name.
+   * This name is the type name (species/genus) for the related higher ranked name.
+   * The name should be the original combination, i.e. basionym, if subsequent recombinations exist.
    */
   TYPE(true, null, null);
   
