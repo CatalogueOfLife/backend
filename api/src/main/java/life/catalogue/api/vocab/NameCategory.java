@@ -4,30 +4,24 @@ import org.gbif.nameparser.api.Rank;
 
 public enum NameCategory {
   
-  /**
-   * Name made from a single epithet only.
-   * All ranks above species aggregates.
-   */
-  UNINOMIAL(null, Rank.INFRAGENERIC_NAME),
+  UNINOMIAL(null, Rank.INFRAGENERIC_NAME,
+    "Name made from a single epithet only. All ranks above species aggregates."),
   
-  /**
-   * Name made from a single epithet only.
-   * All ranks above species aggregates.
-   */
-  BINOMIAL(Rank.SPECIES_AGGREGATE, Rank.SPECIES),
+  BINOMIAL(Rank.SPECIES_AGGREGATE, Rank.SPECIES,
+    "Name made from a single epithet only. All ranks above species aggregates."),
   
-  /**
-   * Name made from a single epithet only.
-   * All ranks above species aggregates.
-   */
-  TRINOMIAL(Rank.INFRASPECIFIC_NAME, Rank.STRAIN);
-  
+  TRINOMIAL(Rank.INFRASPECIFIC_NAME, Rank.STRAIN,
+    "Name made from a single epithet only. All ranks above species aggregates.");
+
+
   private final Rank highest;
   private final Rank lowest;
-  
-  NameCategory(Rank highest, Rank lowest) {
+  private final String description;
+
+  NameCategory(Rank highest, Rank lowest, String description) {
     this.highest = highest;
     this.lowest = lowest;
+    this.description = description;
   }
   
   /**
@@ -44,5 +38,9 @@ public enum NameCategory {
    */
   public Rank getLowest() {
     return lowest;
+  }
+
+  public String getDescription() {
+    return description;
   }
 }

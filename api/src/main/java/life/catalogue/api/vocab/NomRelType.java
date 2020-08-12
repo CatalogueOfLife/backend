@@ -109,13 +109,13 @@ public enum NomRelType {
   private final Boolean homotypic;
   private final NomStatus from;
   private final NomStatus to;
-  private final String documentation;
+  private final String description;
 
-  NomRelType(Boolean homotypic, NomStatus from, NomStatus to, String documentation) {
+  NomRelType(Boolean homotypic, NomStatus from, NomStatus to, String description) {
     this.homotypic = homotypic;
     this.from = from;
     this.to = to;
-    this.documentation = documentation;
+    this.description = description;
   }
   
   /**
@@ -139,7 +139,7 @@ public enum NomRelType {
     return to;
   }
 
-  public String getDocumentation() {
-    return documentation;
+  public String getDescription() {
+    return description;
   }
 }

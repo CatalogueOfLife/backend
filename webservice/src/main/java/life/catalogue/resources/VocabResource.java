@@ -37,7 +37,7 @@ public class VocabResource {
   public VocabResource() {
     Map<String, Class<Enum>> enums = Maps.newHashMap();
     try {
-      for (Package p : Lists.newArrayList(AreaStandard.class.getPackage(), Rank.class.getPackage())) {
+      for (Package p : Lists.newArrayList(DatasetOrigin.class.getPackage(), Rank.class.getPackage())) {
         LOG.debug("Scan package {} for enums", p);
         for (ClassPath.ClassInfo info : ClassPath.from(getClass().getClassLoader()).getTopLevelClasses(p.getName())) {
           add(enums, info.load());

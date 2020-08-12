@@ -32,19 +32,19 @@ public enum TaxonConceptRelType {
   EXCLUDES("disjoint (DR)", "The related taxon concept is not a subset of this concept.");
 
   private final String rcc5;
-  private final String documentation;
+  private final String description;
 
-  TaxonConceptRelType(String rcc5, String documentation) {
+  TaxonConceptRelType(String rcc5, String description) {
     this.rcc5 = rcc5;
-    this.documentation = documentation;
+    this.description = description;
   }
 
   public String getRcc5() {
     return rcc5;
   }
 
-  public String getDocumentation() {
-    return documentation;
+  public String getDescription() {
+    return description;
   }
 
 }

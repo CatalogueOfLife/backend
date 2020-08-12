@@ -223,12 +223,12 @@ public enum SpeciesInteractionType {
 
   private final SpeciesInteractionType[] superTypes;
   private final URI obo;
-  private final String documentation;
+  private final String description;
 
 
-  SpeciesInteractionType(String obo, String documentation, SpeciesInteractionType... superTypes) {
+  SpeciesInteractionType(String obo, String description, SpeciesInteractionType... superTypes) {
     this.obo = URI.create(obo);
-    this.documentation = documentation;
+    this.description = description;
     this.superTypes = superTypes;
   }
 
@@ -240,8 +240,8 @@ public enum SpeciesInteractionType {
     return obo;
   }
 
-  public String getDocumentation() {
-    return documentation;
+  public String getDescription() {
+    return description;
   }
 
   public SpeciesInteractionType getInverse() {
