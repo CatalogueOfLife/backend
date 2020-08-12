@@ -15,7 +15,10 @@ and done it manually. So we can as well log changes here.
 
 Run the following to update all foreign keys to on update cascade:
 ```
-TODO !!!
+ALTER TABLE name_usage_{KEY} DROP CONSTRAINT name_usage_{KEY}_parent_id_fk;
+ALTER TABLE name_usage_{KEY} ADD CONSTRAINT name_usage_{KEY}_parent_id_fk FOREIGN KEY (parent_id) REFERENCES name_usage_{KEY} (id) ON UPDATE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+TODO: many more...    
 ``` 
 
 ### 2020-08-06 sector key compression for CoL
