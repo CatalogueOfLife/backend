@@ -170,9 +170,11 @@ sp,SPECIES
 spe,SPECIES
 spec,SPECIES
 special form,FORMA_SPECIALIS
+species complex,SPECIES_AGGREGATE
 species group,SPECIES_AGGREGATE
 species subgroup,SPECIES_AGGREGATE
 speciesaggregate,SPECIES_AGGREGATE
+speciescomplex,SPECIES_AGGREGATE
 speciesgroup,SPECIES_AGGREGATE
 ss,SUBSPECIES
 sses,SUBSPECIES

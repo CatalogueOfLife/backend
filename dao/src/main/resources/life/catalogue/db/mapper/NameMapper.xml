@@ -287,6 +287,12 @@
     </if>
   </sql>
 
+  <select id="deleteBySectorAndRank" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    DELETE FROM name_${partition}
+    WHERE sector_key = #{key.id} AND rank >= #{rank}::rank
+  </select>
+
   <delete id="deleteOrphans" parameterType="map">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     DELETE FROM name_${partition} n

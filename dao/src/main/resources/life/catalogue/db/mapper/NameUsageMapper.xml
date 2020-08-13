@@ -246,14 +246,19 @@
     WHERE sector_key = #{key.id}
   </update>
 
-  <select id="deleteBySectorAndRank" parameterType="map" resultType="String">
+  <select id="deleteBySectorAndRank" parameterType="map">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
     DELETE FROM name_usage_${partition} u
     USING name_${partition} n
     WHERE u.name_id=n.id
       AND u.sector_key = #{key.id}
       AND n.rank >= #{rank}::rank
-    RETURNING u.name_id
+  </select>
+
+  <select id="deleteSynonymsBySector" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    DELETE FROM name_usage_${partition} u
+    WHERE u.sector_key = #{key.id} AND u.is_synonym
   </select>
 
   <select id="deleteSubtree" parameterType="map" resultType="String">

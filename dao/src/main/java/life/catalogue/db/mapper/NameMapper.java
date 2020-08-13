@@ -8,6 +8,7 @@ import life.catalogue.api.vocab.MatchType;
 import life.catalogue.db.*;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
+import org.gbif.nameparser.api.Rank;
 
 import javax.annotation.Nullable;
 import java.time.LocalDateTime;
@@ -20,7 +21,13 @@ import java.util.List;
 public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable<Name>, DatasetPageable<Name>, SectorProcessable<Name>, CopyDataset {
   
   Name getByUsage(@Param("datasetKey") int datasetKey, @Param("usageId") String usageId);
-  
+
+  /**
+   * Deletes names by sector key and a max rank to be included.
+   * @param key the sector key
+   */
+  int deleteBySectorAndRank(@Param("key") DSID<Integer> key, @Param("rank") Rank rank);
+
   /**
    * Lists all distinct name index ids from the names table.
    */
