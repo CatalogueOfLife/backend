@@ -170,8 +170,8 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
     assertEquals(468, count.get());
 
     // delete
-    List<String> dels = mapper().deleteBySectorAndRank(sectorKey, Rank.SUBSPECIES);
-    assertEquals(450, dels.size());
+    int dels = mapper().deleteBySectorAndRank(sectorKey, Rank.SUBSPECIES);
+    assertEquals(450, dels);
     count.set(0);
     mapper().processSector(sectorKey).forEach(n -> count.incrementAndGet());
     assertEquals(18, count.get());
