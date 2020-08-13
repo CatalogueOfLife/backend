@@ -79,10 +79,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                       @Param("userKey") int userKey);
   /**
    * Deletes usages by sector key and a max rank to be included.
-   * It returns the deleted name ids, so names can also be removed if needed.
    * @param key the sector key
    */
-  List<String> deleteBySectorAndRank(@Param("key") DSID<Integer> key, @Param("rank") Rank rank);
+  int deleteBySectorAndRank(@Param("key") DSID<Integer> key, @Param("rank") Rank rank);
+
+  int deleteSynonymsBySector(@Param("key") DSID<Integer> key);
 
   /**
    * Does a recursive delete to remove an entire subtree including synonyms and cascading to all associated data.

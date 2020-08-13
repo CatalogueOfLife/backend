@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -54,17 +53,20 @@ public class SectorDelete extends SectorRunnable {
       if (s == null) {
         throw new IllegalArgumentException("Sector "+sectorKey+" does not exist");
       }
-      NameUsageMapper um = session.getMapper(NameUsageMapper.class);
-      NameMapper nm = session.getMapper(NameMapper.class);
       // cascading delete removes vernacular, distributions, descriptions, media
-      List<String> ids = um.deleteBySectorAndRank(sectorKey, Rank.SUBGENUS);
-      int delTaxa = ids.size();
-      // now also remove the names
-      final DSID<String> key = DSID.of(sectorKey.getDatasetKey(), "");
-      ids.forEach(nid -> nm.delete(key.id(nid)));
+      NameUsageMapper um = session.getMapper(NameUsageMapper.class);
+      int del = um.deleteSynonymsBySector(sectorKey);
+      LOG.info("Deleted {} synonyms from sector {}", del, sectorKey);
+      del = um.deleteBySectorAndRank(sectorKey, Rank.SUBGENUS);
+      LOG.info("Deleted {} taxa below genus level from sector {}", del, sectorKey);
+      session.commit();
+
+      // now also remove the names - they should not be shared by other usages as they also belong to the same sector
+      NameMapper nm = session.getMapper(NameMapper.class);
+      del = nm.deleteBySectorAndRank(sectorKey, Rank.SUBGENUS);
       session.commit();
       // TODO: remove refs and name rels
-      LOG.info("Deleted {} taxa and synonyms below genus level from sector {}", delTaxa, sectorKey);
+      LOG.info("Deleted {} names below genus level from sector {}", del, sectorKey);
 
       // remove sector from usages, names, refs & type_material
       int count = um.removeSectorKey(sectorKey);
