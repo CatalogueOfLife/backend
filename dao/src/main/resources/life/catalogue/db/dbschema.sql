@@ -1143,6 +1143,13 @@ $$
 LANGUAGE SQL
 IMMUTABLE;
 
+-- botanical subgeneric ranks that are placed above genus level in zoology
+CREATE FUNCTION ambiguousRanks() RETURNS rank[] AS $$
+  SELECT ARRAY['SUPERSECTION','SECTION','SUBSECTION','SUPERSERIES','SERIES','SUBSERIES','OTHER','UNRANKED']::rank[]
+$$
+LANGUAGE SQL
+IMMUTABLE;
+
 -- replaces whitespace including tabs, carriage returns and new lines with a single space
 CREATE FUNCTION repl_ws(x text) RETURNS TEXT AS $$
   SELECT regexp_replace(x, '\s', ' ', 'g' )

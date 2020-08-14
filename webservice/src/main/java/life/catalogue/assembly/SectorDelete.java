@@ -1,8 +1,6 @@
 package life.catalogue.assembly;
 
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.Sector;
-import life.catalogue.api.model.User;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.FileMetricsSectorDao;
 import life.catalogue.dao.SectorDao;
@@ -15,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -24,6 +23,7 @@ import java.util.function.Consumer;
  */
 public class SectorDelete extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorDelete.class);
+  private static final Rank maxAmbiguousRank = Arrays.stream(Rank.values()).filter(Rank::isAmbiguous).max(Rank::compareTo).orElseThrow(() -> new IllegalStateException("No ambiguous ranks exist"));
   private Rank cutoffRank = Rank.SPECIES;
   private final FileMetricsSectorDao fmDao;
 
@@ -53,17 +53,22 @@ public class SectorDelete extends SectorRunnable {
       if (s == null) {
         throw new IllegalArgumentException("Sector "+sectorKey+" does not exist");
       }
-      // cascading delete removes vernacular, distributions, descriptions, media
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
+      NameMapper nm = session.getMapper(NameMapper.class);
+
+      // cascading delete removes vernacular, distributions, descriptions, media
       int del = um.deleteSynonymsBySector(sectorKey);
       LOG.info("Deleted {} synonyms from sector {}", del, sectorKey);
-      del = um.deleteBySectorAndRank(sectorKey, Rank.SUBGENUS);
+
+      Set<String> nameIds = findZoologicalAmbiguousRanks(sectorKey, session);
+      LOG.info("Found {} ambiguous zoological ranks above genus from sector {} that we will keep", nameIds.size(), sectorKey);
+
+      del = um.deleteBySectorAndRank(sectorKey, Rank.SUBGENUS, nameIds);
       LOG.info("Deleted {} taxa below genus level from sector {}", del, sectorKey);
       session.commit();
 
       // now also remove the names - they should not be shared by other usages as they also belong to the same sector
-      NameMapper nm = session.getMapper(NameMapper.class);
-      del = nm.deleteBySectorAndRank(sectorKey, Rank.SUBGENUS);
+      del = nm.deleteBySectorAndRank(sectorKey, Rank.SUBGENUS, nameIds);
       session.commit();
       // TODO: remove refs and name rels
       LOG.info("Deleted {} names below genus level from sector {}", del, sectorKey);
@@ -90,6 +95,31 @@ public class SectorDelete extends SectorRunnable {
 
       LOG.info("Deleted sector {}", sectorKey);
     }
+  }
+
+  /**
+   * @param sectorKey
+   * @return name ids of the ambiguous zoological ranks above genus
+   */
+  private Set<String> findZoologicalAmbiguousRanks(DSID<Integer> sectorKey, SqlSession session) {
+    Set<String> zoological = new HashSet<>();
+    List<String> nids = session.getMapper(NameMapper.class).ambiguousRankNameIds(sectorKey.getDatasetKey(), sectorKey.getId());
+    // if we have ambiguous ranks filter out the ones that have children of ranks above SUPERSECTION
+    // we iterate over children as we rarely even get ambiguous ranks
+    if (nids != null && !nids.isEmpty()) {
+      NameUsageMapper um = session.getMapper(NameUsageMapper.class);
+      for (String nid : nids) {
+        for (NameUsageBase u : um.listByNameID(sector.getDatasetKey(), nid)){
+          for (SimpleName sn : um.processTreeSimple(sector.getDatasetKey(), sector.getId(), u.getId(), null, Rank.SUPERSECTION, false)) {
+            if (sn.getRank().higherThan(maxAmbiguousRank)) {
+              zoological.add(nid);
+              break;
+            }
+          }
+        }
+      }
+    }
+    return zoological;
   }
 
   private void updateSearchIndex() {
