@@ -246,6 +246,29 @@
     WHERE sector_key = #{key.id}
   </update>
 
+  <select id="ambiguousZooRankNameIds" parameterType="map" resultType="string">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT DISTINCT n.id
+    FROM <include refid="FROM_SIMPLE"/>
+    WHERE u.sector_key = #{sectorKey}
+      AND n.rank IN ()
+      AND EXISTS (
+        SELECT true
+        FROM name_usage_${partition} u2 JOIN name_${partition} n2 ON u2.name_id=n2.id
+        WHERE u2.sector_key = #{sectorKey}
+          AND u2.parent_id
+      )
+
+    DELETE FROM name_usage_${partition} u
+    USING name_${partition} n,
+      name_usage_${partition} p, name_${partition} pn,
+    WHERE u.name_id=n.id
+      AND p.id=u.parent_id AND p.name_id=pn.id
+      AND u.sector_key = #{key.id}
+      AND n.rank IN ambiguousRank()
+      AND pn.rank &lt;= 'GENUS'::rank
+  </select>
+
   <delete id="deleteBySectorAndRank" parameterType="map">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
     DELETE FROM name_usage_${partition} u
@@ -253,6 +276,10 @@
     WHERE u.name_id=n.id
       AND u.sector_key = #{key.id}
       AND n.rank >= #{rank}::rank
+      <if test="nameIds != null and !nameIds.isEmpty()">
+        AND n.id NOT IN
+        <foreach item="id" collection="nameIds" open="(" separator="," close=")">#{id}</foreach>
+      </if>
   </delete>
 
   <delete id="deleteSynonymsBySector" parameterType="map">

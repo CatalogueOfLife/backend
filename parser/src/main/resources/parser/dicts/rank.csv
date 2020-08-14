@@ -188,9 +188,9 @@ subbranch,UNRANKED
 subcl,SUBCLASS
 subclase,SUBCLASS
 subclassis,SUBCLASS
-subdiv,SUBPHYLUM
-subdivisio,SUBPHYLUM
-subdivision,SUBPHYLUM
+subdiv,SUBDIVISION
+subdivisio,SUBDIVISION
+subdivision,SUBDIVISION
 subespecie,SUBSPECIES
 subf,SUBFAMILY
 subfam,SUBFAMILY
@@ -220,8 +220,6 @@ subtribus,SUBTRIBE
 subvar,SUBVARIETY
 subvarietas,SUBVARIETY
 superclassis,SUPERCLASS
-superdivision,SUPERPHYLUM
-superkingdom,DOMAIN
 superordo,SUPERORDER
 superphyl,SUPERPHYLUM
 superregnum,SUPERKINGDOM
@@ -255,8 +253,8 @@ variedade,VARIETY
 varietas,VARIETY
 variete,VARIETY
 variety,VARIETY
-zoodivisio,SUBCLASS
-zoosectio,INFRAORDER
+zoodivisio,DIVISION
+zoosectio,SECTION
 µ,UNRANKED
 ß,UNRANKED
 ßß,UNRANKED

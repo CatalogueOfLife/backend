@@ -14,7 +14,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
@@ -141,6 +143,14 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   }
 
   @Test
+  public void deleteBySectorAndRank() throws Exception {
+    // no real data to delete but tests valid SQL
+    mapper().deleteBySectorAndRank(DSID.of(datasetKey, 1), Rank.GENUS, null);
+    mapper().deleteBySectorAndRank(DSID.of(datasetKey, 1), Rank.SUPERSECTION, Set.of());
+    mapper().deleteBySectorAndRank(DSID.of(datasetKey, 1), Rank.FAMILY, Set.of("1,2,3", "abc"));
+  }
+
+  @Test
   public void deleteUsages() throws Exception {
     // attach taxa with sector to
     final DSID<Integer> sectorKey = DSID.of(datasetKey, 1);
@@ -170,7 +180,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
     assertEquals(468, count.get());
 
     // delete
-    int dels = mapper().deleteBySectorAndRank(sectorKey, Rank.SUBSPECIES);
+    int dels = mapper().deleteBySectorAndRank(sectorKey, Rank.SUBSPECIES, Collections.emptySet());
     assertEquals(450, dels);
     count.set(0);
     mapper().processSector(sectorKey).forEach(n -> count.incrementAndGet());

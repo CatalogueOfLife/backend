@@ -12,6 +12,7 @@ import org.gbif.nameparser.api.Rank;
 
 import javax.annotation.Nullable;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -23,10 +24,21 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
   Name getByUsage(@Param("datasetKey") int datasetKey, @Param("usageId") String usageId);
 
   /**
-   * Deletes names by sector key and a max rank to be included.
-   * @param key the sector key
+   * Lists all name ids of a dataset or sector belonging to ranks that are ambiguous in their placement
+   * like section or series which are placed differently in botany and zoology.
+   *
+   * Our rank enum places these ranks according to their frequent botanical use below genus level.
    */
-  int deleteBySectorAndRank(@Param("key") DSID<Integer> key, @Param("rank") Rank rank);
+  List<String> ambiguousRankNameIds(@Param("datasetKey") int datasetKey,
+                                    @Param("sectorKey") @Nullable Integer sectorKey);
+  /**
+   * Deletes names by sector key and a max rank to be included.
+   * An optional set of name ids can be provided that will be excluded from the deletion.
+   * This is useful to avoid deletion of ambiguous ranks like section or series which are placed differently in zoology and botany.
+   * @param key the sector key
+   * @param excludeNameIds name ids to exclude from the deletion
+   */
+  int deleteBySectorAndRank(@Param("key") DSID<Integer> key, @Param("rank") Rank rank, @Param("nameIds") Collection<String> excludeNameIds);
 
   /**
    * Lists all distinct name index ids from the names table.

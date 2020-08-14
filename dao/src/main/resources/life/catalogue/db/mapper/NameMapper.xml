@@ -211,6 +211,16 @@
     WHERE u.id = #{usageId}
   </select>
 
+  <select id="ambiguousRankNameIds" resultType="string">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT id
+    FROM <include refid="FROM"/>
+    WHERE rank = ANY(ambiguousRanks())
+    <if test="sectorKey">
+      AND sector_key = #{sectorKey}
+    </if>
+  </select>
+
   <select id="processIndexIds" resultType="Integer">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT DISTINCT unnest(name_index_ids)
@@ -287,11 +297,15 @@
     </if>
   </sql>
 
-  <select id="deleteBySectorAndRank" parameterType="map">
+  <delete id="deleteBySectorAndRank" parameterType="map">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
     DELETE FROM name_${partition}
     WHERE sector_key = #{key.id} AND rank >= #{rank}::rank
-  </select>
+    <if test="nameIds != null and !nameIds.isEmpty()">
+      AND id NOT IN
+      <foreach item="id" collection="nameIds" open="(" separator="," close=")">#{id}</foreach>
+    </if>
+  </delete>
 
   <delete id="deleteOrphans" parameterType="map">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>

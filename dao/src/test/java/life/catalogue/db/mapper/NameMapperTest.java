@@ -3,6 +3,7 @@ package life.catalogue.db.mapper;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.MatchType;
@@ -10,11 +11,13 @@ import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.dao.Partitioner;
 import life.catalogue.db.PgSetupRule;
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static life.catalogue.api.TestEntityGenerator.*;
@@ -40,6 +43,21 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
     Name n = TestEntityGenerator.newName(id);
     n.setHomotypicNameId(basionym.getId());
     return n;
+  }
+
+  @Test
+  public void ambiguousRankNameIds() throws Exception {
+    // no real data to delete but tests valid SQL
+    mapper().ambiguousRankNameIds(datasetKey, null);
+    mapper().ambiguousRankNameIds(datasetKey, 1);
+  }
+
+  @Test
+  public void deleteBySectorAndRank() throws Exception {
+    // no real data to delete but tests valid SQL
+    mapper().deleteBySectorAndRank(DSID.of(datasetKey, 1), Rank.GENUS, null);
+    mapper().deleteBySectorAndRank(DSID.of(datasetKey, 1), Rank.SUPERSECTION, Set.of());
+    mapper().deleteBySectorAndRank(DSID.of(datasetKey, 1), Rank.FAMILY, Set.of("1,2,3", "abc"));
   }
 
   @Test

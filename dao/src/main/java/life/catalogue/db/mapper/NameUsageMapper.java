@@ -1,6 +1,9 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.NameUsageBase;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.SimpleName;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.SectorProcessable;
 import org.apache.ibatis.annotations.Param;
@@ -8,6 +11,7 @@ import org.apache.ibatis.cursor.Cursor;
 import org.gbif.nameparser.api.Rank;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -69,11 +73,25 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   void updateParentId(@Param("key") DSID<String> key,
                       @Param("parentId") String parentId,
                       @Param("userKey") int userKey);
+
+  /**
+   * Selects the name ids of all usages that have an ambiguous zoological rank above genus
+   * like section or series and which is placed at suprageneric level in the tree.
+   *
+   * Our rank enum places these ranks according to their frequent botanical use below genus level.
+   */
+  List<String> ambiguousZooRankNameIds(@Param("datasetKey") int datasetKey,
+                                      @Param("sectorKey") @Nullable Integer sectorKey);
+
   /**
    * Deletes usages by sector key and a max rank to be included.
+   * An optional set of name ids can be provided that will be excluded from the deletion.
+   * This is useful to avoid deletion of ambiguous ranks like section or series which are placed differently in zoology and botany.
+   *
    * @param key the sector key
+   * @param excludeNameIds name ids to exclude from the deletion
    */
-  int deleteBySectorAndRank(@Param("key") DSID<Integer> key, @Param("rank") Rank rank);
+  int deleteBySectorAndRank(@Param("key") DSID<Integer> key, @Param("rank") Rank rank, @Param("nameIds") Collection<String> excludeNameIds);
 
   int deleteSynonymsBySector(@Param("key") DSID<Integer> key);
 
