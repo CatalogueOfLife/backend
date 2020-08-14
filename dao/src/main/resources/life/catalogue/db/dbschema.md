@@ -9,6 +9,15 @@ We could have used Liquibase, but we would not have trusted the automatic update
 and done it manually. So we can as well log changes here.
 
 ### PROD changes
+
+### 2020-08-14 division ranks
+```
+ALTER TYPE RANK ADD VALUE 'SUPERDIVISION' before 'SUPERLEGION';
+ALTER TYPE RANK ADD VALUE 'DIVISION' before 'SUPERLEGION';
+ALTER TYPE RANK ADD VALUE 'SUBDIVISION' before 'SUPERLEGION';
+ALTER TYPE RANK ADD VALUE 'INFRADIVISION' before 'SUPERLEGION';
+```
+
 ### 2020-08-06 sector key compression for CoL
 Turned out to be more difficult and initial statements failed, so the solution became much longer 
 but is documented here. The June release 2140 now has a few bad sectors wrongly linked to data and import metrics.
