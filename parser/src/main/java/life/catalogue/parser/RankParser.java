@@ -15,7 +15,7 @@ import java.util.Optional;
 public class RankParser extends EnumParser<Rank> {
   public static final RankParser PARSER = new RankParser();
 
-  private static final Map<Rank, Rank> ZOOLOGY_MAP = ImmutableMap.of(
+  private static final Map<Rank, Rank> BOTANY_MAP = ImmutableMap.of(
     Rank.SUPERDIVISION, Rank.SUPERPHYLUM,
     Rank.DIVISION, Rank.PHYLUM,
     Rank.SUBDIVISION, Rank.SUBPHYLUM,
@@ -38,8 +38,8 @@ public class RankParser extends EnumParser<Rank> {
    */
   public Optional<Rank> parse(@Nullable NomCode code, String value) throws UnparsableException {
     Optional<Rank> rank = super.parse(value);
-    if (code == NomCode.ZOOLOGICAL) {
-      Optional<Rank> mapped = rank.map(ZOOLOGY_MAP::get);
+    if (code != NomCode.ZOOLOGICAL) {
+      Optional<Rank> mapped = rank.map(BOTANY_MAP::get);
       if (mapped.isPresent()) {
         return mapped;
       }
