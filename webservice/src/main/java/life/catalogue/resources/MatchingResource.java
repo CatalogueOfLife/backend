@@ -37,12 +37,9 @@ public class MatchingResource {
   public NameMatch match(@QueryParam("q") String q,
                          @QueryParam("rank") Rank rank,
                          @QueryParam("code") NomCode code,
-                         @QueryParam("trusted") boolean trusted,
                          @QueryParam("verbose") boolean verbose) {
-    // TODO: remove trusted param - this is for tests only at this stage
-    // trusted inserts should only happen during imports, not exposing public webservices.
     Name n = name(q, rank, code);
-    NameMatch m = ni.match(n, trusted, verbose);
+    NameMatch m = ni.match(n, false, verbose);
     LOG.debug("Matching {} to {}", n.getLabel(), m);
     return m;
   }
