@@ -1,9 +1,6 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.NameUsageBase;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.*;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.SectorProcessable;
 import org.apache.ibatis.annotations.Param;
@@ -178,7 +175,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
 
   /**
    * Iterates over all name usages with a temporary UUID id of a given dataset
-   * and returns their names index ids.
+   * and returns their simple names with the names index ids.
    */
   Cursor<SimpleNameWithNidx> processTemporary(@Param("datasetKey") int datasetKey);
 
