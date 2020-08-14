@@ -1,7 +1,6 @@
 package life.catalogue.parser;
 
 import com.google.common.collect.ImmutableMap;
-import life.catalogue.api.util.VocabularyUtils;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
@@ -45,10 +44,6 @@ public class RankParser extends EnumParser<Rank> {
       }
     }
     return rank;
-  }
-
-  public static org.gbif.api.vocabulary.Rank convertToGbif(Rank rank) {
-    return VocabularyUtils.convertEnum(org.gbif.api.vocabulary.Rank.class, rank);
   }
 
 }
