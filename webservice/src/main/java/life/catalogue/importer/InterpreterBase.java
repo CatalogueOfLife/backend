@@ -334,8 +334,16 @@ public class InterpreterBase {
                                                  String nomCode, String nomStatus,
                                                  String link, String remarks, VerbatimRecord v) {
     // parse rank & code as they improve name parsing
-    Rank rank = SafeParser.parse(RankParser.PARSER, vrank).orElse(Rank.UNRANKED, Issue.RANK_INVALID, v);
     final NomCode code = SafeParser.parse(NomCodeParser.PARSER, nomCode).orElse((NomCode) settings.getEnum(Setting.NOMENCLATURAL_CODE), Issue.NOMENCLATURAL_CODE_INVALID, v);
+
+    Rank rank;
+    try {
+      // use advanced rank parser that takes the code into account!
+      rank = RankParser.PARSER.parse(code, vrank).orElse(Rank.UNRANKED);
+    } catch (UnparsableException e) {
+      v.addIssue(Issue.RANK_INVALID);
+      rank = Rank.UNRANKED;
+    }
 
     // this can be wrong in some cases, e.g. in DwC records often scientificName and just a genus is given
     boolean isAtomized;
