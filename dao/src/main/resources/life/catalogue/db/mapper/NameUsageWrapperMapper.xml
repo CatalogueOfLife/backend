@@ -54,7 +54,7 @@
     FROM
     <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM"/>
     JOIN dataset d ON d.key=u.dataset_key
-    LEFT JOIN sector s ON s.id=u.sector_key AND s.dataset_key=u.dataset_key
+    LEFT JOIN sector s ON s.id=u.sector_key
     LEFT JOIN verbatim_${partition} vbt ON vbt.id=u.verbatim_key
     LEFT JOIN verbatim_${partition} vbn ON vbn.id=n.verbatim_key
     LEFT JOIN (SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM taxon_rel_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id GROUP
@@ -70,7 +70,7 @@
     LEFT JOIN (SELECT name_id, array_agg_nonull(v.issues) AS issues FROM name_rel_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id GROUP BY
     x.name_id) nrel ON nrel.name_id=u.name_id
     LEFT JOIN vernacular_name_${partition} vn ON vn.taxon_id=u.id
-    LEFT JOIN decision ed ON ed.subject_dataset_key=#{datasetKey} AND ed.subject_id=u.id AND ed.dataset_key=u.dataset_key
+    LEFT JOIN decision ed ON ed.subject_dataset_key=#{datasetKey} AND ed.subject_id=u.id
   </sql>
 
   <sql id="bareNameSelectFrom">
