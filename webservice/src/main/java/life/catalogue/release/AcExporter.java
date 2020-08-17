@@ -113,7 +113,7 @@ public class AcExporter {
   }
 
   private static String exportSchema(int datasetKey){
-    return "exp_"+datasetKey;
+    return "exp"+datasetKey;
   }
 
   private static void dropSchema(int datasetKey, Connection con) throws SQLException {
