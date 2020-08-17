@@ -95,7 +95,7 @@
   </sql>
 
   <sql id="FROM">
-    sector s LEFT JOIN sector_import si ON si.sector_key=s.id AND s.sync_attempt=si.attempt
+    sector s LEFT JOIN sector_import si ON s.id=si.sector_key AND s.dataset_key=si.dataset_key AND s.sync_attempt=si.attempt
   </sql>
 
   <sql id="WHERE">

@@ -36,7 +36,7 @@
   <sql id="FROM">
     sector_import si
     <if test="subjectDatasetKey != null or datasetKey != null or _parameter.containsKey('current')">
-      JOIN sector s ON s.id=si.sector_key
+      JOIN sector s ON s.id=si.sector_key AND s.dataset_key=si.dataset_key
     </if>
   </sql>
 

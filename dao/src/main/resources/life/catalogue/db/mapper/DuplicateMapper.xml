@@ -162,7 +162,7 @@
       AND ed.dataset_key=#{projectKey}
     </if>
     <if test="sourceDatasetKey != null">
-      LEFT JOIN sector s ON s.id=u.sector_key
+      LEFT JOIN sector s ON s.id=u.sector_key AND s.dataset_key=#{projectKey}
     </if>
     <where>
       <include refid="commonWhereClause"/>
