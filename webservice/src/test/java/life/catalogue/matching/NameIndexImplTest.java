@@ -3,6 +3,7 @@ package life.catalogue.matching;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;

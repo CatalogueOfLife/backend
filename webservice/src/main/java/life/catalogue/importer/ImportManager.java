@@ -9,6 +9,7 @@ import com.google.common.base.Strings;
 import io.dropwizard.lifecycle.Managed;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.util.PagingUtil;
@@ -323,6 +324,9 @@ public class ImportManager implements Managed {
   }
 
   private Dataset validDataset(int datasetKey) {
+    if (!hasStarted()) {
+      throw UnavailableException.unavailable("dataset importer");
+    }
     if (datasetKey == Datasets.DRAFT_COL) {
       throw new IllegalArgumentException("Dataset " + datasetKey + " is the CoL working draft and cannot be imported");
     }
