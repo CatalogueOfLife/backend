@@ -48,6 +48,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     d.setVerbatimCount(5748923);
     d.setNameCount(65432);
     d.setTaxonCount(5748329);
+    d.setBareNameCount(13);
     d.setReferenceCount(9781);
     d.setDistributionCount(12345);
     d.setVernacularCount(432);

@@ -4,7 +4,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.FileMetricsSectorDao;
+import life.catalogue.dao.SectorImportDao;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
@@ -39,7 +39,7 @@ public class SectorSyncTest {
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
 
   DatasetImportDao diDao;
-  FileMetricsSectorDao fmsDao;
+  SectorImportDao siDao;
 
   final int datasetKey = DATASET11.getKey();
   Sector sector;
@@ -47,7 +47,6 @@ public class SectorSyncTest {
   
   @Before
   public void init() {
-    fmsDao = new FileMetricsSectorDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       // draft partition
       MybatisTestUtils.partition(session, Datasets.DRAFT_COL);
@@ -86,6 +85,7 @@ public class SectorSyncTest {
     }
   
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
+    siDao = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     MapperTestBase.createSuccess(Datasets.DRAFT_COL, Users.TESTER, diDao);
   }
 
@@ -96,7 +96,7 @@ public class SectorSyncTest {
       assertEquals(1, nm.count(Datasets.DRAFT_COL));
     }
 
-    SectorSync ss = new SectorSync(sector, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), fmsDao,
+    SectorSync ss = new SectorSync(sector, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), siDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
     ss.run();
 
@@ -139,7 +139,7 @@ public class SectorSyncTest {
       sm.update(sector);
     }
 
-    ss = new SectorSync(sector, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), fmsDao,
+    ss = new SectorSync(sector, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), siDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
     ss.run();
 

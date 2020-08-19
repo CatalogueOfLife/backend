@@ -67,13 +67,14 @@ public class ProjectRelease extends AbstractProjectCopy {
 
   private void metrics() {
     LOG.info("Build import metrics for dataset " + datasetKey);
-    diDao.updateMetrics(metrics);
+    diDao.updateMetrics(metrics, newDatasetKey);
     diDao.update(metrics);
-    diDao.updateDatasetLastAttempt(metrics);
 
-    // also update release datasets import attempt pointer
+    // update both the projects and release datasets import attempt pointer
     try (SqlSession session = factory.openSession(true)) {
-      session.getMapper(DatasetMapper.class).updateLastImport(newDatasetKey, metrics.getAttempt());
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      dm.updateLastImport(datasetKey, metrics.getAttempt());
+      dm.updateLastImport(newDatasetKey, metrics.getAttempt());
     }
   }
 

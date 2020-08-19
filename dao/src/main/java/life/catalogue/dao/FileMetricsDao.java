@@ -28,36 +28,64 @@ public abstract class FileMetricsDao<K> {
   protected final File repo;
   protected final String type;
 
-  public FileMetricsDao(String type, SqlSessionFactory factory, File repo) {
-    this.type = type;
-    this.factory = factory;
-    this.repo = repo;
-  }
-  
   public static Set<String> readLines(File f) throws IOException{
     try (BufferedReader br = UTF8IoUtils.readerFromFile(f)) {
       return br.lines().collect(Collectors.toSet());
     }
   }
-  
-  public void updateNames(K key, int attempt) {
-    try (SqlSession session = factory.openSession(true);
-        NamesWriter nHandler = new NamesWriter(namesFile(key, attempt));
-        NamesIdWriter idHandler = new NamesIdWriter(namesIdFile(key, attempt))
-    ){
-      NameMapper nm = session.getMapper(NameMapper.class);
 
-      DSID<Integer> skey = sectorKey(key);
-      nm.processNameStrings(skey.getDatasetKey(), skey.getId()).forEach(nHandler);
-      LOG.info("Written {} name strings for {} {}-{}", nHandler.counter, type, key, attempt);
-
-      nm.processIndexIds(skey.getDatasetKey(), skey.getId()).forEach(idHandler);
-      LOG.info("Written {} names index ids for {} {}-{}", idHandler.counter, type, key, attempt);
-    }
+  public FileMetricsDao(String type, SqlSessionFactory factory, File repo) {
+    this.type = type;
+    this.factory = factory;
+    this.repo = repo;
   }
 
   public String getType() {
     return type;
+  }
+
+  /**
+   * Updates the file metrics on the filesystem as taking 2 explicit keys for
+   * the source of data and where to store the metrics under.
+   * This is needed for releases to use the key from the release as the source,
+   * but the mother projects key for storing the metrics under.
+   *
+   * @param dataKey key from where the data is taken
+   * @param storeKey key where the metrics are stored
+   * @param attempt attempt where the metrics are stored
+   */
+  public void updateNames(K dataKey, K storeKey, int attempt) {
+    try (SqlSession session = factory.openSession(true);
+         NamesWriter nHandler = new NamesWriter(namesFile(storeKey, attempt));
+         NamesIdWriter idHandler = new NamesIdWriter(namesIdFile(storeKey, attempt))
+    ){
+      NameMapper nm = session.getMapper(NameMapper.class);
+
+      DSID<Integer> skey = sectorKey(dataKey);
+      nm.processNameStrings(skey.getDatasetKey(), skey.getId()).forEach(nHandler);
+      LOG.info("Written {} name strings for {} {}-{}", nHandler.counter, type, dataKey, attempt);
+
+      nm.processIndexIds(skey.getDatasetKey(), skey.getId()).forEach(idHandler);
+      LOG.info("Written {} names index ids for {} {}-{}", idHandler.counter, type, dataKey, attempt);
+    }
+  }
+
+  public int updateTree(K dataKey, K storeKey, int attempt) throws IOException {
+    try (Writer writer = UTF8IoUtils.writerFromGzipFile(treeFile(storeKey, attempt))) {
+      TextTreePrinter ttp = ttPrinter(dataKey, factory, writer);
+      int count = ttp.print();
+      LOG.info("Written text tree with {} lines for {} {}-{}", count, type, dataKey, attempt);
+      return count;
+    }
+  }
+
+  /**
+   * Deletes all metrics stored for the given key, incl tree and name index sets.
+   */
+  public void deleteAll(K key) throws IOException {
+    File dir = subdir(key);
+    FileUtils.deleteDirectory(dir);
+    LOG.info("Deleted all file metrics for {} {}", type, key);
   }
 
   static class NamesWriter implements Consumer<String>, AutoCloseable {
@@ -137,24 +165,6 @@ public abstract class FileMetricsDao<K> {
         LOG.error("Failed to write to {}", f.getAbsolutePath());
         throw new RuntimeException(e);
       }
-    }
-  }
-
-  /**
-   * Deletes all metrics stored for the given key, incl tree and name index sets.
-   */
-  public void deleteAll(K key) throws IOException {
-    File dir = subdir(key);
-    FileUtils.deleteDirectory(dir);
-    LOG.info("Deleted all file metrics for {} {}", type, key);
-  }
-
-  public int updateTree(K key, int attempt) throws IOException {
-    try (Writer writer = UTF8IoUtils.writerFromGzipFile(treeFile(key, attempt))) {
-      TextTreePrinter ttp = ttPrinter(key, factory, writer);
-      int count = ttp.print();
-      LOG.info("Written text tree with {} lines for {} {}-{}", count, type, key, attempt);
-      return count;
     }
   }
 

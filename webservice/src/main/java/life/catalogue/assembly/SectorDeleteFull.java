@@ -6,6 +6,7 @@ import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.SectorDao;
+import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
@@ -15,6 +16,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -29,13 +31,13 @@ public class SectorDeleteFull extends SectorRunnable {
   private Set<Integer> visitedSectors = new HashSet<>();
   
   public SectorDeleteFull(DSID<Integer> sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService,
-                          Consumer<SectorRunnable> successCallback,
+                          SectorImportDao sid, Consumer<SectorRunnable> successCallback,
                           BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    super(sectorKey, false, factory, indexService, successCallback, errorCallback, user);
+    super(sectorKey, false, factory, indexService, sid, successCallback, errorCallback, user);
   }
-  
+
   @Override
-  void doWork() {
+  void doWork() throws Exception {
     state.setState( ImportState.DELETING);
     // do a recursive delete to make sure we have no more children
     for (Sector cs : childSectors) {
@@ -43,13 +45,8 @@ public class SectorDeleteFull extends SectorRunnable {
     }
     deleteSector(sectorKey);
     LOG.info("Deleted {} sectors in total", visitedSectors.size());
-    
-    state.setState( ImportState.INDEXING);
-    updateSearchIndex();
-    
-    state.setState( ImportState.FINISHED);
   }
-  
+
   private void deleteSectorRecursively(final DSID<Integer> sectorKey) {
     if (!visitedSectors.contains(sectorKey.getId())) {
       Set<Integer> childSectors;
@@ -69,7 +66,7 @@ public class SectorDeleteFull extends SectorRunnable {
       deleteSector(sectorKey);
     }
   }
-  
+
   private void deleteSector(DSID<Integer> sectorKey) {
     if (!visitedSectors.contains(sectorKey.getId())) {
       visitedSectors.add(sectorKey.getId());
@@ -93,7 +90,23 @@ public class SectorDeleteFull extends SectorRunnable {
     }
   }
 
-  private void updateSearchIndex() {
+  @Override
+  void doMetrics() throws Exception {
+    final DSIDValue<Integer> key = DSID.copy(sectorKey);
+    for (int sKey : visitedSectors) {
+      // remove metric files
+      try {
+        sid.deleteAll(key.id(sKey));
+      } catch (IOException e) {
+        LOG.error("Failed to delete metrics files for sector {}", key, e);
+      }
+      LOG.info("Removed file metrics for sector {}", key);
+    }
+    LOG.info("Removed file metrics for {} sectors", visitedSectors.size());
+  }
+
+  @Override
+  void updateSearchIndex() {
     final DSIDValue<Integer> key = DSID.copy(sectorKey);
     for (int sKey : visitedSectors) {
       indexService.deleteSector(key.id(sKey));

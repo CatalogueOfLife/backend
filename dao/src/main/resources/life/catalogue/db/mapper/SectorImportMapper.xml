@@ -118,11 +118,11 @@
     WHERE si.sector_key=s.id AND s.dataset_key=#{datasetKey}
   </delete>
 
-  <select id="countDescription" resultType="integer">
+  <select id="countBareName" resultType="integer">
     SELECT count(*)
-    FROM description_${datasetKey} x
-    JOIN name_usage_${datasetKey} t ON t.id=x.taxon_id
-    WHERE t.sector_key=${sectorKey}
+    FROM name_${datasetKey} n
+    LEFT JOIN name_usage_${datasetKey} u ON n.id = u.name_id
+    WHERE u.id IS NULL AND n.sector_key=${sectorKey}
   </select>
   <select id="countDistribution" resultType="integer">
     SELECT count(*)
@@ -147,6 +147,9 @@
     FROM treatment_${datasetKey} x
       JOIN name_usage_${datasetKey} t ON t.id=x.id
     WHERE t.sector_key=${sectorKey}
+  </select>
+  <select id="countTypeMaterial" resultType="integer">
+    SELECT count(*) FROM type_material_${datasetKey} WHERE sector_key=${sectorKey}
   </select>
 
   <select id="countName" resultType="integer">
@@ -243,6 +246,12 @@
     FROM name_usage_${datasetKey} t JOIN name_${datasetKey} n ON t.name_id=n.id
     WHERE NOT t.is_synonym AND t.sector_key=${sectorKey}
     GROUP BY n.rank
+  </select>
+  <select id="countTypeMaterialByStatus" resultType="StringCount">
+    SELECT status AS key, count(*) AS count
+    FROM type_material_${datasetKey}
+    WHERE sector_key=${sectorKey}
+    GROUP BY status
   </select>
   <select id="countUsagesByStatus" resultType="StringCount">
     SELECT status AS key, count(*) AS count

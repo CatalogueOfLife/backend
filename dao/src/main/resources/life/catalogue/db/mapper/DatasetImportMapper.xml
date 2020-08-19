@@ -30,6 +30,7 @@
     ${alias}name_count,
     ${alias}taxon_count,
     ${alias}synonym_count,
+    ${alias}bare_name_count,
     ${alias}reference_count,
     ${alias}vernacular_count,
     ${alias}distribution_count,
@@ -70,6 +71,7 @@
     #{imp.nameCount},
     #{imp.taxonCount},
     #{imp.synonymCount},
+    #{imp.bareNameCount},
     #{imp.referenceCount},
     #{imp.vernacularCount},
     #{imp.distributionCount},
@@ -158,6 +160,12 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
+  <select id="countBareName" resultType="integer">
+    SELECT count(*)
+    FROM name_${key} n
+      LEFT JOIN name_usage_${key} u ON n.id = u.name_id
+    WHERE u.id IS NULL
+  </select>
   <select id="countDistribution" resultType="integer">
     SELECT count(*) FROM distribution_${key}
   </select>

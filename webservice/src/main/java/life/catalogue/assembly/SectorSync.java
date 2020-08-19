@@ -1,11 +1,13 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.*;
-import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.EstimateDao;
-import life.catalogue.dao.FileMetricsSectorDao;
-import life.catalogue.db.mapper.*;
+import life.catalogue.dao.SectorImportDao;
+import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.ReferenceMapper;
+import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.match.EstimateRematcher;
 import life.catalogue.match.MatchingDao;
@@ -14,11 +16,9 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.gbif.nameparser.api.NameType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -26,26 +26,35 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static life.catalogue.dao.DatasetImportDao.countMap;
-
 /**
  * Syncs/imports source data for a given sector into the assembled catalogue
  */
 public class SectorSync extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorSync.class);
-  private final FileMetricsSectorDao fmDao;
+  private final SectorImportDao sid;
 
-  public SectorSync(DSID<Integer> sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, FileMetricsSectorDao fmDao,
+  public SectorSync(DSID<Integer> sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, SectorImportDao sid,
                     Consumer<SectorRunnable> successCallback,
                     BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    super(sectorKey, true, factory, indexService, successCallback, errorCallback, user);
-    this.fmDao = fmDao;
+    super(sectorKey, true, factory, indexService, sid, successCallback, errorCallback, user);
+    this.sid = sid;
   }
   
   @Override
   void doWork() throws Exception {
     sync();
-    metrics();
+  }
+
+  @Override
+  void doMetrics() throws Exception {
+    // build metrics
+    sid.updateMetrics(state, sectorKey.getDatasetKey());
+  }
+
+  @Override
+  void updateSearchIndex() throws Exception {
+    indexService.indexSector(sector);
+    LOG.info("Reindexed sector {} from search index", sectorKey);
   }
 
   @Override
@@ -70,43 +79,6 @@ public class SectorSync extends SectorRunnable {
     }
   }
 
-  private void metrics() {
-    try (SqlSession session = factory.openSession(true)) {
-      // generate import metrics
-      SectorImportMapper mapper = session.getMapper(SectorImportMapper.class);
-      final int key = sector.getId();
-      state.setDistributionCount(mapper.countDistribution(sectorKey.getDatasetKey(), key));
-      state.setMediaCount(mapper.countMedia(sectorKey.getDatasetKey(), key));
-      state.setNameCount(mapper.countName(sectorKey.getDatasetKey(), key));
-      state.setReferenceCount(mapper.countReference(sectorKey.getDatasetKey(), key));
-      state.setTaxonCount(mapper.countTaxon(sectorKey.getDatasetKey(), key));
-      state.setSynonymCount(mapper.countSynonym(sectorKey.getDatasetKey(), key));
-      state.setVernacularCount(mapper.countVernacular(sectorKey.getDatasetKey(), key));
-      state.setTreatmentCount(mapper.countTreatment(sectorKey.getDatasetKey(), key));
-      state.setIssuesCount(countMap(Issue.class, mapper.countIssues(sectorKey.getDatasetKey(), key)));
-  
-      state.setDistributionsByGazetteerCount(countMap(Gazetteer.class, mapper.countDistributionsByGazetteer(sectorKey.getDatasetKey(), key)));
-      state.setIssuesCount(countMap(Issue.class, mapper.countIssues(sectorKey.getDatasetKey(), key)));
-      state.setMediaByTypeCount(countMap(MediaType.class, mapper.countMediaByType(sectorKey.getDatasetKey(), key)));
-      state.setNameRelationsByTypeCount(countMap(NomRelType.class, mapper.countNameRelationsByType(sectorKey.getDatasetKey(), key)));
-      state.setNamesByOriginCount(countMap(Origin.class, mapper.countNamesByOrigin(sectorKey.getDatasetKey(), key)));
-      state.setNamesByRankCount(countMap(DatasetImportDao::parseRank, mapper.countNamesByRank(sectorKey.getDatasetKey(), key)));
-      state.setNamesByStatusCount(countMap(NomStatus.class, mapper.countNamesByStatus(sectorKey.getDatasetKey(), key)));
-      state.setNamesByTypeCount(countMap(NameType.class, mapper.countNamesByType(sectorKey.getDatasetKey(), key)));
-      state.setTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(sectorKey.getDatasetKey(), key)));
-      state.setTaxonRelationsByTypeCount(countMap(TaxRelType.class, mapper.countTaxonRelationsByType(sectorKey.getDatasetKey(), key)));
-      state.setUsagesByStatusCount(countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(sectorKey.getDatasetKey(), key)));
-      state.setVernacularsByLanguageCount(countMap(mapper.countVernacularsByLanguage(sectorKey.getDatasetKey(), key)));
-
-      try {
-        fmDao.updateTree(sector, state.getAttempt());
-        fmDao.updateNames(sector, state.getAttempt());
-      } catch (IOException e) {
-        LOG.error("Failed to print sector {} of catalogue {}", sector.getKey(), sectorKey.getDatasetKey(), e);
-      }
-    }
-  }
-  
   private void sync() throws InterruptedException {
     state.setState( ImportState.DELETING);
     relinkForeignChildren();
@@ -124,11 +96,7 @@ public class SectorSync extends SectorRunnable {
       rematchForeignChildren();
       relinkAttachedSectors();
       rematchEstimates();
-      state.setState( ImportState.INDEXING);
-      indexService.indexSector(sector);
     }
-  
-    state.setState( ImportState.FINISHED);
   }
 
   /**

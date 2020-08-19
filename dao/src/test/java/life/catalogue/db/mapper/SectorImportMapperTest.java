@@ -67,6 +67,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     d.setFinished(LocalDateTime.now());
     d.setNameCount(65432);
     d.setTaxonCount(5748329);
+    d.setBareNameCount(13);
     d.setReferenceCount(9781);
     d.setDistributionCount(12345);
     d.setVernacularCount(432);

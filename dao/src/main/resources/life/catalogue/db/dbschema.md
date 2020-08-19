@@ -10,6 +10,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2020-08-19 track bare name counts
+```
+ALTER TABLE dataset_import ADD COLUMN bare_name_count INTEGER; 
+ALTER TABLE sector_import ADD COLUMN bare_name_count INTEGER; 
+```
+
 ### 2020-08-14 division ranks
 ```
 ALTER TYPE RANK ADD VALUE 'SUPERDIVISION' before 'SUPERLEGION';

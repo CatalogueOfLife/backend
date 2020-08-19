@@ -65,13 +65,13 @@ public class SectorSyncIT {
       .around(importRule);
 
   DatasetImportDao diDao;
-  FileMetricsSectorDao fmsDao;
+  SectorImportDao siDao;
   TaxonDao tdao;
   
   @Before
   public void init () throws IOException, SQLException {
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    fmsDao = new FileMetricsSectorDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
+    siDao = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     // reset draft
     dataRule.truncateDraft();
     dataRule.loadData(true);
@@ -149,23 +149,23 @@ public class SectorSyncIT {
   }
 
   public void syncAll() {
-    syncAll(fmsDao);
+    syncAll(siDao);
   }
 
-  public static void syncAll(FileMetricsSectorDao fmsDao) {
+  public static void syncAll(SectorImportDao siDao) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       for (Sector s : session.getMapper(SectorMapper.class).list(Datasets.DRAFT_COL, null)) {
-        sync(s, fmsDao);
+        sync(s, siDao);
       }
     }
   }
 
   void sync(Sector s) {
-    sync(s, fmsDao);
+    sync(s, siDao);
   }
 
-  static void sync(Sector s, FileMetricsSectorDao fmsDao) {
-    SectorSync ss = new SectorSync(s, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), fmsDao,
+  static void sync(Sector s, SectorImportDao siDao) {
+    SectorSync ss = new SectorSync(s, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), siDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     System.out.println("\n*** SECTOR SYNC " + s.getKey() + " ***");
     ss.run();
@@ -173,13 +173,13 @@ public class SectorSyncIT {
   
   private void deleteFull(Sector s) {
     SectorDeleteFull sd = new SectorDeleteFull(s, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(),
-        SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
+        siDao, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     System.out.println("\n*** SECTOR FULL DELETION " + s.getKey() + " ***");
     sd.run();
   }
 
   private void delete(Sector s) {
-    SectorDelete sd = new SectorDelete(s, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), fmsDao,
+    SectorDelete sd = new SectorDelete(s, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), siDao,
       SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     System.out.println("\n*** SECTOR DELETION " + s.getKey() + " ***");
     sd.run();

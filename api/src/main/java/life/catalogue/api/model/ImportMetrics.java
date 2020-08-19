@@ -47,6 +47,7 @@ public class ImportMetrics implements ImportAttempt {
   private Integer nameCount;
   private Integer taxonCount;
   private Integer synonymCount;
+  private Integer bareNameCount;
   private Integer referenceCount;
   private Integer typeMaterialCount;
   private Integer distributionCount;
@@ -155,7 +156,15 @@ public class ImportMetrics implements ImportAttempt {
   public void setSynonymCount(Integer synonymCount) {
     this.synonymCount = synonymCount;
   }
-  
+
+  public Integer getBareNameCount() {
+    return bareNameCount;
+  }
+
+  public void setBareNameCount(Integer bareNameCount) {
+    this.bareNameCount = bareNameCount;
+  }
+
   public Integer getReferenceCount() {
     return referenceCount;
   }
@@ -395,6 +404,7 @@ public class ImportMetrics implements ImportAttempt {
       Objects.equals(nameCount, that.nameCount) &&
       Objects.equals(taxonCount, that.taxonCount) &&
       Objects.equals(synonymCount, that.synonymCount) &&
+      Objects.equals(bareNameCount, that.bareNameCount) &&
       Objects.equals(referenceCount, that.referenceCount) &&
       Objects.equals(typeMaterialCount, that.typeMaterialCount) &&
       Objects.equals(distributionCount, that.distributionCount) &&
@@ -420,7 +430,7 @@ public class ImportMetrics implements ImportAttempt {
   @Override
   public int hashCode() {
     return Objects.hash(datasetKey, attempt, job, state, started, finished, createdBy, error,
-      nameCount, taxonCount, synonymCount, referenceCount, typeMaterialCount, distributionCount, mediaCount, treatmentCount, vernacularCount, sectorCount,
+      nameCount, taxonCount, synonymCount, bareNameCount, referenceCount, typeMaterialCount, distributionCount, mediaCount, treatmentCount, vernacularCount, sectorCount,
       namesByTypeCount, namesByStatusCount, namesByOriginCount, namesByRankCount, nameRelationsByTypeCount, typeMaterialByStatusCount, distributionsByGazetteerCount, vernacularsByLanguageCount, mediaByTypeCount, usagesByStatusCount, taxaByRankCount, taxonRelationsByTypeCount, issuesCount);
   }
 

@@ -25,7 +25,7 @@ public abstract class FileMetricsDaoTestBase<K> extends DaoTestBase {
   public void roundtripTree() throws Exception {
     BufferedReader expected = FileUtils.getInputStreamReader(FileUtils.classpathStream("trees/tree.tree"), "UTF8");
 
-    dao.updateTree(key, 1);
+    dao.updateTree(key, key, 1);
   
     Stream<String> lines = dao.getTree( key, 1);
     assertEquals(expected.lines(), lines);
@@ -38,7 +38,7 @@ public abstract class FileMetricsDaoTestBase<K> extends DaoTestBase {
 
   @Test
   public void roundtripNames() throws Exception {
-    dao.updateNames(key, 1);
+    dao.updateNames(key, key,1);
 
     Stream<String> lines = dao.getNames(key, 1);
     //lines.forEach(System.out::println);

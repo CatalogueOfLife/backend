@@ -2,8 +2,8 @@ package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
-import life.catalogue.dao.FileMetricsSectorDao;
 import life.catalogue.dao.SectorDao;
+import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
@@ -13,7 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -23,30 +26,38 @@ import java.util.function.Consumer;
  */
 public class SectorDelete extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorDelete.class);
+
   private static final Rank maxAmbiguousRank = Arrays.stream(Rank.values()).filter(Rank::isAmbiguous).max(Rank::compareTo).orElseThrow(() -> new IllegalStateException("No ambiguous ranks exist"));
   private Rank cutoffRank = Rank.SPECIES;
-  private final FileMetricsSectorDao fmDao;
 
-  public SectorDelete(DSID<Integer> sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, FileMetricsSectorDao fmDao,
+  public SectorDelete(DSID<Integer> sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, SectorImportDao sid,
                       Consumer<SectorRunnable> successCallback,
                       BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    super(sectorKey, false, factory, indexService, successCallback, errorCallback, user);
-    this.fmDao = fmDao;
+    super(sectorKey, false, factory, indexService, sid, successCallback, errorCallback, user);
   }
-  
+
   @Override
   void doWork() {
     state.setState( ImportState.DELETING);
     deleteSector(sectorKey);
-    LOG.info("Removed sector {}, keeping usages above {} level", sectorKey, cutoffRank);
-    
-    state.setState( ImportState.INDEXING);
-    updateSearchIndex();
-    
-    state.setState( ImportState.FINISHED);
   }
 
-  
+  @Override
+  void doMetrics() throws Exception {
+    // remove metric files
+    try {
+      sid.deleteAll(sectorKey);
+    } catch (IOException e) {
+      LOG.error("Failed to delete metrics files for sector {}", sectorKey, e);
+    }
+  }
+
+  @Override
+  void updateSearchIndex() throws Exception {
+    indexService.deleteSector(sectorKey);
+    LOG.info("Removed sector {} from search index", sectorKey);
+  }
+
   private void deleteSector(DSID<Integer> sectorKey) {
     try (SqlSession session = factory.openSession(false)) {
       Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
@@ -86,14 +97,8 @@ public class SectorDelete extends SectorRunnable {
       session.getMapper(SectorImportMapper.class).delete(sectorKey);
       session.getMapper(SectorMapper.class).delete(sectorKey);
       session.commit();
-      // remove metric files
-      try {
-        fmDao.deleteAll(sectorKey);
-      } catch (IOException e) {
-        LOG.error("Failed to delete metrics files for sector {}", sectorKey, e);
-      }
 
-      LOG.info("Deleted sector {}", sectorKey);
+      LOG.info("Deleted sector {}, keeping usages above {} level", sectorKey, cutoffRank);
     }
   }
 
@@ -120,11 +125,6 @@ public class SectorDelete extends SectorRunnable {
       }
     }
     return zoological;
-  }
-
-  private void updateSearchIndex() {
-    indexService.indexSector(sector);
-    LOG.info("Reindexed sector {} from search index", sectorKey);
   }
   
 }
