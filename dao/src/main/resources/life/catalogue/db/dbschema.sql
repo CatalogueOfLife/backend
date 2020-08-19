@@ -581,11 +581,11 @@ CREATE TABLE dataset (
   type DATASETTYPE NOT NULL DEFAULT 'OTHER',
   origin DATASETORIGIN NOT NULL,
   private BOOLEAN DEFAULT FALSE,
-  gbif_key UUID,
+  gbif_key UUID UNIQUE,
   gbif_publisher_key UUID,
 
   title TEXT NOT NULL,
-  alias TEXT,
+  alias TEXT UNIQUE,
   description TEXT,
   organisations TEXT[] DEFAULT '{}',
   contact TEXT,
