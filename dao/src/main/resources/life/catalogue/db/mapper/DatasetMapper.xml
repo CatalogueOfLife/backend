@@ -322,7 +322,7 @@
   </update>
 
   <update id="delete" parameterType="map">
-    UPDATE dataset SET deleted = now(), import_attempt=null
+    UPDATE dataset SET deleted = now(), import_attempt=null, alias=null, gbif_key=null
     WHERE key = #{key}
   </update>
 
