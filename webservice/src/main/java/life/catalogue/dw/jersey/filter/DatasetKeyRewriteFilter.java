@@ -92,7 +92,7 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     // change request
     URI rewritten = builder.build();
     if (!rewritten.equals(original)) {
-      LOG.info("Rewrite URI {} to {}", original, rewritten);
+      LOG.debug("Rewrite URI {} to {}", original, rewritten);
       req.setRequestUri( rewritten );
     }
   }
