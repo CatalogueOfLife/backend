@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProjectRelease extends AbstractProjectCopy {
   private static final String DEFAULT_TITLE_TEMPLATE = "{title}, {date}";
-  private static final String DEFAULT_ALIAS_TEMPLATE = "{alias}-{date}";
+  private static final String DEFAULT_ALIAS_TEMPLATE = "{aliasOrTitle}-{date}";
   private static final String DEFAULT_CITATION_TEMPLATE = "{citation} released on {date}";
 
   private final ImageService imageService;
@@ -78,20 +78,23 @@ public class ProjectRelease extends AbstractProjectCopy {
     }
   }
 
-  private static String procTemplate(Dataset d, DatasetSettings ds, Setting setting, String defaultTemplate){
+  static String procTemplate(Dataset d, DatasetSettings ds, Setting setting, String defaultTemplate){
     String tmpl = defaultTemplate;
     if (ds.has(setting)) {
       tmpl = ds.getString(setting);
     }
-    return SimpleTemplate.render(tmpl, d);
+    if (tmpl != null) {
+      return SimpleTemplate.render(tmpl, d);
+    }
+    return null;
   }
 
-  public static void releaseInit(Dataset d, DatasetSettings ds) {
-    String title = procTemplate(d, ds, Setting.RELEASE_TITLE_TEMPLATE, DEFAULT_TITLE_TEMPLATE);
-    d.setTitle(title);
-
+  public static void releaseDataset(Dataset d, DatasetSettings ds) {
     String alias = procTemplate(d, ds, Setting.RELEASE_ALIAS_TEMPLATE, DEFAULT_ALIAS_TEMPLATE);
     d.setAlias(alias);
+
+    String title = procTemplate(d, ds, Setting.RELEASE_TITLE_TEMPLATE, DEFAULT_TITLE_TEMPLATE);
+    d.setTitle(title);
 
     String citation = procTemplate(d, ds, Setting.RELEASE_CITATION_TEMPLATE, DEFAULT_CITATION_TEMPLATE);
     d.setCitation(citation);

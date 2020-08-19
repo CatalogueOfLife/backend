@@ -90,8 +90,9 @@ public class ProjectDuplicationIT {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()){
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       d = dm.get(Datasets.DRAFT_COL);
-      d.setTitle("Copied draft");
+      d.setTitle(d.getTitle() + " copy");
       d.setKey(1100);
+      d.setAlias(d.getAlias() + " copy");
       dm.createWithKey(d);
       session.commit();
     }

@@ -1,7 +1,9 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 import life.catalogue.api.constraints.AbsoluteURI;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.License;
@@ -284,6 +286,11 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
   
   public void setNotes(String notes) {
     this.notes = notes;
+  }
+
+  @JsonIgnore
+  public String getAliasOrTitle() {
+    return ObjectUtils.coalesce(alias, title);
   }
 
   @Override

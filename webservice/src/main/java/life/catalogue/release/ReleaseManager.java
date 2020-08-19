@@ -11,8 +11,10 @@ import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,7 +90,7 @@ public class ReleaseManager {
    */
   public static ProjectRelease release(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, ImageService imageService,
                                        int projectKey, int userKey) {
-    Dataset release = createDataset(factory, projectKey, "release", userKey, ProjectRelease::releaseInit);
+    Dataset release = createDataset(factory, projectKey, "release", userKey, ProjectRelease::releaseDataset);
     return new ProjectRelease(factory, indexService, diDao, imageService, projectKey, release, userKey);
   }
 
@@ -99,9 +101,7 @@ public class ReleaseManager {
    * @throws IllegalArgumentException if the dataset is not managed
    */
   public static ProjectDuplication duplicate(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, int projectKey, int userKey) {
-    Dataset copy = createDataset(factory, projectKey, "duplicate", userKey, (d, ds) -> {
-      d.setTitle(d.getTitle() + " copy");
-    });
+    Dataset copy = createDataset(factory, projectKey, "duplicate", userKey, ProjectDuplication::copyDataset);
     return new ProjectDuplication(factory, indexService, diDao, projectKey, copy, userKey);
   }
 
@@ -120,7 +120,8 @@ public class ReleaseManager {
       // create new dataset based on current metadata
       copy.setKey(null);
       copy.setSourceKey(projectKey);
-      copy.setAlias(null);
+      copy.setGbifKey(null);
+      copy.setGbifPublisherKey(null);
       copy.setModifiedBy(userKey);
       copy.setCreatedBy(userKey);
 
@@ -129,7 +130,21 @@ public class ReleaseManager {
         DatasetSettings ds = dm.getSettings(projectKey);
         modifier.accept(copy, ds);
       }
-      dm.create(copy);
+
+      try {
+        dm.create(copy);
+      } catch (PersistenceException e) {
+        PSQLException pe = (PSQLException) e.getCause();
+        // https://www.postgresql.org/docs/12/errcodes-appendix.html
+        // 23505 = unique_violation
+        if (pe.getSQLState().equals("23505")) {
+          // make sure alias is unique - will fail otherwise
+          copy.setAlias(null);
+          dm.create(copy);
+        } else {
+          throw e;
+        }
+      }
 
       return copy;
 

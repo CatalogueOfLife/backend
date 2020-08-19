@@ -14,6 +14,11 @@ and done it manually. So we can as well log changes here.
 ```
 ALTER TABLE dataset_import ADD COLUMN bare_name_count INTEGER; 
 ALTER TABLE sector_import ADD COLUMN bare_name_count INTEGER; 
+DROP INDEX dataset_gbif_key_idx;
+ALTER TABLE dataset ADD UNIQUE (gbif_key);
+ALTER TABLE dataset ADD UNIQUE (alias); 
+-- to list duplicate aliases
+-- SELECT alias, array_agg(key) from dataset where alias is not null group by alias having count(*) > 1; 
 ```
 
 ### 2020-08-14 division ranks
