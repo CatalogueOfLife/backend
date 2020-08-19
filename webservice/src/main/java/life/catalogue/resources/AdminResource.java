@@ -243,7 +243,7 @@ public class AdminResource {
           LOG.warn("Reindex all datasets by {}", user);
           indexService.indexAll();
         }
-      } catch (Exception e){
+      } catch (RuntimeException e){
         LOG.error("Error reindexing", e);
       }
     }

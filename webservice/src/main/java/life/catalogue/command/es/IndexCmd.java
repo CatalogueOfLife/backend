@@ -17,7 +17,9 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class IndexCmd extends AbstractPromptCmd {
   private static final Logger LOG = LoggerFactory.getLogger(IndexCmd.class);
@@ -74,7 +76,17 @@ public class IndexCmd extends AbstractPromptCmd {
 
         } else if(namespace.getList(ARG_KEY) != null) {
           List<Integer> keys = namespace.getList(ARG_KEY);
-          keys.forEach(svc::indexDataset);
+          LOG.info("Start sequential indexing of {} datasets", keys.size());
+          Set<String> failed = new HashSet<>();
+          for (Integer key : keys) {
+            try {
+              svc.indexDataset(key);
+            } catch (RuntimeException e) {
+              failed.add(key.toString());
+              LOG.error("Failed to index dataset {}", key, e);
+            }
+          }
+          LOG.info("Finished indexing {} datasets. Failed: {}", keys.size(), String.join(", ", failed));
 
         } else {
           System.out.println("No indexing argument given. See help for options");
