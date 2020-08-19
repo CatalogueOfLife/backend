@@ -139,7 +139,6 @@ public class PgImportRule extends ExternalResource {
     URL url = getClass().getResource("/" + tr.format.name().toLowerCase() + "/" + tr.key);
     Path source = Paths.get(url.toURI());
     dataset = new DatasetWithSettings();
-    dataset.getDataset().setContributesTo(null); // is this needed?
     dataset.setCreatedBy(IMPORT_USER.getKey());
     dataset.setModifiedBy(IMPORT_USER.getKey());
     dataset.setDataFormat(tr.format);
