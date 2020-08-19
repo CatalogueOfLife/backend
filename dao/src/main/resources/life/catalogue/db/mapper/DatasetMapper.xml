@@ -10,8 +10,7 @@
     d.gbif_key,
     d.gbif_publisher_key,
     d.private,
-    (coalesce(di.taxon_count,0) + coalesce(di.synonym_count,0) + coalesce(di.bare_name_count,0)) AS size,
-    (select array_agg(distinct s.dataset_key) from sector s where s.subject_dataset_key=d.key) AS contributes_to
+    (coalesce(di.taxon_count,0) + coalesce(di.synonym_count,0) + coalesce(di.bare_name_count,0)) AS size
   </sql>
 
   <sql id="COLS">
@@ -110,7 +109,6 @@
   <resultMap id="datasetResultMap" type="Dataset" autoMapping="true" extends="life.catalogue.db.mapper.DatasetArchiveMapper.archiveResultMap">
     <id property="key" column="key"/>
     <result property="privat" column="private"/>
-    <result property="contributesTo" column="contributes_to" typeHandler="life.catalogue.db.type2.IntegerSetTypeHandler"/>
   </resultMap>
 
   <resultMap id="settingsResultMap" type="DatasetSettings" autoMapping="false">

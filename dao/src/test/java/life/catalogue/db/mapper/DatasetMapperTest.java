@@ -95,9 +95,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     commit();
 
     Dataset d2 = TestEntityGenerator.nullifyDate(mapper().get(d1.getKey()));
-    // we generate this on the fly
-    d2.setContributesTo(null);
-  
+
     //printDiff(d1, d2);
     assertEquals(d1, d2);
   }
@@ -541,8 +539,6 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   }
 
   public static Dataset rmDbCreatedProps(Dataset d) {
-    // we generate this on the fly
-    d.setContributesTo(null);
     return d;
   }
 
