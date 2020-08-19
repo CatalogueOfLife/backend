@@ -185,7 +185,7 @@ public class AdminResource {
 
   @POST
   @Path("/rematch")
-  public String reindex(@QueryParam("datasetKey") Integer datasetKey, @Auth User user) {
+  public String rematch(@QueryParam("datasetKey") Integer datasetKey, @Auth User user) {
     if (datasetKey != null) {
     }
     return runJob("rematcher", () -> new RematchJob(datasetKey, user));

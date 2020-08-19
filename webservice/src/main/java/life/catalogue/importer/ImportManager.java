@@ -249,7 +249,7 @@ public class ImportManager implements Managed {
    *         exist or is of origin managed
    */
   public synchronized ImportRequest submit(final ImportRequest req) throws IllegalArgumentException {
-    validDataset(req.datasetKey);
+    validRequest(req);
     return submitValidDataset(req);
   }
 
@@ -321,6 +321,19 @@ public class ImportManager implements Managed {
     futures.put(req.datasetKey, exec.submit(createImport(req), req.priority));
     LOG.info("Queued import for dataset {}", req.datasetKey);
     return req;
+  }
+
+
+  private Dataset validRequest(ImportRequest request) {
+    Dataset d = validDataset(request.datasetKey);
+    // does a local archive exist for uploads?
+    if (request.upload) {
+      File f = cfg.normalizer.source(request.datasetKey);
+      if (!f.exists()) {
+        throw new IllegalArgumentException("No local archive exists for dataset " + request.datasetKey);
+      }
+    }
+    return d;
   }
 
   private Dataset validDataset(int datasetKey) {
