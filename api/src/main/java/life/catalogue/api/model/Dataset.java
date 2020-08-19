@@ -131,13 +131,12 @@ public class Dataset extends ArchivedDataset {
       Objects.equals(gbifPublisherKey, dataset.gbifPublisherKey) &&
       Objects.equals(imported, dataset.imported) &&
       Objects.equals(deleted, dataset.deleted) &&
-      Objects.equals(size, dataset.size) &&
       Objects.equals(contributesTo, dataset.contributesTo);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), privat, gbifKey, gbifPublisherKey, imported, deleted, size, contributesTo);
+    return Objects.hash(super.hashCode(), privat, gbifKey, gbifPublisherKey, imported, deleted, contributesTo);
   }
 
   @Override

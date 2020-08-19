@@ -1,5 +1,6 @@
 package life.catalogue.dao;
 
+import com.google.common.base.Preconditions;
 import com.google.common.eventbus.Subscribe;
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.exception.NotFoundException;
@@ -33,17 +34,20 @@ public class DatasetInfoCache {
     this.factory = factory;
   }
 
-  static class DatasetInfo {
-    final int key;
-    final DatasetOrigin origin;
-    final Integer sourceKey;
-    final Integer importAttempt;
+  public static class DatasetInfo {
+    public final int key;
+    public final DatasetOrigin origin;
+    public final Integer sourceKey;
+    public final Integer importAttempt;
 
     DatasetInfo(int key, DatasetOrigin origin, Integer sourceKey, Integer importAttempt) {
       this.key = key;
-      this.origin = origin;
+      this.origin = Preconditions.checkNotNull(origin, "origin is required");
       this.sourceKey = sourceKey;
       this.importAttempt = importAttempt;
+      if (origin == DatasetOrigin.RELEASED) {
+        Preconditions.checkNotNull(sourceKey, "sourceKey is required for release " + key);
+      }
     }
   }
 
@@ -66,6 +70,10 @@ public class DatasetInfoCache {
       deleted.add(key);
     }
     throw NotFoundException.notFound(Dataset.class, key);
+  }
+
+  public DatasetInfo info(int datasetKey) throws NotFoundException {
+    return get(datasetKey);
   }
 
   public DatasetOrigin origin(int datasetKey) throws NotFoundException {

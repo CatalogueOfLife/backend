@@ -51,6 +51,7 @@
 
   <update id="lockTables" parameterType="map">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT 1 FROM verbatim_${partition} LIMIT 1;
     LOCK TABLE verbatim_${partition} IN EXCLUSIVE mode;
     LOCK TABLE name_${partition} IN EXCLUSIVE mode;
     LOCK TABLE name_usage_${partition} IN EXCLUSIVE mode;

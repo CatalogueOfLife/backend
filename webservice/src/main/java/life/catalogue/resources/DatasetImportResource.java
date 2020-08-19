@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -35,10 +36,13 @@ public class DatasetImportResource {
                                         @QueryParam("state") List<ImportState> states,
                                         @QueryParam("limit") @DefaultValue("1") int limit) {
     // a release? use mother project in that case
-    if (DatasetInfoCache.CACHE.origin(key) == DatasetOrigin.RELEASED) {
-      Integer projectKey = DatasetInfoCache.CACHE.sourceProject(key);
-      Integer attempt = DatasetInfoCache.CACHE.importAttempt(key);
-      return List.of(diDao.getAttempt(projectKey, attempt));
+    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(key);
+    if (info.origin == DatasetOrigin.RELEASED) {
+      if (info.importAttempt == null) {
+        // could possibly happen for older releases where do not have any metrics for anymore
+        return Collections.emptyList();
+      }
+      return List.of(diDao.getAttempt(info.sourceKey, info.importAttempt));
 
     } else {
       return diDao.list(key, states, new Page(0, limit)).getResult();
