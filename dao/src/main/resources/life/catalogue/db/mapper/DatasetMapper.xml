@@ -32,7 +32,7 @@
   </sql>
 
   <sql id="FROM">
-    dataset d LEFT JOIN dataset_import di ON d.import_attempt=di.attempt AND d.key=di.dataset_key
+    dataset d LEFT JOIN dataset_import di ON di.attempt=d.import_attempt AND di.dataset_key=coalesce(d.source_key,d.key)
   </sql>
 
   <sql id="PRIVATE">
