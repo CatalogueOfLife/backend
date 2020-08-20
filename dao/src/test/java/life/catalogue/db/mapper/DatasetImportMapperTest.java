@@ -3,6 +3,7 @@ package life.catalogue.db.mapper;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.*;
@@ -10,6 +11,7 @@ import life.catalogue.common.text.StringUtils;
 import life.catalogue.db.type2.StringCount;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
+import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
@@ -172,12 +174,23 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
   
   @Test
   public void counts() throws Exception {
-    assertEquals((Integer) 5, mapper().countName(DATASET11.getKey()));
-    assertEquals((Integer) 2, mapper().countTaxon(DATASET11.getKey()));
-    assertEquals((Integer) 3, mapper().countReference(DATASET11.getKey()));
-    assertEquals((Integer) 5, mapper().countVerbatim(DATASET11.getKey()));
-    assertEquals((Integer) 3, mapper().countVernacular(DATASET11.getKey()));
+    assertEquals((Integer) 1, mapper().countBareName(DATASET11.getKey()));
     assertEquals((Integer) 3, mapper().countDistribution(DATASET11.getKey()));
+    assertEquals((Integer) 0, mapper().countMedia(DATASET11.getKey()));
+    assertEquals((Integer) 5, mapper().countName(DATASET11.getKey()));
+    assertEquals((Integer) 3, mapper().countReference(DATASET11.getKey()));
+    assertEquals((Integer) 2, mapper().countSynonym(DATASET11.getKey()));
+    assertEquals((Integer) 2, mapper().countTaxon(DATASET11.getKey()));
+    assertEquals((Integer) 0, mapper().countTreatment(DATASET11.getKey()));
+    assertEquals((Integer) 0, mapper().countTypeMaterial(DATASET11.getKey()));
+    assertEquals((Integer) 3, mapper().countVernacular(DATASET11.getKey()));
+    assertEquals((Integer) 5, mapper().countVerbatim(DATASET11.getKey()));
+  }
+
+  @Test
+  public void countVerbatimTerms() throws Exception {
+    assertEquals(0, mapper().countVerbatimTerms(DATASET11.getKey(), ColdpTerm.scientificName).size());
+    assertEquals(0, mapper().countVerbatimTerms(DATASET11.getKey(), UnknownTerm.build("scientificName", false)).size());
   }
 
   @Test

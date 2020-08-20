@@ -267,7 +267,7 @@
   <select id="countVerbatimTerms" resultType="StringCount">
     SELECT t AS key, count(*) AS count
     FROM verbatim_${key}, lateral jsonb_object_keys(terms) AS t
-    WHERE type = #{rowType}
+    WHERE type = #{rowType, typeHandler=life.catalogue.db.type.TermTypeHandler}
     GROUP BY t
   </select>
   <select id="countVernacularsByLanguage" resultType="StringCount">

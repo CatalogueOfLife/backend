@@ -65,47 +65,52 @@ public class MetricsUpdater implements Runnable {
     final boolean isRelease = DatasetOrigin.RELEASED == d.getOrigin();
     // the datasetKey to store metrics under - the project in case of a release
     int datasetKey = isRelease ? d.getSourceKey() : d.getKey();
-    if (d.getOrigin() != DatasetOrigin.MANAGED && d.getImportAttempt() != null) {
-      int attempt = d.getImportAttempt();
-      DatasetImport di = diDao.getAttempt(datasetKey, attempt);
-      if (di == null) {
-        LOG.warn("No import metrics exist for dataset {} attempt {}, but which was given in dataset {}", datasetKey, attempt, d.getKey());
+
+    try {
+      if (d.getOrigin() != DatasetOrigin.MANAGED && d.getImportAttempt() != null) {
+        int attempt = d.getImportAttempt();
+        DatasetImport di = diDao.getAttempt(datasetKey, attempt);
+        if (di == null) {
+          LOG.warn("No import metrics exist for dataset {} attempt {}, but which was given in dataset {}", datasetKey, attempt, d.getKey());
+        } else {
+          LOG.info("Build import metrics for dataset " + d.getKey());
+          diDao.updateMetrics(di, d.getKey());
+          diDao.update(di);
+        }
       } else {
-        LOG.info("Build import metrics for dataset " + d.getKey());
-        diDao.updateMetrics(di, d.getKey());
-        diDao.update(di);
+        LOG.info("No import existing for dataset {}", d.getKey());
       }
-    } else {
-      LOG.info("No import existing for dataset {}", d.getKey());
-    }
 
-    // SECTORS
-    // managed & released datasets can have sectors
-    try (SqlSession session = factory.openSession()) {
-      sCounter = 0;
-      sCounterFailed = 0;
-      for (Sector s : session.getMapper(SectorMapper.class).processDataset(d.getKey())){
-        updateSector(s, datasetKey);
+      // SECTORS
+      // managed & released datasets can have sectors
+      try (SqlSession session = factory.openSession()) {
+        sCounter = 0;
+        sCounterFailed = 0;
+        for (Sector s : session.getMapper(SectorMapper.class).processDataset(d.getKey())){
+          updateSector(s, datasetKey);
+        }
+        if (sCounter > 0) {
+          LOG.info("Updated metrics for {} sectors from dataset {}, {} failed", sCounter, d.getKey(), sCounterFailed);
+        }
+      } catch (Exception e) {
+        LOG.error("Failed to update sector metrics for dataset {}", d.getKey(), e);
       }
-      if (sCounter > 0) {
-        LOG.info("Updated metrics for {} sectors from dataset {}, {} failed", sCounter, d.getKey(), sCounterFailed);
-      }
-    } catch (Exception e) {
-      LOG.error("Failed to update sector metrics for dataset {}", d.getKey(), e);
-    }
-    counter++;
+      counter++;
 
-    // wipe all metrics on the filesystem for releases - we stored things there in the early days
-    if (isRelease) {
-      // subdir includes also sectors
-      File dir = diDao.getFileMetricsDao().subdir(d.getKey());
-      if (dir.exists()) {
-        try {
-          FileUtils.deleteDirectory(dir);
-        } catch (IOException e) {
-          LOG.warn("Failed to remove metrics directory {} for release {}", dir, d.getKey());
+      // wipe all metrics on the filesystem for releases - we stored things there in the early days
+      if (isRelease) {
+        // subdir includes also sectors
+        File dir = diDao.getFileMetricsDao().subdir(d.getKey());
+        if (dir.exists()) {
+          try {
+            FileUtils.deleteDirectory(dir);
+          } catch (IOException e) {
+            LOG.warn("Failed to remove metrics directory {} for release {}", dir, d.getKey());
+          }
         }
       }
+    } catch (Exception e) {
+      LOG.error("Failed to update metrics for dataset {}", d.getKey());
     }
   }
 
