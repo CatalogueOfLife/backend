@@ -249,6 +249,18 @@
     WHERE NOT t.is_synonym
     GROUP BY n.rank
   </select>
+  <select id="countExtinctTaxaByRank" resultType="StringCount">
+    SELECT n.rank AS key, count(*) AS count
+    FROM name_usage_${key} t JOIN name_${key} n ON t.name_id=n.id
+    WHERE NOT t.is_synonym AND t.extinct
+    GROUP BY n.rank
+  </select>
+  <select id="countSynonymsByRank" resultType="StringCount">
+    SELECT n.rank AS key, count(*) AS count
+    FROM name_usage_${key} t JOIN name_${key} n ON t.name_id=n.id
+    WHERE t.is_synonym
+    GROUP BY n.rank
+  </select>
   <select id="countTaxonRelationsByType" resultType="StringCount">
     SELECT type AS key, count(*) AS count
     FROM taxon_rel_${key}

@@ -66,6 +66,8 @@ public class ImportMetrics implements ImportAttempt {
   private Map<MediaType, Integer> mediaByTypeCount = Maps.newHashMap();
   private Map<TaxonomicStatus, Integer> usagesByStatusCount = Maps.newHashMap();
   private Map<Rank, Integer> taxaByRankCount = Maps.newHashMap();
+  private Map<Rank, Integer> extinctTaxaByRankCount = Maps.newHashMap();
+  private Map<Rank, Integer> synonymsByRankCount = Maps.newHashMap();
   private Map<TaxRelType, Integer> taxonRelationsByTypeCount = Maps.newHashMap();
   private Map<Issue, Integer> issuesCount = Maps.newHashMap();
   
@@ -316,6 +318,22 @@ public class ImportMetrics implements ImportAttempt {
     this.taxaByRankCount = taxaByRankCount;
   }
 
+  public Map<Rank, Integer> getExtinctTaxaByRankCount() {
+    return extinctTaxaByRankCount;
+  }
+
+  public void setExtinctTaxaByRankCount(Map<Rank, Integer> extinctTaxaByRankCount) {
+    this.extinctTaxaByRankCount = extinctTaxaByRankCount;
+  }
+
+  public Map<Rank, Integer> getSynonymsByRankCount() {
+    return synonymsByRankCount;
+  }
+
+  public void setSynonymsByRankCount(Map<Rank, Integer> synonymsByRankCount) {
+    this.synonymsByRankCount = synonymsByRankCount;
+  }
+
   public Map<TaxRelType, Integer> getTaxonRelationsByTypeCount() {
     return taxonRelationsByTypeCount;
   }
@@ -342,6 +360,7 @@ public class ImportMetrics implements ImportAttempt {
 
   public void add(ImportMetrics m) {
     nameCount = sum(nameCount, m.nameCount);
+    bareNameCount = sum(bareNameCount, m.bareNameCount);
     taxonCount = sum(taxonCount, m.taxonCount);
     synonymCount = sum(synonymCount, m.synonymCount);
     referenceCount = sum(referenceCount, m.referenceCount);
@@ -362,6 +381,8 @@ public class ImportMetrics implements ImportAttempt {
     mediaByTypeCount = sum(mediaByTypeCount, m.mediaByTypeCount);
     usagesByStatusCount = sum(usagesByStatusCount, m.usagesByStatusCount);
     taxaByRankCount = sum(taxaByRankCount, m.taxaByRankCount);
+    extinctTaxaByRankCount = sum(extinctTaxaByRankCount, m.extinctTaxaByRankCount);
+    synonymsByRankCount = sum(synonymsByRankCount, m.synonymsByRankCount);
     taxonRelationsByTypeCount = sum(taxonRelationsByTypeCount, m.taxonRelationsByTypeCount);
     issuesCount = sum(issuesCount, m.issuesCount);
   }
@@ -423,6 +444,8 @@ public class ImportMetrics implements ImportAttempt {
       Objects.equals(mediaByTypeCount, that.mediaByTypeCount) &&
       Objects.equals(usagesByStatusCount, that.usagesByStatusCount) &&
       Objects.equals(taxaByRankCount, that.taxaByRankCount) &&
+      Objects.equals(extinctTaxaByRankCount, that.extinctTaxaByRankCount) &&
+      Objects.equals(synonymsByRankCount, that.synonymsByRankCount) &&
       Objects.equals(taxonRelationsByTypeCount, that.taxonRelationsByTypeCount) &&
       Objects.equals(issuesCount, that.issuesCount);
   }
@@ -431,7 +454,9 @@ public class ImportMetrics implements ImportAttempt {
   public int hashCode() {
     return Objects.hash(datasetKey, attempt, job, state, started, finished, createdBy, error,
       nameCount, taxonCount, synonymCount, bareNameCount, referenceCount, typeMaterialCount, distributionCount, mediaCount, treatmentCount, vernacularCount, sectorCount,
-      namesByTypeCount, namesByStatusCount, namesByOriginCount, namesByRankCount, nameRelationsByTypeCount, typeMaterialByStatusCount, distributionsByGazetteerCount, vernacularsByLanguageCount, mediaByTypeCount, usagesByStatusCount, taxaByRankCount, taxonRelationsByTypeCount, issuesCount);
+      namesByTypeCount, namesByStatusCount, namesByOriginCount, namesByRankCount, nameRelationsByTypeCount, typeMaterialByStatusCount, distributionsByGazetteerCount,
+      vernacularsByLanguageCount, mediaByTypeCount, usagesByStatusCount,
+      taxaByRankCount, extinctTaxaByRankCount, synonymsByRankCount, taxonRelationsByTypeCount, issuesCount);
   }
 
   @Override

@@ -247,6 +247,18 @@
     WHERE NOT t.is_synonym AND t.sector_key=${sectorKey}
     GROUP BY n.rank
   </select>
+  <select id="countExtinctTaxaByRank" resultType="StringCount">
+    SELECT n.rank AS key, count(*) AS count
+    FROM name_usage_${datasetKey} t JOIN name_${datasetKey} n ON t.name_id=n.id
+    WHERE NOT t.is_synonym AND t.sector_key=${sectorKey} AND t.extinct
+    GROUP BY n.rank
+  </select>
+  <select id="countSynonymsByRank" resultType="StringCount">
+    SELECT n.rank AS key, count(*) AS count
+    FROM name_usage_${datasetKey} t JOIN name_${datasetKey} n ON t.name_id=n.id
+    WHERE t.is_synonym AND t.sector_key=${sectorKey}
+    GROUP BY n.rank
+  </select>
   <select id="countTypeMaterialByStatus" resultType="StringCount">
     SELECT status AS key, count(*) AS count
     FROM type_material_${datasetKey}

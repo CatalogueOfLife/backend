@@ -22,6 +22,7 @@ import java.util.*;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 
 /**
@@ -185,6 +186,25 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     assertEquals((Integer) 0, mapper().countTypeMaterial(DATASET11.getKey()));
     assertEquals((Integer) 3, mapper().countVernacular(DATASET11.getKey()));
     assertEquals((Integer) 5, mapper().countVerbatim(DATASET11.getKey()));
+  }
+
+  @Test
+  public void countByMaps() throws Exception {
+    assertEquals(1, mapper().countDistributionsByGazetteer(DATASET11.getKey()).size());
+    assertEquals(1, mapper().countExtinctTaxaByRank(DATASET11.getKey()).size());
+    assertEquals(6, mapper().countIssues(DATASET11.getKey()).size());
+    assertEquals(0, mapper().countMediaByType(DATASET11.getKey()).size());
+    assertEquals(1, mapper().countNameRelationsByType(DATASET11.getKey()).size());
+    assertEquals(1, mapper().countNamesByOrigin(DATASET11.getKey()).size());
+    assertEquals(1, mapper().countNamesByRank(DATASET11.getKey()).size());
+    assertEquals(1, mapper().countNamesByStatus(DATASET11.getKey()).size());
+    assertEquals(1, mapper().countNamesByType(DATASET11.getKey()).size());
+    assertEquals(1, mapper().countSynonymsByRank(DATASET11.getKey()).size());
+    assertEquals(1, mapper().countTaxaByRank(DATASET11.getKey()).size());
+    assertEquals(0, mapper().countTaxonRelationsByType(DATASET11.getKey()).size());
+    assertEquals(0, mapper().countTypeMaterialByStatus(DATASET11.getKey()).size());
+    assertEquals(2, mapper().countUsagesByStatus(DATASET11.getKey()).size());
+    assertEquals(3, mapper().countVernacularsByLanguage(DATASET11.getKey()).size());
   }
 
   @Test

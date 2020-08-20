@@ -64,6 +64,7 @@ public class SectorImportDao {
     si.setVernacularCount(mapper.countVernacular(datasetKey, key));
 
     si.setDistributionsByGazetteerCount(DatasetImportDao.countMap(Gazetteer.class, mapper.countDistributionsByGazetteer(datasetKey, key)));
+    si.setExtinctTaxaByRankCount(DatasetImportDao.countMap(DatasetImportDao::parseRank, mapper.countExtinctTaxaByRank(datasetKey, key)));
     si.setIssuesCount(DatasetImportDao.countMap(Issue.class, mapper.countIssues(datasetKey, key)));
     si.setMediaByTypeCount(DatasetImportDao.countMap(MediaType.class, mapper.countMediaByType(datasetKey, key)));
     si.setNameRelationsByTypeCount(DatasetImportDao.countMap(NomRelType.class, mapper.countNameRelationsByType(datasetKey, key)));
@@ -71,6 +72,7 @@ public class SectorImportDao {
     si.setNamesByRankCount(DatasetImportDao.countMap(DatasetImportDao::parseRank, mapper.countNamesByRank(datasetKey, key)));
     si.setNamesByStatusCount(DatasetImportDao.countMap(NomStatus.class, mapper.countNamesByStatus(datasetKey, key)));
     si.setNamesByTypeCount(DatasetImportDao.countMap(NameType.class, mapper.countNamesByType(datasetKey, key)));
+    si.setSynonymsByRankCount(DatasetImportDao.countMap(DatasetImportDao::parseRank, mapper.countSynonymsByRank(datasetKey, key)));
     si.setTaxaByRankCount(DatasetImportDao.countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(datasetKey, key)));
     si.setTaxonRelationsByTypeCount(DatasetImportDao.countMap(TaxRelType.class, mapper.countTaxonRelationsByType(datasetKey, key)));
     si.setTypeMaterialByStatusCount(DatasetImportDao.countMap(TypeStatus.class, mapper.countTypeMaterialByStatus(datasetKey, key)));
