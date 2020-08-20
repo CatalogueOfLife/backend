@@ -229,8 +229,8 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
     AtomicInteger sectorCounter = new AtomicInteger(0);
     // a release? use mother project in that case
-    if (DatasetInfoCache.CACHE.origin(key) == DatasetOrigin.RELEASED) {
-      Integer projectKey = DatasetInfoCache.CACHE.sourceProject(key);
+    if (DatasetInfoCache.CACHE.origin(datasetKey) == DatasetOrigin.RELEASED) {
+      Integer projectKey = DatasetInfoCache.CACHE.sourceProject(datasetKey);
       session.getMapper(SectorMapper.class).processDataset(datasetKey).forEach(s -> {
         ImportMetrics m = sim.get(DSID.of(projectKey, key), s.getSyncAttempt());
         metrics.add(m);

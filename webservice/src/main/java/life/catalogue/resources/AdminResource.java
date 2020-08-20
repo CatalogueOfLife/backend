@@ -159,7 +159,7 @@ public class AdminResource {
 
   @POST
   @Path("/metrics-update")
-  public String updateAllFileMetrics(@QueryParam("datasetKey") Integer datasetKey) {
+  public String updateMetrics(@QueryParam("datasetKey") Integer datasetKey) {
     return runJob("metrics-updater", () -> new MetricsUpdater(factory, cfg, datasetKey));
   }
 

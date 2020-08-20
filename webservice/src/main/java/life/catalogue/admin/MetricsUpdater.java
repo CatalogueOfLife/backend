@@ -54,18 +54,18 @@ public class MetricsUpdater implements Runnable {
       if (datasetKey != null){
         updateDataset(dm.get(datasetKey));
       } else {
-        LOG.info("Start file metrics update for all datasets");
+        LOG.info("Start metrics update for all datasets");
         dm.process(null).forEach(this::updateDataset);
       }
     }
-    LOG.info("Finished file metrics update updating {} datasets", counter);
+    LOG.info("Finished metrics update, updating {} datasets", counter);
   }
 
   private void updateDataset(Dataset d) {
     final boolean isRelease = DatasetOrigin.RELEASED == d.getOrigin();
     // the datasetKey to store metrics under - the project in case of a release
     int datasetKey = isRelease ? d.getSourceKey() : d.getKey();
-    if (d.getImportAttempt() != null) {
+    if (d.getOrigin() != DatasetOrigin.MANAGED && d.getImportAttempt() != null) {
       int attempt = d.getImportAttempt();
       DatasetImport di = diDao.getAttempt(datasetKey, attempt);
       if (di == null) {
