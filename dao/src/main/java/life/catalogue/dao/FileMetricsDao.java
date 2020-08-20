@@ -225,7 +225,7 @@ public abstract class FileMetricsDao<K> {
     return new File(subdir(key), "names/"+attempt+".txt.gz");
   }
 
-  abstract File subdir(K key);
+  public abstract File subdir(K key);
 
   abstract DSID<Integer> sectorKey(K key);
 }

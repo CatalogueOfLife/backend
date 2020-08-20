@@ -7,11 +7,14 @@ import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.SectorMapper;
+import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -59,8 +62,9 @@ public class MetricsUpdater implements Runnable {
   }
 
   private void updateDataset(Dataset d) {
+    final boolean isRelease = DatasetOrigin.RELEASED == d.getOrigin();
     // the datasetKey to store metrics under - the project in case of a release
-    int datasetKey = DatasetOrigin.RELEASED == d.getOrigin() ? d.getSourceKey() : d.getKey();
+    int datasetKey = isRelease ? d.getSourceKey() : d.getKey();
     if (d.getImportAttempt() != null) {
       int attempt = d.getImportAttempt();
       DatasetImport di = diDao.getAttempt(datasetKey, attempt);
@@ -90,6 +94,19 @@ public class MetricsUpdater implements Runnable {
       LOG.error("Failed to update sector metrics for dataset {}", d.getKey(), e);
     }
     counter++;
+
+    // wipe all metrics on the filesystem for releases - we stored things there in the early days
+    if (isRelease) {
+      // subdir includes also sectors
+      File dir = diDao.getFileMetricsDao().subdir(d.getKey());
+      if (dir.exists()) {
+        try {
+          FileUtils.deleteDirectory(dir);
+        } catch (IOException e) {
+          LOG.warn("Failed to remove metrics directory {} for release {}", dir, d.getKey());
+        }
+      }
+    }
   }
 
   static class SectorAttempt {

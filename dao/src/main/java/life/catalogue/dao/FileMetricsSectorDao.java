@@ -23,7 +23,7 @@ public class FileMetricsSectorDao extends FileMetricsDao<DSID<Integer>> {
   }
 
   @Override
-  File subdir(DSID<Integer> key) {
+  public File subdir(DSID<Integer> key) {
     File dDir = FileMetricsDatasetDao.datasetDir(repo, key.getDatasetKey());
     return new File(dDir, "sector/" + key.getId());
   }
