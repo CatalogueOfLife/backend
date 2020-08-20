@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -30,6 +31,7 @@ public class MetricsUpdater implements Runnable {
   private Integer datasetKey;
   private int counter;
   private int sCounter;
+  private int sCounterFailed;
   private DatasetImportDao diDao;
   private SectorImportDao siDao;
   private Set<SectorAttempt> metricsDone = new HashSet<>();
@@ -57,9 +59,10 @@ public class MetricsUpdater implements Runnable {
   }
 
   private void updateDataset(Dataset d) {
+    // the datasetKey to store metrics under - the project in case of a release
+    int datasetKey = DatasetOrigin.RELEASED == d.getOrigin() ? d.getSourceKey() : d.getKey();
     if (d.getImportAttempt() != null) {
       int attempt = d.getImportAttempt();
-      int datasetKey = DatasetOrigin.RELEASED == d.getOrigin() ? d.getSourceKey() : d.getKey();
       DatasetImport di = diDao.getAttempt(datasetKey, attempt);
       if (di == null) {
         LOG.warn("No import metrics exist for dataset {} attempt {}, but which was given in dataset {}", datasetKey, attempt, d.getKey());
@@ -73,11 +76,15 @@ public class MetricsUpdater implements Runnable {
     }
 
     // SECTORS
+    // managed & released datasets can have sectors
     try (SqlSession session = factory.openSession()) {
       sCounter = 0;
-      session.getMapper(SectorMapper.class).processDataset(d.getKey()).forEach(this::updateSector);
+      sCounterFailed = 0;
+      for (Sector s : session.getMapper(SectorMapper.class).processDataset(d.getKey())){
+        updateSector(s, datasetKey);
+      }
       if (sCounter > 0) {
-        LOG.info("Updated metrics for {} sectors from dataset {}", sCounter, d.getKey());
+        LOG.info("Updated metrics for {} sectors from dataset {}, {} failed", sCounter, d.getKey(), sCounterFailed);
       }
     } catch (Exception e) {
       LOG.error("Failed to update sector metrics for dataset {}", d.getKey(), e);
@@ -95,24 +102,39 @@ public class MetricsUpdater implements Runnable {
       this.sectorKey = sectorKey;
       this.attempt = attempt;
     }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof SectorAttempt)) return false;
+      SectorAttempt that = (SectorAttempt) o;
+      return datasetKey == that.datasetKey &&
+        sectorKey == that.sectorKey &&
+        attempt == that.attempt;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(datasetKey, sectorKey, attempt);
+    }
   }
 
-  private void updateSector(Sector s) {
-    // managed & released datasets can have sectors
+  private void updateSector(Sector s, int projectKey) {
     // release sector syncs are stored in the project
     if (s.getSyncAttempt() != null) {
-      int attempt = s.getSyncAttempt();
-      int projectKey = 0;
-      DSID<Integer> metricsKey = DSID.of(projectKey, s.getId());
-      if (!metricsDone.contains(1)) {
-        SectorImport si = siDao.getAttempt(metricsKey, attempt);
+      SectorAttempt sa = new SectorAttempt(s.getDatasetKey(), s.getId(), s.getSyncAttempt());
+      if (!metricsDone.contains(sa)) {
+        metricsDone.add(sa);
+        sCounter++;
+        DSID<Integer> metricsKey = DSID.of(projectKey, s.getId());
+        SectorImport si = siDao.getAttempt(metricsKey, sa.attempt);
         if (si == null) {
-          LOG.warn("No import metrics exist for sector {} attempt {}, but which was given in sector {}", metricsKey, attempt, s.getKey());
+          LOG.warn("No import metrics exist for sector {} attempt {}, but which was given in sector {}", metricsKey, sa.attempt, s.getKey());
+          sCounterFailed++;
         } else {
           LOG.info("Build import metrics for sector " + s.getKey());
           siDao.updateMetrics(si, s.getDatasetKey());
         }
-        sCounter++;
       }
     }
   }
