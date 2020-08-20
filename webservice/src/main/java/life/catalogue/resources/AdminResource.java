@@ -5,6 +5,7 @@ import io.dropwizard.auth.Auth;
 import io.dropwizard.lifecycle.Managed;
 import life.catalogue.WsServerConfig;
 import life.catalogue.admin.MetricsUpdater;
+import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
 import life.catalogue.assembly.AssemblyCoordinator;
@@ -165,7 +166,7 @@ public class AdminResource {
 
   private String runJob(String threadName, Supplier<Runnable> supplier){
     if (thread != null) {
-      throw new IllegalStateException("A background thread " + thread.getName() + " is already running");
+      throw new UnavailableException("A background thread " + thread.getName() + " is already running");
     }
     Runnable job = supplier.get();
     thread = new Thread(new JobWrapper(job), threadName);
