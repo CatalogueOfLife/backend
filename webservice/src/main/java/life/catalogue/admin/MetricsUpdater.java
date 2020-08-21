@@ -13,6 +13,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
@@ -39,7 +40,10 @@ public class MetricsUpdater implements Runnable {
   private SectorImportDao siDao;
   private Set<SectorAttempt> metricsDone = new HashSet<>();
 
-  public MetricsUpdater(SqlSessionFactory factory, WsServerConfig cfg, Integer datasetKey) {
+  /**
+   * @param datasetKey if null update all datasets
+   */
+  public MetricsUpdater(SqlSessionFactory factory, WsServerConfig cfg, @Nullable Integer datasetKey) {
     this.factory = factory;
     this.cfg = cfg;
     this.datasetKey = datasetKey;
