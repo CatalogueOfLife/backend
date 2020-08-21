@@ -62,11 +62,10 @@ public class MetricsUpdater implements Runnable {
   }
 
   private void updateDataset(Dataset d) {
-    final boolean isRelease = DatasetOrigin.RELEASED == d.getOrigin();
-    // the datasetKey to store metrics under - the project in case of a release
-    int datasetKey = isRelease ? d.getSourceKey() : d.getKey();
-
     try {
+      final boolean isRelease = DatasetOrigin.RELEASED == d.getOrigin();
+      // the datasetKey to store metrics under - the project in case of a release
+      int datasetKey = isRelease ? d.getSourceKey() : d.getKey();
       if (d.getOrigin() != DatasetOrigin.MANAGED && d.getImportAttempt() != null) {
         int attempt = d.getImportAttempt();
         DatasetImport di = diDao.getAttempt(datasetKey, attempt);
@@ -105,12 +104,12 @@ public class MetricsUpdater implements Runnable {
           try {
             FileUtils.deleteDirectory(dir);
           } catch (IOException e) {
-            LOG.warn("Failed to remove metrics directory {} for release {}", dir, d.getKey());
+            LOG.warn("Failed to remove metrics directory {} for release {}", dir, d.getKey(), e);
           }
         }
       }
     } catch (Exception e) {
-      LOG.error("Failed to update metrics for dataset {}", d.getKey());
+      LOG.error("Failed to update metrics for dataset {}", d.getKey(), e);
     }
   }
 
