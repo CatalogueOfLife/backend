@@ -24,9 +24,7 @@ import static life.catalogue.db.mapper.LogicalOperator.AND;
 import static life.catalogue.db.mapper.LogicalOperator.OR;
 import static org.junit.Assert.assertEquals;
 
-/**
- *
- */
+
 public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMapper> {
   private static long line = 1;
   private static final int datasetKey = DATASET11.getKey();
