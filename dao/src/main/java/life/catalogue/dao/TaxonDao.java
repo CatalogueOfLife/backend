@@ -247,7 +247,15 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       }
     }
   }
-  
+
+  @Override
+  protected void updateBefore(Taxon obj, Taxon old, int user, TaxonMapper mapper, SqlSession session) {
+    // only allow parent changes if they are not part of a sector
+    if (!Objects.equals(old.getParentId(), obj.getParentId()) && old.getSectorKey() != null) {
+      throw new IllegalArgumentException("You cannot move a taxon which is part of sector " + obj.getSectorKey());
+    }
+  }
+
   @Override
   protected void updateAfter(Taxon t, Taxon old, int user, TaxonMapper tm, SqlSession session) {
     // has parent, i.e. classification been changed ?
