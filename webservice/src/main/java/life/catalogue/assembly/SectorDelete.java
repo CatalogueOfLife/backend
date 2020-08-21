@@ -109,13 +109,14 @@ public class SectorDelete extends SectorRunnable {
   private Set<String> findZoologicalAmbiguousRanks(DSID<Integer> sectorKey, SqlSession session) {
     Set<String> zoological = new HashSet<>();
     List<String> nids = session.getMapper(NameMapper.class).ambiguousRankNameIds(sectorKey.getDatasetKey(), sectorKey.getId());
+    LOG.debug("Found {} names of ambiguous ranks. Check their usages next", nids.size());
     // if we have ambiguous ranks filter out the ones that have children of ranks above SUPERSECTION
     // we iterate over children as we rarely even get ambiguous ranks
     if (nids != null && !nids.isEmpty()) {
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
       for (String nid : nids) {
         for (NameUsageBase u : um.listByNameID(sector.getDatasetKey(), nid)){
-          for (SimpleName sn : um.processTreeSimple(sector.getDatasetKey(), sector.getId(), u.getId(), null, Rank.SUPERSECTION, false)) {
+          for (SimpleName sn : um.processTreeSimple(sector.getDatasetKey(), sector.getId(), u.getId(), null, Rank.INFRAGENERIC_NAME, false)) {
             if (sn.getRank().higherThan(maxAmbiguousRank)) {
               zoological.add(nid);
               break;
