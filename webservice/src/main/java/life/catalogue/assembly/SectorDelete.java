@@ -6,7 +6,6 @@ import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
-import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.Rank;
@@ -100,9 +99,6 @@ public class SectorDelete extends SectorRunnable {
       session.commit();
 
       LOG.info("Deleted sector {}, keeping usages above {} level", sectorKey, cutoffRank);
-    } catch (PersistenceException e) {
-      LOG.error("Failed to delete sector {}", sectorKey, e);
-      throw e;
     }
   }
 
