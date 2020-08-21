@@ -359,32 +359,34 @@ public class ImportMetrics implements ImportAttempt {
   }
 
   public void add(ImportMetrics m) {
-    nameCount = sum(nameCount, m.nameCount);
-    bareNameCount = sum(bareNameCount, m.bareNameCount);
-    taxonCount = sum(taxonCount, m.taxonCount);
-    synonymCount = sum(synonymCount, m.synonymCount);
-    referenceCount = sum(referenceCount, m.referenceCount);
-    typeMaterialCount = sum(typeMaterialCount, m.typeMaterialCount);
-    distributionCount = sum(distributionCount, m.distributionCount);
-    mediaCount = sum(mediaCount, m.mediaCount);
-    treatmentCount = sum(treatmentCount, m.treatmentCount);
-    vernacularCount = sum(vernacularCount, m.vernacularCount);
+    if (m != null) {
+      nameCount = sum(nameCount, m.nameCount);
+      bareNameCount = sum(bareNameCount, m.bareNameCount);
+      taxonCount = sum(taxonCount, m.taxonCount);
+      synonymCount = sum(synonymCount, m.synonymCount);
+      referenceCount = sum(referenceCount, m.referenceCount);
+      typeMaterialCount = sum(typeMaterialCount, m.typeMaterialCount);
+      distributionCount = sum(distributionCount, m.distributionCount);
+      mediaCount = sum(mediaCount, m.mediaCount);
+      treatmentCount = sum(treatmentCount, m.treatmentCount);
+      vernacularCount = sum(vernacularCount, m.vernacularCount);
 
-    namesByTypeCount = sum(namesByTypeCount, m.namesByTypeCount);
-    namesByStatusCount = sum(namesByStatusCount, m.namesByStatusCount);
-    namesByOriginCount = sum(namesByOriginCount, m.namesByOriginCount);
-    namesByRankCount = sum(namesByRankCount, m.namesByRankCount);
-    nameRelationsByTypeCount = sum(nameRelationsByTypeCount, m.nameRelationsByTypeCount);
-    typeMaterialByStatusCount = sum(typeMaterialByStatusCount, m.typeMaterialByStatusCount);
-    distributionsByGazetteerCount = sum(distributionsByGazetteerCount, m.distributionsByGazetteerCount);
-    vernacularsByLanguageCount = sum(vernacularsByLanguageCount, m.vernacularsByLanguageCount);
-    mediaByTypeCount = sum(mediaByTypeCount, m.mediaByTypeCount);
-    usagesByStatusCount = sum(usagesByStatusCount, m.usagesByStatusCount);
-    taxaByRankCount = sum(taxaByRankCount, m.taxaByRankCount);
-    extinctTaxaByRankCount = sum(extinctTaxaByRankCount, m.extinctTaxaByRankCount);
-    synonymsByRankCount = sum(synonymsByRankCount, m.synonymsByRankCount);
-    taxonRelationsByTypeCount = sum(taxonRelationsByTypeCount, m.taxonRelationsByTypeCount);
-    issuesCount = sum(issuesCount, m.issuesCount);
+      namesByTypeCount = sum(namesByTypeCount, m.namesByTypeCount);
+      namesByStatusCount = sum(namesByStatusCount, m.namesByStatusCount);
+      namesByOriginCount = sum(namesByOriginCount, m.namesByOriginCount);
+      namesByRankCount = sum(namesByRankCount, m.namesByRankCount);
+      nameRelationsByTypeCount = sum(nameRelationsByTypeCount, m.nameRelationsByTypeCount);
+      typeMaterialByStatusCount = sum(typeMaterialByStatusCount, m.typeMaterialByStatusCount);
+      distributionsByGazetteerCount = sum(distributionsByGazetteerCount, m.distributionsByGazetteerCount);
+      vernacularsByLanguageCount = sum(vernacularsByLanguageCount, m.vernacularsByLanguageCount);
+      mediaByTypeCount = sum(mediaByTypeCount, m.mediaByTypeCount);
+      usagesByStatusCount = sum(usagesByStatusCount, m.usagesByStatusCount);
+      taxaByRankCount = sum(taxaByRankCount, m.taxaByRankCount);
+      extinctTaxaByRankCount = sum(extinctTaxaByRankCount, m.extinctTaxaByRankCount);
+      synonymsByRankCount = sum(synonymsByRankCount, m.synonymsByRankCount);
+      taxonRelationsByTypeCount = sum(taxonRelationsByTypeCount, m.taxonRelationsByTypeCount);
+      issuesCount = sum(issuesCount, m.issuesCount);
+    }
   }
 
   private static Integer sum(Integer cnt1, Integer cnt2) {
