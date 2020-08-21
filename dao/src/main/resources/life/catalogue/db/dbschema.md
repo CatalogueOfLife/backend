@@ -15,7 +15,7 @@ and done it manually. So we can as well log changes here.
 ALTER TABLE dataset_import ADD COLUMN extinct_taxa_by_rank_count HSTORE; 
 ALTER TABLE dataset_import ADD COLUMN synonyms_by_rank_count HSTORE; 
 ALTER TABLE dataset_import RENAME COLUMN issues_count TO issues_by_issue_count;
-ALTER TABLE dataset_import RENAME COLUMN verbatim_by_term_count TO issues_by_row_type_count;
+ALTER TABLE dataset_import RENAME COLUMN verbatim_by_term_count TO verbatim_by_row_type_count;
 ALTER TABLE dataset_import RENAME COLUMN verbatim_by_type_count TO verbatim_by_term_count;
 
 ALTER TABLE sector_import ADD COLUMN extinct_taxa_by_rank_count HSTORE; 
