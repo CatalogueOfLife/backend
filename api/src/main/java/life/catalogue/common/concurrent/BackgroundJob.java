@@ -21,7 +21,7 @@ public abstract class BackgroundJob implements Runnable {
   private LocalDateTime started;
   private LocalDateTime finished;
   private Exception error;
-  private Consumer<BackgroundJob> finishedHandler;
+  private Consumer<BackgroundJob> finishedHandler = (j) -> {}; // default is void
 
   public BackgroundJob(int userKey) {
     this(JobPriority.MEDIUM, userKey);
