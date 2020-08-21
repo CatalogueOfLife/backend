@@ -1,8 +1,10 @@
 package life.catalogue.admin;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.common.concurrent.BackgroundJob;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -27,12 +29,14 @@ import java.util.Set;
  * For releases the metrics are stored as part of the project, so all older release attempts
  * will be changed.
  */
-public class MetricsUpdater implements Runnable {
+public class MetricsUpdater extends BackgroundJob {
   private static final Logger LOG = LoggerFactory.getLogger(MetricsUpdater.class);
 
   private final SqlSessionFactory factory;
   private final WsServerConfig cfg;
-  private Integer datasetKey;
+  @JsonProperty
+  private final Integer datasetKey;
+  @JsonProperty
   private int counter;
   private int sCounter;
   private int sCounterFailed;
@@ -43,14 +47,15 @@ public class MetricsUpdater implements Runnable {
   /**
    * @param datasetKey if null update all datasets
    */
-  public MetricsUpdater(SqlSessionFactory factory, WsServerConfig cfg, @Nullable Integer datasetKey) {
+  public MetricsUpdater(SqlSessionFactory factory, WsServerConfig cfg, @Nullable Integer datasetKey, User user) {
+    super(user.getKey());
     this.factory = factory;
     this.cfg = cfg;
     this.datasetKey = datasetKey;
   }
 
   @Override
-  public void run() {
+  public void execute() throws Exception {
     diDao = new DatasetImportDao(factory, cfg.metricsRepo);
     siDao = new SectorImportDao(factory, cfg.metricsRepo);
     try (SqlSession session = factory.openSession()) {

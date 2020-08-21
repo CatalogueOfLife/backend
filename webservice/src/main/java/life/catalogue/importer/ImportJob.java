@@ -230,7 +230,7 @@ public class ImportJob implements Runnable {
         new Normalizer(dataset, store, sourceDir, index, imgService).call();
   
         LOG.info("Fetching logo for {}", datasetKey);
-        LogoUpdateJob.updateDatasetAsync(dataset.getDataset(), factory, downloader, cfg.normalizer::scratchFile, imgService);
+        LogoUpdateJob.updateDatasetAsync(dataset.getDataset(), factory, downloader, cfg.normalizer::scratchFile, imgService, req.createdBy);
         
         LOG.info("Writing {} to Postgres!", datasetKey);
         updateState(ImportState.INSERTING);

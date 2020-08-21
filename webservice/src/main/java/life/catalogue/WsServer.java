@@ -22,6 +22,7 @@ import life.catalogue.command.es.IndexCmd;
 import life.catalogue.command.initdb.InitDbCmd;
 import life.catalogue.command.updatedb.AddTableCmd;
 import life.catalogue.command.updatedb.ExecSqlCmd;
+import life.catalogue.common.concurrent.JobExecutor;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.tax.AuthorshipNormalizer;
@@ -174,6 +175,10 @@ public class WsServer extends Application<WsServerConfig> {
 
     DatasetInfoCache.CACHE.setFactory(mybatis.getSqlSessionFactory());
 
+    // job executor
+    JobExecutor executor = new JobExecutor(cfg.backgroundJobs);
+    env.lifecycle().manage(new ManagedCloseable(executor));
+
     // name parser
     ParserConfigDao dao = new ParserConfigDao(getSqlSessionFactory());
     dao.loadParserConfigs();
@@ -271,7 +276,8 @@ public class WsServer extends Application<WsServerConfig> {
     UserDao udao = new UserDao(getSqlSessionFactory(), bus);
 
     // resources
-    j.register(new AdminResource(getSqlSessionFactory(), assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter, importManager, gbifSync, ni));
+    j.register(new AdminResource(getSqlSessionFactory(), assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter,
+      importManager, gbifSync, ni, executor));
     j.register(new DataPackageResource());
     j.register(new DatasetDiffResource(dDiff));
     j.register(new DatasetImportResource(diDao));

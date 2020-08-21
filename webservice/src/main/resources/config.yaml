@@ -5,7 +5,7 @@ logging:
     "org.eclipse.jetty.servlet": WARN
     "life.catalogue": INFO
     "life.catalogue.db.mapper": DEBUG
-    "life.catalogue.db.legacy": DEBUG
+    "life.catalogue.db.legacy": INFO
   appenders:
     - type: console
 db:

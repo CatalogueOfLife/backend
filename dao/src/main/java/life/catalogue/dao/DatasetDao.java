@@ -148,7 +148,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   @Override
   protected void createAfter(Dataset obj, int user, DatasetMapper mapper, SqlSession session) {
-    pullLogo(obj);
+    pullLogo(obj, user);
     if (obj.getOrigin() == DatasetOrigin.MANAGED) {
       recreatePartition(obj.getKey());
       Partitioner.createManagedSequences(factory, obj.getKey());
@@ -164,7 +164,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   @Override
   protected void updateAfter(Dataset obj, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
-    pullLogo(obj);
+    pullLogo(obj, user);
     if (obj.getOrigin() == DatasetOrigin.MANAGED && !session.getMapper(DatasetPartitionMapper.class).exists(obj.getKey())) {
       recreatePartition(obj.getKey());
     }
@@ -176,8 +176,8 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     Partitioner.indexAndAttach(factory, datasetKey);
   }
 
-  private void pullLogo(Dataset d) {
-    LogoUpdateJob.updateDatasetAsync(d, factory, downloader, scratchFileFunc, imgService);
+  private void pullLogo(Dataset d, int user) {
+    LogoUpdateJob.updateDatasetAsync(d, factory, downloader, scratchFileFunc, imgService, user);
   }
 
   public void addEditor(int key, int editorKey, User user) {

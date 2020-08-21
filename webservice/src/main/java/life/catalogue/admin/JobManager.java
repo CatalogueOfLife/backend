@@ -1,13 +1,13 @@
 package life.catalogue.admin;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.common.concurrent.PBQThreadPoolExecutor2;
+import life.catalogue.common.concurrent.JobExecutor;
 
 public class JobManager {
-  private final PBQThreadPoolExecutor2 exec;
+  private final JobExecutor exec;
 
   public JobManager(WsServerConfig cfg) {
-    this.exec = new PBQThreadPoolExecutor2(cfg.backgroundJobs, 1000);
+    this.exec = new JobExecutor(cfg.backgroundJobs, 1000);
   }
 
 

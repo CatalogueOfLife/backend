@@ -2,6 +2,7 @@ package life.catalogue.img;
 
 import com.google.common.base.Strings;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.common.concurrent.BackgroundJob;
 import life.catalogue.common.io.DownloadException;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -20,7 +21,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 
-public class LogoUpdateJob implements Runnable {
+public class LogoUpdateJob extends BackgroundJob {
   private static final Logger LOG = LoggerFactory.getLogger(LogoUpdateJob.class);
   
   private final ImageService imgService;
@@ -35,14 +36,16 @@ public class LogoUpdateJob implements Runnable {
    * @param scratchFileFunc function to return a scratch dir for a given datasetKey
    * @return new thread ready to be started
    */
-  public static LogoUpdateJob updateAllAsync(SqlSessionFactory factory, DownloadUtil downloader, BiFunction<Integer, String, File> scratchFileFunc, ImageService imgService) {
-    return new LogoUpdateJob(null, factory, downloader, scratchFileFunc, imgService);
+  public static LogoUpdateJob updateAllAsync(SqlSessionFactory factory, DownloadUtil downloader, BiFunction<Integer, String, File> scratchFileFunc,
+                                             ImageService imgService, int userKey) {
+    return new LogoUpdateJob(null, factory, downloader, scratchFileFunc, imgService, userKey);
   }
   
-  public static void updateDatasetAsync(Dataset d, SqlSessionFactory factory, DownloadUtil downloader, BiFunction<Integer, String, File> scratchFileFunc, ImageService imgService) {
+  public static void updateDatasetAsync(Dataset d, SqlSessionFactory factory, DownloadUtil downloader, BiFunction<Integer, String, File> scratchFileFunc,
+                                        ImageService imgService, int userKey) {
     if (d.getLogo() != null) {
       CompletableFuture.runAsync(
-          new LogoUpdateJob(d, factory, downloader,scratchFileFunc, imgService)
+          new LogoUpdateJob(d, factory, downloader,scratchFileFunc, imgService, userKey)
       );
     }
   }
@@ -50,7 +53,9 @@ public class LogoUpdateJob implements Runnable {
   /**
    * @param d if null pages through all datasets
    */
-  private LogoUpdateJob(@Nullable Dataset d, SqlSessionFactory factory, DownloadUtil downloader, BiFunction<Integer, String, File> scratchFileFunc, ImageService imgService) {
+  private LogoUpdateJob(@Nullable Dataset d, SqlSessionFactory factory, DownloadUtil downloader, BiFunction<Integer, String, File> scratchFileFunc,
+                        ImageService imgService, int userKey) {
+    super(userKey);
     this.dataset = d;
     this.imgService = imgService;
     this.factory = factory;
@@ -59,7 +64,7 @@ public class LogoUpdateJob implements Runnable {
   }
   
   @Override
-  public void run() {
+  public void execute() {
     if (dataset != null) {
       pullLogo(dataset);
     } else {
