@@ -195,8 +195,8 @@
   </insert>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO sector (id, dataset_key, sync_attempt, <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by )
-    SELECT id, #{newDatasetKey}, sync_attempt, <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by
+    INSERT INTO sector (id, dataset_key, sync_attempt, dataset_import_attempt, <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by )
+    SELECT id, #{newDatasetKey}, sync_attempt, dataset_import_attempt, <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by
     FROM sector
     WHERE dataset_key=#{datasetKey}
   </insert>
