@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.DatasetImport;
+import life.catalogue.api.model.ImportMetrics;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.text.StringUtils;
@@ -22,7 +23,6 @@ import java.util.*;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 
 /**
@@ -34,47 +34,60 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
   public DatasetImportMapperTest() {
     super(DatasetImportMapper.class);
   }
-  
+
+  static void fill(ImportMetrics m, ImportState state) {
+    m.setDatasetKey(DATASET11.getKey());
+    m.setCreatedBy(Users.TESTER);
+    m.setJob(DatasetImportMapperTest.class.getSimpleName());
+    m.setError("no error");
+    m.setState(state);
+    m.setStarted(LocalDateTime.now());
+    m.setFinished(LocalDateTime.now());
+    m.setBareNameCount(13);
+    m.setDistributionCount(12345);
+    m.setMediaCount(936);
+    m.setNameCount(65432);
+    m.setReferenceCount(9781);
+    m.setSynonymCount(137);
+    m.setTaxonCount(5748329);
+    m.setTreatmentCount(432);
+    m.setTypeMaterialCount(432);
+    m.setVernacularCount(432);
+    m.setDistributionsByGazetteerCount(mockCount(Gazetteer.class));
+    m.setExtinctTaxaByRankCount(mockCount(Rank.class));
+    m.setIssuesCount(mockCount(Issue.class));
+    m.setMediaByTypeCount(mockCount(MediaType.class));
+    m.setNameRelationsByTypeCount(mockCount(NomRelType.class));
+    m.setNamesByOriginCount(mockCount(Origin.class));
+    m.setNamesByRankCount(mockCount(Rank.class));
+    m.setNamesByStatusCount(mockCount(NomStatus.class));
+    m.setNamesByTypeCount(mockCount(NameType.class));
+    m.setSynonymsByRankCount(mockCount(Rank.class));
+    m.setTaxaByRankCount(mockCount(Rank.class));
+    m.setTaxonRelationsByTypeCount(mockCount(TaxRelType.class));
+    m.setTypeMaterialByStatusCount(mockCount(TypeStatus.class));
+    m.setUsagesByStatusCount(mockCount(TaxonomicStatus.class));
+    m.setVernacularsByLanguageCount(mockCount());
+  }
+
   private static DatasetImport create(ImportState state) throws Exception {
     DatasetImport d = new DatasetImport();
-    d.setDatasetKey(DATASET11.getKey());
-    d.setCreatedBy(Users.TESTER);
-    d.setJob(DatasetImportMapperTest.class.getSimpleName());
-    d.setError("no error");
-    d.setState(state);
+    fill(d, state);
     d.setFormat(DataFormat.COLDP);
     d.setOrigin(DatasetOrigin.EXTERNAL);
-    d.setStarted(LocalDateTime.now());
-    d.setFinished(LocalDateTime.now());
     d.setDownloadUri(URI.create("http://rs.gbif.org/datasets/nub.zip"));
     d.setDownload(LocalDateTime.now());
     d.setVerbatimCount(5748923);
-    d.setNameCount(65432);
-    d.setTaxonCount(5748329);
-    d.setBareNameCount(13);
-    d.setReferenceCount(9781);
-    d.setDistributionCount(12345);
-    d.setVernacularCount(432);
-    d.setIssuesCount(mockCount(Issue.class));
-    d.setNamesByOriginCount(mockCount(Origin.class));
-    d.setNamesByRankCount(mockCount(Rank.class));
-    d.setTaxaByRankCount(mockCount(Rank.class));
-    d.setNamesByTypeCount(mockCount(NameType.class));
-    d.setVernacularsByLanguageCount(mockCount());
-    d.setDistributionsByGazetteerCount(mockCount(Gazetteer.class));
-    d.setUsagesByStatusCount(mockCount(TaxonomicStatus.class));
-    d.setNamesByStatusCount(mockCount(NomStatus.class));
-    d.setNameRelationsByTypeCount(mockCount(NomRelType.class));
     Map<Term, Integer> vcnt = new HashMap<>();
     vcnt.put(AcefTerm.AcceptedSpecies, 10);
-    d.setVerbatimByTypeCount(vcnt);
+    d.setVerbatimByTermCount(vcnt);
     Map<Term, Integer> terms = new HashMap<>();
     terms.put(AcefTerm.SpeciesEpithet, 10);
     terms.put(AcefTerm.Genus, 10);
     terms.put(AcefTerm.AcceptedTaxonID, 10);
     terms.put(AcefTerm.SubGenusName, 7);
-    for (Term rt : d.getVerbatimByTypeCount().keySet()) {
-      d.getVerbatimByTermCount().put(rt, terms);
+    for (Term rt : d.getVerbatimByTermCount().keySet()) {
+      d.getVerbatimByRowTypeCount().put(rt, terms);
     }
     return d;
   }
@@ -109,9 +122,10 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     DatasetImport d2 = mapper().get(d1.getDatasetKey(), d1.getAttempt());
 
     if (!d1.equals(d2)) {
-      d1.setVerbatimByTermCount(null);
-      d2.setVerbatimByTermCount(null);
+      d1.setVerbatimByRowTypeCount(null);
+      d2.setVerbatimByRowTypeCount(null);
     }
+    //printDiff(d1, d2);
     assertEquals(d1, d2);
     
     d1.setState(ImportState.FINISHED);

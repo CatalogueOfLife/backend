@@ -37,12 +37,12 @@ public class DatasetImport extends ImportMetrics {
   
   private Integer verbatimCount;
   
-  private Map<Term, Integer> verbatimByTypeCount = Maps.newHashMap();
+  private Map<Term, Integer> verbatimByTermCount = Maps.newHashMap();
   
   /**
    * Map of row types that return a map of terms and their counts of verbatim records with that type
    */
-  private Map<Term, Map<Term, Integer>> verbatimByTermCount = Maps.newHashMap();
+  private Map<Term, Map<Term, Integer>> verbatimByRowTypeCount = Maps.newHashMap();
 
   public URI getDownloadUri() {
     return downloadUri;
@@ -96,20 +96,20 @@ public class DatasetImport extends ImportMetrics {
     this.verbatimCount = verbatimCount;
   }
   
-  public Map<Term, Integer> getVerbatimByTypeCount() {
-    return verbatimByTypeCount;
-  }
-  
-  public void setVerbatimByTypeCount(Map<Term, Integer> verbatimByTypeCount) {
-    this.verbatimByTypeCount = verbatimByTypeCount;
-  }
-  
-  public Map<Term, Map<Term, Integer>> getVerbatimByTermCount() {
+  public Map<Term, Integer> getVerbatimByTermCount() {
     return verbatimByTermCount;
   }
   
-  public void setVerbatimByTermCount(Map<Term, Map<Term, Integer>> verbatimByTermCount) {
+  public void setVerbatimByTermCount(Map<Term, Integer> verbatimByTermCount) {
     this.verbatimByTermCount = verbatimByTermCount;
+  }
+  
+  public Map<Term, Map<Term, Integer>> getVerbatimByRowTypeCount() {
+    return verbatimByRowTypeCount;
+  }
+  
+  public void setVerbatimByRowTypeCount(Map<Term, Map<Term, Integer>> verbatimByRowTypeCount) {
+    this.verbatimByRowTypeCount = verbatimByRowTypeCount;
   }
 
   @Override
@@ -124,13 +124,13 @@ public class DatasetImport extends ImportMetrics {
         Objects.equals(download, that.download) &&
         Objects.equals(md5, that.md5) &&
         Objects.equals(verbatimCount, that.verbatimCount) &&
-        Objects.equals(verbatimByTypeCount, that.verbatimByTypeCount) &&
-        Objects.equals(verbatimByTermCount, that.verbatimByTermCount);
+        Objects.equals(verbatimByTermCount, that.verbatimByTermCount) &&
+        Objects.equals(verbatimByRowTypeCount, that.verbatimByRowTypeCount);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), downloadUri, origin, format, download, md5, verbatimCount, verbatimByTypeCount, verbatimByTermCount);
+    return Objects.hash(super.hashCode(), downloadUri, origin, format, download, md5, verbatimCount, verbatimByTermCount, verbatimByRowTypeCount);
   }
 
   @Override

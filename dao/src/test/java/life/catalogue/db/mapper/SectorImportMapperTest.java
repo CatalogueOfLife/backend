@@ -8,11 +8,8 @@ import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.ImportState;
-import life.catalogue.api.vocab.Users;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.time.LocalDateTime;
 
 import static life.catalogue.api.TestEntityGenerator.*;
 import static life.catalogue.api.vocab.Datasets.DRAFT_COL;
@@ -54,23 +51,13 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
   
   public static SectorImport create(ImportState state, Sector s) {
     SectorImport d = new SectorImport();
+    DatasetImportMapperTest.fill(d, state);
     d.setJob("SectorImportTest");
     d.setDatasetKey(s.getDatasetKey());
     d.setSectorKey(s.getId());
-    d.setCreatedBy(Users.TESTER);
     d.setAttempt(attempts++);
-    d.setError("no error");
     d.addWarning("warning 1");
     d.addWarning("warning 2");
-    d.setState(state);
-    d.setStarted(LocalDateTime.now());
-    d.setFinished(LocalDateTime.now());
-    d.setNameCount(65432);
-    d.setTaxonCount(5748329);
-    d.setBareNameCount(13);
-    d.setReferenceCount(9781);
-    d.setDistributionCount(12345);
-    d.setVernacularCount(432);
     return d;
   }
 

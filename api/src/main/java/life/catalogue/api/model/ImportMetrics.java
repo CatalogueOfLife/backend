@@ -422,38 +422,39 @@ public class ImportMetrics implements ImportAttempt {
       Objects.equals(finished, that.finished) &&
       Objects.equals(createdBy, that.createdBy) &&
       Objects.equals(error, that.error) &&
-      Objects.equals(nameCount, that.nameCount) &&
-      Objects.equals(taxonCount, that.taxonCount) &&
-      Objects.equals(synonymCount, that.synonymCount) &&
       Objects.equals(bareNameCount, that.bareNameCount) &&
-      Objects.equals(referenceCount, that.referenceCount) &&
-      Objects.equals(typeMaterialCount, that.typeMaterialCount) &&
       Objects.equals(distributionCount, that.distributionCount) &&
+      Objects.equals(issuesCount, that.issuesCount) &&
       Objects.equals(mediaCount, that.mediaCount) &&
+      Objects.equals(nameCount, that.nameCount) &&
+      Objects.equals(referenceCount, that.referenceCount) &&
+      Objects.equals(synonymCount, that.synonymCount) &&
+      Objects.equals(taxonCount, that.taxonCount) &&
       Objects.equals(treatmentCount, that.treatmentCount) &&
-      Objects.equals(vernacularCount, that.vernacularCount) &&
+      Objects.equals(typeMaterialCount, that.typeMaterialCount) &&
       Objects.equals(sectorCount, that.sectorCount) &&
-      Objects.equals(namesByTypeCount, that.namesByTypeCount) &&
-      Objects.equals(namesByStatusCount, that.namesByStatusCount) &&
+      Objects.equals(vernacularCount, that.vernacularCount) &&
+      Objects.equals(distributionsByGazetteerCount, that.distributionsByGazetteerCount) &&
+      Objects.equals(extinctTaxaByRankCount, that.extinctTaxaByRankCount) &&
+      Objects.equals(mediaByTypeCount, that.mediaByTypeCount) &&
+      Objects.equals(nameRelationsByTypeCount, that.nameRelationsByTypeCount) &&
       Objects.equals(namesByOriginCount, that.namesByOriginCount) &&
       Objects.equals(namesByRankCount, that.namesByRankCount) &&
-      Objects.equals(nameRelationsByTypeCount, that.nameRelationsByTypeCount) &&
-      Objects.equals(typeMaterialByStatusCount, that.typeMaterialByStatusCount) &&
-      Objects.equals(distributionsByGazetteerCount, that.distributionsByGazetteerCount) &&
-      Objects.equals(vernacularsByLanguageCount, that.vernacularsByLanguageCount) &&
-      Objects.equals(mediaByTypeCount, that.mediaByTypeCount) &&
-      Objects.equals(usagesByStatusCount, that.usagesByStatusCount) &&
-      Objects.equals(taxaByRankCount, that.taxaByRankCount) &&
-      Objects.equals(extinctTaxaByRankCount, that.extinctTaxaByRankCount) &&
+      Objects.equals(namesByStatusCount, that.namesByStatusCount) &&
+      Objects.equals(namesByTypeCount, that.namesByTypeCount) &&
       Objects.equals(synonymsByRankCount, that.synonymsByRankCount) &&
+      Objects.equals(taxaByRankCount, that.taxaByRankCount) &&
       Objects.equals(taxonRelationsByTypeCount, that.taxonRelationsByTypeCount) &&
-      Objects.equals(issuesCount, that.issuesCount);
+      Objects.equals(typeMaterialByStatusCount, that.typeMaterialByStatusCount) &&
+      Objects.equals(usagesByStatusCount, that.usagesByStatusCount) &&
+      Objects.equals(vernacularsByLanguageCount, that.vernacularsByLanguageCount);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(datasetKey, attempt, job, state, started, finished, createdBy, error,
-      nameCount, taxonCount, synonymCount, bareNameCount, referenceCount, typeMaterialCount, distributionCount, mediaCount, treatmentCount, vernacularCount, sectorCount,
+      nameCount, taxonCount, synonymCount, bareNameCount, referenceCount, typeMaterialCount, distributionCount, mediaCount, treatmentCount, vernacularCount,
+      sectorCount,
       namesByTypeCount, namesByStatusCount, namesByOriginCount, namesByRankCount, nameRelationsByTypeCount, typeMaterialByStatusCount, distributionsByGazetteerCount,
       vernacularsByLanguageCount, mediaByTypeCount, usagesByStatusCount,
       taxaByRankCount, extinctTaxaByRankCount, synonymsByRankCount, taxonRelationsByTypeCount, issuesCount);

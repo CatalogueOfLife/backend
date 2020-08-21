@@ -63,11 +63,8 @@
     </where>
   </sql>
 
-  <!--  A mapping to Name, mostly auto mapped -->
-  <resultMap id="sectorImportResultMap" type="SectorImport" autoMapping="true">
-    <result property="issueCount" column="issue_count" typeHandler="life.catalogue.db.type2.HstoreIssueCountTypeHandler"/>
+  <resultMap id="sectorImportResultMap" type="SectorImport" autoMapping="true" extends="life.catalogue.db.mapper.DatasetImportMapper.importMetricsResultMap">
     <result property="warnings" column="warnings" typeHandler="life.catalogue.db.type2.StringCollectionArrayTypeHandler"/>
-    <result property="names" column="names" typeHandler="life.catalogue.db.type2.StringSetTypeHandler"/>
   </resultMap>
 
   <select id="get" resultMap="sectorImportResultMap">

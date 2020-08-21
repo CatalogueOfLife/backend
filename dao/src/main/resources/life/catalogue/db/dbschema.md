@@ -10,6 +10,23 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2020-08-20 track extinct and synonym counts per rank
+```
+ALTER TABLE dataset_import ADD COLUMN extinct_taxa_by_rank_count HSTORE; 
+ALTER TABLE dataset_import ADD COLUMN synonyms_by_rank_count HSTORE; 
+ALTER TABLE dataset_import RENAME COLUMN issues_count TO issues_by_issue_count;
+ALTER TABLE dataset_import RENAME COLUMN verbatim_by_term_count TO issues_by_row_type_count;
+ALTER TABLE dataset_import RENAME COLUMN verbatim_by_type_count TO verbatim_by_term_count;
+
+ALTER TABLE sector_import ADD COLUMN extinct_taxa_by_rank_count HSTORE; 
+ALTER TABLE sector_import ADD COLUMN synonyms_by_rank_count HSTORE;
+ALTER TABLE sector_import RENAME COLUMN issues_count TO issues_by_issue_count;
+-- missing from earlier changes
+ALTER TABLE sector_import ADD COLUMN type_material_count INTEGER;
+ALTER TABLE sector_import ADD COLUMN type_material_by_status_count HSTORE;
+ALTER TABLE sector_import DROP COLUMN verbatim_by_type_count;
+```
+
 ### 2020-08-19 track bare name counts
 ```
 ALTER TABLE dataset_import ADD COLUMN bare_name_count INTEGER; 

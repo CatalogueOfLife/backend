@@ -166,14 +166,14 @@ public class DatasetImportDao {
     di.setTaxonRelationsByTypeCount(countMap(TaxRelType.class, mapper.countTaxonRelationsByType(key)));
     di.setTypeMaterialByStatusCount(countMap(TypeStatus.class, mapper.countTypeMaterialByStatus(key)));
     di.setUsagesByStatusCount(countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(key)));
-    di.setVerbatimByTypeCount(countMap(DatasetImportDao::parseRowType, mapper.countVerbatimByType(key)));
+    di.setVerbatimByTermCount(countMap(DatasetImportDao::parseRowType, mapper.countVerbatimByType(key)));
     di.setVernacularsByLanguageCount(countMap(mapper.countVernacularsByLanguage(key)));
     
     // verbatim term metrics for each row type
-    for (Term rowType : di.getVerbatimByTypeCount().keySet()) {
+    for (Term rowType : di.getVerbatimByTermCount().keySet()) {
       Map<Term, Integer> terms = countMap(DatasetImportDao::parseTerm, mapper.countVerbatimTerms(key, rowType));
       if (!terms.isEmpty()) {
-        di.getVerbatimByTermCount().put(rowType, terms);
+        di.getVerbatimByRowTypeCount().put(rowType, terms);
       }
     }
   }

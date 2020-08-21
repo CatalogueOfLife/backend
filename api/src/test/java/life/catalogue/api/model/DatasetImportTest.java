@@ -40,9 +40,9 @@ public class DatasetImportTest extends SerdeTestBase<DatasetImport> {
     d.getVernacularsByLanguageCount().put("deu", 12);
     d.getVernacularsByLanguageCount().put("fra", 12);
     d.getVernacularsByLanguageCount().put("hin", 12);
-    d.getVerbatimByTypeCount().put(DwcTerm.Taxon, 12342);
-    d.getVerbatimByTypeCount().put(AcefTerm.AcceptedSpecies, 78);
-    d.getVerbatimByTypeCount().put(ColdpTerm.Name, 641723);
+    d.getVerbatimByTermCount().put(DwcTerm.Taxon, 12342);
+    d.getVerbatimByTermCount().put(AcefTerm.AcceptedSpecies, 78);
+    d.getVerbatimByTermCount().put(ColdpTerm.Name, 641723);
     d.getNameRelationsByTypeCount().put(NomRelType.BASIONYM, 12);
     d.getNameRelationsByTypeCount().put(NomRelType.LATER_HOMONYM, 3);
     d.getTaxonRelationsByTypeCount().put(TaxRelType.EQUALS, 121);
