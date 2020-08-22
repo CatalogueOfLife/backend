@@ -25,7 +25,6 @@ import life.catalogue.csv.ExcelCsvExtractor;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.NameIndex;
@@ -443,15 +442,12 @@ public class ImportManager implements Managed {
     Iterator<DatasetImport> iter = PagingUtil.pageAll(p -> dao.list(null, ImportState.runningStates(), p));
     while (iter.hasNext()) {
       DatasetImport di = iter.next();
-      dao.updateImportCancelled(di);
-      // truncate data?
-      if (di.getState() != ImportState.DOWNLOADING && di.getState() != ImportState.PROCESSING) {
-        try (SqlSession session = factory.openSession(true)) {
-          DatasetPartitionMapper dm = session.getMapper(DatasetPartitionMapper.class);
-          LOG.info("Drop partially imported data for dataset {}", di.getDatasetKey());
-          dm.delete(di.getDatasetKey());
-        }
+      // only reschedule import jobs, no releases
+      if (!di.getJob().equalsIgnoreCase(ImportJob.class.getSimpleName())) {
+        continue;
       }
+      // mark as cancelled
+      dao.updateImportCancelled(di);
       // add back to queue
       try {
         requests.add(new ImportRequest(di.getDatasetKey(), di.getCreatedBy(), true, false, di.isUpload()));
