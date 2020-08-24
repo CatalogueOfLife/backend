@@ -28,6 +28,7 @@
 
   <select id="search" resultMap="vernacularResultMap">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    <bind name="full" value="false"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="life.catalogue.db.mapper.legacy.LNameMapper.FROM"/>
       JOIN vernacular_name_${partition} v ON v.taxon_id=u.id
