@@ -2,7 +2,6 @@ package life.catalogue.img;
 
 import life.catalogue.db.PgDbConfig;
 
-import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import java.nio.file.Path;
 
@@ -22,7 +21,7 @@ public class ImgConfig extends PgDbConfig {
   @NotNull
   public Path repo;
 
-  @Nullable
+  @NotNull
   public Path archive;
 
   @NotNull

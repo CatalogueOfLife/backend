@@ -44,8 +44,10 @@ public class ImageServiceFS implements ImageService {
   public void archiveDatasetLogo(int releaseKey, int datasetKey) throws IOException {
     Path src = cfg.datasetLogo(datasetKey, ImgConfig.Scale.ORIGINAL);
     if (Files.exists(src)) {
-      LOG.info("Archive logo for dataset {} in release {}", datasetKey, releaseKey);
-      Files.copy(src, cfg.datasetLogoArchived(releaseKey, datasetKey));
+      LOG.info("Archive logo for dataset {} in release {} from {}", datasetKey, releaseKey, src);
+      Path target = cfg.datasetLogoArchived(releaseKey, datasetKey);
+      Files.createDirectories(target.getParent());
+      Files.copy(src, target);
     } else {
       LOG.debug("No logo existing for dataset {} to archive in release {}", datasetKey, releaseKey);
     }
@@ -78,6 +80,9 @@ public class ImageServiceFS implements ImageService {
    * Scales the image keeping proportions and restricting primarily by the images height.
    */
   private BufferedImage scale(BufferedImage raw, ImgConfig.Scale scale) {
+    if (scale == ImgConfig.Scale.ORIGINAL) {
+      return raw;
+    }
     final Size size = cfg.size(scale);
     return Scalr.resize(raw, Scalr.Method.ULTRA_QUALITY, Scalr.Mode.FIT_TO_HEIGHT, size.getWidth(), size.getHeight());
   }
