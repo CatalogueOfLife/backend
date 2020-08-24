@@ -25,7 +25,7 @@ public class LegacyFormatFilter implements ContainerResponseFilter {
   @Override
   public void filter(ContainerRequestContext req, ContainerResponseContext resp) throws IOException {
     MultivaluedMap<String, String> params = req.getUriInfo().getQueryParameters();
-    // default to XML
+    // XML is the legacy default
     MediaType type = MediaType.APPLICATION_XML_TYPE;
     if (params.containsKey(PARAM) && params.getFirst(PARAM).endsWith("json")) {
       type = MediaType.APPLICATION_JSON_TYPE;

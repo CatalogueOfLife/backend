@@ -1,0 +1,8 @@
+id,name_id,parent_id,status,name_phrase,according_to_id,reference_ids,extinct,lifezones,scrutinizer
+u1,c1,,ACCEPTED,,,"{}",false,{},
+u2,c2,u1,ACCEPTED,,,"{}",false,{},
+u3,c3,u2,ACCEPTED,,,"{}",false,{},
+u4,c4,u3,ACCEPTED,,,"{}",false,{},
+u10,n10,u4,ACCEPTED,,,"{}",false,{MARINE},
+u100,n100,u10,ACCEPTED,,Allen1991,"{}",false,{MARINE},
+u101,n101,u100,MISAPPLIED,"(non Gilbert, 1905)",,,,,

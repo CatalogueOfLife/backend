@@ -20,10 +20,14 @@
 
   <resultMap id="speciesResultMap" type="life.catalogue.db.mapper.legacy.model.LSpeciesName" autoMapping="true">
     <id property="id" column="id"/>
+    <association property="recordScrutinyDate" javaType="LScrutiny">
+      <result property="scrutinizer" column="scrutinizer"/>
+      <result property="scrutiny" column="scrutiny"/>
+    </association>
   </resultMap>
 
   <resultMap id="higherResultMap" type="life.catalogue.db.mapper.legacy.model.LHigherName" autoMapping="true">
-    <id column="id"/>
+    <id property="id" column="id"/>
   </resultMap>
 
 
@@ -41,7 +45,21 @@
     n.authorship AS ${prefix}author,
     n.rank AS ${prefix}rank,
     u.status AS ${prefix}status,
-    u.extinct AS ${prefix}extinct
+    u.extinct AS ${prefix}extinct,
+    u.scrutinizer AS ${prefix}scrutinizer,
+    u.scrutinizer_date AS ${prefix}scrutiny,
+    u.link AS ${prefix}onlineResource,
+    coalesce(d.alias,d.title) AS ${prefix}sourceDatabase,
+    d.website AS ${prefix}sourceDatabaseUrl,
+    NULL AS ${prefix}bibliographicCitation
+    <if test="full">,
+      n.genus AS ${prefix}genus,
+      n.infrageneric_epithet AS ${prefix}subgenus,
+      n.specific_epithet AS ${prefix}species,
+      CASE WHEN n.rank > 'SPECIES'::rank THEN r.marker ELSE NULL END AS ${prefix}infraspecies_marker,
+      n.infraspecific_epithet AS ${prefix}infraspecies,
+      n.authorship AS ${prefix}author
+    </if>
   </sql>
 
   <sql id="WHERE">
@@ -50,6 +68,11 @@
 
   <sql id="FROM">
     name_usage_${partition} u JOIN name_${partition} n on n.id=u.name_id
+    LEFT JOIN sector s ON s.id=u.sector_key AND s.dataset_key=#{datasetKey}
+    LEFT JOIN dataset d ON d.key=s.subject_dataset_key
+    <if test="full">
+      LEFT JOIN __ranks r ON n.rank=r.key
+    </if>
   </sql>
 
   <select id="count" resultType="integer">

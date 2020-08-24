@@ -21,7 +21,25 @@ ALTER TABLE sector_import DROP COLUMN names_by_origin_count;
 ALTER TABLE sector_import ADD COLUMN usages_by_origin_count HSTORE; 
 ALTER TABLE sector_import ADD COLUMN names_by_code_count HSTORE;
 
-ALTER TYPE ORIGIN REMOVE VALUE 'NAME_MATCHING'; 
+ALTER TABLE name ALTER COLUMN origin TYPE text;
+ALTER TABLE name_usage ALTER COLUMN origin TYPE text;
+DROP TYPE ORIGIN;
+CREATE TYPE ORIGIN AS ENUM (
+  'SOURCE',
+  'DENORMED_CLASSIFICATION',
+  'VERBATIM_PARENT',
+  'VERBATIM_ACCEPTED',
+  'VERBATIM_BASIONYM',
+  'AUTONYM',
+  'IMPLICIT_NAME',
+  'MISSING_ACCEPTED',
+  'BASIONYM_PLACEHOLDER',
+  'EX_AUTHOR_SYNONYM',
+  'USER',
+  'OTHER'
+);
+ALTER TABLE name ALTER COLUMN origin TYPE origin using origin::origin;
+ALTER TABLE name_usage ALTER COLUMN origin TYPE origin using origin::origin;
 ```
 
 ### 2020-08-20 track extinct and synonym counts per rank

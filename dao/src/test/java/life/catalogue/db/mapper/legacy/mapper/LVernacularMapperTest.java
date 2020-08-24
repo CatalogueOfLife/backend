@@ -2,10 +2,11 @@ package life.catalogue.db.mapper.legacy.mapper;
 
 import life.catalogue.db.LookupTables;
 import life.catalogue.db.TestDataRule;
+import life.catalogue.db.mapper.MapperTestBase;
 import life.catalogue.db.mapper.legacy.LVernacularMapper;
 import life.catalogue.db.mapper.legacy.model.LCommonName;
 import life.catalogue.db.mapper.legacy.model.LName;
-import life.catalogue.db.mapper.MapperTestBase;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -22,6 +23,11 @@ public class LVernacularMapperTest extends MapperTestBase<LVernacularMapper> {
   }
 
 
+  @Before
+  public void init () throws IOException, SQLException {
+    LookupTables.recreateTables(session().getConnection());
+  }
+
   @Test
   public void count() {
     // 1 Apple
@@ -37,7 +43,6 @@ public class LVernacularMapperTest extends MapperTestBase<LVernacularMapper> {
 
   @Test
   public void search() throws IOException, SQLException {
-    LookupTables.recreateTables(session().getConnection());
     mapper().search(datasetKey, false, "Apfel" ,0 ,2).forEach(this::isVernacular);
   }
 

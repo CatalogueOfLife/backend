@@ -2,6 +2,7 @@ package life.catalogue.db.mapper.legacy.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
 import java.util.Objects;
 
 public class LCommonName implements LName {
@@ -11,6 +12,7 @@ public class LCommonName implements LName {
   // API uses full english names: "country": "French Polynesia",
   private String country;
   private LSpeciesName acceptedName;
+  private List<LReference> references;
 
   @Override
   public String getName() {
@@ -66,6 +68,14 @@ public class LCommonName implements LName {
     this.acceptedName = acceptedName;
   }
 
+  public List<LReference> getReferences() {
+    return references;
+  }
+
+  public void setReferences(List<LReference> references) {
+    this.references = references;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -74,11 +84,12 @@ public class LCommonName implements LName {
     return Objects.equals(name, that.name) &&
       Objects.equals(language, that.language) &&
       Objects.equals(country, that.country) &&
-      Objects.equals(acceptedName, that.acceptedName);
+      Objects.equals(acceptedName, that.acceptedName) &&
+      Objects.equals(references, that.references);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, language, country, acceptedName);
+    return Objects.hash(name, language, country, acceptedName, references);
   }
 }
