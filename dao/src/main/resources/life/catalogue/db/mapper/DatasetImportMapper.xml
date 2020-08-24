@@ -42,7 +42,7 @@
     ${alias}issues_by_issue_count,
     ${alias}media_by_type_count,
     ${alias}name_relations_by_type_count,
-    ${alias}names_by_origin_count,
+    ${alias}names_by_code_count,
     ${alias}names_by_rank_count,
     ${alias}names_by_status_count,
     ${alias}names_by_type_count,
@@ -50,6 +50,7 @@
     ${alias}taxa_by_rank_count,
     ${alias}taxon_relations_by_type_count,
     ${alias}type_material_by_status_count,
+    ${alias}usages_by_origin_count,
     ${alias}usages_by_status_count,
     ${alias}vernaculars_by_language_count
   </sql>
@@ -91,7 +92,7 @@
     #{imp.issuesCount, typeHandler=life.catalogue.db.type2.HstoreIssueCountTypeHandler}::hstore,
     #{imp.mediaByTypeCount, typeHandler=life.catalogue.db.type2.HstoreIssueCountTypeHandler}::hstore,
     #{imp.nameRelationsByTypeCount, typeHandler=life.catalogue.db.type2.HstoreNameRelCountTypeHandler}::hstore,
-    #{imp.namesByOriginCount, typeHandler=life.catalogue.db.type2.HstoreOriginCountTypeHandler}::hstore,
+    #{imp.namesByCodeCount, typeHandler=life.catalogue.db.type2.HstoreCodeCountTypeHandler}::hstore,
     #{imp.namesByRankCount, typeHandler=life.catalogue.db.type2.HstoreRankCountTypeHandler}::hstore,
     #{imp.namesByStatusCount, typeHandler=life.catalogue.db.type2.HstoreNomStatusCountTypeHandler}::hstore,
     #{imp.namesByTypeCount, typeHandler=life.catalogue.db.type2.HstoreNameTypeCountTypeHandler}::hstore,
@@ -99,6 +100,7 @@
     #{imp.taxaByRankCount, typeHandler=life.catalogue.db.type2.HstoreRankCountTypeHandler}::hstore,
     #{imp.taxonRelationsByTypeCount, typeHandler=life.catalogue.db.type2.HstoreRankCountTypeHandler}::hstore,
     #{imp.typeMaterialByStatusCount, typeHandler=life.catalogue.db.type2.HstoreRankCountTypeHandler}::hstore,
+    #{imp.usagesByOriginCount, typeHandler=life.catalogue.db.type2.HstoreOriginCountTypeHandler}::hstore,
     #{imp.usagesByStatusCount, typeHandler=life.catalogue.db.type2.HstoreTaxStatusCountTypeHandler}::hstore,
     #{imp.vernacularsByLanguageCount, typeHandler=life.catalogue.db.type2.HstoreLanguageCountTypeHandler}::hstore
   </sql>
@@ -147,7 +149,7 @@
     <result property="issuesCount" column="issues_by_issue_count" typeHandler="life.catalogue.db.type2.HstoreIssueCountTypeHandler"/>
     <result property="mediaByTypeCount" column="media_by_type_count" typeHandler="life.catalogue.db.type2.HstoreMediaTypeCountTypeHandler"/>
     <result property="nameRelationsByTypeCount" column="name_relations_by_type_count" typeHandler="life.catalogue.db.type2.HstoreNameRelCountTypeHandler"/>
-    <result property="namesByOriginCount" column="names_by_origin_count" typeHandler="life.catalogue.db.type2.HstoreOriginCountTypeHandler"/>
+    <result property="namesByCodeCount" column="names_by_code_count" typeHandler="life.catalogue.db.type2.HstoreCodeCountTypeHandler"/>
     <result property="namesByRankCount" column="names_by_rank_count" typeHandler="life.catalogue.db.type2.HstoreRankCountTypeHandler"/>
     <result property="namesByStatusCount" column="names_by_status_count" typeHandler="life.catalogue.db.type2.HstoreNomStatusCountTypeHandler"/>
     <result property="namesByTypeCount" column="names_by_type_count" typeHandler="life.catalogue.db.type2.HstoreNameTypeCountTypeHandler"/>
@@ -155,6 +157,7 @@
     <result property="taxaByRankCount" column="taxa_by_rank_count" typeHandler="life.catalogue.db.type2.HstoreRankCountTypeHandler"/>
     <result property="taxonRelationsByTypeCount" column="taxon_relations_by_type_count" typeHandler="life.catalogue.db.type2.HstoreTaxonRelCountTypeHandler"/>
     <result property="typeMaterialByStatusCount" column="type_material_by_status_count" typeHandler="life.catalogue.db.type2.HstoreTypeStatusCountTypeHandler"/>
+    <result property="usagesByOriginCount" column="usages_by_origin_count" typeHandler="life.catalogue.db.type2.HstoreOriginCountTypeHandler"/>
     <result property="usagesByStatusCount" column="usages_by_status_count" typeHandler="life.catalogue.db.type2.HstoreTaxStatusCountTypeHandler"/>
     <result property="vernacularsByLanguageCount" column="vernaculars_by_language_count" typeHandler="life.catalogue.db.type2.HstoreLanguageCountTypeHandler"/>
   </resultMap>
@@ -252,10 +255,10 @@
     FROM name_${key}
     GROUP BY nom_status
   </select>
-  <select id="countNamesByOrigin" resultType="StringCount">
-    SELECT origin AS key, count(*) AS count
+  <select id="countNamesByCode" resultType="StringCount">
+    SELECT code AS key, count(*) AS count
     FROM name_${key}
-    GROUP BY origin
+    GROUP BY code
   </select>
   <select id="countNamesByRank" resultType="StringCount">
     SELECT rank AS key, count(*) AS count
@@ -289,6 +292,11 @@
     SELECT type AS key, count(*) AS count
     FROM taxon_rel_${key}
     GROUP BY type
+  </select>
+  <select id="countUsagesByOrigin" resultType="StringCount">
+    SELECT origin AS key, count(*) AS count
+    FROM name_usage_${key}
+    GROUP BY origin
   </select>
   <select id="countUsagesByStatus" resultType="StringCount">
     SELECT status AS key, count(*) AS count

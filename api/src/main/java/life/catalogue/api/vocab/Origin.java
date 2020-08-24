@@ -41,8 +41,6 @@ public enum Origin {
   EX_AUTHOR_SYNONYM("Implicit synonym based on the illegitimate ex author. " +
     "See ICN article 46: http://www.iapt-taxon.org/nomen/main.php?page=art46"),
   
-  NAME_MATCHING("A name in the names index introduced by name matching"),
-
   USER("An entity was created or modified by a user."),
 
   OTHER("Any other origin not covered by the above.");

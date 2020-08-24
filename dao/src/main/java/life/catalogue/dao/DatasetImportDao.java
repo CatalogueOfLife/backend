@@ -14,6 +14,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -157,7 +158,7 @@ public class DatasetImportDao {
     di.setIssuesCount(countMap(Issue.class, mapper.countIssues(key)));
     di.setMediaByTypeCount(countMap(MediaType.class, mapper.countMediaByType(key)));
     di.setNameRelationsByTypeCount(countMap(NomRelType.class, mapper.countNameRelationsByType(key)));
-    di.setNamesByOriginCount(countMap(Origin.class, mapper.countNamesByOrigin(key)));
+    di.setNamesByCodeCount(countMap(NomCode.class, mapper.countNamesByCode(key)));
     di.setNamesByRankCount(countMap(DatasetImportDao::parseRank, mapper.countNamesByRank(key)));
     di.setNamesByStatusCount(countMap(NomStatus.class, mapper.countNamesByStatus(key)));
     di.setNamesByTypeCount(countMap(NameType.class, mapper.countNamesByType(key)));
@@ -165,6 +166,7 @@ public class DatasetImportDao {
     di.setTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(key)));
     di.setTaxonRelationsByTypeCount(countMap(TaxRelType.class, mapper.countTaxonRelationsByType(key)));
     di.setTypeMaterialByStatusCount(countMap(TypeStatus.class, mapper.countTypeMaterialByStatus(key)));
+    di.setUsagesByOriginCount(countMap(Origin.class, mapper.countUsagesByOrigin(key)));
     di.setUsagesByStatusCount(countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(key)));
     di.setVerbatimByTermCount(countMap(DatasetImportDao::parseRowType, mapper.countVerbatimByType(key)));
     di.setVernacularsByLanguageCount(countMap(mapper.countVernacularsByLanguage(key)));

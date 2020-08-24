@@ -78,7 +78,7 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
   List<StringCount> countIssues(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   List<StringCount> countMediaByType(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   List<StringCount> countNameRelationsByType(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
-  List<StringCount> countNamesByOrigin(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+  List<StringCount> countNamesByCode(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   List<StringCount> countNamesByRank(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   List<StringCount> countNamesByStatus(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   List<StringCount> countNamesByType(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
@@ -86,6 +86,7 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
   List<StringCount> countTaxaByRank(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   List<StringCount> countTaxonRelationsByType(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   List<StringCount> countTypeMaterialByStatus(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+  List<StringCount> countUsagesByOrigin(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   List<StringCount> countUsagesByStatus(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   List<StringCount> countVernacularsByLanguage(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   

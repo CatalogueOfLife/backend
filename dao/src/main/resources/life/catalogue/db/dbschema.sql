@@ -367,7 +367,6 @@ CREATE TYPE ORIGIN AS ENUM (
   'MISSING_ACCEPTED',
   'BASIONYM_PLACEHOLDER',
   'EX_AUTHOR_SYNONYM',
-  'NAME_MATCHING',
   'USER',
   'OTHER'
 );
@@ -692,7 +691,7 @@ CREATE TABLE dataset_import (
   issues_by_issue_count HSTORE,
   media_by_type_count HSTORE,
   name_relations_by_type_count HSTORE,
-  names_by_origin_count HSTORE,
+  names_by_code_count HSTORE,
   names_by_rank_count HSTORE,
   names_by_status_count HSTORE,
   names_by_type_count HSTORE,
@@ -700,6 +699,7 @@ CREATE TABLE dataset_import (
   taxa_by_rank_count HSTORE,
   taxon_relations_by_type_count HSTORE,
   type_material_by_status_count HSTORE,
+  usages_by_origin_count HSTORE,
   usages_by_status_count HSTORE,
   vernaculars_by_language_count HSTORE,
   -- extra
@@ -770,7 +770,7 @@ CREATE TABLE sector_import (
   issues_by_issue_count HSTORE,
   media_by_type_count HSTORE,
   name_relations_by_type_count HSTORE,
-  names_by_origin_count HSTORE,
+  names_by_code_count HSTORE,
   names_by_rank_count HSTORE,
   names_by_status_count HSTORE,
   names_by_type_count HSTORE,
@@ -778,6 +778,7 @@ CREATE TABLE sector_import (
   taxa_by_rank_count HSTORE,
   taxon_relations_by_type_count HSTORE,
   type_material_by_status_count HSTORE,
+  usages_by_origin_count HSTORE,
   usages_by_status_count HSTORE,
   vernaculars_by_language_count HSTORE,
   job TEXT NOT NULL,

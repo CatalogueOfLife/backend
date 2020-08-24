@@ -226,11 +226,11 @@
     WHERE sector_key=${sectorKey}
     GROUP BY nom_status
   </select>
-  <select id="countNamesByOrigin" resultType="StringCount">
-    SELECT origin AS key, count(*) AS count
+  <select id="countNamesByCode" resultType="StringCount">
+    SELECT code AS key, count(*) AS count
     FROM name_${datasetKey}
     WHERE sector_key=${sectorKey}
-    GROUP BY origin
+    GROUP BY code
   </select>
   <select id="countNamesByRank" resultType="StringCount">
     SELECT rank AS key, count(*) AS count
@@ -261,6 +261,12 @@
     FROM type_material_${datasetKey}
     WHERE sector_key=${sectorKey}
     GROUP BY status
+  </select>
+  <select id="countUsagesByOrigin" resultType="StringCount">
+    SELECT origin AS key, count(*) AS count
+    FROM name_usage_${datasetKey}
+    WHERE sector_key=${sectorKey}
+    GROUP BY origin
   </select>
   <select id="countUsagesByStatus" resultType="StringCount">
     SELECT status AS key, count(*) AS count

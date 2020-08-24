@@ -3,6 +3,7 @@ package life.catalogue.api.model;
 import com.google.common.collect.Maps;
 import life.catalogue.api.vocab.*;
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDateTime;
@@ -57,7 +58,7 @@ public class ImportMetrics implements ImportAttempt {
   private Integer sectorCount;
   private Map<NameType, Integer> namesByTypeCount = Maps.newHashMap();
   private Map<NomStatus, Integer> namesByStatusCount = Maps.newHashMap();
-  private Map<Origin, Integer> namesByOriginCount = Maps.newHashMap();
+  private Map<NomCode, Integer> namesByCodeCount = Maps.newHashMap();
   private Map<Rank, Integer> namesByRankCount = Maps.newHashMap();
   private Map<NomRelType, Integer> nameRelationsByTypeCount = Maps.newHashMap();
   private Map<TypeStatus, Integer> typeMaterialByStatusCount = Maps.newHashMap();
@@ -65,6 +66,7 @@ public class ImportMetrics implements ImportAttempt {
   private Map<String, Integer> vernacularsByLanguageCount = Maps.newHashMap();
   private Map<MediaType, Integer> mediaByTypeCount = Maps.newHashMap();
   private Map<TaxonomicStatus, Integer> usagesByStatusCount = Maps.newHashMap();
+  private Map<Origin, Integer> usagesByOriginCount = Maps.newHashMap();
   private Map<Rank, Integer> taxaByRankCount = Maps.newHashMap();
   private Map<Rank, Integer> extinctTaxaByRankCount = Maps.newHashMap();
   private Map<Rank, Integer> synonymsByRankCount = Maps.newHashMap();
@@ -231,14 +233,22 @@ public class ImportMetrics implements ImportAttempt {
     this.namesByStatusCount = namesByStatusCount;
   }
   
-  public Map<Origin, Integer> getNamesByOriginCount() {
-    return namesByOriginCount;
+  public Map<NomCode, Integer> getNamesByCodeCount() {
+    return namesByCodeCount;
   }
-  
-  public void setNamesByOriginCount(Map<Origin, Integer> namesByOriginCount) {
-    this.namesByOriginCount = namesByOriginCount;
+
+  public void setNamesByCodeCount(Map<NomCode, Integer> namesByCodeCount) {
+    this.namesByCodeCount = namesByCodeCount;
   }
-  
+
+  public Map<Origin, Integer> getUsagesByOriginCount() {
+    return usagesByOriginCount;
+  }
+
+  public void setUsagesByOriginCount(Map<Origin, Integer> usagesByOriginCount) {
+    this.usagesByOriginCount = usagesByOriginCount;
+  }
+
   public Map<Rank, Integer> getNamesByRankCount() {
     return namesByRankCount;
   }
@@ -373,13 +383,14 @@ public class ImportMetrics implements ImportAttempt {
 
       namesByTypeCount = sum(namesByTypeCount, m.namesByTypeCount);
       namesByStatusCount = sum(namesByStatusCount, m.namesByStatusCount);
-      namesByOriginCount = sum(namesByOriginCount, m.namesByOriginCount);
+      namesByCodeCount = sum(namesByCodeCount, m.namesByCodeCount);
       namesByRankCount = sum(namesByRankCount, m.namesByRankCount);
       nameRelationsByTypeCount = sum(nameRelationsByTypeCount, m.nameRelationsByTypeCount);
       typeMaterialByStatusCount = sum(typeMaterialByStatusCount, m.typeMaterialByStatusCount);
       distributionsByGazetteerCount = sum(distributionsByGazetteerCount, m.distributionsByGazetteerCount);
       vernacularsByLanguageCount = sum(vernacularsByLanguageCount, m.vernacularsByLanguageCount);
       mediaByTypeCount = sum(mediaByTypeCount, m.mediaByTypeCount);
+      usagesByOriginCount = sum(usagesByOriginCount, m.usagesByOriginCount);
       usagesByStatusCount = sum(usagesByStatusCount, m.usagesByStatusCount);
       taxaByRankCount = sum(taxaByRankCount, m.taxaByRankCount);
       extinctTaxaByRankCount = sum(extinctTaxaByRankCount, m.extinctTaxaByRankCount);
@@ -440,7 +451,7 @@ public class ImportMetrics implements ImportAttempt {
       Objects.equals(extinctTaxaByRankCount, that.extinctTaxaByRankCount) &&
       Objects.equals(mediaByTypeCount, that.mediaByTypeCount) &&
       Objects.equals(nameRelationsByTypeCount, that.nameRelationsByTypeCount) &&
-      Objects.equals(namesByOriginCount, that.namesByOriginCount) &&
+      Objects.equals(namesByCodeCount, that.namesByCodeCount) &&
       Objects.equals(namesByRankCount, that.namesByRankCount) &&
       Objects.equals(namesByStatusCount, that.namesByStatusCount) &&
       Objects.equals(namesByTypeCount, that.namesByTypeCount) &&
@@ -448,6 +459,7 @@ public class ImportMetrics implements ImportAttempt {
       Objects.equals(taxaByRankCount, that.taxaByRankCount) &&
       Objects.equals(taxonRelationsByTypeCount, that.taxonRelationsByTypeCount) &&
       Objects.equals(typeMaterialByStatusCount, that.typeMaterialByStatusCount) &&
+      Objects.equals(usagesByOriginCount, that.usagesByOriginCount) &&
       Objects.equals(usagesByStatusCount, that.usagesByStatusCount) &&
       Objects.equals(vernacularsByLanguageCount, that.vernacularsByLanguageCount);
   }
@@ -457,8 +469,8 @@ public class ImportMetrics implements ImportAttempt {
     return Objects.hash(datasetKey, attempt, job, state, started, finished, createdBy, error,
       nameCount, taxonCount, synonymCount, bareNameCount, referenceCount, typeMaterialCount, distributionCount, mediaCount, treatmentCount, vernacularCount,
       sectorCount,
-      namesByTypeCount, namesByStatusCount, namesByOriginCount, namesByRankCount, nameRelationsByTypeCount, typeMaterialByStatusCount, distributionsByGazetteerCount,
-      vernacularsByLanguageCount, mediaByTypeCount, usagesByStatusCount,
+      namesByTypeCount, namesByStatusCount, namesByCodeCount, namesByRankCount, nameRelationsByTypeCount, typeMaterialByStatusCount, distributionsByGazetteerCount,
+      vernacularsByLanguageCount, mediaByTypeCount, usagesByOriginCount, usagesByStatusCount,
       taxaByRankCount, extinctTaxaByRankCount, synonymsByRankCount, taxonRelationsByTypeCount, issuesCount);
   }
 

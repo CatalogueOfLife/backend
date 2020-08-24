@@ -7,6 +7,7 @@ import life.catalogue.db.mapper.SectorImportMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,7 +69,7 @@ public class SectorImportDao {
     si.setIssuesCount(DatasetImportDao.countMap(Issue.class, mapper.countIssues(datasetKey, key)));
     si.setMediaByTypeCount(DatasetImportDao.countMap(MediaType.class, mapper.countMediaByType(datasetKey, key)));
     si.setNameRelationsByTypeCount(DatasetImportDao.countMap(NomRelType.class, mapper.countNameRelationsByType(datasetKey, key)));
-    si.setNamesByOriginCount(DatasetImportDao.countMap(Origin.class, mapper.countNamesByOrigin(datasetKey, key)));
+    si.setNamesByCodeCount(DatasetImportDao.countMap(NomCode.class, mapper.countNamesByCode(datasetKey, key)));
     si.setNamesByRankCount(DatasetImportDao.countMap(DatasetImportDao::parseRank, mapper.countNamesByRank(datasetKey, key)));
     si.setNamesByStatusCount(DatasetImportDao.countMap(NomStatus.class, mapper.countNamesByStatus(datasetKey, key)));
     si.setNamesByTypeCount(DatasetImportDao.countMap(NameType.class, mapper.countNamesByType(datasetKey, key)));
@@ -76,6 +77,7 @@ public class SectorImportDao {
     si.setTaxaByRankCount(DatasetImportDao.countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(datasetKey, key)));
     si.setTaxonRelationsByTypeCount(DatasetImportDao.countMap(TaxRelType.class, mapper.countTaxonRelationsByType(datasetKey, key)));
     si.setTypeMaterialByStatusCount(DatasetImportDao.countMap(TypeStatus.class, mapper.countTypeMaterialByStatus(datasetKey, key)));
+    si.setUsagesByOriginCount(DatasetImportDao.countMap(Origin.class, mapper.countUsagesByOrigin(datasetKey, key)));
     si.setUsagesByStatusCount(DatasetImportDao.countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(datasetKey, key)));
     si.setVernacularsByLanguageCount(DatasetImportDao.countMap(mapper.countVernacularsByLanguage(datasetKey, key)));
   }

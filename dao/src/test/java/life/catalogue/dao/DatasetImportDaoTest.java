@@ -52,8 +52,8 @@ public class DatasetImportDaoTest extends DaoTestBase {
     assertEquals( 1, d.getNamesByRankCount().size());
     assertEquals((Integer) 5, d.getNamesByRankCount().get(Rank.SPECIES));
     
-    assertEquals(1, d.getNamesByOriginCount().size());
-    assertEquals((Integer) 5, d.getNamesByOriginCount().get(Origin.SOURCE));
+    assertEquals(1, d.getUsagesByOriginCount().size());
+    assertEquals((Integer) 4, d.getUsagesByOriginCount().get(Origin.SOURCE));
     
     assertEquals(1, d.getNamesByTypeCount().size());
     assertEquals((Integer) 5, d.getNamesByTypeCount().get(NameType.SCIENTIFIC));

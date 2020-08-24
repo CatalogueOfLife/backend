@@ -14,6 +14,7 @@ import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
@@ -58,7 +59,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     m.setIssuesCount(mockCount(Issue.class));
     m.setMediaByTypeCount(mockCount(MediaType.class));
     m.setNameRelationsByTypeCount(mockCount(NomRelType.class));
-    m.setNamesByOriginCount(mockCount(Origin.class));
+    m.setNamesByCodeCount(mockCount(NomCode.class));
     m.setNamesByRankCount(mockCount(Rank.class));
     m.setNamesByStatusCount(mockCount(NomStatus.class));
     m.setNamesByTypeCount(mockCount(NameType.class));
@@ -66,6 +67,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     m.setTaxaByRankCount(mockCount(Rank.class));
     m.setTaxonRelationsByTypeCount(mockCount(TaxRelType.class));
     m.setTypeMaterialByStatusCount(mockCount(TypeStatus.class));
+    m.setUsagesByOriginCount(mockCount(Origin.class));
     m.setUsagesByStatusCount(mockCount(TaxonomicStatus.class));
     m.setVernacularsByLanguageCount(mockCount());
   }
@@ -209,7 +211,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     assertEquals(6, mapper().countIssues(DATASET11.getKey()).size());
     assertEquals(0, mapper().countMediaByType(DATASET11.getKey()).size());
     assertEquals(1, mapper().countNameRelationsByType(DATASET11.getKey()).size());
-    assertEquals(1, mapper().countNamesByOrigin(DATASET11.getKey()).size());
+    assertEquals(1, mapper().countNamesByCode(DATASET11.getKey()).size());
     assertEquals(1, mapper().countNamesByRank(DATASET11.getKey()).size());
     assertEquals(1, mapper().countNamesByStatus(DATASET11.getKey()).size());
     assertEquals(1, mapper().countNamesByType(DATASET11.getKey()).size());
@@ -217,6 +219,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     assertEquals(1, mapper().countTaxaByRank(DATASET11.getKey()).size());
     assertEquals(0, mapper().countTaxonRelationsByType(DATASET11.getKey()).size());
     assertEquals(0, mapper().countTypeMaterialByStatus(DATASET11.getKey()).size());
+    assertEquals(1, mapper().countUsagesByOrigin(DATASET11.getKey()).size());
     assertEquals(2, mapper().countUsagesByStatus(DATASET11.getKey()).size());
     assertEquals(3, mapper().countVernacularsByLanguage(DATASET11.getKey()).size());
   }
@@ -252,8 +255,8 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     assertCounts(expected, mapper().countTaxaByRank(DATASET11.getKey()));
     
     expected.clear();
-    expected.add(new StringCount(Origin.SOURCE, 5));
-    assertCounts(expected, mapper().countNamesByOrigin(DATASET11.getKey()));
+    expected.add(new StringCount(Origin.SOURCE, 4));
+    assertCounts(expected, mapper().countUsagesByOrigin(DATASET11.getKey()));
     
     expected.clear();
     expected.add(new StringCount(NameType.SCIENTIFIC, 5));

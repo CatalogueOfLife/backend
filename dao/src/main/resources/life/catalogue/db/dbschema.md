@@ -10,6 +10,20 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2020-08-24 nom code metrics
+
+```
+ALTER TABLE dataset_import DROP COLUMN names_by_origin_count; 
+ALTER TABLE dataset_import ADD COLUMN usages_by_origin_count HSTORE; 
+ALTER TABLE dataset_import ADD COLUMN names_by_code_count HSTORE; 
+
+ALTER TABLE sector_import DROP COLUMN names_by_origin_count; 
+ALTER TABLE sector_import ADD COLUMN usages_by_origin_count HSTORE; 
+ALTER TABLE sector_import ADD COLUMN names_by_code_count HSTORE;
+
+ALTER TYPE ORIGIN REMOVE VALUE 'NAME_MATCHING'; 
+```
+
 ### 2020-08-20 track extinct and synonym counts per rank
 ```
 ALTER TABLE dataset_import ADD COLUMN extinct_taxa_by_rank_count HSTORE; 
