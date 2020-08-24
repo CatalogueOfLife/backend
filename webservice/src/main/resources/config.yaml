@@ -49,6 +49,7 @@ auth:
 jwtKey: 3254e6rftgbzg6tz73254e6rftgbzg6tz73254e6rftgbzg6tz7
 img:
   repo: ${img.repo}
+  archive: ${img.repo}/archive
 cors:
   headers: "Authorization, Content-Type, Accept-Language, X-Requested-With, User-Agent, Referer"
 namesIndexFile: /tmp/col/nidx
