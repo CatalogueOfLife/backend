@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Set;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Taxon;
@@ -18,6 +19,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+@Ignore
 public class NameUsageSuggestionServiceTest extends EsReadTestBase {
 
   @Before
