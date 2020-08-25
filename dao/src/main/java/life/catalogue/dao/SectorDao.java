@@ -121,7 +121,7 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   }
 
   private static SimpleName requireTaxon(DSID<String> key, SqlSession session){
-    if (key != null) {
+    if (key != null && key.getId() != null) {
       SimpleName sn = session.getMapper(NameUsageMapper.class).getSimple(key);
       if (sn == null) {
         throw new IllegalArgumentException("ID " + key.getId() + " not existing in dataset " + key.getDatasetKey());
