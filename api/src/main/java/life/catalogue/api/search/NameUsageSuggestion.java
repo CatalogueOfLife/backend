@@ -16,8 +16,9 @@ public class NameUsageSuggestion {
   private boolean vernacularName;
   // The name matching the search phrase: an accepted name/synonym/bare name/vernacular name
   private String match;
-  // The accepted name if the suggestion is anything but an accepted name, null otherwise
-  private String acceptedName;
+  // The parent taxon's accepted name if this is a suggestion for an accepted name, else the accepted name if this is a suggestion for
+  // anyhing but an accepted name.
+  private String parentOrAcceptedName;
   private String usageId;
   private Rank rank;
   private TaxonomicStatus status;
@@ -30,11 +31,13 @@ public class NameUsageSuggestion {
    */
   public String getSuggestion() {
     if (vernacularName) {
-      return String.format("%s (vernacular name of %s)", match, acceptedName);
+      return String.format("%s (vernacular name of %s)", match, parentOrAcceptedName);
     } else if (status == null) {
       return match + " (bare name)";
     } else if (status.isSynonym()) {
-      return String.format("%s (%s of %s)", match, status.name().toLowerCase(), acceptedName);
+      return String.format("%s (%s of %s)", match, status.name().toLowerCase(), parentOrAcceptedName);
+    } else if (parentOrAcceptedName != null) { // not a kingdom or so
+      return match + " (" + parentOrAcceptedName + ")";
     }
     return match;
   }
@@ -56,12 +59,12 @@ public class NameUsageSuggestion {
     this.match = match;
   }
 
-  public String getAcceptedName() {
-    return acceptedName;
+  public String getParentOrAcceptedName() {
+    return parentOrAcceptedName;
   }
 
-  public void setAcceptedName(String acceptedName) {
-    this.acceptedName = acceptedName;
+  public void setParentOrAcceptedName(String name) {
+    this.parentOrAcceptedName = name;
   }
 
   public String getUsageId() {
@@ -106,7 +109,7 @@ public class NameUsageSuggestion {
 
   @Override
   public int hashCode() {
-    return Objects.hash(acceptedName, match, nomCode, rank, score, status, usageId, vernacularName);
+    return Objects.hash(parentOrAcceptedName, match, nomCode, rank, score, status, usageId, vernacularName);
   }
 
   @Override
@@ -118,7 +121,8 @@ public class NameUsageSuggestion {
     if (getClass() != obj.getClass())
       return false;
     NameUsageSuggestion other = (NameUsageSuggestion) obj;
-    return Objects.equals(acceptedName, other.acceptedName) && Objects.equals(match, other.match) && nomCode == other.nomCode
+    return Objects.equals(parentOrAcceptedName, other.parentOrAcceptedName) && Objects.equals(match, other.match)
+        && nomCode == other.nomCode
         && rank == other.rank && Float.floatToIntBits(score) == Float.floatToIntBits(other.score) && status == other.status
         && Objects.equals(usageId, other.usageId) && vernacularName == other.vernacularName;
   }

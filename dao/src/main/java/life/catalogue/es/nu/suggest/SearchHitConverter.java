@@ -3,6 +3,7 @@ package life.catalogue.es.nu.suggest;
 import java.util.List;
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.api.search.NameUsageSuggestion;
+import life.catalogue.es.EsMonomial;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.UpwardConverter;
 import life.catalogue.es.response.SearchHit;
@@ -31,13 +32,16 @@ class SearchHitConverter implements UpwardConverter<SearchHit<EsNameUsage>, Name
     if (isVernacularName) {
       List<String> names = hit.getSource().getVernacularNames();
       suggestion.setMatch(matcher.getMatch(names));
+      suggestion.setParentOrAcceptedName(doc.getScientificName());
+    } else if (doc.getAcceptedName() != null) { // This is a suggestion for a synonym
+      suggestion.setMatch(doc.getScientificName());
+      suggestion.setParentOrAcceptedName(doc.getAcceptedName());
     } else {
       suggestion.setMatch(doc.getScientificName());
-    }
-    if (doc.getAcceptedName() != null) {
-      suggestion.setAcceptedName(doc.getAcceptedName());
-    } else {
-      suggestion.setAcceptedName(doc.getScientificName());
+      if (doc.getClassification().size() > 1) {
+        EsMonomial parent = doc.getClassification().get(doc.getClassification().size() - 2);
+        suggestion.setParentOrAcceptedName(parent.getName());
+      }
     }
     suggestion.setUsageId(doc.getUsageId());
     suggestion.setNomCode(doc.getNomCode());
