@@ -1,8 +1,9 @@
-id,homotypic_name_id,scientific_name,authorship,uninomial,genus,specific_epithet,rank,code,published_in_id
-n10,n10,Chromis,Cuvier,Chromis,,,GENUS,ZOOLOGICAL,
-n100,n100,Chromis agilis,"Smith, 1960",,Chromis,agilis,SPECIES,ZOOLOGICAL,
-n101,n101,Chromis leucurus,,,Chromis,leucurus,SPECIES,ZOOLOGICAL,
-c1,c1,Actinopterygii,,Actinopterygii,,,CLASS,ZOOLOGICAL,
-c2,c2,Perciformes,,Perciformes,,,ORDER,ZOOLOGICAL,
-c3,c3,Pomacentridae,,Pomacentridae,,,FAMILY,ZOOLOGICAL,
-c4,c4,Pomacentrinae,,Pomacentrinae,,,SUBFAMILY,ZOOLOGICAL,
+id,homotypic_name_id,scientific_name,authorship,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,rank,code,published_in_id
+n10,n10,Chromis,Cuvier,Chromis,,,,,GENUS,ZOOLOGICAL,
+n100,n100,Chromis (Chromis) agilis,"Smith, 1960",,Chromis,Chromis,agilis,,SPECIES,ZOOLOGICAL,
+n101,n101,Chromis leucurus,,,Chromis,,leucurus,,SPECIES,ZOOLOGICAL,
+n102,n102,Chromis (Chromis) agilis pacifica,"Smith, 1973",,Chromis,Chromis,agilis,pacifica,SUBSPECIES,ZOOLOGICAL,
+c1,c1,Actinopterygii,,Actinopterygii,,,,,CLASS,ZOOLOGICAL,
+c2,c2,Perciformes,,Perciformes,,,,,ORDER,ZOOLOGICAL,
+c3,c3,Pomacentridae,,Pomacentridae,,,,,FAMILY,ZOOLOGICAL,
+c4,c4,Pomacentrinae,,Pomacentrinae,,,,,SUBFAMILY,ZOOLOGICAL,

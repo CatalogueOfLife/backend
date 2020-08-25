@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class LNameMapperTest extends MapperTestBase<LNameMapper> {
 
@@ -43,7 +44,38 @@ public class LNameMapperTest extends MapperTestBase<LNameMapper> {
     n = (LSpeciesName) mapper().get(true, datasetKey, "u100");
     assertEquals("u100", n.getId());
     assertEquals(Rank.SPECIES, n.getRank());
+    assertEquals("Chromis (Chromis) agilis", n.getName());
+    assertEquals("<i>Chromis (Chromis) agilis</i> Smith, 1960", n.getNameHtml());
+    assertEquals("Chromis", n.getGenus());
+    assertEquals("Chromis", n.getSubgenus());
+    assertEquals("agilis", n.getSpecies());
+    assertNull(n.getInfraspecies());
+    assertNull(n.getInfraspeciesMarker());
+    assertEquals("Smith, 1960", n.getAuthor());
+    assertEquals("http://fish.org/100", n.getOnlineResource());
 
+    assertEquals("Fishes", n.getSourceDatabase());
+    assertEquals("http://fish.org", n.getSourceDatabaseUrl());
+    assertEquals("", n.getRecordScrutinyDate());
+
+    //assertNull(n.getBibliographicCitation());
+    //assertEquals(Rank.SPECIES, n.getChildTaxa());
+    //assertEquals(Rank.SPECIES, n.getClassification());
+    //assertEquals(Rank.SPECIES, n.getCommonNames());
+    //assertEquals(Rank.SPECIES, n.getDistribution());
+
+
+    n = (LSpeciesName) mapper().get(true, datasetKey, "u102");
+    assertEquals("u102", n.getId());
+    assertEquals(Rank.SUBSPECIES, n.getRank());
+    assertEquals("Chromis (Chromis) agilis pacifica", n.getName());
+    assertEquals("<i>Chromis (Chromis) agilis pacifica</i> Smith, 1973", n.getNameHtml());
+    assertEquals("Smith, 1973", n.getAuthor());
+    assertEquals("Chromis", n.getGenus());
+    assertEquals("Chromis", n.getSubgenus());
+    assertEquals("agilis", n.getSpecies());
+    assertEquals("pacifica", n.getInfraspecies());
+    assertEquals("subsp.", n.getInfraspeciesMarker());
   }
 
   @Test
