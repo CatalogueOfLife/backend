@@ -29,26 +29,42 @@ public class PersistenceExceptionMapper extends LoggingExceptionMapper<Persisten
   @Override
   public Response toResponse(PersistenceException e) {
     if (e.getCause() != null) {
-      Matcher m = RELATION.matcher(e.getCause().getMessage());
-      if (m.find()) {
-        return jsonErrorResponse(Response.Status.NOT_FOUND, "Dataset " + Integer.parseInt(m.group(1)) + " does not exist", e.getMessage());
-      }
+      if (e.getCause() instanceof PSQLException) {
+        PSQLException pe = (PSQLException) e.getCause();
+        if (pe.getSQLState() != null) {
+          // https://www.postgresql.org/docs/12/errcodes-appendix.html
+          if (pe.getSQLState().equals("42P01")) {
+            Matcher m = RELATION.matcher(pe.getMessage());
+            if (m.find()) {
+              int datasetKey = Integer.parseInt(m.group(1));
+              LOG.debug("Missing partition tables for dataset {}", datasetKey, pe);
+              return jsonErrorResponse(Response.Status.NOT_FOUND, "Dataset " + datasetKey + " does not exist");
+            }
 
-      m = UNIQUE.matcher(e.getCause().getMessage());
-      if (m.find()) {
-        String entity = StringUtils.capitalize(m.group(1));
-        return jsonErrorResponse(Response.Status.BAD_REQUEST, entity + " already exists", e.getMessage());
+          } else if (pe.getSQLState().equals("23505")) {
+            String entity = "Entity";
+            Matcher m = UNIQUE.matcher(e.getCause().getMessage());
+            if (m.find()) {
+              entity = StringUtils.capitalize(m.group(1));
+            }
+            LOG.debug("{} already exists", entity, pe);
+            return jsonErrorResponse(Response.Status.BAD_REQUEST, entity + " already exists");
+          }
+
+          // All PgSql Error codes starting with 23 are constraint violations.
+          if (pe.getSQLState().startsWith("23")) {
+            LOG.warn("Postgres constraint violation", pe);
+            return jsonErrorResponse(Response.Status.BAD_REQUEST, "Database constraint violation", e.getMessage());
+          }
+        }
       }
 
       if (e.getCause() instanceof PSQLException) {
-        PSQLException pe = (PSQLException) e.getCause();
-        // All PgSql Error codes starting with 23 are constraint violations.
-        // https://www.postgresql.org/docs/11/errcodes-appendix.html
-        if (pe.getSQLState() != null && pe.getSQLState().startsWith("23")) {
-          LOG.warn("Postgres constraint violation", pe);
-          return jsonErrorResponse(Response.Status.BAD_REQUEST, "Database constraint violation", e.getMessage());
-        }
+        PSQLException pe2 = (PSQLException) e.getCause();
+        LOG.info("Postgres code {}", pe2.getSQLState());
       }
+
+
     }
     
     return super.toResponse(e);
