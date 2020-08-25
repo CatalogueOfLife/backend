@@ -32,7 +32,6 @@ public class LNameMapperTest extends MapperTestBase<LNameMapper> {
   }
 
   @Test
-  @Ignore("current work")
   public void get() {
     LSpeciesName n = (LSpeciesName) mapper().get(false, datasetKey, "u100");
     assertEquals("u100", n.getId());
@@ -55,9 +54,9 @@ public class LNameMapperTest extends MapperTestBase<LNameMapper> {
     assertEquals("Smith, 1960", n.getAuthor());
     assertEquals("http://fish.org/100", n.getOnlineResource());
 
-    assertEquals("Fishes", n.getSourceDatabase());
-    assertEquals("http://fish.org", n.getSourceDatabaseUrl());
-    assertEquals("", n.getRecordScrutinyDate());
+    assertEquals("FishBase", n.getSourceDatabase());
+    assertEquals("http://fishbase.de", n.getSourceDatabaseUrl());
+    assertNull(n.getRecordScrutinyDate());
 
     //assertNull(n.getBibliographicCitation());
     //assertEquals(Rank.SPECIES, n.getChildTaxa());
