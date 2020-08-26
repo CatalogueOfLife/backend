@@ -34,7 +34,6 @@ public class EsReadTestBase {
     kryo.register(NameUsageWrapper.class);
   }
 
-
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(EsReadTestBase.class);
 
@@ -129,6 +128,15 @@ public class EsReadTestBase {
 
   protected NameUsageSuggestResponse suggest(NameUsageSuggestRequest query) {
     return new NameUsageSuggestionServiceEs(indexName(), getEsClient()).suggest(query);
+  }
+
+  protected EsNameUsage newDocument(Name n) {
+    EsNameUsage doc = new EsNameUsage();
+    doc.setDatasetKey(n.getDatasetKey());
+    doc.setScientificName(n.getScientificName());
+    doc.setNameStrings(new NameStrings(n));
+    doc.setDatasetKey(n.getDatasetKey());
+    return doc;
   }
 
   /**

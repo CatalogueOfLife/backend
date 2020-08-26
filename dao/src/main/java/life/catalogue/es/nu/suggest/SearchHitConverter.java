@@ -33,12 +33,15 @@ class SearchHitConverter implements UpwardConverter<SearchHit<EsNameUsage>, Name
       List<String> names = hit.getSource().getVernacularNames();
       suggestion.setMatch(matcher.getMatch(names));
       suggestion.setParentOrAcceptedName(doc.getScientificName());
-    } else if (doc.getAcceptedName() != null) { // This is a suggestion for a synonym
+    } else if (doc.getAcceptedName() != null) { // *then* this is a synonym
       suggestion.setMatch(doc.getScientificName());
       suggestion.setParentOrAcceptedName(doc.getAcceptedName());
     } else {
       suggestion.setMatch(doc.getScientificName());
-      if (doc.getClassification().size() > 1) {
+      if (doc.getClassification() == null) {
+        // That's corrupt data but let's not make the suggestion service trip over it
+        suggestion.setParentOrAcceptedName("MISSING PARENT TAXON");
+      } else if (doc.getClassification().size() > 1) { // not a kingdom
         EsMonomial parent = doc.getClassification().get(doc.getClassification().size() - 2);
         suggestion.setParentOrAcceptedName(parent.getName());
       }

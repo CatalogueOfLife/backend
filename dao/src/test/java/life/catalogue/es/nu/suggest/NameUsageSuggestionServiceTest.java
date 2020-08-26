@@ -1,10 +1,11 @@
 package life.catalogue.es.nu.suggest;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Taxon;
@@ -12,6 +13,8 @@ import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.api.search.NameUsageSuggestResponse;
 import life.catalogue.api.search.NameUsageSuggestion;
 import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.es.EsMonomial;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.NameStrings;
@@ -19,7 +22,6 @@ import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-@Ignore
 public class NameUsageSuggestionServiceTest extends EsReadTestBase {
 
   @Before
@@ -257,8 +259,8 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
 
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetKey(1);
-    
-    NameUsageSuggestResponse response ;
+
+    NameUsageSuggestResponse response;
 
     query.setQ("Larus argentatus argenteus");
     response = suggest(query);
@@ -311,13 +313,11 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
    */
   @Test
   public void testTruncateNotFuzzy() {
-    
-    
+
     // query
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetKey(1);
     query.setFuzzy(false);
-
 
     EsNameUsage doc1 = new EsNameUsage(); // match 1
     doc1.setDatasetKey(1);
@@ -363,7 +363,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
     indexRaw(doc1, doc2, doc3, doc4);
 
     query.setQ("abcde");
-    
+
     NameUsageSuggestResponse response = suggest(query);
     assertMatch(response, doc3, doc4);
 
@@ -390,13 +390,11 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
 
   @Test
   public void testTruncateFuzzy() {
-    
-    
+
     // query
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetKey(1);
     query.setFuzzy(true);
-
 
     EsNameUsage doc1 = new EsNameUsage(); // match 1
     doc1.setDatasetKey(1);
@@ -442,7 +440,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
     indexRaw(doc1, doc2, doc3, doc4);
 
     query.setQ("abcde");
-    
+
     NameUsageSuggestResponse response = suggest(query);
     assertMatch(response, doc3, doc4);
 
@@ -465,6 +463,119 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
     query.setQ("altobrasiliensis");
     response = suggest(query);
     assertMatch(response, doc2);
+  }
+
+  @Test
+  public void testParentTaxon() {
+    Name n = new Name();
+    n.setDatasetKey(1);
+    n.setScientificName("Larus fuscus");
+    n.setGenus("Larus");
+    n.setSpecificEpithet("fuscus");
+    n.setRank(Rank.SPECIES);
+    EsNameUsage nu1 = newDocument(n);
+    nu1.setUsageId("1");
+    nu1.setStatus(TaxonomicStatus.ACCEPTED);
+    nu1.setClassification(classification("Laridae", "Larus", "Larus fuscus"));
+
+    n = new Name();
+    n.setDatasetKey(1);
+    n.setScientificName("Larus fuscus argentatus");
+    n.setGenus("Larus");
+    n.setSpecificEpithet("fuscus");
+    n.setInfraspecificEpithet("argentatus");
+    n.setRank(Rank.SUBSPECIES);
+    EsNameUsage nu2 = newDocument(n);
+    nu2.setStatus(TaxonomicStatus.ACCEPTED);
+    nu2.setUsageId("2");
+    nu2.setClassification(classification("Laridae", "Larus", "Larus fuscus", "Larus fuscus argentatus"));
+
+    n = new Name();
+    n.setDatasetKey(1);
+    n.setScientificName("Larus");
+    n.setUninomial("Larus");
+    n.setRank(Rank.GENUS);
+    EsNameUsage nu3 = newDocument(n);
+    nu3.setStatus(TaxonomicStatus.ACCEPTED);
+    nu3.setUsageId("3");
+    nu3.setScientificName("Larus");
+    nu3.setClassification(classification("Laridae", "Larus"));
+
+    n = new Name();
+    n.setDatasetKey(1);
+    n.setScientificName("Meles meles");
+    n.setGenus("Meles");
+    n.setSpecificEpithet("meles");
+    n.setRank(Rank.SPECIES);
+    EsNameUsage nu4 = newDocument(n);
+    nu4.setStatus(TaxonomicStatus.ACCEPTED);
+    nu4.setUsageId("4");
+    nu4.setClassification(classification("Mustelidae", "Meles", "Meles meles"));
+
+    indexRaw(nu1, nu2, nu3, nu4);
+
+    NameUsageSuggestRequest query = new NameUsageSuggestRequest();
+    query.setDatasetKey(1);
+    query.setQ("larus f");
+    NameUsageSuggestResponse response = suggest(query);
+
+    assertMatch(response, nu1, nu2);
+
+  }
+
+  @Test
+  public void testParentTaxon2() {
+    Name n = new Name();
+    n.setDatasetKey(1);
+    n.setScientificName("Larus fuscus");
+    n.setGenus("Larus");
+    n.setSpecificEpithet("fuscus");
+    n.setRank(Rank.SPECIES);
+    EsNameUsage nu1 = newDocument(n);
+    nu1.setStatus(TaxonomicStatus.ACCEPTED);
+    nu1.setUsageId("1");
+    nu1.setClassification(classification("Laridae", "Larus", "Larus fuscus"));
+
+    indexRaw(nu1);
+
+    NameUsageSuggestRequest query = new NameUsageSuggestRequest();
+    query.setDatasetKey(1);
+    query.setQ("larus f");
+    NameUsageSuggestResponse response = suggest(query);
+
+    assertEquals("Larus fuscus", response.getSuggestions().get(0).getMatch());
+    assertEquals("Larus", response.getSuggestions().get(0).getParentOrAcceptedName());
+    assertEquals("Larus fuscus (Larus)", response.getSuggestions().get(0).getSuggestion());
+
+  }
+
+  @Test
+  public void testParentTaxon3() {
+    Name n = new Name();
+    n.setDatasetKey(1);
+    n.setScientificName("Mustelidae");
+    n.setUninomial("Mustelidae");
+    n.setRank(Rank.FAMILY);
+    EsNameUsage nu1 = newDocument(n);
+    nu1.setStatus(TaxonomicStatus.ACCEPTED);
+    nu1.setUsageId("1");
+    nu1.setClassification(classification("Mammalia", "Carnivora", "Mustelidae"));
+
+    indexRaw(nu1);
+
+    NameUsageSuggestRequest query = new NameUsageSuggestRequest();
+    query.setDatasetKey(1);
+    query.setQ("mus");
+    NameUsageSuggestResponse response = suggest(query);
+
+    assertEquals("Mustelidae", response.getSuggestions().get(0).getMatch());
+    assertEquals("Carnivora", response.getSuggestions().get(0).getParentOrAcceptedName());
+    assertEquals("Mustelidae (Carnivora)", response.getSuggestions().get(0).getSuggestion());
+
+  }
+
+  private static List<EsMonomial> classification(String... names) {
+    return Arrays.stream(names).map(n -> new EsMonomial(null, n)).collect(Collectors.toList());
   }
 
   private static boolean containsUsageIds(NameUsageSuggestResponse response, EsNameUsage... docs) {

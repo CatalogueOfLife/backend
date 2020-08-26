@@ -18,7 +18,8 @@ import static life.catalogue.es.query.AbstractMatchQuery.Operator.*;
  */
 public abstract class QMatcher {
 
-  static final int MAX_NGRAM_SIZE = 10; // see es-settings.json
+  static final int MIN_NGRAM_SIZE = 2; // see es-settings.json
+  static final int MAX_NGRAM_SIZE = 10;
 
   private static final Logger LOG = LoggerFactory.getLogger(QMatcher.class);
 
