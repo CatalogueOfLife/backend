@@ -7,12 +7,20 @@
 
   <resultMap id="vernacularResultMap" type="life.catalogue.db.mapper.legacy.model.LCommonName" autoMapping="true">
     <id column="id"/>
+  </resultMap>
+
+  <resultMap id="vernacularFullResultMap" type="life.catalogue.db.mapper.legacy.model.LCommonName" autoMapping="true" extends="vernacularResultMap">
+    <id column="id"/>
     <association property="acceptedName" resultMap="life.catalogue.db.mapper.legacy.LNameMapper.speciesResultMap" columnPrefix="a_"/>
   </resultMap>
 
   <sql id="SELECT">
-    v.id, v.name, c.title AS country, l.title AS language,
+    <include refid="VCORE"/>,
     <include refid="life.catalogue.db.mapper.legacy.LNameMapper.COLS"><property name="prefix" value="a_"/></include>
+  </sql>
+
+  <sql id="VCORE">
+    v.id, v.name, c.title AS country, l.title AS language
   </sql>
 
   <sql id="WHERE">
@@ -26,7 +34,7 @@
     <include refid="WHERE"/>
   </select>
 
-  <select id="search" resultMap="vernacularResultMap">
+  <select id="search" resultMap="vernacularFullResultMap">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     <bind name="full" value="false"/>
     SELECT <include refid="SELECT"/>
@@ -35,6 +43,15 @@
       LEFT JOIN __language l ON l.code = v.language
       LEFT JOIN __country c  ON c.code = v.country
     <include refid="WHERE"/>
+  </select>
+
+  <select id="vernaculars" parameterType="map" resultMap="vernacularResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT <include refid="VCORE"/>
+    FROM vernacular_name_${partition} v
+      LEFT JOIN __language l ON l.code = v.language
+      LEFT JOIN __country c  ON c.code = v.country
+    WHERE v.taxon_id = #{id}
   </select>
 
 </mapper>

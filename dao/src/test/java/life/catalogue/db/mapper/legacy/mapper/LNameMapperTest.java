@@ -4,6 +4,7 @@ import life.catalogue.db.LookupTables;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.MapperTestBase;
 import life.catalogue.db.mapper.legacy.LNameMapper;
+import life.catalogue.db.mapper.legacy.model.LCommonName;
 import life.catalogue.db.mapper.legacy.model.LHigherName;
 import life.catalogue.db.mapper.legacy.model.LName;
 import life.catalogue.db.mapper.legacy.model.LSpeciesName;
@@ -62,7 +63,10 @@ public class LNameMapperTest extends MapperTestBase<LNameMapper> {
 
     assertEquals(5, n.getClassification().size());
     n.getClassification().forEach(this::assertPresent);
-    //assertEquals(Rank.SPECIES, n.getCommonNames());
+
+    assertEquals(4, n.getCommonNames().size());
+    n.getCommonNames().forEach(this::assertPresent);
+
     //assertEquals(Rank.SPECIES, n.getDistribution());
 
 
@@ -79,12 +83,19 @@ public class LNameMapperTest extends MapperTestBase<LNameMapper> {
     assertEquals("subsp.", n.getInfraspeciesMarker());
   }
 
-  void assertPresent(LHigherName hn){
-    assertNotNull(hn.getId());
-    assertNotNull(hn.getRank());
-    assertNotNull(hn.getName());
-    assertNotNull(hn.getStatus());
+  void assertPresent(LHigherName n){
+    assertNotNull(n.getId());
+    assertNotNull(n.getRank());
+    assertNotNull(n.getName());
+    assertNotNull(n.getStatus());
   }
+
+  void assertPresent(LCommonName n){
+    assertNotNull(n.getName());
+    assertNotNull(n.getCountry());
+    assertNotNull(n.getLanguage());
+  }
+
   @Test
   public void count() {
     assertEquals(0, mapper().count(datasetKey, true, "Larus"));

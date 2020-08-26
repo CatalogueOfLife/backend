@@ -48,6 +48,7 @@
     <collection property="classification" ofType="LHigherName" column="{id=id,datasetKey=dataset_key}" autoMapping="true" select="classification"/>
     <collection property="childTaxa" ofType="LHigherName" column="{id=id,datasetKey=dataset_key}" autoMapping="true" select="children"/>
     <collection property="synonyms" ofType="LSpeciesName" column="{id=id,datasetKey=dataset_key}" autoMapping="true" select="synonyms"/>
+    <collection property="commonNames" ofType="LCommonName" column="{id=id,datasetKey=dataset_key}" autoMapping="true" select="life.catalogue.db.mapper.legacy.LVernacularMapper.vernaculars"/>
   </resultMap>
 
 
