@@ -16,7 +16,7 @@ class SearchHitConverter implements UpwardConverter<SearchHit<EsNameUsage>, Name
   private final VernacularNameMatcher matcher;
 
   SearchHitConverter(NameUsageSuggestRequest request) {
-    if (request.suggestVernaculars()) {
+    if (request.isVernaculars()) {
       this.matcher = new VernacularNameMatcher(request);
     } else {
       // matcher is not going to be used

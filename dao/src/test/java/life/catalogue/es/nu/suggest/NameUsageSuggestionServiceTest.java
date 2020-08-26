@@ -574,6 +574,69 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
 
   }
 
+  @Test
+  public void testSynonym() {
+    Name n = new Name();
+    n.setDatasetKey(1);
+    n.setScientificName("Larus foo");
+    n.setGenus("Larus");
+    n.setRank(Rank.SPECIES);
+    EsNameUsage nu1 = newDocument(n);
+    nu1.setStatus(TaxonomicStatus.SYNONYM);
+    nu1.setUsageId("1");
+    nu1.setAcceptedName("Larus fuscus");
+    nu1.setClassification(classification("Laridae", "Larus", "fuscus", "foo"));
+
+    indexRaw(nu1);
+
+    NameUsageSuggestRequest query = new NameUsageSuggestRequest();
+    query.setDatasetKey(1);
+    query.setQ("foo");
+    NameUsageSuggestResponse response = suggest(query);
+
+    assertEquals("Larus foo", response.getSuggestions().get(0).getMatch());
+    assertEquals("Larus foo (synonym of Larus fuscus)", response.getSuggestions().get(0).getSuggestion());
+
+  }
+
+  @Test
+  public void testAcceptedOnly() {
+
+    Name n = new Name();
+    n.setDatasetKey(1);
+    n.setScientificName("Larus fuscus");
+    n.setGenus("Larus");
+    n.setSpecificEpithet("fuscus");
+    n.setRank(Rank.SPECIES);
+    EsNameUsage nu1 = newDocument(n);
+    nu1.setUsageId("1");
+    nu1.setStatus(TaxonomicStatus.ACCEPTED);
+    nu1.setClassification(classification("Laridae", "Larus", "Larus fuscus"));
+
+    n = new Name();
+    n.setDatasetKey(1);
+    n.setScientificName("Larus fuscus");
+    n.setGenus("Larus");
+    n.setSpecificEpithet("fuscus");
+    n.setRank(Rank.SPECIES);
+    EsNameUsage nu2 = newDocument(n);
+    nu2.setUsageId("2");
+    nu2.setStatus(TaxonomicStatus.SYNONYM);
+    nu2.setClassification(classification("Laridae", "Larus", "Larus fuscus"));
+
+    indexRaw(nu1, nu2);
+
+    NameUsageSuggestRequest query = new NameUsageSuggestRequest();
+    query.setDatasetKey(1);
+    query.setAccepted(true);
+    query.setQ("laru");
+    NameUsageSuggestResponse response = suggest(query);
+
+    assertEquals(1, response.getSuggestions().size());
+    assertEquals("1", response.getSuggestions().get(0).getUsageId());
+
+  }
+
   private static List<EsMonomial> classification(String... names) {
     return Arrays.stream(names).map(n -> new EsMonomial(null, n)).collect(Collectors.toList());
   }
