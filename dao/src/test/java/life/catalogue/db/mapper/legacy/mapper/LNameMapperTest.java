@@ -9,7 +9,6 @@ import life.catalogue.db.mapper.legacy.model.LName;
 import life.catalogue.db.mapper.legacy.model.LSpeciesName;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -87,19 +86,14 @@ public class LNameMapperTest extends MapperTestBase<LNameMapper> {
     assertNotNull(hn.getStatus());
   }
   @Test
-  @Ignore
   public void count() {
-    // Apia apis
-    // Malus sylvestris
-    // Larus fuscus
-    // Larus fusca
-    // Larus erfundus
-    assertEquals(3, mapper().count(datasetKey, true, "Larus"));
-    assertEquals(3, mapper().count(datasetKey, true, "larus"));
-    assertEquals(0, mapper().count(datasetKey, false, "Larus"));
-    assertEquals(1, mapper().count(datasetKey, false, "Larus fusca"));
-    assertEquals(2, mapper().count(datasetKey, true, "Larus fusc"));
-    assertEquals(0, mapper().count(datasetKey, true, "fusc"));
+    assertEquals(0, mapper().count(datasetKey, true, "Larus"));
+    assertEquals(4, mapper().count(datasetKey, true, "chromis"));
+    assertEquals(4, mapper().count(datasetKey, true, "Chromis"));
+    assertEquals(1, mapper().count(datasetKey, false, "Chromis"));
+    assertEquals(0, mapper().count(datasetKey, false, "agilis"));
+    assertEquals(1, mapper().count(datasetKey, true, "Perciform"));
+    assertEquals(1, mapper().count(datasetKey, true, "perciformes"));
   }
 
   @Test

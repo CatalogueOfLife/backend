@@ -47,6 +47,7 @@
     <id property="id" column="id"/>
     <collection property="classification" ofType="LHigherName" column="{id=id,datasetKey=dataset_key}" autoMapping="true" select="classification"/>
     <collection property="childTaxa" ofType="LHigherName" column="{id=id,datasetKey=dataset_key}" autoMapping="true" select="children"/>
+    <collection property="synonyms" ofType="LSpeciesName" column="{id=id,datasetKey=dataset_key}" autoMapping="true" select="synonyms"/>
   </resultMap>
 
 
@@ -165,7 +166,14 @@
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     <include refid="HIGHER_SELECT"/>,n.authorship
     FROM <include refid="FROM"/>
-    WHERE u.parent_id = #{id} AND n.rank > 'SPECIES'::rank
+    WHERE u.parent_id = #{id} AND NOT u.is_synonym AND n.rank > 'SPECIES'::rank
+  </select>
+
+  <select id="synonyms" parameterType="map" resultMap="speciesResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT <include refid="SELECT_FULL"/>
+    FROM <include refid="FROM_FULL"/>
+    WHERE u.parent_id = #{id} AND u.is_synonym
   </select>
 
 </mapper>
