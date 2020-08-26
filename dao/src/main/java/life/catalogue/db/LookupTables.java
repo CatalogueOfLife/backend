@@ -3,6 +3,8 @@ package life.catalogue.db;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.Language;
 import org.gbif.nameparser.api.Rank;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -12,11 +14,14 @@ import java.sql.Statement;
 
 public class LookupTables {
 
+  private static final Logger LOG = LoggerFactory.getLogger(LookupTables.class);
+
   /**
    * Creates lookup table for java enumerations in the database: __ranks, __country and __language
    * Running the method will drop all existing tables first.
    */
   public static void recreateTables(Connection c) throws SQLException, IOException {
+    LOG.info("Drop existing lookup tables");
     c.setAutoCommit(false);
     try (Statement st = c.createStatement()) {
       st.execute("DROP TABLE IF EXISTS __ranks");
@@ -30,6 +35,7 @@ public class LookupTables {
          PreparedStatement pstC = c.prepareStatement("INSERT INTO __country (code, title) values (?, ?)");
          PreparedStatement pstL = c.prepareStatement("INSERT INTO __language (code, title) values (?, ?)")
     ) {
+      LOG.info("Create lookup table for ranks");
       for (Rank r : Rank.values()) {
         // exclude infrasp., see https://github.com/Sp2000/colplus-backend/issues/478
         if (r.isUncomparable()) continue;
@@ -37,12 +43,14 @@ public class LookupTables {
         pstR.setString(2, r.getMarker());
         pstR.execute();
       }
+      LOG.info("Create lookup table for countries");
       for (Country cn : Country.values()) {
         pstC.setString(1, cn.getIso2LetterCode());
         pstC.setString(2, cn.getTitle());
         pstC.execute();
 
       }
+      LOG.info("Create lookup table for languages");
       for (Language l : Language.values()) {
         // exclude infrasp., see https://github.com/Sp2000/colplus-backend/issues/478
         pstL.setString(1, l.getCode());

@@ -314,6 +314,7 @@ public class NameIndexImpl implements NameIndex {
     LOG.info("Started name index with {} names", counter.get());
   }
 
+  @Override
   public boolean hasStarted() {
     try {
       store.get("something");

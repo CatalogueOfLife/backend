@@ -216,6 +216,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @GET
   @Path("/{datasetKey}/source/{key}")
   public ProjectSourceDataset projectSource(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @Context SqlSession session) {
+    //TODO: this only works for releases
     return session.getMapper(ProjectSourceMapper.class).get(key, datasetKey);
   }
 
@@ -233,7 +234,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
       Integer projectKey = DatasetInfoCache.CACHE.sourceProject(datasetKey);
       session.getMapper(SectorMapper.class).processDataset(datasetKey).forEach(s -> {
         if (s.getSyncAttempt() != null) {
-          SectorImport m = sim.get(DSID.of(projectKey, key), s.getSyncAttempt());
+          SectorImport m = sim.get(DSID.of(projectKey, s.getId()), s.getSyncAttempt());
           metrics.add(m);
           sectorCounter.incrementAndGet();
         }

@@ -26,7 +26,6 @@ import life.catalogue.importer.ImportManager;
 import life.catalogue.importer.ImportRequest;
 import life.catalogue.matching.DatasetMatcher;
 import life.catalogue.matching.NameIndex;
-import life.catalogue.matching.NameIndexImpl;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -62,14 +61,14 @@ public class AdminResource {
   private final ContinuousImporter continuousImporter;
   private final GbifSync gbifSync;
   private final AssemblyCoordinator assembly;
-  private final NameIndexImpl namesIndex;
+  private final NameIndex namesIndex;
   private final JobExecutor exec;
 
 
 
   public AdminResource(SqlSessionFactory factory, AssemblyCoordinator assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
                        NameUsageIndexService indexService, ContinuousImporter continuousImporter, ImportManager importManager, GbifSync gbifSync,
-                       NameIndexImpl namesIndex, JobExecutor executor) {
+                       NameIndex namesIndex, JobExecutor executor) {
     this.factory = factory;
     this.assembly = assembly;
     this.imgService = imgService;

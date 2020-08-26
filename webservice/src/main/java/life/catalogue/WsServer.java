@@ -50,8 +50,8 @@ import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.importer.ImportManager;
+import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
-import life.catalogue.matching.NameIndexImpl;
 import life.catalogue.parser.NameParser;
 import life.catalogue.release.AcExporter;
 import life.catalogue.release.ReleaseManager;
@@ -84,7 +84,7 @@ public class WsServer extends Application<WsServerConfig> {
   private final EventBus bus = new EventBus("bus");
   protected CloseableHttpClient httpClient;
   protected Client jerseyClient;
-  private NameIndexImpl ni;
+  private NameIndex ni;
   private ImportManager importManager;
 
   public static void main(final String[] args) throws Exception {
@@ -138,7 +138,7 @@ public class WsServer extends Application<WsServerConfig> {
     return bus;
   }
 
-  public NameIndexImpl getNamesIndex() {
+  public NameIndex getNamesIndex() {
     return ni;
   }
 
@@ -213,6 +213,8 @@ public class WsServer extends Application<WsServerConfig> {
 
     // name index
     ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE);
+    // to start up quickly for local testing use this instead:
+    //ni = NameIndexFactory.passThru();
     env.lifecycle().manage(stopOnly(ni));
     env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));
 
