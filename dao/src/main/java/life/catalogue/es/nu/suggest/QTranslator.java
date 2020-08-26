@@ -21,7 +21,7 @@ class QTranslator {
 
   Query translate() {
     QMatcher matcher = QMatcher.getInstance(request);
-    if (request.suggestVernaculars()) {
+    if (request.isVernaculars()) {
       return new BoolQuery()
           .should(matcher.getScientificNameQuery().withName(SN_QUERY_NAME))
           .should(matcher.getVernacularNameQuery().withName(VN_QUERY_NAME));
