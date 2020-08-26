@@ -308,6 +308,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   public void updateParent(SqlSession session, DSID<String> t, String newParentId, String oldParentId, int userKey){
     NameUsageMapper num = session.getMapper(NameUsageMapper.class);
     num.updateParentId(t, newParentId, userKey);
+    session.commit();
     updatedParentCacheUpdate(session.getMapper(TaxonMapper.class), t, newParentId, oldParentId);
     // update single taxon in ES
     indexService.update(t.getDatasetKey(), List.of(t.getId()));
