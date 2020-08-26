@@ -229,31 +229,6 @@ public class WsServer extends Application<WsServerConfig> {
     // release
     final ReleaseManager releaseManager = new ReleaseManager(diDao, indexService, imgService, getSqlSessionFactory());
 
-    // importer
-    importManager = new ImportManager(cfg,
-        env.metrics(),
-        httpClient,
-        getSqlSessionFactory(),
-        ni,
-        indexService,
-        imgService,
-        releaseManager);
-    env.lifecycle().manage(stopOnly(importManager));
-    ContinuousImporter cImporter = new ContinuousImporter(cfg.importer, importManager, getSqlSessionFactory());
-    env.lifecycle().manage(stopOnly(cImporter));
-
-    // gbif sync
-    GbifSync gbifSync = new GbifSync(cfg.gbif, getSqlSessionFactory(), jerseyClient);
-    env.lifecycle().manage(stopOnly(gbifSync));
-
-    // assembly
-    AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), siDao, indexService, env.metrics());
-    env.lifecycle().manage(assembly);
-
-    // link assembly and import manager so they are aware of each other
-    importManager.setAssemblyCoordinator(assembly);
-    assembly.setImportManager(importManager);
-
     // diff
     DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), fmdDao);
     SectorDiffService sDiff = new SectorDiffService(getSqlSessionFactory(), fmsDao);
@@ -271,11 +246,38 @@ public class WsServer extends Application<WsServerConfig> {
     EstimateDao edao = new EstimateDao(getSqlSessionFactory());
     NameDao ndao = new NameDao(getSqlSessionFactory(), indexService);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory());
-    SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService);
-    SynonymDao sdao = new SynonymDao(getSqlSessionFactory());
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, indexService);
+    SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao);
+    SynonymDao sdao = new SynonymDao(getSqlSessionFactory());
     TreeDao trDao = new TreeDao(getSqlSessionFactory());
     UserDao udao = new UserDao(getSqlSessionFactory(), bus);
+
+    // importer
+    importManager = new ImportManager(cfg,
+      env.metrics(),
+      httpClient,
+      getSqlSessionFactory(),
+      ni,
+      secdao,
+      indexService,
+      imgService,
+      releaseManager
+    );
+    env.lifecycle().manage(stopOnly(importManager));
+    ContinuousImporter cImporter = new ContinuousImporter(cfg.importer, importManager, getSqlSessionFactory());
+    env.lifecycle().manage(stopOnly(cImporter));
+
+    // gbif sync
+    GbifSync gbifSync = new GbifSync(cfg.gbif, getSqlSessionFactory(), jerseyClient);
+    env.lifecycle().manage(stopOnly(gbifSync));
+
+    // assembly
+    AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), siDao, indexService, env.metrics());
+    env.lifecycle().manage(assembly);
+
+    // link assembly and import manager so they are aware of each other
+    importManager.setAssemblyCoordinator(assembly);
+    assembly.setImportManager(importManager);
 
     // resources
     j.register(new AdminResource(getSqlSessionFactory(), assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter,

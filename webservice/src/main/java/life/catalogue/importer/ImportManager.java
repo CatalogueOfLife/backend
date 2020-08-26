@@ -24,6 +24,7 @@ import life.catalogue.common.lang.Exceptions;
 import life.catalogue.csv.ExcelCsvExtractor;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.dao.SectorDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
@@ -66,13 +67,14 @@ public class ImportManager implements Managed {
   private final NameIndex index;
   private final NameUsageIndexService indexService;
   private final ReleaseManager releaseManager;
+  private final SectorDao sDao;
   private final DatasetImportDao dao;
   private final ImageService imgService;
   private final Timer importTimer;
   private final Counter failed;
 
   public ImportManager(WsServerConfig cfg, MetricRegistry registry, CloseableHttpClient client,
-      SqlSessionFactory factory, NameIndex index,
+      SqlSessionFactory factory, NameIndex index, SectorDao sDao,
       NameUsageIndexService indexService, ImageService imgService, ReleaseManager releaseManager) {
     this.cfg = cfg;
     this.factory = factory;
@@ -81,6 +83,7 @@ public class ImportManager implements Managed {
     this.index = index;
     this.imgService = imgService;
     this.indexService = indexService;
+    this.sDao = sDao;
     this.dao = new DatasetImportDao(factory, cfg.metricsRepo);
     importTimer = registry.timer("life.catalogue.import.timer");
     failed = registry.counter("life.catalogue.import.failed");
@@ -406,7 +409,7 @@ public class ImportManager implements Managed {
         throw NotFoundException.notFound(Dataset.class, req.datasetKey);
       }
       DatasetSettings ds = dm.getSettings(req.datasetKey);
-      ImportJob job = new ImportJob(req, new DatasetWithSettings(d, ds), cfg, downloader, factory, index, indexService, imgService,
+      ImportJob job = new ImportJob(req, new DatasetWithSettings(d, ds), cfg, downloader, factory, index, indexService, imgService, sDao,
           new StartNotifier() {
             @Override
             public void started() {

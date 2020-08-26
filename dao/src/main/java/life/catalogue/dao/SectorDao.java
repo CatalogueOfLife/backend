@@ -23,10 +23,12 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorDao.class);
   private final NameUsageIndexService indexService;
+  private final TaxonDao tDao;
 
-  public SectorDao(SqlSessionFactory factory, NameUsageIndexService indexService) {
+  public SectorDao(SqlSessionFactory factory, NameUsageIndexService indexService, TaxonDao tDao) {
     super(true, factory, SectorMapper.class);
     this.indexService = indexService;
+    this.tDao = tDao;
   }
   
   public ResultPage<Sector> search(SectorSearchRequest request, Page page) {
@@ -152,10 +154,18 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       incSectorCounts(session, old, -1);
     }
     // update usages in case the target has changed!
-    if (obj.getTarget() != null && old.getTarget() != null && old.getTarget().getId() != null && !Objects.equals(old.getTarget().getId(), obj.getTarget().getId())) {
-      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-      num.updateParentIds(obj.getDatasetKey(), old.getTarget().getId(), obj.getTarget().getId(), obj.getId(), user);
+    if (!Objects.equals(simpleNameID(old.getTarget()), simpleNameID(obj.getTarget())) && obj.getTarget().getId()!=null) {
+      // loop over sector root taxa as the old target id might be missing or even wrong. Only trust real usage data!
+      final DSID<String> key = DSID.of(obj.getDatasetKey(), null);
+      for (SimpleName sn : session.getMapper(NameUsageMapper.class).sectorRoot(obj)) {
+        // obj.getTarget().getId() must exist as we validated this in the before update method
+        tDao.updateParent(session, key.id(sn.getId()), obj.getTarget().getId(), sn.getParent(), user);
+      }
     }
+  }
+
+  private static String simpleNameID(SimpleName sn) {
+    return sn == null ? null : sn.getId();
   }
 
   @Override

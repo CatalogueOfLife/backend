@@ -61,6 +61,7 @@ public class ImportJob implements Runnable {
   private final DownloadUtil downloader;
   private final SqlSessionFactory factory;
   private final DatasetImportDao dao;
+  private final SectorDao sDao;
   private final NameIndex index;
   private final NameUsageIndexService indexService;
   private final ImageService imgService;
@@ -73,7 +74,7 @@ public class ImportJob implements Runnable {
   ImportJob(ImportRequest req, DatasetWithSettings d,
             WsServerConfig cfg,
             DownloadUtil downloader, SqlSessionFactory factory, NameIndex index,
-            NameUsageIndexService indexService, ImageService imgService,
+            NameUsageIndexService indexService, ImageService imgService, SectorDao sDao,
             StartNotifier notifier,
             Consumer<ImportRequest> successCallback,
             BiConsumer<ImportRequest, Exception> errorCallback
@@ -87,6 +88,7 @@ public class ImportJob implements Runnable {
     this.factory = factory;
     this.index = index;
     this.indexService = indexService;
+    this.sDao = sDao;
     dao = new DatasetImportDao(factory, cfg.metricsRepo);
     this.imgService = imgService;
     
@@ -249,7 +251,7 @@ public class ImportJob implements Runnable {
           updateState(ImportState.MATCHING);
           LOG.info("Updating sector and decision subjects for dataset {}", datasetKey);
           DecisionRematcher.match(new DecisionDao(factory, indexService), new DecisionRematchRequest(datasetKey, false), req.createdBy);
-          SectorRematcher.match(new SectorDao(factory, indexService), new SectorRematchRequest(datasetKey, false), req.createdBy);
+          SectorRematcher.match(sDao, new SectorRematchRequest(datasetKey, false), req.createdBy);
         }
 
         LOG.info("Dataset import {} completed in {}", datasetKey,

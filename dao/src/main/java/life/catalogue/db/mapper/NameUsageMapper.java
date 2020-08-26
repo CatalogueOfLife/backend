@@ -68,9 +68,9 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                       @Param("userKey") int userKey);
 
   /**
-   * Move all children including synonyms of a given taxon to a new parent.
-   * @param key the usage to update
-   * @param parentId the new parentId
+   * Moves the taxon given to a new parent by updating the parent_id
+   * @param key the taxon to update
+   * @param parentId the new parentId to assign
    */
   void updateParentId(@Param("key") DSID<String> key,
                       @Param("parentId") String parentId,
@@ -138,6 +138,12 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * @param sectorKey sector that foreign children should point into
    */
   List<SimpleName> foreignChildren(@Param("key") DSID<Integer> sectorKey);
+
+  /**
+   * List all taxa of a project/release that are the root of a given sector by looking at the real usages.
+   * For ATTACH sectors this should just be one, but for UNIONs it is likely multiple.
+   */
+  List<SimpleName> sectorRoot(@Param("key") DSID<Integer> sectorKey);
 
   /**
    * Depth first only implementation using a much lighter object then above.

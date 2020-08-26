@@ -5,7 +5,9 @@ import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.dao.NameDao;
 import life.catalogue.dao.SectorDao;
+import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
@@ -13,6 +15,7 @@ import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.Rank;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,11 +25,22 @@ import static org.junit.Assert.assertNull;
 
 public class SectorRematcherTest {
 
+  NameDao nDao;
+  TaxonDao tDao;
+  SectorDao dao;
+
   @ClassRule
   public static PgSetupRule pg = new PgSetupRule();
 
   @Rule
   public final TestDataRule importRule = TestDataRule.apple();
+
+  @Before
+  public void init(){
+    nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
+    tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
+    dao = new SectorDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tDao);
+  }
 
   @Test
   public void matchDataset() {
@@ -49,7 +63,6 @@ public class SectorRematcherTest {
       new SimpleName(null, "Lepidoptera", Rank.ORDER)
     );
 
-    SectorDao dao = new SectorDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
     SectorRematchRequest req = new SectorRematchRequest(Datasets.DRAFT_COL, false);
     req.setSubjectDatasetKey(datasetKey);
     SectorRematcher.match(dao, req, Users.TESTER);

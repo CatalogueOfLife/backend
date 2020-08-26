@@ -377,6 +377,14 @@
     AND (u.sector_key IS NULL OR u.sector_key!=#{key.id})
   </select>
 
+  <select id="sectorRoot" resultMap="simpleResultMap">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    SELECT <include refid="SELECT_SIMPLE"/>
+    FROM <include refid="FROM_SIMPLE"/> JOIN name_usage_${partition} p ON p.id=u.parent_id
+    WHERE u.sector_key=#{key.id}
+    AND (p.sector_key IS NULL OR p.sector_key!=#{key.id})
+  </select>
+
   <select id="processTreeSimple" parameterType="map" resultMap="simpleResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     WITH RECURSIVE x AS(

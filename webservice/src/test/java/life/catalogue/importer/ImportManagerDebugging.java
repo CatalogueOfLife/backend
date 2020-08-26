@@ -11,6 +11,9 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.tax.AuthorshipNormalizer;
+import life.catalogue.dao.NameDao;
+import life.catalogue.dao.SectorDao;
+import life.catalogue.dao.TaxonDao;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
@@ -73,11 +76,16 @@ public class ImportManagerDebugging {
     
     final WsServerConfig cfg = provideConfig();
     //new InitDbCmd().execute(cfg);
-    
+
+    NameUsageIndexService indexService = NameUsageIndexService.passThru();
+    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), indexService);
+    TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, indexService);
+    SectorDao sDao = new SectorDao(PgSetupRule.getSqlSessionFactory(), indexService, tDao);
+
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
         NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer).started(),
-        NameUsageIndexService.passThru(), new ImageServiceFS(cfg.img), releaseManager);
+        sDao, indexService, new ImageServiceFS(cfg.img), releaseManager);
     importManager.start();
   }
   

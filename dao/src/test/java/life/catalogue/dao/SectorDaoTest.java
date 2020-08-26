@@ -7,7 +7,11 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.db.MybatisTestUtils;
-import life.catalogue.db.mapper.*;
+import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.SectorMapperTest;
+import life.catalogue.db.mapper.TaxonMapper;
+import life.catalogue.db.mapper.TreeMapper;
 import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
@@ -24,7 +28,9 @@ public class SectorDaoTest extends DaoTestBase {
 
   @Before
   public void init(){
-    dao = new SectorDao(factory(), NameUsageIndexService.passThru());
+    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
+    TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
+    dao = new SectorDao(factory(), NameUsageIndexService.passThru(), tDao);
   }
 
   @Test
