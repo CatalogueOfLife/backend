@@ -198,7 +198,7 @@
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     UPDATE name_usage_${partition}
     SET (parent_id, modified, modified_by) = (#{newParentId}, now(), #{userKey})
-    WHERE parent_id = #{parentId}
+    WHERE parent_id = #{parentId} <if test="sectorKey != null"> AND sector_key=#{sectorKey}</if>
   </update>
 
   <update id="updateParentId" parameterType="map">

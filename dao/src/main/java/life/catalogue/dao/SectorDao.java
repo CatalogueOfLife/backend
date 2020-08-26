@@ -4,6 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.es.NameUsageIndexService;
@@ -115,8 +116,21 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   @Override
   protected void updateBefore(Sector s, Sector old, int user, SectorMapper mapper, SqlSession session) {
     parsePlaceholderRank(s);
+    requireTaxon(s.getTargetAsDSID(), session);
     super.updateBefore(s, old, user, mapper, session);
   }
+
+  private static SimpleName requireTaxon(DSID<String> key, SqlSession session){
+    if (key != null && key.getId() != null) {
+      SimpleName sn = session.getMapper(NameUsageMapper.class).getSimple(key);
+      if (sn == null) {
+        throw new IllegalArgumentException("ID " + key.getId() + " not existing in dataset " + key.getDatasetKey());
+      }
+      return sn;
+    }
+    return null;
+  }
+
 
   public static boolean parsePlaceholderRank(Sector s){
     RankID subjId = RankID.parseID(s.getSubjectDatasetKey(), s.getSubject().getId());
@@ -128,11 +142,19 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     return false;
   }
 
+  /**
+   * We already verified the target taxon exists in the before update...
+   */
   @Override
   protected void updateAfter(Sector obj, Sector old, int user, SectorMapper mapper, SqlSession session) {
     if (old.getTarget() == null || obj.getTarget() == null || !Objects.equals(old.getTarget().getId(), obj.getTarget().getId())) {
       incSectorCounts(session, obj, 1);
       incSectorCounts(session, old, -1);
+    }
+    // update usages in case the target has changed!
+    if (obj.getTarget() != null && old.getTarget() != null && old.getTarget().getId() != null && !Objects.equals(old.getTarget().getId(), obj.getTarget().getId())) {
+      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+      num.updateParentIds(obj.getDatasetKey(), old.getTarget().getId(), obj.getTarget().getId(), obj.getId(), user);
     }
   }
 

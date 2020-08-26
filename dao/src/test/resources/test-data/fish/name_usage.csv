@@ -1,8 +1,9 @@
-id,name_id,parent_id,status,name_phrase,according_to_id,reference_ids,extinct,lifezones,scrutinizer
-u1,c1,,ACCEPTED,,,"{}",false,{},
-u2,c2,u1,ACCEPTED,,,"{}",false,{},
-u3,c3,u2,ACCEPTED,,,"{}",false,{},
-u4,c4,u3,ACCEPTED,,,"{}",false,{},
-u10,n10,u4,ACCEPTED,,,"{}",false,{MARINE},
-u100,n100,u10,ACCEPTED,,Allen1991,"{}",false,{MARINE},
-u101,n101,u100,MISAPPLIED,"(non Gilbert, 1905)",,,,,
+id,name_id,parent_id,sector_key,status,name_phrase,according_to_id,reference_ids,extinct,lifezones,scrutinizer,scrutinizer_date,link
+u1,c1,,1,ACCEPTED,,,"{}",false,{},,,
+u2,c2,u1,1,ACCEPTED,,,"{}",false,{},,,
+u3,c3,u2,1,ACCEPTED,,,"{}",false,{},,,
+u4,c4,u3,1,ACCEPTED,,,"{}",false,{},,,
+u10,n10,u4,1,ACCEPTED,,,"{}",false,{MARINE},,,
+u100,n100,u10,1,ACCEPTED,,Allen1991,"{}",false,{MARINE},"","",http://fish.org/100
+u101,n101,u100,1,MISAPPLIED,"(non Gilbert, 1905)",,,,,,,http://fish.org/101
+u102,n102,u100,1,PROVISIONALLY_ACCEPTED,,,,,,,,http://fish.org/102

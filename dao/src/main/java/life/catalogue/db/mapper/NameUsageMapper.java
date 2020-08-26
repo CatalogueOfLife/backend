@@ -30,7 +30,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   int delete(@Param("key") DSID<String> key);
 
   int count(@Param("datasetKey") int datasetKey);
-  
+
   List<NameUsageBase> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
   
   List<NameUsageBase> listByNameID(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
@@ -58,11 +58,13 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * @param datasetKey
    * @param parentId the current parentId
    * @param newParentId the new parentId
+   * @param sectorKey the optional sectorKey to restrict the update to
    * @return number of changed usages
    */
   int updateParentIds(@Param("datasetKey") int datasetKey,
                       @Param("parentId") String parentId,
                       @Param("newParentId") String newParentId,
+                      @Param("sectorKey") @Nullable Integer sectorKey,
                       @Param("userKey") int userKey);
 
   /**

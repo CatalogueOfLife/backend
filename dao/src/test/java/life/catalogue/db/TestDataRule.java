@@ -67,7 +67,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     APPLE(11, 3, 2, 3, 11, 12),
 
     // apple datasetKey=11
-    FISH(100, 2, 3, 3, 100, 101, 102),
+    FISH(100, 2, 4, 3, 100, 101, 102),
 
     // tree datasetKey=11
     TREE(11, 2, 2, 3, 11),
