@@ -16,23 +16,13 @@ public class LSpeciesName extends LHigherName {
   private String species;
   private String infraspeciesMarker;
   private String infraspecies;
-  private String author;
   private String distribution;
   private List<LReference> references;
   private List<LHigherName> classification;
-  private List<LSpeciesName> childTaxa;
+  private List<LHigherName> childTaxa;
   private List<LSpeciesName> synonyms;
   private List<LCommonName> commonNames;
 
-
-  @Override
-  public String getNameHtml() {
-    String html = super.getNameHtml();
-    if (author != null) {
-      html = html + " " + author;
-    }
-    return html;
-  }
 
   @JsonProperty("online_resource")
   public String getOnlineResource() {
@@ -119,14 +109,6 @@ public class LSpeciesName extends LHigherName {
     this.infraspecies = infraspecies;
   }
 
-  public String getAuthor() {
-    return author;
-  }
-
-  public void setAuthor(String author) {
-    this.author = author;
-  }
-
   public String getDistribution() {
     return distribution;
   }
@@ -151,11 +133,11 @@ public class LSpeciesName extends LHigherName {
     this.classification = classification;
   }
 
-  public List<LSpeciesName> getChildTaxa() {
+  public List<LHigherName> getChildTaxa() {
     return childTaxa;
   }
 
-  public void setChildTaxa(List<LSpeciesName> childTaxa) {
+  public void setChildTaxa(List<LHigherName> childTaxa) {
     this.childTaxa = childTaxa;
   }
 
@@ -192,7 +174,6 @@ public class LSpeciesName extends LHigherName {
       Objects.equals(species, that.species) &&
       Objects.equals(infraspeciesMarker, that.infraspeciesMarker) &&
       Objects.equals(infraspecies, that.infraspecies) &&
-      Objects.equals(author, that.author) &&
       Objects.equals(distribution, that.distribution) &&
       Objects.equals(references, that.references) &&
       Objects.equals(classification, that.classification) &&

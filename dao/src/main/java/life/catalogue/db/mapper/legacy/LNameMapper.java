@@ -7,16 +7,23 @@ import java.util.List;
 
 public interface LNameMapper {
 
-  LName get(@Param("full") boolean full,
-            @Param("datasetKey") int datasetKey,
+  LName get(@Param("datasetKey") int datasetKey,
             @Param("id") String id);
+
+  LName getFull(@Param("datasetKey") int datasetKey,
+                @Param("id") String id);
 
   int count(@Param("datasetKey") int datasetKey,
             @Param("prefix") boolean prefix,
             @Param("name") String name);
 
-  List<LName> search(@Param("full") boolean full,
-                     @Param("datasetKey") int datasetKey,
+  List<LName> search(@Param("datasetKey") int datasetKey,
+                     @Param("prefix") boolean prefix,
+                     @Param("name") String name,
+                     @Param("start") int start,
+                     @Param("limit") int limit);
+
+  List<LName> searchFull(@Param("datasetKey") int datasetKey,
                      @Param("prefix") boolean prefix,
                      @Param("name") String name,
                      @Param("start") int start,

@@ -15,8 +15,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.sql.SQLException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class LNameMapperTest extends MapperTestBase<LNameMapper> {
 
@@ -33,15 +32,15 @@ public class LNameMapperTest extends MapperTestBase<LNameMapper> {
 
   @Test
   public void get() {
-    LSpeciesName n = (LSpeciesName) mapper().get(false, datasetKey, "u100");
+    LSpeciesName n = (LSpeciesName) mapper().get(datasetKey, "u100");
     assertEquals("u100", n.getId());
     assertEquals(Rank.SPECIES, n.getRank());
 
-    LHigherName hn = (LHigherName) mapper().get(false, datasetKey, "u10");
+    LHigherName hn = (LHigherName) mapper().get(datasetKey, "u10");
     assertEquals("u10", hn.getId());
     assertEquals(Rank.GENUS, hn.getRank());
 
-    n = (LSpeciesName) mapper().get(true, datasetKey, "u100");
+    n = (LSpeciesName) mapper().getFull(datasetKey, "u100");
     assertEquals("u100", n.getId());
     assertEquals(Rank.SPECIES, n.getRank());
     assertEquals("Chromis (Chromis) agilis", n.getName());
@@ -59,13 +58,16 @@ public class LNameMapperTest extends MapperTestBase<LNameMapper> {
     assertNull(n.getRecordScrutinyDate());
 
     //assertNull(n.getBibliographicCitation());
-    //assertEquals(Rank.SPECIES, n.getChildTaxa());
-    //assertEquals(Rank.SPECIES, n.getClassification());
+    assertEquals(1, n.getChildTaxa().size());
+    n.getChildTaxa().forEach(this::assertPresent);
+
+    assertEquals(5, n.getClassification().size());
+    n.getClassification().forEach(this::assertPresent);
     //assertEquals(Rank.SPECIES, n.getCommonNames());
     //assertEquals(Rank.SPECIES, n.getDistribution());
 
 
-    n = (LSpeciesName) mapper().get(true, datasetKey, "u102");
+    n = (LSpeciesName) mapper().getFull(datasetKey, "u102");
     assertEquals("u102", n.getId());
     assertEquals(Rank.SUBSPECIES, n.getRank());
     assertEquals("Chromis (Chromis) agilis pacifica", n.getName());
@@ -78,6 +80,12 @@ public class LNameMapperTest extends MapperTestBase<LNameMapper> {
     assertEquals("subsp.", n.getInfraspeciesMarker());
   }
 
+  void assertPresent(LHigherName hn){
+    assertNotNull(hn.getId());
+    assertNotNull(hn.getRank());
+    assertNotNull(hn.getName());
+    assertNotNull(hn.getStatus());
+  }
   @Test
   @Ignore
   public void count() {
@@ -96,8 +104,8 @@ public class LNameMapperTest extends MapperTestBase<LNameMapper> {
 
   @Test
   public void search() {
-    mapper().search(false, datasetKey, false, "Larus" ,0 ,2).forEach(this::isSpecies);
-    mapper().search(true, datasetKey, false, "Larus" ,0 ,2).forEach(this::isSpecies);
+    mapper().search(datasetKey, false, "Larus" ,0 ,2).forEach(this::isSpecies);
+    mapper().searchFull(datasetKey, false, "Larus" ,0 ,2).forEach(this::isSpecies);
   }
 
   LSpeciesName isSpecies(LName n) {
