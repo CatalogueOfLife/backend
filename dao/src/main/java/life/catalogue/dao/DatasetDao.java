@@ -81,7 +81,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   public Dataset latestRelease(int projectKey) {
     try (SqlSession session = factory.openSession()){
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      Integer key = dm.latestRelease(projectKey);
+      Integer key = dm.latestRelease(projectKey, true);
       if (key == null) {
         throw new NotFoundException("Dataset " + projectKey + " was never released");
       }

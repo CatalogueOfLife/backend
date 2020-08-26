@@ -4,6 +4,7 @@ import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.Language;
 import life.catalogue.common.func.Predicates;
 import org.gbif.nameparser.api.Rank;
+import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +22,7 @@ public class LookupTables {
    */
   public static void recreateTables(Connection c) throws SQLException, IOException {
     LOG.info("Check existing lookup tables");
-    c.setAutoCommit(false);
+    c.setAutoCommit(true);
     if (count(c, "__ranks") != Arrays.stream(Rank.values()).filter(Predicates.not(Rank::isUncomparable)).count()) {
       ranks(c);
     }
@@ -41,6 +42,9 @@ public class LookupTables {
       int cnt = rs.getInt(1);
       rs.close();
       return cnt;
+
+    } catch (PSQLException e) {
+      return -1;
     }
   }
 
@@ -58,7 +62,6 @@ public class LookupTables {
         pst.setString(2, r.getMarker());
         pst.execute();
       }
-      c.commit();
     }
   }
 
@@ -74,7 +77,6 @@ public class LookupTables {
         pst.setString(2, cn.getTitle());
         pst.execute();
       }
-      c.commit();
     }
   }
 
@@ -90,7 +92,6 @@ public class LookupTables {
         pst.setString(2, l.getTitle());
         pst.execute();
       }
-      c.commit();
     }
   }
 }
