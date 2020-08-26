@@ -102,6 +102,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     d.setOrigin(DatasetOrigin.RELEASED);
     final LocalDate today = LocalDate.now();
     d.setReleased(today);
+    d.setPrivat(true); // all releases are private candidate releases first
     d.setVersion(today.toString());
     d.setCitation(buildCitation(d));
   }

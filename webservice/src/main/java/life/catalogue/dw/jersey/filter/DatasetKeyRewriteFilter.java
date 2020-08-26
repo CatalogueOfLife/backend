@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 /**
  * Filter that parses dataset keys given as path or query parameters
  * and rewrites them if needed to support conventions to refer to
- *  - the latest release of a project: {projectKey}LR
+ *  - the latest public release of a project: {projectKey}LR
  */
 @PreMatching
 public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
@@ -129,7 +129,7 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
   private Integer lookupLatest(int projectKey) throws NotFoundException {
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      return dm.latestRelease(projectKey);
+      return dm.latestRelease(projectKey, true);
     }
   }
 

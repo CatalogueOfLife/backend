@@ -235,7 +235,7 @@
 
   <select id="latestRelease" resultType="integer">
     SELECT key FROM dataset
-    WHERE source_key = #{key} AND deleted IS NULL
+    WHERE source_key = #{key} AND deleted IS NULL <if test="public">AND NOT private</if>
     ORDER BY created DESC
     LIMIT 1
   </select>
