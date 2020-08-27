@@ -152,7 +152,7 @@ public class DatasetImportDao {
     di.setTypeMaterialCount(mapper.countTypeMaterial(key));
     di.setVerbatimCount(mapper.countVerbatim(key));
     di.setVernacularCount(mapper.countVernacular(key));
-  
+
     di.setDistributionsByGazetteerCount(countMap(Gazetteer.class, mapper.countDistributionsByGazetteer(key)));
     di.setExtinctTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countExtinctTaxaByRank(key)));
     di.setIssuesCount(countMap(Issue.class, mapper.countIssues(key)));
@@ -170,7 +170,7 @@ public class DatasetImportDao {
     di.setUsagesByStatusCount(countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(key)));
     di.setVerbatimByTermCount(countMap(DatasetImportDao::parseRowType, mapper.countVerbatimByType(key)));
     di.setVernacularsByLanguageCount(countMap(mapper.countVernacularsByLanguage(key)));
-    
+
     // verbatim term metrics for each row type
     for (Term rowType : di.getVerbatimByTermCount().keySet()) {
       Map<Term, Integer> terms = countMap(DatasetImportDao::parseTerm, mapper.countVerbatimTerms(key, rowType));
