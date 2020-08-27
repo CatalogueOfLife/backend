@@ -45,17 +45,19 @@ public class ImportMetrics implements ImportAttempt {
   private String error;
 
   // metrics
-  private Integer nameCount;
-  private Integer taxonCount;
-  private Integer synonymCount;
+  private Integer appliedDecisionCount;
   private Integer bareNameCount;
-  private Integer referenceCount;
-  private Integer typeMaterialCount;
   private Integer distributionCount;
   private Integer mediaCount;
-  private Integer treatmentCount;
-  private Integer vernacularCount;
+  private Integer nameCount;
+  private Integer referenceCount;
   private Integer sectorCount;
+  private Integer synonymCount;
+  private Integer taxonCount;
+  private Integer treatmentCount;
+  private Integer typeMaterialCount;
+  private Integer vernacularCount;
+
   private Map<Gazetteer, Integer> distributionsByGazetteerCount = Maps.newHashMap();
   private Map<Rank, Integer> extinctTaxaByRankCount = Maps.newHashMap();
   private Map<IgnoreReason, Integer> ignoredByReasonCount = Maps.newHashMap();
@@ -226,6 +228,14 @@ public class ImportMetrics implements ImportAttempt {
     this.sectorCount = sectorCount;
   }
 
+  public Integer getAppliedDecisionCount() {
+    return appliedDecisionCount;
+  }
+
+  public void setAppliedDecisionCount(Integer appliedDecisionCount) {
+    this.appliedDecisionCount = appliedDecisionCount;
+  }
+
   public Map<NameType, Integer> getNamesByTypeCount() {
     return namesByTypeCount;
   }
@@ -379,33 +389,36 @@ public class ImportMetrics implements ImportAttempt {
 
   public void add(ImportMetrics m) {
     if (m != null) {
-      nameCount = sum(nameCount, m.nameCount);
+      appliedDecisionCount = sum(appliedDecisionCount, m.appliedDecisionCount);
       bareNameCount = sum(bareNameCount, m.bareNameCount);
-      taxonCount = sum(taxonCount, m.taxonCount);
-      synonymCount = sum(synonymCount, m.synonymCount);
-      referenceCount = sum(referenceCount, m.referenceCount);
-      typeMaterialCount = sum(typeMaterialCount, m.typeMaterialCount);
       distributionCount = sum(distributionCount, m.distributionCount);
       mediaCount = sum(mediaCount, m.mediaCount);
+      nameCount = sum(nameCount, m.nameCount);
+      referenceCount = sum(referenceCount, m.referenceCount);
+      sectorCount = sum(sectorCount, m.sectorCount);
+      synonymCount = sum(synonymCount, m.synonymCount);
+      taxonCount = sum(taxonCount, m.taxonCount);
       treatmentCount = sum(treatmentCount, m.treatmentCount);
+      typeMaterialCount = sum(typeMaterialCount, m.typeMaterialCount);
       vernacularCount = sum(vernacularCount, m.vernacularCount);
 
-      namesByTypeCount = sum(namesByTypeCount, m.namesByTypeCount);
-      namesByStatusCount = sum(namesByStatusCount, m.namesByStatusCount);
+      distributionsByGazetteerCount = sum(distributionsByGazetteerCount, m.distributionsByGazetteerCount);
+      extinctTaxaByRankCount = sum(extinctTaxaByRankCount, m.extinctTaxaByRankCount);
+      issuesCount = sum(issuesCount, m.issuesCount);
+      ignoredByReasonCount = sum(ignoredByReasonCount, m.ignoredByReasonCount);
+      mediaByTypeCount = sum(mediaByTypeCount, m.mediaByTypeCount);
+      nameRelationsByTypeCount = sum(nameRelationsByTypeCount, m.nameRelationsByTypeCount);
       namesByCodeCount = sum(namesByCodeCount, m.namesByCodeCount);
       namesByRankCount = sum(namesByRankCount, m.namesByRankCount);
-      nameRelationsByTypeCount = sum(nameRelationsByTypeCount, m.nameRelationsByTypeCount);
+      namesByStatusCount = sum(namesByStatusCount, m.namesByStatusCount);
+      namesByTypeCount = sum(namesByTypeCount, m.namesByTypeCount);
+      synonymsByRankCount = sum(synonymsByRankCount, m.synonymsByRankCount);
+      taxaByRankCount = sum(taxaByRankCount, m.taxaByRankCount);
+      taxonRelationsByTypeCount = sum(taxonRelationsByTypeCount, m.taxonRelationsByTypeCount);
       typeMaterialByStatusCount = sum(typeMaterialByStatusCount, m.typeMaterialByStatusCount);
-      distributionsByGazetteerCount = sum(distributionsByGazetteerCount, m.distributionsByGazetteerCount);
-      vernacularsByLanguageCount = sum(vernacularsByLanguageCount, m.vernacularsByLanguageCount);
-      mediaByTypeCount = sum(mediaByTypeCount, m.mediaByTypeCount);
       usagesByOriginCount = sum(usagesByOriginCount, m.usagesByOriginCount);
       usagesByStatusCount = sum(usagesByStatusCount, m.usagesByStatusCount);
-      taxaByRankCount = sum(taxaByRankCount, m.taxaByRankCount);
-      extinctTaxaByRankCount = sum(extinctTaxaByRankCount, m.extinctTaxaByRankCount);
-      synonymsByRankCount = sum(synonymsByRankCount, m.synonymsByRankCount);
-      taxonRelationsByTypeCount = sum(taxonRelationsByTypeCount, m.taxonRelationsByTypeCount);
-      issuesCount = sum(issuesCount, m.issuesCount);
+      vernacularsByLanguageCount = sum(vernacularsByLanguageCount, m.vernacularsByLanguageCount);
     }
   }
 
@@ -444,21 +457,23 @@ public class ImportMetrics implements ImportAttempt {
       Objects.equals(finished, that.finished) &&
       Objects.equals(createdBy, that.createdBy) &&
       Objects.equals(error, that.error) &&
+
+      Objects.equals(appliedDecisionCount, that.appliedDecisionCount) &&
       Objects.equals(bareNameCount, that.bareNameCount) &&
       Objects.equals(distributionCount, that.distributionCount) &&
-      Objects.equals(issuesCount, that.issuesCount) &&
       Objects.equals(mediaCount, that.mediaCount) &&
       Objects.equals(nameCount, that.nameCount) &&
       Objects.equals(referenceCount, that.referenceCount) &&
+      Objects.equals(sectorCount, that.sectorCount) &&
       Objects.equals(synonymCount, that.synonymCount) &&
       Objects.equals(taxonCount, that.taxonCount) &&
       Objects.equals(treatmentCount, that.treatmentCount) &&
       Objects.equals(typeMaterialCount, that.typeMaterialCount) &&
-      Objects.equals(sectorCount, that.sectorCount) &&
-      Objects.equals(ignoredByReasonCount, that.ignoredByReasonCount) &&
-      Objects.equals(vernacularCount, that.vernacularCount) &&
+
       Objects.equals(distributionsByGazetteerCount, that.distributionsByGazetteerCount) &&
       Objects.equals(extinctTaxaByRankCount, that.extinctTaxaByRankCount) &&
+      Objects.equals(ignoredByReasonCount, that.ignoredByReasonCount) &&
+      Objects.equals(issuesCount, that.issuesCount) &&
       Objects.equals(mediaByTypeCount, that.mediaByTypeCount) &&
       Objects.equals(nameRelationsByTypeCount, that.nameRelationsByTypeCount) &&
       Objects.equals(namesByCodeCount, that.namesByCodeCount) &&
@@ -471,6 +486,7 @@ public class ImportMetrics implements ImportAttempt {
       Objects.equals(typeMaterialByStatusCount, that.typeMaterialByStatusCount) &&
       Objects.equals(usagesByOriginCount, that.usagesByOriginCount) &&
       Objects.equals(usagesByStatusCount, that.usagesByStatusCount) &&
+      Objects.equals(vernacularCount, that.vernacularCount) &&
       Objects.equals(vernacularsByLanguageCount, that.vernacularsByLanguageCount);
   }
 
@@ -478,7 +494,7 @@ public class ImportMetrics implements ImportAttempt {
   public int hashCode() {
     return Objects.hash(datasetKey, attempt, job, state, started, finished, createdBy, error,
       nameCount, taxonCount, synonymCount, bareNameCount, referenceCount, typeMaterialCount, distributionCount, mediaCount, treatmentCount, vernacularCount,
-      sectorCount,ignoredByReasonCount,
+      sectorCount, ignoredByReasonCount, appliedDecisionCount,
       namesByTypeCount, namesByStatusCount, namesByCodeCount, namesByRankCount, nameRelationsByTypeCount, typeMaterialByStatusCount, distributionsByGazetteerCount,
       vernacularsByLanguageCount, mediaByTypeCount, usagesByOriginCount, usagesByStatusCount,
       taxaByRankCount, extinctTaxaByRankCount, synonymsByRankCount, taxonRelationsByTypeCount, issuesCount);

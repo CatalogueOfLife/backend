@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
@@ -223,6 +224,9 @@ public class SectorSync extends SectorRunnable {
       } else {
         throw new NotImplementedException("Only attach and union sectors are implemented");
       }
+      // copy handler stats to metrics
+      state.setAppliedDecisionCount(treeHandler.decisionCounter);
+      state.setIgnoredByReasonCount(Map.copyOf(treeHandler.ignoredCounter));
     }
   }
   

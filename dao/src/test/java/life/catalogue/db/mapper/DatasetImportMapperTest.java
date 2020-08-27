@@ -44,6 +44,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     m.setState(state);
     m.setStarted(LocalDateTime.now());
     m.setFinished(LocalDateTime.now());
+    m.setAppliedDecisionCount(83);
     m.setBareNameCount(13);
     m.setDistributionCount(12345);
     m.setMediaCount(936);

@@ -14,8 +14,11 @@ and done it manually. So we can as well log changes here.
 
 ```
 ALTER TABLE dataset_import ADD COLUMN ignored_by_reason_count HSTORE; 
+ALTER TABLE dataset_import ADD COLUMN applied_decision_count INTEGER; 
+
 ALTER TABLE sector_import ADD COLUMN ignored_by_reason_count HSTORE; 
-ALTER TABLE sector_import DROP COLUMN ignored_usage_count INTEGER; 
+ALTER TABLE sector_import ADD COLUMN applied_decision_count INTEGER; 
+ALTER TABLE sector_import DROP COLUMN ignored_usage_count; 
 ```
 
 

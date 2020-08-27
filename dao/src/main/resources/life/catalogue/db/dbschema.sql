@@ -676,6 +676,7 @@ CREATE TABLE dataset_import (
   created_by INTEGER NOT NULL,
   verbatim_count INTEGER,
   -- shared
+  applied_decision_count INTEGER,
   bare_name_count INTEGER,
   distribution_count INTEGER,
   media_count INTEGER,
@@ -755,6 +756,7 @@ CREATE TABLE sector_import (
   created_by INTEGER NOT NULL,
   state IMPORTSTATE NOT NULL,
   -- shared
+  applied_decision_count INTEGER,
   bare_name_count INTEGER,
   distribution_count INTEGER,
   media_count INTEGER,

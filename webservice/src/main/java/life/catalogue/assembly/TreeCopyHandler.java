@@ -51,7 +51,8 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   private final Map<RanKnName, Usage> implicits = new HashMap<>();
   private final Map<String, Usage> ids = new HashMap<>();
   private final Map<String, String> refIds = new HashMap<>();
-  private final Map<IgnoreReason, Integer> ignoredCounter = new HashMap<>();
+  final Map<IgnoreReason, Integer> ignoredCounter = new HashMap<>();
+  int decisionCounter = 0;
 
   TreeCopyHandler(Map<String, EditorialDecision> decisions, SqlSessionFactory factory, User user, Sector sector, SectorImport state) {
     this.catalogueKey = sector.getDatasetKey();
@@ -291,6 +292,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
       case BLOCK:
         throw new IllegalStateException("Blocked usage " + u.getId() + " should not have been traversed");
       case UPDATE:
+        decisionCounter++;
         if (ed.getName() != null) {
           Name n = u.getName();
           Name n2 = ed.getName();
