@@ -62,6 +62,28 @@ public class TreeDaoTest {
     }
   }
 
+  static void verifyClassification(List<TreeNode> classification){
+    if (!classification.isEmpty()) {
+      TreeNode last = classification.get(classification.size()-1);
+      TreeNode child = null;
+      for (TreeNode tn : classification) {
+        assertNotNull(tn.getId());
+        assertNotNull(tn.getRank());
+        assertNotNull(tn.getName());
+        if (tn.getId().equals(last.getId())) {
+          assertNull(tn.getParentId());
+        } else {
+          assertNotNull(tn.getParentId());
+        }
+        if (child != null) {
+          assertTrue(tn.getRank().higherThan(child.getRank()));
+          assertEquals(tn.getId(), child.getParentId());
+        }
+        child = tn;
+      }
+    }
+  }
+
   @Test
   public void classification() {
     for (boolean placeholder : List.of(false, true)) {
@@ -70,12 +92,14 @@ public class TreeDaoTest {
         assertEquals(6, classification.size());
         assertEquals(Rank.SPECIES, classification.get(0).getRank());
         assertEquals(Rank.GENUS, classification.get(1).getRank());
+        verifyClassification(classification);
       }
     }
 
     // expect placeholders
     for (TreeNode.Type type : TreeNode.types()) {
       List<TreeNode> classification = valid(dao.classification(DSID.of(TRILOBITA, "61"), catKey, true, type));
+      verifyClassification(classification);
       assertEquals(5, classification.size());
       assertNode(assertNoSector(classification.get(0)), Rank.SPECIES, "Amechilus palaora");
       assertEquals(Rank.GENUS, classification.get(1).getRank());
@@ -92,6 +116,7 @@ public class TreeDaoTest {
     // Agnostida family placeholder
     for (TreeNode.Type type : TreeNode.types()) {
       List<TreeNode> classification = valid(dao.classification(DSID.of(TRILOBITA, RankID.buildID("2", Rank.FAMILY)), catKey, true, type));
+      verifyClassification(classification);
       assertEquals(4, classification.size());
       assertPlaceholder(assertNoSector(classification.get(0)), Rank.FAMILY);
       assertPlaceholder(classification.get(1), Rank.SUPERFAMILY);

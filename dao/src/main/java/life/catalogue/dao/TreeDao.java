@@ -41,9 +41,16 @@ public class TreeDao {
       Rank pRank = null;
       LinkedList<TreeNode> classification = new LinkedList<>();
       if (key.rank != null) {
+        // the requested key is a placeholder node itself. First get the "real" parent
         TreeNode parentNode = trm.get(projectKey, type, key);
-        classification.add(placeholder(parentNode, key.rank));
+        // first add a node for the given key - we dont know if the parent is also a placeholder yet. this can be changed later
+        TreeNode thisPlaceholder = placeholder(parentNode, null, key.rank);
+        classification.add(thisPlaceholder);
         classification.addAll(parentPlaceholder(trm, parentNode, key.rank));
+        if (classification.size() > 1) {
+          // update the parentID to point to the parent placeholder instead
+          thisPlaceholder.setParentId(classification.get(1).getId());
+        }
         pRank = parentNode.getRank();
       }
       boolean first = true;
@@ -51,7 +58,12 @@ public class TreeDao {
         if (first) {
           first = false;
         } else if (placeholder) {
-          classification.addAll(parentPlaceholder(trm, tn, pRank));
+          List<TreeNode> placeholders = parentPlaceholder(trm, tn, pRank);
+          // we need to change the parentID of the last entry to point to the first placeholder
+          if (!classification.isEmpty() && !placeholders.isEmpty()) {
+            classification.getLast().setParentId(placeholders.get(0).getId());
+          }
+          classification.addAll(placeholders);
         }
         classification.add(tn);
         pRank = tn.getRank();
@@ -103,9 +115,15 @@ public class TreeDao {
       Collections.reverse(ranks);
       // we dont want no placeholder for the lowest rank
       ranks.remove(0);
+      Rank child = null;
       for (Rank r : ranks) {
-        nodes.add(placeholder(tn, r));
+        if (child != null) {
+          nodes.add(placeholder(tn, r, child));
+        }
+        child = r;
       }
+      // now we miss the last one which should have no parent
+      nodes.add(placeholder(tn, null, child));
     }
     return nodes;
   }
@@ -129,12 +147,13 @@ public class TreeDao {
 
       if (placeholder && !result.isEmpty() && result.size() <= page.getLimit()) {
         // we *might* need a placeholder, check if there are more children of other ranks
-        // look for the current rank of the result set
+        // look for the highest rank of the result set in the first record - they are ordered by rank!
         TreeNode firstResult = result.get(0);
         int lowerChildren = tm.countChildrenBelowRank(parent, firstResult.getRank());
         if (lowerChildren > 0) {
+          List<Rank> placeholderParentRanks = trm.childrenRanks(parent, firstResult.getRank());
           TreeNode tnParent = trm.get(projectKey, type, parent);
-          TreeNode placeHolder = placeholder(tnParent, firstResult, lowerChildren);
+          TreeNode placeHolder = placeholder(tnParent, firstResult, lowerChildren, placeholderParentRanks);
           // does a placeholder sector exist with a matching placeholder rank?
           if (type == TreeNode.Type.SOURCE) {
             SectorMapper sm = session.getMapper(SectorMapper.class);
@@ -151,19 +170,32 @@ public class TreeDao {
     }
   }
 
-  private static TreeNode placeholder(TreeNode parent, Rank rank){
-    return placeholder(parent.getDatasetKey(), parent.getSectorKey(), parent.getId(), rank, 1);
+  private static TreeNode placeholder(TreeNode parent, @Nullable Rank parentPlaceholderRank, Rank rank){
+    return placeholder(parent.getDatasetKey(), parent.getSectorKey(), parent.getId(), parentPlaceholderRank, rank, 1);
   }
 
-  private static TreeNode placeholder(TreeNode parent, TreeNode sibling, int childCount){
-    return placeholder(sibling.getDatasetKey(), parent.getSectorKey(), sibling.getParentId(), sibling.getRank(), childCount);
+  private static TreeNode placeholder(TreeNode parent, TreeNode sibling, int childCount, List<Rank> placeholderParentRanks){
+    Collections.sort(placeholderParentRanks);
+    Rank placeholderParentRank = placeholderParentRanks.isEmpty() ? null : placeholderParentRanks.get(placeholderParentRanks.size() - 1);
+    return placeholder(sibling.getDatasetKey(), parent.getSectorKey(), sibling.getParentId(), placeholderParentRank, sibling.getRank(), childCount);
   }
 
-  private static TreeNode placeholder(Integer datasetKey, Integer sectorKey, String parentID, Rank rank, int childCount){
+  /**
+   * Builds a virtual placeholder node mostly based on the rank and the first real usage id of its parents
+   *
+   * @param datasetKey
+   * @param sectorKey
+   * @param parentID the real usage id of the parent
+   * @param parentPlaceholderRank the next higher placeholder rank if there are any other ranks in between this placeholder and the real parent
+   * @param rank rank of the placeholder to be generated
+   * @param childCount number of direct children for this placeholder
+   */
+  private static TreeNode placeholder(Integer datasetKey, Integer sectorKey, String parentID, @Nullable Rank parentPlaceholderRank, Rank rank, int childCount){
     TreeNode tn = new TreeNode.PlaceholderNode();
     tn.setDatasetKey(datasetKey);
     tn.setSectorKey(sectorKey);
     tn.setId(RankID.buildID(parentID, rank));
+    tn.setParentId(parentPlaceholderRank == null ? parentID : RankID.buildID(parentID, parentPlaceholderRank));
     tn.setRank(rank);
     tn.setChildCount(childCount);
     tn.setStatus(TaxonomicStatus.ACCEPTED);
