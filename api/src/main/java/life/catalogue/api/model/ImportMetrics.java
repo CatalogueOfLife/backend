@@ -31,12 +31,12 @@ public class ImportMetrics implements ImportAttempt {
    * State of the import, e.g. indicating if still running, success or failure.
    */
   private ImportState state;
-  
+
   /**
    * Time the import command started
    */
   private LocalDateTime started;
-  
+
   /**
    * Time the import command finished
    */
@@ -56,23 +56,24 @@ public class ImportMetrics implements ImportAttempt {
   private Integer treatmentCount;
   private Integer vernacularCount;
   private Integer sectorCount;
-  private Map<NameType, Integer> namesByTypeCount = Maps.newHashMap();
-  private Map<NomStatus, Integer> namesByStatusCount = Maps.newHashMap();
+  private Map<Gazetteer, Integer> distributionsByGazetteerCount = Maps.newHashMap();
+  private Map<Rank, Integer> extinctTaxaByRankCount = Maps.newHashMap();
+  private Map<IgnoreReason, Integer> ignoredByReasonCount = Maps.newHashMap();
+  private Map<Issue, Integer> issuesCount = Maps.newHashMap();
+  private Map<MediaType, Integer> mediaByTypeCount = Maps.newHashMap();
   private Map<NomCode, Integer> namesByCodeCount = Maps.newHashMap();
   private Map<Rank, Integer> namesByRankCount = Maps.newHashMap();
+  private Map<NomStatus, Integer> namesByStatusCount = Maps.newHashMap();
+  private Map<NameType, Integer> namesByTypeCount = Maps.newHashMap();
   private Map<NomRelType, Integer> nameRelationsByTypeCount = Maps.newHashMap();
+  private Map<Rank, Integer> synonymsByRankCount = Maps.newHashMap();
+  private Map<Rank, Integer> taxaByRankCount = Maps.newHashMap();
+  private Map<TaxRelType, Integer> taxonRelationsByTypeCount = Maps.newHashMap();
   private Map<TypeStatus, Integer> typeMaterialByStatusCount = Maps.newHashMap();
-  private Map<Gazetteer, Integer> distributionsByGazetteerCount = Maps.newHashMap();
-  private Map<String, Integer> vernacularsByLanguageCount = Maps.newHashMap();
-  private Map<MediaType, Integer> mediaByTypeCount = Maps.newHashMap();
   private Map<TaxonomicStatus, Integer> usagesByStatusCount = Maps.newHashMap();
   private Map<Origin, Integer> usagesByOriginCount = Maps.newHashMap();
-  private Map<Rank, Integer> taxaByRankCount = Maps.newHashMap();
-  private Map<Rank, Integer> extinctTaxaByRankCount = Maps.newHashMap();
-  private Map<Rank, Integer> synonymsByRankCount = Maps.newHashMap();
-  private Map<TaxRelType, Integer> taxonRelationsByTypeCount = Maps.newHashMap();
-  private Map<Issue, Integer> issuesCount = Maps.newHashMap();
-  
+  private Map<String, Integer> vernacularsByLanguageCount = Maps.newHashMap();
+
   public Integer getDatasetKey() {
     return datasetKey;
   }
@@ -184,7 +185,15 @@ public class ImportMetrics implements ImportAttempt {
   public void setDistributionCount(Integer distributionCount) {
     this.distributionCount = distributionCount;
   }
-  
+
+  public Map<IgnoreReason, Integer> getIgnoredByReasonCount() {
+    return ignoredByReasonCount;
+  }
+
+  public void setIgnoredByReasonCount(Map<IgnoreReason, Integer> ignoredByReasonCount) {
+    this.ignoredByReasonCount = ignoredByReasonCount;
+  }
+
   public Integer getMediaCount() {
     return mediaCount;
   }
@@ -446,6 +455,7 @@ public class ImportMetrics implements ImportAttempt {
       Objects.equals(treatmentCount, that.treatmentCount) &&
       Objects.equals(typeMaterialCount, that.typeMaterialCount) &&
       Objects.equals(sectorCount, that.sectorCount) &&
+      Objects.equals(ignoredByReasonCount, that.ignoredByReasonCount) &&
       Objects.equals(vernacularCount, that.vernacularCount) &&
       Objects.equals(distributionsByGazetteerCount, that.distributionsByGazetteerCount) &&
       Objects.equals(extinctTaxaByRankCount, that.extinctTaxaByRankCount) &&
@@ -468,7 +478,7 @@ public class ImportMetrics implements ImportAttempt {
   public int hashCode() {
     return Objects.hash(datasetKey, attempt, job, state, started, finished, createdBy, error,
       nameCount, taxonCount, synonymCount, bareNameCount, referenceCount, typeMaterialCount, distributionCount, mediaCount, treatmentCount, vernacularCount,
-      sectorCount,
+      sectorCount,ignoredByReasonCount,
       namesByTypeCount, namesByStatusCount, namesByCodeCount, namesByRankCount, nameRelationsByTypeCount, typeMaterialByStatusCount, distributionsByGazetteerCount,
       vernacularsByLanguageCount, mediaByTypeCount, usagesByOriginCount, usagesByStatusCount,
       taxaByRankCount, extinctTaxaByRankCount, synonymsByRankCount, taxonRelationsByTypeCount, issuesCount);

@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.EntityType;
+import life.catalogue.api.vocab.IgnoreReason;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.CatCopy;
@@ -46,12 +47,12 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   private final NameMapper nm;
   private int sCounter = 0;
   private int tCounter = 0;
-  private int ignoredCounter = 0;
   private final Usage target;
   private final Map<RanKnName, Usage> implicits = new HashMap<>();
   private final Map<String, Usage> ids = new HashMap<>();
   private final Map<String, String> refIds = new HashMap<>();
-  
+  private final Map<IgnoreReason, Integer> ignoredCounter = new HashMap<>();
+
   TreeCopyHandler(Map<String, EditorialDecision> decisions, SqlSessionFactory factory, User user, Sector sector, SectorImport state) {
     this.catalogueKey = sector.getDatasetKey();
     this.user = user;
@@ -215,9 +216,8 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
       applyDecision(u, decisions.get(u.getId()));
     }
     if (skipUsage(u)) {
-      state.setIgnoredUsageCount(++ignoredCounter);
       // skip this taxon, but include children
-      LOG.debug("Ignore {} {} [{}] type={}; status={}", u.getName().getRank(), u.getName().getLabel(), u.getId(), u.getName().getType(), u.getName().getNomStatus());
+      LOG.info("Ignore {} {} [{}] type={}; status={}", u.getName().getRank(), u.getName().getLabel(), u.getId(), u.getName().getType(), u.getName().getNomStatus());
       // use taxons parent also as the parentID for this so children link one level up
       ids.put(u.getId(), ids.getOrDefault(u.getParentId(), target));
       return;
@@ -249,10 +249,15 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
       batchSession.commit();
     }
   }
-  
+
+  private void incIgnored(IgnoreReason reason) {
+    ignoredCounter.compute(reason, (k, v) -> v == null ? 1 : v+1);
+  }
+
   private boolean skipUsage(NameUsageBase u) {
     Name n = u.getName();
     if (!ranks.isEmpty() && !ranks.contains(n.getRank())) {
+      incIgnored(IgnoreReason.RANK);
       return true;
     }
     switch (n.getType()) {
@@ -260,18 +265,22 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
       case NO_NAME:
       case HYBRID_FORMULA:
       case INFORMAL:
+        incIgnored(IgnoreReason.reasonByNameType(n.getType()));
         return true;
     }
     if (n.getNomStatus() != null) {
       switch (n.getNomStatus()) {
         case CHRESONYM:
+          incIgnored(IgnoreReason.CHRESONYM);
           return true;
       }
     }
     if (n.getCultivarEpithet() != null || n.getCode() == NomCode.CULTIVARS || n.getRank().isCultivarRank()) {
+      incIgnored(IgnoreReason.INCONSISTENT_NAME);
       return true;
     }
     if (n.getType().isParsable() && n.isIndetermined()) {
+      incIgnored(IgnoreReason.INDETERMINED);
       return true;
     }
     return false;
@@ -426,4 +435,5 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     batchSession.commit();
     batchSession.close();
   }
+
 }

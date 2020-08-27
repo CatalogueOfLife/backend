@@ -10,6 +10,15 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2020-08-27 ignored_usage_count metrics
+
+```
+ALTER TABLE dataset_import ADD COLUMN ignored_by_reason_count HSTORE; 
+ALTER TABLE sector_import ADD COLUMN ignored_by_reason_count HSTORE; 
+ALTER TABLE sector_import DROP COLUMN ignored_usage_count INTEGER; 
+```
+
+
 ### 2020-08-24 nom code metrics
 
 ```

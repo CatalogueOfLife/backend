@@ -688,6 +688,7 @@ CREATE TABLE dataset_import (
   vernacular_count INTEGER,
   distributions_by_gazetteer_count HSTORE,
   extinct_taxa_by_rank_count HSTORE,
+  ignored_by_reason_count HSTORE,
   issues_by_issue_count HSTORE,
   media_by_type_count HSTORE,
   name_relations_by_type_count HSTORE,
@@ -753,7 +754,6 @@ CREATE TABLE sector_import (
   finished TIMESTAMP WITHOUT TIME ZONE,
   created_by INTEGER NOT NULL,
   state IMPORTSTATE NOT NULL,
-  ignored_usage_count INTEGER,
   -- shared
   bare_name_count INTEGER,
   distribution_count INTEGER,
@@ -767,6 +767,7 @@ CREATE TABLE sector_import (
   vernacular_count INTEGER,
   distributions_by_gazetteer_count HSTORE,
   extinct_taxa_by_rank_count HSTORE,
+  ignored_by_reason_count HSTORE,
   issues_by_issue_count HSTORE,
   media_by_type_count HSTORE,
   name_relations_by_type_count HSTORE,

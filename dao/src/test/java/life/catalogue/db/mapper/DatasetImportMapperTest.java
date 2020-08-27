@@ -56,6 +56,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     m.setVernacularCount(432);
     m.setDistributionsByGazetteerCount(mockCount(Gazetteer.class));
     m.setExtinctTaxaByRankCount(mockCount(Rank.class));
+    m.setIgnoredByReasonCount(mockCount(IgnoreReason.class));
     m.setIssuesCount(mockCount(Issue.class));
     m.setMediaByTypeCount(mockCount(MediaType.class));
     m.setNameRelationsByTypeCount(mockCount(NomRelType.class));

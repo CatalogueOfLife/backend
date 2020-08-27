@@ -39,6 +39,7 @@
     ${alias}vernacular_count,
     ${alias}distributions_by_gazetteer_count,
     ${alias}extinct_taxa_by_rank_count,
+    ${alias}ignored_by_reason_count,
     ${alias}issues_by_issue_count,
     ${alias}media_by_type_count,
     ${alias}name_relations_by_type_count,
@@ -89,6 +90,7 @@
     #{imp.vernacularCount},
     #{imp.distributionsByGazetteerCount, typeHandler=life.catalogue.db.type2.HstoreGazetteerCountTypeHandler}::hstore,
     #{imp.extinctTaxaByRankCount, typeHandler=life.catalogue.db.type2.HstoreRankCountTypeHandler}::hstore,
+    #{imp.ignoredByReasonCount, typeHandler=life.catalogue.db.type2.HstoreIgnoredCountTypeHandler}::hstore,
     #{imp.issuesCount, typeHandler=life.catalogue.db.type2.HstoreIssueCountTypeHandler}::hstore,
     #{imp.mediaByTypeCount, typeHandler=life.catalogue.db.type2.HstoreIssueCountTypeHandler}::hstore,
     #{imp.nameRelationsByTypeCount, typeHandler=life.catalogue.db.type2.HstoreNameRelCountTypeHandler}::hstore,
@@ -146,6 +148,7 @@
   <resultMap id="importMetricsResultMap" type="ImportMetrics" autoMapping="true">
     <result property="distributionsByGazetteerCount" column="distributions_by_gazetteer_count" typeHandler="life.catalogue.db.type2.HstoreGazetteerCountTypeHandler"/>
     <result property="extinctTaxaByRankCount" column="extinct_taxa_by_rank_count" typeHandler="life.catalogue.db.type2.HstoreRankCountTypeHandler"/>
+    <result property="ignoredByReasonCount" column="ignored_by_reason_count" typeHandler="life.catalogue.db.type2.HstoreIgnoredCountTypeHandler"/>
     <result property="issuesCount" column="issues_by_issue_count" typeHandler="life.catalogue.db.type2.HstoreIssueCountTypeHandler"/>
     <result property="mediaByTypeCount" column="media_by_type_count" typeHandler="life.catalogue.db.type2.HstoreMediaTypeCountTypeHandler"/>
     <result property="nameRelationsByTypeCount" column="name_relations_by_type_count" typeHandler="life.catalogue.db.type2.HstoreNameRelCountTypeHandler"/>
