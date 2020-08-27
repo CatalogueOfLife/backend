@@ -138,7 +138,6 @@ public class TreeDao {
       List<TreeNode> result = placeholder ?
         trm.childrenWithPlaceholder(projectKey, type, parent, parent.rank, page) :
         trm.children(projectKey, type, parent, parent.rank, page);
-
       Supplier<Integer> countSupplier;
       if (placeholder && !result.isEmpty()) {
         countSupplier =  () -> tm.countChildrenWithRank(parent, result.get(0).getRank());
@@ -165,6 +164,8 @@ public class TreeDao {
           result.add(placeHolder);
         }
       }
+      // update parentID to use original input
+      result.forEach(c -> c.setParentId(id.getId()));
       addPlaceholderSectors(projectKey, result, type, session);
       updateSectorRootFlags(tnParent.getSectorKey(), result);
       return new ResultPage<>(page, result, countSupplier);
@@ -199,7 +200,7 @@ public class TreeDao {
 
   private static TreeNode placeholder(TreeNode parent, TreeNode sibling, int childCount, List<Rank> placeholderParentRanks){
     Collections.sort(placeholderParentRanks);
-    Rank placeholderParentRank = placeholderParentRanks.isEmpty() ? null : placeholderParentRanks.get(placeholderParentRanks.size() - 1);
+    Rank placeholderParentRank = placeholderParentRanks.size() > 1 ? placeholderParentRanks.get(placeholderParentRanks.size() - 2) : null;
     return placeholder(sibling.getDatasetKey(), parent.getSectorKey(), sibling.getParentId(), placeholderParentRank, sibling.getRank(), childCount);
   }
 

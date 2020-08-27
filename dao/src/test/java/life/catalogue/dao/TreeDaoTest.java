@@ -84,6 +84,16 @@ public class TreeDaoTest {
     }
   }
 
+  static void verifyChildren(DSID<String> parentID, ResultPage<TreeNode> children){
+    for (TreeNode c : children) {
+      assertNotNull(c.getId());
+      assertNotNull(c.getRank());
+      assertNotNull(c.getName());
+      assertNotEquals(parentID.getId(), c.getId());
+      assertEquals(parentID.getId(), c.getParentId());
+    }
+  }
+
   @Test
   public void classification() {
     for (boolean placeholder : List.of(false, true)) {
@@ -161,8 +171,11 @@ public class TreeDaoTest {
 
   @Test
   public void children() {
+    DSID<String> key;
     for (TreeNode.Type type : TreeNode.types()) {
-      ResultPage<TreeNode> children = valid(dao.children(DSID.of(TRILOBITA, RankID.buildID("1", Rank.ORDER)), catKey, true, type, PAGE));
+      key = DSID.of(TRILOBITA, RankID.buildID("1", Rank.ORDER));
+      ResultPage<TreeNode> children = valid(dao.children(key, catKey, true, type, PAGE));
+      verifyChildren(key, children);
       assertEquals(2, children.size());
       assertNode(children.getResult().get(0), Rank.FAMILY, "Scutelluidae");
       assertPlaceholder(children.getResult().get(1), Rank.FAMILY);
@@ -172,14 +185,18 @@ public class TreeDaoTest {
         assertNoSector(children.getResult().get(1));
       }
 
-      children = valid(dao.children(children.getResult().get(1), catKey, true, type, PAGE));
+      key = children.getResult().get(1);
+      children = valid(dao.children(key, catKey, true, type, PAGE));
+      verifyChildren(key, children);
       assertEquals(2, children.size());
       assertNode(children.getResult().get(0), Rank.GENUS, "Amechilus");
       assertNode(children.getResult().get(1), Rank.GENUS, "Deltacare");
     }
 
     // browse the project catalogue
-    ResultPage<TreeNode> children = valid(dao.children(DSID.of(catKey, "9"), catKey, true, TreeNode.Type.CATALOGUE, PAGE));
+    key = DSID.of(catKey, "9");
+    ResultPage<TreeNode> children = valid(dao.children(key, catKey, true, TreeNode.Type.CATALOGUE, PAGE));
+    verifyChildren(key, children);
     assertEquals(2, children.size());
     assertNode(children.getResult().get(0), Rank.SUPERFAMILY, "Agnostoidea");
     assertSector(children.getResult().get(0), sectorRule.sectorKey(1));
@@ -188,7 +205,9 @@ public class TreeDaoTest {
     assertNoSector(children.getResult().get(1));
 
     // mammalia with 2 placeholders below that should show up with sectorKeys
-    children = valid(dao.children(DSID.of(catKey, "18"), catKey, true, TreeNode.Type.CATALOGUE, PAGE));
+    key = DSID.of(catKey, "18");
+    children = valid(dao.children(key, catKey, true, TreeNode.Type.CATALOGUE, PAGE));
+    verifyChildren(key, children);
     assertEquals(3, children.size());
 
     assertNode(children.getResult().get(0), Rank.ORDER, "Carnivora");
