@@ -42,6 +42,7 @@ public abstract class TreeNode implements DSID<String> {
   private int childCount;
   private List<SpeciesEstimate> estimates;
   private Integer sectorKey;
+  private Boolean sectorRoot;
   private EditorialDecision decision;
   private Int2IntOpenHashMap datasetSectors;
   
@@ -175,7 +176,15 @@ public abstract class TreeNode implements DSID<String> {
   public void setSectorKey(Integer sectorKey) {
     this.sectorKey = sectorKey;
   }
-  
+
+  public Boolean getSectorRoot() {
+    return sectorRoot;
+  }
+
+  public void setSectorRoot(Boolean sectorRoot) {
+    this.sectorRoot = sectorRoot;
+  }
+
   public EditorialDecision getDecision() {
     return decision;
   }
@@ -200,23 +209,24 @@ public abstract class TreeNode implements DSID<String> {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof TreeNode)) return false;
     TreeNode treeNode = (TreeNode) o;
     return childCount == treeNode.childCount &&
-        Objects.equals(datasetKey, treeNode.datasetKey) &&
-        Objects.equals(id, treeNode.id) &&
-        Objects.equals(parentId, treeNode.parentId) &&
-        rank == treeNode.rank &&
-        status == treeNode.status &&
-        Objects.equals(estimates, treeNode.estimates) &&
-        Objects.equals(sectorKey, treeNode.sectorKey) &&
-        Objects.equals(decision, treeNode.decision) &&
-        Objects.equals(datasetSectors, treeNode.datasetSectors);
+      Objects.equals(datasetKey, treeNode.datasetKey) &&
+      Objects.equals(id, treeNode.id) &&
+      Objects.equals(parentId, treeNode.parentId) &&
+      rank == treeNode.rank &&
+      status == treeNode.status &&
+      Objects.equals(estimates, treeNode.estimates) &&
+      Objects.equals(sectorKey, treeNode.sectorKey) &&
+      Objects.equals(sectorRoot, treeNode.sectorRoot) &&
+      Objects.equals(decision, treeNode.decision) &&
+      Objects.equals(datasetSectors, treeNode.datasetSectors);
   }
-  
+
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, id, parentId, rank, status, childCount, estimates, sectorKey, decision, datasetSectors);
+    return Objects.hash(datasetKey, id, parentId, rank, status, childCount, estimates, sectorKey, sectorRoot, decision, datasetSectors);
   }
 
   @Override

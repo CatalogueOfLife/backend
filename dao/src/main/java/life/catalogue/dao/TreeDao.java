@@ -69,6 +69,7 @@ public class TreeDao {
         pRank = tn.getRank();
       }
       addPlaceholderSectors(projectKey, classification, type, session);
+      updateSectorRootFlags(classification);
       return classification;
     }
   }
@@ -106,7 +107,6 @@ public class TreeDao {
     }
   }
 
-
   private static List<TreeNode> parentPlaceholder(TreeMapper trm, TreeNode tn, @Nullable Rank exclRank){
     List<TreeNode> nodes = new ArrayList<>();
     // ranks ordered from kingdom to lower
@@ -128,12 +128,13 @@ public class TreeDao {
     return nodes;
   }
 
-  public ResultPage<TreeNode> children(DSID<String> id, int projectKey, boolean placeholder, TreeNode.Type type, Page page) {
+  public ResultPage<TreeNode> children(final DSID<String> id, final int projectKey, final boolean placeholder, final TreeNode.Type type, final Page page) {
     try (SqlSession session = factory.openSession()){
       TreeMapper trm = session.getMapper(TreeMapper.class);
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
 
-      RankID parent = RankID.parseID(id);
+      final RankID parent = RankID.parseID(id);
+      final TreeNode tnParent = trm.get(projectKey, type, parent);
       List<TreeNode> result = placeholder ?
         trm.childrenWithPlaceholder(projectKey, type, parent, parent.rank, page) :
         trm.children(projectKey, type, parent, parent.rank, page);
@@ -152,7 +153,6 @@ public class TreeDao {
         int lowerChildren = tm.countChildrenBelowRank(parent, firstResult.getRank());
         if (lowerChildren > 0) {
           List<Rank> placeholderParentRanks = trm.childrenRanks(parent, firstResult.getRank());
-          TreeNode tnParent = trm.get(projectKey, type, parent);
           TreeNode placeHolder = placeholder(tnParent, firstResult, lowerChildren, placeholderParentRanks);
           // does a placeholder sector exist with a matching placeholder rank?
           if (type == TreeNode.Type.SOURCE) {
@@ -166,7 +166,30 @@ public class TreeDao {
         }
       }
       addPlaceholderSectors(projectKey, result, type, session);
+      updateSectorRootFlags(tnParent.getSectorKey(), result);
       return new ResultPage<>(page, result, countSupplier);
+    }
+  }
+
+  static void updateSectorRootFlags(List<TreeNode> classification){
+    TreeNode child = null;
+    for (TreeNode n : classification) {
+      if (child != null && child.getSectorKey() != null && !Objects.equals(child.getSectorKey(), n.getSectorKey())) {
+        child.setSectorRoot(true);
+      }
+      child = n;
+    }
+    // child is now the root of the classification. If there still is a sectorKey its the root
+    if (child != null && child.getSectorKey() != null) {
+      child.setSectorRoot(true);
+    }
+  }
+
+  static void updateSectorRootFlags(Integer parentSectorKey, List<TreeNode> children){
+    for (TreeNode c : children) {
+      if (c.getSectorKey() != null && !Objects.equals(c.getSectorKey(), parentSectorKey)) {
+        c.setSectorRoot(true);
+      }
     }
   }
 
