@@ -88,6 +88,7 @@ abstract class SectorRunnable implements Runnable {
     try {
       state.setStarted(LocalDateTime.now());
       state.setState( ImportState.PREPARING);
+      LOG.info("Start {} for sector {}", this.getClass().getSimpleName(), sectorKey);
       init();
 
       doWork();
@@ -99,7 +100,7 @@ abstract class SectorRunnable implements Runnable {
       updateSearchIndex();
 
       state.setState( ImportState.FINISHED);
-      LOG.info("Completed {}", this);
+      LOG.info("Completed {} for sector {}", this.getClass().getSimpleName(), sectorKey);
       failed = false;
       successCallback.accept(this);
 
