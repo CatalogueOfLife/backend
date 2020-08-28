@@ -10,6 +10,10 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2020-08-27 usage counter
+```
+```
+
 ### 2020-08-27 ignored_usage_count metrics
 
 ```

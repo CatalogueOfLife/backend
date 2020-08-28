@@ -58,40 +58,17 @@
   <update id="attachUsageCounter" parameterType="map">
     INSERT INTO usage_count (dataset_key, counter) VALUES (${key}, (SELECT count(*) from name_usage_${key}));
 
-    CREATE OR REPLACE FUNCTION count_usage_on_insert_${key}()
-    RETURNS TRIGGER AS
-    $$
-    DECLARE
-    BEGIN
-      EXECUTE 'UPDATE usage_count set counter=counter+(select count(*) from inserted) where dataset_key=${key}';
-      RETURN NULL;
-    END;
-    $$
-    LANGUAGE 'plpgsql';
-
     CREATE TRIGGER trg_name_usage_${key}_insert
     AFTER INSERT ON name_usage_${key}
     REFERENCING NEW TABLE AS inserted
     FOR EACH STATEMENT
-    EXECUTE PROCEDURE count_usage_on_insert_${key}();
-
-
-    CREATE OR REPLACE FUNCTION count_usage_on_delete_${key}()
-    RETURNS TRIGGER AS
-    $$
-    DECLARE
-    BEGIN
-    EXECUTE 'UPDATE usage_count set counter=counter-(select count(*) from deleted) where dataset_key=${key}';
-    RETURN NULL;
-    END;
-    $$
-    LANGUAGE 'plpgsql';
+    EXECUTE FUNCTION count_usage_on_insert(${key});
 
     CREATE TRIGGER trg_name_usage_${key}_delete
     AFTER DELETE ON name_usage_${key}
     REFERENCING OLD TABLE AS deleted
     FOR EACH STATEMENT
-    EXECUTE PROCEDURE count_usage_on_delete_${key}();
+    EXECUTE FUNCTION count_usage_on_delete(${key});
   </update>
 
   <update id="lockTables" parameterType="map">

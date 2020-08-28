@@ -1342,18 +1342,24 @@ CREATE TABLE usage_count (
   counter int
 );
 
-CREATE OR REPLACE FUNCTION adjust_usage_count()
+CREATE OR REPLACE FUNCTION count_usage_on_insert()
 RETURNS TRIGGER AS
 $$
-   DECLARE
-   BEGIN
-   IF TG_OP = 'INSERT' THEN
-      EXECUTE 'UPDATE usage_count set counter=counter +1 where dataset_key = ' || NEW.dataset_key;
-      RETURN NEW;
-   ELSIF TG_OP = 'DELETE' THEN
-      EXECUTE 'UPDATE usage_count set counter=counter -1 where dataset_key = ' || OLD.dataset_key;
-      RETURN OLD;
-   END IF;
-   END;
+  DECLARE
+  BEGIN
+    EXECUTE 'UPDATE usage_count set counter=counter+(select count(*) from inserted) where dataset_key=' || TG_ARGV[0];
+    RETURN NULL;
+  END;
+$$
+LANGUAGE 'plpgsql';
+
+CREATE OR REPLACE FUNCTION count_usage_on_delete()
+RETURNS TRIGGER AS
+$$
+  DECLARE
+  BEGIN
+  EXECUTE 'UPDATE usage_count set counter=counter-(select count(*) from deleted) where dataset_key=' || TG_ARGV[0];
+  RETURN NULL;
+  END;
 $$
 LANGUAGE 'plpgsql';
