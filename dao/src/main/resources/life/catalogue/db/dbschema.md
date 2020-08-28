@@ -12,6 +12,50 @@ and done it manually. So we can as well log changes here.
 
 ### 2020-08-27 usage counter
 ```
+CREATE TABLE usage_count (
+  dataset_key int PRIMARY KEY,
+  counter int
+);
+
+CREATE OR REPLACE FUNCTION count_usage_on_insert()
+RETURNS TRIGGER AS
+$$
+  DECLARE
+  BEGIN
+    EXECUTE 'UPDATE usage_count set counter=counter+(select count(*) from inserted) where dataset_key=' || TG_ARGV[0];
+    RETURN NULL;
+  END;
+$$
+LANGUAGE 'plpgsql';
+
+CREATE OR REPLACE FUNCTION count_usage_on_delete()
+RETURNS TRIGGER AS
+$$
+  DECLARE
+  BEGIN
+  EXECUTE 'UPDATE usage_count set counter=counter-(select count(*) from deleted) where dataset_key=' || TG_ARGV[0];
+  RETURN NULL;
+  END;
+$$
+LANGUAGE 'plpgsql';
+```
+
+
+Then execute the following for each managed dataset:
+```
+    INSERT INTO usage_count (dataset_key, counter) VALUES (${key}, (SELECT count(*) from name_usage_${key}));
+
+    CREATE TRIGGER trg_name_usage_${key}_insert
+    AFTER INSERT ON name_usage_${key}
+    REFERENCING NEW TABLE AS inserted
+    FOR EACH STATEMENT
+    EXECUTE FUNCTION count_usage_on_insert(${key});
+
+    CREATE TRIGGER trg_name_usage_${key}_delete
+    AFTER DELETE ON name_usage_${key}
+    REFERENCING OLD TABLE AS deleted
+    FOR EACH STATEMENT
+    EXECUTE FUNCTION count_usage_on_delete(${key});
 ```
 
 ### 2020-08-27 ignored_usage_count metrics
