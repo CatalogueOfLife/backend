@@ -41,21 +41,21 @@ LANGUAGE 'plpgsql';
 ```
 
 
-Then execute the following for each managed dataset:
+Then run this script against all managed datasets with the `execSql --managed --sqlfile YOUR_FILE.sql` command using the following sql template:
 ```
-    INSERT INTO usage_count (dataset_key, counter) VALUES (${key}, (SELECT count(*) from name_usage_${key}));
+INSERT INTO usage_count (dataset_key, counter) VALUES ({KEY}, (SELECT count(*) from name_usage_{KEY}));
 
-    CREATE TRIGGER trg_name_usage_${key}_insert
-    AFTER INSERT ON name_usage_${key}
-    REFERENCING NEW TABLE AS inserted
-    FOR EACH STATEMENT
-    EXECUTE FUNCTION count_usage_on_insert(${key});
+CREATE TRIGGER trg_name_usage_{KEY}_insert
+AFTER INSERT ON name_usage_{KEY}
+REFERENCING NEW TABLE AS inserted
+FOR EACH STATEMENT
+EXECUTE FUNCTION count_usage_on_insert({KEY});
 
-    CREATE TRIGGER trg_name_usage_${key}_delete
-    AFTER DELETE ON name_usage_${key}
-    REFERENCING OLD TABLE AS deleted
-    FOR EACH STATEMENT
-    EXECUTE FUNCTION count_usage_on_delete(${key});
+CREATE TRIGGER trg_name_usage_{KEY}_delete
+AFTER DELETE ON name_usage_{KEY}
+REFERENCING OLD TABLE AS deleted
+FOR EACH STATEMENT
+EXECUTE FUNCTION count_usage_on_delete({KEY});
 ```
 
 ### 2020-08-27 ignored_usage_count metrics

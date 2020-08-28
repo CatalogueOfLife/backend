@@ -488,11 +488,14 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     
     // by origin
     query = new DatasetSearchRequest();
-    query.setOrigin(DatasetOrigin.MANAGED);
+    query.setOrigin(List.of(DatasetOrigin.MANAGED));
     assertEquals(7, mapper().search(query, null, new Page()).size());
   
-    query.setOrigin(DatasetOrigin.EXTERNAL);
+    query.setOrigin(List.of(DatasetOrigin.EXTERNAL));
     assertEquals(1, mapper().search(query, null, new Page()).size());
+
+    query.setOrigin(List.of(DatasetOrigin.MANAGED, DatasetOrigin.EXTERNAL));
+    assertEquals(8, mapper().search(query, null, new Page()).size());
 
     // by code
     query = new DatasetSearchRequest();

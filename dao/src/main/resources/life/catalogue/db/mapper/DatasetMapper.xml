@@ -63,11 +63,11 @@
       <if test="req.code != null">
         AND d.settings @> jsonb_build_object('NOMENCLATURAL_CODE', #{req.code})
       </if>
-      <if test="req.type != null">
-        AND d.type=#{req.type}::DATASETTYPE
+      <if test="req.type != null and !req.type.isEmpty()">
+        AND d.type IN <foreach item="o" collection="req.type" open="(" separator="," close=")">#{o}::DATASETTYPE</foreach>
       </if>
-      <if test="req.origin != null">
-        AND d.origin=#{req.origin}::DATASETORIGIN
+      <if test="req.origin != null and !req.origin.isEmpty()">
+        AND d.origin IN <foreach item="o" collection="req.origin" open="(" separator="," close=")">#{o}::DATASETORIGIN</foreach>
       </if>
       <if test="req.contributesTo != null">
         AND exists(

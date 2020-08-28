@@ -9,6 +9,7 @@ import org.gbif.nameparser.api.NomCode;
 import javax.validation.constraints.Min;
 import javax.ws.rs.QueryParam;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
 
 public class DatasetSearchRequest {
@@ -71,10 +72,10 @@ public class DatasetSearchRequest {
   private DataFormat format;
   
   @QueryParam("origin")
-  private DatasetOrigin origin;
+  private List<DatasetOrigin> origin;
 
   @QueryParam("type")
-  private DatasetType type;
+  private List<DatasetType> type;
   
   @QueryParam("modified")
   private LocalDate modified;
@@ -181,19 +182,19 @@ public class DatasetSearchRequest {
     this.format = format;
   }
   
-  public DatasetType getType() {
+  public List<DatasetType> getType() {
     return type;
   }
-  
-  public void setType(DatasetType type) {
+
+  public void setType(List<DatasetType> type) {
     this.type = type;
   }
-  
-  public DatasetOrigin getOrigin() {
+
+  public List<DatasetOrigin> getOrigin() {
     return origin;
   }
   
-  public void setOrigin(DatasetOrigin origin) {
+  public void setOrigin(List<DatasetOrigin> origin) {
     this.origin = origin;
   }
   
