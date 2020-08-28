@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
+import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,11 +113,19 @@ public class VocabResource {
 
   @GET
   @Path("term/{prefix}:{name}")
-  public Term term(@PathParam("prefix") String prefix, @PathParam("name") String name, @QueryParam("class") Boolean isClass) {
+  public Map<String, Object> term(@PathParam("prefix") String prefix, @PathParam("name") String name, @QueryParam("class") Boolean isClass) throws IllegalAccessException {
     String term = prefix + ":" + name;
-    return isClass == null ?
+    Term t = isClass == null ?
       TermFactory.instance().findTerm(term) :
       TermFactory.instance().findTerm(term, isClass);
+    if (t instanceof UnknownTerm) {
+      return null;
+    }
+    Map<String, Object> map = enumFields((Enum)t);
+    map.put("prefixedName", t.prefixedName());
+    map.put("qualifiedName", t.qualifiedName());
+    map.remove("normQName");
+    return map;
   }
   
   @GET
@@ -179,24 +188,29 @@ public class VocabResource {
     }
     throw new NotFoundException();
   }
-  
+
+  private static Map<String, Object> enumFields(Enum entry) throws IllegalAccessException {
+    Map<String, Object> map = new HashMap<>();
+    for (Field f : entry.getDeclaringClass().getDeclaredFields()) {
+      if (!f.isEnumConstant() && !Modifier.isStatic(f.getModifiers()) && !f.getName().equals("$VALUES")) {
+        Object val = FieldUtils.readField(f, entry, true);
+        if (val != null) {
+          if (val instanceof Class) {
+            Class<?> cl = (Class<?>) val;
+            val = cl.getSimpleName();
+          }
+        }
+        map.put(f.getName(), val);
+      }
+    }
+    map.put("name", PermissiveEnumSerde.enumValueName(entry));
+    return map;
+  }
+
   private static List<Map<String, Object>> enumList(Class<Enum> clazz) throws IllegalAccessException {
     List<Map<String, Object>> values = new ArrayList<>();
     for (Enum entry : clazz.getEnumConstants()) {
-      Map<String, Object> map = new HashMap<>();
-      for (Field f : clazz.getDeclaredFields()) {
-        if (!f.isEnumConstant() && !Modifier.isStatic(f.getModifiers()) && !f.getName().equals("$VALUES")) {
-          Object val = FieldUtils.readField(f, entry, true);
-          if (val != null) {
-            if (val instanceof Class) {
-              Class<?> cl = (Class<?>) val;
-              val = cl.getSimpleName();
-            }
-          }
-          map.put(f.getName(), val);
-        }
-      }
-      map.put("name", PermissiveEnumSerde.enumValueName(entry));
+      Map<String, Object> map = enumFields(entry);
       values.add(map);
     }
     return values;
