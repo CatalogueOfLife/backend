@@ -6,7 +6,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.ClassPath;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.EditorialDecision;
+import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.TreeNode;
+import life.catalogue.api.model.User;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.vocab.*;
 import life.catalogue.img.ImgConfig;
@@ -82,7 +85,7 @@ public class VocabResource {
   }
   
   @GET
-  @Path("terms")
+  @Path("term")
   public <TE extends Enum & Term> List<Term> terms(@QueryParam("prefix") String prefix) {
     Set<Class<? extends Enum>> classes = new HashSet<>( TermFactory.instance().listRegisteredTermEnums() );
     if (prefix != null) {
@@ -105,6 +108,15 @@ public class VocabResource {
     }
     
     return terms;
+  }
+
+  @GET
+  @Path("term/{prefix}:{name}")
+  public Term term(@PathParam("prefix") String prefix, @PathParam("name") String name, @QueryParam("class") Boolean isClass) {
+    String term = prefix + ":" + name;
+    return isClass == null ?
+      TermFactory.instance().findTerm(term) :
+      TermFactory.instance().findTerm(term, isClass);
   }
   
   @GET
