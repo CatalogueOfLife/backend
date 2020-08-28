@@ -51,13 +51,13 @@ public class ExecSqlCmd extends AbstractPromptCmd {
       .type(String.class)
       .required(false)
       .help("File that contains SQL in plain text UTF8 to be executed per dataset partition");
-    subparser.addArgument("--"+ ARG_MANAGED, "-f")
+    subparser.addArgument("--"+ ARG_MANAGED)
       .dest(ARG_MANAGED)
       .type(Boolean.class)
       .required(false)
       .setDefault(false)
       .help("If true restrict only to managed dataset partitions");
-    subparser.addArgument("--"+ ARG_SAFE, "-f")
+    subparser.addArgument("--"+ ARG_SAFE)
       .dest(ARG_SAFE)
       .type(Boolean.class)
       .required(false)
