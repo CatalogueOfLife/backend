@@ -54,17 +54,23 @@ public class Partitioner {
   }
 
   /**
-   * Creates dataset specific extras only needed for managed datasets.
-   * These are sequences for the global non partitioned tables like sector
-   * and usage count triggers.
-   * @param factory
-   * @param datasetKey
+   * Creates dataset specific sequences for the global non partitioned tables like sector.
    */
-  public static void createManagedObjects(SqlSessionFactory factory, int datasetKey) {
+  public static void createManagedSequences(SqlSessionFactory factory, int datasetKey) {
     interruptIfCancelled();
-    LOG.info("Create sequences & triggers for managed dataset {}", datasetKey);
+    LOG.info("Create sequences for managed dataset {}", datasetKey);
     try (SqlSession session = factory.openSession(true)) {
       session.getMapper(DatasetPartitionMapper.class).createManagedSequences(datasetKey);
+    }
+  }
+
+  /**
+   * Creates dataset specific usage count trigger for managed datasets.
+   */
+  public static void createUsageCounter(SqlSessionFactory factory, int datasetKey) {
+    interruptIfCancelled();
+    LOG.info("Create triggers for managed dataset {}", datasetKey);
+    try (SqlSession session = factory.openSession(true)) {
       session.getMapper(DatasetPartitionMapper.class).attachUsageCounter(datasetKey);
     }
   }

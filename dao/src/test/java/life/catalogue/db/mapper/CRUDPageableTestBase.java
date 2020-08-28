@@ -37,7 +37,7 @@ abstract class CRUDPageableTestBase<K, T extends DatasetScopedEntity<K>, M exten
     d.applyUser(Users.TESTER);
     mapper(DatasetMapper.class).create(d);
     Partitioner.partition(PgSetupRule.getSqlSessionFactory(), d.getKey());
-    Partitioner.createManagedObjects(PgSetupRule.getSqlSessionFactory(), d.getKey());
+    Partitioner.createManagedSequences(PgSetupRule.getSqlSessionFactory(), d.getKey());
     return d.getKey();
   }
 

@@ -151,7 +151,8 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     pullLogo(obj, user);
     if (obj.getOrigin() == DatasetOrigin.MANAGED) {
       recreatePartition(obj.getKey());
-      Partitioner.createManagedObjects(factory, obj.getKey());
+      Partitioner.createManagedSequences(factory, obj.getKey());
+      Partitioner.createUsageCounter(factory, obj.getKey());
     }
     bus.post(DatasetChanged.change(obj));
     session.commit();
