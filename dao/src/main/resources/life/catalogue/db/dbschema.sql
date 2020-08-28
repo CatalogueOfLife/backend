@@ -1334,3 +1334,26 @@ CREATE VIEW v_name_usage AS (
   SELECT u.dataset_key, u.id, n.id AS nid, u.parent_id, u.status, n.rank, n.scientific_name, n.authorship
   FROM name_usage u JOIN name n ON n.id=u.name_id AND u.dataset_key=n.dataset_key
 );
+
+
+
+CREATE TABLE usage_count (
+  dataset_key int PRIMARY KEY,
+  counter int
+);
+
+CREATE OR REPLACE FUNCTION adjust_usage_count()
+RETURNS TRIGGER AS
+$$
+   DECLARE
+   BEGIN
+   IF TG_OP = 'INSERT' THEN
+      EXECUTE 'UPDATE usage_count set counter=counter +1 where dataset_key = ' || NEW.dataset_key;
+      RETURN NEW;
+   ELSIF TG_OP = 'DELETE' THEN
+      EXECUTE 'UPDATE usage_count set counter=counter -1 where dataset_key = ' || OLD.dataset_key;
+      RETURN OLD;
+   END IF;
+   END;
+$$
+LANGUAGE 'plpgsql';

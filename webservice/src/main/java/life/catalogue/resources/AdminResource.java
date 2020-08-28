@@ -8,6 +8,7 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.admin.MetricsUpdater;
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.AssemblyState;
 import life.catalogue.common.concurrent.BackgroundJob;
@@ -188,6 +189,12 @@ public class AdminResource {
   }
 
   @POST
+  @Path("/counter-update")
+  public BackgroundJob updateCounter(@Auth User user) {
+    return runJob(new UsageCountJob(user, JobPriority.HIGH));
+  }
+
+  @POST
   @Path("/reindex")
   public BackgroundJob reindex(@QueryParam("datasetKey") Integer datasetKey, @QueryParam("prio") JobPriority priority, RequestScope req, @Auth User user) {
     if (req == null) {
@@ -224,6 +231,28 @@ public class AdminResource {
   private BackgroundJob runJob(BackgroundJob job){
     exec.submit(job);
     return job;
+  }
+
+  /**
+   * Updates the usage counter for all managed datasets.
+   */
+  class UsageCountJob extends BackgroundJob {
+
+    UsageCountJob(User user, JobPriority priority) {
+      super(priority, user.getKey());
+    }
+
+    @Override
+    public void execute() {
+      try (SqlSession session = factory.openSession(true)) {
+        DatasetMapper dm = session.getMapper(DatasetMapper.class);
+        DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
+        for (int key : dm.keys(DatasetOrigin.MANAGED)) {
+          int cnt = dpm.updateUsageCounter(key);
+          LOG.info("Updated usage counter for managed dataset {} to {}", key, cnt);
+        }
+      }
+    }
   }
 
   class IndexJob extends BackgroundJob {

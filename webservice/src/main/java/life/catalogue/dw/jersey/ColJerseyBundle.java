@@ -60,7 +60,7 @@ public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
   @Subscribe
   public void datasetChanged(DatasetChanged d){
     if (d.obj!=null && d.obj.getOrigin() == DatasetOrigin.RELEASED) {
-      ccFilter.addRelease((int)d.key);
+      ccFilter.addRelease(d.key);
     }
   }
 }

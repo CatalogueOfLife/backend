@@ -10,7 +10,7 @@
     d.gbif_key,
     d.gbif_publisher_key,
     d.private,
-    (coalesce(di.taxon_count,0) + coalesce(di.synonym_count,0) + coalesce(di.bare_name_count,0)) AS size
+    coalesce(uc.counter, (coalesce(di.taxon_count,0) + coalesce(di.synonym_count,0) + coalesce(di.bare_name_count,0))) AS size
   </sql>
 
   <sql id="COLS">
@@ -31,7 +31,9 @@
   </sql>
 
   <sql id="FROM">
-    dataset d LEFT JOIN dataset_import di ON di.attempt=d.import_attempt AND di.dataset_key=coalesce(d.source_key,d.key)
+    dataset d
+      LEFT JOIN dataset_import di ON di.attempt=d.import_attempt AND di.dataset_key=coalesce(d.source_key,d.key)
+      LEFT JOIN usage_count uc ON uc.dataset_key=d.key
   </sql>
 
   <sql id="PRIVATE">
@@ -192,11 +194,12 @@
     SELECT
     <include refid="SELECT"/>
     FROM dataset d
-    LEFT JOIN dataset_import di ON di.dataset_key=d.key
+      LEFT JOIN dataset_import di ON di.dataset_key=d.key
+      LEFT JOIN usage_count uc ON uc.dataset_key=d.key
     WHERE d.deleted IS NULL
-    AND d.origin = 'EXTERNAL'
-    AND coalesce((d.settings ->> 'import frequency')::int, 0) >= 0
-    AND di.attempt IS NULL
+      AND d.origin = 'EXTERNAL'
+      AND coalesce((d.settings ->> 'import frequency')::int, 0) >= 0
+      AND di.attempt IS NULL
     ORDER BY d.key ASC
     LIMIT #{limit}
   </select>
@@ -207,11 +210,12 @@
       SELECT DISTINCT ON (d.key) di.state, di.finished,
       <include refid="SELECT"/>, (settings ->> 'import frequency')::int AS frequency
       FROM dataset d
-      LEFT JOIN dataset_import di ON di.dataset_key=d.key
+        LEFT JOIN dataset_import di ON di.dataset_key=d.key
+        LEFT JOIN usage_count uc ON uc.dataset_key=d.key
       WHERE d.deleted IS NULL
-      AND d.origin = 'EXTERNAL'
-      AND di.finished IS NOT NULL
-      AND coalesce((d.settings ->> 'import frequency')::int, 0) > 0
+        AND d.origin = 'EXTERNAL'
+        AND di.finished IS NOT NULL
+        AND coalesce((d.settings ->> 'import frequency')::int, 0) > 0
       ORDER BY d.key, di.attempt DESC
     ) AS latest
     WHERE state != 'WAITING'::importstate AND (finished + frequency * interval '1 day') &lt; now()

@@ -75,7 +75,7 @@ public abstract class AbstractProjectCopy implements Runnable {
       updateState(ImportState.PROCESSING);
       Partitioner.partition(factory, newDatasetKey);
       if (newDatasetOrigin == DatasetOrigin.MANAGED) {
-        Partitioner.createManagedSequences(factory, newDatasetKey);
+        Partitioner.createManagedObjects(factory, newDatasetKey);
       }
       prepWork();
 

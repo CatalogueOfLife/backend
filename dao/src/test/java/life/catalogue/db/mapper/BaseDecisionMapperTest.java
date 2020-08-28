@@ -19,7 +19,7 @@ abstract class BaseDecisionMapperTest<T extends DatasetScopedEntity<Integer>, R,
   @Test
   public void copyDataset() throws Exception {
     Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
-    Partitioner.createManagedSequences(PgSetupRule.getSqlSessionFactory(), 999);
+    Partitioner.createManagedObjects(PgSetupRule.getSqlSessionFactory(), 999);
     mapper().copyDataset(datasetKey, 999);
   }
 
