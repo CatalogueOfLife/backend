@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.StringReader;
-import java.sql.*;
+import java.sql.Connection;
 
 /**
  * Command to execute given SQL statements for each dataset partition.
@@ -32,6 +32,7 @@ public class ExecSqlCmd extends AbstractPromptCmd {
   private static final String ARG_SQL = "sql";
   private static final String ARG_FILE = "sqlfile";
   private static final String ARG_MANAGED = "managed"; // if non null will process only managed datasets!!!
+  private static final String ARG_SAFE = "safe"; // if non null will process only managed datasets!!!
 
   public ExecSqlCmd() {
     super("execSql", "Executes a SQL template for each data partition");
@@ -56,6 +57,12 @@ public class ExecSqlCmd extends AbstractPromptCmd {
       .required(false)
       .setDefault(false)
       .help("If true restrict only to managed dataset partitions");
+    subparser.addArgument("--"+ ARG_SAFE, "-f")
+      .dest(ARG_SAFE)
+      .type(Boolean.class)
+      .required(false)
+      .setDefault(false)
+      .help("If true catch exceptions per dataset");
   }
 
   @Override
@@ -77,22 +84,31 @@ public class ExecSqlCmd extends AbstractPromptCmd {
       sql = namespace.get(ARG_SQL);
     }
     boolean managed = namespace.getBoolean(ARG_MANAGED);
+    boolean safe = namespace.getBoolean(ARG_SAFE);
     if (StringUtils.isBlank(sql)) {
       throw new IllegalArgumentException("No sql found to execute");
     }
-    execute(sql, managed);
+    execute(sql, managed, safe);
   }
 
-  private void execute(final String template, boolean managedOnly) throws Exception {
+  private void execute(final String template, boolean managedOnly, boolean safe) throws Exception {
     try (Connection con = cfg.db.connect(cfg.db)) {
       ScriptRunner runner = PgConfig.scriptRunner(con);
       for (int key : AddTableCmd.datasetKeys(con)) {
         // only managed datasets?
-        if (!managedOnly || DatasetInfoCache.CACHE.origin(key) == DatasetOrigin.MANAGED) {
-          String sql = template.replaceAll("\\{KEY}", String.valueOf(key));
-          System.out.println("Execute SQL for dataset key " + key);
-          runner.runScript(new StringReader(sql));
-          con.commit();
+        try {
+          if (!managedOnly || DatasetInfoCache.CACHE.origin(key) == DatasetOrigin.MANAGED) {
+            String sql = template.replaceAll("\\{KEY}", String.valueOf(key));
+            System.out.println("Execute SQL for dataset key " + key);
+            runner.runScript(new StringReader(sql));
+            con.commit();
+          }
+        } catch (Exception e) {
+          if (safe) {
+            LOG.error("Failed to execute sql for dataset {}", key, e);
+          } else {
+            throw e;
+          }
         }
       }
     }
