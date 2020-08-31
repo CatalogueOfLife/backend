@@ -5,7 +5,6 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.command.AbstractPromptCmd;
 import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.PgConfig;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
@@ -94,15 +93,13 @@ public class ExecSqlCmd extends AbstractPromptCmd {
   private void execute(final String template, boolean managedOnly, boolean safe) throws Exception {
     try (Connection con = cfg.db.connect(cfg.db)) {
       ScriptRunner runner = PgConfig.scriptRunner(con);
-      for (int key : AddTableCmd.datasetKeys(con)) {
-        // only managed datasets?
+      // only managed datasets?
+      for (int key : AddTableCmd.datasetKeys(con, managedOnly ? DatasetOrigin.MANAGED : null)) {
         try {
-          if (!managedOnly || DatasetInfoCache.CACHE.origin(key) == DatasetOrigin.MANAGED) {
-            String sql = template.replaceAll("\\{KEY}", String.valueOf(key));
-            System.out.println("Execute SQL for dataset key " + key);
-            runner.runScript(new StringReader(sql));
-            con.commit();
-          }
+          String sql = template.replaceAll("\\{KEY}", String.valueOf(key));
+          System.out.println("Execute SQL for dataset key " + key);
+          runner.runScript(new StringReader(sql));
+          con.commit();
         } catch (Exception e) {
           if (safe) {
             LOG.error("Failed to execute sql for dataset {}", key, e);
