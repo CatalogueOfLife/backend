@@ -10,8 +10,10 @@
     d.gbif_key,
     d.gbif_publisher_key,
     d.private,
-    coalesce(uc.counter, (coalesce(di.taxon_count,0) + coalesce(di.synonym_count,0) + coalesce(di.bare_name_count,0))) AS size
+    <include refid="size"/> AS size
   </sql>
+
+  <sql id="size">coalesce(uc.counter, (coalesce(di.taxon_count,0) + coalesce(di.synonym_count,0) + coalesce(di.bare_name_count,0)))</sql>
 
   <sql id="COLS">
     <include refid="life.catalogue.db.mapper.DatasetArchiveMapper.COLS"/>,
@@ -101,9 +103,8 @@
         AND released > #{req.released}
       </if>
       <if test="req.minSize != null">
-        AND di.verbatim_count >= #{req.minSize}
+        AND <include refid="size"/> >= #{req.minSize}
       </if>
-
     </if>
   </sql>
 

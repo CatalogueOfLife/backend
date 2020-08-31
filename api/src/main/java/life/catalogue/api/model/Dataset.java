@@ -18,7 +18,6 @@ public class Dataset extends ArchivedDataset {
   private LocalDateTime imported; // from import table
   private LocalDateTime deleted;
 
-  // human metadata
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   private Integer size;
 

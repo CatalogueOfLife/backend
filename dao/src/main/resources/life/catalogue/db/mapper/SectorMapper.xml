@@ -31,8 +31,11 @@
     s.modified,
     s.modified_by,
     s.created,
-    s.created_by
+    s.created_by,
+    <include refid="size"/> AS size
   </sql>
+
+  <sql id="size">coalesce(si.taxon_count,0) + coalesce(si.synonym_count,0) + coalesce(si.bare_name_count,0)</sql>
 
   <sql id="COLS">
     dataset_key,
@@ -125,6 +128,9 @@
         </if>
         <if test="req.modifiedBy != null">
           AND s.modified_by = #{req.modifiedBy}
+        </if>
+        <if test="req.minSize != null">
+          AND <include refid="size"/> >= #{req.minSize}
         </if>
         <if test="req.withoutData">
           AND NOT EXISTS (SELECT id FROM name_usage_${req.datasetKey} WHERE sector_key=s.id)

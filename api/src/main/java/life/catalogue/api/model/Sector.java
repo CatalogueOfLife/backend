@@ -1,6 +1,7 @@
 package life.catalogue.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.api.vocab.EntityType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -33,7 +34,9 @@ public class Sector extends DatasetScopedEntity<Integer> {
   private Set<Rank> ranks;
   private Set<EntityType> entities;
   private String note;
-  
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  private Integer size;
+
   public static enum Mode {
     /**
      * Attach the entire subject and its descendants under its target parent.
@@ -70,6 +73,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
     this.ranks = other.ranks == null ? null : EnumSet.copyOf(other.ranks);
     this.entities = other.entities == null ? null : EnumSet.copyOf(other.entities);
     this.note = other.note;
+    this.size = other.size;
   }
 
   public Integer getSubjectDatasetKey() {
@@ -182,6 +186,10 @@ public class Sector extends DatasetScopedEntity<Integer> {
 
   public void setEntities(Set<EntityType> entities) {
     this.entities = entities;
+  }
+
+  public Integer getSize() {
+    return size;
   }
 
   @Override
