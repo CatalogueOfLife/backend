@@ -141,7 +141,7 @@ public class AddTableCmd extends AbstractPromptCmd {
           int key = Integer.parseInt(m.group(1));
           if (origin != null) {
             originStmt.execute("select origin from dataset where key = "+key + " AND origin='"+origin.name()+"'::datasetorigin");
-            if (!st.getResultSet().next()) {
+            if (!originStmt.getResultSet().next()) {
               // no matching origin
               continue;
             }
