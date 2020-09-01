@@ -14,11 +14,13 @@ import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.neo.traverse.StartEndHandler;
 import life.catalogue.importer.neo.traverse.TreeWalker;
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
+import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,6 +96,7 @@ public class PgImport implements Callable<Boolean> {
         dm.get(dataset.getKey()),
         dm.getSettings(dataset.getKey())
       );
+      final String aliasOLD = old.getAlias();
       // archive the previous attempt if existing before we update the current metadata and tie it to a new attempt
       if (old.getDataset().getImportAttempt() != null) {
         int attempt = old.getDataset().getImportAttempt();
@@ -108,7 +111,22 @@ public class PgImport implements Callable<Boolean> {
       // update current
       LOG.info("Updating dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
       updateMetadata(old, dataset);
-      dm.updateAll(old);
+      
+      try {
+        dm.updateAll(old);
+      } catch (PersistenceException e) {
+        PSQLException pe = (PSQLException) e.getCause();
+        // https://www.postgresql.org/docs/12/errcodes-appendix.html
+        // 23505 = unique_violation
+        if (pe.getSQLState().equals("23505")) {
+          // make sure alias is unique - will fail otherwise
+          old.setAlias(aliasOLD);
+          dm.updateAll(old);
+        } else {
+          throw e;
+        }
+      }
+
       dm.updateLastImport(dataset.getKey(), attempt);
       LOG.info("Updated last successful import attempt {} for dataset {}: {}", attempt, dataset.getKey(), dataset.getTitle());
       session.commit();
