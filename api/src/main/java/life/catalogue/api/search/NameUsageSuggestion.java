@@ -20,6 +20,7 @@ public class NameUsageSuggestion {
   // anyhing but an accepted name.
   private String parentOrAcceptedName;
   private String usageId;
+  private String acceptedUsageId;
   private Rank rank;
   private TaxonomicStatus status;
   private NomCode nomCode;
@@ -75,6 +76,14 @@ public class NameUsageSuggestion {
     this.usageId = usageId;
   }
 
+  public String getAcceptedUsageId() {
+    return acceptedUsageId;
+  }
+
+  public void setAcceptedUsageId(String acceptedUsageId) {
+    this.acceptedUsageId = acceptedUsageId;
+  }
+
   public Rank getRank() {
     return rank;
   }
@@ -109,7 +118,7 @@ public class NameUsageSuggestion {
 
   @Override
   public int hashCode() {
-    return Objects.hash(parentOrAcceptedName, match, nomCode, rank, score, status, usageId, vernacularName);
+    return Objects.hash(parentOrAcceptedName, match, nomCode, rank, score, status, usageId, acceptedUsageId, vernacularName);
   }
 
   @Override
@@ -121,10 +130,15 @@ public class NameUsageSuggestion {
     if (getClass() != obj.getClass())
       return false;
     NameUsageSuggestion other = (NameUsageSuggestion) obj;
-    return Objects.equals(parentOrAcceptedName, other.parentOrAcceptedName) && Objects.equals(match, other.match)
+    return Objects.equals(parentOrAcceptedName, other.parentOrAcceptedName)
+        && Objects.equals(match, other.match)
         && nomCode == other.nomCode
-        && rank == other.rank && Float.floatToIntBits(score) == Float.floatToIntBits(other.score) && status == other.status
-        && Objects.equals(usageId, other.usageId) && vernacularName == other.vernacularName;
+        && rank == other.rank
+        && Float.floatToIntBits(score) == Float.floatToIntBits(other.score)
+        && status == other.status
+        && Objects.equals(usageId, other.usageId)
+        && Objects.equals(acceptedUsageId, other.acceptedUsageId)
+        && vernacularName == other.vernacularName;
   }
 
 }

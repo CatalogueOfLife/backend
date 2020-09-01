@@ -111,7 +111,7 @@ public class PgImport implements Callable<Boolean> {
       // update current
       LOG.info("Updating dataset metadata for {}: {}", dataset.getKey(), dataset.getTitle());
       updateMetadata(old, dataset);
-      
+
       try {
         dm.updateAll(old);
       } catch (PersistenceException e) {

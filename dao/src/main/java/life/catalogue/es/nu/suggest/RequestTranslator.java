@@ -1,11 +1,11 @@
 package life.catalogue.es.nu.suggest;
 
+import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.es.DownwardConverter;
-import life.catalogue.es.query.BoolQuery;
-import life.catalogue.es.query.EsSearchRequest;
-import life.catalogue.es.query.TermQuery;
-import life.catalogue.es.query.TermsQuery;
+import life.catalogue.es.nu.NameUsageFieldLookup;
+import life.catalogue.es.query.*;
+
 import static life.catalogue.api.vocab.TaxonomicStatus.ACCEPTED;
 import static life.catalogue.api.vocab.TaxonomicStatus.PROVISIONALLY_ACCEPTED;
 import static life.catalogue.es.query.SortField.SCORE;
@@ -25,8 +25,11 @@ class RequestTranslator implements DownwardConverter<NameUsageSuggestRequest, Es
     BoolQuery query = new BoolQuery()
         .filter(new TermQuery("datasetKey", request.getDatasetKey()))
         .must(new QTranslator(request).translate());
+    final String statusField = NameUsageFieldLookup.INSTANCE.lookup(NameUsageSearchParameter.STATUS);
+    // always avoid bare names
+    query.filter(new IsNotNullQuery(statusField));
     if (request.isAccepted()) {
-      query.filter(new TermsQuery("status", ACCEPTED.ordinal(), PROVISIONALLY_ACCEPTED.ordinal()));
+      query.filter(new TermsQuery(statusField, ACCEPTED.ordinal(), PROVISIONALLY_ACCEPTED.ordinal()));
     }
     return new EsSearchRequest().where(query).sortBy(SCORE).size(request.getLimit());
   }
