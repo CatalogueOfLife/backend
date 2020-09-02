@@ -10,6 +10,7 @@ import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchRequest.SearchContent;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.search.NameUsageRequest.SearchType;
 import life.catalogue.es.EsReadTestBase;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +34,7 @@ public class QSearchTests extends EsReadTestBase {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setQ("Parus maj");
     query.setContent(EnumSet.of(SearchContent.SCIENTIFIC_NAME));
-    query.setPrefix(true);
+    query.setSearchType(SearchType.PREFIX);
 
     Name name = new Name();
     name.setGenus("Parus");
@@ -55,7 +56,7 @@ public class QSearchTests extends EsReadTestBase {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setQ("PARUS MAJ");
     query.setContent(EnumSet.of(SearchContent.SCIENTIFIC_NAME));
-    query.setPrefix(true);
+    query.setSearchType(SearchType.PREFIX);
 
     Name name = new Name();
     name.setGenus("Parus");

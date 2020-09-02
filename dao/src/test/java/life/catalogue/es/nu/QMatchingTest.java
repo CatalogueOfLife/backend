@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
+import life.catalogue.api.search.NameUsageRequest.SearchType;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchRequest.SearchContent;
@@ -33,7 +34,7 @@ public class QMatchingTest extends EsReadTestBase {
     searchQuery.setContent(Set.of(SearchContent.SCIENTIFIC_NAME));
     searchQuery.setQ("Crocodylidae");
     searchQuery.addFilter(NameUsageSearchParameter.DATASET_KEY, 1008);
-    searchQuery.setPrefix(true);
+    searchQuery.setSearchType(SearchType.PREFIX);
     NameUsageSearchResponse nsr = search(searchQuery);
 
     NameUsageSuggestRequest suggestQuery = new NameUsageSuggestRequest();
@@ -53,7 +54,7 @@ public class QMatchingTest extends EsReadTestBase {
     searchQuery.setContent(Set.of(SearchContent.SCIENTIFIC_NAME));
     searchQuery.setQ("Croco");
     searchQuery.addFilter(NameUsageSearchParameter.DATASET_KEY, 2020);
-    searchQuery.setPrefix(true);
+    searchQuery.setSearchType(SearchType.PREFIX);
     NameUsageSearchResponse nsr = search(searchQuery);
 
     NameUsageSuggestRequest suggestQuery = new NameUsageSuggestRequest();
@@ -74,7 +75,7 @@ public class QMatchingTest extends EsReadTestBase {
     searchQuery.setContent(Set.of(SearchContent.SCIENTIFIC_NAME));
     searchQuery.setQ("Croco Dundee");
     searchQuery.addFilter(NameUsageSearchParameter.DATASET_KEY, 2020);
-    searchQuery.setPrefix(true);
+    searchQuery.setSearchType(SearchType.PREFIX);
     NameUsageSearchResponse nsr = search(searchQuery);
     // Match-type queries currently use operator AND (all search terms must occur in the target field). Therefore:
     assertEquals(0, nsr.getTotal());
@@ -96,7 +97,7 @@ public class QMatchingTest extends EsReadTestBase {
     searchQuery.setContent(Set.of(SearchContent.SCIENTIFIC_NAME));
     searchQuery.setQ("morelety");
     searchQuery.addFilter(NameUsageSearchParameter.DATASET_KEY, 123123123);
-    searchQuery.setPrefix(true);
+    searchQuery.setSearchType(SearchType.PREFIX);
     searchQuery.setFuzzy(true);
     NameUsageSearchResponse nsr = search(searchQuery);
 
@@ -119,7 +120,7 @@ public class QMatchingTest extends EsReadTestBase {
     searchQuery.setContent(Set.of(SearchContent.SCIENTIFIC_NAME));
     searchQuery.setQ("morelety");
     searchQuery.addFilter(NameUsageSearchParameter.DATASET_KEY, 123123123);
-    searchQuery.setPrefix(true);
+    searchQuery.setSearchType(SearchType.PREFIX);
     searchQuery.setFuzzy(false);
     NameUsageSearchResponse nsr = search(searchQuery);
 
@@ -142,7 +143,7 @@ public class QMatchingTest extends EsReadTestBase {
     searchQuery.setContent(Set.of(SearchContent.SCIENTIFIC_NAME));
     searchQuery.setQ("morelety");
     searchQuery.addFilter(NameUsageSearchParameter.DATASET_KEY, 123123123);
-    searchQuery.setPrefix(false);
+    searchQuery.setSearchType(SearchType.WHOLE_WORDS);
     searchQuery.setFuzzy(true);
     NameUsageSearchResponse nsr = search(searchQuery);
 
@@ -157,7 +158,7 @@ public class QMatchingTest extends EsReadTestBase {
     searchQuery.setContent(Set.of(SearchContent.SCIENTIFIC_NAME));
     searchQuery.setQ("morelety");
     searchQuery.addFilter(NameUsageSearchParameter.DATASET_KEY, 123123123);
-    searchQuery.setPrefix(false);
+    searchQuery.setSearchType(SearchType.WHOLE_WORDS);
     searchQuery.setFuzzy(false);
     NameUsageSearchResponse nsr = search(searchQuery);
 

@@ -1,11 +1,10 @@
 package life.catalogue.api.search;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.ws.rs.QueryParam;
 import java.util.Arrays;
 import java.util.Objects;
+import javax.ws.rs.QueryParam;
+import org.apache.commons.lang3.StringUtils;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Base class for {@link NameUsageSearchRequest} and {@link NameUsageSuggestRequest}.
@@ -13,17 +12,34 @@ import java.util.Objects;
  */
 public abstract class NameUsageRequest {
 
+  /**
+   * Symbolic constants for the available search types within the Catalogue of Life.
+   */
+  public static enum SearchType {
+    /**
+     * Matches a search term to the beginning of the epithets within a scientific name. This is the only
+     * available search type for the suggest service. Whole-word and exact matching defies the purpose
+     * of auto-completion. However, you still have the option of fuzzy/non-fuzzy matching.
+     */
+    PREFIX,
+    /**
+     * Matches a search term to entire epithets within a scientific name.
+     */
+    WHOLE_WORDS,
+    /**
+     * Matches the entire search phrase to the entire scientific name. When choosing this type you
+     * cannot also opt for fuzzy matching. The "fuzzy" parameter is silently ignored.
+     */
+    EXACT
+  }
+
   @QueryParam("q")
   protected String q;
   @QueryParam("fuzzy")
   protected boolean fuzzy = false;
   protected String[] searchTerms;
 
-  /**
-   * Whether or not to apply fuzzing matching for scientific names. Will always return true for the suggestion service (whole word matching
-   * defies the purpose of an auto-completion), but is user-configurable for the search service.
-   */
-  public abstract boolean isPrefix();
+  public abstract SearchType getSearchType();
 
   @JsonIgnore
   public boolean isEmpty() {
@@ -31,8 +47,9 @@ public abstract class NameUsageRequest {
   }
 
   /**
-   * The search terms analyzed as appropriate for scientific name searches. Should not be used for vernacular name and authorship searches.
-   * The search terms are derived from the Q and are set programmatically.
+   * The search terms analyzed as appropriate for scientific name searches. Should not be used for
+   * vernacular name and authorship searches. The search terms are derived from the Q and are set
+   * programmatically.
    * 
    * @return
    */
@@ -55,11 +72,13 @@ public abstract class NameUsageRequest {
 
   public void setQ(String q) {
     /*
-     * BEWARE: currently ALL analyzers involved in q matching (whether on scientific name, vernacular name or authorship) churn out
-     * all-lowercase tokens. Therefore, we might as well be done with it and lowercase the Q as well as soon as possible (i.e. here).
-     * Otherwise it's easy to forget (issue #697). If case-sensitive matching is introduced for some reason, we must change this setter into
-     * a regular setter and be **very** careful to check **all** classes that implicitly assume the Q to be lowercase (the QMatcher classes,
-     * the Highlighter classes, etc.) In other words check all references to NameUsageRequest.getQ()
+     * BEWARE: currently ALL analyzers involved in q matching (whether on scientific name, vernacular
+     * name or authorship) churn out all-lowercase tokens. Therefore, we might as well be done with it
+     * and lowercase the Q as well as soon as possible (i.e. here). Otherwise it's easy to forget (issue
+     * #697). If case-sensitive matching is introduced for some reason, we must change this setter into
+     * a regular setter and be **very** careful to check **all** classes that implicitly assume the Q to
+     * be lowercase (the QMatcher classes, the Highlighter classes, etc.) In other words check all
+     * references to NameUsageRequest.getQ()
      */
     if (q != null) {
       this.q = q.toLowerCase();

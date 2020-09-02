@@ -5,6 +5,7 @@ import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.search.NameUsageRequest.SearchType;
 import life.catalogue.es.EsReadTestBase;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +32,7 @@ public class Issue541_SearchForUnparsedNames extends EsReadTestBase {
     index(nuw);
 
     NameUsageSearchRequest request = new NameUsageSearchRequest();
-    request.setPrefix(false);
+    request.setSearchType(SearchType.WHOLE_WORDS);
 
     request.setQ(q);
     NameUsageSearchResponse response = search(request);

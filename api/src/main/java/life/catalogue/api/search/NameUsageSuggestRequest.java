@@ -18,8 +18,8 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
   private Integer limit; // Desired number of suggestions
 
   @Override
-  public boolean isPrefix() {
-    return true; // false defies the purpose of auto-complete
+  public SearchType getSearchType() {
+    return SearchType.PREFIX;
   }
 
   @JsonIgnore

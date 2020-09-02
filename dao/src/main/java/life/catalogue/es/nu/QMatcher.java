@@ -11,10 +11,12 @@ import life.catalogue.es.query.EdgeNgramQuery;
 import life.catalogue.es.query.Query;
 import life.catalogue.es.query.SciNameEqualsQuery;
 import life.catalogue.es.query.SciNameMatchQuery;
+import life.catalogue.es.query.TermQuery;
 import static life.catalogue.es.query.AbstractMatchQuery.Operator.*;
 
 /**
- * Generates the queries for the suggest service and the search service. See also {@link MultiField} for consideration about how & why.
+ * Generates the queries for the suggest service and the search service. See also {@link MultiField}
+ * for consideration about how & why.
  */
 public abstract class QMatcher {
 
@@ -33,16 +35,26 @@ public abstract class QMatcher {
 
   public static QMatcher getInstance(NameUsageRequest request) {
     QMatcher matcher;
-    if (request.isFuzzy()) {
-      if (request.isPrefix()) {
-        matcher = new FuzzyPrefixMatcher(request);
-      } else {
-        matcher = new FuzzyWholeWordMatcher(request);
-      }
-    } else if (request.isPrefix()) {
-      matcher = new SimplePrefixMatcher(request);
-    } else {
-      matcher = new SimpleWholeWordMatcher(request);
+    switch (request.getSearchType()) {
+      case EXACT:
+        matcher = getExactQMatcher(request);
+        break;
+      case PREFIX:
+        if (request.isFuzzy()) {
+          matcher = new FuzzyPrefixMatcher(request);
+        } else {
+          matcher = new SimplePrefixMatcher(request);
+        }
+        break;
+      case WHOLE_WORDS:
+        if (request.isFuzzy()) {
+          matcher = new FuzzyWholeWordMatcher(request);
+        } else {
+          matcher = new SimpleWholeWordMatcher(request);
+        }
+        break;
+      default:
+        throw new AssertionError();
     }
     if (LOG.isTraceEnabled()) {
       LOG.trace("Using {} for search phrase \"{}\"", matcher.getClass().getSimpleName(), request.getQ());
@@ -57,11 +69,12 @@ public abstract class QMatcher {
   }
 
   /*
-   * Note about the boost values. You need to experiment, but given a max ngram size of 10 and given a search term of exactly that length, a
-   * prefix query seems to score about as good as an edge ngram query if you let each letter increase the boost value by 0.1 for prefix
-   * queries, while boosting autocomplete queries by 3.5. So the prefix query will catch up the ngram query by the time the max ngram size
-   * is reached. It's hard to arrive at watertight relevance scores though, because the effects of TD/IF-scoring are impossible to estimate
-   * unless you also know your data really well.
+   * Note about the boost values. You need to experiment, but given a max ngram size of 10 and given a
+   * search term of exactly that length, a prefix query seems to score about as good as an edge ngram
+   * query if you let each letter increase the boost value by 0.1 for prefix queries, while boosting
+   * autocomplete queries by 3.5. So the prefix query will catch up the ngram query by the time the
+   * max ngram size is reached. It's hard to arrive at watertight relevance scores though, because the
+   * effects of TD/IF-scoring are impossible to estimate unless you also know your data really well.
    */
 
   public Query getVernacularNameQuery() {
@@ -115,12 +128,14 @@ public abstract class QMatcher {
       // could still all be epithets but we don't know how to deal with them any longer
       return false;
     } else if (terms.length == 1) {
-      // With just one search term it's too much of a stretch to assume the user is typing the abbreviated form of a generic epithet
+      // With just one search term it's too much of a stretch to assume the user is typing the abbreviated
+      // form of a generic epithet
       return couldBeEpithet(terms[0]);
     }
     for (String term : terms) {
       if (term.length() == 1 && isEpitheticalCharacter(term.codePointAt(0))) {
-        continue; // User could be typing "H sapiens", which we cater for, or even "sapiens H", which we still cater for.
+        continue; // User could be typing "H sapiens", which we cater for, or even "sapiens H", which we still cater
+                  // for.
       } else if (term.length() == 2 && isEpitheticalCharacter(term.codePointAt(0)) && term.charAt(1) == '.') {
         continue; // User could be typing "H. sapiens"
       } else if (!couldBeEpithet(term)) {
@@ -136,10 +151,31 @@ public abstract class QMatcher {
 
   private static boolean isEpitheticalCharacter(int i) {
     /*
-     * In fact hyphen and apostophe are also legitimate characters in an epithet, but these are filtered out by the tokenizer, so what
-     * remains is a strings of letters.
+     * In fact hyphen and apostophe are also legitimate characters in an epithet, but these are filtered
+     * out by the tokenizer, so what remains is a strings of letters.
      */
     return Character.isLetter(i);
+  }
+
+  private static QMatcher getExactQMatcher(NameUsageRequest request) {
+    return new QMatcher(request) {
+
+      public Query getScientificNameQuery() {
+        return new TermQuery(FLD_SCINAME, request.getQ());
+      }
+
+      Query matchAsTrinomial() {
+        return null;
+      }
+
+      Query matchAsMonomial() {
+        return null;
+      }
+
+      Query matchAsBinomial() {
+        return null;
+      }
+    };
   }
 
 }
