@@ -20,7 +20,12 @@ import java.util.Set;
 public interface VerbatimRecordMapper extends Create<VerbatimRecord>, DatasetProcessable<VerbatimRecord>, CopyDataset {
   
   /**
-   * See list method for parameters
+   * @param datasetKey the required dataset key
+   * @param types rowTypes to restrict to
+   * @param terms optional list of terms and their values to filter by
+   * @param termOp logical operator to combine multiple term filters
+   * @param issues optional issues to filter by
+   * @param q full text search query on term values
    */
   int count(@Param("datasetKey") int datasetKey,
             @Nullable @Param("types") Collection<Term> types,

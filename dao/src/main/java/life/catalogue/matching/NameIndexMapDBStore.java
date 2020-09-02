@@ -3,6 +3,7 @@ package life.catalogue.matching;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
 import com.google.common.base.Preconditions;
+import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.common.kryo.ApiKryoPool;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
@@ -167,6 +168,6 @@ public class NameIndexMapDBStore implements NameIndexStore {
   }
 
   private void avail() throws UnavailableException {
-    if (db == null) throw new UnavailableException("Names Index is offline");
+    if (db == null) throw UnavailableException.unavailable("names index");
   }
 }

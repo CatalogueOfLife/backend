@@ -9,6 +9,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.util.LoggingUtils;
+import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import org.apache.commons.lang3.NotImplementedException;
@@ -34,6 +35,7 @@ abstract class SectorRunnable implements Runnable {
   final boolean validateSector;
   final SqlSessionFactory factory;
   final NameUsageIndexService indexService;
+  final SectorImportDao sid;
   // maps keyed on taxon ids from this sector
   final Map<String, EditorialDecision> decisions = new HashMap<>();
   List<Sector> childSectors;
@@ -49,13 +51,14 @@ abstract class SectorRunnable implements Runnable {
   /**
    * @throws IllegalArgumentException if the sectors dataset is not of MANAGED origin
    */
-  SectorRunnable(DSID<Integer> sectorKey, boolean validateSector, SqlSessionFactory factory, NameUsageIndexService indexService,
-                 Consumer<SectorRunnable> successCallback,
-                 BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
+  SectorRunnable(DSID<Integer> sectorKey, boolean validateSector, SqlSessionFactory factory,
+                 NameUsageIndexService indexService, SectorImportDao sid,
+                 Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     this.user = Preconditions.checkNotNull(user);
     this.validateSector = validateSector;
     this.factory = factory;
     this.indexService = indexService;
+    this.sid = sid;
     this.successCallback = successCallback;
     this.errorCallback = errorCallback;
     this.sectorKey = sectorKey;
@@ -84,9 +87,20 @@ abstract class SectorRunnable implements Runnable {
     boolean failed = true;
     try {
       state.setStarted(LocalDateTime.now());
+      state.setState( ImportState.PREPARING);
+      LOG.info("Start {} for sector {}", this.getClass().getSimpleName(), sectorKey);
       init();
+
       doWork();
-      LOG.info("Completed {}", this);
+
+      state.setState( ImportState.ANALYZING);
+      doMetrics();
+
+      state.setState( ImportState.INDEXING);
+      updateSearchIndex();
+
+      state.setState( ImportState.FINISHED);
+      LOG.info("Completed {} for sector {}", this.getClass().getSimpleName(), sectorKey);
       failed = false;
       successCallback.accept(this);
 
@@ -116,7 +130,6 @@ abstract class SectorRunnable implements Runnable {
   }
 
   void init() throws Exception {
-    state.setState( ImportState.PREPARING);
     // load latest version of the sector again to get the latest target ids
     sector = loadSector(validateSector);
     if (sector.getMode() == Sector.Mode.MERGE) {
@@ -211,6 +224,10 @@ abstract class SectorRunnable implements Runnable {
   }
   
   abstract void doWork() throws Exception;
+
+  abstract void doMetrics() throws Exception;
+
+  abstract void updateSearchIndex() throws Exception;
   
   public SectorImport getState() {
     return state;

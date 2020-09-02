@@ -12,8 +12,7 @@ import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.io.Resources;
-import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.TreeRepoRule;
+import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -54,6 +53,8 @@ public class ImportJobIT {
   private WsServerConfig cfg;
   private ImportJob job;
   private DatasetWithSettings d;
+  private NameUsageIndexService indexService;
+  private SectorDao sDao;
 
   private static WsServerConfig provideConfig() {
     WsServerConfig cfg = new WsServerConfig();
@@ -82,6 +83,11 @@ public class ImportJobIT {
     cfg = provideConfig();
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
+    indexService = NameUsageIndexService.passThru();
+    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru());
+    TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, indexService);
+    sDao = new SectorDao(PgSetupRule.getSqlSessionFactory(), indexService, tDao);
+
     LOG.warn("Test initialized");
   }
 
@@ -121,12 +127,12 @@ public class ImportJobIT {
 
     ImportRequest req = new ImportRequest(d.getKey(), Users.TESTER, false, false, false);
     job = new ImportJob(req, d, cfg, new DownloadUtil(hc), PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(),
-      NameUsageIndexService.passThru(), new ImageServiceFS(cfg.img), this::start, this::success, this::error);
+      indexService, new ImageServiceFS(cfg.img), sDao, this::start, this::success, this::error);
 
   }
 
   @Test
-  @Ignore("require github raw to always work. Currently down")
+  @Ignore("require github raw to always work")
   public void proxy() {
     setupNrun(DataFormat.PROXY, "proxy/1011.yaml");
     job.run();

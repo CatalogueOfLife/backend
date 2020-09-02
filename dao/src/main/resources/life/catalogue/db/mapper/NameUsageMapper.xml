@@ -210,7 +210,7 @@
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     UPDATE name_usage_${partition}
     SET (parent_id, modified, modified_by) = (#{newParentId}, now(), #{userKey})
-    WHERE parent_id = #{parentId}
+    WHERE parent_id = #{parentId} <if test="sectorKey != null"> AND sector_key=#{sectorKey}</if>
   </update>
 
   <update id="updateParentId" parameterType="map">
@@ -387,6 +387,14 @@
     FROM <include refid="FROM_SIMPLE"/> JOIN name_usage_${partition} p ON p.id=u.parent_id
     WHERE p.sector_key=#{key.id}
     AND (u.sector_key IS NULL OR u.sector_key!=#{key.id})
+  </select>
+
+  <select id="sectorRoot" resultMap="simpleResultMap">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    SELECT <include refid="SELECT_SIMPLE"/>
+    FROM <include refid="FROM_SIMPLE"/> JOIN name_usage_${partition} p ON p.id=u.parent_id
+    WHERE u.sector_key=#{key.id}
+    AND (p.sector_key IS NULL OR p.sector_key!=#{key.id})
   </select>
 
   <select id="processTreeSimple" parameterType="map" resultMap="simpleResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">

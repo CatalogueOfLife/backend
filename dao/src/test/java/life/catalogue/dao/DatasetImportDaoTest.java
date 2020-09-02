@@ -52,8 +52,8 @@ public class DatasetImportDaoTest extends DaoTestBase {
     assertEquals( 1, d.getNamesByRankCount().size());
     assertEquals((Integer) 5, d.getNamesByRankCount().get(Rank.SPECIES));
     
-    assertEquals(1, d.getNamesByOriginCount().size());
-    assertEquals((Integer) 5, d.getNamesByOriginCount().get(Origin.SOURCE));
+    assertEquals(1, d.getUsagesByOriginCount().size());
+    assertEquals((Integer) 4, d.getUsagesByOriginCount().get(Origin.SOURCE));
     
     assertEquals(1, d.getNamesByTypeCount().size());
     assertEquals((Integer) 5, d.getNamesByTypeCount().get(NameType.SCIENTIFIC));
@@ -77,11 +77,11 @@ public class DatasetImportDaoTest extends DaoTestBase {
 
     assertEquals( 0, d.getTaxonRelationsByTypeCount().size());
 
-    assertEquals(2, d.getVerbatimByTypeCount().size());
-    assertEquals((Integer) 3, d.getVerbatimByTypeCount().get(AcefTerm.AcceptedSpecies));
     assertEquals(2, d.getVerbatimByTermCount().size());
-    assertEquals(18, d.getVerbatimByTermCount().get(AcefTerm.AcceptedSpecies).size());
-    for (Term t : d.getVerbatimByTermCount().get(AcefTerm.AcceptedSpecies).keySet()) {
+    assertEquals((Integer) 3, d.getVerbatimByTermCount().get(AcefTerm.AcceptedSpecies));
+    assertEquals(2, d.getVerbatimByRowTypeCount().size());
+    assertEquals(18, d.getVerbatimByRowTypeCount().get(AcefTerm.AcceptedSpecies).size());
+    for (Term t : d.getVerbatimByRowTypeCount().get(AcefTerm.AcceptedSpecies).keySet()) {
       assertEquals(AcefTerm.class, t.getClass());
     }
   }

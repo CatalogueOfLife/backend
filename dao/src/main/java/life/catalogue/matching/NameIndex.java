@@ -52,6 +52,8 @@ public interface NameIndex extends Managed, AutoCloseable {
     }
   }
 
+  boolean hasStarted();
+
   @Override
   default void close() throws Exception {
     stop();

@@ -37,7 +37,7 @@ public class Synonym extends NameUsageBase {
    * @return true if the synonym is a homotypic synonym for at least one of the accepted names.
    */
   public boolean isHomotypic() {
-    return Objects.equals(getName().getHomotypicNameId(), accepted.getName().getHomotypicNameId());
+    return accepted != null && Objects.equals(getName().getHomotypicNameId(), accepted.getName().getHomotypicNameId());
   }
   
   public Taxon getAccepted() {

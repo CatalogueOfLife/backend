@@ -4,9 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -20,11 +18,8 @@ public class Dataset extends ArchivedDataset {
   private LocalDateTime imported; // from import table
   private LocalDateTime deleted;
 
-  // human metadata
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   private Integer size;
-  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-  private Set<Integer> contributesTo;
 
   public Dataset() {
   }
@@ -41,7 +36,6 @@ public class Dataset extends ArchivedDataset {
     this.imported = other.imported;
     this.deleted = other.deleted;
     this.size = other.size;
-    this.contributesTo = other.contributesTo;
   }
 
   public UUID getGbifKey() {
@@ -71,27 +65,6 @@ public class Dataset extends ArchivedDataset {
 
   public Integer getSize() {
     return size;
-  }
-  
-  /**
-   * If the dataset participates in any catalogue assemblies
-   * this is indicated here by listing the catalogues datasetKey.
-   * <p>
-   * Dataset used to build the provisional catalogue will be trusted and insert their names into the names index.
-   */
-  public Set<Integer> getContributesTo() {
-    return contributesTo;
-  }
-  
-  public void setContributesTo(Set<Integer> contributesTo) {
-    this.contributesTo = contributesTo;
-  }
-  
-  public void addContributesTo(Integer catalogueKey) {
-    if (contributesTo == null) {
-      contributesTo = new HashSet<>();
-    }
-    contributesTo.add(catalogueKey);
   }
 
   /**
@@ -130,14 +103,12 @@ public class Dataset extends ArchivedDataset {
       Objects.equals(gbifKey, dataset.gbifKey) &&
       Objects.equals(gbifPublisherKey, dataset.gbifPublisherKey) &&
       Objects.equals(imported, dataset.imported) &&
-      Objects.equals(deleted, dataset.deleted) &&
-      Objects.equals(size, dataset.size) &&
-      Objects.equals(contributesTo, dataset.contributesTo);
+      Objects.equals(deleted, dataset.deleted);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), privat, gbifKey, gbifPublisherKey, imported, deleted, size, contributesTo);
+    return Objects.hash(super.hashCode(), privat, gbifKey, gbifPublisherKey, imported, deleted);
   }
 
   @Override

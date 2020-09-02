@@ -95,9 +95,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     commit();
 
     Dataset d2 = TestEntityGenerator.nullifyDate(mapper().get(d1.getKey()));
-    // we generate this on the fly
-    d2.setContributesTo(null);
-  
+
     //printDiff(d1, d2);
     assertEquals(d1, d2);
   }
@@ -490,11 +488,14 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     
     // by origin
     query = new DatasetSearchRequest();
-    query.setOrigin(DatasetOrigin.MANAGED);
+    query.setOrigin(List.of(DatasetOrigin.MANAGED));
     assertEquals(7, mapper().search(query, null, new Page()).size());
   
-    query.setOrigin(DatasetOrigin.EXTERNAL);
+    query.setOrigin(List.of(DatasetOrigin.EXTERNAL));
     assertEquals(1, mapper().search(query, null, new Page()).size());
+
+    query.setOrigin(List.of(DatasetOrigin.MANAGED, DatasetOrigin.EXTERNAL));
+    assertEquals(8, mapper().search(query, null, new Page()).size());
 
     // by code
     query = new DatasetSearchRequest();
@@ -541,8 +542,6 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   }
 
   public static Dataset rmDbCreatedProps(Dataset d) {
-    // we generate this on the fly
-    d.setContributesTo(null);
     return d;
   }
 

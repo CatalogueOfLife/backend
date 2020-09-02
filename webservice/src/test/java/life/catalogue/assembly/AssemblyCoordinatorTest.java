@@ -9,7 +9,7 @@ import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.FileMetricsSectorDao;
+import life.catalogue.dao.SectorImportDao;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
@@ -42,8 +42,8 @@ public class AssemblyCoordinatorTest {
     DatasetImportDao diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     MapperTestBase.createSuccess(Datasets.DRAFT_COL, Users.TESTER, diDao);
 
-    FileMetricsSectorDao fmsDao = new FileMetricsSectorDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    coord = new AssemblyCoordinator(PgSetupRule.getSqlSessionFactory(), fmsDao, NameUsageIndexService.passThru(), new MetricRegistry());
+    SectorImportDao sid = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
+    coord = new AssemblyCoordinator(PgSetupRule.getSqlSessionFactory(), sid, NameUsageIndexService.passThru(), new MetricRegistry());
   }
   
   @Test(expected = IllegalArgumentException.class)

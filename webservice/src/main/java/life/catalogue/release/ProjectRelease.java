@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProjectRelease extends AbstractProjectCopy {
   private static final String DEFAULT_TITLE_TEMPLATE = "{title}, {date}";
-  private static final String DEFAULT_ALIAS_TEMPLATE = "{alias}-{date}";
+  private static final String DEFAULT_ALIAS_TEMPLATE = "{aliasOrTitle}-{date}";
   private static final String DEFAULT_CITATION_TEMPLATE = "{citation} released on {date}";
 
   private final ImageService imageService;
@@ -66,7 +66,7 @@ public class ProjectRelease extends AbstractProjectCopy {
         try {
           imageService.archiveDatasetLogo(newDatasetKey, d.getKey());
         } catch (IOException e) {
-          LOG.warn("Failed to archive logo for source dataset {} of release {}", d.getKey(), newDatasetKey);
+          LOG.warn("Failed to archive logo for source dataset {} of release {}", d.getKey(), newDatasetKey, e);
         }
         counter.incrementAndGet();
       });
@@ -103,30 +103,34 @@ public class ProjectRelease extends AbstractProjectCopy {
 
   private void metrics() {
     LOG.info("Build import metrics for dataset " + datasetKey);
-    diDao.updateMetrics(metrics);
+    diDao.updateMetrics(metrics, newDatasetKey);
     diDao.update(metrics);
-    diDao.updateDatasetLastAttempt(metrics);
 
-    // also update release datasets import attempt pointer
+    // update both the projects and release datasets import attempt pointer
     try (SqlSession session = factory.openSession(true)) {
-      session.getMapper(DatasetMapper.class).updateLastImport(newDatasetKey, metrics.getAttempt());
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      dm.updateLastImport(datasetKey, metrics.getAttempt());
+      dm.updateLastImport(newDatasetKey, metrics.getAttempt());
     }
   }
 
-  private static String procTemplate(Dataset d, DatasetSettings ds, Setting setting, String defaultTemplate){
+  static String procTemplate(Dataset d, DatasetSettings ds, Setting setting, String defaultTemplate){
     String tmpl = defaultTemplate;
     if (ds.has(setting)) {
       tmpl = ds.getString(setting);
     }
-    return SimpleTemplate.render(tmpl, d);
+    if (tmpl != null) {
+      return SimpleTemplate.render(tmpl, d);
+    }
+    return null;
   }
 
-  public static void releaseInit(Dataset d, DatasetSettings ds) {
-    String title = procTemplate(d, ds, Setting.RELEASE_TITLE_TEMPLATE, DEFAULT_TITLE_TEMPLATE);
-    d.setTitle(title);
-
+  public static void releaseDataset(Dataset d, DatasetSettings ds) {
     String alias = procTemplate(d, ds, Setting.RELEASE_ALIAS_TEMPLATE, DEFAULT_ALIAS_TEMPLATE);
     d.setAlias(alias);
+
+    String title = procTemplate(d, ds, Setting.RELEASE_TITLE_TEMPLATE, DEFAULT_TITLE_TEMPLATE);
+    d.setTitle(title);
 
     String citation = procTemplate(d, ds, Setting.RELEASE_CITATION_TEMPLATE, DEFAULT_CITATION_TEMPLATE);
     d.setCitation(citation);
@@ -134,6 +138,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     d.setOrigin(DatasetOrigin.RELEASED);
     final LocalDate today = LocalDate.now();
     d.setReleased(today);
+    d.setPrivat(true); // all releases are private candidate releases first
     d.setVersion(today.toString());
     d.setCitation(buildCitation(d));
   }

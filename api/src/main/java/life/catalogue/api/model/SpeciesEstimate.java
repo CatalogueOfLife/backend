@@ -7,7 +7,7 @@ import java.util.Objects;
 public class SpeciesEstimate extends DatasetScopedEntity<Integer> {
   private SimpleName target;
   private Integer estimate;
-  private EstimateType type = EstimateType.DESCRIBED_SPECIES_LIVING;
+  private EstimateType type = EstimateType.SPECIES_LIVING;
   private String referenceId;
   private String note;
 

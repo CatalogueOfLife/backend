@@ -72,7 +72,7 @@ public class ColdpInterpreter extends InterpreterBase {
       if (status.isSynonym()) {
         u = NeoUsage.createSynonym(Origin.SOURCE, status);
       } else {
-        u = NeoUsage.createTaxon(Origin.SOURCE, TaxonomicStatus.ACCEPTED);
+        u = NeoUsage.createTaxon(Origin.SOURCE, status);
         interpretTaxonInfos(v, u);
       }
       interpretUsageBase(u, nn, v);

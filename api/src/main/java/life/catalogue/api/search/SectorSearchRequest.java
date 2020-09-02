@@ -2,6 +2,7 @@ package life.catalogue.api.search;
 
 import life.catalogue.api.model.Sector;
 
+import javax.validation.constraints.Min;
 import javax.ws.rs.QueryParam;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -19,6 +20,10 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
 
   @QueryParam("subject")
   private boolean subject = false;
+
+  @Min(0)
+  @QueryParam("minSize")
+  private Integer minSize;
 
   @QueryParam("withoutData")
   private boolean withoutData = false;
@@ -75,20 +80,30 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
     this.withoutData = withoutData;
   }
 
+  public Integer getMinSize() {
+    return minSize;
+  }
+
+  public void setMinSize(Integer minSize) {
+    this.minSize = minSize;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof SectorSearchRequest)) return false;
+    if (!super.equals(o)) return false;
     SectorSearchRequest that = (SectorSearchRequest) o;
     return subject == that.subject &&
+      withoutData == that.withoutData &&
       Objects.equals(subjectDatasetKey, that.subjectDatasetKey) &&
       Objects.equals(lastSync, that.lastSync) &&
       mode == that.mode &&
-      withoutData == that.withoutData;
+      Objects.equals(minSize, that.minSize);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, subjectDatasetKey, lastSync, mode, subject, withoutData);
+    return Objects.hash(super.hashCode(), subjectDatasetKey, lastSync, mode, subject, minSize, withoutData);
   }
 }

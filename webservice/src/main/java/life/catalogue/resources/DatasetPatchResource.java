@@ -2,7 +2,10 @@ package life.catalogue.resources;
 
 import io.dropwizard.auth.Auth;
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.DSIDValue;
+import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.User;
 import life.catalogue.db.mapper.DatasetPatchMapper;
 import life.catalogue.dw.auth.Roles;
 import org.apache.ibatis.session.SqlSession;
@@ -14,6 +17,8 @@ import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Editorial decision patching the metadata of a source dataset.
@@ -27,6 +32,14 @@ public class DatasetPatchResource {
 
   private static final Logger LOG = LoggerFactory.getLogger(DatasetPatchResource.class);
 
+
+  @GET
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public List<Dataset> list(@PathParam("datasetKey") int datasetKey, @Context SqlSession session) {
+    List<Dataset> patches = new ArrayList<>();
+    session.getMapper(DatasetPatchMapper.class).processDataset(datasetKey).forEach(patches::add);
+    return patches;
+  }
 
   /**
    * @return the primary key of the object. Together with the CreatedResponseFilter will return a 201 location

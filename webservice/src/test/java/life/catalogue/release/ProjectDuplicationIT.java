@@ -51,13 +51,13 @@ public class ProjectDuplicationIT {
     .around(importRule);
 
   DatasetImportDao diDao;
-  FileMetricsSectorDao fmsDao;
+  SectorImportDao siDao;
   TaxonDao tdao;
 
   @Before
   public void init () throws IOException, SQLException {
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    fmsDao = new FileMetricsSectorDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
+    siDao = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
     // reset draft
@@ -84,15 +84,16 @@ public class ProjectDuplicationIT {
     trg = SectorSyncIT.getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
     DSID<Integer> s3 = SectorSyncIT.createSector(Sector.Mode.ATTACH, src, trg);
 
-    SectorSyncIT.syncAll(fmsDao);
+    SectorSyncIT.syncAll(siDao);
 
     // test ProjectDuplication
     Dataset d;
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()){
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       d = dm.get(Datasets.DRAFT_COL);
-      d.setTitle("Copied draft");
+      d.setTitle(d.getTitle() + " copy");
       d.setKey(1100);
+      d.setAlias(d.getAlias() + " copy");
       dm.createWithKey(d);
       session.commit();
     }

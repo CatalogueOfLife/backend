@@ -24,7 +24,7 @@ public class FileMetricsDatasetDao extends FileMetricsDao<Integer> {
   }
 
   @Override
-  File subdir(Integer key) {
+  public File subdir(Integer key) {
     return datasetDir(repo, key);
   }
 

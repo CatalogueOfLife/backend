@@ -1,5 +1,6 @@
 package life.catalogue.resources;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Joiner;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.lifecycle.Managed;
@@ -7,8 +8,12 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.admin.MetricsUpdater;
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.AssemblyState;
+import life.catalogue.common.concurrent.BackgroundJob;
+import life.catalogue.common.concurrent.JobExecutor;
+import life.catalogue.common.concurrent.JobPriority;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
@@ -22,7 +27,6 @@ import life.catalogue.importer.ImportManager;
 import life.catalogue.importer.ImportRequest;
 import life.catalogue.matching.DatasetMatcher;
 import life.catalogue.matching.NameIndex;
-import life.catalogue.matching.NameIndexImpl;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -37,8 +41,8 @@ import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 @Path("/admin")
 @Produces(MediaType.APPLICATION_JSON)
@@ -53,18 +57,19 @@ public class AdminResource {
   private final ImageService imgService;
   private final NameUsageIndexService indexService;
   private final NameIndex ni;
-  private Thread thread;
   // managed background processes
   private final ImportManager importManager;
   private final ContinuousImporter continuousImporter;
   private final GbifSync gbifSync;
   private final AssemblyCoordinator assembly;
-  private final NameIndexImpl namesIndex;
+  private final NameIndex namesIndex;
+  private final JobExecutor exec;
 
 
 
   public AdminResource(SqlSessionFactory factory, AssemblyCoordinator assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
-                       NameUsageIndexService indexService, ContinuousImporter continuousImporter, ImportManager importManager, GbifSync gbifSync, NameIndexImpl namesIndex) {
+                       NameUsageIndexService indexService, ContinuousImporter continuousImporter, ImportManager importManager, GbifSync gbifSync,
+                       NameIndex namesIndex, JobExecutor executor) {
     this.factory = factory;
     this.assembly = assembly;
     this.imgService = imgService;
@@ -76,6 +81,7 @@ public class AdminResource {
     this.continuousImporter = continuousImporter;
     this.importManager = importManager;
     this.namesIndex = namesIndex;
+    this.exec = executor;
   }
   
   public static class BackgroundProcesses {
@@ -86,6 +92,25 @@ public class AdminResource {
     @Min(1)
     public Integer importerThreads;
   }
+
+  @GET
+  @Path("/job")
+  public List<BackgroundJob> jobQueue() {
+    return exec.getQueue();
+  }
+
+  @GET
+  @Path("/job/{key}")
+  public BackgroundJob job(@PathParam("key") UUID key) {
+    return exec.getJob(key);
+  }
+
+  @DELETE
+  @Path("/job/{key}")
+  public BackgroundJob cancel(@PathParam("key") UUID key, @Auth User user) {
+    return exec.cancel(key, user.getKey());
+  }
+
 
   @GET
   @Path("/assembly")
@@ -153,42 +178,41 @@ public class AdminResource {
   
   @POST
   @Path("/logo-update")
-  public String updateAllLogos() {
-    return runJob("logo-updater", () -> LogoUpdateJob.updateAllAsync(factory, downloader, cfg.normalizer::scratchFile, imgService));
+  public BackgroundJob updateAllLogos(@Auth User user) {
+    return runJob(LogoUpdateJob.updateAllAsync(factory, downloader, cfg.normalizer::scratchFile, imgService, user.getKey()));
   }
 
   @POST
   @Path("/metrics-update")
-  public String updateAllFileMetrics(@QueryParam("datasetKey") Integer datasetKey) {
-    return runJob("metrics-updater", () -> new MetricsUpdater(factory, cfg, datasetKey));
+  public BackgroundJob updateMetrics(@QueryParam("datasetKey") Integer datasetKey, @Auth User user) {
+    return runJob(new MetricsUpdater(factory, cfg, datasetKey, user));
   }
 
-  private String runJob(String threadName, Supplier<Runnable> supplier){
-    if (thread != null) {
-      throw new IllegalStateException("A background thread " + thread.getName() + " is already running");
-    }
-    Runnable job = supplier.get();
-    thread = new Thread(new JobWrapper(job), threadName);
-    thread.setDaemon(false);
-    thread.start();
-    return "Started " + job.getClass().getSimpleName();
+  @POST
+  @Path("/counter-update")
+  public BackgroundJob updateCounter(@Auth User user) {
+    return runJob(new UsageCountJob(user, JobPriority.HIGH));
   }
-  
+
   @POST
   @Path("/reindex")
-  public String reindex(RequestScope req, @Auth User user) {
-    if (req == null || (req.getDatasetKey() == null && !req.getAll())) {
+  public BackgroundJob reindex(@QueryParam("datasetKey") Integer datasetKey, @QueryParam("prio") JobPriority priority, RequestScope req, @Auth User user) {
+    if (req == null) {
+      req = new RequestScope();
+    }
+    if (datasetKey != null) {
+      req.setDatasetKey(datasetKey);
+    }
+    if (req.getDatasetKey() == null && !req.getAll()) {
       throw new IllegalArgumentException("Request parameter all or datasetKey must be provided");
     }
-    return runJob("es-reindexer", () -> new IndexJob(req, user));
+    return runJob(new IndexJob(req, user, priority));
   }
 
   @POST
   @Path("/rematch")
-  public String reindex(@QueryParam("datasetKey") Integer datasetKey, @Auth User user) {
-    if (datasetKey != null) {
-    }
-    return runJob("rematcher", () -> new RematchJob(datasetKey, user));
+  public BackgroundJob rematch(@QueryParam("datasetKey") Integer datasetKey, @Auth User user) {
+    return runJob(new RematchJob(datasetKey, user));
   }
 
   @DELETE
@@ -200,50 +224,58 @@ public class AdminResource {
 
   @POST
   @Path("/reimport")
-  public String reimport(@Auth User user) {
-    return runJob("reimporter", () -> new ReimportJob(user));
+  public BackgroundJob reimport(@Auth User user) {
+    return runJob(new ReimportJob(user));
   }
-  
-  class JobWrapper implements Runnable {
-    private final Runnable job;
-  
-    JobWrapper(Runnable job) {
-      this.job = job;
+
+  private BackgroundJob runJob(BackgroundJob job){
+    exec.submit(job);
+    return job;
+  }
+
+  /**
+   * Updates the usage counter for all managed datasets.
+   */
+  class UsageCountJob extends BackgroundJob {
+
+    UsageCountJob(User user, JobPriority priority) {
+      super(priority, user.getKey());
     }
-  
+
     @Override
-    public void run() {
-      try {
-        job.run();
-      } catch (Exception e){
-        LOG.error("Error running job {}", job.getClass().getSimpleName(), e);
-      } finally {
-        thread = null;
+    public void execute() {
+      try (SqlSession session = factory.openSession(true)) {
+        DatasetMapper dm = session.getMapper(DatasetMapper.class);
+        DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
+        for (int key : dm.keys(DatasetOrigin.MANAGED)) {
+          int cnt = dpm.updateUsageCounter(key);
+          LOG.info("Updated usage counter for managed dataset {} to {}", key, cnt);
+        }
       }
     }
   }
 
-  class IndexJob implements Runnable {
+  class IndexJob extends BackgroundJob {
+    @JsonProperty
     private final RequestScope req;
-    private final User user;
-  
-    IndexJob(RequestScope req, User user) {
+
+    IndexJob(RequestScope req, User user, JobPriority priority) {
+      super(priority, user.getKey());
       this.req = req;
-      this.user = user;
     }
   
     @Override
-    public void run() {
+    public void execute() {
       // cleanup
       try {
         if (req.getDatasetKey() != null) {
-          LOG.info("Reindex dataset {} by {}", req.getDatasetKey(), user);
+          LOG.info("Reindex dataset {} by {}", req.getDatasetKey(), getUserKey());
           indexService.indexDataset(req.getDatasetKey());
         } else {
-          LOG.warn("Reindex all datasets by {}", user);
+          LOG.warn("Reindex all datasets by {}", getUserKey());
           indexService.indexAll();
         }
-      } catch (Exception e){
+      } catch (RuntimeException e){
         LOG.error("Error reindexing", e);
       }
     }
@@ -253,15 +285,16 @@ public class AdminResource {
    * Submits import jobs for all existing archives.
    * Throttles the submission so the import manager does not exceed its queue
    */
-  class ReimportJob implements Runnable {
-    private final User user;
+  class ReimportJob extends BackgroundJob {
+    @JsonProperty
+    private int counter;
 
     public ReimportJob(User user) {
-      this.user = user;
+      super(user.getKey());
     }
 
     @Override
-    public void run() {
+    public void execute() {
       final List<Integer> keys;
       try (SqlSession session = factory.openSession()) {
         DatasetMapper dm = session.getMapper(DatasetMapper.class);
@@ -270,7 +303,7 @@ public class AdminResource {
 
       LOG.warn("Reimporting all {} datasets from their last local copy", keys.size());
       final List<Integer> missed = new ArrayList<>();
-      int counter = 0;
+      counter = 0;
       for (int key : keys) {
         try {
           while (importManager.queueSize() + 5 > cfg.importer.maxQueue) {
@@ -279,7 +312,7 @@ public class AdminResource {
           // does a local archive exist?
           File f = cfg.normalizer.source(key);
           if (f.exists()) {
-            ImportRequest req = new ImportRequest(key, user.getKey(), true, false,true);
+            ImportRequest req = new ImportRequest(key, getUserKey(), true, false,true);
             importManager.submit(req);
             counter++;
           } else {
@@ -301,17 +334,17 @@ public class AdminResource {
     }
   }
 
-  class RematchJob implements Runnable {
-    private final User user;
+  class RematchJob extends BackgroundJob {
+    @JsonProperty
     private final Integer datasetKey;
 
     public RematchJob(Integer datasetKey, User user) {
-      this.user = user;
+      super(user.getKey());
       this.datasetKey = datasetKey;
     }
 
     @Override
-    public void run() {
+    public void execute() {
       final List<Integer> keys;
       if (datasetKey != null) {
         keys = List.of(datasetKey);
@@ -324,7 +357,7 @@ public class AdminResource {
         }
       }
 
-      LOG.warn("Rematching {} datasets with data. Triggered by {}", keys.size(), user);
+      LOG.warn("Rematching {} datasets with data. Triggered by {}", keys.size(), getUserKey());
       DatasetMatcher matcher = new DatasetMatcher(factory, ni, true);
       for (int key : keys) {
         matcher.match(key, true);
@@ -337,4 +370,5 @@ public class AdminResource {
       );
     }
   }
+
 }

@@ -4,41 +4,38 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="life.catalogue.db.mapper.SectorMapper">
 
-  <sql id="SelectVar">
-    ${alias}id AS ${prefix}id,
-    ${alias}dataset_key AS ${prefix}dataset_key,
-    ${alias}subject_dataset_key AS ${prefix}subject_dataset_key,
-    ${alias}original_subject_id AS ${prefix}original_subject_id,
-    ${alias}subject_id AS ${prefix}subject_id,
-    ${alias}subject_name AS ${prefix}subject_name,
-    ${alias}subject_authorship AS ${prefix}subject_authorship,
-    ${alias}subject_rank AS ${prefix}subject_rank,
-    ${alias}subject_code AS ${prefix}subject_code,
-    ${alias}subject_status AS ${prefix}subject_status,
-    ${alias}subject_parent AS ${prefix}subject_parent,
-    ${alias}target_id AS ${prefix}target_id,
-    ${alias}target_name AS ${prefix}target_name,
-    ${alias}target_authorship AS ${prefix}target_authorship,
-    ${alias}target_rank AS ${prefix}target_rank,
-    ${alias}target_code AS ${prefix}target_code,
-    ${alias}mode AS ${prefix}mode,
-    ${alias}code AS ${prefix}code,
-    ${alias}placeholder_rank AS ${prefix}placeholder_rank,
-    ${alias}ranks AS ${prefix}ranks,
-    ${alias}entities AS ${prefix}entities,
-    ${alias}note AS ${prefix}note,
-    ${alias}modified AS ${prefix}modified,
-    ${alias}modified_by AS ${prefix}modified_by,
-    ${alias}created AS ${prefix}created,
-    ${alias}created_by AS ${prefix}created_by
+  <sql id="SELECT">
+    s.id,
+    s.dataset_key,
+    s.sync_attempt,
+    s.subject_dataset_key,
+    s.original_subject_id,
+    s.subject_id,
+    s.subject_name,
+    s.subject_authorship,
+    s.subject_rank,
+    s.subject_code,
+    s.subject_status,
+    s.subject_parent,
+    s.target_id,
+    s.target_name,
+    s.target_authorship,
+    s.target_rank,
+    s.target_code,
+    s.mode,
+    s.code,
+    s.placeholder_rank,
+    s.ranks,
+    s.entities,
+    s.note,
+    s.modified,
+    s.modified_by,
+    s.created,
+    s.created_by,
+    <include refid="size"/> AS size
   </sql>
 
-  <sql id="SELECT">
-    <include refid="life.catalogue.db.mapper.SectorMapper.SelectVar">
-      <property name="alias" value="s."/>
-      <property name="prefix" value=""/>
-    </include>
-  </sql>
+  <sql id="size">coalesce(si.taxon_count,0) + coalesce(si.synonym_count,0) + coalesce(si.bare_name_count,0)</sql>
 
   <sql id="COLS">
     dataset_key,
@@ -95,7 +92,7 @@
   </sql>
 
   <sql id="FROM">
-    sector s LEFT JOIN sector_import si ON si.sector_key=s.id AND s.sync_attempt=si.attempt
+    sector s LEFT JOIN sector_import si ON s.id=si.sector_key AND s.dataset_key=si.dataset_key AND s.sync_attempt=si.attempt
   </sql>
 
   <sql id="WHERE">
@@ -131,6 +128,9 @@
         </if>
         <if test="req.modifiedBy != null">
           AND s.modified_by = #{req.modifiedBy}
+        </if>
+        <if test="req.minSize != null">
+          AND <include refid="size"/> >= #{req.minSize}
         </if>
         <if test="req.withoutData">
           AND NOT EXISTS (SELECT id FROM name_usage_${req.datasetKey} WHERE sector_key=s.id)
@@ -201,8 +201,8 @@
   </insert>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO sector (id, dataset_key, <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by )
-    SELECT id, #{newDatasetKey}, <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by
+    INSERT INTO sector (id, dataset_key, sync_attempt, dataset_import_attempt, <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by )
+    SELECT id, #{newDatasetKey}, sync_attempt, dataset_import_attempt, <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by
     FROM sector
     WHERE dataset_key=#{datasetKey}
   </insert>

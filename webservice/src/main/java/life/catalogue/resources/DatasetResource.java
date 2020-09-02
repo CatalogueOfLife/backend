@@ -216,6 +216,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @GET
   @Path("/{datasetKey}/source/{key}")
   public ProjectSourceDataset projectSource(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @Context SqlSession session) {
+    //TODO: this only works for releases
     return session.getMapper(ProjectSourceMapper.class).get(key, datasetKey);
   }
 
@@ -229,16 +230,17 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
     AtomicInteger sectorCounter = new AtomicInteger(0);
     // a release? use mother project in that case
-    if (DatasetInfoCache.CACHE.origin(key) == DatasetOrigin.RELEASED) {
-      Integer projectKey = DatasetInfoCache.CACHE.sourceProject(key);
-      session.getMapper(SectorMapper.class).processDataset(datasetKey).forEach(s -> {
-        ImportMetrics m = sim.get(DSID.of(projectKey, key), s.getSyncAttempt());
-        metrics.add(m);
-        sectorCounter.incrementAndGet();
-      });
-
+    if (DatasetInfoCache.CACHE.origin(datasetKey) == DatasetOrigin.RELEASED) {
+      Integer projectKey = DatasetInfoCache.CACHE.sourceProject(datasetKey);
+      for (Sector s : session.getMapper(SectorMapper.class).listByDataset(datasetKey, key)){
+        if (s.getSyncAttempt() != null) {
+          SectorImport m = sim.get(DSID.of(projectKey, s.getId()), s.getSyncAttempt());
+          metrics.add(m);
+          sectorCounter.incrementAndGet();
+        }
+      }
     } else {
-      for (ImportMetrics m : sim.list(null, datasetKey, key, null, true, null)) {
+      for (SectorImport m : sim.list(null, datasetKey, key, null, true, null)) {
         metrics.add(m);
         sectorCounter.incrementAndGet();
       }

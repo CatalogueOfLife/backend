@@ -2,27 +2,29 @@ package life.catalogue.api.vocab;
 
 public enum Sex {
 
-    /**
-     * Female (♀) is the sex of an organism, or a part of an organism,
-     * which produces mobile ova (egg cells).
-     */
-    FEMALE('♀'),
+  FEMALE('♀', "Female (♀) is the sex of an organism, or a part of an organism, " +
+    "which produces mobile ova (egg cells)."),
 
-    /**
-     * Male (♂) refers to the sex of an organism, or part of an organism,
-     * which produces small mobile gametes, called spermatozoa.
-     */
-    MALE('♂'),
+  MALE('♂', "Male (♂) refers to the sex of an organism, or part of an organism, " +
+    "which produces small mobile gametes, called spermatozoa."),
 
-    /**
-     * One organism having both male and female sexual characteristics and organs;
-     * at birth an unambiguous assignment of male or female cannot be made
-     */
-    HERMAPHRODITE('⚥');
+  HERMAPHRODITE('⚥',
+    "One organism having both male and female sexual characteristics and organs; " +
+      "at birth an unambiguous assignment of male or female cannot be made.");
 
-    public final char symbol;
+  public final char symbol;
+  private final String description;
 
-    Sex(char symbol) {
-        this.symbol = symbol;
-    }
+  Sex(char symbol, String description) {
+    this.symbol = symbol;
+    this.description = description;
+  }
+
+  public char getSymbol() {
+    return symbol;
+  }
+
+  public String getDescription() {
+    return description;
+  }
 }

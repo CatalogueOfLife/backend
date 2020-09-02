@@ -9,6 +9,7 @@ import com.google.common.base.Strings;
 import io.dropwizard.lifecycle.Managed;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.util.PagingUtil;
@@ -23,8 +24,8 @@ import life.catalogue.common.lang.Exceptions;
 import life.catalogue.csv.ExcelCsvExtractor;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.dao.SectorDao;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.NameIndex;
@@ -66,13 +67,14 @@ public class ImportManager implements Managed {
   private final NameIndex index;
   private final NameUsageIndexService indexService;
   private final ReleaseManager releaseManager;
+  private final SectorDao sDao;
   private final DatasetImportDao dao;
   private final ImageService imgService;
   private final Timer importTimer;
   private final Counter failed;
 
   public ImportManager(WsServerConfig cfg, MetricRegistry registry, CloseableHttpClient client,
-      SqlSessionFactory factory, NameIndex index,
+      SqlSessionFactory factory, NameIndex index, SectorDao sDao,
       NameUsageIndexService indexService, ImageService imgService, ReleaseManager releaseManager) {
     this.cfg = cfg;
     this.factory = factory;
@@ -81,6 +83,7 @@ public class ImportManager implements Managed {
     this.index = index;
     this.imgService = imgService;
     this.indexService = indexService;
+    this.sDao = sDao;
     this.dao = new DatasetImportDao(factory, cfg.metricsRepo);
     importTimer = registry.timer("life.catalogue.import.timer");
     failed = registry.counter("life.catalogue.import.failed");
@@ -248,7 +251,7 @@ public class ImportManager implements Managed {
    *         exist or is of origin managed
    */
   public synchronized ImportRequest submit(final ImportRequest req) throws IllegalArgumentException {
-    validDataset(req.datasetKey);
+    validRequest(req);
     return submitValidDataset(req);
   }
 
@@ -322,7 +325,23 @@ public class ImportManager implements Managed {
     return req;
   }
 
+
+  private Dataset validRequest(ImportRequest request) {
+    Dataset d = validDataset(request.datasetKey);
+    // does a local archive exist for uploads?
+    if (request.upload) {
+      File f = cfg.normalizer.source(request.datasetKey);
+      if (!f.exists()) {
+        throw new IllegalArgumentException("No local archive exists for dataset " + request.datasetKey);
+      }
+    }
+    return d;
+  }
+
   private Dataset validDataset(int datasetKey) {
+    if (!hasStarted()) {
+      throw UnavailableException.unavailable("dataset importer");
+    }
     if (datasetKey == Datasets.DRAFT_COL) {
       throw new IllegalArgumentException("Dataset " + datasetKey + " is the CoL working draft and cannot be imported");
     }
@@ -390,7 +409,7 @@ public class ImportManager implements Managed {
         throw NotFoundException.notFound(Dataset.class, req.datasetKey);
       }
       DatasetSettings ds = dm.getSettings(req.datasetKey);
-      ImportJob job = new ImportJob(req, new DatasetWithSettings(d, ds), cfg, downloader, factory, index, indexService, imgService,
+      ImportJob job = new ImportJob(req, new DatasetWithSettings(d, ds), cfg, downloader, factory, index, indexService, imgService, sDao,
           new StartNotifier() {
             @Override
             public void started() {
@@ -426,15 +445,12 @@ public class ImportManager implements Managed {
     Iterator<DatasetImport> iter = PagingUtil.pageAll(p -> dao.list(null, ImportState.runningStates(), p));
     while (iter.hasNext()) {
       DatasetImport di = iter.next();
-      dao.updateImportCancelled(di);
-      // truncate data?
-      if (di.getState() != ImportState.DOWNLOADING && di.getState() != ImportState.PROCESSING) {
-        try (SqlSession session = factory.openSession(true)) {
-          DatasetPartitionMapper dm = session.getMapper(DatasetPartitionMapper.class);
-          LOG.info("Drop partially imported data for dataset {}", di.getDatasetKey());
-          dm.delete(di.getDatasetKey());
-        }
+      // only reschedule import jobs, no releases
+      if (!di.getJob().equalsIgnoreCase(ImportJob.class.getSimpleName())) {
+        continue;
       }
+      // mark as cancelled
+      dao.updateImportCancelled(di);
       // add back to queue
       try {
         requests.add(new ImportRequest(di.getDatasetKey(), di.getCreatedBy(), true, false, di.isUpload()));

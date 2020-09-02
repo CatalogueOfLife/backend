@@ -12,6 +12,9 @@ import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.io.Resources;
+import life.catalogue.dao.NameDao;
+import life.catalogue.dao.SectorDao;
+import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -89,10 +92,15 @@ public class ImportManagerTest {
       datasetKey = d.getKey();
     }
 
+    NameUsageIndexService indexService = NameUsageIndexService.passThru();
+    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru());
+    TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, indexService);
+    SectorDao sDao = new SectorDao(PgSetupRule.getSqlSessionFactory(), indexService, tDao);
+
     MetricRegistry metrics = new MetricRegistry();
     final WsServerConfig cfg = provideConfig();
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
-    manager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), NameUsageIndexService.passThru(), imgService, releaseManager);
+    manager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), sDao, indexService, imgService, releaseManager);
     manager.start();
   }
 

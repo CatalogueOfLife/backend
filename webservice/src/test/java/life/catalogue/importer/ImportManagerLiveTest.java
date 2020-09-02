@@ -4,13 +4,16 @@ import com.codahale.metrics.MetricRegistry;
 import com.google.common.io.Files;
 import io.dropwizard.client.HttpClientBuilder;
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DatasetImport;
+import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.vocab.*;
-import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.TreeRepoRule;
+import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.TestDataRule;
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.release.ReleaseManager;
@@ -77,10 +80,15 @@ public class ImportManagerLiveTest {
     MetricRegistry metrics = new MetricRegistry();
     
     final WsServerConfig cfg = provideConfig();
-    
+
+    NameUsageIndexService indexService = NameUsageIndexService.passThru();
+    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru());
+    TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, indexService);
+    SectorDao sDao = new SectorDao(PgSetupRule.getSqlSessionFactory(), indexService, tDao);
+
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, PgSetupRule.getSqlSessionFactory(),
-        NameIndexFactory.passThru(), null, new ImageServiceFS(cfg.img), releaseManager);
+        NameIndexFactory.passThru(), sDao, indexService, new ImageServiceFS(cfg.img), releaseManager);
     importManager.start();
   
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());

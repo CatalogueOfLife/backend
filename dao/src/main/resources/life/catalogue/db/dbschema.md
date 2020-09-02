@@ -10,7 +10,7 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-### 2020-08-16 names index canonical
+### 2020-10-01 names index canonical
 ```
 ```
 
@@ -21,6 +21,133 @@ ALTER TABLE name_usage_{KEY} ADD CONSTRAINT name_usage_{KEY}_parent_id_fk FOREIG
 
 TODO: many more...    
 ``` 
+
+### 2020-09-02 renamed estimate types
+```
+ALTER TYPE ESTIMATETYPE RENAME VALUE 'DESCRIBED_SPECIES_LIVING' TO 'SPECIES_LIVING';
+ALTER TYPE ESTIMATETYPE RENAME VALUE 'DESCRIBED_SPECIES_EXTINCT' TO 'SPECIES_EXTINCT';
+```
+
+### 2020-08-27 usage counter
+```
+CREATE TABLE usage_count (
+  dataset_key int PRIMARY KEY,
+  counter int
+);
+
+CREATE OR REPLACE FUNCTION count_usage_on_insert()
+RETURNS TRIGGER AS
+$$
+  DECLARE
+  BEGIN
+    EXECUTE 'UPDATE usage_count set counter=counter+(select count(*) from inserted) where dataset_key=' || TG_ARGV[0];
+    RETURN NULL;
+  END;
+$$
+LANGUAGE 'plpgsql';
+
+CREATE OR REPLACE FUNCTION count_usage_on_delete()
+RETURNS TRIGGER AS
+$$
+  DECLARE
+  BEGIN
+  EXECUTE 'UPDATE usage_count set counter=counter-(select count(*) from deleted) where dataset_key=' || TG_ARGV[0];
+  RETURN NULL;
+  END;
+$$
+LANGUAGE 'plpgsql';
+```
+
+
+Then run this script against all managed datasets with the `execSql --managed --sqlfile YOUR_FILE.sql` command using the following sql template:
+```
+INSERT INTO usage_count (dataset_key, counter) VALUES ({KEY}, (SELECT count(*) from name_usage_{KEY}));
+
+CREATE TRIGGER trg_name_usage_{KEY}_insert
+AFTER INSERT ON name_usage_{KEY}
+REFERENCING NEW TABLE AS inserted
+FOR EACH STATEMENT
+EXECUTE FUNCTION count_usage_on_insert({KEY});
+
+CREATE TRIGGER trg_name_usage_{KEY}_delete
+AFTER DELETE ON name_usage_{KEY}
+REFERENCING OLD TABLE AS deleted
+FOR EACH STATEMENT
+EXECUTE FUNCTION count_usage_on_delete({KEY});
+```
+
+### 2020-08-27 ignored_usage_count metrics
+
+```
+ALTER TABLE dataset_import ADD COLUMN ignored_by_reason_count HSTORE; 
+ALTER TABLE dataset_import ADD COLUMN applied_decision_count INTEGER; 
+
+ALTER TABLE sector_import ADD COLUMN ignored_by_reason_count HSTORE; 
+ALTER TABLE sector_import ADD COLUMN applied_decision_count INTEGER; 
+ALTER TABLE sector_import DROP COLUMN ignored_usage_count; 
+```
+
+
+### 2020-08-24 nom code metrics
+
+```
+ALTER TABLE dataset_import DROP COLUMN names_by_origin_count; 
+ALTER TABLE dataset_import ADD COLUMN usages_by_origin_count HSTORE; 
+ALTER TABLE dataset_import ADD COLUMN names_by_code_count HSTORE; 
+
+ALTER TABLE sector_import DROP COLUMN names_by_origin_count; 
+ALTER TABLE sector_import ADD COLUMN usages_by_origin_count HSTORE; 
+ALTER TABLE sector_import ADD COLUMN names_by_code_count HSTORE;
+
+ALTER TABLE name ALTER COLUMN origin TYPE text;
+ALTER TABLE name_usage ALTER COLUMN origin TYPE text;
+DROP TYPE ORIGIN;
+CREATE TYPE ORIGIN AS ENUM (
+  'SOURCE',
+  'DENORMED_CLASSIFICATION',
+  'VERBATIM_PARENT',
+  'VERBATIM_ACCEPTED',
+  'VERBATIM_BASIONYM',
+  'AUTONYM',
+  'IMPLICIT_NAME',
+  'MISSING_ACCEPTED',
+  'BASIONYM_PLACEHOLDER',
+  'EX_AUTHOR_SYNONYM',
+  'USER',
+  'OTHER'
+);
+ALTER TABLE name ALTER COLUMN origin TYPE origin using origin::origin;
+ALTER TABLE name_usage ALTER COLUMN origin TYPE origin using origin::origin;
+```
+
+### 2020-08-20 track extinct and synonym counts per rank
+```
+ALTER TABLE dataset_import ADD COLUMN extinct_taxa_by_rank_count HSTORE; 
+ALTER TABLE dataset_import ADD COLUMN synonyms_by_rank_count HSTORE; 
+ALTER TABLE dataset_import RENAME COLUMN issues_count TO issues_by_issue_count;
+ALTER TABLE dataset_import RENAME COLUMN verbatim_by_term_count TO verbatim_by_row_type_count;
+ALTER TABLE dataset_import RENAME COLUMN verbatim_by_type_count TO verbatim_by_term_count;
+
+ALTER TABLE sector_import ADD COLUMN extinct_taxa_by_rank_count HSTORE; 
+ALTER TABLE sector_import ADD COLUMN synonyms_by_rank_count HSTORE;
+ALTER TABLE sector_import RENAME COLUMN issues_count TO issues_by_issue_count;
+-- missing from earlier changes
+ALTER TABLE sector_import ADD COLUMN type_material_count INTEGER;
+ALTER TABLE sector_import ADD COLUMN type_material_by_status_count HSTORE;
+ALTER TABLE sector_import DROP COLUMN verbatim_by_type_count;
+```
+
+### 2020-08-19 track bare name counts
+```
+ALTER TABLE dataset_import ADD COLUMN bare_name_count INTEGER; 
+ALTER TABLE sector_import ADD COLUMN bare_name_count INTEGER; 
+DROP INDEX dataset_gbif_key_idx;
+ALTER TABLE dataset ADD UNIQUE (gbif_key);
+ALTER TABLE dataset ADD UNIQUE (alias); 
+-- to list duplicate aliases
+-- SELECT alias, array_agg(key) from dataset where alias is not null group by alias having count(*) > 1; 
+```
+>>>>>>> master
 
 ### 2020-08-14 division ranks
 ```

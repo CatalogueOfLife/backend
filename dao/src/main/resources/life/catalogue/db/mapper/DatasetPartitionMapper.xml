@@ -49,8 +49,31 @@
     ALTER TABLE ${table} ATTACH PARTITION ${table}_${key} FOR VALUES IN ( ${key} )
   </update>
 
+  <select id="updateUsageCounter" parameterType="map" resultType="int">
+    DELETE FROM usage_count WHERE dataset_key=#{key};
+    INSERT INTO usage_count (dataset_key, counter) VALUES (${key}, (SELECT count(*) from name_usage_${key}));
+    SELECT counter FROM usage_count WHERE dataset_key=#{key};
+  </select>
+
+  <update id="attachUsageCounter" parameterType="map">
+    INSERT INTO usage_count (dataset_key, counter) VALUES (${key}, (SELECT count(*) from name_usage_${key}));
+
+    CREATE TRIGGER trg_name_usage_${key}_insert
+    AFTER INSERT ON name_usage_${key}
+    REFERENCING NEW TABLE AS inserted
+    FOR EACH STATEMENT
+    EXECUTE FUNCTION count_usage_on_insert(${key});
+
+    CREATE TRIGGER trg_name_usage_${key}_delete
+    AFTER DELETE ON name_usage_${key}
+    REFERENCING OLD TABLE AS deleted
+    FOR EACH STATEMENT
+    EXECUTE FUNCTION count_usage_on_delete(${key});
+  </update>
+
   <update id="lockTables" parameterType="map">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT 1 FROM verbatim_${partition} LIMIT 1;
     LOCK TABLE verbatim_${partition} IN EXCLUSIVE mode;
     LOCK TABLE name_${partition} IN EXCLUSIVE mode;
     LOCK TABLE name_usage_${partition} IN EXCLUSIVE mode;
@@ -144,6 +167,10 @@
   <update id="deleteTable" parameterType="map">
     DROP TABLE IF EXISTS ${table}_${key};
     DROP SEQUENCE IF EXISTS ${table}_${key}_id_seq;
+  </update>
+
+  <update id="deleteUsageCounter" parameterType="map">
+    DELETE FROM usage_count WHERE dataset_key=#{key};
   </update>
 
   <select id="exists" parameterType="map" resultType="boolean">

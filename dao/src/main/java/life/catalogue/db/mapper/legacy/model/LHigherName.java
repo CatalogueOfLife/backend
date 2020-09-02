@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 public class LHigherName implements LName {
   private static Pattern RANK_MATCHER = Pattern.compile("^(.+[a-z]) [a-z]{1,6}\\. ([a-z]{2}.+)$");
   private static String BASE_URL = "https://www.catalogue.life/data/taxon/";
+  protected String author;
 
   private String id;
   private String name;
@@ -52,10 +53,16 @@ public class LHigherName implements LName {
 
   @JsonProperty("name_html")
   public String getNameHtml() {
+    String html;
     if (rank != null && rank.ordinal() >= Rank.GENUS.ordinal()) {
-      return inItalics(name);
+      html = inItalics(name);
+    } else {
+      html = name;
     }
-    return name;
+    if (author != null) {
+      html = html + " " + author;
+    }
+    return html;
   }
 
   static String inItalics(String x) {
@@ -114,6 +121,14 @@ public class LHigherName implements LName {
     this.extinct = extinct;
   }
 
+  public String getAuthor() {
+    return author;
+  }
+
+  public void setAuthor(String author) {
+    this.author = author;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -121,6 +136,7 @@ public class LHigherName implements LName {
     LHigherName that = (LHigherName) o;
     return Objects.equals(id, that.id) &&
       Objects.equals(name, that.name) &&
+      Objects.equals(author, that.author) &&
       rank == that.rank &&
       status == that.status &&
       Objects.equals(extinct, that.extinct);
@@ -128,6 +144,6 @@ public class LHigherName implements LName {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, rank, status, extinct);
+    return Objects.hash(id, name, author, rank, status, extinct);
   }
 }

@@ -169,7 +169,7 @@
     SELECT
     <include refid="SELECT"/>
     FROM decision ed
-    WHERE id = #{key.id}
+    WHERE id = #{key.id} AND dataset_key=#{key.datasetKey}
   </select>
 
   <select id="getBySubject" resultMap="decisionResultMap">
@@ -189,12 +189,12 @@
   <update id="update" parameterType="EditorialDecision">
     UPDATE decision
     SET (<include refid="COLS"/>) = (<include refid="PROPS"/>)
-    WHERE id = #{id}
+    WHERE id = #{id} AND dataset_key=#{datasetKey}
   </update>
 
   <delete id="delete" parameterType="map">
     DELETE FROM decision
-    WHERE id = #{key.id}
+    WHERE id = #{key.id} AND dataset_key=#{key.datasetKey}
   </delete>
 
   <delete id="deleteByDataset" parameterType="map">

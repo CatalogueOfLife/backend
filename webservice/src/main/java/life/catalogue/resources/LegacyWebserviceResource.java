@@ -18,6 +18,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
+/**
+ * Old PHP API migrated to the new postgres db and java code.
+ * http://webservice.catalogueoflife.org/col/webservice
+ */
 @ApplyFormatFilter
 @Produces({MediaType.TEXT_XML, MediaType.APPLICATION_JSON})
 @Path("/dataset/{datasetKey}/legacy")
@@ -89,7 +93,9 @@ public class LegacyWebserviceResource {
     List<LName> results;
     if (cntSN - start > 0) {
       // scientific and maybe vernaculars
-      results = sMapper.search(datasetKey, prefix, q, start, limit);
+      results = full ?
+        sMapper.searchFull(datasetKey, prefix, q, start, limit) :
+        sMapper.search(datasetKey, prefix, q, start, limit);
       int vLimit = limit - results.size();
       if (cntVN > 0 && vLimit > 0) {
         results.addAll(vMapper.search(datasetKey, prefix, q, start, vLimit));
@@ -103,7 +109,9 @@ public class LegacyWebserviceResource {
 
   private LResponse get (int datasetKey, String id, boolean full, SqlSession session) {
     LNameMapper mapper = session.getMapper(LNameMapper.class);
-    LName obj = mapper.get(datasetKey, id);
+    LName obj = full ?
+      mapper.getFull(datasetKey, id) :
+      mapper.get(datasetKey, id);
     if (obj == null) {
       return idNotFound(id);
     }

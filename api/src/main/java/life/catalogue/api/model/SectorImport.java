@@ -9,8 +9,7 @@ import java.util.Queue;
 public class SectorImport extends ImportMetrics implements SectorEntity {
 
   private Integer sectorKey;
-  private Integer ignoredUsageCount;
-  
+
   private final Queue<String> warnings = EvictingQueue.create(25);
   
   public Collection<String> getWarnings() {
@@ -33,15 +32,7 @@ public class SectorImport extends ImportMetrics implements SectorEntity {
   public void setSectorKey(Integer sectorKey) {
     this.sectorKey = sectorKey;
   }
-  
-  public Integer getIgnoredUsageCount() {
-    return ignoredUsageCount;
-  }
-  
-  public void setIgnoredUsageCount(Integer ignoredUsageCount) {
-    this.ignoredUsageCount = ignoredUsageCount;
-  }
-  
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -49,7 +40,6 @@ public class SectorImport extends ImportMetrics implements SectorEntity {
     if (!super.equals(o)) return false;
     SectorImport that = (SectorImport) o;
     return sectorKey == that.sectorKey &&
-        Objects.equals(ignoredUsageCount, that.ignoredUsageCount) &&
         // EvictingQueue has no equals method implemented
         // for equality this hardly matters, so we just compare the sizes
         warnings.size() == that.warnings.size();
@@ -57,7 +47,7 @@ public class SectorImport extends ImportMetrics implements SectorEntity {
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, ignoredUsageCount, warnings);
+    return Objects.hash(super.hashCode(), sectorKey, warnings);
   }
   
   @Override

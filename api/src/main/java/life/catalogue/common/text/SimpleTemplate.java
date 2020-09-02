@@ -10,8 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
-import java.util.IllegalFormatException;
-import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,30 +25,32 @@ import java.util.regex.Pattern;
  */
 public class SimpleTemplate {
   private final static Pattern ARG_PATTERN = Pattern.compile("\\{([a-zA-Z_0-9]+)(?:,([^}]+))?}");
-  private static Locale DEFAULT_LOCALE = Locale.UK;
-
-  public static String render(String template, Object arg) throws IllegalFormatException {
-    return render(template, arg, DEFAULT_LOCALE);
-  }
 
   /**
    *
    * @param template
    * @param arg
-   * @param locale
    * @return
    * @throws IllegalArgumentException when the argument does not have the properties listed in the template or the template is invalid
    */
-  public static String render(String template, Object arg, Locale locale) throws IllegalArgumentException {
+  public static String render(String template, Object arg) throws IllegalArgumentException {
     Preconditions.checkNotNull(template);
     try {
-      BeanInfo info = Introspector.getBeanInfo(arg.getClass());
+      boolean isMap = arg instanceof Map;
+      BeanInfo info = null;
+      Map<?,?> map = null;
+      if (isMap) {
+        map = (Map<?,?>) arg;
+      } else {
+        info = Introspector.getBeanInfo(arg.getClass());
+      }
       Matcher matcher = ARG_PATTERN.matcher(template);
       StringBuffer buffer = new StringBuffer();
-      int idx = 0;
       while (matcher.find()) {
-        matcher.appendReplacement(buffer, propertyValue(matcher.group(1), matcher.group(2), info, arg));
-        idx++;
+        matcher.appendReplacement(buffer, isMap ?
+          mapValue(matcher.group(1), matcher.group(2), map) :
+          propertyValue(matcher.group(1), matcher.group(2), info, arg)
+        );
       }
       matcher.appendTail(buffer);
       return buffer.toString();
@@ -68,6 +69,26 @@ public class SimpleTemplate {
     return df.format(arg);
   }
 
+  private static String mapValue(String key, String format, Map<?, ?> arg) {
+    if (key.equalsIgnoreCase("date")) {
+      return temporalValue(LocalDate.now(), format);
+    }
+    if (arg.containsKey(key)) {
+      return str(arg.get(key), format);
+    }
+    throw new IllegalArgumentException("No key "+key+" exists in map argument of size " + arg.size());
+  }
+
+  private static String str(Object value, String format){
+    if (value == null) {
+      return "";
+    } else if (value instanceof TemporalAccessor) {
+      return temporalValue((TemporalAccessor)value, format);
+    } else {
+      return value.toString();
+    }
+  }
+
   private static String propertyValue(String prop, String format, BeanInfo info, Object arg) {
     if (prop.equalsIgnoreCase("date")) {
       return temporalValue(LocalDate.now(), format);
@@ -75,14 +96,7 @@ public class SimpleTemplate {
     for (PropertyDescriptor pd : info.getPropertyDescriptors()) {
       if (pd.getName().equalsIgnoreCase(prop)) {
         try {
-          Object value = pd.getReadMethod().invoke(arg);
-          if (value == null) {
-            return "";
-          } else if (value instanceof TemporalAccessor) {
-            return temporalValue((TemporalAccessor)value, format);
-          } else {
-            return value.toString();
-          }
+          return str(pd.getReadMethod().invoke(arg), format);
         } catch (IllegalAccessException | InvocationTargetException e) {
           return "";
         }

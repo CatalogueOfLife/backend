@@ -2,6 +2,7 @@ package life.catalogue.db;
 
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Name;
@@ -9,6 +10,8 @@ import life.catalogue.api.model.Taxon;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.common.collection.CollectionUtils;
+import life.catalogue.dao.DatasetInfoCache;
+import life.catalogue.dao.Partitioner;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.NameMapper;
@@ -17,6 +20,8 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -24,13 +29,22 @@ import java.sql.SQLException;
 import static life.catalogue.api.vocab.Datasets.DRAFT_COL;
 
 public class MybatisTestUtils {
-  
+  private static final Logger LOG = LoggerFactory.getLogger(MybatisTestUtils.class);
+
   public static void partition(SqlSession session, int datasetKey) {
-    final DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
-    pm.delete(datasetKey);
-    pm.create(datasetKey);
-    pm.buildIndices(datasetKey);
-    pm.attach(datasetKey);
+    Partitioner.partition(session, datasetKey);
+    Partitioner.indexAndAttach(session, datasetKey);
+    DatasetOrigin origin;
+    try {
+      origin = DatasetInfoCache.CACHE.origin(datasetKey);
+    } catch (NotFoundException e) {
+      // happens in tests, just treat them as a managed one that needs a counter
+      origin = DatasetOrigin.MANAGED;
+    }
+    if (origin == DatasetOrigin.MANAGED) {
+      LOG.info("Attach usage counter to dataset {}", datasetKey);
+      session.getMapper(DatasetPartitionMapper.class).attachUsageCounter(datasetKey);
+    }
   }
 
   /**

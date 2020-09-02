@@ -6,7 +6,7 @@ import io.dropwizard.lifecycle.Managed;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.concurrent.ExecutorUtils;
-import life.catalogue.dao.FileMetricsSectorDao;
+import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
@@ -39,7 +39,7 @@ public class AssemblyCoordinator implements Managed {
   private ImportManager importManager;
   private final SqlSessionFactory factory;
   private final NameUsageIndexService indexService;
-  private final FileMetricsSectorDao fmsDao;
+  private final SectorImportDao sid;
   private final Map<DSID<Integer>, SectorFuture> syncs = Collections.synchronizedMap(new LinkedHashMap<>());
   private final Timer timer;
   private final Map<Integer, AtomicInteger> counter = new HashMap<>(); // by dataset (project) key
@@ -59,9 +59,9 @@ public class AssemblyCoordinator implements Managed {
     }
   }
   
-  public AssemblyCoordinator(SqlSessionFactory factory, FileMetricsSectorDao fmsDao, NameUsageIndexService indexService, MetricRegistry registry) {
+  public AssemblyCoordinator(SqlSessionFactory factory, SectorImportDao sid, NameUsageIndexService indexService, MetricRegistry registry) {
     this.factory = factory;
-    this.fmsDao = fmsDao;
+    this.sid = sid;
     this.indexService = indexService;
     timer = registry.timer("life.catalogue.assembly.timer");
   }
@@ -184,12 +184,12 @@ public class AssemblyCoordinator implements Managed {
   }
   
   private synchronized void syncSector(DSID<Integer> sectorKey, User user) throws IllegalArgumentException {
-    SectorSync ss = new SectorSync(sectorKey, factory, indexService, fmsDao, this::successCallBack, this::errorCallBack, user);
+    SectorSync ss = new SectorSync(sectorKey, factory, indexService, sid, this::successCallBack, this::errorCallBack, user);
     queueJob(ss);
   }
 
   public void deleteSector(DSID<Integer> sectorKey, User user) throws IllegalArgumentException {
-    SectorDelete sd = new SectorDelete(sectorKey, factory, indexService, fmsDao, this::successCallBack, this::errorCallBack, user);
+    SectorDelete sd = new SectorDelete(sectorKey, factory, indexService, sid, this::successCallBack, this::errorCallBack, user);
     queueJob(sd);
   }
   

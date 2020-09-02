@@ -22,6 +22,8 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+import static org.junit.Assert.assertEquals;
+
 public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionMapper> {
   Random rnd = new Random();
   
@@ -43,6 +45,12 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
   public void exists() {
     Assert.assertTrue(mapper().exists(Datasets.DRAFT_COL));
     Assert.assertFalse(mapper().exists(9999));
+  }
+
+  @Test
+  public void updateCounter() {
+    int x = mapper().updateUsageCounter(TestDataRule.TestData.APPLE.key);
+    assertEquals(4, x);
   }
 
   /**

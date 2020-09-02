@@ -1,16 +1,19 @@
 package life.catalogue.db.mapper.legacy.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 
 public class LSynonym extends LSpeciesName {
-  private LSpeciesName accepted_name;
+  private LSpeciesName acceptedName;
 
-  public LSpeciesName getAccepted_name() {
-    return accepted_name;
+  @JsonProperty("accepted_name")
+  public LSpeciesName getAcceptedName() {
+    return acceptedName;
   }
 
-  public void setAccepted_name(LSpeciesName accepted_name) {
-    this.accepted_name = accepted_name;
+  public void setAcceptedName(LSpeciesName acceptedName) {
+    this.acceptedName = acceptedName;
   }
 
   @Override
@@ -19,11 +22,11 @@ public class LSynonym extends LSpeciesName {
     if (!(o instanceof LSynonym)) return false;
     if (!super.equals(o)) return false;
     LSynonym lSynonym = (LSynonym) o;
-    return Objects.equals(accepted_name, lSynonym.accepted_name);
+    return Objects.equals(acceptedName, lSynonym.acceptedName);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), accepted_name);
+    return Objects.hash(super.hashCode(), acceptedName);
   }
 }

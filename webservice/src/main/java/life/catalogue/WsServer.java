@@ -21,6 +21,7 @@ import life.catalogue.command.es.IndexCmd;
 import life.catalogue.command.initdb.InitDbCmd;
 import life.catalogue.command.updatedb.AddTableCmd;
 import life.catalogue.command.updatedb.ExecSqlCmd;
+import life.catalogue.common.concurrent.JobExecutor;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.tax.AuthorshipNormalizer;
@@ -47,8 +48,8 @@ import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.importer.ImportManager;
+import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
-import life.catalogue.matching.NameIndexImpl;
 import life.catalogue.parser.NameParser;
 import life.catalogue.release.AcExporter;
 import life.catalogue.release.ReleaseManager;
@@ -81,7 +82,7 @@ public class WsServer extends Application<WsServerConfig> {
   private final EventBus bus = new EventBus("bus");
   protected CloseableHttpClient httpClient;
   protected Client jerseyClient;
-  private NameIndexImpl ni;
+  private NameIndex ni;
   private ImportManager importManager;
 
   public static void main(final String[] args) throws Exception {
@@ -135,7 +136,7 @@ public class WsServer extends Application<WsServerConfig> {
     return bus;
   }
 
-  public NameIndexImpl getNamesIndex() {
+  public NameIndex getNamesIndex() {
     return ni;
   }
 
@@ -172,6 +173,10 @@ public class WsServer extends Application<WsServerConfig> {
 
     DatasetInfoCache.CACHE.setFactory(mybatis.getSqlSessionFactory());
 
+    // job executor
+    JobExecutor executor = new JobExecutor(cfg.backgroundJobs);
+    env.lifecycle().manage(ManagedUtils.from(executor));
+
     // name parser
     ParserConfigDao dao = new ParserConfigDao(getSqlSessionFactory());
     dao.loadParserConfigs();
@@ -206,10 +211,13 @@ public class WsServer extends Application<WsServerConfig> {
 
     // name index
     ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE);
+    // to start up quickly for local testing use this instead:
+    //ni = NameIndexFactory.passThru();
     env.lifecycle().manage(ManagedUtils.stopOnly(ni));
     env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));
 
     final DatasetImportDao diDao = new DatasetImportDao(getSqlSessionFactory(), cfg.metricsRepo);
+    final SectorImportDao siDao = new SectorImportDao(getSqlSessionFactory(), cfg.metricsRepo);
     final FileMetricsDatasetDao fmdDao = new FileMetricsDatasetDao(getSqlSessionFactory(), cfg.metricsRepo);
     final FileMetricsSectorDao fmsDao = new FileMetricsSectorDao(getSqlSessionFactory(), cfg.metricsRepo);
 
@@ -218,31 +226,6 @@ public class WsServer extends Application<WsServerConfig> {
 
     // release
     final ReleaseManager releaseManager = new ReleaseManager(diDao, ni, indexService, imgService, getSqlSessionFactory());
-
-    // importer
-    importManager = new ImportManager(cfg,
-        env.metrics(),
-        httpClient,
-        getSqlSessionFactory(),
-        ni,
-        indexService,
-        imgService,
-        releaseManager);
-    env.lifecycle().manage(ManagedUtils.stopOnly(importManager));
-    ContinuousImporter cImporter = new ContinuousImporter(cfg.importer, importManager, getSqlSessionFactory());
-    env.lifecycle().manage(ManagedUtils.stopOnly(cImporter));
-
-    // gbif sync
-    GbifSync gbifSync = new GbifSync(cfg.gbif, getSqlSessionFactory(), jerseyClient);
-    env.lifecycle().manage(ManagedUtils.stopOnly(gbifSync));
-
-    // assembly
-    AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), fmsDao, indexService, env.metrics());
-    env.lifecycle().manage(assembly);
-
-    // link assembly and import manager so they are aware of each other
-    importManager.setAssemblyCoordinator(assembly);
-    assembly.setImportManager(importManager);
 
     // diff
     DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), fmdDao);
@@ -261,14 +244,42 @@ public class WsServer extends Application<WsServerConfig> {
     EstimateDao edao = new EstimateDao(getSqlSessionFactory());
     NameDao ndao = new NameDao(getSqlSessionFactory(), indexService, ni);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory());
-    SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService);
-    SynonymDao sdao = new SynonymDao(getSqlSessionFactory());
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, indexService);
+    SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao);
+    SynonymDao sdao = new SynonymDao(getSqlSessionFactory());
     TreeDao trDao = new TreeDao(getSqlSessionFactory());
     UserDao udao = new UserDao(getSqlSessionFactory(), bus);
 
+    // importer
+    importManager = new ImportManager(cfg,
+      env.metrics(),
+      httpClient,
+      getSqlSessionFactory(),
+      ni,
+      secdao,
+      indexService,
+      imgService,
+      releaseManager
+    );
+    env.lifecycle().manage(ManagedUtils.stopOnly(importManager));
+    ContinuousImporter cImporter = new ContinuousImporter(cfg.importer, importManager, getSqlSessionFactory());
+    env.lifecycle().manage(ManagedUtils.stopOnly(cImporter));
+
+    // gbif sync
+    GbifSync gbifSync = new GbifSync(cfg.gbif, getSqlSessionFactory(), jerseyClient);
+    env.lifecycle().manage(ManagedUtils.stopOnly(gbifSync));
+
+    // assembly
+    AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), siDao, indexService, env.metrics());
+    env.lifecycle().manage(assembly);
+
+    // link assembly and import manager so they are aware of each other
+    importManager.setAssemblyCoordinator(assembly);
+    assembly.setImportManager(importManager);
+
     // resources
-    j.register(new AdminResource(getSqlSessionFactory(), assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter, importManager, gbifSync, ni));
+    j.register(new AdminResource(getSqlSessionFactory(), assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter,
+      importManager, gbifSync, ni, executor));
     j.register(new DataPackageResource());
     j.register(new DatasetDiffResource(dDiff));
     j.register(new DatasetImportResource(diDao));

@@ -81,7 +81,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   public Dataset latestRelease(int projectKey) {
     try (SqlSession session = factory.openSession()){
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      Integer key = dm.latestRelease(projectKey);
+      Integer key = dm.latestRelease(projectKey, true);
       if (key == null) {
         throw new NotFoundException("Dataset " + projectKey + " was never released");
       }
@@ -148,10 +148,11 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   @Override
   protected void createAfter(Dataset obj, int user, DatasetMapper mapper, SqlSession session) {
-    pullLogo(obj);
+    pullLogo(obj, user);
     if (obj.getOrigin() == DatasetOrigin.MANAGED) {
       recreatePartition(obj.getKey());
       Partitioner.createManagedSequences(factory, obj.getKey());
+      Partitioner.createUsageCounter(factory, obj.getKey());
     }
     bus.post(DatasetChanged.change(obj));
     session.commit();
@@ -164,7 +165,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   @Override
   protected void updateAfter(Dataset obj, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
-    pullLogo(obj);
+    pullLogo(obj, user);
     if (obj.getOrigin() == DatasetOrigin.MANAGED && !session.getMapper(DatasetPartitionMapper.class).exists(obj.getKey())) {
       recreatePartition(obj.getKey());
     }
@@ -176,8 +177,8 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     Partitioner.indexAndAttach(factory, datasetKey);
   }
 
-  private void pullLogo(Dataset d) {
-    LogoUpdateJob.updateDatasetAsync(d, factory, downloader, scratchFileFunc, imgService);
+  private void pullLogo(Dataset d, int user) {
+    LogoUpdateJob.updateDatasetAsync(d, factory, downloader, scratchFileFunc, imgService, user);
   }
 
   public void addEditor(int key, int editorKey, User user) {

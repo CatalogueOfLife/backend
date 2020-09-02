@@ -58,7 +58,12 @@ public class NameIndexFactory {
       @Override
       public void add(IndexName name) {
       }
-      
+
+      @Override
+      public boolean hasStarted() {
+        return true;
+      }
+
     };
   }
 
@@ -102,6 +107,11 @@ public class NameIndexFactory {
 
       @Override
       public void add(IndexName name) { }
+
+      @Override
+      public boolean hasStarted() {
+        return true;
+      }
 
     };
   }

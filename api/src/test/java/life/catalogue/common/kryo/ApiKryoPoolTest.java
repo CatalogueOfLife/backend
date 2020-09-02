@@ -14,7 +14,6 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
@@ -47,7 +46,6 @@ public class ApiKryoPoolTest {
     d.setKey(1234);
     d.setReleased(LocalDate.now());
     d.setGbifKey(UUID.randomUUID());
-    d.setContributesTo(Set.of(12,13,14,15));
     d.setAuthorsAndEditors(List.of("Karl", "Frank"));
     assertSerde(d);
   }

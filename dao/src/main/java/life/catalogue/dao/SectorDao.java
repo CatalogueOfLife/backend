@@ -4,6 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.es.NameUsageIndexService;
@@ -22,10 +23,12 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorDao.class);
   private final NameUsageIndexService indexService;
+  private final TaxonDao tDao;
 
-  public SectorDao(SqlSessionFactory factory, NameUsageIndexService indexService) {
+  public SectorDao(SqlSessionFactory factory, NameUsageIndexService indexService, TaxonDao tDao) {
     super(true, factory, SectorMapper.class);
     this.indexService = indexService;
+    this.tDao = tDao;
   }
   
   public ResultPage<Sector> search(SectorSearchRequest request, Page page) {
@@ -115,8 +118,21 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   @Override
   protected void updateBefore(Sector s, Sector old, int user, SectorMapper mapper, SqlSession session) {
     parsePlaceholderRank(s);
+    requireTaxon(s.getTargetAsDSID(), session);
     super.updateBefore(s, old, user, mapper, session);
   }
+
+  private static SimpleName requireTaxon(DSID<String> key, SqlSession session){
+    if (key != null && key.getId() != null) {
+      SimpleName sn = session.getMapper(NameUsageMapper.class).getSimple(key);
+      if (sn == null) {
+        throw new IllegalArgumentException("ID " + key.getId() + " not existing in dataset " + key.getDatasetKey());
+      }
+      return sn;
+    }
+    return null;
+  }
+
 
   public static boolean parsePlaceholderRank(Sector s){
     RankID subjId = RankID.parseID(s.getSubjectDatasetKey(), s.getSubject().getId());
@@ -128,12 +144,28 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     return false;
   }
 
+  /**
+   * We already verified the target taxon exists in the before update...
+   */
   @Override
   protected void updateAfter(Sector obj, Sector old, int user, SectorMapper mapper, SqlSession session) {
     if (old.getTarget() == null || obj.getTarget() == null || !Objects.equals(old.getTarget().getId(), obj.getTarget().getId())) {
       incSectorCounts(session, obj, 1);
       incSectorCounts(session, old, -1);
     }
+    // update usages in case the target has changed!
+    if (!Objects.equals(simpleNameID(old.getTarget()), simpleNameID(obj.getTarget())) && obj.getTarget().getId()!=null) {
+      // loop over sector root taxa as the old target id might be missing or even wrong. Only trust real usage data!
+      final DSID<String> key = DSID.of(obj.getDatasetKey(), null);
+      for (SimpleName sn : session.getMapper(NameUsageMapper.class).sectorRoot(obj)) {
+        // obj.getTarget().getId() must exist as we validated this in the before update method
+        tDao.updateParent(session, key.id(sn.getId()), obj.getTarget().getId(), sn.getParent(), user);
+      }
+    }
+  }
+
+  private static String simpleNameID(SimpleName sn) {
+    return sn == null ? null : sn.getId();
   }
 
   @Override

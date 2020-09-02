@@ -60,28 +60,34 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
    * Deletes all imports for the given sector
    */
   int delete(@Param("key") DSID<Integer> sectorKey);
-  
-  
+
+
+  Integer countBareName(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countDistribution(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countMedia(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countName(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
-  Integer countTreatment(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countReference(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
-  Integer countTaxon(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countSynonym(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+  Integer countTaxon(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+  Integer countTreatment(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+  Integer countTypeMaterial(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countVernacular(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
-  List<StringCount> countIssues(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
-  
+
   List<StringCount> countDistributionsByGazetteer(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+  List<StringCount> countExtinctTaxaByRank(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+  List<StringCount> countIssues(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   List<StringCount> countMediaByType(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   List<StringCount> countNameRelationsByType(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
-  List<StringCount> countNamesByOrigin(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+  List<StringCount> countNamesByCode(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+  List<StringCount> countNamesByRank(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   List<StringCount> countNamesByStatus(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   List<StringCount> countNamesByType(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
-  List<StringCount> countUsagesByStatus(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
-  List<StringCount> countNamesByRank(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+  List<StringCount> countSynonymsByRank(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   List<StringCount> countTaxaByRank(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   List<StringCount> countTaxonRelationsByType(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+  List<StringCount> countTypeMaterialByStatus(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+  List<StringCount> countUsagesByOrigin(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+  List<StringCount> countUsagesByStatus(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   List<StringCount> countVernacularsByLanguage(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   
 }

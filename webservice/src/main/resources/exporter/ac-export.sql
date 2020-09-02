@@ -111,7 +111,7 @@ COPY (
     r.id AS reference_code
   FROM reference_{{datasetKey}} r
     JOIN __ref_keys rk ON rk.id=r.id
-    LEFT JOIN sector s ON r.sector_key=s.id
+    LEFT JOIN sector s ON r.sector_key=s.id AND s.dataset_key={{datasetKey}}
     
 ) TO 'references.csv';
 
@@ -141,7 +141,7 @@ CREATE TABLE __scrutinizer (key serial, dataset_key int, name text, unique(datas
 INSERT INTO __scrutinizer (name, dataset_key)
     SELECT DISTINCT t.scrutinizer, s.subject_dataset_key
         FROM name_usage_{{datasetKey}} t
-            LEFT JOIN sector s ON t.sector_key=s.id
+            LEFT JOIN sector s ON t.sector_key=s.id AND s.dataset_key={{datasetKey}}
         WHERE t.scrutinizer IS NOT NULL;
 COPY (
     SELECT key AS record_id, name AS specialist_name, null AS specialist_code, coalesce(dataset_key, 1500) - 1000 AS database_id FROM __scrutinizer
@@ -158,7 +158,7 @@ COPY (
         coalesce(s.subject_dataset_key, 1500) - 1000 AS database_id
     FROM name_usage_{{datasetKey}} t
         JOIN __tax_keys tk ON t.id=tk.id
-        LEFT JOIN sector s ON t.sector_key=s.id
+        LEFT JOIN sector s ON t.sector_key=s.id AND s.dataset_key={{datasetKey}}
     WHERE t.lifezones IS NOT NULL
 ) TO 'lifezone.csv';
 
@@ -183,7 +183,7 @@ WITH RECURSIVE tree AS(
     FROM name_usage_{{datasetKey}} t
         JOIN __tax_keys tk ON t.id=tk.id
         JOIN name_{{datasetKey}} n ON n.id=t.name_id
-        LEFT JOIN sector s ON t.sector_key=s.id
+        LEFT JOIN sector s ON t.sector_key=s.id AND s.dataset_key={{datasetKey}}
     WHERE t.parent_id IS NULL AND NOT t.is_synonym
   UNION
     SELECT
@@ -203,7 +203,7 @@ WITH RECURSIVE tree AS(
     FROM name_usage_{{datasetKey}} t
         JOIN __tax_keys tk ON t.id=tk.id
         JOIN name_{{datasetKey}} n ON n.id=t.name_id
-        LEFT JOIN sector s ON t.sector_key=s.id
+        LEFT JOIN sector s ON t.sector_key=s.id AND s.dataset_key={{datasetKey}}
         JOIN tree ON (tree.id = t.parent_id) AND NOT t.is_synonym
 )
 SELECT * FROM tree
@@ -376,7 +376,7 @@ COPY (
     JOIN name_usage_{{datasetKey}} t ON t.id=v.taxon_id
     LEFT JOIN reference_{{datasetKey}} r ON r.id=v.reference_id
     LEFT JOIN __ref_keys rk ON rk.id=r.id
-    LEFT JOIN sector s ON t.sector_key=s.id
+    LEFT JOIN sector s ON t.sector_key=s.id AND s.dataset_key={{datasetKey}}
 ) TO 'common_names.csv';
 
 
@@ -390,7 +390,7 @@ COPY (
     coalesce(s.subject_dataset_key, 1500) - 1000 AS database_id
   FROM distribution_{{datasetKey}} d
       JOIN name_usage_{{datasetKey}} t ON t.id=d.taxon_id
-      LEFT JOIN sector s ON t.sector_key=s.id
+      LEFT JOIN sector s ON t.sector_key=s.id AND s.dataset_key={{datasetKey}}
       LEFT JOIN __country c ON c.code=d.area
 ) TO 'distribution.csv';
 
@@ -407,7 +407,7 @@ COPY (
     JOIN name_usage_{{datasetKey}} t ON t.name_id=n.id
     JOIN reference_{{datasetKey}} r ON r.id=n.published_in_id
     JOIN __ref_keys rk ON rk.id=r.id
-    LEFT JOIN sector s ON r.sector_key=s.id
+    LEFT JOIN sector s ON r.sector_key=s.id AND s.dataset_key={{datasetKey}}
 
   UNION
 
@@ -421,7 +421,7 @@ COPY (
     (SELECT id, UNNEST(reference_ids) AS rid FROM name_usage_{{datasetKey}}) u
     JOIN reference_{{datasetKey}} r ON r.id=u.rid
     JOIN __ref_keys rk ON rk.id=r.id
-    LEFT JOIN sector s ON r.sector_key=s.id
+    LEFT JOIN sector s ON r.sector_key=s.id AND s.dataset_key={{datasetKey}}
 
 ) TO 'scientific_name_references.csv';
 

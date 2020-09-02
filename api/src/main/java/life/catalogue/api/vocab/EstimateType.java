@@ -1,18 +1,21 @@
 package life.catalogue.api.vocab;
 
 public enum EstimateType {
-  /**
-   * Estimate number of all extant species described with a linnean name.
-   */
-  DESCRIBED_SPECIES_LIVING,
+
+  SPECIES_LIVING("Number of living species which are recognised by science at present time on a global scale and have been described by a Linnean name. Estimates do not include fossil species."),
   
-  /**
-   * Estimate number of all extinct species incl fossils described with a linnean name.
-   */
-  DESCRIBED_SPECIES_EXTINCT,
+  SPECIES_EXTINCT("Number of extinct species which are recognised by science at present time on a global scale and have been described by a Linnean name. Estimates do not include living species."),
   
-  /**
-   * Estimate number of all species including both described and yet to be discovered species.
-   */
-  ESTIMATED_SPECIES
+  ESTIMATED_SPECIES("Number of living species which are estimated to exist on a global scale, including both already described and yet to be discovered species.");
+
+
+  private final String description;
+
+  EstimateType(String description) {
+    this.description = description;
+  }
+
+  public String getDescription() {
+    return description;
+  }
 }

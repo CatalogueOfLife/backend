@@ -100,10 +100,13 @@ public interface DatasetPartitionMapper {
    * @param key
    */
   default void delete(int key) {
+    deleteUsageCounter(key);
     Lists.reverse(TABLES).forEach(t -> deleteTable(t, key));
   }
  
   void deleteTable(@Param("table") String table, @Param("key") int key);
+
+  void deleteUsageCounter(@Param("key") int key);
 
   /**
    * Creates indices on a all partition tables for a given datasetKey.
@@ -128,6 +131,15 @@ public interface DatasetPartitionMapper {
   }
   
   void attachTable(@Param("table") String table, @Param("key") int key);
+
+  /**
+   * Attaches a trigger to the name usage partition that tracks the total counts of usages.
+   * Make sure to call this AFTER the partition table is attached
+   * @param key datasetkey
+   */
+  void attachUsageCounter(@Param("key") int key);
+
+  int updateUsageCounter(@Param("key") int key);
 
   /**
    * Locks a dataset specific table in EXCLUSIVE mode, only allowing select statements by other transactions.

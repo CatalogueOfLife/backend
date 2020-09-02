@@ -66,6 +66,9 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     // apple datasetKey=11
     APPLE(11, 3, 2, 3, 11, 12),
 
+    // apple datasetKey=11
+    FISH(100, 2, 4, 3, 100, 101, 102),
+
     // tree datasetKey=11
     TREE(11, 2, 2, 3, 11),
 
@@ -112,6 +115,10 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   public static TestDataRule apple(SqlSessionFactory sqlSessionFactory) {
     return new TestDataRule(TestData.APPLE, () -> sqlSessionFactory);
+  }
+
+  public static TestDataRule fish() {
+    return new TestDataRule(TestData.FISH);
   }
 
   public static TestDataRule tree() {

@@ -30,35 +30,48 @@ public class Partitioner {
     return partition( (Integer) key.get("datasetKey"));
   }
 
-  /**
-   * Creates all dataset partitions needed, removing any previous partition and data for the given datasetKey.
-   * To avoid table deadlocks we synchronize this method!
-   * See https://github.com/Sp2000/colplus-backend/issues/127
-   */
   public static synchronized void partition(SqlSessionFactory factory, int datasetKey) {
-    interruptIfCancelled();
-    LOG.info("Create empty partition for dataset {}", datasetKey);
     try (SqlSession session = factory.openSession(false)) {
-      DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
-      // first remove if existing
-      mapper.delete(datasetKey);
-      
-      // then create
-      mapper.create(datasetKey);
+      partition(session, datasetKey);
       session.commit();
     }
   }
 
   /**
+   * Creates all dataset partitions needed, removing any previous partition and data for the given datasetKey.
+   * To avoid table deadlocks we synchronize this method!
+   * See https://github.com/Sp2000/colplus-backend/issues/127
+   */
+  public static synchronized void partition(SqlSession session, int datasetKey) {
+    interruptIfCancelled();
+    LOG.info("Create empty partition for dataset {}", datasetKey);
+    DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
+    // first remove if existing
+    mapper.delete(datasetKey);
+
+    // then create
+    mapper.create(datasetKey);
+  }
+
+  /**
    * Creates dataset specific sequences for the global non partitioned tables like sector.
-   * @param factory
-   * @param datasetKey
    */
   public static void createManagedSequences(SqlSessionFactory factory, int datasetKey) {
     interruptIfCancelled();
-    LOG.info("Create global sequences for managed dataset {}", datasetKey);
+    LOG.info("Create sequences for managed dataset {}", datasetKey);
     try (SqlSession session = factory.openSession(true)) {
       session.getMapper(DatasetPartitionMapper.class).createManagedSequences(datasetKey);
+    }
+  }
+
+  /**
+   * Creates dataset specific usage count trigger for managed datasets.
+   */
+  public static void createUsageCounter(SqlSessionFactory factory, int datasetKey) {
+    interruptIfCancelled();
+    LOG.info("Create triggers for managed dataset {}", datasetKey);
+    try (SqlSession session = factory.openSession(true)) {
+      session.getMapper(DatasetPartitionMapper.class).attachUsageCounter(datasetKey);
     }
   }
   
@@ -72,26 +85,31 @@ public class Partitioner {
   public static synchronized void delete(SqlSession session, int datasetKey) {
     interruptIfCancelled();
     LOG.info("Delete partition for dataset {}", datasetKey);
-    DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
-    mapper.delete(datasetKey);
+    session.getMapper(DatasetPartitionMapper.class).delete(datasetKey);
   }
-  
+
+  public static synchronized void indexAndAttach(SqlSessionFactory factory, int datasetKey) {
+    try (SqlSession session = factory.openSession(true)) {
+      // build indices and add dataset bound constraints
+      indexAndAttach(session, datasetKey);
+    }
+  }
+
   /**
    * Builds indices and finally attaches partitions to main tables.
    * To avoid table deadlocks on the main table we synchronize this method.
+   * @param session session with auto commit - no transaction allowed here !!!
    */
-  public static synchronized void indexAndAttach(SqlSessionFactory factory, int datasetKey) {
+  public static synchronized void indexAndAttach(SqlSession session, int datasetKey) {
     interruptIfCancelled();
+
     LOG.info("Build partition indices for dataset {}", datasetKey);
-    try (SqlSession session = factory.openSession(true)) {
-      // build indices and add dataset bound constraints
-      session.getMapper(DatasetPartitionMapper.class).buildIndices(datasetKey);
-    }
-    
-    try (SqlSession session = factory.openSession(true)) {
-      // attach to main table - this requires an AccessExclusiveLock on all main tables
-      // see https://github.com/Sp2000/colplus-backend/issues/387
-      session.getMapper(DatasetPartitionMapper.class).attach(datasetKey);
-    }
+    // build indices and add dataset bound constraints
+    session.getMapper(DatasetPartitionMapper.class).buildIndices(datasetKey);
+
+    // attach to main table - this requires an AccessExclusiveLock on all main tables
+    // see https://github.com/Sp2000/colplus-backend/issues/387
+    LOG.info("Attach partition tables for dataset {}", datasetKey);
+    session.getMapper(DatasetPartitionMapper.class).attach(datasetKey);
   }
 }

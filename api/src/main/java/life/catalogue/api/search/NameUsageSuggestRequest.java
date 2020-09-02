@@ -11,6 +11,9 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
   private Integer datasetKey;
   @QueryParam("vernaculars")
   private Boolean vernaculars;
+  @QueryParam("accepted")
+  private Boolean accepted;
+
   @QueryParam("limit")
   private Integer limit; // Desired number of suggestions
 
@@ -20,8 +23,13 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
   }
 
   @JsonIgnore
-  public boolean suggestVernaculars() {
-    return vernaculars != null && vernaculars.equals(Boolean.TRUE);
+  public boolean isVernaculars() {
+    return vernaculars != null && vernaculars;
+  }
+
+  @JsonIgnore
+  public boolean isAccepted() {
+    return accepted != null && accepted;
   }
 
   public Integer getDatasetKey() {
@@ -40,6 +48,14 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
     this.vernaculars = vernaculars;
   }
 
+  public Boolean getAccepted() {
+    return accepted;
+  }
+
+  public void setAccepted(Boolean accepted) {
+    this.accepted = accepted;
+  }
+
   public Integer getLimit() {
     return limit;
   }
@@ -50,14 +66,14 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
 
   @JsonIgnore
   public boolean isEmpty() {
-    return super.isEmpty() && datasetKey == null && vernaculars == null && limit == null;
+    return super.isEmpty() && datasetKey == null && vernaculars == null && accepted == null && limit == null;
   }
 
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result = prime * result + Objects.hash(datasetKey, limit, vernaculars);
+    result = prime * result + Objects.hash(accepted, datasetKey, limit, vernaculars);
     return result;
   }
 
@@ -73,7 +89,9 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
       return false;
     }
     NameUsageSuggestRequest other = (NameUsageSuggestRequest) obj;
-    return Objects.equals(datasetKey, other.datasetKey) && Objects.equals(limit, other.limit)
+    return Objects.equals(accepted, other.accepted) 
+        && Objects.equals(datasetKey, other.datasetKey) 
+        && Objects.equals(limit, other.limit)
         && Objects.equals(vernaculars, other.vernaculars);
   }
 

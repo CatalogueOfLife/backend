@@ -161,7 +161,7 @@ public class InitDbCmd extends AbstractPromptCmd {
         .put("modified_by", Users.DB_INIT)
         .build());
     PgCopyUtils.copy(pgc, "estimate", "/life/catalogue/db/draft/estimate.csv", ImmutableMap.<String, Object>builder()
-        .put("type", EstimateType.DESCRIBED_SPECIES_LIVING)
+        .put("type", EstimateType.SPECIES_LIVING)
         .put("dataset_key", Datasets.DRAFT_COL)
         .put("created_by", Users.DB_INIT)
         .put("modified_by", Users.DB_INIT)

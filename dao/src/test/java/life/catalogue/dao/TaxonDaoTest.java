@@ -270,6 +270,18 @@ public class TaxonDaoTest extends DaoTestBase {
     tDao.update(t5, USER_EDITOR.getKey());
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void updateIllegalParentChange(){
+    MybatisTestUtils.populateDraftTree(session());
+    Taxon t5 = tDao.get(DSID.draftID("t5"));
+    assertEquals("t3", t5.getParentId());
+    t5.setSectorKey(1);
+    tDao.update(t5, USER_EDITOR.getKey());
+
+    t5.setParentId("t4");
+    tDao.update(t5, USER_EDITOR.getKey());
+  }
+
   @Test
   public void deleteRecursively() throws Exception {
     final DSIDValue<String> key = DSID.of(TestDataRule.TestData.TREE.key, null);

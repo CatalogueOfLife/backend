@@ -92,8 +92,8 @@ CREATE TYPE ENTITYTYPE AS ENUM (
 );
 
 CREATE TYPE ESTIMATETYPE AS ENUM (
-  'DESCRIBED_SPECIES_LIVING',
-  'DESCRIBED_SPECIES_EXTINCT',
+  'SPECIES_LIVING',
+  'SPECIES_EXTINCT',
   'ESTIMATED_SPECIES'
 );
 
@@ -368,7 +368,6 @@ CREATE TYPE ORIGIN AS ENUM (
   'MISSING_ACCEPTED',
   'BASIONYM_PLACEHOLDER',
   'EX_AUTHOR_SYNONYM',
-  'NAME_MATCHING',
   'USER',
   'OTHER'
 );
@@ -582,11 +581,11 @@ CREATE TABLE dataset (
   type DATASETTYPE NOT NULL DEFAULT 'OTHER',
   origin DATASETORIGIN NOT NULL,
   private BOOLEAN DEFAULT FALSE,
-  gbif_key UUID,
+  gbif_key UUID UNIQUE,
   gbif_publisher_key UUID,
 
   title TEXT NOT NULL,
-  alias TEXT,
+  alias TEXT UNIQUE,
   description TEXT,
   organisations TEXT[] DEFAULT '{}',
   contact TEXT,
@@ -677,30 +676,38 @@ CREATE TABLE dataset_import (
   download TIMESTAMP WITHOUT TIME ZONE,
   created_by INTEGER NOT NULL,
   verbatim_count INTEGER,
-  name_count INTEGER,
-  type_material_count INTEGER,
-  taxon_count INTEGER,
-  synonym_count INTEGER,
-  reference_count INTEGER,
-  vernacular_count INTEGER,
+  -- shared
+  applied_decision_count INTEGER,
+  bare_name_count INTEGER,
   distribution_count INTEGER,
-  treatment_count INTEGER,
   media_count INTEGER,
-  issues_count HSTORE,
+  name_count INTEGER,
+  reference_count INTEGER,
+  synonym_count INTEGER,
+  taxon_count INTEGER,
+  treatment_count INTEGER,
+  type_material_count INTEGER,
+  vernacular_count INTEGER,
+  distributions_by_gazetteer_count HSTORE,
+  extinct_taxa_by_rank_count HSTORE,
+  ignored_by_reason_count HSTORE,
+  issues_by_issue_count HSTORE,
+  media_by_type_count HSTORE,
+  name_relations_by_type_count HSTORE,
+  names_by_code_count HSTORE,
   names_by_rank_count HSTORE,
+  names_by_status_count HSTORE,
+  names_by_type_count HSTORE,
+  synonyms_by_rank_count HSTORE,
   taxa_by_rank_count HSTORE,
   taxon_relations_by_type_count HSTORE,
-  names_by_type_count HSTORE,
-  vernaculars_by_language_count HSTORE,
-  distributions_by_gazetteer_count HSTORE,
-  names_by_origin_count HSTORE,
-  usages_by_status_count HSTORE,
-  names_by_status_count HSTORE,
-  name_relations_by_type_count HSTORE,
   type_material_by_status_count HSTORE,
-  verbatim_by_type_count HSTORE,
-  verbatim_by_term_count JSONB,
-  media_by_type_count HSTORE,
+  usages_by_origin_count HSTORE,
+  usages_by_status_count HSTORE,
+  vernaculars_by_language_count HSTORE,
+  -- extra
+  verbatim_by_row_type_count JSONB,
+  verbatim_by_term_count HSTORE,
   job TEXT NOT NULL,
   error TEXT,
   md5 TEXT,
@@ -749,28 +756,35 @@ CREATE TABLE sector_import (
   finished TIMESTAMP WITHOUT TIME ZONE,
   created_by INTEGER NOT NULL,
   state IMPORTSTATE NOT NULL,
-  name_count INTEGER,
-  taxon_count INTEGER,
-  synonym_count INTEGER,
-  reference_count INTEGER,
-  vernacular_count INTEGER,
+  -- shared
+  applied_decision_count INTEGER,
+  bare_name_count INTEGER,
   distribution_count INTEGER,
-  treatment_count INTEGER,
   media_count INTEGER,
-  ignored_usage_count INTEGER,
-  issues_count HSTORE,
+  name_count INTEGER,
+  reference_count INTEGER,
+  synonym_count INTEGER,
+  taxon_count INTEGER,
+  treatment_count INTEGER,
+  type_material_count INTEGER,
+  vernacular_count INTEGER,
+  distributions_by_gazetteer_count HSTORE,
+  extinct_taxa_by_rank_count HSTORE,
+  ignored_by_reason_count HSTORE,
+  issues_by_issue_count HSTORE,
+  media_by_type_count HSTORE,
+  name_relations_by_type_count HSTORE,
+  names_by_code_count HSTORE,
   names_by_rank_count HSTORE,
+  names_by_status_count HSTORE,
+  names_by_type_count HSTORE,
+  synonyms_by_rank_count HSTORE,
   taxa_by_rank_count HSTORE,
   taxon_relations_by_type_count HSTORE,
-  names_by_type_count HSTORE,
-  vernaculars_by_language_count HSTORE,
-  distributions_by_gazetteer_count HSTORE,
-  names_by_origin_count HSTORE,
+  type_material_by_status_count HSTORE,
+  usages_by_origin_count HSTORE,
   usages_by_status_count HSTORE,
-  names_by_status_count HSTORE,
-  name_relations_by_type_count HSTORE,
-  verbatim_by_type_count HSTORE,
-  media_by_type_count HSTORE,
+  vernaculars_by_language_count HSTORE,
   job TEXT NOT NULL,
   warnings TEXT[],
   error TEXT,
@@ -1322,3 +1336,32 @@ CREATE VIEW v_name_usage AS (
   SELECT u.dataset_key, u.id, n.id AS nid, u.parent_id, u.status, n.rank, n.scientific_name, n.authorship
   FROM name_usage u JOIN name n ON n.id=u.name_id AND u.dataset_key=n.dataset_key
 );
+
+
+
+CREATE TABLE usage_count (
+  dataset_key int PRIMARY KEY,
+  counter int
+);
+
+CREATE OR REPLACE FUNCTION count_usage_on_insert()
+RETURNS TRIGGER AS
+$$
+  DECLARE
+  BEGIN
+    EXECUTE 'UPDATE usage_count set counter=counter+(select count(*) from inserted) where dataset_key=' || TG_ARGV[0];
+    RETURN NULL;
+  END;
+$$
+LANGUAGE 'plpgsql';
+
+CREATE OR REPLACE FUNCTION count_usage_on_delete()
+RETURNS TRIGGER AS
+$$
+  DECLARE
+  BEGIN
+  EXECUTE 'UPDATE usage_count set counter=counter-(select count(*) from deleted) where dataset_key=' || TG_ARGV[0];
+  RETURN NULL;
+  END;
+$$
+LANGUAGE 'plpgsql';

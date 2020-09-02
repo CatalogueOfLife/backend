@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.util.Properties;
@@ -96,7 +97,13 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
    */
   @NotNull
   public File exportDir = new File("/tmp");
-  
+
+  /**
+   * Maximum number of background job to run simultaneously
+   */
+  @Min(1)
+  public int backgroundJobs = 1;
+
   @Override
   @JsonIgnore
   public CorsConfiguration getCorsConfiguration() {

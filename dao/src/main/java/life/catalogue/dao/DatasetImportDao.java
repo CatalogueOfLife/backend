@@ -14,6 +14,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,58 +110,72 @@ public class DatasetImportDao {
     di.setCreatedBy(user);
     try (SqlSession session = factory.openSession(true)) {
       DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
-      updateMetrics(mapper, di);
+      updateMetrics(mapper, di, datasetKey);
     }
     return di;
   }
-  
-  public void updateMetrics(DatasetImport di) {
+
+  /**
+   * Update all metrics for the given dataset import and dataset key.
+   * The key is given explicitly because it might deviate from the datasetKey of the DatasetImport
+   * in case of releases, where we store the release metrics in the mother project (which is the DatasetImport.datasetKey).
+   *
+   * @param di import to update
+   * @param key the dataset key to analyze the data from. Should be the release datasetKey for releases
+   */
+  public void updateMetrics(DatasetImport di, int key) {
     try (SqlSession session = factory.openSession(true)) {
       DatasetImportMapper mapper = session.getMapper(DatasetImportMapper.class);
-      updateMetrics(mapper, di);
+      updateMetrics(mapper, di, key);
   
-      fileMetricsDao.updateTree(di.getDatasetKey(), di.getAttempt());
-      fileMetricsDao.updateNames(di.getDatasetKey(), di.getAttempt());
+      fileMetricsDao.updateTree(key, di.getDatasetKey(), di.getAttempt());
+      fileMetricsDao.updateNames(key, di.getDatasetKey(), di.getAttempt());
       
     } catch (IOException e) {
-      LOG.error("Failed to print text tree for dataset {}", di.getDatasetKey(), e);
+      LOG.error("Failed to update metrics for dataset {} from dataset {}", di.getDatasetKey(), key, e);
     }
   }
-  
-  private void updateMetrics(DatasetImportMapper mapper, DatasetImport di) {
-    final int key = di.getDatasetKey();
-  
+
+  /**
+   * @param di import to update
+   * @param key the dataset key to analyze the data from
+   */
+  private void updateMetrics(DatasetImportMapper mapper, DatasetImport di, int key) {
+    di.setBareNameCount(mapper.countBareName(key));
     di.setDistributionCount(mapper.countDistribution(key));
     di.setMediaCount(mapper.countMedia(key));
     di.setNameCount(mapper.countName(key));
-    di.setTypeMaterialCount(mapper.countTypeMaterial(key));
     di.setReferenceCount(mapper.countReference(key));
     di.setSynonymCount(mapper.countSynonym(key));
     di.setTaxonCount(mapper.countTaxon(key));
     di.setTreatmentCount(mapper.countTreatment(key));
+    di.setTypeMaterialCount(mapper.countTypeMaterial(key));
     di.setVerbatimCount(mapper.countVerbatim(key));
     di.setVernacularCount(mapper.countVernacular(key));
-  
-    di.setDistributionsByGazetteerCount(DatasetImportDao.countMap(Gazetteer.class, mapper.countDistributionsByGazetteer(key)));
-    di.setIssuesCount(DatasetImportDao.countMap(Issue.class, mapper.countIssues(key)));
-    di.setMediaByTypeCount(DatasetImportDao.countMap(MediaType.class, mapper.countMediaByType(key)));
-    di.setNameRelationsByTypeCount(DatasetImportDao.countMap(NomRelType.class, mapper.countNameRelationsByType(key)));
-    di.setNamesByOriginCount(DatasetImportDao.countMap(Origin.class, mapper.countNamesByOrigin(key)));
+
+    di.setDistributionsByGazetteerCount(countMap(Gazetteer.class, mapper.countDistributionsByGazetteer(key)));
+    di.setExtinctTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countExtinctTaxaByRank(key)));
+    di.setIssuesCount(countMap(Issue.class, mapper.countIssues(key)));
+    di.setMediaByTypeCount(countMap(MediaType.class, mapper.countMediaByType(key)));
+    di.setNameRelationsByTypeCount(countMap(NomRelType.class, mapper.countNameRelationsByType(key)));
+    di.setNamesByCodeCount(countMap(NomCode.class, mapper.countNamesByCode(key)));
     di.setNamesByRankCount(countMap(DatasetImportDao::parseRank, mapper.countNamesByRank(key)));
-    di.setNamesByStatusCount(DatasetImportDao.countMap(NomStatus.class, mapper.countNamesByStatus(key)));
-    di.setNamesByTypeCount(DatasetImportDao.countMap(NameType.class, mapper.countNamesByType(key)));
-    di.setTypeMaterialByStatusCount(DatasetImportDao.countMap(TypeStatus.class, mapper.countTypeMaterialByStatus(key)));
+    di.setNamesByStatusCount(countMap(NomStatus.class, mapper.countNamesByStatus(key)));
+    di.setNamesByTypeCount(countMap(NameType.class, mapper.countNamesByType(key)));
+    di.setSynonymsByRankCount(countMap(DatasetImportDao::parseRank, mapper.countSynonymsByRank(key)));
     di.setTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(key)));
-    di.setTaxonRelationsByTypeCount(DatasetImportDao.countMap(TaxRelType.class, mapper.countTaxonRelationsByType(key)));
-    di.setUsagesByStatusCount(DatasetImportDao.countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(key)));
-    di.setVerbatimByTypeCount(countMap(DatasetImportDao::parseRowType, mapper.countVerbatimByType(key)));
+    di.setTaxonRelationsByTypeCount(countMap(TaxRelType.class, mapper.countTaxonRelationsByType(key)));
+    di.setTypeMaterialByStatusCount(countMap(TypeStatus.class, mapper.countTypeMaterialByStatus(key)));
+    di.setUsagesByOriginCount(countMap(Origin.class, mapper.countUsagesByOrigin(key)));
+    di.setUsagesByStatusCount(countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(key)));
+    di.setVerbatimByTermCount(countMap(DatasetImportDao::parseRowType, mapper.countVerbatimByType(key)));
     di.setVernacularsByLanguageCount(countMap(mapper.countVernacularsByLanguage(key)));
-    
+
     // verbatim term metrics for each row type
-    for (Term rowType : di.getVerbatimByTypeCount().keySet()) {
+    for (Term rowType : di.getVerbatimByTermCount().keySet()) {
       Map<Term, Integer> terms = countMap(DatasetImportDao::parseTerm, mapper.countVerbatimTerms(key, rowType));
       if (!terms.isEmpty()) {
-        di.getVerbatimByTermCount().put(rowType, terms);
+        di.getVerbatimByRowTypeCount().put(rowType, terms);
       }
     }
   }

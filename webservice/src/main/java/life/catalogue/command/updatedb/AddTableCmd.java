@@ -3,12 +3,14 @@ package life.catalogue.command.updatedb;
 import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.setup.Bootstrap;
 import life.catalogue.WsServerConfig;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.command.AbstractPromptCmd;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -85,7 +87,7 @@ public class AddTableCmd extends AbstractPromptCmd {
     ) {
       List<ForeignKey> fks = analyze(st, table);
 
-      for (int key : datasetKeys(con)) {
+      for (int key : datasetKeys(con, null)) {
         final String pTable = table+"_"+key;
         if (exists(pExists, pTable)) {
           LOG.info("{} already exists", pTable);
@@ -123,8 +125,10 @@ public class AddTableCmd extends AbstractPromptCmd {
   /**
    * @return list of all dataset keys for which a name data partition exists.
    */
-  public static Set<Integer> datasetKeys(Connection con) throws SQLException {
-    try (Statement st = con.createStatement()) {
+  public static Set<Integer> datasetKeys(Connection con, @Nullable DatasetOrigin origin) throws SQLException {
+    try (Statement st = con.createStatement();
+         Statement originStmt = con.createStatement()
+    ) {
       Set<Integer> keys = new HashSet<>();
       st.execute("select table_name from information_schema.tables where table_schema='public' and table_name ~* '^name_\\d+'");
       ResultSet rs = st.getResultSet();
@@ -134,7 +138,15 @@ public class AddTableCmd extends AbstractPromptCmd {
         String tbl = rs.getString(1);
         Matcher m = TABLE.matcher(tbl);
         if (m.find()) {
-          keys.add( Integer.parseInt(m.group(1)) );
+          int key = Integer.parseInt(m.group(1));
+          if (origin != null) {
+            originStmt.execute("select origin from dataset where key = "+key + " AND origin='"+origin.name()+"'::datasetorigin");
+            if (!originStmt.getResultSet().next()) {
+              // no matching origin
+              continue;
+            }
+          }
+          keys.add( key );
         }
       }
       rs.close();

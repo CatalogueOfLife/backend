@@ -2,6 +2,7 @@ package life.catalogue.command.updatedb;
 
 import io.dropwizard.setup.Bootstrap;
 import life.catalogue.WsServerConfig;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.command.AbstractPromptCmd;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.PgConfig;
@@ -14,12 +15,14 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.StringReader;
-import java.sql.*;
+import java.sql.Connection;
 
 /**
  * Command to execute given SQL statements for each dataset partition.
  * The command executes a SQL template passed into the command for each dataset where data partitions exist.
  * Before execution of the SQL the command replaces all {KEY} variables in the template with the actual integer key.
+ *
+ * If the optional "managed" argument is given with any non null value, only managed datasets with a partition are processed.
  *
  * The command will look at the existing name partition tables to find the datasets with data.
  */
@@ -27,6 +30,8 @@ public class ExecSqlCmd extends AbstractPromptCmd {
   private static final Logger LOG = LoggerFactory.getLogger(ExecSqlCmd.class);
   private static final String ARG_SQL = "sql";
   private static final String ARG_FILE = "sqlfile";
+  private static final String ARG_MANAGED = "managed"; // if non null will process only managed datasets!!!
+  private static final String ARG_SAFE = "safe"; // if non null will process only managed datasets!!!
 
   public ExecSqlCmd() {
     super("execSql", "Executes a SQL template for each data partition");
@@ -45,6 +50,18 @@ public class ExecSqlCmd extends AbstractPromptCmd {
       .type(String.class)
       .required(false)
       .help("File that contains SQL in plain text UTF8 to be executed per dataset partition");
+    subparser.addArgument("--"+ ARG_MANAGED)
+      .dest(ARG_MANAGED)
+      .type(Boolean.class)
+      .required(false)
+      .setDefault(false)
+      .help("If true restrict only to managed dataset partitions");
+    subparser.addArgument("--"+ ARG_SAFE)
+      .dest(ARG_SAFE)
+      .type(Boolean.class)
+      .required(false)
+      .setDefault(false)
+      .help("If true catch exceptions per dataset");
   }
 
   @Override
@@ -65,20 +82,31 @@ public class ExecSqlCmd extends AbstractPromptCmd {
     } else {
       sql = namespace.get(ARG_SQL);
     }
+    boolean managed = namespace.getBoolean(ARG_MANAGED);
+    boolean safe = namespace.getBoolean(ARG_SAFE);
     if (StringUtils.isBlank(sql)) {
       throw new IllegalArgumentException("No sql found to execute");
     }
-    execute(sql);
+    execute(sql, managed, safe);
   }
 
-  private void execute(final String template) throws Exception {
+  private void execute(final String template, boolean managedOnly, boolean safe) throws Exception {
     try (Connection con = cfg.db.connect(cfg.db)) {
       ScriptRunner runner = PgConfig.scriptRunner(con);
-      for (int key : AddTableCmd.datasetKeys(con)) {
-        String sql = template.replaceAll("\\{KEY}", String.valueOf(key));
-        System.out.println("Execute SQL for dataset key " + key);
-        runner.runScript(new StringReader(sql));
-        con.commit();
+      // only managed datasets?
+      for (int key : AddTableCmd.datasetKeys(con, managedOnly ? DatasetOrigin.MANAGED : null)) {
+        try {
+          String sql = template.replaceAll("\\{KEY}", String.valueOf(key));
+          System.out.println("Execute SQL for dataset key " + key);
+          runner.runScript(new StringReader(sql));
+          con.commit();
+        } catch (Exception e) {
+          if (safe) {
+            LOG.error("Failed to execute sql for dataset {}", key, e);
+          } else {
+            throw e;
+          }
+        }
       }
     }
   }

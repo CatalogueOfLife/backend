@@ -1,6 +1,5 @@
 package life.catalogue.api.model;
 
-import com.google.common.collect.ImmutableSet;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -56,24 +55,6 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
 
     assertEquals("Grundig", d.getTitle());
     assertEquals("grr", d.getAlias());
-  }
-
-  @Test
-  public void testContributesTo() throws Exception {
-    Dataset d = genTestValue();
-    d.setContributesTo(ImmutableSet.of(1,2));
-
-    String json = ApiModule.MAPPER.writeValueAsString(d);
-    Dataset d2 = ApiModule.MAPPER.readValue(json, Dataset.class);
-  
-    json = json.replaceAll("\"contributesTo\":\\[1,2\\]", "\"contributesTo\":\"col\"");
-    System.out.println(json);
-    d2 = ApiModule.MAPPER.readValue(json, Dataset.class);
-    assertNull(d2.getContributesTo());
-  
-    json = json.replaceAll("\"contributesTo\":\"col\"", "\"contributesTo\":[\"col\", \"dCol\"]");
-    d2 = ApiModule.MAPPER.readValue(json, Dataset.class);
-    assertNull(d2.getContributesTo());
   }
   
   @Test

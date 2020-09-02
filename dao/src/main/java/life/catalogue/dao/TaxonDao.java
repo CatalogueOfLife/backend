@@ -247,38 +247,73 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       }
     }
   }
-  
+
+  @Override
+  protected void updateBefore(Taxon obj, Taxon old, int user, TaxonMapper mapper, SqlSession session) {
+    // only allow parent changes if they are not part of a sector
+    if (!Objects.equals(old.getParentId(), obj.getParentId()) && old.getSectorKey() != null) {
+      throw new IllegalArgumentException("You cannot move a taxon which is part of sector " + obj.getSectorKey());
+    }
+  }
+
   @Override
   protected void updateAfter(Taxon t, Taxon old, int user, TaxonMapper tm, SqlSession session) {
     // has parent, i.e. classification been changed ?
     if (!Objects.equals(old.getParentId(), t.getParentId())) {
-      // migrate entire DatasetSectors from old to new
-      Int2IntOpenHashMap delta = tm.getCounts(t).getCount();
-      if (delta != null && !delta.isEmpty()) {
-        DSID<String> parentKey =  DSID.of(t.getDatasetKey(), old.getParentId());
-        // reusable catalogue key instance
-        final DSIDValue<String> catKey = DSID.of(t.getDatasetKey(), "");
-        // remove delta
-        for (TaxonSectorCountMap tc : tm.classificationCounts(parentKey)) {
-          tm.updateDatasetSectorCount(catKey.id(tc.getId()), mergeMapCounts(tc.getCount(), delta, -1));
-        }
-        // add counts
-        parentKey.setId(t.getParentId());
-        for (TaxonSectorCountMap tc : tm.classificationCounts(parentKey)) {
-          tm.updateDatasetSectorCount(catKey.id(tc.getId()), mergeMapCounts(tc.getCount(), delta, 1));
-        }
-      }
-      // async update classification of all descendants.
-      CompletableFuture.runAsync(() -> indexService.updateClassification(t.getDatasetKey(), t.getId()))
-          .exceptionally(ex -> {
-            LOG.error("Failed to update classification for descendants of {}", t, ex);
-            return null;
-          });
+      updatedParentCacheUpdate(tm, t, t.getParentId(), old.getParentId());
     }
     // update single taxon in ES
     indexService.update(t.getDatasetKey(), List.of(t.getId()));
   }
-  
+
+  /**
+   * Updates cached information in both postgres and elastic when a parent id of a taxon has changed.
+   * The actual parentID change is expected to have happened already in the database!
+   * @param t the taxon that has been assigned a new parentID
+   * @param newParentId the newly assigned parentID (already set as the taxons parent_id)
+   * @param oldParentId the former parentID
+   */
+  private void updatedParentCacheUpdate(TaxonMapper tm, DSID<String> t, String newParentId, String oldParentId){
+    // migrate entire DatasetSectors from old to new
+    Int2IntOpenHashMap delta = tm.getCounts(t).getCount();
+    if (delta != null && !delta.isEmpty()) {
+      DSID<String> parentKey =  DSID.of(t.getDatasetKey(), oldParentId);
+      // reusable catalogue key instance
+      final DSIDValue<String> catKey = DSID.of(t.getDatasetKey(), "");
+      // remove delta
+      for (TaxonSectorCountMap tc : tm.classificationCounts(parentKey)) {
+        tm.updateDatasetSectorCount(catKey.id(tc.getId()), mergeMapCounts(tc.getCount(), delta, -1));
+      }
+      // add counts
+      parentKey.setId(newParentId);
+      for (TaxonSectorCountMap tc : tm.classificationCounts(parentKey)) {
+        tm.updateDatasetSectorCount(catKey.id(tc.getId()), mergeMapCounts(tc.getCount(), delta, 1));
+      }
+    }
+    // async update classification of all descendants.
+    CompletableFuture.runAsync(() -> indexService.updateClassification(t.getDatasetKey(), t.getId()))
+      .exceptionally(ex -> {
+        LOG.error("Failed to update classification for descendants of {}", t, ex);
+        return null;
+      });
+  }
+
+  /**
+   * Moves a taxon to a different parent, updating all caches and search index under the hood.
+   *
+   * @param t the taxon to change
+   * @param newParentId the new parentId to move the taxon to
+   * @param oldParentId the current parentId of the taxon to be modified
+   */
+  public void updateParent(SqlSession session, DSID<String> t, String newParentId, String oldParentId, int userKey){
+    NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+    num.updateParentId(t, newParentId, userKey);
+    session.commit();
+    updatedParentCacheUpdate(session.getMapper(TaxonMapper.class), t, newParentId, oldParentId);
+    // update single taxon in ES
+    indexService.update(t.getDatasetKey(), List.of(t.getId()));
+  }
+
   private static Int2IntOpenHashMap mergeMapCounts(Int2IntOpenHashMap m1, Int2IntOpenHashMap m2, int factor) {
     for (Int2IntMap.Entry e : m2.int2IntEntrySet()) {
       if (m1.containsKey(e.getIntKey())) {
@@ -294,7 +329,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
   protected void deleteBefore(DSID<String> did, Taxon old, int user, TaxonMapper tMapper, SqlSession session) {
     Taxon t = tMapper.get(did);
 
-    int cnt = session.getMapper(NameUsageMapper.class).updateParentIds(did.getDatasetKey(), did.getId(), t.getParentId(), user);
+    int cnt = session.getMapper(NameUsageMapper.class).updateParentIds(did.getDatasetKey(), did.getId(), t.getParentId(), null, user);
     LOG.debug("Moved {} children of {} to {}", cnt, t.getId(), t.getParentId());
     
     // if this taxon had a sector we need to adjust parental counts

@@ -1,0 +1,4 @@
+key,username,firstname,lastname,email,roles
+91,admin,Stan,Sterling,stan@mailinator.com,{2}
+92,editor,Yuri,Roskov,yuri@mailinator.com,"{0,1}"
+93,user,Frank,Müller,frank@mailinator.com,{0}

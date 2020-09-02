@@ -20,70 +20,39 @@ package life.catalogue.api.vocab;
  */
 public enum Origin {
   
-  /**
-   * Record came straight from source record.
-   */
-  SOURCE,
+  SOURCE("Record came straight from source record."),
   
-  /**
-   * Implicit usage from a denormalised classification.
-   */
-  DENORMED_CLASSIFICATION,
+  DENORMED_CLASSIFICATION("Implicit usage from a denormalised classification."),
   
-  /**
-   * Implicit usage from a verbatim parent name usage.
-   */
-  VERBATIM_PARENT,
+  VERBATIM_PARENT("Implicit usage from a verbatim parent name usage."),
   
-  /**
-   * Implicit usage from a verbatim accepted name usage.
-   */
-  VERBATIM_ACCEPTED,
+  VERBATIM_ACCEPTED("Implicit usage from a verbatim accepted name usage."),
   
-  /**
-   * Implicit usage from a verbatim basionym/original name.
-   */
-  VERBATIM_BASIONYM,
+  VERBATIM_BASIONYM("Implicit usage from a verbatim basionym/original name."),
 
-  /**
-   * Generated, missing autonym.
-   */
-  AUTONYM,
+  AUTONYM("Generated, missing autonym."),
   
-  /**
-   * Generated, missing genus or species for "orphaned" lower name.
-   */
-  IMPLICIT_NAME,
+  IMPLICIT_NAME("Generated, missing genus or species for \"orphaned\" lower name."),
   
-  /**
-   * Artificial accepted usage for a synonym if its missing to preserve the taxonomic hierarchy.
-   */
-  MISSING_ACCEPTED,
+  MISSING_ACCEPTED("Artificial accepted usage for a synonym if its missing to preserve the taxonomic hierarchy."),
   
-  /**
-   * Placeholder usage for a missing or implicit basionym.
-   */
-  BASIONYM_PLACEHOLDER,
+  BASIONYM_PLACEHOLDER("Placeholder usage for a missing or implicit basionym."),
   
-  /**
-   * Implicit synonym based on the illegitimate ex author.
-   * See ICN article 46: http://www.iapt-taxon.org/nomen/main.php?page=art46
-   */
-  EX_AUTHOR_SYNONYM,
+  EX_AUTHOR_SYNONYM("Implicit synonym based on the illegitimate ex author. " +
+    "See ICN article 46: http://www.iapt-taxon.org/nomen/main.php?page=art46"),
   
-  /**
-   * A name in the names index introduced by name matching
-   */
-  NAME_MATCHING,
+  USER("An entity was created or modified by a user."),
 
-  /**
-   * An entity was created or modified by a user.
-   */
-  USER,
+  OTHER("Any other origin not covered by the above.");
 
-  /**
-   * Any other origin not covered by the above.
-   */
-  OTHER;
-  
+
+  private final String description;
+
+  Origin(String description) {
+    this.description = description;
+  }
+
+  public String getDescription() {
+    return description;
+  }
 }

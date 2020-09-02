@@ -35,7 +35,8 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
   public SectorMapperTest() {
     super(SectorMapper.class);
   }
-  
+
+
   private void add2Sectors() {
     // create a few draft taxa to attach sectors to
     MybatisTestUtils.populateDraftTree(session());
@@ -125,6 +126,10 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
 
     req = SectorSearchRequest.byProject(targetDatasetKey);
     req.setWithoutData(true);
+    assertEquals(2, mapper().search(req, new Page()).size());
+
+    req = SectorSearchRequest.byProject(targetDatasetKey);
+    req.setMinSize(10);
     assertEquals(2, mapper().search(req, new Page()).size());
   }
 

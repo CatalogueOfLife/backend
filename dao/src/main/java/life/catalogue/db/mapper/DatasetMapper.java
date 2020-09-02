@@ -104,9 +104,10 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   /**
    * Looks up the dataset key of the latest release for a given project
    * @param key the project key
+   * @param publicOnly if true only include public releases
    * @return dataset key of the latest release or null if no release exists
    */
-  Integer latestRelease(@Param("key") int key);
+  Integer latestRelease(@Param("key") int key, @Param("public") boolean publicOnly);
 
   Dataset getByGBIF(@Param("key") UUID key);
   

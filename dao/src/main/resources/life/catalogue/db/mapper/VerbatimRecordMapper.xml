@@ -83,21 +83,14 @@
     SELECT coalesce(
     (SELECT
     <choose>
-      <when test="q != null or (terms != null and !terms.isEmpty()) or (issues != null and !issues.isEmpty()) or (types != null and types.size > 1)">
+      <when test="q != null or (terms != null and !terms.isEmpty()) or (issues != null and !issues.isEmpty()) or (types != null and !types.isEmpty())">
         count(*)
         FROM
         <include refid="FROM"/>
         <include refid="WHERE"/>
       </when>
       <otherwise>
-        <choose>
-          <when test="types != null and !types.isEmpty()">
-            (verbatim_by_type_count->#{types[0], typeHandler=life.catalogue.db.type.TermTypeHandler})::int
-          </when>
-          <otherwise>
-            verbatim_count
-          </otherwise>
-        </choose>
+        verbatim_count
         <include refid="life.catalogue.db.Common.fromFinishedDatasetImport"/>
       </otherwise>
     </choose>

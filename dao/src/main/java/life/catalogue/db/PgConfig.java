@@ -74,6 +74,9 @@ public class PgConfig extends PgDbConfig {
    * This allows any locks held by that session to be released and the connection slot to be reused;
    * it also allows tuples visible only to this transaction to be vacuumed.
    * <p>
+   * We do need long running transactions in the backend though, e.g. when indexing a dataset into the search index.
+   * Recommended to keep this feature disabled for CoL in production.
+   * <p>
    * The default value of 0 disables this feature.
    */
   @Min(0)

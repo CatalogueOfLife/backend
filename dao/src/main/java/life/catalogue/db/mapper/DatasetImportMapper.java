@@ -36,30 +36,36 @@ public interface DatasetImportMapper extends DatasetProcessable<DatasetImport> {
   
   void update(@Param("imp") DatasetImport datasetImport);
 
+  Integer countBareName(@Param("key") int datasetKey);
   Integer countDistribution(@Param("key") int datasetKey);
   Integer countMedia(@Param("key") int datasetKey);
   Integer countName(@Param("key") int datasetKey);
-  Integer countTypeMaterial(@Param("key") int datasetKey);
   Integer countReference(@Param("key") int datasetKey);
-  Integer countTaxon(@Param("key") int datasetKey);
   Integer countSynonym(@Param("key") int datasetKey);
+  Integer countTaxon(@Param("key") int datasetKey);
   Integer countTreatment(@Param("key") int datasetKey);
+  Integer countTypeMaterial(@Param("key") int datasetKey);
   Integer countVerbatim(@Param("key") int datasetKey);
   Integer countVernacular(@Param("key") int datasetKey);
   
   List<StringCount> countDistributionsByGazetteer(@Param("key") int datasetKey);
+  List<StringCount> countExtinctTaxaByRank(@Param("key") int datasetKey);
   List<StringCount> countIssues(@Param("key") int datasetKey);
   List<StringCount> countMediaByType(@Param("key") int datasetKey);
   List<StringCount> countNameRelationsByType(@Param("key") int datasetKey);
-  List<StringCount> countNamesByOrigin(@Param("key") int datasetKey);
+  List<StringCount> countNamesByCode(@Param("key") int datasetKey);
+  List<StringCount> countNamesByRank(@Param("key") int datasetKey);
   List<StringCount> countNamesByStatus(@Param("key") int datasetKey);
   List<StringCount> countNamesByType(@Param("key") int datasetKey);
-  List<StringCount> countUsagesByStatus(@Param("key") int datasetKey);
-  List<StringCount> countNamesByRank(@Param("key") int datasetKey);
-  List<StringCount> countTypeMaterialByStatus(@Param("key") int datasetKey);
+  List<StringCount> countSynonymsByRank(@Param("key") int datasetKey);
   List<StringCount> countTaxaByRank(@Param("key") int datasetKey);
   List<StringCount> countTaxonRelationsByType(@Param("key") int datasetKey);
+  List<StringCount> countTypeMaterialByStatus(@Param("key") int datasetKey);
+  List<StringCount> countUsagesByOrigin(@Param("key") int datasetKey);
+  List<StringCount> countUsagesByStatus(@Param("key") int datasetKey);
   List<StringCount> countVerbatimByType(@Param("key") int datasetKey);
   List<StringCount> countVerbatimTerms(@Param("key") int datasetKey, @Param("rowType") Term rowType);
   List<StringCount> countVernacularsByLanguage(@Param("key") int datasetKey);
+
+
 }

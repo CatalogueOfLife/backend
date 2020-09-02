@@ -55,7 +55,7 @@ public interface TreeMapper {
                            @Nullable @Param("rank") Rank rank);
 
   /**
-   * Retuns the list of unique sectors of all children of the given parentID
+   * Returns the list of unique sectors of all children of the given parentID
    * which are below the optional rank given.
    * Null values are also included if at least one child has no sectorKey
    *

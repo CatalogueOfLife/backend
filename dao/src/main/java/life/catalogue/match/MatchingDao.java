@@ -47,7 +47,7 @@ public class MatchingDao {
         if (name.getStatus() != null && !Objects.equals(name.getStatus(), t.getStatus())) {
           continue;
         }
-        if (name.getCode() != null && !Objects.equals(name.getCode(), t.getName().getCode())) {
+        if (name.getCode() != null && t.getName().getCode() != null && !name.getCode().equals(t.getName().getCode())) {
           continue;
         }
         if (name.getParent() != null) {

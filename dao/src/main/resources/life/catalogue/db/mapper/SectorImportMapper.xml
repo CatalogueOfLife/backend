@@ -36,7 +36,7 @@
   <sql id="FROM">
     sector_import si
     <if test="subjectDatasetKey != null or datasetKey != null or _parameter.containsKey('current')">
-      JOIN sector s ON s.id=si.sector_key
+      JOIN sector s ON s.id=si.sector_key AND s.dataset_key=si.dataset_key
     </if>
   </sql>
 
@@ -63,11 +63,8 @@
     </where>
   </sql>
 
-  <!--  A mapping to Name, mostly auto mapped -->
-  <resultMap id="sectorImportResultMap" type="SectorImport" autoMapping="true">
-    <result property="issueCount" column="issue_count" typeHandler="life.catalogue.db.type2.HstoreIssueCountTypeHandler"/>
+  <resultMap id="sectorImportResultMap" type="SectorImport" autoMapping="true" extends="life.catalogue.db.mapper.DatasetImportMapper.importMetricsResultMap">
     <result property="warnings" column="warnings" typeHandler="life.catalogue.db.type2.StringCollectionArrayTypeHandler"/>
-    <result property="names" column="names" typeHandler="life.catalogue.db.type2.StringSetTypeHandler"/>
   </resultMap>
 
   <select id="get" resultMap="sectorImportResultMap">
@@ -118,11 +115,11 @@
     WHERE si.sector_key=s.id AND s.dataset_key=#{datasetKey}
   </delete>
 
-  <select id="countDescription" resultType="integer">
+  <select id="countBareName" resultType="integer">
     SELECT count(*)
-    FROM description_${datasetKey} x
-    JOIN name_usage_${datasetKey} t ON t.id=x.taxon_id
-    WHERE t.sector_key=${sectorKey}
+    FROM name_${datasetKey} n
+    LEFT JOIN name_usage_${datasetKey} u ON n.id = u.name_id
+    WHERE u.id IS NULL AND n.sector_key=${sectorKey}
   </select>
   <select id="countDistribution" resultType="integer">
     SELECT count(*)
@@ -147,6 +144,9 @@
     FROM treatment_${datasetKey} x
       JOIN name_usage_${datasetKey} t ON t.id=x.id
     WHERE t.sector_key=${sectorKey}
+  </select>
+  <select id="countTypeMaterial" resultType="integer">
+    SELECT count(*) FROM type_material_${datasetKey} WHERE sector_key=${sectorKey}
   </select>
 
   <select id="countName" resultType="integer">
@@ -226,11 +226,11 @@
     WHERE sector_key=${sectorKey}
     GROUP BY nom_status
   </select>
-  <select id="countNamesByOrigin" resultType="StringCount">
-    SELECT origin AS key, count(*) AS count
+  <select id="countNamesByCode" resultType="StringCount">
+    SELECT code AS key, count(*) AS count
     FROM name_${datasetKey}
     WHERE sector_key=${sectorKey}
-    GROUP BY origin
+    GROUP BY code
   </select>
   <select id="countNamesByRank" resultType="StringCount">
     SELECT rank AS key, count(*) AS count
@@ -243,6 +243,30 @@
     FROM name_usage_${datasetKey} t JOIN name_${datasetKey} n ON t.name_id=n.id
     WHERE NOT t.is_synonym AND t.sector_key=${sectorKey}
     GROUP BY n.rank
+  </select>
+  <select id="countExtinctTaxaByRank" resultType="StringCount">
+    SELECT n.rank AS key, count(*) AS count
+    FROM name_usage_${datasetKey} t JOIN name_${datasetKey} n ON t.name_id=n.id
+    WHERE NOT t.is_synonym AND t.sector_key=${sectorKey} AND t.extinct
+    GROUP BY n.rank
+  </select>
+  <select id="countSynonymsByRank" resultType="StringCount">
+    SELECT n.rank AS key, count(*) AS count
+    FROM name_usage_${datasetKey} t JOIN name_${datasetKey} n ON t.name_id=n.id
+    WHERE t.is_synonym AND t.sector_key=${sectorKey}
+    GROUP BY n.rank
+  </select>
+  <select id="countTypeMaterialByStatus" resultType="StringCount">
+    SELECT status AS key, count(*) AS count
+    FROM type_material_${datasetKey}
+    WHERE sector_key=${sectorKey}
+    GROUP BY status
+  </select>
+  <select id="countUsagesByOrigin" resultType="StringCount">
+    SELECT origin AS key, count(*) AS count
+    FROM name_usage_${datasetKey}
+    WHERE sector_key=${sectorKey}
+    GROUP BY origin
   </select>
   <select id="countUsagesByStatus" resultType="StringCount">
     SELECT status AS key, count(*) AS count

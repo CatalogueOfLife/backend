@@ -1,0 +1,4 @@
+key,type,alias,title,origin,website,created_by,modified_by,created
+100,OTHER,,Fishes,MANAGED,"http://fish.org",100,100,2017-03-24
+101,OTHER,FishBase,FishBase,EXTERNAL,"http://fishbase.de",100,100,2020-07-18
+102,OTHER,CatoFish,Catalogue Of Fishes,EXTERNAL,,100,100,2020-05-08

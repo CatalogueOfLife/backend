@@ -1,6 +1,6 @@
 package life.catalogue.dw.jersey.exception;
 
-import life.catalogue.matching.UnavailableException;
+import life.catalogue.api.exception.UnavailableException;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
