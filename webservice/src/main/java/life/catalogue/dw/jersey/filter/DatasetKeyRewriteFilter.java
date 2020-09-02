@@ -122,7 +122,7 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     Integer releaseKey;
     // candidate requested?
     if (m.group().toLowerCase().endsWith("c")) {
-      releaseKey = latestRelease.get(projectKey);
+      releaseKey = latestCandidate.get(projectKey);
     } else {
       releaseKey = latestRelease.get(projectKey);
     }
