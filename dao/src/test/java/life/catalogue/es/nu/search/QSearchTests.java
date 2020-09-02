@@ -10,6 +10,7 @@ import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchRequest.SearchContent;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.search.NameUsageRequest.SearchType;
 import life.catalogue.es.EsReadTestBase;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +34,7 @@ public class QSearchTests extends EsReadTestBase {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setQ("Parus maj");
     query.setContent(EnumSet.of(SearchContent.SCIENTIFIC_NAME));
-    query.setPrefix(true);
+    query.setSearchType(SearchType.PREFIX);
 
     Name name = new Name();
     name.setGenus("Parus");
@@ -55,7 +56,7 @@ public class QSearchTests extends EsReadTestBase {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setQ("PARUS MAJ");
     query.setContent(EnumSet.of(SearchContent.SCIENTIFIC_NAME));
-    query.setPrefix(true);
+    query.setSearchType(SearchType.PREFIX);
 
     Name name = new Name();
     name.setGenus("Parus");
@@ -238,6 +239,49 @@ public class QSearchTests extends EsReadTestBase {
     NameUsageSearchResponse response = search(request);
 
     assertEquals(1, response.getResult().size());
+  }
+
+  @Test // EXACT matching
+  public void test10() {
+
+    // ==> The query
+    NameUsageSearchRequest request = new NameUsageSearchRequest();
+    request.setQ("COVID-19");
+    request.setSearchType(SearchType.EXACT);
+
+    // Name, Usage & scientific name to prevent NPEs while indexing
+    Name name = new Name();
+    name.setScientificName("COVID-19");
+    Taxon t = new Taxon();
+    t.setName(name);
+    NameUsageWrapper w0 = new NameUsageWrapper(t);
+    index(w0);
+
+    name = new Name();
+    name.setScientificName("covid-19");
+    t = new Taxon();
+    t.setName(name);
+    w0 = new NameUsageWrapper(t);
+    index(w0);
+
+    name = new Name();
+    name.setScientificName("Covid-19");
+    t = new Taxon();
+    t.setName(name);
+    w0 = new NameUsageWrapper(t);
+    index(w0);
+
+    name = new Name();
+    name.setScientificName("Covid 19");
+    t = new Taxon();
+    t.setName(name);
+    w0 = new NameUsageWrapper(t);
+    index(w0);
+
+    NameUsageSearchResponse response = search(request);
+
+    assertEquals(1, response.getResult().size());
+    assertEquals("COVID-19",response.getResult().get(0).getUsage().getName().getScientificName());
   }
 
 }

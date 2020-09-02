@@ -1,5 +1,9 @@
 package life.catalogue.es.nu.search;
 
+import java.io.IOException;
+import org.elasticsearch.client.RestClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.NameUsageSearchRequest;
@@ -7,18 +11,13 @@ import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.es.EsException;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.NameUsageSearchService;
-import life.catalogue.es.ddl.Analyzer;
 import life.catalogue.es.nu.NameUsageQueryService;
 import life.catalogue.es.query.EsSearchRequest;
 import life.catalogue.es.response.EsResponse;
-import org.elasticsearch.client.RestClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-
+import static life.catalogue.api.search.NameUsageRequest.SearchType.EXACT;
 import static life.catalogue.api.search.NameUsageSearchRequest.SearchContent.SCIENTIFIC_NAME;
 import static life.catalogue.es.EsUtil.getSearchTerms;
+import static life.catalogue.es.ddl.Analyzer.SCINAME_WHOLE_WORDS;
 
 public class NameUsageSearchServiceEs extends NameUsageQueryService implements NameUsageSearchService {
 
@@ -41,8 +40,10 @@ public class NameUsageSearchServiceEs extends NameUsageQueryService implements N
   public NameUsageSearchResponse search(String index, NameUsageSearchRequest request, Page page) throws IOException {
     RequestValidator validator = new RequestValidator(request);
     validator.validateRequest();
-    if (request.hasQ() && request.getContent().contains(SCIENTIFIC_NAME)) {
-      request.setSciNameSearchTerms(getSearchTerms(client, index, Analyzer.SCINAME_WHOLE_WORDS, request.getQ()));
+    if (request.hasQ() && request.getContent().contains(SCIENTIFIC_NAME) && request.getSearchType() != EXACT) {
+      String q = request.getQ().toLowerCase();
+      request.setQ(q);
+      request.setSciNameSearchTerms(getSearchTerms(client, index, SCINAME_WHOLE_WORDS, q));
     }
     RequestTranslator translator = new RequestTranslator(request, page);
     EsSearchRequest esSearchRequest = translator.translateRequest();
@@ -52,7 +53,8 @@ public class NameUsageSearchServiceEs extends NameUsageQueryService implements N
   }
 
   @VisibleForTesting
-  public NameUsageSearchResponse search(String index, EsSearchRequest esSearchRequest, Page page, boolean inclVernaculars) throws IOException {
+  public NameUsageSearchResponse search(String index, EsSearchRequest esSearchRequest, Page page, boolean inclVernaculars)
+      throws IOException {
     EsResponse<EsNameUsage> esResponse = executeSearchRequest(index, esSearchRequest);
     ResponseConverter converter = new ResponseConverter(esResponse);
     return converter.convertEsResponse(page, inclVernaculars);

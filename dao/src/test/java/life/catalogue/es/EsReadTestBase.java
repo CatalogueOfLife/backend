@@ -131,11 +131,11 @@ public class EsReadTestBase {
     return new NameUsageSuggestionServiceEs(indexName(), getEsClient()).suggest(query);
   }
 
-  protected EsNameUsage newDocument(Name n) throws IOException {
+  protected EsNameUsage newDocument(Name n) {
     return newDocument(n, TaxonomicStatus.ACCEPTED);
   }
 
-  protected EsNameUsage newDocument(Name n, String... vernacularNames) throws IOException {
+  protected EsNameUsage newDocument(Name n, String... vernacularNames) {
     EsNameUsage doc = newDocument(n, TaxonomicStatus.ACCEPTED);
     if (vernacularNames != null) {
       doc.setVernacularNames(Arrays.asList(vernacularNames));
@@ -143,7 +143,7 @@ public class EsReadTestBase {
     return doc;
   }
 
-  protected EsNameUsage newDocument(Name n, TaxonomicStatus status, String... classification) throws IOException {
+  protected EsNameUsage newDocument(Name n, TaxonomicStatus status, String... classification) {
     EsNameUsage doc = new EsNameUsage();
     doc.setUsageId(n.getId());
     doc.setDatasetKey(n.getDatasetKey());
@@ -151,19 +151,9 @@ public class EsReadTestBase {
     doc.setNameStrings(new NameStrings(n));
     doc.setDatasetKey(n.getDatasetKey());
     doc.setStatus(status);
-    // we need some payload for synonyms
-    if (status != null && status.isSynonym()) {
-      Synonym s = new Synonym();
-      s.setId(n.getId());
-      s.setParentId("acc-"+n.getId());
-      s.setStatus(status);
-      NameUsageWrapper nuw = new NameUsageWrapper(s);
-      doc.setPayload(NameUsageWrapperConverter.deflate(nuw));
-    }
     if (classification != null) {
       doc.setClassification(classification(classification));
     }
-
     return doc;
   }
 

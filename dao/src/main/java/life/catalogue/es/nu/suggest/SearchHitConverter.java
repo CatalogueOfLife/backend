@@ -17,6 +17,7 @@ import java.util.ListIterator;
  * Converts an ES SearchHit instance into a NameUsageSuggestion object.
  */
 class SearchHitConverter implements UpwardConverter<SearchHit<EsNameUsage>, NameUsageSuggestion> {
+  @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SearchHitConverter.class);
 
   private final VernacularNameMatcher matcher;
@@ -42,12 +43,10 @@ class SearchHitConverter implements UpwardConverter<SearchHit<EsNameUsage>, Name
     } else if (doc.getAcceptedName() != null) { // *then* this is a synonym
       suggestion.setMatch(doc.getScientificName());
       suggestion.setParentOrAcceptedName(doc.getAcceptedName());
-      // for synonyms the classification includes the accepted as the 2nd last in the list
-      if (doc.getClassificationIds().size() < 2) {
-        LOG.warn("Missing or incomplete classification for synonym {}", doc.getUsageId());
-      } else {
-        String accID = doc.getClassificationIds().get(doc.getClassification().size()-2);
-        suggestion.setAcceptedUsageId(accID);
+      if (doc.getClassificationIds() == null || doc.getClassificationIds().size() < 2) {
+        // That's corrupt data but let's not make the suggestion service trip over it
+        LOG.warn("Missing classification for synonym {} {}", doc.getScientificName(), doc.getUsageId());
+        suggestion.setAcceptedUsageId(doc.getClassificationIds().get(doc.getClassificationIds().size() - 2));
       }
     } else {
       suggestion.setMatch(doc.getScientificName());
@@ -57,7 +56,9 @@ class SearchHitConverter implements UpwardConverter<SearchHit<EsNameUsage>, Name
         suggestion.setParentOrAcceptedName("MISSING");
       } else if (doc.getClassification().size() > 1) { // not a kingdom
         EsMonomial parent = findFirstAboveGenus(doc.getClassification());
-        suggestion.setParentOrAcceptedName(parent.getName());
+        if (parent != null) {
+          suggestion.setParentOrAcceptedName(parent.getName());
+        }
       }
     }
     suggestion.setUsageId(doc.getUsageId());

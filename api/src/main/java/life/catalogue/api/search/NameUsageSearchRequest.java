@@ -63,8 +63,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   private Set<SearchContent> content;
 
   /**
-   * Whether to include vernacular names in the response.
-   * Defaults to false
+   * Whether to include vernacular names in the response. Defaults to false
    */
   @QueryParam("vernacular")
   private boolean vernacular = false;
@@ -78,8 +77,8 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   @QueryParam("reverse")
   private boolean reverse;
 
-  @QueryParam("prefix")
-  private boolean prefix;
+  @QueryParam("searchType")
+  private SearchType searchType;
 
   @QueryParam("minRank")
   private Rank minRank;
@@ -99,7 +98,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
       @JsonProperty("highlight") boolean highlight,
       @JsonProperty("reverse") boolean reverse,
       @JsonProperty("fuzzy") boolean fuzzy,
-      @JsonProperty("prefix") boolean prefix,
+      @JsonProperty("prefix") SearchType searchType,
       @JsonProperty("minRank") Rank minRank,
       @JsonProperty("maxRank") Rank maxRank) {
     this.filters = filters == null ? new EnumMap<>(NameUsageSearchParameter.class) : new EnumMap<>(filters);
@@ -111,15 +110,16 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     this.highlight = highlight;
     this.reverse = reverse;
     this.fuzzy = fuzzy;
-    this.prefix = prefix;
+    this.searchType = searchType;
     this.minRank = minRank;
     this.maxRank = maxRank;
   }
 
   /**
-   * Creates a shallow copy of this NameSearchRequest. The filters map is copied using EnumMap's copy constructor. Therefore you should not
-   * manipulate the filter values (which are lists) as they are copied by reference. You can, however, simply replace the list with another
-   * list, and you can also add/remove facets and search content without affecting the original request.
+   * Creates a shallow copy of this NameSearchRequest. The filters map is copied using EnumMap's copy
+   * constructor. Therefore you should not manipulate the filter values (which are lists) as they are
+   * copied by reference. You can, however, simply replace the list with another list, and you can
+   * also add/remove facets and search content without affecting the original request.
    */
   public NameUsageSearchRequest copy() {
     NameUsageSearchRequest copy = new NameUsageSearchRequest();
@@ -141,16 +141,17 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     copy.highlight = highlight;
     copy.reverse = reverse;
     copy.fuzzy = fuzzy;
-    copy.prefix = prefix;
+    copy.searchType = searchType;
     copy.minRank = minRank;
     copy.maxRank = maxRank;
     return copy;
   }
 
   /**
-   * Extracts all query parameters that match a NameSearchParameter and registers them as query filters. Values of query parameters that are
-   * associated with an enum type can be supplied using the name of the enum constant or using the ordinal of the enum constant. In both
-   * cases it is the ordinal that will be registered as the query filter.
+   * Extracts all query parameters that match a NameSearchParameter and registers them as query
+   * filters. Values of query parameters that are associated with an enum type can be supplied using
+   * the name of the enum constant or using the ordinal of the enum constant. In both cases it is the
+   * ordinal that will be registered as the query filter.
    */
   public void addFilters(MultivaluedMap<String, String> params) {
     params.entrySet().stream().filter(e -> !NON_FILTERS.contains(e.getKey())).forEach(e -> {
@@ -168,8 +169,8 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   }
 
   /*
-   * Primary usage case - parameter values coming in as strings from the HTTP request. Values are validated and converted to the type
-   * associated with the parameter.
+   * Primary usage case - parameter values coming in as strings from the HTTP request. Values are
+   * validated and converted to the type associated with the parameter.
    */
   public void addFilter(NameUsageSearchParameter param, String value) {
     value = StringUtils.trimToNull(value);
@@ -216,7 +217,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
         && !highlight
         && !reverse
         && !fuzzy
-        && !prefix;
+        && searchType == null;
   }
 
   private static void nonNull(Object value) {
@@ -355,12 +356,13 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   /**
    * Whether or not to match on whole words only.
    */
-  public boolean isPrefix() {
-    return prefix;
+  @Override
+  public SearchType getSearchType() {
+    return searchType == null ? SearchType.WHOLE_WORDS : searchType;
   }
 
-  public void setPrefix(boolean prefix) {
-    this.prefix = prefix;
+  public void setSearchType(SearchType searchType) {
+    this.searchType = searchType;
   }
 
   public Rank getMinRank() {
@@ -372,8 +374,9 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   }
 
   /**
-   * Filters usages by their rank, excluding all usages with a higher rank then the one given. E.g. maxRank=FAMILY will include usages of
-   * rank family and below (genus, species, etc), but exclude all orders and above.
+   * Filters usages by their rank, excluding all usages with a higher rank then the one given. E.g.
+   * maxRank=FAMILY will include usages of rank family and below (genus, species, etc), but exclude
+   * all orders and above.
    */
   public Rank getMaxRank() {
     return maxRank;
@@ -392,7 +395,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result = prime * result + Objects.hash(content, vernacular, facets, filters, highlight, reverse, sortBy, prefix, minRank, maxRank);
+    result = prime * result + Objects.hash(content, vernacular, facets, filters, highlight, reverse, sortBy, searchType, minRank, maxRank);
     return result;
   }
 
@@ -415,7 +418,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
         highlight == other.highlight &&
         reverse == other.reverse &&
         sortBy == other.sortBy &&
-        prefix == other.prefix &&
+        searchType == other.searchType &&
         minRank == other.minRank &&
         maxRank == other.maxRank;
   }

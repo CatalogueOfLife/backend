@@ -2,6 +2,7 @@ package life.catalogue.es.nu.search;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
+import life.catalogue.api.search.NameUsageRequest.SearchType;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
@@ -517,7 +518,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   @Test
   public void testWithSmthii__1() {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
-    query.setPrefix(true);
+    query.setSearchType(SearchType.PREFIX);
     query.setHighlight(false);
     query.setQ("Smithi");
     query.setFuzzy(true);
@@ -530,7 +531,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   @Test
   public void testWithSmthii__2() {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
-    query.setPrefix(true);
+    query.setSearchType(SearchType.PREFIX);
     query.setHighlight(false);
     query.setQ("Smithii");
     query.setFuzzy(true);

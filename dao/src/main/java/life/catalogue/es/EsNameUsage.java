@@ -31,7 +31,7 @@ public class EsNameUsage {
   private Integer sectorKey;
   @MapToType(ESDataType.KEYWORD)
   private Integer sectorDatasetKey;
-  @Analyzers({SCINAME_IGNORE_CASE, SCINAME_WHOLE_WORDS, SCINAME_AUTO_COMPLETE})
+  @Analyzers({KEYWORD, SCINAME_IGNORE_CASE, SCINAME_WHOLE_WORDS, SCINAME_AUTO_COMPLETE})
   private String scientificName;
   private NameStrings nameStrings;
   // Only indexed using KEYWORD analyzer since it's meant for faceting only (#371)
