@@ -77,7 +77,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   @QueryParam("reverse")
   private boolean reverse;
 
-  @QueryParam("searchType")
+  @QueryParam("type")
   private SearchType searchType;
 
   @QueryParam("minRank")
@@ -98,7 +98,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
       @JsonProperty("highlight") boolean highlight,
       @JsonProperty("reverse") boolean reverse,
       @JsonProperty("fuzzy") boolean fuzzy,
-      @JsonProperty("prefix") SearchType searchType,
+      @JsonProperty("type") SearchType searchType,
       @JsonProperty("minRank") Rank minRank,
       @JsonProperty("maxRank") Rank maxRank) {
     this.filters = filters == null ? new EnumMap<>(NameUsageSearchParameter.class) : new EnumMap<>(filters);
