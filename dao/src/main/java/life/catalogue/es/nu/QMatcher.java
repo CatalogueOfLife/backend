@@ -1,5 +1,6 @@
 package life.catalogue.es.nu;
 
+import life.catalogue.api.util.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import life.catalogue.api.search.NameUsageRequest;
@@ -35,7 +36,8 @@ public abstract class QMatcher {
 
   public static QMatcher getInstance(NameUsageRequest request) {
     QMatcher matcher;
-    switch (request.getSearchType()) {
+    // default to WHOLE_WORDS
+    switch (ObjectUtils.coalesce(request.getSearchType(), NameUsageRequest.SearchType.WHOLE_WORDS)) {
       case EXACT:
         if (LOG.isTraceEnabled()) {
           LOG.trace("Instantiating EXACT matcher for search phrase \"{}\"", request.getQ());

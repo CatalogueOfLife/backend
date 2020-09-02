@@ -1,6 +1,7 @@
 package life.catalogue.api.search;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.ws.rs.QueryParam;
 import java.util.Objects;
@@ -10,26 +11,32 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
   @QueryParam("datasetKey")
   private Integer datasetKey;
   @QueryParam("vernaculars")
-  private Boolean vernaculars;
+  private boolean vernaculars;
   @QueryParam("accepted")
-  private Boolean accepted;
-
+  private boolean accepted;
   @QueryParam("limit")
   private Integer limit; // Desired number of suggestions
 
   @Override
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   public SearchType getSearchType() {
     return SearchType.PREFIX;
   }
 
-  @JsonIgnore
   public boolean isVernaculars() {
-    return vernaculars != null && vernaculars;
+    return vernaculars;
   }
 
-  @JsonIgnore
+  public void setVernaculars(boolean vernaculars) {
+    this.vernaculars = vernaculars;
+  }
+
   public boolean isAccepted() {
-    return accepted != null && accepted;
+    return accepted;
+  }
+
+  public void setAccepted(boolean accepted) {
+    this.accepted = accepted;
   }
 
   public Integer getDatasetKey() {
@@ -66,7 +73,7 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
 
   @JsonIgnore
   public boolean isEmpty() {
-    return super.isEmpty() && datasetKey == null && vernaculars == null && accepted == null && limit == null;
+    return super.isEmpty() && datasetKey == null && !vernaculars && !accepted && limit == null;
   }
 
   @Override

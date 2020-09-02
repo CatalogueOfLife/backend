@@ -353,12 +353,9 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     this.reverse = reverse;
   }
 
-  /**
-   * Whether or not to match on whole words only.
-   */
   @Override
   public SearchType getSearchType() {
-    return searchType == null ? SearchType.WHOLE_WORDS : searchType;
+    return searchType;
   }
 
   public void setSearchType(SearchType searchType) {
