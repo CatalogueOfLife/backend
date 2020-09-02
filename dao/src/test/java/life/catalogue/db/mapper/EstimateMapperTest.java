@@ -1,10 +1,8 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Reference;
 import life.catalogue.api.model.SpeciesEstimate;
-import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.api.search.EstimateSearchRequest;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.EstimateType;
@@ -37,7 +35,7 @@ public class EstimateMapperTest extends BaseDecisionMapperTest<SpeciesEstimate, 
     d.setDatasetKey(Datasets.DRAFT_COL);
     d.setTarget(TestEntityGenerator.newSimpleNameWithoutStatusParent());
     d.setEstimate(34567);
-    d.setType(EstimateType.DESCRIBED_SPECIES_EXTINCT);
+    d.setType(EstimateType.SPECIES_EXTINCT);
     d.setReferenceId(ref.getId());
     d.setNote("I cannot remember why I did this.");
     d.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());

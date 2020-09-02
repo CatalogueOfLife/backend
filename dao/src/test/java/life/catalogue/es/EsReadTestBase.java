@@ -4,6 +4,7 @@ import com.esotericsoftware.kryo.Kryo;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
 import life.catalogue.api.search.NameUsageSearchRequest.SortBy;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.kryo.ApiKryoPool;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
 import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
@@ -130,13 +131,44 @@ public class EsReadTestBase {
     return new NameUsageSuggestionServiceEs(indexName(), getEsClient()).suggest(query);
   }
 
-  protected EsNameUsage newDocument(Name n) {
+  protected EsNameUsage newDocument(Name n) throws IOException {
+    return newDocument(n, TaxonomicStatus.ACCEPTED);
+  }
+
+  protected EsNameUsage newDocument(Name n, String... vernacularNames) throws IOException {
+    EsNameUsage doc = newDocument(n, TaxonomicStatus.ACCEPTED);
+    if (vernacularNames != null) {
+      doc.setVernacularNames(Arrays.asList(vernacularNames));
+    }
+    return doc;
+  }
+
+  protected EsNameUsage newDocument(Name n, TaxonomicStatus status, String... classification) throws IOException {
     EsNameUsage doc = new EsNameUsage();
+    doc.setUsageId(n.getId());
     doc.setDatasetKey(n.getDatasetKey());
     doc.setScientificName(n.getScientificName());
     doc.setNameStrings(new NameStrings(n));
     doc.setDatasetKey(n.getDatasetKey());
+    doc.setStatus(status);
+    // we need some payload for synonyms
+    if (status != null && status.isSynonym()) {
+      Synonym s = new Synonym();
+      s.setId(n.getId());
+      s.setParentId("acc-"+n.getId());
+      s.setStatus(status);
+      NameUsageWrapper nuw = new NameUsageWrapper(s);
+      doc.setPayload(NameUsageWrapperConverter.deflate(nuw));
+    }
+    if (classification != null) {
+      doc.setClassification(classification(classification));
+    }
+
     return doc;
+  }
+
+  protected static List<EsMonomial> classification(String... names) {
+    return Arrays.stream(names).map(n -> new EsMonomial(null, n)).collect(Collectors.toList());
   }
 
   /**

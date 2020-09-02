@@ -1,12 +1,5 @@
 package life.catalogue.es.nu.suggest;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.gbif.nameparser.api.Rank;
-import org.junit.Before;
-import org.junit.Test;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.NameUsageSuggestRequest;
@@ -14,10 +7,16 @@ import life.catalogue.api.search.NameUsageSuggestResponse;
 import life.catalogue.api.search.NameUsageSuggestion;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.es.EsMonomial;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
-import life.catalogue.es.NameStrings;
+import org.gbif.nameparser.api.Rank;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Set;
+
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -30,60 +29,54 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
   }
 
   @Test // The basics
-  public void test01() {
+  public void test01() throws IOException {
 
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetKey(1);
     query.setQ("abcde");
     query.setFuzzy(true);
 
-    EsNameUsage doc1 = new EsNameUsage(); // match 1
-    doc1.setDatasetKey(1);
-    doc1.setUsageId("1");
-    doc1.setRank(Rank.SPECIES);
     Name n = new Name();
+    n.setDatasetKey(1);
+    n.setRank(Rank.SPECIES);
+    n.setId("1");
     n.setSpecificEpithet("AbCdEfGhIjK");
-    doc1.setNameStrings(new NameStrings(n));
+    EsNameUsage doc1 = newDocument(n); // match 1
 
-    EsNameUsage doc2 = new EsNameUsage(); // match 2
-    doc2.setDatasetKey(1);
-    doc2.setUsageId("2");
-    doc2.setRank(Rank.SUBSPECIES);
     n = new Name();
+    n.setDatasetKey(1);
+    n.setId("2");
+    n.setRank(Rank.SUBSPECIES);
     n.setSpecificEpithet("AbCdEfG"); // Just for peeking at scores
-    doc2.setNameStrings(new NameStrings(n));
+    EsNameUsage doc2 = newDocument(n); // match 2
 
-    EsNameUsage doc3 = new EsNameUsage(); // match 3
-    doc3.setDatasetKey(1);
-    doc3.setUsageId("3");
-    doc3.setRank(Rank.SPECIES);
     n = new Name();
+    n.setDatasetKey(1);
+    n.setId("3");
+    n.setRank(Rank.SPECIES);
     n.setSpecificEpithet("   AbCdE  ");
-    doc3.setNameStrings(new NameStrings(n));
+    EsNameUsage doc3 = newDocument(n); // match 3
 
-    EsNameUsage doc4 = new EsNameUsage(); // no match (name)
-    doc4.setDatasetKey(1);
-    doc4.setUsageId("4");
-    doc4.setRank(Rank.SUBSPECIES);
     n = new Name();
+    n.setDatasetKey(1);
+    n.setId("4");
+    n.setRank(Rank.SUBSPECIES);
     n.setSpecificEpithet("AbCd");
-    doc4.setNameStrings(new NameStrings(n));
+    EsNameUsage doc4 = newDocument(n); // no match (name)
 
-    EsNameUsage doc5 = new EsNameUsage(); // no match (dataset key)
-    doc5.setDatasetKey(1234567);
-    doc5.setUsageId("5");
-    doc5.setRank(Rank.SPECIES);
     n = new Name();
+    n.setDatasetKey(1234567);
+    n.setId("5");
+    n.setRank(Rank.SPECIES);
     n.setSpecificEpithet("abcde");
-    doc5.setNameStrings(new NameStrings(n));
+    EsNameUsage doc5 = newDocument(n); // no match (dataset key)
 
-    EsNameUsage doc6 = new EsNameUsage(); // match 4
-    doc6.setDatasetKey(1);
-    doc6.setUsageId("6");
-    doc6.setRank(Rank.FAMILY);
     n = new Name();
+    n.setDatasetKey(1);
+    n.setId("6");
+    n.setRank(Rank.FAMILY);
     n.setSpecificEpithet("abcde");
-    doc6.setNameStrings(new NameStrings(n));
+    EsNameUsage doc6 = newDocument(n); // match 4
 
     indexRaw(doc1, doc2, doc3, doc4, doc5, doc6);
 
@@ -93,7 +86,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
   }
 
   @Test // Relevance goes from infraspecific epithet -> specific epithet -> genus
-  public void test02() {
+  public void test02() throws IOException {
 
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetKey(1);
@@ -103,35 +96,32 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
 
     String THE_NAME = "AbCdEfGhIjK";
 
-    EsNameUsage doc1 = new EsNameUsage();
-    doc1.setDatasetKey(1);
-    doc1.setUsageId("1");
-    doc1.setRank(Rank.SPECIES);
     Name n = new Name();
+    n.setDatasetKey(1);
+    n.setId("1");
+    n.setRank(Rank.SPECIES);
     n.setGenus(THE_NAME); // 3: genus
-    doc1.setNameStrings(new NameStrings(n));
+    EsNameUsage doc1 = newDocument(n);
 
-    EsNameUsage doc2 = new EsNameUsage();
-    doc2.setDatasetKey(1);
-    doc2.setUsageId("2");
-    doc2.setRank(Rank.SPECIES); // 2: species
     n = new Name();
+    n.setDatasetKey(1);
+    n.setId("2");
+    n.setRank(Rank.SPECIES); // 2: species
     n.setSpecificEpithet(THE_NAME);
-    doc2.setNameStrings(new NameStrings(n));
+    EsNameUsage doc2 = newDocument(n);
 
-    EsNameUsage doc3 = new EsNameUsage();
-    doc3.setDatasetKey(1);
-    doc3.setUsageId("3");
-    doc3.setRank(Rank.SUBSPECIES); // 1: subspecies
     n = new Name();
+    n.setDatasetKey(1);
+    n.setId("3");
+    n.setRank(Rank.SUBSPECIES); // 1: subspecies
     n.setInfraspecificEpithet(THE_NAME);
-    doc3.setNameStrings(new NameStrings(n));
+    EsNameUsage doc3 = newDocument(n);
 
-    EsNameUsage doc4 = new EsNameUsage();
-    doc4.setDatasetKey(1);
-    doc4.setUsageId("4");
-    doc4.setRank(Rank.SUBSPECIES);
-    doc4.setVernacularNames(Arrays.asList(THE_NAME)); // 4: vernacular
+    n = new Name();
+    n.setDatasetKey(1);
+    n.setId("4");
+    n.setRank(Rank.SUBSPECIES);
+    EsNameUsage doc4 = newDocument(n, THE_NAME);
 
     indexRaw(doc1, doc2, doc3, doc4);
 
@@ -145,57 +135,55 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
   }
 
   @Test // Relevance goes from infraspecific epithet -> specific epithet -> genus
-  public void test02b() {
+  public void test02b() throws IOException {
 
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetKey(1);
     query.setQ("abcde fghij");
     query.setVernaculars(true);
 
-    EsNameUsage doc1 = new EsNameUsage();
-    doc1.setDatasetKey(1);
-    doc1.setUsageId("1");
-    doc1.setRank(Rank.SPECIES);
     Name n = new Name();
+    n.setDatasetKey(1);
+    n.setId("1");
+    n.setRank(Rank.SPECIES);
     n.setGenus("abcde");
     n.setSpecificEpithet("fghij");
-    doc1.setNameStrings(new NameStrings(n));
+    EsNameUsage doc1 = newDocument(n);
 
-    EsNameUsage doc2 = new EsNameUsage();
-    doc2.setDatasetKey(1);
-    doc2.setUsageId("2");
-    doc2.setRank(Rank.SUBSPECIES);
     n = new Name();
+    n.setDatasetKey(1);
+    n.setId("2");
+    n.setRank(Rank.SUBSPECIES);
     n.setGenus("abcde");
     n.setInfraspecificEpithet("fghij");
-    doc2.setNameStrings(new NameStrings(n));
+    EsNameUsage doc2 = newDocument(n);
 
-    EsNameUsage doc3 = new EsNameUsage();
-    doc3.setDatasetKey(1);
-    doc3.setUsageId("3");
-    doc3.setRank(Rank.SUBSPECIES);
     n = new Name();
+    n.setDatasetKey(1);
+    n.setId("3");
+    n.setRank(Rank.SUBSPECIES);
     n.setSpecificEpithet("abcde");
     n.setInfraspecificEpithet("fghij");
-    doc3.setNameStrings(new NameStrings(n));
+    EsNameUsage doc3 = newDocument(n);
 
-    EsNameUsage doc4 = new EsNameUsage();
-    doc4.setDatasetKey(1);
-    doc4.setUsageId("4");
-    doc4.setRank(Rank.SPECIES);
-    doc4.setVernacularNames(Arrays.asList("abcde fghij"));
+    n = new Name();
+    n.setId("4");
+    n.setDatasetKey(1);
+    n.setRank(Rank.SPECIES);
+    EsNameUsage doc4 = newDocument(n, "abcde fghij");
 
-    EsNameUsage doc5 = new EsNameUsage();
-    doc5.setDatasetKey(1);
-    doc5.setUsageId("5");
-    doc5.setRank(Rank.SPECIES);
-    doc5.setVernacularNames(Arrays.asList("abcde", "fghij"));
+    n = new Name();
+    n.setDatasetKey(1);
+    n.setId("5");
+    n.setRank(Rank.SPECIES);
+    EsNameUsage doc5 = newDocument(n, "abcde", "fghij");
 
-    EsNameUsage doc6 = new EsNameUsage();
-    doc6.setDatasetKey(1);
-    doc6.setUsageId("6");
-    doc6.setRank(Rank.SPECIES);
-    doc6.setScientificName("abcde fghij");
+    n = new Name();
+    n.setDatasetKey(1);
+    n.setId("6");
+    n.setRank(Rank.SPECIES);
+    n.setScientificName("abcde fghij");
+    EsNameUsage doc6 = newDocument(n);
 
     indexRaw(doc1, doc2, doc3, doc4, doc5, doc6);
 
@@ -206,7 +194,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
   }
 
   @Test // lots of search terms
-  public void test03() {
+  public void test03() throws IOException {
 
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetKey(1);
@@ -214,17 +202,18 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
     query.setVernaculars(true);
     query.setFuzzy(true);
 
-    EsNameUsage doc1 = new EsNameUsage();
-    doc1.setDatasetKey(1);
-    doc1.setUsageId("1");
-    doc1.setRank(Rank.SPECIES);
-    doc1.setScientificName("Larus fuscus");
+    Name n = new Name();
+    n.setDatasetKey(1);
+    n.setId("1");
+    n.setRank(Rank.SPECIES);
+    n.setScientificName("Larus fuscus");
+    EsNameUsage doc1 = newDocument(n);
 
-    EsNameUsage doc2 = new EsNameUsage();
-    doc2.setDatasetKey(1);
-    doc2.setUsageId("2");
-    doc2.setRank(Rank.SPECIES);
-    doc2.setVernacularNames(Arrays.asList("Foo Bar Larusca"));
+    n = new Name();
+    n.setDatasetKey(1);
+    n.setId("2");
+    n.setRank(Rank.SPECIES);
+    EsNameUsage doc2 = newDocument(n, "Foo Bar Larusca");
 
     indexRaw(doc1, doc2);
 
@@ -252,6 +241,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
     t.setId("1");
     t.setDatasetKey(1);
     t.setName(n);
+    t.setStatus(TaxonomicStatus.ACCEPTED);
 
     NameUsageWrapper nuw = new NameUsageWrapper(t);
 
@@ -312,53 +302,48 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
    * Suggest with a query larger than ngram max should still match
    */
   @Test
-  public void testTruncateNotFuzzy() {
+  public void testTruncateNotFuzzy() throws IOException {
 
     // query
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetKey(1);
     query.setFuzzy(false);
 
-    EsNameUsage doc1 = new EsNameUsage(); // match 1
-    doc1.setDatasetKey(1);
-    doc1.setUsageId("1");
-    doc1.setRank(Rank.SPECIES);
     Name n = new Name();
+    n.setDatasetKey(1);
+    n.setId("1");
+    n.setRank(Rank.SPECIES);
     // genus has 13 chars - more than the 12 max ngram limit - but it gets transformed into Tiranosaura which is smaller
     n.setScientificName("Tyrannosaurus rex");
     n.setGenus("Tyrannosaurus");
     n.setSpecificEpithet("rex");
     n.setRank(Rank.SPECIES);
-    doc1.setNameStrings(new NameStrings(n));
+    EsNameUsage doc1 = newDocument(n, TaxonomicStatus.ACCEPTED); // match 1
 
-    EsNameUsage doc2 = new EsNameUsage(); // match 2
-    doc2.setDatasetKey(1);
-    doc2.setUsageId("2");
-    doc2.setRank(Rank.SUBSPECIES);
     n = new Name();
+    n.setDatasetKey(1);
+    n.setId("2");
+    n.setRank(Rank.SUBSPECIES);
     // subspecies has more than the 12 max ngram limit
     n.setScientificName("Tyrannosaurus rex altobrasiliensis");
     n.setGenus("Tyrannosaurus");
     n.setSpecificEpithet("rex");
     n.setInfraspecificEpithet("altobrasiliensis");
-    n.setRank(Rank.SUBSPECIES);
-    doc2.setNameStrings(new NameStrings(n));
+    EsNameUsage doc2 = newDocument(n); // match 2
 
-    EsNameUsage doc3 = new EsNameUsage(); // match 3
-    doc3.setDatasetKey(1);
-    doc3.setUsageId("3");
-    doc3.setRank(Rank.SPECIES);
     n = new Name();
+    n.setDatasetKey(1);
+    n.setId("3");
+    n.setRank(Rank.SPECIES);
     n.setSpecificEpithet("   AbCdE  ");
-    doc3.setNameStrings(new NameStrings(n));
+    EsNameUsage doc3 = newDocument(n); // match 3
 
-    EsNameUsage doc4 = new EsNameUsage(); // match 1
-    doc4.setDatasetKey(1);
-    doc4.setUsageId("1");
-    doc4.setRank(Rank.SPECIES);
     n = new Name();
+    n.setDatasetKey(1);
+    n.setId("1");
+    n.setRank(Rank.SPECIES);
     n.setSpecificEpithet("AbCdEfGhIjK");
-    doc4.setNameStrings(new NameStrings(n));
+    EsNameUsage doc4 = newDocument(n); // match 1
 
     indexRaw(doc1, doc2, doc3, doc4);
 
@@ -389,53 +374,48 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testTruncateFuzzy() {
+  public void testTruncateFuzzy() throws IOException {
 
     // query
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetKey(1);
     query.setFuzzy(true);
 
-    EsNameUsage doc1 = new EsNameUsage(); // match 1
-    doc1.setDatasetKey(1);
-    doc1.setUsageId("1");
-    doc1.setRank(Rank.SPECIES);
     Name n = new Name();
+    n.setDatasetKey(1);
+    n.setId("1");
+    n.setRank(Rank.SPECIES);
     // genus has 13 chars - more than the 12 max ngram limit - but it gets transformed into Tiranosaura which is smaller
     n.setScientificName("Tyrannosaurus rex");
     n.setGenus("Tyrannosaurus");
     n.setSpecificEpithet("rex");
-    n.setRank(Rank.SPECIES);
-    doc1.setNameStrings(new NameStrings(n));
+    EsNameUsage doc1 = newDocument(n); // match 1
 
-    EsNameUsage doc2 = new EsNameUsage(); // match 2
-    doc2.setDatasetKey(1);
-    doc2.setUsageId("2");
-    doc2.setRank(Rank.SUBSPECIES);
     n = new Name();
+    n.setDatasetKey(1);
+    n.setId("2");
+    n.setRank(Rank.SUBSPECIES);
     // subspecies has more than the 12 max ngram limit
     n.setScientificName("Tyrannosaurus rex altobrasiliensis");
     n.setGenus("Tyrannosaurus");
     n.setSpecificEpithet("rex");
     n.setInfraspecificEpithet("altobrasiliensis");
     n.setRank(Rank.SUBSPECIES);
-    doc2.setNameStrings(new NameStrings(n));
+    EsNameUsage doc2 = newDocument(n); // match 2
 
-    EsNameUsage doc3 = new EsNameUsage(); // match 3
-    doc3.setDatasetKey(1);
-    doc3.setUsageId("3");
-    doc3.setRank(Rank.SPECIES);
     n = new Name();
+    n.setDatasetKey(1);
+    n.setId("3");
+    n.setRank(Rank.SPECIES);
     n.setSpecificEpithet("   AbCdE  ");
-    doc3.setNameStrings(new NameStrings(n));
+    EsNameUsage doc3 = newDocument(n); // match 3
 
-    EsNameUsage doc4 = new EsNameUsage(); // match 1
-    doc4.setDatasetKey(1);
-    doc4.setUsageId("1");
-    doc4.setRank(Rank.SPECIES);
     n = new Name();
+    n.setDatasetKey(1);
+    n.setId("1");
+    n.setRank(Rank.SPECIES);
     n.setSpecificEpithet("AbCdEfGhIjK");
-    doc4.setNameStrings(new NameStrings(n));
+    EsNameUsage doc4 = newDocument(n); // match 1
 
     indexRaw(doc1, doc2, doc3, doc4);
 
@@ -466,51 +446,42 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testParentTaxon() {
+  public void testParentTaxon() throws IOException {
     Name n = new Name();
+    n.setId("1");
     n.setDatasetKey(1);
     n.setScientificName("Larus fuscus");
     n.setGenus("Larus");
     n.setSpecificEpithet("fuscus");
     n.setRank(Rank.SPECIES);
-    EsNameUsage nu1 = newDocument(n);
-    nu1.setUsageId("1");
-    nu1.setStatus(TaxonomicStatus.ACCEPTED);
-    nu1.setClassification(classification("Laridae", "Larus", "Larus fuscus"));
+    EsNameUsage nu1 = newDocument(n, TaxonomicStatus.ACCEPTED, "Laridae", "Larus", "Larus fuscus");
 
     n = new Name();
+    n.setId("2");
     n.setDatasetKey(1);
     n.setScientificName("Larus fuscus argentatus");
     n.setGenus("Larus");
     n.setSpecificEpithet("fuscus");
     n.setInfraspecificEpithet("argentatus");
     n.setRank(Rank.SUBSPECIES);
-    EsNameUsage nu2 = newDocument(n);
-    nu2.setStatus(TaxonomicStatus.ACCEPTED);
-    nu2.setUsageId("2");
-    nu2.setClassification(classification("Laridae", "Larus", "Larus fuscus", "Larus fuscus argentatus"));
+    EsNameUsage nu2 = newDocument(n, TaxonomicStatus.ACCEPTED, "Laridae", "Larus", "Larus fuscus", "Larus fuscus argentatus");
 
     n = new Name();
+    n.setId("3");
     n.setDatasetKey(1);
     n.setScientificName("Larus");
     n.setUninomial("Larus");
     n.setRank(Rank.GENUS);
-    EsNameUsage nu3 = newDocument(n);
-    nu3.setStatus(TaxonomicStatus.ACCEPTED);
-    nu3.setUsageId("3");
-    nu3.setScientificName("Larus");
-    nu3.setClassification(classification("Laridae", "Larus"));
+    EsNameUsage nu3 = newDocument(n, TaxonomicStatus.ACCEPTED, "Laridae", "Larus");
 
     n = new Name();
+    n.setId("4");
     n.setDatasetKey(1);
     n.setScientificName("Meles meles");
     n.setGenus("Meles");
     n.setSpecificEpithet("meles");
     n.setRank(Rank.SPECIES);
-    EsNameUsage nu4 = newDocument(n);
-    nu4.setStatus(TaxonomicStatus.ACCEPTED);
-    nu4.setUsageId("4");
-    nu4.setClassification(classification("Mustelidae", "Meles", "Meles meles"));
+    EsNameUsage nu4 = newDocument(n, TaxonomicStatus.ACCEPTED, "Mustelidae", "Meles", "Meles meles");
 
     indexRaw(nu1, nu2, nu3, nu4);
 
@@ -524,17 +495,15 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testParentTaxon2() {
+  public void testParentTaxon2() throws IOException{
     Name n = new Name();
+    n.setId("1");
     n.setDatasetKey(1);
     n.setScientificName("Larus fuscus");
     n.setGenus("Larus");
     n.setSpecificEpithet("fuscus");
     n.setRank(Rank.SPECIES);
-    EsNameUsage nu1 = newDocument(n);
-    nu1.setStatus(TaxonomicStatus.ACCEPTED);
-    nu1.setUsageId("1");
-    nu1.setClassification(classification("Laridae", "Larus", "Larus fuscus"));
+    EsNameUsage nu1 = newDocument(n, TaxonomicStatus.ACCEPTED, "Laridae", "Larus", "Larus fuscus");
 
     indexRaw(nu1);
 
@@ -550,16 +519,14 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testParentTaxon3() {
+  public void testParentTaxon3() throws IOException{
     Name n = new Name();
+    n.setId("1");
     n.setDatasetKey(1);
     n.setScientificName("Mustelidae");
     n.setUninomial("Mustelidae");
     n.setRank(Rank.FAMILY);
-    EsNameUsage nu1 = newDocument(n);
-    nu1.setStatus(TaxonomicStatus.ACCEPTED);
-    nu1.setUsageId("1");
-    nu1.setClassification(classification("Mammalia", "Carnivora", "Mustelidae"));
+    EsNameUsage nu1 = newDocument(n, TaxonomicStatus.ACCEPTED, "Mammalia", "Carnivora", "Mustelidae");
 
     indexRaw(nu1);
 
@@ -575,17 +542,15 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testSynonym() {
+  public void testSynonym() throws IOException {
     Name n = new Name();
+    n.setId("1");
     n.setDatasetKey(1);
     n.setScientificName("Larus foo");
     n.setGenus("Larus");
     n.setRank(Rank.SPECIES);
-    EsNameUsage nu1 = newDocument(n);
-    nu1.setStatus(TaxonomicStatus.SYNONYM);
-    nu1.setUsageId("1");
+    EsNameUsage nu1 = newDocument(n, TaxonomicStatus.SYNONYM, "Laridae", "Larus", "fuscus", "foo");
     nu1.setAcceptedName("Larus fuscus");
-    nu1.setClassification(classification("Laridae", "Larus", "fuscus", "foo"));
 
     indexRaw(nu1);
 
@@ -600,29 +565,25 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testAcceptedOnly() {
+  public void testAcceptedOnly() throws IOException{
 
     Name n = new Name();
+    n.setId("1");
     n.setDatasetKey(1);
     n.setScientificName("Larus fuscus");
     n.setGenus("Larus");
     n.setSpecificEpithet("fuscus");
     n.setRank(Rank.SPECIES);
-    EsNameUsage nu1 = newDocument(n);
-    nu1.setUsageId("1");
-    nu1.setStatus(TaxonomicStatus.ACCEPTED);
-    nu1.setClassification(classification("Laridae", "Larus", "Larus fuscus"));
+    EsNameUsage nu1 = newDocument(n, TaxonomicStatus.ACCEPTED, "Laridae", "Larus", "Larus fuscus");
 
     n = new Name();
+    n.setId("2");
     n.setDatasetKey(1);
     n.setScientificName("Larus fuscus");
     n.setGenus("Larus");
     n.setSpecificEpithet("fuscus");
     n.setRank(Rank.SPECIES);
-    EsNameUsage nu2 = newDocument(n);
-    nu2.setUsageId("2");
-    nu2.setStatus(TaxonomicStatus.SYNONYM);
-    nu2.setClassification(classification("Laridae", "Larus", "Larus fuscus"));
+    EsNameUsage nu2 = newDocument(n, TaxonomicStatus.SYNONYM, "Laridae", "Larus", "Larus fuscus");
 
     indexRaw(nu1, nu2);
 
@@ -635,10 +596,6 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
     assertEquals(1, response.getSuggestions().size());
     assertEquals("1", response.getSuggestions().get(0).getUsageId());
 
-  }
-
-  private static List<EsMonomial> classification(String... names) {
-    return Arrays.stream(names).map(n -> new EsMonomial(null, n)).collect(Collectors.toList());
   }
 
   private static boolean containsUsageIds(NameUsageSuggestResponse response, EsNameUsage... docs) {

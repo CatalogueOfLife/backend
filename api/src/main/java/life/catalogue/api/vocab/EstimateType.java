@@ -2,11 +2,11 @@ package life.catalogue.api.vocab;
 
 public enum EstimateType {
 
-  DESCRIBED_SPECIES_LIVING("Estimate number of all extant species described with a linnean name."),
+  SPECIES_LIVING("Number of living species which are recognised by science at present time on a global scale and have been described by a Linnean name. Estimates do not include fossil species."),
   
-  DESCRIBED_SPECIES_EXTINCT("Estimate number of all extinct species incl fossils described with a linnean name."),
+  SPECIES_EXTINCT("Number of extinct species which are recognised by science at present time on a global scale and have been described by a Linnean name. Estimates do not include living species."),
   
-  ESTIMATED_SPECIES("Estimate number of all species including both described and yet to be discovered species.");
+  ESTIMATED_SPECIES("Number of living species which are estimated to exist on a global scale, including both already described and yet to be discovered species.");
 
 
   private final String description;

@@ -164,7 +164,7 @@ public abstract class TreeNode implements DSID<String> {
     }
     double avg = estimates.stream()
         .filter(e -> e.getEstimate() != null)
-        .filter(e -> e.getType() == EstimateType.DESCRIBED_SPECIES_LIVING)
+        .filter(e -> e.getType() == EstimateType.SPECIES_LIVING)
         .collect(Collectors.averagingInt(SpeciesEstimate::getEstimate));
     return avg == 0 ? null : (int) avg;
   }

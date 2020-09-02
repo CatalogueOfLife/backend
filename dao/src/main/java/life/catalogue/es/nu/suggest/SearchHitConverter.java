@@ -47,9 +47,11 @@ class SearchHitConverter implements UpwardConverter<SearchHit<EsNameUsage>, Name
       try {
         // we need the payload to figure out the acceptedUsageID
         String payload = hit.getSource().getPayload();
-        NameUsageWrapper nuw = NameUsageWrapperConverter.inflate(payload);
-        NameUsageBase syn = (NameUsageBase) nuw.getUsage();
-        suggestion.setAcceptedUsageId(syn.getParentId());
+        if (payload != null) {
+          NameUsageWrapper nuw = NameUsageWrapperConverter.inflate(payload);
+          NameUsageBase syn = (NameUsageBase) nuw.getUsage();
+          suggestion.setAcceptedUsageId(syn.getParentId());
+        }
       } catch (IOException e) {
         LOG.error("Failed to inflate payload for synonym {}", doc.getUsageId(), e);
       }
