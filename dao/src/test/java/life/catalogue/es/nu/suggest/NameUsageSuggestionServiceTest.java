@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import static java.util.stream.Collectors.toSet;
@@ -551,6 +552,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
     n.setRank(Rank.SPECIES);
     EsNameUsage nu1 = newDocument(n, TaxonomicStatus.SYNONYM, "Laridae", "Larus", "fuscus", "foo");
     nu1.setAcceptedName("Larus fuscus");
+    nu1.setClassificationIds(List.of("1","2","3","4"));
 
     indexRaw(nu1);
 
@@ -561,7 +563,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
 
     assertEquals("Larus foo", response.getSuggestions().get(0).getMatch());
     assertEquals("Larus foo (synonym of Larus fuscus)", response.getSuggestions().get(0).getSuggestion());
-
+    assertEquals("3", response.getSuggestions().get(0).getAcceptedUsageId());
   }
 
   @Test
