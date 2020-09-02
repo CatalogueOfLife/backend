@@ -1,5 +1,10 @@
 package life.catalogue.es.nu.suggest;
 
+import java.util.Arrays;
+import java.util.Set;
+import org.gbif.nameparser.api.Rank;
+import org.junit.Before;
+import org.junit.Test;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.NameUsageSuggestRequest;
@@ -9,14 +14,6 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
-import org.gbif.nameparser.api.Rank;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Set;
-
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -29,7 +26,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
   }
 
   @Test // The basics
-  public void test01() throws IOException {
+  public void test01() {
 
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetKey(1);
@@ -86,7 +83,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
   }
 
   @Test // Relevance goes from infraspecific epithet -> specific epithet -> genus
-  public void test02() throws IOException {
+  public void test02() {
 
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetKey(1);
@@ -135,7 +132,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
   }
 
   @Test // Relevance goes from infraspecific epithet -> specific epithet -> genus
-  public void test02b() throws IOException {
+  public void test02b() {
 
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetKey(1);
@@ -194,7 +191,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
   }
 
   @Test // lots of search terms
-  public void test03() throws IOException {
+  public void test03() {
 
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetKey(1);
@@ -302,7 +299,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
    * Suggest with a query larger than ngram max should still match
    */
   @Test
-  public void testTruncateNotFuzzy() throws IOException {
+  public void testTruncateNotFuzzy() {
 
     // query
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
@@ -313,7 +310,8 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
     n.setDatasetKey(1);
     n.setId("1");
     n.setRank(Rank.SPECIES);
-    // genus has 13 chars - more than the 12 max ngram limit - but it gets transformed into Tiranosaura which is smaller
+    // genus has 13 chars - more than the 12 max ngram limit - but it gets transformed into Tiranosaura
+    // which is smaller
     n.setScientificName("Tyrannosaurus rex");
     n.setGenus("Tyrannosaurus");
     n.setSpecificEpithet("rex");
@@ -374,7 +372,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testTruncateFuzzy() throws IOException {
+  public void testTruncateFuzzy() {
 
     // query
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
@@ -385,7 +383,8 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
     n.setDatasetKey(1);
     n.setId("1");
     n.setRank(Rank.SPECIES);
-    // genus has 13 chars - more than the 12 max ngram limit - but it gets transformed into Tiranosaura which is smaller
+    // genus has 13 chars - more than the 12 max ngram limit - but it gets transformed into Tiranosaura
+    // which is smaller
     n.setScientificName("Tyrannosaurus rex");
     n.setGenus("Tyrannosaurus");
     n.setSpecificEpithet("rex");
@@ -446,7 +445,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testParentTaxon() throws IOException {
+  public void testParentTaxon() {
     Name n = new Name();
     n.setId("1");
     n.setDatasetKey(1);
@@ -495,7 +494,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testParentTaxon2() throws IOException{
+  public void testParentTaxon2() {
     Name n = new Name();
     n.setId("1");
     n.setDatasetKey(1);
@@ -519,7 +518,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testParentTaxon3() throws IOException{
+  public void testParentTaxon3() {
     Name n = new Name();
     n.setId("1");
     n.setDatasetKey(1);
@@ -542,14 +541,16 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testSynonym() throws IOException {
+  public void testSynonym() {
     Name n = new Name();
     n.setId("1");
     n.setDatasetKey(1);
     n.setScientificName("Larus foo");
     n.setGenus("Larus");
     n.setRank(Rank.SPECIES);
+
     EsNameUsage nu1 = newDocument(n, TaxonomicStatus.SYNONYM, "Laridae", "Larus", "fuscus", "foo");
+    nu1.setClassificationIds(Arrays.asList("1", "2", "3", "4"));
     nu1.setAcceptedName("Larus fuscus");
 
     indexRaw(nu1);
@@ -565,7 +566,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void testAcceptedOnly() throws IOException{
+  public void testAcceptedOnly() {
 
     Name n = new Name();
     n.setId("1");

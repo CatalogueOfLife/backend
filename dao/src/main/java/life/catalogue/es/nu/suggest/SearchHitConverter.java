@@ -1,24 +1,20 @@
 package life.catalogue.es.nu.suggest;
 
-import life.catalogue.api.model.NameUsageBase;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.api.search.NameUsageSuggestion;
-import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.es.EsMonomial;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.UpwardConverter;
-import life.catalogue.es.nu.NameUsageWrapperConverter;
 import life.catalogue.es.response.SearchHit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.List;
 
 /**
  * Converts an ES SearchHit instance into a NameUsageSuggestion object.
  */
 class SearchHitConverter implements UpwardConverter<SearchHit<EsNameUsage>, NameUsageSuggestion> {
+  @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SearchHitConverter.class);
 
   private final VernacularNameMatcher matcher;
@@ -44,16 +40,9 @@ class SearchHitConverter implements UpwardConverter<SearchHit<EsNameUsage>, Name
     } else if (doc.getAcceptedName() != null) { // *then* this is a synonym
       suggestion.setMatch(doc.getScientificName());
       suggestion.setParentOrAcceptedName(doc.getAcceptedName());
-      try {
-        // we need the payload to figure out the acceptedUsageID
-        String payload = hit.getSource().getPayload();
-        if (payload != null) {
-          NameUsageWrapper nuw = NameUsageWrapperConverter.inflate(payload);
-          NameUsageBase syn = (NameUsageBase) nuw.getUsage();
-          suggestion.setAcceptedUsageId(syn.getParentId());
-        }
-      } catch (IOException e) {
-        LOG.error("Failed to inflate payload for synonym {}", doc.getUsageId(), e);
+      if (doc.getClassificationIds() == null || doc.getClassificationIds().size() < 2) {
+        // That's corrupt data but let's not make the suggestion service trip over it
+        suggestion.setAcceptedUsageId(doc.getClassificationIds().get(doc.getClassificationIds().size() - 2));
       }
     } else {
       suggestion.setMatch(doc.getScientificName());
