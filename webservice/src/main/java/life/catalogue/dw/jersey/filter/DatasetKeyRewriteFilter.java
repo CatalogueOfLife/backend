@@ -116,12 +116,12 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
 
     if (!isManaged(projectKey)) {
       // abort request! bad argument
-      throw new IllegalArgumentException("Dataset " + projectKey + " is not a managed project");
+      throw new IllegalArgumentException("Dataset " + projectKey + " is not a project");
     }
 
     Integer releaseKey;
     // candidate requested?
-    if (m.group().toLowerCase().endsWith("c")) {
+    if (m.group().endsWith("C")) {
       releaseKey = latestCandidate.get(projectKey);
     } else {
       releaseKey = latestRelease.get(projectKey);
