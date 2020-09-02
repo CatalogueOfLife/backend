@@ -37,27 +37,39 @@ public abstract class QMatcher {
     QMatcher matcher;
     switch (request.getSearchType()) {
       case EXACT:
+        if (LOG.isTraceEnabled()) {
+          LOG.trace("Instantiating EXACT matcher for search phrase \"{}\"", request.getQ());
+        }
         matcher = getExactQMatcher(request);
         break;
       case PREFIX:
         if (request.isFuzzy()) {
+          if (LOG.isTraceEnabled()) {
+            LOG.trace("Instantiating FUZZY PREFIX matcher for search phrase \"{}\"", request.getQ());
+          }
           matcher = new FuzzyPrefixMatcher(request);
         } else {
+          if (LOG.isTraceEnabled()) {
+            LOG.trace("Instantiating SIMPLE PREFIX matcher for search phrase \"{}\"", request.getQ());
+          }
           matcher = new SimplePrefixMatcher(request);
         }
         break;
       case WHOLE_WORDS:
         if (request.isFuzzy()) {
+          if (LOG.isTraceEnabled()) {
+            LOG.trace("Instantiating FUZZY WHOLE_WORDS matcher for search phrase \"{}\"", request.getQ());
+          }
           matcher = new FuzzyWholeWordMatcher(request);
         } else {
+          if (LOG.isTraceEnabled()) {
+            LOG.trace("Instantiating SIMPLE WHOLE_WORDS matcher for search phrase \"{}\"", request.getQ());
+          }
           matcher = new SimpleWholeWordMatcher(request);
         }
         break;
       default:
         throw new AssertionError();
-    }
-    if (LOG.isTraceEnabled()) {
-      LOG.trace("Using {} for search phrase \"{}\"", matcher.getClass().getSimpleName(), request.getQ());
     }
     return matcher;
   }
@@ -78,7 +90,7 @@ public abstract class QMatcher {
    */
 
   public Query getVernacularNameQuery() {
-    String q = CatCopy.transLatin.transliterate(request.getQ());
+    String q = CatCopy.transLatin.transliterate(request.getQ().toLowerCase());
     return new DisMaxQuery()
         .subquery(new CaseInsensitiveQuery(FLD_VERNACULAR, q).withBoost(100.0))
         .subquery(new EdgeNgramQuery(FLD_VERNACULAR, q).withOperator(AND));
@@ -86,7 +98,7 @@ public abstract class QMatcher {
   }
 
   public Query getAuthorshipQuery() {
-    String q = request.getQ();
+    String q = request.getQ().toLowerCase();
     return new DisMaxQuery()
         .subquery(new CaseInsensitiveQuery(FLD_AUTHOR, q).withBoost(100.0))
         .subquery(new EdgeNgramQuery(FLD_AUTHOR, q).withOperator(AND));

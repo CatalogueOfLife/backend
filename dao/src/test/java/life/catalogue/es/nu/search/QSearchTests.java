@@ -241,4 +241,47 @@ public class QSearchTests extends EsReadTestBase {
     assertEquals(1, response.getResult().size());
   }
 
+  @Test // EXACT matching
+  public void test10() {
+
+    // ==> The query
+    NameUsageSearchRequest request = new NameUsageSearchRequest();
+    request.setQ("COVID-19");
+    request.setSearchType(SearchType.EXACT);
+
+    // Name, Usage & scientific name to prevent NPEs while indexing
+    Name name = new Name();
+    name.setScientificName("COVID-19");
+    Taxon t = new Taxon();
+    t.setName(name);
+    NameUsageWrapper w0 = new NameUsageWrapper(t);
+    index(w0);
+
+    name = new Name();
+    name.setScientificName("covid-19");
+    t = new Taxon();
+    t.setName(name);
+    w0 = new NameUsageWrapper(t);
+    index(w0);
+
+    name = new Name();
+    name.setScientificName("Covid-19");
+    t = new Taxon();
+    t.setName(name);
+    w0 = new NameUsageWrapper(t);
+    index(w0);
+
+    name = new Name();
+    name.setScientificName("Covid 19");
+    t = new Taxon();
+    t.setName(name);
+    w0 = new NameUsageWrapper(t);
+    index(w0);
+
+    NameUsageSearchResponse response = search(request);
+
+    assertEquals(1, response.getResult().size());
+    assertEquals("COVID-19",response.getResult().get(0).getUsage().getName().getScientificName());
+  }
+
 }

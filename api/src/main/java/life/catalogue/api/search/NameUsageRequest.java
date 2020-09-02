@@ -71,18 +71,7 @@ public abstract class NameUsageRequest {
   }
 
   public void setQ(String q) {
-    /*
-     * BEWARE: currently ALL analyzers involved in q matching (whether on scientific name, vernacular
-     * name or authorship) churn out all-lowercase tokens. Therefore, we might as well be done with it
-     * and lowercase the Q as well as soon as possible (i.e. here). Otherwise it's easy to forget (issue
-     * #697). If case-sensitive matching is introduced for some reason, we must change this setter into
-     * a regular setter and be **very** careful to check **all** classes that implicitly assume the Q to
-     * be lowercase (the QMatcher classes, the Highlighter classes, etc.) In other words check all
-     * references to NameUsageRequest.getQ()
-     */
-    if (q != null) {
-      this.q = q.toLowerCase();
-    }
+    this.q = q;
   }
 
   public boolean isFuzzy() {
