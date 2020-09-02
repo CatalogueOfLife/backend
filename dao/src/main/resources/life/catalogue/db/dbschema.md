@@ -10,6 +10,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2020-09-02 renamed estimate types
+```
+ALTER TYPE ESTIMATETYPE RENAME `DESCRIBED_SPECIES_LIVING` TO 'SPECIES_LIVING';
+ALTER TYPE ESTIMATETYPE RENAME `DESCRIBED_SPECIES_EXTINCT` TO 'SPECIES_EXTINCT';
+```
+
 ### 2020-08-27 usage counter
 ```
 CREATE TABLE usage_count (
