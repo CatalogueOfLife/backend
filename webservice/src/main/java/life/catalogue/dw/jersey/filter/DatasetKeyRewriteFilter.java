@@ -41,17 +41,21 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
 
   private static final Logger LOG = LoggerFactory.getLogger(DatasetKeyRewriteFilter.class);
 
-  private static final String LATEST_RELEASE_SUFFIX  = "LR";
-  private static final Pattern LR_PATH  = Pattern.compile("dataset/(\\d+)" + LATEST_RELEASE_SUFFIX);
+  private static final Pattern LRC_PATTERN  = Pattern.compile("(\\d+)LRC?$");
+  private static final Pattern LRC_PATH = Pattern.compile("dataset/(\\d+)LRC?");
   // all parameters that contain dataset keys and which we check if they need to be rewritten
   private static final Set<String> QUERY_PARAMS  = Set.of("datasetkey", "cataloguekey", "projectkey", "subjectdatasetkey");
   private static final Set<String> METHODS  = Set.of(HttpMethod.GET, HttpMethod.OPTIONS, HttpMethod.HEAD);
 
   private SqlSessionFactory factory;
-  private final LoadingCache<Integer, Integer> latest = Caffeine.newBuilder()
+  private final LoadingCache<Integer, Integer> latestRelease = Caffeine.newBuilder()
     .maximumSize(1000)
     .expireAfterWrite(60, TimeUnit.MINUTES)
-    .build(this::lookupLatest);
+    .build(k -> lookupLatest(k, false));
+  private final LoadingCache<Integer, Integer> latestCandidate = Caffeine.newBuilder()
+    .maximumSize(1000)
+    .expireAfterWrite(15, TimeUnit.MINUTES)
+    .build(k -> lookupLatest(k, true));
 
   // we dont use a limited loading cache here as
   //  - the primitive map saves a lot of memory and we dont really have many datasets so we can keep them all in memory
@@ -82,11 +86,10 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     }
 
     // rewrite path params
-    Matcher m = LR_PATH.matcher(req.getUriInfo().getPath());
+    Matcher m = LRC_PATH.matcher(req.getUriInfo().getPath());
     if (m.find()) {
-      // parsing cannot fail, we have a pattern
-      int projectKey = Integer.parseInt(m.group(1));
-      builder.replacePath(m.replaceFirst("dataset/" + latestRelease(projectKey)));
+      Integer rkey = releaseKeyFromMatch(m);
+      builder.replacePath(m.replaceFirst("dataset/" + rkey));
     }
 
     // change request
@@ -98,24 +101,32 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
   }
 
   private String rewriteDatasetKey(String datasetKey) {
-    if (StringUtils.hasContent(datasetKey) && datasetKey.endsWith(LATEST_RELEASE_SUFFIX)) {
-      try {
-        int projectKey = Integer.parseInt(datasetKey.substring(0, datasetKey.length() - 2));
-        return latestRelease(projectKey).toString();
-      } catch (NumberFormatException e) {
-        throw new IllegalArgumentException(datasetKey + "is not a valid dataset key");
+    if (StringUtils.hasContent(datasetKey)) {
+      Matcher m = LRC_PATTERN.matcher(datasetKey);
+      if (m.find()){
+        return releaseKeyFromMatch(m).toString();
       }
-    } else {
-      return datasetKey;
     }
+    return datasetKey;
   }
 
-  private Integer latestRelease(int projectKey) throws IllegalArgumentException {
+  private Integer releaseKeyFromMatch(Matcher m) {
+    // parsing cannot fail, we have a pattern
+    int projectKey = Integer.parseInt(m.group(1));
+
     if (!isManaged(projectKey)) {
       // abort request! bad argument
       throw new IllegalArgumentException("Dataset " + projectKey + " is not a managed project");
     }
-    Integer releaseKey = latest.get(projectKey);
+
+    Integer releaseKey;
+    // candidate requested?
+    if (m.group().toLowerCase().endsWith("c")) {
+      releaseKey = latestRelease.get(projectKey);
+    } else {
+      releaseKey = latestRelease.get(projectKey);
+    }
+
     if (releaseKey == null) {
       throw new NotFoundException("Dataset " + projectKey + " was never released");
     }
@@ -126,10 +137,10 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
    * @param projectKey a dataset key that is known to exist and point to a managed dataset
    * @return dataset key for the latest release of a project or null in case no release exists
    */
-  private Integer lookupLatest(int projectKey) throws NotFoundException {
+  private Integer lookupLatest(int projectKey, boolean candidate) throws NotFoundException {
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      return dm.latestRelease(projectKey, true);
+      return dm.latestRelease(projectKey, !candidate);
     }
   }
 
