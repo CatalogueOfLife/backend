@@ -18,6 +18,26 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Basic steps:
+ * 
+ * 1) Generate a ReleaseView (use interface to allow for different impls) on all previous releases,
+ *    keyed on their usage id and names index id (nxId).
+ *    For each id only use the version from its latest release.
+ *    Include ALL ids, also deleted ones.
+ *    Convert ids to their int representation to save memory and simplify comparison etc.
+ *    Expose only properties needed for matching, i.e. id (int), nxId (int), status, parentID (int), ???
+ *
+ * 2) Match all usages, ordered for matching by their status, then rank from top down (allows to compare parentIds):
+ *    First assign ids for accepted, then prov accepted, synonyms, ambiguous syns and finally misapplied names
+ *    -
+ * 3) Use new "usage" matching service that sits on top of the ReleaseView
+ *    - retrieve candidates by looking up all ids by their nxId
+ *    - if none, issue a new id
+ *    - if single match, not yet taken: use it
+ *    - if single and taken, issue a new one and log this (in issues, reports and logs???)
+ *    - if multiple look for best match and use it
+ */
 public class StableIdProvider {
   protected final Logger LOG = LoggerFactory.getLogger(StableIdProvider.class);
 
