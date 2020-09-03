@@ -56,7 +56,7 @@ public class StableIdProvider {
     id2dataset.clear();
     keySequence.set(findMaxKey());
 
-    // we keep a list of usages that have ambiguous matches to mulitple index names
+    // we keep a list of usages that have ambiguous matches to multiple index names
     // and deal with those names last.
     AtomicInteger counter = new AtomicInteger();
     List<SimpleNameWithNidx> ambiguous = new ArrayList<>();
