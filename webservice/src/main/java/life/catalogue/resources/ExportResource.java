@@ -1,18 +1,32 @@
 package life.catalogue.resources;
 
 import io.dropwizard.auth.Auth;
+import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.User;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.dao.DatasetInfoCache;
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.release.AcExporter;
+import org.apache.commons.io.IOUtils;
+import org.apache.ibatis.cursor.Cursor;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+import java.io.*;
+import java.util.Set;
 
 /**
  * Stream dataset exports to the user.
@@ -41,13 +55,17 @@ import javax.ws.rs.core.MediaType;
 @Path("/dataset/{datasetKey}/export")
 @Produces(MediaType.APPLICATION_JSON)
 public class ExportResource {
+  private final DatasetImportDao diDao;
+  private final SqlSessionFactory factory;
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(ExportResource.class);
   private final AcExporter exporter;
 
-  public ExportResource(AcExporter exporter) {
+  public ExportResource(SqlSessionFactory factory, AcExporter exporter, DatasetImportDao diDao) {
+    this.factory = factory;
     this.exporter = exporter;
+    this.diDao = diDao;
   }
 
   @POST
@@ -67,4 +85,57 @@ public class ExportResource {
     return false;
   }
 
+
+  @GET
+  @Produces(MediaType.TEXT_PLAIN)
+  public Response textTree(@PathParam("datasetKey") int key,
+                           @QueryParam("root") String rootID,
+                           @QueryParam("rank") Set<Rank> ranks,
+                           @Context SqlSession session) {
+    StreamingOutput stream;
+    final Integer projectKey;
+    Integer attempt;
+    // a release?
+    if (DatasetInfoCache.CACHE.origin(key) == DatasetOrigin.RELEASED) {
+      attempt = DatasetInfoCache.CACHE.importAttempt(key);
+      projectKey = DatasetInfoCache.CACHE.sourceProject(key);
+    } else {
+      attempt = session.getMapper(DatasetMapper.class).lastImportAttempt(key);
+      projectKey = key;
+    }
+
+    if (attempt != null && rootID == null && (ranks == null || ranks.isEmpty())) {
+      // stream from pre-generated file
+      stream = os -> {
+        InputStream in = new FileInputStream(diDao.getFileMetricsDao().treeFile(projectKey, attempt));
+        IOUtils.copy(in, os);
+        os.flush();
+      };
+
+    } else {
+      stream = os -> {
+        Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+        TextTreePrinter printer = TextTreePrinter.dataset(key, rootID, ranks, factory, writer);
+        printer.print();
+        if (printer.getCounter() == 0) {
+          writer.write("--NONE--");
+        }
+        writer.flush();
+      };
+    }
+    return Response.ok(stream).build();
+  }
+
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  public Cursor<SimpleName> simpleName(@PathParam("datasetKey") int key,
+                                        @QueryParam("root") String rootID,
+                                        @QueryParam("rank") Rank lowestRank,
+                                        @QueryParam("synonyms") boolean includeSynonyms,
+                                        @Context SqlSession session) {
+    if (rootID == null) {
+      throw new IllegalArgumentException("root query parameter required");
+    }
+    return session.getMapper(NameUsageMapper.class).processTreeSimple(key, null, rootID, null, lowestRank, includeSynonyms);
+  }
 }

@@ -8,10 +8,8 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.AssemblyState;
 import life.catalogue.dao.DatasetDao;
-import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.*;
-import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.dw.jersey.filter.DatasetKeyRewriteFilter;
@@ -19,10 +17,8 @@ import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.img.ImgConfig;
 import life.catalogue.release.ReleaseManager;
-import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,12 +28,11 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static life.catalogue.api.model.User.userkey;
@@ -50,15 +45,13 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetResource.class);
   private final DatasetDao dao;
   private final ImageService imgService;
-  private final DatasetImportDao diDao;
   private final AssemblyCoordinator assembly;
   private final ReleaseManager releaseManager;
 
-  public DatasetResource(SqlSessionFactory factory, DatasetDao dao, ImageService imgService, DatasetImportDao diDao, AssemblyCoordinator assembly, ReleaseManager releaseManager) {
+  public DatasetResource(SqlSessionFactory factory, DatasetDao dao, ImageService imgService, AssemblyCoordinator assembly, ReleaseManager releaseManager) {
     super(Dataset.class, dao, factory);
     this.dao = dao;
     this.imgService = imgService;
-    this.diDao = diDao;
     this.assembly = assembly;
     this.releaseManager = releaseManager;
   }
@@ -98,47 +91,6 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @Path("{datasetKey}/assembly")
   public AssemblyState assemblyState(@PathParam("datasetKey") int key) {
     return assembly.getState(key);
-  }
-
-  @GET
-  @Path("{datasetKey}/texttree")
-  @Produces(MediaType.TEXT_PLAIN)
-  public Response textTree(@PathParam("datasetKey") int key,
-                         @QueryParam("root") String rootID,
-                         @QueryParam("rank") Set<Rank> ranks,
-                         @Context SqlSession session) {
-    StreamingOutput stream;
-    final Integer projectKey;
-    Integer attempt;
-    // a release?
-    if (DatasetInfoCache.CACHE.origin(key) == DatasetOrigin.RELEASED) {
-      attempt = DatasetInfoCache.CACHE.importAttempt(key);
-      projectKey = DatasetInfoCache.CACHE.sourceProject(key);
-    } else {
-      attempt = session.getMapper(DatasetMapper.class).lastImportAttempt(key);
-      projectKey = key;
-    }
-
-    if (attempt != null && rootID == null && (ranks == null || ranks.isEmpty())) {
-      // stream from pre-generated file
-      stream = os -> {
-        InputStream in = new FileInputStream(diDao.getFileMetricsDao().treeFile(projectKey, attempt));
-        IOUtils.copy(in, os);
-        os.flush();
-      };
-  
-    } else {
-      stream = os -> {
-        Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-        TextTreePrinter printer = TextTreePrinter.dataset(key, rootID, ranks, factory, writer);
-        printer.print();
-        if (printer.getCounter() == 0) {
-          writer.write("--NONE--");
-        }
-        writer.flush();
-      };
-    }
-    return Response.ok(stream).build();
   }
   
   @GET
