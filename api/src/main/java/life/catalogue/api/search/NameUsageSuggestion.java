@@ -37,10 +37,35 @@ public class NameUsageSuggestion {
       return match + " (bare name)";
     } else if (status.isSynonym()) {
       return String.format("%s (%s of %s)", match, status.name().toLowerCase(), parentOrAcceptedName);
-    } else if (parentOrAcceptedName != null) { // not a kingdom or so
-      return match + " (" + parentOrAcceptedName + ")";
+    } else {
+      StringBuilder sb = new StringBuilder();
+      sb.append(match);
+
+      boolean prov = status == TaxonomicStatus.PROVISIONALLY_ACCEPTED;
+      boolean showRank = rank != null && (prov || rank.isSupraspecific());
+      boolean showAcc = parentOrAcceptedName != null;
+
+      if (showRank || prov || showAcc) {
+        sb.append(" (");
+        if (prov) {
+          sb.append("prov.");
+        }
+        if (showRank) {
+          if (prov) {
+            sb.append(" ");
+          }
+          sb.append(rank.name().toLowerCase());
+        }
+        if (showAcc) {
+          if (showRank || prov) {
+            sb.append(" in ");
+          }
+          sb.append(parentOrAcceptedName);
+        }
+        sb.append(")");
+      }
+      return sb.toString();
     }
-    return match;
   }
 
   @JsonIgnore

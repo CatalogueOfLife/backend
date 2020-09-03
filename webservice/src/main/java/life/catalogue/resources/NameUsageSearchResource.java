@@ -74,10 +74,10 @@ public class NameUsageSearchResource {
         @JsonProperty("fuzzy") @DefaultValue("false") boolean fuzzy,
         @JsonProperty("offset") @DefaultValue("0") int offset,
         @JsonProperty("limit") @DefaultValue("10") int limit,
-        @JsonProperty("prefix") @DefaultValue("false") boolean prefix,
+        @JsonProperty("type") NameUsageRequest.SearchType searchType,
         @JsonProperty("minRank") Rank minRank,
         @JsonProperty("maxRank") Rank maxRank) {
-      request = new NameUsageSearchRequest(filter, facet, content, vernacular, sortBy, q, highlight, reverse, fuzzy, prefix, minRank, maxRank);
+      request = new NameUsageSearchRequest(filter, facet, content, vernacular, sortBy, q, highlight, reverse, fuzzy, searchType, minRank, maxRank);
       page = new Page(offset, limit);
     }
   }
