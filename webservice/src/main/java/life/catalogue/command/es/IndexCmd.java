@@ -53,15 +53,21 @@ public class IndexCmd extends AbstractPromptCmd {
   public void prePromt(Bootstrap<WsServerConfig> bootstrap, Namespace namespace, WsServerConfig cfg){
     if (namespace.getBoolean(ARG_ALL)) {
       // change index name, use current date
-      String date = DateTimeFormatter.ISO_DATE.format(LocalDate.now());
-      cfg.es.nameUsage.name = cfg.es.nameUsage.name + "-" + date;
-      System.out.println("Use new index " + cfg.es.nameUsage.name);
+      cfg.es.nameUsage.name = indexNameToday();
+      System.out.println("Creating new index " + cfg.es.nameUsage.name);
+      LOG.info("Creating new index {}", cfg.es.nameUsage.name);
     }
+  }
+
+  private static String indexNameToday(){
+    String date = DateTimeFormatter.ISO_DATE.format(LocalDate.now());
+    return "col-" + date;
   }
 
   @Override
   public String describeCmd(Namespace namespace, WsServerConfig cfg) {
-    return String.format("Indexing DB %s on %s into ES index %s on %s.\n", cfg.db.database, cfg.db.host, cfg.es.nameUsage.name, cfg.es.hosts);
+    String index = namespace.getBoolean(ARG_ALL) ? indexNameToday() : cfg.es.nameUsage.name;
+    return String.format("Indexing DB %s on %s into new ES index %s on %s.\n", cfg.db.database, cfg.db.host, index, cfg.es.hosts);
   }
 
   @Override
