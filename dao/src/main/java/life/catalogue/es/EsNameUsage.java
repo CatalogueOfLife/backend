@@ -57,8 +57,10 @@ public class EsNameUsage {
   private Boolean fossil;
   private Boolean recent;
 
-  // Nested documents. Will require special query logic!
+  @MapToType(ESDataType.OBJECT)
   private List<EsMonomial> classification;
+  
+  // Nested documents. Will require special query logic!
   private List<EsDecision> decisions;
 
   @NotIndexed

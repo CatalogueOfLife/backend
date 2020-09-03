@@ -35,6 +35,13 @@ class GetterMappingsFactory extends MappingsFactory {
     ESDataType esType;
     MapToType annotation = method.getAnnotation(MapToType.class);
     if (annotation != null) {
+      if (annotation.value() == ESDataType.OBJECT || annotation.value() == ESDataType.NESTED) {
+        if (!isA(method.getReturnType(), Object[].class) && !isA(method.getReturnType(), Collection.class)) {
+          throw new MappingException(
+              String.format("Illegal mapping from java type %s to ES datatype %s", method.getReturnType(), annotation.value()));
+        }
+        return createSubDocument(method, getMappedType(method), ancestors);
+      }
       esType = annotation.value();
     } else {
       Class<?> mapToType = getMappedType(method);
@@ -52,8 +59,20 @@ class GetterMappingsFactory extends MappingsFactory {
   private ComplexField createSubDocument(Method method, Class<?> mapToType, Set<Class<?>> ancestors) {
     Class<?> realType = method.getReturnType();
     ComplexField document;
-    if (realType.isArray() || isA(realType, Collection.class)) {
-      document = new ComplexField(NESTED);
+    if (isA(realType, Object[].class) || isA(realType, Collection.class)) {
+      /*
+       * Ordinarily arrays or collections of objects should **always** be mapped to the NESTED datatype.
+       * Otherwise searching on a combination of fields within the object will give unexpected (wrong)
+       * results. However, if none (or just one) of the fields within the object are indexed , this is not
+       * relevant any longer, because you can't search on them anyway. So mapping it to type OBJECT will
+       * save you the creation of separate subdocuments.
+       */
+      MapToType annotation = method.getAnnotation(MapToType.class);
+      if (annotation != null && annotation.value() == ESDataType.OBJECT) {
+        document = new ComplexField();
+      } else {
+        document = new ComplexField(NESTED);
+      }
     } else {
       document = new ComplexField();
     }
