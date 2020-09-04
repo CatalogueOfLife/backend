@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Basic steps:
- * 
+ *
  * 1) Generate a ReleaseView (use interface to allow for different impls) on all previous releases,
  *    keyed on their usage id and names index id (nxId).
  *    For each id only use the version from its latest release.
