@@ -14,7 +14,7 @@ import org.neo4j.graphdb.Node;
 public class ColdpRelationInserter extends RelationInserterBase {
 
   ColdpRelationInserter(NeoDb store) {
-    super(store, ColdpTerm.taxonID, ColdpTerm.parentID, ColdpTerm.originalNameID);
+    super(store, ColdpTerm.taxonID, ColdpTerm.parentID, ColdpTerm.basionymID);
   }
 
   @Override
