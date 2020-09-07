@@ -40,10 +40,10 @@ class SearchHitConverter implements UpwardConverter<SearchHit<EsNameUsage>, Name
       List<String> names = hit.getSource().getVernacularNames();
       suggestion.setMatch(matcher.getMatch(names));
       suggestion.setParentOrAcceptedName(doc.getScientificName());
-    } else if (doc.getAcceptedName() != null) { // *then* this is a synonym
+    } else if (doc.getStatus() != null && doc.getStatus().isSynonym()) { // a synonym
       suggestion.setMatch(doc.getScientificName());
       suggestion.setParentOrAcceptedName(doc.getAcceptedName());
-      if (doc.getClassificationIds() == null || doc.getClassificationIds().size() < 2) {
+      if (doc.getClassificationIds() == null || doc.getClassificationIds().size() > 1) {
         // That's corrupt data but let's not make the suggestion service trip over it
         LOG.warn("Missing classification for synonym {} {}", doc.getScientificName(), doc.getUsageId());
         suggestion.setAcceptedUsageId(doc.getClassificationIds().get(doc.getClassificationIds().size() - 2));

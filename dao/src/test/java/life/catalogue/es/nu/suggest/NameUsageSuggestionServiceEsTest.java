@@ -1,10 +1,5 @@
 package life.catalogue.es.nu.suggest;
 
-import java.util.Arrays;
-import java.util.Set;
-import org.gbif.nameparser.api.Rank;
-import org.junit.Before;
-import org.junit.Test;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.NameUsageSuggestRequest;
@@ -14,11 +9,18 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
+import org.gbif.nameparser.api.Rank;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.Set;
+
 import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class NameUsageSuggestionServiceTest extends EsReadTestBase {
+public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
 
   @Before
   public void before() {
@@ -562,7 +564,7 @@ public class NameUsageSuggestionServiceTest extends EsReadTestBase {
 
     assertEquals("Larus foo", response.getSuggestions().get(0).getMatch());
     assertEquals("Larus foo (synonym of Larus fuscus)", response.getSuggestions().get(0).getSuggestion());
-
+    assertEquals("3", response.getSuggestions().get(0).getAcceptedUsageId());
   }
 
   @Test
