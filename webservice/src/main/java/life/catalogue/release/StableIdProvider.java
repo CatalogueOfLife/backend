@@ -1,11 +1,11 @@
 package life.catalogue.release;
 
 import it.unimi.dsi.fastutil.ints.*;
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.model.SimpleNameWithNidx;
+import life.catalogue.api.model.*;
+import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.common.id.IdConverter;
 import life.catalogue.common.text.StringUtils;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -19,12 +19,13 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * Prerequisites:
+ *     - nomCode applied to all usages
+ *     - names match up to date
+ *
  * Basic steps:
  *
- * 0) Prerequisite:
- *     - Apply nomCode from parent update decision
- *     - Rematch all names, verify existing
- * 1) Generate a ReleaseView (use interface to allow for different impls) on all previous releases,
+ * 1) Generate a ReleasedIds view (use interface to allow for different impls) on all previous releases,
  *    keyed on their usage id and names index id (nxId).
  *    For each id only use the version from its latest release.
  *    Include ALL ids, also deleted ones.
@@ -49,13 +50,9 @@ public class StableIdProvider {
   private final int datasetKey;
   private final SqlSessionFactory factory;
 
+  private final ReleasedIds ids = new ReleasedIds();
+  private final Int2IntMap attempt2dataset = new Int2IntOpenHashMap();
   private final AtomicInteger keySequence = new AtomicInteger();
-  // names index ids to list of usage ids (converted to ints) of previous release
-  private Int2ObjectMap<IntArrayList> prevIds; // just the ids that are not part of the project already!!!
-  private Int2ObjectMap<IntArrayList> prevDel; // ids that existed in any previous release, but was since deleted and not part of the previous release
-  private Int2IntMap id2dataset = new Int2IntOpenHashMap(); // maps existing ids to their last used release datasetKey
-  // reverse map of ID to names index ids, but to save memory only for the few IDs that have more than one index id!
-  private Int2ObjectMap<IntArrayList> id2Nidx;
   // id changes in this release
   private IntSet added = new IntOpenHashSet();
   private IntSet deleted = new IntOpenHashSet();
@@ -69,18 +66,33 @@ public class StableIdProvider {
 
   public void run() {
     LOG.info("Map name usage IDs");
-    // TODO: load prev releases via NameUsageIndexIds
-    // just the ids that are not already part of the project!!!
-    prevIds = new Int2ObjectOpenHashMap<>();
-    prevDel = new Int2ObjectOpenHashMap<>();
-    // keep reverse map of ID to names index ids, but to save memory only for the few IDs that have more than one index id!
-    id2Nidx = new Int2ObjectOpenHashMap<>();
-    for (Int2ObjectMap.Entry<IntArrayList> x : prevIds.int2ObjectEntrySet()) {
-    }
-    // TODO: populate id2dataset
-    id2dataset.clear();
-    keySequence.set(findMaxKey());
+    prepare();
+    verifyExistingIds();
+    replaceTemporaryIds();
+  }
 
+  private void prepare(){
+    // populate ids from db
+    LOG.info("Prepare stable id provider");
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      DatasetSearchRequest dsr = new DatasetSearchRequest();
+      List<Dataset> releases = dm.search(dsr, null, new Page(0, 100));
+      for (Dataset rel : releases) {
+
+      }
+    }
+    for (ReleasedIds.ReleasedId rid : new ReleasedIds.ReleasedId[]{}) {
+      ids.add(rid);
+    }
+    keySequence.set(ids.maxKey());
+  }
+
+  private void verifyExistingIds(){
+
+  }
+
+  private void replaceTemporaryIds(){
     // we keep a list of usages that have ambiguous matches to multiple index names
     // and deal with those names last.
     AtomicInteger counter = new AtomicInteger();
@@ -114,7 +126,6 @@ public class StableIdProvider {
       session.commit();
     }
   }
-
 
   private String issueID(SimpleName name, int... nidxs) {
     int id;
@@ -225,46 +236,4 @@ public class StableIdProvider {
     return IdConverter.LATIN32.encode(id);
   }
 
-
-  /**
-   * Retrieves the highest key ever assigned to a name usage in any release of the project.
-   * Keys are encoded as short string in the db, so we cannot just do a select max() in SQL.
-   * But the higher the key, the longer the string, so we can preselect without decoding all of them.
-   * @return highest key, decoded as an int
-   */
-  private int findMaxKey() {
-    String maxID = null;
-    // max has the longest id and ids sort alphanumerically
-    int maxLen = -1;
-    // check non temp ids from curr project
-    try (SqlSession session = factory.openSession(false)) {
-      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-      for (String id : num.processIds(datasetKey)) {
-        if (maxLen < id.length()) {
-          maxLen = id.length();
-          maxID = id;
-        } else if (maxLen == id.length()) {
-          if (maxID.compareTo(id) > 0) {
-            maxID = id;
-          }
-        }
-      }
-    }
-    int max = maxID == null ? 0 : decode(maxID);
-    // now also check all ids from the previous (curr & deleted)
-    max = findMax(max, prevIds);
-    max = findMax(max, prevDel);
-    return max;
-  }
-
-  private static int findMax(int max, Int2ObjectMap<IntArrayList> idMap) {
-    for (IntArrayList ids : idMap.values()) {
-      for (int id : ids) {
-        if (id > max) {
-          max = id;
-        };
-      }
-    }
-    return max;
-  }
 }
