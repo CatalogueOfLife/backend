@@ -1,18 +1,18 @@
 package life.catalogue.resources;
 
 import io.dropwizard.auth.Auth;
-import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.tree.AbstractTreePrinter;
+import life.catalogue.db.tree.JsonTreePrinter;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.release.AcExporter;
 import org.apache.commons.io.IOUtils;
-import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.Rank;
@@ -26,6 +26,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.*;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.Set;
 
 /**
@@ -128,14 +130,36 @@ public class ExportResource {
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public Cursor<SimpleName> simpleName(@PathParam("datasetKey") int key,
+  public Object simpleName(@PathParam("datasetKey") int key,
                                         @QueryParam("root") String rootID,
-                                        @QueryParam("rank") Rank lowestRank,
+                                        @QueryParam("rank") Set<Rank> ranks,
                                         @QueryParam("synonyms") boolean includeSynonyms,
+                                        @QueryParam("nested") boolean nested,
                                         @Context SqlSession session) {
     if (rootID == null) {
       throw new IllegalArgumentException("root query parameter required");
     }
-    return session.getMapper(NameUsageMapper.class).processTreeSimple(key, null, rootID, null, lowestRank, includeSynonyms);
+
+    if (nested) {
+      StreamingOutput stream;
+      stream = os -> {
+        Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+        AbstractTreePrinter printer = JsonTreePrinter.dataset(key, rootID, ranks, factory, writer);
+        printer.print();
+        writer.flush();
+      };
+      return Response.ok(stream).build();
+
+    } else {
+      // spot lowest rank
+      Rank lowestRank = null;
+      if (!ranks.isEmpty()) {
+        LinkedList<Rank> rs = new LinkedList<>(ranks);
+        Collections.sort(rs);
+        lowestRank = rs.getLast();
+      }
+      return session.getMapper(NameUsageMapper.class).processTreeSimple(key, null, rootID, null, lowestRank, includeSynonyms);
+    }
   }
+
 }
