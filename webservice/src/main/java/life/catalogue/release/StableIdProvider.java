@@ -19,6 +19,10 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * Generates a usage id mapping table that maps the temporary UUIDs from the project source
+ * to some stable integer based identifiers. The newly generated table can be used in copy dataset commands
+ * during the project release.
+ *
  * Prerequisites:
  *     - nomCode applied to all usages
  *     - names match up to date
@@ -77,13 +81,17 @@ public class StableIdProvider {
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       DatasetSearchRequest dsr = new DatasetSearchRequest();
+      dsr.setReleasedFrom(datasetKey);
+      dsr.setSortBy(DatasetSearchRequest.SortBy.CREATED);
+      dsr.setReverse(true);
       List<Dataset> releases = dm.search(dsr, null, new Page(0, 100));
       for (Dataset rel : releases) {
-
+        int attempt = rel.getImportAttempt();
+        attempt2dataset.put(attempt, (int)rel.getKey());
+        session.getMapper(NameUsageMapper.class).processNxIds(rel.getKey()).forEach(sn -> {
+          ids.add(new ReleasedIds.ReleasedId(decode(sn.getId()), sn.getNameIndexIds().toIntArray(), attempt));
+        });
       }
-    }
-    for (ReleasedIds.ReleasedId rid : new ReleasedIds.ReleasedId[]{}) {
-      ids.add(rid);
     }
     keySequence.set(ids.maxKey());
   }

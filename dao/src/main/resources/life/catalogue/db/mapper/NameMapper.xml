@@ -60,13 +60,13 @@
   <sql id="COLS">
     dataset_key,
     sector_key,
+    id,
     <include refid="COLS_COPY">
       <property name="alias" value=""/>
     </include>
   </sql>
 
   <sql id="COLS_COPY">
-    ${alias}id,
     ${alias}verbatim_key,
     ${alias}name_index_ids,
     ${alias}name_index_match_type,
@@ -261,9 +261,12 @@
   </insert>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO name_${newDatasetKey} (dataset_key,sector_key,<include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
-    SELECT #{newDatasetKey},n.sector_key,<include refid="COLS_COPY"><property name="alias" value="n."/></include>, n.created, n.modified
+    INSERT INTO name_${newDatasetKey} (dataset_key,sector_key,id,<include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
+    SELECT #{newDatasetKey},n.sector_key,coalesce(<if test="mapIds">m.id2,</if>n.id),<include refid="COLS_COPY"><property name="alias" value="n."/></include>, n.created, n.modified
     FROM name_${datasetKey} n
+    <if test="mapIds">
+      LEFT JOIN idmap_name_${datasetKey} m ON m.id=n.id
+    </if>
   </insert>
 
   <update id="update" parameterType="Name" keyProperty="id">

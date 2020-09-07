@@ -24,6 +24,13 @@
     </if>
   </update>
 
+  <update id="createIdMapTable" parameterType="map">
+    CREATE TABLE ${table}_${key} (
+      id TEXT PRIMARY KEY,
+      id2 TEXT NOT NULL
+    );
+  </update>
+
   <update id="createSerial" parameterType="map">
     CREATE SEQUENCE IF NOT EXISTS ${table}_${key}_id_seq START 1;
     ALTER TABLE ${table}_${key} ALTER COLUMN id SET DEFAULT nextval('${table}_${key}_id_seq');

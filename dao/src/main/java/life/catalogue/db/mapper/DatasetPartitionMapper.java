@@ -7,7 +7,12 @@ import java.util.List;
 
 public interface DatasetPartitionMapper {
 
-  // order is important !!!
+  List<String> IDMAP_TABLES = Lists.newArrayList(
+    "idmap_name",
+    "idmap_name_usage"
+  );
+
+    // order is important !!!
   List<String> TABLES = Lists.newArrayList(
       "verbatim",
       "reference",
@@ -49,6 +54,8 @@ public interface DatasetPartitionMapper {
   }
   
   void createTable(@Param("table") String table, @Param("key") int key);
+
+  void createIdMapTable(@Param("table") String table, @Param("key") int key);
 
   /**
    * Creates a new id sequence and uses it as the default value (serial) for the given tables id column.
@@ -102,6 +109,7 @@ public interface DatasetPartitionMapper {
   default void delete(int key) {
     deleteUsageCounter(key);
     Lists.reverse(TABLES).forEach(t -> deleteTable(t, key));
+    IDMAP_TABLES.forEach(t -> deleteTable(t, key));
   }
  
   void deleteTable(@Param("table") String table, @Param("key") int key);

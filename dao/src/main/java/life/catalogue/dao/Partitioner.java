@@ -65,14 +65,23 @@ public class Partitioner {
   }
 
   /**
-   * Creates dataset specific usage count trigger for managed datasets.
+   * Creates dataset specific tables & objects that are needed for managed datasets only.
+   * E.g. usage count triggers or id mapping tables.
+   *
+   * This requires the partitions to be attached already!
    */
-  public static void createUsageCounter(SqlSessionFactory factory, int datasetKey) {
+  public static void createManagedObjects(SqlSessionFactory factory, int datasetKey) {
+    try (SqlSession session = factory.openSession(true)) {
+      createManagedObjects(session, datasetKey);
+    }
+  }
+
+  public static void createManagedObjects(SqlSession session, int datasetKey) {
     interruptIfCancelled();
     LOG.info("Create triggers for managed dataset {}", datasetKey);
-    try (SqlSession session = factory.openSession(true)) {
-      session.getMapper(DatasetPartitionMapper.class).attachUsageCounter(datasetKey);
-    }
+    DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
+    dmp.attachUsageCounter(datasetKey);
+    DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.createIdMapTable(t, datasetKey));
   }
   
   public static synchronized void delete(SqlSessionFactory factory, int datasetKey) {

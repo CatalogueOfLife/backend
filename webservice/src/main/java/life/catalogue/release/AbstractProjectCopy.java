@@ -32,13 +32,17 @@ public abstract class AbstractProjectCopy implements Runnable {
   protected final String actionName;
   protected final int newDatasetKey;
   private final DatasetOrigin newDatasetOrigin;
+  protected final boolean mapIds;
 
-  public AbstractProjectCopy(String actionName, SqlSessionFactory factory, DatasetImportDao diDao, NameUsageIndexService indexService, int userKey, int datasetKey, Dataset newDataset) {
+
+  public AbstractProjectCopy(String actionName, SqlSessionFactory factory, DatasetImportDao diDao, NameUsageIndexService indexService,
+                             int userKey, int datasetKey, Dataset newDataset, boolean mapIds) {
     this.actionName = actionName;
     this.factory = factory;
     this.diDao = diDao;
     this.indexService = indexService;
     this.user = userKey;
+    this.mapIds = mapIds;
     this.datasetKey = datasetKey;
     metrics = diDao.createWaiting(datasetKey, this, userKey);
     metrics.setJob(getClass().getSimpleName());
@@ -84,7 +88,7 @@ public abstract class AbstractProjectCopy implements Runnable {
 
       // build indices and attach partition
       Partitioner.indexAndAttach(factory, newDatasetKey);
-      Partitioner.createUsageCounter(factory, newDatasetKey);
+      Partitioner.createManagedObjects(factory, newDatasetKey);
 
       // subclass specifics
       finalWork();
@@ -133,11 +137,11 @@ public abstract class AbstractProjectCopy implements Runnable {
 
       copyTable(Reference.class, ReferenceMapper.class, session);
 
-      copyTable(Name.class, NameMapper.class, session);
-      copyTable(NameRelation.class, NameRelationMapper.class, session);
+      copyTable(Name.class, NameMapper.class, session, mapIds);
+      copyTable(NameRelation.class, NameRelationMapper.class, session, mapIds);
       copyTable(TypeMaterial.class, TypeMaterialMapper.class, session);
 
-      copyTable(NameUsage.class, NameUsageMapper.class, session);
+      copyTable(NameUsage.class, NameUsageMapper.class, session, mapIds);
 
       copyTable(VernacularName.class, VernacularNameMapper.class, session);
       copyTable(Distribution.class, DistributionMapper.class, session);
@@ -158,7 +162,11 @@ public abstract class AbstractProjectCopy implements Runnable {
   }
 
   private <M extends CopyDataset> void copyTable(Class entity, Class<M> mapperClass, SqlSession session){
-    int count = session.getMapper(mapperClass).copyDataset(datasetKey, newDatasetKey);
+    copyTable(entity, mapperClass, session, false);
+  }
+
+  private <M extends CopyDataset> void copyTable(Class entity, Class<M> mapperClass, SqlSession session, boolean mapIds){
+    int count = session.getMapper(mapperClass).copyDataset(datasetKey, newDatasetKey, mapIds);
     LOG.info("Copied {} {}s", count, entity.getSimpleName());
   }
 

@@ -52,8 +52,6 @@
 
   <sql id="COLS_COPY">
     ${alias}verbatim_key,
-    ${alias}parent_id,
-    ${alias}name_id,
     ${alias}status,
     ${alias}is_synonym,
     ${alias}origin,
@@ -221,9 +219,16 @@
   </update>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO name_usage_${newDatasetKey} (id, dataset_key, sector_key, <include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
-    SELECT u.id, #{newDatasetKey}, u.sector_key, <include refid="COLS_COPY"><property name="alias" value="u."/></include>, u.created, u.modified
+    INSERT INTO name_usage_${newDatasetKey} (id, parent_id, name_id,
+      dataset_key, sector_key, <include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
+    SELECT coalesce(<if test="mapIds">mu.id2,</if>u.id), coalesce(<if test="mapIds">mp.id2,</if>u.parent_id), coalesce(<if test="mapIds">mn.id2,</if>u.name_id),
+      #{newDatasetKey}, u.sector_key, <include refid="COLS_COPY"><property name="alias" value="u."/></include>, u.created, u.modified
     FROM name_usage_${datasetKey} u
+    <if test="mapIds">
+      LEFT JOIN idmap_name_usage_${datasetKey} mu ON mu.id=u.id
+      LEFT JOIN idmap_name_usage_${datasetKey} mp ON mp.id=u.parent_id
+      LEFT JOIN idmap_name_${datasetKey} mn ON mn.id=u.name_id
+    </if>
   </insert>
 
   <select id="processDataset" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
@@ -432,6 +437,12 @@
       LEFT JOIN name_usage_${partition} p ON p.id=u.parent_id
       LEFT JOIN name_${partition} pn ON pn.id=p.name_id
     WHERE char_length(u.id)=36 AND u.id ~ '-'
+  </select>
+
+  <select id="processNxIds" parameterType="map" resultMap="simpleNidxResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT u.id, u.status, n.name_index_ids
+    FROM name_usage_${partition} u JOIN name_${partition} n ON n.id=u.name_id
   </select>
 
   <select id="processIds" parameterType="map" resultType="string" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">

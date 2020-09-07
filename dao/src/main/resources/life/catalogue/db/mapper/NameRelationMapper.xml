@@ -21,14 +21,14 @@
 
   <sql id="COLS">
     dataset_key,
+    name_id,
+    related_name_id,
     <include refid="COLS_COPY"/>
   </sql>
 
   <sql id="COLS_COPY">
     verbatim_key,
     type,
-    name_id,
-    related_name_id,
     published_in_id,
     remarks,
     created_by,
@@ -37,10 +37,10 @@
 
   <sql id="PROPS">
     #{datasetKey},
-    #{verbatimKey},
-    #{type}::NOMRELTYPE,
     #{nameId},
     #{relatedNameId},
+    #{verbatimKey},
+    #{type}::NOMRELTYPE,
     #{publishedInId},
     #{remarks},
     #{createdBy},
@@ -87,9 +87,13 @@
   </insert>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO name_rel_${newDatasetKey} (dataset_key,<include refid="COLS_COPY"/>, created, modified)
-    SELECT #{newDatasetKey},<include refid="COLS_COPY"/>, created, modified
-    FROM name_rel_${datasetKey}
+    INSERT INTO name_rel_${newDatasetKey} (dataset_key,name_id,related_name_id,<include refid="COLS_COPY"/>, created, modified)
+    SELECT #{newDatasetKey},coalesce(<if test="mapIds">m1.id2,</if>name_id),coalesce(<if test="mapIds">m2.id2,</if>related_name_id),<include refid="COLS_COPY"/>, created, modified
+    FROM name_rel_${datasetKey} r
+    <if test="mapIds">
+      LEFT JOIN idmap_name_${datasetKey} m1 ON m1.id=r.name_id
+      LEFT JOIN idmap_name_${datasetKey} m2 ON m2.id=r.related_name_id
+    </if>
   </insert>
 
 </mapper>

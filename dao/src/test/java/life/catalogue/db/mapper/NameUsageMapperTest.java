@@ -45,7 +45,13 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   @Test
   public void copyDataset() throws Exception {
     Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
-    mapper().copyDataset(datasetKey, 999);
+    mapper().copyDataset(datasetKey, 999, false);
+  }
+
+  @Test
+  public void copyDatasetWithMap() throws Exception {
+    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
+    mapper().copyDataset(datasetKey, 999, true);
   }
 
   @Test

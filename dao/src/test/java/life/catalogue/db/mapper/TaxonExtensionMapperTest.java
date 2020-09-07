@@ -26,7 +26,7 @@ abstract class TaxonExtensionMapperTest<T extends DatasetScopedEntity<Integer>, 
   public TaxonExtensionMapperTest(Class<M> mapperClazz) {
     super(mapperClazz, TestDataRule.empty());
   }
-  
+
   /**
    * @return at least 3 entities, more allowed !
    */
@@ -35,7 +35,14 @@ abstract class TaxonExtensionMapperTest<T extends DatasetScopedEntity<Integer>, 
   @Test
   public void copyDataset() throws Exception {
     Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
-    mapper().copyDataset(Datasets.DRAFT_COL, 999);
+    mapper().copyDataset(Datasets.DRAFT_COL, 999, false);
+  }
+
+  @Test
+  public void copyDatasetWithMap() throws Exception {
+    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
+    Partitioner.createManagedObjects(PgSetupRule.getSqlSessionFactory(), 999);
+    mapper().copyDataset(Datasets.DRAFT_COL, 999, true);
   }
 
   @Test

@@ -187,5 +187,10 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    */
   Cursor<SimpleNameWithNidx> processTemporary(@Param("datasetKey") int datasetKey);
 
+  /**
+   * Iterate over all usages but return just the id, status and name index ids
+   */
+  Cursor<SimpleNameWithNidx> processNxIds(@Param("datasetKey") int datasetKey);
+
   Cursor<String> processIds(@Param("datasetKey") int datasetKey);
 }
