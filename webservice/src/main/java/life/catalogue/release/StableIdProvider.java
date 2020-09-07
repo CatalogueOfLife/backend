@@ -21,6 +21,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Basic steps:
  *
+ * 0) Prerequisite:
+ *     - Apply nomCode from parent update decision
+ *     - Rematch all names, verify existing
  * 1) Generate a ReleaseView (use interface to allow for different impls) on all previous releases,
  *    keyed on their usage id and names index id (nxId).
  *    For each id only use the version from its latest release.
@@ -28,10 +31,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  *    Convert ids to their int representation to save memory and simplify comparison etc.
  *    Expose only properties needed for matching, i.e. id (int), nxId (int), status, parentID (int), ???
  *
- * 2) Match all usages, ordered for matching by their status, then rank from top down (allows to compare parentIds):
+ * 2) Keep existing non uuids, verify they still match with their nxId or exact sciname tp prevent nx bugs
+ *
+ * 3) Match all usages with temp UUID, ordered for matching by their status, then rank from top down (allows to compare parentIds):
  *    First assign ids for accepted, then prov accepted, synonyms, ambiguous syns and finally misapplied names
  *    -
- * 3) Use new "usage" matching service that sits on top of the ReleaseView
+ * 4) Use new "usage" matching service that sits on top of the ReleaseView
  *    - retrieve candidates by looking up all ids by their nxId
  *    - if none, issue a new id
  *    - if single match, not yet taken: use it
