@@ -66,7 +66,7 @@ public abstract class TreeNode implements DSID<String> {
 
     @Override
     public String getLabelHtml() {
-      return _name.getLabelHtml();
+      return _name.getLabel(true);
     }
   }
 
