@@ -81,6 +81,15 @@ public abstract class AbstractProjectCopy implements Runnable {
       if (newDatasetOrigin == DatasetOrigin.MANAGED) {
         Partitioner.createManagedSequences(factory, newDatasetKey);
       }
+      // is an id mapping table needed?
+      if (mapIds) {
+        LOG.info("Create id mapping tables for project {}", datasetKey);
+        try (SqlSession session = factory.openSession(true)) {
+          DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
+          DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.createIdMapTable(t, datasetKey));
+        }
+      }
+
       prepWork();
 
       // copy data
@@ -119,6 +128,16 @@ public abstract class AbstractProjectCopy implements Runnable {
       }
 
     } finally {
+      if (mapIds) {
+        LOG.info("Remove id mapping tables for project {}", datasetKey);
+        try (SqlSession session = factory.openSession(true)) {
+          DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
+          DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.deleteTable(t, datasetKey));
+        } catch (Exception e) {
+          // avoid any excpetions as it would bring down the finally block
+          LOG.error("Failed to remove id mapping tables for project {}", datasetKey, e);
+        }
+      }
       ReleaseManager.releaseLock();
       LoggingUtils.removeDatasetMDC();
     }

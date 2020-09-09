@@ -35,7 +35,7 @@ public class ProjectRelease extends AbstractProjectCopy {
 
   ProjectRelease(SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService, DatasetImportDao diDao, ImageService imageService,
                  int datasetKey, Dataset release, int userKey) {
-    super("releasing", factory, diDao, indexService, userKey, datasetKey, release);
+    super("releasing", factory, diDao, indexService, userKey, datasetKey, release, true);
     this.imageService = imageService;
     this.nameIndex = nameIndex;
   }

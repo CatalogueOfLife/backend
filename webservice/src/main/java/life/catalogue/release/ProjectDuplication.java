@@ -12,7 +12,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 public class ProjectDuplication extends AbstractProjectCopy {
 
   ProjectDuplication(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, int datasetKey, Dataset copy, int userKey) {
-    super("duplicating", factory, diDao, indexService, userKey, datasetKey, copy);
+    super("duplicating", factory, diDao, indexService, userKey, datasetKey, copy, false);
   }
 
   public static void copyDataset(Dataset d, DatasetSettings ds) {

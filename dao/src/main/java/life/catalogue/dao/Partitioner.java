@@ -81,7 +81,6 @@ public class Partitioner {
     LOG.info("Create triggers for managed dataset {}", datasetKey);
     DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
     dmp.attachUsageCounter(datasetKey);
-    DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.createIdMapTable(t, datasetKey));
   }
   
   public static synchronized void delete(SqlSessionFactory factory, int datasetKey) {

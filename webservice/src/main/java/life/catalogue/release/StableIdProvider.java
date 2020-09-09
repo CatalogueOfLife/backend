@@ -6,6 +6,7 @@ import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.common.id.IdConverter;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.IdMapMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;

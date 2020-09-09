@@ -8,8 +8,4 @@
     INSERT INTO ${table}_${datasetKey} (id, id2) VALUES (#{id}, #{id2})
   </insert>
 
-  <update id="truncateTable" parameterType="map">
-    TRUNCATE ${table}_${key};
-  </update>
-
 </mapper>

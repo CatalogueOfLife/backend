@@ -4,12 +4,6 @@ import org.apache.ibatis.annotations.Param;
 
 public interface IdMapMapper {
 
-  default void truncate(@Param("key") int key) {
-    DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> truncateTable(t, key));
-  }
-
-  void truncateTable(@Param("table") String table, @Param("key") int key);
-
   default void mapName(int datasetKey, String id, String id2) {
     insert(datasetKey, "idmap_name", id, id2);
   }
