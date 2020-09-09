@@ -236,7 +236,7 @@ abstract class NormalizerITBase {
       Node bn = rel.getOtherNode(usage.nameNode);
       nn = store.names().objByNode(bn);
       assertNotNull(nn);
-      assertEquals(basionymNameId, nn.name.getId());
+      assertEquals(basionymNameId, nn.getName().getId());
     }
     return nn;
   }

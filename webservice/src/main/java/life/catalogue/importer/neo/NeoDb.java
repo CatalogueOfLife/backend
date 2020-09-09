@@ -203,7 +203,7 @@ public class NeoDb {
     NeoUsage u = usages().objByNode(usageNode);
     if (u != null) {
       NeoName nn = nameByUsage(usageNode);
-      u.usage.setName(nn.name);
+      u.usage.setName(nn.getName());
       u.nameNode = nn.node;
     }
     return u;
@@ -371,11 +371,11 @@ public class NeoDb {
     if (nn.getVerbatimKey() == null) {
       nn.setVerbatimKey(u.getVerbatimKey());
     }
-    if (nn.name.getOrigin() == null) {
+    if (nn.getName().getOrigin() == null) {
       if (u.isSynonym()) {
-        nn.name.setOrigin(u.getSynonym().getOrigin());
+        nn.getName().setOrigin(u.getSynonym().getOrigin());
       } else {
-        nn.name.setOrigin(u.getTaxon().getOrigin());
+        nn.getName().setOrigin(u.getTaxon().getOrigin());
       }
     }
     nn.homotypic = u.homotypic;
@@ -386,7 +386,7 @@ public class NeoDb {
       u.usage.setName(null);
       usages.create(u);
     } else {
-      LOG.debug("Skip usage {} as no name node was created for {}", u.getId(), nn.name.getLabel());
+      LOG.debug("Skip usage {} as no name node was created for {}", u.getId(), nn.getName().getLabel());
     }
     return u.nameNode;
   }
@@ -604,15 +604,15 @@ public class NeoDb {
           }
           NeoName acc = nameByUsage(r.getEndNode());
           String homoId;
-          if (acc.name.getHomotypicNameId() == null) {
-            homoId = acc.name.getId();
-            acc.name.setHomotypicNameId(homoId);
+          if (acc.getName().getHomotypicNameId() == null) {
+            homoId = acc.getName().getId();
+            acc.getName().setHomotypicNameId(homoId);
             names().update(acc);
             counter++;
           } else {
-            homoId = acc.name.getHomotypicNameId();
+            homoId = acc.getName().getHomotypicNameId();
           }
-          tsyn.name.setHomotypicNameId(homoId);
+          tsyn.getName().setHomotypicNameId(homoId);
           names().update(tsyn);
         }
       }
@@ -623,7 +623,7 @@ public class NeoDb {
       for (Node n : Iterators.loop(getNeo().findNodes(Labels.NAME))) {
         // check if this node has a homotypic group already in which case we can skip it
         NeoName start = names().objByNode(n);
-        if (start.name.getHomotypicNameId() != null) {
+        if (start.getName().getHomotypicNameId() != null) {
           continue;
         }
         // query homotypic group excluding start node
@@ -639,22 +639,22 @@ public class NeoDb {
           // determine existing or new key to be shared
           String homoId = null;
           for (NeoName t : group) {
-            if (t.name.getHomotypicNameId() != null) {
+            if (t.getName().getHomotypicNameId() != null) {
               if (homoId == null) {
-                homoId = t.name.getHomotypicNameId();
-              } else if (!homoId.equals(t.name.getHomotypicNameId())) {
+                homoId = t.getName().getHomotypicNameId();
+              } else if (!homoId.equals(t.getName().getHomotypicNameId())) {
                 LOG.warn("Several homotypic name keys found in the same homotypic name group for {}", NeoProperties.getScientificNameWithAuthor(n));
               }
             }
           }
           if (homoId == null) {
-            homoId = start.name.getId();
+            homoId = start.getName().getId();
             counter++;
           }
           // update entire group with key
           for (NeoName t : group) {
-            if (t.name.getHomotypicNameId() == null) {
-              t.name.setHomotypicNameId(homoId);
+            if (t.getName().getHomotypicNameId() == null) {
+              t.getName().setHomotypicNameId(homoId);
               names().update(t);
             }
           }

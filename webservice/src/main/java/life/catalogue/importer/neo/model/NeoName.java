@@ -1,11 +1,14 @@
 package life.catalogue.importer.neo.model;
 
-import java.util.Objects;
-
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.Name;
+import life.catalogue.api.model.ParsedNameUsage;
+import life.catalogue.api.model.VerbatimEntity;
 import life.catalogue.importer.neo.NeoDbUtils;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
+
+import java.util.Objects;
 
 /**
  * Simple wrapper to hold a neo4j node together with a name
@@ -14,27 +17,34 @@ public class NeoName implements NeoNode, DSID<String>, VerbatimEntity {
   private static final Label[] LABELS = new Label[]{Labels.NAME};
   
   public Node node;
-  public Name name;
-  public String accordingTo;
+  public ParsedNameUsage pnu;
   public boolean homotypic = false;
   
   public NeoName() {
   }
   
-  public NeoName(ParsedNameUsage nat) {
-    this.name = nat.getName();
-    this.accordingTo = nat.getTaxonomicNote();
+  public NeoName(ParsedNameUsage pnu) {
+    this.pnu = pnu;
+  }
+
+  public NeoName(Node node, ParsedNameUsage pnu) {
+    this(pnu);
+    this.node = node;
   }
 
   public NeoName(Name name) {
-    this.name = name;
+    this.pnu = new ParsedNameUsage(name);
   }
 
   public NeoName(Node node, Name name) {
+    this(name);
     this.node = node;
-    this.name = name;
   }
-  
+
+  public Name getName() {
+    return pnu.getName();
+  }
+
   @Override
   public Node getNode() {
     return node;
@@ -47,37 +57,37 @@ public class NeoName implements NeoNode, DSID<String>, VerbatimEntity {
   
   @Override
   public Integer getVerbatimKey() {
-    return name.getVerbatimKey();
+    return pnu.getName().getVerbatimKey();
   }
   
   @Override
   public void setVerbatimKey(Integer verbatimKey) {
-    name.setVerbatimKey(verbatimKey);
+    pnu.getName().setVerbatimKey(verbatimKey);
   }
   
   @Override
   public String getId() {
-    return name.getId();
+    return pnu.getName().getId();
   }
   
   @Override
   public void setId(String id) {
-    name.setId(id);
+    pnu.getName().setId(id);
   }
   
   @Override
   public Integer getDatasetKey() {
-    return name.getDatasetKey();
+    return pnu.getName().getDatasetKey();
   }
   
   @Override
   public void setDatasetKey(Integer key) {
-    name.setDatasetKey(key);
+    pnu.getName().setDatasetKey(key);
   }
   
   @Override
   public PropLabel propLabel() {
-    return NeoDbUtils.neo4jProps(name, new PropLabel(LABELS));
+    return NeoDbUtils.neo4jProps(pnu.getName(), new PropLabel(LABELS));
   }
   
   @Override
@@ -87,12 +97,12 @@ public class NeoName implements NeoNode, DSID<String>, VerbatimEntity {
     NeoName name1 = (NeoName) o;
     return homotypic == name1.homotypic &&
         this.equalNode(name1) &&
-        Objects.equals(name, name1.name);
+        Objects.equals(pnu, name1.pnu);
   }
   
   @Override
   public int hashCode() {
     
-    return Objects.hash(node, name, homotypic);
+    return Objects.hash(node, pnu, homotypic);
   }
 }

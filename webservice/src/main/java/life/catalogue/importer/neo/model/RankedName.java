@@ -12,10 +12,10 @@ public class RankedName {
   
   public RankedName(NeoName nn) {
     this.nameNode = nn.node;
-    this.name = nn.name.getScientificName();
-    this.author = nn.name.getAuthorship();
-    this.sensu = null;
-    this.rank = nn.name.getRank();
+    this.name = nn.getName().getScientificName();
+    this.author = nn.getName().getAuthorship();
+    this.sensu = nn.pnu.getTaxonomicNote();
+    this.rank = nn.getName().getRank();
   }
   
   public RankedName(Node n, String name, String author, Rank rank) {

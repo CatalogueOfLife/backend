@@ -130,7 +130,7 @@ public class Normalizer implements Callable<Boolean> {
    */
   private void verify() {
     store.names().all().forEach(nn -> {
-      Name n = nn.name;
+      Name n = nn.getName();
       require(n, n.getId(), "name id");
 
       // is it a source with verbatim data?
@@ -200,21 +200,21 @@ public class Normalizer implements Callable<Boolean> {
           if (gn != null) {
             NeoName g = store.nameByUsage(gn);
             // does the genus name match up?
-            if (sp.name.isParsed() && g.name.isParsed() && !Objects.equals(sp.name.getGenus(), g.name.getUninomial())) {
-              store.addIssues(sp.name, Issue.PARENT_NAME_MISMATCH);
+            if (sp.getName().isParsed() && g.getName().isParsed() && !Objects.equals(sp.getName().getGenus(), g.getName().getUninomial())) {
+              store.addIssues(sp.getName(), Issue.PARENT_NAME_MISMATCH);
             }
             // compare combination authorship years if existing
-            if (sp.name.getCombinationAuthorship().getYear() != null && g.name.getCombinationAuthorship().getYear() != null) {
-              if (isBefore(sp.name.getCombinationAuthorship().getYear(), g.name.getCombinationAuthorship().getYear())) {
-                store.addIssues(sp.name, Issue.PUBLISHED_BEFORE_GENUS);
+            if (sp.getName().getCombinationAuthorship().getYear() != null && g.getName().getCombinationAuthorship().getYear() != null) {
+              if (isBefore(sp.getName().getCombinationAuthorship().getYear(), g.getName().getCombinationAuthorship().getYear())) {
+                store.addIssues(sp.getName(), Issue.PUBLISHED_BEFORE_GENUS);
               }
 
-            } else if (sp.name.getPublishedInId() != null && g.name.getPublishedInId() != null) {
+            } else if (sp.getName().getPublishedInId() != null && g.getName().getPublishedInId() != null) {
               // compare publication years if existing
-              Reference spr = store.references().get(sp.name.getPublishedInId());
-              Reference gr = store.references().get(g.name.getPublishedInId());
+              Reference spr = store.references().get(sp.getName().getPublishedInId());
+              Reference gr = store.references().get(g.getName().getPublishedInId());
               if (spr.getYear() != null && gr.getYear() != null && spr.getYear() < gr.getYear()) {
-                store.addIssues(sp.name, Issue.PUBLISHED_BEFORE_GENUS);
+                store.addIssues(sp.getName(), Issue.PUBLISHED_BEFORE_GENUS);
               }
             }
           }
@@ -272,25 +272,25 @@ public class Normalizer implements Callable<Boolean> {
     // track duplicates, map index name ids to first verbatim key
     final Int2IntMap nameIds = new Int2IntOpenHashMap();
     store.names().all().forEach(nn -> {
-      NameMatch m = index.match(nn.name, true, false);
-      nn.name.setNameIndexMatchType(m.getType());
+      NameMatch m = index.match(nn.getName(), true, false);
+      nn.getName().setNameIndexMatchType(m.getType());
       if (m.hasMatch()) {
-        nn.name.setNameIndexIds(m.getNameIds());
+        nn.getName().setNameIndexIds(m.getNameIds());
         store.names().update(nn);
         // track duplicates regardless of status - but only for verbatim records!
-        if (nn.name.getVerbatimKey() != null) {
+        if (nn.getName().getVerbatimKey() != null) {
           for (IndexName n : m.getNames()) {
             if (nameIds.containsKey(n.getKey())) {
               store.addIssues(nameIds.get(n.getKey()), Issue.DUPLICATE_NAME);
-              store.addIssues(nn.name, Issue.DUPLICATE_NAME);
+              store.addIssues(nn.getName(), Issue.DUPLICATE_NAME);
             } else {
-              nameIds.put(n.getKey(), nn.name.getVerbatimKey());
+              nameIds.put(n.getKey(), nn.getName().getVerbatimKey());
             }
           }
         }
       }
       if (m.getType().issue != null) {
-        store.addIssues(nn.name, m.getType().issue);
+        store.addIssues(nn.getName(), m.getType().issue);
       }
       counts.get(m.getType()).incrementAndGet();
     });
@@ -384,7 +384,7 @@ public class Normalizer implements Callable<Boolean> {
           Synonym syn = u.getSynonym();
           // getUsage a real neo4j node (store.allUsages() only populates a dummy with an id)
           Node n = store.getNeo().getNodeById(u.node.getId());
-          Name name = store.names().objByNode(NeoProperties.getNameNode(n)).name;
+          Name name = store.names().objByNode(NeoProperties.getNameNode(n)).getName();
           boolean ambigous = n.getDegree(RelType.SYNONYM_OF, Direction.OUTGOING) > 1;
           boolean misapplied = MisappliedNameMatcher.isMisappliedName(new ParsedNameUsage(name, false, syn.getAccordingToId(), null));
           TaxonomicStatus status = syn.getStatus();
@@ -676,7 +676,7 @@ public class Normalizer implements Callable<Boolean> {
    */
   private void updateRank(Node n, Rank r) {
     NeoName name = store.names().objByNode(n);
-    name.name.setRank(r);
+    name.getName().setRank(r);
     store.names().update(name);
   }
 
@@ -823,7 +823,7 @@ public class Normalizer implements Callable<Boolean> {
   }
 
   private void addNameIssue(Node node, Issue issue) {
-    store.addIssues(store.names().objByNode(node).name, issue);
+    store.addIssues(store.names().objByNode(node).getName(), issue);
   }
 
   private void addUsageIssue(Node node, Issue issue) {

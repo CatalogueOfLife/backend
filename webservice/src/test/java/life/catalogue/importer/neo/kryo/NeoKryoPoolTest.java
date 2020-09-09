@@ -1,24 +1,22 @@
 package life.catalogue.importer.neo.kryo;
 
-import java.io.ByteArrayOutputStream;
-import java.util.List;
-
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.google.common.collect.Lists;
+import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.importer.neo.NeoKryoPool;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
-import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Issue;
 import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.Rank;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.ByteArrayOutputStream;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -45,13 +43,11 @@ public class NeoKryoPoolTest {
   
   @Test
   public void testNeoName() throws Exception {
-    NeoName nn = new NeoName();
-    
-    nn.name = new Name();
-    nn.name.setScientificName("Abies alba");
-    nn.name.setCombinationAuthorship(TestEntityGenerator.createAuthorship());
-    nn.name.setBasionymAuthorship(TestEntityGenerator.createAuthorship());
-    nn.name.setRank(Rank.SPECIES);
+    NeoName nn = new NeoName(new Name());
+    nn.getName().setScientificName("Abies alba");
+    nn.getName().setCombinationAuthorship(TestEntityGenerator.createAuthorship());
+    nn.getName().setBasionymAuthorship(TestEntityGenerator.createAuthorship());
+    nn.getName().setRank(Rank.SPECIES);
     assertSerde(nn);
   }
 

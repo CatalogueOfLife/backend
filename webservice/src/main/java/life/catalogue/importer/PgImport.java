@@ -266,10 +266,10 @@ public class PgImport implements Callable<Boolean> {
       final NameMapper nameMapper = session.getMapper(NameMapper.class);
       LOG.debug("Inserting all names");
       store.names().all().forEach(n -> {
-        n.name.setDatasetKey(dataset.getKey());
-        updateVerbatimUserEntity(n.name);
-        updateReferenceKey(n.name.getPublishedInId(), n.name::setPublishedInId);
-        nameMapper.create(n.name);
+        n.getName().setDatasetKey(dataset.getKey());
+        updateVerbatimUserEntity(n.getName());
+        updateReferenceKey(n.getName().getPublishedInId(), n.getName()::setPublishedInId);
+        nameMapper.create(n.getName());
         if (nCounter.incrementAndGet() % batchSize == 0) {
           interruptIfCancelled();
           session.commit();
@@ -356,7 +356,7 @@ public class PgImport implements Callable<Boolean> {
           updateVerbatimEntity(nn);
           // update share props for taxon or synonym
           NameUsageBase nu = u.usage;
-          nu.setName(nn.name);
+          nu.setName(nn.getName());
           nu.setDatasetKey(dataset.getKey());
           updateReferenceKey(nu.getAccordingToId(), nu::setAccordingToId);
           updateReferenceKey(nu.getReferenceIds());
@@ -365,9 +365,9 @@ public class PgImport implements Callable<Boolean> {
             // use parent postgres key from stack, but keep it there
             nu.setParentId(parentIds.peek());
           } else if (u.isSynonym()) {
-            throw new IllegalStateException("Synonym node " + n.getId() + " without accepted taxon found: " + nn.name.getScientificName());
+            throw new IllegalStateException("Synonym node " + n.getId() + " without accepted taxon found: " + nn.getName().getScientificName());
           } else if (!n.hasLabel(Labels.ROOT)) {
-            throw new IllegalStateException("Non root node " + n.getId() + " with an accepted taxon without parent found: " + nn.name.getScientificName());
+            throw new IllegalStateException("Non root node " + n.getId() + " with an accepted taxon without parent found: " + nn.getName().getScientificName());
           }
   
           // insert taxon or synonym

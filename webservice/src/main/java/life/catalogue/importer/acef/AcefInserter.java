@@ -205,13 +205,13 @@ public class AcefInserter extends NeoCsvInserter {
       switch (refType) {
         case NomRef:
           NeoName nn = store.nameByUsage(u.node);
-          if (nn.name.getPublishedInId() != null) {
+          if (nn.getName().getPublishedInId() != null) {
             rec.addIssue(Issue.MULTIPLE_PUBLISHED_IN_REFERENCES);
           }
-          nn.name.setPublishedInId(ref.getId());
+          nn.getName().setPublishedInId(ref.getId());
           // we extract the page from CSL and also store it in the name
           // No deduplication of refs happening
-          nn.name.setPublishedInPage(ref.getCsl().getPage());
+          nn.getName().setPublishedInPage(ref.getCsl().getPage());
           store.names().update(nn);
           break;
         case TaxAccRef:

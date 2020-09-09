@@ -2,6 +2,7 @@ package life.catalogue.importer.coldp;
 
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.*;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -73,10 +74,9 @@ public class ColdpInterpreter extends InterpreterBase {
         u = NeoUsage.createSynonym(Origin.SOURCE, status);
       } else {
         u = NeoUsage.createTaxon(Origin.SOURCE, status);
-        interpretTaxonInfos(v, u);
+        interpretTaxonInfos(u, nn, v);
       }
       interpretUsageBase(u, nn, v);
-      u.usage.setName(nn.name);
       return u;
     });
   }
@@ -92,18 +92,22 @@ public class ColdpInterpreter extends InterpreterBase {
       interpretUsageBase(u, n, v);
 
       // taxon
-      interpretTaxonInfos(v, u);
+      interpretTaxonInfos(u, n, v);
 
       return u;
     });
   }
 
-  private void interpretTaxonInfos(VerbatimRecord v, NeoUsage u){
+  private void interpretTaxonInfos(NeoUsage u, NeoName n, VerbatimRecord v){
     if (!u.isSynonym()) {
       Taxon t = u.getTaxon();
       t.setScrutinizer(v.get(ColdpTerm.scrutinizer));
       t.setScrutinizerDate(fuzzydate(v, Issue.SCRUTINIZER_DATE_INVALID, ColdpTerm.scrutinizerDate));
-      t.setExtinct(bool(v, Issue.IS_EXTINCT_INVALID, ColdpTerm.extinct));
+      if (v.hasTerm(ColdpTerm.extinct)) {
+        t.setExtinct(bool(v, Issue.IS_EXTINCT_INVALID, ColdpTerm.extinct));
+      } else {
+        t.setExtinct(n.pnu.isExtinct());
+      }
       // geotime
       t.setTemporalRangeStart(parse(GeoTimeParser.PARSER, v.get(ColdpTerm.temporalRangeStart)).orNull(Issue.GEOTIME_INVALID, v));
       t.setTemporalRangeEnd(parse(GeoTimeParser.PARSER, v.get(ColdpTerm.temporalRangeEnd)).orNull(Issue.GEOTIME_INVALID, v));
@@ -152,9 +156,11 @@ public class ColdpInterpreter extends InterpreterBase {
     u.setVerbatimKey(v.getId());
     setReference(v, ColdpTerm.accordingToID, u.usage::setAccordingToId);
     u.usage.setOrigin(Origin.SOURCE);
-    u.usage.setNamePhrase( v.get(ColdpTerm.namePhrase));
+    u.usage.setNamePhrase(ObjectUtils.coalesce(v.get(ColdpTerm.namePhrase), n.pnu.getTaxonomicNote()));
     u.usage.setLink(uri(v, Issue.URL_INVALID, ColdpTerm.link));
     u.usage.setRemarks(v.get(ColdpTerm.remarks));
+
+    u.usage.setName(n.getName());
   }
 
   Optional<NeoRel> interpretNameRelations(VerbatimRecord rec) {

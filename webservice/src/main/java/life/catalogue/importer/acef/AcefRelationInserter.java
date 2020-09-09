@@ -37,17 +37,17 @@ public class AcefRelationInserter extends RelationInserterBase {
       Optional<ParsedNameUsage> opt = Optional.empty();
       if (p != null) {
         NeoName sp = store.nameByUsage(p);
-        if (sp.name.getRank() != Rank.GENUS) {
+        if (sp.getName().getRank() != Rank.GENUS) {
           opt = inter.interpretName(true, u.getId(), v.get(AcefTerm.InfraSpeciesMarker), null, v.get(AcefTerm.InfraSpeciesAuthorString),
-              null, sp.name.getGenus(), sp.name.getInfragenericEpithet(), sp.name.getSpecificEpithet(), v.get(AcefTerm.InfraSpeciesEpithet),
+              null, sp.getName().getGenus(), sp.getName().getInfragenericEpithet(), sp.getName().getSpecificEpithet(), v.get(AcefTerm.InfraSpeciesEpithet),
               null, null, v.get(AcefTerm.GSDNameStatus), null, null, v);
         }
       }
     
       if (opt.isPresent()) {
-        nn.name = opt.get().getName();
-        if (!nn.name.getRank().isInfraspecific()) {
-          LOG.info("Expected infraspecific taxon but found {} for name {}: {}", nn.name.getRank(), u.getId(), nn.name.getScientificName());
+        nn.pnu = opt.get();
+        if (!nn.getName().getRank().isInfraspecific()) {
+          LOG.info("Expected infraspecific taxon but found {} for name {}: {}", nn.getName().getRank(), u.getId(), nn.getName().getScientificName());
           v.addIssue(Issue.INCONSISTENT_NAME);
         }
       

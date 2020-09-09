@@ -129,8 +129,8 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       assertEquals(1, t2.node.getDegree(RelType.HAS_BASIONYM));
       assertEquals(t2.node,
           t1.node.getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getEndNode());
-      assertNotNull(t1.name.getHomotypicNameId());
-      assertEquals(t2.name.getHomotypicNameId(), t1.name.getHomotypicNameId());
+      assertNotNull(t1.getName().getHomotypicNameId());
+      assertEquals(t2.getName().getHomotypicNameId(), t1.getName().getHomotypicNameId());
       
       // 10->11->12->10, 13->11
       // should be: 10,13->11 12
@@ -147,10 +147,10 @@ public class NormalizerDwcaIT extends NormalizerITBase {
           .getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getOtherNode(t10.node));
       assertEquals(t11.node, t13.node
           .getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getOtherNode(t13.node));
-      assertNull(t12.name.getHomotypicNameId());
-      assertEquals(t10.name.getId(), t11.name.getHomotypicNameId());
-      assertEquals(t10.name.getId(), t10.name.getHomotypicNameId());
-      assertEquals(t10.name.getId(), t13.name.getHomotypicNameId());
+      assertNull(t12.getName().getHomotypicNameId());
+      assertEquals(t10.getName().getId(), t11.getName().getHomotypicNameId());
+      assertEquals(t10.getName().getId(), t10.getName().getHomotypicNameId());
+      assertEquals(t10.getName().getId(), t13.getName().getHomotypicNameId());
     }
   }
   
@@ -250,8 +250,8 @@ public class NormalizerDwcaIT extends NormalizerITBase {
 
       List<String> homos = Lists.newArrayList("4", "5", "7", "8");
       store.names().all().forEach(nn -> {
-        if (!homos.contains(nn.name.getId())) {
-          assertNull(nn.name.getHomotypicNameId());
+        if (!homos.contains(nn.getName().getId())) {
+          assertNull(nn.getName().getHomotypicNameId());
         }
       });
     }

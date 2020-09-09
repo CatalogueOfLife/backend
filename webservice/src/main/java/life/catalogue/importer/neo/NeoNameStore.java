@@ -1,20 +1,20 @@
 package life.catalogue.importer.neo;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.util.Pool;
+import com.google.common.base.Preconditions;
+import life.catalogue.importer.IdGenerator;
+import life.catalogue.importer.neo.model.NeoName;
+import org.apache.commons.lang3.ArrayUtils;
+import org.mapdb.DB;
+import org.mapdb.Serializer;
+import org.neo4j.graphdb.Node;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.util.Pool;
-import com.google.common.base.Preconditions;
-import org.apache.commons.lang3.ArrayUtils;
-import life.catalogue.importer.IdGenerator;
-import life.catalogue.importer.neo.model.NeoName;
-import org.mapdb.DB;
-import org.mapdb.Serializer;
-import org.neo4j.graphdb.Node;
 
 public class NeoNameStore extends NeoCRUDStore<NeoName> {
   
@@ -68,28 +68,28 @@ public class NeoNameStore extends NeoCRUDStore<NeoName> {
   }
   
   private void remove(NeoName n) {
-    if (n.name.getScientificName() != null) {
-      long[] nids = names.get(n.name.getScientificName());
+    if (n.getName().getScientificName() != null) {
+      long[] nids = names.get(n.getName().getScientificName());
       if (nids != null) {
         nids = ArrayUtils.removeElement(nids, n.node.getId());
         if (nids.length < 1) {
-          names.remove(n.name.getScientificName());
+          names.remove(n.getName().getScientificName());
         } else {
-          names.put(n.name.getScientificName(), nids);
+          names.put(n.getName().getScientificName(), nids);
         }
       }
     }
   }
   
   private void add(NeoName n, long nodeId) {
-    if (n.name.getScientificName() != null) {
-      long[] nids = names.get(n.name.getScientificName());
+    if (n.getName().getScientificName() != null) {
+      long[] nids = names.get(n.getName().getScientificName());
       if (nids == null) {
         nids = new long[]{nodeId};
       } else {
         nids = ArrayUtils.add(nids, nodeId);
       }
-      names.put(n.name.getScientificName(), nids);
+      names.put(n.getName().getScientificName(), nids);
     }
   }
 }

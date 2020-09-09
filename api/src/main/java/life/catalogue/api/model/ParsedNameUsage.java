@@ -15,7 +15,11 @@ public class ParsedNameUsage {
 
   public ParsedNameUsage() {
   }
-  
+
+  public ParsedNameUsage(Name name) {
+    this.name = name;
+  }
+
   public ParsedNameUsage(Name name, boolean extinct, String taxonomicNote, String publishedIn) {
     this.name = name;
     this.extinct = extinct;

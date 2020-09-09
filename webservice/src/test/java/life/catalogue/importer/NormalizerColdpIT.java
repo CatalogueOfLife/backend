@@ -1,10 +1,12 @@
 package life.catalogue.importer;
 
 import life.catalogue.api.model.NameRelation;
+import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomRelType;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.ParserConfigDao;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
@@ -55,7 +57,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
       store.names().all().forEach(n -> {
         VerbatimRecord v = store.getVerbatim(n.getVerbatimKey());
         assertNotNull(v);
-        if (!n.name.getId().equals("cult")){
+        if (!n.getName().getId().equals("cult")){
           assertEquals(1, v.getIssues().size());
         } else {
           assertEquals(2, v.getIssues().size());
@@ -164,15 +166,15 @@ public class NormalizerColdpIT extends NormalizerITBase {
 
   private void assertRosanae(String id){
     NeoName n = nameByID(id);
-    assertEquals("Rosanae", n.name.getLabel());
-    assertEquals("Rosanae", n.name.getUninomial());
-    assertEquals("Rosanae", n.name.getScientificName());
-    assertEquals(NameType.SCIENTIFIC, n.name.getType());
-    assertEquals(Rank.SUPERORDER, n.name.getRank());
-    assertNull(n.name.getNomenclaturalNote());
-    assertNull(n.name.getUnparsed());
-    assertNull(n.name.getGenus());
-    assertNull(n.name.getAuthorship());
+    assertEquals("Rosanae", n.getName().getLabel());
+    assertEquals("Rosanae", n.getName().getUninomial());
+    assertEquals("Rosanae", n.getName().getScientificName());
+    assertEquals(NameType.SCIENTIFIC, n.getName().getType());
+    assertEquals(Rank.SUPERORDER, n.getName().getRank());
+    assertNull(n.getName().getNomenclaturalNote());
+    assertNull(n.getName().getUnparsed());
+    assertNull(n.getName().getGenus());
+    assertNull(n.getName().getAuthorship());
   }
 
   @Test
@@ -231,4 +233,28 @@ public class NormalizerColdpIT extends NormalizerITBase {
     }
   }
 
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/841
+   */
+  @Test
+  public void misapplied() throws Exception {
+    normalize(8);
+    store.dump();
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoUsage t = usageByID("1225-3");
+      assertTrue(t.isSynonym());
+      assertEquals(TaxonomicStatus.MISAPPLIED, t.usage.getStatus());
+      assertEquals("auct. nec Zeller, 1877", t.usage.getNamePhrase());
+      assertEquals("Platyptilia fuscicornis", t.usage.getName().getLabel());
+      assertEquals("Platyptilia fuscicornis auct. nec Zeller, 1877", t.usage.getLabel());
+
+      t = usageByID("778");
+      assertFalse(t.isSynonym());
+      assertEquals(TaxonomicStatus.ACCEPTED, t.usage.getStatus());
+      Taxon tt = t.getTaxon();
+      assertTrue(tt.isExtinct());
+      assertNull(tt.getNamePhrase());
+      assertEquals("Anstenoptilia marmarodactyla Dyar, 1902", tt.getLabel());
+    }
+  }
 }

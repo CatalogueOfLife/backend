@@ -44,9 +44,9 @@ public class NormalizerACEFIT extends NormalizerITBase {
       assertNull(t);
       
       NeoName n = nameByID("s7");
-      assertEquals("Astragalus nonexistus", n.name.getScientificName());
-      assertEquals("DC.", n.name.getAuthorship());
-      assertEquals(Rank.SPECIES, n.name.getRank());
+      assertEquals("Astragalus nonexistus", n.getName().getScientificName());
+      assertEquals("DC.", n.getName().getAuthorship());
+      assertEquals(Rank.SPECIES, n.getName().getRank());
 
       assertTrue(hasIssues(n, Issue.SYNONYM_DATA_MOVED));
       assertTrue(hasIssues(n, Issue.ACCEPTED_ID_INVALID));
@@ -282,8 +282,8 @@ public class NormalizerACEFIT extends NormalizerITBase {
       u = usageByID("2");
       assertEquals("Foa fo", u.usage.getName().getScientificName());
       assertEquals("Jordan & Seale, 1905", u.usage.getName().getAuthorship());
-      assertTrue(u.getNeoName().name.isParsed());
-      assertEquals(NameType.SCIENTIFIC, u.getNeoName().name.getType());
+      assertTrue(u.getNeoName().getName().isParsed());
+      assertEquals(NameType.SCIENTIFIC, u.getNeoName().getName().getType());
       v = verbatim(u.usage.getName());
       assertFalse(v.hasIssue(Issue.UNPARSABLE_AUTHORSHIP));
     }
@@ -477,7 +477,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
     NeoUsage t = usageByID(id);
     for (RankedUsage u : store.parents(t.node)) {
       NeoName n = store.names().objByNode(u.nameNode);
-      if (NameType.PLACEHOLDER == n.name.getType()) {
+      if (NameType.PLACEHOLDER == n.getName().getType()) {
         return;
       }
     }

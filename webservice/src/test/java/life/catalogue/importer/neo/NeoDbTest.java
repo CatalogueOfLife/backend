@@ -130,13 +130,13 @@ public class NeoDbTest {
     try (Transaction tx = db.getNeo().beginTx()) {
       NeoName n1b = db.names().objByID("12");
       NeoName n2b = db.names().objByID("13");
-      assertNotNull(n1b.name.getHomotypicNameId());
-      assertNotNull(n2b.name.getHomotypicNameId());
+      assertNotNull(n1b.getName().getHomotypicNameId());
+      assertNotNull(n2b.getName().getHomotypicNameId());
 
-      assertEquals(n1b.name.getHomotypicNameId(), n2b.name.getHomotypicNameId());
+      assertEquals(n1b.getName().getHomotypicNameId(), n2b.getName().getHomotypicNameId());
       
-      n1b.name.setHomotypicNameId(null);
-      assertEquals(n1, n1b.name);
+      n1b.getName().setHomotypicNameId(null);
+      assertEquals(n1, n1b.getName());
 
       NeoUsage u1b = db.usages().objByID("12");
       assertEquals(u1, u1b);
