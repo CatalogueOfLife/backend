@@ -91,9 +91,7 @@ public enum NameUsageSearchParameter {
    */
   TYPE(NameType.class),
 
-  FOSSIL(Boolean.class),
-
-  RECENT(Boolean.class),
+  EXTINCT(Boolean.class),
 
   LIFEZONE(Lifezone.class),
   

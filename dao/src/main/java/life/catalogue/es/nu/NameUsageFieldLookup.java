@@ -31,8 +31,8 @@ public class NameUsageFieldLookup extends EnumMap<NameUsageSearchParameter, Stri
     putSingle(CATALOGUE_KEY, "decisions.catalogueKey");
     putSingle(DATASET_KEY, "datasetKey");
     putSingle(DECISION_MODE, "decisions.mode");
+    putSingle(EXTINCT, "extinct");
     putSingle(FIELD, "nameFields");
-    putSingle(FOSSIL, "fossil");
     putSingle(ISSUE, "issues");
     putSingle(LIFEZONE, "lifezone");
     putSingle(NAME_ID, "nameId");
@@ -42,7 +42,6 @@ public class NameUsageFieldLookup extends EnumMap<NameUsageSearchParameter, Stri
     putSingle(PUBLISHED_IN_ID, "publishedInId");
     putSingle(PUBLISHER_KEY, "publisherKey");
     putSingle(RANK, "rank");
-    putSingle(RECENT, "recent");
     putSingle(STATUS, "status");
     putSingle(SECTOR_DATASET_KEY, "sectorDatasetKey");
     putSingle(SECTOR_KEY, "sectorKey");
