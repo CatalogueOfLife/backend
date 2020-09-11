@@ -1,6 +1,7 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.SectorProcessable;
 import org.apache.ibatis.annotations.Param;
@@ -182,15 +183,10 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   Cursor<UsageNameID> processTreeIds(@Param("key") DSID<String> key);
 
   /**
-   * Iterates over all name usages with a temporary UUID id of a given dataset
-   * and returns their simple names with the names index ids.
+   * Iterate over all usages optionally filtered by its status but return just the id, status and name index ids
+   * @param status if null return all usages regardless their status
    */
-  Cursor<SimpleNameWithNidx> processTemporary(@Param("datasetKey") int datasetKey);
-
-  /**
-   * Iterate over all usages but return just the id, status and name index ids
-   */
-  Cursor<SimpleNameWithNidx> processNxIds(@Param("datasetKey") int datasetKey);
+  Cursor<SimpleNameWithNidx> processNxIds(@Param("datasetKey") int datasetKey, @Param("status")TaxonomicStatus status);
 
   Cursor<String> processIds(@Param("datasetKey") int datasetKey);
 }

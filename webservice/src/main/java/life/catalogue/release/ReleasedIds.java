@@ -1,9 +1,8 @@
 package life.catalogue.release;
 
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import life.catalogue.common.id.IdConverter;
 import org.apache.commons.lang3.ArrayUtils;
 
 public class ReleasedIds {
@@ -23,6 +22,28 @@ public class ReleasedIds {
 
     public final int[] nxId;
     public final int attempt;
+
+    public String id() {
+      return IdConverter.LATIN32.encode(id);
+    }
+  }
+
+  public int size() {
+    return byId.size();
+  }
+
+  public void remove(int id) {
+    ReleasedId r = byId.remove(id);
+    if (r != null) {
+      for (int nx : r.nxId) {
+        ReleasedId[] rids = ArrayUtils.removeAllOccurences(byNxId.get(nx), r);
+        if (rids == null || rids.length == 0) {
+          byNxId.remove(nx);
+        } else {
+          byNxId.put(nx, rids);
+        }
+      }
+    }
   }
 
   void add (ReleasedId id) {

@@ -1,13 +1,18 @@
 package life.catalogue.release;
 
-import it.unimi.dsi.fastutil.ints.*;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.id.IdConverter;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.IdMapMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.release.ReleasedIds.ReleasedId;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -57,23 +62,25 @@ public class StableIdProvider {
 
   private final ReleasedIds ids = new ReleasedIds();
   private final Int2IntMap attempt2dataset = new Int2IntOpenHashMap();
+  private final int currAttempt;
   private final AtomicInteger keySequence = new AtomicInteger();
   // id changes in this release
-  private IntSet added = new IntOpenHashSet();
-  private IntSet deleted = new IntOpenHashSet();
   private IntSet resurrected = new IntOpenHashSet();
+  private IntSet created = new IntOpenHashSet();
+  private IntSet deleted = new IntOpenHashSet();
   private NameUsageMapper num;
+  private IdMapMapper idm;
 
-  public StableIdProvider(int datasetKey, SqlSessionFactory factory) {
+  public StableIdProvider(int datasetKey, int attempt, SqlSessionFactory factory) {
     this.datasetKey = datasetKey;
+    this.currAttempt = attempt;
     this.factory = factory;
   }
 
   public void run() {
     LOG.info("Map name usage IDs");
     prepare();
-    verifyExistingIds();
-    replaceTemporaryIds();
+    mapIds();
   }
 
   private void prepare(){
@@ -89,7 +96,7 @@ public class StableIdProvider {
       for (Dataset rel : releases) {
         int attempt = rel.getImportAttempt();
         attempt2dataset.put(attempt, (int)rel.getKey());
-        session.getMapper(NameUsageMapper.class).processNxIds(rel.getKey()).forEach(sn -> {
+        session.getMapper(NameUsageMapper.class).processNxIds(rel.getKey(), null).forEach(sn -> {
           ids.add(new ReleasedIds.ReleasedId(decode(sn.getId()), sn.getNameIndexIds().toIntArray(), attempt));
         });
       }
@@ -97,42 +104,45 @@ public class StableIdProvider {
     keySequence.set(ids.maxKey());
   }
 
-  private void verifyExistingIds(){
-
-  }
-
-  private void replaceTemporaryIds(){
-    // we keep a list of usages that have ambiguous matches to multiple index names
-    // and deal with those names last.
-    AtomicInteger counter = new AtomicInteger();
-    List<SimpleNameWithNidx> ambiguous = new ArrayList<>();
+  private void mapIds(){
+    // we keep a list of usages that have ambiguous matches to multiple index names and deal with those names last.
     DSID<String> key = DSID.of(datasetKey, "");
-    try (SqlSession session = factory.openSession(false)) {
-      num = session.getMapper(NameUsageMapper.class);
-      num.processTemporary(datasetKey).forEach(u -> {
-        if (u.getNameIndexIds().isEmpty()) {
-          LOG.debug("Usage with no name match id - keep the temporary id");
-        } else if (u.getNameIndexIds().size() == 1) {
+    for (TaxonomicStatus status : new TaxonomicStatus[]{
+      TaxonomicStatus.ACCEPTED,
+      TaxonomicStatus.PROVISIONALLY_ACCEPTED,
+      TaxonomicStatus.SYNONYM,
+      TaxonomicStatus.AMBIGUOUS_SYNONYM,
+      TaxonomicStatus.MISAPPLIED
+    }) {
+      AtomicInteger counter = new AtomicInteger();
+      List<SimpleNameWithNidx> ambiguous = new ArrayList<>();
+      try (SqlSession session = factory.openSession(false)) {
+        num = session.getMapper(NameUsageMapper.class);
+        num.processNxIds(datasetKey, status).forEach(u -> {
+          if (u.getNameIndexIds().isEmpty()) {
+            LOG.debug("{} usage {} with no name match id - keep the temporary id", status, u.getId());
+          } else if (u.getNameIndexIds().size() == 1) {
+            String id = issueID(u, u.getNameIndexIds().toIntArray());
+            idm.mapUsage(datasetKey, u.getId(), id);
+            if (counter.incrementAndGet() % 10000 == 0) {
+              session.commit();
+            }
+          } else {
+            ambiguous.add(u);
+          }
+        });
+        session.commit();
+
+        LOG.info("Updated {} ids for simple matches, doing {} ambiguous matches next", counter, ambiguous.size());
+        for (SimpleNameWithNidx u : ambiguous){
           String id = issueID(u, u.getNameIndexIds().toIntArray());
-          num.updateId(key.id(u.getId()), id);
-          if (counter.incrementAndGet() % 1000 == 0) {
+          idm.mapUsage(datasetKey, u.getId(), id);
+          if (counter.incrementAndGet() % 10000 == 0) {
             session.commit();
           }
-        } else {
-          ambiguous.add(u);
         }
-      });
-      session.commit();
-
-      LOG.info("Updated {} temporary ids for simple matches, doing {} ambiguous matches next", counter, ambiguous.size());
-      for (SimpleNameWithNidx u : ambiguous){
-        String id = issueID(u, u.getNameIndexIds().toIntArray());
-        num.updateId(key.id(u.getId()), id);
-        if (counter.incrementAndGet() % 1000 == 0) {
-          session.commit();
-        }
+        session.commit();
       }
-      session.commit();
     }
   }
 
@@ -140,52 +150,22 @@ public class StableIdProvider {
     int id;
     // does a previous id match?
     for (int nidx : nidxs) {
-      if (prevIds.containsKey(nidx)) {
-        id = selectID(prevIds.get(nidx), name);
-        if (id > 0) {
-          removeID(id, nidx);
-          return encode(id);
+      ReleasedId[] rids = ids.byNxId(nidx);
+      if (rids != null) {
+        ReleasedId rid = selectID(rids, name);
+        if (rid != null) {
+          if (rid.attempt != currAttempt) {
+            resurrected.add(rid.id);
+          }
+          ids.remove(rid.id);
+          return rid.id();
         }
       }
     }
-    // if not, does a previously deleted id match?
-    for (int nidx : nidxs) {
-      if (prevDel.containsKey(nidx)) {
-        id = selectID(prevDel.get(nidx), name);
-        if (id > 0) {
-          removeID(id, nidx);
-          resurrected.add(id);
-          return encode(id);
-        }
-      }
-    }
-    // if not, issue a new id
+    // if nothing found, issue a new id
     id = keySequence.incrementAndGet();
-    added.add(id);
+    created.add(id);
     return encode(id);
-  }
-
-  /**
-   * Removes an CoL ID from the previous maps so its not issued again in this release
-   */
-  private void removeID(int id, int nidx){
-    _removeID(id, nidx);
-    // do we have more index ids associated with the same id that we need to remove?
-    if (id2Nidx.containsKey(id)) {
-      for (int nidx2 : id2Nidx.get(id)){
-        if (nidx == nidx2) continue;
-        _removeID(id, nidx2);
-      }
-      id2Nidx.remove(id);
-    }
-  }
-  private void _removeID(int id, int nidx){
-    if (prevIds.containsKey(nidx)) {
-      prevIds.get(nidx).removeInt(id);
-    }
-    if (prevDel.containsKey(nidx)) {
-      prevDel.get(nidx).removeInt(id);
-    }
   }
 
   /**
@@ -193,44 +173,44 @@ public class StableIdProvider {
    * It is assumed all ids match the canonical name at least.
    * Selecting considers authorship and the parent name to select between multiple candidates.
    *
-   * @param ids id candidates from any previous release (but not from the current project)
-   * @param name the name to match against
+   * @param candidates id candidates from any previous release (but not from the current project)
+   * @param nu the name usage to match against
    * @return the matched id or -1 for no match
    */
-  private int selectID(IntCollection ids, SimpleName name) {
-    if (ids.size() == 1) return ids.iterator().nextInt();
+  private ReleasedId selectID(ReleasedId[] candidates, SimpleName nu) {
+    if (candidates.length == 1) return candidates[0];
     // select best id from multiple
     int max = 0;
-    IntSet best = new IntOpenHashSet();
-    for (int id : ids) {
-      DSID<String> key = DSID.of(id2dataset.get(id), encode(id));
+    List<ReleasedId> best = new ArrayList<>();
+    for (ReleasedId rid : candidates) {
+      DSID<String> key = DSID.of(attempt2dataset.get(rid.attempt), encode(rid.id));
       SimpleName sn = num.getSimple(key);
       int score = 0;
       // author 0-2
-      if (name.getAuthorship() != null && Objects.equals(name.getAuthorship(), sn.getAuthorship())) {
+      if (nu.getAuthorship() != null && Objects.equals(nu.getAuthorship(), sn.getAuthorship())) {
         score += 2;
-      } else if (StringUtils.equalsIgnoreCaseAndSpace(name.getAuthorship(), sn.getAuthorship())) {
+      } else if (StringUtils.equalsIgnoreCaseAndSpace(nu.getAuthorship(), sn.getAuthorship())) {
         score += 1;
       }
       // parent 0-2
-      if (name.getParent() != null && Objects.equals(name.getParent(), sn.getParent())) {
+      if (nu.getParent() != null && Objects.equals(nu.getParent(), sn.getParent())) {
         score += 2;
       }
       if (score > max) {
         max = score;
         best.clear();
-        best.add(id);
+        best.add(rid);
       } else if (score == max) {
-        best.add(id);
+        best.add(rid);
       }
     }
     if (max > 0) {
       if (best.size() > 1) {
-        LOG.debug("{} ids all matching to {}", Arrays.toString(best.toArray()), name);
+        LOG.debug("{} ids all matching to {}", Arrays.toString(best.toArray()), nu);
       }
-      return best.iterator().nextInt();
+      return best.get(0);
     }
-    return -1;
+    return null;
   }
 
   static int decode(String id) {
