@@ -189,6 +189,14 @@ public class NameUsageSearchRequest extends NameUsageRequest {
       } catch (NumberFormatException e) {
         throw illegalValueForParameter(param, value);
       }
+    } else if (param.type() == Boolean.class) {
+      if (value.equals("-1") || value.equals("0") || value.toLowerCase().equals("f") || value.toLowerCase().equals("false")) {
+        addFilterValue(param, false);
+      } else if (value.equals("1") || value.toLowerCase().equals("t") || value.toLowerCase().equals("true")) {
+        addFilterValue(param, true);
+      } else {
+        throw illegalValueForParameter(param, value);
+      }
     } else if (param.type().isEnum()) {
       try {
         int i = Integer.parseInt(value);

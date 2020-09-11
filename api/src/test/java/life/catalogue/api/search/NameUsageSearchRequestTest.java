@@ -53,6 +53,12 @@ public class NameUsageSearchRequestTest extends SerdeTestBase<NameUsageSearchReq
     r.addFilter(NameUsageSearchParameter.RANK, "spezi");
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void badBoolean() {
+    NameUsageSearchRequest r = new NameUsageSearchRequest();
+    r.addFilter(NameUsageSearchParameter.EXTINCT, "extinct");
+  }
+
   @Test
   public void addFilterGood() {
     NameUsageSearchRequest r = new NameUsageSearchRequest();
@@ -64,6 +70,11 @@ public class NameUsageSearchRequestTest extends SerdeTestBase<NameUsageSearchReq
 
     r.addFilter(NameUsageSearchParameter.DATASET_KEY, Lists.newArrayList("1", "2"));
     assertEquals(ImmutableSet.of(123, 1234, 1234, 12, 13, 14, 1, 2), r.getFilterValues(NameUsageSearchParameter.DATASET_KEY));
+
+    r.addFilter(NameUsageSearchParameter.EXTINCT, true);
+    assertTrue(r.getFilterValue(NameUsageSearchParameter.EXTINCT));
+    r.addFilter(NameUsageSearchParameter.EXTINCT, "1");
+    assertTrue(r.getFilterValue(NameUsageSearchParameter.EXTINCT));
   }
 
   @Test
