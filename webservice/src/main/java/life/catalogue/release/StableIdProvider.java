@@ -94,14 +94,18 @@ public class StableIdProvider {
       dsr.setReverse(true);
       List<Dataset> releases = dm.search(dsr, null, new Page(0, 100));
       for (Dataset rel : releases) {
+        AtomicInteger counter = new AtomicInteger();
         int attempt = rel.getImportAttempt();
         attempt2dataset.put(attempt, (int)rel.getKey());
         session.getMapper(NameUsageMapper.class).processNxIds(rel.getKey(), null).forEach(sn -> {
+          counter.incrementAndGet();
           ids.add(new ReleasedIds.ReleasedId(decode(sn.getId()), sn.getNameIndexIds().toIntArray(), attempt));
         });
+        LOG.info("Read {} usages from previous release {}, key={}. Total released ids = {}", counter, rel.getImportAttempt(), rel.getKey(), ids.size());
       }
     }
     keySequence.set(ids.maxKey());
+    LOG.info("Max existing id is {} ({})", keySequence, encode(keySequence.get()));
   }
 
   private void mapIds(){

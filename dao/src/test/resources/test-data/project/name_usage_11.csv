@@ -1,0 +1,7 @@
+id,parent_id,status,name_id,reference_ids
+2,,ACCEPTED,1,{r1}
+3,2,ACCEPTED,2,{r1}
+4,3,ACCEPTED,3,{r1}
+5,4,ACCEPTED,4,{}
+6,5,ACCEPTED,5,{}
+7,5,ACCEPTED,6,{}

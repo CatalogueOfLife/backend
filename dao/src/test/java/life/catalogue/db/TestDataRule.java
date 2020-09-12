@@ -78,6 +78,9 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     // basic draft hierarchy
     DRAFT_WITH_SECTORS(3, 2, 3, 3),
 
+    // basic draft hierarchy
+    PROJECT(3, 2, 2, 3,11,12,13),
+
     /**
      * Inits the datasets table with real col data from colplus-repo
      */
@@ -135,6 +138,10 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   public static TestDataRule draftWithSectors() {
     return new TestDataRule(TestData.DRAFT_WITH_SECTORS);
+  }
+
+  public static TestDataRule project() {
+    return new TestDataRule(TestData.PROJECT);
   }
 
   public static TestDataRule datasets() {
@@ -212,6 +219,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     for (Integer dk : testData.datasetKeys) {
       MybatisTestUtils.partition(session, dk);
     }
+    session.commit();
   }
 
   public void updateSequences() throws Exception {
@@ -289,28 +297,11 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
             copyGlobalTable(pgc, "dataset");
             copyGlobalTable(pgc, "sector");
           }
-          copyPartitionedTable(pgc, "verbatim", ImmutableMap.of("dataset_key", testData.key));
-          copyPartitionedTable(pgc, "reference", datasetEntityDefaults());
-          copyPartitionedTable(pgc, "name",
-              datasetEntityDefaults(ImmutableMap.<String, Object>of(
-                  "origin", Origin.SOURCE,
-                  "type", NameType.SCIENTIFIC
-              )),
-              ImmutableMap.<String, Function<String[], String>>of(
-                  "scientific_name_normalized", row -> SciNameNormalizer.normalize(row[testData.sciNameColumn])
-              )
-          );
-          copyPartitionedTable(pgc, "name_rel", datasetEntityDefaults());
-          copyPartitionedTable(pgc, "name_usage",
-              datasetEntityDefaults(ImmutableMap.<String, Object>of("origin", Origin.SOURCE)),
-              ImmutableMap.<String, Function<String[], String>>of(
-                  "is_synonym", this::isSynonym
-              )
-          );
-          copyPartitionedTable(pgc, "distribution", datasetEntityDefaults());
-          copyPartitionedTable(pgc, "vernacular_name", datasetEntityDefaults());
 
-          c.commit();
+          for (int key : testData.datasetKeys) {
+            copyDataset(pgc, key);
+            c.commit();
+          }
 
           runner.runScript(Resources.getResourceAsReader("test-data/sequences.sql"));
         }
@@ -320,14 +311,37 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     }
   }
 
-  private Map<String, Object> datasetEntityDefaults() {
-    return datasetEntityDefaults(new HashMap<>());
+  private void copyDataset(PgConnection pgc, int key) throws IOException, SQLException {
+    copyPartitionedTable(pgc, "verbatim", key, ImmutableMap.of("dataset_key", key));
+    copyPartitionedTable(pgc, "reference", key, datasetEntityDefaults(key));
+    copyPartitionedTable(pgc, "name", key,
+      datasetEntityDefaults(key, ImmutableMap.<String, Object>of(
+        "origin", Origin.SOURCE,
+        "type", NameType.SCIENTIFIC
+      )),
+      ImmutableMap.<String, Function<String[], String>>of(
+        "scientific_name_normalized", row -> SciNameNormalizer.normalize(row[testData.sciNameColumn])
+      )
+    );
+    copyPartitionedTable(pgc, "name_rel", key, datasetEntityDefaults(key));
+    copyPartitionedTable(pgc, "name_usage", key,
+      datasetEntityDefaults(key, ImmutableMap.<String, Object>of("origin", Origin.SOURCE)),
+      ImmutableMap.<String, Function<String[], String>>of(
+        "is_synonym", this::isSynonym
+      )
+    );
+    copyPartitionedTable(pgc, "distribution", key, datasetEntityDefaults(key));
+    copyPartitionedTable(pgc, "vernacular_name", key, datasetEntityDefaults(key));
   }
 
-  private Map<String, Object> datasetEntityDefaults(Map<String, Object> defaults) {
+  private Map<String, Object> datasetEntityDefaults(int datasetKey) {
+    return datasetEntityDefaults(datasetKey, new HashMap<>());
+  }
+
+  private Map<String, Object> datasetEntityDefaults(int datasetKey, Map<String, Object> defaults) {
     return ImmutableMap.<String, Object>builder()
         .putAll(defaults)
-        .put("dataset_key", testData.key)
+        .put("dataset_key", datasetKey)
         .put("created_by", 0)
         .put("modified_by", 0)
         .build();
@@ -342,16 +356,12 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     copyTable(pgc, table + ".csv", table, Collections.EMPTY_MAP, Collections.EMPTY_MAP);
   }
 
-  private void copyPartitionedTable(PgConnection pgc, String table) throws IOException, SQLException {
-    copyPartitionedTable(pgc, table, Collections.EMPTY_MAP, Collections.EMPTY_MAP);
+  private void copyPartitionedTable(PgConnection pgc, String table, int datasetKey, Map<String, Object> defaults) throws IOException, SQLException {
+    copyPartitionedTable(pgc, table, datasetKey, defaults, Collections.EMPTY_MAP);
   }
 
-  private void copyPartitionedTable(PgConnection pgc, String table, Map<String, Object> defaults) throws IOException, SQLException {
-    copyPartitionedTable(pgc, table, defaults, Collections.EMPTY_MAP);
-  }
-
-  private void copyPartitionedTable(PgConnection pgc, String table, Map<String, Object> defaults, Map<String, Function<String[], String>> funcs) throws IOException, SQLException {
-    copyTable(pgc, table + ".csv", table + "_" + testData.key, defaults, funcs);
+  private void copyPartitionedTable(PgConnection pgc, String table, int datasetKey, Map<String, Object> defaults, Map<String, Function<String[], String>> funcs) throws IOException, SQLException {
+    copyTable(pgc, table + "_" + datasetKey + ".csv", table + "_" + datasetKey, defaults, funcs);
   }
 
   private void copyTable(PgConnection pgc, String filename, String table, Map<String, Object> defaults, Map<String, Function<String[], String>> funcs)
