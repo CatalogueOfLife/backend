@@ -254,8 +254,17 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    * into ParsedName objects with the scientific name, rank and name type given.
    */
   public Optional<ParsedNameUsage> parse(String name, Rank rank, NomCode code, IssueContainer issues) {
+    return parse(name, null, rank, code, issues);
+  }
+
+  /**
+   * Fully parses a name using #parse(String, Rank) but converts names that throw a UnparsableException
+   * into ParsedName objects with the scientific name, rank and name type given.
+   */
+  public Optional<ParsedNameUsage> parse(String name, String authorship, Rank rank, NomCode code, IssueContainer issues) {
     Name n = new Name();
     n.setScientificName(name);
+    n.setAuthorship(authorship);
     n.setRank(rank);
     n.setCode(code);
     return parse(n, issues);

@@ -45,15 +45,17 @@ public class NameParserResource {
     private NomCode code;
     private Rank rank;
     private String name;
+    private String authorship;
     private Set<Issue> issues = EnumSet.noneOf(Issue.class);
 
     public CRName() {
     }
   
-    public CRName(NomCode code, Rank rank, String name) {
+    public CRName(NomCode code, Rank rank, String name, String authorship) {
       this.code = code;
       this.rank = rank;
       this.name = name;
+      this.authorship = authorship;
     }
   
     public Rank getRank() {
@@ -78,6 +80,14 @@ public class NameParserResource {
   
     public void setName(String name) {
       this.name = name;
+    }
+
+    public String getAuthorship() {
+      return authorship;
+    }
+
+    public void setAuthorship(String authorship) {
+      this.authorship = authorship;
     }
 
     @Override
@@ -119,18 +129,16 @@ public class NameParserResource {
     }
   }
 
-
-
-
-
+  
   /**
    * Parsing names as GET query parameters.
    */
   @GET
-  public List<PNUIssue> parseGet(@QueryParam("code") NomCode code,
+  public Optional<PNUIssue> parseGet(@QueryParam("code") NomCode code,
                                  @QueryParam("rank") Rank rank,
-                                 @QueryParam("name") List<String> names) {
-    return parse(code, rank, names.stream());
+                                 @QueryParam("name") String name,
+                                 @QueryParam("authorship") String authorship) {
+    return parse(new CRName(code, rank, name, authorship));
   }
   
   /**
@@ -176,19 +184,21 @@ public class NameParserResource {
   }
   
   private List<PNUIssue> parse(final NomCode code, final Rank rank, Stream<String> names) {
-    return parse(names.map(n -> new CRName(code, rank, n)));
+    return parse(names.map(n -> new CRName(code, rank, n, null)));
   }
   
   private List<PNUIssue> parse(Stream<CRName> names) {
     return names
-        .peek(n -> LOG.debug("Parse: {}", n))
-        .map(n -> {
-          Optional<ParsedNameUsage> parsed = parser.parse(n.name, n.rank, n.code, n);
-          return parsed.map(nat -> new PNUIssue(nat, n.issues));
-        })
+        .map(this::parse)
         .filter(Optional::isPresent)
         .map(Optional::get)
         .collect(Collectors.toList());
+  }
+
+  private Optional<PNUIssue> parse(CRName n) {
+    LOG.debug("Parse: {}", n);
+    Optional<ParsedNameUsage> parsed = parser.parse(n.name, n.authorship, n.rank, n.code, n);
+    return parsed.map(nat -> new PNUIssue(nat, n.issues));
   }
 
   @GET
