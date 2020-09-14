@@ -8,8 +8,6 @@ import life.catalogue.api.model.Reference;
 import life.catalogue.api.search.ReferenceSearchRequest;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Issue;
-import life.catalogue.dao.Partitioner;
-import life.catalogue.db.PgSetupRule;
 import org.junit.Test;
 
 import java.time.LocalDateTime;
@@ -48,14 +46,7 @@ public class ReferenceMapperTest extends CRUDDatasetScopedStringTestBase<Referen
 
   @Test
   public void copyDataset() throws Exception {
-    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
-    mapper().copyDataset(datasetKey, 999, false);
-  }
-
-  @Test
-  public void copyDatasetWithMap() throws Exception {
-    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
-    mapper().copyDataset(datasetKey, 999, true);
+    CopyDatasetTestComponent.copy(mapper(), testDataRule.testData.key, true);
   }
 
   @Test

@@ -16,6 +16,7 @@ import static org.junit.Assert.assertNull;
 abstract class CRUDDatasetScopedStringTestBase<T extends DatasetScopedEntity<String>, M extends CRUD<DSID<String>, T> & DatasetPageable<T> & DatasetProcessable<T>>
     extends CRUDPageableTestBase<String, T, M> {
 
+
   public CRUDDatasetScopedStringTestBase(Class<M> mapperClazz) {
     super(mapperClazz);
   }
@@ -30,5 +31,4 @@ abstract class CRUDDatasetScopedStringTestBase<T extends DatasetScopedEntity<Str
     ent.setId(String.valueOf(TestEntityGenerator.ID_GEN.incrementAndGet()));
     return ent;
   }
-  
 }

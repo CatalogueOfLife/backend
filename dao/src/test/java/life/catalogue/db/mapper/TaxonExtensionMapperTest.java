@@ -4,9 +4,6 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DatasetScopedEntity;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.TaxonExtension;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.dao.Partitioner;
-import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import org.junit.Test;
 
@@ -24,7 +21,7 @@ abstract class TaxonExtensionMapperTest<T extends DatasetScopedEntity<Integer>, 
   Taxon tax;
   
   public TaxonExtensionMapperTest(Class<M> mapperClazz) {
-    super(mapperClazz, TestDataRule.empty());
+      super(mapperClazz, TestDataRule.empty());
   }
 
   /**
@@ -34,15 +31,7 @@ abstract class TaxonExtensionMapperTest<T extends DatasetScopedEntity<Integer>, 
 
   @Test
   public void copyDataset() throws Exception {
-    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
-    mapper().copyDataset(Datasets.DRAFT_COL, 999, false);
-  }
-
-  @Test
-  public void copyDatasetWithMap() throws Exception {
-    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
-    Partitioner.createManagedObjects(PgSetupRule.getSqlSessionFactory(), 999);
-    mapper().copyDataset(Datasets.DRAFT_COL, 999, true);
+    CopyDatasetTestComponent.copy(mapper(), testDataRule.testData.key, true);
   }
 
   @Test

@@ -56,7 +56,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     TEST_USER.getRoles().add(User.Role.ADMIN);
   }
 
-  final private TestData testData;
+  public final TestData testData;
   private SqlSession session;
   private final Supplier<SqlSessionFactory> sqlSessionFactorySupplier;
 

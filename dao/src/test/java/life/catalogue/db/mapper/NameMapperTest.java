@@ -8,8 +8,6 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.common.collection.CollectionUtils;
-import life.catalogue.dao.Partitioner;
-import life.catalogue.db.PgSetupRule;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
@@ -46,6 +44,11 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
   }
 
   @Test
+  public void copyDataset() throws Exception {
+    CopyDatasetTestComponent.copy(mapper(), testDataRule.testData.key, true);
+  }
+
+  @Test
   public void ambiguousRankNameIds() throws Exception {
     // no real data to delete but tests valid SQL
     mapper().ambiguousRankNameIds(datasetKey, null);
@@ -58,18 +61,6 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
     mapper().deleteBySectorAndRank(DSID.of(datasetKey, 1), Rank.GENUS, null);
     mapper().deleteBySectorAndRank(DSID.of(datasetKey, 1), Rank.SUPERSECTION, Set.of());
     mapper().deleteBySectorAndRank(DSID.of(datasetKey, 1), Rank.FAMILY, Set.of("1,2,3", "abc"));
-  }
-
-  @Test
-  public void copyDataset() throws Exception {
-    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
-    mapper().copyDataset(datasetKey, 999, false);
-  }
-
-  @Test
-  public void copyDatasetWithMap() throws Exception {
-    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
-    mapper().copyDataset(datasetKey, 999, true);
   }
 
   @Test

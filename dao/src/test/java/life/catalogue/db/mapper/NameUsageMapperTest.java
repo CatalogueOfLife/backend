@@ -5,7 +5,6 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.NameDao;
-import life.catalogue.dao.Partitioner;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.es.NameUsageIndexService;
@@ -32,7 +31,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   int datasetKey = TestDataRule.TestData.APPLE.key;
 
   public NameUsageMapperTest() {
-    super(NameUsageMapper.class);
+    super(NameUsageMapper.class, TestDataRule.apple());
   }
   
   @Before
@@ -44,14 +43,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
 
   @Test
   public void copyDataset() throws Exception {
-    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
-    mapper().copyDataset(datasetKey, 999, false);
-  }
-
-  @Test
-  public void copyDatasetWithMap() throws Exception {
-    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
-    mapper().copyDataset(datasetKey, 999, true);
+    CopyDatasetTestComponent.copy(mapper(), testDataRule.testData.key, true);
   }
 
   @Test
