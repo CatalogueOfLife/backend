@@ -8,15 +8,13 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
 
 import javax.ws.rs.core.GenericType;
-import java.util.List;
 
 import static life.catalogue.ApiUtils.userCreds;
 import static org.junit.Assert.assertEquals;
 
 public class NameParserResourceTest extends ResourceTestBase {
 
-  GenericType<List<ParsedNameUsage>> PARSER_TYPE = new GenericType<List<ParsedNameUsage>>() {
-  };
+  GenericType<ParsedNameUsage> PARSER_TYPE = new GenericType<ParsedNameUsage>() {};
 
   public NameParserResourceTest() {
     super("/parser/name");
@@ -24,8 +22,9 @@ public class NameParserResourceTest extends ResourceTestBase {
 
   @Test
   public void parseGet() {
-    List<ParsedNameUsage> resp = userCreds(base.queryParam("name", "Abies alba Mill.")
-                                               .queryParam("code", "botanical")
+    ParsedNameUsage resp = userCreds(base.queryParam("name", "Abies alba")
+                                         .queryParam("authorship", "Mill.")
+                                         .queryParam("code", "botanical")
     ).get(PARSER_TYPE);
     
     Name abies = new Name();
@@ -38,8 +37,7 @@ public class NameParserResourceTest extends ResourceTestBase {
     abies.rebuildScientificName();
     abies.rebuildAuthorship();
     
-    assertEquals(1, resp.size());
     //printDiff(abies, resp.get(0).getName());
-    assertEquals(abies, resp.get(0).getName());
+    assertEquals(abies, resp.getName());
   }
 }
