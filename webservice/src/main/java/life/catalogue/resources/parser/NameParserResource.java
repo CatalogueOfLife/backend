@@ -129,7 +129,7 @@ public class NameParserResource {
     }
   }
 
-  
+
   /**
    * Parsing names as GET query parameters.
    */
