@@ -168,6 +168,14 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     Arrays.stream(values).forEach((v) -> addFilter(param, v == null ? IS_NULL : v.toString()));
   }
 
+  /**
+   * Sets a single filter, removing any existing filter for the given parameter.
+   */
+  public void setFilter(NameUsageSearchParameter param, String value) {
+    getFilters().remove(param);
+    addFilter(param, value);
+  }
+
   /*
    * Primary usage case - parameter values coming in as strings from the HTTP request. Values are
    * validated and converted to the type associated with the parameter.

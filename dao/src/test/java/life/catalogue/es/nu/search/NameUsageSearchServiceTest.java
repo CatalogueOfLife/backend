@@ -29,6 +29,7 @@ import java.util.*;
 import static life.catalogue.es.EsUtil.insert;
 import static life.catalogue.es.EsUtil.refreshIndex;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class NameUsageSearchServiceTest extends EsReadTestBase {
 
@@ -701,6 +702,12 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     return nuw;
   }
 
+  static NameUsageWrapper fill (NameUsageWrapper nuw, String id, Taxon accepted) {
+    fill((NameUsageBase) nuw.getUsage(), id);
+    ((Synonym)nuw.getUsage()).setAccepted(accepted);
+    return nuw;
+  }
+
   /**
    * https://github.com/CatalogueOfLife/backend/issues/842
    */
@@ -708,29 +715,45 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   public void missappliedNames() {
     // content
     NameUsageWrapper nuw1 = fill(minimalTaxon(), "t1");
+    Taxon acc = (Taxon) nuw1.getUsage();
 
-    NameUsageWrapper syn = fill(minimalSynonym(), "s1");
-    ((Synonym)syn.getUsage()).setAccepted(fill((Taxon)minimalTaxon().getUsage(), "a1"));
+    NameUsageWrapper syn = fill(minimalSynonym(), "s1", acc);
 
-    NameUsageWrapper mis = fill(minimalSynonym(), "miss");
-    ((Synonym)mis.getUsage()).setAccepted(fill((Taxon)minimalTaxon().getUsage(), "a1"));
+    NameUsageWrapper mis = fill(minimalSynonym(), "mis", acc);
     mis.getUsage().setNamePhrase("non Miller 1879");
     mis.getUsage().setStatus(TaxonomicStatus.MISAPPLIED);
 
-    index(nuw1, syn, mis);
+    NameUsageWrapper mis2 = fill(minimalSynonym(), "mis2", acc);
+    mis2.getUsage().setNamePhrase(null);
+    mis2.getUsage().setAccordingToId("r1");
+    ((Synonym)mis2.getUsage()).setAccordingTo("Miller 1901");
+    mis2.getUsage().setStatus(TaxonomicStatus.MISAPPLIED);
+
+    index(nuw1, syn, mis, mis2);
 
     // search
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(NameUsageSearchParameter.STATUS, TaxonomicStatus.MISAPPLIED);
-    //query.addFilter(NameUsageSearchParameter.DATASET_KEY, mis.getUsage().getDatasetKey());
-    //query.addFilter(NameUsageSearchParameter.USAGE_ID, mis.getUsage().getId());
-
     ResultPage<NameUsageWrapper> result = search(query);
+    assertEquals(2, result.getResult().size());
+
+
+    query = new NameUsageSearchRequest();
+    query.addFilter(NameUsageSearchParameter.DATASET_KEY, mis.getUsage().getDatasetKey());
+    query.addFilter(NameUsageSearchParameter.USAGE_ID, mis.getUsage().getId());
+    result = search(query);
     assertEquals(1, result.getResult().size());
     Synonym s = (Synonym) result.getResult().get(0).getUsage();
-
     assertEquals("non Miller 1879", s.getNamePhrase());
     assertEquals("Abies alba montana Smith & Miller, 1879 non Miller 1879", s.getLabel());
+
+    query.setFilter(NameUsageSearchParameter.USAGE_ID, mis2.getUsage().getId());
+    result = search(query);
+    assertEquals(1, result.getResult().size());
+    s = (Synonym) result.getResult().get(0).getUsage();
+    assertNull(s.getNamePhrase());
+    assertEquals("Miller 1901", s.getAccordingTo());
+    assertEquals("Abies alba montana Smith & Miller, 1879 sensu Miller 1901", s.getLabel());
   }
 
   @Test
