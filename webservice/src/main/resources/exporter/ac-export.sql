@@ -159,7 +159,7 @@ COPY (
     FROM name_usage_{{datasetKey}} t
         JOIN __tax_keys tk ON t.id=tk.id
         LEFT JOIN sector s ON t.sector_key=s.id AND s.dataset_key={{datasetKey}}
-    WHERE t.lifezones IS NOT NULL
+    WHERE t.environments IS NOT NULL
 ) TO 'lifezone.csv';
 
 
