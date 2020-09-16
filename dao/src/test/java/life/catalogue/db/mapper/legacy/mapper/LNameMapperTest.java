@@ -125,8 +125,8 @@ public class LNameMapperTest extends MapperTestBase<LNameMapper> {
   @Test
   public void count() {
     assertEquals(0, mapper().count(datasetKey, true, "Larus"));
-    assertEquals(4, mapper().count(datasetKey, true, "chromis"));
-    assertEquals(4, mapper().count(datasetKey, true, "Chromis"));
+    assertEquals(5, mapper().count(datasetKey, true, "chromis"));
+    assertEquals(5, mapper().count(datasetKey, true, "Chromis"));
     assertEquals(1, mapper().count(datasetKey, false, "Chromis"));
     assertEquals(0, mapper().count(datasetKey, false, "agilis"));
     assertEquals(1, mapper().count(datasetKey, true, "Perciform"));
