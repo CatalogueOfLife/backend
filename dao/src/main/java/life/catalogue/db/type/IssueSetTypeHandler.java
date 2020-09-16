@@ -3,7 +3,7 @@ package life.catalogue.db.type;
 import life.catalogue.api.vocab.Issue;
 
 /**
- * A TypeHandler that converts between enum Lifezone constants and their ordinal
+ * A TypeHandler that converts between enum Issue constants and their ordinal
  * values.
  */
 public class IssueSetTypeHandler extends BaseEnumSetTypeHandler<Issue> {

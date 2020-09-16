@@ -2,7 +2,7 @@
   "name": {
     "type": "scientific"
   },
-  "lifezones": [],
+  "environments": [],
   "mode": "update",
   "subjectDatasetKey": 11,
   "datasetKey": 3,

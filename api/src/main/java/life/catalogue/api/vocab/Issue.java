@@ -218,9 +218,9 @@ public enum Issue {
   
   PROVISIONAL_STATUS_INVALID(NAME_USAGE, Level.ERROR,
       "col:provisional is no boolean"),
-  
-  LIFEZONE_INVALID(NAME_USAGE, Level.WARNING,
-      "acef:lifezone contains values that cannot be interpreted"),
+
+  ENVIRONMENT_INVALID(NAME_USAGE, Level.WARNING,
+      "environment contains values that cannot be interpreted"),
   
   IS_EXTINCT_INVALID(NAME_USAGE, Level.WARNING,
       "acef:IsExtinct contains values that cannot be interpreted"),

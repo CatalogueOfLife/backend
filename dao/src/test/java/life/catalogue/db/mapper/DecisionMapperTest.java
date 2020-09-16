@@ -7,7 +7,7 @@ import life.catalogue.api.model.DatasetScoped;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.Lifezone;
+import life.catalogue.api.vocab.Environment;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.io.Resources;
 import org.junit.Test;
@@ -93,7 +93,7 @@ public class DecisionMapperTest extends BaseDecisionMapperTest<EditorialDecision
     d.setName(TestEntityGenerator.newName());
     d.setStatus(TaxonomicStatus.AMBIGUOUS_SYNONYM);
     d.setExtinct(true);
-    d.setLifezones(Set.of(Lifezone.MARINE, Lifezone.BRACKISH));
+    d.setEnvironments(Set.of(Environment.MARINE, Environment.BRACKISH));
     d.setNote("I cannot remember why I did this.");
     d.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());
     d.setModifiedBy(d.getCreatedBy());

@@ -2,7 +2,7 @@ package life.catalogue.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.search.SimpleDecision;
-import life.catalogue.api.vocab.Lifezone;
+import life.catalogue.api.vocab.Environment;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
 import java.util.EnumSet;
@@ -27,7 +27,7 @@ public class EditorialDecision extends DatasetScopedEntity<Integer> {
   private Boolean extinct;
   private String temporalRangeStart;
   private String temporalRangeEnd;
-  private Set<Lifezone> lifezones = EnumSet.noneOf(Lifezone.class);
+  private Set<Environment> environments = EnumSet.noneOf(Environment.class);
   private String note;
   
   public static enum Mode {
@@ -42,13 +42,13 @@ public class EditorialDecision extends DatasetScopedEntity<Integer> {
     REVIEWED,
 
     /**
-     * Updates the subject using the configured name, status, lifezone and extinct flag
+     * Updates the subject using the configured name, status, environment and extinct flag
      * leaving NULL values unchanged.
      */
     UPDATE,
   
     /**
-     * Updates the subject and all its descendants using the configured status, lifezone and extinct flag
+     * Updates the subject and all its descendants using the configured status, environment and extinct flag
      * leaving NULL values unchanged.
      *
      * If configured, Name updates will be ignored!!!
@@ -70,7 +70,7 @@ public class EditorialDecision extends DatasetScopedEntity<Integer> {
     this.extinct = other.extinct;
     this.temporalRangeStart = other.temporalRangeStart;
     this.temporalRangeEnd = other.temporalRangeEnd;
-    this.lifezones = other.lifezones == null ? null : EnumSet.copyOf(other.lifezones);
+    this.environments = other.environments == null ? null : EnumSet.copyOf(other.environments);
     this.note = other.note;
   }
 
@@ -154,12 +154,12 @@ public class EditorialDecision extends DatasetScopedEntity<Integer> {
     this.temporalRangeEnd = temporalRangeEnd;
   }
   
-  public Set<Lifezone> getLifezones() {
-    return lifezones;
+  public Set<Environment> getEnvironments() {
+    return environments;
   }
   
-  public void setLifezones(Set<Lifezone> lifezones) {
-    this.lifezones = lifezones;
+  public void setEnvironments(Set<Environment> environments) {
+    this.environments = environments;
   }
   
   @JsonIgnore
@@ -191,13 +191,13 @@ public class EditorialDecision extends DatasetScopedEntity<Integer> {
         Objects.equals(extinct, that.extinct) &&
         Objects.equals(temporalRangeStart, that.temporalRangeStart) &&
         Objects.equals(temporalRangeEnd, that.temporalRangeEnd) &&
-        Objects.equals(lifezones, that.lifezones) &&
+        Objects.equals(environments, that.environments) &&
         Objects.equals(note, that.note);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), subject, originalSubjectId, subjectDatasetKey, mode, name, status, extinct, temporalRangeStart, temporalRangeEnd, lifezones, note);
+    return Objects.hash(super.hashCode(), subject, originalSubjectId, subjectDatasetKey, mode, name, status, extinct, temporalRangeStart, temporalRangeEnd, environments, note);
   }
 
   @Override

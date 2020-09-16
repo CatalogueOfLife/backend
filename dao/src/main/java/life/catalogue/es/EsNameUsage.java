@@ -1,9 +1,6 @@
 package life.catalogue.es;
 
-import life.catalogue.api.vocab.Issue;
-import life.catalogue.api.vocab.NameField;
-import life.catalogue.api.vocab.NomStatus;
-import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.vocab.*;
 import life.catalogue.es.ddl.*;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
@@ -51,6 +48,7 @@ public class EsNameUsage {
   private Set<NameField> nameFields;
   private TaxonomicStatus status;
   private Set<Issue> issues;
+  private Set<Environment> environments;
   @Analyzers({IGNORE_CASE, AUTO_COMPLETE})
   private List<String> vernacularNames;
   private List<String> classificationIds;
@@ -218,6 +216,14 @@ public class EsNameUsage {
     this.nomStatus = nomStatus;
   }
 
+  public Set<Environment> getEnvironments() {
+    return environments;
+  }
+
+  public void setEnvironments(Set<Environment> environments) {
+    this.environments = environments;
+  }
+
   public Set<NameField> getNameFields() {
     return nameFields;
   }
@@ -325,19 +331,32 @@ public class EsNameUsage {
       return false;
     }
     EsNameUsage other = (EsNameUsage) obj;
-    return Objects.equals(acceptedName, other.acceptedName) && Objects.equals(authorship, other.authorship)
-        && Objects.equals(authorshipComplete, other.authorshipComplete) && Objects.equals(authorshipYear, other.authorshipYear)
-        && Objects.equals(classification, other.classification) && Objects.equals(classificationIds, other.classificationIds)
+    return Objects.equals(acceptedName, other.acceptedName)
+        && Objects.equals(authorship, other.authorship)
+        && Objects.equals(authorshipComplete, other.authorshipComplete)
+        && Objects.equals(authorshipYear, other.authorshipYear)
+        && Objects.equals(classification, other.classification)
+        && Objects.equals(classificationIds, other.classificationIds)
         && Objects.equals(datasetKey, other.datasetKey)
-        && Objects.equals(decisions, other.decisions) && Objects.equals(documentId, other.documentId)
-        && Objects.equals(extinct, other.extinct) && Objects.equals(issues, other.issues) && Objects.equals(nameFields, other.nameFields)
-        && Objects.equals(nameId, other.nameId) && Objects.equals(nameIndexIds, other.nameIndexIds)
-        && Objects.equals(nameStrings, other.nameStrings) && nomCode == other.nomCode && nomStatus == other.nomStatus
-        && Objects.equals(payload, other.payload) && Objects.equals(publishedInId, other.publishedInId)
+        && Objects.equals(decisions, other.decisions)
+        && Objects.equals(documentId, other.documentId)
+        && Objects.equals(extinct, other.extinct)
+        && Objects.equals(issues, other.issues)
+        && Objects.equals(environments, other.environments)
+        && Objects.equals(nameFields, other.nameFields)
+        && Objects.equals(nameId, other.nameId)
+        && Objects.equals(nameIndexIds, other.nameIndexIds)
+        && Objects.equals(nameStrings, other.nameStrings)
+        && nomCode == other.nomCode && nomStatus == other.nomStatus
+        && Objects.equals(payload, other.payload)
+        && Objects.equals(publishedInId, other.publishedInId)
         && Objects.equals(publisherKey, other.publisherKey) && rank == other.rank
-        && Objects.equals(scientificName, other.scientificName) && Objects.equals(sectorDatasetKey, other.sectorDatasetKey)
-        && Objects.equals(sectorKey, other.sectorKey) && status == other.status && type == other.type
-        && Objects.equals(usageId, other.usageId) && Objects.equals(vernacularNames, other.vernacularNames);
+        && Objects.equals(scientificName, other.scientificName)
+        && Objects.equals(sectorDatasetKey, other.sectorDatasetKey)
+        && Objects.equals(sectorKey, other.sectorKey)
+        && status == other.status && type == other.type
+        && Objects.equals(usageId, other.usageId)
+        && Objects.equals(vernacularNames, other.vernacularNames);
   }
 
 }

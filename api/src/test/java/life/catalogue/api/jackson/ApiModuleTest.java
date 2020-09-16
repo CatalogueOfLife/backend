@@ -2,7 +2,7 @@ package life.catalogue.api.jackson;
 
 import life.catalogue.api.model.DSIDValue;
 import life.catalogue.api.model.EditorialDecision;
-import life.catalogue.api.vocab.Lifezone;
+import life.catalogue.api.vocab.Environment;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import org.junit.Test;
 
@@ -41,7 +41,7 @@ public class ApiModuleTest {
     EditorialDecision ed = new EditorialDecision();
     ed.setDatasetKey(4321);
     ed.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
-    ed.setLifezones(Set.of(Lifezone.MARINE, Lifezone.FRESHWATER));
+    ed.setEnvironments(Set.of(Environment.MARINE, Environment.FRESHWATER));
     ed.setMode(EditorialDecision.Mode.UPDATE);
     
     String json = ApiModule.MAPPER.writeValueAsString(ed);

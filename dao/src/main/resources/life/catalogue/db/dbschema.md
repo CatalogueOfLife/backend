@@ -10,6 +10,15 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2020-09-16 lifezone -> environment
+```
+ALTER TYPE LIFEZONE RENAME TO ENVIRONMENT;
+ALTER TYPE ISSUE RENAME VALUE 'LIFEZONE_INVALID' TO 'ENVIRONMENT_INVALID';
+
+ALTER TABLE name_usage RENAME COLUMN lifezones TO environments;
+ALTER TABLE decision RENAME COLUMN lifezones TO environments;
+```
+
 ### 2020-09-02 renamed estimate types
 ```
 ALTER TYPE ESTIMATETYPE RENAME VALUE 'DESCRIBED_SPECIES_LIVING' TO 'SPECIES_LIVING';

@@ -132,7 +132,7 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(Issue.class);
     kryo.register(Kingdom.class);
     kryo.register(License.class);
-    kryo.register(Lifezone.class);
+    kryo.register(Environment.class);
     kryo.register(MatchType.class);
     kryo.register(MediaType.class);
     kryo.register(NamePart.class);

@@ -93,7 +93,7 @@ public enum NameUsageSearchParameter {
 
   EXTINCT(Boolean.class),
 
-  LIFEZONE(Lifezone.class),
+  ENVIRONMENT(Environment.class),
   
   AUTHORSHIP(String.class),
   

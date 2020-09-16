@@ -84,7 +84,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
       assertEquals("(Kunth) H.M.Hern.", u.usage.getName().getAuthorship());
       assertEquals(Rank.SPECIES, u.usage.getName().getRank());
       assertEquals("Fabaceae", u.classification.getFamily());
-      assertEquals(Sets.newHashSet(Lifezone.values()), t.getLifezones());
+      assertEquals(Sets.newHashSet(Environment.values()), t.getEnvironments());
       
       // distributions
       assertEquals(3, u.distributions.size());

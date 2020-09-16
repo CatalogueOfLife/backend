@@ -1,4 +1,4 @@
-ID	parentID	originalNameID	status	accordingToID	scrutinizer	scrutinizerDate	extinct	lifezone	scientificName	authorship	rank	genericName	specificEpithet	infraspecificEpithet	cultivarEpithet	publishedInID	publishedInPage	code	nameStatus	link	remarks
+ID	parentID	originalNameID	status	accordingToID	scrutinizer	scrutinizerDate	extinct	environment	scientificName	authorship	rank	genericName	specificEpithet	infraspecificEpithet	cultivarEpithet	publishedInID	publishedInPage	code	nameStatus	link	remarks
 1			accepted				false	terrestrial	Plantae		kingdom							botanical			
 2	1		synonym						Viridae		kingdom							botanical			
 10	1						false	terrestrial	Asteraceae		family							botanical			

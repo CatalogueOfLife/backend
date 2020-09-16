@@ -102,7 +102,7 @@ public class AcefInterpreter extends InterpreterBase {
         t.setScrutinizer(v.get(AcefTerm.LTSSpecialist));
         t.setScrutinizerDate(fuzzydate(v, Issue.SCRUTINIZER_DATE_INVALID, AcefTerm.LTSDate));
         t.setExtinct(bool(v, Issue.IS_EXTINCT_INVALID, AcefTerm.IsExtinct));
-        setLifezones(t, v, AcefTerm.LifeZone);
+        setEnvironment(t, v, AcefTerm.LifeZone);
       }
       // for both synonyms and taxa
       u.usage.setLink(uri(v, Issue.URL_INVALID, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));

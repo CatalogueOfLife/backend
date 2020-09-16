@@ -1,4 +1,4 @@
-id,name_id,parent_id,sector_key,status,name_phrase,according_to_id,reference_ids,extinct,lifezones,scrutinizer,scrutinizer_date,link
+id,name_id,parent_id,sector_key,status,name_phrase,according_to_id,reference_ids,extinct,environments,scrutinizer,scrutinizer_date,link
 u1,c1,,1,ACCEPTED,,,"{}",false,{},,,
 u2,c2,u1,1,ACCEPTED,,,"{}",false,{},,,
 u3,c3,u2,1,ACCEPTED,,,"{}",false,{},,,

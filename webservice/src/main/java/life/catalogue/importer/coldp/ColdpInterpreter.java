@@ -115,8 +115,8 @@ public class ColdpInterpreter extends InterpreterBase {
       if (Objects.equals(Boolean.TRUE, bool(v, Issue.PROVISIONAL_STATUS_INVALID, ColdpTerm.provisional))) {
         t.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
       }
-      // lifezones
-      setLifezones(t, v, ColdpTerm.lifezone);
+      // environment
+      setEnvironment(t, v, ColdpTerm.environment);
     }
     // flat classification for any usage
     u.classification = interpretClassification(v);

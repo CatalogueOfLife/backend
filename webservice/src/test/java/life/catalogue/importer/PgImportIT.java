@@ -429,7 +429,7 @@ public class PgImportIT {
       assertEquals("Tester", t.getScrutinizer());
       assertEquals("2008", t.getScrutinizerDate().toString());
       assertFalse(t.isExtinct());
-      assertTrue(t.getLifezones().isEmpty());
+      assertTrue(t.getEnvironments().isEmpty());
       assertNull(t.getRemarks());
       assertNull(t.getLink());
       

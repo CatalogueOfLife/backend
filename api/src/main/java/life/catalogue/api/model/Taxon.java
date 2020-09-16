@@ -2,8 +2,8 @@ package life.catalogue.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
+import life.catalogue.api.vocab.Environment;
 import life.catalogue.api.vocab.GeoTime;
-import life.catalogue.api.vocab.Lifezone;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.date.FuzzyDate;
 
@@ -21,7 +21,7 @@ public class Taxon extends NameUsageBase {
   private Boolean extinct;
   private String temporalRangeStart;
   private String temporalRangeEnd;
-  private Set<Lifezone> lifezones = EnumSet.noneOf(Lifezone.class);
+  private Set<Environment> environments = EnumSet.noneOf(Environment.class);
 
   public Taxon() {
   }
@@ -37,7 +37,7 @@ public class Taxon extends NameUsageBase {
     this.extinct = other.extinct;
     this.temporalRangeStart = other.temporalRangeStart;
     this.temporalRangeEnd = other.temporalRangeEnd;
-    this.lifezones = other.lifezones;
+    this.environments = other.environments;
   }
 
   @Override
@@ -101,12 +101,12 @@ public class Taxon extends NameUsageBase {
     this.temporalRangeEnd = end == null ? null : end.getName();
   }
 
-  public Set<Lifezone> getLifezones() {
-    return lifezones;
+  public Set<Environment> getEnvironments() {
+    return environments;
   }
   
-  public void setLifezones(Set<Lifezone> lifezones) {
-    this.lifezones = lifezones;
+  public void setEnvironments(Set<Environment> environments) {
+    this.environments = environments;
   }
   
   @Override
@@ -120,11 +120,11 @@ public class Taxon extends NameUsageBase {
         Objects.equals(extinct, taxon.extinct) &&
         Objects.equals(temporalRangeStart, taxon.temporalRangeStart) &&
         Objects.equals(temporalRangeEnd, taxon.temporalRangeEnd) &&
-        Objects.equals(lifezones, taxon.lifezones);
+        Objects.equals(environments, taxon.environments);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), scrutinizer, scrutinizerDate, extinct, temporalRangeStart, temporalRangeEnd, lifezones);
+    return Objects.hash(super.hashCode(), scrutinizer, scrutinizerDate, extinct, temporalRangeStart, temporalRangeEnd, environments);
   }
 }

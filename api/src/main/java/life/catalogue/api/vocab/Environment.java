@@ -3,7 +3,7 @@ package life.catalogue.api.vocab;
 /**
  *
  */
-public enum Lifezone {
+public enum Environment {
   BRACKISH,
   FRESHWATER,
   MARINE,

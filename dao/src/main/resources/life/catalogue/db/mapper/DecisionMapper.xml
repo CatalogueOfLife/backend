@@ -27,7 +27,7 @@
     ${alias}extinct AS ${prefix}extinct,
     ${alias}temporal_range_start AS ${prefix}temporal_range_start,
     ${alias}temporal_range_end AS ${prefix}temporal_range_end,
-    ${alias}lifezones AS ${prefix}lifezones
+    ${alias}environments AS ${prefix}environments
   </sql>
 
   <sql id="SELECT">
@@ -59,7 +59,7 @@
     extinct,
     temporal_range_start,
     temporal_range_end,
-    lifezones
+    environments
   </sql>
 
   <sql id="PROPS">
@@ -81,7 +81,7 @@
     #{extinct},
     #{temporalRangeStart},
     #{temporalRangeEnd},
-    #{lifezones, typeHandler=life.catalogue.db.type.LifezoneSetTypeHandler}
+    #{environments, typeHandler=life.catalogue.db.type.EnvironmentSetTypeHandler}
   </sql>
 
   <sql id="WHERE">
@@ -122,7 +122,7 @@
   <resultMap id="decisionResultMap" type="EditorialDecision" autoMapping="true">
     <id property="id" column="id"/>
     <result property="name" column="name" typeHandler="life.catalogue.db.type2.JsonNameHandler"/>
-    <result property="lifezones" column="lifezones" typeHandler="life.catalogue.db.type.LifezoneSetTypeHandler"/>
+    <result property="environments" column="environments" typeHandler="life.catalogue.db.type.EnvironmentSetTypeHandler"/>
     <association property="subject" javaType="SimpleName" autoMapping="true" columnPrefix="subject_"/>
   </resultMap>
 

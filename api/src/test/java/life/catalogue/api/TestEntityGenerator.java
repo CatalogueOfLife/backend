@@ -289,7 +289,7 @@ public class TestEntityGenerator {
     t.setLink(URI.create("http://foo.com"));
     t.setExtinct(false);
     t.setId(id);
-    t.setLifezones(EnumSet.of(Lifezone.BRACKISH, Lifezone.FRESHWATER, Lifezone.TERRESTRIAL));
+    t.setEnvironments(EnumSet.of(Environment.BRACKISH, Environment.FRESHWATER, Environment.TERRESTRIAL));
     t.setName(n);
     t.setOrigin(Origin.SOURCE);
     t.setParentId(parentID);
@@ -312,7 +312,7 @@ public class TestEntityGenerator {
     t.setLink(URI.create("http://foo-bar.com"));
     t.setExtinct(true);
     t.setId(id);
-    t.setLifezones(EnumSet.of(Lifezone.BRACKISH, Lifezone.FRESHWATER, Lifezone.TERRESTRIAL));
+    t.setEnvironments(EnumSet.of(Environment.BRACKISH, Environment.FRESHWATER, Environment.TERRESTRIAL));
     t.setName(setUserDate(newName(datasetKey, id + "_name_id", scientificName)));
     t.setOrigin(Origin.SOURCE);
     t.setParentId(TAXON1.getId());

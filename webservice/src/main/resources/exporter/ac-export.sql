@@ -154,7 +154,7 @@ COPY (
     SELECT
         nextval('__record_id_seq') AS record_id,
         t.id AS name_code,
-        unnest(t.lifezones) AS lifezone,
+        unnest(t.environments) AS lifezone,
         coalesce(s.subject_dataset_key, 1500) - 1000 AS database_id
     FROM name_usage_{{datasetKey}} t
         JOIN __tax_keys tk ON t.id=tk.id

@@ -366,8 +366,8 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
         }
         if (u.isTaxon()) {
           Taxon t = (Taxon) u;
-          if (ed.getLifezones() != null) {
-            t.setLifezones(ed.getLifezones());
+          if (ed.getEnvironments() != null) {
+            t.setEnvironments(ed.getEnvironments());
           }
           if (ed.isExtinct() != null) {
             t.setExtinct(ed.isExtinct());

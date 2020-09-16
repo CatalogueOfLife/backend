@@ -40,7 +40,7 @@ public class ParserResource<T> {
     parsers.put("integer", IntegerParser.PARSER);
     parsers.put("language", LanguageParser.PARSER);
     parsers.put("license", LicenseParser.PARSER);
-    parsers.put("lifezone", LifezoneParser.PARSER);
+    parsers.put("lifezone", EnvironmentParser.PARSER);
     parsers.put("mediatype", MediaTypeParser.PARSER);
     parsers.put("nomcode", NomCodeParser.PARSER);
     parsers.put("nomreltype", NomRelTypeParser.PARSER);

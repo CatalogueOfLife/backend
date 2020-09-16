@@ -69,7 +69,7 @@
     ${alias}extinct,
     ${alias}temporal_range_start,
     ${alias}temporal_range_end,
-    ${alias}lifezones,
+    ${alias}environments,
     ${alias}link
   </sql>
 

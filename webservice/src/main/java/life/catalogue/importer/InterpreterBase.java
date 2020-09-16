@@ -506,13 +506,13 @@ public class InterpreterBase {
     return u;
   }
 
-  protected void setLifezones(Taxon t, VerbatimRecord v, Term lifezone) {
-    String raw = v.get(lifezone);
+  protected void setEnvironment(Taxon t, VerbatimRecord v, Term environment) {
+    String raw = v.get(environment);
     if (raw != null) {
       for (String lzv : words(raw)) {
-        Lifezone lz = parse(LifezoneParser.PARSER, lzv).orNull(Issue.LIFEZONE_INVALID, v);
+        Environment lz = parse(EnvironmentParser.PARSER, lzv).orNull(Issue.ENVIRONMENT_INVALID, v);
         if (lz != null) {
-          t.getLifezones().add(lz);
+          t.getEnvironments().add(lz);
         }
       }
     }

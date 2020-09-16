@@ -45,7 +45,7 @@ public class DataPackageBuilder {
       .put(ColdpTerm.format, DataFormat.class)
       .put(ColdpTerm.gazetteer, Gazetteer.class)
       .put(ColdpTerm.rank, Rank.class)
-      .put(ColdpTerm.lifezone, Lifezone.class)
+      .put(ColdpTerm.environment, Environment.class)
       .build();
   
   private static final Map<ColdpTerm, ForeignKey> foreignKeys = ImmutableMap.<ColdpTerm, ForeignKey>builder()

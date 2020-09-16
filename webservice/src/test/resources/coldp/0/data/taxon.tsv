@@ -1,4 +1,4 @@
-ID	parentID	nameID	provisional	accordingToID	scrutinizer	scrutinizerDate	extinct	lifezone	link	remarks
+ID	parentID	nameID	provisional	accordingToID	scrutinizer	scrutinizerDate	extinct	environment	link	remarks
 1		1	false		M.Döring	2005-01-21	false	terrestrial		
 10	1	10	false		M.Döring	2015-03-11	false	terrestrial		
 20	10	20	false		M.Döring	2015-03-11	false	terrestrial		
