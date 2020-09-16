@@ -35,7 +35,7 @@ public class XmlMessageBodyProvider<T> implements MessageBodyReader<T>, MessageB
     objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     objectMapper.configure(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, true);
-    objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+    objectMapper.setSerializationInclusion(JsonInclude.Include.ALWAYS);
     objectMapper.configure(ToXmlGenerator.Feature.WRITE_XML_1_1, true);
   }
 

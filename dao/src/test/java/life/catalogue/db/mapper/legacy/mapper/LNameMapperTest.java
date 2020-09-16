@@ -81,6 +81,32 @@ public class LNameMapperTest extends MapperTestBase<LNameMapper> {
     assertEquals("agilis", n.getSpecies());
     assertEquals("pacifica", n.getInfraspecies());
     assertEquals("subsp.", n.getInfraspeciesMarker());
+
+    // regular synonym
+    n = (LSpeciesName) mapper().getFull(datasetKey, "us1");
+    assertEquals("us1", n.getId());
+    assertEquals(Rank.SPECIES, n.getRank());
+    assertEquals("Chromis acuticeps", n.getName());
+    assertEquals("Steindachner, 1866", n.getAuthor());
+    assertEquals("<i>Chromis acuticeps</i> Steindachner, 1866", n.getNameHtml());
+    assertEquals("Chromis", n.getGenus());
+    assertNull(n.getSubgenus());
+    assertEquals("acuticeps", n.getSpecies());
+    assertNull(n.getInfraspecies());
+    assertNull(n.getInfraspeciesMarker());
+
+    // misapplied name
+    n = (LSpeciesName) mapper().getFull(datasetKey, "u101");
+    assertEquals("u101", n.getId());
+    assertEquals(Rank.SPECIES, n.getRank());
+    assertEquals("Chromis leucurus", n.getName());
+    assertEquals("(non Gilbert, 1905)", n.getAuthor());
+    assertEquals("<i>Chromis leucurus</i> (non Gilbert, 1905)", n.getNameHtml());
+    assertEquals("Chromis", n.getGenus());
+    assertNull(n.getSubgenus());
+    assertEquals("leucurus", n.getSpecies());
+    assertNull(n.getInfraspecies());
+    assertNull(n.getInfraspeciesMarker());
   }
 
   void assertPresent(LHigherName n){

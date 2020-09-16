@@ -21,7 +21,7 @@ public class LError extends LResponse {
   }
 
   @JsonProperty("error_message")
-  @JacksonXmlProperty(isAttribute = true)
+  @JacksonXmlProperty(isAttribute = true, localName = "error_message")
   public String getError() {
     return error;
   }

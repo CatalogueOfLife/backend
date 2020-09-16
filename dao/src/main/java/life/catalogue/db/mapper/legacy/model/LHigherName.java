@@ -126,7 +126,7 @@ public class LHigherName implements LName {
   }
 
   public void setAuthor(String author) {
-    this.author = author;
+    this.author = StringUtils.trimToNull(author);
   }
 
   @Override

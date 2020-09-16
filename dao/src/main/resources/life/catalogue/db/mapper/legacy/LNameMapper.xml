@@ -86,7 +86,7 @@
   <sql id="COLS">
     u.id AS ${prefix}id,
     n.scientific_name AS ${prefix}scientific_name,
-    n.authorship AS ${prefix}authorship,
+    coalesce(n.authorship,'') || coalesce(' ' || u.name_phrase,'') AS ${prefix}authorship,
     n.rank AS ${prefix}rank,
     u.status AS ${prefix}status,
     u.extinct AS ${prefix}extinct,
