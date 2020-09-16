@@ -14,6 +14,8 @@ and done it manually. So we can as well log changes here.
 ```
 ALTER TYPE LIFEZONE RENAME TO ENVIRONMENT;
 ALTER TYPE ISSUE RENAME VALUE 'LIFEZONE_INVALID' TO 'ENVIRONMENT_INVALID';
+UPDATE dataset_import SET issues_by_issue_count = delete(issues_by_issue_count, 'LIFEZONE_INVALID') || hstore('ENVIRONMENT_INVALID', issues_by_issue_count -> 'LIFEZONE_INVALID');
+UPDATE sector_import SET issues_by_issue_count = delete(issues_by_issue_count, 'LIFEZONE_INVALID') || hstore('ENVIRONMENT_INVALID', issues_by_issue_count -> 'LIFEZONE_INVALID');
 
 ALTER TABLE name_usage RENAME COLUMN lifezones TO environments;
 ALTER TABLE decision RENAME COLUMN lifezones TO environments;
