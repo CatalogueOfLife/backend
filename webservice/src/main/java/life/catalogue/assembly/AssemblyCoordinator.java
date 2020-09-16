@@ -161,25 +161,24 @@ public class AssemblyCoordinator implements Managed {
   }
   
   public void sync(int catalogueKey, RequestScope request, User user) throws IllegalArgumentException {
-    if (request.getAll()) {
+    if (request.getSectorKey() != null) {
+      syncSector(DSID.of(catalogueKey, request.getSectorKey()), user);
+    } else if (request.getDatasetKey() != null) {
+      LOG.info("Sync all sectors in source dataset {}", request.getDatasetKey());
+      final AtomicInteger cnt = new AtomicInteger();
+      try (SqlSession session = factory.openSession(true)) {
+        SectorMapper sm = session.getMapper(SectorMapper.class);
+        sm.processSectors(catalogueKey, request.getDatasetKey()).forEach(s -> {
+          syncSector(s, user);
+          cnt.getAndIncrement();
+        });
+      }
+      // now that we have them schedule syncs
+      LOG.info("Queued {} sectors from dataset {} for sync", cnt.get(), request.getDatasetKey());
+    } else if (request.getAll()) {
       syncAll(catalogueKey, user);
     } else {
-      if (request.getSectorKey() != null) {
-        syncSector(DSID.of(catalogueKey, request.getSectorKey()), user);
-      }
-      if (request.getDatasetKey() != null) {
-        LOG.info("Sync all sectors in source dataset {}", request.getDatasetKey());
-        final AtomicInteger cnt = new AtomicInteger();
-        try (SqlSession session = factory.openSession(true)) {
-          SectorMapper sm = session.getMapper(SectorMapper.class);
-          sm.processSectors(catalogueKey, request.getDatasetKey()).forEach(s -> {
-            syncSector(s, user);
-            cnt.getAndIncrement();
-          });
-        }
-        // now that we have them schedule syncs
-        LOG.info("Queued {} sectors from dataset {} for sync", cnt.get(), request.getDatasetKey());
-      }
+      throw new IllegalArgumentException("No sectorKey or datasetKey given in request");
     }
   }
   
