@@ -84,7 +84,7 @@ public class NameUsageSearchRequestTest extends SerdeTestBase<NameUsageSearchReq
     r.addFilter(NameUsageSearchParameter.DATASET_KEY, 1234);
     assertEquals(r, r.copy());
 
-    r.setContent(null);
+    r.setContent((SearchContent)null);
     assertEquals(r, r.copy());
 
     r.setContent(Sets.newHashSet(NameUsageSearchRequest.SearchContent.AUTHORSHIP));

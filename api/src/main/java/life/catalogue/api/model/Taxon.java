@@ -106,7 +106,7 @@ public class Taxon extends NameUsageBase {
   }
   
   public void setEnvironments(Set<Environment> environments) {
-    this.environments = environments;
+    this.environments = environments == null ? EnumSet.noneOf(Environment.class) : EnumSet.copyOf(environments);
   }
   
   @Override

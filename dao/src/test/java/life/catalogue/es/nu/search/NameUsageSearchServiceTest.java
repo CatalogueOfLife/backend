@@ -1,5 +1,6 @@
 package life.catalogue.es.nu.search;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageRequest.SearchType;
@@ -7,10 +8,13 @@ import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.*;
+import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
 import org.elasticsearch.client.RestClient;
+import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -19,10 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
+import java.net.URI;
+import java.util.*;
 
 import static life.catalogue.es.EsUtil.insert;
 import static life.catalogue.es.EsUtil.refreshIndex;
@@ -651,6 +653,84 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     ResultPage<NameUsageWrapper> result = search(query);
 
     assertEquals(0, result.getResult().size());
+  }
+
+  static <T extends NameUsageBase> T fill (T nu, String id) {
+    nu.setId(id);
+    nu.setDatasetKey(100);
+    nu.setAccordingToId("r0");
+    nu.setLink(URI.create("https://gbif.org"));
+    nu.setNamePhrase("s.l.");
+    nu.setOrigin(Origin.SOURCE);
+    nu.setParentId("1");
+    nu.setReferenceIds(List.of("r1", "r2", "r3"));
+    nu.setRemarks("My eternal remarks");
+    nu.setSectorKey(13);
+    nu.setVerbatimKey(999);
+
+    if (nu.isTaxon()) {
+      Taxon t = (Taxon) nu;
+      nu.setStatus(TaxonomicStatus.ACCEPTED);
+      t.setEnvironments(Set.of(Environment.MARINE, Environment.BRACKISH));
+      t.setExtinct(true);
+      t.setScrutinizer("M.D.Hernett");
+      t.setScrutinizerDate(FuzzyDate.now());
+      t.setTemporalRangeStart("Jura");
+      t.setTemporalRangeEnd("Kreide");
+    } else if (nu.isSynonym()) {
+      Synonym s = (Synonym) nu;
+      s.setStatus(TaxonomicStatus.SYNONYM);
+    }
+    Name n = nu.getName();
+    n.setId("n" + id);
+    n.setDatasetKey(nu.getDatasetKey());
+    n.setGenus("Abies");
+    n.setSpecificEpithet("alba");
+    n.setInfraspecificEpithet("montana");
+    n.setRank(Rank.SUBSPECIES);
+    n.setNameIndexMatchType(MatchType.EXACT);
+    n.setNameIndexIds(new IntOpenHashSet(Set.of(11,12)));
+    n.setCombinationAuthorship(Authorship.yearAuthors("1879", "Smith", "Miller"));
+    n.rebuildScientificName();
+    n.rebuildAuthorship();
+    return nu;
+  }
+
+  static NameUsageWrapper fill (NameUsageWrapper nuw, String id) {
+    fill((NameUsageBase) nuw.getUsage(), id);
+    return nuw;
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/842
+   */
+  @Test
+  public void missappliedNames() {
+    // content
+    NameUsageWrapper nuw1 = fill(minimalTaxon(), "t1");
+
+    NameUsageWrapper syn = fill(minimalSynonym(), "s1");
+    ((Synonym)syn.getUsage()).setAccepted(fill((Taxon)minimalTaxon().getUsage(), "a1"));
+
+    NameUsageWrapper mis = fill(minimalSynonym(), "miss");
+    ((Synonym)mis.getUsage()).setAccepted(fill((Taxon)minimalTaxon().getUsage(), "a1"));
+    mis.getUsage().setNamePhrase("non Miller 1879");
+    mis.getUsage().setStatus(TaxonomicStatus.MISAPPLIED);
+
+    index(nuw1, syn, mis);
+
+    // search
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.addFilter(NameUsageSearchParameter.STATUS, TaxonomicStatus.MISAPPLIED);
+    //query.addFilter(NameUsageSearchParameter.DATASET_KEY, mis.getUsage().getDatasetKey());
+    //query.addFilter(NameUsageSearchParameter.USAGE_ID, mis.getUsage().getId());
+
+    ResultPage<NameUsageWrapper> result = search(query);
+    assertEquals(1, result.getResult().size());
+    Synonym s = (Synonym) result.getResult().get(0).getUsage();
+
+    assertEquals("non Miller 1879", s.getNamePhrase());
+    assertEquals("Abies alba montana Smith & Miller, 1879 non Miller 1879", s.getLabel());
   }
 
   @Test

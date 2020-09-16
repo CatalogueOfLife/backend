@@ -321,6 +321,14 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     return content;
   }
 
+  public void setContent(SearchContent content) {
+    if (content == null) {
+      this.content = EnumSet.allOf(SearchContent.class);
+    } else {
+      this.content = EnumSet.of(content);
+    }
+  }
+
   public void setContent(Set<SearchContent> content) {
     if (content == null || content.size() == 0) {
       this.content = EnumSet.allOf(SearchContent.class);
