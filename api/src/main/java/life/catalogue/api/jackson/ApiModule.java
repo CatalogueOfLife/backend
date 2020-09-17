@@ -22,6 +22,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Jackson module that defines all serde rules for all CoL API model classes.
@@ -67,6 +68,7 @@ public class ApiModule extends SimpleModule {
     addDeserializer(Term.class, new TermSerde.Deserializer());
     addDeserializer(CSLRefType.class, new CSLRefTypeSerde.Deserializer());
     addDeserializer(URI.class, new URIDeserializer());
+    addDeserializer(UUID.class, new UUIDSerde.Deserializer());
     // override the JavaTimeModule to use a permissive localdate deserializer catching parsing exceptions
     addDeserializer(LocalDateTime.class, new PermissiveJavaDateSerde.LocalDateTimeDeserializer());
     addDeserializer(LocalDate.class, new PermissiveJavaDateSerde.LocalDateDeserializer());
@@ -75,14 +77,17 @@ public class ApiModule extends SimpleModule {
     addSerializer(Country.class, new CountrySerde.Serializer());
     addSerializer(Term.class, new TermSerde.ValueSerializer());
     addSerializer(CSLRefType.class, new CSLRefTypeSerde.Serializer());
+    addSerializer(UUID.class, new UUIDSerde.Serializer());
 
     // then key deserializers
     addKeyDeserializer(Term.class, new TermSerde.TermKeyDeserializer());
     addKeyDeserializer(Country.class, new CountrySerde.KeyDeserializer());
+    addKeyDeserializer(UUID.class, new UUIDSerde.KeyDeserializer());
 
     // then key serializers
     addKeySerializer(Term.class, new TermSerde.FieldSerializer());
     addKeySerializer(Country.class, new CountrySerde.FieldSerializer());
+    addKeySerializer(UUID.class, new UUIDSerde.FieldSerializer());
 
     // fastutils primitive collection
     FastutilsSerde.register(this);

@@ -1,6 +1,7 @@
 package life.catalogue.resources;
 
 import life.catalogue.WsServerConfig;
+import life.catalogue.common.id.ShortUuid;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.db.mapper.legacy.LNameMapper;
 import life.catalogue.db.mapper.legacy.LVernacularMapper;
@@ -46,18 +47,24 @@ public class LegacyWebserviceResource {
                       @QueryParam("response") @DefaultValue("terse") String response,
                       @QueryParam("start") @DefaultValue("0") int start,
                       @Context SqlSession session) {
-    boolean full = response.equalsIgnoreCase("full");
-    LResponse resp;
-    if (StringUtils.hasContent(id)) {
-      resp = get(datasetKey, id, full, session);
+    try {
+      boolean full = response.equalsIgnoreCase("full");
+      LResponse resp;
+      if (StringUtils.hasContent(id)) {
+        resp = get(datasetKey, id, full, session);
 
-    } else if (StringUtils.hasContent(name)) {
-      resp = search(datasetKey, name, full, start, session);
+      } else if (StringUtils.hasContent(name)) {
+        resp = search(datasetKey, name, full, start, session);
 
-    } else {
-      resp = new LError(null, null, "No name or ID given", version);
+      } else {
+        resp = new LError(null, null, "No name or ID given", version);
+      }
+      return resp;
+    } catch (Exception e) {
+      String key = ShortUuid.build().toString();
+      LOG.error("Legacy API error (ID {})", key, e);
+      return new LError(id, name, "Application error (ID "+key+")", version);
     }
-    return resp;
   }
 
   /**
