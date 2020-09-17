@@ -33,12 +33,12 @@ public class TreeMapper2Test extends MapperTestBase<TreeMapper> {
     TreeMapper tm = mapper(TreeMapper.class);
     Page page = new Page(0, 100);
     for (TreeNode.Type type : TreeNode.types()) {
-      List<TreeNode> root = noSectors(tm.root(catKey, type, catKey, page));
+      List<TreeNode> root = noSectors(tm.root(catKey, type, catKey, true, page));
       assertEquals(1, root.size());
       assertEquals("1", root.get(0).getId());
       assertEquals("Animalia", root.get(0).getName());
 
-      root = noSectors(tm.root(catKey, type, TRILOBITA, page));
+      root = noSectors(tm.root(catKey, type, TRILOBITA, true, page));
       assertEquals(1, root.size());
       assertEquals("1", root.get(0).getId());
       assertEquals("Trilobita", root.get(0).getName());

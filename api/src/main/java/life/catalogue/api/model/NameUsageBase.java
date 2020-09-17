@@ -17,7 +17,8 @@ import java.util.Objects;
  *
  */
 public abstract class NameUsageBase extends DatasetScopedEntity<String> implements NameUsage, SectorEntity {
-  
+  public static final char EXTINCT_SYMBOL = '†';
+
   private Integer sectorKey;
   private Integer verbatimKey;
   @Nonnull
@@ -77,12 +78,18 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   }
 
   public String getLabel(boolean html) {
-    StringBuilder sb;
+    return getLabelBuilder(name, null, namePhrase, accordingTo, html).toString();
+  }
+
+  public static StringBuilder getLabelBuilder(Name name, Boolean extinct, String namePhrase, String accordingTo, boolean html) {
+    StringBuilder sb = new StringBuilder();
+    if (Boolean.TRUE.equals(extinct)) {
+      sb.append(EXTINCT_SYMBOL);
+    }
     if (name != null) {
-      sb = name.getLabelBuilder(html);
+      name.appendNameLabel(sb, html);
     } else {
-      sb = new StringBuilder();
-      sb.append("NO-NAME");
+      sb.append("UNNAMED");
     }
     if (namePhrase != null) {
       sb.append(" ");
@@ -98,7 +105,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
       sb.append(" ");
       sb.append(accordingTo);
     }
-    return sb.toString();
+    return sb;
   }
 
   @Override

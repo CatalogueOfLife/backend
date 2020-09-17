@@ -44,6 +44,10 @@ public class TaxonTest extends SerdeTestBase<Taxon> {
 
     t.setNamePhrase("sensu lato");
     assertEquals("Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999 nom.illeg. sensu lato", t.getLabel());
+
+    t.setExtinct(true);
+    assertEquals("†Abies × alba subsp. alpina (Lin. & Deca., 1899) L. & DC., 1999 nom.illeg. sensu lato", t.getLabel());
+    assertEquals("†<i>Abies × alba</i> subsp. <i>alpina</i> (Lin. & Deca., 1899) L. & DC., 1999 nom.illeg. sensu lato", t.getLabelHtml());
   }
 }
 

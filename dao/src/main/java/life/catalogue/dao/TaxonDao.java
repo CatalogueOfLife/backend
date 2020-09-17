@@ -111,7 +111,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       Page p = page == null ? new Page() : page;
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
       List<Taxon> result = tm.children(key, null, p);
-      return new ResultPage<>(p, result, () -> tm.countChildren(key));
+      return new ResultPage<>(p, result, () -> tm.countChildren(key, true));
     }
   }
   

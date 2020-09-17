@@ -62,9 +62,13 @@ public class TreeResourceTest extends ResourceTestBase {
         .queryParam("type", TreeNode.Type.SOURCE.name())
     ).get(RESP_TYPE);
     assertEquals(2, root.size());
-    // make sure we get the html markup
+    // make sure we get the html markup and an extinct dagger
     assertEquals("Larus fuscus", root.getResult().get(0).getName());
-    assertEquals("<i>Larus fuscus</i>", root.getResult().get(0).getLabelHtml());
+    assertEquals("†<i>Larus fuscus</i>", root.getResult().get(0).getLabelHtml());
+
+    // not extinct
+    assertEquals("Malus sylvestris", root.getResult().get(1).getName());
+    assertEquals("<i>Malus sylvestris</i>", root.getResult().get(1).getLabelHtml());
   }
 
   @Test

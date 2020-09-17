@@ -53,7 +53,9 @@ public abstract class TreeNode implements DSID<String> {
    */
   public static class TreeNodeMybatis extends TreeNode {
     private Name _name;
-  
+    private String namePhrase;
+    private Boolean extinct;
+
     @Override
     public String getName() {
       return _name.getScientificName();
@@ -66,7 +68,7 @@ public abstract class TreeNode implements DSID<String> {
 
     @Override
     public String getLabelHtml() {
-      return _name.getLabel(true);
+      return NameUsageBase.getLabelBuilder(_name, extinct, namePhrase, null, true).toString();
     }
   }
 

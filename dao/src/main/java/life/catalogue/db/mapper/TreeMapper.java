@@ -27,6 +27,7 @@ public interface TreeMapper {
   List<TreeNode> root(@Param("catalogueKey") int catalogueKey,
                       @Nullable @Param("type") TreeNode.Type type,
                       @Param("datasetKey") int datasetKey,
+                      @Param("extinct") boolean inclExtinct,
                       @Param("page") Page page);
 
   List<TreeNode> classification(@Param("catalogueKey") int catalogueKey,
@@ -37,22 +38,25 @@ public interface TreeMapper {
                           @Nullable @Param("type") TreeNode.Type type,
                           @Param("key") DSID<String> key,
                           @Nullable @Param("rank") Rank rank,
+                          @Param("extinct") boolean inclExtinct,
                           @Param("page") Page page);
 
   List<TreeNode> childrenWithPlaceholder(@Param("catalogueKey") int catalogueKey,
                                          @Nullable @Param("type") TreeNode.Type type,
                                          @Param("key") DSID<String> key,
                                          @Nullable @Param("rank") Rank rank,
+                                         @Param("extinct") boolean inclExtinct,
                                          @Param("page") Page page);
 
   /**
-   * Retuns the list of unique ranks of all accepted children of the given parentID
+   * Returns the list of unique ranks of all accepted children of the given parentID
    * which are above or equal the optional rank given.
    * @param rank optional minimum rank to consider
    * @return
    */
   List<Rank> childrenRanks(@Param("key") DSID<String> key,
-                           @Nullable @Param("rank") Rank rank);
+                           @Nullable @Param("rank") Rank rank,
+                           @Param("extinct") boolean inclExtinct);
 
   /**
    * Returns the list of unique sectors of all children of the given parentID

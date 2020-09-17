@@ -18,6 +18,7 @@ import java.util.function.Supplier;
  * A junit test rule that creates sectors and fakes a sector sync
  * by copying over all name usages and setting the sectorKey.
  * It is much quicker than a regular sync, but ignores decisions and does not copy references, vernacular names, etc.
+ * It offers a way to set the extinct flag for all usages from a given sector if needed.
  *
  * The rule was designed to run as a junit {@link org.junit.Rule} before every test or test class if you only need to test reads.
  */
@@ -33,6 +34,7 @@ public class SectorDataRule extends ExternalResource implements AutoCloseable {
   private NameUsageMapper um;
 
   private List<Sector> sectors;
+  private Boolean extinct;
   private Sector sector;
   private String parentID;
 
@@ -44,11 +46,16 @@ public class SectorDataRule extends ExternalResource implements AutoCloseable {
     sqlSessionFactorySupplier = PgSetupRule::getSqlSessionFactory;
   }
 
+  public static Sector create(Sector.Mode mode, DSID<String> subject, DSID<String> target){
+    return create(mode, subject, target, null);
+  }
+
   /**
    * Utility method to build sectors to be passed into the constructor.
    * The sectors are not persisted.
+   * @param extinct if given the extinct flag for all copied usages from the sector is set
    */
-  public static Sector create(Sector.Mode mode, DSID<String> subject, DSID<String> target){
+  public static Sector create(Sector.Mode mode, DSID<String> subject, DSID<String> target, Boolean extinct){
     Sector s = new Sector();
     s.setMode(mode);
 
@@ -58,6 +65,9 @@ public class SectorDataRule extends ExternalResource implements AutoCloseable {
     s.setDatasetKey(target.getDatasetKey());
     s.setTarget(SimpleName.of(target));
 
+    if (extinct != null) {
+      s.setNote(extinct.toString());
+    }
     return s;
   }
 
@@ -75,6 +85,12 @@ public class SectorDataRule extends ExternalResource implements AutoCloseable {
     initSession();
     for (Sector s : sectors) {
       sector = s;
+      // set extinct?
+      if (s.getNote() != null) {
+        extinct = Boolean.parseBoolean(s.getNote());
+      } else {
+        extinct = null;
+      }
       // make sure we deal with placeholder ids correctly
       SectorDao.parsePlaceholderRank(s);
       LOG.info("Create and sync sector {}", s);
@@ -132,6 +148,9 @@ public class SectorDataRule extends ExternalResource implements AutoCloseable {
     }
     u.applyUser(Users.TESTER);
     if (u instanceof Taxon) {
+      if (extinct != null) {
+        ((Taxon) u).setExtinct(extinct);
+      }
       tm.create( (Taxon) u);
     } else {
       sym.create( (Synonym) u);

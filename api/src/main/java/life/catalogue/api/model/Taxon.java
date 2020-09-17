@@ -15,7 +15,6 @@ import java.util.Set;
  *
  */
 public class Taxon extends NameUsageBase {
-
   private String scrutinizer;
   private FuzzyDate scrutinizerDate;
   private Boolean extinct;
@@ -38,6 +37,11 @@ public class Taxon extends NameUsageBase {
     this.temporalRangeStart = other.temporalRangeStart;
     this.temporalRangeEnd = other.temporalRangeEnd;
     this.environments = other.environments;
+  }
+
+  @Override
+  public String getLabel(boolean html) {
+    return getLabelBuilder(getName(), extinct, getNamePhrase(), getAccordingTo(), html).toString();
   }
 
   @Override

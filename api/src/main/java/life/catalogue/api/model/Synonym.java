@@ -26,6 +26,15 @@ public class Synonym extends NameUsageBase {
   }
 
   @Override
+  public String getLabel(boolean html) {
+    if (accepted != null && Boolean.TRUE.equals(accepted.isExtinct())) {
+      return Taxon.EXTINCT_SYMBOL + super.getLabel(html);
+    } else {
+      return super.getLabel(html);
+    }
+  }
+
+  @Override
   public void setStatus(TaxonomicStatus status) {
     if (!Preconditions.checkNotNull(status).isSynonym()) {
       throw new IllegalArgumentException("Synonym status required");

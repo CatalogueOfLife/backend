@@ -80,7 +80,7 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
     generateDatasetImport(DATASET11.getKey());
     
     assertEquals(5, mapper().count(DATASET11.getKey()));
-    assertEquals(3, mapper().countChildrenWithRank(DSID.of(DATASET11.getKey(), "root-1"), Rank.SPECIES));
+    assertEquals(3, mapper().countChildrenWithRank(DSID.of(DATASET11.getKey(), "root-1"), Rank.SPECIES, true));
   }
   
   @Test
@@ -163,7 +163,7 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
     
     commit();
     
-    int res = mapper().countChildren(parent);
+    int res = mapper().countChildren(parent, true);
     assertEquals(3, res);
   }
   

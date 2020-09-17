@@ -23,9 +23,9 @@ public class TreeDao {
     this.factory = factory;
   }
 
-  public ResultPage<TreeNode> root(int datasetKey, int catalogueKey, TreeNode.Type type, Page page) {
+  public ResultPage<TreeNode> root(int datasetKey, int catalogueKey, boolean extinct, TreeNode.Type type, Page page) {
     try (SqlSession session = factory.openSession()){
-      List<TreeNode> result = session.getMapper(TreeMapper.class).root(catalogueKey, type, datasetKey, page);
+      List<TreeNode> result = session.getMapper(TreeMapper.class).root(catalogueKey, type, datasetKey, extinct, page);
       return new ResultPage<>(page, result, () -> session.getMapper(TaxonMapper.class).countRoot(datasetKey));
     }
   }
@@ -33,7 +33,7 @@ public class TreeDao {
   /**
    * @return classification starting with the given start id
    */
-  public List<TreeNode> classification(DSID<String> id, int projectKey, boolean placeholder, TreeNode.Type type) {
+  public List<TreeNode> classification(DSID<String> id, int projectKey, boolean inclExtinct, boolean placeholder, TreeNode.Type type) {
     RankID key = RankID.parseID(id);
     try (SqlSession session = factory.openSession()){
       TreeMapper trm = session.getMapper(TreeMapper.class);
@@ -46,7 +46,7 @@ public class TreeDao {
         // first add a node for the given key - we dont know if the parent is also a placeholder yet. this can be changed later
         TreeNode thisPlaceholder = placeholder(parentNode, null, key.rank);
         classification.add(thisPlaceholder);
-        classification.addAll(parentPlaceholder(trm, parentNode, key.rank));
+        classification.addAll(parentPlaceholder(trm, parentNode, key.rank, inclExtinct));
         if (classification.size() > 1) {
           // update the parentID to point to the parent placeholder instead
           thisPlaceholder.setParentId(classification.get(1).getId());
@@ -58,7 +58,7 @@ public class TreeDao {
         if (first) {
           first = false;
         } else if (placeholder) {
-          List<TreeNode> placeholders = parentPlaceholder(trm, tn, pRank);
+          List<TreeNode> placeholders = parentPlaceholder(trm, tn, pRank, inclExtinct);
           // we need to change the parentID of the last entry to point to the first placeholder
           if (!classification.isEmpty() && !placeholders.isEmpty()) {
             classification.getLast().setParentId(placeholders.get(0).getId());
@@ -107,10 +107,10 @@ public class TreeDao {
     }
   }
 
-  private static List<TreeNode> parentPlaceholder(TreeMapper trm, TreeNode tn, @Nullable Rank exclRank){
+  private static List<TreeNode> parentPlaceholder(TreeMapper trm, TreeNode tn, @Nullable Rank exclRank, boolean inclExtinct){
     List<TreeNode> nodes = new ArrayList<>();
     // ranks ordered from kingdom to lower
-    List<Rank> ranks = trm.childrenRanks(tn, exclRank);
+    List<Rank> ranks = trm.childrenRanks(tn, exclRank, inclExtinct);
     if (ranks.size() > 1) {
       Collections.reverse(ranks);
       // we dont want no placeholder for the lowest rank
@@ -128,7 +128,7 @@ public class TreeDao {
     return nodes;
   }
 
-  public ResultPage<TreeNode> children(final DSID<String> id, final int projectKey, final boolean placeholder, final TreeNode.Type type, final Page page) {
+  public ResultPage<TreeNode> children(final DSID<String> id, final int projectKey, final boolean placeholder, boolean inclExtinct, final TreeNode.Type type, final Page page) {
     try (SqlSession session = factory.openSession()){
       TreeMapper trm = session.getMapper(TreeMapper.class);
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
@@ -136,22 +136,22 @@ public class TreeDao {
       final RankID parent = RankID.parseID(id);
       final TreeNode tnParent = trm.get(projectKey, type, parent);
       List<TreeNode> result = placeholder ?
-        trm.childrenWithPlaceholder(projectKey, type, parent, parent.rank, page) :
-        trm.children(projectKey, type, parent, parent.rank, page);
+        trm.childrenWithPlaceholder(projectKey, type, parent, parent.rank, inclExtinct, page) :
+        trm.children(projectKey, type, parent, parent.rank, inclExtinct, page);
       Supplier<Integer> countSupplier;
       if (placeholder && !result.isEmpty()) {
-        countSupplier =  () -> tm.countChildrenWithRank(parent, result.get(0).getRank());
+        countSupplier =  () -> tm.countChildrenWithRank(parent, result.get(0).getRank(), inclExtinct);
       } else {
-        countSupplier =  () -> tm.countChildren(parent);
+        countSupplier =  () -> tm.countChildren(parent, inclExtinct);
       }
 
       if (placeholder && !result.isEmpty() && result.size() <= page.getLimit()) {
         // we *might* need a placeholder, check if there are more children of other ranks
         // look for the highest rank of the result set in the first record - they are ordered by rank!
         TreeNode firstResult = result.get(0);
-        int lowerChildren = tm.countChildrenBelowRank(parent, firstResult.getRank());
+        int lowerChildren = tm.countChildrenBelowRank(parent, firstResult.getRank(), inclExtinct);
         if (lowerChildren > 0) {
-          List<Rank> placeholderParentRanks = trm.childrenRanks(parent, firstResult.getRank());
+          List<Rank> placeholderParentRanks = trm.childrenRanks(parent, firstResult.getRank(), inclExtinct);
           TreeNode placeHolder = placeholder(tnParent, firstResult, lowerChildren, placeholderParentRanks);
           // does a placeholder sector exist with a matching placeholder rank?
           if (type == TreeNode.Type.SOURCE) {

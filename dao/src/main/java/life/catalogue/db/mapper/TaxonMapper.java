@@ -42,11 +42,11 @@ public interface TaxonMapper extends CRUD<DSID<String>, Taxon>, DatasetProcessab
    */
   TaxonSectorCountMap getCounts(@Param("key") DSID<String> key);
   
-  int countChildren(@Param("key") DSID<String> key);
+  int countChildren(@Param("key") DSID<String> key, @Param("extinct") Boolean inclExtinct);
   
-  int countChildrenWithRank(@Param("key") DSID<String> key, @Param("rank") Rank rank);
+  int countChildrenWithRank(@Param("key") DSID<String> key, @Param("rank") Rank rank, @Param("extinct") Boolean inclExtinct);
 
-  int countChildrenBelowRank(@Param("key") DSID<String> key, @Param("rank") Rank rank);
+  int countChildrenBelowRank(@Param("key") DSID<String> key, @Param("rank") Rank rank, @Param("extinct") Boolean inclExtinct);
 
   /**
    * Lists all accepted children (taxon) of a given parent

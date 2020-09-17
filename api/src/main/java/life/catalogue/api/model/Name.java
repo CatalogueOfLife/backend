@@ -703,11 +703,10 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   }
 
   public String getLabel(boolean html) {
-    return getLabelBuilder(html).toString();
+    return appendNameLabel(new StringBuilder(), html).toString();
   }
 
-  StringBuilder getLabelBuilder(boolean html) {
-    StringBuilder sb = new StringBuilder();
+  StringBuilder appendNameLabel(StringBuilder sb, boolean html) {
     String name = html ? scientificNameHtml() : scientificName;
     if (name != null) {
       sb.append(name);
