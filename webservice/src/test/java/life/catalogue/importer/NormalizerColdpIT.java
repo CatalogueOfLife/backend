@@ -254,7 +254,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
       Taxon tt = t.getTaxon();
       assertTrue(tt.isExtinct());
       assertNull(tt.getNamePhrase());
-      assertEquals("Anstenoptilia marmarodactyla Dyar, 1902", tt.getLabel());
+      assertEquals("†Anstenoptilia marmarodactyla Dyar, 1902", tt.getLabel());
     }
   }
 }

@@ -80,7 +80,7 @@ public class TreeResourceTest extends ResourceTestBase {
     assertEquals(2, root.size());
     // make sure we get the html markup
     assertEquals("Larus fuscus", root.getResult().get(0).getName());
-    assertEquals("<i>Larus fuscus</i>", root.getResult().get(0).getLabelHtml());
+    assertEquals("†<i>Larus fuscus</i>", root.getResult().get(0).getLabelHtml());
   }
   
 }
