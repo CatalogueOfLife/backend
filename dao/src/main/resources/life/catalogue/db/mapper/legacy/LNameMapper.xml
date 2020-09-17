@@ -69,11 +69,11 @@
       WHEN n.rank &lt; 'SPECIES_AGGREGATE'::rank THEN 2
       ELSE 3
     END AS java_class,
+    u.dataset_key,
     <include refid="COLS"><property name="prefix" value=""/></include>
   </sql>
 
   <sql id="SELECT_FULL">
-    u.dataset_key,
     <include refid="SELECT"/>,
     n.genus,
     n.infrageneric_epithet AS subgenus,
