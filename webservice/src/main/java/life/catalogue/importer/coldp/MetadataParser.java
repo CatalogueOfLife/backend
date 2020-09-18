@@ -1,5 +1,6 @@
 package life.catalogue.importer.coldp;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -11,6 +12,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.jackson.FastutilsSerde;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.model.Person;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.License;
 import life.catalogue.importer.jackson.EnumParserSerde;
@@ -36,7 +38,7 @@ public class MetadataParser {
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .registerModule(new JavaTimeModule())
         .registerModule(new ColdpYamlModule());
-    DATASET_READER = OM.readerFor(DatasetWithSettings.class);
+    DATASET_READER = OM.readerFor(YamlDataset.class);
     
     TermFactory.instance().registerTerm(ColdpInserter.BIBTEX_CLASS_TERM);
     TermFactory.instance().registerTerm(ColdpInserter.CSLJSON_CLASS_TERM);
@@ -55,6 +57,18 @@ public class MetadataParser {
       ctxt.addDeserializers(new PermissiveEnumSerde.PermissiveEnumDeserializers());
       ctxt.addDeserializers(new PermissiveEnumSerde.PermissiveEnumDeserializers());
       super.setupModule(ctxt);
+    }
+  }
+
+  static class YamlDataset extends DatasetWithSettings {
+
+    @JsonProperty("contact")
+    public void setContactList(List<Person> contacts) {
+      if (contacts == null || contacts.isEmpty()) {
+        setContact(null);
+      } else {
+        setContact(contacts.get(0));
+      }
     }
   }
 

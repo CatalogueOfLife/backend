@@ -1,15 +1,12 @@
 package life.catalogue.importer.acef;
 
 import com.google.common.base.Splitter;
-import life.catalogue.api.model.DatasetSettings;
-import life.catalogue.api.model.Reference;
-import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
-import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.neo.model.NeoName;
@@ -261,8 +258,8 @@ public class AcefInserter extends NeoCsvInserter {
       d.setLogo(dr.getURI(AcefTerm.LogoFileName));
       d.setWebsite(dr.getURI(AcefTerm.HomeURL));
       d.setType(dr.get(AcefTerm.Coverage, DatasetTypeParser.PARSER));
-      d.setContact(dr.get(AcefTerm.ContactPerson));
-      d.setAuthorsAndEditors(dr.get(AcefTerm.AuthorsEditors, COMMA_SPLITTER));
+      d.setContact(Person.parse(dr.get(AcefTerm.ContactPerson)));
+      d.setAuthorsAndEditors(Person.parse(dr.get(AcefTerm.AuthorsEditors, COMMA_SPLITTER)));
       d.setOrganisations(dr.get(AcefTerm.Organisation, COMMA_SPLITTER));
     }
     return Optional.ofNullable(d);

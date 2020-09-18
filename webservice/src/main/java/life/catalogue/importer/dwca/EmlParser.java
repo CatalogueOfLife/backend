@@ -1,8 +1,9 @@
 package life.catalogue.importer.dwca;
 
+import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.model.Person;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.CharsetDetectingStream;
-import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.parser.DateParser;
 import life.catalogue.parser.SafeParser;
 import org.apache.commons.lang3.StringUtils;
@@ -149,10 +150,10 @@ public class EmlParser {
                   }
                   break;
                 case "creator":
-                  agent.name().ifPresent(d.getAuthorsAndEditors()::add);
+                  agent.person().ifPresent(d.getAuthorsAndEditors()::add);
                   break;
                 case "contact":
-                  agent.name().ifPresent(d::setContact);
+                  agent.person().ifPresent(d::setContact);
                   break;
               }
             }
@@ -207,7 +208,19 @@ public class EmlParser {
     public String email;
     public String url;
     public String orcid;
-    
+
+    Optional<Person> person() {
+      if (firstname != null || surname != null || email != null || orcid != null) {
+        Person p = new Person();
+        p.setGivenName(firstname);
+        p.setFamilyName(surname);
+        p.setEmail(email);
+        p.setOrcid(orcid);
+        return Optional.of(p);
+      }
+      return Optional.empty();
+    }
+
     Optional<String> name() {
       StringBuilder sb = new StringBuilder();
       if (firstname != null)

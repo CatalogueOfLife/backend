@@ -27,17 +27,17 @@ public interface DatasetMetadata {
 
   void setDescription(String description);
 
-  List<String> getAuthorsAndEditors();
+  List<Person> getAuthorsAndEditors();
 
-  void setAuthorsAndEditors(List<String> authorsAndEditors);
+  void setAuthorsAndEditors(List<Person> authorsAndEditors);
 
   List<String> getOrganisations();
 
   void setOrganisations(List<String> organisations);
 
-  String getContact();
+  Person getContact();
 
-  void setContact(String contact);
+  void setContact(Person contact);
 
   License getLicense();
 

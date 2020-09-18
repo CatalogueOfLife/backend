@@ -587,8 +587,8 @@ CREATE TABLE dataset (
   alias TEXT UNIQUE,
   description TEXT,
   organisations TEXT[] DEFAULT '{}',
-  contact TEXT,
-  authors_and_editors TEXT[] DEFAULT '{}',
+  contact JSONB,
+  authors_and_editors JSONB,
   license LICENSE,
   version TEXT,
   released DATE,
@@ -639,11 +639,12 @@ CREATE INDEX ON dataset USING gin(doc);
 CREATE OR REPLACE FUNCTION dataset_doc_update() RETURNS trigger AS $$
 BEGIN
     NEW.doc :=
+      setweight(to_tsvector('simple2', coalesce(NEW.alias,'')), 'A') ||
       setweight(to_tsvector('simple2', coalesce(NEW.title,'')), 'A') ||
       setweight(to_tsvector('simple2', coalesce(array_to_string(NEW.organisations, '|'), '')), 'B') ||
       setweight(to_tsvector('simple2', coalesce(NEW.description,'')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(NEW.contact,'')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(array_to_string(NEW.authors_and_editors, '|'), '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(jsonb_path_query_first(NEW.contact,'$.familyName')::text,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(jsonb_path_query_first(NEW.authors_and_editors,'$[*].familyName')::text,'')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(NEW.gbif_key::text,'')), 'C');
     RETURN NEW;
 END

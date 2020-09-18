@@ -2,6 +2,7 @@ package life.catalogue.resources;
 
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
+import life.catalogue.api.model.Person;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DataFormat;
@@ -70,7 +71,7 @@ public class DatasetResourceTest extends ResourceTestBase {
     d.setTitle("s3s3derftg");
     d.setType(DatasetType.OTHER);
     d.setOrigin(DatasetOrigin.EXTERNAL);
-    d.setContact("me");
+    d.setContact(Person.parse("me"));
     d.setReleased(LocalDate.now());
     Integer key = editorCreds(base).post(json(d), Integer.class);
     d.setKey(key);

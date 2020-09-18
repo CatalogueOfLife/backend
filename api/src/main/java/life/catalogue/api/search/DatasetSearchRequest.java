@@ -16,6 +16,7 @@ public class DatasetSearchRequest {
   
   public static enum SortBy {
     KEY,
+    ALIAS,
     TITLE,
     AUTHORS,
     RELEVANCE,

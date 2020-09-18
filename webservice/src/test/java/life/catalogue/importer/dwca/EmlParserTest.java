@@ -1,10 +1,12 @@
 package life.catalogue.importer.dwca;
 
 import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.model.Person;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -22,13 +24,14 @@ public class EmlParserTest {
   @Test
   public void famous() throws Exception {
     DatasetWithSettings d = read("famous.xml");
-    
+    Person markus = new Person("Markus", "Döring", "mdoering@gbif.org", "0000-0001-7757-1889");
+
     assertEquals("Species named after famous people", d.getTitle());
     assertEquals("A list of species named after famous people including musicians and politicians.", d.getDescription());
     assertEquals("https://github.com/mdoering/famous-organism", d.getWebsite().toString());
     //assertEquals("Species named after famous people", d.getLicense());
-    assertEquals("Markus Döring (GBIF)", d.getContact());
-    assertEquals("[Markus Döring (GBIF)]", d.getAuthorsAndEditors().toString());
+    assertEquals(markus, d.getContact());
+    assertEquals(List.of(markus), d.getAuthorsAndEditors());
     assertEquals("2017-01-19", d.getReleased().toString());
     assertEquals("http://www.marinespecies.org/aphia.php?p=taxdetails&id=146230", d.getLogo().toString());
     assertEquals("cite my famous dataset", d.getCitation());

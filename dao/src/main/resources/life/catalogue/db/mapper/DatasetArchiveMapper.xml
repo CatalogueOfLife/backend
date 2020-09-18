@@ -28,8 +28,8 @@
     #{title},
     #{description},
     #{organisations, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
-    #{contact},
-    #{authorsAndEditors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
+    #{contact, typeHandler=life.catalogue.db.type.PersonJsonHandler}::jsonb,
+    #{authorsAndEditors, typeHandler=life.catalogue.db.type.PersonListJsonHandler}::jsonb,
     #{license}::LICENSE,
     #{version},
     #{released},
@@ -52,9 +52,9 @@
   <resultMap id="archiveResultMap" type="ArchivedDataset" autoMapping="true">
     <id property="key" column="key"/>
     <result property="organisations" column="organisations" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
-    <result property="authorsAndEditors" column="authors_and_editors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
+    <result property="contact" column="contact" typeHandler="life.catalogue.db.type.PersonJsonHandler"/>
+    <result property="authorsAndEditors" column="authors_and_editors" typeHandler="life.catalogue.db.type.PersonListJsonHandler"/>
   </resultMap>
-
 
   <select id="get" resultMap="archiveResultMap">
     SELECT <include refid="SELECT"/>

@@ -1,6 +1,7 @@
 package life.catalogue.importer.coldp;
 
 import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.model.Person;
 import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.io.Resources;
@@ -9,11 +10,12 @@ import org.junit.Test;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class MetadataParserTest {
   
@@ -45,5 +47,37 @@ public class MetadataParserTest {
     List<String> authors = Arrays.asList("Michael Calonje orcid:0000-0001-9650-3136", "Leonie Stanberg", "Dennis Stevenson orcid:0000-0002-2986-7076");
     assertEquals(authors, d.getAuthorsAndEditors());
   
+  }
+
+  @Test
+  public void alucitoidea(){
+    MetadataParser mp = new MetadataParser();
+    Optional<DatasetWithSettings> m = mp.readMetadata(Resources.stream("metadata/Alucitoidea.yaml"));
+    DatasetWithSettings d = m.get();
+
+    Person donald = new Person("Donald","Hobern","dhobern@gmail.com","0000-0001-6492-4016");
+
+    assertEquals("Catalogue of the Alucitoidea of the World", d.getTitle());
+    assertEquals("Alucitoidea", d.getAlias());
+    assertEquals("This GSD is derived from C. Gielis (2003) Pterophoroidea & Alucitoidea (Lepidoptera) (World Catalogue of Insects, volume 4), as subsequently maintained and updated by Cees Gielis. The database has been edited for inclusion in the Catalogue of Life and updated by Donald Hobern. A current version of the dataset is presented as a web document at https://hobern.net.Alucitoidea.html. Version 1.0 includes updates to reflect recent changes in taxonomy and new species.", d.getDescription());
+    assertEquals(donald, d.getContact());
+    assertEquals(License.CC_BY, d.getLicense());
+    assertEquals("ver. 1.0 (09/2020)", d.getVersion());
+    assertEquals(LocalDate.of(2020, 9, 18), d.getReleased());
+    assertNull(d.getWebsite());
+    assertEquals(URI.create("https://hobern.net/img/Alucita_hexadactyla.png"), d.getLogo());
+    assertEquals("Gielis C. & Hobern D. (eds) (2020). Catalogue of the Alucitoidea of the World (version 1.0, 09/2020).", d.getCitation());
+    assertNull(d.getCompleteness());
+    assertNull(d.getConfidence());
+    assertEquals(NomCode.ZOOLOGICAL, d.getCode());
+    assertEquals(Gazetteer.ISO, d.getGazetteer());
+
+    assertTrue(d.getOrganisations().isEmpty());
+
+    List<Person> authors = new ArrayList<>();
+    authors.add(donald);
+    authors.add(new Person("Cees", "Gielis", null, "0000-0003-0857-1679"));
+    assertEquals(authors, d.getAuthorsAndEditors());
+
   }
 }

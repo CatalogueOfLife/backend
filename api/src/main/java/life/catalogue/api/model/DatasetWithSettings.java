@@ -154,11 +154,11 @@ public class DatasetWithSettings {
     dataset.setDescription(description);
   }
 
-  public List<String> getAuthorsAndEditors() {
+  public List<Person> getAuthorsAndEditors() {
     return dataset.getAuthorsAndEditors();
   }
 
-  public void setAuthorsAndEditors(List<String> authorsAndEditors) {
+  public void setAuthorsAndEditors(List<Person> authorsAndEditors) {
     dataset.setAuthorsAndEditors(authorsAndEditors);
   }
 
@@ -170,11 +170,11 @@ public class DatasetWithSettings {
     dataset.setOrganisations(organisations);
   }
 
-  public String getContact() {
+  public Person getContact() {
     return dataset.getContact();
   }
 
-  public void setContact(String contact) {
+  public void setContact(Person contact) {
     dataset.setContact(contact);
   }
 

@@ -111,11 +111,11 @@ public class ProjectRelease extends AbstractProjectCopy {
   protected static String buildCitation(Dataset d){
     // ${d.authorsAndEditors?join(", ")}, eds. (${d.released.format('yyyy')}). ${d.title}, ${d.released.format('yyyy-MM-dd')}. Digital resource at www.catalogueoflife.org/col. Species 2000: Naturalis, Leiden, the Netherlands. ISSN 2405-8858.
     StringBuilder sb = new StringBuilder();
-    for (String au : d.getAuthorsAndEditors()) {
+    for (Person au : d.getAuthorsAndEditors()) {
       if (sb.length() > 1) {
         sb.append(", ");
       }
-      sb.append(au);
+      sb.append(au.getFamilyName());
     }
     sb.append(" (")
       .append(d.getReleased().getYear())

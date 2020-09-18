@@ -10,6 +10,16 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2020-09-18 dataset person
+```
+dataset
+dataset_archive
+project_source
+
+  contact JSONB,
+  authors_and_editors JSONB,
+```
+
 ### 2020-09-16 lifezone -> environment
 ```
 ALTER TYPE LIFEZONE RENAME TO ENVIRONMENT;

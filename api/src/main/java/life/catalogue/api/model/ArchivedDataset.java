@@ -48,8 +48,8 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
   private String alias;
   private String description;
   private List<String> organisations = Lists.newArrayList();
-  private String contact;
-  private List<String> authorsAndEditors = Lists.newArrayList();
+  private Person contact;
+  private List<Person> authorsAndEditors = Lists.newArrayList();
   private License license;
   private String version;
   private LocalDate released;
@@ -171,15 +171,15 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
   }
   
   @Override
-  public List<String> getAuthorsAndEditors() {
+  public List<Person> getAuthorsAndEditors() {
     return authorsAndEditors;
   }
   
   @Override
-  public void setAuthorsAndEditors(List<String> authorsAndEditors) {
+  public void setAuthorsAndEditors(List<Person> authorsAndEditors) {
     this.authorsAndEditors = authorsAndEditors;
   }
-  
+
   @Override
   public List<String> getOrganisations() {
     return organisations;
@@ -191,12 +191,12 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
   }
   
   @Override
-  public String getContact() {
+  public Person getContact() {
     return contact;
   }
   
   @Override
-  public void setContact(String contact) {
+  public void setContact(Person contact) {
     this.contact = contact;
   }
   
