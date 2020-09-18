@@ -14,10 +14,14 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
+
+import static life.catalogue.api.util.ObjectUtils.coalesce;
 
 /**
  * Old PHP API migrated to the new postgres db and java code.
@@ -27,8 +31,10 @@ import java.util.List;
 @Produces({MediaType.TEXT_XML, MediaType.APPLICATION_JSON})
 @Path("/dataset/{datasetKey}/legacy")
 public class LegacyWebserviceResource {
-  static int LIMIT_TERSE = 100;
-  static int LIMIT_FULL = 25;
+  static int DEFAULT_LIMIT_TERSE = 100;
+  static int DEFAULT_LIMIT_FULL = 10;
+  static int MAX_LIMIT_TERSE = 1000;
+  static int MAX_LIMIT_FULL = 100;
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(LegacyWebserviceResource.class);
@@ -40,12 +46,20 @@ public class LegacyWebserviceResource {
     version = cfg.versionString();
   }
 
+  static int calcLimit(boolean full, Integer limitRequested){
+    return Math.max(0, Math.min(
+      coalesce(limitRequested, full ? DEFAULT_LIMIT_FULL : DEFAULT_LIMIT_TERSE),
+      full ? MAX_LIMIT_FULL : MAX_LIMIT_TERSE
+    ));
+  }
+
   @GET
   public LResponse searchOrGet(@PathParam("datasetKey") int datasetKey,
                       @QueryParam("id") String id,
                       @QueryParam("name") String name,
                       @QueryParam("response") @DefaultValue("terse") String response,
-                      @QueryParam("start") @DefaultValue("0") int start,
+                      @QueryParam("start") @DefaultValue("0") @Min(0) int start,
+                      @QueryParam("limit") @Max(1000) Integer limit,
                       @Context SqlSession session) {
     try {
       boolean full = response.equalsIgnoreCase("full");
@@ -54,7 +68,7 @@ public class LegacyWebserviceResource {
         resp = get(datasetKey, id, full, session);
 
       } else if (StringUtils.hasContent(name)) {
-        resp = search(datasetKey, name, full, start, session);
+        resp = search(datasetKey, name, full, start, limit, session);
 
       } else {
         resp = new LError(null, null, "No name or ID given", version);
@@ -79,7 +93,7 @@ public class LegacyWebserviceResource {
    * @param session
    * @return
    */
-  private LResponse search (int datasetKey, final String name, boolean full, int start, SqlSession session) {
+  private LResponse search (int datasetKey, final String name, boolean full, int start, Integer limitRequested, SqlSession session) {
     LNameMapper sMapper = session.getMapper(LNameMapper.class);
     LVernacularMapper vMapper = session.getMapper(LVernacularMapper.class);
     boolean prefix = false;
@@ -97,7 +111,7 @@ public class LegacyWebserviceResource {
     if (cntSN + cntVN < start) {
       return nameNotFound(name, start);
     }
-    int limit = full ? LIMIT_FULL : LIMIT_TERSE;
+    int limit = calcLimit(full, limitRequested);
     List<LName> results;
     if (cntSN - start > 0) {
       // scientific and maybe vernaculars
