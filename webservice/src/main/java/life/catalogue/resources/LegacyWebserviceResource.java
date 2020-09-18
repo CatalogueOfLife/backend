@@ -60,6 +60,7 @@ public class LegacyWebserviceResource {
         resp = new LError(null, null, "No name or ID given", version);
       }
       return resp;
+
     } catch (Exception e) {
       String key = ShortUuid.build().toString();
       LOG.error("Legacy API error (ID {})", key, e);

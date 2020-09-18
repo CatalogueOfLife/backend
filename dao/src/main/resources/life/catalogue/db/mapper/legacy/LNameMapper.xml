@@ -23,6 +23,7 @@
     </discriminator>
   </resultMap>
 
+
   <resultMap id="higherResultMap" type="life.catalogue.db.mapper.legacy.model.LHigherName" autoMapping="true">
     <id property="id" column="id"/>
     <result property="name" column="scientific_name"/>
@@ -54,14 +55,13 @@
 
   <resultMap id="synonymResultMap" type="life.catalogue.db.mapper.legacy.model.LSynonym" autoMapping="true" extends="speciesResultMap">
     <id property="id" column="id"/>
-    <association property="acceptedName" javaType="LSpeciesName" column="{id=id,datasetKey=dataset_key}" autoMapping="true" select="get"/>
+    <association property="acceptedName" javaType="LSpeciesName" column="{id=parent_id,datasetKey=dataset_key}" autoMapping="true" select="get"/>
   </resultMap>
 
   <resultMap id="synonymFullResultMap" type="life.catalogue.db.mapper.legacy.model.LSynonym" autoMapping="true" extends="speciesResultMap">
     <id property="id" column="id"/>
-    <association property="acceptedName" javaType="LSpeciesName" column="{id=id,datasetKey=dataset_key}" autoMapping="true" select="getFull"/>
+    <association property="acceptedName" javaType="LSpeciesName" column="{id=parent_id,datasetKey=dataset_key}" autoMapping="true" select="getFull"/>
   </resultMap>
-
 
 
   <sql id="SELECT">
@@ -70,6 +70,7 @@
       ELSE 3
     END AS java_class,
     u.dataset_key,
+    u.parent_id,
     <include refid="COLS"><property name="prefix" value=""/></include>
   </sql>
 
@@ -147,7 +148,6 @@
     FROM <include refid="FROM_FULL"/>
     WHERE u.id = #{id}
   </select>
-
 
   <sql id="HIGHER_SELECT">SELECT u.id, n.scientific_name, n.rank, u.status, u.extinct</sql>
 

@@ -46,17 +46,17 @@ public class LCommonName implements LName {
   }
 
   public String getUrl() {
-    return acceptedName.getUrl();
+    return acceptedName == null ? null : acceptedName.getUrl();
   }
 
   @JsonProperty("source_database")
   public String getSourceDatabase() {
-    return acceptedName.getSourceDatabase();
+    return acceptedName == null ? null : acceptedName.getSourceDatabase();
   }
 
   @JsonProperty("source_database_url")
   public String getSourceDatabaseUrl() {
-    return acceptedName.getSourceDatabaseUrl();
+    return acceptedName == null ? null : acceptedName.getSourceDatabaseUrl();
   }
 
   @JsonProperty("accepted_name")
