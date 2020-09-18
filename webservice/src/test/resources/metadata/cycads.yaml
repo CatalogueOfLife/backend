@@ -10,14 +10,23 @@ organisations:
   - Royal Botanic Gardens, Sydney, New South Wales, Australia
 
 # point of contact for questions. Either just a plain email or a name given with email address in angel brackets
-contact: Michael Calonje <michaelc@montgomerybotanical.org>
+contact:
+  - givenName: Michael
+    familyName: Calonje
+    email: michaelc@montgomerybotanical.org
 
 # list of authors and editors.
 # optionally an ORCID can be appended (orcid: prefix required!) to be included in DOI metadata
 authorsAndEditors:
-  - Michael Calonje orcid:0000-0001-9650-3136
-  - Leonie Stanberg
-  - Dennis Stevenson orcid:0000-0002-2986-7076
+  - givenName: Michael
+    familyName: Calonje
+    email: michaelc@montgomerybotanical.org
+    orcid: 0000-0001-9650-3136
+  - givenName: Leonie
+    familyName: Stanberg
+  - givenName: Dennis
+    familyName: Stevenson
+    orcid: 0000-0002-2986-7076
 
 # Any commons license, but preferrably CC0, CC-BY or CC-BY-NC
 license: unspecified

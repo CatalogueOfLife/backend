@@ -27,7 +27,7 @@ public class MetadataParserTest {
     assertEquals("The World List of Cycads, online edition", d.getTitle());
     assertEquals("Cycad List", d.getAlias());
     assertEquals("The World List of Cycads is a working list of known cycad species names with the primary goal of providing reliable information on the taxonomy of cycads for use by researchers, conservation planners, and others. It is developed in close collaboration with world's foremost cycad experts and published under the auspices of the IUCN's Cycad Specialist Group. The printed edition is published in the proceedings of the International Conference of Cycad Biology, which is held every three years.", d.getDescription());
-    assertEquals("Michael Calonje <michaelc@montgomerybotanical.org>", d.getContact());
+    assertEquals(new Person("Michael", "Calonje", "michaelc@montgomerybotanical.org", null), d.getContact());
     assertEquals(License.UNSPECIFIED, d.getLicense());
     assertEquals("ver. (02/2019)", d.getVersion());
     assertEquals(LocalDate.of(2019, 2, 15), d.getReleased());
@@ -44,7 +44,11 @@ public class MetadataParserTest {
         "Royal Botanic Gardens, Sydney, New South Wales, Australia");
     assertEquals(orgs, d.getOrganisations());
   
-    List<String> authors = Arrays.asList("Michael Calonje orcid:0000-0001-9650-3136", "Leonie Stanberg", "Dennis Stevenson orcid:0000-0002-2986-7076");
+    List<Person> authors = List.of(
+      new Person("Michael","Calonje", "michaelc@montgomerybotanical.org", "0000-0001-9650-3136"),
+      new Person("Leonie", "Stanberg"),
+      new Person("Dennis", "Stevenson",null, "0000-0002-2986-7076")
+    );
     assertEquals(authors, d.getAuthorsAndEditors());
   
   }

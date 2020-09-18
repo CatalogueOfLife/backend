@@ -97,7 +97,6 @@ public class MetadataParser {
         if (d.getDescription() != null) {
           d.setDescription(d.getDescription().trim());
         }
-        // TODO: transform contact ORCIDSs
         return Optional.of(d);
         
       } catch (IOException e) {
