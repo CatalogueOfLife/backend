@@ -43,6 +43,7 @@
       LEFT JOIN __language l ON l.code = v.language
       LEFT JOIN __country c  ON c.code = v.country
     <include refid="WHERE"/>
+    <include refid="life.catalogue.db.mapper.legacy.LNameMapper.LIMIT"/>
   </select>
 
   <select id="vernaculars" parameterType="map" resultMap="vernacularResultMap">
