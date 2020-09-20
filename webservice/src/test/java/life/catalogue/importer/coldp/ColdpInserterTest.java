@@ -6,6 +6,7 @@ import com.codahale.metrics.Timer;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.model.Person;
 import life.catalogue.api.model.Reference;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.License;
@@ -18,6 +19,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -33,8 +35,11 @@ public class ColdpInserterTest extends InserterBaseTest {
     assertEquals("The full dataset title", d.getTitle());
     assertNotNull(d.getDescription());
     assertEquals(10, d.getOrganisations().size());
-    assertEquals("Nicolas Bailly <nbailly@hcmr.gr>", d.getContact());
-    assertEquals(3, d.getAuthorsAndEditors().size());
+    assertEquals(new Person("Rainer", "Froese", "rainer@mailinator.com", null), d.getContact());
+    assertEquals(List.of(
+        new Person("Rainer", "Froese", "rainer@mailinator.com", "0000-0001-9745-636X"),
+        new Person("Daniel", "Pauly", null, "0000-0003-3756-4793")
+      ), d.getAuthorsAndEditors());
     assertEquals(License.CC_BY_NC, d.getLicense());
     assertEquals("ver. (06/2018)", d.getVersion());
     assertEquals("2018-06-01", d.getReleased().toString());

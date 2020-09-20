@@ -18,14 +18,21 @@ organisations:
   - CAFS
 
 # point of contact for questions. Either just a plain email or a name given with email address in angel brackets
-contact: Nicolas Bailly <nbailly@hcmr.gr>
+contact:
+  - givenName: Rainer
+    familyName: Froese
+    email: rainer@mailinator.com
 
 # queue of authors and editors.
 # optionally an ORCID can be appended (orcid: prefix required!) to be included in DOI metadata
 authorsAndEditors:
-  - Rainer Froese
-  - Daniel Pauly
-  - Nicolas Bailly orcid:0000-0003-4994-0653
+  - givenName: Rainer
+    familyName: Froese
+    email: rainer@mailinator.com
+    orcid: 0000-0001-9745-636X
+  - givenName: Daniel
+    familyName: Pauly
+    orcid: 0000-0003-3756-4793
 
 # Any commons license, but preferrably CC0, CC-BY or CC-BY-NC
 license: CC-BY-NC
