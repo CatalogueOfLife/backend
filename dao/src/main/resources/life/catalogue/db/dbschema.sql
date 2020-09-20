@@ -643,8 +643,8 @@ BEGIN
       setweight(to_tsvector('simple2', coalesce(NEW.title,'')), 'A') ||
       setweight(to_tsvector('simple2', coalesce(array_to_string(NEW.organisations, '|'), '')), 'B') ||
       setweight(to_tsvector('simple2', coalesce(NEW.description,'')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(jsonb_path_query_first(NEW.contact,'$.familyName')::text,'')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(jsonb_path_query_first(NEW.authors_and_editors,'$[*].familyName')::text,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce((NEW.contact->'familyName')::text,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce((NEW.authors_and_editors->0->'familyName')::text,'')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(NEW.gbif_key::text,'')), 'C');
     RETURN NEW;
 END
