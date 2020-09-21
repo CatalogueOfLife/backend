@@ -165,7 +165,7 @@
             <bind name="rev" value="!req.reverse"/>
           </when>
           <when test="sortBy == 'AUTHORS'">
-            lower(jsonb_path_query_first(authors_and_editors, '$[0].familyName')::text)
+            lower((authors_and_editors->0->'familyName')::text)
           </when>
           <when test="sortBy == 'ALIAS'">
             lower(alias)
