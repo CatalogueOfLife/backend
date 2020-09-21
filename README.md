@@ -10,15 +10,15 @@ The CoL backend consists of 2 [Dropwizard](https://www.dropwizard.io/) applicati
 1. Postgres 12
 
 ## Run the CoL WS application locally
-1. cd into `colplus-ws`
+1. cd into `webservice`
 1. Run `mvn clean install` to build your application
-1. create a local [config.yml](colplus-ws/src/main/resources/config.yaml) file
-1. On the first run init a new, empty database with `java -jar target/colplus-admin-1.0-SNAPSHOT.jar initdb config.yml`
-1. Start application with `java -jar target/colplus-ws-1.0-SNAPSHOT.jar server config.yml`
+1. create a local [config.yml](webservice/src/main/resources/config.yaml) file
+1. On the first run init a new, empty database with `java -jar target/webservice-1.0-SNAPSHOT.jar initdb config.yml`
+1. Start application with `java -jar target/webservice-1.0-SNAPSHOT.jar server config.yml`
 1. To check that your application is running enter url `http://localhost:8080`
 
 For development tests you can also run the application straight from your IDE 
-by executing the main `WsServer.java` or `AdminServer.java` class and passing it the right arguments `server /path/to/config.yml`
+by executing the main `WsServer.java` class and passing it the right arguments `server /path/to/config.yml`
 
 In order to avoid real authentication against the GBIF registry you can change the AuthBundle and use a LocalAuthFilter
 instead of the real AuthFilter. This authenticates every request with a test account with full admin privileges.
@@ -30,17 +30,17 @@ To see your applications health enter url `http://localhost:8081/healthcheck`
 
 ## Maven modules
 
-### colplus-api
+### api
 The main API with model classes and shared common utilities classes.
 
-### colplus-dao
+### dao
 The postgres persistence layer.
 
-### colplus-parser
+### parser
 Various parsers/interpreters used mostly for importing.
 Contains a GBIF name parser wrapper.
 
-### colplus-ws
+### webservice
 The Dropwizard based JSON webservices, importer and assembly code.
 
 
