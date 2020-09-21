@@ -25,8 +25,8 @@ import life.catalogue.img.LogoUpdateJob;
 import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.importer.ImportRequest;
-import life.catalogue.matching.DatasetMatcher;
 import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.RematchJob;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -212,7 +212,11 @@ public class AdminResource {
   @POST
   @Path("/rematch")
   public BackgroundJob rematch(@QueryParam("datasetKey") Integer datasetKey, @Auth User user) {
-    return runJob(new RematchJob(datasetKey, user));
+    if (datasetKey == null) {
+      return runJob(RematchJob.all(user,factory,ni));
+    } else {
+      return runJob(RematchJob.one(user,factory,ni, datasetKey));
+    }
   }
 
   @DELETE
@@ -331,43 +335,6 @@ public class AdminResource {
       }
       LOG.info("Scheduled {} datasets out of {} for reimporting. Missed {} datasets without an archive or other reasons", counter, keys.size(),  missed.size());
       LOG.info("Missed keys: {}", Joiner.on(", ").join(missed));
-    }
-  }
-
-  class RematchJob extends BackgroundJob {
-    @JsonProperty
-    private final Integer datasetKey;
-
-    public RematchJob(Integer datasetKey, User user) {
-      super(user.getKey());
-      this.datasetKey = datasetKey;
-    }
-
-    @Override
-    public void execute() {
-      final List<Integer> keys;
-      if (datasetKey != null) {
-        keys = List.of(datasetKey);
-      } else {
-        try (SqlSession session = factory.openSession()) {
-          DatasetMapper dm = session.getMapper(DatasetMapper.class);
-          DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
-          keys = dm.keys();
-          keys.removeIf(key -> !dpm.exists(key));
-        }
-      }
-
-      LOG.warn("Rematching {} datasets with data. Triggered by {}", keys.size(), getUserKey());
-      DatasetMatcher matcher = new DatasetMatcher(factory, ni, true);
-      for (int key : keys) {
-        matcher.match(key, true);
-      }
-      LOG.info("Rematched {} datasets ({} failed), updating {} names from {} in total",
-        matcher.getDatasets(),
-        keys.size() - matcher.getDatasets(),
-        matcher.getUpdated(),
-        matcher.getTotal()
-      );
     }
   }
 

@@ -121,6 +121,7 @@ public class StableIdProvider {
       AtomicInteger counter = new AtomicInteger();
       List<SimpleNameWithNidx> ambiguous = new ArrayList<>();
       try (SqlSession session = factory.openSession(false)) {
+        idm = session.getMapper(IdMapMapper.class);
         num = session.getMapper(NameUsageMapper.class);
         num.processNxIds(datasetKey, status).forEach(u -> {
           if (u.getNameIndexIds().isEmpty()) {
