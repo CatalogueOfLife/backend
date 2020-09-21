@@ -12,12 +12,110 @@ and done it manually. So we can as well log changes here.
 
 ### 2020-09-18 dataset person
 ```
-dataset
-dataset_archive
-project_source
+--
+-- dataset
+--
 
-  contact JSONB,
-  authors_and_editors JSONB,
+CREATE OR REPLACE FUNCTION dataset_doc_update() RETURNS trigger AS $$
+BEGIN
+    NEW.doc :=
+      setweight(to_tsvector('simple2', coalesce(NEW.alias,'')), 'A') ||
+      setweight(to_tsvector('simple2', coalesce(NEW.title,'')), 'A') ||
+      setweight(to_tsvector('simple2', coalesce(array_to_string(NEW.organisations, '|'), '')), 'B') ||
+      setweight(to_tsvector('simple2', coalesce(NEW.description,'')), 'C') ||
+      --setweight(to_tsvector('simple2', coalesce((NEW.contact->'familyName')::text,'')), 'C') ||
+      --setweight(to_tsvector('simple2', coalesce((NEW.authors_and_editors->0->'familyName')::text,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(NEW.gbif_key::text,'')), 'C');
+    RETURN NEW;
+END
+$$
+LANGUAGE plpgsql;
+
+
+ALTER TABLE dataset ADD contact2 JSONB;
+UPDATE dataset SET contact2 = json_build_object('familyName',contact) WHERE contact IS NOT NULL;
+ALTER TABLE dataset DROP COLUMN contact;
+ALTER TABLE dataset RENAME COLUMN contact2 TO contact;
+
+ALTER TABLE dataset ADD authors2 JSONB;
+CREATE TABLE dataset_authors AS (
+    SELECT key, unnest(authors_and_editors) AS "author"  
+    FROM dataset WHERE authors_and_editors IS NOT NULL AND array_length(authors_and_editors,1)>0
+); 
+CREATE TABLE dataset_authors2 AS (
+ SELECT key, array_to_json(array_agg(json_build_object('familyName',author)))::jsonb as authors from dataset_authors
+ GROUP BY key
+); 
+UPDATE dataset d SET authors2=a.authors FROM dataset_authors2 a WHERE a.key=d.key;
+ALTER TABLE dataset DROP COLUMN authors_and_editors;
+ALTER TABLE dataset RENAME COLUMN authors2 TO authors_and_editors;
+DROP TABLE dataset_authors;
+DROP TABLE dataset_authors2;
+
+CREATE OR REPLACE FUNCTION dataset_doc_update() RETURNS trigger AS $$
+BEGIN
+    NEW.doc :=
+      setweight(to_tsvector('simple2', coalesce(NEW.alias,'')), 'A') ||
+      setweight(to_tsvector('simple2', coalesce(NEW.title,'')), 'A') ||
+      setweight(to_tsvector('simple2', coalesce(array_to_string(NEW.organisations, '|'), '')), 'B') ||
+      setweight(to_tsvector('simple2', coalesce(NEW.description,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce((NEW.contact->'familyName')::text,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce((NEW.authors_and_editors->0->'familyName')::text,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(NEW.gbif_key::text,'')), 'C');
+    RETURN NEW;
+END
+$$
+LANGUAGE plpgsql;
+
+
+--
+-- dataset_archive
+--
+
+ALTER TABLE dataset_archive ADD contact2 JSONB;
+UPDATE dataset_archive SET contact2 = json_build_object('familyName',contact) WHERE contact IS NOT NULL;
+ALTER TABLE dataset_archive DROP COLUMN contact;
+ALTER TABLE dataset_archive RENAME COLUMN contact2 TO contact;
+
+ALTER TABLE dataset_archive ADD authors2 JSONB;
+CREATE TABLE dataset_authors AS (
+    SELECT key, unnest(authors_and_editors) AS "author"  
+    FROM dataset_archive WHERE authors_and_editors IS NOT NULL AND array_length(authors_and_editors,1)>0
+); 
+CREATE TABLE dataset_authors2 AS (
+ SELECT key, array_to_json(array_agg(json_build_object('familyName',author)))::jsonb as authors from dataset_authors
+ GROUP BY key
+); 
+UPDATE dataset_archive d SET authors2=a.authors FROM dataset_authors2 a WHERE a.key=d.key;
+ALTER TABLE dataset_archive DROP COLUMN authors_and_editors;
+ALTER TABLE dataset_archive RENAME COLUMN authors2 TO authors_and_editors;
+DROP TABLE dataset_authors;
+DROP TABLE dataset_authors2;
+
+
+--
+-- project_source
+--
+
+ALTER TABLE project_source ADD contact2 JSONB;
+UPDATE project_source SET contact2 = json_build_object('familyName',contact) WHERE contact IS NOT NULL;
+ALTER TABLE project_source DROP COLUMN contact;
+ALTER TABLE project_source RENAME COLUMN contact2 TO contact;
+
+ALTER TABLE project_source ADD authors2 JSONB;
+CREATE TABLE dataset_authors AS (
+    SELECT key, unnest(authors_and_editors) AS "author"  
+    FROM project_source WHERE authors_and_editors IS NOT NULL AND array_length(authors_and_editors,1)>0
+); 
+CREATE TABLE dataset_authors2 AS (
+ SELECT key, array_to_json(array_agg(json_build_object('familyName',author)))::jsonb as authors from dataset_authors
+ GROUP BY key
+); 
+UPDATE project_source d SET authors2=a.authors FROM dataset_authors2 a WHERE a.key=d.key;
+ALTER TABLE project_source DROP COLUMN authors_and_editors;
+ALTER TABLE project_source RENAME COLUMN authors2 TO authors_and_editors;
+DROP TABLE dataset_authors;
+DROP TABLE dataset_authors2;
 ```
 
 ### 2020-09-16 lifezone -> environment
