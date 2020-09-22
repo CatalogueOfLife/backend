@@ -437,7 +437,9 @@ public class InterpreterBase {
     pnu.getName().setRemarks(remarks);
     // applies default dataset code if we cannot find or parse any
     // Always make sure this happens BEFORE we update the canonical scientific name
-    pnu.getName().setCode(code);
+    if (code != null) {
+      pnu.getName().setCode(code);
+    }
 
     // name status can be explicitly given or as part of the nom notes from the authorship
     // dont store the explicit name status, it only remains as verbatim and interpreted data

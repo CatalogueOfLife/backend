@@ -38,7 +38,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   private static final Pattern NORM_PUNCT_WS = Pattern.compile("\\s*([)}\\],;:])\\s*");
   private static final Pattern NORM_WS_PUNCT = Pattern.compile("\\s*([({\\[])\\s*");
   private static final Pattern NORM_AND = Pattern.compile("\\s*(\\b(?:and|et|und)\\b|(?:,\\s*)?&)\\s*");
-  private static final Pattern NORM_ET_AL = Pattern.compile("(&|et) al\\.?(?:[^.]|$)");
+  private static final Pattern NORM_ET_AL = Pattern.compile("(&|\\bet) al\\b\\.?");
   private static final Pattern NORM_ANON = Pattern.compile("\\b(anon\\.?)(\\b|\\s|$)");
   private static final String YEAR = "[12][0-9][0-9][0-9?]";
   private static final Pattern COMMA_BEFORE_YEAR = Pattern.compile("(?<!,)\\s+("+YEAR+")");
