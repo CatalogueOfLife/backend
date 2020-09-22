@@ -3,13 +3,11 @@ package life.catalogue.db;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.zaxxer.hikari.pool.HikariProxyConnection;
-import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.tax.SciNameNormalizer;
-import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.postgres.PgCopyUtils;
@@ -190,18 +188,18 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   protected void after() {
     session.close();
 
-    try (SqlSession session = sqlSessionFactorySupplier.get().openSession(false)) {
-      LOG.info("remove managed sequences not bound to a table");
-      DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
-      for (Dataset d : session.getMapper(DatasetMapper.class).process(null)) {
-        LOG.debug("Remove managed sequences for dataset {}", d.getKey());
-        pm.deleteManagedSequences(d.getKey());
-      }
-      truncate(session);
-      session.commit();
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
+    //try (SqlSession session = sqlSessionFactorySupplier.get().openSession(false)) {
+    //  LOG.info("remove managed sequences not bound to a table");
+    //  DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
+    //  for (Dataset d : session.getMapper(DatasetMapper.class).process(null)) {
+    //    LOG.debug("Remove managed sequences for dataset {}", d.getKey());
+    //    pm.deleteManagedSequences(d.getKey());
+    //  }
+    //  truncate(session);
+    //  session.commit();
+    //} catch (SQLException e) {
+    //  throw new RuntimeException(e);
+    //}
   }
 
   @Override

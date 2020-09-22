@@ -17,6 +17,7 @@ public class IdConverterTest {
       assertEquals(String.valueOf(x), dec.encode(x));
     }
     assertEquals("2", IdConverter.LATIN32.encode(0));
+    assertEquals("32", IdConverter.LATIN32.encode(32));
 
     int[] ids = new int[]{0, 18, 1089, 1781089, 4781089, 12781089, Integer.MAX_VALUE};
     List<IdConverter> converters = new ArrayList<>();

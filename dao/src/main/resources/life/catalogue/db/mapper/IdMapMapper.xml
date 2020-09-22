@@ -8,4 +8,12 @@
     INSERT INTO ${table}_${datasetKey} (id, id2) VALUES (#{id}, #{id2})
   </insert>
 
+  <select id="count" parameterType="map" resultType="int">
+    SELECT count(*) FROM ${table}_${datasetKey}
+  </select>
+
+  <select id="get" parameterType="map" resultType="String">
+    SELECT id2 FROM ${table}_${datasetKey} WHERE id=#{id}
+  </select>
+
 </mapper>

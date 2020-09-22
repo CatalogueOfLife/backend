@@ -29,4 +29,26 @@ public interface IdMapMapper {
   default void mapUsage(int datasetKey, String id, String id2) {
     insert(datasetKey, USAGE_TBL, id, id2);
   }
+
+  int count(@Param("datasetKey") int datasetKey,
+             @Param("table") String table
+  );
+  default int countName(int datasetKey) {
+    return count(datasetKey, NAME_TBL);
+  }
+  default int countUsage(int datasetKey) {
+    return count(datasetKey, USAGE_TBL);
+  }
+
+  String get(@Param("datasetKey") int datasetKey,
+             @Param("table") String table,
+             @Param("id") String id
+  );
+  default String getName(int datasetKey, String id) {
+    return get(datasetKey, NAME_TBL, id);
+  }
+  default String getUsage(int datasetKey, String id) {
+    return get(datasetKey, USAGE_TBL, id);
+  }
+
 }

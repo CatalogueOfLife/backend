@@ -186,7 +186,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * Iterate over all usages optionally filtered by its status but return just the id, status and name index ids
    * @param status if null return all usages regardless their status
    */
-  Cursor<SimpleNameWithNidx> processNxIds(@Param("datasetKey") int datasetKey, @Param("status")TaxonomicStatus status);
+  Cursor<SimpleNameWithNidx> processNxIds(@Param("datasetKey") int datasetKey, @Nullable @Param("status")TaxonomicStatus status);
 
   Cursor<String> processIds(@Param("datasetKey") int datasetKey);
 }

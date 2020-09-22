@@ -105,7 +105,7 @@ public class StableIdProvider {
       }
     }
     keySequence.set(ids.maxKey());
-    LOG.info("Max existing id is {} ({})", keySequence, encode(keySequence.get()));
+    LOG.info("Max existing id = {} ({})", keySequence, encode(keySequence.get()));
   }
 
   private void mapIds(){
