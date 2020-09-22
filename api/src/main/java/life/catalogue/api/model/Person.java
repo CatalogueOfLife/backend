@@ -56,17 +56,17 @@ public class Person {
 
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   public String getName(){
-    if (familyName == null && givenName == null) return null;
+    if (givenName == null && familyName == null) return null;
 
     StringBuilder sb = new StringBuilder();
-    if (familyName != null) {
-      sb.append(familyName);
-    }
     if (givenName != null) {
-      if (familyName != null) {
-        sb.append(", ");
-      }
       sb.append(givenName);
+    }
+    if (familyName != null) {
+      if (givenName != null) {
+        sb.append(" ");
+      }
+      sb.append(familyName);
     }
     return sb.toString();
   }
