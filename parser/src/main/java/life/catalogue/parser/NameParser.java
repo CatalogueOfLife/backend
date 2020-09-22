@@ -10,6 +10,8 @@ import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
+import life.catalogue.common.tax.AuthorshipComparator;
+import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.NameFormatter;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.NameParserGBIF;
@@ -32,7 +34,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   private static Logger LOG = LoggerFactory.getLogger(NameParser.class);
   public static final NameParser PARSER = new NameParser();
   private static final NameParserGBIF PARSER_INTERNAL = new NameParserGBIF();
-
+  private static final AuthorshipComparator authorshipComparator = new AuthorshipComparator();
   private static final Pattern NORM_PUNCT_WS = Pattern.compile("\\s*([)}\\],;:])\\s*");
   private static final Pattern NORM_WS_PUNCT = Pattern.compile("\\s*([({\\[])\\s*");
   private static final Pattern NORM_AND = Pattern.compile("\\s*(\\b(?:and|et|und)\\b|(?:,\\s*)?&)\\s*");
@@ -103,36 +105,50 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
    */
   public void parseAuthorshipIntoName(ParsedNameUsage pnu, final String authorship, IssueContainer v){
     // try to add an authorship if not yet there
-    if (pnu.getName().isParsed() && !Strings.isNullOrEmpty(authorship)) {
-      ParsedAuthorship pnAuthorship = parseAuthorship(authorship).orElseGet(() -> {
-        LOG.info("Unparsable authorship {}", authorship);
-        v.addIssue(Issue.UNPARSABLE_AUTHORSHIP);
-        // add the full, unparsed authorship in this case to not lose it
-        ParsedName pn = new ParsedName();
-        pn.getCombinationAuthorship().getAuthors().add(authorship);
-        return pn;
-      });
+    if (!Strings.isNullOrEmpty(authorship)) {
+      if (pnu.getName().isParsed()) {
+        ParsedAuthorship pnAuthorship = parseAuthorship(authorship).orElseGet(() -> {
+          LOG.info("Unparsable authorship {}", authorship);
+          v.addIssue(Issue.UNPARSABLE_AUTHORSHIP);
+          // add the full, unparsed authorship in this case to not lose it
+          ParsedName pn = new ParsedName();
+          pn.getCombinationAuthorship().getAuthors().add(authorship);
+          return pn;
+        });
 
-      // we might have already parsed an authorship from the scientificName string which does not match up?
-      if (pnu.getName().hasAuthorship()) {
-        String prevAuthorship = NameFormatter.authorship(pnu.getName());
-        if (!prevAuthorship.equalsIgnoreCase(pnAuthorship.authorshipComplete())) {
-          v.addIssue(Issue.INCONSISTENT_AUTHORSHIP);
-          LOG.info("Different authorship found in name {} than in parsed version: [{}] vs [{}]",
-              pnu.getName(), prevAuthorship, pnAuthorship.authorshipComplete());
+        // we might have already parsed an authorship from the scientificName string which does not match up?
+        if (pnu.getName().hasAuthorship()) {
+          String prevAuthorship = NameFormatter.authorship(pnu.getName());
+          if (!prevAuthorship.equalsIgnoreCase(pnAuthorship.authorshipComplete())) {
+            v.addIssue(Issue.INCONSISTENT_AUTHORSHIP);
+            LOG.info("Different authorship found in name {} than in parsed version: [{}] vs [{}]",
+                pnu.getName(), prevAuthorship, pnAuthorship.authorshipComplete());
+          }
+        }
+
+        // keep authorship issues in a separate container
+        // so we can filter out non authorship related issues before we add them to the verbatim record
+        IssueContainer ic = new IssueContainer.Simple();
+        copyToPNU(pnAuthorship, pnu, ic);
+        // ignore issues related to the epithet - we only parse authorships here
+        removeEpithetIssues(ic);
+        ic.getIssues().forEach(v::addIssue);
+
+        // use original authorship string but normalize whitespace
+        pnu.getName().setAuthorship( normalizeAuthorship(authorship, pnAuthorship.getTaxonomicNote()) );
+
+      } else {
+        // unparsed name might still not have any authorship
+        String sciName = AuthorshipNormalizer.normalize(pnu.getName().getScientificName());
+        if (sciName == null) {
+          pnu.getName().setAuthorship(authorship);
+        } else {
+          String authNormed = AuthorshipNormalizer.normalize(authorship);
+          if (authNormed != null && !sciName.contains(authNormed)) {
+            pnu.getName().setAuthorship(authorship);
+          }
         }
       }
-
-      // keep authorship issues in a separate container
-      // so we can filter out non authorship related issues before we add them to the verbatim record
-      IssueContainer ic = new IssueContainer.Simple();
-      copyToPNU(pnAuthorship, pnu, ic);
-      // ignore issues related to the epithet - we only parse authorships here
-      removeEpithetIssues(ic);
-      ic.getIssues().forEach(v::addIssue);
-
-      // use original authorship string but normalize whitespace
-      pnu.getName().setAuthorship( normalizeAuthorship(authorship, pnAuthorship.getTaxonomicNote()) );
     }
   }
 

@@ -66,6 +66,12 @@ public class NameFormatter {
         sb.append(n.getSanctioningAuthor());
       }
     }
+    if (n.getNomenclaturalNote() != null) {
+      if (n.hasAuthorship()) {
+        sb.append(" ");
+      }
+      sb.append(n.getNomenclaturalNote());
+    }
     return sb.length() == 0 ? null : sb.toString();
   }
 

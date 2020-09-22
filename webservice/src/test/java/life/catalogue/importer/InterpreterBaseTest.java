@@ -178,6 +178,23 @@ public class InterpreterBaseTest {
     assertEquals("Ristorcelli", n.getBasionymAuthorship().getAuthors().get(0));
     assertEquals("Van ty", n.getBasionymAuthorship().getAuthors().get(1));
     assertTrue(n.getBasionymAuthorship().getExAuthors().isEmpty());
+
+    // https://github.com/CatalogueOfLife/backend/issues/788
+    pnu = ib.interpretName(true, "1", "superfamily", "Eucnidoideae ined.", "ined.",
+      null, null, null, null, null, null, null, null, null, null, v);
+    assertNull(pnu.get().getTaxonomicNote());
+    n = pnu.get().getName();
+    assertEquals("Eucnidoideae", n.getScientificName());
+    assertEquals("ined.", n.getAuthorship());
+    assertEquals("ined.", n.getNomenclaturalNote());
+    assertEquals(Rank.SUPERFAMILY, n.getRank());
+    assertEquals("Eucnidoideae", n.getUninomial());
+    assertNull(n.getGenus());
+    assertNull(n.getInfragenericEpithet());
+    assertNull(n.getSpecificEpithet());
+    assertTrue(n.getCombinationAuthorship().isEmpty());
+    assertTrue(n.getCombinationAuthorship().isEmpty());
+    assertTrue(n.getBasionymAuthorship().isEmpty());
   }
 
   @Test

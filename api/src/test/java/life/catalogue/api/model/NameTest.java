@@ -80,7 +80,27 @@ public class NameTest extends SerdeTestBase<Name> {
     n.rebuildScientificName();
     n.rebuildAuthorship();
     assertEquals("Abies × alba subsp. alpina", n.getScientificName());
-    assertEquals("(Lin. & Deca., 1899) L. & DC., 1999", n.getAuthorship());
+    assertEquals("(Lin. & Deca., 1899) L. & DC., 1999 nom.illeg.", n.getAuthorship());
+
+    // https://github.com/CatalogueOfLife/backend/issues/849#issuecomment-696383826
+    n = new Name();
+    n.setUninomial("Eucnidoideae");
+    n.setRank(Rank.SUPERFAMILY);
+    n.rebuildScientificName();
+    n.rebuildAuthorship();
+    assertEquals("Eucnidoideae", n.getScientificName());
+
+    assertNull(n.getAuthorship());
+    assertNull(n.getNomenclaturalNote());
+
+    n.setNomenclaturalNote("ined.");
+    n.rebuildScientificName();
+    n.rebuildAuthorship();
+
+    assertEquals("Eucnidoideae", n.getScientificName());
+    assertEquals("ined.", n.getAuthorship());
+    assertEquals("ined.", n.getNomenclaturalNote());
+    assertEquals("Eucnidoideae ined.", n.getLabel());
   }
 
   @Test

@@ -715,10 +715,6 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
       sb.append(" ");
       sb.append(authorship);
     }
-    if (nomenclaturalNote != null) {
-      sb.append(" ");
-      sb.append(nomenclaturalNote);
-    }
     return sb;
   }
 
