@@ -13,7 +13,8 @@ import org.junit.rules.TestRule;
 import static org.junit.Assert.assertEquals;
 
 public class StableIdProviderTest {
-  final int projectKey = TestDataRule.TestData.PROJECT.key;
+  public final static TestDataRule.TestData PROJECT_DATA = new TestDataRule.TestData("project", 3, 2, 2, 3,11,12,13);
+  final int projectKey = PROJECT_DATA.key;
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -23,7 +24,7 @@ public class StableIdProviderTest {
 
   @Rule
   public final TestRule chain = RuleChain
-    .outerRule(TestDataRule.project())
+    .outerRule(new TestDataRule(PROJECT_DATA))
     .around(matchingRule);
 
 
@@ -53,6 +54,10 @@ public class StableIdProviderTest {
       IdMapMapper idm = session.getMapper(IdMapMapper.class);
       assertEquals(24, idm.countUsage(projectKey));
       assertEquals("R", idm.getUsage(projectKey, "25"));
+      // rufus -> rufa
+      assertEquals("E", idm.getUsage(projectKey, "14"));
+      // baileyi -> baileii
+      assertEquals("F", idm.getUsage(projectKey, "15"));
     }
   }
 

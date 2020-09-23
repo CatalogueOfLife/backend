@@ -28,7 +28,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   SynonymMapper sm;
   NameMapper nm;
   int idGen = 1;
-  int datasetKey = TestDataRule.TestData.APPLE.key;
+  int datasetKey = TestDataRule.APPLE.key;
 
   public NameUsageMapperTest() {
     super(NameUsageMapper.class, TestDataRule.apple());

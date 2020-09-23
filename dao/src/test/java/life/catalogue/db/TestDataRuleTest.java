@@ -10,8 +10,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -24,10 +24,7 @@ public class TestDataRuleTest {
 
   @Parameterized.Parameters(name= "{index}: {0}")
   public static Iterable<Object[]> data() {
-    //return Arrays.stream(TestDataRule.TestData.values()).map(t -> new Object[]{t}).collect(Collectors.toList());
-    List<Object[]> data = new ArrayList<>();
-    data.add(new Object[]{TestDataRule.TestData.PROJECT});
-    return data;
+    return TestDataRule.allTestData().stream().map(t -> new Object[]{t}).collect(Collectors.toList());
   }
 
   @Rule
@@ -48,10 +45,7 @@ public class TestDataRuleTest {
 
     for (int key : data.datasetKeys) {
       assertNotNull(dm.get(key));
-      List<Name> list = nm.list(key, new Page());
-      if (data == TestDataRule.TestData.PROJECT) {
-        assertTrue(list.size() > 0);
-      }
+      nm.list(key, new Page());
     }
     if (data.key != null) {
       List<Name> list = nm.list(data.key, new Page());

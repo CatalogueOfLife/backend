@@ -9,8 +9,8 @@ id,homotypic_name_id,scientific_name,uninomial,genus,specific_epithet,infraspeci
 11,,Pardina,Pardina,,,,GENUS,r1
 12,,Lynx lynx,,Lynx,lynx,,SPECIES,r1
 13,,Lynx rufus,,Lynx,rufus,,SPECIES,r1
-14,n13,Felis rufus,,Felis,rufus,,SPECIES,r1
-15,,Lynx rufus baileyi,,Lynx,rufus,baileyi,SUBSPECIES,r1
+14,n13,Felis rufa,,Felis,rufa,,SPECIES,r1
+15,,Lynx rufus baileii,,Lynx,rufus,baileii,SUBSPECIES,r1
 16,,Lynx rufus gigas,,Lynx,rufus,gigas,SUBSPECIES,r1
 20,,Canis,Canis,,,,GENUS,r1
 21,,Alopsis,Alopsis,,,,GENUS,r1

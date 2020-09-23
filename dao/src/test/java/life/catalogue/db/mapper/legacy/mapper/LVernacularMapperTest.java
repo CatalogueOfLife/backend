@@ -16,7 +16,7 @@ import static org.junit.Assert.assertEquals;
 
 public class LVernacularMapperTest extends MapperTestBase<LVernacularMapper> {
 
-  int datasetKey = TestDataRule.TestData.APPLE.key;
+  int datasetKey = TestDataRule.APPLE.key;
 
   public LVernacularMapperTest() {
     super(LVernacularMapper.class);

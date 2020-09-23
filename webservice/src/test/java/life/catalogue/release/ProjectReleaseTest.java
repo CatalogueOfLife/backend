@@ -50,7 +50,7 @@ public class ProjectReleaseTest {
     // dataset needs to be a managed one
     try (SqlSession s = PgSetupRule.getSqlSessionFactory().openSession()) {
       DatasetMapper dm = s.getMapper(DatasetMapper.class);
-      d = dm.get(TestDataRule.TestData.APPLE.key);
+      d = dm.get(TestDataRule.APPLE.key);
     }
   }
   

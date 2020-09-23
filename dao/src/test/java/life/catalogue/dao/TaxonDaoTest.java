@@ -284,16 +284,16 @@ public class TaxonDaoTest extends DaoTestBase {
 
   @Test
   public void deleteRecursively() throws Exception {
-    final DSIDValue<String> key = DSID.of(TestDataRule.TestData.TREE.key, null);
-    MybatisTestUtils.populateTestData(TestDataRule.TestData.TREE, true);
+    final DSIDValue<String> key = DSID.of(TestDataRule.TREE.key, null);
+    MybatisTestUtils.populateTestData(TestDataRule.TREE, true);
   
     // create some sectors in the subtree to make sure they also get removed
     SectorMapper sm = mapper(SectorMapper.class);
-    Sector s1 = SectorMapperTest.create(key.id("t2"), DSID.of(TestDataRule.TestData.TREE.datasetKeys.iterator().next(), "x"));
+    Sector s1 = SectorMapperTest.create(key.id("t2"), DSID.of(TestDataRule.TREE.datasetKeys.iterator().next(), "x"));
     sm.create(s1);
-    Sector s2 = SectorMapperTest.create(key.id("t4"), DSID.of(TestDataRule.TestData.TREE.datasetKeys.iterator().next(), "xy"));
+    Sector s2 = SectorMapperTest.create(key.id("t4"), DSID.of(TestDataRule.TREE.datasetKeys.iterator().next(), "xy"));
     sm.create(s2);
-    Sector s3 = SectorMapperTest.create(key.id("t10"), DSID.of(TestDataRule.TestData.TREE.datasetKeys.iterator().next(), "xyz"));
+    Sector s3 = SectorMapperTest.create(key.id("t10"), DSID.of(TestDataRule.TREE.datasetKeys.iterator().next(), "xyz"));
     sm.create(s3);
 
     commit();

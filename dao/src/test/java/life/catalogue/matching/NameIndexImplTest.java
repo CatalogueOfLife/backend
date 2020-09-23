@@ -109,7 +109,7 @@ public class NameIndexImplTest {
       NamesIndexMapper nim = s.getMapper(NamesIndexMapper.class);
       // add all apple records to names index
       AtomicInteger counter = new AtomicInteger(1);
-      nm.processDataset(TestDataRule.TestData.APPLE.key).forEach(n -> {
+      nm.processDataset(TestDataRule.APPLE.key).forEach(n -> {
         IndexName in = new IndexName(n);
         in.setKey(counter.getAndIncrement());
         if (persist) {

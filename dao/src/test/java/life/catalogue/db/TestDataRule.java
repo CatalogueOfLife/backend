@@ -27,10 +27,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -60,38 +57,36 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   private SqlSession session;
   private final Supplier<SqlSessionFactory> sqlSessionFactorySupplier;
 
-  public enum TestData {
-    NONE(null, null, null, 3),
+  public final static TestData NONE = new TestData("none", null, null, null, true, false,3);
+  /**
+   * Inits the datasets table with real col data from colplus-repo
+   */
+  public final static TestData DATASETS = new TestData("datasets", null, 3, null, false, true);
+  public final static TestData APPLE = new TestData("apple", 11, 3, 2, 3, 11, 12);
+  public final static TestData FISH = new TestData("fish", 100, 2, 4, 3, 100, 101, 102);
+  public final static TestData TREE = new TestData("tree", 11, 2, 2, 3, 11);
+  public final static TestData DRAFT = new TestData("draft", 3, 1, 2, 3);
+  public final static TestData DRAFT_WITH_SECTORS = new TestData("draft_with_sectors", 3, 2, 3, 3);
 
-    // apple datasetKey=11
-    APPLE(11, 3, 2, 3, 11, 12),
+  public static List<TestData> allTestData() {
+    return List.of(NONE, APPLE, FISH, TREE, DRAFT, DRAFT_WITH_SECTORS, DATASETS);
+  }
 
-    // apple datasetKey=11
-    FISH(100, 2, 4, 3, 100, 101, 102),
-
-    // tree datasetKey=11
-    TREE(11, 2, 2, 3, 11),
-
-    // basic draft hierarchy
-    DRAFT(3, 1, 2, 3),
-
-    // basic draft hierarchy
-    DRAFT_WITH_SECTORS(3, 2, 3, 3),
-
-    // basic draft hierarchy
-    PROJECT(3, 2, 2, 3,11,12,13),
-
-    /**
-     * Inits the datasets table with real col data from colplus-repo
-     */
-    DATASETS(null, 3, null);
-
+  public static class TestData {
+    public final String name;
     public final Integer key;
     public final Integer sciNameColumn;
     public final Integer taxStatusColumn;
     public final Set<Integer> datasetKeys;
+    private final boolean datasets;
+    private final boolean none;
 
-    TestData(Integer key, Integer sciNameColumn, Integer taxStatusColumn, Integer... datasetKeys) {
+    public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Integer... datasetKeys) {
+      this(name, key, sciNameColumn, taxStatusColumn, false, false, datasetKeys);
+    }
+
+    private TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, boolean none, boolean initAllDatasets, Integer... datasetKeys) {
+      this.name = name;
       this.key = key;
       this.sciNameColumn = sciNameColumn;
       this.taxStatusColumn = taxStatusColumn;
@@ -100,56 +95,50 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       } else {
         this.datasetKeys = ImmutableSet.copyOf(datasetKeys);
       }
+      this.none = none;
+      this.datasets = initAllDatasets;
     }
 
+    @Override
+    public String toString() {
+      return name + " ("+ key +")";
+    }
   }
 
   public static TestDataRule empty() {
-    return new TestDataRule(TestData.NONE);
-  }
-
-  public static TestDataRule empty(SqlSessionFactory sqlSessionFactory) {
-    return new TestDataRule(TestData.NONE, () -> sqlSessionFactory);
+    return new TestDataRule(NONE);
   }
 
   public static TestDataRule apple() {
-    return new TestDataRule(TestData.APPLE);
+    return new TestDataRule(APPLE);
   }
 
   public static TestDataRule apple(SqlSessionFactory sqlSessionFactory) {
-    return new TestDataRule(TestData.APPLE, () -> sqlSessionFactory);
+    return new TestDataRule(APPLE, () -> sqlSessionFactory);
   }
 
   public static TestDataRule fish() {
-    return new TestDataRule(TestData.FISH);
+    return new TestDataRule(FISH);
   }
 
   public static TestDataRule tree() {
-    return new TestDataRule(TestData.TREE);
-  }
-
-  public static TestDataRule tree(SqlSessionFactory sqlSessionFactory) {
-    return new TestDataRule(TestData.TREE, () -> sqlSessionFactory);
+    return new TestDataRule(TREE);
   }
 
   public static TestDataRule draft() {
-    return new TestDataRule(TestData.DRAFT);
+    return new TestDataRule(DRAFT);
   }
 
   public static TestDataRule draftWithSectors() {
-    return new TestDataRule(TestData.DRAFT_WITH_SECTORS);
-  }
-
-  public static TestDataRule project() {
-    return new TestDataRule(TestData.PROJECT);
+    return new TestDataRule(DRAFT_WITH_SECTORS);
   }
 
   public static TestDataRule datasets() {
-    return new TestDataRule(TestData.DATASETS);
+    return new TestDataRule(DATASETS);
   }
 
   public static TestDataRule datasets(SqlSessionFactory sqlSessionFactory) {
-    return new TestDataRule(TestData.DATASETS, () -> sqlSessionFactory);
+    return new TestDataRule(DATASETS, () -> sqlSessionFactory);
   }
 
   private TestDataRule(TestData testData, Supplier<SqlSessionFactory> sqlSessionFactorySupplier) {
@@ -274,11 +263,11 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       runner.runScript(Resources.getResourceAsReader(PgConfig.DATA_FILE));
     }
 
-    if (testData != TestData.NONE) {
+    if (!testData.none) {
       System.out.format("Load %s test data\n\n", testData);
 
 
-      if (testData == TestData.DATASETS) {
+      if (testData.datasets) {
         // known datasets
         runner.runScript(Resources.getResourceAsReader(PgConfig.DATASETS_FILE));
 
@@ -365,7 +354,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   private void copyTable(PgConnection pgc, String filename, String table, Map<String, Object> defaults, Map<String, Function<String[], String>> funcs)
       throws IOException, SQLException {
-    String resource = "/test-data/" + testData.name().toLowerCase() + "/" + filename;
+    String resource = "/test-data/" + testData.name.toLowerCase() + "/" + filename;
     URL url = PgCopyUtils.class.getResource(resource);
     if (url != null) {
       PgCopyUtils.copy(pgc, table, resource, defaults, funcs);
