@@ -156,11 +156,11 @@ public abstract class AbstractProjectCopy implements Runnable {
 
       copyTable(Reference.class, ReferenceMapper.class, session);
 
-      copyTable(Name.class, NameMapper.class, session, mapIds);
-      copyTable(NameRelation.class, NameRelationMapper.class, session, mapIds);
+      copyTable(Name.class, NameMapper.class, session);
+      copyTable(NameRelation.class, NameRelationMapper.class, session);
       copyTable(TypeMaterial.class, TypeMaterialMapper.class, session);
 
-      copyTable(NameUsage.class, NameUsageMapper.class, session, mapIds);
+      copyTable(NameUsage.class, NameUsageMapper.class, session);
 
       copyTable(VernacularName.class, VernacularNameMapper.class, session);
       copyTable(Distribution.class, DistributionMapper.class, session);
@@ -181,10 +181,6 @@ public abstract class AbstractProjectCopy implements Runnable {
   }
 
   private <M extends CopyDataset> void copyTable(Class entity, Class<M> mapperClass, SqlSession session){
-    copyTable(entity, mapperClass, session, false);
-  }
-
-  private <M extends CopyDataset> void copyTable(Class entity, Class<M> mapperClass, SqlSession session, boolean mapIds){
     int count = session.getMapper(mapperClass).copyDataset(datasetKey, newDatasetKey, mapIds);
     LOG.info("Copied {} {}s", count, entity.getSimpleName());
   }

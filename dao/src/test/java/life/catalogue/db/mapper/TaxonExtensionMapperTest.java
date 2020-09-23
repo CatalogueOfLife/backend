@@ -4,6 +4,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DatasetScopedEntity;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.TaxonExtension;
+import life.catalogue.api.vocab.Datasets;
 import life.catalogue.db.TestDataRule;
 import org.junit.Test;
 
@@ -31,7 +32,7 @@ abstract class TaxonExtensionMapperTest<T extends DatasetScopedEntity<Integer>, 
 
   @Test
   public void copyDataset() throws Exception {
-    CopyDatasetTestComponent.copy(mapper(), testDataRule.testData.key, true);
+    CopyDatasetTestComponent.copy(mapper(), Datasets.DRAFT_COL, true);
   }
 
   @Test
