@@ -94,7 +94,7 @@ public enum NameUsageSearchParameter {
   /**
    * Name.type
    */
-  TYPE(NameType.class),
+  NAME_TYPE(NameType.class),
 
   EXTINCT(Boolean.class),
 
