@@ -16,6 +16,7 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 
 public class StableIdProviderTest {
+
   public final static TestDataRule.TestData PROJECT_DATA = new TestDataRule.TestData("project", 3, 2, 2, Map.of(
     "distribution_3", Map.of("gazetteer", Gazetteer.ISO, "reference_id", "Flade2008")
   ),3,11,12,13);
