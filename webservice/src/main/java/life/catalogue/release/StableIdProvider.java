@@ -18,6 +18,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -56,6 +57,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class StableIdProvider {
   protected final Logger LOG = LoggerFactory.getLogger(StableIdProvider.class);
+  // the date we first deployed stable ids in releases - we ignore older ids than this date
+  private final LocalDateTime ID_START_DATE = LocalDateTime.of(2020, 9, 1, 1,1);
 
   private final int datasetKey;
   private final SqlSessionFactory factory;
@@ -94,6 +97,9 @@ public class StableIdProvider {
       dsr.setReverse(true);
       List<Dataset> releases = dm.search(dsr, null, new Page(0, 100));
       for (Dataset rel : releases) {
+        if (rel.getCreated().isBefore(ID_START_DATE)) {
+          LOG.info("Ignore old release {} with unstable ids", rel.getKey());
+        }
         AtomicInteger counter = new AtomicInteger();
         int attempt = rel.getImportAttempt();
         attempt2dataset.put(attempt, (int)rel.getKey());

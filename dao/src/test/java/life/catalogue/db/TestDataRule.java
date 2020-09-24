@@ -57,11 +57,11 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   private SqlSession session;
   private final Supplier<SqlSessionFactory> sqlSessionFactorySupplier;
 
-  public final static TestData NONE = new TestData("none", null, null, null, true, false,3);
+  public final static TestData NONE = new TestData("none", null, null, null, true, false, Collections.emptyMap(),3);
   /**
    * Inits the datasets table with real col data from colplus-repo
    */
-  public final static TestData DATASETS = new TestData("datasets", null, 3, null, false, true);
+  public final static TestData DATASETS = new TestData("datasets", null, 3, null, false, true, Collections.emptyMap());
   public final static TestData APPLE = new TestData("apple", 11, 3, 2, 3, 11, 12);
   public final static TestData FISH = new TestData("fish", 100, 2, 4, 3, 100, 101, 102);
   public final static TestData TREE = new TestData("tree", 11, 2, 2, 3, 11);
@@ -75,17 +75,22 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   public static class TestData {
     public final String name;
     public final Integer key;
-    public final Integer sciNameColumn;
-    public final Integer taxStatusColumn;
     public final Set<Integer> datasetKeys;
+    final Integer sciNameColumn;
+    final Integer taxStatusColumn;
+    final Map<String, Map<String, Object>> defaultValues;
     private final boolean datasets;
     private final boolean none;
 
     public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Integer... datasetKeys) {
-      this(name, key, sciNameColumn, taxStatusColumn, false, false, datasetKeys);
+      this(name, key, sciNameColumn, taxStatusColumn, Collections.emptyMap(), datasetKeys);
     }
 
-    private TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, boolean none, boolean initAllDatasets, Integer... datasetKeys) {
+    public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Map<String, Map<String, Object>> defaultValues, Integer... datasetKeys) {
+      this(name, key, sciNameColumn, taxStatusColumn, false, false, defaultValues, datasetKeys);
+    }
+
+    private TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, boolean none, boolean initAllDatasets, Map<String, Map<String, Object>> defaultValues, Integer... datasetKeys) {
       this.name = name;
       this.key = key;
       this.sciNameColumn = sciNameColumn;
@@ -97,6 +102,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       }
       this.none = none;
       this.datasets = initAllDatasets;
+      this.defaultValues = defaultValues;
     }
 
     @Override
@@ -357,6 +363,11 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     String resource = "/test-data/" + testData.name.toLowerCase() + "/" + filename;
     URL url = PgCopyUtils.class.getResource(resource);
     if (url != null) {
+      // global defaults to add?
+      if (testData.defaultValues.containsKey(table)) {
+        defaults = new HashMap<>(defaults);
+        defaults.putAll(testData.defaultValues.get(table));
+      }
       PgCopyUtils.copy(pgc, table, resource, defaults, funcs);
     }
   }

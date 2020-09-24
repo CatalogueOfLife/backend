@@ -1,5 +1,6 @@
 package life.catalogue.release;
 
+import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
@@ -10,10 +11,14 @@ import org.junit.*;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
+import java.util.Map;
+
 import static org.junit.Assert.assertEquals;
 
 public class StableIdProviderTest {
-  public final static TestDataRule.TestData PROJECT_DATA = new TestDataRule.TestData("project", 3, 2, 2, 3,11,12,13);
+  public final static TestDataRule.TestData PROJECT_DATA = new TestDataRule.TestData("project", 3, 2, 2, Map.of(
+    "distribution_3", Map.of("gazetteer", Gazetteer.ISO, "reference_id", "Flade2008")
+  ),3,11,12,13);
   final int projectKey = PROJECT_DATA.key;
 
   @ClassRule
@@ -52,7 +57,7 @@ public class StableIdProviderTest {
     provider.run();
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       IdMapMapper idm = session.getMapper(IdMapMapper.class);
-      assertEquals(24, idm.countUsage(projectKey));
+      assertEquals(25, idm.countUsage(projectKey));
       assertEquals("R", idm.getUsage(projectKey, "25"));
       // rufus -> rufa
       assertEquals("E", idm.getUsage(projectKey, "14"));

@@ -1,0 +1,14 @@
+taxon_id,language,name,reference_id
+1,deu,Tiere,verns
+1,eng,Animals,verns
+2,deu,Wirbeltiere,verns
+3,deu,Säugetiere,verns
+3,eng,Mammals,verns
+4,deu,Raubtiere,verns
+5,deu,Hunde,verns
+6,deu,Katzen,verns
+10,deu,Luchs,verns
+12,deu,Eurasischer Luchs,verns
+13,deu,Rotluchs,verns
+20,deu,Hund,verns
+23,deu,Streifenschakal,verns
