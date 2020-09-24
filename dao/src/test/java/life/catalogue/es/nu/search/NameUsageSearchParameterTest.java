@@ -12,6 +12,7 @@ import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
+import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.Authorship;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +27,7 @@ import static java.util.stream.Collectors.toList;
 import static life.catalogue.api.search.NameUsageSearchParameter.*;
 import static life.catalogue.api.search.NameUsageSearchRequest.IS_NOT_NULL;
 import static life.catalogue.api.search.NameUsageSearchRequest.IS_NULL;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * <p>
@@ -44,6 +45,17 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
   @Before
   public void before() {
     destroyAndCreateIndex();
+  }
+
+  // https://github.com/CatalogueOfLife/backend/issues/853
+  @Test
+  public void noUnderscores() {
+    for (NameUsageSearchParameter p : NameUsageSearchParameter.values()) {
+      System.out.println(p.name());
+      assertFalse(StringUtils.containsWhitespace(p.name()));
+      assertFalse(StringUtils.containsAny(p.name(),'_', '-'));
+      assertTrue(StringUtils.isAlphanumeric(p.name()));
+    }
   }
 
   @Test

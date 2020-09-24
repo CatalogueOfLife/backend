@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
-import com.google.common.collect.ImmutableSet;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.vocab.CSLRefType;
 import life.catalogue.api.vocab.ColDwcTerm;
@@ -21,16 +20,15 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Set;
 import java.util.UUID;
 
 /**
  * Jackson module that defines all serde rules for all CoL API model classes.
  */
 public class ApiModule extends SimpleModule {
-  
+
   public static final ObjectMapper  MAPPER = configureMapper(new ObjectMapper());
-  static final Set<Class> ENUM_CLASSES = ImmutableSet.of(Country.class, CSLRefType.class, Term.class);
+
   static {
     // register new term enums
     TermFactory.instance().registerTermEnum(ColDwcTerm.class);
@@ -99,6 +97,11 @@ public class ApiModule extends SimpleModule {
     ctxt.addDeserializers(new PermissiveEnumSerde.PermissiveEnumDeserializers());
     ctxt.addSerializers(new PermissiveEnumSerde.PermissiveEnumSerializers());
     ctxt.addKeySerializers(new PermissiveEnumSerde.PermissiveEnumKeySerializers());
+    // lower camel case, permissive enum serde
+    ctxt.addDeserializers(new LowerCamelCaseEnumSerde.LowerCamelCaseEnumDeserializers());
+    ctxt.addKeyDeserializers(new LowerCamelCaseEnumSerde.LowerCamelCaseEnumKeyDeserializers());
+    ctxt.addSerializers(new LowerCamelCaseEnumSerde.LowerCamelCaseEnumSerializers());
+    ctxt.addKeySerializers(new LowerCamelCaseEnumSerde.LowerCamelCaseEnumKeySerializers());
     // required to properly register serdes
     super.setupModule(ctxt);
     ctxt.setMixInAnnotations(Authorship.class, AuthorshipMixIn.class);

@@ -8,6 +8,11 @@ import org.gbif.nameparser.api.Rank;
 
 import java.util.UUID;
 
+/**
+ * NOTE: the search parameters are used as http parameter names.
+ * The standard CoL JSON serialization converts underscores to whitespace, which is not wanted in http parameter names.
+ * Therefore avoid underscores at any cost !!!
+ */
 public enum NameUsageSearchParameter {
 
   USAGE_ID(String.class),

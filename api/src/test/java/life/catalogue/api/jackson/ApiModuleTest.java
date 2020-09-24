@@ -2,12 +2,19 @@ package life.catalogue.api.jackson;
 
 import life.catalogue.api.model.DSIDValue;
 import life.catalogue.api.model.EditorialDecision;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.search.FacetValue;
+import life.catalogue.api.search.NameUsageSearchParameter;
+import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.vocab.Environment;
+import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -48,5 +55,35 @@ public class ApiModuleTest {
     assertTrue(json.contains("provisionally accepted"));
     EditorialDecision ed2 = ApiModule.MAPPER.readValue(json, EditorialDecision.class);
     assertEquals(ed, ed2);
+  }
+
+  @Test
+  public void testSearchParameters() throws IOException {
+    NameUsageSearchResponse resp = new NameUsageSearchResponse(
+      new Page(1,17), 69,
+      Collections.EMPTY_LIST,
+      Map.of(
+        NameUsageSearchParameter.NOM_STATUS, Set.of(
+          new FacetValue(NomStatus.NOT_ESTABLISHED, 13),
+          new FacetValue(NomStatus.CHRESONYM, 3)
+        ),
+        NameUsageSearchParameter.DATASET_KEY, Set.of(
+          new FacetValue(3, 13),
+          new FacetValue(13, 43),
+          new FacetValue(23, 52)
+        )
+      )
+    );
+
+    String json = ApiModule.MAPPER.writeValueAsString(resp);
+    System.out.println(json);
+    assertTrue(json.contains("\"nomStatus\""));
+    assertFalse(json.contains("\"NOM_STATUS\""));
+    assertFalse(json.contains("\"nom status\""));
+    assertTrue(json.contains("\"datasetKey\""));
+    assertTrue(json.contains("\"not established\""));
+    assertTrue(json.contains("\"chresonym\""));
+    assertFalse(json.contains("\"CHRESONYM\""));
+    // we do not read back in json as FacetValue has not appropriate constructor
   }
 }

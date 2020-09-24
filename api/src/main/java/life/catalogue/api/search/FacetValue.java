@@ -1,16 +1,10 @@
 package life.catalogue.api.search;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
-
 import com.google.common.base.Preconditions;
-
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.vocab.Issue;
+
+import java.util.*;
 
 public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValue<T>> {
 
@@ -60,7 +54,7 @@ public class FacetValue<T extends Comparable<T>> implements Comparable<FacetValu
   private final T value;
   private final int count;
 
-  private FacetValue(T value, int count) {
+  public FacetValue(T value, int count) {
     Preconditions.checkNotNull(value);
     this.value = value;
     this.count = count;
