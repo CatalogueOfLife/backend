@@ -122,6 +122,7 @@ public class NameParserResource {
     public PNUIssue(ParsedNameUsage pnu, Set<Issue> issues) {
       super(pnu.getName(), pnu.isExtinct(), pnu.getTaxonomicNote(), pnu.getPublishedIn());
       this.issues = issues;
+      pnu.getName().setNameIndexIds(null);
     }
 
     public Set<Issue> getIssues() {

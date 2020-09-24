@@ -9,7 +9,14 @@ public class MoreMediaTypes {
   public final static String IMG_PSD = "image/vnd.adobe.photoshop";
   
   public final static String APP_GZIP = "application/gzip";
+  public final static String APP_GZIP_ALT1 = "application/x-gzip";
+  public final static String APP_GZIP_ALT2 = "application/x-gtar";
+  public final static String APP_GZIP_ALT3 = "application/x-tgz";
   public final static String APP_ZIP = "application/zip";
+  public final static String APP_ZIP_ALT1 = "application/zip-compressed";
+  public final static String APP_ZIP_ALT2 = "application/x-zip-compressed";
+  public final static String APP_ZIP_ALT3 = "multipart/x-zip";
+
   public final static String APP_YAML = "application/x-yaml";
 
   public final static String APP_JSON_COLDP = "application/vnd.coldp+json";

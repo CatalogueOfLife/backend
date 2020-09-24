@@ -82,7 +82,13 @@ public class ImporterResource {
 
   @POST
   @Path("{key}")
-  @Consumes({MoreMediaTypes.APP_GZIP, MoreMediaTypes.APP_ZIP, MediaType.APPLICATION_OCTET_STREAM})
+  // there are many unofficial mime types around for zip and gzip
+  // these can show up via the upload component of the CLB UI if used from Windows for example, so we add them all
+  @Consumes({
+    MediaType.APPLICATION_OCTET_STREAM,
+    MoreMediaTypes.APP_GZIP, MoreMediaTypes.APP_GZIP_ALT1, MoreMediaTypes.APP_GZIP_ALT2, MoreMediaTypes.APP_GZIP_ALT3,
+    MoreMediaTypes.APP_ZIP, MoreMediaTypes.APP_ZIP_ALT1, MoreMediaTypes.APP_ZIP_ALT2, MoreMediaTypes.APP_ZIP_ALT3
+  })
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public ImportRequest uploadArchive(@PathParam("key") int datasetKey, @Auth User user, @Context HttpHeaders headers, InputStream archive) throws IOException {
     return importManager.upload(datasetKey, archive, false, null, user);
