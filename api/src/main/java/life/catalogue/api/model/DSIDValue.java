@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import javax.ws.rs.PathParam;
 import java.util.Objects;
 
 /**
@@ -7,8 +8,11 @@ import java.util.Objects;
  * Useful for name, taxon and reference objects.
  */
 public class DSIDValue<T> implements DSID<T> {
-  
+
+  @PathParam("key")
   private Integer datasetKey;
+
+  @PathParam("datasetKey")
   private T id;
   
   public DSIDValue() {

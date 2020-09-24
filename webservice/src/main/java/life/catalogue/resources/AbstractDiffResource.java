@@ -1,5 +1,7 @@
 package life.catalogue.resources;
 
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.DSIDValue;
 import life.catalogue.db.tree.BaseDiffService;
 import life.catalogue.db.tree.NamesDiff;
 import org.slf4j.Logger;
@@ -12,37 +14,39 @@ import java.io.Reader;
 
 @SuppressWarnings("static-method")
 @Produces(MediaType.APPLICATION_JSON)
-public class AbstractDiffResource {
+public abstract class AbstractDiffResource<K> {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(AbstractDiffResource.class);
-  private final BaseDiffService diff;
+  private final BaseDiffService<K> diff;
 
-  public AbstractDiffResource(BaseDiffService diff) {
+  public AbstractDiffResource(BaseDiffService<K> diff) {
     this.diff = diff;
   }
+
+  abstract K keyFromPath(DSID<Integer> dsid);
 
   @GET
   @Path("tree")
   @Produces(MediaType.TEXT_PLAIN)
-  public Reader diffTree(@PathParam("key") int key,
+  public Reader diffTree(@BeanParam DSIDValue<Integer> key,
                          @QueryParam("attempts") String attempts) throws IOException {
-    return diff.treeDiff(key, attempts);
+    return diff.treeDiff(keyFromPath(key), attempts);
   }
 
   @GET
   @Path("names")
   @Produces(MediaType.TEXT_PLAIN)
-  public Reader diffNames(@PathParam("key") int key,
+  public Reader diffNames(@BeanParam DSIDValue<Integer> key,
                           @QueryParam("attempts") String attempts) throws IOException {
-    return diff.namesDiff(key, attempts);
+    return diff.namesDiff(keyFromPath(key), attempts);
   }
 
   @GET
   @Path("ids")
-  public NamesDiff diffNameIds(@PathParam("key") int key,
+  public NamesDiff diffNameIds(@BeanParam DSIDValue<Integer> key,
                                @QueryParam("attempts") String attempts) throws IOException {
-    return diff.nameIdsDiff(key, attempts);
+    return diff.nameIdsDiff(keyFromPath(key), attempts);
   }
 
 }
