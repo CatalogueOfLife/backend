@@ -216,8 +216,8 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
     this.referenceIds = referenceIds;
   }
   
-  public SimpleName toSimpleName() {
-    SimpleName sn = new SimpleName(getId(), name.getScientificName(), name.getAuthorship(), name.getRank());
+  public SimpleNameLink toSimpleNameLink() {
+    SimpleNameLink sn = SimpleNameLink.of(getId(), name.getScientificName(), name.getAuthorship(), name.getRank());
     sn.setStatus(status);
     sn.setCode(name.getCode());
     sn.setParent(parentId);

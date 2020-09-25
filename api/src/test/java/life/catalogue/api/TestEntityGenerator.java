@@ -561,19 +561,19 @@ public class TestEntityGenerator {
     return rec;
   }
 
-  public static SimpleName newSimpleNameWithoutStatusParent() {
-    SimpleName sn = newSimpleName(RandomUtils.randomLatinString(5));
+  public static SimpleNameLink newSimpleNameWithoutStatusParent() {
+    SimpleNameLink sn = newSimpleName(RandomUtils.randomLatinString(5));
     sn.setStatus(null);
     sn.setParent(null);
     return sn;
   }
 
-  public static SimpleName newSimpleName() {
+  public static SimpleNameLink newSimpleName() {
     return newSimpleName(RandomUtils.randomLatinString(5));
   }
 
-  public static SimpleName newSimpleName(String id) {
-    SimpleName n = new SimpleName();
+  public static SimpleNameLink newSimpleName(String id) {
+    SimpleNameLink n = new SimpleNameLink();
     n.setId(id);
     n.setName(RandomUtils.randomSpecies());
     n.setAuthorship(RandomUtils.randomAuthorship().toString());

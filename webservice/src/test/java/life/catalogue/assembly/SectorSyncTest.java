@@ -75,8 +75,8 @@ public class SectorSyncTest {
       sector = new Sector();
       sector.setDatasetKey(Datasets.DRAFT_COL);
       sector.setSubjectDatasetKey(datasetKey);
-      sector.setSubject(new SimpleName("t2", "name", Rank.ORDER));
-      sector.setTarget(new SimpleName("cole", "Coleoptera", Rank.ORDER));
+      sector.setSubject(SimpleNameLink.of("t2", "name", Rank.ORDER));
+      sector.setTarget(SimpleNameLink.of("cole", "Coleoptera", Rank.ORDER));
       sector.setEntities(Set.of(EntityType.VERNACULAR, EntityType.DISTRIBUTION, EntityType.REFERENCE, EntityType.MEDIA));
       sector.applyUser(TestEntityGenerator.USER_EDITOR);
       session.getMapper(SectorMapper.class).create(sector);

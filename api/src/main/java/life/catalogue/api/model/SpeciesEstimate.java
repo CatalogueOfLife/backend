@@ -5,7 +5,7 @@ import life.catalogue.api.vocab.EstimateType;
 import java.util.Objects;
 
 public class SpeciesEstimate extends DatasetScopedEntity<Integer> {
-  private SimpleName target;
+  private SimpleNameLink target;
   private Integer estimate;
   private EstimateType type = EstimateType.SPECIES_LIVING;
   private String referenceId;
@@ -16,18 +16,18 @@ public class SpeciesEstimate extends DatasetScopedEntity<Integer> {
 
   public SpeciesEstimate(SpeciesEstimate other) {
     super(other);
-    this.target = new SimpleName(other.target);
+    this.target = SimpleNameLink.of(other.target);
     this.estimate = other.estimate;
     this.type = other.type;
     this.referenceId = other.referenceId;
     this.note = other.note;
   }
 
-  public SimpleName getTarget() {
+  public SimpleNameLink getTarget() {
     return target;
   }
   
-  public void setTarget(SimpleName target) {
+  public void setTarget(SimpleNameLink target) {
     this.target = target;
   }
   

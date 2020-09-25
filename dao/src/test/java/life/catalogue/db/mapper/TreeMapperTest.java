@@ -246,7 +246,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     SpeciesEstimate s = new SpeciesEstimate();
     s.setDatasetKey(DRAFT_COL);
     s.setEstimate(5678);
-    s.setTarget(new SimpleName(id, "Abies alba", Rank.SPECIES));
+    s.setTarget(SimpleNameLink.of(id, "Abies alba", Rank.SPECIES));
     s.applyUser(TestEntityGenerator.USER_USER);
     return s;
   }
@@ -299,8 +299,8 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     return nodes;
   }
   
-  static SimpleName nameref(String id) {
-    SimpleName nr = new SimpleName();
+  static SimpleNameLink nameref(String id) {
+    SimpleNameLink nr = new SimpleNameLink();
     nr.setId(id);
     return nr;
   }

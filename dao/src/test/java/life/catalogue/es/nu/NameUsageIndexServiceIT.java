@@ -1,11 +1,8 @@
 package life.catalogue.es.nu;
 
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.EditorialDecision;
+import life.catalogue.api.model.*;
 import life.catalogue.api.model.EditorialDecision.Mode;
-import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
@@ -73,7 +70,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     // Make 1st taxon the "subject" of an editorial decision
     Taxon edited = pgTaxa.get(0);
     EditorialDecision decision = new EditorialDecision();
-    decision.setSubject(SimpleName.of(edited));
+    decision.setSubject(SimpleNameLink.of(edited));
     decision.setMode(Mode.UPDATE);
     decision.setDatasetKey(Datasets.DRAFT_COL);
     decision.setSubjectDatasetKey(edited.getDatasetKey());
@@ -154,7 +151,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     // Make 1st taxon the "subject" of an editorial decision
     Taxon edited = pgTaxa.get(0);
     EditorialDecision decision = new EditorialDecision();
-    decision.setSubject(SimpleName.of(edited));
+    decision.setSubject(SimpleNameLink.of(edited));
     decision.setMode(Mode.UPDATE);
     decision.setDatasetKey(Datasets.DRAFT_COL);
     decision.setSubjectDatasetKey(edited.getDatasetKey());
@@ -172,7 +169,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     assertEquals(pgTaxa.get(0).getId(), res.getResult().get(0).getUsage().getId());
     decision.setId(key);
     // Change subject of the decision so now 2 taxa should be deleted first and then re-indexed.
-    decision.setSubject(SimpleName.of(pgTaxa.get(1)));
+    decision.setSubject(SimpleNameLink.of(pgTaxa.get(1)));
     dao.update(decision, edited.getCreatedBy());
 
     res = search(request);
@@ -190,7 +187,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     // Make 1st taxon the "subject" of an editorial decision
     Taxon edited = pgTaxa.get(2);
     EditorialDecision decision = new EditorialDecision();
-    decision.setSubject(SimpleName.of(edited));
+    decision.setSubject(SimpleNameLink.of(edited));
     decision.setMode(Mode.UPDATE);
     decision.setDatasetKey(Datasets.DRAFT_COL);
     decision.setSubjectDatasetKey(edited.getDatasetKey());
@@ -213,7 +210,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
 
   // Some JSON to send using the REST API
   void printDecision() {
-    SimpleName sn = new SimpleName("s1", "Larus Fuscus", Rank.SPECIES);
+    SimpleNameLink sn = SimpleNameLink.of("s1", "Larus Fuscus", Rank.SPECIES);
     EditorialDecision decision = new EditorialDecision();
     decision.setSubject(sn);
     decision.setMode(Mode.UPDATE);

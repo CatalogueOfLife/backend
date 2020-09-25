@@ -2,7 +2,7 @@ package life.catalogue.match;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
-import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.SimpleNameLink;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.NameDao;
@@ -55,12 +55,12 @@ public class SectorRematcherTest {
     final int datasetKey = 11;
 
     DSID<Integer> s1 = createSector(Sector.Mode.ATTACH, datasetKey,
-      new SimpleName(null, "Malus sylvestris", Rank.SPECIES),
-      new SimpleName(null, "Coleoptera", Rank.ORDER)
+      SimpleNameLink.of("Malus sylvestris", Rank.SPECIES),
+      SimpleNameLink.of("Coleoptera", Rank.ORDER)
     );
     DSID<Integer> s2 = createSector(Sector.Mode.UNION, datasetKey,
-      new SimpleName(null, "Larus fuscus", Rank.SPECIES),
-      new SimpleName(null, "Lepidoptera", Rank.ORDER)
+      SimpleNameLink.of("Larus fuscus", Rank.SPECIES),
+      SimpleNameLink.of("Lepidoptera", Rank.ORDER)
     );
 
     SectorRematchRequest req = new SectorRematchRequest(Datasets.DRAFT_COL, false);
@@ -98,7 +98,7 @@ public class SectorRematcherTest {
     }
   }
 
-  static DSID<Integer> createSector(Sector.Mode mode, int datasetKey, SimpleName src, SimpleName target) {
+  static DSID<Integer> createSector(Sector.Mode mode, int datasetKey, SimpleNameLink src, SimpleNameLink target) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       Sector sector = new Sector();
       sector.setMode(mode);

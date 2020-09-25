@@ -2,10 +2,7 @@ package life.catalogue.assembly;
 
 import com.codahale.metrics.MetricRegistry;
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.RequestScope;
-import life.catalogue.api.model.Sector;
-import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.DatasetImportDao;
@@ -51,8 +48,8 @@ public class AssemblyCoordinatorTest {
     Sector sector = new Sector();
     sector.setDatasetKey(Datasets.DRAFT_COL);
     sector.setMode(Sector.Mode.ATTACH);
-    sector.setSubject(new SimpleName("7", "Insecta", Rank.CLASS));
-    sector.setTarget(new SimpleName("123", "Arthropoda", Rank.PHYLUM));
+    sector.setSubject(SimpleNameLink.of("7", "Insecta", Rank.CLASS));
+    sector.setTarget(SimpleNameLink.of("123", "Arthropoda", Rank.PHYLUM));
     sector.applyUser(TestEntityGenerator.USER_EDITOR);
 
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
@@ -74,8 +71,8 @@ public class AssemblyCoordinatorTest {
     Sector sector = new Sector();
     sector.setMode(Sector.Mode.ATTACH);
     sector.setDatasetKey(Datasets.DRAFT_COL);
-    sector.setSubject(new SimpleName("7", "Insecta", Rank.CLASS));
-    sector.setTarget(new SimpleName("123", "Arthropoda", Rank.PHYLUM));
+    sector.setSubject(SimpleNameLink.of("7", "Insecta", Rank.CLASS));
+    sector.setTarget(SimpleNameLink.of("123", "Arthropoda", Rank.PHYLUM));
     sector.applyUser(TestEntityGenerator.USER_EDITOR);
     
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {

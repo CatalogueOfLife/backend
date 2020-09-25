@@ -1,14 +1,13 @@
 package life.catalogue.assembly;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Sector;
-import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.SimpleNameLink;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static life.catalogue.api.model.Sector.Mode;
 
@@ -37,7 +36,7 @@ public class AssemblyCoordinatorOrderTest {
     }
   }
   
-  static Sector sec(Mode mode, SimpleName sn) {
+  static Sector sec(Mode mode, SimpleNameLink sn) {
     Sector sector = new Sector();
     sector.setMode(mode);
     sector.setTarget(sn);
@@ -46,8 +45,8 @@ public class AssemblyCoordinatorOrderTest {
     return sector;
   }
   
-  static SimpleName sn(Rank rank, String name, String author) {
-    return new SimpleName(null, name, author, rank);
+  static SimpleNameLink sn(Rank rank, String name, String author) {
+    return SimpleNameLink.of(name, author, rank);
   }
   
 }

@@ -17,11 +17,13 @@
     s.subject_code,
     s.subject_status,
     s.subject_parent,
+    ts.id IS NULL AS subject_broken,
     s.target_id,
     s.target_name,
     s.target_authorship,
     s.target_rank,
     s.target_code,
+    tt.id IS NULL AS target_broken,
     s.mode,
     s.code,
     s.placeholder_rank,
@@ -92,15 +94,14 @@
   </sql>
 
   <sql id="FROM">
-    sector s LEFT JOIN sector_import si ON s.id=si.sector_key AND s.dataset_key=si.dataset_key AND s.sync_attempt=si.attempt
+    sector s
+    LEFT JOIN sector_import si ON s.id=si.sector_key AND s.dataset_key=si.dataset_key AND s.sync_attempt=si.attempt
+    LEFT JOIN name_usage tt ON tt.id=s.target_id AND tt.dataset_key=s.dataset_key
+    LEFT JOIN name_usage ts ON ts.id=s.subject_id AND ts.dataset_key=s.subject_dataset_key
   </sql>
 
   <sql id="WHERE">
     <if test="req != null">
-      <if test="req.broken">
-        LEFT JOIN name_usage tt ON tt.id=s.target_id AND tt.dataset_key=s.dataset_key
-        LEFT JOIN name_usage ts ON ts.id=s.subject_id AND ts.dataset_key=s.subject_dataset_key
-      </if>
       <where>
         <if test="req.broken">
           (tt.id IS NULL OR ts.id IS NULL)
@@ -143,15 +144,15 @@
     <id property="id" column="id"/>
     <result property="ranks" column="ranks" typeHandler="life.catalogue.db.type2.RankSetTypeHandler"/>
     <result property="entities" column="entities" typeHandler="life.catalogue.db.type2.EntitySetTypeHandler"/>
-    <association property="subject" javaType="SimpleName" autoMapping="true" columnPrefix="subject_"/>
-    <association property="target" javaType="SimpleName" autoMapping="true" columnPrefix="target_"/>
+    <association property="subject" javaType="SimpleNameLink" autoMapping="true" columnPrefix="subject_"/>
+    <association property="target" javaType="SimpleNameLink" autoMapping="true" columnPrefix="target_"/>
   </resultMap>
 
 
   <select id="get" resultMap="sectorResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE id = #{key.id} AND s.dataset_key = #{key.datasetKey}
+    WHERE s.id = #{key.id} AND s.dataset_key = #{key.datasetKey}
   </select>
 
   <select id="getBySubject" resultMap="sectorResultMap">

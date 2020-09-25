@@ -111,15 +111,16 @@ public class SectorSyncIT {
     return (Taxon) getByName(Datasets.DRAFT_COL, src.getName().getRank(), src.getName().getScientificName());
   }
 
-  private static SimpleName simple(NameUsageBase nu) {
-    return new SimpleName(nu.getId(), nu.getName().getLabel(), nu.getName().getRank());
+  private static SimpleNameLink simple(NameUsageBase nu) {
+    return nu.toSimpleNameLink();
+    //return new SimpleName(nu.getId(), nu.getName().getLabel(), nu.getName().getRank());
   }
   
   public static DSID<Integer> createSector(Sector.Mode mode, NameUsageBase src, NameUsageBase target) {
     return createSector(mode, src.getDatasetKey(), simple(src), simple(target));
   }
 
-  public static DSID<Integer> createSector(Sector.Mode mode, int datasetKey, SimpleName src, SimpleName target) {
+  public static DSID<Integer> createSector(Sector.Mode mode, int datasetKey, SimpleNameLink src, SimpleNameLink target) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       Sector sector = new Sector();
       sector.setMode(mode);
@@ -134,7 +135,7 @@ public class SectorSyncIT {
     }
   }
 
-  public static EditorialDecision createDecision(int datasetKey, SimpleName src, EditorialDecision.Mode mode, Name name) {
+  public static EditorialDecision createDecision(int datasetKey, SimpleNameLink src, EditorialDecision.Mode mode, Name name) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       EditorialDecision ed = new EditorialDecision();
       ed.setMode(mode);
@@ -318,7 +319,7 @@ public class SectorSyncIT {
     src = getByName(datasetKey(11, DataFormat.ACEF), Rank.GENUS, "Dectus");
     // target without id so far
     final DSID<Integer> s2 = DSID.copy(createSector(Sector.Mode.ATTACH, src.getDatasetKey(), simple(src),
-        new SimpleName(null, "Theridiidae", Rank.FAMILY)
+      SimpleNameLink.of("Theridiidae", Rank.FAMILY)
     ));
   
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
@@ -368,7 +369,7 @@ public class SectorSyncIT {
     src = getByName(datasetKey(11, DataFormat.ACEF), Rank.GENUS, "Dectus");
     // target without id so far
     final DSID<Integer> s11 = createSector(Sector.Mode.ATTACH, src.getDatasetKey(), simple(src),
-        new SimpleName(null, "Theridiidae", Rank.FAMILY)
+      SimpleNameLink.of("Theridiidae", Rank.FAMILY)
     );
     
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
@@ -416,7 +417,7 @@ public class SectorSyncIT {
     src = getByName(datasetKey(11, DataFormat.ACEF), Rank.GENUS, "Dectus");
     // target without id so far
     final DSID<Integer> s11 = createSector(Sector.Mode.ATTACH, src.getDatasetKey(), simple(src),
-      new SimpleName(null, "Theridiidae", Rank.FAMILY)
+      SimpleNameLink.of("Theridiidae", Rank.FAMILY)
     );
 
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {

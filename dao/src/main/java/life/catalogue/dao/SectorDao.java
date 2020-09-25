@@ -71,13 +71,13 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       if (subject == null) {
         throw new IllegalArgumentException("subject ID " + s.getSubject().getId() + " not existing in dataset " + s.getSubjectDatasetKey());
       }
-      s.setSubject(subject.toSimpleName());
+      s.setSubject(subject.toSimpleNameLink());
 
       Taxon target  = tm.get(s.getTargetAsDSID());
       if (target == null) {
         throw new IllegalArgumentException("target ID " + s.getTarget().getId() + " not existing in catalogue " + s.getDatasetKey());
       }
-      s.setTarget(target.toSimpleName());
+      s.setTarget(target.toSimpleNameLink());
       
       
       // creates sector key

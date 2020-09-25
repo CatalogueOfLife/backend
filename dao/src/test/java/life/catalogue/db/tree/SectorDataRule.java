@@ -60,10 +60,10 @@ public class SectorDataRule extends ExternalResource implements AutoCloseable {
     s.setMode(mode);
 
     s.setSubjectDatasetKey(subject.getDatasetKey());
-    s.setSubject(SimpleName.of(subject));
+    s.setSubject(SimpleNameLink.of(subject));
 
     s.setDatasetKey(target.getDatasetKey());
-    s.setTarget(SimpleName.of(target));
+    s.setTarget(SimpleNameLink.of(target));
 
     if (extinct != null) {
       s.setNote(extinct.toString());

@@ -31,6 +31,7 @@
   </sql>
 
   <sql id="SELECT">
+    t.id IS NULL AS subject_broken,
     <include refid="life.catalogue.db.mapper.DecisionMapper.SelectVar">
       <property name="alias" value="ed."/>
       <property name="prefix" value=""/>
@@ -84,11 +85,15 @@
     #{environments, typeHandler=life.catalogue.db.type.EnvironmentSetTypeHandler}
   </sql>
 
+  <sql id="JOIN_USAGE">
+    LEFT JOIN name_usage t ON t.dataset_key=ed.subject_dataset_key AND t.id=ed.subject_id
+  </sql>
+  <sql id="FROM">
+    decision ed <include refid="JOIN_USAGE"/>
+  </sql>
+
   <sql id="WHERE">
     <if test="req != null">
-      <if test="req.broken">
-        LEFT JOIN name_usage t ON t.dataset_key=ed.subject_dataset_key AND t.id=ed.subject_id
-      </if>
       <where>
         <if test="req.broken">
           t.id IS NULL
@@ -123,14 +128,14 @@
     <id property="id" column="id"/>
     <result property="name" column="name" typeHandler="life.catalogue.db.type2.JsonNameHandler"/>
     <result property="environments" column="environments" typeHandler="life.catalogue.db.type.EnvironmentSetTypeHandler"/>
-    <association property="subject" javaType="SimpleName" autoMapping="true" columnPrefix="subject_"/>
+    <association property="subject" javaType="SimpleNameLink" autoMapping="true" columnPrefix="subject_"/>
   </resultMap>
 
 
   <select id="list" resultMap="decisionResultMap">
     SELECT
     <include refid="SELECT"/>
-    FROM decision ed
+    FROM <include refid="FROM"/>
     WHERE ed.dataset_key = #{datasetKey}
     ORDER BY ed.id
     <include refid="life.catalogue.db.Common.limit"/>
@@ -145,13 +150,16 @@
   <select id="countSearch" resultType="integer">
     SELECT count(*)
     FROM decision ed
+    <if test="req.broken">
+      <include refid="JOIN_USAGE"/>
+    </if>
     <include refid="WHERE"/>
   </select>
 
   <select id="search" resultMap="decisionResultMap">
     SELECT
     <include refid="SELECT"/>
-    FROM decision ed
+    FROM <include refid="FROM"/>
     <include refid="WHERE"/>
     ORDER BY ed.id desc
     <include refid="life.catalogue.db.Common.limit"/>
@@ -160,7 +168,7 @@
   <select id="processSearch" resultMap="decisionResultMap">
     SELECT
     <include refid="SELECT"/>
-    FROM decision ed
+    FROM <include refid="FROM"/>
     <include refid="WHERE"/>
     ORDER BY ed.id desc
   </select>
@@ -168,14 +176,14 @@
   <select id="get" resultMap="decisionResultMap">
     SELECT
     <include refid="SELECT"/>
-    FROM decision ed
-    WHERE id = #{key.id} AND dataset_key=#{key.datasetKey}
+    FROM <include refid="FROM"/>
+    WHERE ed.id = #{key.id} AND ed.dataset_key=#{key.datasetKey}
   </select>
 
   <select id="getBySubject" resultMap="decisionResultMap">
     SELECT
     <include refid="SELECT"/>
-    FROM decision ed
+    FROM <include refid="FROM"/>
     WHERE ed.subject_dataset_key = #{subjectDatasetKey}
     AND ed.dataset_key = #{datasetKey}
     AND ed.subject_id = #{id}
@@ -204,15 +212,15 @@
   <select id="processDataset" parameterType="map" resultMap="decisionResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT
     <include refid="SELECT"/>
-    FROM decision ed
-    WHERE dataset_key=#{datasetKey}
+    FROM <include refid="FROM"/>
+    WHERE ed.dataset_key=#{datasetKey}
   </select>
 
   <select id="processDecisions" parameterType="map" resultMap="decisionResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT
     <include refid="SELECT"/>
-    FROM decision ed
-    WHERE subject_dataset_key = #{subjectDatasetKey} AND dataset_key = #{datasetKey}
+    FROM <include refid="FROM"/>
+    WHERE ed.subject_dataset_key = #{subjectDatasetKey} AND ed.dataset_key = #{datasetKey}
   </select>
 
   <insert id="copyDataset" parameterType="map">

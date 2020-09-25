@@ -47,6 +47,7 @@ public class EstimateMapperTest extends BaseDecisionMapperTest<SpeciesEstimate, 
   SpeciesEstimate removeDbCreatedProps(SpeciesEstimate obj) {
     obj.setCreated(null);
     obj.setModified(null);
+    obj.getTarget().setBroken(false);
     return obj;
   }
   

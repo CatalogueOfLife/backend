@@ -18,7 +18,7 @@ import java.util.Set;
  * Otherwise all non null values from status or name should be applied to the underlying subject.
  */
 public class EditorialDecision extends DatasetScopedEntity<Integer> {
-  private SimpleName subject;
+  private SimpleNameLink subject;
   private String originalSubjectId;
   private Integer subjectDatasetKey; // the datasetKey the subject belongs to, not the catalogue!
   private Mode mode;
@@ -61,7 +61,7 @@ public class EditorialDecision extends DatasetScopedEntity<Integer> {
 
   public EditorialDecision(EditorialDecision other) {
     super(other);
-    this.subject = new SimpleName(other.subject);
+    this.subject = SimpleNameLink.of(other.subject);
     this.originalSubjectId = other.originalSubjectId;
     this.subjectDatasetKey = other.subjectDatasetKey;
     this.mode = other.mode;
@@ -74,11 +74,11 @@ public class EditorialDecision extends DatasetScopedEntity<Integer> {
     this.note = other.note;
   }
 
-  public SimpleName getSubject() {
+  public SimpleNameLink getSubject() {
     return subject;
   }
   
-  public void setSubject(SimpleName subject) {
+  public void setSubject(SimpleNameLink subject) {
     this.subject = subject;
   }
 

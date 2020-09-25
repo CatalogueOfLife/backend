@@ -1,20 +1,20 @@
 package life.catalogue.dao;
 
-import java.sql.Connection;
-import java.sql.Statement;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.TestDataRule;
+import life.catalogue.db.mapper.SectorMapper;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.sql.Connection;
+import java.sql.Statement;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 import static life.catalogue.api.TestEntityGenerator.NAME4;
 import static life.catalogue.api.vocab.Datasets.DRAFT_COL;
@@ -86,7 +86,7 @@ public class NameUsageProcessorTest extends DaoTestBase {
     Sector s = TestEntityGenerator.setUserDate(new Sector());
     s.setDatasetKey(DRAFT_COL);
     s.setSubjectDatasetKey(DRAFT_COL);
-    s.setTarget(new SimpleName("t2", null, null));
+    s.setTarget(SimpleNameLink.of("t2"));
     sm.create(s);
     
     // we update the sector key of a few usages so we mock a sync

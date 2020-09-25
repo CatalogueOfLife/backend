@@ -23,6 +23,7 @@
   </sql>
 
   <sql id="SELECT">
+    t.id IS NULL AS target_broken,
     <include refid="life.catalogue.db.mapper.EstimateMapper.SelectVar">
       <property name="alias" value="est."/>
       <property name="prefix" value=""/>
@@ -63,15 +64,16 @@
     #{referenceId}
   </sql>
 
+  <sql id="JOIN_USAGE">
+    LEFT JOIN name_usage t ON t.dataset_key=est.dataset_key AND t.id=est.target_id
+  </sql>
+
   <sql id="FROM">
-    estimate est
+    estimate est <include refid="JOIN_USAGE"/>
   </sql>
 
   <sql id="WHERE">
     <if test="req != null">
-      <if test="req.broken">
-        LEFT JOIN name_usage t ON t.dataset_key=est.dataset_key AND t.id=est.target_id
-      </if>
       <where>
         <if test="req.broken">
           t.id IS NULL
@@ -104,25 +106,21 @@
 
   <resultMap id="estimateResultMap" type="SpeciesEstimate" autoMapping="true">
     <id property="id" column="id"/>
-    <association property="target" javaType="SimpleName" autoMapping="true" columnPrefix="target_"/>
+    <association property="target" javaType="SimpleNameLink" autoMapping="true" columnPrefix="target_"/>
   </resultMap>
 
 
   <select id="list" resultMap="estimateResultMap">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     ORDER BY est.id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="get" resultMap="estimateResultMap">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
-    WHERE id = #{key.id} AND dataset_key=#{key.datasetKey}
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE est.id = #{key.id} AND est.dataset_key=#{key.datasetKey}
   </select>
 
   <insert id="create" parameterType="SpeciesEstimate" useGeneratedKeys="true" keyProperty="id">
@@ -154,43 +152,38 @@
 
   <select id="count" resultType="integer">
     SELECT count(*)
-    FROM
-    <include refid="FROM"/>
-    WHERE dataset_key=#{datasetKey}
+    FROM estimate est
+    WHERE est.dataset_key=#{datasetKey}
   </select>
 
   <select id="search" resultMap="estimateResultMap">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     <include refid="WHERE"/>
     ORDER BY est.target_rank, est.target_name
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="processSearch" resultMap="estimateResultMap">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     <include refid="WHERE"/>
     ORDER BY est.target_rank, est.target_name
   </select>
 
   <select id="countSearch" resultType="int">
     SELECT count(*)
-    FROM
-    <include refid="FROM"/>
+    FROM <include refid="FROM"/>
+    <if test="req.broken">
+      <include refid="JOIN_USAGE"/>
+    </if>
     <include refid="WHERE"/>
   </select>
 
   <select id="processDataset" parameterType="map" resultMap="estimateResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
-    WHERE dataset_key=#{datasetKey}
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE est.dataset_key=#{datasetKey}
   </select>
 
 </mapper>

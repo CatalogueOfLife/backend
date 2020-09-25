@@ -2,7 +2,7 @@ package life.catalogue.match;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.EditorialDecision;
-import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.SimpleNameLink;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.DecisionDao;
@@ -41,13 +41,13 @@ public class DecisionRematcherTest {
     final int datasetKey = 11;
 
     DSID<Integer> d1 = createDecision(datasetKey,
-      new SimpleName("xyz", "Larus fuscus", Rank.SPECIES)
+      SimpleNameLink.of("xyz", "Larus fuscus", Rank.SPECIES)
     );
     DSID<Integer> d2 = createDecision(datasetKey,
-      new SimpleName(null, "Larus fuscus", Rank.SPECIES)
+      SimpleNameLink.of(null, "Larus fuscus", Rank.SPECIES)
     );
     DSID<Integer> d3 = createDecision(datasetKey,
-      new SimpleName("null", "Larus", Rank.GENUS)
+      SimpleNameLink.of("null", "Larus", Rank.GENUS)
     );
 
     DecisionDao dao = new DecisionDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
@@ -87,7 +87,7 @@ public class DecisionRematcherTest {
     }
   }
 
-  static DSID<Integer> createDecision(int datasetKey, SimpleName src) {
+  static DSID<Integer> createDecision(int datasetKey, SimpleNameLink src) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       EditorialDecision d = new EditorialDecision();
       d.setMode(EditorialDecision.Mode.BLOCK);

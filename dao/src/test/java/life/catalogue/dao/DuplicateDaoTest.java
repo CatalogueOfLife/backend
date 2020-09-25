@@ -75,7 +75,7 @@ public class DuplicateDaoTest {
     EditorialDecision d = new EditorialDecision();
     d.setDatasetKey(Datasets.DRAFT_COL);
     d.setSubjectDatasetKey(datasetKey);
-    d.setSubject(new SimpleName(id, "Nana", rank));
+    d.setSubject(SimpleNameLink.of(id, "Nana", rank));
     d.setMode(EditorialDecision.Mode.BLOCK);
     d.applyUser(TestEntityGenerator.USER_EDITOR);
     dm.create(d);

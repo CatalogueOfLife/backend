@@ -2,7 +2,7 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
-import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.SimpleNameLink;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.SectorMapper;
 import org.apache.ibatis.session.SqlSession;
@@ -26,8 +26,8 @@ public class FileMetricsSectorDaoTest extends FileMetricsDaoTestBase<DSID<Intege
       Sector s = new Sector();
       s.setKey(key);
       s.setSubjectDatasetKey(11);
-      s.setSubject(SimpleName.of("t1", "t1", "", null));
-      s.setTarget(SimpleName.of("t1", "t1", "", null));
+      s.setSubject(SimpleNameLink.of("t1", "t1", "", null));
+      s.setTarget(SimpleNameLink.of("t1", "t1", "", null));
       s.applyUser(TestDataRule.TEST_USER);
       sm.create(s);
 

@@ -178,6 +178,8 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
   Sector removeDbCreatedProps(Sector s) {
     // remove newly set property
     s.setOriginalSubjectId(null);
+    s.getTarget().setBroken(false);
+    s.getSubject().setBroken(false);
     return s;
   }
   

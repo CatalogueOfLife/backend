@@ -56,9 +56,9 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
     SectorMapper sm = mapper(SectorMapper.class);
     Sector s = new Sector();
     s.setSubjectDatasetKey(TAXON2.getDatasetKey());
-    s.setSubject(TAXON2.toSimpleName());
+    s.setSubject(TAXON2.toSimpleNameLink());
     s.setDatasetKey(d.getKey());
-    s.setTarget(t.toSimpleName());
+    s.setTarget(t.toSimpleNameLink());
     s.applyUser(TestEntityGenerator.USER_USER);
     sm.create(s);
 

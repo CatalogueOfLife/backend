@@ -22,9 +22,9 @@ import java.util.Set;
  * A sector can be really small and the subject even be a species, but usually it is some higher taxon.
  */
 public class Sector extends DatasetScopedEntity<Integer> {
-  private SimpleName target;
+  private SimpleNameLink target;
   private Integer subjectDatasetKey; // the datasetKey the subject belongs to, not the catalogue!
-  private SimpleName subject;
+  private SimpleNameLink subject;
   private String originalSubjectId;
   private Mode mode = Sector.Mode.ATTACH;
   private Integer syncAttempt;
@@ -61,9 +61,9 @@ public class Sector extends DatasetScopedEntity<Integer> {
 
   public Sector(Sector other) {
     super(other);
-    this.target = new SimpleName(other.target);
+    this.target = SimpleNameLink.of(other.target);
     this.subjectDatasetKey = other.subjectDatasetKey;
-    this.subject = new SimpleName(other.subject);
+    this.subject = SimpleNameLink.of(other.subject);
     this.originalSubjectId = other.originalSubjectId;
     this.mode = other.mode;
     this.syncAttempt = other.syncAttempt;
@@ -84,11 +84,11 @@ public class Sector extends DatasetScopedEntity<Integer> {
     this.subjectDatasetKey = subjectDatasetKey;
   }
   
-  public SimpleName getSubject() {
+  public SimpleNameLink getSubject() {
     return subject;
   }
   
-  public void setSubject(SimpleName subject) {
+  public void setSubject(SimpleNameLink subject) {
     this.subject = subject;
   }
 
@@ -156,11 +156,11 @@ public class Sector extends DatasetScopedEntity<Integer> {
   /**
    * The attachment point in the CoL tree, i.e. the CoL parent taxon for the sector root
    */
-  public SimpleName getTarget() {
+  public SimpleNameLink getTarget() {
     return target;
   }
   
-  public void setTarget(SimpleName target) {
+  public void setTarget(SimpleNameLink target) {
     this.target = target;
   }
 
