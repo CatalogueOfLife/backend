@@ -1,12 +1,5 @@
 package life.catalogue.dw.auth;
 
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.UUID;
-
-import javax.crypto.SecretKey;
-
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
@@ -15,9 +8,15 @@ import life.catalogue.common.date.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.UUID;
+
 public class JwtCodec {
   private static final Logger LOG = LoggerFactory.getLogger(JwtCodec.class);
-  private static final int EXPIRE_IN_HOURS = 24;
+  private static final int EXPIRE_IN_HOURS = 24*7;
   private static final String ISSUER = "CoL";
   private final SecretKey key;
   private final JwtParser parser;
