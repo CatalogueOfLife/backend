@@ -4,12 +4,17 @@ import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.text.SimpleTemplate;
 import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.db.mapper.*;
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.DatasetPatchMapper;
+import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.ProjectSourceMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
+import life.catalogue.matching.NameIndex;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
@@ -23,19 +28,24 @@ public class ProjectRelease extends AbstractProjectCopy {
   private static final String DEFAULT_CITATION_TEMPLATE = "{citation} released on {date}";
 
   private final ImageService imageService;
+  private final NameIndex nameIndex;
 
-  ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, ImageService imageService,
+  ProjectRelease(SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService, DatasetImportDao diDao, ImageService imageService,
                  int datasetKey, Dataset release, int userKey) {
-    super("releasing", factory, diDao, indexService, userKey, datasetKey, release);
+    super("releasing", factory, diDao, indexService, userKey, datasetKey, release, true);
     this.imageService = imageService;
+    this.nameIndex = nameIndex;
   }
 
   @Override
   void prepWork() throws Exception {
     // map ids
     updateState(ImportState.MATCHING);
-    mapIds();
+    matchUnmatchedNames();
+    new StableIdProvider(datasetKey, metrics.getAttempt(), factory).run();
+
     // archive dataset metadata & logos
+    updateState(ImportState.ARCHIVING);
     try (SqlSession session = factory.openSession(true)) {
       ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
       DatasetPatchMapper dpm = session.getMapper(DatasetPatchMapper.class);
@@ -63,6 +73,29 @@ public class ProjectRelease extends AbstractProjectCopy {
     // create new dataset "import" metrics in mother project
     updateState(ImportState.ANALYZING);
     metrics();
+  }
+
+  /**
+   * Makes sure all names are matched to the names index.
+   * When syncing names from other sources the names index match is carried over
+   * so there should really not be any name without a match.
+   * We still make sure here that at least there is no such case in releases.
+   */
+  private void matchUnmatchedNames() {
+    try (SqlSession session = factory.openSession(false)) {
+      AtomicInteger counter = new AtomicInteger();
+      NameMapper nm = session.getMapper(NameMapper.class);
+      nm.processUnmatched(datasetKey).forEach(n -> {
+        if (n.getNameIndexMatchType() == null || n.getNameIndexMatchType() == MatchType.NONE || n.getNameIndexIds().isEmpty()) {
+          NameMatch match = nameIndex.match(n, true, false);
+          nm.updateMatch(datasetKey, n.getId(), match.getNameIds(), match.getType());
+          if (counter.getAndIncrement() % 1000 == 0) {
+            session.commit();
+          }
+        }
+      });
+      session.commit();
+    }
   }
 
   private void metrics() {
@@ -126,10 +159,4 @@ public class ProjectRelease extends AbstractProjectCopy {
       .append(". Digital resource at www.catalogueoflife.org/col. Species 2000: Naturalis, Leiden, the Netherlands. ISSN 2405-8858.");
     return sb.toString();
   }
-
-  private void mapIds() {
-    LOG.info("Map IDs");
-    //TODO: match & generate ids
-  }
-
 }

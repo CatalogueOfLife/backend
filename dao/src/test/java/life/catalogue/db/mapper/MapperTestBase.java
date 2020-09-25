@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
 public abstract class MapperTestBase<M> {
   
   private final Class<M> mapperClazz;
-  
+
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
   
@@ -34,7 +34,7 @@ public abstract class MapperTestBase<M> {
   
   @Rule
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
-  
+
   public MapperTestBase() {
     this(null, TestDataRule.empty());
   }
@@ -42,7 +42,7 @@ public abstract class MapperTestBase<M> {
   public MapperTestBase(Class<M> mapperClazz) {
     this(mapperClazz, TestDataRule.apple());
   }
-  
+
   public MapperTestBase(Class<M> mapperClazz, TestDataRule testDataRule) {
     this.mapperClazz = mapperClazz;
     this.testDataRule = testDataRule;

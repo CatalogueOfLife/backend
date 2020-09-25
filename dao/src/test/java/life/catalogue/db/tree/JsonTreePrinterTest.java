@@ -26,7 +26,7 @@ public class JsonTreePrinterTest {
   @Test
   public void print() throws IOException {
     Writer writer = new StringWriter();
-    int count = JsonTreePrinter.dataset(TestDataRule.TestData.TREE.key, PgSetupRule.getSqlSessionFactory(), writer).print();
+    int count = JsonTreePrinter.dataset(TestDataRule.TREE.key, PgSetupRule.getSqlSessionFactory(), writer).print();
     assertEquals(24, count);
     System.out.println(writer.toString());
     String expected = IOUtils.toString(Resources.stream("trees/tree.json"), StandardCharsets.UTF_8);

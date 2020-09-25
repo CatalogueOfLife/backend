@@ -23,8 +23,10 @@ import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.postgresql.jdbc.PgConnection;
 
 import java.io.File;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -50,6 +52,17 @@ public class NameIndexImplTest {
     }
   }
 
+  void updateNamesIndexSequence() throws SQLException {
+    int max = 1;
+    for (IndexName n : ni.all()) {
+      if (n.getKey() > max) {
+        max = n.getKey();
+      }
+    }
+    try (PgConnection c = PgSetupRule.getCfg().connect()) {
+      c.execSQLQuery("SELECT setval('names_index_id_seq', "+ (max+1)+ ")");
+    }
+  }
 
   void addTestNames() throws Exception {
     List.of(
@@ -86,16 +99,17 @@ public class NameIndexImplTest {
     ).forEach(n -> {
       ni.add(n);
     });
+    updateNamesIndexSequence();
     assertEquals(22, ni.size());
   }
 
-  void addApples(boolean persist) {
+  void addApples(boolean persist) throws SQLException {
     try (SqlSession s = PgSetupRule.getSqlSessionFactory().openSession()) {
       NameMapper nm = s.getMapper(NameMapper.class);
       NamesIndexMapper nim = s.getMapper(NamesIndexMapper.class);
       // add all apple records to names index
       AtomicInteger counter = new AtomicInteger(1);
-      nm.processDataset(TestDataRule.TestData.APPLE.key).forEach(n -> {
+      nm.processDataset(TestDataRule.APPLE.key).forEach(n -> {
         IndexName in = new IndexName(n);
         in.setKey(counter.getAndIncrement());
         if (persist) {
@@ -106,6 +120,7 @@ public class NameIndexImplTest {
       if (persist) {
         s.commit();
       }
+      updateNamesIndexSequence();
     }
     assertEquals(5, ni.size());
   }
@@ -295,7 +310,8 @@ public class NameIndexImplTest {
         name(10, "Zyras bangae (Cameron, 1926)", Rank.SPECIES, NomCode.ZOOLOGICAL)
     );
     ni.addAll(names);
-  
+    updateNamesIndexSequence();
+
     assertEquals(10, ni.size());
   
     assertMatch(5, "Drusilla zyrasoides", Rank.SPECIES, null);

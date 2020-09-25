@@ -32,13 +32,17 @@ public abstract class AbstractProjectCopy implements Runnable {
   protected final String actionName;
   protected final int newDatasetKey;
   private final DatasetOrigin newDatasetOrigin;
+  protected final boolean mapIds;
 
-  public AbstractProjectCopy(String actionName, SqlSessionFactory factory, DatasetImportDao diDao, NameUsageIndexService indexService, int userKey, int datasetKey, Dataset newDataset) {
+
+  public AbstractProjectCopy(String actionName, SqlSessionFactory factory, DatasetImportDao diDao, NameUsageIndexService indexService,
+                             int userKey, int datasetKey, Dataset newDataset, boolean mapIds) {
     this.actionName = actionName;
     this.factory = factory;
     this.diDao = diDao;
     this.indexService = indexService;
     this.user = userKey;
+    this.mapIds = mapIds;
     this.datasetKey = datasetKey;
     metrics = diDao.createWaiting(datasetKey, this, userKey);
     metrics.setJob(getClass().getSimpleName());
@@ -77,6 +81,15 @@ public abstract class AbstractProjectCopy implements Runnable {
       if (newDatasetOrigin == DatasetOrigin.MANAGED) {
         Partitioner.createManagedSequences(factory, newDatasetKey);
       }
+      // is an id mapping table needed?
+      if (mapIds) {
+        LOG.info("Create id mapping tables for project {}", datasetKey);
+        try (SqlSession session = factory.openSession(true)) {
+          DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
+          DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.createIdMapTable(t, datasetKey));
+        }
+      }
+
       prepWork();
 
       // copy data
@@ -84,7 +97,7 @@ public abstract class AbstractProjectCopy implements Runnable {
 
       // build indices and attach partition
       Partitioner.indexAndAttach(factory, newDatasetKey);
-      Partitioner.createUsageCounter(factory, newDatasetKey);
+      Partitioner.createManagedObjects(factory, newDatasetKey);
 
       // subclass specifics
       finalWork();
@@ -115,6 +128,16 @@ public abstract class AbstractProjectCopy implements Runnable {
       }
 
     } finally {
+      if (mapIds) {
+        LOG.info("Remove id mapping tables for project {}", datasetKey);
+        try (SqlSession session = factory.openSession(true)) {
+          DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
+          DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.deleteTable(t, datasetKey));
+        } catch (Exception e) {
+          // avoid any excpetions as it would bring down the finally block
+          LOG.error("Failed to remove id mapping tables for project {}", datasetKey, e);
+        }
+      }
       ReleaseManager.releaseLock();
       LoggingUtils.removeDatasetMDC();
     }
@@ -158,7 +181,7 @@ public abstract class AbstractProjectCopy implements Runnable {
   }
 
   private <M extends CopyDataset> void copyTable(Class entity, Class<M> mapperClass, SqlSession session){
-    int count = session.getMapper(mapperClass).copyDataset(datasetKey, newDatasetKey);
+    int count = session.getMapper(mapperClass).copyDataset(datasetKey, newDatasetKey, mapIds);
     LOG.info("Copied {} {}s", count, entity.getSimpleName());
   }
 

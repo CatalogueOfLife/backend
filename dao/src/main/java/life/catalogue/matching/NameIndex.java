@@ -1,9 +1,9 @@
 package life.catalogue.matching;
 
-import io.dropwizard.lifecycle.Managed;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
+import life.catalogue.common.Managed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +22,14 @@ public interface NameIndex extends Managed, AutoCloseable {
    * @return a match which is never null, but might have a usageKey=null if nothing could be matched
    */
   NameMatch match(Name name, boolean allowInserts, boolean verbose);
-  
+
+  /**
+   * Lookup IndexName by its key
+   */
+  IndexName get(Integer key);
+
+  Iterable<IndexName> all();
+
   /**
    * @return the number of names in the index
    */

@@ -84,7 +84,7 @@ public class ImportJobIT {
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     indexService = NameUsageIndexService.passThru();
-    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), indexService);
+    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru());
     TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, indexService);
     sDao = new SectorDao(PgSetupRule.getSqlSessionFactory(), indexService, tDao);
 

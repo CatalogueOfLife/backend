@@ -14,6 +14,7 @@ import life.catalogue.dao.TaxonDao;
 import life.catalogue.es.*;
 import life.catalogue.es.query.TermQuery;
 import life.catalogue.es.query.TermsQuery;
+import life.catalogue.matching.NameIndexFactory;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -105,7 +106,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     Taxon taxon = (Taxon) nuw.getUsage();
 
     // Insert that taxon into Postgres
-    NameDao ndao = new NameDao(getSqlSessionFactory(), NameUsageIndexService.passThru());
+    NameDao ndao = new NameDao(getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
     DSID<String> dsid = ndao.create(taxon.getName(), USER_ID);
     LOG.info(">>>>>>> Name inserted into database. ID: {}\n", dsid.getId());
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, NameUsageIndexService.passThru());

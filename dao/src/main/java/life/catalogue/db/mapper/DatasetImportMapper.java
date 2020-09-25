@@ -31,7 +31,10 @@ public interface DatasetImportMapper extends DatasetProcessable<DatasetImport> {
   List<DatasetImport> list(@Param("key") @Nullable Integer datasetKey,
                            @Param("states") @Nullable Collection<ImportState> states,
                            @Param("page") Page page);
-  
+
+  /**
+   * Creates a new dataset import and sets the new attempt in the DatasetImport object
+   */
   void create(@Param("imp") DatasetImport datasetImport);
   
   void update(@Param("imp") DatasetImport datasetImport);

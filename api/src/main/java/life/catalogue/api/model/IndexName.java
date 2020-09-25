@@ -19,6 +19,7 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
 
   @JsonProperty("id")
   private Integer key;
+  private Integer canonicalId;
   @Nonnull
   private String scientificName;
   private String authorship;
@@ -60,9 +61,7 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
     this.sanctioningAuthor = n.getSanctioningAuthor();
     this.code = n.getCode();
     this.type = n.getType();
-    this.setCreatedBy(n.getCreatedBy());
     this.setCreated(n.getCreated());
-    this.setModifiedBy(n.getModifiedBy());
     this.setModified(n.getModified());
   }
 
@@ -74,6 +73,14 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
   @Override
   public void setKey(Integer key) {
     this.key = key;
+  }
+
+  public Integer getCanonicalId() {
+    return canonicalId;
+  }
+
+  public void setCanonicalId(Integer canonicalId) {
+    this.canonicalId = canonicalId;
   }
 
   @Override
@@ -304,6 +311,16 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
     return sb;
   }
 
+  @Override
+  public void setCreatedBy(Integer createdBy) {
+    // dont do anything, we do not store the creator in the database
+  }
+
+  @Override
+  public void setModifiedBy(Integer modifiedBy) {
+    // dont do anything, we do not store the modifier in the database
+  }
+
   /**
    * Adds italics around the epithets but not rank markers or higher ranked names.
    */
@@ -319,6 +336,7 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
     IndexName indexName = (IndexName) o;
     return candidatus == indexName.candidatus &&
       Objects.equals(key, indexName.key) &&
+      Objects.equals(canonicalId, indexName.canonicalId) &&
       scientificName.equals(indexName.scientificName) &&
       Objects.equals(authorship, indexName.authorship) &&
       rank == indexName.rank &&
@@ -338,7 +356,7 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, type);
+    return Objects.hash(super.hashCode(), key, canonicalId, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, type);
   }
 
   @Override

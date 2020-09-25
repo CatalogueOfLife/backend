@@ -1,22 +1,20 @@
 package life.catalogue.resources;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Joiner;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.lifecycle.Managed;
 import life.catalogue.WsServerConfig;
 import life.catalogue.admin.MetricsUpdater;
+import life.catalogue.admin.jobs.IndexJob;
+import life.catalogue.admin.jobs.ReimportJob;
+import life.catalogue.admin.jobs.UsageCountJob;
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
-import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.AssemblyState;
 import life.catalogue.common.concurrent.BackgroundJob;
 import life.catalogue.common.concurrent.JobExecutor;
 import life.catalogue.common.concurrent.JobPriority;
 import life.catalogue.common.io.DownloadUtil;
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.gbifsync.GbifSync;
@@ -24,10 +22,8 @@ import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
 import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.importer.ImportManager;
-import life.catalogue.importer.ImportRequest;
-import life.catalogue.matching.DatasetMatcher;
 import life.catalogue.matching.NameIndex;
-import org.apache.ibatis.session.SqlSession;
+import life.catalogue.matching.RematchJob;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,11 +34,8 @@ import javax.annotation.security.RolesAllowed;
 import javax.validation.constraints.Min;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 @Path("/admin")
 @Produces(MediaType.APPLICATION_JSON)
@@ -64,7 +57,6 @@ public class AdminResource {
   private final AssemblyCoordinator assembly;
   private final NameIndex namesIndex;
   private final JobExecutor exec;
-
 
 
   public AdminResource(SqlSessionFactory factory, AssemblyCoordinator assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
@@ -191,7 +183,7 @@ public class AdminResource {
   @POST
   @Path("/counter-update")
   public BackgroundJob updateCounter(@Auth User user) {
-    return runJob(new UsageCountJob(user, JobPriority.HIGH));
+    return runJob(new UsageCountJob(user, JobPriority.HIGH, factory));
   }
 
   @POST
@@ -206,13 +198,17 @@ public class AdminResource {
     if (req.getDatasetKey() == null && !req.getAll()) {
       throw new IllegalArgumentException("Request parameter all or datasetKey must be provided");
     }
-    return runJob(new IndexJob(req, user, priority));
+    return runJob(new IndexJob(req, user, priority, indexService));
   }
 
   @POST
   @Path("/rematch")
   public BackgroundJob rematch(@QueryParam("datasetKey") Integer datasetKey, @Auth User user) {
-    return runJob(new RematchJob(datasetKey, user));
+    if (datasetKey == null) {
+      return runJob(RematchJob.all(user,factory,ni));
+    } else {
+      return runJob(RematchJob.one(user,factory,ni, datasetKey));
+    }
   }
 
   @DELETE
@@ -225,150 +221,12 @@ public class AdminResource {
   @POST
   @Path("/reimport")
   public BackgroundJob reimport(@Auth User user) {
-    return runJob(new ReimportJob(user));
+    return runJob(new ReimportJob(user, factory, importManager, cfg));
   }
 
   private BackgroundJob runJob(BackgroundJob job){
     exec.submit(job);
     return job;
-  }
-
-  /**
-   * Updates the usage counter for all managed datasets.
-   */
-  class UsageCountJob extends BackgroundJob {
-
-    UsageCountJob(User user, JobPriority priority) {
-      super(priority, user.getKey());
-    }
-
-    @Override
-    public void execute() {
-      try (SqlSession session = factory.openSession(true)) {
-        DatasetMapper dm = session.getMapper(DatasetMapper.class);
-        DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
-        for (int key : dm.keys(DatasetOrigin.MANAGED)) {
-          int cnt = dpm.updateUsageCounter(key);
-          LOG.info("Updated usage counter for managed dataset {} to {}", key, cnt);
-        }
-      }
-    }
-  }
-
-  class IndexJob extends BackgroundJob {
-    @JsonProperty
-    private final RequestScope req;
-
-    IndexJob(RequestScope req, User user, JobPriority priority) {
-      super(priority, user.getKey());
-      this.req = req;
-    }
-  
-    @Override
-    public void execute() {
-      // cleanup
-      try {
-        if (req.getDatasetKey() != null) {
-          LOG.info("Reindex dataset {} by {}", req.getDatasetKey(), getUserKey());
-          indexService.indexDataset(req.getDatasetKey());
-        } else {
-          LOG.warn("Reindex all datasets by {}", getUserKey());
-          indexService.indexAll();
-        }
-      } catch (RuntimeException e){
-        LOG.error("Error reindexing", e);
-      }
-    }
-  }
-
-  /**
-   * Submits import jobs for all existing archives.
-   * Throttles the submission so the import manager does not exceed its queue
-   */
-  class ReimportJob extends BackgroundJob {
-    @JsonProperty
-    private int counter;
-
-    public ReimportJob(User user) {
-      super(user.getKey());
-    }
-
-    @Override
-    public void execute() {
-      final List<Integer> keys;
-      try (SqlSession session = factory.openSession()) {
-        DatasetMapper dm = session.getMapper(DatasetMapper.class);
-        keys = dm.keys();
-      }
-
-      LOG.warn("Reimporting all {} datasets from their last local copy", keys.size());
-      final List<Integer> missed = new ArrayList<>();
-      counter = 0;
-      for (int key : keys) {
-        try {
-          while (importManager.queueSize() + 5 > cfg.importer.maxQueue) {
-            TimeUnit.MINUTES.sleep(1);
-          }
-          // does a local archive exist?
-          File f = cfg.normalizer.source(key);
-          if (f.exists()) {
-            ImportRequest req = new ImportRequest(key, getUserKey(), true, false,true);
-            importManager.submit(req);
-            counter++;
-          } else {
-            missed.add(key);
-            LOG.warn("No local archive exists for dataset {}. Do not reimport", key);
-          }
-
-        } catch (IllegalArgumentException e) {
-          missed.add(key);
-          LOG.warn("Cannot reimport dataset {}", key, e);
-
-        } catch (InterruptedException e) {
-          LOG.warn("Reimporting interrupted", e);
-          break;
-        }
-      }
-      LOG.info("Scheduled {} datasets out of {} for reimporting. Missed {} datasets without an archive or other reasons", counter, keys.size(),  missed.size());
-      LOG.info("Missed keys: {}", Joiner.on(", ").join(missed));
-    }
-  }
-
-  class RematchJob extends BackgroundJob {
-    @JsonProperty
-    private final Integer datasetKey;
-
-    public RematchJob(Integer datasetKey, User user) {
-      super(user.getKey());
-      this.datasetKey = datasetKey;
-    }
-
-    @Override
-    public void execute() {
-      final List<Integer> keys;
-      if (datasetKey != null) {
-        keys = List.of(datasetKey);
-      } else {
-        try (SqlSession session = factory.openSession()) {
-          DatasetMapper dm = session.getMapper(DatasetMapper.class);
-          DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
-          keys = dm.keys();
-          keys.removeIf(key -> !dpm.exists(key));
-        }
-      }
-
-      LOG.warn("Rematching {} datasets with data. Triggered by {}", keys.size(), getUserKey());
-      DatasetMatcher matcher = new DatasetMatcher(factory, ni, true);
-      for (int key : keys) {
-        matcher.match(key, true);
-      }
-      LOG.info("Rematched {} datasets ({} failed), updating {} names from {} in total",
-        matcher.getDatasets(),
-        keys.size() - matcher.getDatasets(),
-        matcher.getUpdated(),
-        matcher.getTotal()
-      );
-    }
   }
 
 }

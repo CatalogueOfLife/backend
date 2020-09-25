@@ -19,7 +19,7 @@ import static org.junit.Assert.*;
 
 public class LNameMapperTest extends MapperTestBase<LNameMapper> {
 
-  int datasetKey = TestDataRule.TestData.FISH.key;
+  int datasetKey = TestDataRule.FISH.key;
 
   public LNameMapperTest() {
     super(LNameMapper.class, TestDataRule.fish());

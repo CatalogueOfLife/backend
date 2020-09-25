@@ -26,11 +26,11 @@
 
   <sql id="COLS">
     dataset_key,
+    taxon_id,
     <include refid="COLS_COPY"/>
   </sql>
 
   <sql id="COLS_COPY">
-    taxon_id,
     verbatim_key,
     url,
     type,
@@ -110,9 +110,12 @@
   </insert>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO media_${newDatasetKey} (dataset_key,<include refid="COLS_COPY"/>, created, modified)
-    SELECT #{newDatasetKey},<include refid="COLS_COPY"/>, created, modified
-    FROM media_${datasetKey}
+    INSERT INTO media_${newDatasetKey} (dataset_key, taxon_id, <include refid="COLS_COPY"/>, created, modified)
+    SELECT #{newDatasetKey},coalesce(<if test="mapIds">m.id2,</if>taxon_id),<include refid="COLS_COPY"/>, created, modified
+    FROM media_${datasetKey} md
+    <if test="mapIds">
+      LEFT JOIN idmap_name_usage_${datasetKey} m ON m.id=md.taxon_id
+    </if>
   </insert>
 
 </mapper>

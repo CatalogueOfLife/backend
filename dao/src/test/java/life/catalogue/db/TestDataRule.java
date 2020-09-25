@@ -11,6 +11,7 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
+import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.postgres.PgCopyUtils;
 import org.apache.ibatis.io.Resources;
@@ -27,10 +28,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -56,39 +54,45 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     TEST_USER.getRoles().add(User.Role.ADMIN);
   }
 
-  final private TestData testData;
+  public final TestData testData;
   private SqlSession session;
   private final Supplier<SqlSessionFactory> sqlSessionFactorySupplier;
 
-  public enum TestData {
-    NONE(null, null, null, 3),
+  public final static TestData NONE = new TestData("none", null, null, null, true, false, Collections.emptyMap(),3);
+  /**
+   * Inits the datasets table with real col data from colplus-repo
+   */
+  public final static TestData DATASETS = new TestData("datasets", null, null, null, false, true, Collections.emptyMap());
+  public final static TestData APPLE = new TestData("apple", 11, 3, 2, 3, 11, 12);
+  public final static TestData FISH = new TestData("fish", 100, 2, 4, 3, 100, 101, 102);
+  public final static TestData TREE = new TestData("tree", 11, 2, 2, 3, 11);
+  public final static TestData DRAFT = new TestData("draft", 3, 1, 2, 3);
+  public final static TestData DRAFT_WITH_SECTORS = new TestData("draft_with_sectors", 3, 2, 3, 3);
 
-    // apple datasetKey=11
-    APPLE(11, 3, 2, 3, 11, 12),
+  public static List<TestData> allTestData() {
+    return List.of(NONE, APPLE, FISH, TREE, DRAFT, DRAFT_WITH_SECTORS, DATASETS);
+  }
 
-    // apple datasetKey=11
-    FISH(100, 2, 4, 3, 100, 101, 102),
-
-    // tree datasetKey=11
-    TREE(11, 2, 2, 3, 11),
-
-    // basic draft hierarchy
-    DRAFT(3, 1, 2, 3),
-
-    // basic draft hierarchy
-    DRAFT_WITH_SECTORS(3, 2, 3, 3),
-
-    /**
-     * Inits the datasets table with real col data from colplus-repo
-     */
-    DATASETS(null, 3, null);
-
+  public static class TestData {
+    public final String name;
     public final Integer key;
-    public final Integer sciNameColumn;
-    public final Integer taxStatusColumn;
     public final Set<Integer> datasetKeys;
+    final Integer sciNameColumn;
+    final Integer taxStatusColumn;
+    final Map<String, Map<String, Object>> defaultValues;
+    private final boolean datasets;
+    private final boolean none;
 
-    TestData(Integer key, Integer sciNameColumn, Integer taxStatusColumn, Integer... datasetKeys) {
+    public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Integer... datasetKeys) {
+      this(name, key, sciNameColumn, taxStatusColumn, Collections.emptyMap(), datasetKeys);
+    }
+
+    public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Map<String, Map<String, Object>> defaultValues, Integer... datasetKeys) {
+      this(name, key, sciNameColumn, taxStatusColumn, false, false, defaultValues, datasetKeys);
+    }
+
+    private TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, boolean none, boolean initAllDatasets, Map<String, Map<String, Object>> defaultValues, Integer... datasetKeys) {
+      this.name = name;
       this.key = key;
       this.sciNameColumn = sciNameColumn;
       this.taxStatusColumn = taxStatusColumn;
@@ -97,52 +101,51 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       } else {
         this.datasetKeys = ImmutableSet.copyOf(datasetKeys);
       }
+      this.none = none;
+      this.datasets = initAllDatasets;
+      this.defaultValues = defaultValues;
     }
 
+    @Override
+    public String toString() {
+      return name + " ("+ key +")";
+    }
   }
 
   public static TestDataRule empty() {
-    return new TestDataRule(TestData.NONE);
-  }
-
-  public static TestDataRule empty(SqlSessionFactory sqlSessionFactory) {
-    return new TestDataRule(TestData.NONE, () -> sqlSessionFactory);
+    return new TestDataRule(NONE);
   }
 
   public static TestDataRule apple() {
-    return new TestDataRule(TestData.APPLE);
+    return new TestDataRule(APPLE);
   }
 
   public static TestDataRule apple(SqlSessionFactory sqlSessionFactory) {
-    return new TestDataRule(TestData.APPLE, () -> sqlSessionFactory);
+    return new TestDataRule(APPLE, () -> sqlSessionFactory);
   }
 
   public static TestDataRule fish() {
-    return new TestDataRule(TestData.FISH);
+    return new TestDataRule(FISH);
   }
 
   public static TestDataRule tree() {
-    return new TestDataRule(TestData.TREE);
-  }
-
-  public static TestDataRule tree(SqlSessionFactory sqlSessionFactory) {
-    return new TestDataRule(TestData.TREE, () -> sqlSessionFactory);
+    return new TestDataRule(TREE);
   }
 
   public static TestDataRule draft() {
-    return new TestDataRule(TestData.DRAFT);
+    return new TestDataRule(DRAFT);
   }
 
   public static TestDataRule draftWithSectors() {
-    return new TestDataRule(TestData.DRAFT_WITH_SECTORS);
+    return new TestDataRule(DRAFT_WITH_SECTORS);
   }
 
   public static TestDataRule datasets() {
-    return new TestDataRule(TestData.DATASETS);
+    return new TestDataRule(DATASETS);
   }
 
   public static TestDataRule datasets(SqlSessionFactory sqlSessionFactory) {
-    return new TestDataRule(TestData.DATASETS, () -> sqlSessionFactory);
+    return new TestDataRule(DATASETS, () -> sqlSessionFactory);
   }
 
   private TestDataRule(TestData testData, Supplier<SqlSessionFactory> sqlSessionFactorySupplier) {
@@ -170,6 +173,8 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   protected void before() throws Throwable {
     LOG.info("Loading {} test data", testData);
     initSession();
+    // remove potential old (global) data
+    truncate(session);
     // create required partitions to load data
     partition();
     loadData(false);
@@ -190,10 +195,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
         LOG.debug("Remove managed sequences for dataset {}", d.getKey());
         pm.deleteManagedSequences(d.getKey());
       }
-      truncate(session);
       session.commit();
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
     }
   }
 
@@ -212,6 +214,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     for (Integer dk : testData.datasetKeys) {
       MybatisTestUtils.partition(session, dk);
     }
+    session.commit();
   }
 
   public void updateSequences() throws Exception {
@@ -221,11 +224,9 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     }
     if (testData.key != null) {
       pm.updateIdSequences(testData.key);
-      // names index keys
-      try (java.sql.Statement st = session.getConnection().createStatement()) {
-        st.execute("ALTER SEQUENCE names_index_id_seq RESTART WITH 1");
-      }
     }
+    // names index keys
+    session.getMapper(NamesIndexMapper.class).resetSequence();
     session.commit();
   }
 
@@ -267,11 +268,11 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       runner.runScript(Resources.getResourceAsReader(PgConfig.DATA_FILE));
     }
 
-    if (testData != TestData.NONE) {
+    if (!testData.none) {
       System.out.format("Load %s test data\n\n", testData);
 
 
-      if (testData == TestData.DATASETS) {
+      if (testData.datasets) {
         // known datasets
         runner.runScript(Resources.getResourceAsReader(PgConfig.DATASETS_FILE));
 
@@ -288,29 +289,13 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
           if (!skipGlobalTable) {
             copyGlobalTable(pgc, "dataset");
             copyGlobalTable(pgc, "sector");
+            copyGlobalTable(pgc, "names_index");
           }
-          copyPartitionedTable(pgc, "verbatim", ImmutableMap.of("dataset_key", testData.key));
-          copyPartitionedTable(pgc, "reference", datasetEntityDefaults());
-          copyPartitionedTable(pgc, "name",
-              datasetEntityDefaults(ImmutableMap.<String, Object>of(
-                  "origin", Origin.SOURCE,
-                  "type", NameType.SCIENTIFIC
-              )),
-              ImmutableMap.<String, Function<String[], String>>of(
-                  "scientific_name_normalized", row -> SciNameNormalizer.normalize(row[testData.sciNameColumn])
-              )
-          );
-          copyPartitionedTable(pgc, "name_rel", datasetEntityDefaults());
-          copyPartitionedTable(pgc, "name_usage",
-              datasetEntityDefaults(ImmutableMap.<String, Object>of("origin", Origin.SOURCE)),
-              ImmutableMap.<String, Function<String[], String>>of(
-                  "is_synonym", this::isSynonym
-              )
-          );
-          copyPartitionedTable(pgc, "distribution", datasetEntityDefaults());
-          copyPartitionedTable(pgc, "vernacular_name", datasetEntityDefaults());
 
-          c.commit();
+          for (int key : testData.datasetKeys) {
+            copyDataset(pgc, key);
+            c.commit();
+          }
 
           runner.runScript(Resources.getResourceAsReader("test-data/sequences.sql"));
         }
@@ -320,14 +305,37 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     }
   }
 
-  private Map<String, Object> datasetEntityDefaults() {
-    return datasetEntityDefaults(new HashMap<>());
+  private void copyDataset(PgConnection pgc, int key) throws IOException, SQLException {
+    copyPartitionedTable(pgc, "verbatim", key, ImmutableMap.of("dataset_key", key));
+    copyPartitionedTable(pgc, "reference", key, datasetEntityDefaults(key));
+    copyPartitionedTable(pgc, "name", key,
+      datasetEntityDefaults(key, ImmutableMap.<String, Object>of(
+        "origin", Origin.SOURCE,
+        "type", NameType.SCIENTIFIC
+      )),
+      ImmutableMap.<String, Function<String[], String>>of(
+        "scientific_name_normalized", row -> SciNameNormalizer.normalize(row[testData.sciNameColumn])
+      )
+    );
+    copyPartitionedTable(pgc, "name_rel", key, datasetEntityDefaults(key));
+    copyPartitionedTable(pgc, "name_usage", key,
+      datasetEntityDefaults(key, ImmutableMap.<String, Object>of("origin", Origin.SOURCE)),
+      ImmutableMap.<String, Function<String[], String>>of(
+        "is_synonym", this::isSynonym
+      )
+    );
+    copyPartitionedTable(pgc, "distribution", key, datasetEntityDefaults(key));
+    copyPartitionedTable(pgc, "vernacular_name", key, datasetEntityDefaults(key));
   }
 
-  private Map<String, Object> datasetEntityDefaults(Map<String, Object> defaults) {
+  private Map<String, Object> datasetEntityDefaults(int datasetKey) {
+    return datasetEntityDefaults(datasetKey, new HashMap<>());
+  }
+
+  private Map<String, Object> datasetEntityDefaults(int datasetKey, Map<String, Object> defaults) {
     return ImmutableMap.<String, Object>builder()
         .putAll(defaults)
-        .put("dataset_key", testData.key)
+        .put("dataset_key", datasetKey)
         .put("created_by", 0)
         .put("modified_by", 0)
         .build();
@@ -342,23 +350,24 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     copyTable(pgc, table + ".csv", table, Collections.EMPTY_MAP, Collections.EMPTY_MAP);
   }
 
-  private void copyPartitionedTable(PgConnection pgc, String table) throws IOException, SQLException {
-    copyPartitionedTable(pgc, table, Collections.EMPTY_MAP, Collections.EMPTY_MAP);
+  private void copyPartitionedTable(PgConnection pgc, String table, int datasetKey, Map<String, Object> defaults) throws IOException, SQLException {
+    copyPartitionedTable(pgc, table, datasetKey, defaults, Collections.EMPTY_MAP);
   }
 
-  private void copyPartitionedTable(PgConnection pgc, String table, Map<String, Object> defaults) throws IOException, SQLException {
-    copyPartitionedTable(pgc, table, defaults, Collections.EMPTY_MAP);
-  }
-
-  private void copyPartitionedTable(PgConnection pgc, String table, Map<String, Object> defaults, Map<String, Function<String[], String>> funcs) throws IOException, SQLException {
-    copyTable(pgc, table + ".csv", table + "_" + testData.key, defaults, funcs);
+  private void copyPartitionedTable(PgConnection pgc, String table, int datasetKey, Map<String, Object> defaults, Map<String, Function<String[], String>> funcs) throws IOException, SQLException {
+    copyTable(pgc, table + "_" + datasetKey + ".csv", table + "_" + datasetKey, defaults, funcs);
   }
 
   private void copyTable(PgConnection pgc, String filename, String table, Map<String, Object> defaults, Map<String, Function<String[], String>> funcs)
       throws IOException, SQLException {
-    String resource = "/test-data/" + testData.name().toLowerCase() + "/" + filename;
+    String resource = "/test-data/" + testData.name.toLowerCase() + "/" + filename;
     URL url = PgCopyUtils.class.getResource(resource);
     if (url != null) {
+      // global defaults to add?
+      if (testData.defaultValues.containsKey(table)) {
+        defaults = new HashMap<>(defaults);
+        defaults.putAll(testData.defaultValues.get(table));
+      }
       PgCopyUtils.copy(pgc, table, resource, defaults, funcs);
     }
   }

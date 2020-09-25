@@ -11,6 +11,7 @@ import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
+import life.catalogue.matching.NameIndex;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -34,15 +35,16 @@ public class ReleaseManager {
   // we only allow a single release to run at a time
   private static boolean LOCK = false;
 
+  private final NameIndex nameIndex;
   private final DatasetImportDao diDao;
   private final NameUsageIndexService indexService;
   private final SqlSessionFactory factory;
   private final ImageService imageService;
-
   private AbstractProjectCopy job;
 
-  public ReleaseManager(DatasetImportDao diDao, NameUsageIndexService indexService, ImageService imageService, SqlSessionFactory factory) {
+  public ReleaseManager(DatasetImportDao diDao, NameIndex nameIndex, NameUsageIndexService indexService, ImageService imageService, SqlSessionFactory factory) {
     this.diDao = diDao;
+    this.nameIndex = nameIndex;
     this.indexService = indexService;
     this.imageService = imageService;
     this.factory = factory;
@@ -52,7 +54,7 @@ public class ReleaseManager {
    * @return newly created dataset key of the release
    */
   public Integer release(int datasetKey, User user) {
-    return execute(() -> release(factory, indexService, diDao, imageService, datasetKey, user.getKey()));
+    return execute(() -> release(factory, nameIndex, indexService, diDao, imageService, datasetKey, user.getKey()));
   }
 
   /**
@@ -98,10 +100,10 @@ public class ReleaseManager {
    *
    * @throws IllegalArgumentException if the dataset is not managed
    */
-  public static ProjectRelease release(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, ImageService imageService,
+  public static ProjectRelease release(SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService, DatasetImportDao diDao, ImageService imageService,
                                        int projectKey, int userKey) {
     Dataset release = createDataset(factory, projectKey, "release", userKey, ProjectRelease::releaseDataset);
-    return new ProjectRelease(factory, indexService, diDao, imageService, projectKey, release, userKey);
+    return new ProjectRelease(factory, nameIndex, indexService, diDao, imageService, projectKey, release, userKey);
   }
 
   /**

@@ -10,6 +10,20 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2020-09-25 names index canonical
+```
+ALTER TYPE IMPORTSTATE ADD VALUE 'ARCHIVING' before 'EXPORTING';
+ALTER TABLE names_index ADD COLUMN canonical_id INTEGER REFERENCES names_index;
+```
+
+Run the following to update all foreign keys to on update cascade:
+```
+ALTER TABLE name_usage_{KEY} DROP CONSTRAINT name_usage_{KEY}_parent_id_fk;
+ALTER TABLE name_usage_{KEY} ADD CONSTRAINT name_usage_{KEY}_parent_id_fk FOREIGN KEY (parent_id) REFERENCES name_usage_{KEY} (id) ON UPDATE CASCADE DEFERRABLE INITIALLY DEFERRED;
+
+TODO: many more...    
+``` 
+
 ### 2020-09-18 dataset person
 ```
 --

@@ -10,6 +10,7 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.NameDao;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.matching.NameIndexFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,7 +39,7 @@ public class SynonymMapperTest extends CRUDDatasetScopedStringTestBase<Synonym, 
   
   @Before
   public void initMappers() {
-    nameDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
+    nameDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
     synonymMapper = testDataRule.getMapper(SynonymMapper.class);
     taxonMapper = testDataRule.getMapper(TaxonMapper.class);
     // prepare taxon to hook extensions to

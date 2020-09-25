@@ -18,11 +18,11 @@
 
   <sql id="COLS">
     dataset_key,
+    id,
     <include refid="COLS_COPY"/>
   </sql>
 
   <sql id="COLS_COPY">
-    id,
     verbatim_key,
     format,
     document,
@@ -60,9 +60,13 @@
   </insert>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO treatment_${newDatasetKey} (dataset_key,<include refid="COLS_COPY"/>, created, modified)
-    SELECT #{newDatasetKey},<include refid="COLS_COPY"/>, created, modified
-    FROM treatment_${datasetKey}
+    INSERT INTO treatment_${newDatasetKey} (dataset_key,id,<include refid="COLS_COPY"/>, created, modified)
+    SELECT #{newDatasetKey},coalesce(<if test="mapIds">m.id2,</if>t.id),<include refid="COLS_COPY"/>, created, modified
+    FROM treatment_${datasetKey} t
+    <if test="mapIds">
+      LEFT JOIN idmap_name_usage_${datasetKey} m ON m.id=t.id
+    </if>
+
   </insert>
 
 </mapper>

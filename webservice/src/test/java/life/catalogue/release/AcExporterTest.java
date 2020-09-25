@@ -92,8 +92,8 @@ public class AcExporterTest {
   @Test
   public void exportNonManaged() throws Exception {
     // run different test data rule
-    MybatisTestUtils.populateTestData(TestDataRule.TestData.APPLE, false);
-    final int key = TestDataRule.TestData.APPLE.key;
+    MybatisTestUtils.populateTestData(TestDataRule.APPLE, false);
+    final int key = TestDataRule.APPLE.key;
 
     AcExporter exp = new AcExporter(cfg, PgSetupRule.getSqlSessionFactory());
     // prepare metadata

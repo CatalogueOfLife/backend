@@ -1,9 +1,7 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.NameUsageBase;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.SectorProcessable;
 import org.apache.ibatis.annotations.Param;
@@ -52,6 +50,14 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   Cursor<NameUsageBase> processDataset(@Param("datasetKey") int datasetKey,
                                        @Nullable @Param("minRank") Rank minRank,
                                        @Nullable @Param("maxRank") Rank maxRank);
+
+  /**
+   * Updates the primary key. By using on update cascade triggers the related entities will be updated too.
+   * @param key the usage to update
+   * @param newId the new id to be used
+   */
+  void updateId(@Param("key") DSID<String> key,
+                @Param("newId") String newId);
 
   /**
    * Move all children including synonyms of a given taxon to a new parent.
@@ -176,4 +182,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    */
   Cursor<UsageNameID> processTreeIds(@Param("key") DSID<String> key);
 
+  /**
+   * Iterate over all usages optionally filtered by its status but return just the id, status and name index ids
+   * @param status if null return all usages regardless their status
+   */
+  Cursor<SimpleNameWithNidx> processNxIds(@Param("datasetKey") int datasetKey, @Nullable @Param("status")TaxonomicStatus status);
+
+  Cursor<String> processIds(@Param("datasetKey") int datasetKey);
 }

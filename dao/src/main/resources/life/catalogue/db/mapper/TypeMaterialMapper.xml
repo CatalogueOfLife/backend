@@ -32,6 +32,7 @@
   <sql id="COLS">
     dataset_key,
     sector_key,
+    name_id,
     <include refid="COLS_COPY">
       <property name="alias" value=""/>
     </include>
@@ -40,7 +41,6 @@
   <sql id="COLS_COPY">
     ${alias}id,
     ${alias}verbatim_key,
-    ${alias}name_id,
     ${alias}citation,
     ${alias}status,
     ${alias}locality,
@@ -61,9 +61,9 @@
   <sql id="PROPS">
     #{datasetKey},
     #{sectorKey},
+    #{nameId},
     #{id},
     #{verbatimKey},
-    #{nameId},
     #{citation},
     #{status}::TYPESTATUS,
     #{locality},
@@ -91,20 +91,16 @@
 
   <select id="listByName" resultMap="typeResultMap">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE name_id = #{key.id}
     ORDER BY id
   </select>
 
   <select id="get" resultMap="typeResultMap">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE id = #{key.id}
   </select>
 
@@ -115,9 +111,13 @@
   </insert>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO type_material_${newDatasetKey} (dataset_key,sector_key,<include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
-    SELECT #{newDatasetKey}, t.sector_key, <include refid="COLS_COPY"><property name="alias" value="t."/></include>, t.created, t.modified
+    INSERT INTO type_material_${newDatasetKey} (dataset_key, sector_key, name_id, <include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
+    SELECT #{newDatasetKey}, t.sector_key, coalesce(<if test="mapIds">m.id2,</if>name_id), <include refid="COLS_COPY"><property name="alias" value="t."/></include>, t.created, t.modified
     FROM type_material_${datasetKey} t
+    <if test="mapIds">
+      LEFT JOIN idmap_name_${datasetKey} m ON m.id=t.name_id
+    </if>
+
   </insert>
 
   <update id="update" parameterType="TypeMaterial" keyProperty="id">

@@ -1,0 +1,7 @@
+id,homotypic_name_id,scientific_name,uninomial,genus,specific_epithet,infraspecific_epithet,rank,published_in_id
+1,,Animalia,Animalia,,,,KINGDOM,r1
+2,,Chordata,Chordata,,,,PHYLUM,r1
+3,,Mammalia,Mammalia,,,,CLASS,r1
+4,,Carnivora,Carnivora,,,,ORDER,r1
+5,,Canidae,Canidae,,,,FAMILY,r1
+6,,Felidae,Felidae,,,,FAMILY,r1

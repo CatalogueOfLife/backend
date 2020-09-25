@@ -43,7 +43,7 @@ public class MybatisTestUtils {
     }
     if (origin == DatasetOrigin.MANAGED) {
       LOG.info("Attach usage counter to dataset {}", datasetKey);
-      session.getMapper(DatasetPartitionMapper.class).attachUsageCounter(datasetKey);
+      Partitioner.createManagedObjects(session, datasetKey);
     }
   }
 

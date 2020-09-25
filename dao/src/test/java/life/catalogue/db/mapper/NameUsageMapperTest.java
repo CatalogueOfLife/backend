@@ -5,10 +5,10 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.NameDao;
-import life.catalogue.dao.Partitioner;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.matching.NameIndexFactory;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,10 +28,10 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   SynonymMapper sm;
   NameMapper nm;
   int idGen = 1;
-  int datasetKey = TestDataRule.TestData.APPLE.key;
+  int datasetKey = TestDataRule.APPLE.key;
 
   public NameUsageMapperTest() {
-    super(NameUsageMapper.class);
+    super(NameUsageMapper.class, TestDataRule.apple());
   }
   
   @Before
@@ -43,8 +43,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
 
   @Test
   public void copyDataset() throws Exception {
-    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
-    mapper().copyDataset(datasetKey, 999);
+    CopyDatasetTestComponent.copy(mapper(), testDataRule.testData.key, true);
   }
 
   @Test
@@ -61,7 +60,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
 
   @Test
   public void list() throws Exception {
-    NameDao nameDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
+    NameDao nameDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
   
     List<Taxon> taxa = new ArrayList<>();
     taxa.add(TestEntityGenerator.newTaxon("t1"));

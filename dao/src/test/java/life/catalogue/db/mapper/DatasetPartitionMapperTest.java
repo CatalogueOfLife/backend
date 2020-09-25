@@ -49,7 +49,7 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
 
   @Test
   public void updateCounter() {
-    int x = mapper().updateUsageCounter(TestDataRule.TestData.APPLE.key);
+    int x = mapper().updateUsageCounter(TestDataRule.APPLE.key);
     assertEquals(4, x);
   }
 
@@ -81,7 +81,7 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
       // wait a little so the threads get started
       TimeUnit.SECONDS.sleep(1);
       // now try to attach a different physical table to the same partition that we insert into
-      final int datasetKey = TestDataRule.TestData.APPLE.key;
+      final int datasetKey = TestDataRule.APPLE.key;
       System.out.println("Delete partition " + datasetKey);
       mapper().delete(datasetKey);
       mapper().create(datasetKey);

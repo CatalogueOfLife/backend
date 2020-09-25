@@ -26,7 +26,6 @@ import java.util.function.Consumer;
  */
 public class SectorDelete extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorDelete.class);
-
   private static final Rank maxAmbiguousRank = Arrays.stream(Rank.values()).filter(Rank::isAmbiguous).max(Rank::compareTo).orElseThrow(() -> new IllegalStateException("No ambiguous ranks exist"));
   private Rank cutoffRank = Rank.SPECIES;
 
@@ -128,5 +127,5 @@ public class SectorDelete extends SectorRunnable {
     }
     return zoological;
   }
-  
+
 }

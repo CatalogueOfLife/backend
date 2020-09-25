@@ -5,6 +5,7 @@ import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.matching.NameIndex;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -19,12 +20,27 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameDao.class);
   private final NameUsageIndexService indexService;
+  private final NameIndex nameIndex;
 
-  public NameDao(SqlSessionFactory factory, NameUsageIndexService indexService) {
+  public NameDao(SqlSessionFactory factory, NameUsageIndexService indexService, NameIndex nameIndex) {
     super(false, factory, NameMapper.class);
     this.indexService = indexService;
+    this.nameIndex = nameIndex;
   }
-  
+
+  @Override
+  public DSID<String> create(Name obj, int user) {
+    // match name if not done yet
+    if (obj.getNameIndexMatchType() == null || obj.getNameIndexIds().isEmpty()) {
+      NameMatch match = nameIndex.match(obj, true, false);
+      obj.setNameIndexMatchType(match.getType());
+      if (match.hasMatch()) {
+        obj.setNameIndexIds(match.getNameIds());
+      }
+    }
+    return super.create(obj, user);
+  }
+
   public Name getBasionym(DSID<String> did) {
     try (SqlSession session = factory.openSession(false)) {
       NameRelationMapper rm = session.getMapper(NameRelationMapper.class);

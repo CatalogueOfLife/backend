@@ -11,7 +11,6 @@ import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
-import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import life.catalogue.api.datapackage.ColdpTerm;
@@ -30,8 +29,7 @@ import life.catalogue.dao.*;
 import life.catalogue.db.LookupTables;
 import life.catalogue.db.tree.DatasetDiffService;
 import life.catalogue.db.tree.SectorDiffService;
-import life.catalogue.dw.ManagedCloseable;
-import life.catalogue.dw.ManagedStopOnly;
+import life.catalogue.dw.ManagedUtils;
 import life.catalogue.dw.auth.AuthBundle;
 import life.catalogue.dw.cors.CorsBundle;
 import life.catalogue.dw.db.MybatisBundle;
@@ -177,14 +175,14 @@ public class WsServer extends Application<WsServerConfig> {
 
     // job executor
     JobExecutor executor = new JobExecutor(cfg.backgroundJobs);
-    env.lifecycle().manage(new ManagedCloseable(executor));
+    env.lifecycle().manage(ManagedUtils.from(executor));
 
     // name parser
     ParserConfigDao dao = new ParserConfigDao(getSqlSessionFactory());
     dao.loadParserConfigs();
     NameParser.PARSER.register(env.metrics());
     env.healthChecks().register("name-parser", new NameParserHealthCheck());
-    env.lifecycle().manage(new ManagedCloseable(NameParser.PARSER));
+    env.lifecycle().manage(ManagedUtils.from(NameParser.PARSER));
 
     // time CSL Util
     CslUtil.register(env.metrics());
@@ -215,7 +213,7 @@ public class WsServer extends Application<WsServerConfig> {
     ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE);
     // to start up quickly for local testing use this instead:
     //ni = NameIndexFactory.passThru();
-    env.lifecycle().manage(stopOnly(ni));
+    env.lifecycle().manage(ManagedUtils.stopOnly(ni));
     env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));
 
     final DatasetImportDao diDao = new DatasetImportDao(getSqlSessionFactory(), cfg.metricsRepo);
@@ -227,7 +225,7 @@ public class WsServer extends Application<WsServerConfig> {
     AcExporter exporter = new AcExporter(cfg, getSqlSessionFactory());
 
     // release
-    final ReleaseManager releaseManager = new ReleaseManager(diDao, indexService, imgService, getSqlSessionFactory());
+    final ReleaseManager releaseManager = new ReleaseManager(diDao, ni, indexService, imgService, getSqlSessionFactory());
 
     // diff
     DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), fmdDao);
@@ -244,7 +242,7 @@ public class WsServer extends Application<WsServerConfig> {
     DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), new DownloadUtil(httpClient), imgService, diDao, indexService, cfg.normalizer::scratchFile, bus);
     DecisionDao decdao = new DecisionDao(getSqlSessionFactory(), indexService);
     EstimateDao edao = new EstimateDao(getSqlSessionFactory());
-    NameDao ndao = new NameDao(getSqlSessionFactory(), indexService);
+    NameDao ndao = new NameDao(getSqlSessionFactory(), indexService, ni);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory());
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, indexService);
     SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao);
@@ -263,13 +261,13 @@ public class WsServer extends Application<WsServerConfig> {
       imgService,
       releaseManager
     );
-    env.lifecycle().manage(stopOnly(importManager));
+    env.lifecycle().manage(ManagedUtils.stopOnly(importManager));
     ContinuousImporter cImporter = new ContinuousImporter(cfg.importer, importManager, getSqlSessionFactory());
-    env.lifecycle().manage(stopOnly(cImporter));
+    env.lifecycle().manage(ManagedUtils.stopOnly(cImporter));
 
     // gbif sync
     GbifSync gbifSync = new GbifSync(cfg.gbif, getSqlSessionFactory(), jerseyClient);
-    env.lifecycle().manage(stopOnly(gbifSync));
+    env.lifecycle().manage(ManagedUtils.stopOnly(gbifSync));
 
     // assembly
     AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), siDao, indexService, env.metrics());
@@ -316,10 +314,6 @@ public class WsServer extends Application<WsServerConfig> {
     bus.register(auth);
     bus.register(coljersey);
     bus.register(DatasetInfoCache.CACHE);
-  }
-
-  static Managed stopOnly(Managed managed){
-    return new ManagedStopOnly(managed);
   }
 
   @Override

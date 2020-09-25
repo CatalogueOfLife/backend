@@ -1,86 +1,26 @@
 package life.catalogue.release;
 
-import com.google.common.io.Files;
-import life.catalogue.WsServerConfig;
+import com.google.common.collect.Lists;
 import life.catalogue.api.model.Dataset;
-import life.catalogue.api.vocab.ImportState;
-import life.catalogue.api.vocab.Users;
-import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.TreeRepoRule;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.TestDataRule;
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.img.ImageService;
-import org.apache.ibatis.session.SqlSession;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
+import life.catalogue.api.model.Person;
+import life.catalogue.api.vocab.Datasets;
 import org.junit.Test;
 
+import java.time.LocalDate;
+
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 public class ProjectReleaseTest {
-  
-  @ClassRule
-  public static PgSetupRule pgSetupRule = new PgSetupRule();
-  
-  @Rule
-  public final TreeRepoRule treeRepoRule = new TreeRepoRule();
 
-  @Rule
-  public TestDataRule testDataRule = TestDataRule.apple();
-  
-  WsServerConfig cfg;
-  DatasetImportDao diDao;
-  AcExporter exp;
-  Dataset d;
-  
-  @Before
-  public void init()  {
-    cfg = new WsServerConfig();
-    cfg.db = PgSetupRule.getCfg();
-    cfg.exportDir = Files.createTempDir();
-    cfg.normalizer.scratchDir  = Files.createTempDir();
-    diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    exp = new AcExporter(cfg, PgSetupRule.getSqlSessionFactory());
-    
-    // dataset needs to be a managed one
-    try (SqlSession s = PgSetupRule.getSqlSessionFactory().openSession()) {
-      DatasetMapper dm = s.getMapper(DatasetMapper.class);
-      d = dm.get(TestDataRule.TestData.APPLE.key);
-    }
-  }
-  
   @Test
   public void release() throws Exception {
-    ProjectRelease release = buildRelease();
-    release.run();
-    assertEquals(ImportState.FINISHED, release.getMetrics().getState());
+    Dataset d = new Dataset();
+    d.setKey(Datasets.DRAFT_COL);
+    d.setTitle("Species 2000 & ITIS Catalogue of Life");
+    d.setAuthorsAndEditors(Person.parse(Lists.newArrayList("Roskov Y.", "Ower G.", "Orrell T.", "Nicolson D.", "eds.")));
+    d.setReleased(LocalDate.parse("2019-04-21"));
+    assertEquals("Roskov Y., Ower G., Orrell T., Nicolson D., eds. (2019). Species 2000 & ITIS Catalogue of Life, 2019-04-21. Digital resource at www.catalogueoflife.org/col. Species 2000: Naturalis, Leiden, the Netherlands. ISSN 2405-8858.",
+      ProjectRelease.buildCitation(d)
+    );
   }
-  
-  private ProjectRelease buildRelease() {
-    return ReleaseManager.release(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao, ImageService.passThru(), d.getKey(), Users.TESTER);
-  }
-  
-  @Test
-  public void releaseConcurrently() throws Exception {
-    Thread t1 = new Thread(buildRelease());
-    t1.start();
-  
-    try {
-      buildRelease();
-      fail("Parallel releases should not be allowed!");
-    } catch (IllegalArgumentException e) {
-      // expected
-    }
-    // wait for release to be done and run another one
-    t1.join();
-  
-    Thread t2 = new Thread(buildRelease());
-    t2.start();
-    t2.join();
-  }
-  
 }

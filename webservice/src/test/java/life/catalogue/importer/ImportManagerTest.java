@@ -93,7 +93,7 @@ public class ImportManagerTest {
     }
 
     NameUsageIndexService indexService = NameUsageIndexService.passThru();
-    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), indexService);
+    NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru());
     TaxonDao tDao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, indexService);
     SectorDao sDao = new SectorDao(PgSetupRule.getSqlSessionFactory(), indexService, tDao);
 
