@@ -91,20 +91,16 @@
 
   <select id="listByName" resultMap="typeResultMap">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE name_id = #{key.id}
     ORDER BY id
   </select>
 
   <select id="get" resultMap="typeResultMap">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE id = #{key.id}
   </select>
 

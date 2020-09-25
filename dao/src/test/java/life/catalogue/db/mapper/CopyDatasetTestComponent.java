@@ -18,7 +18,6 @@ public class CopyDatasetTestComponent {
         DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
         DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.createIdMapTable(t, key));
       }
-      //TODO: add ids to map
       mapper.copyDataset(key, 999, true);
     }
   }
