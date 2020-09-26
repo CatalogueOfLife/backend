@@ -289,7 +289,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DocsResource(cfg, OpenApiFactory.build(cfg, env)));
     j.register(new DuplicateResource());
     j.register(new EstimateResource(edao));
-    j.register(new ExportResource(getSqlSessionFactory(), exporter, diDao));
+    j.register(new ExportResource(getSqlSessionFactory(), exporter, diDao, cfg));
     j.register(new ImporterResource(importManager, diDao));
     j.register(new LegacyWebserviceResource(getSqlSessionFactory(), cfg));
     j.register(new MatchingResource(ni));

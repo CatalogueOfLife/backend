@@ -1,6 +1,8 @@
 package life.catalogue.resources;
 
 import io.dropwizard.auth.Auth;
+import life.catalogue.WsServerConfig;
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.dao.DatasetImportDao;
@@ -59,15 +61,17 @@ import java.util.Set;
 public class ExportResource {
   private final DatasetImportDao diDao;
   private final SqlSessionFactory factory;
+  private final WsServerConfig cfg;
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(ExportResource.class);
   private final AcExporter exporter;
 
-  public ExportResource(SqlSessionFactory factory, AcExporter exporter, DatasetImportDao diDao) {
+  public ExportResource(SqlSessionFactory factory, AcExporter exporter, DatasetImportDao diDao, WsServerConfig cfg) {
     this.factory = factory;
     this.exporter = exporter;
     this.diDao = diDao;
+    this.cfg = cfg;
   }
 
   @POST
@@ -87,6 +91,21 @@ public class ExportResource {
     return false;
   }
 
+
+  @GET
+  @Produces(MediaType.APPLICATION_OCTET_STREAM)
+  public Response original(@PathParam("datasetKey") int key) {
+    File source = cfg.normalizer.source(key);
+    if (source.exists()) {
+      StreamingOutput stream = os -> {
+        InputStream in = new FileInputStream(source);
+        IOUtils.copy(in, os);
+        os.flush();
+      };
+      return Response.ok(stream).build();
+    }
+    throw new NotFoundException(key, "original archive for dataset " + key + " not found");
+  }
 
   @GET
   @Produces(MediaType.TEXT_PLAIN)
