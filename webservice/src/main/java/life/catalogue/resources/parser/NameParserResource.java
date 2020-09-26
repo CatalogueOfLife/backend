@@ -116,11 +116,22 @@ public class NameParserResource {
     }
   }
 
-  static class PNUIssue extends ParsedNameUsage {
+  /**
+   * For name parsing results only.
+   * We flatten results here to just a single json object without a usage with a nested name.
+   * And add issues.
+   */
+  static class PNIssue extends Name {
+    private boolean extinct;
+    private String taxonomicNote;
+    private String publishedIn;
     private Set<Issue> issues;
 
-    public PNUIssue(ParsedNameUsage pnu, Set<Issue> issues) {
-      super(pnu.getName(), pnu.isExtinct(), pnu.getTaxonomicNote(), pnu.getPublishedIn());
+    public PNIssue(ParsedNameUsage pnu, Set<Issue> issues) {
+      super(pnu.getName());
+      this.extinct = pnu.isExtinct();
+      this.taxonomicNote = pnu.getTaxonomicNote();
+      this.publishedIn = pnu.getPublishedIn();
       this.issues = issues;
       pnu.getName().setNameIndexIds(null);
     }
@@ -135,10 +146,10 @@ public class NameParserResource {
    * Parsing names as GET query parameters.
    */
   @GET
-  public Optional<PNUIssue> parseGet(@QueryParam("code") NomCode code,
-                                 @QueryParam("rank") Rank rank,
-                                 @QueryParam("name") String name,
-                                 @QueryParam("authorship") String authorship) {
+  public Optional<PNIssue> parseGet(@QueryParam("code") NomCode code,
+                                    @QueryParam("rank") Rank rank,
+                                    @QueryParam("name") String name,
+                                    @QueryParam("authorship") String authorship) {
     return parse(new CRName(code, rank, name, authorship));
   }
   
@@ -147,7 +158,7 @@ public class NameParserResource {
    */
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
-  public List<PNUIssue> parseJson(List<CRName> names) {
+  public List<PNIssue> parseJson(List<CRName> names) {
     return parse(names.stream());
   }
   
@@ -159,9 +170,9 @@ public class NameParserResource {
    */
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
-  public List<PNUIssue> parseFile(@FormDataParam("code") NomCode code,
-                                  @FormDataParam("rank") Rank rank,
-                                  @FormDataParam("names") InputStream file) throws UnsupportedEncodingException {
+  public List<PNIssue> parseFile(@FormDataParam("code") NomCode code,
+                                 @FormDataParam("rank") Rank rank,
+                                 @FormDataParam("names") InputStream file) throws UnsupportedEncodingException {
     if (file == null) {
       LOG.debug("No names file uploaded");
       return Lists.newArrayList();
@@ -180,15 +191,15 @@ public class NameParserResource {
    */
   @POST
   @Consumes(MediaType.TEXT_PLAIN)
-  public List<PNUIssue> parsePlainText(InputStream names) throws UnsupportedEncodingException {
+  public List<PNIssue> parsePlainText(InputStream names) throws UnsupportedEncodingException {
     return parseFile(null, Rank.UNRANKED, names);
   }
   
-  private List<PNUIssue> parse(final NomCode code, final Rank rank, Stream<String> names) {
+  private List<PNIssue> parse(final NomCode code, final Rank rank, Stream<String> names) {
     return parse(names.map(n -> new CRName(code, rank, n, null)));
   }
   
-  private List<PNUIssue> parse(Stream<CRName> names) {
+  private List<PNIssue> parse(Stream<CRName> names) {
     return names
         .map(this::parse)
         .filter(Optional::isPresent)
@@ -196,10 +207,10 @@ public class NameParserResource {
         .collect(Collectors.toList());
   }
 
-  private Optional<PNUIssue> parse(CRName n) {
+  private Optional<PNIssue> parse(CRName n) {
     LOG.debug("Parse: {}", n);
     Optional<ParsedNameUsage> parsed = parser.parse(n.name, n.authorship, n.rank, n.code, n);
-    return parsed.map(nat -> new PNUIssue(nat, n.issues));
+    return parsed.map(nat -> new PNIssue(nat, n.issues));
   }
 
   @GET
