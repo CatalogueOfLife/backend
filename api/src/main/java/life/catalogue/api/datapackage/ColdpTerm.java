@@ -28,7 +28,14 @@ public enum ColdpTerm implements Term, AlternativeNames {
   details,
   doi,
   link,
-  
+
+  NameReference(true),
+  nameID,
+  referenceID,
+  page,
+  //link,
+  remarks,
+
   Name(true),
   //ID,
   basionymID(false, "originalNameID"),
@@ -41,16 +48,17 @@ public enum ColdpTerm implements Term, AlternativeNames {
   infragenericEpithet,
   infraspecificEpithet,
   cultivarEpithet,
-  publishedInID,
-  publishedInPage(false, "namePublishedInPage"),
-  publishedInYear(false, "namePublishedInYear"),
   code,
+  //referenceID,
+  publishedInYear(false, "namePublishedInYear"),
+  publishedInPage(false, "namePublishedInPage"),
+  publishedInPageLink,
   status,
   //link,
-  remarks,
+  //remarks,
 
   NameRelation(true, "NameRel"),
-  nameID,
+  //nameID,
   relatedNameID,
   type,
   //publishedInID,
@@ -68,7 +76,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   host,
   date,
   collector,
-  referenceID,
+  //referenceID,
   //link,
   //remarks,
 
@@ -81,6 +89,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   provisional,
   //referenceID,
   scrutinizer,
+  scrutinizerID,
   scrutinizerDate,
   extinct,
   temporalRangeStart,
@@ -118,6 +127,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
 
   NameUsage(true),
   nameStatus, // alternative term to Name.status
+  nameReferenceID, // alternative term to Name.referenceID
   genericName, // alternative term to Name.genus
 
   TaxonRelation(true, "TaxonRel"),
@@ -156,8 +166,15 @@ public enum ColdpTerm implements Term, AlternativeNames {
   transliteration,
   language,
   //country,
-  sex
+  sex,
   //referenceID
+
+  SpeciesEstimate(true),
+  //taxonID,
+  estimate,
+  //type,
+  //referenceID
+  //remarks
   ;
   
   private static Map<String, ColdpTerm> LOOKUP = Maps.uniqueIndex(Arrays.asList(values()), ColdpTerm::normalize);
@@ -184,8 +201,16 @@ public enum ColdpTerm implements Term, AlternativeNames {
           title,
           year,
           source,
+          details,
           doi,
-          link)
+          link,
+          remarks)
+      ).put(NameReference, ImmutableList.of(
+          nameID,
+          referenceID,
+          page,
+          link,
+          remarks)
       ).put(Name, ImmutableList.of(
           ID,
           basionymID,
@@ -194,28 +219,37 @@ public enum ColdpTerm implements Term, AlternativeNames {
           rank,
           uninomial,
           genus,
+          infragenericEpithet,
           specificEpithet,
           infraspecificEpithet,
           cultivarEpithet,
-          namePhrase,
-          publishedInID,
-          publishedInPage,
-          publishedInYear,
           code,
           status,
+          referenceID,
+          publishedInYear,
+          publishedInPage,
+          publishedInPageLink,
           link,
           remarks)
       ).put(NameRelation, ImmutableList.of(
           nameID,
           relatedNameID,
           type,
-          publishedInID,
+          referenceID,
           remarks)
       ).put(TypeMaterial, ImmutableList.of(
           nameID,
           citation,
           status,
           referenceID,
+          locality,
+          country,
+          latitude,
+          longitude,
+          altitude,
+          host,
+          date,
+          collector,
           link,
           remarks)
       ).put(Taxon, ImmutableList.of(
@@ -225,13 +259,14 @@ public enum ColdpTerm implements Term, AlternativeNames {
           namePhrase,
           accordingToID,
           provisional,
-          referenceID,
           scrutinizer,
+          scrutinizerID,
           scrutinizerDate,
           extinct,
           temporalRangeStart,
           temporalRangeEnd,
-      environment,
+          environment,
+          referenceID,
           species,
           section,
           subgenus,
@@ -264,30 +299,32 @@ public enum ColdpTerm implements Term, AlternativeNames {
           ID,
           parentID,
           basionymID,
+          status,
           scientificName,
           authorship,
           rank,
           uninomial,
           genericName,
+          infragenericEpithet,
           specificEpithet,
           infraspecificEpithet,
           cultivarEpithet,
           namePhrase,
-          publishedInID,
-          publishedInPage,
+          nameReferenceID,
           publishedInYear,
+          publishedInPage,
+          publishedInPageLink,
           code,
           nameStatus,
-          namePhrase,
           accordingToID,
-          status,
           referenceID,
           scrutinizer,
+          scrutinizerID,
           scrutinizerDate,
           extinct,
           temporalRangeStart,
           temporalRangeEnd,
-      environment,
+          environment,
           species,
           section,
           subgenus,
@@ -321,7 +358,8 @@ public enum ColdpTerm implements Term, AlternativeNames {
           area,
           gazetteer,
           status,
-          referenceID)
+          referenceID,
+          remarks)
       ).put(Media, ImmutableList.of(
           taxonID,
           url,
@@ -338,10 +376,17 @@ public enum ColdpTerm implements Term, AlternativeNames {
           transliteration,
           language,
           country,
+          area,
           sex,
           referenceID)
+      ).put(SpeciesEstimate, ImmutableList.of(
+          taxonID,
+          estimate,
+          type,
+          referenceID,
+          remarks)
       ).build();
-  
+
   private static final String PREFIX = "col";
   private static final String NS = "http://catalogueoflife.org/terms/";
   private static final URI NS_URI = URI.create(NS);
