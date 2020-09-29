@@ -71,7 +71,6 @@ public class NameIndexImpl implements NameIndex {
   @Override
   public NameMatch match(Name name, boolean allowInserts, boolean verbose) {
     NameMatch m;
-    name.setRank(normRank(name.getRank()));
 
     List<IndexName> candidates = store.get(key(name));
     if (candidates != null) {
@@ -134,7 +133,8 @@ public class NameIndexImpl implements NameIndex {
    * Does comparison by rank, author and nom code to pick real match from candidates
    */
   private NameMatch matchCandidates(Name query, final List<IndexName> candidates) {
-    final boolean compareRank = query.getRank() != Rank.UNRANKED;
+    final Rank rank = normRank(query.getRank());
+    final boolean compareRank = rank != Rank.UNRANKED;
     final boolean isCanonical = !query.hasAuthorship();
     final String queryname = SciNameNormalizer.normalizedAscii(query.getScientificName());
     final String queryfullname = SciNameNormalizer.normalizedAscii(query.getLabel());
@@ -148,7 +148,7 @@ public class NameIndexImpl implements NameIndex {
       int score = 0;
       
       // make sure rank match up exactly if part of query
-      if (compareRank && !match(query.getRank(), n.getRank())) {
+      if (compareRank && !match(rank, n.getRank())) {
         continue;
       }
 
@@ -213,7 +213,9 @@ public class NameIndexImpl implements NameIndex {
       // pick canonical
       if (matches.stream().anyMatch(Predicates.not(IndexName::hasAuthorship))) {
         matches.removeIf(IndexName::hasAuthorship);
-        m.setType(MatchType.CANONICAL);
+        if (matches.size()==1) {
+          m.setType(MatchType.CANONICAL);
+        }
       }
 
       // log a warning if we still have more than one match so we can maybe refine the algorithm in the future
@@ -287,6 +289,8 @@ public class NameIndexImpl implements NameIndex {
   @Override
   public synchronized void add(IndexName name) {
     final String key = key(name);
+    name.setRank(normRank(name.getRank()));
+
     try (SqlSession s = sqlFactory.openSession(true)) {
       NamesIndexMapper nim = s.getMapper(NamesIndexMapper.class);
 

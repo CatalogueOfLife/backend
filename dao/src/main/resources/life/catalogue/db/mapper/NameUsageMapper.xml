@@ -196,13 +196,6 @@
     </if>
   </select>
 
-  <update id="updateId" parameterType="map">
-    <include refid="life.catalogue.db.Common.partitionByKey"/>
-    UPDATE name_usage_${partition}
-    SET id = #{newId}
-    WHERE id = #{key.id}
-  </update>
-
   <update id="updateParentIds" parameterType="map">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     UPDATE name_usage_${partition}

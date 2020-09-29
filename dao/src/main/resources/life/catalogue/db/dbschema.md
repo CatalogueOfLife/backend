@@ -29,12 +29,54 @@ ALTER TYPE IMPORTSTATE ADD VALUE 'ARCHIVING' before 'EXPORTING';
 ALTER TABLE names_index ADD COLUMN canonical_id INTEGER REFERENCES names_index;
 ```
 
-Run the following to update all foreign keys to on update cascade:
+Run the following to update all foreign keys to on update cascade 
+with the `execSql --sqlfile upd-cascade.sql` command using the following sql template:
+
 ```
-ALTER TABLE name_usage_{KEY} DROP CONSTRAINT name_usage_{KEY}_parent_id_fk;
+ALTER TABLE name_{KEY} DROP CONSTRAINT IF EXISTS name_{KEY}_publishedin_id_fk;
+ALTER TABLE name_{KEY} ADD CONSTRAINT name_{KEY}_publishedin_id_fk FOREIGN KEY (published_in_id) REFERENCES reference_{KEY} (id) ON UPDATE CASCADE;
+
+ALTER TABLE name_rel_{KEY} DROP CONSTRAINT IF EXISTS name_rel_{KEY}_name_id_fk;
+ALTER TABLE name_rel_{KEY} ADD CONSTRAINT name_rel_{KEY}_name_id_fk FOREIGN KEY (name_id) REFERENCES name_{KEY} (id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE name_rel_{KEY} DROP CONSTRAINT IF EXISTS name_rel_{KEY}_related_name_id_fk;
+ALTER TABLE name_rel_{KEY} ADD CONSTRAINT name_rel_{KEY}_related_name_id_fk FOREIGN KEY (related_name_id) REFERENCES name_{KEY} (id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE name_rel_{KEY} DROP CONSTRAINT IF EXISTS name_rel_{KEY}_published_in_id_fk;
+ALTER TABLE name_rel_{KEY} ADD CONSTRAINT name_rel_{KEY}_published_in_id_fk FOREIGN KEY (published_in_id) REFERENCES reference_{KEY} (id) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE type_material_{KEY} DROP CONSTRAINT IF EXISTS type_material_{KEY}_name_id_fk;
+ALTER TABLE type_material_{KEY} ADD CONSTRAINT type_material_{KEY}_name_id_fk FOREIGN KEY (name_id) REFERENCES name_{KEY} (id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE type_material_{KEY} DROP CONSTRAINT IF EXISTS type_material_{KEY}_reference_id_fk;
+ALTER TABLE type_material_{KEY} ADD CONSTRAINT type_material_{KEY}_reference_id_fk FOREIGN KEY (reference_id) REFERENCES reference_{KEY} (id) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE name_usage_{KEY} DROP CONSTRAINT IF EXISTS name_usage_{KEY}_name_id_fk;
+ALTER TABLE name_usage_{KEY} ADD CONSTRAINT name_usage_{KEY}_name_id_fk FOREIGN KEY (name_id) REFERENCES name_{KEY} (id) ON UPDATE CASCADE;
+ALTER TABLE name_usage_{KEY} DROP CONSTRAINT IF EXISTS name_usage_{KEY}_parent_id_fk;
 ALTER TABLE name_usage_{KEY} ADD CONSTRAINT name_usage_{KEY}_parent_id_fk FOREIGN KEY (parent_id) REFERENCES name_usage_{KEY} (id) ON UPDATE CASCADE DEFERRABLE INITIALLY DEFERRED;
 
-TODO: many more...    
+ALTER TABLE taxon_rel_{KEY} DROP CONSTRAINT IF EXISTS taxon_rel_{KEY}_taxon_id_fk;
+ALTER TABLE taxon_rel_{KEY} ADD CONSTRAINT taxon_rel_{KEY}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES name_usage_{KEY} (id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE taxon_rel_{KEY} DROP CONSTRAINT IF EXISTS taxon_rel_{KEY}_related_taxon_id_fk;
+ALTER TABLE taxon_rel_{KEY} ADD CONSTRAINT taxon_rel_{KEY}_related_taxon_id_fk FOREIGN KEY (related_taxon_id) REFERENCES name_usage_{KEY} (id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE taxon_rel_{KEY} DROP CONSTRAINT IF EXISTS taxon_rel_{KEY}_reference_id_fk;
+ALTER TABLE taxon_rel_{KEY} ADD CONSTRAINT taxon_rel_{KEY}_reference_id_fk FOREIGN KEY (reference_id) REFERENCES reference_{KEY} (id) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE treatment_{KEY} DROP CONSTRAINT IF EXISTS treatment_{KEY}_id_fk;
+ALTER TABLE treatment_{KEY} ADD CONSTRAINT treatment_{KEY}_id_fk FOREIGN KEY (id) REFERENCES name_usage_{KEY} (id) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE distribution_{KEY} DROP CONSTRAINT IF EXISTS distribution_{KEY}_taxon_id_fk;
+ALTER TABLE distribution_{KEY} ADD CONSTRAINT distribution_{KEY}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES name_usage_{KEY} (id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE distribution_{KEY} DROP CONSTRAINT IF EXISTS distribution_{KEY}_reference_id_fk;
+ALTER TABLE distribution_{KEY} ADD CONSTRAINT distribution_{KEY}_reference_id_fk FOREIGN KEY (reference_id) REFERENCES reference_{KEY} (id) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE media_{KEY} DROP CONSTRAINT IF EXISTS media_{KEY}_taxon_id_fk;
+ALTER TABLE media_{KEY} ADD CONSTRAINT media_{KEY}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES name_usage_{KEY} (id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE media_{KEY} DROP CONSTRAINT IF EXISTS media_{KEY}_reference_id_fk;
+ALTER TABLE media_{KEY} ADD CONSTRAINT media_{KEY}_reference_id_fk FOREIGN KEY (reference_id) REFERENCES reference_{KEY} (id) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE vernacular_name_{KEY} DROP CONSTRAINT IF EXISTS vernacular_name_{KEY}_taxon_id_fk;
+ALTER TABLE vernacular_name_{KEY} ADD CONSTRAINT vernacular_name_{KEY}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES name_usage_{KEY} (id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE vernacular_name_{KEY} DROP CONSTRAINT IF EXISTS vernacular_name_{KEY}_reference_id_fk;
+ALTER TABLE vernacular_name_{KEY} ADD CONSTRAINT vernacular_name_{KEY}_reference_id_fk FOREIGN KEY (reference_id) REFERENCES reference_{KEY} (id) ON DELETE CASCADE ON UPDATE CASCADE;
 ``` 
 
 ### 2020-09-18 dataset person

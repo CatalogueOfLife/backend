@@ -13,10 +13,7 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import org.apache.ibatis.session.SqlSession;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
@@ -48,6 +45,7 @@ public class ProjectReleaseIT {
   }
   
   @Test
+  @Ignore("Work in progress")
   public void release() throws Exception {
     ProjectRelease release = buildRelease();
     release.run();

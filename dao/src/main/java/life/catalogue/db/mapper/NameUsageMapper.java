@@ -52,14 +52,6 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                                        @Nullable @Param("maxRank") Rank maxRank);
 
   /**
-   * Updates the primary key. By using on update cascade triggers the related entities will be updated too.
-   * @param key the usage to update
-   * @param newId the new id to be used
-   */
-  void updateId(@Param("key") DSID<String> key,
-                @Param("newId") String newId);
-
-  /**
    * Move all children including synonyms of a given taxon to a new parent.
    * @param datasetKey
    * @param parentId the current parentId
