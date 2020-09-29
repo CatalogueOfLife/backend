@@ -1,5 +1,5 @@
-id,canonical_id,rank,code,scientific_name,authorship
-1,1,GENUS,BOTANICAL,Abies,
-2,1,GENUS,BOTANICAL,Abies,Miller
-3,3,SPECIES,BOTANICAL,Abies alba,
-4,3,SPECIES,BOTANICAL,Abies alba,Miller
+id,canonical_id,rank,scientific_name,authorship
+1,1,GENUS,Abies,
+2,1,GENUS,Abies,Miller
+3,3,SPECIES,Abies alba,
+4,3,SPECIES,Abies alba,Miller

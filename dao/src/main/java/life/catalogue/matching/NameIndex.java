@@ -36,7 +36,7 @@ public interface NameIndex extends Managed, AutoCloseable {
   int size();
   
   /**
-   * Adds a name to the index
+   * Adds a name to the index, generating a new key and potentially inserting a canonical name record too.
    *
    * @param name
    */

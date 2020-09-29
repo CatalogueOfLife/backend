@@ -1,11 +1,9 @@
 package life.catalogue.es.nu;
 
-import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchRequest.SortBy;
 import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.EsUtil;
 import org.gbif.nameparser.api.Rank;
@@ -56,7 +54,7 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
   }
 
   private static List<NameUsageWrapper> createTestObjects() {
-    final IntSet DUMMY_NIDX = CollectionUtils.intSetOf(13, 23456789);
+    final int DUMMY_NIDX = 13;
     NameUsageWrapper nuw1 = new NameUsageWrapper();
     nuw1.setClassification(createClassification(
       "7",
@@ -76,7 +74,7 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     nuw1.setId("10");
     Name name = new Name();
     name.setDatasetKey(DATASET_KEY);
-    name.setNameIndexIds(DUMMY_NIDX);
+    name.setNameIndexId(DUMMY_NIDX);
     nu.setName(name);
     nuw1.setUsage(nu);
 
@@ -99,7 +97,7 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     nuw2.setId("20");
     name = new Name();
     name.setDatasetKey(DATASET_KEY);
-    name.setNameIndexIds(DUMMY_NIDX);
+    name.setNameIndexId(DUMMY_NIDX);
     nu.setName(name);
     nuw2.setUsage(nu);
 
@@ -129,7 +127,7 @@ public class ClassificationUpdaterTest extends EsReadTestBase {
     nuw3.setId("777");
     name = new Name();
     name.setDatasetKey(DATASET_KEY);
-    name.setNameIndexIds(DUMMY_NIDX);
+    name.setNameIndexId(DUMMY_NIDX);
     nu.setName(name);
     nuw3.setUsage(nu);
 

@@ -1,6 +1,5 @@
 package life.catalogue.es.nu.search;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageRequest.SearchType;
@@ -690,7 +689,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setInfraspecificEpithet("montana");
     n.setRank(Rank.SUBSPECIES);
     n.setNameIndexMatchType(MatchType.EXACT);
-    n.setNameIndexIds(new IntOpenHashSet(Set.of(11,12)));
+    n.setNameIndexId(11);
     n.setCombinationAuthorship(Authorship.yearAuthors("1879", "Smith", "Miller"));
     n.rebuildScientificName();
     n.rebuildAuthorship();

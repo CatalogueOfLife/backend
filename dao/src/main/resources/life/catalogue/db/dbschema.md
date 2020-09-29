@@ -10,6 +10,19 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2020-09-27 require single names index match sine code
+```
+ALTER TABLE names_index DROP COLUMN code;
+ALTER TABLE names_index DROP COLUMN type;
+ALTER TABLE names_index DROP COLUMN notho;
+ALTER TABLE names_index DROP COLUMN candidatus;
+
+ALTER TABLE name DROP COLUMN name_index_ids; 
+ALTER TABLE name ADD COLUMN name_index_id INTEGER;
+
+ALTER TYPE MATCHTYPE ADD VALUE 'CANONICAL' before 'INSERTED';
+```
+
 ### 2020-09-25 names index canonical
 ```
 ALTER TYPE IMPORTSTATE ADD VALUE 'ARCHIVING' before 'EXPORTING';

@@ -31,7 +31,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
 
   NameReference(true),
   nameID,
-  referenceID,
+  referenceID(false, "publishedInID"),
   page,
   //link,
   remarks,
@@ -61,7 +61,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   //nameID,
   relatedNameID,
   type,
-  //publishedInID,
+  //referenceID,
   //remarks,
 
   TypeMaterial(true),

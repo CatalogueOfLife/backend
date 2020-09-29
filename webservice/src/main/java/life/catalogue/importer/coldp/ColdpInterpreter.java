@@ -177,12 +177,7 @@ public class ColdpInterpreter extends InterpreterBase {
     if (type.isPresent()) {
       rel.setType(typeFunction.apply(type.get()));
       rel.setRemarks(rec.get(ColdpTerm.remarks));
-      // nomRel uses publishedInID while taxRel uses referenceID. We simply allow both
-      if (rec.hasTerm(ColdpTerm.publishedInID)) {
-        super.setReference(rec, ColdpTerm.publishedInID, rel::setReferenceId);
-      } else {
-        setReference(rel, rec);
-      }
+      setReference(rel, rec);
       return Optional.of(rel);
     }
     return Optional.empty();
@@ -263,7 +258,7 @@ public class ColdpInterpreter extends InterpreterBase {
     if (opt.isPresent()) {
       // publishedIn
       Name n = opt.get().getName();
-      setReference(v, ColdpTerm.publishedInID, rid -> {
+      setReference(v, ColdpTerm.referenceID, rid -> {
           n.setPublishedInId(rid);
           n.setPublishedInPage(v.get(ColdpTerm.publishedInPage));
           n.setPublishedInYear(parseYear(ColdpTerm.publishedInYear, v));

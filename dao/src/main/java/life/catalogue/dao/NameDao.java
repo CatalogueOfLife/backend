@@ -31,11 +31,11 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
   @Override
   public DSID<String> create(Name obj, int user) {
     // match name if not done yet
-    if (obj.getNameIndexMatchType() == null || obj.getNameIndexIds().isEmpty()) {
+    if (obj.getNameIndexMatchType() == null || obj.getNameIndexId() == null) {
       NameMatch match = nameIndex.match(obj, true, false);
       obj.setNameIndexMatchType(match.getType());
       if (match.hasMatch()) {
-        obj.setNameIndexIds(match.getNameIds());
+        obj.setNameIndexId(match.getName().getKey());
       }
     }
     return super.create(obj, user);

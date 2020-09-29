@@ -81,7 +81,7 @@ public class NameIndexFactory {
       @Override
       public NameMatch match(Name query, boolean allowInserts, boolean verbose) {
         NameMatch m = new NameMatch();
-        m.addName(n);
+        m.setName(n);
         if (query.getLabel().equalsIgnoreCase(n.getLabel())) {
           m.setType(MatchType.EXACT);
         } else {

@@ -7,9 +7,9 @@ import life.catalogue.api.model.SpeciesEstimate;
 import life.catalogue.api.model.User;
 import life.catalogue.api.search.EstimateSearchRequest;
 import life.catalogue.dao.EstimateDao;
-import life.catalogue.match.EstimateRematcher;
-import life.catalogue.match.RematchRequest;
-import life.catalogue.match.RematcherBase;
+import life.catalogue.matching.decision.EstimateRematcher;
+import life.catalogue.matching.decision.RematchRequest;
+import life.catalogue.matching.decision.RematcherBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

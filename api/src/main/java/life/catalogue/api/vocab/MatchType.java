@@ -12,7 +12,12 @@ public enum MatchType {
    * which is considered to be the same name still.
    */
   VARIANT(Issue.NAME_MATCH_VARIANT),
-  
+
+  /**
+   * Name matched to canonical name only, but could not be inserted.
+   */
+  CANONICAL(Issue.NAME_MATCH_AMBIGUOUS),
+
   /**
    * No existing name matching, but the name was newly inserted.
    */
@@ -23,7 +28,7 @@ public enum MatchType {
    * Usually only happens for canonical monomials without authorship.
    */
   AMBIGUOUS(Issue.NAME_MATCH_AMBIGUOUS),
-  
+
   /**
    * No matching name.
    */

@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.jackson.IsEmptyFilter;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.MatchType;
@@ -52,9 +50,9 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   private String homotypicNameId;
   
   /**
-   * Keys from the names index grouping all distinct scientific names
+   * Key from the names index grouping all distinct scientific names
    */
-  private IntSet nameIndexIds = new IntOpenHashSet();
+  private Integer nameIndexId;
   
   /**
    * Match type that resulted in the nameIndexId.
@@ -196,7 +194,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.setKey(n);
     this.sectorKey = n.sectorKey;
     this.homotypicNameId = n.homotypicNameId;
-    this.nameIndexIds = n.nameIndexIds;
+    this.nameIndexId = n.nameIndexId;
     this.nameIndexMatchType = n.nameIndexMatchType;
     this.scientificName = n.scientificName;
     this.authorship = n.authorship;
@@ -270,12 +268,12 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.verbatimKey = verbatimKey;
   }
 
-  public void setNameIndexIds(IntSet nameIndexIds) {
-    this.nameIndexIds = nameIndexIds;
+  public void setNameIndexId(Integer nameIndexId) {
+    this.nameIndexId = nameIndexId;
   }
 
-  public IntSet getNameIndexIds() {
-    return nameIndexIds;
+  public Integer getNameIndexId() {
+    return nameIndexId;
   }
 
   public MatchType getNameIndexMatchType() {
@@ -765,7 +763,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
         Objects.equals(sectorKey, name.sectorKey) &&
         Objects.equals(verbatimKey, name.verbatimKey) &&
         Objects.equals(homotypicNameId, name.homotypicNameId) &&
-        Objects.equals(nameIndexIds, name.nameIndexIds) &&
+        Objects.equals(nameIndexId, name.nameIndexId) &&
         nameIndexMatchType == name.nameIndexMatchType &&
         Objects.equals(scientificName, name.scientificName) &&
         Objects.equals(authorship, name.authorship) &&
@@ -794,7 +792,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, homotypicNameId, nameIndexIds, nameIndexMatchType, scientificName, authorship, rank,
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, homotypicNameId, nameIndexId, nameIndexMatchType, scientificName, authorship, rank,
       uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho,
       combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, publishedInId, publishedInPage, publishedInYear, origin, type, link,
       nomenclaturalNote, remarks);

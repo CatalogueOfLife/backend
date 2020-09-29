@@ -105,7 +105,7 @@ public class StableIdProvider {
         attempt2dataset.put(attempt, (int)rel.getKey());
         session.getMapper(NameUsageMapper.class).processNxIds(rel.getKey(), null).forEach(sn -> {
           counter.incrementAndGet();
-          ids.add(new ReleasedIds.ReleasedId(decode(sn.getId()), sn.getNameIndexIds().toIntArray(), attempt));
+          ids.add(new ReleasedIds.ReleasedId(decode(sn.getId()), sn.getNameIndexId(), attempt));
         });
         LOG.info("Read {} usages from previous release {}, key={}. Total released ids = {}", counter, rel.getImportAttempt(), rel.getKey(), ids.size());
       }
@@ -130,28 +130,16 @@ public class StableIdProvider {
         idm = session.getMapper(IdMapMapper.class);
         num = session.getMapper(NameUsageMapper.class);
         num.processNxIds(datasetKey, status).forEach(u -> {
-          if (u.getNameIndexIds().isEmpty()) {
-            LOG.debug("{} usage {} with no name match id - keep the temporary id", status, u.getId());
-          } else if (u.getNameIndexIds().size() == 1) {
-            String id = issueID(u, u.getNameIndexIds().toIntArray());
+          if (u.getNameIndexId() == null) {
+            LOG.info("{} usage {} with no name match for {} - keep the temporary id", status, u.getId(), u.getName());
+          } else {
+            String id = issueID(u, u.getNameIndexId());
             idm.mapUsage(datasetKey, u.getId(), id);
             if (counter.incrementAndGet() % 10000 == 0) {
               session.commit();
             }
-          } else {
-            ambiguous.add(u);
           }
         });
-        session.commit();
-
-        LOG.info("Updated {} ids for simple matches, doing {} ambiguous matches next", counter, ambiguous.size());
-        for (SimpleNameWithNidx u : ambiguous){
-          String id = issueID(u, u.getNameIndexIds().toIntArray());
-          idm.mapUsage(datasetKey, u.getId(), id);
-          if (counter.incrementAndGet() % 10000 == 0) {
-            session.commit();
-          }
-        }
         session.commit();
       }
     }
@@ -196,6 +184,8 @@ public class StableIdProvider {
     for (ReleasedId rid : candidates) {
       DSID<String> key = DSID.of(attempt2dataset.get(rid.attempt), encode(rid.id));
       SimpleName sn = num.getSimple(key);
+      //TODO: make sure misapplied names never match non misapplied names
+      // names index ids are for NAMES only, not for usage related namePhrase & accordingTo !!!
       int score = 0;
       // author 0-2
       if (nu.getAuthorship() != null && Objects.equals(nu.getAuthorship(), sn.getAuthorship())) {

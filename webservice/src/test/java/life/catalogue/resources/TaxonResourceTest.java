@@ -43,7 +43,7 @@ public class TaxonResourceTest extends ResourceTestBase {
     Taxon t2 = userCreds(base.path(t.getId())).get(Taxon.class);
     assertNotNull(t2);
     assertEquals(MatchType.INSERTED, t2.getName().getNameIndexMatchType());
-    assertFalse(t2.getName().getNameIndexIds().isEmpty());
+    assertNotNull(t2.getName().getNameIndexId());
 
     // manually created taxa will always be of origin USER
     assertEquals(t.getId(), t2.getId());
@@ -66,7 +66,6 @@ public class TaxonResourceTest extends ResourceTestBase {
     t.setOrigin(Origin.USER);
     TestEntityGenerator.nullifyUserDate(t);
     t.getName().setNameIndexMatchType(null);
-    t.getName().getNameIndexIds().clear();
   }
 
   private Taxon createTaxon() {

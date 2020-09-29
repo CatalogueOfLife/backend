@@ -1,4 +1,4 @@
-package life.catalogue.match;
+package life.catalogue.matching.decision;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
@@ -36,9 +36,9 @@ public abstract class RematcherBase<
 
   public RematcherBase(Class<T> type, Class<M> mapperClass, R req, int userKey) {
     this.userKey = userKey;
+    this.req = req;
     this.projectKey = req.getDatasetKey();
     this.type = type.getSimpleName();
-    this.req = req;
     this.mapperClass = mapperClass;
   }
 

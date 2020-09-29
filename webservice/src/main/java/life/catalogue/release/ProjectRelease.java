@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
-import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.text.SimpleTemplate;
 import life.catalogue.dao.DatasetImportDao;
@@ -86,9 +85,9 @@ public class ProjectRelease extends AbstractProjectCopy {
       AtomicInteger counter = new AtomicInteger();
       NameMapper nm = session.getMapper(NameMapper.class);
       nm.processUnmatched(datasetKey).forEach(n -> {
-        if (n.getNameIndexMatchType() == null || n.getNameIndexMatchType() == MatchType.NONE || n.getNameIndexIds().isEmpty()) {
-          NameMatch match = nameIndex.match(n, true, false);
-          nm.updateMatch(datasetKey, n.getId(), match.getNameIds(), match.getType());
+        NameMatch match = nameIndex.match(n, true, false);
+        if (match.hasMatch()) {
+          nm.updateMatch(datasetKey, n.getId(), match.getName().getKey(), match.getType());
           if (counter.getAndIncrement() % 1000 == 0) {
             session.commit();
           }

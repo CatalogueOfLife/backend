@@ -1,5 +1,6 @@
 package life.catalogue.matching;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
@@ -11,6 +12,7 @@ import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.model.ScientificName;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.common.func.Predicates;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.common.text.StringUtils;
@@ -19,7 +21,6 @@ import life.catalogue.matching.authorship.AuthorComparator;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,12 +71,14 @@ public class NameIndexImpl implements NameIndex {
   @Override
   public NameMatch match(Name name, boolean allowInserts, boolean verbose) {
     NameMatch m;
+    name.setRank(normRank(name.getRank()));
+
     List<IndexName> candidates = store.get(key(name));
     if (candidates != null) {
       m = matchCandidates(name, candidates);
       if (verbose) {
         if (m.hasMatch()) {
-          candidates.removeAll(m.getNames());
+          candidates.remove(m.getName());
         }
         m.setAlternatives(candidates);
       }
@@ -84,11 +87,11 @@ public class NameIndexImpl implements NameIndex {
       m = NameMatch.noMatch();
     }
     
-    if (!m.hasMatch() && allowInserts) {
+    if ((!m.hasMatch() || m.getType() == MatchType.CANONICAL) && allowInserts) {
       if (INDEX_NAME_TYPES.contains(name.getType())) {
-        m.addName(insert(name));
+        m.setName(add(name));
         m.setType(MatchType.INSERTED);
-        LOG.debug("Inserted: {}", m.getNames().get(0).getLabel());
+        LOG.debug("Inserted: {}", m.getName().getLabel());
       } else {
         LOG.debug("Do not insert {} name: {}", name.getType(), name.getLabel());
       }
@@ -102,13 +105,37 @@ public class NameIndexImpl implements NameIndex {
     return store.get(key);
   }
 
+  static Rank normRank(Rank r) {
+    if (r == null || r == Rank.OTHER) {
+      return Rank.UNRANKED;
+
+    } else if (r.isFamilyGroup()) {
+      return Rank.FAMILY;
+
+    } else if (r.isGenusGroup()) {
+      return Rank.GENUS;
+
+    } else if (r.isSuprageneric()) {
+      return Rank.SUPRAGENERIC_NAME;
+
+    } else if (r == Rank.SPECIES_AGGREGATE) {
+      return Rank.SPECIES;
+
+    } else if (r == Rank.INFRASPECIFIC_NAME) {
+      return Rank.SUBSPECIES;
+
+    } else if (r == Rank.INFRASUBSPECIFIC_NAME) {
+      return Rank.VARIETY;
+    }
+    return r;
+  }
+
   /**
    * Does comparison by rank, author and nom code to pick real match from candidates
    */
   private NameMatch matchCandidates(Name query, final List<IndexName> candidates) {
-    final boolean compareRank = query.getRank() != null && query.getRank() != Rank.UNRANKED;
-    final boolean compareAuthorship = query.hasAuthorship();
-    final boolean compareCode = query.getCode() != null;
+    final boolean compareRank = query.getRank() != Rank.UNRANKED;
+    final boolean isCanonical = !query.hasAuthorship();
     final String queryname = SciNameNormalizer.normalizedAscii(query.getScientificName());
     final String queryfullname = SciNameNormalizer.normalizedAscii(query.getLabel());
     final String queryauthorship = Strings.nullToEmpty(SciNameNormalizer.normalizedAscii(query.getAuthorship()));
@@ -124,32 +151,35 @@ public class NameIndexImpl implements NameIndex {
       if (compareRank && !match(query.getRank(), n.getRank())) {
         continue;
       }
-      
-      // make sure nom code match up exactly if part of query
-      if (compareCode && !match(query.getCode(), n.getCode())) {
+
+      // we only want matches without an authorship
+      if (isCanonical && n.hasAuthorship()) {
         continue;
       }
-      
+
       // exact full name match: =5
       if (queryfullname.equalsIgnoreCase(SciNameNormalizer.normalizedAscii(n.getLabel()))) {
         score = 5;
         
       } else {
-        // remove different authorships or
-        // 0 for unknown match
-        // +1 for equal authorships
-        // +2 for exact equal authorship strings
-        Equality aeq = compareAuthorship ? authComp.compare(query, n) : Equality.UNKNOWN;
-        if (aeq == Equality.DIFFERENT) {
-          continue;
+
+        // authorship comparison only for non canonical queries/matches
+        if (!isCanonical) {
+          // remove different authorships or
+          // +1 for equal authorships
+          // +2 for exact equal authorship strings
+          Equality aeq = authComp.compare(query, n);
+          if (aeq == Equality.DIFFERENT) {
+            continue;
+          }
+
+          if (queryauthorship.equalsIgnoreCase(SciNameNormalizer.normalizedAscii(n.getAuthorship()))) {
+            score += 3;
+          } else if (aeq == Equality.EQUAL) {
+            score += 1;
+          }
         }
-        
-        if (queryauthorship.equalsIgnoreCase(SciNameNormalizer.normalizedAscii(n.getAuthorship()))) {
-          score += 2;
-        } else if (aeq == Equality.EQUAL) {
-          score += 1;
-        }
-        
+
         // exact canonical name match: +1
         if (queryname.equalsIgnoreCase(SciNameNormalizer.normalizedAscii(n.getScientificName()))) {
           score += 1;
@@ -163,18 +193,41 @@ public class NameIndexImpl implements NameIndex {
       m.setType(MatchType.NONE);
 
     } else if (matches.size() == 1) {
-      m.addName(matches.get(0));
-      if (query.getLabel().equalsIgnoreCase(matches.get(0).getLabel())) {
+      IndexName m0 = matches.get(0);
+      m.setName(m0);
+      if (query.getLabel().equalsIgnoreCase(m0.getLabel())) {
         m.setType(MatchType.EXACT);
+      } else if (!isCanonical && !m0.hasAuthorship() && query.getScientificName().equalsIgnoreCase(m0.getLabel())) {
+        m.setType(MatchType.CANONICAL);
       } else {
         m.setType(MatchType.VARIANT);
       }
 
     } else {
-      // multiple, ambiguous matches
-      LOG.debug("Ambiguous match ({} hits) for {}", matches.size(), query.getLabel());
-      m.getNames().addAll(matches);
       m.setType(MatchType.AMBIGUOUS);
+      // multiple, ambiguous matches. Pick the canonical one out of them
+      // This can happen when:
+      //  a) no rank was given
+      //  b) the authorship matches various authorships, e.g. if only the basionym or year is given
+
+      // pick canonical
+      if (matches.stream().anyMatch(Predicates.not(IndexName::hasAuthorship))) {
+        matches.removeIf(IndexName::hasAuthorship);
+        m.setType(MatchType.CANONICAL);
+      }
+
+      // log a warning if we still have more than one match so we can maybe refine the algorithm in the future
+      if (compareRank && matches.size() > 1) {
+        LOG.info("Ambiguous match ({} hits) for {} {}", matches.size(), query.getRank(), query.getLabel());
+      }
+      // we pick the lowest key to guarantee a stable outcome in all cases - even if we dont have a canonical (should not really happen)
+      IndexName earliest = matches.get(0);
+      for (IndexName n : matches) {
+        if (n.getKey() < earliest.getKey()) {
+          earliest = n;
+        }
+      }
+      m.setName(earliest);
       return m;
     }
     m.setAlternatives(candidates);
@@ -199,11 +252,12 @@ public class NameIndexImpl implements NameIndex {
     matches.add(n);
     return score;
   }
-  
-  private IndexName getCanonical(ScientificName name) {
+
+  @VisibleForTesting
+  protected IndexName getCanonical(ScientificName name) {
     List<IndexName> matches = store.get(key(name));
     // make sure name has no authorship and code is matching if it was part of the "query"
-    matches.removeIf(n -> (n.hasAuthorship() || n.getAuthorship() != null) || (name.getCode() != null && !name.getCode().equals(n.getCode())));
+    matches.removeIf(IndexName::hasAuthorship);
     // just in case we have multiple results make sure to have a stable return by selecting the lowest, i.e. oldes key
     IndexName lowest = null;
     for (IndexName n : matches) {
@@ -214,9 +268,25 @@ public class NameIndexImpl implements NameIndex {
     return lowest;
   }
 
-  private IndexName insert(Name orig) {
-    IndexName name = new IndexName(orig);
+  @Override
+  public int size() {
+    return store.count();
+  }
 
+  @Override
+  public Iterable<IndexName> all() {
+    return store.all();
+  }
+
+  public IndexName add(Name orig) {
+    IndexName n = new IndexName(orig);
+    add(n);
+    return n;
+  }
+
+  @Override
+  public synchronized void add(IndexName name) {
+    final String key = key(name);
     try (SqlSession s = sqlFactory.openSession(true)) {
       NamesIndexMapper nim = s.getMapper(NamesIndexMapper.class);
 
@@ -237,35 +307,17 @@ public class NameIndexImpl implements NameIndex {
           canonical.setInfragenericEpithet(name.getInfragenericEpithet());
           canonical.setInfraspecificEpithet(name.getInfraspecificEpithet());
           canonical.setCultivarEpithet(name.getCultivarEpithet());
-          canonical.setType(name.getType());
           canonical.setCreatedBy(Users.MATCHER);
           canonical.setModifiedBy(Users.MATCHER);
-          nim.create(name);
+          nim.create(canonical);
+          store.add(key, canonical);
         }
         name.setCanonicalId(canonical.getKey());
       }
       // insert into postgres assigning a key
       nim.create(name);
+      store.add(key, name);
     }
-    // add to index map, assigning a new NI id
-    add(name);
-    return name;
-  }
-  
-  @Override
-  public int size() {
-    return store.count();
-  }
-
-  @Override
-  public Iterable<IndexName> all() {
-    return store.all();
-  }
-
-  @Override
-  public synchronized void add(IndexName name) {
-    final String key = key(name);
-    store.add(key, name);
   }
 
   /**
@@ -273,11 +325,6 @@ public class NameIndexImpl implements NameIndex {
    */
   private static String key(ScientificName n) {
     return StringUtils.replaceNonAscii(SciNameNormalizer.normalize(n.getScientificName()), '*');
-  }
-  
-  private static boolean match(NomCode c1, NomCode c2) {
-    if (c1 == null || c2 == null) return true;
-    return c1 == c2;
   }
   
   /**

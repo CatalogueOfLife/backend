@@ -3,7 +3,6 @@ package life.catalogue.es.nu;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.NameField;
-import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.dao.CatCopy;
 import life.catalogue.es.*;
@@ -147,7 +146,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     name.setDatasetKey(null);
     name.setId(null);
     name.setScientificName(null);
-    name.setNameIndexIds(null);
+    name.setNameIndexId(null);
     name.setNomStatus(null);
     name.setPublishedInId(null);
     name.setType(null);
@@ -192,7 +191,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     name.setDatasetKey(doc.getDatasetKey());
     name.setId(doc.getNameId());
     name.setScientificName(doc.getScientificName());
-    name.setNameIndexIds(CollectionUtils.intSetOf(doc.getNameIndexIds()));
+    name.setNameIndexId(doc.getNameIndexId());
     name.setNomStatus(doc.getNomStatus());
     name.setPublishedInId(doc.getPublishedInId());
     name.setType(doc.getType());
@@ -237,7 +236,9 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     doc.setDatasetKey(name.getDatasetKey());
     doc.setSectorDatasetKey(nuw.getSectorDatasetKey());
     doc.setNameId(name.getId());
-    doc.setNameIndexIds(name.getNameIndexIds() == null ? null : Set.copyOf(name.getNameIndexIds()));
+    doc.setNameIndexId(name.getNameIndexId());
+    //TODO: lookup canonical ID or better even put it into the wrapper !!!
+    doc.setNameIndexCanonicalId(null);
     doc.setNomCode(name.getCode());
     doc.setNomStatus(name.getNomStatus());
     doc.setPublishedInId(name.getPublishedInId());

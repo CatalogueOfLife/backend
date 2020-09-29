@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.EnumSet;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -58,7 +57,7 @@ public class EsNameUsageSerde extends EsReadTestBase {
     docIn.setDatasetKey(472);
     docIn.setNameFields(EnumSet.of(NameField.COMBINATION_EX_AUTHORS, NameField.UNINOMIAL));
     docIn.setNameId("16");
-    docIn.setNameIndexIds(Set.of(56770));
+    docIn.setNameIndexId(56770);
     docIn.setPublishedInId("AMO333");
     docIn.setRank(Rank.SPECIES);
     docIn.setStatus(TaxonomicStatus.ACCEPTED);

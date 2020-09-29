@@ -1,14 +1,12 @@
 package life.catalogue.api.model;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.vocab.MatchType;
 
 import java.util.Objects;
 
 public class SimpleNameWithNidx extends SimpleName {
   private MatchType nameIndexMatchType;
-  private IntSet nameIndexIds = new IntOpenHashSet();
+  private Integer nameIndexId;
 
   public MatchType getNameIndexMatchType() {
     return nameIndexMatchType;
@@ -18,12 +16,12 @@ public class SimpleNameWithNidx extends SimpleName {
     this.nameIndexMatchType = nameIndexMatchType;
   }
 
-  public IntSet getNameIndexIds() {
-    return nameIndexIds;
+  public Integer getNameIndexId() {
+    return nameIndexId;
   }
 
-  public void setNameIndexIds(IntSet nameIndexIds) {
-    this.nameIndexIds = nameIndexIds;
+  public void setNameIndexId(Integer nameIndexId) {
+    this.nameIndexId = nameIndexId;
   }
 
   @Override
@@ -33,11 +31,11 @@ public class SimpleNameWithNidx extends SimpleName {
     if (!super.equals(o)) return false;
     SimpleNameWithNidx that = (SimpleNameWithNidx) o;
     return nameIndexMatchType == that.nameIndexMatchType &&
-      Objects.equals(nameIndexIds, that.nameIndexIds);
+      Objects.equals(nameIndexId, that.nameIndexId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), nameIndexMatchType, nameIndexIds);
+    return Objects.hash(super.hashCode(), nameIndexMatchType, nameIndexId);
   }
 }

@@ -32,6 +32,8 @@ public class ColdpReader extends CsvReader {
     ColdpTerm.Treatment, ColdpTerm.Synonym, ColdpTerm.Distribution, ColdpTerm.Media, ColdpTerm.VernacularName, ColdpTerm.TaxonRelation
   );
   private static Set<ColdpTerm> REFID_SCHEMAS = ImmutableSet.of(
+    ColdpTerm.Name,
+    ColdpTerm.NameRelation,
     ColdpTerm.NameUsage,
     ColdpTerm.Distribution,
     ColdpTerm.Synonym,
@@ -144,9 +146,7 @@ public class ColdpReader extends CsvReader {
     // reference dependencies
     if (!hasReferences()) {
       LOG.warn("No Reference mapped! Disallow all referenceIDs");
-      disallow(ColdpTerm.Name, ColdpTerm.publishedInID);
-      disallow(ColdpTerm.NameUsage, ColdpTerm.publishedInID);
-      disallow(ColdpTerm.NameRelation, ColdpTerm.publishedInID);
+      disallow(ColdpTerm.NameUsage, ColdpTerm.nameReferenceID);
       for (ColdpTerm rt : REFID_SCHEMAS) {
         disallow(rt, ColdpTerm.referenceID);
       }

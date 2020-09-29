@@ -6,7 +6,6 @@ import com.google.common.collect.Lists;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.*;
-import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.kryo.ApiKryoPool;
@@ -376,7 +375,7 @@ public class TestEntityGenerator {
   public static Name newName(int datasetKey, String id, String scientificName, Rank rank) {
     Name n = setUserDate(new Name());
     n.setId(id);
-    n.setNameIndexIds(CollectionUtils.intSetOf(RandomUtils.randomInt(), RandomUtils.randomInt()));
+    n.setNameIndexId(RandomUtils.randomInt());
     n.setHomotypicNameId(id);
     n.setDatasetKey(datasetKey);
     n.setCombinationAuthorship(createAuthorship());

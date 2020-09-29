@@ -1,4 +1,4 @@
-package life.catalogue.match;
+package life.catalogue.matching.decision;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.EditorialDecision;
@@ -11,6 +11,8 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.matching.decision.DecisionRematchRequest;
+import life.catalogue.matching.decision.DecisionRematcher;
 import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.Rank;
 import org.junit.ClassRule;

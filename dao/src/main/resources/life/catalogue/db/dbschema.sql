@@ -263,6 +263,7 @@ CREATE TYPE MATCHINGMODE AS ENUM (
 CREATE TYPE MATCHTYPE AS ENUM (
   'EXACT',
   'VARIANT',
+  'CANONICAL',
   'INSERTED',
   'AMBIGUOUS',
   'NONE'
@@ -842,12 +843,8 @@ CREATE TABLE estimate (
 
 CREATE TABLE names_index (
   id SERIAL PRIMARY KEY,
-  canonical_id INTEGER REFERENCES names_index,
-  candidatus BOOLEAN DEFAULT FALSE,
+  canonical_id INTEGER NOT NULL REFERENCES names_index,
   rank RANK NOT NULL,
-  notho NAMEPART,
-  code NOMCODE,
-  type NAMETYPE NOT NULL,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   scientific_name TEXT NOT NULL,
@@ -937,7 +934,7 @@ CREATE TABLE name (
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   homotypic_name_id TEXT NOT NULL,
-  name_index_ids INTEGER[],
+  name_index_id INTEGER,
   scientific_name TEXT NOT NULL,
   scientific_name_normalized TEXT NOT NULL,
   authorship TEXT,

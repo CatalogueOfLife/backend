@@ -13,6 +13,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
+
 /**
  * Utils class adding specific string methods to existing guava {@link Strings} and commons {@link org.apache.commons.lang3.StringUtils}.
  */
@@ -468,6 +470,13 @@ public class StringUtils {
     }
     sb.append(str);
     return sb.toString();
+  }
+
+  public static String removeHybrid(String x) {
+    if(x != null && !x.isEmpty() && x.charAt(0) == HYBRID_MARKER) {
+      return x.substring(1);
+    }
+    return x;
   }
 
 }

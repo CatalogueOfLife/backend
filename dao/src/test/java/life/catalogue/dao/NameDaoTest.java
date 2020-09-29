@@ -38,6 +38,6 @@ public class NameDaoTest extends DaoTestBase {
     assertEquals(MatchType.VARIANT, n.getNameIndexMatchType());
     IntSet ints = new IntOpenHashSet();
     ints.add(match.getKey());
-    assertEquals(ints, n.getNameIndexIds());
+    assertEquals(ints, n.getNameIndexId());
   }
 }

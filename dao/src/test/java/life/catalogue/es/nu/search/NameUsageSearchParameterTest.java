@@ -1,6 +1,5 @@
 package life.catalogue.es.nu.search;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import life.catalogue.api.model.BareName;
 import life.catalogue.api.model.EditorialDecision.Mode;
 import life.catalogue.api.model.Name;
@@ -8,7 +7,6 @@ import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.NomStatus;
-import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
@@ -379,23 +377,23 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
     Integer key2 = 101;
 
     NameUsageWrapper nuw1 = minimalTaxon();
-    nuw1.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key1));
+    nuw1.getUsage().getName().setNameIndexId(key1);
 
     NameUsageWrapper nuw2 = minimalTaxon();
-    nuw2.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key1,999,77));
+    nuw2.getUsage().getName().setNameIndexId(key1);
 
     NameUsageWrapper nuw3 = minimalTaxon();
-    nuw3.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key2));
+    nuw3.getUsage().getName().setNameIndexId(key2);
 
     NameUsageWrapper nuw4 = minimalTaxon();
-    nuw4.getUsage().getName().setNameIndexIds(null);
+    nuw4.getUsage().getName().setNameIndexId(null);
 
     index(nuw1, nuw2, nuw3, nuw4);
 
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(NAME_INDEX_ID, key2);
 
-    List<NameUsageWrapper> expected = Arrays.asList(nuw3);
+    List<NameUsageWrapper> expected = List.of(nuw3);
     assertEquals(expected, search(query).getResult());
 
     countdown(NAME_INDEX_ID);
@@ -406,23 +404,23 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
     Integer key1 = 100;
     Integer key2 = 020;
     NameUsageWrapper nuw1 = minimalTaxon();
-    nuw1.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key1));
+    nuw1.getUsage().getName().setNameIndexId(key1);
 
     NameUsageWrapper nuw2 = minimalTaxon();
-    nuw2.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key1));
+    nuw2.getUsage().getName().setNameIndexId(key1);
 
     NameUsageWrapper nuw3 = minimalTaxon();
-    nuw3.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key2));
+    nuw3.getUsage().getName().setNameIndexId(key2);
 
     NameUsageWrapper nuw4 = minimalTaxon();
-    nuw4.getUsage().getName().setNameIndexIds(new IntOpenHashSet());
+    nuw4.getUsage().getName().setNameIndexId(null);
 
     index(nuw1, nuw2, nuw3, nuw4);
 
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.addFilter(NAME_INDEX_ID, IS_NULL);
 
-    List<NameUsageWrapper> expected = Arrays.asList(nuw4);
+    List<NameUsageWrapper> expected = List.of(nuw4);
     assertEquals(expected, search(query).getResult());
 
     countdown(NAME_INDEX_ID);
@@ -433,16 +431,16 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
     Integer key1 = 100;
     Integer key2 = 101;
     NameUsageWrapper nuw1 = minimalTaxon();
-    nuw1.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key1));
+    nuw1.getUsage().getName().setNameIndexId(key1);
 
     NameUsageWrapper nuw2 = minimalTaxon();
-    nuw2.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key1));
+    nuw2.getUsage().getName().setNameIndexId(key1);
 
     NameUsageWrapper nuw3 = minimalTaxon();
-    nuw3.getUsage().getName().setNameIndexIds(CollectionUtils.intSetOf(key2));
+    nuw3.getUsage().getName().setNameIndexId(key2);
 
     NameUsageWrapper nuw4 = minimalTaxon();
-    nuw4.getUsage().getName().setNameIndexIds(null);
+    nuw4.getUsage().getName().setNameIndexId(null);
 
     index(nuw1, nuw2, nuw3, nuw4);
 

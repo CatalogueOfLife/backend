@@ -39,8 +39,7 @@ public class ReleasedIdsTest {
     ids.remove(r.id);
     assertNull(ids.byId(3));
     assertEquals(9, ids.size());
-    assertEquals(1, r.nxId.length);
-    assertEquals(3, r.nxId[0]);
+    assertEquals(3, r.nxId);
     assertEquals(1, ids.byNxId(0).length);
     assertEquals(2, ids.byNxId(1).length);
     assertEquals(2, ids.byNxId(2).length);
@@ -62,16 +61,14 @@ public class ReleasedIdsTest {
 
   ReleasedId gen(){
     int id = counter++;
-    int[] nxIds;
+    int nxId;
     if (id % 1000 == 0) {
-      nxIds = new int[]{id % 1000, id % 1000+1, id % 1000+2};
-
+      nxId = id % 1000+2;
     } else if (id % 100 == 0) {
-      nxIds = new int[]{id % 1000, id % 1000+1};
-
+      nxId = id % 1000+1;
     } else {
-      nxIds = new int[]{id % 1000};
+      nxId = id % 1000;
     }
-    return new ReleasedId(id, nxIds, counter < 100000 ? 1 : 2);
+    return new ReleasedId(id, nxId, counter < 100000 ? 1 : 2);
   }
 }

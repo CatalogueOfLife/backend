@@ -1,13 +1,10 @@
 package life.catalogue.db.mapper;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.MatchType;
-import life.catalogue.common.collection.CollectionUtils;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
@@ -73,8 +70,8 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
     Name n = TestEntityGenerator.newName(dkey, "sk1");
     n.setNomenclaturalNote("nom. illeg.");
     n.setUnparsed("bla bli blub");
-    n.setNameIndexMatchType(MatchType.AMBIGUOUS);
-    n.setNameIndexIds(CollectionUtils.intSetOf(13, 234567));
+    n.setNameIndexMatchType(MatchType.CANONICAL);
+    n.setNameIndexId(13);
     return n;
   }
   
@@ -269,30 +266,28 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
 
   @Test
   public void updateMatches() throws Exception {
-    IntSet ints = new IntOpenHashSet();
-    ints.add(1);
+    Integer ints = 1;
     mapper().updateMatch(datasetKey, NAME1.getId(), ints, MatchType.EXACT);
     Name n = mapper().get(NAME1);
     assertEquals(MatchType.EXACT, n.getNameIndexMatchType());
-    assertEquals(ints, n.getNameIndexIds());
+    assertEquals(ints, n.getNameIndexId());
 
-    ints.add(13);
-    ints.add(42213);
-    mapper().updateMatch(datasetKey, NAME1.getId(), ints, MatchType.AMBIGUOUS);
+    ints= 42213;
+    mapper().updateMatch(datasetKey, NAME1.getId(), ints, MatchType.CANONICAL);
     n = mapper().get(NAME1);
-    assertEquals(MatchType.AMBIGUOUS, n.getNameIndexMatchType());
-    assertEquals(ints, n.getNameIndexIds());
+    assertEquals(MatchType.CANONICAL, n.getNameIndexMatchType());
+    assertEquals(ints, n.getNameIndexId());
 
-    ints.clear();
+    ints = null;
     mapper().updateMatch(datasetKey, NAME1.getId(), ints, MatchType.NONE);
     n = mapper().get(NAME1);
     assertEquals(MatchType.NONE, n.getNameIndexMatchType());
-    assertEquals(ints, n.getNameIndexIds());
+    assertEquals(ints, n.getNameIndexId());
 
     mapper().updateMatch(datasetKey, NAME1.getId(), null, null);
     n = mapper().get(NAME1);
     assertNull(n.getNameIndexMatchType());
-    assertEquals(ints, n.getNameIndexIds());
+    assertEquals(ints, n.getNameIndexId());
   }
 
   private static Name newAcceptedName(String scientificName) {

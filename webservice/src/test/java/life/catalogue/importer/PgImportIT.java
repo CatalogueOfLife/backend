@@ -152,7 +152,7 @@ public class PgImportIT {
     try(SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()){
       NameMapper nm = session.getMapper(NameMapper.class);
       for (Name n : nm.processDataset(datasetKey)) {
-        assertNotNull(n.getNameIndexIds());
+        assertNotNull(n.getNameIndexId());
         assertNotNull(n.getNameIndexMatchType());
       }
     }

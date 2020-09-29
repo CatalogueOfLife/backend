@@ -255,15 +255,15 @@ public class SortingTest extends EsReadTestBase {
   @Test
   public void testSortByIndexNameId_01() {
     EsNameUsage docA = new EsNameUsage();
-    docA.setNameIndexIds(Set.of(1));
+    docA.setNameIndexId(1);
     EsNameUsage docB = new EsNameUsage();
-    docB.setNameIndexIds(Set.of(2));
+    docB.setNameIndexId(2);
     EsNameUsage docC = new EsNameUsage();
-    docC.setNameIndexIds(Set.of(3));
+    docC.setNameIndexId(3);
     EsNameUsage docD = new EsNameUsage();
-    docD.setNameIndexIds(Set.of(4));
+    docD.setNameIndexId(4);
     EsNameUsage docE = new EsNameUsage();
-    docE.setNameIndexIds(Set.of(5));
+    docE.setNameIndexId(5);
 
     indexRaw(docB, docA, docD, docE, docC);
 
@@ -279,15 +279,15 @@ public class SortingTest extends EsReadTestBase {
   @Test
   public void testSortByIndexNameIdDescending_01() {
     EsNameUsage docA = new EsNameUsage();
-    docA.setNameIndexIds(Set.of(1));
+    docA.setNameIndexId(1);
     EsNameUsage docB = new EsNameUsage();
-    docB.setNameIndexIds(Set.of(2));
+    docB.setNameIndexId(2);
     EsNameUsage docC = new EsNameUsage();
-    docC.setNameIndexIds(Set.of(3));
+    docC.setNameIndexId(3);
     EsNameUsage docD = new EsNameUsage();
-    docD.setNameIndexIds(Set.of(4));
+    docD.setNameIndexId(4);
     EsNameUsage docE = new EsNameUsage();
-    docE.setNameIndexIds(Set.of(5));
+    docE.setNameIndexId(5);
 
     indexRaw(docB, docA, docD, docE, docC);
 

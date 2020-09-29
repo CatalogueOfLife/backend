@@ -5,11 +5,10 @@
 <mapper namespace="life.catalogue.db.mapper.NamesIndexMapper">
 
   <sql id="SELECT">
-    id, <include refid="COLS"/>, created, modified
+    id, canonical_id, <include refid="COLS"/>, created, modified
   </sql>
 
   <sql id="COLS">
-    canonical_id,
     scientific_name,
     authorship,
     rank,
@@ -19,21 +18,16 @@
     specific_epithet,
     infraspecific_epithet,
     cultivar_epithet,
-    candidatus,
-    notho,
     basionym_authors,
     basionym_ex_authors,
     basionym_year,
     combination_authors,
     combination_ex_authors,
     combination_year,
-    sanctioning_author,
-    code,
-    type
+    sanctioning_author
   </sql>
 
   <sql id="PROPS">
-    #{canonicalId},
     #{scientificName},
     #{authorship},
     #{rank}::RANK,
@@ -43,17 +37,13 @@
     #{specificEpithet},
     #{infraspecificEpithet},
     #{cultivarEpithet},
-    #{candidatus},
-    #{notho}::NAMEPART,
     #{basionymAuthorship.authors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
     #{basionymAuthorship.exAuthors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
     #{basionymAuthorship.year},
     #{combinationAuthorship.authors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
     #{combinationAuthorship.exAuthors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
     #{combinationAuthorship.year},
-    #{sanctioningAuthor},
-    #{code}::NOMCODE,
-    #{type}::NAMETYPE
+    #{sanctioningAuthor}
   </sql>
 
   <sql id="FROM">names_index n</sql>
@@ -81,13 +71,14 @@
   </select>
 
   <insert id="create" parameterType="IndexName" useGeneratedKeys="true" keyProperty="key">
-    INSERT INTO names_index (<include refid="COLS"/>, created, modified)
-    VALUES (<include refid="PROPS"/>, now(), now())
+    INSERT INTO names_index (canonical_id, <include refid="COLS"/>, created, modified)
+    VALUES (coalesce(#{canonicalId}, currval('names_index_id_seq')), <include refid="PROPS"/>, now(), now())
   </insert>
 
   <update id="update" parameterType="IndexName" keyProperty="key">
     UPDATE names_index
-    SET (<include refid="COLS"/>, created, modified) = (<include refid="PROPS"/>, now(), now())
+    SET (canonical_id, <include refid="COLS"/>, created, modified) =
+        (#{canonicalId}, <include refid="PROPS"/>, now(), now())
     WHERE id = #{key}
   </update>
 

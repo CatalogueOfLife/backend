@@ -1,4 +1,4 @@
-package life.catalogue.match;
+package life.catalogue.matching.decision;
 
 import life.catalogue.api.search.DecisionSearchRequest;
 

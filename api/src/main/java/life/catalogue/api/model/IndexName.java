@@ -4,16 +4,18 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.api.jackson.IsEmptyFilter;
+import life.catalogue.common.text.StringUtils;
 import org.gbif.nameparser.api.*;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
 
-import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
-
 /**
  * A parsed or unparsed name that belongs to the names index.
  * Contains all main Name properties but removes all dataset, verbatim, sector extras.
+ * It is also code agnostic.
+ *
+ * All names with an authorship point also to their canonical authorless version.
  */
 public class IndexName extends DataEntity<Integer> implements LinneanName, ScientificName {
 
@@ -31,15 +33,11 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
   private String specificEpithet;
   private String infraspecificEpithet;
   private String cultivarEpithet;
-  private boolean candidatus;
-  private NamePart notho;
   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = IsEmptyFilter.class)
   private Authorship combinationAuthorship = new Authorship();
   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = IsEmptyFilter.class)
   private Authorship basionymAuthorship = new Authorship();
   private String sanctioningAuthor;
-  private NomCode code;
-  private NameType type;
 
   public IndexName() {
   }
@@ -54,13 +52,9 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
     this.specificEpithet = n.getSpecificEpithet();
     this.infraspecificEpithet = n.getInfraspecificEpithet();
     this.cultivarEpithet = n.getCultivarEpithet();
-    this.candidatus = n.isCandidatus();
-    this.notho = n.getNotho();
     this.combinationAuthorship = n.getCombinationAuthorship();
     this.basionymAuthorship = n.getBasionymAuthorship();
     this.sanctioningAuthor = n.getSanctioningAuthor();
-    this.code = n.getCode();
-    this.type = n.getType();
     this.setCreated(n.getCreated());
     this.setModified(n.getModified());
   }
@@ -153,33 +147,22 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
   public void setRank(Rank rank) {
     this.rank = rank == null ? Rank.UNRANKED : rank;
   }
-  
+
+  @Override
   public NomCode getCode() {
-    return code;
+    return null;
   }
-  
+
+  @Override
   public void setCode(NomCode code) {
-    this.code = code;
   }
   
   public String getUninomial() {
     return uninomial;
   }
   
-  private boolean setNothoIfHybrid(String x, NamePart part) {
-    boolean isHybrid = x != null && !x.isEmpty() && x.charAt(0) == HYBRID_MARKER;
-    if (isHybrid) {
-      notho = part;
-    }
-    return isHybrid;
-  }
-  
   public void setUninomial(String uni) {
-    if (setNothoIfHybrid(uni, NamePart.GENERIC)) {
-      this.uninomial = uni.substring(1);
-    } else {
-      this.uninomial = uni;
-    }
+    this.uninomial = StringUtils.removeHybrid(uni);
   }
   
   public String getGenus() {
@@ -187,23 +170,15 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
   }
   
   public void setGenus(String genus) {
-    if (setNothoIfHybrid(genus, NamePart.GENERIC)) {
-      this.genus = genus.substring(1);
-    } else {
-      this.genus = genus;
-    }
+    this.genus = StringUtils.removeHybrid(genus);
   }
   
   public String getInfragenericEpithet() {
     return infragenericEpithet;
   }
-  
+
   public void setInfragenericEpithet(String infraGeneric) {
-    if (setNothoIfHybrid(infraGeneric, NamePart.INFRAGENERIC)) {
-      this.infragenericEpithet = infraGeneric.substring(1);
-    } else {
-      this.infragenericEpithet = infraGeneric;
-    }
+    this.infragenericEpithet = StringUtils.removeHybrid(infraGeneric);
   }
   
   public String getSpecificEpithet() {
@@ -211,11 +186,7 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
   }
   
   public void setSpecificEpithet(String species) {
-    if (setNothoIfHybrid(species, NamePart.SPECIFIC)) {
-      specificEpithet = species.substring(1);
-    } else {
-      specificEpithet = species;
-    }
+    this.specificEpithet = StringUtils.removeHybrid(species);
   }
   
   public String getInfraspecificEpithet() {
@@ -223,13 +194,19 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
   }
   
   public void setInfraspecificEpithet(String infraSpecies) {
-    if (setNothoIfHybrid(infraSpecies, NamePart.INFRASPECIFIC)) {
-      this.infraspecificEpithet = infraSpecies.substring(1);
-    } else {
-      this.infraspecificEpithet = infraSpecies;
-    }
+    this.infraspecificEpithet = StringUtils.removeHybrid(infraSpecies);
   }
-  
+
+  @Override
+  public NamePart getNotho() {
+    return null;
+  }
+
+  @Override
+  public void setNotho(NamePart namePart) {
+    // ignore
+  }
+
   public String getCultivarEpithet() {
     return cultivarEpithet;
   }
@@ -238,37 +215,12 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
     this.cultivarEpithet = cultivarEpithet;
   }
 
-  @JsonInclude(value = JsonInclude.Include.NON_DEFAULT)
-  public boolean isCandidatus() {
-    return candidatus;
-  }
-  
-  public void setCandidatus(boolean candidatus) {
-    this.candidatus = candidatus;
-  }
-  
-  public NamePart getNotho() {
-    return notho;
-  }
-  
-  public void setNotho(NamePart notho) {
-    this.notho = notho;
-  }
-
-  public NameType getType() {
-    return type;
-  }
-  
-  public void setType(NameType type) {
-    this.type = type;
-  }
-
   /**
    * @return true if any kind of authorship exists
    */
   @JsonIgnore
   public boolean hasAuthorship() {
-    return hasCombinationAuthorship() || hasBasionymAuthorship();
+    return hasCombinationAuthorship() || hasBasionymAuthorship() || authorship != null;
   }
 
   /**
@@ -334,8 +286,7 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
     if (!(o instanceof IndexName)) return false;
     if (!super.equals(o)) return false;
     IndexName indexName = (IndexName) o;
-    return candidatus == indexName.candidatus &&
-      Objects.equals(key, indexName.key) &&
+    return Objects.equals(key, indexName.key) &&
       Objects.equals(canonicalId, indexName.canonicalId) &&
       scientificName.equals(indexName.scientificName) &&
       Objects.equals(authorship, indexName.authorship) &&
@@ -346,17 +297,14 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
       Objects.equals(specificEpithet, indexName.specificEpithet) &&
       Objects.equals(infraspecificEpithet, indexName.infraspecificEpithet) &&
       Objects.equals(cultivarEpithet, indexName.cultivarEpithet) &&
-      notho == indexName.notho &&
       Objects.equals(combinationAuthorship, indexName.combinationAuthorship) &&
       Objects.equals(basionymAuthorship, indexName.basionymAuthorship) &&
-      Objects.equals(sanctioningAuthor, indexName.sanctioningAuthor) &&
-      code == indexName.code &&
-      type == indexName.type;
+      Objects.equals(sanctioningAuthor, indexName.sanctioningAuthor);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, canonicalId, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, type);
+    return Objects.hash(super.hashCode(), key, canonicalId, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, combinationAuthorship, basionymAuthorship, sanctioningAuthor);
   }
 
   @Override

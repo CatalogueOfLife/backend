@@ -3,10 +3,8 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.db.TestDataRule;
-import org.gbif.nameparser.api.NameType;
 import org.junit.Test;
 
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
@@ -14,9 +12,7 @@ import static org.junit.Assert.assertNotNull;
 
 public class NamesIndexMapperTest extends CRUDTestBase<Integer, IndexName, NamesIndexMapper> {
 
-  public final static TestDataRule.TestData NIDX = new TestDataRule.TestData("nidx", null, null, null, Map.of(
-    "names_index", Map.of("type", NameType.SCIENTIFIC)
-  ));
+  public final static TestDataRule.TestData NIDX = new TestDataRule.TestData("nidx", null, null, null);
 
   public NamesIndexMapperTest() {
     super(NamesIndexMapper.class, NIDX);
@@ -51,6 +47,28 @@ public class NamesIndexMapperTest extends CRUDTestBase<Integer, IndexName, Names
     assertEquals(2, (int) n.getKey());
   }
 
+  /**
+   * we can create index names with or without an explicit canonical id value.
+   * In both cases the create must populate the column.
+   */
+  @Test
+  public void create() {
+    IndexName n1 = createTestEntity(1);
+    n1.setCanonicalId(null);
+    n1.setAuthorship(null);
+    mapper().create(n1);
+
+    IndexName n = mapper().get(n1.getKey());
+    assertEquals(n.getKey(), n.getCanonicalId());
+
+    IndexName n2 = createTestEntity(1);
+    n2.setCanonicalId(n1.getKey());
+    mapper().create(n2);
+
+    n = mapper().get(n2.getKey());
+    assertEquals(n1.getKey(), n.getCanonicalId());
+  }
+
   @Override
   IndexName createTestEntity(int datasetKey) {
     IndexName n = new IndexName(TestEntityGenerator.newName());
@@ -60,7 +78,14 @@ public class NamesIndexMapperTest extends CRUDTestBase<Integer, IndexName, Names
   }
 
   @Override
+  IndexName removeDbCreatedProps(IndexName obj) {
+    obj.setCanonicalId(null);
+    return obj;
+  }
+
+  @Override
   void updateTestObj(IndexName obj) {
     obj.setAuthorship("Döring, 2022");
+    obj.setCanonicalId(obj.getKey());
   }
 }

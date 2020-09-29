@@ -69,10 +69,6 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   public final static TestData DRAFT = new TestData("draft", 3, 1, 2, 3);
   public final static TestData DRAFT_WITH_SECTORS = new TestData("draft_with_sectors", 3, 2, 3, 3);
 
-  public static List<TestData> allTestData() {
-    return List.of(NONE, APPLE, FISH, TREE, DRAFT, DRAFT_WITH_SECTORS, DATASETS);
-  }
-
   public static class TestData {
     public final String name;
     public final Integer key;
