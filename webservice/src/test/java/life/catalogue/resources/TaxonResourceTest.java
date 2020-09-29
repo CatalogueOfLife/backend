@@ -50,13 +50,15 @@ public class TaxonResourceTest extends ResourceTestBase {
 
     TestEntityGenerator.nullifyUserDate(t2);
 
-    Javers javers = JaversBuilder.javers().build();
-    Diff diff = javers.compare(t, t2);
-    System.out.println(diff);
 
     prepareEquals(t);
     prepareEquals(t2);
     t2.getName().setId(null);
+
+    Javers javers = JaversBuilder.javers().build();
+    Diff diff = javers.compare(t, t2);
+    System.out.println(diff);
+
     assertEquals(t, t2);
   }
 
@@ -66,6 +68,7 @@ public class TaxonResourceTest extends ResourceTestBase {
     t.setOrigin(Origin.USER);
     TestEntityGenerator.nullifyUserDate(t);
     t.getName().setNameIndexMatchType(null);
+    t.getName().setNameIndexId(null);
   }
 
   private Taxon createTaxon() {

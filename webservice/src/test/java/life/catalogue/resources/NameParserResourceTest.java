@@ -1,7 +1,6 @@
 package life.catalogue.resources;
 
 import life.catalogue.api.model.Name;
-import life.catalogue.api.model.ParsedNameUsage;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -14,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 
 public class NameParserResourceTest extends ResourceTestBase {
 
-  GenericType<ParsedNameUsage> PARSER_TYPE = new GenericType<ParsedNameUsage>() {};
+  GenericType<Name> PARSER_TYPE = new GenericType<Name>() {};
 
   public NameParserResourceTest() {
     super("/parser/name");
@@ -22,7 +21,7 @@ public class NameParserResourceTest extends ResourceTestBase {
 
   @Test
   public void parseGet() {
-    ParsedNameUsage resp = userCreds(base.queryParam("name", "Abies alba")
+    Name resp = userCreds(base.queryParam("name", "Abies alba")
                                          .queryParam("authorship", "Mill.")
                                          .queryParam("code", "botanical")
     ).get(PARSER_TYPE);
@@ -38,6 +37,6 @@ public class NameParserResourceTest extends ResourceTestBase {
     abies.rebuildAuthorship();
     
     //printDiff(abies, resp.get(0).getName());
-    assertEquals(abies, resp.getName());
+    assertEquals(abies, resp);
   }
 }

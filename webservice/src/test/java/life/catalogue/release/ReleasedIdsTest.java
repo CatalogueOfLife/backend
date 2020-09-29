@@ -40,24 +40,21 @@ public class ReleasedIdsTest {
     assertNull(ids.byId(3));
     assertEquals(9, ids.size());
     assertEquals(3, r.nxId);
-    assertEquals(1, ids.byNxId(0).length);
-    assertEquals(2, ids.byNxId(1).length);
+    assertEquals(1, ids.byNxId(1).length);
     assertEquals(2, ids.byNxId(2).length);
     assertNull(ids.byNxId(3));
 
-    // id 0 has 0,1,2 as nx ids
-    r = ids.byId(1);
-    ids.remove(r.id);
+    // id 0 has nx id = 2
+    ids.remove(0);
     assertEquals(8, ids.size());
-    assertEquals(1, ids.byNxId(0).length);
     assertEquals(1, ids.byNxId(1).length);
-    assertNull(ids.byId(1));
+    assertEquals(1, ids.byNxId(2).length);
+    assertNull(ids.byId(0));
 
     // we did remove it already, no change
     ids.remove(r.id);
     assertEquals(8, ids.size());
   }
-
 
   ReleasedId gen(){
     int id = counter++;

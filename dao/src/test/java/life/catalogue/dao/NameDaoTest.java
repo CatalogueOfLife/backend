@@ -1,7 +1,5 @@
 package life.catalogue.dao;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Name;
@@ -36,8 +34,6 @@ public class NameDaoTest extends DaoTestBase {
     Name n = TestEntityGenerator.newName("n2");
     dao.create(n, Users.IMPORTER);
     assertEquals(MatchType.VARIANT, n.getNameIndexMatchType());
-    IntSet ints = new IntOpenHashSet();
-    ints.add(match.getKey());
-    assertEquals(ints, n.getNameIndexId());
+    assertEquals(match.getKey(), n.getNameIndexId());
   }
 }
