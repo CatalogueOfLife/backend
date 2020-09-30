@@ -2,7 +2,10 @@ package life.catalogue.dao;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.Name;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.ParserConfig;
+import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.QuerySearchRequest;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.db.mapper.ParserConfigMapper;
@@ -30,8 +33,12 @@ public class ParserConfigDao {
   }
 
   private static String concat(String name, String authorship) {
+    return concat(name, ' ', authorship);
+  }
+
+  private static String concat(String name, char delimiter, String authorship) {
     if (!Strings.isNullOrEmpty(authorship)) {
-      return name.trim() + " " +authorship.trim();
+      return name.trim() + delimiter +authorship.trim();
     }
     return name.trim();
   }
@@ -68,8 +75,16 @@ public class ParserConfigDao {
   }
 
   public void putName(ParserConfig obj, int user) {
-    Preconditions.checkNotNull(obj.getId(), "ID required");
-    Preconditions.checkArgument(obj.getId().contains("|"), "ID must concatenate name and authorship with a pipe symbol");
+    // try to create an id based on given sciname and authorship
+    if (obj.getId() == null) {
+      obj.updateID();
+    }
+    // make sure by now we have an ID
+    if (obj.getId() == null) {
+      throw new IllegalArgumentException("ID or scientificName and authorship required");
+    } else if (!obj.getId().contains("|")) {
+      throw new IllegalArgumentException("ID must concatenate name and authorship with a pipe symbol");
+    }
     obj.setCreatedBy(user);
     // persists first
     try (SqlSession session = factory.openSession(true)) {

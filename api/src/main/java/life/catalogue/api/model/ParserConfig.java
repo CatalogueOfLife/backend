@@ -33,6 +33,12 @@ public class ParserConfig extends Name {
     return parseID(getId())[0];
   }
 
+  public void updateID() {
+    if (super.getScientificName() != null) {
+      this.setId(Strings.nullToEmpty(super.getScientificName()).trim() + "|" + Strings.nullToEmpty(super.getAuthorship()).trim());
+    }
+  }
+
   public void updateID(String scientificName, String authorship) {
     this.setId(Strings.nullToEmpty(scientificName).trim() + "|" + Strings.nullToEmpty(authorship).trim());
   }
