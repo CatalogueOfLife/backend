@@ -67,6 +67,10 @@ public abstract class BackgroundJob implements Runnable {
     }
   }
 
+  public String getJobClassName() {
+    return getClass().getSimpleName();
+  }
+
   public UUID getKey() {
     return key;
   }

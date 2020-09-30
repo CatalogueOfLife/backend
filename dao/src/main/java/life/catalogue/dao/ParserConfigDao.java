@@ -86,6 +86,10 @@ public class ParserConfigDao {
       throw new IllegalArgumentException("ID must concatenate name and authorship with a pipe symbol");
     }
     obj.setCreatedBy(user);
+    // default name type
+    if (obj.getType() == null) {
+      obj.setType(NameType.SCIENTIFIC);
+    }
     // persists first
     try (SqlSession session = factory.openSession(true)) {
       ParserConfigMapper pcm = session.getMapper(ParserConfigMapper.class);
