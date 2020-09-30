@@ -222,6 +222,14 @@ public class NameParserResource {
   @POST
   @RolesAllowed({Roles.ADMIN})
   @Path("config")
+  public String createConfig(@Valid ParserConfig config, @Auth User user) {
+    dao.putName(config, user.getKey());
+    return config.getId();
+  }
+
+  @POST
+  @RolesAllowed({Roles.ADMIN})
+  @Path("config/batch")
   public List<String> createConfigs(@Valid List<ParserConfig> configs, @Auth User user) {
     List<String> ids = new ArrayList<>(configs.size());
     for (ParserConfig pc : configs) {

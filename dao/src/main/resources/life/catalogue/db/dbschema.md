@@ -26,7 +26,8 @@ ALTER TYPE MATCHTYPE ADD VALUE 'CANONICAL' before 'INSERTED';
 ### 2020-09-25 names index canonical
 ```
 ALTER TYPE IMPORTSTATE ADD VALUE 'ARCHIVING' before 'EXPORTING';
-ALTER TABLE names_index ADD COLUMN canonical_id INTEGER REFERENCES names_index;
+TRUNCATE names_index;
+ALTER TABLE names_index ADD COLUMN canonical_id INTEGER NOT NULL REFERENCES names_index;
 ```
 
 Run the following to update all foreign keys to on update cascade 
