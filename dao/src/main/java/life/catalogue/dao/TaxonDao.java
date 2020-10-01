@@ -1,5 +1,6 @@
 package life.catalogue.dao;
 
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
@@ -127,62 +129,94 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       return getTaxonInfo(session, taxon);
     }
   }
-  
-  private TaxonInfo getTaxonInfo(final SqlSession session, final Taxon taxon) {
+
+  public static TaxonInfo getTaxonInfo(final SqlSession session, final Taxon taxon) {
     // main taxon object
     if (taxon == null) {
       return null;
     }
-  
-    SynonymMapper sm = session.getMapper(SynonymMapper.class);
-    DistributionMapper dim = session.getMapper(DistributionMapper.class);
-    VernacularNameMapper vm = session.getMapper(VernacularNameMapper.class);
-    MediaMapper mm = session.getMapper(MediaMapper.class);
-    ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
-    TreatmentMapper trm = session.getMapper(TreatmentMapper.class);
-    TypeMaterialMapper tmm = session.getMapper(TypeMaterialMapper.class);
-
     TaxonInfo info = new TaxonInfo();
     info.setTaxon(taxon);
+    fillTaxonInfo(session, info, null, true, true, true, true, true, false);
+    return info;
+  }
+
+  public static void fillTaxonInfo(final SqlSession session, final TaxonInfo info,
+                                   LoadingCache<String, Reference> refCache,
+                                   boolean loadSynonyms,
+                                   boolean loadDistributions,
+                                   boolean loadVernacular,
+                                   boolean loadMedia,
+                                   boolean loadTypeMaterial,
+                                   boolean loadTreatments) {
+    Taxon taxon = info.getTaxon();
+
     // all reference keys so we can select their details at the end
     Set<String> refIds = new HashSet<>(taxon.getReferenceIds());
     refIds.add(taxon.getName().getPublishedInId());
 
     // synonyms
-    info.setSynonyms(sm.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
-    info.getSynonyms().forEach(s -> refIds.addAll(s.getReferenceIds()));
+    if (loadSynonyms) {
+      SynonymMapper sm = session.getMapper(SynonymMapper.class);
+      info.setSynonyms(sm.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
+      info.getSynonyms().forEach(s -> refIds.addAll(s.getReferenceIds()));
+    }
 
     // treatment
-    info.setTreatment(trm.get(taxon));
+    if (loadTreatments) {
+      TreatmentMapper trm = session.getMapper(TreatmentMapper.class);
+      info.setTreatment(trm.get(taxon));
+    }
 
     // add all supplementary taxon infos
-    info.setDistributions(dim.listByTaxon(taxon));
-    info.getDistributions().forEach(d -> refIds.add(d.getReferenceId()));
-    
-    info.setMedia(mm.listByTaxon(taxon));
-    info.getMedia().forEach(m -> refIds.add(m.getReferenceId()));
-    
-    info.setVernacularNames(vm.listByTaxon(taxon));
-    info.getVernacularNames().forEach(d -> refIds.add(d.getReferenceId()));
+    if (loadDistributions) {
+      DistributionMapper dim = session.getMapper(DistributionMapper.class);
+      info.setDistributions(dim.listByTaxon(taxon));
+      info.getDistributions().forEach(d -> refIds.add(d.getReferenceId()));
+    }
+
+    if (loadMedia) {
+      MediaMapper mm = session.getMapper(MediaMapper.class);
+      info.setMedia(mm.listByTaxon(taxon));
+      info.getMedia().forEach(m -> refIds.add(m.getReferenceId()));
+    }
+
+    if (loadVernacular) {
+      VernacularNameMapper vm = session.getMapper(VernacularNameMapper.class);
+      info.setVernacularNames(vm.listByTaxon(taxon));
+      info.getVernacularNames().forEach(d -> refIds.add(d.getReferenceId()));
+    }
 
     // add all type material
-    info.getTypeMaterial().put(taxon.getName().getId(), tmm.listByName(taxon.getName()));
-    info.getSynonyms().forEach(s -> info.getTypeMaterial().put(s.getName().getId(), tmm.listByName(s.getName())));
-    info.getTypeMaterial().values().forEach(
-            types -> types.forEach(
-                    t -> refIds.add(t.getReferenceId())
-            )
-    );
+    if (loadTypeMaterial) {
+      TypeMaterialMapper tmm = session.getMapper(TypeMaterialMapper.class);
+      info.getTypeMaterial().put(taxon.getName().getId(), tmm.listByName(taxon.getName()));
+      if (info.getSynonyms() != null) {
+        info.getSynonyms().forEach(s -> info.getTypeMaterial().put(s.getName().getId(), tmm.listByName(s.getName())));
+      }
+      info.getTypeMaterial().values().forEach(
+              types -> types.forEach(
+                      t -> refIds.add(t.getReferenceId())
+              )
+      );
+    }
 
     // make sure we did not add null by accident
     refIds.remove(null);
     
     if (!refIds.isEmpty()) {
-      List<Reference> refs = rm.listByIds(taxon.getDatasetKey(), refIds);
-      info.addReferences(refs);
+      if (refCache == null) {
+        ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
+        List<Reference> refs = rm.listByIds(taxon.getDatasetKey(), refIds);
+        info.addReferences(refs);
+      } else {
+        try {
+          info.setReferences(refCache.getAll(refIds));
+        } catch (ExecutionException e) {
+          throw new RuntimeException(e);
+        }
+      }
     }
-    
-    return info;
   }
   
   /**

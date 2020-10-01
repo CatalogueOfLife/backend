@@ -25,12 +25,13 @@ public class MoreMediaTypes {
   public final static String APP_XLS   = "application/vnd.ms-excel";
   public final static String APP_XLSX  = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
-  public final static String TEXT_YAML   = "text/yaml";
+  public final static String TEXT_YAML  = "text/yaml";
   public final static String TEXT_CSV   = "text/csv";
   public final static String TEXT_TSV   = "text/tsv";
-  public final static String TEXT_COMMA_SEP   = "text/comma-separated-values";
+  public final static String TEXT_COMMA_SEP = "text/comma-separated-values";
   public final static String TEXT_TAB_SEP   = "text/tab-separated-values";
-  public final static String TEXT_WILDCARD   = "text/*";
+  public final static String TEXT_CSS      = "text/css";
+  public final static String TEXT_WILDCARD = "text/*";
   
   private MoreMediaTypes() {
   }

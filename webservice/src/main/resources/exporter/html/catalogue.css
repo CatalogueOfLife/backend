@@ -1,0 +1,196 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : 10 Sep 2020, 2:12:26 pm
+    Author     : stang
+*/
+@import url('https://fonts.googleapis.com/css2?family=Marmelad&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredericka+the+Great&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    line-height: 1.3em;
+}
+html {
+    width: 100%;
+}
+body {
+    width: 100%;
+    min-width: 100%;
+    background-color: #f2f3ed;
+    font-family: 'Marmelad', sans-serif;
+    color: #3b2b0c;
+    padding: 10px 20px 20px 20px;
+}
+div {
+    width: 100%;
+}
+
+
+a:link, a:visited {
+    color: #3b2b0c;
+}
+a:hover {
+    color: #7e560e;
+}
+a {
+    text-decoration: none;
+}
+
+header {
+    height: 140px;
+    border-bottom: 1px solid #3b2b0c;
+    background-clip: border-box;
+}
+
+.site-name {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 20px;
+    overflow: auto;
+    justify-content: space-between;
+}
+
+.site-name a {
+    width: 100%;
+    display: flex;
+    font-size: 2.0rem;
+    font-weight: normal;
+    font-family: 'Fredericka the Great', serif;
+    align-items: center;
+}
+
+.site-name img {
+    height: 100px;
+    padding: 0px 5px 5px 0px;
+}
+
+.HigherTaxon {
+    margin: 10px 0px 0px 0px;
+}
+.HigherTaxon > .Name > *, .HigherTaxon > .References > * {
+    font-size: 0.8rem;
+    padding: 0px 10px;
+}
+.HigherTaxon > .Name, .HigherTaxon > .Name > strong {
+    font-size: 1.0rem;
+}
+.HigherTaxon > .References {
+    padding: 0px;
+}
+.level1 {
+    padding-top: 20px;
+    font-size: 2.4rem;
+}
+.level2 {
+    padding-top: 20px;
+    font-size: 2.2rem;
+}
+.level3 {
+    padding-top: 20px;
+    font-size: 2.0rem;
+}
+.level4 {
+    padding-top: 20px;
+    font-size: 1.8rem;
+}
+.level5 {
+    padding-top: 20px;
+    padding-left: 40px;
+    font-size: 1.6rem;
+}
+.level6 {
+    padding-top: 20px;
+    padding-left: 40px;
+    font-size: 1.4rem;
+}
+.Reference, .NameRelationship, .Note, .Synonym, .Distribution {
+    padding-left: 40px;
+    font-size: 1.0rem;
+}
+.Region {
+    display: inline;
+    padding-left: 10px;
+    font-size: 1.0rem;
+}
+.References, .Synonyms, .Distribution {
+    padding-top: 10px;
+    font-size: 1.0rem;
+}
+
+@media (max-width: 1000px) {
+    html {
+        font-size: 10px;
+    }
+
+    .site-name img {
+        height: 80px;
+    }
+}
+.Overview {
+    padding: 20px 0px;
+    border-bottom: 1px solid #3b2b0c;
+}
+.Overview p {
+    padding-top: 5px;
+}
+.Search {
+    padding: 20px 10%;
+}
+.footer {
+    margin-top: 40px;
+    padding: 20px 0px;
+    border-top: 1px solid #3b2b0c;
+    text-align:center;
+    font-size: 80%;
+}
+.cc-logo img {
+    padding-right: 10px;
+    vertical-align: middle;
+    display: inline;
+}
+
+
+.catalogue-of-life, .ant-tree, .ant-tree-list, .ant-tree-treenode, .tree-node-rank, .catalogue-of-life a, .catalogue-of-life .ant-input-affix-wrapper, .catalogue-of-life .ant-input, .rc-virtual-list, .ant-select-item-option-content {
+    background-color: #f2f3ed;
+    font-family: 'Marmelad', sans-serif;
+    font-size: 1.2rem;
+    background: #f2f3ed;
+}
+.ant-select-item-option-active .ant-select-item-option-content {
+    color: #7e560e;
+    font-weight: bold;
+}
+.catalogue-of-life ::selection {
+    color: #fff;
+    background: #7e560e;
+}
+.catalogue-of-life a:link, .catalogue-of-life a:visited {
+    color: #3b2b0c;
+}
+.catalogue-of-life a:hover {
+    color: #7e560e;
+}
+.catalogue-of-life .ant-tree-treenode.filter-node {
+    color: #7e560e
+}
+.catalogue-of-life .ant-tree-treenode.filter-node span.tree-node-rank, .catalogue-of-life .ant-tree-treenode span.tree-node-rank {
+    color: #7e560e
+}
+.filter-node {
+    color: #7e560e
+}
+.catalogue-of-life .ant-tree-show-line .ant-tree-switcher {
+    background: #f2f3ed;
+}
+.catalogue-of-life .ant-input-clear-icon {
+    font-size: 1.6rem;
+}

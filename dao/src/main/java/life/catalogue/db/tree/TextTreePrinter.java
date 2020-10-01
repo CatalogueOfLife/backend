@@ -34,7 +34,7 @@ import java.util.Set;
  * Absinthium viridifolium var. rupestre (L.) Besser
  * </pre>
  */
-public class TextTreePrinter extends AbstractTreePrinter {
+public class TextTreePrinter extends SimpleUsageTreePrinter {
   public static final String SYNONYM_SYMBOL = "*";
   public static final String BASIONYM_SYMBOL = "$";
   

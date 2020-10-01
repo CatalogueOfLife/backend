@@ -15,6 +15,7 @@ public class TaxonInfo {
   private List<Distribution> distributions;
   private List<VernacularName> vernacularNames;
   private List<Media> media;
+  private List<NameRelation> nameRelations;
 
   /**
    * Lookup of types for a given nameID
@@ -26,6 +27,11 @@ public class TaxonInfo {
    * saving json serialization size.
    */
   private Map<String, Reference> references = new HashMap<>();
+
+  /**
+   * Lookup of nameID to name so the same name can be shared across different objects, i.e. name relations
+   */
+  private Map<String, Name> names = new HashMap<>();
 
   @JsonIgnore
   public String getId() {

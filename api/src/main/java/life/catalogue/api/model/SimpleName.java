@@ -12,7 +12,7 @@ import java.util.Objects;
  * A small class representing a name usage with an id. It can act as a reference to a scientific name in a dataset.
  * It combines the source usage ID with the full scientific name in order to best deal with changing identifiers in sources.
  */
-public class SimpleName implements Comparable<SimpleName> {
+public class SimpleName implements Comparable<SimpleName>, RankedID {
   private static Comparator<String> nullSafeStringComparator = Comparator
       .nullsLast(String::compareTo);
   private static Comparator<Enum> nullSafeEnumComparator = Comparator

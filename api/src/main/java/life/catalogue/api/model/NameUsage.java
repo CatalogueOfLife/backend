@@ -3,11 +3,12 @@ package life.catalogue.api.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import org.gbif.nameparser.api.Rank;
 
 /**
  *
  */
-public interface NameUsage extends DSID<String>, VerbatimEntity {
+public interface NameUsage extends DSID<String>, VerbatimEntity, RankedID {
 
   String getLabel();
 
@@ -32,6 +33,11 @@ public interface NameUsage extends DSID<String>, VerbatimEntity {
   String getAccordingToId();
   
   void setAccordingToId(String according);
+
+  @JsonIgnore
+  default Rank getRank() {
+    return getName() == null ? null : getName().getRank();
+  }
 
   @JsonIgnore
   default boolean isSynonym() {

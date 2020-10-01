@@ -5,14 +5,15 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.common.io.Resources;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.tree.AbstractTreePrinter;
 import life.catalogue.db.tree.JsonTreePrinter;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.dw.auth.Roles;
+import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.exporter.AcExporter;
 import life.catalogue.exporter.HtmlExporter;
 import org.apache.commons.io.IOUtils;
@@ -52,7 +53,7 @@ import java.util.Set;
  *  - DwC simple (single TSV file)
  *  - TextTree
  *
- *  Single file formats for dynamic exports using some filter (e.g. rank, rootID, etc)
+ *  Single file formats for dynamic exports using some filter (e.g. rank, taxonID, etc)
  *  - ColDP simple (single TSV file)
  *  - DwC simple (single TSV file)
  *  - TextTree
@@ -109,9 +110,10 @@ public class ExportResource {
   }
 
   @GET
+  @Path("{taxonID}")
   @Produces(MediaType.TEXT_PLAIN)
   public Response textTree(@PathParam("datasetKey") int key,
-                           @QueryParam("root") String rootID,
+                           @PathParam("taxonID") String taxonID,
                            @QueryParam("rank") Set<Rank> ranks,
                            @Context SqlSession session) {
     StreamingOutput stream;
@@ -126,7 +128,7 @@ public class ExportResource {
       projectKey = key;
     }
 
-    if (attempt != null && rootID == null && (ranks == null || ranks.isEmpty())) {
+    if (attempt != null && taxonID == null && (ranks == null || ranks.isEmpty())) {
       // stream from pre-generated file
       stream = os -> {
         InputStream in = new FileInputStream(diDao.getFileMetricsDao().treeFile(projectKey, attempt));
@@ -137,7 +139,7 @@ public class ExportResource {
     } else {
       stream = os -> {
         Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-        TextTreePrinter printer = TextTreePrinter.dataset(key, rootID, ranks, factory, writer);
+        TextTreePrinter printer = TextTreePrinter.dataset(key, taxonID, ranks, factory, writer);
         printer.print();
         if (printer.getCounter() == 0) {
           writer.write("--NONE--");
@@ -149,18 +151,23 @@ public class ExportResource {
   }
 
   @GET
+  @Produces(MediaType.TEXT_PLAIN)
+  public Response textTreeAll(@PathParam("datasetKey") int key,
+                              @QueryParam("rank") Set<Rank> ranks,
+                              @Context SqlSession session) {
+    return textTree(key,null,ranks,session);
+  }
+                           
+  @GET
+  @Path("{taxonID}")
   @Produces(MediaType.TEXT_HTML)
   public Response html(@PathParam("datasetKey") int key,
-                     @QueryParam("root") String rootID,
-                     @QueryParam("rank") Set<Rank> ranks) {
-    if (rootID == null) {
-      throw new IllegalArgumentException("root query parameter required");
-    }
-
+                       @PathParam("taxonID") String taxonID,
+                       @QueryParam("rank") Set<Rank> ranks) {
     StreamingOutput stream;
     stream = os -> {
       Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-      HtmlExporter exporter = HtmlExporter.subtree(key, rootID, ranks, factory, writer);
+      HtmlExporter exporter = HtmlExporter.subtree(key, taxonID, ranks, factory, writer);
       exporter.print();
       writer.flush();
     };
@@ -168,23 +175,31 @@ public class ExportResource {
   }
 
   @GET
-  @Produces(MediaType.APPLICATION_JSON)
-  public Object simpleName(@PathParam("datasetKey") int key,
-                            @QueryParam("root") String rootID,
-                            @QueryParam("rank") Set<Rank> ranks,
-                            @QueryParam("synonyms") boolean includeSynonyms,
-                            @QueryParam("nested") boolean nested,
-                            @Context SqlSession session) {
-    if (rootID == null) {
-      throw new IllegalArgumentException("root query parameter required");
-    }
+  @Path("css")
+  @Produces(MoreMediaTypes.TEXT_CSS)
+  public Response htmlCss() {
+    StreamingOutput stream = os -> {
+      InputStream in = Resources.stream("exporter/html/catalogue.css");
+      IOUtils.copy(in, os);
+      os.flush();
+    };
+    return Response.ok(stream).build();
+  }
 
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("{taxonID}")
+  public Object simpleName(@PathParam("datasetKey") int key,
+                           @PathParam("taxonID") String taxonID,
+                           @QueryParam("rank") Set<Rank> ranks,
+                           @QueryParam("synonyms") boolean includeSynonyms,
+                           @QueryParam("nested") boolean nested,
+                           @Context SqlSession session) {
     if (nested) {
       StreamingOutput stream;
       stream = os -> {
         Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-        AbstractTreePrinter printer = JsonTreePrinter.dataset(key, rootID, ranks, factory, writer);
-        printer.print();
+        JsonTreePrinter.dataset(key, taxonID, ranks, factory, writer).print();
         writer.flush();
       };
       return Response.ok(stream).build();
@@ -197,7 +212,7 @@ public class ExportResource {
         Collections.sort(rs);
         lowestRank = rs.getLast();
       }
-      return session.getMapper(NameUsageMapper.class).processTreeSimple(key, null, rootID, null, lowestRank, includeSynonyms);
+      return session.getMapper(NameUsageMapper.class).processTreeSimple(key, null, taxonID, null, lowestRank, includeSynonyms);
     }
   }
 

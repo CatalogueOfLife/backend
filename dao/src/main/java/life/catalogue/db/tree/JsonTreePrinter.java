@@ -17,14 +17,18 @@ import java.util.Set;
 /**
  * Print an entire dataset in a nested SimpleName json array.
  */
-public class JsonTreePrinter extends EventTreePrinter {
+public class JsonTreePrinter extends SimpleUsageTreePrinter {
   private static final int indentation = 2;
+  private final Writer writer;
+  private EVENT last;
+  private enum EVENT {START, END}
 
   /**
    * @param sectorKey optional sectorKey to restrict printed tree to
    */
   protected JsonTreePrinter(int datasetKey, Integer sectorKey, String startID, Set<Rank> ranks, SqlSessionFactory factory, Writer writer) {
-    super(datasetKey, sectorKey, startID, ranks, factory, writer);
+    super(datasetKey, sectorKey, startID, ranks, factory);
+    this.writer = writer;
   }
   
   public static JsonTreePrinter dataset(int datasetKey, SqlSessionFactory factory, Writer writer) {
@@ -54,7 +58,7 @@ public class JsonTreePrinter extends EventTreePrinter {
     return count;
   }
 
-  protected void startEvent(SimpleName u) throws IOException {
+  protected void start(SimpleName u) throws IOException {
     u.setParent(null);
     if (last == EVENT.END) {
       writer.write(",");
@@ -64,14 +68,20 @@ public class JsonTreePrinter extends EventTreePrinter {
     String json = ApiModule.MAPPER.writeValueAsString(u);
     writer.write(json.substring(0, json.length()-1));
     writer.write(",\"children\":[");
+    last = EVENT.START;
   }
 
-  protected void endEvent(SimpleName u) throws IOException {
+  protected void end(SimpleName u) throws IOException {
     if (last == EVENT.END) {
       writer.write("\n");
       writer.write(StringUtils.repeat(' ', (level-1) * indentation));
     }
     writer.write("]}");
+    last = EVENT.END;
   }
-  
+
+  @Override
+  protected void flush() throws IOException {
+    writer.flush();
+  }
 }
