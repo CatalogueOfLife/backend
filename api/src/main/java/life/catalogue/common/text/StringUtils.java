@@ -3,6 +3,7 @@ package life.catalogue.common.text;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
+import org.apache.commons.text.WordUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -477,6 +478,18 @@ public class StringUtils {
       return x.substring(1);
     }
     return x;
+  }
+
+  public static String camelCase(Enum<?> val) {
+    if (val == null) return null;
+    return WordUtils.capitalizeFully(val.name(), new char[]{'_'}).replaceAll("_", "");
+  }
+
+  public static String lowerCamelCase(Enum<?> val) {
+    if (val == null) return null;
+    char c[] = camelCase(val).toCharArray();
+    c[0] = Character.toLowerCase(c[0]);
+    return new String(c);
   }
 
 }

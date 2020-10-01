@@ -1,4 +1,4 @@
-package life.catalogue.release;
+package life.catalogue.exporter;
 
 import com.google.common.io.Files;
 import freemarker.template.*;

@@ -33,8 +33,8 @@ public abstract class BaseEnumSetTypeHandler<T extends Enum<T>> extends Abstract
     return value == null ? null : value.name();
   }
   
-  protected T fromKey(String value) {
-    return value == null ? null : Enum.valueOf(type, value);
+  protected T fromKey(Object value) {
+    return value == null ? null : Enum.valueOf(type, value.toString());
   }
 
   @Override
@@ -54,8 +54,8 @@ public abstract class BaseEnumSetTypeHandler<T extends Enum<T>> extends Abstract
       return nullValue != null ? EnumSet.noneOf(type) : null;
     }
 
-    if (((String[]) pgArray.getArray()).length > 0) {
-      Set<T> set = Arrays.stream(((String[]) pgArray.getArray()))
+    if (((Object[]) pgArray.getArray()).length > 0) {
+      Set<T> set = Arrays.stream(((Object[]) pgArray.getArray()))
           .map(this::fromKey)
           .filter(Objects::nonNull)
           .collect(Collectors.toSet());

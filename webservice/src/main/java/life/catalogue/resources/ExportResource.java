@@ -13,7 +13,8 @@ import life.catalogue.db.tree.AbstractTreePrinter;
 import life.catalogue.db.tree.JsonTreePrinter;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.dw.auth.Roles;
-import life.catalogue.release.AcExporter;
+import life.catalogue.exporter.AcExporter;
+import life.catalogue.exporter.HtmlExporter;
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -148,13 +149,32 @@ public class ExportResource {
   }
 
   @GET
+  @Produces(MediaType.TEXT_HTML)
+  public Response html(@PathParam("datasetKey") int key,
+                     @QueryParam("root") String rootID,
+                     @QueryParam("rank") Set<Rank> ranks) {
+    if (rootID == null) {
+      throw new IllegalArgumentException("root query parameter required");
+    }
+
+    StreamingOutput stream;
+    stream = os -> {
+      Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+      HtmlExporter exporter = HtmlExporter.subtree(key, rootID, ranks, factory, writer);
+      exporter.print();
+      writer.flush();
+    };
+    return Response.ok(stream).build();
+  }
+
+  @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Object simpleName(@PathParam("datasetKey") int key,
-                                        @QueryParam("root") String rootID,
-                                        @QueryParam("rank") Set<Rank> ranks,
-                                        @QueryParam("synonyms") boolean includeSynonyms,
-                                        @QueryParam("nested") boolean nested,
-                                        @Context SqlSession session) {
+                            @QueryParam("root") String rootID,
+                            @QueryParam("rank") Set<Rank> ranks,
+                            @QueryParam("synonyms") boolean includeSynonyms,
+                            @QueryParam("nested") boolean nested,
+                            @Context SqlSession session) {
     if (rootID == null) {
       throw new IllegalArgumentException("root query parameter required");
     }

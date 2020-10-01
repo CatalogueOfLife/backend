@@ -1,5 +1,6 @@
 package life.catalogue.common.text;
 
+import life.catalogue.api.search.NameUsageSearchParameter;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -94,4 +95,11 @@ public class StringUtilsTest {
     assertEquals("HA LLO34 GRR", StringUtils.digitOrAsciiLetters(" Ha-llo34!   grr.!"));
   }
 
+  @Test
+  public void lowerCamelCase() {
+    assertNull(StringUtils.lowerCamelCase(null));
+    assertEquals("datasetKey", StringUtils.lowerCamelCase(NameUsageSearchParameter.DATASET_KEY));
+    assertEquals("extinct", StringUtils.lowerCamelCase(NameUsageSearchParameter.EXTINCT));
+    assertEquals("nameIndexId", StringUtils.lowerCamelCase(NameUsageSearchParameter.NAME_INDEX_ID));
+  }
 }

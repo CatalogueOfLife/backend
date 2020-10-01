@@ -18,12 +18,12 @@ import java.util.function.Consumer;
  */
 public abstract class AbstractTreePrinter implements Consumer<SimpleName> {
   private int counter = 0;
-  private final int datasetKey;
-  private final Integer sectorKey;
-  private final String startID;
+  protected final int datasetKey;
+  protected final Integer sectorKey;
+  protected final String startID;
   private final Set<Rank> ranks;
   private final Rank lowestRank;
-  private final SqlSessionFactory factory;
+  protected final SqlSessionFactory factory;
   private SqlSession session;
   private final LinkedList<SimpleName> parents = new LinkedList<>();
   protected int level = 0;
@@ -31,7 +31,7 @@ public abstract class AbstractTreePrinter implements Consumer<SimpleName> {
   /**
    * @param sectorKey optional sectorKey to restrict printed tree to
    */
-  AbstractTreePrinter(int datasetKey, Integer sectorKey, String startID, Set<Rank> ranks, SqlSessionFactory factory) {
+  protected AbstractTreePrinter(int datasetKey, Integer sectorKey, String startID, Set<Rank> ranks, SqlSessionFactory factory) {
     this.datasetKey = datasetKey;
     this.startID = startID;
     this.sectorKey = sectorKey;
@@ -102,9 +102,9 @@ public abstract class AbstractTreePrinter implements Consumer<SimpleName> {
     }
   }
 
-  abstract void start(SimpleName u) throws IOException;
+  protected abstract void start(SimpleName u) throws IOException;
 
-  abstract void end(SimpleName u) throws IOException;
+  protected abstract void end(SimpleName u) throws IOException;
 
   abstract void flush() throws IOException;
 

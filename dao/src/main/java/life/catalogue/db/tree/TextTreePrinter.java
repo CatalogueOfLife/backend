@@ -72,7 +72,7 @@ public class TextTreePrinter extends AbstractTreePrinter {
     writer.flush();
   }
 
-  void start(SimpleName u) throws IOException {
+  protected void start(SimpleName u) throws IOException {
     writer.write(StringUtils.repeat(' ', level * indentation));
     if (u.getStatus() != null && u.getStatus().isSynonym()) {
       writer.write(SYNONYM_SYMBOL);
@@ -91,8 +91,8 @@ public class TextTreePrinter extends AbstractTreePrinter {
 
     writer.write('\n');
   }
-  
-  void end(SimpleName u) {
+
+  protected void end(SimpleName u) {
     //nothing
   }
   

@@ -51,7 +51,7 @@ import life.catalogue.importer.ImportManager;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.parser.NameParser;
-import life.catalogue.release.AcExporter;
+import life.catalogue.exporter.AcExporter;
 import life.catalogue.release.ReleaseManager;
 import life.catalogue.resources.*;
 import life.catalogue.resources.parser.NameParserResource;

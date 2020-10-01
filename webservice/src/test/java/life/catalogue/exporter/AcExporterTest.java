@@ -1,4 +1,4 @@
-package life.catalogue.release;
+package life.catalogue.exporter;
 
 import com.google.common.io.Files;
 import life.catalogue.WsServerConfig;
@@ -10,8 +10,8 @@ import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.db.LookupTables;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.TestDataRule;
+import life.catalogue.db.mapper.DatasetMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;

@@ -1,5 +1,7 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.*;
 
 /**
@@ -24,8 +26,12 @@ public class TaxonInfo {
    * saving json serialization size.
    */
   private Map<String, Reference> references = new HashMap<>();
-  
-  
+
+  @JsonIgnore
+  public String getId() {
+    return taxon.getId();
+  }
+
   public Taxon getTaxon() {
     return taxon;
   }

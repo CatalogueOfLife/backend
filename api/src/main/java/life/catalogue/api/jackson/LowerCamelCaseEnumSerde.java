@@ -2,7 +2,7 @@ package life.catalogue.api.jackson;
 
 import com.google.common.collect.ImmutableSet;
 import life.catalogue.api.search.NameUsageSearchParameter;
-import org.apache.commons.text.WordUtils;
+import life.catalogue.common.text.StringUtils;
 
 import java.util.Set;
 
@@ -23,32 +23,26 @@ public class LowerCamelCaseEnumSerde {
   static class LowerCamelCaseEnumSerializers extends PermissiveEnumSerde.PermissiveEnumSerializers {
 
     public LowerCamelCaseEnumSerializers() {
-      super(LowerCamelCaseEnumSerde::lowerCamelCase, ENUM_CLASSES_LCC::contains);
+      super(StringUtils::lowerCamelCase, ENUM_CLASSES_LCC::contains);
     }
   }
 
   static class LowerCamelCaseEnumKeySerializers extends PermissiveEnumSerde.PermissiveEnumKeySerializers {
     public LowerCamelCaseEnumKeySerializers() {
-      super(LowerCamelCaseEnumSerde::lowerCamelCase, ENUM_CLASSES_LCC::contains);
+      super(StringUtils::lowerCamelCase, ENUM_CLASSES_LCC::contains);
     }
   }
 
   public static class LowerCamelCaseEnumDeserializers extends PermissiveEnumSerde.PermissiveEnumDeserializers {
     public LowerCamelCaseEnumDeserializers() {
-      super(LowerCamelCaseEnumSerde::lowerCamelCase, ENUM_CLASSES_LCC::contains);
+      super(StringUtils::lowerCamelCase, ENUM_CLASSES_LCC::contains);
     }
   }
 
   public static class LowerCamelCaseEnumKeyDeserializers extends PermissiveEnumSerde.PermissiveEnumKeyDeserializers {
     public LowerCamelCaseEnumKeyDeserializers() {
-      super(LowerCamelCaseEnumSerde::lowerCamelCase, ENUM_CLASSES_LCC::contains);
+      super(StringUtils::lowerCamelCase, ENUM_CLASSES_LCC::contains);
     }
-  }
-
-  public static String lowerCamelCase(Enum<?> val) {
-    char c[] = WordUtils.capitalizeFully(val.name(), new char[]{'_'}).replaceAll("_", "").toCharArray();
-    c[0] = Character.toLowerCase(c[0]);
-    return new String(c);
   }
 
 }
