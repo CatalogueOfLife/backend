@@ -97,7 +97,7 @@ public class HtmlExporter extends NameUsageTreePrinter {
   }
 
   protected void start(NameUsageBase u) throws IOException {
-    if (u.getStatus().isSynonym()) {
+    if (u.isSynonym()) {
       Synonym s = (Synonym) u;
       if (taxon.getSynonyms() == null) {
         taxon.setSynonyms(new ArrayList<>());
@@ -105,28 +105,29 @@ public class HtmlExporter extends NameUsageTreePrinter {
       taxon.getSynonyms().add(s);
 
     } else {
-      // print previous?
       if (taxon != null) {
         writeTaxon();
       }
 
+      taxonLevel = level;
       taxon = new TaxonInfo();
       Taxon t = (Taxon) u;
       taxon.setTaxon(t);
-      if (taxon.getTaxon().getName().getRank().isSpeciesOrBelow()) {
-        taxonLevel = 6;
-      } else {
-        taxonLevel = Math.min(level,6);
-      }
     }
+    //System.out.println(StringUtils.repeat(' ', level) + ">" + status(u));
   }
 
   void writeTaxon() throws IOException {
+    //System.out.println(taxon.getTaxon().getLabel());
     // load missing references
     TaxonDao.fillTaxonInfo(session, taxon, refCache, false, true, true, false, true, false);
     // now print the full thing
     data.put("t", taxon);
-    data.put("level", taxonLevel);
+    int cssLevel = 6;
+    if (!taxon.getTaxon().getName().getRank().isSpeciesOrBelow()) {
+      cssLevel = Math.min(taxonLevel,6);
+    }
+    data.put("level", cssLevel);
 
     try {
       Template temp = fmk.getTemplate("taxon.ftl");
@@ -134,10 +135,19 @@ public class HtmlExporter extends NameUsageTreePrinter {
     } catch (TemplateException e) {
       throw new IOException(e);
     }
+    taxon = null;
+  }
+
+  static char status(NameUsageBase u) {
+    return u.isSynonym() ? 'S' : 'T';
   }
 
   protected void end(NameUsageBase u) throws IOException {
-    if (!u.getStatus().isSynonym()) {
+    if (taxon != null && u.isTaxon() && taxonLevel==(level-1)) {
+      writeTaxon();
+    }
+    //System.out.println(StringUtils.repeat(' ', level-1) + "<" + status(u));
+    if (u.isTaxon()) {
       writer.write("</div>\n");
     }
   }

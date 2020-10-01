@@ -1,5 +1,5 @@
 <div class="level${level}" id="${t.getId()}">
-  <div class="Name">${t.taxon.name.rank}: <strong>${t.taxon.label}</strong>
+  <div class="Name">${t.taxon.name.rank}: ${t.taxon.labelHtml}
   <#if t.taxon.name.publishedInId??>
     <#assign ref = t.getReference(t.taxon.name.publishedInId) >
     <div class="Reference">${ref.citation}</div>
@@ -12,7 +12,7 @@
   <div class="Synonyms">
    <#list t.synonyms as s>
     <div class="Synonym">
-      <div class="Name">=&nbsp;${s.name.rank} (${s.status}): <strong>${s.label}</strong>
+      <div class="Name">=&nbsp; ${s.labelHtml}
       </div>
     </div>
    </#list>
@@ -23,6 +23,13 @@
    <#list t.taxon.referenceIds as rid>
     <#assign ref = t.getReference(rid) >
     <div class="Reference">${ref.citation}</div>
+   </#list>
+  </div>
+</#if>
+<#if t.vernacularNames??>
+  <div class="Vernaculars">
+   <#list t.vernacularNames as v>
+    <span class="Vernacular">${v.name} [${v.language}]</span>
    </#list>
   </div>
 </#if>

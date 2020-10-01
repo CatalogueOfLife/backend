@@ -27,6 +27,7 @@ public abstract class AbstractTreePrinter<T extends RankedID> implements Consume
   protected SqlSession session;
   private final LinkedList<T> parents = new LinkedList<>();
   protected int level = 0;
+  protected boolean exhausted;
 
   /**
    * @param sectorKey optional sectorKey to restrict printed tree to
@@ -60,7 +61,7 @@ public abstract class AbstractTreePrinter<T extends RankedID> implements Consume
     try {
       session = factory.openSession(true);
       iterate().forEach(this);
-
+      exhausted = true;
       // send final end signals
       while (!parents.isEmpty()) {
         T p = parents.removeLast();
@@ -80,7 +81,7 @@ public abstract class AbstractTreePrinter<T extends RankedID> implements Consume
   public int getCounter() {
     return counter;
   }
-  
+
   @Override
   public void accept(T u) {
     try {
