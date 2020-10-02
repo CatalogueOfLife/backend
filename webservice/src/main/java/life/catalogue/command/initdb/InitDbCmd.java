@@ -12,6 +12,7 @@ import life.catalogue.common.io.PathUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.dao.NameDao;
+import life.catalogue.dao.Partitioner;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.PgConfig;
@@ -224,12 +225,9 @@ public class InitDbCmd extends AbstractPromptCmd {
   }
 
   public static void setupColPartition(SqlSession session) {
-    DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
-    LOG.info("Create CoL project partitions");
-    pm.delete(Datasets.DRAFT_COL);
-    pm.create(Datasets.DRAFT_COL);
-    pm.buildIndices(Datasets.DRAFT_COL);
-    pm.attach(Datasets.DRAFT_COL);
+    Partitioner.partition(session, Datasets.DRAFT_COL);
+    Partitioner.indexAndAttach(session, Datasets.DRAFT_COL);
+    Partitioner.createManagedObjects(session, Datasets.DRAFT_COL);
     session.commit();
   }
   

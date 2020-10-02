@@ -96,9 +96,9 @@ public class NameUsageSearchRequest extends NameUsageRequest {
       @JsonProperty("minRank") Rank minRank,
       @JsonProperty("maxRank") Rank maxRank) {
     super();
-    this.filters = filters == null ? new EnumMap<>(NameUsageSearchParameter.class) : new EnumMap<>(filters);
-    this.facets = facets == null ? EnumSet.noneOf(NameUsageSearchParameter.class) : EnumSet.copyOf(facets);
-    this.content = content == null ? EnumSet.noneOf(SearchContent.class) : EnumSet.copyOf(content);
+    this.filters = filters == null || filters.isEmpty() ? new EnumMap<>(NameUsageSearchParameter.class) : new EnumMap<>(filters);
+    this.facets = facets == null || facets.isEmpty() ? EnumSet.noneOf(NameUsageSearchParameter.class) : EnumSet.copyOf(facets);
+    this.content = content == null || content.isEmpty() ? EnumSet.noneOf(SearchContent.class) : EnumSet.copyOf(content);
     this.vernacular = vernacular;
     this.sortBy = sortBy;
     this.highlight = highlight;

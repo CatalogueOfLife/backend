@@ -13,9 +13,7 @@ import org.junit.Test;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.HashSet;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -75,6 +73,14 @@ public class NameUsageSearchRequestTest extends SerdeTestBase<NameUsageSearchReq
     assertTrue(r.getFilterValue(NameUsageSearchParameter.EXTINCT));
     r.addFilter(NameUsageSearchParameter.EXTINCT, "1");
     assertTrue(r.getFilterValue(NameUsageSearchParameter.EXTINCT));
+  }
+
+  @Test
+  public void jsonConstructor() {
+    // all nulls
+    NameUsageSearchRequest r = new NameUsageSearchRequest(null,null,null,false,null,null,false,false,false,null,null,null);
+    // empty collections
+    r = new NameUsageSearchRequest(Map.of(), Set.of(),Set.of(),false,null,null,false,false,false,null,null,null);
   }
 
   @Test
