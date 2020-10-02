@@ -30,6 +30,10 @@ public class RequestScope {
     return sectorKey;
   }
 
+  public DSID<Integer> getSectorKeyAsDSID() {
+    return DSID.of(datasetKey, sectorKey);
+  }
+
   public void setSectorKey(Integer sectorKey) {
     this.sectorKey = sectorKey;
   }
@@ -63,5 +67,14 @@ public class RequestScope {
   @Override
   public int hashCode() {
     return Objects.hash(all, sectorKey, datasetKey);
+  }
+
+  @Override
+  public String toString() {
+    return "RequestScope{" +
+      "all=" + all +
+      ", sectorKey=" + sectorKey +
+      ", datasetKey=" + datasetKey +
+      '}';
   }
 }

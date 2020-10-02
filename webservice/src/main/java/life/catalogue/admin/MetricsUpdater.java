@@ -2,6 +2,7 @@ package life.catalogue.admin;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.WsServerConfig;
+import life.catalogue.admin.jobs.IndexJob;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.concurrent.BackgroundJob;
@@ -52,6 +53,15 @@ public class MetricsUpdater extends BackgroundJob {
     this.factory = factory;
     this.cfg = cfg;
     this.datasetKey = datasetKey;
+  }
+
+  @Override
+  public boolean isDuplicate(BackgroundJob other) {
+    if (other instanceof MetricsUpdater) {
+      MetricsUpdater job = (MetricsUpdater) other;
+      return datasetKey.equals(job.datasetKey);
+    }
+    return false;
   }
 
   @Override

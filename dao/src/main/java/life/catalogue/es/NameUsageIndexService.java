@@ -1,7 +1,6 @@
 package life.catalogue.es;
 
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.Sector;
 import life.catalogue.api.search.NameUsageWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +34,7 @@ public interface NameUsageIndexService {
   /**
    * Indexes all CoL usages from an entire sector from postgres into ElasticSearch using the bulk API.
    */
-  Stats indexSector(Sector sector);
+  Stats indexSector(DSID<Integer> sectorKey);
 
   /**
    * Removed all CoL usage docs of the given sector from ElasticSearch, i.e. taxa and synonyms.
@@ -110,8 +109,8 @@ public interface NameUsageIndexService {
       }
 
       @Override
-      public Stats indexSector(Sector sector) {
-        LOG.info("No Elastic Search configured, pass through sector {}", sector);
+      public Stats indexSector(DSID<Integer> sectorKey) {
+        LOG.info("No Elastic Search configured, pass through sector {}", sectorKey);
         return new Stats();
       }
 

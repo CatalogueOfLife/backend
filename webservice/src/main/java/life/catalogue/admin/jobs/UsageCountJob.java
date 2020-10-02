@@ -24,6 +24,11 @@ public class UsageCountJob extends BackgroundJob {
   }
 
   @Override
+  public boolean isDuplicate(BackgroundJob other) {
+    return other instanceof UsageCountJob;
+  }
+
+  @Override
   public void execute() {
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);

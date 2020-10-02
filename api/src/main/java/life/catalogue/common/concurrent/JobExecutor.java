@@ -104,8 +104,15 @@ public class JobExecutor implements AutoCloseable {
   }
 
   public void submit(BackgroundJob task) {
-    if (task == null)
+    if (task == null) {
       throw new NullPointerException();
+    }
+    // look for duplicates in the queue
+    for (BackgroundJob qj : getQueue()) {
+      if (task.isDuplicate(qj)) {
+        throw new IllegalArgumentException("A duplicate job is queued already");
+      }
+    }
     task.setHandler(this::onFinished);
     ComparableFutureTask ftask = new ComparableFutureTask(task);
     exec.execute(ftask);

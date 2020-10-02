@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import java.util.Objects;
 import java.util.function.Function;
 
 import static life.catalogue.api.vocab.Datasets.DRAFT_COL;
@@ -26,6 +27,18 @@ public interface DSID<K> extends DatasetScoped {
    */
   default String concat() {
     return getDatasetKey() + ":" + getId();
+  }
+
+  /**
+   * Checks whether 2 instances of DSID potentially using different implementation classes are identical
+   * when it comes to their DSID content.
+   * @param d1
+   * @param d2
+   * @return true if both are equal identifiers
+   */
+  static <K> boolean equals(DSID<K> d1, DSID<K> d2) {
+    return Objects.equals(d1.getDatasetKey(), d2.getDatasetKey())
+        && Objects.equals(d1.getId(), d2.getId());
   }
 
   /**

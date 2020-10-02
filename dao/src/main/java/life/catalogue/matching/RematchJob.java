@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class RematchJob extends BackgroundJob {
@@ -39,6 +40,15 @@ public class RematchJob extends BackgroundJob {
     this.datasetKeys = datasetKeys;
     this.factory = factory;
     this.ni = ni;
+  }
+
+  @Override
+  public boolean isDuplicate(BackgroundJob other) {
+    if (other instanceof RematchJob) {
+      RematchJob job = (RematchJob) other;
+      return Arrays.equals(datasetKeys, job.datasetKeys);
+    }
+    return false;
   }
 
   @Override

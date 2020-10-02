@@ -20,6 +20,11 @@ public class DatasetScopedEntity<T> extends DataEntity<DSID<T>> implements DSID<
   public DatasetScopedEntity() {
   }
 
+  public DatasetScopedEntity(DSID<T> key) {
+    this.datasetKey = key.getDatasetKey();
+    this.id = key.getId();
+  }
+
   public DatasetScopedEntity(DatasetScopedEntity<T> other) {
     super(other);
     this.datasetKey = other.datasetKey;

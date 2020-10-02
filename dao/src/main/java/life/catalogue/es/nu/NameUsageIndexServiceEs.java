@@ -2,6 +2,7 @@ package life.catalogue.es.nu;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterables;
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleNameClassification;
@@ -14,6 +15,7 @@ import life.catalogue.dao.NameUsageProcessor;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.NameUsageWrapperMapper;
+import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.*;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
@@ -102,10 +104,13 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
 
   @Override
-  public Stats indexSector(Sector s) {
-    NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
+  public Stats indexSector(DSID<Integer> sectorKey) {
     Stats stats = new Stats();
     try (SqlSession session = factory.openSession()) {
+      Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
+      if (s == null) throw NotFoundException.notFound(Sector.class, sectorKey);
+
+      NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
       deleteSector(s);
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
 
@@ -124,7 +129,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       stats.names = indexer.documentsIndexed();
     }
     LOG.info("Successfully indexed sector {}. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
-        s.getKey(), esConfig.nameUsage.name, stats.usages, stats.names, stats.total());
+      sectorKey, esConfig.nameUsage.name, stats.usages, stats.names, stats.total());
     return stats;
   }
 

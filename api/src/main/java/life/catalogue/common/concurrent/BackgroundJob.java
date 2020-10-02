@@ -1,5 +1,6 @@
 package life.catalogue.common.concurrent;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.common.util.LoggingUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,15 @@ public abstract class BackgroundJob implements Runnable {
     this.finishedHandler = finishedHandler;
   }
 
+  /**
+   * Method to override if you want the job executor to reject duplicate jobs on submit that are already present in the queue
+   * or are running already. By default jobs are compared by their key which is unique to every job instance.
+   * @return true if its a duplicate that should be rejected
+   */
+  public boolean isDuplicate(BackgroundJob other) {
+    return this.key.equals(other.key);
+  }
+
   @Override
   public final void run() {
     try {
@@ -67,7 +77,8 @@ public abstract class BackgroundJob implements Runnable {
     }
   }
 
-  public String getJobClassName() {
+  @JsonProperty("job")
+  public String getJobName() {
     return getClass().getSimpleName();
   }
 

@@ -40,6 +40,11 @@ public class ReimportJob extends BackgroundJob {
   }
 
   @Override
+  public boolean isDuplicate(BackgroundJob other) {
+    return other instanceof ReimportJob;
+  }
+
+  @Override
   public void execute() {
     final List<Integer> keys;
     try (SqlSession session = factory.openSession()) {

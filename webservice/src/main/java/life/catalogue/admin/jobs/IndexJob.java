@@ -24,15 +24,31 @@ public class IndexJob extends BackgroundJob {
   }
 
   @Override
+  public boolean isDuplicate(BackgroundJob other) {
+    if (other instanceof IndexJob) {
+      IndexJob job = (IndexJob) other;
+      return req.equals(job.req);
+    }
+    return false;
+  }
+
+  @Override
   public void execute() {
     // cleanup
     try {
       if (req.getDatasetKey() != null) {
-        LOG.info("Reindex dataset {} by {}", req.getDatasetKey(), getUserKey());
-        indexService.indexDataset(req.getDatasetKey());
-      } else {
+        if (req.getSectorKey() != null) {
+          LOG.info("Reindex sector {} by {}", req.getDatasetKey(), getUserKey());
+          indexService.indexSector(req.getSectorKeyAsDSID());
+        } else {
+          LOG.info("Reindex dataset {} by {}", req.getDatasetKey(), getUserKey());
+          indexService.indexDataset(req.getDatasetKey());
+        }
+      } else if (req.getAll()){
         LOG.warn("Reindex all datasets by {}", getUserKey());
         indexService.indexAll();
+      } else {
+        LOG.info("Bad reindex request {}", req);
       }
     } catch (RuntimeException e){
       LOG.error("Error reindexing", e);
