@@ -5,10 +5,11 @@
   <meta charset="UTF-8">
   <meta name="description" content="${d.title!}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://raw.githubusercontent.com/CatalogueOfLife/backend/master/webservice/src/main/resources/exporter/html/catalogue.css">
   <#--
   <link rel="stylesheet" href="https://data.catalogue.life/dataset/0/export/css">
-  -->
   <link rel="stylesheet" href="file:///Users/markus/code/col/backend/webservice/src/main/resources/exporter/html/catalogue.css">
+  -->
   <script src="https://kit.fontawesome.com/9dcb058c00.js" crossorigin="anonymous"></script>
 </head>
 <body>
