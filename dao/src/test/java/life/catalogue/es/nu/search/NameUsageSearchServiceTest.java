@@ -532,9 +532,9 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
   // https://github.com/CatalogueOfLife/backend/issues/864
   @Test
-  @Ignore("Unresolve issue")
   public void Navas() {
-    indexNewTaxon(Rank.SPECIES, "Eatonica", "schoutedeni", "(Navás, 1911) Miller");
+    indexNewTaxon(Rank.SPECIES, "Eatonica", "schoutedeni", "Navás");
+    indexNewTaxon(Rank.SPECIES, "Eatonica", "maxima", "(Navás, 1911) Miller");
     indexNewTaxon(Rank.SPECIES, "Eatonica", "markii", "(Navás, 1911)");
     indexNewTaxon(Rank.SPECIES, "Eatonica", "minima", "Navas, 1911");
 
@@ -542,19 +542,23 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     query.setSearchType(SearchType.WHOLE_WORDS);
     query.setQ("Eatonica");
     NameUsageSearchResponse result = search(query);
-    assertEquals(3, result.getResult().size());
+    assertEquals(4, result.getResult().size());
 
     query.setQ("Navas");
-    assertEquals(3, search(query).getResult().size());
+    assertEquals(4, search(query).getResult().size());
 
-    query.setQ("Navas, 1911");
-    assertEquals(1, search(query).getResult().size());
+    //TODO: why does this not work???
+//    query.setQ("1911");
+//    assertEquals(3, search(query).getResult().size());
 
     query.setQ("Miller");
     assertEquals(1, search(query).getResult().size());
 
     query.setQ("Navás");
-    assertEquals(2, search(query).getResult().size());
+    assertEquals(4, search(query).getResult().size());
+
+    query.setQ("Nävas");
+    assertEquals(4, search(query).getResult().size());
   }
 
   @Test

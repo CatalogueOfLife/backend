@@ -27,7 +27,7 @@ public abstract class QMatcher {
   private static final Logger LOG = LoggerFactory.getLogger(QMatcher.class);
 
   static final String FLD_SCINAME = "scientificName";
-  static final String FLD_AUTHOR = "authorship";
+  static final String FLD_AUTHOR = "authorshipComplete";
   static final String FLD_VERNACULAR = "vernacularNames";
   static final String FLD_GENUS = "nameStrings.genusOrMonomial";
   static final String FLD_GENUS_LETTER = "nameStrings.genusLetter";
