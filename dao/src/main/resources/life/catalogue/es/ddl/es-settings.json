@@ -87,6 +87,13 @@
 						"asciifolding"
 					]
 				},
+        "standard_ascii": {
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "asciifolding"
+          ]
+        },
 				"sciname_autocomplete_indextime": {
 					"char_filter": "sciname_char_filter",
 					"tokenizer": "sciname_autocomplete_indextime",

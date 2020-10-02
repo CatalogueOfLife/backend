@@ -1,18 +1,13 @@
 package life.catalogue.es.nu;
 
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.es.query.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import life.catalogue.api.search.NameUsageRequest;
 import life.catalogue.dao.CatCopy;
 import life.catalogue.es.ddl.MultiField;
-import life.catalogue.es.query.CaseInsensitiveQuery;
-import life.catalogue.es.query.DisMaxQuery;
-import life.catalogue.es.query.EdgeNgramQuery;
-import life.catalogue.es.query.Query;
-import life.catalogue.es.query.SciNameEqualsQuery;
-import life.catalogue.es.query.SciNameMatchQuery;
-import life.catalogue.es.query.TermQuery;
+
 import static life.catalogue.es.query.AbstractMatchQuery.Operator.*;
 
 /**
@@ -94,7 +89,7 @@ public abstract class QMatcher {
   public Query getVernacularNameQuery() {
     String q = CatCopy.transLatin.transliterate(request.getQ().toLowerCase());
     return new DisMaxQuery()
-        .subquery(new CaseInsensitiveQuery(FLD_VERNACULAR, q).withBoost(100.0))
+        .subquery(new StandardAsciiQuery(FLD_VERNACULAR, q).withBoost(100.0))
         .subquery(new EdgeNgramQuery(FLD_VERNACULAR, q).withOperator(AND));
 
   }
@@ -102,7 +97,7 @@ public abstract class QMatcher {
   public Query getAuthorshipQuery() {
     String q = request.getQ().toLowerCase();
     return new DisMaxQuery()
-        .subquery(new CaseInsensitiveQuery(FLD_AUTHOR, q).withBoost(100.0))
+        .subquery(new StandardAsciiQuery(FLD_AUTHOR, q).withBoost(100.0))
         .subquery(new EdgeNgramQuery(FLD_AUTHOR, q).withOperator(AND));
   }
 

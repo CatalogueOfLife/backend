@@ -20,6 +20,11 @@ public enum Analyzer {
   IGNORE_CASE("ic", "ignore_case"),
 
   /**
+   * A standard analyzer that additionally folds strings to ASCII.
+   */
+  STANDARD_ASCII("std", "standard_ascii"),
+
+  /**
    * An edge ngram analyzer used for auto-complete functionality. This is meant as an index-time-only analyzer. Note that in
    * es-settings.json we have defined another analyzer (autocomplete_search, which is the search-time-only counterpart of this analyzer.
    * Ordinarily, index-time and search-time analysis should be the same, except in this special case (as explained in the Elasticsearch
