@@ -153,24 +153,22 @@ public class QSearchTests extends EsReadTestBase {
   }
 
   @Test
-  public void test6() {
+  public void vernacular() {
 
     // ==> The query
     NameUsageSearchRequest request = new NameUsageSearchRequest();
-    request.setQ("EAT");
+    request.setQ("EATer");
     request.setContent(EnumSet.of(SearchContent.VERNACULAR_NAME));
 
     // Name, Usage & scientific name to prevent NPEs while indexing
     Name name = new Name();
     name.setScientificName("Foo");
-    Taxon t = new Taxon();
-    t.setName(name);
-    NameUsageWrapper w0 = new NameUsageWrapper(t);
+    NameUsageWrapper nuw = new NameUsageWrapper(new Taxon(name));
 
     VernacularName vn = new VernacularName();
     vn.setName("Rosy Bee-eater");
-    w0.setVernacularNames(Arrays.asList(vn));
-    index(w0);
+    nuw.setVernacularNames(Arrays.asList(vn));
+    index(nuw);
 
     NameUsageSearchResponse response = search(request);
 

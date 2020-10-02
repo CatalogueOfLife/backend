@@ -27,8 +27,7 @@ import java.util.*;
 
 import static life.catalogue.es.EsUtil.insert;
 import static life.catalogue.es.EsUtil.refreshIndex;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class NameUsageSearchServiceTest extends EsReadTestBase {
 
@@ -603,7 +602,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     // Define search
     NameUsageSearchRequest query = new NameUsageSearchRequest(NameUsageSearchRequest.SearchContent.VERNACULAR_NAME);
     query.setHighlight(false);
-    query.setQ("UNLIKE");
+    query.setQ("UNLIKELY");
 
     // Match
     NameUsageWrapper nuw1 = minimalTaxon();
@@ -625,13 +624,13 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     // Match
     NameUsageWrapper nuw4 = minimalTaxon();
-    vernaculars = Arrays.asList("it's unlike capital case");
+    vernaculars = Arrays.asList("it's unlikely. A capital case");
     nuw4.setVernacularNames(create(vernaculars));
     index(nuw4);
 
     // No match
     NameUsageWrapper nuw5 = minimalTaxon();
-    vernaculars = Arrays.asList("LIKE IT OR NOT");
+    vernaculars = Arrays.asList("un LIKEly IT OR NOT");
     nuw5.setVernacularNames(create(vernaculars));
     index(nuw5);
 
@@ -787,16 +786,18 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
   @Test
   public void vernacularNameTransliterationTest01() {
+    index(vernacularNameTransliterationTest_data());
+
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setHighlight(false);
     query.setQ("Hier");
-    index(vernacularNameTransliterationTest_data());
-
-    ResultPage<NameUsageWrapper> result = search(query);
-    assertEquals(0, result.getResult().size());
+    assertTrue(search(query).getResult().isEmpty());
 
     query.setSingleContent(NameUsageSearchRequest.SearchContent.VERNACULAR_NAME);
-    result = search(query);
+    assertTrue(search(query).getResult().isEmpty());
+
+    query.setQ("Hierogliefen");
+    ResultPage<NameUsageWrapper> result = search(query);
     assertEquals(1, result.getResult().size());
     assertEquals("1", result.getResult().iterator().next().getId());
   }
@@ -805,7 +806,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   public void vernacularNameTransliterationTest02() {
     NameUsageSearchRequest query = new NameUsageSearchRequest(NameUsageSearchRequest.SearchContent.VERNACULAR_NAME);
     query.setHighlight(false);
-    query.setQ("hIEr");
+    query.setQ("hIErogliefen");
     index(vernacularNameTransliterationTest_data());
     ResultPage<NameUsageWrapper> result = search(query);
     assertEquals(1, result.getResult().size());
@@ -816,7 +817,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   public void vernacularNameTransliterationTest03() {
     NameUsageSearchRequest query = new NameUsageSearchRequest(NameUsageSearchRequest.SearchContent.VERNACULAR_NAME);
     query.setHighlight(false);
-    query.setQ("ȞȋȆr");
+    query.setQ("ȞȋȆrogliefen");
     index(vernacularNameTransliterationTest_data());
     ResultPage<NameUsageWrapper> result = search(query);
     assertEquals(1, result.getResult().size());

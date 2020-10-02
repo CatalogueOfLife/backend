@@ -90,7 +90,6 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetKey(1);
     query.setQ("abcde");
-    query.setVernaculars(true);
     query.setFuzzy(true);
 
     String THE_NAME = "AbCdEfGhIjK";
@@ -126,11 +125,10 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
 
     NameUsageSuggestResponse response = suggest(query);
 
+    assertEquals(3, response.getSuggestions().size());
     assertEquals("3", response.getSuggestions().get(0).getUsageId());
     assertEquals("2", response.getSuggestions().get(1).getUsageId());
     assertEquals("1", response.getSuggestions().get(2).getUsageId());
-    assertEquals("4", response.getSuggestions().get(3).getUsageId());
-
   }
 
   @Test // Relevance goes from infraspecific epithet -> specific epithet -> genus
@@ -139,7 +137,6 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetKey(1);
     query.setQ("abcde fghij");
-    query.setVernaculars(true);
 
     Name n = new Name();
     n.setDatasetKey(1);
@@ -188,7 +185,7 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
 
     NameUsageSuggestResponse response = suggest(query);
 
-    response.getSuggestions().stream().forEach(s -> System.out.println("usage ID " + s.getUsageId() + ": " + s.getScore()));
+    response.getSuggestions().forEach(s -> System.out.println("usage ID " + s.getUsageId() + ": " + s.getScore()));
 
   }
 
@@ -198,7 +195,6 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetKey(1);
     query.setQ("LARUS FUSCUS FUSCUS (LINNAEUS 1752)");
-    query.setVernaculars(true);
     query.setFuzzy(true);
 
     Name n = new Name();

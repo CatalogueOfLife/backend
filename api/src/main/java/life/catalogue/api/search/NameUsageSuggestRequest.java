@@ -10,8 +10,6 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
 
   @QueryParam("datasetKey")
   private Integer datasetKey;
-  @QueryParam("vernaculars")
-  private boolean vernaculars;
   @QueryParam("accepted")
   private boolean accepted;
   @QueryParam("limit")
@@ -21,14 +19,6 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   public SearchType getSearchType() {
     return SearchType.PREFIX;
-  }
-
-  public boolean isVernaculars() {
-    return vernaculars;
-  }
-
-  public void setVernaculars(boolean vernaculars) {
-    this.vernaculars = vernaculars;
   }
 
   public boolean isAccepted() {
@@ -45,14 +35,6 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
 
   public void setDatasetKey(Integer datasetKey) {
     this.datasetKey = datasetKey;
-  }
-
-  public Boolean getVernaculars() {
-    return vernaculars;
-  }
-
-  public void setVernaculars(Boolean vernaculars) {
-    this.vernaculars = vernaculars;
   }
 
   public Boolean getAccepted() {
@@ -73,14 +55,14 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
 
   @JsonIgnore
   public boolean isEmpty() {
-    return super.isEmpty() && datasetKey == null && !vernaculars && !accepted && limit == null;
+    return super.isEmpty() && datasetKey == null && !accepted && limit == null;
   }
 
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result = prime * result + Objects.hash(accepted, datasetKey, limit, vernaculars);
+    result = prime * result + Objects.hash(accepted, datasetKey, limit);
     return result;
   }
 
@@ -98,8 +80,7 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
     NameUsageSuggestRequest other = (NameUsageSuggestRequest) obj;
     return Objects.equals(accepted, other.accepted) 
         && Objects.equals(datasetKey, other.datasetKey) 
-        && Objects.equals(limit, other.limit)
-        && Objects.equals(vernaculars, other.vernaculars);
+        && Objects.equals(limit, other.limit);
   }
 
 }

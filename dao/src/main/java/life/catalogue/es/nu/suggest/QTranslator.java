@@ -2,7 +2,6 @@ package life.catalogue.es.nu.suggest;
 
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.es.nu.QMatcher;
-import life.catalogue.es.query.BoolQuery;
 import life.catalogue.es.query.Query;
 
 /**
@@ -11,7 +10,6 @@ import life.catalogue.es.query.Query;
 class QTranslator {
 
   static final String SN_QUERY_NAME = "sn";
-  static final String VN_QUERY_NAME = "vn";
 
   private final NameUsageSuggestRequest request;
 
@@ -21,11 +19,6 @@ class QTranslator {
 
   Query translate() {
     QMatcher matcher = QMatcher.getInstance(request);
-    if (request.isVernaculars()) {
-      return new BoolQuery()
-          .should(matcher.getScientificNameQuery().withName(SN_QUERY_NAME))
-          .should(matcher.getVernacularNameQuery().withName(VN_QUERY_NAME));
-    }
     return matcher.getScientificNameQuery().withName(SN_QUERY_NAME);
   }
 

@@ -1,6 +1,5 @@
 package life.catalogue.es.nu.suggest;
 
-import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.api.search.NameUsageSuggestion;
 import life.catalogue.es.EsMonomial;
 import life.catalogue.es.EsNameUsage;
@@ -20,27 +19,11 @@ class SearchHitConverter implements UpwardConverter<SearchHit<EsNameUsage>, Name
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SearchHitConverter.class);
 
-  private final VernacularNameMatcher matcher;
-
-  SearchHitConverter(NameUsageSuggestRequest request) {
-    if (request.isVernaculars()) {
-      this.matcher = new VernacularNameMatcher(request);
-    } else {
-      // matcher is not going to be used
-      this.matcher = null;
-    }
-  }
-
-  NameUsageSuggestion createSuggestion(SearchHit<EsNameUsage> hit, boolean isVernacularName) {
+  NameUsageSuggestion createSuggestion(SearchHit<EsNameUsage> hit) {
     NameUsageSuggestion suggestion = new NameUsageSuggestion();
     suggestion.setScore(hit.getScore());
-    suggestion.setVernacularName(isVernacularName);
     EsNameUsage doc = hit.getSource();
-    if (isVernacularName) {
-      List<String> names = hit.getSource().getVernacularNames();
-      suggestion.setMatch(matcher.getMatch(names));
-      suggestion.setParentOrAcceptedName(doc.getScientificName());
-    } else if (doc.getStatus() != null && doc.getStatus().isSynonym()) { // a synonym
+    if (doc.getStatus() != null && doc.getStatus().isSynonym()) { // a synonym
       suggestion.setMatch(doc.getScientificName());
       suggestion.setParentOrAcceptedName(doc.getAcceptedName());
       if (doc.getClassificationIds() == null || doc.getClassificationIds().size() > 1) {

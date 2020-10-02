@@ -97,8 +97,7 @@ public abstract class QMatcher {
   public Query getAuthorshipQuery() {
     String q = request.getQ().toLowerCase();
     return new DisMaxQuery()
-        .subquery(new StandardAsciiQuery(FLD_AUTHOR, q).withBoost(100.0))
-        .subquery(new EdgeNgramQuery(FLD_AUTHOR, q).withOperator(AND));
+        .subquery(new StandardAsciiQuery(FLD_AUTHOR, q).withBoost(100.0));
   }
 
   public Query getScientificNameQuery() {

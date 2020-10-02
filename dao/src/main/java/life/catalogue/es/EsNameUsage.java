@@ -34,7 +34,7 @@ public class EsNameUsage {
   // Only indexed using KEYWORD analyzer since it's meant for faceting only (#371)
   private Set<String> authorship;
   private Set<String> authorshipYear;
-  @Analyzers({STANDARD_ASCII, AUTO_COMPLETE})
+  @Analyzers(STANDARD_ASCII)
   private String authorshipComplete;
   private String nameId;
   private Integer nameIndexId;
@@ -50,7 +50,7 @@ public class EsNameUsage {
   private TaxonomicStatus status;
   private Set<Issue> issues;
   private Set<Environment> environments;
-  @Analyzers({STANDARD_ASCII, AUTO_COMPLETE})
+  @Analyzers(STANDARD_ASCII)
   private List<String> vernacularNames;
   private List<String> classificationIds;
   private Boolean extinct;

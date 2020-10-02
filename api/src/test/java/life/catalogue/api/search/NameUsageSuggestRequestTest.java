@@ -12,7 +12,6 @@ public class NameUsageSuggestRequestTest extends SerdeTestBase<NameUsageSuggestR
   public NameUsageSuggestRequest genTestValue() throws Exception {
     NameUsageSuggestRequest req = new NameUsageSuggestRequest();
     req.setQ("Abies");
-    req.setVernaculars(false);
     req.setAccepted(true);
     req.setFuzzy(true);
     return req;

@@ -1,12 +1,5 @@
 package life.catalogue.es.nu.suggest;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.commons.lang3.StringUtils;
-import org.elasticsearch.client.RestClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.api.search.NameUsageSuggestResponse;
@@ -19,6 +12,14 @@ import life.catalogue.es.ddl.Analyzer;
 import life.catalogue.es.nu.NameUsageQueryService;
 import life.catalogue.es.query.EsSearchRequest;
 import life.catalogue.es.response.EsResponse;
+import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.client.RestClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class NameUsageSuggestionServiceEs extends NameUsageQueryService implements NameUsageSuggestionService {
 
@@ -47,13 +48,10 @@ public class NameUsageSuggestionServiceEs extends NameUsageQueryService implemen
     EsSearchRequest query = translator.translate();
     EsResponse<EsNameUsage> esResponse = executeSearchRequest(index, query);
     List<NameUsageSuggestion> suggestions = new ArrayList<>();
-    SearchHitConverter suggestionFactory = new SearchHitConverter(request);
+    SearchHitConverter suggestionFactory = new SearchHitConverter();
     esResponse.getHits().getHits().forEach(hit -> {
       if (hit.matchedQuery(QTranslator.SN_QUERY_NAME)) {
-        suggestions.add(suggestionFactory.createSuggestion(hit, false));
-      }
-      if (hit.matchedQuery(QTranslator.VN_QUERY_NAME)) {
-        suggestions.add(suggestionFactory.createSuggestion(hit, true));
+        suggestions.add(suggestionFactory.createSuggestion(hit));
       }
     });
     return new NameUsageSuggestResponse(suggestions);

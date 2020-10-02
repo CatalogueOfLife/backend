@@ -1,6 +1,5 @@
 package life.catalogue.api.search;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -12,8 +11,6 @@ import java.util.Objects;
  */
 public class NameUsageSuggestion {
 
-  // Whether this suggestion contains a scientific name or a vernacular name
-  private boolean vernacularName;
   // The name matching the search phrase: an accepted name/synonym/bare name/vernacular name
   private String match;
   // The parent taxon's accepted name if this is a suggestion for an accepted name, else the accepted name if this is a suggestion for
@@ -31,9 +28,7 @@ public class NameUsageSuggestion {
    * multi-lingual.
    */
   public String getSuggestion() {
-    if (vernacularName) {
-      return String.format("%s (vernacular name of %s)", match, parentOrAcceptedName);
-    } else if (status == null) {
+    if (status == null) {
       return match + " (bare name)";
     } else if (status.isSynonym()) {
       return String.format("%s (%s of %s)", match, status.name().toLowerCase(), parentOrAcceptedName);
@@ -66,15 +61,6 @@ public class NameUsageSuggestion {
       }
       return sb.toString();
     }
-  }
-
-  @JsonIgnore
-  public boolean isVernacularName() {
-    return vernacularName;
-  }
-
-  public void setVernacularName(boolean vernacularName) {
-    this.vernacularName = vernacularName;
   }
 
   public String getMatch() {
@@ -143,7 +129,7 @@ public class NameUsageSuggestion {
 
   @Override
   public int hashCode() {
-    return Objects.hash(parentOrAcceptedName, match, nomCode, rank, score, status, usageId, acceptedUsageId, vernacularName);
+    return Objects.hash(parentOrAcceptedName, match, nomCode, rank, score, status, usageId, acceptedUsageId);
   }
 
   @Override
@@ -162,8 +148,7 @@ public class NameUsageSuggestion {
         && Float.floatToIntBits(score) == Float.floatToIntBits(other.score)
         && status == other.status
         && Objects.equals(usageId, other.usageId)
-        && Objects.equals(acceptedUsageId, other.acceptedUsageId)
-        && vernacularName == other.vernacularName;
+        && Objects.equals(acceptedUsageId, other.acceptedUsageId);
   }
 
 }
