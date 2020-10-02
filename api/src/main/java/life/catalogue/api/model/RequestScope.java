@@ -1,5 +1,7 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Objects;
 
 public class RequestScope {
@@ -30,8 +32,9 @@ public class RequestScope {
     return sectorKey;
   }
 
+  @JsonIgnore
   public DSID<Integer> getSectorKeyAsDSID() {
-    return DSID.of(datasetKey, sectorKey);
+    return datasetKey == null ? null : DSID.of(datasetKey, sectorKey);
   }
 
   public void setSectorKey(Integer sectorKey) {
