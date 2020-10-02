@@ -1,10 +1,12 @@
 package life.catalogue.es.query;
 
-import java.util.List;
-import org.junit.Before;
-import org.junit.Test;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 
 public class PrefixQueryTest extends EsReadTestBase {
@@ -15,31 +17,31 @@ public class PrefixQueryTest extends EsReadTestBase {
   }
 
   @Test
-  public void test1() {
+  public void author() {
     EsNameUsage doc = new EsNameUsage();
     String s = "  tHiS  iS  a  LoNg  string  with  spaces";
     // This field is indexed using the IGNORE_CASE analyzer.
     doc.setAuthorshipComplete(s);
     indexRaw(doc);
-    Query query = new CaseInsensitivePrefixQuery("authorshipComplete", s.substring(0, 8));
+    Query query = new StandardAsciiQuery("authorshipComplete", "LoNg");
     List<EsNameUsage> result = queryRaw(query);
     assertEquals(1, result.size());
   }
 
   @Test
-  public void test1a() {
+  public void authorNoMatch() {
     EsNameUsage doc = new EsNameUsage();
     String s = "  tHiS  iS  a  LoNg  string  with  spaces";
     // This field is indexed using the IGNORE_CASE analyzer.
     doc.setAuthorshipComplete(s);
     indexRaw(doc);
-    Query query = new BoolQuery().must(new CaseInsensitivePrefixQuery("authorshipComplete", s.substring(0, 8)));
+    Query query = new BoolQuery().must(new StandardAsciiQuery("authorshipComplete", "LoN"));
     List<EsNameUsage> result = queryRaw(query);
-    assertEquals(1, result.size());
+    assertEquals(0, result.size());
   }
 
   @Test
-  public void test2() {
+  public void usageId() {
     EsNameUsage doc = new EsNameUsage();
     String s = "  tHiS  iS  a  LoNg  string  with  spaces";
     // This field is indexed as-is.
@@ -51,7 +53,7 @@ public class PrefixQueryTest extends EsReadTestBase {
   }
 
   @Test
-  public void test3() {
+  public void usageId2() {
     EsNameUsage doc = new EsNameUsage();
     String s = "  tHiS  iS  a  LoNg  string  with  spaces";
     // This field is indexed as-is.

@@ -37,15 +37,35 @@ public abstract class NameUsageRequest {
 
   @QueryParam("q")
   protected String q;
+
   @QueryParam("fuzzy")
   protected boolean fuzzy = false;
-  protected String[] searchTerms;
+
   @QueryParam("minRank")
   private Rank minRank;
+
   @QueryParam("maxRank")
   private Rank maxRank;
 
+  @QueryParam("sortBy")
+  private NameUsageSearchRequest.SortBy sortBy;
+
+  @QueryParam("reverse")
+  private boolean reverse;
+
+  protected String[] searchTerms;
+
+
   public NameUsageRequest() {
+  }
+
+  public NameUsageRequest(String q, boolean fuzzy, Rank minRank, Rank maxRank, NameUsageSearchRequest.SortBy sortBy, boolean reverse) {
+    this.q = q;
+    this.fuzzy = fuzzy;
+    this.minRank = minRank;
+    this.maxRank = maxRank;
+    this.sortBy = sortBy;
+    this.reverse = reverse;
   }
 
   public NameUsageRequest(NameUsageRequest other) {
@@ -54,13 +74,20 @@ public abstract class NameUsageRequest {
     this.searchTerms = other.searchTerms;
     this.minRank = other.minRank;
     this.maxRank = other.maxRank;
+    this.sortBy = other.sortBy;
+    this.reverse = other.reverse;
   }
 
   public abstract SearchType getSearchType();
 
   @JsonIgnore
   public boolean isEmpty() {
-    return q == null && !fuzzy && minRank==null && maxRank==null;
+    return q == null
+      && !fuzzy
+      && minRank==null
+      && maxRank==null
+      && sortBy == null
+      && !reverse;
   }
 
   /**
@@ -120,6 +147,22 @@ public abstract class NameUsageRequest {
     this.maxRank = maxRank;
   }
 
+  public NameUsageSearchRequest.SortBy getSortBy() {
+    return sortBy;
+  }
+
+  public void setSortBy(NameUsageSearchRequest.SortBy sortBy) {
+    this.sortBy = sortBy;
+  }
+
+  public boolean isReverse() {
+    return reverse;
+  }
+
+  public void setReverse(boolean reverse) {
+    this.reverse = reverse;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -129,12 +172,14 @@ public abstract class NameUsageRequest {
       Objects.equals(q, that.q) &&
       Arrays.equals(searchTerms, that.searchTerms) &&
       minRank == that.minRank &&
-      maxRank == that.maxRank;
+      maxRank == that.maxRank &&
+      sortBy == that.sortBy &&
+      reverse == that.reverse;
   }
 
   @Override
   public int hashCode() {
-    int result = Objects.hash(q, fuzzy, minRank, maxRank);
+    int result = Objects.hash(q, fuzzy, minRank, maxRank, sortBy, reverse);
     result = 31 * result + Arrays.hashCode(searchTerms);
     return result;
   }

@@ -3,6 +3,7 @@ package life.catalogue.es.nu.search;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.es.DownwardConverter;
+import life.catalogue.es.nu.SortByTranslator;
 import life.catalogue.es.query.BoolQuery;
 import life.catalogue.es.query.EsSearchRequest;
 import life.catalogue.es.query.MatchAllQuery;

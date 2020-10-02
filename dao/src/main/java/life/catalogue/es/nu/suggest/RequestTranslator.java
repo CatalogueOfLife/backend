@@ -4,12 +4,12 @@ import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.es.DownwardConverter;
 import life.catalogue.es.nu.NameUsageFieldLookup;
+import life.catalogue.es.nu.SortByTranslator;
 import life.catalogue.es.nu.search.FiltersTranslator;
 import life.catalogue.es.query.*;
 
 import static life.catalogue.api.vocab.TaxonomicStatus.ACCEPTED;
 import static life.catalogue.api.vocab.TaxonomicStatus.PROVISIONALLY_ACCEPTED;
-import static life.catalogue.es.query.SortField.SCORE;
 
 /**
  * Translates the {@code NameSuggestRequest} into a native Elasticsearch search request.
@@ -33,7 +33,11 @@ class RequestTranslator implements DownwardConverter<NameUsageSuggestRequest, Es
       query.filter(new TermsQuery(statusField, ACCEPTED.ordinal(), PROVISIONALLY_ACCEPTED.ordinal()));
     }
     FiltersTranslator.processMinMaxRank(request).forEach(query::filter);
-    return new EsSearchRequest().where(query).sortBy(SCORE).size(request.getLimit());
+    EsSearchRequest req = new EsSearchRequest()
+      .where(query)
+      .size(request.getLimit());
+    req.setSort(new SortByTranslator(request).translate());
+    return req;
   }
 
 }

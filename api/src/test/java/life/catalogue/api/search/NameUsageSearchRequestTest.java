@@ -6,14 +6,16 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
-import life.catalogue.api.search.NameUsageSearchRequest.SearchContent;
 import life.catalogue.api.vocab.NomStatus;
 import org.junit.Test;
 
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -100,13 +102,14 @@ public class NameUsageSearchRequestTest extends SerdeTestBase<NameUsageSearchReq
     r.copy();
   }
 
-  @Test // Tests #510 (bad behaviour if filters/facets/content is empty).
+  @Test
   public void copy02() {
     NameUsageSearchRequest r0 = new NameUsageSearchRequest();
     NameUsageSearchRequest r1 = r0.copy();
     assertFalse(r1.hasFilters());
+    assertTrue(r1.getFilters().isEmpty());
     assertTrue(r1.getFacets().isEmpty());
-    assertEquals(EnumSet.allOf(SearchContent.class),r1.getContent());  
+    assertEquals(NameUsageSearchRequest.DEFAULT_CONTENT, r1.getContent());
   }
 
   @Test

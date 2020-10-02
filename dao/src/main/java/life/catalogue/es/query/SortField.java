@@ -1,8 +1,8 @@
 package life.catalogue.es.query;
 
-import java.util.Collections;
-
 import com.fasterxml.jackson.annotation.JsonValue;
+
+import java.util.Collections;
 
 import static life.catalogue.es.query.SortOptions.Order.ASC;
 import static life.catalogue.es.query.SortOptions.Order.DESC;
@@ -12,6 +12,8 @@ public class SortField {
   // Sort in the order in which documents were indexed
   public static final SortField DOC = new SortField("_doc");
   public static final SortField SCORE = new SortField("_score");
+  public static final SortField RANK = new SortField("rank");
+  public static final SortField SCIENTIFIC_NAME = new SortField("scientificName");
 
   final String field;
   final SortOptions options;

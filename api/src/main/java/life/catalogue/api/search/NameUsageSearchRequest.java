@@ -41,7 +41,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     SCIENTIFIC_NAME, AUTHORSHIP, VERNACULAR_NAME
   }
 
-  private static final Set<SearchContent> DEFAULT_CONTENT = Sets.immutableEnumSet(SearchContent.SCIENTIFIC_NAME, SearchContent.AUTHORSHIP);
+  static final Set<SearchContent> DEFAULT_CONTENT = Sets.immutableEnumSet(SearchContent.SCIENTIFIC_NAME, SearchContent.AUTHORSHIP);
 
   public enum SortBy {
     NAME, TAXONOMIC, INDEX_NAME_ID, NATIVE, RELEVANCE
@@ -57,13 +57,13 @@ public class NameUsageSearchRequest extends NameUsageRequest {
    */
   public static final String IS_NULL = "_NULL";
 
-  private EnumMap<NameUsageSearchParameter, @Size(max = 1000) Set<Object>> filters;
+  private EnumMap<NameUsageSearchParameter, @Size(max = 1000) Set<Object>> filters = new EnumMap<>(NameUsageSearchParameter.class);
 
   @QueryParam("facet")
-  private Set<NameUsageSearchParameter> facets;
+  private Set<NameUsageSearchParameter> facets = EnumSet.noneOf(NameUsageSearchParameter.class);
 
   @QueryParam("content")
-  private Set<SearchContent> content;
+  private Set<SearchContent> content = EnumSet.copyOf(DEFAULT_CONTENT);
 
   /**
    * Whether to include vernacular names in the response. Defaults to false
@@ -71,14 +71,8 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   @QueryParam("vernacular")
   private boolean vernacular = false;
 
-  @QueryParam("sortBy")
-  private SortBy sortBy;
-
   @QueryParam("highlight")
   private boolean highlight;
-
-  @QueryParam("reverse")
-  private boolean reverse;
 
   @QueryParam("type")
   private SearchType searchType;
@@ -102,19 +96,18 @@ public class NameUsageSearchRequest extends NameUsageRequest {
       @JsonProperty("type") SearchType searchType,
       @JsonProperty("minRank") Rank minRank,
       @JsonProperty("maxRank") Rank maxRank) {
-    super();
+    super(q, fuzzy, minRank, maxRank, sortBy, reverse);
+    this.vernacular = vernacular;
+    this.highlight = highlight;
+    this.fuzzy = fuzzy;
+    this.searchType = searchType;
+    copyCollections(filters, facets, content);
+  }
+
+  private void copyCollections(Map<NameUsageSearchParameter, Set<Object>> filters, Set<NameUsageSearchParameter> facets, Set<SearchContent> content){
     this.filters = filters == null || filters.isEmpty() ? new EnumMap<>(NameUsageSearchParameter.class) : new EnumMap<>(filters);
     this.facets = facets == null || facets.isEmpty() ? EnumSet.noneOf(NameUsageSearchParameter.class) : EnumSet.copyOf(facets);
     this.content = content == null || content.isEmpty() ? EnumSet.noneOf(SearchContent.class) : EnumSet.copyOf(content);
-    this.vernacular = vernacular;
-    this.sortBy = sortBy;
-    this.highlight = highlight;
-    this.reverse = reverse;
-    this.fuzzy = fuzzy;
-    this.searchType = searchType;
-    setQ(q); // see comments there
-    setMinRank(minRank);
-    setMaxRank(maxRank);
   }
 
   /**
@@ -126,13 +119,9 @@ public class NameUsageSearchRequest extends NameUsageRequest {
    */
   public NameUsageSearchRequest(NameUsageSearchRequest other) {
     super(other);
-    this.filters = other.filters == null ? null : new EnumMap<>(other.filters);
-    this.facets = other.facets == null ? null : EnumSet.copyOf(other.facets);
-    this.content = other.content == null ? null : EnumSet.copyOf(other.content);
+    copyCollections(other.filters, other.facets, other.content);
     this.vernacular = other.vernacular;
-    this.sortBy = other.sortBy;
     this.highlight = other.highlight;
-    this.reverse = other.reverse;
     this.searchType = other.searchType;
   }
 
@@ -230,9 +219,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
         && (facets == null || facets.isEmpty())
         && (filters == null || filters.isEmpty())
         && !vernacular
-        && sortBy == null
         && !highlight
-        && !reverse
         && !fuzzy
         && searchType == null;
   }
@@ -296,7 +283,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   }
 
   public boolean hasFilter(NameUsageSearchParameter filter) {
-    return getFilters().containsKey(filter);
+    return filters != null && getFilters().containsKey(filter);
   }
 
   public void removeFilter(NameUsageSearchParameter filter) {
@@ -305,41 +292,36 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     }
   }
 
+  public void setFacets(Set<NameUsageSearchParameter> facets) {
+    this.facets = facets == null || facets.isEmpty() ? EnumSet.noneOf(NameUsageSearchParameter.class) : EnumSet.copyOf(facets);
+  }
+
   public void addFacet(NameUsageSearchParameter facet) {
     getFacets().add(facet);
   }
 
+  public void setFilters(EnumMap<NameUsageSearchParameter, Set<Object>> filters) {
+    this.filters = filters == null || filters.isEmpty() ? new EnumMap<>(NameUsageSearchParameter.class) : new EnumMap<>(filters);
+  }
+
   public EnumMap<NameUsageSearchParameter, Set<Object>> getFilters() {
-    if (filters == null) {
-      filters = new EnumMap<>(NameUsageSearchParameter.class);
-    }
     return filters;
   }
 
   public Set<NameUsageSearchParameter> getFacets() {
-    if (facets == null) {
-      facets = EnumSet.noneOf(NameUsageSearchParameter.class);
-    }
     return facets;
   }
 
   public Set<SearchContent> getContent() {
-    if (content == null || content.isEmpty()) {
-      content = EnumSet.copyOf(DEFAULT_CONTENT);
-    }
     return content;
   }
 
   public void setSingleContent(SearchContent content) {
-    if (content == null) {
-      this.content = null;
-    } else {
-      this.content = EnumSet.of(content);
-    }
+    this.content = content == null ? EnumSet.copyOf(DEFAULT_CONTENT) : EnumSet.of(content);
   }
 
   public void setContent(Set<SearchContent> content) {
-    this.content = content;
+    this.content = content == null || content.isEmpty() ? EnumSet.copyOf(DEFAULT_CONTENT) : EnumSet.copyOf(content);
   }
 
   public boolean isVernacular() {
@@ -350,28 +332,12 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     this.vernacular = vernacular;
   }
 
-  public SortBy getSortBy() {
-    return sortBy;
-  }
-
-  public void setSortBy(SortBy sortBy) {
-    this.sortBy = sortBy;
-  }
-
   public boolean isHighlight() {
     return highlight;
   }
 
   public void setHighlight(boolean highlight) {
     this.highlight = highlight;
-  }
-
-  public boolean isReverse() {
-    return reverse;
-  }
-
-  public void setReverse(boolean reverse) {
-    this.reverse = reverse;
   }
 
   @Override
@@ -396,16 +362,14 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     NameUsageSearchRequest that = (NameUsageSearchRequest) o;
     return vernacular == that.vernacular &&
       highlight == that.highlight &&
-      reverse == that.reverse &&
       Objects.equals(filters, that.filters) &&
       Objects.equals(facets, that.facets) &&
       Objects.equals(content, that.content) &&
-      sortBy == that.sortBy &&
       searchType == that.searchType;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), filters, facets, content, vernacular, sortBy, highlight, reverse, searchType);
+    return Objects.hash(super.hashCode(), filters, facets, content, vernacular, highlight, searchType);
   }
 }

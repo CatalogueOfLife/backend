@@ -2,10 +2,7 @@ package life.catalogue.es.nu.suggest;
 
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Taxon;
-import life.catalogue.api.search.NameUsageSuggestRequest;
-import life.catalogue.api.search.NameUsageSuggestResponse;
-import life.catalogue.api.search.NameUsageSuggestion;
-import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
@@ -84,35 +81,41 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     assertTrue(containsUsageIds(response, doc1, doc2, doc3, doc6));
   }
 
-  @Test // Relevance goes from infraspecific epithet -> specific epithet -> genus
+  @Test // Relevance goes from infraspecific epithet <- specific epithet <- genus
   public void test02() {
 
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetKey(1);
     query.setQ("abcde");
-    query.setFuzzy(true);
+    query.setFuzzy(false);
 
     String THE_NAME = "AbCdEfGhIjK";
 
     Name n = new Name();
     n.setDatasetKey(1);
     n.setId("1");
-    n.setRank(Rank.SPECIES);
-    n.setGenus(THE_NAME); // 3: genus
+    n.setRank(Rank.GENUS);
+    n.setUninomial(THE_NAME);
+    n.rebuildScientificName();
     EsNameUsage doc1 = newDocument(n);
 
     n = new Name();
     n.setDatasetKey(1);
     n.setId("2");
-    n.setRank(Rank.SPECIES); // 2: species
+    n.setRank(Rank.SPECIES);
+    n.setGenus("Abies");
     n.setSpecificEpithet(THE_NAME);
+    n.rebuildScientificName();
     EsNameUsage doc2 = newDocument(n);
 
     n = new Name();
     n.setDatasetKey(1);
     n.setId("3");
-    n.setRank(Rank.SUBSPECIES); // 1: subspecies
+    n.setGenus("Abies");
+    n.setSpecificEpithet("alba");
+    n.setRank(Rank.SUBSPECIES);
     n.setInfraspecificEpithet(THE_NAME);
+    n.rebuildScientificName();
     EsNameUsage doc3 = newDocument(n);
 
     n = new Name();
@@ -123,12 +126,20 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
 
     indexRaw(doc1, doc2, doc3, doc4);
 
+    query.setSortBy(NameUsageSearchRequest.SortBy.TAXONOMIC);
     NameUsageSuggestResponse response = suggest(query);
-
     assertEquals(3, response.getSuggestions().size());
-    assertEquals("3", response.getSuggestions().get(0).getUsageId());
+    assertEquals("1", response.getSuggestions().get(0).getUsageId());
     assertEquals("2", response.getSuggestions().get(1).getUsageId());
-    assertEquals("1", response.getSuggestions().get(2).getUsageId());
+    assertEquals("3", response.getSuggestions().get(2).getUsageId());
+
+    query.setSortBy(NameUsageSearchRequest.SortBy.RELEVANCE);
+    response = suggest(query);
+    assertEquals(3, response.getSuggestions().size());
+    assertEquals("1", response.getSuggestions().get(0).getUsageId());
+    assertEquals("2", response.getSuggestions().get(1).getUsageId());
+    assertEquals("3", response.getSuggestions().get(2).getUsageId());
+
   }
 
   @Test // Relevance goes from infraspecific epithet -> specific epithet -> genus

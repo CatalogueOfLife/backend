@@ -1,6 +1,6 @@
-package life.catalogue.es.nu.search;
+package life.catalogue.es.nu;
 
-import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.api.search.NameUsageRequest;
 import life.catalogue.es.query.CollapsibleList;
 import life.catalogue.es.query.SortField;
 
@@ -8,15 +8,15 @@ import java.util.List;
 
 import static life.catalogue.api.search.NameUsageSearchRequest.SortBy.TAXONOMIC;
 
-class SortByTranslator {
+public class SortByTranslator {
 
-  private final NameUsageSearchRequest request;
+  private final NameUsageRequest request;
 
-  SortByTranslator(NameUsageSearchRequest request) {
+  public SortByTranslator(NameUsageRequest request) {
     this.request = request;
   }
 
-  List<SortField> translate() {
+  public List<SortField> translate() {
     if (request.getSortBy() == null) {
       request.setSortBy(TAXONOMIC);
     }
