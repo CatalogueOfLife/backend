@@ -80,12 +80,6 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   @QueryParam("type")
   private SearchType searchType;
 
-  @QueryParam("minRank")
-  private Rank minRank;
-
-  @QueryParam("maxRank")
-  private Rank maxRank;
-
   public NameUsageSearchRequest() {}
 
   @JsonCreator
@@ -101,19 +95,41 @@ public class NameUsageSearchRequest extends NameUsageRequest {
       @JsonProperty("type") SearchType searchType,
       @JsonProperty("minRank") Rank minRank,
       @JsonProperty("maxRank") Rank maxRank) {
+    super();
     this.filters = filters == null ? new EnumMap<>(NameUsageSearchParameter.class) : new EnumMap<>(filters);
     this.facets = facets == null ? EnumSet.noneOf(NameUsageSearchParameter.class) : EnumSet.copyOf(facets);
     this.content = content == null ? EnumSet.noneOf(SearchContent.class) : EnumSet.copyOf(content);
     this.vernacular = vernacular;
-    setQ(q); // see comments there
     this.sortBy = sortBy;
     this.highlight = highlight;
     this.reverse = reverse;
     this.fuzzy = fuzzy;
     this.searchType = searchType;
-    this.minRank = minRank;
-    this.maxRank = maxRank;
+    setQ(q); // see comments there
+    setMinRank(minRank);
+    setMaxRank(maxRank);
   }
+
+  /**
+   * Creates a nearly deep copy of this NameSearchRequest, but does deep copy the filters map values!
+   * The filters map is copied using EnumMap's copy constructor.
+   * Therefore you should not manipulate the filter values (which are lists) as they are
+   * copied by reference. You can, however, simply replace the list with another list, and you can
+   * also add/remove facets and search content without affecting the original request.
+   */
+  public NameUsageSearchRequest(NameUsageSearchRequest other) {
+    super(other);
+    this.filters = other.filters == null ? null : new EnumMap<>(other.filters);
+    this.facets = other.facets == null ? null : EnumSet.copyOf(other.facets);
+    this.content = other.content == null ? null : EnumSet.copyOf(other.content);
+    this.vernacular = other.vernacular;
+    this.sortBy = other.sortBy;
+    this.highlight = other.highlight;
+    this.reverse = other.reverse;
+    this.searchType = other.searchType;
+  }
+
+
 
   /**
    * Creates a shallow copy of this NameSearchRequest. The filters map is copied using EnumMap's copy
@@ -122,29 +138,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
    * also add/remove facets and search content without affecting the original request.
    */
   public NameUsageSearchRequest copy() {
-    NameUsageSearchRequest copy = new NameUsageSearchRequest();
-    if (filters != null) {
-      copy.filters = new EnumMap<>(NameUsageSearchParameter.class);
-      copy.filters.putAll(filters);
-    }
-    if (facets != null) {
-      copy.facets = EnumSet.noneOf(NameUsageSearchParameter.class);
-      copy.facets.addAll(facets);
-    }
-    if (content != null) {
-      copy.content = EnumSet.noneOf(SearchContent.class);
-      copy.content.addAll(content);
-    }
-    copy.vernacular = vernacular;
-    copy.q = q;
-    copy.sortBy = sortBy;
-    copy.highlight = highlight;
-    copy.reverse = reverse;
-    copy.fuzzy = fuzzy;
-    copy.searchType = searchType;
-    copy.minRank = minRank;
-    copy.maxRank = maxRank;
-    return copy;
+    return new NameUsageSearchRequest(this);
   }
 
   /**
@@ -386,62 +380,29 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     this.searchType = searchType;
   }
 
-  public Rank getMinRank() {
-    return minRank;
-  }
-
-  public void setMinRank(Rank minRank) {
-    this.minRank = minRank;
-  }
-
-  /**
-   * Filters usages by their rank, excluding all usages with a higher rank then the one given. E.g.
-   * maxRank=FAMILY will include usages of rank family and below (genus, species, etc), but exclude
-   * all orders and above.
-   */
-  public Rank getMaxRank() {
-    return maxRank;
-  }
-
-  public void setMaxRank(Rank maxRank) {
-    this.maxRank = maxRank;
-  }
-
   private static IllegalArgumentException illegalValueForParameter(NameUsageSearchParameter param, String value) {
     String err = String.format("Illegal value for parameter %s: %s", param, value);
     return new IllegalArgumentException(err);
   }
 
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = super.hashCode();
-    result = prime * result + Objects.hash(content, vernacular, facets, filters, highlight, reverse, sortBy, searchType, minRank, maxRank);
-    return result;
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof NameUsageSearchRequest)) return false;
+    if (!super.equals(o)) return false;
+    NameUsageSearchRequest that = (NameUsageSearchRequest) o;
+    return vernacular == that.vernacular &&
+      highlight == that.highlight &&
+      reverse == that.reverse &&
+      Objects.equals(filters, that.filters) &&
+      Objects.equals(facets, that.facets) &&
+      Objects.equals(content, that.content) &&
+      sortBy == that.sortBy &&
+      searchType == that.searchType;
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (!super.equals(obj)) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    NameUsageSearchRequest other = (NameUsageSearchRequest) obj;
-    return Objects.equals(content, other.content) &&
-        Objects.equals(facets, other.facets) &&
-        Objects.equals(filters, other.filters) &&
-        vernacular == other.vernacular &&
-        highlight == other.highlight &&
-        reverse == other.reverse &&
-        sortBy == other.sortBy &&
-        searchType == other.searchType &&
-        minRank == other.minRank &&
-        maxRank == other.maxRank;
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), filters, facets, content, vernacular, sortBy, highlight, reverse, searchType);
   }
-
 }

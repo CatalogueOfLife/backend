@@ -1,14 +1,16 @@
 package life.catalogue.es.nu.suggest;
 
-import java.io.IOException;
-import org.junit.Before;
-import org.junit.Test;
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.api.search.NameUsageSuggestResponse;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.EsTestUtils;
+import org.gbif.nameparser.api.Rank;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.io.IOException;
+
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 
 public class CheilanthesTest extends EsReadTestBase {
@@ -26,6 +28,28 @@ public class CheilanthesTest extends EsReadTestBase {
     query.setQ("Cheilant");
     query.setFuzzy(true);
     NameUsageSuggestResponse nur = suggest(query);
+    assertEquals(1, nur.getSuggestions().size());
+
+    query.setMinRank(Rank.GENUS);
+    nur = suggest(query);
+    assertEquals(1, nur.getSuggestions().size());
+
+    query.setMinRank(Rank.FAMILY);
+    nur = suggest(query);
+    assertEquals(0, nur.getSuggestions().size());
+
+    query.setMinRank(Rank.GENUS);
+    query.setMaxRank(Rank.GENUS);
+    nur = suggest(query);
+    assertEquals(1, nur.getSuggestions().size());
+
+    query.setMinRank(null);
+    query.setMaxRank(Rank.SPECIES);
+    nur = suggest(query);
+    assertEquals(0, nur.getSuggestions().size());
+
+    query.setMaxRank(Rank.FAMILY);
+    nur = suggest(query);
     assertEquals(1, nur.getSuggestions().size());
   }
 

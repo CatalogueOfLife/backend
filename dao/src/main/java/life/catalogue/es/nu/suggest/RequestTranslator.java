@@ -4,6 +4,7 @@ import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.es.DownwardConverter;
 import life.catalogue.es.nu.NameUsageFieldLookup;
+import life.catalogue.es.nu.search.FiltersTranslator;
 import life.catalogue.es.query.*;
 
 import static life.catalogue.api.vocab.TaxonomicStatus.ACCEPTED;
@@ -31,6 +32,7 @@ class RequestTranslator implements DownwardConverter<NameUsageSuggestRequest, Es
     if (request.isAccepted()) {
       query.filter(new TermsQuery(statusField, ACCEPTED.ordinal(), PROVISIONALLY_ACCEPTED.ordinal()));
     }
+    FiltersTranslator.processMinMaxRank(request).forEach(query::filter);
     return new EsSearchRequest().where(query).sortBy(SCORE).size(request.getLimit());
   }
 

@@ -1,10 +1,12 @@
 package life.catalogue.api.search;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.commons.lang3.StringUtils;
+import org.gbif.nameparser.api.Rank;
+
+import javax.ws.rs.QueryParam;
 import java.util.Arrays;
 import java.util.Objects;
-import javax.ws.rs.QueryParam;
-import org.apache.commons.lang3.StringUtils;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Base class for {@link NameUsageSearchRequest} and {@link NameUsageSuggestRequest}.
@@ -38,12 +40,27 @@ public abstract class NameUsageRequest {
   @QueryParam("fuzzy")
   protected boolean fuzzy = false;
   protected String[] searchTerms;
+  @QueryParam("minRank")
+  private Rank minRank;
+  @QueryParam("maxRank")
+  private Rank maxRank;
+
+  public NameUsageRequest() {
+  }
+
+  public NameUsageRequest(NameUsageRequest other) {
+    this.q = other.q;
+    this.fuzzy = other.fuzzy;
+    this.searchTerms = other.searchTerms;
+    this.minRank = other.minRank;
+    this.maxRank = other.maxRank;
+  }
 
   public abstract SearchType getSearchType();
 
   @JsonIgnore
   public boolean isEmpty() {
-    return q == null && !fuzzy;
+    return q == null && !fuzzy && minRank==null && maxRank==null;
   }
 
   /**
@@ -82,29 +99,43 @@ public abstract class NameUsageRequest {
     this.fuzzy = fuzzy;
   }
 
+  public Rank getMinRank() {
+    return minRank;
+  }
+
+  public void setMinRank(Rank minRank) {
+    this.minRank = minRank;
+  }
+
+  /**
+   * Filters usages by their rank, excluding all usages with a higher rank then the one given. E.g.
+   * maxRank=FAMILY will include usages of rank family and below (genus, species, etc), but exclude
+   * all orders and above.
+   */
+  public Rank getMaxRank() {
+    return maxRank;
+  }
+
+  public void setMaxRank(Rank maxRank) {
+    this.maxRank = maxRank;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof NameUsageRequest)) return false;
+    NameUsageRequest that = (NameUsageRequest) o;
+    return fuzzy == that.fuzzy &&
+      Objects.equals(q, that.q) &&
+      Arrays.equals(searchTerms, that.searchTerms) &&
+      minRank == that.minRank &&
+      maxRank == that.maxRank;
+  }
+
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + Arrays.hashCode(searchTerms);
-    result = prime * result + Objects.hash(fuzzy, q);
+    int result = Objects.hash(q, fuzzy, minRank, maxRank);
+    result = 31 * result + Arrays.hashCode(searchTerms);
     return result;
   }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    NameUsageRequest other = (NameUsageRequest) obj;
-    return fuzzy == other.fuzzy && Objects.equals(q, other.q)
-        && Arrays.equals(searchTerms, other.searchTerms);
-  }
-
 }

@@ -1,5 +1,6 @@
 package life.catalogue.es.nu.search;
 
+import life.catalogue.api.search.NameUsageRequest;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.es.InvalidQueryException;
 import life.catalogue.es.query.*;
@@ -34,7 +35,7 @@ import static life.catalogue.api.search.NameUsageSearchRequest.IS_NULL;
  * of extra logic, and the minRank/maxRank filters as they don't translate into simple term queries.
  * </p>
  */
-class FiltersTranslator {
+public class FiltersTranslator {
 
   private final NameUsageSearchRequest request;
 
@@ -52,7 +53,7 @@ class FiltersTranslator {
           .map(ft::translate)
           .forEach(subqueries::add);
     }
-    subqueries.addAll(processMinMaxRank());
+    subqueries.addAll(processMinMaxRank(request));
     if (subqueries.size() == 1) {
       return subqueries.get(0);
     }
@@ -79,7 +80,7 @@ class FiltersTranslator {
   }
 
   // Little gotcha here: the higher the rank, the lower the ordinal!
-  private List<Query> processMinMaxRank() {
+  public static List<Query> processMinMaxRank(NameUsageRequest request) {
     if (request.getMinRank() != null) {
       if (request.getMaxRank() != null) {
         return List.of(RangeQuery.on(RANK)
