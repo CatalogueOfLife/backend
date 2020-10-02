@@ -530,6 +530,33 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     assertEquals(testWithSmthii_data(), result.getResult());
   }
 
+  // https://github.com/CatalogueOfLife/backend/issues/864
+  @Test
+  @Ignore("Unresolve issue")
+  public void Navas() {
+    indexNewTaxon(Rank.SPECIES, "Eatonica", "schoutedeni", "(Navás, 1911) Miller");
+    indexNewTaxon(Rank.SPECIES, "Eatonica", "markii", "(Navás, 1911)");
+    indexNewTaxon(Rank.SPECIES, "Eatonica", "minima", "Navas, 1911");
+
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.setSearchType(SearchType.WHOLE_WORDS);
+    query.setQ("Eatonica");
+    NameUsageSearchResponse result = search(query);
+    assertEquals(3, result.getResult().size());
+
+    query.setQ("Navas");
+    assertEquals(3, search(query).getResult().size());
+
+    query.setQ("Navas, 1911");
+    assertEquals(1, search(query).getResult().size());
+
+    query.setQ("Miller");
+    assertEquals(1, search(query).getResult().size());
+
+    query.setQ("Navás");
+    assertEquals(2, search(query).getResult().size());
+  }
+
   @Test
   public void testWithSmthii__2() {
     NameUsageSearchRequest query = new NameUsageSearchRequest();

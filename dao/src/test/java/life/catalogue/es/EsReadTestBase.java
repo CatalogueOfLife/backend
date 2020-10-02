@@ -1,6 +1,7 @@
 package life.catalogue.es;
 
 import com.esotericsoftware.kryo.Kryo;
+import com.google.common.base.Preconditions;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
 import life.catalogue.api.search.NameUsageSearchRequest.SortBy;
@@ -12,6 +13,7 @@ import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
 import life.catalogue.es.query.EsSearchRequest;
 import life.catalogue.es.query.Query;
 import org.elasticsearch.client.RestClient;
+import org.gbif.nameparser.api.Rank;
 import org.junit.ClassRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,6 +78,27 @@ public class EsReadTestBase {
     } catch (IOException e) {
       throw new EsException(e);
     }
+  }
+
+  protected NameUsageWrapper indexNewTaxon(Rank rank, String uninomial, String authorship) {
+    Preconditions.checkArgument(rank.isGenusOrSuprageneric());
+    return indexNewTaxon(rank, uninomial, null, authorship);
+  }
+
+  protected NameUsageWrapper indexNewTaxon(Rank rank, String genus, String species, String authorship) {
+    Name n = new Name();
+    n.setRank(rank);
+    if (rank.isGenusOrSuprageneric()) {
+      n.setUninomial(genus);
+    } else {
+      n.setGenus(genus);
+      n.setSpecificEpithet(species);
+    }
+    n.setAuthorship(authorship);
+    n.rebuildScientificName();
+    NameUsageWrapper nuw = new NameUsageWrapper(new Taxon(n));
+    index(nuw);
+    return nuw;
   }
 
   protected void indexRaw(EsNameUsage... documents) {

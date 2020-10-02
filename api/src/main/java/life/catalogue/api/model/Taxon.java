@@ -25,6 +25,10 @@ public class Taxon extends NameUsageBase {
   public Taxon() {
   }
 
+  public Taxon(Name n) {
+    setName(n);
+  }
+
   public Taxon(NameUsageBase other) {
     super(other);
   }
