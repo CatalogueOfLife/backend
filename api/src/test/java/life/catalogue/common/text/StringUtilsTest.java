@@ -69,6 +69,7 @@ public class StringUtilsTest {
 
   @Test
   public void testFoldToAscii() throws Exception {
+    assertEquals("Navas, 1929", StringUtils.foldToAscii("Navás, 1929"));
     assertEquals(null, StringUtils.foldToAscii(null));
     assertEquals("", StringUtils.foldToAscii(""));
     assertEquals("Schulhof, Gymnasium Hurth", StringUtils.foldToAscii("Schulhof, Gymnasium Hürth"));

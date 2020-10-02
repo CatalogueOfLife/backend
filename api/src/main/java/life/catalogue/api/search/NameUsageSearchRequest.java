@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Sets;
 import life.catalogue.api.util.VocabularyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -36,11 +37,13 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     NON_FILTERS = Set.copyOf(non);
   }
 
-  public static enum SearchContent {
+  public enum SearchContent {
     SCIENTIFIC_NAME, AUTHORSHIP, VERNACULAR_NAME
   }
 
-  public static enum SortBy {
+  private static final Set<SearchContent> DEFAULT_CONTENT = Sets.immutableEnumSet(SearchContent.SCIENTIFIC_NAME, SearchContent.AUTHORSHIP);
+
+  public enum SortBy {
     NAME, TAXONOMIC, INDEX_NAME_ID, NATIVE, RELEVANCE
   }
 
@@ -81,6 +84,10 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   private SearchType searchType;
 
   public NameUsageSearchRequest() {}
+
+  public NameUsageSearchRequest(NameUsageSearchRequest.SearchContent content) {
+    setSingleContent(content);
+  }
 
   @JsonCreator
   public NameUsageSearchRequest(@JsonProperty("filter") Map<NameUsageSearchParameter, @Size(max = 1000) Set<Object>> filters,
@@ -318,25 +325,21 @@ public class NameUsageSearchRequest extends NameUsageRequest {
 
   public Set<SearchContent> getContent() {
     if (content == null || content.isEmpty()) {
-      content = EnumSet.allOf(SearchContent.class);
+      content = EnumSet.copyOf(DEFAULT_CONTENT);
     }
     return content;
   }
 
   public void setSingleContent(SearchContent content) {
     if (content == null) {
-      this.content = EnumSet.allOf(SearchContent.class);
+      this.content = null;
     } else {
       this.content = EnumSet.of(content);
     }
   }
 
   public void setContent(Set<SearchContent> content) {
-    if (content == null || content.size() == 0) {
-      this.content = EnumSet.allOf(SearchContent.class);
-    } else {
-      this.content = content;
-    }
+    this.content = content;
   }
 
   public boolean isVernacular() {

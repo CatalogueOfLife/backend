@@ -571,7 +571,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   public void test05() {
 
     // Define search
-    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest(NameUsageSearchRequest.SearchContent.VERNACULAR_NAME);
     query.setHighlight(false);
     query.setQ("UNLIKE");
 
@@ -761,14 +761,19 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     query.setHighlight(false);
     query.setQ("Hier");
     index(vernacularNameTransliterationTest_data());
+
     ResultPage<NameUsageWrapper> result = search(query);
+    assertEquals(0, result.getResult().size());
+
+    query.setSingleContent(NameUsageSearchRequest.SearchContent.VERNACULAR_NAME);
+    result = search(query);
     assertEquals(1, result.getResult().size());
     assertEquals("1", result.getResult().iterator().next().getId());
   }
 
   @Test
   public void vernacularNameTransliterationTest02() {
-    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest(NameUsageSearchRequest.SearchContent.VERNACULAR_NAME);
     query.setHighlight(false);
     query.setQ("hIEr");
     index(vernacularNameTransliterationTest_data());
@@ -779,7 +784,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
   @Test
   public void vernacularNameTransliterationTest03() {
-    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    NameUsageSearchRequest query = new NameUsageSearchRequest(NameUsageSearchRequest.SearchContent.VERNACULAR_NAME);
     query.setHighlight(false);
     query.setQ("ȞȋȆr");
     index(vernacularNameTransliterationTest_data());
