@@ -31,7 +31,7 @@ es:
   hosts: ${es.hosts}
   ports: ${es.ports}
   nameUsage:
-    name: local-nu
+    name: ${es.index}
     numShards: 1
     numReplicas: 0
 auth:

@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 /**
- * To be used as a ClassRule. Mainly installs/configures embedded Elasticsearch.
+ * To be used as a ClassRule. Mainly installs/configures an external Elasticsearch instance.
  */
 public class EsSetupRule extends ExternalResource {
 

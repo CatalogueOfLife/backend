@@ -1,70 +1,80 @@
 package life.catalogue.admin.jobs;
 
-import com.zaxxer.hikari.HikariDataSource;
-import life.catalogue.WsServerConfig;
+import life.catalogue.api.model.Page;
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
+import life.catalogue.api.search.NameUsageSearchParameter;
+import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.api.search.NameUsageSearchResponse;
+import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.db.MybatisFactory;
-import life.catalogue.es.EsClientFactory;
-import life.catalogue.es.IndexConfig;
+import life.catalogue.db.PgSetupRule;
+import life.catalogue.es.EsSetupRule;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.nu.NameUsageIndexServiceEs;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.elasticsearch.client.RestClient;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
+import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
+import org.gbif.nameparser.api.Rank;
+import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * Use with care !!!
- * Only for debugging dev with real data remotely
+ * Indexes a dataset from postgres into elastic.
+ * Does not wipe or import into the database.
+ * This is indexing only!
  */
 @Ignore
 public class IndexJobTest {
-  static WsServerConfig cfg;
   static User user;
-  static NameUsageIndexService indexService;
-  static RestClient esClient;
-  static SqlSessionFactory factory;
-  static HikariDataSource dataSource;
+  NameUsageIndexService indexService;
+  NameUsageSearchServiceEs searchService;
+  NameUsageSuggestionServiceEs suggestService;
   IndexJob job;
 
-  @BeforeClass
-  public static void init(){
-    cfg = new WsServerConfig();
-    cfg.db.host = "pg1.dev.catalogue.life";
-    cfg.db.database = "coldev";
-    cfg.db.user = "col";
-    cfg.db.password = "";
-    cfg.es.hosts = cfg.db.host;
-    cfg.es.nameUsage = new IndexConfig();
-    cfg.es.nameUsage.name = "dev-nu";
+  @ClassRule
+  public static PgSetupRule pgSetupRule = new PgSetupRule(false);
 
+  @ClassRule
+  public static final EsSetupRule esSetupRule = new EsSetupRule();
+
+  @Before
+  public void init(){
     user = new User();
     user.setKey(Users.TESTER);
     user.setFirstname("Tim");
     user.setLastname("Tester");
-    dataSource = new HikariDataSource(cfg.db.hikariConfig());
-    factory = MybatisFactory.configure(dataSource, IndexJobTest.class.getSimpleName());
-
-    esClient = new EsClientFactory(cfg.es).createClient();
-    indexService = new NameUsageIndexServiceEs(esClient, cfg.es, factory);
-  }
-
-  @AfterClass
-  public static void destroy() throws Exception {
-    dataSource.close();
-    esClient.close();
+    indexService = new NameUsageIndexServiceEs(esSetupRule.getClient(), esSetupRule.getEsConfig(), PgSetupRule.getSqlSessionFactory());
+    searchService = new NameUsageSearchServiceEs(esSetupRule.getEsConfig().nameUsage.name, esSetupRule.getClient());
+    suggestService = new NameUsageSuggestionServiceEs(esSetupRule.getEsConfig().nameUsage.name, esSetupRule.getClient());
   }
 
   @Test
   public void indexDataset() {
     RequestScope req = new RequestScope();
-    req.setDatasetKey(1106);
+    req.setDatasetKey(1000);
     job = new IndexJob(req, user, null, indexService);
     job.run();
     System.out.println("INDEX JOB DONE !!!");
+  }
+
+  @Test
+  public void search() {
+    NameUsageSearchRequest req = new NameUsageSearchRequest();
+    req.addFilter(NameUsageSearchParameter.DATASET_KEY, 2052);
+    req.setQ("kosterini");
+    req.addFilter(NameUsageSearchParameter.RANK, Rank.SPECIES);
+    search(req);
+  }
+
+  NameUsageSearchResponse search(NameUsageSearchRequest req){
+    NameUsageSearchResponse resp = searchService.search(req, new Page(0,100));
+    System.out.println("\n-----\n");
+    System.out.println(String.format("%s results:", resp.size()));
+    for (NameUsageWrapper nuw : resp) {
+      System.out.println(String.format("%s %s %s", nuw.getId(), nuw.getUsage().getRank(), nuw.getUsage().getLabel()));
+    }
+    return resp;
   }
 }

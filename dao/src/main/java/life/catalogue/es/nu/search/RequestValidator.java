@@ -14,7 +14,9 @@ class RequestValidator {
   }
 
   void validateRequest() {
-
+    if (request.getContent() == null || request.getContent().isEmpty()) {
+       request.setContentDefault();
+    }
     if (request.hasFilter(USAGE_ID)) {
       if (!request.hasFilter(DATASET_KEY)) {
         throw invalidSearchRequest("When specifying a usage ID, the dataset key must also be specified");

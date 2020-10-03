@@ -1,6 +1,6 @@
 hosts: ${es.hosts}
 ports: ${es.ports}
 nameUsage:
-  name: name_usage_test
+  name: ${es.index}
   numShards: 1
   numReplicas: 0

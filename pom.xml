@@ -117,6 +117,7 @@
         <!-- default to a local instance -->
         <es.hosts>localhost</es.hosts>
         <es.ports>9200</es.ports>
+        <es.index>name_usage_test</es.index>
 
         <gbif.api>https://api.gbif.org/v1/</gbif.api>
         <gbif.appkey>col.plus</gbif.appkey>

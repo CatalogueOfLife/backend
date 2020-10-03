@@ -101,13 +101,9 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     this.highlight = highlight;
     this.fuzzy = fuzzy;
     this.searchType = searchType;
-    copyCollections(filters, facets, content);
-  }
-
-  private void copyCollections(Map<NameUsageSearchParameter, Set<Object>> filters, Set<NameUsageSearchParameter> facets, Set<SearchContent> content){
-    this.filters = filters == null || filters.isEmpty() ? new EnumMap<>(NameUsageSearchParameter.class) : new EnumMap<>(filters);
-    this.facets = facets == null || facets.isEmpty() ? EnumSet.noneOf(NameUsageSearchParameter.class) : EnumSet.copyOf(facets);
-    this.content = content == null || content.isEmpty() ? EnumSet.noneOf(SearchContent.class) : EnumSet.copyOf(content);
+    setFilters(filters);
+    setFacets(facets);
+    setContent(content);
   }
 
   /**
@@ -119,7 +115,9 @@ public class NameUsageSearchRequest extends NameUsageRequest {
    */
   public NameUsageSearchRequest(NameUsageSearchRequest other) {
     super(other);
-    copyCollections(other.filters, other.facets, other.content);
+    setFilters(other.filters);
+    setFacets(other.facets);
+    setContent(other.content);
     this.vernacular = other.vernacular;
     this.highlight = other.highlight;
     this.searchType = other.searchType;
@@ -300,11 +298,11 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     getFacets().add(facet);
   }
 
-  public void setFilters(EnumMap<NameUsageSearchParameter, Set<Object>> filters) {
+  public void setFilters(Map<NameUsageSearchParameter, Set<Object>> filters) {
     this.filters = filters == null || filters.isEmpty() ? new EnumMap<>(NameUsageSearchParameter.class) : new EnumMap<>(filters);
   }
 
-  public EnumMap<NameUsageSearchParameter, Set<Object>> getFilters() {
+  public Map<NameUsageSearchParameter, Set<Object>> getFilters() {
     return filters;
   }
 
@@ -321,7 +319,15 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   }
 
   public void setContent(Set<SearchContent> content) {
-    this.content = content == null || content.isEmpty() ? EnumSet.copyOf(DEFAULT_CONTENT) : EnumSet.copyOf(content);
+    if (content == null || content.isEmpty()) {
+      setContentDefault();
+    } else {
+      this.content = EnumSet.copyOf(content);
+    }
+  }
+
+  public void setContentDefault() {
+    this.content = EnumSet.copyOf(DEFAULT_CONTENT);
   }
 
   public boolean isVernacular() {
