@@ -57,6 +57,18 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
     this.referenceIds = other.referenceIds;
   }
 
+  public NameUsageBase(SimpleName sn) {
+    setId(sn.getId());
+    Name n = new Name();
+    n.setScientificName(sn.getName());
+    n.setAuthorship(sn.getAuthorship());
+    n.setRank(sn.getRank());
+    n.setCode(sn.getCode());
+    setName(n);
+    setStatus(sn.getStatus());
+    setParentId(sn.getParent());
+  }
+
   @Override
   public Integer getVerbatimKey() {
     return verbatimKey;

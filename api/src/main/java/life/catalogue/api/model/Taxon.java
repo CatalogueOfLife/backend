@@ -43,6 +43,10 @@ public class Taxon extends NameUsageBase {
     this.environments = other.environments;
   }
 
+  public Taxon(SimpleName sn) {
+    super(sn);
+  }
+
   @Override
   public String getLabel(boolean html) {
     return getLabelBuilder(getName(), extinct, getNamePhrase(), getAccordingTo(), html).toString();

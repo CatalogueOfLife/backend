@@ -25,6 +25,10 @@ public class Synonym extends NameUsageBase {
     this.accepted = other.accepted;
   }
 
+  public Synonym(SimpleName sn) {
+    super(sn);
+  }
+
   @Override
   public String getLabel(boolean html) {
     if (accepted != null && Boolean.TRUE.equals(accepted.isExtinct())) {

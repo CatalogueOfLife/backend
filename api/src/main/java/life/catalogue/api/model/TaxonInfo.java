@@ -33,6 +33,13 @@ public class TaxonInfo {
    */
   private Map<String, Name> names = new HashMap<>();
 
+  public TaxonInfo() {
+  }
+
+  public TaxonInfo(Taxon taxon) {
+    this.taxon = taxon;
+  }
+
   @JsonIgnore
   public String getId() {
     return taxon.getId();

@@ -1,16 +1,16 @@
-<div class="level${level}" id="${t.getId()}">
-  <div class="Name">${t.taxon.name.rank}: ${t.taxon.labelHtml}
-  <#if t.taxon.name.publishedInId??>
-    <#assign ref = t.getReference(t.taxon.name.publishedInId) >
+<div class="level${cssLevel}" id="${info.getId()}">
+  <div class="Name">${info.taxon.name.rank}: ${info.taxon.labelHtml}
+  <#if info.taxon.name.publishedInId??>
+    <#assign ref = info.getReference(info.taxon.name.publishedInId) >
     <div class="Reference">${ref.citation}</div>
   </#if>
   <#--
     <div class="NameRelationship">Has type genus (Type genus): <em>Alucita</em> Linnaeus, 1758</div>
   -->
   </div>
-<#if t.synonyms??>
+<#if info.synonyms??>
   <div class="Synonyms">
-   <#list t.synonyms as s>
+   <#list info.synonyms as s>
     <div class="Synonym">
       <div class="Name">=&nbsp; ${s.labelHtml}
       </div>
@@ -18,17 +18,17 @@
    </#list>
   </div>
 </#if>
-<#if t.taxon.referenceIds??>
+<#if info.taxon.referenceIds??>
   <div class="References">
-   <#list t.taxon.referenceIds as rid>
-    <#assign ref = t.getReference(rid) >
+   <#list info.taxon.referenceIds as rid>
+    <#assign ref = info.getReference(rid) >
     <div class="Reference">${ref.citation}</div>
    </#list>
   </div>
 </#if>
-<#if t.vernacularNames??>
+<#if info.vernacularNames??>
   <div class="Vernaculars">
-   <#list t.vernacularNames as v>
+   <#list info.vernacularNames as v>
     <span class="Vernacular">${v.name} [${v.language}]</span>
    </#list>
   </div>

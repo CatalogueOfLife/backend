@@ -39,19 +39,6 @@ public class AcExporter {
   private static final Pattern COPY_START = Pattern.compile("^\\s*COPY\\s*\\(");
   private static final Pattern COPY_END   = Pattern.compile("^\\s*\\)\\s*TO\\s*'(.+)'");
   private static final Pattern VAR_DATASET_KEY = Pattern.compile("\\{\\{datasetKey}}", Pattern.CASE_INSENSITIVE);
-  private static final Version freemarkerVersion = Configuration.VERSION_2_3_28;
-  private static final Configuration fmk = new Configuration(freemarkerVersion);
-  static {
-    fmk.setClassForTemplateLoading(AcExporter.class, "/exporter");
-    // see https://freemarker.apache.org/docs/pgui_quickstart_createconfiguration.html
-    fmk.setDefaultEncoding("UTF-8");
-    fmk.setDateFormat("yyyy-MM-dd");
-    fmk.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-    fmk.setLogTemplateExceptions(false);
-    fmk.setWrapUncheckedExceptions(true);
-    // allow the use of java8 dates
-    fmk.setObjectWrapper(new LocalDateObjectWrapper(freemarkerVersion));
-  }
   private final WsServerConfig cfg;
   private final SqlSessionFactory factory;
   // we only allow a single export to run at a time
@@ -152,7 +139,7 @@ public class AcExporter {
       }
       data.put("d", d);
       
-      Template temp = fmk.getTemplate("credits.ftl");
+      Template temp = FmUtil.FMK.getTemplate("credits.ftl");
       Writer out = UTF8IoUtils.writerFromFile(cf);
       temp.process(data, out);
     } catch (TemplateException e) {

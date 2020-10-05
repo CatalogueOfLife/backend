@@ -16,6 +16,7 @@ import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.exporter.AcExporter;
 import life.catalogue.exporter.HtmlExporter;
+import life.catalogue.exporter.HtmlExporterSimple;
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -163,12 +164,18 @@ public class ExportResource {
   @Produces(MediaType.TEXT_HTML)
   public Response html(@PathParam("datasetKey") int key,
                        @PathParam("taxonID") String taxonID,
-                       @QueryParam("rank") Set<Rank> ranks) {
+                       @QueryParam("rank") Set<Rank> ranks,
+                       @QueryParam("full") boolean full) {
     StreamingOutput stream;
     stream = os -> {
       Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-      HtmlExporter exporter = HtmlExporter.subtree(key, taxonID, ranks, factory, writer);
-      exporter.print();
+      if (full) {
+        HtmlExporter exporter = HtmlExporter.subtree(key, taxonID, ranks, factory, writer);
+        exporter.print();
+      } else {
+        HtmlExporterSimple exporter = HtmlExporterSimple.subtree(key, taxonID, ranks, factory, writer);
+        exporter.print();
+      }
       writer.flush();
     };
     return Response.ok(stream).build();

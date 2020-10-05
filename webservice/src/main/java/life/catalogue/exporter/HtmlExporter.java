@@ -3,13 +3,9 @@ package life.catalogue.exporter;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.Lists;
-import freemarker.template.*;
 import life.catalogue.api.model.*;
 import life.catalogue.dao.TaxonDao;
-import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.ReferenceMapper;
-import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.tree.NameUsageTreePrinter;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -19,34 +15,18 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Set;
 
 public class HtmlExporter extends NameUsageTreePrinter {
   private static final Logger LOG = LoggerFactory.getLogger(HtmlExporter.class);
-  private static final Version freemarkerVersion = Configuration.VERSION_2_3_28;
-  private static final Configuration fmk = new Configuration(freemarkerVersion);
-  static {
-    fmk.setClassForTemplateLoading(AcExporter.class, "/exporter/html");
-    // see https://freemarker.apache.org/docs/pgui_quickstart_createconfiguration.html
-    fmk.setDefaultEncoding("UTF-8");
-    fmk.setDateFormat("yyyy-MM-dd");
-    fmk.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-    fmk.setLogTemplateExceptions(false);
-    fmk.setWrapUncheckedExceptions(true);
-    // allow the use of java8 dates
-    fmk.setObjectWrapper(new LocalDateObjectWrapper(freemarkerVersion));
-  }
 
-  private final Writer writer;
-  private Dataset dataset;
-  private TaxonInfo taxon;
-  private int taxonLevel;
-  private Map<String, Object> data = new HashMap<>();
+  private final HtmlWriter writer;
   private LoadingCache<String, Reference> refCache;
 
   private HtmlExporter(int datasetKey, String startID, Set<Rank> ranks, SqlSessionFactory factory, Writer writer) {
     super(datasetKey, null, startID, ranks, factory);
-    this.writer = writer;
+    this.writer = new HtmlWriter(writer, factory, "html", DSID.of(datasetKey, startID));
   }
 
   public static HtmlExporter subtree(int datasetKey, String rootID, SqlSessionFactory factory, Writer writer) {
@@ -74,86 +54,48 @@ public class HtmlExporter extends NameUsageTreePrinter {
   public int print() throws IOException {
     level=1;
     try (SqlSession session = factory.openSession(true)) {
-      DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      TaxonMapper tm = session.getMapper(TaxonMapper.class);
       setupCache(session);
-      dataset = dm.get(datasetKey);
-      data.put("d", dataset);
-      List<Taxon> parents = tm.classification(DSID.of(datasetKey, startID));
-      data.put("classification", Lists.reverse(parents));
-      Template temp = fmk.getTemplate("header.ftl");
-      temp.process(data, writer);
-
-      setupCache(session);
+      writer.header();
       int count = super.print();
-
-      temp = fmk.getTemplate("footer.ftl");
-      temp.process(data, writer);
+      writer.footer();
       return count;
-
-    } catch (TemplateException e) {
-      throw new IOException(e);
     }
   }
 
   protected void start(NameUsageBase u) throws IOException {
     if (u.isSynonym()) {
       Synonym s = (Synonym) u;
-      if (taxon.getSynonyms() == null) {
-        taxon.setSynonyms(new ArrayList<>());
+      if (writer.info.getSynonyms() == null) {
+        writer.info.setSynonyms(new ArrayList<>());
       }
-      taxon.getSynonyms().add(s);
+      writer.info.getSynonyms().add(s);
 
     } else {
-      if (taxon != null) {
+      if (writer.hasTaxon()) {
         writeTaxon();
       }
 
-      taxonLevel = level;
-      taxon = new TaxonInfo();
-      Taxon t = (Taxon) u;
-      taxon.setTaxon(t);
+      writer.setTaxon(level, (Taxon) u);
     }
-    //System.out.println(StringUtils.repeat(' ', level) + ">" + status(u));
   }
 
   void writeTaxon() throws IOException {
-    //System.out.println(taxon.getTaxon().getLabel());
-    // load missing references
-    TaxonDao.fillTaxonInfo(session, taxon, refCache, false, true, true, false, true, false);
-    // now print the full thing
-    data.put("t", taxon);
-    int cssLevel = 6;
-    if (!taxon.getTaxon().getName().getRank().isSpeciesOrBelow()) {
-      cssLevel = Math.min(taxonLevel,6);
-    }
-    data.put("level", cssLevel);
-
-    try {
-      Template temp = fmk.getTemplate("taxon.ftl");
-      temp.process(data, writer);
-    } catch (TemplateException e) {
-      throw new IOException(e);
-    }
-    taxon = null;
-  }
-
-  static char status(NameUsageBase u) {
-    return u.isSynonym() ? 'S' : 'T';
+    // load missing references and other infos
+    TaxonDao.fillTaxonInfo(session, writer.info, refCache, false, true, true, false, true, false);
+    writer.taxon();
   }
 
   protected void end(NameUsageBase u) throws IOException {
-    if (taxon != null && u.isTaxon() && taxonLevel==(level-1)) {
+    if (writer.hasTaxon() && u.isTaxon() && writer.getLevel()==(level-1)) {
       writeTaxon();
     }
-    //System.out.println(StringUtils.repeat(' ', level-1) + "<" + status(u));
     if (u.isTaxon()) {
-      writer.write("</div>\n");
+      writer.divClose();
     }
   }
 
   @Override
   protected void flush() throws IOException {
-    writer.flush();
+    writer.close();
   }
 }

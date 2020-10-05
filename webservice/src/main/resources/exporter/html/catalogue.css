@@ -76,11 +76,8 @@ header {
 .HigherTaxon {
     margin: 10px 0px 0px 0px;
 }
-.HigherTaxon > .Name > *, .HigherTaxon > .References > * {
-    font-size: 0.8rem;
+.HigherTaxon > .Name{
     padding: 0px 10px;
-}
-.HigherTaxon > .Name, .HigherTaxon > .Name > strong {
     font-size: 1.0rem;
 }
 .HigherTaxon > .References {
@@ -91,29 +88,24 @@ header {
 }
 .level1 {
     padding-top: 20px;
-    font-size: 2.4rem;
+    font-size: 2.0rem;
 }
 .level2 {
     padding-top: 20px;
-    font-size: 2.2rem;
+    font-size: 1.8rem;
 }
 .level3 {
     padding-top: 20px;
-    font-size: 2.0rem;
+    font-size: 1.6rem;
 }
 .level4 {
     padding-top: 20px;
-    font-size: 1.8rem;
+    font-size: 1.4rem;
 }
 .level5 {
     padding-top: 20px;
     padding-left: 40px;
-    font-size: 1.6rem;
-}
-.level6 {
-    padding-top: 20px;
-    padding-left: 40px;
-    font-size: 1.4rem;
+    font-size: 1.2rem;
 }
 .Reference, .NameRelationship, .Note, .Synonym, .Distribution {
     padding-left: 40px;
