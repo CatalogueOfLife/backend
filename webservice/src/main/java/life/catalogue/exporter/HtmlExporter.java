@@ -3,6 +3,7 @@ package life.catalogue.exporter;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.ReferenceMapper;
@@ -24,17 +25,17 @@ public class HtmlExporter extends NameUsageTreePrinter {
   private final HtmlWriter writer;
   private LoadingCache<String, Reference> refCache;
 
-  private HtmlExporter(int datasetKey, String startID, Set<Rank> ranks, SqlSessionFactory factory, Writer writer) {
+  private HtmlExporter(int datasetKey, String startID, Set<Rank> ranks, WsServerConfig cfg, SqlSessionFactory factory, Writer writer) {
     super(datasetKey, null, startID, ranks, factory);
-    this.writer = new HtmlWriter(writer, factory, "html", DSID.of(datasetKey, startID));
+    this.writer = new HtmlWriter(writer, factory, "html", cfg, DSID.of(datasetKey, startID));
   }
 
-  public static HtmlExporter subtree(int datasetKey, String rootID, SqlSessionFactory factory, Writer writer) {
-    return new HtmlExporter(datasetKey, rootID, null, factory, writer);
+  public static HtmlExporter subtree(int datasetKey, String rootID, WsServerConfig cfg, SqlSessionFactory factory, Writer writer) {
+    return new HtmlExporter(datasetKey, rootID, null, cfg, factory, writer);
   }
 
-  public static HtmlExporter subtree(int datasetKey, String rootID, Set<Rank> ranks, SqlSessionFactory factory, Writer writer) {
-    return new HtmlExporter(datasetKey, rootID, ranks, factory, writer);
+  public static HtmlExporter subtree(int datasetKey, String rootID, Set<Rank> ranks, WsServerConfig cfg, SqlSessionFactory factory, Writer writer) {
+    return new HtmlExporter(datasetKey, rootID, ranks, cfg, factory, writer);
   }
 
   void setupCache(SqlSession session) {

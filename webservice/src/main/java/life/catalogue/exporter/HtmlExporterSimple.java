@@ -1,6 +1,10 @@
 package life.catalogue.exporter;
 
-import life.catalogue.api.model.*;
+import life.catalogue.WsServerConfig;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.Synonym;
+import life.catalogue.api.model.Taxon;
 import life.catalogue.db.tree.SimpleUsageTreePrinter;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.Rank;
@@ -16,17 +20,17 @@ import java.util.Set;
 public class HtmlExporterSimple extends SimpleUsageTreePrinter {
   private final HtmlWriter writer;
 
-  private HtmlExporterSimple(int datasetKey, String startID, Set<Rank> ranks, SqlSessionFactory factory, Writer writer) {
+  private HtmlExporterSimple(int datasetKey, String startID, Set<Rank> ranks, WsServerConfig cfg, SqlSessionFactory factory, Writer writer) {
     super(datasetKey, null, startID, ranks, factory);
-    this.writer = new HtmlWriter(writer, factory, "html", DSID.of(datasetKey, startID));
+    this.writer = new HtmlWriter(writer, factory, "html", cfg, DSID.of(datasetKey, startID));
   }
 
-  public static HtmlExporterSimple subtree(int datasetKey, String rootID, SqlSessionFactory factory, Writer writer) {
-    return new HtmlExporterSimple(datasetKey, rootID, null, factory, writer);
+  public static HtmlExporterSimple subtree(int datasetKey, String rootID, WsServerConfig cfg, SqlSessionFactory factory, Writer writer) {
+    return new HtmlExporterSimple(datasetKey, rootID, null, cfg, factory, writer);
   }
 
-  public static HtmlExporterSimple subtree(int datasetKey, String rootID, Set<Rank> ranks, SqlSessionFactory factory, Writer writer) {
-    return new HtmlExporterSimple(datasetKey, rootID, ranks, factory, writer);
+  public static HtmlExporterSimple subtree(int datasetKey, String rootID, Set<Rank> ranks, WsServerConfig cfg,  SqlSessionFactory factory, Writer writer) {
+    return new HtmlExporterSimple(datasetKey, rootID, ranks, cfg, factory, writer);
   }
 
   @Override

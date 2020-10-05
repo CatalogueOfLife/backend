@@ -104,6 +104,9 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   @Min(1)
   public int backgroundJobs = 1;
 
+  @NotNull
+  public String exportCss = "https://gitcdn.link/repo/CatalogueOfLife/backend/master/webservice/src/main/resources/exporter/html/catalogue.css";
+
   @Override
   @JsonIgnore
   public CorsConfiguration getCorsConfiguration() {

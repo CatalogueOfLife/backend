@@ -170,10 +170,10 @@ public class ExportResource {
     stream = os -> {
       Writer writer = new BufferedWriter(new OutputStreamWriter(os));
       if (full) {
-        HtmlExporter exporter = HtmlExporter.subtree(key, taxonID, ranks, factory, writer);
+        HtmlExporter exporter = HtmlExporter.subtree(key, taxonID, ranks, cfg, factory, writer);
         exporter.print();
       } else {
-        HtmlExporterSimple exporter = HtmlExporterSimple.subtree(key, taxonID, ranks, factory, writer);
+        HtmlExporterSimple exporter = HtmlExporterSimple.subtree(key, taxonID, ranks, cfg, factory, writer);
         exporter.print();
       }
       writer.flush();

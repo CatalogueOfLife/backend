@@ -3,6 +3,7 @@ package life.catalogue.exporter;
 import com.google.common.collect.Lists;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -26,10 +27,12 @@ public class HtmlWriter implements AutoCloseable {
   TaxonInfo info = new TaxonInfo();
   private int level;
   private int cssLevel;
+  private String css;
 
-  public HtmlWriter(Writer writer, SqlSessionFactory factory, String fmkPath, DSID<String> key) {
+  public HtmlWriter(Writer writer, SqlSessionFactory factory, String fmkPath, WsServerConfig cfg, DSID<String> key) {
     this.writer = writer;
     this.path = fmkPath;
+    this.css = cfg.exportCss;
     try (SqlSession session = factory.openSession(true)) {
       dataset = session.getMapper(DatasetMapper.class).get(key.getDatasetKey());
       if (dataset == null) {
@@ -46,6 +49,10 @@ public class HtmlWriter implements AutoCloseable {
       }
       classification = Lists.reverse(tm.classificationSimple(key));
     }
+  }
+
+  public String getCss() {
+    return css;
   }
 
   public Dataset getDataset() {

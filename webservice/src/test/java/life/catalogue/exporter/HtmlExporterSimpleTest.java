@@ -1,5 +1,6 @@
 package life.catalogue.exporter;
 
+import life.catalogue.WsServerConfig;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import org.junit.ClassRule;
@@ -18,9 +19,12 @@ public class HtmlExporterSimpleTest {
 
   @Test
   public void print() throws Exception {
+    WsServerConfig cfg = new WsServerConfig();
+    cfg.exportCss = "file:///Users/markus/code/col/backend/webservice/src/main/resources/exporter/html/catalogue.css";
     //Writer w = UTF8IoUtils.writerFromFile(new File("/Users/markus/Desktop/catalogue.html"));
+
     Writer w = new StringWriter();
-    HtmlExporterSimple exp = HtmlExporterSimple.subtree(TestDataRule.FISH.key, "u4", PgSetupRule.getSqlSessionFactory(), w);
+    HtmlExporterSimple exp = HtmlExporterSimple.subtree(TestDataRule.FISH.key, "u4", cfg, PgSetupRule.getSqlSessionFactory(), w);
     exp.print();
     System.out.println("\n\n");
     System.out.println(w.toString());
