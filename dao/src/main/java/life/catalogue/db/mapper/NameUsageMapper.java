@@ -1,7 +1,6 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.SectorProcessable;
 import org.apache.ibatis.annotations.Param;
@@ -175,10 +174,10 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   Cursor<UsageNameID> processTreeIds(@Param("key") DSID<String> key);
 
   /**
-   * Iterate over all usages optionally filtered by its status but return just the id, status and name index ids
-   * @param status if null return all usages regardless their status
+   * Iterate over all usages ordered by their canonical names index id,
+   * but return just the id, status, rank and name index id
    */
-  Cursor<SimpleNameWithNidx> processNxIds(@Param("datasetKey") int datasetKey, @Nullable @Param("status")TaxonomicStatus status);
+  Cursor<SimpleNameWithNidx> processNxIds(@Param("datasetKey") int datasetKey);
 
   Cursor<String> processIds(@Param("datasetKey") int datasetKey);
 }

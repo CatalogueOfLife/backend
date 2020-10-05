@@ -11,6 +11,7 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.matching.NameIndexFactory;
 import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -96,7 +97,7 @@ public class SectorSyncTest {
       assertEquals(1, nm.count(Datasets.DRAFT_COL));
     }
 
-    SectorSync ss = new SectorSync(sector, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), siDao,
+    SectorSync ss = new SectorSync(sector, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), NameUsageIndexService.passThru(), siDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
     ss.run();
 
@@ -139,7 +140,7 @@ public class SectorSyncTest {
       sm.update(sector);
     }
 
-    ss = new SectorSync(sector, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), siDao,
+    ss = new SectorSync(sector, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), NameUsageIndexService.passThru(), siDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
     ss.run();
 

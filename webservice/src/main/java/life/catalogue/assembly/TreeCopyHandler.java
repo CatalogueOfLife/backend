@@ -14,6 +14,7 @@ import life.catalogue.dao.ReferenceDao;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.ReferenceMapper;
 import life.catalogue.db.mapper.TaxonMapper;
+import life.catalogue.matching.NameIndex;
 import life.catalogue.parser.NameParser;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
@@ -40,6 +41,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   private final Sector sector;
   private final SectorImport state;
   private final Map<String, EditorialDecision> decisions;
+  private final NameIndex nameIndex;
   private final SqlSession session;
   private final SqlSession batchSession;
   private final ReferenceMapper rm;
@@ -54,12 +56,13 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   final Map<IgnoreReason, Integer> ignoredCounter = new HashMap<>();
   int decisionCounter = 0;
 
-  TreeCopyHandler(Map<String, EditorialDecision> decisions, SqlSessionFactory factory, User user, Sector sector, SectorImport state) {
+  TreeCopyHandler(Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, User user, Sector sector, SectorImport state) {
     this.catalogueKey = sector.getDatasetKey();
     this.user = user;
     this.sector = sector;
     this.state = state;
     this.decisions = decisions;
+    this.nameIndex = nameIndex;
     // we open up a separate batch session that we can write to so we do not disturb the open main cursor for processing with this handler
     batchSession = factory.openSession(ExecutorType.BATCH, false);
     session = factory.openSession(true);
@@ -373,6 +376,8 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
             t.setExtinct(ed.isExtinct());
           }
         }
+        // finally also rematch name - it has changed!
+        rematch(u);
       case REVIEWED:
         // good. nothing to do
     }
@@ -382,7 +387,15 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
       u.addRemarks(ed.getNote());
     }
   }
-  
+
+  private void rematch(NameUsageBase u) {
+    NameMatch match = nameIndex.match(u.getName(), true, false);
+    u.getName().setNameIndexMatchType(match.getType());
+    if (match.hasMatch()) {
+      u.getName().setNameIndexId(match.getName().getKey());
+    }
+  }
+
   private String lookupReference(String refID) {
     if (refID != null) {
       if (refIds.containsKey(refID)) {

@@ -1,6 +1,7 @@
 package life.catalogue.assembly;
 
 import com.google.common.base.Charsets;
+import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Datasets;
@@ -16,6 +17,7 @@ import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.importer.PgImportRule;
+import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -44,9 +46,9 @@ import static org.junit.Assert.*;
  */
 public class SectorSyncIT {
   
-  public final static PgSetupRule pg = new PgSetupRule();
-  public final static TestDataRule dataRule = TestDataRule.draft();
-  public final static PgImportRule importRule = PgImportRule.create(
+  final static PgSetupRule pg = new PgSetupRule();
+  final static TestDataRule dataRule = TestDataRule.draft();
+  final static PgImportRule importRule = PgImportRule.create(
       NomCode.BOTANICAL,
         DataFormat.ACEF,  1,
         DataFormat.COLDP, 0,
@@ -56,8 +58,10 @@ public class SectorSyncIT {
       NomCode.VIRUS,
         DataFormat.ACEF,  14
   );
-  public final static TreeRepoRule treeRepoRule = new TreeRepoRule();
-  
+  final static TreeRepoRule treeRepoRule = new TreeRepoRule();
+  static final IndexName match = new IndexName(TestEntityGenerator.NAME4, 1);
+  static NameIndex nidx;
+
   @ClassRule
   public final static TestRule chain = RuleChain
       .outerRule(pg)
@@ -68,7 +72,7 @@ public class SectorSyncIT {
   DatasetImportDao diDao;
   SectorImportDao siDao;
   TaxonDao tdao;
-  
+
   @Before
   public void init () throws IOException, SQLException {
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
@@ -78,6 +82,7 @@ public class SectorSyncIT {
     dataRule.loadData(true);
     NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
+    nidx = NameIndexFactory.fixed(match);
   }
   
   
@@ -167,7 +172,7 @@ public class SectorSyncIT {
   }
 
   static void sync(Sector s, SectorImportDao siDao) {
-    SectorSync ss = new SectorSync(s, PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), siDao,
+    SectorSync ss = new SectorSync(s, PgSetupRule.getSqlSessionFactory(), nidx, NameUsageIndexService.passThru(), siDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
     System.out.println("\n*** SECTOR SYNC " + s.getKey() + " ***");
     ss.run();

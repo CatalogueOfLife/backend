@@ -59,7 +59,12 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
     this.setModified(n.getModified());
   }
 
-  @Override
+  public IndexName(Name n, int key) {
+    this(n);
+    setKey(key);
+  }
+
+    @Override
   public Integer getKey() {
     return key;
   }

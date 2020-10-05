@@ -15,6 +15,7 @@ import life.catalogue.db.mapper.DatasetMapperTest;
 import life.catalogue.db.mapper.MapperTestBase;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.matching.NameIndexFactory;
 import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
@@ -40,7 +41,7 @@ public class AssemblyCoordinatorTest {
     MapperTestBase.createSuccess(Datasets.DRAFT_COL, Users.TESTER, diDao);
 
     SectorImportDao sid = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    coord = new AssemblyCoordinator(PgSetupRule.getSqlSessionFactory(), sid, NameUsageIndexService.passThru(), new MetricRegistry());
+    coord = new AssemblyCoordinator(PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), sid, NameUsageIndexService.passThru(), new MetricRegistry());
   }
   
   @Test(expected = IllegalArgumentException.class)

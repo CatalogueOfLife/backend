@@ -19,19 +19,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Generates a usage id mapping table that maps the temporary UUIDs from the project source
- * to some stable integer based identifiers. The newly generated table can be used in copy dataset commands
+ * Generates a usage id mapping table that maps all name usages from the project source
+ * to some stable integer based identifiers.
+ * The newly generated mapping table can be used in copy dataset commands
  * during the project release.
  *
  * Prerequisites:
- *     - nomCode applied to all usages
  *     - names match up to date
  *
  * Basic steps:
@@ -43,22 +40,16 @@ import java.util.concurrent.atomic.AtomicInteger;
  *    Convert ids to their int representation to save memory and simplify comparison etc.
  *    Expose only properties needed for matching, i.e. id (int), nxId (int), status, parentID (int), ???
  *
- * 2) Keep existing non uuids, verify they still match with their nxId or exact sciname tp prevent nx bugs
+ * 2) Process all name usages as groups by their canonical name index id, i.e. all usages that share the same name regardless of
+ *    their authorship. Process groups by ranks from top down (allows to compare parentIds).
  *
- * 3) Match all usages with temp UUID, ordered for matching by their status, then rank from top down (allows to compare parentIds):
+ * 3) Match all usages in such a group ordered by their status:
  *    First assign ids for accepted, then prov accepted, synonyms, ambiguous syns and finally misapplied names
- *    -
- * 4) Use new "usage" matching service that sits on top of the ReleaseView
- *    - retrieve candidates by looking up all ids by their nxId
- *    - if none, issue a new id
- *    - if single match, not yet taken: use it
- *    - if single and taken, issue a new one and log this (in issues, reports and logs???)
- *    - if multiple look for best match and use it
  */
 public class StableIdProvider {
   protected final Logger LOG = LoggerFactory.getLogger(StableIdProvider.class);
   // the date we first deployed stable ids in releases - we ignore older ids than this date
-  private final LocalDateTime ID_START_DATE = LocalDateTime.of(2020, 9, 1, 1,1);
+  private final LocalDateTime ID_START_DATE = LocalDateTime.of(2020, 10, 1, 1,1);
 
   private final int datasetKey;
   private final SqlSessionFactory factory;
@@ -73,6 +64,14 @@ public class StableIdProvider {
   private IntSet deleted = new IntOpenHashSet();
   private NameUsageMapper num;
   private IdMapMapper idm;
+  private Map<TaxonomicStatus, Integer> statusOrder = Map.of(
+    TaxonomicStatus.ACCEPTED, 1,
+    TaxonomicStatus.PROVISIONALLY_ACCEPTED, 2,
+    TaxonomicStatus.SYNONYM, 3,
+    TaxonomicStatus.AMBIGUOUS_SYNONYM, 4,
+    TaxonomicStatus.MISAPPLIED, 5
+  );
+
 
   public StableIdProvider(int datasetKey, int attempt, SqlSessionFactory factory) {
     this.datasetKey = datasetKey;
@@ -103,7 +102,7 @@ public class StableIdProvider {
         AtomicInteger counter = new AtomicInteger();
         int attempt = rel.getImportAttempt();
         attempt2dataset.put(attempt, (int)rel.getKey());
-        session.getMapper(NameUsageMapper.class).processNxIds(rel.getKey(), null).forEach(sn -> {
+        session.getMapper(NameUsageMapper.class).processNxIds(rel.getKey()).forEach(sn -> {
           counter.incrementAndGet();
           ids.add(new ReleasedIds.ReleasedId(decode(sn.getId()), sn.getNameIndexId(), attempt));
         });
@@ -115,35 +114,45 @@ public class StableIdProvider {
   }
 
   private void mapIds(){
-    // we keep a list of usages that have ambiguous matches to multiple index names and deal with those names last.
-    DSID<String> key = DSID.of(datasetKey, "");
-    for (TaxonomicStatus status : new TaxonomicStatus[]{
-      TaxonomicStatus.ACCEPTED,
-      TaxonomicStatus.PROVISIONALLY_ACCEPTED,
-      TaxonomicStatus.SYNONYM,
-      TaxonomicStatus.AMBIGUOUS_SYNONYM,
-      TaxonomicStatus.MISAPPLIED
-    }) {
-      AtomicInteger counter = new AtomicInteger();
-      List<SimpleNameWithNidx> ambiguous = new ArrayList<>();
-      try (SqlSession session = factory.openSession(false)) {
-        idm = session.getMapper(IdMapMapper.class);
-        num = session.getMapper(NameUsageMapper.class);
-        num.processNxIds(datasetKey, status).forEach(u -> {
-          if (u.getNameIndexId() == null) {
-            LOG.info("{} usage {} with no name match for {} - keep the temporary id", status, u.getId(), u.getName());
-          } else {
-            String id = issueID(u, u.getNameIndexId());
-            idm.mapUsage(datasetKey, u.getId(), id);
-            if (counter.incrementAndGet() % 10000 == 0) {
-              session.commit();
-            }
+    AtomicInteger counter = new AtomicInteger();
+    try (SqlSession session = factory.openSession(false)) {
+      idm = session.getMapper(IdMapMapper.class);
+      num = session.getMapper(NameUsageMapper.class);
+      final int batchSize = 10000;
+      Integer lastCanonID = null;
+      List<SimpleNameWithNidx> group = new ArrayList<>();
+      for (SimpleNameWithNidx u : num.processNxIds(datasetKey)) {
+        if (lastCanonID != null && !lastCanonID.equals(u.getCanonicalId())) {
+          mapGroup(group);
+          int before = counter.get() / batchSize;
+          int after = counter.addAndGet(group.size()) / batchSize;
+          if (before != after) {
+            session.commit();
           }
-        });
-        session.commit();
+          group.clear();
+        }
+        lastCanonID = u.getCanonicalId();
+        group.add(u);
+      }
+      mapGroup(group);
+      session.commit();
+    }
+  }
+
+  private void mapGroup(List<SimpleNameWithNidx> group){
+    if (!group.isEmpty()) {
+      Collections.sort(group, Comparator.comparing(u -> statusOrder.get(u.getStatus())));
+      for (SimpleNameWithNidx u : group) {
+        if (u.getNameIndexId() == null) {
+          LOG.info("{} usage {} with no name match for {} - keep the temporary id", u.getStatus(), u.getId(), u.getName());
+        } else {
+          String id = issueID(u, u.getNameIndexId());
+          idm.mapUsage(datasetKey, u.getId(), id);
+        }
       }
     }
   }
+
 
   private String issueID(SimpleName name, int... nidxs) {
     int id;

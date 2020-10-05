@@ -9,6 +9,7 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.ReferenceMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.decision.EstimateRematcher;
 import life.catalogue.matching.decision.MatchingDao;
 import life.catalogue.matching.decision.RematchRequest;
@@ -33,12 +34,14 @@ import java.util.stream.Collectors;
 public class SectorSync extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorSync.class);
   private final SectorImportDao sid;
+  private final NameIndex nameIndex;
 
-  public SectorSync(DSID<Integer> sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, SectorImportDao sid,
+  public SectorSync(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService, SectorImportDao sid,
                     Consumer<SectorRunnable> successCallback,
                     BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     super(sectorKey, true, factory, indexService, sid, successCallback, errorCallback, user);
     this.sid = sid;
+    this.nameIndex = nameIndex;
   }
   
   @Override
@@ -192,7 +195,7 @@ public class SectorSync extends SectorRunnable {
         .map(ed -> ed.getSubject().getId())
         .collect(Collectors.toSet());
     try (SqlSession session = factory.openSession(false);
-         TreeCopyHandler treeHandler = new TreeCopyHandler(decisions, factory, user, sector, state)
+         TreeCopyHandler treeHandler = new TreeCopyHandler(decisions, factory, nameIndex, user, sector, state)
     ){
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
       LOG.info("{} taxon tree {} to {}. Blocking {} nodes", sector.getMode(), sector.getSubject(), sector.getTarget(), blockedIds.size());

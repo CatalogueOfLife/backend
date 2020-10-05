@@ -270,7 +270,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.lifecycle().manage(ManagedUtils.stopOnly(gbifSync));
 
     // assembly
-    AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), siDao, indexService, env.metrics());
+    AssemblyCoordinator assembly = new AssemblyCoordinator(getSqlSessionFactory(), ni, siDao, indexService, env.metrics());
     env.lifecycle().manage(assembly);
 
     // link assembly and import manager so they are aware of each other

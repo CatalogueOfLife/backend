@@ -12,6 +12,7 @@ import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.importer.ImportManager;
+import life.catalogue.matching.NameIndex;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -37,6 +38,7 @@ public class AssemblyCoordinator implements Managed {
   
   private ExecutorService exec;
   private ImportManager importManager;
+  private final NameIndex nameIndex;
   private final SqlSessionFactory factory;
   private final NameUsageIndexService indexService;
   private final SectorImportDao sid;
@@ -59,10 +61,11 @@ public class AssemblyCoordinator implements Managed {
     }
   }
   
-  public AssemblyCoordinator(SqlSessionFactory factory, SectorImportDao sid, NameUsageIndexService indexService, MetricRegistry registry) {
+  public AssemblyCoordinator(SqlSessionFactory factory, NameIndex nameIndex, SectorImportDao sid, NameUsageIndexService indexService, MetricRegistry registry) {
     this.factory = factory;
     this.sid = sid;
     this.indexService = indexService;
+    this.nameIndex = nameIndex;
     timer = registry.timer("life.catalogue.assembly.timer");
   }
   
@@ -183,7 +186,7 @@ public class AssemblyCoordinator implements Managed {
   }
   
   private synchronized void syncSector(DSID<Integer> sectorKey, User user) throws IllegalArgumentException {
-    SectorSync ss = new SectorSync(sectorKey, factory, indexService, sid, this::successCallBack, this::errorCallBack, user);
+    SectorSync ss = new SectorSync(sectorKey, factory, nameIndex, indexService, sid, this::successCallBack, this::errorCallBack, user);
     queueJob(ss);
   }
 

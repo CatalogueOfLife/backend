@@ -15,10 +15,7 @@ import static org.junit.Assert.assertEquals;
 
 public class NameDaoTest extends DaoTestBase {
 
-  static final IndexName match = new IndexName(TestEntityGenerator.NAME4);
-  static {
-    match.setKey(1);
-  }
+  static final IndexName match = new IndexName(TestEntityGenerator.NAME4, 1);
   NameDao dao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.fixed(match));
   
   @Test
