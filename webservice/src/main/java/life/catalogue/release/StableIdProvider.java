@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.id.IdConverter;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -104,7 +105,7 @@ public class StableIdProvider {
         attempt2dataset.put(attempt, (int)rel.getKey());
         session.getMapper(NameUsageMapper.class).processNxIds(rel.getKey()).forEach(sn -> {
           counter.incrementAndGet();
-          ids.add(new ReleasedIds.ReleasedId(decode(sn.getId()), sn.getNameIndexId(), attempt));
+          ids.add(new ReleasedIds.ReleasedId(sn, attempt));
         });
         LOG.info("Read {} usages from previous release {}, key={}. Total released ids = {}", counter, rel.getImportAttempt(), rel.getKey(), ids.size());
       }
@@ -123,7 +124,7 @@ public class StableIdProvider {
       List<SimpleNameWithNidx> group = new ArrayList<>();
       for (SimpleNameWithNidx u : num.processNxIds(datasetKey)) {
         if (lastCanonID != null && !lastCanonID.equals(u.getCanonicalId())) {
-          mapGroup(group);
+          mapCanonicalGroup(group);
           int before = counter.get() / batchSize;
           int after = counter.addAndGet(group.size()) / batchSize;
           if (before != after) {
@@ -134,50 +135,83 @@ public class StableIdProvider {
         lastCanonID = u.getCanonicalId();
         group.add(u);
       }
-      mapGroup(group);
+      mapCanonicalGroup(group);
       session.commit();
+      // ids remaining from the current attempt will be deleted
+      deleted = ids.remainingIds(currAttempt);
     }
   }
 
-  private void mapGroup(List<SimpleNameWithNidx> group){
-    if (!group.isEmpty()) {
-      Collections.sort(group, Comparator.comparing(u -> statusOrder.get(u.getStatus())));
-      for (SimpleNameWithNidx u : group) {
-        if (u.getNameIndexId() == null) {
-          LOG.info("{} usage {} with no name match for {} - keep the temporary id", u.getStatus(), u.getId(), u.getName());
-        } else {
-          String id = issueID(u, u.getNameIndexId());
-          idm.mapUsage(datasetKey, u.getId(), id);
-        }
-      }
+  private void mapCanonicalGroup(List<SimpleNameWithNidx> group){
+    // make sure we have the names sorted by their nidx
+    group.sort(Comparator.comparing(SimpleNameWithNidx::getNameIndexId));
+    // now split the canonical group into subgroups for each nidx to match them individually
+    for (List<SimpleNameWithNidx> idGroup : IterUtils.group(group, Comparator.comparing(SimpleNameWithNidx::getNameIndexId))) {
+      issueIDs(idGroup.get(0).getNameIndexId(), idGroup);
     }
   }
 
+  private void issueIDs(Integer nidx, List<SimpleNameWithNidx> names) {
+    if (nidx == null) {
+      LOG.info("{} usages with no name match, e.g. {} - keep temporary ids", names.size(), names.get(0).getId());
 
-  private String issueID(SimpleName name, int... nidxs) {
-    int id;
-    // does a previous id match?
-    for (int nidx : nidxs) {
+    } else {
+      // convenient "hack": we keep the new identifiers as the canonicalID property of SimpleNameWithNidx
+      names.forEach(n->n.setCanonicalId(null));
+      // how many released ids do exist for this names index id?
       ReleasedId[] rids = ids.byNxId(nidx);
       if (rids != null) {
-        ReleasedId rid = selectID(rids, name);
-        if (rid != null) {
-          if (rid.attempt != currAttempt) {
-            resurrected.add(rid.id);
+        ScoreMatrix scores = new ScoreMatrix(names, ids.byNxId(nidx), this::matchScore);
+        List<ScoreMatrix.ReleaseMatch> best = scores.highest();
+        while (!best.isEmpty()) {
+          if (best.size()==1) {
+            release(best.get(0), scores);
+          } else {
+            // TODO: equal high scores, but potentially non conflicting names. Resolve
+            System.out.println(best);
           }
-          ids.remove(rid.id);
-          return rid.id();
+          best = scores.highest();
         }
       }
+      // persist mappings, issuing new ids for missing ones
+      for (SimpleNameWithNidx sn : names) {
+        if (sn.getCanonicalId() == null) {
+          issueNewId(sn);
+        }
+        idm.mapUsage(datasetKey, sn.getId(), encode(sn.getCanonicalId()));
+      }
     }
-    // if nothing found, issue a new id
-    id = keySequence.incrementAndGet();
+  }
+
+  private void release(ScoreMatrix.ReleaseMatch rm, ScoreMatrix scores){
+    rm.name.setCanonicalId(rm.rid.id);
+    ids.remove(rm.rid.id);
+    if (rm.rid.attempt != currAttempt) {
+      resurrected.add(rm.rid.id);
+    }
+    scores.remove(rm);
+  }
+
+  private void issueNewId(SimpleNameWithNidx n) {
+    int id = keySequence.incrementAndGet();
+    n.setCanonicalId(id);
     created.add(id);
-    return encode(id);
   }
 
   /**
-   * Takes several existing ids as candidates and checks whether one of matches the given simple name.
+   * @return zero for no match, positive for a match. The higher the better!
+   */
+  private int matchScore(SimpleName n, ReleasedId r) {
+    SimpleName rn = load(r);
+    return 1;
+  }
+
+  private SimpleName load(ReleasedId rid) {
+    return null;
+  }
+
+  /**
+   * Takes several existing ids as candidates and checks whether one matches the given simple name.
    * It is assumed all ids match the canonical name at least.
    * Selecting considers authorship and the parent name to select between multiple candidates.
    *
@@ -221,14 +255,6 @@ public class StableIdProvider {
       return best.get(0);
     }
     return null;
-  }
-
-  static int decode(String id) {
-    try {
-      return IdConverter.LATIN32.decode(id);
-    } catch (IllegalArgumentException e) {
-      return -1;
-    }
   }
 
   static String encode(int id) {

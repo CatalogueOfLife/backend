@@ -2,6 +2,9 @@ package life.catalogue.release;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.common.id.IdConverter;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -15,6 +18,18 @@ public class ReleasedIds {
     public final int id;
     public final int nxId;
     public final int attempt;
+
+    public ReleasedId(SimpleNameWithNidx sn, int attempt) {
+      int id1;
+      try {
+        id1 = IdConverter.LATIN32.decode(sn.getId());
+      } catch (IllegalArgumentException e) {
+        id1 = -1;
+      }
+      this.id = id1;
+      this.nxId = sn.getNameIndexId();
+      this.attempt = attempt;
+    }
 
     public ReleasedId(int id, int nxId, int attempt) {
       this.id = id;
@@ -41,6 +56,16 @@ public class ReleasedIds {
         byNxId.put(r.nxId, rids);
       }
     }
+  }
+
+  public IntSet remainingIds(int attempt){
+    IntSet ids = new IntOpenHashSet();
+    for (ReleasedId rid : byId.values()) {
+      if (rid.attempt == attempt) {
+        ids.add(rid.id);
+      }
+    }
+    return ids;
   }
 
   void add (ReleasedId id) {

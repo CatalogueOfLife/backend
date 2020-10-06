@@ -94,7 +94,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     ids.clear();
   }
 
-  private static class Usage {
+  static class Usage {
     String id;
     Rank rank;
     TaxonomicStatus status;
@@ -226,11 +226,13 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
       ids.put(u.getId(), ids.getOrDefault(u.getParentId(), target));
       return;
     }
-    
     // all non root nodes have newly created parents
     Usage parent = ids.getOrDefault(u.getParentId(), target);
+    // apply general COL rules
+    CoLUsageRules.apply(u, parent);
+
+    // make sure we have a genus for species and a species for infraspecific taxa
     if (u.isTaxon() && u.getName().getRank().isSpeciesOrBelow()) {
-      // make sure we have a genus for species and a species for infraspecific taxa
       parent = createImplicit(parent, (Taxon) u);
     }
 
