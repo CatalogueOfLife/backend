@@ -13,16 +13,21 @@ public class RankID extends DSIDValue<String> {
   private static final Pattern ID_PATTERN = Pattern.compile("^(.+)"+INC_SEDIS+"([A-Z_]+)$", Pattern.CASE_INSENSITIVE);
 
   public static RankID parseID(DSID<String> id){
-    return parseID(id.getDatasetKey(), id.getId());
+    if (id != null) {
+      return parseID(id.getDatasetKey(), id.getId());
+    }
+    return null;
   }
 
   public static RankID parseID(int datasetKey, String id){
-    Matcher m = ID_PATTERN.matcher(id);
-    if (m.find()) {
-      try {
-        return new RankID(datasetKey, m.group(1), Rank.valueOf(m.group(2).toUpperCase()));
-      } catch (IllegalArgumentException e) {
-        LOG.warn("Bad incertae sedis ID " + id);
+    if (id != null) {
+      Matcher m = ID_PATTERN.matcher(id);
+      if (m.find()) {
+        try {
+          return new RankID(datasetKey, m.group(1), Rank.valueOf(m.group(2).toUpperCase()));
+        } catch (IllegalArgumentException e) {
+          LOG.warn("Bad incertae sedis ID " + id);
+        }
       }
     }
     return new RankID(datasetKey, id, null);

@@ -118,21 +118,17 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   @Override
   protected void updateBefore(Sector s, Sector old, int user, SectorMapper mapper, SqlSession session) {
     parsePlaceholderRank(s);
-    requireTaxon(s.getTargetAsDSID(), session);
+    requireTaxonIdExists(s.getTargetAsDSID(), session);
     super.updateBefore(s, old, user, mapper, session);
   }
 
-  private static SimpleName requireTaxon(DSID<String> key, SqlSession session){
+  private static void requireTaxonIdExists(DSID<String> key, SqlSession session){
     if (key != null && key.getId() != null) {
-      SimpleName sn = session.getMapper(NameUsageMapper.class).getSimple(key);
-      if (sn == null) {
+      if (!session.getMapper(NameUsageMapper.class).exists(key)) {
         throw new IllegalArgumentException("ID " + key.getId() + " not existing in dataset " + key.getDatasetKey());
       }
-      return sn;
     }
-    return null;
   }
-
 
   public static boolean parsePlaceholderRank(Sector s){
     RankID subjId = RankID.parseID(s.getSubjectDatasetKey(), s.getSubject().getId());

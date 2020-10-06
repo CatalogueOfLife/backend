@@ -13,7 +13,10 @@ import java.util.List;
 import java.util.Set;
 
 public interface DuplicateMapper {
-  
+
+  /**
+   * See DuplicateDao for parameter descriptions...
+   */
   List<Duplicate.Mybatis> duplicateNames(@Param("mode") MatchingMode mode,
                                  @Param("minSize") Integer minSize,
                                  @Param("datasetKey") int datasetKey,
@@ -25,8 +28,11 @@ public interface DuplicateMapper {
                                  @Param("page") Page page);
   
   List<Duplicate.UsageDecision> namesByIds(@Param("datasetKey") int datasetKey, @Param("ids") Collection<String> ids);
-  
-  
+
+
+  /**
+   * See DuplicateDao for parameter descriptions...
+   */
   List<Duplicate.Mybatis> duplicates(@Param("mode") MatchingMode mode,
                              @Param("minSize") Integer minSize,
                              @Param("datasetKey") int datasetKey,

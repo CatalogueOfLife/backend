@@ -49,7 +49,8 @@ public class DuplicateResource {
                               @Valid @BeanParam Page page, @Context SqlSession session) {
     DuplicateDao dao = new DuplicateDao(session);
     if (entity == null || entity == EntityType.NAME_USAGE) {
-        return dao.findUsages(mode, minSize, datasetKey, sourceDatasetKey, sectorKey, category, ranks, status, authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, catalogueKey, page);
+        return dao.findUsages(mode, minSize, datasetKey, sourceDatasetKey, sectorKey, category, ranks, status,
+          authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, catalogueKey, page);
       
     } else if (entity == EntityType.NAME) {
         return dao.findNames(mode, minSize, datasetKey, category, ranks, authorshipDifferent, rankDifferent, codeDifferent, page);

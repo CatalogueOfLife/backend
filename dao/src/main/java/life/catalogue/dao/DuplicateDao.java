@@ -40,7 +40,9 @@ public class DuplicateDao {
    * @param mode the matching mode to detect duplicates - strict or fuzzy
    * @param minSize minimum number of duplicate names to exist. Defaults to 2
    * @param datasetKey the dataset to be analyzed
-   * @param sectorKey optional sector to restrict the duplicates to
+   * @param projectKey the project key decisions and sectors are for. Required if withDecision is given
+   * @param sourceDatasetKey the source dataset within a project to analyze. Requires datasetKey to be a project or release
+   * @param sectorKey optional sector to restrict the duplicates to a single sector. Requires datasetKey to be a project or release
    * @param category optional restriction to uni/bi/trinomials only
    * @param ranks optional restriction on ranks
    * @param status optional restriction on usage status
@@ -49,12 +51,13 @@ public class DuplicateDao {
    * @param rankDifferent
    * @param codeDifferent
    * @param withDecision optionally filter duplicates to have or do not already have a decision
-   * @param projectKey the catalogue key the decisions are for. Required if withDecision is given
    */
-  public List<Duplicate> findUsages(MatchingMode mode, Integer minSize, int datasetKey, Integer sourceDatasetKey, Integer sectorKey, NameCategory category, Set<Rank> ranks,
-                              Set<TaxonomicStatus> status, Boolean authorshipDifferent, Boolean acceptedDifferent, Boolean rankDifferent,
+  public List<Duplicate> findUsages(MatchingMode mode, Integer minSize, int datasetKey, Integer sourceDatasetKey, Integer sectorKey, NameCategory category,
+                                    Set<Rank> ranks, Set<TaxonomicStatus> status,
+                                    Boolean authorshipDifferent, Boolean acceptedDifferent, Boolean rankDifferent,
                                     Boolean codeDifferent, Boolean withDecision, Integer projectKey, Page page) {
-    return find(false, mode, minSize, datasetKey, sourceDatasetKey, sectorKey, category, ranks, status, authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, projectKey, page);
+    return find(false, mode, minSize, datasetKey, sourceDatasetKey, sectorKey, category, ranks, status,
+      authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, projectKey, page);
   }
   
   private List<Duplicate> find(boolean compareNames, MatchingMode mode, Integer minSize, int datasetKey, Integer sourceDatasetKey, Integer sectorKey, NameCategory category, Set<Rank> ranks,
@@ -66,13 +69,20 @@ public class DuplicateDao {
     if (withDecision != null) {
       Preconditions.checkArgument(projectKey != null, "projectKey is required if parameter withDecision is used");
     }
+    if (sourceDatasetKey != null){
+      Preconditions.checkArgument(!DatasetInfoCache.CACHE.origin(datasetKey).isProject(), "datasetKey must be a project or release if parameter sourceDatasetKey is used");
+    }
+    if (sectorKey != null){
+      Preconditions.checkArgument(!DatasetInfoCache.CACHE.origin(datasetKey).isProject(), "datasetKey must be a project or release if parameter sectorKey is used");
+    }
     page = ObjectUtils.defaultIfNull(page, new Page());
     // load all duplicate usages or names
     List<Duplicate.Mybatis> dupsTmp;
     if (compareNames) {
       dupsTmp = mapper.duplicateNames(mode, minSize, datasetKey, category, ranks, authorshipDifferent, rankDifferent, codeDifferent, page);
     } else {
-      dupsTmp = mapper.duplicates(mode, minSize, datasetKey, sourceDatasetKey, sectorKey, category, ranks, status, authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, projectKey, page);
+      dupsTmp = mapper.duplicates(mode, minSize, datasetKey, sourceDatasetKey, sectorKey, category, ranks, status,
+        authorshipDifferent, acceptedDifferent, rankDifferent, codeDifferent, withDecision, projectKey, page);
     }
     if (dupsTmp.isEmpty()) {
       return Collections.EMPTY_LIST;

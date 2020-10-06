@@ -15,5 +15,10 @@ public class RankIDTest {
     assertNull(RankID.parseID(3,"55812e8-5422-402e-b071-b67a9cdf481f").rank);
     assertEquals(Rank.SPECIES, RankID.parseID(3,"55812e8-5422-402e-b071-b67a9cdf481f--incertae-sedis--species").rank);
     assertEquals(Rank.SPECIES, RankID.parseID(3,"55812e8-5422-402e-b071-b67a9cdf481f--Incertae-Sedis--Species").rank);
+
+    assertEquals("", RankID.parseID(3,"").getId());
+    assertEquals(null, RankID.parseID(3,null).getId());
+
+    assertNull(RankID.parseID(null));
   }
 }
