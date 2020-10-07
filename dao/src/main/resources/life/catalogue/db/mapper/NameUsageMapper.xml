@@ -51,6 +51,7 @@
   </sql>
 
   <sql id="COLS_COPY">
+    ${alias}sector_key,
     ${alias}verbatim_key,
     ${alias}status,
     ${alias}is_synonym,
@@ -59,7 +60,9 @@
     ${alias}according_to_id,
     ${alias}reference_ids,
     ${alias}remarks,
+    ${alias}created,
     ${alias}created_by,
+    ${alias}modified,
     ${alias}modified_by,
     <!-- from TAXON -->
     ${alias}scrutinizer,
@@ -68,7 +71,9 @@
     ${alias}temporal_range_start,
     ${alias}temporal_range_end,
     ${alias}environments,
-    ${alias}link
+    ${alias}link,
+    <!-- calculated -->
+    ${alias}dataset_sectors
   </sql>
 
   <sql id="COLS">
@@ -218,10 +223,11 @@
   </update>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO name_usage_${newDatasetKey} (id, parent_id, name_id,
-      dataset_key, sector_key, <include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
-    SELECT coalesce(<if test="mapIds">mu.id2,</if>u.id), coalesce(<if test="mapIds">mp.id2,</if>u.parent_id), coalesce(<if test="mapIds">mn.id2,</if>u.name_id),
-      #{newDatasetKey}, u.sector_key, <include refid="COLS_COPY"><property name="alias" value="u."/></include>, u.created, u.modified
+    INSERT INTO name_usage_${newDatasetKey}
+      (id, parent_id, name_id, dataset_key,
+      <include refid="COLS_COPY"><property name="alias" value=""/></include>)
+    SELECT coalesce(<if test="mapIds">mu.id2,</if>u.id), coalesce(<if test="mapIds">mp.id2,</if>u.parent_id), coalesce(<if test="mapIds">mn.id2,</if>u.name_id), #{newDatasetKey},
+      <include refid="COLS_COPY"><property name="alias" value="u."/></include>
     FROM name_usage_${datasetKey} u
     <if test="mapIds">
       LEFT JOIN idmap_name_usage_${datasetKey} mu ON mu.id=u.id
