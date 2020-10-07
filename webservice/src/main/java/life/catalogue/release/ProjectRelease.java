@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ProjectRelease extends AbstractProjectCopy {
   private static final String DEFAULT_TITLE_TEMPLATE = "{title}, {date}";
   private static final String DEFAULT_ALIAS_TEMPLATE = "{aliasOrTitle}-{date}";
-  private static final String DEFAULT_CITATION_TEMPLATE = "{citation} released on {date}";
 
   private final ImageService imageService;
   private final NameIndex nameIndex;
@@ -124,21 +123,21 @@ public class ProjectRelease extends AbstractProjectCopy {
   }
 
   public static void releaseDataset(Dataset d, DatasetSettings ds) {
+    d.setOrigin(DatasetOrigin.RELEASED);
+    final LocalDate today = LocalDate.now();
+    d.setReleased(today);
+    d.setVersion(today.toString());
+
     String alias = procTemplate(d, ds, Setting.RELEASE_ALIAS_TEMPLATE, DEFAULT_ALIAS_TEMPLATE);
     d.setAlias(alias);
 
     String title = procTemplate(d, ds, Setting.RELEASE_TITLE_TEMPLATE, DEFAULT_TITLE_TEMPLATE);
     d.setTitle(title);
 
-    String citation = procTemplate(d, ds, Setting.RELEASE_CITATION_TEMPLATE, DEFAULT_CITATION_TEMPLATE);
+    String citation = procTemplate(d, ds, Setting.RELEASE_CITATION_TEMPLATE, buildCitation(d));
     d.setCitation(citation);
 
-    d.setOrigin(DatasetOrigin.RELEASED);
-    final LocalDate today = LocalDate.now();
-    d.setReleased(today);
     d.setPrivat(true); // all releases are private candidate releases first
-    d.setVersion(today.toString());
-    d.setCitation(buildCitation(d));
   }
 
   @VisibleForTesting

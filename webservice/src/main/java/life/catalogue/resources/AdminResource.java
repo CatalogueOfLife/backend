@@ -232,7 +232,7 @@ public class AdminResource {
   }
 
   @POST
-  @Path("sector-counts")
+  @Path("sector-count-update")
   public BackgroundJob updateAllSectorCounts(@QueryParam("datasetKey") Integer datasetKey, @Auth User user) {
     Preconditions.checkArgument(datasetKey != null, "A datasetKey parameter must be given");
     return runJob(new SectorCountJob(user.getKey(), factory, indexService, datasetKey));

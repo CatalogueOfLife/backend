@@ -25,7 +25,7 @@ public class DaoUtils {
    */
   public static void requireProject(int datasetKey) throws NotFoundException {
     DatasetOrigin origin = DatasetInfoCache.CACHE.origin(datasetKey);
-    if (origin != DatasetOrigin.MANAGED) {
+    if (origin == null || !origin.isProject()) {
       throw new IllegalArgumentException("Only data from managed datasets can be modified. Dataset " + datasetKey + " is of origin " + origin);
     }
   }

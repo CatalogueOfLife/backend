@@ -19,6 +19,21 @@ public class PersonTest {
 
     p = new Person("Markus", null);
     assertEquals("Markus", p.getName());
+
+    // from APA guide
+    // https://blog.apastyle.org/apastyle/2017/05/whats-in-a-name-two-part-surnames-in-apa-style.html
+    p = new Person("Diego J.", "Rivera-Gutierrez");
+    assertEquals("Rivera-Gutierrez D. J.", p.getName());
+
+    p = new Person("Rena", "Torres Cacoullos");
+    assertEquals("Torres Cacoullos R.", p.getName());
+
+    p = new Person("Ulrica", "von Thiele Schwarz");
+    assertEquals("von Thiele Schwarz U.", p.getName());
+
+    p = new Person("Simone", "de Beauvoir");
+    assertEquals("de Beauvoir S.", p.getName());
+
   }
 
   @Test
