@@ -172,14 +172,6 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   }
 
   @POST
-  @Path("count-update")
-  public boolean updateAllSectorCounts(@PathParam("datasetKey") int datasetKey) {
-    DaoUtils.requireManaged(datasetKey);
-    tdao.updateAllSectorCounts(datasetKey);
-    return true;
-  }
-
-  @POST
   @Path("/rematch")
   public RematcherBase.MatchCounter rematch(@PathParam("datasetKey") int projectKey, SectorRematchRequest req, @Auth User user) {
     req.setDatasetKey(projectKey);

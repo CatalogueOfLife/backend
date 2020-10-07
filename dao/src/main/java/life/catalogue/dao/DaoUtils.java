@@ -20,6 +20,16 @@ public class DaoUtils {
     }
   }
 
+  /**
+   * Makes sure the datasets origin is a project and is either managed or released
+   */
+  public static void requireProject(int datasetKey) throws NotFoundException {
+    DatasetOrigin origin = DatasetInfoCache.CACHE.origin(datasetKey);
+    if (origin != DatasetOrigin.MANAGED) {
+      throw new IllegalArgumentException("Only data from managed datasets can be modified. Dataset " + datasetKey + " is of origin " + origin);
+    }
+  }
+
   public static void aquireTableLock(int datasetKey, SqlSession session) {
     LOG.info("Try to aquire a table lock for dataset {}", datasetKey);
     session.getMapper(DatasetPartitionMapper.class).lockTables(datasetKey);
