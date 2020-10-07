@@ -41,7 +41,7 @@ SELECT DISTINCT ON (d.key)
  NULL AS SpeciesEst,
  (
    SELECT string_agg(coalesce((ae->>'givenName')::text || ' ', '') || (ae->>'familyName')::text, '; ') AS authors_editors
-   FROM jsonb_array_elements(d.authors_and_editors) as ae
+   FROM jsonb_array_elements(coalesce(d.editors, d.authors)) as ae
  ),
  NULL AS accepted_species_names,
  NULL AS accepted_infraspecies_names,

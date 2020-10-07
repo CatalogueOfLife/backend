@@ -449,16 +449,16 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
    * Resets all dataset sector counts for an entire catalogue
    * and rebuilds the counts from the currently mapped sectors
    *
-   * @param catalogueKey
+   * @param datasetKey
    */
-  public void updateAllSectorCounts(int catalogueKey) {
+  public void updateAllSectorCounts(int datasetKey) {
     try (SqlSession readSession = factory.openSession(true);
         SqlSession writeSession = factory.openSession(false)
     ) {
       TaxonMapper tm = writeSession.getMapper(TaxonMapper.class);
-      tm.resetDatasetSectorCount(catalogueKey);
+      tm.resetDatasetSectorCount(datasetKey);
       SectorCountUpdHandler scConsumer = new SectorCountUpdHandler(tm);
-      readSession.getMapper(SectorMapper.class).processDataset(catalogueKey).forEach(scConsumer);
+      readSession.getMapper(SectorMapper.class).processDataset(datasetKey).forEach(scConsumer);
       writeSession.commit();
       LOG.info("Updated dataset sector counts from {} sectors", scConsumer.counter);
     }
