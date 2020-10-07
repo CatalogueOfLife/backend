@@ -46,7 +46,8 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     d.setDescription(RandomUtils.randomLatinString(500));
     d.setLicense(License.CC0);
     for (int i = 0; i < 8; i++) {
-      d.getAuthorsAndEditors().add(Person.parse(RandomUtils.randomLatinString(100)));
+      d.getAuthors().add(Person.parse(RandomUtils.randomLatinString(100)));
+      d.getEditors().add(Person.parse(RandomUtils.randomLatinString(100)));
     }
     d.setContact(Person.parse("Hans Peter"));
     d.setReleased(LocalDate.now());
@@ -519,15 +520,15 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     Dataset ds = new Dataset();
     ds.setTitle(title);
     if (author != null) {
-      ds.setAuthorsAndEditors(Person.parse(Lists.newArrayList(author.split(";"))));
+      ds.setAuthors(Person.parse(Lists.newArrayList(author.split(";"))));
     }
     ds.getOrganisations().add(organisation);
     ds.setDescription(description);
     ds.setType(DatasetType.TAXONOMIC);
     ds.setOrigin(DatasetOrigin.MANAGED);
     ds.setContact(new Person("Frank", "Furter", "frank@mailinator.com", "0000-0003-0857-1679"));
-    ds.getAuthorsAndEditors().add(new Person("Karl", "Marx", "karl@mailinator.com", "0000-0000-0000-0001"));
-    ds.getAuthorsAndEditors().add(new Person("Chuck", "Berry", "chuck@mailinator.com", "0000-0666-0666-0666"));
+    ds.getEditors().add(new Person("Karl", "Marx", "karl@mailinator.com", "0000-0000-0000-0001"));
+    ds.getEditors().add(new Person("Chuck", "Berry", "chuck@mailinator.com", "0000-0666-0666-0666"));
     mapper().create(TestEntityGenerator.setUserDate(ds));
 
     mapper(DatasetPartitionMapper.class).createManagedSequences(ds.getKey());

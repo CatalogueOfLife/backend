@@ -55,8 +55,9 @@ public class DwcaInserterTest extends InserterBaseTest {
     assertEquals("12, May 2014", d.getVersion());
     assertNotNull(d.getReleased());
     //assertEquals("2014-05-05", d.getReleased().toString());
-    assertEquals(1, d.getAuthorsAndEditors().size());
-    assertThat(d.getAuthorsAndEditors(), is(Lists.newArrayList("Roskov Y.R.")));
+    assertEquals(1, d.getAuthors().size());
+    assertEquals(0, d.getEditors().size());
+    assertThat(d.getAuthors(), is(Lists.newArrayList("Roskov Y.R.")));
     assertEquals("Legumes", d.getGroup());
     assertEquals("The International Legume Database & Information Service (ILDIS) is an international project which aims to document and catalogue the world's legume species diversity in a readily accessible form. Research groups in many countries are participating on a co-operative basis to pool information in the ILDIS World Database of Legumes, which is used to provide a worldwide information service through publications, electronic access and enquiry services.", d.getDescription());
     assertThat(d.getOrganisations(), is(Lists.newArrayList("International")));

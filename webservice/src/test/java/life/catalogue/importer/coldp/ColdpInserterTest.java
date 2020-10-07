@@ -39,7 +39,8 @@ public class ColdpInserterTest extends InserterBaseTest {
     assertEquals(List.of(
         new Person("Rainer", "Froese", "rainer@mailinator.com", "0000-0001-9745-636X"),
         new Person("Daniel", "Pauly", null, "0000-0003-3756-4793")
-      ), d.getAuthorsAndEditors());
+      ), d.getAuthors());
+    assertTrue(d.getEditors().isEmpty());
     assertEquals(License.CC_BY_NC, d.getLicense());
     assertEquals("ver. (06/2018)", d.getVersion());
     assertEquals("2018-06-01", d.getReleased().toString());

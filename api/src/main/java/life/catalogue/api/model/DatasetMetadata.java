@@ -27,9 +27,13 @@ public interface DatasetMetadata {
 
   void setDescription(String description);
 
-  List<Person> getAuthorsAndEditors();
+  List<Person> getAuthors();
 
-  void setAuthorsAndEditors(List<Person> authorsAndEditors);
+  void setAuthors(List<Person> authors);
+
+  List<Person> getEditors();
+
+  void setEditors(List<Person> editors);
 
   List<String> getOrganisations();
 

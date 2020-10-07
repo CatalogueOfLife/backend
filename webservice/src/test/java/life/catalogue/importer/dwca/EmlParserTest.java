@@ -31,7 +31,7 @@ public class EmlParserTest {
     assertEquals("https://github.com/mdoering/famous-organism", d.getWebsite().toString());
     //assertEquals("Species named after famous people", d.getLicense());
     assertEquals(markus, d.getContact());
-    assertEquals(List.of(markus), d.getAuthorsAndEditors());
+    assertEquals(List.of(markus), d.getAuthors());
     assertEquals("2017-01-19", d.getReleased().toString());
     assertEquals("http://www.marinespecies.org/aphia.php?p=taxdetails&id=146230", d.getLogo().toString());
     assertEquals("cite my famous dataset", d.getCitation());
@@ -48,7 +48,7 @@ public class EmlParserTest {
     assertEquals("https://github.com/mdoering/famous-organism", d.getWebsite().toString());
     //assertEquals("Species named after famous people", d.getLicense());
     assertEquals("Markus Döring (GBIF)", d.getContact());
-    assertEquals("[Markus Döring (GBIF)]", d.getAuthorsAndEditors().toString());
+    assertEquals("[Markus Döring (GBIF)]", d.getAuthors().toString());
     assertEquals("2017-01-19", d.getReleased().toString());
   }
   
@@ -62,7 +62,7 @@ public class EmlParserTest {
     assertEquals("https://github.com/mdoering/famous-organism", d.getWebsite().toString());
     //assertEquals("Species named after famous people", d.getLicense());
     assertEquals("Markus Döring (GBIF)", d.getContact());
-    assertEquals("[Markus Döring (GBIF)]", d.getAuthorsAndEditors().toString());
+    assertEquals("[Markus Döring (GBIF)]", d.getAuthors().toString());
     assertEquals("2017-01-19", d.getReleased().toString());
   }
   
@@ -76,7 +76,7 @@ public class EmlParserTest {
     assertEquals("https://github.com/mdoering/famous-organism", d.getWebsite().toString());
     //assertEquals("Species named after famous people", d.getLicense());
     assertEquals("Markus Döring (GBIF)", d.getContact());
-    assertEquals("[Markus Döring (GBIF)]", d.getAuthorsAndEditors().toString());
+    assertEquals("[Markus Döring (GBIF)]", d.getAuthors().toString());
     assertEquals("2017-01-19", d.getReleased().toString());
   }
   

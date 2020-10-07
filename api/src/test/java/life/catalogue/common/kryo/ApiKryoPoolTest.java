@@ -46,7 +46,8 @@ public class ApiKryoPoolTest {
     d.setKey(1234);
     d.setReleased(LocalDate.now());
     d.setGbifKey(UUID.randomUUID());
-    d.setAuthorsAndEditors(Person.parse(List.of("Karl", "Frank")));
+    d.setAuthors(Person.parse(List.of("Karl", "Frank")));
+    d.setEditors(Person.parse(List.of("Karlo", "Franko")));
     assertSerde(d);
   }
 

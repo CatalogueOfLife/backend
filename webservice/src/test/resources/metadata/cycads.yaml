@@ -15,9 +15,20 @@ contact:
     familyName: Calonje
     email: michaelc@montgomerybotanical.org
 
-# list of authors and editors.
+# list of authors and/or editors.
 # optionally an ORCID can be appended (orcid: prefix required!) to be included in DOI metadata
-authorsAndEditors:
+authors:
+  - givenName: Michael
+    familyName: Calonje
+    email: michaelc@montgomerybotanical.org
+    orcid: 0000-0001-9650-3136
+  - givenName: Leonie
+    familyName: Stanberg
+  - givenName: Dennis
+    familyName: Stevenson
+    orcid: 0000-0002-2986-7076
+
+editors:
   - givenName: Michael
     familyName: Calonje
     email: michaelc@montgomerybotanical.org

@@ -154,12 +154,20 @@ public class DatasetWithSettings {
     dataset.setDescription(description);
   }
 
-  public List<Person> getAuthorsAndEditors() {
-    return dataset.getAuthorsAndEditors();
+  public List<Person> getAuthors() {
+    return dataset.getAuthors();
   }
 
-  public void setAuthorsAndEditors(List<Person> authorsAndEditors) {
-    dataset.setAuthorsAndEditors(authorsAndEditors);
+  public void setAuthors(List<Person> authors) {
+    dataset.setAuthors(authors);
+  }
+
+  public List<Person> getEditors() {
+    return dataset.getEditors();
+  }
+
+  public void setEditors(List<Person> editors) {
+    dataset.setEditors(editors);
   }
 
   public List<String> getOrganisations() {

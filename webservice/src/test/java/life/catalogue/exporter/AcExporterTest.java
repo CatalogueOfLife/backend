@@ -62,7 +62,7 @@ public class AcExporterTest {
 
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       Dataset d = dm.get(Datasets.DRAFT_COL);
-      d.setAuthorsAndEditors(Person.parse(List.of("Röskøv Y.", "Ower G.", "Orrell T.", "Nicolson D.")));
+      d.setEditors(Person.parse(List.of("Röskøv Y.", "Ower G.", "Orrell T.", "Nicolson D.")));
       d.setOrganisations(List.of("Species 2000", "ITIS Catalogue of Life"));
       d.setReleased(null);
       dm.update(d);
@@ -100,7 +100,7 @@ public class AcExporterTest {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       Dataset d = dm.get(key);
-      d.setAuthorsAndEditors(Person.parse(List.of("Röskøv Y.", "Ower G.", "Orrell T.", "Nicolson D.")));
+      d.setEditors(Person.parse(List.of("Röskøv Y.", "Ower G.", "Orrell T.", "Nicolson D.")));
       d.setOrganisations(List.of("Species 2000", "ITIS Catalogue of Life"));
       d.setReleased(null);
       d.setOrigin(DatasetOrigin.MANAGED);

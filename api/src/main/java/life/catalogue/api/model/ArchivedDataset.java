@@ -49,7 +49,8 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
   private String description;
   private List<String> organisations = Lists.newArrayList();
   private Person contact;
-  private List<Person> authorsAndEditors = Lists.newArrayList();
+  private List<Person> authors = Lists.newArrayList();
+  private List<Person> editors = Lists.newArrayList();
   private License license;
   private String version;
   private LocalDate released;
@@ -81,7 +82,8 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
     this.description = other.description;
     this.organisations = other.organisations;
     this.contact = other.contact;
-    this.authorsAndEditors = other.authorsAndEditors;
+    this.authors = other.authors;
+    this.editors = other.editors;
     this.license = other.license;
     this.version = other.version;
     this.released = other.released;
@@ -169,15 +171,21 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
   public void setDescription(String description) {
     this.description = description;
   }
-  
-  @Override
-  public List<Person> getAuthorsAndEditors() {
-    return authorsAndEditors;
+
+  public List<Person> getAuthors() {
+    return authors;
   }
-  
-  @Override
-  public void setAuthorsAndEditors(List<Person> authorsAndEditors) {
-    this.authorsAndEditors = authorsAndEditors;
+
+  public void setAuthors(List<Person> authors) {
+    this.authors = authors;
+  }
+
+  public List<Person> getEditors() {
+    return editors;
+  }
+
+  public void setEditors(List<Person> editors) {
+    this.editors = editors;
   }
 
   @Override
@@ -349,7 +357,8 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
       Objects.equals(description, that.description) &&
       Objects.equals(organisations, that.organisations) &&
       Objects.equals(contact, that.contact) &&
-      Objects.equals(authorsAndEditors, that.authorsAndEditors) &&
+      Objects.equals(authors, that.authors) &&
+      Objects.equals(editors, that.editors) &&
       license == that.license &&
       Objects.equals(version, that.version) &&
       Objects.equals(released, that.released) &&
@@ -365,7 +374,8 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, sourceKey, importAttempt, type, origin, title, alias, description, organisations, contact, authorsAndEditors, license, version, released, citation, geographicScope, website, logo, group, confidence, completeness, notes);
+    return Objects.hash(super.hashCode(), key, sourceKey, importAttempt, type, origin, title, alias, description, organisations, contact, authors, editors,
+      license, version, released, citation, geographicScope, website, logo, group, confidence, completeness, notes);
   }
 
   @Override

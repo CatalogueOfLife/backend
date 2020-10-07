@@ -9,7 +9,7 @@
     u.email,
     u.roles,
     u.settings,
-    (SELECT array_agg(d.key) FROM dataset d WHERE d.editors @> ARRAY[u.key] OR d.created_by=u.key) AS datasets,
+    (SELECT array_agg(d.key) FROM dataset d WHERE d.access_control @> ARRAY[u.key] OR d.created_by=u.key) AS datasets,
     u.last_login,
     u.created,
     u.deleted
@@ -69,53 +69,41 @@
 
 
   <select id="get" resultMap="userResultMap">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE u.key = #{key}
   </select>
 
   <select id="getPublic" resultMap="userResultMap">
-    SELECT
-    <include refid="SELECT_PUBLIC"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT_PUBLIC"/>
+    FROM <include refid="FROM"/>
     WHERE u.key = #{key}
   </select>
 
   <select id="getByUsername" resultMap="userResultMap">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE u.username = #{username}
   </select>
 
   <select id="search" resultMap="userResultMap">
-    SELECT
-    <include refid="SELECT_PUBLIC"/>
-    FROM
-    <include refid="FROM"/>
-    WHERE
-    <include refid="WHERE"/>
+    SELECT <include refid="SELECT_PUBLIC"/>
+    FROM <include refid="FROM"/>
+    WHERE <include refid="WHERE"/>
     ORDER BY u.username
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="searchCount" resultType="integer">
     SELECT count(*)
-    FROM
-    <include refid="FROM"/>
-    WHERE
-    <include refid="WHERE"/>
+    FROM <include refid="FROM"/>
+    WHERE <include refid="WHERE"/>
   </select>
 
   <select id="datasetEditors" resultMap="userResultMap">
-    SELECT
-    <include refid="SELECT_PUBLIC"/>
+    SELECT <include refid="SELECT_PUBLIC"/>
     FROM dataset d
-    JOIN "user" u ON d.editors @> ARRAY[u.key]
+    JOIN "user" u ON d.access_control @> ARRAY[u.key]
     WHERE d.key = #{datasetKey}
   </select>
 

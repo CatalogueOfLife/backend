@@ -49,8 +49,8 @@ public class MetadataParserTest {
       new Person("Leonie", "Stanberg"),
       new Person("Dennis", "Stevenson",null, "0000-0002-2986-7076")
     );
-    assertEquals(authors, d.getAuthorsAndEditors());
-  
+    assertEquals(authors, d.getAuthors());
+    assertEquals(authors, d.getEditors());
   }
 
   @Test
@@ -81,7 +81,7 @@ public class MetadataParserTest {
     List<Person> authors = new ArrayList<>();
     authors.add(donald);
     authors.add(new Person("Cees", "Gielis", null, "0000-0003-0857-1679"));
-    assertEquals(authors, d.getAuthorsAndEditors());
-
+    assertEquals(authors, d.getAuthors());
+    assertTrue(d.getEditors().isEmpty());
   }
 }

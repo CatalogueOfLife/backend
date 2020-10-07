@@ -9,7 +9,7 @@ public class PersonTest {
   @Test
   public void getName() {
     Person p = new Person("Markus", "Döring");
-    assertEquals("Döring, M.", p.getName());
+    assertEquals("Döring M.", p.getName());
 
     p.setGivenName(null);
     assertEquals("Döring", p.getName());

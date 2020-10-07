@@ -5,7 +5,6 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Page;
-import life.catalogue.api.model.Person;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
@@ -187,7 +186,8 @@ public class DatasetPager {
     d.setGeographicScope(coverage(g.geographicCoverages));
     //TODO: convert contact and authors
     d.setContact(null);
-    d.setAuthorsAndEditors(null);
+    d.setAuthors(null);
+    d.setEditors(null);
     d.setNotes(null);
     d.setVersion(opt(g.pubDate));
     d.setCreated(LocalDateTime.now());

@@ -41,7 +41,7 @@
   <sql id="PRIVATE">
     <!-- magic number for admins -->
     <if test="userKey != -42">
-      AND (NOT ${alias}.private <if test="userKey != null">OR ${alias}.editors @> ARRAY[#{userKey}::int]</if>)
+      AND (NOT ${alias}.private <if test="userKey != null">OR ${alias}.access_control @> ARRAY[#{userKey}::int]</if>)
     </if>
   </sql>
 
@@ -165,7 +165,8 @@
             <bind name="rev" value="!req.reverse"/>
           </when>
           <when test="sortBy == 'AUTHORS'">
-            lower((authors_and_editors->0->'familyName')::text)
+            lower((editors->0->'familyName')::text),
+            lower((authors->0->'familyName')::text)
           </when>
           <when test="sortBy == 'ALIAS'">
             lower(alias)
@@ -262,13 +263,13 @@
 
   <!--  makes sure to add creator to editors -->
   <insert id="create" parameterType="Dataset" useGeneratedKeys="true" keyProperty="key">
-    INSERT INTO dataset (<include refid="COLS"/>, source_key, origin, editors, created, modified)
+    INSERT INTO dataset (<include refid="COLS"/>, source_key, origin, access_control, created, modified)
     VALUES (<include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, array[#{createdBy}::int], now(), now())
   </insert>
 
   <!--  makes sure to add creator to editors -->
   <insert id="createWithKey" parameterType="Dataset" useGeneratedKeys="false">
-    INSERT INTO dataset (key,<include refid="COLS"/>, source_key, origin, editors, created, modified)
+    INSERT INTO dataset (key,<include refid="COLS"/>, source_key, origin, access_control, created, modified)
     VALUES (#{key},<include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, array[#{createdBy}::int], now(), now())
   </insert>
 
@@ -285,26 +286,26 @@
   </update>
 
   <select id="getEditors" resultType="it.unimi.dsi.fastutil.ints.IntSet">
-    SELECT editors || array[created_by]
+    SELECT access_control || array[created_by]
     FROM dataset
     WHERE key = #{key}
   </select>
 
   <update id="updateEditors" parameterType="map">
-    UPDATE dataset  SET (editors, modified_by, modified) =
+    UPDATE dataset  SET (access_control, modified_by, modified) =
       ( #{editors, typeHandler=life.catalogue.db.type.IntSetTypeHandler}, #{userKey}, now() )
     WHERE key = #{key}
   </update>
 
   <update id="addEditor" parameterType="map">
-    UPDATE dataset SET (editors, modified_by, modified) =
-      ( editors || #{editor}, #{userKey}, now() )
+    UPDATE dataset SET (access_control, modified_by, modified) =
+      ( access_control || #{editor}, #{userKey}, now() )
     WHERE key = #{key}
   </update>
 
   <update id="removeEditor" parameterType="map">
-    UPDATE dataset  SET (editors, modified_by, modified) =
-      ( array_remove(editors, #{editor}), #{userKey}, now() )
+    UPDATE dataset  SET (access_control, modified_by, modified) =
+      ( array_remove(access_control, #{editor}), #{userKey}, now() )
     WHERE key = #{key}
   </update>
 

@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -68,6 +69,15 @@ public class MetadataParser {
         setContact(null);
       } else {
         setContact(contacts.get(0));
+      }
+    }
+
+    @JsonProperty("authorsAndEditors")
+    public void setAuthorsAndEditors(List<Person> authorsAndEditors) {
+      if (authorsAndEditors == null || authorsAndEditors.isEmpty()) {
+        setAuthors(Collections.emptyList());
+      } else {
+        setAuthors(authorsAndEditors);
       }
     }
   }

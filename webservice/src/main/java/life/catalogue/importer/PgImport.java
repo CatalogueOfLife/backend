@@ -141,7 +141,8 @@ public class PgImport implements Callable<Boolean> {
    */
   public static DatasetWithSettings updateMetadata(DatasetWithSettings d, DatasetWithSettings update) {
     copyIfNotNull(update::getAlias, d::setAlias);
-    copyIfNotNull(update::getAuthorsAndEditors, d::setAuthorsAndEditors);
+    copyIfNotNull(update::getAuthors, d::setAuthors);
+    copyIfNotNull(update::getEditors, d::setEditors);
     copyIfNotNull(update::getCompleteness, d::setCompleteness);
     copyIfNotNull(update::getConfidence, d::setConfidence);
     copyIfNotNull(update::getContact, d::setContact);

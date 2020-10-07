@@ -259,7 +259,7 @@ public class AcefInserter extends NeoCsvInserter {
       d.setWebsite(dr.getURI(AcefTerm.HomeURL));
       d.setType(dr.get(AcefTerm.Coverage, DatasetTypeParser.PARSER));
       d.setContact(Person.parse(dr.get(AcefTerm.ContactPerson)));
-      d.setAuthorsAndEditors(Person.parse(dr.get(AcefTerm.AuthorsEditors, COMMA_SPLITTER)));
+      d.setAuthors(Person.parse(dr.get(AcefTerm.AuthorsEditors, COMMA_SPLITTER)));
       d.setOrganisations(dr.get(AcefTerm.Organisation, COMMA_SPLITTER));
     }
     return Optional.ofNullable(d);

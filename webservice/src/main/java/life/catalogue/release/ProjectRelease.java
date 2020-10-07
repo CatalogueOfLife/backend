@@ -19,6 +19,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProjectRelease extends AbstractProjectCopy {
@@ -143,11 +145,26 @@ public class ProjectRelease extends AbstractProjectCopy {
   protected static String buildCitation(Dataset d){
     // ${d.authorsAndEditors?join(", ")}, eds. (${d.released.format('yyyy')}). ${d.title}, ${d.released.format('yyyy-MM-dd')}. Digital resource at www.catalogueoflife.org/col. Species 2000: Naturalis, Leiden, the Netherlands. ISSN 2405-8858.
     StringBuilder sb = new StringBuilder();
-    for (Person au : d.getAuthorsAndEditors()) {
+    boolean isEditors = false;
+    List<Person> people = Collections.emptyList();
+    if (d.getEditors() != null && !d.getEditors().isEmpty()) {
+      people = d.getEditors();
+      isEditors = true;
+    } else if (d.getAuthors() != null && !d.getAuthors().isEmpty()) {
+      people = d.getAuthors();
+    }
+    for (Person au : people) {
       if (sb.length() > 1) {
         sb.append(", ");
       }
-      sb.append(au.getFamilyName());
+      sb.append(au.getName());
+    }
+    if (isEditors) {
+      sb.append(" (ed");
+      if (people.size()>1) {
+        sb.append("s");
+      }
+      sb.append(".)");
     }
     sb.append(" (")
       .append(d.getReleased().getYear())

@@ -590,7 +590,8 @@ CREATE TABLE dataset (
   description TEXT,
   organisations TEXT[] DEFAULT '{}',
   contact JSONB,
-  authors_and_editors JSONB,
+  authors JSONB,
+  editors JSONB,
   license LICENSE,
   version TEXT,
   released DATE,
@@ -604,7 +605,7 @@ CREATE TABLE dataset (
   notes text,
 
   settings JSONB,
-  editors INT[],
+  access_control INT[],
 
   created_by INTEGER NOT NULL,
   modified_by INTEGER NOT NULL,
@@ -618,7 +619,7 @@ CREATE TABLE dataset_archive (LIKE dataset);
 ALTER TABLE dataset_archive
   DROP COLUMN deleted,
   DROP COLUMN doc,
-  DROP COLUMN editors,
+  DROP COLUMN access_control,
   DROP COLUMN gbif_key,
   DROP COLUMN gbif_publisher_key,
   DROP COLUMN private,
@@ -646,7 +647,8 @@ BEGIN
       setweight(to_tsvector('simple2', coalesce(array_to_string(NEW.organisations, '|'), '')), 'B') ||
       setweight(to_tsvector('simple2', coalesce(NEW.description,'')), 'C') ||
       setweight(to_tsvector('simple2', coalesce((NEW.contact->'familyName')::text,'')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce((NEW.authors_and_editors->0->'familyName')::text,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce((NEW.authors->0->'familyName')::text,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce((NEW.editors->0->'familyName')::text,'')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(NEW.gbif_key::text,'')), 'C');
     RETURN NEW;
 END

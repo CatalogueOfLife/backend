@@ -150,7 +150,7 @@ public class EmlParser {
                   }
                   break;
                 case "creator":
-                  agent.person().ifPresent(d.getAuthorsAndEditors()::add);
+                  agent.person().ifPresent(d.getAuthors()::add);
                   break;
                 case "contact":
                   agent.person().ifPresent(d::setContact);

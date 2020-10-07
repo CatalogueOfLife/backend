@@ -10,6 +10,47 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2020-10-07 author & editor
+```
+ALTER TABLE dataset RENAME COLUMN editors TO access_control;
+ALTER TABLE dataset ADD COLUMN authors JSONB;
+ALTER TABLE dataset ADD COLUMN editors JSONB;
+UPDATE dataset set editors = authors_and_editors WHERE authors_and_editors IS NOT NULL;
+ALTER TABLE dataset DROP COLUMN authors_and_editors JSONB;
+
+ALTER TABLE dataset_archive ADD COLUMN authors JSONB;
+ALTER TABLE dataset_archive ADD COLUMN editors JSONB;
+UPDATE dataset_archive set editors = authors_and_editors WHERE authors_and_editors IS NOT NULL;
+ALTER TABLE dataset_archive DROP COLUMN authors_and_editors JSONB;
+
+ALTER TABLE project_source ADD COLUMN authors JSONB;
+ALTER TABLE project_source ADD COLUMN editors JSONB;
+UPDATE project_source set editors = authors_and_editors WHERE authors_and_editors IS NOT NULL;
+ALTER TABLE project_source DROP COLUMN authors_and_editors JSONB;
+
+ALTER TABLE dataset_patch ADD COLUMN authors JSONB;
+ALTER TABLE dataset_patch ADD COLUMN editors JSONB;
+UPDATE dataset_patch set editors = authors_and_editors WHERE authors_and_editors IS NOT NULL;
+ALTER TABLE dataset_patch DROP COLUMN authors_and_editors JSONB;
+
+
+CREATE OR REPLACE FUNCTION dataset_doc_update() RETURNS trigger AS $$
+BEGIN
+    NEW.doc :=
+      setweight(to_tsvector('simple2', coalesce(NEW.alias,'')), 'A') ||
+      setweight(to_tsvector('simple2', coalesce(NEW.title,'')), 'A') ||
+      setweight(to_tsvector('simple2', coalesce(array_to_string(NEW.organisations, '|'), '')), 'B') ||
+      setweight(to_tsvector('simple2', coalesce(NEW.description,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce((NEW.contact->'familyName')::text,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce((NEW.authors->0->'familyName')::text,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce((NEW.editors->0->'familyName')::text,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(NEW.gbif_key::text,'')), 'C');
+    RETURN NEW;
+END
+$$
+LANGUAGE plpgsql;
+```
+
 ### 2020-09-27 require single names index match sine code
 ```
 ALTER TABLE names_index DROP COLUMN code;

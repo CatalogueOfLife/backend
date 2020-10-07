@@ -68,7 +68,7 @@ public class Person {
     }
     if (givenName != null) {
       if (familyName != null) {
-        sb.append(", ");
+        sb.append(" ");
         sb.append(abbreviate(givenName));
       } else {
         sb.append(givenName);
