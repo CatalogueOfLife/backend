@@ -63,7 +63,6 @@ public class StableIdProvider {
   private IntSet resurrected = new IntOpenHashSet();
   private IntSet created = new IntOpenHashSet();
   private IntSet deleted = new IntOpenHashSet();
-  private NameUsageMapper num;
   private IdMapMapper idm;
   private Map<TaxonomicStatus, Integer> statusOrder = Map.of(
     TaxonomicStatus.ACCEPTED, 1,
@@ -116,19 +115,20 @@ public class StableIdProvider {
 
   private void mapIds(){
     AtomicInteger counter = new AtomicInteger();
-    try (SqlSession session = factory.openSession(false)) {
-      idm = session.getMapper(IdMapMapper.class);
-      num = session.getMapper(NameUsageMapper.class);
+    try (SqlSession readSession = factory.openSession(true);
+         SqlSession writeSession = factory.openSession(false)
+    ) {
+      idm = writeSession.getMapper(IdMapMapper.class);
       final int batchSize = 10000;
       Integer lastCanonID = null;
       List<SimpleNameWithNidx> group = new ArrayList<>();
-      for (SimpleNameWithNidx u : num.processNxIds(datasetKey)) {
+      for (SimpleNameWithNidx u : readSession.getMapper(NameUsageMapper.class).processNxIds(datasetKey)) {
         if (lastCanonID != null && !lastCanonID.equals(u.getCanonicalId())) {
           mapCanonicalGroup(group);
           int before = counter.get() / batchSize;
           int after = counter.addAndGet(group.size()) / batchSize;
           if (before != after) {
-            session.commit();
+            writeSession.commit();
           }
           group.clear();
         }
@@ -136,10 +136,10 @@ public class StableIdProvider {
         group.add(u);
       }
       mapCanonicalGroup(group);
-      session.commit();
-      // ids remaining from the current attempt will be deleted
-      deleted = ids.remainingIds(currAttempt);
+      writeSession.commit();
     }
+    // ids remaining from the current attempt will be deleted
+    deleted = ids.remainingIds(currAttempt);
   }
 
   private void mapCanonicalGroup(List<SimpleNameWithNidx> group){
@@ -226,7 +226,7 @@ public class StableIdProvider {
     List<ReleasedId> best = new ArrayList<>();
     for (ReleasedId rid : candidates) {
       DSID<String> key = DSID.of(attempt2dataset.get(rid.attempt), encode(rid.id));
-      SimpleName sn = num.getSimple(key);
+      SimpleName sn = null;
       //TODO: make sure misapplied names never match non misapplied names
       // names index ids are for NAMES only, not for usage related namePhrase & accordingTo !!!
       int score = 0;

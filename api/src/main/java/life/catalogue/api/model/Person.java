@@ -1,12 +1,16 @@
 package life.catalogue.api.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Person {
+  private static Pattern CAMELCASE = Pattern.compile("\\b([A-Z])([a-z]+)\\b");
   private String givenName;
   private String familyName;
   private String email;
@@ -43,7 +47,7 @@ public class Person {
   }
 
   public void setGivenName(String givenName) {
-    this.givenName = givenName;
+    this.givenName = StringUtils.trimToNull(givenName);
   }
 
   public String getFamilyName() {
@@ -51,7 +55,7 @@ public class Person {
   }
 
   public void setFamilyName(String familyName) {
-    this.familyName = familyName;
+    this.familyName = StringUtils.trimToNull(familyName);
   }
 
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -59,16 +63,28 @@ public class Person {
     if (givenName == null && familyName == null) return null;
 
     StringBuilder sb = new StringBuilder();
-    if (givenName != null) {
-      sb.append(givenName);
-    }
     if (familyName != null) {
-      if (givenName != null) {
-        sb.append(" ");
-      }
       sb.append(familyName);
     }
+    if (givenName != null) {
+      if (familyName != null) {
+        sb.append(", ");
+        sb.append(abbreviate(givenName));
+      } else {
+        sb.append(givenName);
+      }
+    }
     return sb.toString();
+  }
+
+  static String abbreviate(String givenName) {
+    if (givenName != null) {
+      Matcher m = CAMELCASE.matcher(givenName);
+      if (m.find()) {
+        givenName = m.replaceAll("$1.");
+      }
+    }
+    return givenName;
   }
 
   public String getEmail() {

@@ -1,14 +1,27 @@
 package life.catalogue.release;
 
 import life.catalogue.api.model.SimpleNameWithNidx;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Random;
 
 import static org.junit.Assert.*;
 
 public class ScoreMatrixTest {
 
+  @Test
+  @Ignore
+  public void aufgaben() {
+    Random rnd = new Random();
+    for (int i=0; i<10; i++) {
+      int x = rnd.nextInt(999);
+      int y = 1 + rnd.nextInt(11);
+      System.out.println(x*y + " / " +y + " = \n\n\n\n\n\n");
+    }
+
+  }
   @Test
   public void testMatrix() {
     List<SimpleNameWithNidx> names = List.of(
