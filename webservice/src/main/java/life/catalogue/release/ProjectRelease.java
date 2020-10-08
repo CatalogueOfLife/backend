@@ -47,17 +47,27 @@ public class ProjectRelease extends AbstractProjectCopy {
     // archive dataset metadata & logos
     updateState(ImportState.ARCHIVING);
     try (SqlSession session = factory.openSession(true)) {
+      final Dataset project = session.getMapper(DatasetMapper.class).get(datasetKey);
       ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
       DatasetPatchMapper dpm = session.getMapper(DatasetPatchMapper.class);
       final AtomicInteger counter = new AtomicInteger(0);
       psm.processDataset(datasetKey).forEach(d -> {
         DatasetMetadata patch = dpm.get(datasetKey, d.getKey());
         if (patch != null) {
-          LOG.debug("Apply dataset patch from project {} to {}: {}", datasetKey, d.getKey(), d.getTitle());
+          LOG.info("Apply dataset patch from project {} to {}: {}", datasetKey, d.getKey(), d.getTitle());
           d.apply(patch);
         }
         d.setDatasetKey(newDatasetKey);
-        LOG.debug("Archive dataset {}: {} for release {}", d.getKey(), d.getTitle(), newDatasetKey);
+        // build an in project citation?
+        if (settings.has(Setting.RELEASE_SOURCE_CITATION_TEMPLATE)) {
+          try {
+            String citation = CitationUtils.fromTemplate(project, d, settings.getString(Setting.RELEASE_SOURCE_CITATION_TEMPLATE));
+            d.setCitation(citation);
+          } catch (IllegalArgumentException e) {
+            LOG.warn("Failed to create citation for source dataset {} of release {}", d.getKey(), newDatasetKey, e);
+          }
+        }
+        LOG.info("Archive dataset {}: {} for release {}", d.getKey(), d.getTitle(), newDatasetKey);
         psm.create(d);
         // archive logos
         try {

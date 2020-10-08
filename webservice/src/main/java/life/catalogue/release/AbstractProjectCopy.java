@@ -33,6 +33,7 @@ public abstract class AbstractProjectCopy implements Runnable {
   protected final int newDatasetKey;
   private final DatasetOrigin newDatasetOrigin;
   protected final boolean mapIds;
+  protected DatasetSettings settings;
 
 
   public AbstractProjectCopy(String actionName, SqlSessionFactory factory, DatasetImportDao diDao, NameUsageIndexService indexService,
@@ -90,6 +91,12 @@ public abstract class AbstractProjectCopy implements Runnable {
         }
       }
 
+      // load settings
+      try (SqlSession session = factory.openSession(true)) {
+        settings = session.getMapper(DatasetMapper.class).getSettings(datasetKey);
+      }
+
+      // call prep
       prepWork();
 
       // copy data

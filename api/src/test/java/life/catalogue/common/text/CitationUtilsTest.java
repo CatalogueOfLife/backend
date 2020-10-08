@@ -65,4 +65,35 @@ public class CitationUtilsTest {
       CitationUtils.buildCitation(d)
     );
   }
+
+  @Test
+  public void buildSourceCitation() throws Exception {
+    Dataset proj = new Dataset();
+    proj.setKey(Datasets.DRAFT_COL);
+    proj.setAlias("COL");
+    proj.setTitle("Species 2000 & ITIS Catalogue of Life");
+    proj.setEditors(people("Yuri", "Roskov", "Geoff", "Ower", "Thomas", "Orrell", "David", "Nicolson"));
+    proj.setReleased(LocalDate.parse("2019-04-21"));
+    proj.setCitation(CitationUtils.buildCitation(proj));
+
+    Dataset d = new Dataset();
+    d.setKey(1010);
+    d.setAlias("fish");
+    d.setTitle("FishBase");
+    d.setVersion("v2.0");
+    d.setEditors(people("Rainer", "Froese", "David", "Pauly"));
+    d.setReleased(LocalDate.parse("2019-07-13"));
+
+    assertEquals("Mama",
+      CitationUtils.fromTemplate(proj, d,"Mama")
+    );
+
+    assertEquals("Mama FishBase",
+      CitationUtils.fromTemplate(proj, d,"Mama {title}")
+    );
+
+    assertEquals("Froese R., Pauly D. (eds.) (2019-04-21). fish: FishBase (version v2.0). In: Roskov Y., Ower G., Orrell T., Nicolson D. (eds.) (2019). Species 2000 & ITIS Catalogue of Life, 2019-04-21.",
+      CitationUtils.fromTemplate(proj, d,"{editorsOrAuthors} ({project.released}). {alias}: {title} (version {version}). In: {project.citation}")
+    );
+  }
 }

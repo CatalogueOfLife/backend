@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
  * produces "Hello Jim! Today is Tuesday"
  */
 public class SimpleTemplate {
-  private final static Pattern ARG_PATTERN = Pattern.compile("\\{([a-zA-Z_0-9]+)(?:,([^}]+))?}");
+  private final static Pattern ARG_PATTERN = Pattern.compile("\\{([a-zA-Z_0-9]+(?:\\.[a-zA-Z_0-9]+)?)(?:,([^}]+))?}");
 
   /**
    *
@@ -119,12 +119,22 @@ public class SimpleTemplate {
     if (prop.equalsIgnoreCase("date")) {
       return temporalValue(LocalDate.now(), format);
     }
+    if (prop.contains(".")) {
+      // nested objects
+      String[] props = prop.split("\\.", 2);
+      Object arg2 = getProperty(props[0], info, arg);
+      return propertyValue(props[1], format, info, arg2);
+    }
+    return str(getProperty(prop, info, arg), format);
+  }
+
+  private static Object getProperty(String prop, BeanInfo info, Object arg) {
     for (PropertyDescriptor pd : info.getPropertyDescriptors()) {
       if (pd.getName().equalsIgnoreCase(prop)) {
         try {
-          return str(pd.getReadMethod().invoke(arg), format);
+          return pd.getReadMethod().invoke(arg);
         } catch (IllegalAccessException | InvocationTargetException e) {
-          return "";
+          return null;
         }
       }
     }

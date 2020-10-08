@@ -1,7 +1,7 @@
 package life.catalogue.common.text;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.annotations.VisibleForTesting;
+import life.catalogue.api.model.ArchivedDataset;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.Person;
@@ -13,53 +13,19 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class CitationUtils {
 
+  static class DatasetWrapper {
+    final ArchivedDataset d;
 
-  static class EnhancedDataset {
-    final Dataset d;
-
-    public EnhancedDataset(Dataset dataset) {
+    public DatasetWrapper(ArchivedDataset dataset) {
       d = dataset;
-    }
-
-    public UUID getGbifKey() {
-      return d.getGbifKey();
-    }
-
-    public UUID getGbifPublisherKey() {
-      return d.getGbifPublisherKey();
-    }
-
-    public boolean isPrivat() {
-      return d.isPrivat();
-    }
-
-    public LocalDateTime getImported() {
-      return d.getImported();
-    }
-
-    public LocalDateTime getDeleted() {
-      return d.getDeleted();
     }
 
     public Integer getKey() {
       return d.getKey();
-    }
-
-    public DatasetType getType() {
-      return d.getType();
-    }
-
-    public Integer getSourceKey() {
-      return d.getSourceKey();
-    }
-
-    public Integer getImportAttempt() {
-      return d.getImportAttempt();
     }
 
     public String getTitle() {
@@ -68,6 +34,14 @@ public class CitationUtils {
 
     public String getDescription() {
       return d.getDescription();
+    }
+
+    public String getEditorsOrAuthors() {
+      if (d.getEditors() != null && !d.getEditors().isEmpty()) {
+        return getEditors();
+      } else {
+        return getAuthors();
+      }
     }
 
     public String getAuthors() {
@@ -118,11 +92,6 @@ public class CitationUtils {
       return d.getWebsite();
     }
 
-    @JsonIgnore
-    public String getAliasOrTitle() {
-      return d.getAliasOrTitle();
-    }
-
     public String getAlias() {
       return d.getAlias();
     }
@@ -139,12 +108,41 @@ public class CitationUtils {
       return d.getCompleteness();
     }
 
+    public DatasetType getType() {
+      return d.getType();
+    }
+
+    public Integer getSourceKey() {
+      return d.getSourceKey();
+    }
+
+    public Integer getImportAttempt() {
+      return d.getImportAttempt();
+    }
+
+    public String getAliasOrTitle() {
+      return d.getAliasOrTitle();
+    }
+
     public LocalDateTime getCreated() {
       return d.getCreated();
     }
 
     public LocalDateTime getModified() {
       return d.getModified();
+    }
+  }
+
+  static class ProjectWrapper extends DatasetWrapper {
+    final DatasetWrapper project;
+
+    public ProjectWrapper(ArchivedDataset dataset, ArchivedDataset project) {
+      super(dataset);
+      this.project = new DatasetWrapper(project);
+    }
+
+    public DatasetWrapper getProject() {
+      return project;
     }
   }
 
@@ -158,7 +156,14 @@ public class CitationUtils {
 
   public static String fromTemplate(Dataset d, String template){
     if (template != null) {
-      return SimpleTemplate.render(template, new EnhancedDataset(d));
+      return SimpleTemplate.render(template, new DatasetWrapper(d));
+    }
+    return null;
+  }
+
+  public static String fromTemplate(ArchivedDataset project, ArchivedDataset d, String template){
+    if (template != null) {
+      return SimpleTemplate.render(template, new ProjectWrapper(d, project));
     }
     return null;
   }
@@ -210,7 +215,7 @@ public class CitationUtils {
       .append(d.getTitle())
       .append(", ")
       .append(d.getReleased().toString())
-      .append(". Digital resource at www.catalogueoflife.org/col. Species 2000: Naturalis, Leiden, the Netherlands. ISSN 2405-8858.");
+      .append(".");
     return sb.toString();
   }
 }

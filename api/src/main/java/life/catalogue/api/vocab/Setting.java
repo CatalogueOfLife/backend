@@ -74,6 +74,14 @@ public enum Setting {
    */
   RELEASE_CITATION_TEMPLATE(String.class, MANAGED),
 
+  /**
+   * Template used to build a new citation for each source dataset in a release.
+   * See RELEASE_TITLE_TEMPLATE for usage.
+   * In addition to the regular dataset properties there is also a project variable available that
+   * offers access to the parent projects dataset metadata.
+   */
+  RELEASE_SOURCE_CITATION_TEMPLATE(String.class, MANAGED),
+
   DATA_FORMAT(DataFormat.class, EXTERNAL, MANAGED),
 
   /**
