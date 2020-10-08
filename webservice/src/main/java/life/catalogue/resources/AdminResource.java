@@ -223,9 +223,8 @@ public class AdminResource {
   }
 
   @POST
-  @Path("sector-count-update")
+  @Path("dataset-person-update")
   public BackgroundJob updateDatasetPersons(@QueryParam("datasetKey") Integer datasetKey, @Auth User user) {
-    Preconditions.checkArgument(datasetKey != null, "A datasetKey parameter must be given");
     return runJob(new DatasetPersonParserJob(user, factory, datasetKey));
   }
 
