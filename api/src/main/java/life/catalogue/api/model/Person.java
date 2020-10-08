@@ -14,8 +14,8 @@ public class Person {
   private static final Pattern CAMELCASE = Pattern.compile("\\b([A-Z])([a-z]+)\\b");
 
   private static final String GIVEN_NAME = "((?:\\p{Lu}\\p{Ll}+){1,3})";
-  private static final String PARTICLES = "(?:al|d[aeiou]?|de[nrmls]?|e|l[ae]s?|ter|'?t|v|v[ao]n|zu[rm]?|y)";
-  private static final String FAMILY_NAME = "((?:" + PARTICLES + "\\s+){0,2}\\p{Lu}\\p{Ll}\\p{L}*(?:[ -]+\\p{Lu}\\p{Ll}+)?)";
+  private static final String PARTICLES = "(?:al|d[aeiou]?|de[nrmls]?|e|l[ae]s?|[oO]|ter|'?t|v|v[ao]n|zu[rm]?|y)";
+  private static final String FAMILY_NAME = "((?:" + PARTICLES + "(?:\\s+|\\s*['´`’]\\s*)){0,2}\\p{Lu}\\p{Ll}\\p{L}*(?:[ -]+\\p{Lu}\\p{Ll}+)?)";
   private static final String INITIALS = "(\\p{Lu}{1,2}(?:[. ]+\\p{Lu}){0,2}\\.?)";
   private static final Pattern FULLNAME = Pattern.compile("^\\s*" + GIVEN_NAME + "\\s+" + FAMILY_NAME + "\\s*$");
   private static final Pattern FULLNAME_REVERSE = Pattern.compile("^\\s*" + FAMILY_NAME + "\\s*,\\s*" + GIVEN_NAME + "\\s*$");
@@ -144,7 +144,11 @@ public class Person {
 
   static String abbreviate(String givenName) {
     if (givenName != null) {
-      Matcher m = CAMELCASE.matcher(givenName);
+      Matcher m = BRACKET_SUFFIX.matcher(givenName);
+      if (m.find()) {
+        givenName = m.group(1).trim();
+      }
+      m = CAMELCASE.matcher(givenName);
       if (m.find()) {
         givenName = m.replaceAll("$1.");
       }
