@@ -19,12 +19,12 @@ public class PersonTypeHandler extends CustomAbstractTypeHandler<Person> {
   }
 
   @Override
-  public String[] toRow(Person obj) throws SQLException {
+  public String[] toAttributes(Person obj) throws SQLException {
     return new String[]{obj.getGivenName(), obj.getFamilyName(), obj.getEmail(), obj.getOrcid()};
   }
 
   @Override
-  public Person fromRow(List<String> cols) throws SQLException {
+  public Person fromAttributes(List<String> cols) throws SQLException {
     if (cols.size() == 4) {
       return new Person(cols.get(0), cols.get(1), cols.get(2), cols.get(3));
     } else {

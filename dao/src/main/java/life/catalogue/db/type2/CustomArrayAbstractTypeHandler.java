@@ -38,7 +38,7 @@ public abstract class CustomArrayAbstractTypeHandler<T> extends BaseTypeHandler<
     Object[] pgParams = new Object[parameter.size()];
     int x = 0;
     for (T p : parameter) {
-      String[] cols = toRow(p);
+      String[] cols = toAttributes(p);
       pgParams[x] = CustomAbstractTypeHandler.buildPgObject(typeName, cols);
       x++;
     }
@@ -61,16 +61,16 @@ public abstract class CustomArrayAbstractTypeHandler<T> extends BaseTypeHandler<
     return toObj(cs.getArray(columnIndex));
   }
 
-  public abstract String[] toRow(T obj) throws SQLException;
+  public abstract String[] toAttributes(T obj) throws SQLException;
 
-  public abstract T fromRow(List<String> cols) throws SQLException;
+  public abstract T fromAttributes(List<String> cols) throws SQLException;
 
   public List<T> toObj(Array pgArray) throws SQLException {
     List<T> result = new ArrayList<>();
     if (pgArray != null) {
       Object[] objs = (Object[]) pgArray.getArray();
       for (Object o : objs) {
-        result.add(fromRow(CustomAbstractTypeHandler.toCols(o)));
+        result.add(fromAttributes(CustomAbstractTypeHandler.toCols(o)));
       }
     }
     return result;

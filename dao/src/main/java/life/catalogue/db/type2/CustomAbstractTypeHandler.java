@@ -28,7 +28,7 @@ public abstract class CustomAbstractTypeHandler<T> extends BaseTypeHandler<T> {
   
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType) throws SQLException {
-    String[] cols = toRow(parameter);
+    String[] cols = toAttributes(parameter);
     ps.setObject(i, buildPgObject(typeName, cols));
   }
 
@@ -54,22 +54,22 @@ public abstract class CustomAbstractTypeHandler<T> extends BaseTypeHandler<T> {
 
   @Override
   public T getNullableResult(ResultSet rs, String columnName) throws SQLException {
-    return fromRow(rs.getObject(columnName));
+    return fromObject(rs.getObject(columnName));
   }
   
   @Override
   public T getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
-    return fromRow(rs.getObject(columnIndex));
+    return fromObject(rs.getObject(columnIndex));
   }
   
   @Override
   public T getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
-    return fromRow(cs.getObject(columnIndex));
+    return fromObject(cs.getObject(columnIndex));
   }
 
-  T fromRow(Object obj) throws SQLException {
+  T fromObject(Object obj) throws SQLException {
     if (obj == null) return null;
-    return fromRow(toCols(obj));
+    return fromAttributes(toCols(obj));
   }
 
   static List<String> toCols(Object obj) throws SQLException {
@@ -79,8 +79,8 @@ public abstract class CustomAbstractTypeHandler<T> extends BaseTypeHandler<T> {
     return CSVUtils.parseLine(row.substring(1, row.length()-1));
   }
 
-  public abstract String[] toRow(T obj) throws SQLException;
+  public abstract String[] toAttributes(T obj) throws SQLException;
 
-  public abstract T fromRow(List<String> cols) throws SQLException;
+  public abstract T fromAttributes(List<String> cols) throws SQLException;
 
 }
