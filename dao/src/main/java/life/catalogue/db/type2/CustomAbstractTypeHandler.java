@@ -18,11 +18,11 @@ import java.util.stream.Collectors;
  * A generic mybatis type handler that translates an object to a postgres custom type.
  */
 @MappedJdbcTypes(JdbcType.OTHER)
-public abstract class CustomTypeAbstractHandler<T> extends BaseTypeHandler<T> {
+public abstract class CustomAbstractTypeHandler<T> extends BaseTypeHandler<T> {
 
   private final String typeName;
 
-  public CustomTypeAbstractHandler(String typeName) {
+  public CustomAbstractTypeHandler(String typeName) {
     this.typeName = typeName;
   }
   
@@ -36,7 +36,7 @@ public abstract class CustomTypeAbstractHandler<T> extends BaseTypeHandler<T> {
     PGobject pgObject = new PGobject();
     pgObject.setType(typeName);
     String value = Arrays.stream(cols)
-      .map(CustomTypeAbstractHandler::pgEscape)
+      .map(CustomAbstractTypeHandler::pgEscape)
       .collect(Collectors.joining(","));
     // (k6,KINGDOM,,"Murmica maximus")
     pgObject.setValue("(" + value + ")");

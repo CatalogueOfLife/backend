@@ -1,7 +1,7 @@
 package life.catalogue.db.type;
 
 import life.catalogue.api.model.Person;
-import life.catalogue.db.type2.CustomTypeArrayAbstractHandler;
+import life.catalogue.db.type2.CustomArrayAbstractTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedJdbcTypes;
 import org.apache.ibatis.type.MappedTypes;
@@ -12,7 +12,7 @@ import java.util.List;
 
 @MappedTypes(Person.class)
 @MappedJdbcTypes(JdbcType.OTHER)
-public class PersonArrayTypeHandler extends CustomTypeArrayAbstractHandler<Person> {
+public class PersonArrayTypeHandler extends CustomArrayAbstractTypeHandler<Person> {
 
   public PersonArrayTypeHandler() {
     super("person");

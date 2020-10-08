@@ -23,13 +23,13 @@ import java.util.List;
  * Stores objects as arrays in postgres.
  * An optional nullValue parameter can be given to avoid nulls in the db and e.g. use empty arrray instead.
  */
-public abstract class CustomTypeArrayAbstractHandler<T> extends BaseTypeHandler<List<T>> {
+public abstract class CustomArrayAbstractTypeHandler<T> extends BaseTypeHandler<List<T>> {
   protected final String typeName;
 
   /**
    * @param typeName type name of the arrays custom name
    */
-  public CustomTypeArrayAbstractHandler(String typeName) {
+  public CustomArrayAbstractTypeHandler(String typeName) {
     this.typeName = typeName;
   }
   
@@ -39,7 +39,7 @@ public abstract class CustomTypeArrayAbstractHandler<T> extends BaseTypeHandler<
     int x = 0;
     for (T p : parameter) {
       String[] cols = toRow(p);
-      pgParams[x] = CustomTypeAbstractHandler.buildPgObject(typeName, cols);
+      pgParams[x] = CustomAbstractTypeHandler.buildPgObject(typeName, cols);
       x++;
     }
     Array array = ps.getConnection().createArrayOf(typeName, pgParams);
@@ -70,7 +70,7 @@ public abstract class CustomTypeArrayAbstractHandler<T> extends BaseTypeHandler<
     if (pgArray != null) {
       Object[] objs = (Object[]) pgArray.getArray();
       for (Object o : objs) {
-        result.add(fromRow(CustomTypeAbstractHandler.toCols(o)));
+        result.add(fromRow(CustomAbstractTypeHandler.toCols(o)));
       }
     }
     return result;
