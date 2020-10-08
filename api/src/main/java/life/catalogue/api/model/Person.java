@@ -1,6 +1,7 @@
 package life.catalogue.api.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import life.catalogue.common.util.RegexUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -10,16 +11,72 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Person {
-  private static Pattern CAMELCASE = Pattern.compile("\\b([A-Z])([a-z]+)\\b");
+  private static final Pattern CAMELCASE = Pattern.compile("\\b([A-Z])([a-z]+)\\b");
+
+  private static final String GIVEN_NAME = "((?:\\p{Lu}\\p{Ll}+){1,3})";
+  private static final String PARTICLES = "(?:al|d[aeiou]?|de[nrmls]?|e|l[ae]s?|ter|'?t|v|v[ao]n|zu[rm]?|y)";
+  private static final String FAMILY_NAME = "((?:" + PARTICLES + "\\s+){0,2}\\p{Lu}\\p{Ll}\\p{L}*(?:[ -]+\\p{Lu}\\p{Ll}+)?)";
+  private static final String INITIALS = "(\\p{Lu}{1,2}(?:[. ]+\\p{Lu}){0,2}\\.?)";
+  private static final Pattern FULLNAME = Pattern.compile("^\\s*" + GIVEN_NAME + "\\s+" + FAMILY_NAME + "\\s*$");
+  private static final Pattern FULLNAME_REVERSE = Pattern.compile("^\\s*" + FAMILY_NAME + "\\s*,\\s*" + GIVEN_NAME + "\\s*$");
+  private static final Pattern SHORTNAME = Pattern.compile("^\\s*" + INITIALS + "\\s+" + FAMILY_NAME + "\\s*$");
+  private static final Pattern SHORTNAME_REVERSE = Pattern.compile("^\\s*" + FAMILY_NAME+"(?:\\s+|\\s*,\\s*)" + INITIALS +"\\s*$");
+  private static final Pattern BRACKET_SUFFIX = Pattern.compile("^(.+)(\\(.+\\)\\.?)\\s*$");
   private String givenName;
   private String familyName;
   private String email;
   private String orcid;
 
-  public static Person parse(String name) {
-    if (name == null) return null;
+  public static Person parse(final String originalName) {
+    if (originalName == null) return null;
     Person p = new Person();
-    p.setFamilyName(name);
+    // see if we have brackets at the end, often for roles
+    String brackets = null;
+    String name = originalName;
+    Matcher m = BRACKET_SUFFIX.matcher(name);
+    if (m.find()) {
+      name = m.group(1);
+      brackets = m.group(2);
+    }
+
+    // try with 4 distinct & common patterns
+    m = FULLNAME.matcher(name);
+    if (m.find()) {
+      p.setGivenName(m.group(1));
+      p.setFamilyName(m.group(2));
+    } else {
+
+      m = FULLNAME_REVERSE.matcher(name);
+      if (m.find()) {
+        p.setFamilyName(m.group(1));
+        p.setGivenName(m.group(2));
+      } else {
+
+        m = SHORTNAME.matcher(name);
+        if (m.find()) {
+          p.setGivenName(m.group(1));
+          p.setFamilyName(m.group(2));
+        } else {
+
+          m = SHORTNAME_REVERSE.matcher(name);
+          if (m.find()) {
+            RegexUtils.log(m);
+            p.setFamilyName(m.group(1));
+            p.setGivenName(m.group(2));
+          } else {
+            // no luck
+            p.setFamilyName(name);
+          }
+        }
+      }
+    }
+    if (brackets != null) {
+      if (p.getGivenName() == null) {
+        p.setGivenName(brackets);
+      } else {
+        p.setGivenName(p.getGivenName() + " " + brackets);
+      }
+    }
     return p;
   }
 

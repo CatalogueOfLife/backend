@@ -15,23 +15,23 @@ and done it manually. So we can as well log changes here.
 ALTER TABLE dataset RENAME COLUMN editors TO access_control;
 ALTER TABLE dataset ADD COLUMN authors JSONB;
 ALTER TABLE dataset ADD COLUMN editors JSONB;
-UPDATE dataset set editors = authors_and_editors WHERE authors_and_editors IS NOT NULL;
-ALTER TABLE dataset DROP COLUMN authors_and_editors JSONB;
+UPDATE dataset set authors = authors_and_editors WHERE authors_and_editors IS NOT NULL;
+ALTER TABLE dataset DROP COLUMN authors_and_editors;
 
 ALTER TABLE dataset_archive ADD COLUMN authors JSONB;
 ALTER TABLE dataset_archive ADD COLUMN editors JSONB;
-UPDATE dataset_archive set editors = authors_and_editors WHERE authors_and_editors IS NOT NULL;
-ALTER TABLE dataset_archive DROP COLUMN authors_and_editors JSONB;
+UPDATE dataset_archive set authors = authors_and_editors WHERE authors_and_editors IS NOT NULL;
+ALTER TABLE dataset_archive DROP COLUMN authors_and_editors;
 
 ALTER TABLE project_source ADD COLUMN authors JSONB;
 ALTER TABLE project_source ADD COLUMN editors JSONB;
-UPDATE project_source set editors = authors_and_editors WHERE authors_and_editors IS NOT NULL;
-ALTER TABLE project_source DROP COLUMN authors_and_editors JSONB;
+UPDATE project_source set authors = authors_and_editors WHERE authors_and_editors IS NOT NULL;
+ALTER TABLE project_source DROP COLUMN authors_and_editors;
 
 ALTER TABLE dataset_patch ADD COLUMN authors JSONB;
 ALTER TABLE dataset_patch ADD COLUMN editors JSONB;
-UPDATE dataset_patch set editors = authors_and_editors WHERE authors_and_editors IS NOT NULL;
-ALTER TABLE dataset_patch DROP COLUMN authors_and_editors JSONB;
+UPDATE dataset_patch set authors = authors_and_editors WHERE authors_and_editors IS NOT NULL;
+ALTER TABLE dataset_patch DROP COLUMN authors_and_editors;
 
 
 CREATE OR REPLACE FUNCTION dataset_doc_update() RETURNS trigger AS $$

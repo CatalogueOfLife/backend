@@ -14,7 +14,7 @@ CREATE OR REPLACE FUNCTION f_unaccent(text)
   RETURNS text AS
 $func$
 SELECT public.unaccent('public.unaccent', $1)  -- schema-qualify function and dictionary
-$func$  LANGUAGE sql IMMUTABLE;
+$func$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
 
 
 -- all enum types produces via PgSetupRuleTest.pgEnumSql()
@@ -1155,21 +1155,21 @@ CREATE FUNCTION plaziGbifKey() RETURNS UUID AS $$
   SELECT '7ce8aef0-9e92-11dc-8738-b8a03c50a862'::uuid
 $$
 LANGUAGE SQL
-IMMUTABLE;
+IMMUTABLE PARALLEL SAFE;
 
 -- botanical subgeneric ranks that are placed above genus level in zoology
 CREATE FUNCTION ambiguousRanks() RETURNS rank[] AS $$
   SELECT ARRAY['SUPERSECTION','SECTION','SUBSECTION','SUPERSERIES','SERIES','SUBSERIES','OTHER','UNRANKED']::rank[]
 $$
 LANGUAGE SQL
-IMMUTABLE;
+IMMUTABLE PARALLEL SAFE;
 
 -- replaces whitespace including tabs, carriage returns and new lines with a single space
 CREATE FUNCTION repl_ws(x text) RETURNS TEXT AS $$
   SELECT regexp_replace(x, '\s', ' ', 'g' )
 $$
 LANGUAGE SQL
-IMMUTABLE;
+IMMUTABLE PARALLEL SAFE;
 
 -- tries to gracely convert text to ints, swallowing exceptions and using null instead
 CREATE OR REPLACE FUNCTION parseInt(v_value text) RETURNS INTEGER AS $$
@@ -1211,7 +1211,7 @@ BEGIN
     END IF;
     RETURN a;
 END;
-$$ IMMUTABLE LANGUAGE 'plpgsql';
+$$ IMMUTABLE PARALLEL SAFE LANGUAGE 'plpgsql';
 
 CREATE OR REPLACE FUNCTION array_agg_nonull (
     a anyarray
@@ -1224,7 +1224,7 @@ BEGIN
     END IF;
     RETURN a;
 END;
-$$ IMMUTABLE LANGUAGE 'plpgsql';
+$$ IMMUTABLE PARALLEL SAFE LANGUAGE 'plpgsql';
 
 CREATE AGGREGATE array_agg_nonull(ANYNONARRAY) (
     SFUNC = array_agg_nonull,
@@ -1245,7 +1245,7 @@ SELECT ARRAY(
     FROM generate_subscripts($1,1) AS s(i)
     ORDER BY i DESC
 );
-$$ LANGUAGE 'sql' STRICT IMMUTABLE;
+$$ LANGUAGE 'sql' STRICT IMMUTABLE PARALLEL SAFE;
 
 
 -- return all parent names as an array

@@ -1,6 +1,7 @@
-package life.catalogue.admin;
+package life.catalogue.admin.jobs;
 
 import life.catalogue.WsServerConfig;
+import life.catalogue.admin.jobs.MetricsUpdater;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;

@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.lifecycle.Managed;
 import life.catalogue.WsServerConfig;
-import life.catalogue.admin.MetricsUpdater;
+import life.catalogue.admin.jobs.MetricsUpdater;
 import life.catalogue.admin.jobs.IndexJob;
 import life.catalogue.admin.jobs.ReimportJob;
 import life.catalogue.admin.jobs.SectorCountJob;

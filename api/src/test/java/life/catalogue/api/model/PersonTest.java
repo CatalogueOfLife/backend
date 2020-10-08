@@ -2,7 +2,8 @@ package life.catalogue.api.model;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class PersonTest {
 
@@ -34,6 +35,21 @@ public class PersonTest {
     p = new Person("Simone", "de Beauvoir");
     assertEquals("de Beauvoir S.", p.getName());
 
+  }
+
+  @Test
+  public void parse() {
+    assertNull(Person.parse((String)null));
+    assertEquals(new Person("K. (eds).", "Fauchald"), Person.parse("Fauchald K. (eds)."));
+    assertEquals(new Person("R.", "DeSalle"), Person.parse("DeSalle R."));
+    assertEquals(new Person(null, "Markus"), Person.parse("Markus"));
+    assertEquals(new Person("Markus", "Döring"), Person.parse("Markus Döring"));
+    assertEquals(new Person("M.", "Döring"), Person.parse("Döring M."));
+    assertEquals(new Person("Markus", "de la Orca"), Person.parse("Markus de la Orca"));
+    assertEquals(new Person("A.S.", "Kroupa"), Person.parse("Kroupa A.S."));
+    assertEquals(new Person("U.", "Neu-Becker"), Person.parse("Neu-Becker U."));
+    assertEquals(new Person("F. (data managers)", "Zinetti"), Person.parse("Zinetti F. (data managers)"));
+    assertEquals(new Person(null, "data managers are great people"), Person.parse("data managers are great people"));
   }
 
   @Test

@@ -1,11 +1,11 @@
-package life.catalogue.admin;
+package life.catalogue.admin.jobs;
 
 import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import static life.catalogue.admin.MetricsUpdater.SectorAttempt;
+import static life.catalogue.admin.jobs.MetricsUpdater.SectorAttempt;
 import static org.junit.Assert.assertEquals;
 
 public class MetricsUpdaterTest {
