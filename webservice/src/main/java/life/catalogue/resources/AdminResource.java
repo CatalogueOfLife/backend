@@ -4,11 +4,7 @@ import com.google.common.base.Preconditions;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.lifecycle.Managed;
 import life.catalogue.WsServerConfig;
-import life.catalogue.admin.jobs.MetricsUpdater;
-import life.catalogue.admin.jobs.IndexJob;
-import life.catalogue.admin.jobs.ReimportJob;
-import life.catalogue.admin.jobs.SectorCountJob;
-import life.catalogue.admin.jobs.UsageCountJob;
+import life.catalogue.admin.jobs.*;
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
 import life.catalogue.assembly.AssemblyCoordinator;
@@ -226,9 +222,11 @@ public class AdminResource {
     return runJob(new ReimportJob(user, factory, importManager, cfg));
   }
 
-  private BackgroundJob runJob(BackgroundJob job){
-    exec.submit(job);
-    return job;
+  @POST
+  @Path("sector-count-update")
+  public BackgroundJob updateDatasetPersons(@QueryParam("datasetKey") Integer datasetKey, @Auth User user) {
+    Preconditions.checkArgument(datasetKey != null, "A datasetKey parameter must be given");
+    return runJob(new DatasetPersonParserJob(user, factory, datasetKey));
   }
 
   @POST
@@ -236,5 +234,11 @@ public class AdminResource {
   public BackgroundJob updateAllSectorCounts(@QueryParam("datasetKey") Integer datasetKey, @Auth User user) {
     Preconditions.checkArgument(datasetKey != null, "A datasetKey parameter must be given");
     return runJob(new SectorCountJob(user.getKey(), factory, indexService, datasetKey));
+  }
+
+
+  private BackgroundJob runJob(BackgroundJob job){
+    exec.submit(job);
+    return job;
   }
 }
