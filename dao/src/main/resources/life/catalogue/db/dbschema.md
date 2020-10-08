@@ -33,6 +33,11 @@ ALTER TABLE dataset_patch ADD COLUMN editors JSONB;
 UPDATE dataset_patch set authors = authors_and_editors WHERE authors_and_editors IS NOT NULL;
 ALTER TABLE dataset_patch DROP COLUMN authors_and_editors;
 
+ALTER TABLE dataset_patch ADD COLUMN contact2 JSONB;
+UPDATE dataset_patch SET contact2 = json_build_object('familyName',contact) WHERE contact IS NOT NULL;
+ALTER TABLE dataset_patch DROP COLUMN contact;
+ALTER TABLE dataset_patch RENAME COLUMN contact2 TO contact;
+
 
 CREATE OR REPLACE FUNCTION dataset_doc_update() RETURNS trigger AS $$
 BEGIN

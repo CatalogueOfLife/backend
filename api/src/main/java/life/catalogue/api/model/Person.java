@@ -22,6 +22,7 @@ public class Person {
   private static final Pattern SHORTNAME = Pattern.compile("^\\s*" + INITIALS + "\\s+" + FAMILY_NAME + "\\s*$");
   private static final Pattern SHORTNAME_REVERSE = Pattern.compile("^\\s*" + FAMILY_NAME+"(?:\\s+|\\s*,\\s*)" + INITIALS +"\\s*$");
   private static final Pattern BRACKET_SUFFIX = Pattern.compile("^(.+)(\\(.+\\)\\.?)\\s*$");
+  private static final Pattern EMAIL = Pattern.compile("<?\\s*\\b([A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,})\\s*>?", Pattern.CASE_INSENSITIVE);
   private String givenName;
   private String familyName;
   private String email;
@@ -37,6 +38,13 @@ public class Person {
     if (m.find()) {
       name = m.group(1);
       brackets = m.group(2);
+    }
+
+    // email?
+    m = EMAIL.matcher(name);
+    if (m.find()) {
+      name = m.replaceFirst("");
+      p.setEmail(m.group(1));
     }
 
     // try with 4 distinct & common patterns

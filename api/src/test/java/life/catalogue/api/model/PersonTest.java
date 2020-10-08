@@ -40,6 +40,8 @@ public class PersonTest {
   @Test
   public void parse() {
     assertNull(Person.parse((String)null));
+    assertEquals(new Person("Markus", "Döring", "markus@mailinator.com", null), Person.parse("Markus Döring <markus@mailinator.com>"));
+    assertEquals(new Person(null, "Döring", "m.doering@mailinator.com", null), Person.parse("Döring<m.doering@mailinator.com>"));
     assertEquals(new Person("K. (eds).", "Fauchald"), Person.parse("Fauchald K. (eds)."));
     assertEquals(new Person("R.", "DeSalle"), Person.parse("DeSalle R."));
     assertEquals(new Person(null, "Markus"), Person.parse("Markus"));
