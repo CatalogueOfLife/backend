@@ -31,7 +31,7 @@ SELECT DISTINCT ON (d.key)
  d.title AS database_full_name,
  d.website AS web_site,
  array_to_string(d.organisations, '; ') AS organization,
- coalesce((d.contact->'givenName')::text || ' ', '') || (d.contact->'familyName')::text AS contact_person,
+ coalesce((d.contact).given || ' ', '') || (d.contact).family AS contact_person,
  d.group AS taxa,
  cov.coverage AS taxonomic_coverage,
  repl_ws(d.description) AS abstract,
@@ -40,8 +40,8 @@ SELECT DISTINCT ON (d.key)
  coalesce((i.taxa_by_rank_count -> 'SPECIES')::int, 0) AS SpeciesCount,
  NULL AS SpeciesEst,
  (
-   SELECT string_agg(coalesce((ae->>'givenName')::text || ' ', '') || (ae->>'familyName')::text, '; ') AS authors_editors
-   FROM jsonb_array_elements(coalesce(d.editors, d.authors)) as ae
+   SELECT string_agg((ae).family || coalesce((ae).given || ' ', ''), ', ') AS authors_editors
+   FROM unnest(d.editors || d.authors) as ae
  ),
  NULL AS accepted_species_names,
  NULL AS accepted_infraspecies_names,
