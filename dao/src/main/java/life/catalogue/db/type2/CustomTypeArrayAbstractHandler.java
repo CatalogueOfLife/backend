@@ -39,7 +39,7 @@ public abstract class CustomTypeArrayAbstractHandler<T> extends BaseTypeHandler<
     int x = 0;
     for (T p : parameter) {
       String[] cols = toRow(p);
-      pgParams[x] = CustomTypeAbstractHandler.build(typeName, cols);
+      pgParams[x] = CustomTypeAbstractHandler.buildPgObject(typeName, cols);
       x++;
     }
     Array array = ps.getConnection().createArrayOf(typeName, pgParams);

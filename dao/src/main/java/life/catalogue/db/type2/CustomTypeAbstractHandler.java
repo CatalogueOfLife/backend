@@ -6,8 +6,13 @@ import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedJdbcTypes;
 import org.postgresql.util.PGobject;
 
-import java.sql.*;
+import java.sql.CallableStatement;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A generic mybatis type handler that translates an object to a postgres custom type.
@@ -24,31 +29,27 @@ public abstract class CustomTypeAbstractHandler<T> extends BaseTypeHandler<T> {
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType) throws SQLException {
     String[] cols = toRow(parameter);
-    ps.setObject(i, build(typeName, cols));
+    ps.setObject(i, buildPgObject(typeName, cols));
   }
 
-  static PGobject build(String typeName, String[] cols) throws SQLException {
-    // (k6,KINGDOM,"Murmica maximus")
-    StringBuilder sb = new StringBuilder();
-    sb.append("(");
-    boolean first = true;
-    for (String col : cols){
-      if (first) {
-        first=false;
-      } else {
-        sb.append(",");
-      }
-      if (col != null) {
-        sb.append("\"");
-        sb.append(col.replaceAll("\"", "\"\""));
-        sb.append("\"");
-      }
-    }
-    sb.append(")");
+  static PGobject buildPgObject(String typeName, String[] cols) throws SQLException {
     PGobject pgObject = new PGobject();
     pgObject.setType(typeName);
-    pgObject.setValue(sb.toString());
+    String value = Arrays.stream(cols)
+      .map(CustomTypeAbstractHandler::pgEscape)
+      .collect(Collectors.joining(","));
+    // (k6,KINGDOM,,"Murmica maximus")
+    pgObject.setValue("(" + value + ")");
     return pgObject;
+  }
+
+  /**
+   * Quotes all values to not worry about commas.
+   * Escapes quotes by doubling them.
+   * NULLs become empty strings.
+   */
+  static String pgEscape(String x) {
+    return x == null ? "" : '"' + x.replaceAll("\"", "\"\"") + '"';
   }
 
   @Override
@@ -73,8 +74,7 @@ public abstract class CustomTypeAbstractHandler<T> extends BaseTypeHandler<T> {
 
   static List<String> toCols(Object obj) throws SQLException {
     if (obj==null) return null;
-    // (k6,KINGDOM,Plantae)
-    // (Hans,Peter,,)
+    // (k6,KINGDOM,,"Murmica maximus")
     String row = obj.toString();
     return CSVUtils.parseLine(row.substring(1, row.length()-1));
   }
