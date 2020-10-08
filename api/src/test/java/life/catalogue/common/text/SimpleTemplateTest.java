@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,5 +53,16 @@ public class SimpleTemplateTest {
     sdf = new SimpleDateFormat("yy.M");
     assertEquals("20.5", sdf.format(new Date(2020, 04, 21)));
     assertEquals(sdf.format(new Date()), SimpleTemplate.render("{date,yy.M}", d));
+  }
+
+  @Test
+  public void renderSpecialDay() {
+    LocalDateTime d = LocalDateTime.of(2020, 6, 21,1,1);
+    Map data = Map.of("d", d);
+    assertEquals("21st", SimpleTemplate.render("{d,ddd}", data));
+    assertEquals("21st June", SimpleTemplate.render("{d,ddd MMMM}", data));
+    assertEquals("21 June", SimpleTemplate.render("{d,dd MMMM}", data));
+    assertEquals("21st June 2020", SimpleTemplate.render("{d,ddd MMMM yyyy}", data));
+    assertEquals("20.6", SimpleTemplate.render("{d,yy.M}", data));
   }
 }

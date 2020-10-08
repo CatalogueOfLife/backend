@@ -1,11 +1,13 @@
 package life.catalogue.release;
 
-import com.google.common.annotations.VisibleForTesting;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetMetadata;
+import life.catalogue.api.model.DatasetSettings;
+import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
-import life.catalogue.common.text.SimpleTemplate;
+import life.catalogue.common.text.CitationUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPatchMapper;
@@ -19,8 +21,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProjectRelease extends AbstractProjectCopy {
@@ -111,67 +111,24 @@ public class ProjectRelease extends AbstractProjectCopy {
     }
   }
 
-  static String procTemplate(Dataset d, DatasetSettings ds, Setting setting, String defaultTemplate){
-    String tmpl = defaultTemplate;
-    if (ds.has(setting)) {
-      tmpl = ds.getString(setting);
-    }
-    if (tmpl != null) {
-      return SimpleTemplate.render(tmpl, d);
-    }
-    return null;
-  }
-
   public static void releaseDataset(Dataset d, DatasetSettings ds) {
     d.setOrigin(DatasetOrigin.RELEASED);
     final LocalDate today = LocalDate.now();
     d.setReleased(today);
     d.setVersion(today.toString());
 
-    String alias = procTemplate(d, ds, Setting.RELEASE_ALIAS_TEMPLATE, DEFAULT_ALIAS_TEMPLATE);
+    String alias = CitationUtils.fromTemplate(d, ds, Setting.RELEASE_ALIAS_TEMPLATE, DEFAULT_ALIAS_TEMPLATE);
     d.setAlias(alias);
 
-    String title = procTemplate(d, ds, Setting.RELEASE_TITLE_TEMPLATE, DEFAULT_TITLE_TEMPLATE);
+    String title = CitationUtils.fromTemplate(d, ds, Setting.RELEASE_TITLE_TEMPLATE, DEFAULT_TITLE_TEMPLATE);
     d.setTitle(title);
 
-    String citation = procTemplate(d, ds, Setting.RELEASE_CITATION_TEMPLATE, buildCitation(d));
-    d.setCitation(citation);
+    if (ds.has(Setting.RELEASE_CITATION_TEMPLATE)) {
+      String citation = CitationUtils.fromTemplate(d, ds.getString(Setting.RELEASE_CITATION_TEMPLATE));
+      d.setCitation(citation);
+    }
 
     d.setPrivat(true); // all releases are private candidate releases first
   }
 
-  @VisibleForTesting
-  protected static String buildCitation(Dataset d){
-    // ${d.authorsAndEditors?join(", ")}, eds. (${d.released.format('yyyy')}). ${d.title}, ${d.released.format('yyyy-MM-dd')}. Digital resource at www.catalogueoflife.org/col. Species 2000: Naturalis, Leiden, the Netherlands. ISSN 2405-8858.
-    StringBuilder sb = new StringBuilder();
-    boolean isEditors = false;
-    List<Person> people = Collections.emptyList();
-    if (d.getEditors() != null && !d.getEditors().isEmpty()) {
-      people = d.getEditors();
-      isEditors = true;
-    } else if (d.getAuthors() != null && !d.getAuthors().isEmpty()) {
-      people = d.getAuthors();
-    }
-    for (Person au : people) {
-      if (sb.length() > 1) {
-        sb.append(", ");
-      }
-      sb.append(au.getName());
-    }
-    if (isEditors) {
-      sb.append(" (ed");
-      if (people.size()>1) {
-        sb.append("s");
-      }
-      sb.append(".)");
-    }
-    sb.append(" (")
-      .append(d.getReleased().getYear())
-      .append("). ")
-      .append(d.getTitle())
-      .append(", ")
-      .append(d.getReleased().toString())
-      .append(". Digital resource at www.catalogueoflife.org/col. Species 2000: Naturalis, Leiden, the Netherlands. ISSN 2405-8858.");
-    return sb.toString();
-  }
 }

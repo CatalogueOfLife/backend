@@ -25,6 +25,7 @@ public enum License {
    * @see <a href="http://creativecommons.org/licenses/by/4.0/legalcode">legal document</a>
    */
   CC_BY("Creative Commons Attribution (CC-BY) 4.0", "http://creativecommons.org/licenses/by/4.0/legalcode"),
+
   /**
    * Creative Commons Attribution-NonCommercial version 4.0.
    *
@@ -38,7 +39,7 @@ public enum License {
   UNSPECIFIED(null, null),
   
   /**
-   * A license not supported by the Clearinghouse.
+   * An unsupported license.
    */
   OTHER(null, null);
   
