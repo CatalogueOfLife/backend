@@ -91,6 +91,10 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   @Test
   public void roundtrip() throws Exception {
     Dataset d1 = create();
+    d1.getContact().setFamilyName("O'Hara");
+    d1.getContact().setGivenName("Döríñg");
+    d1.getContact().setEmail("doering@mac.com");
+    d1.getContact().setOrcid("1234,\"5678\".90/x");
     mapper().create(d1);
 
     commit();

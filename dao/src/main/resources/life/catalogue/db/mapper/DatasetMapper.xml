@@ -126,6 +126,7 @@
     <if test="origin != null and origin.length > 0">
       AND origin IN <foreach item="o" collection="origin" open="(" separator="," close=")">#{o}::DATASETORIGIN</foreach>
     </if>
+    ORDER BY key
   </select>
 
   <select id="process" parameterType="map" resultMap="datasetResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
@@ -165,8 +166,8 @@
             <bind name="rev" value="!req.reverse"/>
           </when>
           <when test="sortBy == 'AUTHORS'">
-            lower((editors->0->'familyName')::text),
-            lower((authors->0->'familyName')::text)
+            lower((editors[1]).family),
+            lower((authors[1]).family)
           </when>
           <when test="sortBy == 'ALIAS'">
             lower(alias)

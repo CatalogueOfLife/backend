@@ -44,7 +44,7 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
   private static final Pattern LRC_PATTERN  = Pattern.compile("(\\d+)LRC?$");
   private static final Pattern LRC_PATH = Pattern.compile("dataset/(\\d+)LRC?");
   // all parameters that contain dataset keys and which we check if they need to be rewritten
-  private static final Set<String> QUERY_PARAMS  = Set.of("datasetkey", "cataloguekey", "projectkey", "subjectdatasetkey");
+  private static final Set<String> QUERY_PARAMS  = Set.of("datasetkey", "cataloguekey", "projectkey", "subjectdatasetkey", "hassourcedataset", "releasedfrom");
   private static final Set<String> METHODS  = Set.of(HttpMethod.GET, HttpMethod.OPTIONS, HttpMethod.HEAD);
 
   private SqlSessionFactory factory;

@@ -558,6 +558,8 @@ CREATE TYPE USER_ROLE AS ENUM (
 -- a simple compound type corresponding to the basics of SimpleName. Often used for building classifications as arrays
 CREATE TYPE simple_name AS (id text, rank rank, name text);
 
+-- Person type to avoid extra tables
+CREATE TYPE person AS (given text, family text, email text, orcid text);
 
 CREATE TABLE "user" (
   key serial PRIMARY KEY,
@@ -589,9 +591,9 @@ CREATE TABLE dataset (
   alias TEXT UNIQUE,
   description TEXT,
   organisations TEXT[] DEFAULT '{}',
-  contact JSONB,
-  authors JSONB,
-  editors JSONB,
+  contact person,
+  authors person[],
+  editors person[],
   license LICENSE,
   version TEXT,
   released DATE,
@@ -646,9 +648,9 @@ BEGIN
       setweight(to_tsvector('simple2', coalesce(NEW.title,'')), 'A') ||
       setweight(to_tsvector('simple2', coalesce(array_to_string(NEW.organisations, '|'), '')), 'B') ||
       setweight(to_tsvector('simple2', coalesce(NEW.description,'')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce((NEW.contact->'familyName')::text,'')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce((NEW.authors->0->'familyName')::text,'')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce((NEW.editors->0->'familyName')::text,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(((NEW.contact).family)::text,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(((NEW.authors[1]).family)::text,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(((NEW.editors[1]).family)::text,'')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(NEW.gbif_key::text,'')), 'C');
     RETURN NEW;
 END

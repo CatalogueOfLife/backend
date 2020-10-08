@@ -28,9 +28,9 @@
     #{title},
     #{description},
     #{organisations, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
-    #{contact, typeHandler=life.catalogue.db.type.PersonJsonHandler}::jsonb,
-    #{authors, typeHandler=life.catalogue.db.type.PersonListJsonHandler}::jsonb,
-    #{editors, typeHandler=life.catalogue.db.type.PersonListJsonHandler}::jsonb,
+    #{contact, typeHandler=life.catalogue.db.type.PersonTypeHandler},
+    #{authors, typeHandler=life.catalogue.db.type.PersonArrayTypeHandler},
+    #{editors, typeHandler=life.catalogue.db.type.PersonArrayTypeHandler},
     #{license}::LICENSE,
     #{version},
     #{released},
@@ -53,9 +53,9 @@
   <resultMap id="archiveResultMap" type="ArchivedDataset" autoMapping="true">
     <id property="key" column="key"/>
     <result property="organisations" column="organisations" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
-    <result property="contact" column="contact" typeHandler="life.catalogue.db.type.PersonJsonHandler"/>
-    <result property="authors" column="authors" typeHandler="life.catalogue.db.type.PersonListJsonHandler"/>
-    <result property="editors" column="editors" typeHandler="life.catalogue.db.type.PersonListJsonHandler"/>
+    <result property="contact" column="contact" typeHandler="life.catalogue.db.type.PersonTypeHandler"/>
+    <result property="authors" column="authors" typeHandler="life.catalogue.db.type.PersonArrayTypeHandler"/>
+    <result property="editors" column="editors" typeHandler="life.catalogue.db.type.PersonArrayTypeHandler"/>
   </resultMap>
 
   <select id="get" resultMap="archiveResultMap">

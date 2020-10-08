@@ -16,11 +16,10 @@ import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 
 import java.sql.*;
-import java.util.Set;
 
 /**
  * Stores objects as arrays in postgres.
- * An optional nullValue parameter can be given to avoid nulls in the db and e.g. use empty arrray instead.
+ * An optional nullValue parameter can be given to avoid nulls in the db and e.g. use empty array instead.
  */
 public abstract class AbstractArrayTypeHandler<T> extends BaseTypeHandler<T> {
   protected final String arrayType;
