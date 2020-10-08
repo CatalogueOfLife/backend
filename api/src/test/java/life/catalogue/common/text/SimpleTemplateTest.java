@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -64,5 +65,63 @@ public class SimpleTemplateTest {
     assertEquals("21 June", SimpleTemplate.render("{d,dd MMMM}", data));
     assertEquals("21st June 2020", SimpleTemplate.render("{d,ddd MMMM yyyy}", data));
     assertEquals("20.6", SimpleTemplate.render("{d,yy.M}", data));
+  }
+
+  static class Puppet {
+    final String name;
+    final LocalDateTime born = LocalDateTime.now();
+    final Puppet mother;
+    final Puppet father;
+
+    public Puppet(String name, Puppet mother, Puppet father) {
+      this.name = name;
+      this.mother = mother;
+      this.father = father;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public LocalDateTime getBorn() {
+      return born;
+    }
+
+    public Puppet getMother() {
+      return mother;
+    }
+
+    public Puppet getFather() {
+      return father;
+    }
+
+    @Override
+    public String toString() {
+      return name;
+    }
+  }
+  static class ListContainer {
+    List<Puppet> puppets;
+
+    public ListContainer(List<Puppet> puppets) {
+      this.puppets = puppets;
+    }
+
+    public List<Puppet> getPuppets() {
+      return puppets;
+    }
+  }
+
+  @Test
+  public void renderNestedProperties() {
+    Puppet clair = new Puppet("Clair", null, null);
+    Puppet mark = new Puppet("Mark", null, null);
+    Puppet shreg = new Puppet("Shreg", clair, mark);
+    Puppet shrug = new Puppet("Shrug", shreg, null);
+
+    assertEquals("Clair 2020-10-09", SimpleTemplate.render("{name} {born}", clair));
+    assertEquals("Shrug 2020-10-09. Mum: Shreg, Grandmother: Clair", SimpleTemplate.render("{name} {born}. Mum: {mother.name}, Grandmother: {mother.mother.name}", shrug));
+
+    assertEquals("Hi Clair, Mark, Shreg, Shreg !!!", SimpleTemplate.render("Hi {puppets} !!!", new ListContainer(List.of(clair, mark, shreg, shreg))));
   }
 }

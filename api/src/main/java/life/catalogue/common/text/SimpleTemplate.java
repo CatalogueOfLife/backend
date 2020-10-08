@@ -12,9 +12,11 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
+import java.util.Collection;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Simple String formatting using property names in curly brackets.
@@ -29,7 +31,7 @@ import java.util.regex.Pattern;
  * produces "Hello Jim! Today is Tuesday"
  */
 public class SimpleTemplate {
-  private final static Pattern ARG_PATTERN = Pattern.compile("\\{([a-zA-Z_0-9]+(?:\\.[a-zA-Z_0-9]+)?)(?:,([^}]+))?}");
+  private final static Pattern ARG_PATTERN = Pattern.compile("\\{([a-zA-Z_0-9]+(?:\\.[a-zA-Z_0-9]+)*)(?:,([^}]+))?}");
 
   /**
    *
@@ -40,28 +42,24 @@ public class SimpleTemplate {
    */
   public static String render(String template, Object arg) throws IllegalArgumentException {
     Preconditions.checkNotNull(template);
-    try {
-      boolean isMap = arg instanceof Map;
-      BeanInfo info = null;
-      Map<?,?> map = null;
-      if (isMap) {
-        map = (Map<?,?>) arg;
-      } else {
-        info = Introspector.getBeanInfo(arg.getClass());
-      }
-      Matcher matcher = ARG_PATTERN.matcher(template);
-      StringBuffer buffer = new StringBuffer();
-      while (matcher.find()) {
-        matcher.appendReplacement(buffer, isMap ?
-          mapValue(matcher.group(1), matcher.group(2), map) :
-          propertyValue(matcher.group(1), matcher.group(2), info, arg)
-        );
-      }
-      matcher.appendTail(buffer);
-      return buffer.toString();
-    } catch (IntrospectionException e) {
-      throw new RuntimeException(e);
+    boolean isMap = arg instanceof Map;
+    BeanInfo info = null;
+    Map<?,?> map = null;
+    if (isMap) {
+      map = (Map<?,?>) arg;
+    } else {
+      info = getInfo(arg);
     }
+    Matcher matcher = ARG_PATTERN.matcher(template);
+    StringBuffer buffer = new StringBuffer();
+    while (matcher.find()) {
+      matcher.appendReplacement(buffer, isMap ?
+        mapValue(matcher.group(1), matcher.group(2), map) :
+        propertyValue(matcher.group(1), matcher.group(2), info, arg)
+      );
+    }
+    matcher.appendTail(buffer);
+    return buffer.toString();
   }
 
   /**
@@ -95,6 +93,9 @@ public class SimpleTemplate {
     }
   }
 
+  /**
+   * WARN: no support for nested properties!
+   */
   private static String mapValue(String key, String format, Map<?, ?> arg) {
     if (key.equalsIgnoreCase("date")) {
       return temporalValue(LocalDate.now(), format);
@@ -110,6 +111,10 @@ public class SimpleTemplate {
       return "";
     } else if (value instanceof TemporalAccessor) {
       return temporalValue((TemporalAccessor)value, format);
+    } else if (value instanceof Collection) {
+      return ((Collection<?>)value).stream()
+        .map(item -> str(item, format))
+        .collect(Collectors.joining(", "));
     } else {
       return value.toString();
     }
@@ -123,9 +128,18 @@ public class SimpleTemplate {
       // nested objects
       String[] props = prop.split("\\.", 2);
       Object arg2 = getProperty(props[0], info, arg);
-      return propertyValue(props[1], format, info, arg2);
+      // Introspector caches the info, so we can just look it up again
+      return propertyValue(props[1], format, getInfo(arg), arg2);
     }
     return str(getProperty(prop, info, arg), format);
+  }
+
+  private static BeanInfo getInfo(Object obj) {
+    try {
+      return Introspector.getBeanInfo(obj.getClass());
+    } catch (IntrospectionException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private static Object getProperty(String prop, BeanInfo info, Object arg) {
