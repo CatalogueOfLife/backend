@@ -201,11 +201,11 @@ public class AdminResource {
 
   @POST
   @Path("/rematch")
-  public BackgroundJob rematch(@QueryParam("datasetKey") Integer datasetKey, @Auth User user) {
-    if (datasetKey == null) {
+  public BackgroundJob rematch(@QueryParam("datasetKey") List<Integer> datasetKeys, @Auth User user) {
+    if (datasetKeys == null || datasetKeys.isEmpty()) {
       return runJob(RematchJob.all(user,factory,ni));
     } else {
-      return runJob(RematchJob.one(user,factory,ni, datasetKey));
+      return runJob(RematchJob.some(user,factory,ni, datasetKeys.stream().mapToInt(i->i).toArray()));
     }
   }
 
