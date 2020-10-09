@@ -6,7 +6,6 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.concurrent.BackgroundJob;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
-import life.catalogue.db.mapper.NamesIndexMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -73,9 +72,7 @@ public class RematchJob extends BackgroundJob {
 
         }
         // kill names index
-        NamesIndexMapper nim = session.getMapper(NamesIndexMapper.class);
-        nim.truncate();
-        nim.resetSequence();
+        ni.reset();
       }
     }
 

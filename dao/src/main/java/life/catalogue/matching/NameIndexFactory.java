@@ -60,6 +60,10 @@ public class NameIndexFactory {
       }
 
       @Override
+      public void reset() {
+      }
+
+      @Override
       public boolean hasStarted() {
         return true;
       }
@@ -107,6 +111,10 @@ public class NameIndexFactory {
 
       @Override
       public void add(IndexName name) { }
+
+      @Override
+      public void reset() {
+      }
 
       @Override
       public boolean hasStarted() {

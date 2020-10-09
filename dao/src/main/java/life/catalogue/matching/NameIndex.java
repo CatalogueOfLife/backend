@@ -52,6 +52,12 @@ public interface NameIndex extends Managed, AutoCloseable {
     }
   }
 
+  /**
+   * Resets the names index, removing all entries and setting back the id sequence to 1.
+   * This does truncate both the file based index as well as the underlying postgres data.
+   */
+  void reset();
+
   boolean hasStarted();
 
   @Override

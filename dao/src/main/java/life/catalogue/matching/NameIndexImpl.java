@@ -85,7 +85,7 @@ public class NameIndexImpl implements NameIndex {
     } else {
       m = NameMatch.noMatch();
     }
-    
+
     if ((!m.hasMatch() || m.getType() == MatchType.CANONICAL) && allowInserts) {
       if (INDEX_NAME_TYPES.contains(name.getType())) {
         m.setName(add(name));
@@ -268,6 +268,16 @@ public class NameIndexImpl implements NameIndex {
       }
     }
     return lowest;
+  }
+
+  @Override
+  public void reset() {
+    store.clear();
+    try (SqlSession session = sqlFactory.openSession()) {
+      NamesIndexMapper nim = session.getMapper(NamesIndexMapper.class);
+      nim.truncate();
+      nim.resetSequence();
+    }
   }
 
   @Override
