@@ -69,7 +69,7 @@ public class SimpleTemplateTest {
 
   static class Puppet {
     final String name;
-    final LocalDateTime born = LocalDateTime.now();
+    final LocalDateTime born = LocalDateTime.of(2020, 10, 9,1,1);
     final Puppet mother;
     final Puppet father;
 
