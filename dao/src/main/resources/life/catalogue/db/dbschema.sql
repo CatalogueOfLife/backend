@@ -648,9 +648,9 @@ BEGIN
       setweight(to_tsvector('simple2', coalesce(NEW.title,'')), 'A') ||
       setweight(to_tsvector('simple2', coalesce(array_to_string(NEW.organisations, '|'), '')), 'B') ||
       setweight(to_tsvector('simple2', coalesce(NEW.description,'')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(((NEW.contact).family)::text,'')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(((NEW.authors[1]).family)::text,'')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(((NEW.editors[1]).family)::text,'')), 'C') ||
+      --setweight(to_tsvector('simple2', coalesce(((NEW.contact).family)::text,'')), 'C') ||
+      --setweight(to_tsvector('simple2', coalesce(((NEW.authors[1]).family)::text,'')), 'C') ||
+      --setweight(to_tsvector('simple2', coalesce(((NEW.editors[1]).family)::text,'')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(NEW.gbif_key::text,'')), 'C');
     RETURN NEW;
 END

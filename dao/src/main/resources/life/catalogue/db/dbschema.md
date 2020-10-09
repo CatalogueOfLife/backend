@@ -10,6 +10,171 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2020-10-09 person custom type
+```
+CREATE TYPE person AS (given text, family text, email text, orcid text);
+
+CREATE OR REPLACE FUNCTION dataset_doc_update() RETURNS trigger AS $$
+BEGIN
+    NEW.doc :=
+      setweight(to_tsvector('simple2', coalesce(NEW.alias,'')), 'A') ||
+      setweight(to_tsvector('simple2', coalesce(NEW.title,'')), 'A') ||
+      setweight(to_tsvector('simple2', coalesce(array_to_string(NEW.organisations, '|'), '')), 'B') ||
+      setweight(to_tsvector('simple2', coalesce(NEW.description,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(NEW.gbif_key::text,'')), 'C');
+    RETURN NEW;
+END
+$$
+LANGUAGE plpgsql;
+
+--
+-- DATASET TABLE
+--
+ALTER TABLE dataset ADD COLUMN contact2 person;
+UPDATE dataset SET contact2=ROW(contact->>'givenName', contact->>'familyName', contact->>'email', contact->>'orcid')::person WHERE contact IS NOT NULL;
+ALTER TABLE dataset DROP COLUMN contact;
+ALTER TABLE dataset RENAME COLUMN contact2 TO contact;
+
+ALTER TABLE dataset ADD COLUMN authors2 person[];
+CREATE TABLE people AS (
+  SELECT key, array_agg(ROW(a->>'givenName', a->>'familyName', a->>'email', a->>'orcid')::person) AS ps FROM (
+    SELECT key, jsonb_array_elements(authors) AS a  
+    FROM dataset WHERE authors IS NOT NULL
+  ) AS a GROUP BY key
+);
+UPDATE dataset d SET authors2=p.ps FROM people p WHERE p.key=d.key;
+ALTER TABLE dataset DROP COLUMN authors;
+ALTER TABLE dataset RENAME COLUMN authors2 TO authors;
+DROP TABLE people;
+
+ALTER TABLE dataset ADD COLUMN editors2 person[];
+CREATE TABLE people AS (
+  SELECT key, array_agg(ROW(a->>'givenName', a->>'familyName', a->>'email', a->>'orcid')::person) AS ps FROM (
+    SELECT key, jsonb_array_elements(editors) AS a  
+    FROM dataset WHERE editors IS NOT NULL
+  ) AS a GROUP BY key
+);
+UPDATE dataset d SET editors2=p.ps FROM people p WHERE p.key=d.key;
+ALTER TABLE dataset DROP COLUMN editors;
+ALTER TABLE dataset RENAME COLUMN editors2 TO editors;
+DROP TABLE people;
+
+
+--
+-- DATASET_ARCHIVE TABLE
+--
+ALTER TABLE dataset_archive ADD COLUMN contact2 person;
+UPDATE dataset_archive SET contact2=ROW(contact->>'givenName', contact->>'familyName', contact->>'email', contact->>'orcid')::person WHERE contact IS NOT NULL;
+ALTER TABLE dataset_archive DROP COLUMN contact;
+ALTER TABLE dataset_archive RENAME COLUMN contact2 TO contact;
+
+ALTER TABLE dataset_archive ADD COLUMN authors2 person[];
+CREATE TABLE people AS (
+  SELECT key, array_agg(ROW(a->>'givenName', a->>'familyName', a->>'email', a->>'orcid')::person) AS ps FROM (
+    SELECT key, jsonb_array_elements(authors) AS a  
+    FROM dataset_archive WHERE authors IS NOT NULL
+  ) AS a GROUP BY key
+);
+UPDATE dataset_archive d SET authors2=p.ps FROM people p WHERE p.key=d.key;
+ALTER TABLE dataset_archive DROP COLUMN authors;
+ALTER TABLE dataset_archive RENAME COLUMN authors2 TO authors;
+DROP TABLE people;
+
+ALTER TABLE dataset_archive ADD COLUMN editors2 person[];
+CREATE TABLE people AS (
+  SELECT key, array_agg(ROW(a->>'givenName', a->>'familyName', a->>'email', a->>'orcid')::person) AS ps FROM (
+    SELECT key, jsonb_array_elements(editors) AS a  
+    FROM dataset_archive WHERE editors IS NOT NULL
+  ) AS a GROUP BY key
+);
+UPDATE dataset_archive d SET editors2=p.ps FROM people p WHERE p.key=d.key;
+ALTER TABLE dataset_archive DROP COLUMN editors;
+ALTER TABLE dataset_archive RENAME COLUMN editors2 TO editors;
+DROP TABLE people;
+
+--
+-- PROJECT_SOURCE TABLE
+--
+ALTER TABLE project_source ADD COLUMN contact2 person;
+UPDATE project_source SET contact2=ROW(contact->>'givenName', contact->>'familyName', contact->>'email', contact->>'orcid')::person WHERE contact IS NOT NULL;
+ALTER TABLE project_source DROP COLUMN contact;
+ALTER TABLE project_source RENAME COLUMN contact2 TO contact;
+
+ALTER TABLE project_source ADD COLUMN authors2 person[];
+CREATE TABLE people AS (
+  SELECT key, array_agg(ROW(a->>'givenName', a->>'familyName', a->>'email', a->>'orcid')::person) AS ps FROM (
+    SELECT key, jsonb_array_elements(authors) AS a  
+    FROM project_source WHERE authors IS NOT NULL
+  ) AS a GROUP BY key
+);
+UPDATE project_source d SET authors2=p.ps FROM people p WHERE p.key=d.key;
+ALTER TABLE project_source DROP COLUMN authors;
+ALTER TABLE project_source RENAME COLUMN authors2 TO authors;
+DROP TABLE people;
+
+ALTER TABLE project_source ADD COLUMN editors2 person[];
+CREATE TABLE people AS (
+  SELECT key, array_agg(ROW(a->>'givenName', a->>'familyName', a->>'email', a->>'orcid')::person) AS ps FROM (
+    SELECT key, jsonb_array_elements(editors) AS a  
+    FROM project_source WHERE editors IS NOT NULL
+  ) AS a GROUP BY key
+);
+UPDATE project_source d SET editors2=p.ps FROM people p WHERE p.key=d.key;
+ALTER TABLE project_source DROP COLUMN editors;
+ALTER TABLE project_source RENAME COLUMN editors2 TO editors;
+DROP TABLE people;
+
+
+--
+-- DATASET_PATCH TABLE
+--
+ALTER TABLE dataset_patch ADD COLUMN contact2 person;
+UPDATE dataset_patch SET contact2=ROW(contact->>'givenName', contact->>'familyName', contact->>'email', contact->>'orcid')::person WHERE contact IS NOT NULL;
+ALTER TABLE dataset_patch DROP COLUMN contact;
+ALTER TABLE dataset_patch RENAME COLUMN contact2 TO contact;
+
+ALTER TABLE dataset_patch ADD COLUMN authors2 person[];
+CREATE TABLE people AS (
+  SELECT key, array_agg(ROW(a->>'givenName', a->>'familyName', a->>'email', a->>'orcid')::person) AS ps FROM (
+    SELECT key, jsonb_array_elements(authors) AS a  
+    FROM dataset_patch WHERE authors IS NOT NULL
+  ) AS a GROUP BY key
+);
+UPDATE dataset_patch d SET authors2=p.ps FROM people p WHERE p.key=d.key;
+ALTER TABLE dataset_patch DROP COLUMN authors;
+ALTER TABLE dataset_patch RENAME COLUMN authors2 TO authors;
+DROP TABLE people;
+
+ALTER TABLE dataset_patch ADD COLUMN editors2 person[];
+CREATE TABLE people AS (
+  SELECT key, array_agg(ROW(a->>'givenName', a->>'familyName', a->>'email', a->>'orcid')::person) AS ps FROM (
+    SELECT key, jsonb_array_elements(editors) AS a  
+    FROM dataset_patch WHERE editors IS NOT NULL
+  ) AS a GROUP BY key
+);
+UPDATE dataset_patch d SET editors2=p.ps FROM people p WHERE p.key=d.key;
+ALTER TABLE dataset_patch DROP COLUMN editors;
+ALTER TABLE dataset_patch RENAME COLUMN editors2 TO editors;
+DROP TABLE people;
+
+
+CREATE OR REPLACE FUNCTION dataset_doc_update() RETURNS trigger AS $$
+BEGIN
+    NEW.doc :=
+      setweight(to_tsvector('simple2', coalesce(NEW.alias,'')), 'A') ||
+      setweight(to_tsvector('simple2', coalesce(NEW.title,'')), 'A') ||
+      setweight(to_tsvector('simple2', coalesce(array_to_string(NEW.organisations, '|'), '')), 'B') ||
+      setweight(to_tsvector('simple2', coalesce(NEW.description,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(((NEW.contact).family)::text,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(((NEW.authors[1]).family)::text,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(((NEW.editors[1]).family)::text,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(NEW.gbif_key::text,'')), 'C');
+    RETURN NEW;
+END
+$$
+LANGUAGE plpgsql;
+```
+
 ### 2020-10-07 author & editor
 ```
 ALTER TABLE dataset RENAME COLUMN editors TO access_control;

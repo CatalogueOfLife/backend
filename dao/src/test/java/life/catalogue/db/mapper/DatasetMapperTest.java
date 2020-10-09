@@ -91,9 +91,11 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   @Test
   public void roundtrip() throws Exception {
     Dataset d1 = create();
+    // this also tests the custom PersonTypeHandler and PersonArrayTypeHandler
+    // thats why we need lots of strange potentially data that needs to be escaped properly
     d1.getContact().setFamilyName("O'Hara");
-    d1.getContact().setGivenName("Döríñg");
-    d1.getContact().setEmail("doering@mac.com");
+    d1.getContact().setGivenName("Œre-Fölíñgé");
+    d1.getContact().setEmail("Maxi\t<oere@foo.bar>\nhidden");
     d1.getContact().setOrcid("1234,\"5678\".90/x");
     mapper().create(d1);
 
@@ -101,7 +103,8 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
 
     Dataset d2 = TestEntityGenerator.nullifyDate(mapper().get(d1.getKey()));
 
-    //printDiff(d1, d2);
+    printDiff(d1.getContact(), d2.getContact());
+    assertEquals(d1.getContact(), d2.getContact());
     assertEquals(d1, d2);
   }
 
@@ -276,7 +279,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
 
     List<Dataset> res = removeDbCreatedProps(mapper().list(p));
     assertEquals(4, res.size());
-    
+
     assertEquals(ds.get(0), res.get(0));
     assertEquals(ds.subList(0, 4), res);
 
@@ -318,7 +321,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     int count = mapper().count(DatasetSearchRequest.byQuery("worms"), null);
     assertEquals("01", 3, count);
   }
-  
+
   private void createSector(int datasetKey, int subjectDatasetKey) {
     Sector s = new Sector();
     s.setDatasetKey(datasetKey);
@@ -329,10 +332,10 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     s.setNote(RandomUtils.randomUnicodeString(128));
     s.setCreatedBy(TestEntityGenerator.USER_EDITOR.getKey());
     s.setModifiedBy(TestEntityGenerator.USER_EDITOR.getKey());
-    
+
     mapper(SectorMapper.class).create(s);
   }
-  
+
   @Test
   public void search() throws Exception {
     final Integer d1 = createSearchableDataset("ITIS", "Mike;Bob", "ITIS", "Also contains worms");
@@ -431,18 +434,18 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
           // nothing, from import and all null
       }
     }
-  
-  
+
+
     query = DatasetSearchRequest.byQuery("worms");
     query.setContributesTo(Datasets.DRAFT_COL);
     assertEquals(1, mapper().search(query, null, new Page()).size());
-  
+
     query.setQ(null);
     assertEquals(2, mapper().search(query, null, new Page()).size());
 
     query.setContributesTo(d4);
     assertEquals(1, mapper().search(query, null, new Page()).size());
-  
+
     // non existing catalogue
     query.setContributesTo(99);
     assertEquals(0, mapper().search(query, null, new Page()).size());
@@ -466,7 +469,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     query = DatasetSearchRequest.byQuery("wor");
     List<Dataset> res = mapper().search(query, null, new Page());
     assertEquals(1, res.size());
-  
+
     // create another catalogue to test non draft sectors
     Dataset cat = TestEntityGenerator.newDataset("cat2");
     TestEntityGenerator.setUser(cat);
@@ -476,26 +479,26 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     createSector(cat.getKey(), d1);
     createSector(cat.getKey(), d5);
     commit();
-  
+
     // old query should still be the same
     query = DatasetSearchRequest.byQuery("worms");
     query.setContributesTo(Datasets.DRAFT_COL);
     assertEquals(1, mapper().search(query, null, new Page()).size());
-  
+
     query = new DatasetSearchRequest();
     query.setContributesTo(Datasets.DRAFT_COL);
     assertEquals(2, mapper().search(query, null, new Page()).size());
-  
+
     query = new DatasetSearchRequest();
     query.setContributesTo(cat.getKey());
     // d5 was deleted!
     assertEquals(1, mapper().search(query, null, new Page()).size());
-    
+
     // by origin
     query = new DatasetSearchRequest();
     query.setOrigin(List.of(DatasetOrigin.MANAGED));
     assertEquals(7, mapper().search(query, null, new Page()).size());
-  
+
     query.setOrigin(List.of(DatasetOrigin.EXTERNAL));
     assertEquals(1, mapper().search(query, null, new Page()).size());
 
@@ -538,12 +541,12 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     mapper(DatasetPartitionMapper.class).createManagedSequences(ds.getKey());
     return ds.getKey();
   }
-  
+
   @Override
   Dataset createTestEntity(int dkey) {
     return create();
   }
-  
+
   @Override
   Dataset removeDbCreatedProps(Dataset d) {
     return rmDbCreatedProps(d);
