@@ -38,7 +38,7 @@ public class DatasetArchiveMapperTest extends MapperTestBase<DatasetArchiveMappe
 
   @Test
   public void deleteByDataset() throws Exception {
-    mapper().deleteByDataset(Datasets.DRAFT_COL);
+    mapper().deleteByDataset(Datasets.COL);
   }
 
 }

@@ -42,11 +42,11 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
   @Test
   public void testGetComplete() throws Exception {
     DatasetMapper dm = mapper(DatasetMapper.class);
-    Dataset d = dm.get(Datasets.DRAFT_COL);
+    Dataset d = dm.get(Datasets.COL);
     d.setGbifPublisherKey(UUID.randomUUID());
     dm.update(d);
 
-    Taxon t = TestEntityGenerator.newTaxon(Datasets.DRAFT_COL);
+    Taxon t = TestEntityGenerator.newTaxon(Datasets.COL);
     NameMapper nm = mapper(NameMapper.class);
     nm.create(t.getName());
 
@@ -67,7 +67,7 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
 
     commit();
 
-    NameUsageWrapper w = mapper().get(Datasets.DRAFT_COL, t.getId());
+    NameUsageWrapper w = mapper().get(Datasets.COL, t.getId());
     assertNotNull(w);
     assertNotNull(w.getUsage());
     Taxon wt = (Taxon) w.getUsage();
@@ -76,7 +76,7 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
     assertEquals(TAXON2.getDatasetKey(), w.getSectorDatasetKey());
     assertEquals(d.getGbifPublisherKey(), w.getPublisherKey());
 
-    w = mapper().getWithoutClassification(Datasets.DRAFT_COL, t.getId());
+    w = mapper().getWithoutClassification(Datasets.COL, t.getId());
     assertNotNull(w);
     assertNotNull(w.getUsage());
     wt = (Taxon) w.getUsage();

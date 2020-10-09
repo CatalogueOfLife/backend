@@ -53,7 +53,7 @@ public class RequestTranslatorTest {
   public void generateWithoutDecision() {
     NameUsageSearchRequest req = new NameUsageSearchRequest();
     req.addFilter(NameUsageSearchParameter.DATASET_KEY, 1010);
-    req.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, Datasets.DRAFT_COL);
+    req.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, Datasets.COL);
     req.addFilter(NameUsageSearchParameter.DECISION_MODE, NameUsageSearchRequest.IS_NULL);
 
     Query q = RequestTranslator.generateQuery(req);

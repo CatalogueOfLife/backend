@@ -41,7 +41,7 @@ public class TreeResource {
 
   @GET
   public ResultPage<TreeNode> root(@PathParam("datasetKey") int datasetKey,
-                                   @QueryParam("catalogueKey") @DefaultValue(Datasets.DRAFT_COL+"") int catalogueKey,
+                                   @QueryParam("catalogueKey") @DefaultValue(Datasets.COL +"") int catalogueKey,
                                    @QueryParam("type") TreeNode.Type type,
                                    @QueryParam("extinct") @DefaultValue("true") boolean inclExtinct,
                                    @QueryParam("limit") Integer limit,
@@ -53,7 +53,7 @@ public class TreeResource {
   @Path("{id}")
   public List<TreeNode> classification(@PathParam("datasetKey") int datasetKey,
                                 @PathParam("id") String id,
-                                @QueryParam("catalogueKey") @DefaultValue(Datasets.DRAFT_COL+"") int catalogueKey,
+                                @QueryParam("catalogueKey") @DefaultValue(Datasets.COL +"") int catalogueKey,
                                 @QueryParam("extinct") @DefaultValue("true") boolean inclExtinct,
                                 @QueryParam("insertPlaceholder") boolean placeholder,
                                 @QueryParam("type") TreeNode.Type type) {
@@ -73,7 +73,7 @@ public class TreeResource {
   @Path("{id}/children")
   public ResultPage<TreeNode> children(@PathParam("datasetKey") int datasetKey,
                                        @PathParam("id") String id,
-                                       @QueryParam("catalogueKey") @DefaultValue(Datasets.DRAFT_COL+"") int catalogueKey,
+                                       @QueryParam("catalogueKey") @DefaultValue(Datasets.COL +"") int catalogueKey,
                                        @QueryParam("insertPlaceholder") boolean placeholder,
                                        @QueryParam("extinct") @DefaultValue("true") boolean inclExtinct,
                                        @QueryParam("type") TreeNode.Type type,

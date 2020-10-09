@@ -50,10 +50,10 @@ public class SectorSyncTest {
   public void init() {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       // draft partition
-      MybatisTestUtils.partition(session, Datasets.DRAFT_COL);
+      MybatisTestUtils.partition(session, Datasets.COL);
 
       Name n = new Name();
-      n.setDatasetKey(Datasets.DRAFT_COL);
+      n.setDatasetKey(Datasets.COL);
       n.setUninomial("Coleoptera");
       n.setScientificName(n.getUninomial());
       n.setRank(Rank.ORDER);
@@ -66,7 +66,7 @@ public class SectorSyncTest {
 
       colAttachment = new Taxon();
       colAttachment .setId("cole");
-      colAttachment.setDatasetKey(Datasets.DRAFT_COL);
+      colAttachment.setDatasetKey(Datasets.COL);
       colAttachment.setStatus(TaxonomicStatus.ACCEPTED);
       colAttachment.setName(n);
       colAttachment.setOrigin(Origin.USER);
@@ -74,7 +74,7 @@ public class SectorSyncTest {
       session.getMapper(TaxonMapper.class).create(colAttachment);
   
       sector = new Sector();
-      sector.setDatasetKey(Datasets.DRAFT_COL);
+      sector.setDatasetKey(Datasets.COL);
       sector.setSubjectDatasetKey(datasetKey);
       sector.setSubject(SimpleNameLink.of("t2", "name", Rank.ORDER));
       sector.setTarget(SimpleNameLink.of("cole", "Coleoptera", Rank.ORDER));
@@ -87,33 +87,33 @@ public class SectorSyncTest {
   
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     siDao = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    MapperTestBase.createSuccess(Datasets.DRAFT_COL, Users.TESTER, diDao);
+    MapperTestBase.createSuccess(Datasets.COL, Users.TESTER, diDao);
   }
 
   @Test
   public void sync() throws Exception {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       final NameMapper nm = session.getMapper(NameMapper.class);
-      assertEquals(1, nm.count(Datasets.DRAFT_COL));
+      assertEquals(1, nm.count(Datasets.COL));
     }
 
     SectorSync ss = new SectorSync(sector, PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), NameUsageIndexService.passThru(), siDao,
         SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
     ss.run();
 
-    MapperTestBase.createSuccess(Datasets.DRAFT_COL, Users.TESTER, diDao);
+    MapperTestBase.createSuccess(Datasets.COL, Users.TESTER, diDao);
 
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       final NameMapper nm = session.getMapper(NameMapper.class);
-      assertEquals(24, nm.count(Datasets.DRAFT_COL));
+      assertEquals(24, nm.count(Datasets.COL));
   
       final TaxonMapper tm = session.getMapper(TaxonMapper.class);
       final SynonymMapper sm = session.getMapper(SynonymMapper.class);
-      assertEquals(1, tm.countRoot(Datasets.DRAFT_COL));
-      assertEquals(20, tm.count(Datasets.DRAFT_COL));
-      assertEquals(4, sm.count(Datasets.DRAFT_COL));
+      assertEquals(1, tm.countRoot(Datasets.COL));
+      assertEquals(20, tm.count(Datasets.COL));
+      assertEquals(4, sm.count(Datasets.COL));
       
-      List<Taxon> taxa = tm.list(Datasets.DRAFT_COL, new Page(0, 100));
+      List<Taxon> taxa = tm.list(Datasets.COL, new Page(0, 100));
       assertEquals(20, taxa.size());
       
       final VernacularNameMapper vm = session.getMapper(VernacularNameMapper.class);

@@ -24,7 +24,7 @@ public class DatasetImportTest extends SerdeTestBase<DatasetImport> {
   public DatasetImport genTestValue() throws Exception {
     DatasetImport d = new DatasetImport();
     d.setAttempt(12);
-    d.setDatasetKey(Datasets.DRAFT_COL);
+    d.setDatasetKey(Datasets.COL);
     d.setState(ImportState.FINISHED);
     d.setTreatmentCount(231456);
     d.setDistributionCount(232456);

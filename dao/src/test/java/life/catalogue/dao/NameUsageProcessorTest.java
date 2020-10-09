@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import static life.catalogue.api.TestEntityGenerator.NAME4;
-import static life.catalogue.api.vocab.Datasets.DRAFT_COL;
+import static life.catalogue.api.vocab.Datasets.COL;
 import static org.junit.Assert.*;
 
 public class NameUsageProcessorTest extends DaoTestBase {
@@ -84,8 +84,8 @@ public class NameUsageProcessorTest extends DaoTestBase {
     SectorMapper sm = mapper(SectorMapper.class);
   
     Sector s = TestEntityGenerator.setUserDate(new Sector());
-    s.setDatasetKey(DRAFT_COL);
-    s.setSubjectDatasetKey(DRAFT_COL);
+    s.setDatasetKey(COL);
+    s.setSubjectDatasetKey(COL);
     s.setTarget(SimpleNameLink.of("t2"));
     sm.create(s);
     
@@ -93,7 +93,7 @@ public class NameUsageProcessorTest extends DaoTestBase {
     try (Connection con = PgSetupRule.getSqlSessionFactory().openSession().getConnection();
         Statement st = con.createStatement();
     ) {
-      st.execute("UPDATE name_usage_" + DRAFT_COL + " SET sector_key="+s.getId()+" WHERE id NOT IN ('t1', 't2') ");
+      st.execute("UPDATE name_usage_" + COL + " SET sector_key="+s.getId()+" WHERE id NOT IN ('t1', 't2') ");
       con.commit();
     }
     
@@ -104,8 +104,8 @@ public class NameUsageProcessorTest extends DaoTestBase {
         Name n = obj.getUsage().getName();
         assertNotNull(n);
         assertNotNull(n.getId());
-        assertEquals(Datasets.DRAFT_COL, (int) obj.getUsage().getDatasetKey());
-        assertEquals(Datasets.DRAFT_COL, (int) n.getDatasetKey());
+        assertEquals(Datasets.COL, (int) obj.getUsage().getDatasetKey());
+        assertEquals(Datasets.COL, (int) n.getDatasetKey());
         
         // classification should always include the taxon itself
         // https://github.com/Sp2000/colplus-backend/issues/326

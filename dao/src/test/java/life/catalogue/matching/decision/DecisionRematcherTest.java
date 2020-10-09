@@ -11,8 +11,6 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.decision.DecisionRematchRequest;
-import life.catalogue.matching.decision.DecisionRematcher;
 import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.Rank;
 import org.junit.ClassRule;
@@ -53,7 +51,7 @@ public class DecisionRematcherTest {
     );
 
     DecisionDao dao = new DecisionDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru());
-    DecisionRematchRequest req = new DecisionRematchRequest(Datasets.DRAFT_COL, false);
+    DecisionRematchRequest req = new DecisionRematchRequest(Datasets.COL, false);
     req.setSubjectDatasetKey(datasetKey);
     DecisionRematcher.match(dao, req, Users.TESTER);
 
@@ -93,7 +91,7 @@ public class DecisionRematcherTest {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       EditorialDecision d = new EditorialDecision();
       d.setMode(EditorialDecision.Mode.BLOCK);
-      d.setDatasetKey(Datasets.DRAFT_COL);
+      d.setDatasetKey(Datasets.COL);
       d.setSubjectDatasetKey(datasetKey);
       d.setSubject(src);
       d.applyUser(TestDataRule.TEST_USER);

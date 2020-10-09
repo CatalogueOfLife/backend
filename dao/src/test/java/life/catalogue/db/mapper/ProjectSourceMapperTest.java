@@ -29,18 +29,18 @@ public class ProjectSourceMapperTest extends MapperTestBase<ProjectSourceMapper>
 
   @Test
   public void deleteByDataset() throws Exception {
-    mapper().deleteByDataset(Datasets.DRAFT_COL);
+    mapper().deleteByDataset(Datasets.COL);
   }
 
   @Test
   public void projectArchive() throws Exception {
     ProjectSourceDataset d1 = createProjectSource();
-    d1.setDatasetKey(Datasets.DRAFT_COL);
+    d1.setDatasetKey(Datasets.COL);
     d1.setImportAttempt(3);
     createDataset(d1);
 
     mapper().create(d1);
-    ArchivedDataset d2 = mapper().get(d1.getKey(), Datasets.DRAFT_COL);
+    ArchivedDataset d2 = mapper().get(d1.getKey(), Datasets.COL);
     assertTrue(d2.equals(d1));
     commit();
   }

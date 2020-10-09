@@ -99,7 +99,7 @@ public class SectorSyncIT {
   }
   
   NameUsageBase getByID(String id) {
-    return getByID(Datasets.DRAFT_COL, id);
+    return getByID(Datasets.COL, id);
   }
   
   NameUsageBase getByID(int datasetKey, String id) {
@@ -114,7 +114,7 @@ public class SectorSyncIT {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
       src = tm.get(DSID.of(sourceDatasetKey, id));
     }
-    return (Taxon) getByName(Datasets.DRAFT_COL, src.getName().getRank(), src.getName().getScientificName());
+    return (Taxon) getByName(Datasets.COL, src.getName().getRank(), src.getName().getScientificName());
   }
 
   private static SimpleNameLink simple(NameUsageBase nu) {
@@ -130,7 +130,7 @@ public class SectorSyncIT {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       Sector sector = new Sector();
       sector.setMode(mode);
-      sector.setDatasetKey(Datasets.DRAFT_COL);
+      sector.setDatasetKey(Datasets.COL);
       sector.setSubjectDatasetKey(datasetKey);
       sector.setSubject(src);
       sector.setTarget(target);
@@ -145,7 +145,7 @@ public class SectorSyncIT {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       EditorialDecision ed = new EditorialDecision();
       ed.setMode(mode);
-      ed.setDatasetKey(Datasets.DRAFT_COL);
+      ed.setDatasetKey(Datasets.COL);
       ed.setSubjectDatasetKey(datasetKey);
       ed.setSubject(src);
       ed.setName(name);
@@ -161,7 +161,7 @@ public class SectorSyncIT {
 
   public static void syncAll(SectorImportDao siDao) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      for (Sector s : session.getMapper(SectorMapper.class).list(Datasets.DRAFT_COL, null)) {
+      for (Sector s : session.getMapper(SectorMapper.class).list(Datasets.COL, null)) {
         sync(s, siDao);
       }
     }
@@ -204,7 +204,7 @@ public class SectorSyncIT {
     String expected = IOUtils.toString(resIn, Charsets.UTF_8).trim();
     
     Writer writer = new StringWriter();
-    TextTreePrinter.dataset(Datasets.DRAFT_COL, PgSetupRule.getSqlSessionFactory(), writer).print();
+    TextTreePrinter.dataset(Datasets.COL, PgSetupRule.getSqlSessionFactory(), writer).print();
     String tree = writer.toString().trim();
     assertFalse("Empty tree, probably no root node found", tree.isEmpty());
     
@@ -221,27 +221,27 @@ public class SectorSyncIT {
 
   @Test
   public void test1_5_6() throws Exception {
-    print(Datasets.DRAFT_COL);
+    print(Datasets.COL);
     print(datasetKey(1, DataFormat.ACEF));
     print(datasetKey(5, DataFormat.ACEF));
     print(datasetKey(6, DataFormat.ACEF));
   
     NameUsageBase src = getByName(datasetKey(1, DataFormat.ACEF), Rank.ORDER, "Fabales");
-    NameUsageBase trg = getByName(Datasets.DRAFT_COL, Rank.PHYLUM, "Tracheophyta");
+    NameUsageBase trg = getByName(Datasets.COL, Rank.PHYLUM, "Tracheophyta");
     DSID<Integer> s1 = DSID.copy(createSector(Sector.Mode.ATTACH, src, trg));
   
     src = getByName(datasetKey(5, DataFormat.ACEF), Rank.CLASS, "Insecta");
-    trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
+    trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
     createSector(Sector.Mode.UNION, src, trg);
   
     src = getByName(datasetKey(6, DataFormat.ACEF), Rank.FAMILY, "Theridiidae");
-    trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
+    trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
     createSector(Sector.Mode.ATTACH, src, trg);
 
     syncAll();
     assertTree("cat1_5_6.txt");
   
-    Taxon vogelii = (Taxon) getByName(Datasets.DRAFT_COL, Rank.SUBSPECIES, "Astragalus vogelii subsp. vogelii");
+    Taxon vogelii = (Taxon) getByName(Datasets.COL, Rank.SUBSPECIES, "Astragalus vogelii subsp. vogelii");
     assertEquals(s1, vogelii.getSectorDSID());
     assertHasVerbatimName(vogelii);
 
@@ -259,18 +259,18 @@ public class SectorSyncIT {
 
     final int s1dk = datasetKey(1, DataFormat.ACEF);
     Taxon t = getDraftTaxonBySourceID(s1dk, "13287");
-    assertEquals(Datasets.DRAFT_COL, (int) t.getDatasetKey());
+    assertEquals(Datasets.COL, (int) t.getDatasetKey());
     // 19 vernaculars, 5 distinct refs
     ti = tdao.getTaxonInfo(t);
     assertEquals(19, ti.getVernacularNames().size());
     Set<String> keys = new HashSet<>();
     for (VernacularName vn : ti.getVernacularNames()) {
-      assertEquals(Datasets.DRAFT_COL, (int) vn.getDatasetKey());
+      assertEquals(Datasets.COL, (int) vn.getDatasetKey());
       assertNotNull(vn.getName());
       if (vn.getReferenceId() != null) {
         r = ti.getReference(vn.getReferenceId());
         keys.add(r.getId());
-        assertEquals(Datasets.DRAFT_COL, (int) r.getDatasetKey());
+        assertEquals(Datasets.COL, (int) r.getDatasetKey());
         assertEquals(t.getSectorKey(), r.getSectorKey());
         assertNotNull(r.getCitation());
       }
@@ -283,12 +283,12 @@ public class SectorSyncIT {
    */
   @Test
   public void testDecisions() throws Exception {
-    print(Datasets.DRAFT_COL);
+    print(Datasets.COL);
     print(datasetKey(4, DataFormat.COLDP));
     final int d4key = datasetKey(4, DataFormat.COLDP);
   
     NameUsageBase coleoptera = getByName(d4key, Rank.ORDER, "Coleoptera");
-    NameUsageBase insecta = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
+    NameUsageBase insecta = getByName(Datasets.COL, Rank.CLASS, "Insecta");
     createSector(Sector.Mode.ATTACH, coleoptera, insecta);
     
     NameUsageBase src = getByID(d4key, "12");
@@ -303,7 +303,7 @@ public class SectorSyncIT {
     syncAll();
     assertTree("cat4.txt");
   
-    NameUsageBase eucav = getByName(Datasets.DRAFT_COL, Rank.SPECIES, "Euplectus cavicollis");
+    NameUsageBase eucav = getByName(Datasets.COL, Rank.SPECIES, "Euplectus cavicollis");
     assertEquals("Euplectus cavicollis", eucav.getName().getScientificName());
     assertEquals(NameType.SCIENTIFIC, eucav.getName().getType());
   }
@@ -314,12 +314,12 @@ public class SectorSyncIT {
    */
   @Test
   public void test6_11() throws Exception {
-    print(Datasets.DRAFT_COL);
+    print(Datasets.COL);
     print(datasetKey(6, DataFormat.ACEF));
     print(datasetKey(11, DataFormat.ACEF));
     
     NameUsageBase src = getByName(datasetKey(6, DataFormat.ACEF), Rank.FAMILY, "Theridiidae");
-    NameUsageBase trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
+    NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
     final DSID<Integer> s1 = createSector(Sector.Mode.ATTACH, src, trg);
     
     src = getByName(datasetKey(11, DataFormat.ACEF), Rank.GENUS, "Dectus");
@@ -334,7 +334,7 @@ public class SectorSyncIT {
       sync(s);
       
       // update sector with now existing Theridiidae key
-      NameUsageBase ther = getByName(Datasets.DRAFT_COL, Rank.FAMILY, "Theridiidae");
+      NameUsageBase ther = getByName(Datasets.COL, Rank.FAMILY, "Theridiidae");
       assertNotNull(ther);
       s = sm.get(s2);
       s.getTarget().setId(ther.getId());
@@ -342,7 +342,7 @@ public class SectorSyncIT {
 
       sync(s);
 
-      NameUsageBase u = getByName(Datasets.DRAFT_COL, Rank.SPECIES, "Dectus mascha");
+      NameUsageBase u = getByName(Datasets.COL, Rank.SPECIES, "Dectus mascha");
       assertNotNull(u);
       assertEquals(u.getSectorDSID(), s2);
       assertTree("cat6_11.txt");
@@ -359,17 +359,17 @@ public class SectorSyncIT {
    */
   @Test
   public void testDeletionFull() throws Exception {
-    print(Datasets.DRAFT_COL);
+    print(Datasets.COL);
     print(datasetKey(5, DataFormat.ACEF));
     print(datasetKey(6, DataFormat.ACEF));
     print(datasetKey(11, DataFormat.ACEF));
   
     NameUsageBase src = getByName(datasetKey(5, DataFormat.ACEF), Rank.CLASS, "Insecta");
-    NameUsageBase trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
+    NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
     final DSID<Integer> s5 = createSector(Sector.Mode.UNION, src, trg);
 
     src = getByName(datasetKey(6, DataFormat.ACEF), Rank.FAMILY, "Theridiidae");
-    trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
+    trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
     final DSID<Integer> s6 = createSector(Sector.Mode.ATTACH, src, trg);
     
     src = getByName(datasetKey(11, DataFormat.ACEF), Rank.GENUS, "Dectus");
@@ -384,7 +384,7 @@ public class SectorSyncIT {
       sync(sm.get(s6));
       
       // update sector with now existing Theridiidae key
-      NameUsageBase ther = getByName(Datasets.DRAFT_COL, Rank.FAMILY, "Theridiidae");
+      NameUsageBase ther = getByName(Datasets.COL, Rank.FAMILY, "Theridiidae");
       Sector s = sm.get(s11);
       s.getTarget().setId(ther.getId());
       sm.update(s);
@@ -407,17 +407,17 @@ public class SectorSyncIT {
    */
   @Test
   public void testDeletion() throws Exception {
-    print(Datasets.DRAFT_COL);
+    print(Datasets.COL);
     print(datasetKey(5, DataFormat.ACEF));
     print(datasetKey(6, DataFormat.ACEF));
     print(datasetKey(11, DataFormat.ACEF));
 
     NameUsageBase src = getByName(datasetKey(5, DataFormat.ACEF), Rank.CLASS, "Insecta");
-    NameUsageBase trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
+    NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
     final DSID<Integer> s5 = createSector(Sector.Mode.UNION, src, trg);
 
     src = getByName(datasetKey(6, DataFormat.ACEF), Rank.FAMILY, "Theridiidae");
-    trg = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
+    trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
     final DSID<Integer> s6 = createSector(Sector.Mode.ATTACH, src, trg);
 
     src = getByName(datasetKey(11, DataFormat.ACEF), Rank.GENUS, "Dectus");
@@ -432,7 +432,7 @@ public class SectorSyncIT {
       sync(sm.get(s6));
 
       // update sector with now existing Theridiidae key
-      NameUsageBase ther = getByName(Datasets.DRAFT_COL, Rank.FAMILY, "Theridiidae");
+      NameUsageBase ther = getByName(Datasets.COL, Rank.FAMILY, "Theridiidae");
       Sector s = sm.get(s11);
       s.getTarget().setId(ther.getId());
       sm.update(s);
@@ -452,16 +452,16 @@ public class SectorSyncIT {
 
   @Test
   public void testImplicitGenus() throws Exception {
-    print(Datasets.DRAFT_COL);
+    print(Datasets.COL);
     print(datasetKey(0, DataFormat.COLDP));
     print(datasetKey(2, DataFormat.COLDP));
     
     NameUsageBase asteraceae   = getByName(datasetKey(0, DataFormat.COLDP), Rank.FAMILY, "Asteraceae");
-    NameUsageBase tracheophyta = getByName(Datasets.DRAFT_COL, Rank.PHYLUM, "Tracheophyta");
+    NameUsageBase tracheophyta = getByName(Datasets.COL, Rank.PHYLUM, "Tracheophyta");
     createSector(Sector.Mode.ATTACH, asteraceae, tracheophyta);
   
     NameUsageBase coleoptera = getByName(datasetKey(2, DataFormat.COLDP), Rank.ORDER, "Coleoptera");
-    NameUsageBase insecta = getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
+    NameUsageBase insecta = getByName(Datasets.COL, Rank.CLASS, "Insecta");
     createSector(Sector.Mode.ATTACH, coleoptera, insecta);
     
     syncAll();
@@ -470,11 +470,11 @@ public class SectorSyncIT {
   
   @Test
   public void testKingdomSector() throws Exception {
-    print(Datasets.DRAFT_COL);
+    print(Datasets.COL);
     print(datasetKey(0, DataFormat.COLDP));
     
     NameUsageBase src = getByName(datasetKey(0, DataFormat.COLDP), Rank.KINGDOM, "Plantae");
-    NameUsageBase plant = getByName(Datasets.DRAFT_COL, Rank.KINGDOM, "Plantae");
+    NameUsageBase plant = getByName(Datasets.COL, Rank.KINGDOM, "Plantae");
     createSector(Sector.Mode.UNION, src, plant);
   
     final String plantID = plant.getId();
@@ -483,7 +483,7 @@ public class SectorSyncIT {
     syncAll();
     
     assertTree("cat0.txt");
-    plant = getByName(Datasets.DRAFT_COL, Rank.KINGDOM, "Plantae");
+    plant = getByName(Datasets.COL, Rank.KINGDOM, "Plantae");
     // make sure the kingdom is not part of the sector, we merged!
     assertNull(plant.getSectorKey());
     assertEquals(plantID, plant.getId());
@@ -497,7 +497,7 @@ public class SectorSyncIT {
     print(datasetKey(14, DataFormat.ACEF));
     
     NameUsageBase src = getByName(datasetKey(14, DataFormat.ACEF), Rank.KINGDOM, "Viruses");
-    NameUsageBase trg = getByName(Datasets.DRAFT_COL, Rank.KINGDOM, "Viruses");
+    NameUsageBase trg = getByName(Datasets.COL, Rank.KINGDOM, "Viruses");
     createSector(Sector.Mode.UNION, src, trg);
     
     syncAll();

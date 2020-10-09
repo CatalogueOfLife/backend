@@ -32,7 +32,7 @@ abstract class TaxonExtensionMapperTest<T extends DatasetScopedEntity<Integer>, 
 
   @Test
   public void copyDataset() throws Exception {
-    CopyDatasetTestComponent.copy(mapper(), Datasets.DRAFT_COL, true);
+    CopyDatasetTestComponent.copy(mapper(), Datasets.COL, true);
   }
 
   @Test

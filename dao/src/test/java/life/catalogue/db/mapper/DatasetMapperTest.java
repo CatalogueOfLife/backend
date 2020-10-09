@@ -153,12 +153,12 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
   @Test
   public void immutableOriginAndSourceKey() throws Exception {
     Dataset d1 = create();
-    d1.setSourceKey(Datasets.DRAFT_COL);
+    d1.setSourceKey(Datasets.COL);
     d1.setOrigin(DatasetOrigin.RELEASED);
     mapper().create(d1);
     DatasetOrigin o = d1.getOrigin();
     assertEquals(DatasetOrigin.RELEASED, o);
-    assertEquals((Integer)Datasets.DRAFT_COL, d1.getSourceKey());
+    assertEquals((Integer)Datasets.COL, d1.getSourceKey());
 
     d1.setOrigin(DatasetOrigin.MANAGED);
     d1.setSourceKey(null);
@@ -168,7 +168,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
 
     Dataset d2 = mapper().get(d1.getKey());
     assertEquals(DatasetOrigin.RELEASED, d2.getOrigin());
-    assertEquals((Integer)Datasets.DRAFT_COL, d2.getSourceKey());
+    assertEquals((Integer)Datasets.COL, d2.getSourceKey());
   }
 
   /**
@@ -250,7 +250,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
 
   private List<Dataset> createExpected() throws Exception {
     List<Dataset> ds = Lists.newArrayList();
-    ds.add(mapper().get(Datasets.DRAFT_COL));
+    ds.add(mapper().get(Datasets.COL));
     ds.add(mapper().get(TestEntityGenerator.DATASET11.getKey()));
     ds.add(mapper().get(TestEntityGenerator.DATASET12.getKey()));
     ds.add(create());
@@ -348,8 +348,8 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     final Integer d4 = createSearchableDataset("FOO", "bar", "BAR", null);
     final Integer d5 = createSearchableDataset("WORMS worms", "beard", "WORMS", "Worms with even more worms than worms");
     mapper().delete(d5);
-    createSector(Datasets.DRAFT_COL, d3);
-    createSector(Datasets.DRAFT_COL, d4);
+    createSector(Datasets.COL, d3);
+    createSector(Datasets.COL, d4);
     createSector(d4, d3);
     commit();
 
@@ -437,7 +437,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
 
 
     query = DatasetSearchRequest.byQuery("worms");
-    query.setContributesTo(Datasets.DRAFT_COL);
+    query.setContributesTo(Datasets.COL);
     assertEquals(1, mapper().search(query, null, new Page()).size());
 
     query.setQ(null);
@@ -450,7 +450,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     query.setContributesTo(99);
     assertEquals(0, mapper().search(query, null, new Page()).size());
 
-    query.setContributesTo(Datasets.DRAFT_COL);
+    query.setContributesTo(Datasets.COL);
     assertEquals(2, mapper().search(query, null, new Page()).size());
 
     // by source dataset
@@ -482,11 +482,11 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
 
     // old query should still be the same
     query = DatasetSearchRequest.byQuery("worms");
-    query.setContributesTo(Datasets.DRAFT_COL);
+    query.setContributesTo(Datasets.COL);
     assertEquals(1, mapper().search(query, null, new Page()).size());
 
     query = new DatasetSearchRequest();
-    query.setContributesTo(Datasets.DRAFT_COL);
+    query.setContributesTo(Datasets.COL);
     assertEquals(2, mapper().search(query, null, new Page()).size());
 
     query = new DatasetSearchRequest();
@@ -512,7 +512,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
 
     // by release
     query = new DatasetSearchRequest();
-    query.setReleasedFrom(Datasets.DRAFT_COL);
+    query.setReleasedFrom(Datasets.COL);
     assertEquals(0, mapper().search(query, null, new Page()).size());
 
     // private only

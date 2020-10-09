@@ -43,7 +43,7 @@ public class DuplicateDaoTest {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       MybatisTestUtils.partition(session, datasetKey);
       MybatisTestUtils.createManagedSequences(session, datasetKey);
-      MybatisTestUtils.createManagedSequences(session, Datasets.DRAFT_COL);
+      MybatisTestUtils.createManagedSequences(session, Datasets.COL);
     }
 
     final AuthorshipNormFunc aFunc = new AuthorshipNormFunc(17);
@@ -73,7 +73,7 @@ public class DuplicateDaoTest {
 
   private static void create(DecisionMapper dm, String id, Rank rank) {
     EditorialDecision d = new EditorialDecision();
-    d.setDatasetKey(Datasets.DRAFT_COL);
+    d.setDatasetKey(Datasets.COL);
     d.setSubjectDatasetKey(datasetKey);
     d.setSubject(SimpleNameLink.of(id, "Nana", rank));
     d.setMode(EditorialDecision.Mode.BLOCK);
@@ -239,7 +239,7 @@ public class DuplicateDaoTest {
     } else {
       watch.resume();
     }
-    List<Duplicate> result = dao.findUsages(mode, minSize, datasetKey, sourceDatasetKey, null, category, ranks, status, authorshipDifferent, acceptedDifferent, null, null, withDecision, Datasets.DRAFT_COL, page);
+    List<Duplicate> result = dao.findUsages(mode, minSize, datasetKey, sourceDatasetKey, null, category, ranks, status, authorshipDifferent, acceptedDifferent, null, null, withDecision, Datasets.COL, page);
     watch.suspend();
     return result;
   }

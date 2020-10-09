@@ -3,7 +3,7 @@ package life.catalogue.api.model;
 import java.util.Objects;
 import java.util.function.Function;
 
-import static life.catalogue.api.vocab.Datasets.DRAFT_COL;
+import static life.catalogue.api.vocab.Datasets.COL;
 
 /**
  * DatasetScopedID: Entity with an ID property scoped within a single dataset.
@@ -76,7 +76,7 @@ public interface DSID<K> extends DatasetScoped {
   }
 
   static <K> DSIDValue<K> draftID(K id) {
-    return new DSIDValue<K>(DRAFT_COL, id);
+    return new DSIDValue<K>(COL, id);
   }
 
 }

@@ -134,8 +134,8 @@ public class ReferenceMapperTest extends CRUDDatasetScopedStringTestBase<Referen
     assertEquals(in, out);
 
     // test draft, the sql is different
-    out = mapper().list(Datasets.DRAFT_COL, new Page());
-    int cnt = mapper().count(Datasets.DRAFT_COL);
+    out = mapper().list(Datasets.COL, new Page());
+    int cnt = mapper().count(Datasets.COL);
     cnt = mapper().count(DATASET11.getKey());
 
   }
@@ -147,7 +147,7 @@ public class ReferenceMapperTest extends CRUDDatasetScopedStringTestBase<Referen
     in.add(newReference("On the road", "Jack","Kerouac"));
     in.add(newReference("Mammal Species of the World. A Taxonomic and Geographic Reference (3rd ed)",  "Don E.","Wilson",  "DeeAnn M.","Reeder"));
     for (Reference r : in) {
-      r.setDatasetKey(Datasets.DRAFT_COL);
+      r.setDatasetKey(Datasets.COL);
       r.setSectorKey(null);
       mapper().create(r);
     }
@@ -157,17 +157,17 @@ public class ReferenceMapperTest extends CRUDDatasetScopedStringTestBase<Referen
     final String r3 = in.get(2).getId();
   
     ReferenceSearchRequest req = ReferenceSearchRequest.byQuery("backyard");
-    List<Reference> out = mapper().search(Datasets.DRAFT_COL, req, new Page());
+    List<Reference> out = mapper().search(Datasets.COL, req, new Page());
     assertEquals(1, out.size());
     assertEquals(r1, out.get(0).getId());
   
     req = ReferenceSearchRequest.byQuery("Kerouac");
-    out = mapper().search(Datasets.DRAFT_COL, req, new Page());
+    out = mapper().search(Datasets.COL, req, new Page());
     assertEquals(1, out.size());
     assertEquals(r2, out.get(0).getId());
     
     req.setIssues(Lists.newArrayList(Issue.REFTYPE_INVALID, Issue.UNMATCHED_REFERENCE_BRACKETS));
-    out = mapper().search(Datasets.DRAFT_COL, req, new Page());
+    out = mapper().search(Datasets.COL, req, new Page());
     assertEquals(0, out.size());
   }
 

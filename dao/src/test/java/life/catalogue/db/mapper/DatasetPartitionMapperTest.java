@@ -34,16 +34,16 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
   @Test
   public void createDelete() {
     // we create the prov-cat partition in the InitMybatisRule
-    mapper().delete(Datasets.DRAFT_COL);
-    mapper().create(Datasets.DRAFT_COL);
-    mapper().buildIndices(Datasets.DRAFT_COL);
-    mapper().attach(Datasets.DRAFT_COL);
-    mapper().delete(Datasets.DRAFT_COL);
+    mapper().delete(Datasets.COL);
+    mapper().create(Datasets.COL);
+    mapper().buildIndices(Datasets.COL);
+    mapper().attach(Datasets.COL);
+    mapper().delete(Datasets.COL);
   }
 
   @Test
   public void exists() {
-    Assert.assertTrue(mapper().exists(Datasets.DRAFT_COL));
+    Assert.assertTrue(mapper().exists(Datasets.COL));
     Assert.assertFalse(mapper().exists(9999));
   }
 
@@ -60,11 +60,11 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
   @Test
   public void concurrentAttach() throws Exception {
     
-    mapper().delete(Datasets.DRAFT_COL);
-    mapper().create(Datasets.DRAFT_COL);
-    mapper().buildIndices(Datasets.DRAFT_COL);
-    mapper().attach(Datasets.DRAFT_COL);
-    mapper().delete(Datasets.DRAFT_COL);
+    mapper().delete(Datasets.COL);
+    mapper().create(Datasets.COL);
+    mapper().buildIndices(Datasets.COL);
+    mapper().attach(Datasets.COL);
+    mapper().delete(Datasets.COL);
   
     // run continuous ref and name imports
     ContinuousInserter<Reference> refIns = new ContinuousInserter<Reference>(PgSetupRule.getSqlSessionFactory(),
@@ -118,7 +118,7 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
   }
   
   private static <T extends DSID & UserManaged> T gen(T obj){
-    obj.setDatasetKey(Datasets.DRAFT_COL);
+    obj.setDatasetKey(Datasets.COL);
     obj.setId(UUID.randomUUID().toString());
     obj.applyUser(TestEntityGenerator.USER_USER);
     return obj;

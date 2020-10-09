@@ -23,7 +23,7 @@ public class EstimateMapperTest extends BaseDecisionMapperTest<SpeciesEstimate, 
   @Before
   public void init() {
     ref = TestEntityGenerator.newReference("Bam bam");
-    ref.setDatasetKey(Datasets.DRAFT_COL);
+    ref.setDatasetKey(Datasets.COL);
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       session.getMapper(ReferenceMapper.class).create(ref);
     }
@@ -32,7 +32,7 @@ public class EstimateMapperTest extends BaseDecisionMapperTest<SpeciesEstimate, 
   @Override
   SpeciesEstimate createTestEntity(int dkey) {
     SpeciesEstimate d = new SpeciesEstimate();
-    d.setDatasetKey(Datasets.DRAFT_COL);
+    d.setDatasetKey(Datasets.COL);
     d.setTarget(TestEntityGenerator.newSimpleNameWithoutStatusParent());
     d.setEstimate(34567);
     d.setType(EstimateType.SPECIES_EXTINCT);
@@ -61,7 +61,7 @@ public class EstimateMapperTest extends BaseDecisionMapperTest<SpeciesEstimate, 
   public void process(){
     // processing
     DecisionMapperTest.CountHandler handler = new DecisionMapperTest.CountHandler();
-    mapper().processDataset(Datasets.DRAFT_COL).forEach(handler);
+    mapper().processDataset(Datasets.COL).forEach(handler);
     assertEquals(0, handler.counter.size());
   }
 }

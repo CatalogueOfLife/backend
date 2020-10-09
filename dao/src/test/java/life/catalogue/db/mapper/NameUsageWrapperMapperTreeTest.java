@@ -42,10 +42,10 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
     
     // now add decisions!!
     DecisionMapper dm = mapper(DecisionMapper.class);
-    EditorialDecision ed1 = TestEntityGenerator.newDecision(Datasets.DRAFT_COL, NAME4.getDatasetKey(), "t15");
+    EditorialDecision ed1 = TestEntityGenerator.newDecision(Datasets.COL, NAME4.getDatasetKey(), "t15");
     dm.create(ed1);
     // broken
-    EditorialDecision ed2 = TestEntityGenerator.newDecision(Datasets.DRAFT_COL, NAME4.getDatasetKey(), "t1556");
+    EditorialDecision ed2 = TestEntityGenerator.newDecision(Datasets.COL, NAME4.getDatasetKey(), "t1556");
     dm.create(ed2);
     EditorialDecision ed3 = TestEntityGenerator.newDecision(11, NAME4.getDatasetKey(), "t15");
     dm.create(ed3);

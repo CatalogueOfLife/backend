@@ -38,7 +38,7 @@ public class AssemblyCoordinatorTest {
   @Before
   public void init() {
     DatasetImportDao diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
-    MapperTestBase.createSuccess(Datasets.DRAFT_COL, Users.TESTER, diDao);
+    MapperTestBase.createSuccess(Datasets.COL, Users.TESTER, diDao);
 
     SectorImportDao sid = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     coord = new AssemblyCoordinator(PgSetupRule.getSqlSessionFactory(), NameIndexFactory.passThru(), sid, NameUsageIndexService.passThru(), new MetricRegistry());
@@ -47,7 +47,7 @@ public class AssemblyCoordinatorTest {
   @Test(expected = IllegalArgumentException.class)
   public void scheduleEmptyDataset() throws Exception {
     Sector sector = new Sector();
-    sector.setDatasetKey(Datasets.DRAFT_COL);
+    sector.setDatasetKey(Datasets.COL);
     sector.setMode(Sector.Mode.ATTACH);
     sector.setSubject(SimpleNameLink.of("7", "Insecta", Rank.CLASS));
     sector.setTarget(SimpleNameLink.of("123", "Arthropoda", Rank.PHYLUM));
@@ -64,14 +64,14 @@ public class AssemblyCoordinatorTest {
       sm.create(sector);
     }
 
-    coord.sync(Datasets.DRAFT_COL, RequestScope.sector(sector), TestEntityGenerator.USER_EDITOR);
+    coord.sync(Datasets.COL, RequestScope.sector(sector), TestEntityGenerator.USER_EDITOR);
   }
   
   @Test
   public void syncAll() throws Exception {
     Sector sector = new Sector();
     sector.setMode(Sector.Mode.ATTACH);
-    sector.setDatasetKey(Datasets.DRAFT_COL);
+    sector.setDatasetKey(Datasets.COL);
     sector.setSubject(SimpleNameLink.of("7", "Insecta", Rank.CLASS));
     sector.setTarget(SimpleNameLink.of("123", "Arthropoda", Rank.PHYLUM));
     sector.applyUser(TestEntityGenerator.USER_EDITOR);
@@ -87,7 +87,7 @@ public class AssemblyCoordinatorTest {
       sm.create(sector);
     }
     
-    coord.sync(Datasets.DRAFT_COL, RequestScope.all(), TestEntityGenerator.USER_EDITOR);
+    coord.sync(Datasets.COL, RequestScope.all(), TestEntityGenerator.USER_EDITOR);
   }
   
 }

@@ -342,7 +342,7 @@ public class ImportManager implements Managed {
     if (!hasStarted()) {
       throw UnavailableException.unavailable("dataset importer");
     }
-    if (datasetKey == Datasets.DRAFT_COL) {
+    if (datasetKey == Datasets.COL) {
       throw new IllegalArgumentException("Dataset " + datasetKey + " is the CoL working draft and cannot be imported");
     }
     try (SqlSession session = factory.openSession(true)) {

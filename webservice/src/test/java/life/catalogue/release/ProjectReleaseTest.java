@@ -22,7 +22,7 @@ public class ProjectReleaseTest {
     ds.put(Setting.RELEASE_CITATION_TEMPLATE, "{editors} ({created,yyyy}). Species 2000 & ITIS Catalogue of Life, {created,ddd MMMM yyyy}. Digital resource at www.catalogueoflife.org. Species 2000: Naturalis, Leiden, the Netherlands. ISSN 2405-8858.");
 
     Dataset d = new Dataset();
-    d.setKey(Datasets.DRAFT_COL);
+    d.setKey(Datasets.COL);
     d.setTitle("Catalogue of Life");
     d.setOrganisations(List.of("Species 2000", "ITIS"));
     d.setEditors(List.of(

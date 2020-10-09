@@ -64,7 +64,7 @@ public class SectorRematcherTest {
       SimpleNameLink.of("Lepidoptera", Rank.ORDER)
     );
 
-    SectorRematchRequest req = new SectorRematchRequest(Datasets.DRAFT_COL, false);
+    SectorRematchRequest req = new SectorRematchRequest(Datasets.COL, false);
     req.setSubjectDatasetKey(datasetKey);
     SectorRematcher.match(dao, req, Users.TESTER);
 
@@ -103,7 +103,7 @@ public class SectorRematcherTest {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       Sector sector = new Sector();
       sector.setMode(mode);
-      sector.setDatasetKey(Datasets.DRAFT_COL);
+      sector.setDatasetKey(Datasets.COL);
       sector.setSubjectDatasetKey(datasetKey);
       sector.setSubject(src);
       sector.setTarget(target);

@@ -73,7 +73,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     EditorialDecision decision = new EditorialDecision();
     decision.setSubject(SimpleNameLink.of(edited));
     decision.setMode(Mode.UPDATE);
-    decision.setDatasetKey(Datasets.DRAFT_COL);
+    decision.setDatasetKey(Datasets.COL);
     decision.setSubjectDatasetKey(edited.getDatasetKey());
     decision.setCreatedBy(edited.getCreatedBy());
     decision.setModifiedBy(edited.getCreatedBy());
@@ -83,7 +83,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
 
     NameUsageSearchRequest request = new NameUsageSearchRequest();
     request.addFilter(NameUsageSearchParameter.DECISION_MODE, Mode.UPDATE);
-    request.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, Datasets.DRAFT_COL);
+    request.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, Datasets.COL);
     NameUsageSearchResponse res = search(request);
 
     assertEquals(1, res.getResult().size());
@@ -154,7 +154,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     EditorialDecision decision = new EditorialDecision();
     decision.setSubject(SimpleNameLink.of(edited));
     decision.setMode(Mode.UPDATE);
-    decision.setDatasetKey(Datasets.DRAFT_COL);
+    decision.setDatasetKey(Datasets.COL);
     decision.setSubjectDatasetKey(edited.getDatasetKey());
     decision.setCreatedBy(edited.getCreatedBy());
     decision.setModifiedBy(edited.getCreatedBy());
@@ -164,7 +164,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
 
     NameUsageSearchRequest request = new NameUsageSearchRequest();
     request.addFilter(NameUsageSearchParameter.DECISION_MODE, Mode.UPDATE);
-    request.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, Datasets.DRAFT_COL);
+    request.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, Datasets.COL);
     NameUsageSearchResponse res = search(request);
 
     assertEquals(pgTaxa.get(0).getId(), res.getResult().get(0).getUsage().getId());
@@ -190,7 +190,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
     EditorialDecision decision = new EditorialDecision();
     decision.setSubject(SimpleNameLink.of(edited));
     decision.setMode(Mode.UPDATE);
-    decision.setDatasetKey(Datasets.DRAFT_COL);
+    decision.setDatasetKey(Datasets.COL);
     decision.setSubjectDatasetKey(edited.getDatasetKey());
     decision.setCreatedBy(edited.getCreatedBy());
     decision.setModifiedBy(edited.getCreatedBy());
@@ -200,7 +200,7 @@ public class NameUsageIndexServiceIT extends EsReadWriteTestBase {
 
     NameUsageSearchRequest request = new NameUsageSearchRequest();
     request.addFilter(NameUsageSearchParameter.DECISION_MODE, Mode.UPDATE);
-    request.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, Datasets.DRAFT_COL);
+    request.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, Datasets.COL);
     NameUsageSearchResponse res = search(request);
 
     assertEquals(pgTaxa.get(2).getId(), res.getResult().get(0).getUsage().getId());

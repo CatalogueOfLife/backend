@@ -46,7 +46,7 @@ public class CitationUtilsTest {
   @Test
   public void buildCitation() throws Exception {
     Dataset d = new Dataset();
-    d.setKey(Datasets.DRAFT_COL);
+    d.setKey(Datasets.COL);
     d.setTitle("Species 2000 & ITIS Catalogue of Life");
     d.setEditors(Person.parse(Lists.newArrayList("Roskov Y.", "Ower G.", "Orrell T.", "Nicolson D.")));
     d.setReleased(LocalDate.parse("2019-04-21"));
@@ -69,7 +69,7 @@ public class CitationUtilsTest {
   @Test
   public void buildSourceCitation() throws Exception {
     Dataset proj = new Dataset();
-    proj.setKey(Datasets.DRAFT_COL);
+    proj.setKey(Datasets.COL);
     proj.setAlias("COL");
     proj.setTitle("Species 2000 & ITIS Catalogue of Life");
     proj.setEditors(people("Yuri", "Roskov", "Geoff", "Ower", "Thomas", "Orrell", "David", "Nicolson"));

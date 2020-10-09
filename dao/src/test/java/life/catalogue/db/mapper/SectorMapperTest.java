@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
 
 public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearchRequest, SectorMapper> {
   
-  private static final int targetDatasetKey = Datasets.DRAFT_COL;
+  private static final int targetDatasetKey = Datasets.COL;
   private static final int subjectDatasetKey = DATASET11.getKey();
   private Sector s1;
   private Sector s2;
@@ -203,7 +203,7 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
   public void process(){
     // processing
     DecisionMapperTest.CountHandler handler = new DecisionMapperTest.CountHandler();
-    mapper().processDataset(Datasets.DRAFT_COL).forEach(handler);
+    mapper().processDataset(Datasets.COL).forEach(handler);
     assertEquals(0, handler.counter.size());
   }
 }

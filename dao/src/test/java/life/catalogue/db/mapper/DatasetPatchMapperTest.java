@@ -22,17 +22,17 @@ public class DatasetPatchMapperTest extends MapperTestBase<DatasetPatchMapper> {
 
   @Test
   public void deleteByDataset() throws Exception {
-    mapper().deleteByDataset(Datasets.DRAFT_COL);
+    mapper().deleteByDataset(Datasets.COL);
   }
 
   @Test
   public void roundtripCrud() throws Exception {
     Dataset u1 = readFirst();
-    mapper().create(Datasets.DRAFT_COL, u1);
+    mapper().create(Datasets.COL, u1);
     commit();
 
     removeDbCreatedProps(u1);
-    Dataset u2 = removeDbCreatedProps(mapper().get(Datasets.DRAFT_COL, u1.getKey()));
+    Dataset u2 = removeDbCreatedProps(mapper().get(Datasets.COL, u1.getKey()));
     printDiff(u1, u2);
     assertEquals(u1, u2);
 
@@ -41,20 +41,20 @@ public class DatasetPatchMapperTest extends MapperTestBase<DatasetPatchMapper> {
     // try bad values cause we should not have constraints on patches
     u1.setConfidence(1946732);
     u1.setOrigin(null);
-    mapper().update(Datasets.DRAFT_COL, u1);
+    mapper().update(Datasets.COL, u1);
     commit();
 
     removeDbCreatedProps(u1);
-    u2 = removeDbCreatedProps(mapper().get(Datasets.DRAFT_COL, u1.getKey()));
+    u2 = removeDbCreatedProps(mapper().get(Datasets.COL, u1.getKey()));
 
     printDiff(u1, u2);
     assertEquals(removeDbCreatedProps(u1), u2);
 
 
-    mapper().delete(Datasets.DRAFT_COL, u1.getKey());
+    mapper().delete(Datasets.COL, u1.getKey());
     commit();
 
-    assertNull(mapper().get(Datasets.DRAFT_COL, u1.getKey()));
+    assertNull(mapper().get(Datasets.COL, u1.getKey()));
   }
 
 

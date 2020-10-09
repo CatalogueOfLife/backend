@@ -258,7 +258,7 @@ public class TaxonDaoTest extends DaoTestBase {
   @Test
   public void updateAllSectorCounts(){
     MybatisTestUtils.populateDraftTree(session());
-    tDao.updateAllSectorCounts(Datasets.DRAFT_COL);
+    tDao.updateAllSectorCounts(Datasets.COL);
   }
   
   @Test

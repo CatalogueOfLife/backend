@@ -73,15 +73,15 @@ public class ProjectDuplicationIT {
   public void duplicate() {
     // prepare a sync
     NameUsageBase src = SectorSyncIT.getByName(datasetKey(1, DataFormat.ACEF), Rank.ORDER, "Fabales");
-    NameUsageBase trg = SectorSyncIT.getByName(Datasets.DRAFT_COL, Rank.PHYLUM, "Tracheophyta");
+    NameUsageBase trg = SectorSyncIT.getByName(Datasets.COL, Rank.PHYLUM, "Tracheophyta");
     DSID<Integer> s1 = SectorSyncIT.createSector(Sector.Mode.ATTACH, src, trg);
 
     src = SectorSyncIT.getByName(datasetKey(5, DataFormat.ACEF), Rank.CLASS, "Insecta");
-    trg = SectorSyncIT.getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
+    trg = SectorSyncIT.getByName(Datasets.COL, Rank.CLASS, "Insecta");
     DSID<Integer> s2 = SectorSyncIT.createSector(Sector.Mode.UNION, src, trg);
 
     src = SectorSyncIT.getByName(datasetKey(6, DataFormat.ACEF), Rank.FAMILY, "Theridiidae");
-    trg = SectorSyncIT.getByName(Datasets.DRAFT_COL, Rank.CLASS, "Insecta");
+    trg = SectorSyncIT.getByName(Datasets.COL, Rank.CLASS, "Insecta");
     DSID<Integer> s3 = SectorSyncIT.createSector(Sector.Mode.ATTACH, src, trg);
 
     SectorSyncIT.syncAll(siDao);
@@ -90,7 +90,7 @@ public class ProjectDuplicationIT {
     Dataset d;
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()){
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      d = dm.get(Datasets.DRAFT_COL);
+      d = dm.get(Datasets.COL);
       d.setTitle(d.getTitle() + " copy");
       d.setKey(1100);
       d.setAlias(d.getAlias() + " copy");
@@ -98,7 +98,7 @@ public class ProjectDuplicationIT {
       session.commit();
     }
 
-    ProjectDuplication dupe = new ProjectDuplication(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao, Datasets.DRAFT_COL, d, Users.TESTER);
+    ProjectDuplication dupe = new ProjectDuplication(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao, Datasets.COL, d, Users.TESTER);
     dupe.run();
     assertEquals(ImportState.FINISHED, dupe.getMetrics().getState());
   }

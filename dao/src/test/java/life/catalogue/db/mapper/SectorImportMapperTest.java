@@ -12,7 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.*;
-import static life.catalogue.api.vocab.Datasets.DRAFT_COL;
+import static life.catalogue.api.vocab.Datasets.COL;
 import static org.junit.Assert.assertEquals;
 
 public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
@@ -25,7 +25,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
   public void prepare() {
     attempts = 1;
     s = new Sector();
-    s.setDatasetKey(DRAFT_COL);
+    s.setDatasetKey(COL);
     s.setSubjectDatasetKey(DATASET11.getKey());
     s.setMode(Sector.Mode.ATTACH);
     s.setSubject(newSimpleName());
@@ -37,7 +37,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     mapper(SectorMapper.class).create(s);
   
     s2 = new Sector();
-    s2.setDatasetKey(DRAFT_COL);
+    s2.setDatasetKey(COL);
     s2.setSubjectDatasetKey(DATASET12.getKey());
     s2.setMode(Sector.Mode.ATTACH);
     s2.setSubject(newSimpleName());
@@ -99,11 +99,11 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
 
     assertEquals(5, mapper().count(s.getId(), null, null, null));
     assertEquals(5, mapper().count(s.getId(), null, s.getSubjectDatasetKey(), null));
-    assertEquals(5, mapper().count(s.getId(), DRAFT_COL, s.getSubjectDatasetKey(), null));
-    assertEquals(0, mapper().count(s2.getId(), DRAFT_COL, s.getSubjectDatasetKey(), null));
-    assertEquals(5, mapper().count(null, DRAFT_COL, s.getSubjectDatasetKey(), null));
-    assertEquals(2, mapper().count(null, DRAFT_COL, s2.getSubjectDatasetKey(), null));
-    assertEquals(2, mapper().count(s2.getId(), DRAFT_COL, null, null));
+    assertEquals(5, mapper().count(s.getId(), COL, s.getSubjectDatasetKey(), null));
+    assertEquals(0, mapper().count(s2.getId(), COL, s.getSubjectDatasetKey(), null));
+    assertEquals(5, mapper().count(null, COL, s.getSubjectDatasetKey(), null));
+    assertEquals(2, mapper().count(null, COL, s2.getSubjectDatasetKey(), null));
+    assertEquals(2, mapper().count(s2.getId(), COL, null, null));
     
     assertEquals(0, mapper().count(99999, null, null, null));
     assertEquals(0, mapper().count(99999, null, 789, null));
@@ -113,7 +113,7 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
 
   @Test
   public void deleteByDataset() throws Exception {
-    mapper().deleteByDataset(Datasets.DRAFT_COL);
+    mapper().deleteByDataset(Datasets.COL);
   }
 
   @Test

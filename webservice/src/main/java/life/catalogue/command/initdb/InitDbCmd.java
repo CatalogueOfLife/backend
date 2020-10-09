@@ -126,7 +126,7 @@ public class InitDbCmd extends AbstractPromptCmd {
       // add col dataset and partitions
       try (SqlSession session = factory.openSession()) {
         setupColPartition(session);
-        session.getMapper(DatasetPartitionMapper.class).createManagedSequences(Datasets.DRAFT_COL);
+        session.getMapper(DatasetPartitionMapper.class).createManagedSequences(Datasets.COL);
         session.commit();
       }
     
@@ -139,7 +139,7 @@ public class InitDbCmd extends AbstractPromptCmd {
   
       LOG.info("Update dataset sector counts");
       NameDao nd = new NameDao(factory, NameUsageIndexService.passThru(), NameIndexFactory.passThru());
-      new TaxonDao(factory, nd, NameUsageIndexService.passThru()).updateAllSectorCounts(Datasets.DRAFT_COL);
+      new TaxonDao(factory, nd, NameUsageIndexService.passThru()).updateAllSectorCounts(Datasets.COL);
       
       updateSearchIndex(cfg, factory);
     }
@@ -152,18 +152,18 @@ public class InitDbCmd extends AbstractPromptCmd {
     // https://github.com/Sp2000/colplus-repo#sector-exports
     PgCopyUtils.copy(pgc, "sector", "/life/catalogue/db/draft/sector.csv", ImmutableMap.<String, Object>builder()
         .put("mode", Sector.Mode.ATTACH)
-        .put("dataset_key", Datasets.DRAFT_COL)
+        .put("dataset_key", Datasets.COL)
         .put("created_by", Users.DB_INIT)
         .put("modified_by", Users.DB_INIT)
         .build());
-    PgCopyUtils.copy(pgc, "reference_"+Datasets.DRAFT_COL, "/life/catalogue/db/draft/reference.csv", ImmutableMap.<String, Object>builder()
-        .put("dataset_key", Datasets.DRAFT_COL)
+    PgCopyUtils.copy(pgc, "reference_"+Datasets.COL, "/life/catalogue/db/draft/reference.csv", ImmutableMap.<String, Object>builder()
+        .put("dataset_key", Datasets.COL)
         .put("created_by", Users.DB_INIT)
         .put("modified_by", Users.DB_INIT)
         .build());
     PgCopyUtils.copy(pgc, "estimate", "/life/catalogue/db/draft/estimate.csv", ImmutableMap.<String, Object>builder()
         .put("type", EstimateType.SPECIES_LIVING)
-        .put("dataset_key", Datasets.DRAFT_COL)
+        .put("dataset_key", Datasets.COL)
         .put("created_by", Users.DB_INIT)
         .put("modified_by", Users.DB_INIT)
         .build(),
@@ -172,8 +172,8 @@ public class InitDbCmd extends AbstractPromptCmd {
       )
     );
     // id,homotypic_name_id,rank,scientific_name,uninomial
-    PgCopyUtils.copy(pgc, "name_"+Datasets.DRAFT_COL, "/life/catalogue/db/draft/name.csv", ImmutableMap.<String, Object>builder()
-          .put("dataset_key", Datasets.DRAFT_COL)
+    PgCopyUtils.copy(pgc, "name_"+Datasets.COL, "/life/catalogue/db/draft/name.csv", ImmutableMap.<String, Object>builder()
+          .put("dataset_key", Datasets.COL)
           .put("origin", Origin.SOURCE)
           .put("type", NameType.SCIENTIFIC)
           .put("nom_status", NomStatus.ACCEPTABLE)
@@ -185,8 +185,8 @@ public class InitDbCmd extends AbstractPromptCmd {
             "authorship_normalized", x -> null
         )
     );
-    PgCopyUtils.copy(pgc, "name_usage_"+Datasets.DRAFT_COL, "/life/catalogue/db/draft/taxon.csv", ImmutableMap.<String, Object>builder()
-        .put("dataset_key", Datasets.DRAFT_COL)
+    PgCopyUtils.copy(pgc, "name_usage_"+Datasets.COL, "/life/catalogue/db/draft/taxon.csv", ImmutableMap.<String, Object>builder()
+        .put("dataset_key", Datasets.COL)
         .put("origin", Origin.SOURCE)
         .put("status", TaxonomicStatus.ACCEPTED)
         .put("is_synonym", false)
@@ -197,14 +197,14 @@ public class InitDbCmd extends AbstractPromptCmd {
     LOG.info("Update managed sequence values");
     try (SqlSession session = factory.openSession(true)) {
       DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
-      dpm.updateManagedSequences(Datasets.DRAFT_COL);
+      dpm.updateManagedSequences(Datasets.COL);
     }
 
     LOG.info("Match draft CoL to names index");
     // we create a new names index de novo to write new hierarchy names into the names index dataset
     try (NameIndex ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, factory, AuthorshipNormalizer.INSTANCE).started()) {
       DatasetMatcher matcher = new DatasetMatcher(factory, ni, false);
-      matcher.match(Datasets.DRAFT_COL, true);
+      matcher.match(Datasets.COL, true);
     }
   }
   
@@ -219,15 +219,15 @@ public class InitDbCmd extends AbstractPromptCmd {
 
         LOG.info("Build search index for draft catalogue");
         NameUsageIndexService indexService = new NameUsageIndexServiceEs(esClient, cfg.es, factory);
-        indexService.indexDataset(Datasets.DRAFT_COL);
+        indexService.indexDataset(Datasets.COL);
       }
     }
   }
 
   public static void setupColPartition(SqlSession session) {
-    Partitioner.partition(session, Datasets.DRAFT_COL);
-    Partitioner.indexAndAttach(session, Datasets.DRAFT_COL);
-    Partitioner.createManagedObjects(session, Datasets.DRAFT_COL);
+    Partitioner.partition(session, Datasets.COL);
+    Partitioner.indexAndAttach(session, Datasets.COL);
+    Partitioner.createManagedObjects(session, Datasets.COL);
     session.commit();
   }
   

@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.sql.SQLException;
 
-import static life.catalogue.api.vocab.Datasets.DRAFT_COL;
+import static life.catalogue.api.vocab.Datasets.COL;
 
 public class MybatisTestUtils {
   private static final Logger LOG = LoggerFactory.getLogger(MybatisTestUtils.class);
@@ -98,7 +98,7 @@ public class MybatisTestUtils {
   }
 
   public static void populateDraftTree(SqlSession session) {
-    populateTestTree(DRAFT_COL, session);
+    populateTestTree(COL, session);
   
     TaxonMapper tm = session.getMapper(TaxonMapper.class);
     tm.incDatasetSectorCount(DSID.draftID("t4"), 11, 1);

@@ -27,7 +27,7 @@ public class DecisionMapperTest extends BaseDecisionMapperTest<EditorialDecision
     super(DecisionMapper.class);
   }
   
-  final int catalogeKey = Datasets.DRAFT_COL;
+  final int catalogeKey = Datasets.COL;
   final int subjectDatasetKey = DATASET11.getKey();
   
   @Test
@@ -86,7 +86,7 @@ public class DecisionMapperTest extends BaseDecisionMapperTest<EditorialDecision
 
   public static EditorialDecision create(int subjectDatasetKey) {
     EditorialDecision d = new EditorialDecision();
-    d.setDatasetKey(Datasets.DRAFT_COL);
+    d.setDatasetKey(Datasets.COL);
     d.setSubjectDatasetKey(subjectDatasetKey);
     d.setSubject(TestEntityGenerator.newSimpleName());
     d.setMode(EditorialDecision.Mode.UPDATE);

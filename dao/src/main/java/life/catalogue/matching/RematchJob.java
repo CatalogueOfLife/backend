@@ -2,6 +2,7 @@ package life.catalogue.matching;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.api.model.User;
+import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.concurrent.BackgroundJob;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
@@ -11,9 +12,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.LinkedList;
 
 public class RematchJob extends BackgroundJob {
   private static final Logger LOG = LoggerFactory.getLogger(RematchJob.class);
@@ -53,9 +53,9 @@ public class RematchJob extends BackgroundJob {
 
   @Override
   public void execute() {
-    final List<Integer> keys;
+    final LinkedList<Integer> keys;
     if (datasetKeys != null && datasetKeys.length > 0) {
-      keys = new ArrayList<>();
+      keys = new LinkedList<>();
       for (int key : datasetKeys){
         keys.add(key);
       }
@@ -64,8 +64,14 @@ public class RematchJob extends BackgroundJob {
       try (SqlSession session = factory.openSession(true)) {
         DatasetMapper dm = session.getMapper(DatasetMapper.class);
         DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
-        keys = dm.keys();
+        keys = new LinkedList<>(dm.keys());
         keys.removeIf(key -> !dpm.exists(key));
+        if (keys.contains(Datasets.COL)) {
+          // make sure COL gets processed first so we get low keys for the higher ranks in COL
+          keys.remove(Datasets.COL);
+          keys.addFirst(Datasets.COL);
+
+        }
         // kill names index
         NamesIndexMapper nim = session.getMapper(NamesIndexMapper.class);
         nim.truncate();

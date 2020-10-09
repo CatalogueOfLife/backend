@@ -300,7 +300,7 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
   }
   
   private TreeNode getTreeNode(String id) {
-    return session().getMapper(TreeMapper.class).get(Datasets.DRAFT_COL, TreeNode.Type.CATALOGUE, DSID.draftID(id));
+    return session().getMapper(TreeMapper.class).get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.draftID(id));
     
   }
 
