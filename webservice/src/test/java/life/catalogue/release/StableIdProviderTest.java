@@ -54,6 +54,7 @@ public class StableIdProviderTest {
   }
 
   @Test
+  @Ignore
   public void run() throws Exception {
     provider.run();
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {

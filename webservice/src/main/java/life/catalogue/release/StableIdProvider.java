@@ -104,7 +104,11 @@ public class StableIdProvider {
         attempt2dataset.put(attempt, (int)rel.getKey());
         session.getMapper(NameUsageMapper.class).processNxIds(rel.getKey()).forEach(sn -> {
           counter.incrementAndGet();
-          ids.add(new ReleasedIds.ReleasedId(sn, attempt));
+          if (sn.getNameIndexId() == null) {
+            LOG.info("Existing release id {}:{} without a names index id. Skip!", rel.getKey(), sn.getId());
+          } else {
+            ids.add(new ReleasedIds.ReleasedId(sn, attempt));
+          }
         });
         LOG.info("Read {} usages from previous release {}, key={}. Total released ids = {}", counter, rel.getImportAttempt(), rel.getKey(), ids.size());
       }
