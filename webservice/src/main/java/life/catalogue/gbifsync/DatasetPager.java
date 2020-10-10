@@ -5,6 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Page;
+import life.catalogue.api.model.Person;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
@@ -24,10 +25,7 @@ import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -184,17 +182,31 @@ public class DatasetPager {
     d.setWebsite(uri(g.homepage));
     d.setLicense(SafeParser.parse(LicenseParser.PARSER, g.license).orElse(License.UNSPECIFIED, License.OTHER));
     d.setGeographicScope(coverage(g.geographicCoverages));
-    //TODO: convert contact and authors
-    d.setContact(null);
-    d.setAuthors(null);
-    d.setEditors(null);
+    // convert contact and authors based on contact type: https://github.com/gbif/gbif-api/blob/master/src/main/java/org/gbif/api/vocabulary/ContactType.java
+    // Not mapped: PUBLISHER,DISTRIBUTOR,METADATA_AUTHOR,TECHNICAL_POINT_OF_CONTACT,OWNER,PROCESSOR,USER,PROGRAMMER,DATA_ADMINISTRATOR,SYSTEM_ADMINISTRATOR,HEAD_OF_DELEGATION,TEMPORARY_HEAD_OF_DELEGATION,ADDITIONAL_DELEGATE,TEMPORARY_DELEGATE,REGIONAL_NODE_REPRESENTATIVE,NODE_MANAGER,NODE_STAFF
+    var contacts = byType(g.contacts, "POINT_OF_CONTACT", "ADMINISTRATIVE_POINT_OF_CONTACT");
+    if (!contacts.isEmpty()) {
+      d.setContact(contacts.get(0));
+    }
+    d.setAuthors(byType(g.contacts, "ORIGINATOR", "PRINCIPAL_INVESTIGATOR", "AUTHOR", "CONTENT_PROVIDER"));
+    d.setEditors(byType(g.contacts, "EDITOR", "CURATOR", "CUSTODIAN_STEWARD"));
     d.setNotes(null);
     d.setVersion(opt(g.pubDate));
     d.setCreated(LocalDateTime.now());
     LOG.debug("Dataset {} converted: {}", g.key, g.title);
     return d;
   }
-  
+
+  static List<Person> byType(List<GContact> contacts, String... type) {
+    List<Person> people = new ArrayList<>();
+    var types = Set.of(type);
+    for (GContact c : contacts) {
+      if (c.type != null && types.contains(c.type.toUpperCase())) {
+        people.add(new Person(c.firstName, c.lastName, c.email == null ? null : c.email.get(0), null));
+      }
+    }
+    return people;
+  }
   static String opt(Object obj) {
     return obj == null ? null : obj.toString();
   }
