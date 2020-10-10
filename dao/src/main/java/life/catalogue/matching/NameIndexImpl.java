@@ -273,7 +273,7 @@ public class NameIndexImpl implements NameIndex {
   @Override
   public void reset() {
     store.clear();
-    try (SqlSession session = sqlFactory.openSession()) {
+    try (SqlSession session = sqlFactory.openSession(true)) {
       NamesIndexMapper nim = session.getMapper(NamesIndexMapper.class);
       nim.truncate();
       nim.resetSequence();

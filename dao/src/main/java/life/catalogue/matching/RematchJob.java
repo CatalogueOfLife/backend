@@ -60,6 +60,9 @@ public class RematchJob extends BackgroundJob {
       }
     } else {
       LOG.warn("Rebuilt names index and rematch all datasets with data");
+      // kill names index
+      ni.reset();
+      // load dataset keys to rematch
       try (SqlSession session = factory.openSession(true)) {
         DatasetMapper dm = session.getMapper(DatasetMapper.class);
         DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
@@ -71,8 +74,6 @@ public class RematchJob extends BackgroundJob {
           keys.addFirst(Datasets.COL);
 
         }
-        // kill names index
-        ni.reset();
       }
     }
 

@@ -157,6 +157,24 @@ public class NameIndexImplTest {
     IndexName n2 = ni.get(2);
   }
 
+  @Test
+  public void truncate() throws Exception {
+    File fIdx = File.createTempFile("col", ".nidx");
+    if (fIdx.exists()) {
+      fIdx.delete();
+    }
+    setupPersistent(fIdx);
+    addApples();
+    assertEquals(5, ni.size());
+
+    ni.reset();
+    assertEquals(0, ni.size());
+
+    ni.add(create("Abies", "alba", null, "Miller"));
+    ni.add(create("Abies", "alba", null, "Duller"));
+    assertEquals(3, ni.size());
+  }
+
 
   private static IndexName create(String genus, String species){
     return create(genus, species, null);
