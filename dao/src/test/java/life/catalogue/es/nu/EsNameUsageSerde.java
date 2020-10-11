@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.EnumSet;
 
 import static org.junit.Assert.assertEquals;
@@ -62,7 +61,6 @@ public class EsNameUsageSerde extends EsReadTestBase {
     docIn.setRank(Rank.SPECIES);
     docIn.setStatus(TaxonomicStatus.ACCEPTED);
     docIn.setType(NameType.SCIENTIFIC);
-    docIn.setVernacularNames(Arrays.asList("Apple tree"));
 
     String json = EsModule.write(docIn);
     EsNameUsage docOut = EsModule.readDocument(json);

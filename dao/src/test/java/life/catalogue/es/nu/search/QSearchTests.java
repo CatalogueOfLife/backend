@@ -2,7 +2,6 @@ package life.catalogue.es.nu.search;
 
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Taxon;
-import life.catalogue.api.model.VernacularName;
 import life.catalogue.api.search.NameUsageRequest.SearchType;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchRequest.SearchContent;
@@ -12,7 +11,6 @@ import life.catalogue.es.EsReadTestBase;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.EnumSet;
 
 import static org.junit.Assert.assertEquals;
@@ -58,9 +56,6 @@ public class QSearchTests extends EsReadTestBase {
     assertEquals(1, search(query).getResult().size());
 
     query.setContent(EnumSet.of(SearchContent.AUTHORSHIP));
-    assertEquals(0, search(query).getResult().size());
-
-    query.setContent(EnumSet.of(SearchContent.VERNACULAR_NAME));
     assertEquals(0, search(query).getResult().size());
 
     query.getContent().add(SearchContent.SCIENTIFIC_NAME);
@@ -125,129 +120,6 @@ public class QSearchTests extends EsReadTestBase {
     NameUsageSearchResponse response = search(request);
 
     assertEquals(0, response.getResult().size());
-  }
-
-  @Test
-  public void test5() {
-
-    // ==> The query
-    NameUsageSearchRequest request = new NameUsageSearchRequest();
-    request.setQ("rosy");
-    request.setContent(EnumSet.of(SearchContent.VERNACULAR_NAME));
-
-    // Name, Usage & scientific name to prevent NPEs while indexing
-    Name name = new Name();
-    name.setScientificName("Foo");
-    Taxon t = new Taxon();
-    t.setName(name);
-    NameUsageWrapper w0 = new NameUsageWrapper(t);
-
-    VernacularName vn = new VernacularName();
-    vn.setName("Rosy Bee-eater");
-    w0.setVernacularNames(Arrays.asList(vn));
-    index(w0);
-
-    NameUsageSearchResponse response = search(request);
-
-    assertEquals(1, response.getResult().size());
-  }
-
-  @Test
-  public void vernacular() {
-
-    // ==> The query
-    NameUsageSearchRequest request = new NameUsageSearchRequest();
-    request.setQ("EATer");
-    request.setContent(EnumSet.of(SearchContent.VERNACULAR_NAME));
-
-    // Name, Usage & scientific name to prevent NPEs while indexing
-    Name name = new Name();
-    name.setScientificName("Foo");
-    NameUsageWrapper nuw = new NameUsageWrapper(new Taxon(name));
-
-    VernacularName vn = new VernacularName();
-    vn.setName("Rosy Bee-eater");
-    nuw.setVernacularNames(Arrays.asList(vn));
-    index(nuw);
-
-    NameUsageSearchResponse response = search(request);
-
-    assertEquals(1, response.getResult().size());
-  }
-
-  @Test
-  public void test7() {
-
-    // ==> The query
-    NameUsageSearchRequest request = new NameUsageSearchRequest();
-    request.setQ("Rosy Bee Eat");
-    request.setContent(EnumSet.of(SearchContent.VERNACULAR_NAME));
-
-    // Name, Usage & scientific name to prevent NPEs while indexing
-    Name name = new Name();
-    name.setScientificName("Foo");
-    Taxon t = new Taxon();
-    t.setName(name);
-    NameUsageWrapper w0 = new NameUsageWrapper(t);
-
-    VernacularName vn = new VernacularName();
-    vn.setName("Rosy Bee-eater");
-    w0.setVernacularNames(Arrays.asList(vn));
-    index(w0);
-
-    NameUsageSearchResponse response = search(request);
-
-    assertEquals(1, response.getResult().size());
-  }
-
-  @Test
-  public void test8() {
-
-    // ==> The query
-    NameUsageSearchRequest request = new NameUsageSearchRequest();
-    request.setQ("Eat Rosy Bee");
-    request.setContent(EnumSet.of(SearchContent.VERNACULAR_NAME));
-
-    // Name, Usage & scientific name to prevent NPEs while indexing
-    Name name = new Name();
-    name.setScientificName("Foo");
-    Taxon t = new Taxon();
-    t.setName(name);
-    NameUsageWrapper w0 = new NameUsageWrapper(t);
-
-    VernacularName vn = new VernacularName();
-    vn.setName("Rosy Bee-eater");
-    w0.setVernacularNames(Arrays.asList(vn));
-    index(w0);
-
-    NameUsageSearchResponse response = search(request);
-
-    assertEquals(1, response.getResult().size());
-  }
-
-  @Test
-  public void test9() {
-
-    // ==> The query
-    NameUsageSearchRequest request = new NameUsageSearchRequest();
-    request.setQ("Eat Rosy Bee");
-    request.setContent(EnumSet.of(SearchContent.VERNACULAR_NAME));
-
-    // Name, Usage & scientific name to prevent NPEs while indexing
-    Name name = new Name();
-    name.setScientificName("Foo");
-    Taxon t = new Taxon();
-    t.setName(name);
-    NameUsageWrapper w0 = new NameUsageWrapper(t);
-
-    VernacularName vn = new VernacularName();
-    vn.setName("ROSY BEE-EATER");
-    w0.setVernacularNames(Arrays.asList(vn));
-    index(w0);
-
-    NameUsageSearchResponse response = search(request);
-
-    assertEquals(1, response.getResult().size());
   }
 
   @Test // EXACT matching

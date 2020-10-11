@@ -38,7 +38,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   }
 
   public enum SearchContent {
-    SCIENTIFIC_NAME, AUTHORSHIP, VERNACULAR_NAME
+    SCIENTIFIC_NAME, AUTHORSHIP
   }
 
   static final Set<SearchContent> DEFAULT_CONTENT = Sets.immutableEnumSet(SearchContent.SCIENTIFIC_NAME, SearchContent.AUTHORSHIP);
@@ -64,12 +64,6 @@ public class NameUsageSearchRequest extends NameUsageRequest {
 
   @QueryParam("content")
   private Set<SearchContent> content = EnumSet.copyOf(DEFAULT_CONTENT);
-
-  /**
-   * Whether to include vernacular names in the response. Defaults to false
-   */
-  @QueryParam("vernacular")
-  private boolean vernacular = false;
 
   @QueryParam("highlight")
   private boolean highlight;
@@ -97,7 +91,6 @@ public class NameUsageSearchRequest extends NameUsageRequest {
       @JsonProperty("minRank") Rank minRank,
       @JsonProperty("maxRank") Rank maxRank) {
     super(q, fuzzy, minRank, maxRank, sortBy, reverse);
-    this.vernacular = vernacular;
     this.highlight = highlight;
     this.fuzzy = fuzzy;
     this.searchType = searchType;
@@ -118,7 +111,6 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     setFilters(other.filters);
     setFacets(other.facets);
     setContent(other.content);
-    this.vernacular = other.vernacular;
     this.highlight = other.highlight;
     this.searchType = other.searchType;
   }
@@ -216,7 +208,6 @@ public class NameUsageSearchRequest extends NameUsageRequest {
         (content == null || content.isEmpty())
         && (facets == null || facets.isEmpty())
         && (filters == null || filters.isEmpty())
-        && !vernacular
         && !highlight
         && !fuzzy
         && searchType == null;
@@ -330,14 +321,6 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     this.content = EnumSet.copyOf(DEFAULT_CONTENT);
   }
 
-  public boolean isVernacular() {
-    return vernacular;
-  }
-
-  public void setVernacular(boolean vernacular) {
-    this.vernacular = vernacular;
-  }
-
   public boolean isHighlight() {
     return highlight;
   }
@@ -366,8 +349,7 @@ public class NameUsageSearchRequest extends NameUsageRequest {
     if (!(o instanceof NameUsageSearchRequest)) return false;
     if (!super.equals(o)) return false;
     NameUsageSearchRequest that = (NameUsageSearchRequest) o;
-    return vernacular == that.vernacular &&
-      highlight == that.highlight &&
+    return highlight == that.highlight &&
       Objects.equals(filters, that.filters) &&
       Objects.equals(facets, that.facets) &&
       Objects.equals(content, that.content) &&
@@ -376,6 +358,6 @@ public class NameUsageSearchRequest extends NameUsageRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), filters, facets, content, vernacular, highlight, searchType);
+    return Objects.hash(super.hashCode(), filters, facets, content, highlight, searchType);
   }
 }

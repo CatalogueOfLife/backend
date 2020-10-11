@@ -500,11 +500,6 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     // Match on scientific name
     usages.get(0).getUsage().getName().setSpecificEpithet("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 
-    // Match on vernacular name
-    VernacularName vn = new VernacularName();
-    vn.setName("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-    usages.get(1).setVernacularNames(Arrays.asList(vn));
-
     // No match (missing 'W')
     usages.get(2).getUsage().getName().setSpecificEpithet("ABCDEFGHIJKLMNOPQRSTUV");
 
@@ -597,49 +592,6 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  public void test05() {
-
-    // Define search
-    NameUsageSearchRequest query = new NameUsageSearchRequest(NameUsageSearchRequest.SearchContent.VERNACULAR_NAME);
-    query.setHighlight(false);
-    query.setQ("UNLIKELY");
-
-    // Match
-    NameUsageWrapper nuw1 = minimalTaxon();
-    List<String> vernaculars = Arrays.asList("AN UNLIKELY NAME");
-    nuw1.setVernacularNames(create(vernaculars));
-    index(nuw1);
-
-    // Match
-    NameUsageWrapper nuw2 = minimalTaxon();
-    vernaculars = Arrays.asList("ANOTHER NAME", "AN UNLIKELY NAME");
-    nuw2.setVernacularNames(create(vernaculars));
-    index(nuw2);
-
-    // Match
-    NameUsageWrapper nuw3 = minimalTaxon();
-    vernaculars = Arrays.asList("YET ANOTHER NAME", "ANOTHER NAME", "AN UNLIKELY NAME");
-    nuw3.setVernacularNames(create(vernaculars));
-    index(nuw3);
-
-    // Match
-    NameUsageWrapper nuw4 = minimalTaxon();
-    vernaculars = Arrays.asList("it's unlikely. A capital case");
-    nuw4.setVernacularNames(create(vernaculars));
-    index(nuw4);
-
-    // No match
-    NameUsageWrapper nuw5 = minimalTaxon();
-    vernaculars = Arrays.asList("un LIKEly IT OR NOT");
-    nuw5.setVernacularNames(create(vernaculars));
-    index(nuw5);
-
-    ResultPage<NameUsageWrapper> result = search(query);
-
-    assertEquals(4, result.getResult().size());
-  }
-
-  @Test
   public void authorshipOnlySearch() {
 
     // Define search
@@ -651,32 +603,27 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     // No match
     NameUsageWrapper nuw1 = minimalTaxon();
-    List<String> vernaculars = Arrays.asList("AN UNLIKELY NAME");
-    nuw1.setVernacularNames(create(vernaculars));
+    nuw1.getUsage().getName().setScientificName("AN UNLIKELY NAME");
     index(nuw1);
 
     // No match
     NameUsageWrapper nuw2 = minimalTaxon();
-    vernaculars = Arrays.asList("ANOTHER NAME", "AN UNLIKELY NAME");
-    nuw2.setVernacularNames(create(vernaculars));
+    nuw2.getUsage().getName().setScientificName("AN UNLIKELY NAME");
     index(nuw2);
 
     // No match
     NameUsageWrapper nuw3 = minimalTaxon();
-    vernaculars = Arrays.asList("YET ANOTHER NAME", "ANOTHER NAME", "AN UNLIKELY NAME");
-    nuw3.setVernacularNames(create(vernaculars));
+    nuw3.getUsage().getName().setScientificName("AN UNLIKELY NAME");
     index(nuw3);
 
     // No match
     NameUsageWrapper nuw4 = minimalTaxon();
-    vernaculars = Arrays.asList("it's unlike capital case");
-    nuw4.setVernacularNames(create(vernaculars));
+    nuw4.getUsage().getName().setScientificName("it's unlike capital case");
     index(nuw4);
 
     // No match
     NameUsageWrapper nuw5 = minimalTaxon();
-    vernaculars = Arrays.asList("LIKE IT OR NOT");
-    nuw5.setVernacularNames(create(vernaculars));
+    nuw5.getUsage().getName().setScientificName("LIKE IT OR NOT");
     index(nuw5);
 
     ResultPage<NameUsageWrapper> result = search(query);
@@ -782,68 +729,6 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     assertNull(s.getNamePhrase());
     assertEquals("Miller 1901", s.getAccordingTo());
     assertEquals("Abies alba montana Smith & Miller, 1879 sensu Miller 1901", s.getLabel());
-  }
-
-  @Test
-  public void vernacularNameTransliterationTest01() {
-    index(vernacularNameTransliterationTest_data());
-
-    NameUsageSearchRequest query = new NameUsageSearchRequest();
-    query.setHighlight(false);
-    query.setQ("Hier");
-    assertTrue(search(query).getResult().isEmpty());
-
-    query.setSingleContent(NameUsageSearchRequest.SearchContent.VERNACULAR_NAME);
-    assertTrue(search(query).getResult().isEmpty());
-
-    query.setQ("Hierogliefen");
-    ResultPage<NameUsageWrapper> result = search(query);
-    assertEquals(1, result.getResult().size());
-    assertEquals("1", result.getResult().iterator().next().getId());
-  }
-
-  @Test
-  public void vernacularNameTransliterationTest02() {
-    NameUsageSearchRequest query = new NameUsageSearchRequest(NameUsageSearchRequest.SearchContent.VERNACULAR_NAME);
-    query.setHighlight(false);
-    query.setQ("hIErogliefen");
-    index(vernacularNameTransliterationTest_data());
-    ResultPage<NameUsageWrapper> result = search(query);
-    assertEquals(1, result.getResult().size());
-    assertEquals("1", result.getResult().iterator().next().getId());
-  }
-
-  @Test
-  public void vernacularNameTransliterationTest03() {
-    NameUsageSearchRequest query = new NameUsageSearchRequest(NameUsageSearchRequest.SearchContent.VERNACULAR_NAME);
-    query.setHighlight(false);
-    query.setQ("ȞȋȆrogliefen");
-    index(vernacularNameTransliterationTest_data());
-    ResultPage<NameUsageWrapper> result = search(query);
-    assertEquals(1, result.getResult().size());
-    assertEquals("1", result.getResult().iterator().next().getId());
-  }
-
-  public List<NameUsageWrapper> vernacularNameTransliterationTest_data() {
-
-    List<NameUsageWrapper> data = new ArrayList<>();
-
-    NameUsageWrapper nuw = minimalTaxon();
-    nuw.setId("1");
-    VernacularName vn = new VernacularName();
-    vn.setName("Hiërogliefen heersbeestje");
-    nuw.setVernacularNames(List.of(vn));
-    data.add(nuw);
-
-    nuw = minimalTaxon();
-    nuw.setId("2");
-    vn = new VernacularName();
-    vn.setName("Ăäuũîèçrōcō");
-    nuw.setVernacularNames(List.of(vn));
-    data.add(nuw);
-
-    return data;
-
   }
 
 }

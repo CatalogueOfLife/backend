@@ -31,26 +31,20 @@ class ResponseConverter implements UpwardConverter<EsResponse<EsNameUsage>, Name
    * @return
    * @throws IOException
    */
-  NameUsageSearchResponse convertEsResponse(Page page, boolean inclVernaculars) throws IOException {
+  NameUsageSearchResponse convertEsResponse(Page page) throws IOException {
     int total = esResponse.getHits().getTotalNumHits();
-    List<NameUsageWrapper> nameUsages = convertNameUsageDocuments(inclVernaculars);
+    List<NameUsageWrapper> nameUsages = convertNameUsageDocuments();
     Map<NameUsageSearchParameter, Set<FacetValue<?>>> facets = generateFacets();
     return new NameUsageSearchResponse(page, total, nameUsages, facets);
   }
 
-  /**
-   * @param inclVernaculars See https://github.com/CatalogueOfLife/backend/issues/200
-   */
-  private List<NameUsageWrapper> convertNameUsageDocuments(boolean inclVernaculars) throws IOException {
+  private List<NameUsageWrapper> convertNameUsageDocuments() throws IOException {
     List<SearchHit<EsNameUsage>> hits = esResponse.getHits().getHits();
     List<NameUsageWrapper> nuws = new ArrayList<>(hits.size());
     for (SearchHit<EsNameUsage> hit : hits) {
       String payload = hit.getSource().getPayload();
       NameUsageWrapper nuw = NameUsageWrapperConverter.inflate(payload);
       NameUsageWrapperConverter.enrichPayload(nuw, hit.getSource());
-      if (!inclVernaculars) {
-        nuw.setVernacularNames(null);
-      }
       nuws.add(nuw);
     }
     return nuws;

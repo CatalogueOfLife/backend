@@ -107,7 +107,7 @@ public class EsReadWriteTestBase extends ExternalResource {
    */
   protected NameUsageSearchResponse query(Query query) throws IOException {
     EsSearchRequest req = EsSearchRequest.emptyRequest().where(query).size(Page.MAX_LIMIT);
-    return createSearchService().search(esSetupRule.getEsConfig().nameUsage.name, req, new Page(Page.MAX_LIMIT), false);
+    return createSearchService().search(esSetupRule.getEsConfig().nameUsage.name, req, new Page(Page.MAX_LIMIT));
   }
 
   /**

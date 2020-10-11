@@ -1,9 +1,5 @@
 package life.catalogue.es.nu.search;
 
-import java.io.IOException;
-import org.elasticsearch.client.RestClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.NameUsageSearchRequest;
@@ -14,6 +10,12 @@ import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.es.nu.NameUsageQueryService;
 import life.catalogue.es.query.EsSearchRequest;
 import life.catalogue.es.response.EsResponse;
+import org.elasticsearch.client.RestClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+
 import static life.catalogue.api.search.NameUsageRequest.SearchType.EXACT;
 import static life.catalogue.api.search.NameUsageSearchRequest.SearchContent.SCIENTIFIC_NAME;
 import static life.catalogue.es.EsUtil.getSearchTerms;
@@ -47,17 +49,17 @@ public class NameUsageSearchServiceEs extends NameUsageQueryService implements N
     }
     RequestTranslator translator = new RequestTranslator(request, page);
     EsSearchRequest esSearchRequest = translator.translateRequest();
-    NameUsageSearchResponse response = search(index, esSearchRequest, page, request.isVernacular());
+    NameUsageSearchResponse response = search(index, esSearchRequest, page);
     ResponsePostProcessor processor = new ResponsePostProcessor(request, response);
     return processor.processResponse();
   }
 
   @VisibleForTesting
-  public NameUsageSearchResponse search(String index, EsSearchRequest esSearchRequest, Page page, boolean inclVernaculars)
+  public NameUsageSearchResponse search(String index, EsSearchRequest esSearchRequest, Page page)
       throws IOException {
     EsResponse<EsNameUsage> esResponse = executeSearchRequest(index, esSearchRequest);
     ResponseConverter converter = new ResponseConverter(esResponse);
-    return converter.convertEsResponse(page, inclVernaculars);
+    return converter.convertEsResponse(page);
   }
 
 }

@@ -51,7 +51,6 @@ public class EsNameUsage {
   private Set<Issue> issues;
   private Set<Environment> environments;
   @Analyzers(STANDARD_ASCII)
-  private List<String> vernacularNames;
   private List<String> classificationIds;
   private Boolean extinct;
 
@@ -249,14 +248,6 @@ public class EsNameUsage {
     this.status = status;
   }
 
-  public List<String> getVernacularNames() {
-    return vernacularNames;
-  }
-
-  public void setVernacularNames(List<String> vernacularNames) {
-    this.vernacularNames = vernacularNames;
-  }
-
   public Set<Issue> getIssues() {
     return issues;
   }
@@ -325,7 +316,7 @@ public class EsNameUsage {
   public int hashCode() {
     return Objects.hash(acceptedName, authorship, authorshipComplete, authorshipYear, classification, classificationIds, datasetKey,
         decisions, documentId, extinct, issues, nameFields, nameId, nameIndexId, nameIndexCanonicalId, nameStrings, nomCode, nomStatus, payload,
-        publishedInId, publisherKey, rank, scientificName, sectorDatasetKey, sectorKey, status, type, usageId, vernacularNames);
+        publishedInId, publisherKey, rank, scientificName, sectorDatasetKey, sectorKey, status, type, usageId);
   }
 
   @Override
@@ -365,8 +356,7 @@ public class EsNameUsage {
         && Objects.equals(sectorDatasetKey, other.sectorDatasetKey)
         && Objects.equals(sectorKey, other.sectorKey)
         && status == other.status && type == other.type
-        && Objects.equals(usageId, other.usageId)
-        && Objects.equals(vernacularNames, other.vernacularNames);
+        && Objects.equals(usageId, other.usageId);
   }
 
 }

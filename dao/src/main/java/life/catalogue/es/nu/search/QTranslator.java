@@ -1,14 +1,15 @@
 package life.catalogue.es.nu.search;
 
-import java.util.ArrayList;
-import java.util.List;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.es.nu.QMatcher;
 import life.catalogue.es.query.BoolQuery;
 import life.catalogue.es.query.Query;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import static life.catalogue.api.search.NameUsageSearchRequest.SearchContent.AUTHORSHIP;
 import static life.catalogue.api.search.NameUsageSearchRequest.SearchContent.SCIENTIFIC_NAME;
-import static life.catalogue.api.search.NameUsageSearchRequest.SearchContent.VERNACULAR_NAME;
 
 class QTranslator {
 
@@ -29,9 +30,6 @@ class QTranslator {
     List<Query> queries = new ArrayList<Query>(request.getContent().size());
     if (request.getContent().contains(SCIENTIFIC_NAME)) {
       queries.add(matcher.getScientificNameQuery().withBoost(SCINAME_EXTRA_BOOST));
-    }
-    if (request.getContent().contains(VERNACULAR_NAME)) {
-      queries.add(matcher.getVernacularNameQuery());
     }
     if (request.getContent().contains(AUTHORSHIP)) {
       queries.add(matcher.getAuthorshipQuery());

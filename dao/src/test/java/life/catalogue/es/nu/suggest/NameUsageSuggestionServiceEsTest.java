@@ -122,7 +122,7 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     n.setDatasetKey(1);
     n.setId("4");
     n.setRank(Rank.SUBSPECIES);
-    EsNameUsage doc4 = newDocument(n, THE_NAME);
+    EsNameUsage doc4 = newDocument(n);
 
     indexRaw(doc1, doc2, doc3, doc4);
 
@@ -177,13 +177,13 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     n.setId("4");
     n.setDatasetKey(1);
     n.setRank(Rank.SPECIES);
-    EsNameUsage doc4 = newDocument(n, "abcde fghij");
+    EsNameUsage doc4 = newDocument(n);
 
     n = new Name();
     n.setDatasetKey(1);
     n.setId("5");
     n.setRank(Rank.SPECIES);
-    EsNameUsage doc5 = newDocument(n, "abcde", "fghij");
+    EsNameUsage doc5 = newDocument(n);
 
     n = new Name();
     n.setDatasetKey(1);
@@ -219,7 +219,7 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     n.setDatasetKey(1);
     n.setId("2");
     n.setRank(Rank.SPECIES);
-    EsNameUsage doc2 = newDocument(n, "Foo Bar Larusca");
+    EsNameUsage doc2 = newDocument(n);
 
     indexRaw(doc1, doc2);
 

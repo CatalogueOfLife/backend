@@ -1,14 +1,11 @@
 package life.catalogue.es.nu;
 
+import life.catalogue.api.search.NameUsageRequest;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.es.ddl.MultiField;
 import life.catalogue.es.query.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import life.catalogue.api.search.NameUsageRequest;
-import life.catalogue.dao.CatCopy;
-import life.catalogue.es.ddl.MultiField;
-
-import static life.catalogue.es.query.AbstractMatchQuery.Operator.*;
 
 /**
  * Generates the queries for the suggest service and the search service. See also {@link MultiField}
@@ -85,14 +82,6 @@ public abstract class QMatcher {
    * max ngram size is reached. It's hard to arrive at watertight relevance scores though, because the
    * effects of TD/IF-scoring are impossible to estimate unless you also know your data really well.
    */
-
-  public Query getVernacularNameQuery() {
-    String q = CatCopy.transLatin.transliterate(request.getQ().toLowerCase());
-    return new DisMaxQuery()
-        .subquery(new StandardAsciiQuery(FLD_VERNACULAR, q).withBoost(100.0))
-        .subquery(new EdgeNgramQuery(FLD_VERNACULAR, q).withOperator(AND));
-
-  }
 
   public Query getAuthorshipQuery() {
     String q = request.getQ().toLowerCase();

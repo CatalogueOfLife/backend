@@ -1,17 +1,15 @@
 package life.catalogue.es.nu.search;
 
-import java.util.EnumSet;
-import org.gbif.nameparser.api.Rank;
-import org.junit.Test;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchRequest.SearchContent;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.es.EsModule;
-import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
-import static life.catalogue.api.search.NameUsageSearchParameter.ISSUE;
-import static life.catalogue.api.search.NameUsageSearchParameter.NAME_ID;
-import static life.catalogue.api.search.NameUsageSearchParameter.RANK;
-import static life.catalogue.api.search.NameUsageSearchParameter.STATUS;
+import org.gbif.nameparser.api.Rank;
+import org.junit.Test;
+
+import java.util.EnumSet;
+
+import static life.catalogue.api.search.NameUsageSearchParameter.*;
 
 /*
  * No real tests here. Just to make sure we don't get exceptions & to peek at the results of specifying an aggregation via the object model.
@@ -44,7 +42,7 @@ public class FacetsTranslatorTest {
     // Add non-facet filters
     request.addFilter(NAME_ID, "ABCDEFG");
     request.setQ("anim");
-    request.setContent(EnumSet.of(SearchContent.AUTHORSHIP, SearchContent.VERNACULAR_NAME));
+    request.setContent(EnumSet.of(SearchContent.AUTHORSHIP));
 
     FacetsTranslator translator = new FacetsTranslator(request);
 
@@ -75,7 +73,7 @@ public class FacetsTranslatorTest {
     // Add non-facet filters
     request.addFilter(NAME_ID, "ABCDEFG");
     request.setQ("anim");
-    request.setContent(EnumSet.of(SearchContent.AUTHORSHIP, SearchContent.VERNACULAR_NAME));
+    request.setContent(EnumSet.of(SearchContent.AUTHORSHIP));
 
     FacetsTranslator translator = new FacetsTranslator(request);
 
@@ -134,7 +132,7 @@ public class FacetsTranslatorTest {
     // Add non-facet filters
     request.addFilter(NAME_ID, "ABCDEFG");
     request.setQ("anim");
-    request.setContent(EnumSet.of(SearchContent.AUTHORSHIP, SearchContent.VERNACULAR_NAME));
+    request.setContent(EnumSet.of(SearchContent.AUTHORSHIP));
 
     FacetsTranslator translator = new FacetsTranslator(request);
 

@@ -4,7 +4,6 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.NameField;
 import life.catalogue.common.tax.SciNameNormalizer;
-import life.catalogue.dao.CatCopy;
 import life.catalogue.es.*;
 import org.apache.commons.io.IOUtils;
 
@@ -228,7 +227,6 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     EsNameUsage doc = new EsNameUsage();
     saveScientificName(nuw, doc);
     saveAuthorship(nuw, doc);
-    saveVernacularNames(nuw, doc);
     saveClassification(doc, nuw);
     saveDecisions(nuw, doc);
     doc.setIssues(nuw.getIssues());
@@ -300,17 +298,6 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     }
     if (!year.isEmpty()) {
       doc.setAuthorshipYear(year);
-    }
-  }
-
-  private static void saveVernacularNames(NameUsageWrapper nuw, EsNameUsage doc) {
-    if (notEmpty(nuw.getVernacularNames())) {
-      List<String> names = nuw.getVernacularNames()
-          .stream()
-          .map(VernacularName::getName)
-          .map(CatCopy.transLatin::transform)
-          .collect(Collectors.toList());
-      doc.setVernacularNames(names);
     }
   }
 

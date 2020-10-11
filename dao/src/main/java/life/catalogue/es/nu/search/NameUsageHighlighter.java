@@ -1,21 +1,19 @@
 package life.catalogue.es.nu.search;
 
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchRequest.SearchContent;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageWrapper;
 import org.gbif.nameparser.api.Authorship;
 
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import static life.catalogue.api.search.NameUsageSearchRequest.SearchContent.AUTHORSHIP;
 import static life.catalogue.api.search.NameUsageSearchRequest.SearchContent.SCIENTIFIC_NAME;
-import static life.catalogue.api.search.NameUsageSearchRequest.SearchContent.VERNACULAR_NAME;
 import static life.catalogue.common.collection.CollectionUtils.isEmpty;
 import static life.catalogue.es.nu.NameUsageWrapperConverter.normalizeStrongly;
 import static life.catalogue.es.nu.NameUsageWrapperConverter.normalizeWeakly;
@@ -42,7 +40,7 @@ class NameUsageHighlighter {
   private final NameUsageSearchRequest request;
   private final NameUsageSearchResponse response;
 
-  private Pattern pattern; // pattern for authorship and vernacular names
+  private Pattern pattern; // pattern for authorship
   private Pattern patternWN; // pattern for weakly normalized Q
   private Pattern patternSN; // pattern for strongly normalized Q
 
@@ -50,7 +48,7 @@ class NameUsageHighlighter {
     this.request = request;
     this.response = response;
     Set<SearchContent> sc = request.getContent();
-    if (sc.contains(AUTHORSHIP) || sc.contains(VERNACULAR_NAME)) {
+    if (sc.contains(AUTHORSHIP)) {
       pattern = Pattern.compile(Pattern.quote(request.getQ().toLowerCase()));
     }
     if (sc.contains(SCIENTIFIC_NAME)) {
@@ -71,9 +69,6 @@ class NameUsageHighlighter {
     if (sc.contains(AUTHORSHIP)) {
       highlightAuthorShip(nuw);
     }
-    if (sc.contains(VERNACULAR_NAME) && !isEmpty(nuw.getVernacularNames())) {
-      highlightVernacularNames(nuw);
-    }
     if (sc.contains(SCIENTIFIC_NAME)) {
       highlightScientificName(nuw);
     }
@@ -88,10 +83,6 @@ class NameUsageHighlighter {
     if (authorship != null && !isEmpty(authorship.getAuthors())) {
       authorship.setAuthors(authorship.getAuthors().stream().map(this::highlight).collect(Collectors.toList()));
     }
-  }
-
-  private void highlightVernacularNames(NameUsageWrapper nuw) {
-    nuw.getVernacularNames().forEach(vn -> vn.setName(highlight(vn.getName())));
   }
 
   private void highlightScientificName(NameUsageWrapper nuw) {

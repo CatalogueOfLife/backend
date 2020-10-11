@@ -589,8 +589,6 @@ public class TestEntityGenerator {
     EnumSet<Issue> issues = EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.NAME_VARIANT,
         Issue.DISTRIBUTION_AREA_INVALID);
     nuw.setIssues(issues);
-    nuw.setVernacularNames(
-        Arrays.asList(newVernacularName("zeemeeuw", "nel"), newVernacularName("seagull")));
     return copy(nuw);
   }
 

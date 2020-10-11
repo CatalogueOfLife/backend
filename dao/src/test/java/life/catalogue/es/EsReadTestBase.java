@@ -158,14 +158,6 @@ public class EsReadTestBase {
     return newDocument(n, TaxonomicStatus.ACCEPTED);
   }
 
-  protected EsNameUsage newDocument(Name n, String... vernacularNames) {
-    EsNameUsage doc = newDocument(n, TaxonomicStatus.ACCEPTED);
-    if (vernacularNames != null) {
-      doc.setVernacularNames(Arrays.asList(vernacularNames));
-    }
-    return doc;
-  }
-
   protected EsNameUsage newDocument(Name n, TaxonomicStatus status, String... classification) {
     EsNameUsage doc = new EsNameUsage();
     doc.setUsageId(n.getId());

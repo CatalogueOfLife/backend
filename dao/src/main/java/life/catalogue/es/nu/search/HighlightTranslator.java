@@ -1,13 +1,13 @@
 package life.catalogue.es.nu.search;
 
+import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.api.search.NameUsageSearchRequest.SearchContent;
+import life.catalogue.es.query.Highlight;
+
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-
-import life.catalogue.api.search.NameUsageSearchRequest;
-import life.catalogue.api.search.NameUsageSearchRequest.SearchContent;
-import life.catalogue.es.query.Highlight;
 
 import static life.catalogue.common.collection.CollectionUtils.isEmpty;
 
@@ -44,8 +44,6 @@ class HighlightTranslator {
         case SCIENTIFIC_NAME:
           fields.add("scientificName");
           break;
-        case VERNACULAR_NAME:
-          fields.add("vernacularNames");
         default:
           break;
       }

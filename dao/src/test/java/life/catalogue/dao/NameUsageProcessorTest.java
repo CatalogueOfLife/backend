@@ -65,10 +65,7 @@ public class NameUsageProcessorTest extends DaoTestBase {
         } else {
           assertNotNull(t.getParentId());
         }
-        for (VernacularName v : obj.getVernacularNames()) {
-          assertNotNull(v.getName());
-        }
-        
+
       } else {
         assertTrue(obj.getUsage().isSynonym());
         synCounter.incrementAndGet();

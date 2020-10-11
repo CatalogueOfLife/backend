@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.SimpleNameClassification;
-import life.catalogue.api.model.VernacularName;
 import life.catalogue.api.vocab.Issue;
 
 import java.util.List;
@@ -15,7 +14,6 @@ import java.util.UUID;
 public class NameUsageWrapper extends SimpleNameClassification {
 
   private NameUsage usage;
-  private List<VernacularName> vernacularNames;
   private Set<Issue> issues;
   private List<SimpleDecision> decisions;
   private Integer sectorDatasetKey;
@@ -42,14 +40,6 @@ public class NameUsageWrapper extends SimpleNameClassification {
 
   public void setUsage(NameUsage usage) {
     this.usage = usage;
-  }
-
-  public List<VernacularName> getVernacularNames() {
-    return vernacularNames;
-  }
-
-  public void setVernacularNames(List<VernacularName> vernacularNames) {
-    this.vernacularNames = vernacularNames;
   }
 
   public List<SimpleDecision> getDecisions() {
@@ -83,7 +73,6 @@ public class NameUsageWrapper extends SimpleNameClassification {
     if (!super.equals(o)) return false;
     NameUsageWrapper that = (NameUsageWrapper) o;
     return Objects.equals(usage, that.usage) &&
-        Objects.equals(vernacularNames, that.vernacularNames) &&
         Objects.equals(issues, that.issues) &&
         Objects.equals(decisions, that.decisions) &&
         Objects.equals(sectorDatasetKey, that.sectorDatasetKey) &&
@@ -92,7 +81,7 @@ public class NameUsageWrapper extends SimpleNameClassification {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), usage, vernacularNames, issues, decisions, sectorDatasetKey, publisherKey);
+    return Objects.hash(super.hashCode(), usage, issues, decisions, sectorDatasetKey, publisherKey);
   }
 
   @Override
