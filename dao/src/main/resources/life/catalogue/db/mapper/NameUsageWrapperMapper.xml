@@ -17,9 +17,6 @@
         <case value="true" resultType="Synonym" resultMap="life.catalogue.db.mapper.SynonymMapper.synonymResultMap"/>
       </discriminator>
     </association>
-    <collection property="vernacularNames" ofType="VernacularName" autoMapping="true" columnPrefix="v_" notNullColumn="id">
-      <id property="id" column="id"/>
-    </collection>
     <collection property="decisions" ofType="SimpleDecision" autoMapping="true" columnPrefix="ed_" notNullColumn="id">
       <id property="id" column="id"/>
       <id property="datasetKey" column="dataset_key"/>
@@ -49,27 +46,31 @@
     d.gbif_publisher_key AS publisherKey,
     s.subject_dataset_key AS sectorDatasetKey,
     array_distinct(vbn.issues || vbt.issues || xrel.issues || xdis.issues || xmed.issues || xver.issues || xtyp.issues || nrel.issues) AS issues,
-    ed.id AS ed_id, ed.dataset_key AS ed_dataset_key, ed.mode AS ed_mode,
-    vn.id AS v_id, vn.name AS v_name, vn.latin AS v_latin, vn.language AS v_language
+    ed.id AS ed_id, ed.dataset_key AS ed_dataset_key, ed.mode AS ed_mode
     FROM
     <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM"/>
     JOIN dataset d ON d.key=u.dataset_key
     LEFT JOIN sector s ON s.id=u.sector_key
     LEFT JOIN verbatim_${partition} vbt ON vbt.id=u.verbatim_key
     LEFT JOIN verbatim_${partition} vbn ON vbn.id=n.verbatim_key
-    LEFT JOIN (SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM taxon_rel_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id GROUP
-    BY x.taxon_id) xrel ON xrel.taxon_id=u.id
-    LEFT JOIN (SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM distribution_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id GROUP
-    BY x.taxon_id) xdis ON xdis.taxon_id=u.id
-    LEFT JOIN (SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM media_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id GROUP BY
-    x.taxon_id) xmed ON xmed.taxon_id=u.id
-    LEFT JOIN (SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM vernacular_name_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id
-    GROUP BY x.taxon_id) xver ON xver.taxon_id=u.id
-    LEFT JOIN (SELECT name_id, array_agg_nonull(v.issues) AS issues FROM type_material_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id GROUP
-    BY x.name_id) xtyp ON xtyp.name_id=u.name_id
-    LEFT JOIN (SELECT name_id, array_agg_nonull(v.issues) AS issues FROM name_rel_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id GROUP BY
-    x.name_id) nrel ON nrel.name_id=u.name_id
-    LEFT JOIN vernacular_name_${partition} vn ON vn.taxon_id=u.id
+    LEFT JOIN (
+      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM taxon_rel_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id GROUP BY x.taxon_id
+    ) xrel ON xrel.taxon_id=u.id
+    LEFT JOIN (
+      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM distribution_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id GROUP BY x.taxon_id
+    ) xdis ON xdis.taxon_id=u.id
+    LEFT JOIN (
+      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM media_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id GROUP BY x.taxon_id
+    ) xmed ON xmed.taxon_id=u.id
+    LEFT JOIN (
+      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM vernacular_name_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id GROUP BY x.taxon_id
+    ) xver ON xver.taxon_id=u.id
+    LEFT JOIN (
+      SELECT name_id, array_agg_nonull(v.issues) AS issues FROM type_material_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id GROUP BY x.name_id
+    ) xtyp ON xtyp.name_id=u.name_id
+    LEFT JOIN (
+      SELECT name_id, array_agg_nonull(v.issues) AS issues FROM name_rel_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id GROUP BY x.name_id
+    ) nrel ON nrel.name_id=u.name_id
     LEFT JOIN decision ed ON ed.subject_dataset_key=#{datasetKey} AND ed.subject_id=u.id
   </sql>
 
@@ -89,10 +90,10 @@
   <select id="processTree" parameterType="map" resultMap="classificationResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     WITH RECURSIVE tree AS (
-    SELECT #{usageId} AS uid, classification_sn(#{datasetKey}, #{usageId}, true) AS classification
+      SELECT #{usageId} AS uid, classification_sn(#{datasetKey}, #{usageId}, true) AS classification
     UNION ALL
-    SELECT u.id, array_append(tree.classification, (u.id,n.rank,n.scientific_name)::simple_name)
-    FROM name_usage_${datasetKey} u JOIN name_${datasetKey} n ON u.name_id=n.id JOIN tree ON (tree.uid = u.parent_id)
+      SELECT u.id, array_append(tree.classification, (u.id,n.rank,n.scientific_name)::simple_name)
+      FROM name_usage_${datasetKey} u JOIN name_${datasetKey} n ON u.name_id=n.id JOIN tree ON (tree.uid = u.parent_id)
     <if test="sectorKey != null">
       WHERE u.sector_key = #{sectorKey}
     </if>
