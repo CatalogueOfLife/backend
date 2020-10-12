@@ -93,9 +93,10 @@ public class DatasetMatcher {
       total++;
       Integer oldId = n.getNameIndexId();
       NameMatch m = ni.match(n, allowInserts, false);
-      
-      if (!Objects.equals(oldId, m.getName().getKey())) {
-        nm.updateMatch(datasetKey, n.getId(), m.getName().getKey(), m.getType());
+
+      Integer newKey = m.hasMatch() ? m.getName().getKey() : null;
+      if (!Objects.equals(oldId, newKey)) {
+        nm.updateMatch(datasetKey, n.getId(), newKey, m.getType());
         if (updateIssues) {
           IssueContainer v = n.getVerbatimKey() != null ? vmGet.getIssues(key.id(n.getVerbatimKey())) : null;
           if (v != null) {
