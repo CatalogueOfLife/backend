@@ -197,7 +197,7 @@ public class StringUtils {
    * null and empty strings empty. The case of existing characters will be kept and the appended chars will use the case of the last char of
    * the original string.
    * <p>
-   * For example "Carlb" becomes "Carla", "Aua" "Atz", "zZz" "aAaa" or "Abies zzz" "Abiet aaa".
+   * For example "Carla" becomes "Carlb", "Atz" -> "Aua", "zZz" -> "aAaa" or "Abies zzz" -> "Abiet aaa".
    *
    * @param x
    * @return

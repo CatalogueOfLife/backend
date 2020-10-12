@@ -1,5 +1,6 @@
 package life.catalogue.command.es;
 
+import com.google.common.base.Preconditions;
 import com.zaxxer.hikari.HikariDataSource;
 import io.dropwizard.setup.Bootstrap;
 import life.catalogue.WsServerConfig;
@@ -26,6 +27,7 @@ public class IndexCmd extends AbstractPromptCmd {
 
   private static final String ARG_KEY = "key";
   private static final String ARG_ALL = "all";
+  private static final String ARG_THREADS = "t";
 
   public IndexCmd() {
     super("index", "Re-indexes all datasets into Elasticsearch");
@@ -48,6 +50,11 @@ public class IndexCmd extends AbstractPromptCmd {
             .required(false)
             .setDefault(false)
             .help("index all datasets into a new index by date");
+    subparser.addArgument("-"+ ARG_THREADS)
+      .dest(ARG_THREADS)
+      .type(Integer.class)
+      .required(false)
+      .help("number of indexing threads to use. Override config entry esConfig.indexingThreads");
   }
 
   public void prePromt(Bootstrap<WsServerConfig> bootstrap, Namespace namespace, WsServerConfig cfg){
@@ -76,7 +83,10 @@ public class IndexCmd extends AbstractPromptCmd {
       try (HikariDataSource dataSource = cfg.db.pool()) {
         SqlSessionFactory factory = MybatisFactory.configure(dataSource, "indexAllCmd");
         NameUsageIndexService svc = new NameUsageIndexServiceEs(esClient, cfg.es, factory);
-
+        if (namespace.getInt(ARG_THREADS) != null) {
+          cfg.es.indexingThreads = namespace.getInt(ARG_THREADS);
+          Preconditions.checkArgument(cfg.es.indexingThreads > 0, "Needs at least one indexing thread");
+        }
         if (namespace.getBoolean(ARG_ALL)) {
           svc.indexAll();
 

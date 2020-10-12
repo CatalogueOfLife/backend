@@ -1,18 +1,22 @@
 package life.catalogue.matching;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Preconditions;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.concurrent.BackgroundJob;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.function.IntPredicate;
 
 public class RematchJob extends BackgroundJob {
   private static final Logger LOG = LoggerFactory.getLogger(RematchJob.class);
@@ -23,7 +27,19 @@ public class RematchJob extends BackgroundJob {
   private final int[] datasetKeys;
 
   public static RematchJob all(User user, SqlSessionFactory factory, NameIndex ni){
-    return new RematchJob(user, factory, ni);
+    LOG.warn("Rebuilt names index and rematch all datasets with data");
+    // kill names index
+    ni.reset();
+    // load dataset keys to rematch
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
+      IntSet keys = new IntOpenHashSet(dm.keys());
+      keys.remove(Datasets.COL);
+      keys.removeIf((IntPredicate) key -> !dpm.exists(key));
+      // make sure COL gets processed first so we get low keys for the higher ranks in COL
+      return some(user, factory, ni, ArrayUtils.insert(0, keys.toIntArray(), Datasets.COL));
+    }
   }
 
   public static RematchJob one(User user, SqlSessionFactory factory, NameIndex ni, int datasetKey){
@@ -36,7 +52,7 @@ public class RematchJob extends BackgroundJob {
 
   private RematchJob(User user, SqlSessionFactory factory, NameIndex ni, int... datasetKeys) {
     super(user.getKey());
-    this.datasetKeys = datasetKeys;
+    this.datasetKeys = Preconditions.checkNotNull(datasetKeys);
     this.factory = factory;
     this.ni = ni;
   }
@@ -52,40 +68,15 @@ public class RematchJob extends BackgroundJob {
 
   @Override
   public void execute() {
-    final LinkedList<Integer> keys;
-    if (datasetKeys != null && datasetKeys.length > 0) {
-      keys = new LinkedList<>();
-      for (int key : datasetKeys){
-        keys.add(key);
-      }
-    } else {
-      LOG.warn("Rebuilt names index and rematch all datasets with data");
-      // kill names index
-      ni.reset();
-      // load dataset keys to rematch
-      try (SqlSession session = factory.openSession(true)) {
-        DatasetMapper dm = session.getMapper(DatasetMapper.class);
-        DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
-        keys = new LinkedList<>(dm.keys());
-        keys.removeIf(key -> !dpm.exists(key));
-        if (keys.contains(Datasets.COL)) {
-          // make sure COL gets processed first so we get low keys for the higher ranks in COL
-          keys.remove(Datasets.COL);
-          keys.addFirst(Datasets.COL);
-
-        }
-      }
-    }
-
-    LOG.info("Rematching {} datasets with data. Triggered by {}", keys.size(), getUserKey());
+    LOG.info("Rematching {} datasets with data. Triggered by {}", datasetKeys.length, getUserKey());
     DatasetMatcher matcher = new DatasetMatcher(factory, ni, true);
-    for (int key : keys) {
+    for (int key : datasetKeys) {
       matcher.match(key, true);
     }
 
     LOG.info("Rematched {} datasets ({} failed), updating {} names from {} in total",
       matcher.getDatasets(),
-      keys.size() - matcher.getDatasets(),
+      datasetKeys.length - matcher.getDatasets(),
       matcher.getUpdated(),
       matcher.getTotal()
     );

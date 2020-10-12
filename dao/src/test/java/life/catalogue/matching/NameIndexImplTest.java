@@ -8,6 +8,7 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.common.tax.AuthorshipNormalizer;
+import life.catalogue.common.text.StringUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.NameMapper;
@@ -165,13 +166,25 @@ public class NameIndexImplTest {
     }
     setupPersistent(fIdx);
     addApples();
-    assertEquals(5, ni.size());
+    ni.add(create("Abies", "alba", null, "Miller"));
+    ni.add(create("Abies", "alba", null, "Duller"));
+    assertEquals(8, ni.size());
+    IndexName n = ni.get(9);
+    assertEquals("Abies alba", n.getScientificName());
+    assertEquals("Duller", n.getAuthorship());
+
+    String epi = "alba";
+    for (int i = 0; i<11000; i++) {
+      epi = StringUtils.increase(epi);
+      ni.add(create("Abies", epi, ""+(1800+i)%200, "Döring"));
+    }
 
     ni.reset();
     assertEquals(0, ni.size());
 
     ni.add(create("Abies", "alba", null, "Miller"));
     ni.add(create("Abies", "alba", null, "Duller"));
+    n = ni.get(2);
     assertEquals(3, ni.size());
   }
 

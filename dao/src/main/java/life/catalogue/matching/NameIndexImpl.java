@@ -272,10 +272,13 @@ public class NameIndexImpl implements NameIndex {
 
   @Override
   public void reset() {
+    LOG.warn("Removing all entries from the names index store");
     store.clear();
     try (SqlSession session = sqlFactory.openSession(true)) {
       NamesIndexMapper nim = session.getMapper(NamesIndexMapper.class);
+      LOG.warn("Truncating the names index postgres table");
       nim.truncate();
+      LOG.info("Resetting names index sequence, count = {}", nim.count());
       nim.resetSequence();
     }
   }
