@@ -97,10 +97,10 @@
   </select>
 
   <update id="truncate">
-    TRUNCATE names_index
+    TRUNCATE names_index RESTART IDENTITY
   </update>
 
-  <update id="resetSequence">
+  <update id="updateSequence">
     SELECT setval('names_index_id_seq', (SELECT COALESCE(max(id),1) FROM names_index))
   </update>
 

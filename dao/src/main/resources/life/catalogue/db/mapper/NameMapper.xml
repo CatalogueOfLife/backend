@@ -354,7 +354,7 @@
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    ORDER BY rank
+    ORDER BY rank, scientific_name
   </select>
 
   <select id="processSince" parameterType="map" resultMap="nameResultMap" resultOrdered="true" fetchSize="5000" resultSetType="FORWARD_ONLY">

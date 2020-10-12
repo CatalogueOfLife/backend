@@ -278,8 +278,6 @@ public class NameIndexImpl implements NameIndex {
       NamesIndexMapper nim = session.getMapper(NamesIndexMapper.class);
       LOG.warn("Truncating the names index postgres table");
       nim.truncate();
-      LOG.info("Resetting names index sequence, count = {}", nim.count());
-      nim.resetSequence();
     }
   }
 

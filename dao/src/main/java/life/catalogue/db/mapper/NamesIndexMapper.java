@@ -28,5 +28,5 @@ public interface NamesIndexMapper extends CRUD<Integer, IndexName> {
   /**
    * Resets the primary key sequence to the next highest int or 1 if no records exist.
    */
-  void resetSequence();
+  void updateSequence();
 }

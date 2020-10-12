@@ -41,10 +41,9 @@ public class NamesIndexMapperTest extends CRUDTestBase<Integer, IndexName, Names
     mapper().truncate();
     assertEquals(0, mapper().count());
 
-    mapper().resetSequence();
     IndexName n = createTestEntity(-1);
     mapper().create(n);
-    assertEquals(2, (int) n.getKey());
+    assertEquals(1, (int) n.getKey());
   }
 
   /**

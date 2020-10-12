@@ -222,7 +222,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       pm.updateIdSequences(testData.key);
     }
     // names index keys
-    session.getMapper(NamesIndexMapper.class).resetSequence();
+    session.getMapper(NamesIndexMapper.class).updateSequence();
     session.commit();
   }
 
