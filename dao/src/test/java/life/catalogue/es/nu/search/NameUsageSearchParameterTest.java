@@ -74,6 +74,11 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
     List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw3);
     assertEquals(expected, search(query).getResult());
 
+    query = new NameUsageSearchRequest();
+    query.addFilter(TAXON_ID, "4");
+    expected = Arrays.asList(nuw2, nuw3, nuw4);
+    assertEquals(expected, search(query).getResult());
+
     countdown(TAXON_ID);
   }
 

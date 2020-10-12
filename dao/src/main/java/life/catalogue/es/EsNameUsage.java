@@ -50,7 +50,7 @@ public class EsNameUsage {
   private TaxonomicStatus status;
   private Set<Issue> issues;
   private Set<Environment> environments;
-  @Analyzers(STANDARD_ASCII)
+  @Analyzers(KEYWORD)
   private List<String> classificationIds;
   private Boolean extinct;
 
