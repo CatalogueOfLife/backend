@@ -71,7 +71,11 @@
     </if>
   </sql>
 
-  <resultMap id="vernacularNameResultMap" type="VernacularNameUsage" autoMapping="true">
+  <resultMap id="vernacularNameResultMap" type="VernacularName" autoMapping="true">
+    <id property="id" column="id"/>
+  </resultMap>
+
+  <resultMap id="vernacularNameUsageResultMap" type="VernacularNameUsage" autoMapping="true">
     <id property="id" column="id"/>
     <result property="taxonID" column="taxon_id"/>
   </resultMap>
@@ -99,7 +103,7 @@
     WHERE vn.id = #{key.id}
   </select>
 
-  <select id="search" resultMap="vernacularNameResultMap">
+  <select id="search" resultMap="vernacularNameUsageResultMap">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
