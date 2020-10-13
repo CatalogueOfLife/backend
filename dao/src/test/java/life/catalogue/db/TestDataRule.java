@@ -28,7 +28,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -221,8 +224,6 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     if (testData.key != null) {
       pm.updateIdSequences(testData.key);
     }
-    // names index keys
-    session.getMapper(NamesIndexMapper.class).updateSequence();
     session.commit();
   }
 
@@ -234,7 +235,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       st.execute("TRUNCATE sector CASCADE");
       st.execute("TRUNCATE estimate CASCADE");
       st.execute("TRUNCATE decision CASCADE");
-      st.execute("TRUNCATE names_index");
+      st.execute("TRUNCATE names_index RESTART IDENTITY");
       session.getConnection().commit();
     }
   }
@@ -285,7 +286,10 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
           if (!skipGlobalTable) {
             copyGlobalTable(pgc, "dataset");
             copyGlobalTable(pgc, "sector");
-            copyGlobalTable(pgc, "names_index");
+            if (copyGlobalTable(pgc, "names_index")) {
+              // update names index keys if we added data
+              session.getMapper(NamesIndexMapper.class).updateSequence();
+            }
           }
 
           for (int key : testData.datasetKeys) {
@@ -342,19 +346,19 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     return String.valueOf(ts.isSynonym());
   }
 
-  private void copyGlobalTable(PgConnection pgc, String table) throws IOException, SQLException {
-    copyTable(pgc, table + ".csv", table, Collections.EMPTY_MAP, Collections.EMPTY_MAP);
+  private boolean copyGlobalTable(PgConnection pgc, String table) throws IOException, SQLException {
+    return copyTable(pgc, table + ".csv", table, Collections.EMPTY_MAP, Collections.EMPTY_MAP);
   }
 
-  private void copyPartitionedTable(PgConnection pgc, String table, int datasetKey, Map<String, Object> defaults) throws IOException, SQLException {
-    copyPartitionedTable(pgc, table, datasetKey, defaults, Collections.EMPTY_MAP);
+  private boolean copyPartitionedTable(PgConnection pgc, String table, int datasetKey, Map<String, Object> defaults) throws IOException, SQLException {
+    return copyPartitionedTable(pgc, table, datasetKey, defaults, Collections.EMPTY_MAP);
   }
 
-  private void copyPartitionedTable(PgConnection pgc, String table, int datasetKey, Map<String, Object> defaults, Map<String, Function<String[], String>> funcs) throws IOException, SQLException {
-    copyTable(pgc, table + "_" + datasetKey + ".csv", table + "_" + datasetKey, defaults, funcs);
+  private boolean copyPartitionedTable(PgConnection pgc, String table, int datasetKey, Map<String, Object> defaults, Map<String, Function<String[], String>> funcs) throws IOException, SQLException {
+    return copyTable(pgc, table + "_" + datasetKey + ".csv", table + "_" + datasetKey, defaults, funcs);
   }
 
-  private void copyTable(PgConnection pgc, String filename, String table, Map<String, Object> defaults, Map<String, Function<String[], String>> funcs)
+  private boolean copyTable(PgConnection pgc, String filename, String table, Map<String, Object> defaults, Map<String, Function<String[], String>> funcs)
       throws IOException, SQLException {
     String resource = "/test-data/" + testData.name.toLowerCase() + "/" + filename;
     URL url = PgCopyUtils.class.getResource(resource);
@@ -365,6 +369,8 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
         defaults.putAll(testData.defaultValues.get(table));
       }
       PgCopyUtils.copy(pgc, table, resource, defaults, funcs);
+      return true;
     }
+    return false;
   }
 }

@@ -177,6 +177,7 @@ public abstract class AbstractProjectCopy implements Runnable {
   }
 
   void updateState(ImportState state) {
+    LOG.info("Change state for dataset {} to {}", newDatasetKey, state);
     metrics.setState(state);
     diDao.update(metrics);
     interruptIfCancelled();
