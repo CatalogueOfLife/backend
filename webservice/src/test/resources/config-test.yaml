@@ -13,7 +13,7 @@ logging:
     - type: console
 db:
   host: ${db.host}
-  port: 5432
+  port: ${db.port}
   database: ${db.database}
   user: ${db.user}
   password: ${db.password}

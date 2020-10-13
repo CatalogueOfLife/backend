@@ -112,6 +112,7 @@
         To use a different server please activate a personal profile -->
         <db.host>localhost</db.host>
         <db.database>colplus</db.database>
+        <db.port>5432</db.port>
         <db.user>postgres</db.user>
         <db.password>postgres</db.password>
         <!-- default to a local instance -->
