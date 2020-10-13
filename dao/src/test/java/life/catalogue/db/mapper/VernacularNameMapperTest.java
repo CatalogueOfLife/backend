@@ -2,7 +2,11 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.Page;
 import life.catalogue.api.model.VernacularName;
+import life.catalogue.api.search.VernacularNameUsage;
+import life.catalogue.api.search.VernacularSearchRequest;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -10,10 +14,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static life.catalogue.api.TestEntityGenerator.newVernacularName;
+import static org.junit.Assert.assertEquals;
 
-/**
- *
- */
 public class VernacularNameMapperTest extends TaxonExtensionMapperTest<VernacularName, VernacularNameMapper> {
 
 	public VernacularNameMapperTest() {
@@ -34,4 +36,28 @@ public class VernacularNameMapperTest extends TaxonExtensionMapperTest<Vernacula
         .collect(Collectors.toList());
 	}
 
+  @Test
+  public void search() throws Exception {
+    insert("Brauner Berg-Adler", "deu");
+    insert("Grüner Berg-Adler", "deu");
+    insert("Seeadler", "deu");
+
+    VernacularSearchRequest req = VernacularSearchRequest.byQuery("adler");
+	  List<VernacularNameUsage> resp = mapper().search(tax.getDatasetKey(), req, new Page());
+	  assertEquals(3, resp.size());
+    assertEquals(3, mapper().count(tax.getDatasetKey(), req));
+  }
+
+  VernacularName insert(String name, String lang) {
+	  if (tax == null) {
+      tax = TestEntityGenerator.newTaxon(3);
+      insertTaxon(tax);
+    }
+    VernacularName v = newVernacularName(name);
+    v.setDatasetKey(tax.getDatasetKey());
+    v.setLanguage(lang);
+    TestEntityGenerator.setUser(v);
+    mapper().create(v, tax.getId());
+    return v;
+  }
 }

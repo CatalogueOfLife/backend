@@ -58,8 +58,22 @@
 
   <sql id="FROM">vernacular_name_${partition} vn</sql>
 
-  <resultMap id="vernacularNameResultMap" type="VernacularName" autoMapping="true">
+  <sql id="SEARCH_WHERE">
+    <if test="req != null">
+      <where>
+        <if test="req.q != null">
+          vn.name ILIKE '%${req.q}%' OR vn.latin ILIKE '%${req.q}%'
+        </if>
+        <if test="req.language != null">
+          AND vn.language = #{req.language}
+        </if>
+      </where>
+    </if>
+  </sql>
+
+  <resultMap id="vernacularNameResultMap" type="VernacularNameUsage" autoMapping="true">
     <id property="id" column="id"/>
+    <result property="taxonID" column="taxon_id"/>
   </resultMap>
 
   <resultMap id="vernacularExtNameResultMap" type="TaxonExtension" autoMapping="true">
@@ -72,29 +86,39 @@
 
   <select id="listByTaxon" resultMap="vernacularNameResultMap">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE vn.taxon_id = #{key.id}
     ORDER BY name
   </select>
 
   <select id="get" resultMap="vernacularNameResultMap">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE vn.id = #{key.id}
+  </select>
+
+  <select id="search" resultMap="vernacularNameResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    <include refid="SEARCH_WHERE"/>
+    ORDER BY name
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
+  <select id="count" resultType="integer">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT count(*)
+    FROM <include refid="FROM"/>
+    <include refid="SEARCH_WHERE"/>
   </select>
 
   <select id="processDataset" parameterType="map" resultMap="vernacularExtNameResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
   </select>
 
   <insert id="create" parameterType="VernacularName" useGeneratedKeys="true" keyProperty="obj.id">
