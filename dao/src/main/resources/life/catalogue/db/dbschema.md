@@ -10,6 +10,35 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### vernacular search
+```
+ALTER TABLE vernacular_name
+  ADD COLUMN doc tsvector
+  GENERATED ALWAYS AS (to_tsvector('simple2', coalesce(name, '') || ' ' || coalesce(latin, ''))) STORED;
+```
+
+Then create new indices on each partition with 
+with the `execSql --sqlfile vernacular-gen.sql` command using the following sql template:
+
+```
+ALTER TABLE vernacular_name DETACH PARTITION vernacular_name_{KEY};
+ALTER TABLE vernacular_name_{KEY} RENAME TO vernacular_name_old_{KEY};
+CREATE TABLE vernacular_name_{KEY} (LIKE vernacular_name INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+INSERT INTO vernacular_name_{KEY} (id,dataset_key,verbatim_key,created_by,modified_by,created,modified,language,country,taxon_id,name,latin,area,sex,reference_id) SELECT id,dataset_key,verbatim_key,created_by,modified_by,created,modified,language,country,taxon_id,name,latin,area,sex,reference_id FROM vernacular_name_old_{KEY};
+DROP TABLE vernacular_name_old_{KEY};
+
+ALTER TABLE vernacular_name_{KEY} ADD PRIMARY KEY (id);
+CREATE INDEX ON vernacular_name_{KEY} USING GIN (doc);
+CREATE INDEX ON vernacular_name_{KEY} (taxon_id);
+CREATE INDEX ON vernacular_name_{KEY} (verbatim_key);
+ALTER TABLE vernacular_name_{KEY} ADD CONSTRAINT vernacular_name_{KEY}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES name_usage_{KEY} (id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE vernacular_name_{KEY} ADD CONSTRAINT vernacular_name_{KEY}_reference_id_fk FOREIGN KEY (reference_id) REFERENCES reference_{KEY} (id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE vernacular_name_{KEY} ADD CONSTRAINT vernacular_name_{KEY}_verbatim_key_fk FOREIGN KEY (verbatim_key) REFERENCES verbatim_{KEY} (id);
+
+ALTER TABLE vernacular_name ATTACH PARTITION vernacular_name_{KEY} FOR VALUES IN ( {KEY} );
+```
+
+
 ### 2020-10-09 person custom type
 ```
 CREATE TYPE person AS (given text, family text, email text, orcid text);

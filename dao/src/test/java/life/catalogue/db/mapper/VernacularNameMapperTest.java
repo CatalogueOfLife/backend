@@ -39,13 +39,13 @@ public class VernacularNameMapperTest extends TaxonExtensionMapperTest<Vernacula
   @Test
   public void search() throws Exception {
     insert("Brauner Berg-Adler", "deu");
-    insert("Grüner Berg-Adler", "deu");
+    insert("Grüner Berg Adler", "deu");
     insert("Seeadler", "deu");
-
+    commit();
     VernacularSearchRequest req = VernacularSearchRequest.byQuery("adler");
 	  List<VernacularNameUsage> resp = mapper().search(tax.getDatasetKey(), req, new Page());
-	  assertEquals(3, resp.size());
-    assertEquals(3, mapper().count(tax.getDatasetKey(), req));
+	  assertEquals(2, resp.size());
+    assertEquals(2, mapper().count(tax.getDatasetKey(), req));
   }
 
   VernacularName insert(String name, String lang) {

@@ -5,7 +5,7 @@
 <mapper namespace="life.catalogue.db.mapper.DatasetPartitionMapper">
 
   <update id="createTable" parameterType="map">
-    CREATE TABLE ${table}_${key} (LIKE ${table} INCLUDING DEFAULTS INCLUDING CONSTRAINTS);
+    CREATE TABLE ${table}_${key} (LIKE ${table} INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
     <if test="table == 'name'">
       CREATE TRIGGER name_trigger_${key} BEFORE INSERT OR UPDATE
       ON name_${key} FOR EACH ROW
@@ -165,7 +165,7 @@
     ALTER TABLE vernacular_name_${key} ADD PRIMARY KEY (id);
     CREATE INDEX ON vernacular_name_${key} (taxon_id);
     CREATE INDEX ON vernacular_name_${key} (verbatim_key);
-    CREATE INDEX ON vernacular_name_${key} (lower(name));
+    CREATE INDEX ON vernacular_name_${key} USING GIN (doc);
     ALTER TABLE vernacular_name_${key} ADD CONSTRAINT vernacular_name_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES name_usage_${key} (id) ON DELETE CASCADE ON UPDATE CASCADE;
     ALTER TABLE vernacular_name_${key} ADD CONSTRAINT vernacular_name_${key}_reference_id_fk FOREIGN KEY (reference_id) REFERENCES reference_${key} (id) ON DELETE CASCADE ON UPDATE CASCADE;
     ALTER TABLE vernacular_name_${key} ADD CONSTRAINT vernacular_name_${key}_verbatim_key_fk FOREIGN KEY (verbatim_key) REFERENCES verbatim_${key} (id);

@@ -1070,7 +1070,8 @@ CREATE TABLE vernacular_name (
   latin TEXT,
   area TEXT,
   sex SEX,
-  reference_id TEXT
+  reference_id TEXT,
+  doc tsvector GENERATED ALWAYS AS (to_tsvector('simple2', coalesce(name, '') || ' ' || coalesce(latin, ''))) STORED
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE distribution (

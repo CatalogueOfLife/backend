@@ -62,7 +62,7 @@
     <if test="req != null">
       <where>
         <if test="req.q != null">
-          vn.name ILIKE '%${req.q}%' OR vn.latin ILIKE '%${req.q}%'
+          vn.doc @@ to_tsquery('${req.q}')
         </if>
         <if test="req.language != null">
           AND vn.language = #{req.language}
