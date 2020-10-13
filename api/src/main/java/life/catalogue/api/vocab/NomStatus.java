@@ -157,23 +157,23 @@ public enum NomStatus {
 
 
   private final NomStatus parent;
-  private final String botany;
+  private final String botanical;
   private final String abbreviated;
-  private final String zoology;
+  private final String zoological;
 
-  NomStatus(String botany, String abbreviated, String zoology) {
-    this(null, botany, abbreviated, zoology);
+  NomStatus(String botanical, String abbreviated, String zoological) {
+    this(null, botanical, abbreviated, zoological);
   }
 
-  NomStatus(NomStatus parent, String botany, String abbreviated, String zoology) {
+  NomStatus(NomStatus parent, String botanical, String abbreviated, String zoological) {
     this.parent = parent;
-    this.botany = botany;
+    this.botanical = botanical;
     this.abbreviated = abbreviated;
-    this.zoology = zoology;
+    this.zoological = zoological;
   }
   
   public String getBotanicalLabel() {
-    return botany;
+    return botanical;
   }
   
   /**
@@ -187,7 +187,7 @@ public enum NomStatus {
   
   @Nullable
   public String getZoologicalLabel() {
-    return zoology;
+    return zoological;
   }
 
   /**
@@ -203,10 +203,10 @@ public enum NomStatus {
       case BACTERIAL:
       case CULTIVARS:
       case VIRUS:
-        return botany;
+        return botanical;
 
       default:
-        return zoology;
+        return zoological;
     }
   }
 
