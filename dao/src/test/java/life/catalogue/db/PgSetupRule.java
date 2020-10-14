@@ -102,7 +102,6 @@ public class PgSetupRule extends ExternalResource {
       runner.runScript(Resources.getResourceAsReader(PgConfig.SCHEMA_FILE));
       con.commit();
     }
-  
     setupMybatis(cfg);
   }
 

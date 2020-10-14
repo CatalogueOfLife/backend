@@ -1,12 +1,14 @@
-version: '1.0 alpha'
-title: Catalogue of Life Clearinghouse API
-description: 'This is the Catalogue of Life API that drives all of the [CoL Clearinghouse UI](http://data.catalogue.life).
-The API is still in development and not finalized, small changes are still expected to take place before the release of version 1.0.
+version: '1.0 beta'
+title: COL ChecklistBank API
+description: 'This is the Catalogue of Life ChecklistBank API that drives all of [CoL ChecklistBank](http://data.catalogue.life).
+The API is still in active development and not finalized, small changes are still expected to take place before the release of version 1.0.
 
-If the documentation here is too sparse please also consult the [previous but heavily outdated API docs](https://catalogueoflife.github.io/general/api/api.html).
-These are much richer and contain real work examples, but we just cannot keep up with the documentation manually.
+For questions, suggestions and discussion please subscribe to our [API mailing list](https://lists.gbif.org/mailman/listinfo/col-users)
+, which we also use to inform about planned downtimes and breaking API changes.
 
-Use with caution!
+Alternatively you are welcome to [file a bug report or feature request](https://github.com/CatalogueOfLife/backend/issues/new) in our github repository.
 '
 contact:
   email: mdoering@gbif.org
+
+https://lists.gbif:org/mailman/listinfo/col-users

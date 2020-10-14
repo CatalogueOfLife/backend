@@ -30,7 +30,7 @@ $$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
 
 DROP TRIGGER dataset_trigger ON dataset;
 DROP FUNCTION dataset_doc_update;
-ALTER TABLE dataset DROP COLUMN doc;
+ALTER TABLE  DROP COLUMN doc;
 ALTER TABLE dataset ADD COLUMN doc tsvector GENERATED ALWAYS AS (
   setweight(to_tsvector('simple2', coalesce(alias,'')), 'A') ||
   setweight(to_tsvector('simple2', coalesce(title,'')), 'A') ||
@@ -41,23 +41,21 @@ ALTER TABLE dataset ADD COLUMN doc tsvector GENERATED ALWAYS AS (
   setweight(to_tsvector('simple2', coalesce(person_str(editors), '')), 'C') ||
   setweight(to_tsvector('simple2', coalesce(gbif_key::text,'')), 'C')
 ) STORED;
+CREATE INDEX ON dataset USING gin(doc);
 
--- we try to minimize downtime so we rename cols instead of just drop and add which takes some minutes
 DROP FUNCTION verbatim_doc_update CASCADE;
-ALTER TABLE verbatim ADD COLUMN doc2 tsvector GENERATED ALWAYS AS (jsonb_to_tsvector('simple2', coalesce(terms,'{}'::jsonb), '["string", "numeric"]')) STORED;
-ALTER TABLE verbatim RENAME COLUMN doc TO doc_old;
-ALTER TABLE verbatim RENAME COLUMN doc2 TO doc;
-ALTER TABLE verbatim DROP COLUMN doc_old;
+ALTER TABLE verbatim DROP COLUMN doc;
+ALTER TABLE verbatim ADD COLUMN doc tsvector GENERATED ALWAYS AS (jsonb_to_tsvector('simple2', coalesce(terms,'{}'::jsonb), '["string", "numeric"]')) STORED;
+CREATE INDEX ON verbatim USING gin(doc);
 
 DROP FUNCTION reference_doc_update CASCADE;
-ALTER TABLE reference ADD COLUMN doc2 tsvector GENERATED ALWAYS AS (
+ALTER TABLE reference DROP COLUMN doc;
+ALTER TABLE reference ADD COLUMN doc tsvector GENERATED ALWAYS AS (
     jsonb_to_tsvector('simple2', coalesce(csl,'{}'::jsonb), '["string", "numeric"]') ||
           to_tsvector('simple2', coalesce(citation,'')) ||
           to_tsvector('simple2', coalesce(year::text,''))
 ) STORED;
-ALTER TABLE reference RENAME COLUMN doc TO doc_old;
-ALTER TABLE reference RENAME COLUMN doc2 TO doc;
-ALTER TABLE reference DROP COLUMN doc_old;
+CREATE INDEX ON reference USING gin(doc);
 ```
 
 ### 2020-10-13 vernacular search
