@@ -19,6 +19,7 @@ db:
   password: ${db.password}
 adminDb:
   database: postgres
+  port: ${db.port}
   user: ${db.user}
   password: ${db.password}
 normalizer:

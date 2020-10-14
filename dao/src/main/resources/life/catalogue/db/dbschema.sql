@@ -12,9 +12,9 @@ ALTER TEXT SEARCH CONFIGURATION simple2 ALTER MAPPING FOR hword, hword_part, wor
 -- see https://stackoverflow.com/questions/11005036/does-postgresql-support-accent-insensitive-collations
 CREATE OR REPLACE FUNCTION f_unaccent(text)
   RETURNS text AS
-$func$
+$$
 SELECT public.unaccent('public.unaccent', $1)  -- schema-qualify function and dictionary
-$func$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
+$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
 
 
 -- all enum types produces via PgSetupRuleTest.pgEnumSql()
@@ -561,6 +561,23 @@ CREATE TYPE simple_name AS (id text, rank rank, name text);
 -- Person type to avoid extra tables
 CREATE TYPE person AS (given text, family text, email text, orcid text);
 
+-- immutable person casts to text function to be used in indexes
+CREATE OR REPLACE FUNCTION person_str(person) RETURNS text AS
+$$
+SELECT $1::text
+$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION person_str(person[]) RETURNS text AS
+$$
+SELECT array_to_string($1, ' ')
+$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION array_str(text[]) RETURNS text AS
+$$
+SELECT array_to_string($1, ' ')
+$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
+
+
 CREATE TABLE "user" (
   key serial PRIMARY KEY,
   last_login TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
@@ -614,8 +631,22 @@ CREATE TABLE dataset (
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   deleted TIMESTAMP WITHOUT TIME ZONE,
-  doc tsvector
+  doc tsvector GENERATED ALWAYS AS (
+      setweight(to_tsvector('simple2', coalesce(alias,'')), 'A') ||
+      setweight(to_tsvector('simple2', coalesce(title,'')), 'A') ||
+      setweight(to_tsvector('simple2', coalesce(array_str(organisations), '')), 'B') ||
+      setweight(to_tsvector('simple2', coalesce(description,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(person_str(contact), '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(person_str(authors), '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(person_str(editors), '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(gbif_key::text,'')), 'C')
+  ) STORED
 );
+
+CREATE INDEX ON dataset USING gin (f_unaccent(title) gin_trgm_ops);
+CREATE INDEX ON dataset USING gin (f_unaccent(alias) gin_trgm_ops);
+CREATE INDEX ON dataset USING gin(doc);
+
 
 CREATE TABLE dataset_archive (LIKE dataset);
 ALTER TABLE dataset_archive
@@ -634,32 +665,7 @@ ALTER TABLE project_source
   ADD COLUMN dataset_key INTEGER REFERENCES dataset;
 ALTER TABLE project_source ADD UNIQUE (key, dataset_key);
 
-
 ALTER TABLE dataset_archive ADD UNIQUE (key, import_attempt);
-
-CREATE INDEX ON dataset USING gin (f_unaccent(title) gin_trgm_ops);
-CREATE INDEX ON dataset USING gin (f_unaccent(alias) gin_trgm_ops);
-CREATE INDEX ON dataset USING gin(doc);
-
-CREATE OR REPLACE FUNCTION dataset_doc_update() RETURNS trigger AS $$
-BEGIN
-    NEW.doc :=
-      setweight(to_tsvector('simple2', coalesce(NEW.alias,'')), 'A') ||
-      setweight(to_tsvector('simple2', coalesce(NEW.title,'')), 'A') ||
-      setweight(to_tsvector('simple2', coalesce(array_to_string(NEW.organisations, '|'), '')), 'B') ||
-      setweight(to_tsvector('simple2', coalesce(NEW.description,'')), 'C') ||
-      --setweight(to_tsvector('simple2', coalesce(((NEW.contact).family)::text,'')), 'C') ||
-      --setweight(to_tsvector('simple2', coalesce(((NEW.authors[1]).family)::text,'')), 'C') ||
-      --setweight(to_tsvector('simple2', coalesce(((NEW.editors[1]).family)::text,'')), 'C') ||
-      setweight(to_tsvector('simple2', coalesce(NEW.gbif_key::text,'')), 'C');
-    RETURN NEW;
-END
-$$
-LANGUAGE plpgsql;
-
-CREATE TRIGGER dataset_trigger BEFORE INSERT OR UPDATE
-  ON dataset FOR EACH ROW EXECUTE PROCEDURE dataset_doc_update();
-
 
 CREATE TABLE dataset_patch AS SELECT * FROM dataset_archive LIMIT 0;
 ALTER TABLE dataset_patch
@@ -883,16 +889,9 @@ CREATE TABLE verbatim (
   type TEXT,
   terms jsonb,
   issues ISSUE[] DEFAULT '{}',
-  doc tsvector
+  doc tsvector GENERATED ALWAYS AS (jsonb_to_tsvector('simple2', coalesce(terms,'{}'::jsonb), '["string", "numeric"]')) STORED
 ) PARTITION BY LIST (dataset_key);
 
-CREATE OR REPLACE FUNCTION verbatim_doc_update() RETURNS trigger AS $$
-BEGIN
-    NEW.doc := jsonb_to_tsvector('simple2', coalesce(NEW.terms,'{}'::jsonb), '["string", "numeric"]');
-    RETURN NEW;
-END
-$$
-LANGUAGE plpgsql;
 
 CREATE TABLE reference (
   id TEXT NOT NULL,
@@ -906,19 +905,12 @@ CREATE TABLE reference (
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   csl JSONB,
   citation TEXT,
-  doc tsvector
+  doc tsvector GENERATED ALWAYS AS (
+    jsonb_to_tsvector('simple2', coalesce(csl,'{}'::jsonb), '["string", "numeric"]') ||
+          to_tsvector('simple2', coalesce(citation,'')) ||
+          to_tsvector('simple2', coalesce(year::text,''))
+  ) STORED
 ) PARTITION BY LIST (dataset_key);
-
-CREATE OR REPLACE FUNCTION reference_doc_update() RETURNS trigger AS $$
-BEGIN
-    NEW.doc :=
-      jsonb_to_tsvector('simple2', coalesce(NEW.csl,'{}'::jsonb), '["string", "numeric"]') ||
-      to_tsvector('simple2', coalesce(NEW.citation,'')) ||
-      to_tsvector('simple2', coalesce(NEW.year::text,''));
-    RETURN NEW;
-END
-$$
-LANGUAGE plpgsql;
 
 CREATE TABLE name (
   id TEXT NOT NULL,

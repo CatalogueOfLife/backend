@@ -12,16 +12,6 @@
       WHEN (NEW.homotypic_name_id IS NULL)
       EXECUTE PROCEDURE homotypic_name_id_default();
     </if>
-    <if test="table == 'reference'">
-      CREATE TRIGGER reference_trigger_${key} BEFORE INSERT OR UPDATE
-      ON reference_${key} FOR EACH ROW
-      EXECUTE PROCEDURE reference_doc_update();
-    </if>
-    <if test="table == 'verbatim'">
-      CREATE TRIGGER verbatim_trigger_${key} BEFORE INSERT OR UPDATE
-      ON verbatim_${key} FOR EACH ROW
-      EXECUTE PROCEDURE verbatim_doc_update();
-    </if>
   </update>
 
   <update id="createIdMapTable" parameterType="map">

@@ -10,7 +10,65 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-### vernacular search
+### 2020-10-13 generated doc cols
+```
+-- immutable person casts to text function to be used in indexes
+CREATE OR REPLACE FUNCTION person_str(person) RETURNS text AS
+$$
+SELECT $1::text
+$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION person_str(person[]) RETURNS text AS
+$$
+SELECT array_to_string($1, ' ')
+$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION array_str(text[]) RETURNS text AS
+$$
+SELECT array_to_string($1, ' ')
+$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
+
+DROP TRIGGER dataset_trigger ON dataset;
+DROP FUNCTION dataset_doc_update;
+ALTER TABLE dataset DROP COLUMN doc;
+ALTER TABLE dataset ADD COLUMN doc tsvector GENERATED ALWAYS AS (
+  setweight(to_tsvector('simple2', coalesce(alias,'')), 'A') ||
+  setweight(to_tsvector('simple2', coalesce(title,'')), 'A') ||
+  setweight(to_tsvector('simple2', coalesce(array_str(organisations), '')), 'B') ||
+  setweight(to_tsvector('simple2', coalesce(description,'')), 'C') ||
+  setweight(to_tsvector('simple2', coalesce(person_str(contact), '')), 'C') ||
+  setweight(to_tsvector('simple2', coalesce(person_str(authors), '')), 'C') ||
+  setweight(to_tsvector('simple2', coalesce(person_str(editors), '')), 'C') ||
+  setweight(to_tsvector('simple2', coalesce(gbif_key::text,'')), 'C')
+) STORED;
+
+
+ALTER TABLE verbatim DROP COLUMN doc;
+ALTER TABLE verbatim ADD COLUMN doc tsvector GENERATED ALWAYS AS (jsonb_to_tsvector('simple2', coalesce(terms,'{}'::jsonb), '["string", "numeric"]')) STORED
+
+ALTER TABLE reference DROP COLUMN doc;
+ALTER TABLE reference ADD COLUMN doc tsvector GENERATED ALWAYS AS (
+    jsonb_to_tsvector('simple2', coalesce(csl,'{}'::jsonb), '["string", "numeric"]') ||
+          to_tsvector('simple2', coalesce(citation,'')) ||
+          to_tsvector('simple2', coalesce(year::text,''))
+) STORED
+
+```
+
+Then update all partitions to use generated columns instead of triggers 
+with the `execSql --sqlfile generated-cols.sql` command using the following sql template:
+
+```
+DROP TRIGGER verbatim_trigger_{KEY} ON verbatim_{KEY};
+DROP TRIGGER reference_trigger_{KEY} ON reference_{KEY};
+```
+
+Then run this once:
+```
+DROP FUNCTION verbatim_doc_update;
+DROP FUNCTION reference_doc_update;
+```
+### 2020-10-13 vernacular search
 ```
 ALTER TABLE vernacular_name
   ADD COLUMN doc tsvector

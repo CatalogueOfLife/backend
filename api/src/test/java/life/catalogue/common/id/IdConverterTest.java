@@ -50,8 +50,6 @@ public class IdConverterTest {
     Collections.sort(xxx);
     for (String id : xxx) System.out.println(id);
 
-    System.exit(1);
-
     List<IdConverter> converters = List.of(
       IdConverter.LATIN32,
       IdConverter.LATIN36,
