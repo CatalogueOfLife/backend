@@ -181,8 +181,8 @@
   </insert>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO reference_${newDatasetKey} (dataset_key, sector_key, <include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified, doc)
-    SELECT #{newDatasetKey}, r.sector_key, <include refid="COLS_COPY"><property name="alias" value="r."/></include>, r.created, r.modified, doc
+    INSERT INTO reference_${newDatasetKey} (dataset_key, sector_key, <include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
+    SELECT #{newDatasetKey}, r.sector_key, <include refid="COLS_COPY"><property name="alias" value="r."/></include>, r.created, r.modified
     FROM reference_${datasetKey} r
   </insert>
 
