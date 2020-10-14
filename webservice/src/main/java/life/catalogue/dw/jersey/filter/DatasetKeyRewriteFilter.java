@@ -62,6 +62,10 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
   //  - a dataset origin is immutable so we dont need to expire
   private final Int2BooleanMap managed = Int2BooleanMaps.synchronize(new Int2BooleanOpenHashMap());
 
+  static String normParam(String param) {
+    return param.toLowerCase().replaceAll("_", "").trim();
+  }
+
   @Override
   public void filter(ContainerRequestContext req) throws IOException {
     // apply only to simple read operations, not POST, PUT or DELETE
@@ -75,7 +79,7 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     // rewrite query params
     MultivaluedMap<String, String> params = req.getUriInfo().getQueryParameters();
     for( Map.Entry<String, List<String>> query : params.entrySet() ) {
-      if (QUERY_PARAMS.contains(query.getKey().toLowerCase())) {
+      if (QUERY_PARAMS.contains(normParam(query.getKey()))) {
         Object[] values = query.getValue().stream()
           .map(this::rewriteDatasetKey)
           .toArray(String[]::new);
