@@ -46,12 +46,12 @@ public interface NameUsage extends DSID<String>, VerbatimEntity, RankedID {
 
   @JsonIgnore
   default boolean isTaxon() {
-    return getStatus() != null && !getStatus().isSynonym();
+    return getStatus() != null && getStatus().isTaxon();
   }
 
   @JsonIgnore
   default boolean isBareName() {
-    return getStatus() == null;
+    return getStatus() == null || getStatus().isBareName();
   }
 
   String getRemarks();

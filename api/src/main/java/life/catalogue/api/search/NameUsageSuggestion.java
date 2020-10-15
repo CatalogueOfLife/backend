@@ -11,7 +11,7 @@ import java.util.Objects;
  */
 public class NameUsageSuggestion {
 
-  // The name matching the search phrase: an accepted name/synonym/bare name/vernacular name
+  // The name matching the search phrase: an accepted name/synonym/bare name
   private String match;
   // The parent taxon's accepted name if this is a suggestion for an accepted name, else the accepted name if this is a suggestion for
   // anyhing but an accepted name.
@@ -28,7 +28,7 @@ public class NameUsageSuggestion {
    * multi-lingual.
    */
   public String getSuggestion() {
-    if (status == null) {
+    if (status == null || status.isBareName()) {
       return match + " (bare name)";
     } else if (status.isSynonym()) {
       return String.format("%s (%s of %s)", match, status.name().toLowerCase(), parentOrAcceptedName);

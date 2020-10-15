@@ -136,6 +136,9 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   
   @Override
   public void setStatus(TaxonomicStatus status) {
+    if (status != null && status.isBareName()) {
+      throw new IllegalArgumentException("Usages cannot have a " + status + " status");
+    }
     this.status = status;
   }
   

@@ -93,13 +93,15 @@ public class BareName implements NameUsage {
   
   @Override
   public TaxonomicStatus getStatus() {
-    return null;
+    return TaxonomicStatus.BARE_NAME;
   }
   
   @Override
   public void setStatus(TaxonomicStatus status) {
-    // nothing, throw if new status is supposed to be non null
-    if (status != null) throw new IllegalArgumentException("Bare names do not have a taxonomic status");
+    // nothing, throw if new status is supposed to be no bare name
+    if (status != null && !status.isBareName()) {
+      throw new IllegalArgumentException("BareName cannot have a " + status + " status");
+    }
   }
   
   @Override

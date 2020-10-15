@@ -9,6 +9,12 @@ We could have used Liquibase, but we would not have trusted the automatic update
 and done it manually. So we can as well log changes here.
 
 ### PROD changes
+### bare names
+https://github.com/CatalogueOfLife/checklistbank/issues/749
+```
+ALTER TYPE TAXONOMICSTATUS ADD VALUE 'BARE_NAME' AFTER 'MISAPPLIED'; 
+```
+
 ### partition indices
 per dataset via `execSql --sqlfile indices.sql`:
 ```

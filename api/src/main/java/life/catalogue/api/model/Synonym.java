@@ -41,7 +41,7 @@ public class Synonym extends NameUsageBase {
   @Override
   public void setStatus(TaxonomicStatus status) {
     if (!Preconditions.checkNotNull(status).isSynonym()) {
-      throw new IllegalArgumentException("Synonym status required");
+      throw new IllegalArgumentException("Synonym cannot have a " + status + " status");
     }
     super.setStatus(status);
   }

@@ -54,8 +54,8 @@ public class Taxon extends NameUsageBase {
 
   @Override
   public void setStatus(TaxonomicStatus status) {
-    if (Preconditions.checkNotNull(status).isSynonym()) {
-      throw new IllegalArgumentException("Taxa cannot have a synonym status");
+    if (!Preconditions.checkNotNull(status).isTaxon()) {
+      throw new IllegalArgumentException("Taxa cannot have a " + status + " status");
     }
     super.setStatus(status);
   }
