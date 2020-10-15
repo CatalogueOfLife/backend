@@ -16,8 +16,7 @@
 package life.catalogue.api.vocab;
 
 /**
- * The taxonomic status of an accepted taxon.
- * For synonyms only a nomenclatural status is allowed.
+ * The taxonomic status of a name usage.
  */
 public enum TaxonomicStatus {
   
@@ -32,7 +31,9 @@ public enum TaxonomicStatus {
     "e.g. homonyms, pro-parte synonyms (in other words, names which appear more than in one place in the Catalogue)."),
   
   MISAPPLIED("A misapplied name. Usually accompanied with an accordingTo on the synonym to indicate the " +
-    "source the misapplication can be found in.");
+    "source the misapplication can be found in."),
+
+  BARE_NAME("A name alone without any usage, neither a synonym nor a taxon.");
 
   private final String description;
 
@@ -41,10 +42,18 @@ public enum TaxonomicStatus {
   }
 
   /**
-   * @return true for a status valid for a synonym, false if valid for an accepted taxon.
+   * @return true for a status valid for a synonym
    */
   public boolean isSynonym() {
-    return this != ACCEPTED && this != PROVISIONALLY_ACCEPTED;
+    return !isTaxon() && this != BARE_NAME;
+  }
+
+  public boolean isTaxon() {
+    return this == ACCEPTED || this == PROVISIONALLY_ACCEPTED;
+  }
+
+  public boolean isBareName() {
+    return this == BARE_NAME;
   }
 
   public String getDescription() {
