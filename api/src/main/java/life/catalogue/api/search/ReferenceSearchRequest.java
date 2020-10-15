@@ -1,13 +1,13 @@
 package life.catalogue.api.search;
 
-import java.util.List;
-import java.util.Objects;
-import javax.ws.rs.QueryParam;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
-import org.apache.commons.lang3.StringUtils;
 import life.catalogue.api.vocab.Issue;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.ws.rs.QueryParam;
+import java.util.List;
+import java.util.Objects;
 
 public class ReferenceSearchRequest {
   
@@ -25,7 +25,14 @@ public class ReferenceSearchRequest {
   
   @QueryParam("sectorKey")
   private String sectorKey ;
-  
+
+  /**
+   * The subject dataset key of the corresponding sector attached to a taxon. Synonyms inherit the key by their accepted taxon, but do not expose
+   * the key on the Synonym instance itself.
+   */
+  @QueryParam("sectorDatasetKey")
+  private Integer sectorDatasetKey;
+
   @QueryParam("issue")
   private List<Issue> issues;
   
@@ -68,7 +75,15 @@ public class ReferenceSearchRequest {
   public void setSectorKey(String sectorKey) {
     this.sectorKey = sectorKey;
   }
-  
+
+  public Integer getSectorDatasetKey() {
+    return sectorDatasetKey;
+  }
+
+  public void setSectorDatasetKey(Integer sectorDatasetKey) {
+    this.sectorDatasetKey = sectorDatasetKey;
+  }
+
   public List<Issue> getIssues() {
     return issues;
   }
@@ -98,21 +113,22 @@ public class ReferenceSearchRequest {
   public void setSortBy(SortBy sortBy) {
     this.sortBy = Preconditions.checkNotNull(sortBy);
   }
-  
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof ReferenceSearchRequest)) return false;
     ReferenceSearchRequest that = (ReferenceSearchRequest) o;
     return Objects.equals(q, that.q) &&
-        Objects.equals(year, that.year) &&
-        Objects.equals(sectorKey, that.sectorKey) &&
-        Objects.equals(issues, that.issues) &&
-        sortBy == that.sortBy;
+      Objects.equals(year, that.year) &&
+      Objects.equals(sectorKey, that.sectorKey) &&
+      Objects.equals(sectorDatasetKey, that.sectorDatasetKey) &&
+      Objects.equals(issues, that.issues) &&
+      sortBy == that.sortBy;
   }
-  
+
   @Override
   public int hashCode() {
-    return Objects.hash(q, year, sectorKey, issues, sortBy);
+    return Objects.hash(q, year, sectorKey, sectorDatasetKey, issues, sortBy);
   }
 }
