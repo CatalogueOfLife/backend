@@ -32,7 +32,7 @@ public class MybatisTestUtils {
 
   public static void partition(SqlSession session, int datasetKey) {
     Partitioner.partition(session, datasetKey);
-    Partitioner.indexAndAttach(session, datasetKey);
+    Partitioner.attach(session, datasetKey);
     DatasetOrigin origin;
     try {
       origin = DatasetInfoCache.CACHE.origin(datasetKey);

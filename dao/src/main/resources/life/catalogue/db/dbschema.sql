@@ -889,9 +889,13 @@ CREATE TABLE verbatim (
   type TEXT,
   terms jsonb,
   issues ISSUE[] DEFAULT '{}',
-  doc tsvector GENERATED ALWAYS AS (jsonb_to_tsvector('simple2', coalesce(terms,'{}'::jsonb), '["string", "numeric"]')) STORED
+  doc tsvector GENERATED ALWAYS AS (jsonb_to_tsvector('simple2', coalesce(terms,'{}'::jsonb), '["string", "numeric"]')) STORED,
+  PRIMARY KEY (dataset_key, id)
 ) PARTITION BY LIST (dataset_key);
 
+CREATE INDEX ON verbatim USING GIN(issues);
+CREATE INDEX ON verbatim (type);
+CREATE INDEX ON verbatim USING GIN (terms jsonb_path_ops);
 
 CREATE TABLE reference (
   id TEXT NOT NULL,
@@ -909,8 +913,13 @@ CREATE TABLE reference (
     jsonb_to_tsvector('simple2', coalesce(csl,'{}'::jsonb), '["string", "numeric"]') ||
           to_tsvector('simple2', coalesce(citation,'')) ||
           to_tsvector('simple2', coalesce(year::text,''))
-  ) STORED
+  ) STORED,
+  PRIMARY KEY (dataset_key, id),
+  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim
 ) PARTITION BY LIST (dataset_key);
+
+CREATE INDEX ON reference (verbatim_key);
+CREATE INDEX ON reference (sector_key);
 
 CREATE TABLE name (
   id TEXT NOT NULL,
@@ -953,8 +962,19 @@ CREATE TABLE name (
   link TEXT,
   nomenclatural_note TEXT,
   unparsed TEXT,
-  remarks TEXT
+  remarks TEXT,
+  PRIMARY KEY (dataset_key, id),
+  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, published_in_id) REFERENCES reference
 ) PARTITION BY LIST (dataset_key);
+
+CREATE INDEX ON name (sector_key);
+CREATE INDEX ON name (verbatim_key);
+CREATE INDEX ON name (homotypic_name_id);
+CREATE INDEX ON name (name_index_id);
+CREATE INDEX ON name (published_in_id);
+CREATE INDEX ON name (lower(scientific_name));
+CREATE INDEX ON name (scientific_name_normalized);
 
 CREATE OR REPLACE FUNCTION homotypic_name_id_default() RETURNS trigger AS $$
 BEGIN
@@ -976,8 +996,16 @@ CREATE TABLE name_rel (
   name_id TEXT NOT NULL,
   related_name_id TEXT NULL,
   published_in_id TEXT,
-  remarks TEXT
+  remarks TEXT,
+  PRIMARY KEY (dataset_key, id),
+  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, name_id) REFERENCES name,
+  FOREIGN KEY (dataset_key, related_name_id) REFERENCES name,
+  FOREIGN KEY (dataset_key, published_in_id) REFERENCES reference
 ) PARTITION BY LIST (dataset_key);
+
+CREATE INDEX ON name_rel (name_id, type);
+CREATE INDEX ON name_rel (verbatim_key);
 
 CREATE TABLE type_material (
   id TEXT NOT NULL,
@@ -1001,8 +1029,16 @@ CREATE TABLE type_material (
   collector TEXT,
   reference_id TEXT,
   link TEXT,
-  remarks TEXT
+  remarks TEXT,
+  PRIMARY KEY (dataset_key, id),
+  FOREIGN KEY (dataset_key, name_id) REFERENCES name,
+  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
+  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim
 ) PARTITION BY LIST (dataset_key);
+
+CREATE INDEX ON type_material (name_id);
+CREATE INDEX ON type_material (reference_id);
+CREATE INDEX ON type_material (verbatim_key);
 
 CREATE TABLE name_usage (
   id TEXT NOT NULL,
@@ -1029,8 +1065,18 @@ CREATE TABLE name_usage (
   environments ENVIRONMENT[] DEFAULT '{}',
   link TEXT,
   remarks TEXT,
-  dataset_sectors JSONB
+  dataset_sectors JSONB,
+  PRIMARY KEY (dataset_key, id),
+  FOREIGN KEY (dataset_key, name_id) REFERENCES name,
+  FOREIGN KEY (dataset_key, parent_id) REFERENCES name_usage,
+  FOREIGN KEY (dataset_key, according_to_id) REFERENCES reference,
+  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim
 ) PARTITION BY LIST (dataset_key);
+
+CREATE INDEX ON name_usage (name_id);
+CREATE INDEX ON name_usage (parent_id);
+CREATE INDEX ON name_usage (verbatim_key);
+CREATE INDEX ON name_usage (sector_key);
 
 CREATE TABLE taxon_rel (
   id INTEGER NOT NULL,
@@ -1044,8 +1090,16 @@ CREATE TABLE taxon_rel (
   taxon_id TEXT NOT NULL,
   related_taxon_id TEXT NULL,
   reference_id TEXT,
-  remarks TEXT
+  remarks TEXT,
+  PRIMARY KEY (dataset_key, id),
+  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage,
+  FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage,
+  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
+  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim
 ) PARTITION BY LIST (dataset_key);
+
+CREATE INDEX ON taxon_rel (taxon_id, type);
+CREATE INDEX ON taxon_rel (verbatim_key);
 
 CREATE TABLE vernacular_name (
   id INTEGER NOT NULL,
@@ -1063,8 +1117,15 @@ CREATE TABLE vernacular_name (
   area TEXT,
   sex SEX,
   reference_id TEXT,
-  doc tsvector GENERATED ALWAYS AS (to_tsvector('simple2', coalesce(name, '') || ' ' || coalesce(latin, ''))) STORED
+  doc tsvector GENERATED ALWAYS AS (to_tsvector('simple2', coalesce(name, '') || ' ' || coalesce(latin, ''))) STORED,
+  PRIMARY KEY (dataset_key, id),
+  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage,
+  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
+  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim
 ) PARTITION BY LIST (dataset_key);
+
+CREATE INDEX ON vernacular_name (taxon_id);
+CREATE INDEX ON vernacular_name (verbatim_key);
 
 CREATE TABLE distribution (
   id INTEGER NOT NULL,
@@ -1078,8 +1139,16 @@ CREATE TABLE distribution (
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   taxon_id TEXT NOT NULL,
   area TEXT NOT NULL,
-  reference_id TEXT
+  reference_id TEXT,
+  PRIMARY KEY (dataset_key, id),
+  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage,
+  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
+  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim
+
 ) PARTITION BY LIST (dataset_key);
+
+CREATE INDEX ON distribution (taxon_id);
+CREATE INDEX ON distribution (verbatim_key);
 
 CREATE TABLE treatment (
   id TEXT NOT NULL,
@@ -1090,7 +1159,10 @@ CREATE TABLE treatment (
   modified_by INTEGER NOT NULL,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  document TEXT NOT NULL
+  document TEXT NOT NULL,
+  PRIMARY KEY (dataset_key, id),
+  FOREIGN KEY (dataset_key, id) REFERENCES name_usage,
+  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim
 ) PARTITION BY LIST (dataset_key);
 
 CREATE TABLE media (
@@ -1110,8 +1182,16 @@ CREATE TABLE media (
   title TEXT,
   captured_by TEXT,
   link TEXT,
-  reference_id TEXT
+  reference_id TEXT,
+  PRIMARY KEY (dataset_key, id),
+  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage,
+  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
+  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim
+
 ) PARTITION BY LIST (dataset_key);
+
+CREATE INDEX ON media (taxon_id);
+CREATE INDEX ON media (verbatim_key);
 
 
 

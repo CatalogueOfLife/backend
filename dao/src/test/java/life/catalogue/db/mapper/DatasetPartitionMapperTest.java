@@ -36,7 +36,6 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
     // we create the prov-cat partition in the InitMybatisRule
     mapper().delete(Datasets.COL);
     mapper().create(Datasets.COL);
-    mapper().buildIndices(Datasets.COL);
     mapper().attach(Datasets.COL);
     mapper().delete(Datasets.COL);
   }
@@ -62,7 +61,6 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
     
     mapper().delete(Datasets.COL);
     mapper().create(Datasets.COL);
-    mapper().buildIndices(Datasets.COL);
     mapper().attach(Datasets.COL);
     mapper().delete(Datasets.COL);
   
@@ -85,7 +83,6 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
       System.out.println("Delete partition " + datasetKey);
       mapper().delete(datasetKey);
       mapper().create(datasetKey);
-      mapper().buildIndices(datasetKey);
       commit();
       System.out.println("Try to attach the partition " + datasetKey);
       mapper().attach(datasetKey);

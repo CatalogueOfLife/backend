@@ -79,7 +79,7 @@ public class PgImport implements Callable<Boolean> {
 
     insertUsages();
   
-    Partitioner.indexAndAttach(sessionFactory, dataset.getKey());
+    Partitioner.attach(sessionFactory, dataset.getKey());
     
     updateMetadata();
 		LOG.info("Completed dataset {} insert with {} verbatim records, " +

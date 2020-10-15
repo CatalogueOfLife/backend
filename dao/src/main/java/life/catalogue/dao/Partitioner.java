@@ -96,25 +96,20 @@ public class Partitioner {
     session.getMapper(DatasetPartitionMapper.class).delete(datasetKey);
   }
 
-  public static synchronized void indexAndAttach(SqlSessionFactory factory, int datasetKey) {
+  public static synchronized void attach(SqlSessionFactory factory, int datasetKey) {
     try (SqlSession session = factory.openSession(true)) {
       // build indices and add dataset bound constraints
-      indexAndAttach(session, datasetKey);
+      attach(session, datasetKey);
     }
   }
 
   /**
-   * Builds indices and finally attaches partitions to main tables.
+   * Attaches partitions to main tables thereby building declared indices.
    * To avoid table deadlocks on the main table we synchronize this method.
    * @param session session with auto commit - no transaction allowed here !!!
    */
-  public static synchronized void indexAndAttach(SqlSession session, int datasetKey) {
+  public static synchronized void attach(SqlSession session, int datasetKey) {
     interruptIfCancelled();
-
-    LOG.info("Build partition indices for dataset {}", datasetKey);
-    // build indices and add dataset bound constraints
-    session.getMapper(DatasetPartitionMapper.class).buildIndices(datasetKey);
-
     // attach to main table - this requires an AccessExclusiveLock on all main tables
     // see https://github.com/Sp2000/colplus-backend/issues/387
     LOG.info("Attach partition tables for dataset {}", datasetKey);

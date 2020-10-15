@@ -115,13 +115,6 @@ public interface DatasetPartitionMapper {
   void deleteTable(@Param("table") String table, @Param("key") int key);
 
   void deleteUsageCounter(@Param("key") int key);
-
-  /**
-   * Creates indices on a all partition tables for a given datasetKey.
-   *
-   * @param key
-   */
-  void buildIndices(@Param("key") int key);
   
   /**
    * Attaches all dataset specific partition tables to their main table
@@ -139,6 +132,8 @@ public interface DatasetPartitionMapper {
   }
   
   void attachTable(@Param("table") String table, @Param("key") int key);
+
+  void detachTable(@Param("table") String table, @Param("key") int key);
 
   /**
    * Attaches a trigger to the name usage partition that tracks the total counts of usages.

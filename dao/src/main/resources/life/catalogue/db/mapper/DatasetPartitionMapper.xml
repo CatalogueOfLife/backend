@@ -46,6 +46,10 @@
     ALTER TABLE ${table} ATTACH PARTITION ${table}_${key} FOR VALUES IN ( ${key} )
   </update>
 
+  <update id="detachTable" parameterType="map">
+    ALTER TABLE ${table} DETACH PARTITION ${table}_${key}
+  </update>
+
   <select id="updateUsageCounter" parameterType="map" resultType="int">
     DELETE FROM usage_count WHERE dataset_key=#{key};
     INSERT INTO usage_count (dataset_key, counter) VALUES (${key}, (SELECT count(*) from name_usage_${key}));
@@ -77,89 +81,8 @@
     LOCK TABLE reference_${partition} IN EXCLUSIVE mode;
   </update>
 
-  <update id="buildIndices" parameterType="map">
-    ALTER TABLE verbatim_${key} ADD PRIMARY KEY (id);
-    CREATE INDEX ON verbatim_${key} USING GIN(issues);
-    CREATE INDEX ON verbatim_${key} (type);
-    CREATE INDEX ON verbatim_${key} USING GIN (terms jsonb_path_ops);
-
-    ALTER TABLE reference_${key} ADD PRIMARY KEY (id);
-    CREATE INDEX ON reference_${key} (verbatim_key);
-    CREATE INDEX ON reference_${key} (sector_key);
-    ALTER TABLE reference_${key} ADD CONSTRAINT reference_${key}_verbatim_key_fk FOREIGN KEY (verbatim_key) REFERENCES verbatim_${key} (id);
-
-    ALTER TABLE name_${key} ADD PRIMARY KEY (id);
-    CREATE INDEX ON name_${key} (verbatim_key);
-    CREATE INDEX ON name_${key} (homotypic_name_id);
-    CREATE INDEX ON name_${key} (name_index_id);
-    CREATE INDEX ON name_${key} (published_in_id);
-    CREATE INDEX ON name_${key} (sector_key);
-    CREATE INDEX ON name_${key} (lower(scientific_name));
-    CREATE INDEX ON name_${key} (scientific_name_normalized);
-    ALTER TABLE name_${key} ADD CONSTRAINT name_${key}_publishedin_id_fk FOREIGN KEY (published_in_id) REFERENCES reference_${key} (id) ON UPDATE CASCADE;
-    ALTER TABLE name_${key} ADD CONSTRAINT name_${key}_verbatim_key_fk FOREIGN KEY (verbatim_key) REFERENCES verbatim_${key} (id);
-
-    ALTER TABLE name_rel_${key} ADD PRIMARY KEY (id);
-    CREATE INDEX ON name_rel_${key} (name_id, type);
-    CREATE INDEX ON name_rel_${key} (verbatim_key);
-    ALTER TABLE name_rel_${key} ADD CONSTRAINT name_rel_${key}_name_id_fk FOREIGN KEY (name_id) REFERENCES name_${key} (id) ON DELETE CASCADE ON UPDATE CASCADE;
-    ALTER TABLE name_rel_${key} ADD CONSTRAINT name_rel_${key}_related_name_id_fk FOREIGN KEY (related_name_id) REFERENCES name_${key} (id) ON DELETE CASCADE ON UPDATE CASCADE;
-    ALTER TABLE name_rel_${key} ADD CONSTRAINT name_rel_${key}_published_in_id_fk FOREIGN KEY (published_in_id) REFERENCES reference_${key} (id) ON DELETE CASCADE ON UPDATE CASCADE;
-    ALTER TABLE name_rel_${key} ADD CONSTRAINT name_rel_${key}_verbatim_key_fk FOREIGN KEY (verbatim_key) REFERENCES verbatim_${key} (id) ON DELETE CASCADE;
-
-    ALTER TABLE type_material_${key} ADD PRIMARY KEY (id);
-    CREATE INDEX ON type_material_${key} (name_id);
-    CREATE INDEX ON type_material_${key} (reference_id);
-    CREATE INDEX ON type_material_${key} (verbatim_key);
-    ALTER TABLE type_material_${key} ADD CONSTRAINT type_material_${key}_name_id_fk FOREIGN KEY (name_id) REFERENCES name_${key} (id) ON DELETE CASCADE ON UPDATE CASCADE;
-    ALTER TABLE type_material_${key} ADD CONSTRAINT type_material_${key}_reference_id_fk FOREIGN KEY (reference_id) REFERENCES reference_${key} (id) ON DELETE CASCADE ON UPDATE CASCADE;
-    ALTER TABLE type_material_${key} ADD CONSTRAINT type_material_${key}_verbatim_key_fk FOREIGN KEY (verbatim_key) REFERENCES verbatim_${key} (id);
-
-    ALTER TABLE name_usage_${key} ADD PRIMARY KEY (id);
-    CREATE INDEX ON name_usage_${key} (parent_id);
-    CREATE INDEX ON name_usage_${key} (name_id);
-    CREATE INDEX ON name_usage_${key} (verbatim_key);
-    CREATE INDEX ON name_usage_${key} (sector_key);
-    ALTER TABLE name_usage_${key} ADD CONSTRAINT name_usage_${key}_name_id_fk FOREIGN KEY (name_id) REFERENCES name_${key} (id) ON UPDATE CASCADE;
-    ALTER TABLE name_usage_${key} ADD CONSTRAINT name_usage_${key}_parent_id_fk FOREIGN KEY (parent_id) REFERENCES name_usage_${key} (id) ON UPDATE CASCADE DEFERRABLE INITIALLY DEFERRED;
-    ALTER TABLE name_usage_${key} ADD CONSTRAINT name_usage_${key}_verbatim_key_fk FOREIGN KEY (verbatim_key) REFERENCES verbatim_${key} (id) ON DELETE CASCADE;
-
-    ALTER TABLE taxon_rel_${key} ADD PRIMARY KEY (id);
-    CREATE INDEX ON taxon_rel_${key} (taxon_id, type);
-    CREATE INDEX ON taxon_rel_${key} (verbatim_key);
-    ALTER TABLE taxon_rel_${key} ADD CONSTRAINT taxon_rel_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES name_usage_${key} (id) ON DELETE CASCADE ON UPDATE CASCADE;
-    ALTER TABLE taxon_rel_${key} ADD CONSTRAINT taxon_rel_${key}_related_taxon_id_fk FOREIGN KEY (related_taxon_id) REFERENCES name_usage_${key} (id) ON DELETE CASCADE ON UPDATE CASCADE;
-    ALTER TABLE taxon_rel_${key} ADD CONSTRAINT taxon_rel_${key}_reference_id_fk FOREIGN KEY (reference_id) REFERENCES reference_${key} (id) ON DELETE CASCADE ON UPDATE CASCADE;
-    ALTER TABLE taxon_rel_${key} ADD CONSTRAINT taxon_rel_${key}_verbatim_key_fk FOREIGN KEY (verbatim_key) REFERENCES verbatim_${key} (id) ON DELETE CASCADE;
-
-    ALTER TABLE treatment_${key} ADD PRIMARY KEY (id);
-    ALTER TABLE treatment_${key} ADD CONSTRAINT treatment_${key}_id_fk FOREIGN KEY (id) REFERENCES name_usage_${key} (id) ON DELETE CASCADE ON UPDATE CASCADE;
-    ALTER TABLE treatment_${key} ADD CONSTRAINT treatment_${key}_verbatim_key_fk FOREIGN KEY (verbatim_key) REFERENCES verbatim_${key} (id) ON DELETE CASCADE;
-
-    ALTER TABLE distribution_${key} ADD PRIMARY KEY (id);
-    CREATE INDEX ON distribution_${key} (taxon_id);
-    CREATE INDEX ON distribution_${key} (verbatim_key);
-    ALTER TABLE distribution_${key} ADD CONSTRAINT distribution_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES name_usage_${key} (id) ON DELETE CASCADE ON UPDATE CASCADE;
-    ALTER TABLE distribution_${key} ADD CONSTRAINT distribution_${key}_reference_id_fk FOREIGN KEY (reference_id) REFERENCES reference_${key} (id) ON DELETE CASCADE ON UPDATE CASCADE;
-    ALTER TABLE distribution_${key} ADD CONSTRAINT distribution_${key}_verbatim_key_fk FOREIGN KEY (verbatim_key) REFERENCES verbatim_${key} (id);
-
-    ALTER TABLE media_${key} ADD PRIMARY KEY (id);
-    CREATE INDEX ON media_${key} (taxon_id);
-    CREATE INDEX ON media_${key} (verbatim_key);
-    ALTER TABLE media_${key} ADD CONSTRAINT media_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES name_usage_${key} (id) ON DELETE CASCADE ON UPDATE CASCADE;
-    ALTER TABLE media_${key} ADD CONSTRAINT media_${key}_reference_id_fk FOREIGN KEY (reference_id) REFERENCES reference_${key} (id) ON DELETE CASCADE ON UPDATE CASCADE;
-    ALTER TABLE media_${key} ADD CONSTRAINT media_${key}_verbatim_key_fk FOREIGN KEY (verbatim_key) REFERENCES verbatim_${key} (id);
-
-    ALTER TABLE vernacular_name_${key} ADD PRIMARY KEY (id);
-    CREATE INDEX ON vernacular_name_${key} (taxon_id);
-    CREATE INDEX ON vernacular_name_${key} (verbatim_key);
-    ALTER TABLE vernacular_name_${key} ADD CONSTRAINT vernacular_name_${key}_taxon_id_fk FOREIGN KEY (taxon_id) REFERENCES name_usage_${key} (id) ON DELETE CASCADE ON UPDATE CASCADE;
-    ALTER TABLE vernacular_name_${key} ADD CONSTRAINT vernacular_name_${key}_reference_id_fk FOREIGN KEY (reference_id) REFERENCES reference_${key} (id) ON DELETE CASCADE ON UPDATE CASCADE;
-    ALTER TABLE vernacular_name_${key} ADD CONSTRAINT vernacular_name_${key}_verbatim_key_fk FOREIGN KEY (verbatim_key) REFERENCES verbatim_${key} (id);
-  </update>
-
   <update id="deleteTable" parameterType="map">
-    DROP TABLE IF EXISTS ${table}_${key};
+    DROP TABLE IF EXISTS ${table}_${key} CASCADE;
     DROP SEQUENCE IF EXISTS ${table}_${key}_id_seq;
   </update>
 

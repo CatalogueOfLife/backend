@@ -174,7 +174,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   private void recreatePartition(int datasetKey) {
     Partitioner.partition(factory, datasetKey);
-    Partitioner.indexAndAttach(factory, datasetKey);
+    Partitioner.attach(factory, datasetKey);
   }
 
   private void pullLogo(Dataset d, int user) {

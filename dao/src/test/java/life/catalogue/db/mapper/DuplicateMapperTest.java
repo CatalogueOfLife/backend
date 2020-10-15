@@ -45,7 +45,6 @@ public class DuplicateMapperTest {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       final DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
       pm.create(datasetKey);
-      pm.buildIndices(datasetKey);
       pm.attach(datasetKey);
       pm.createManagedSequences(datasetKey);
       pm.createManagedSequences(Datasets.COL);

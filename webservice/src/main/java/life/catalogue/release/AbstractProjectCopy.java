@@ -103,7 +103,7 @@ public abstract class AbstractProjectCopy implements Runnable {
       copyData();
 
       // build indices and attach partition
-      Partitioner.indexAndAttach(factory, newDatasetKey);
+      Partitioner.attach(factory, newDatasetKey);
       Partitioner.createManagedObjects(factory, newDatasetKey);
 
       // subclass specifics

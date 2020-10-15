@@ -41,7 +41,7 @@ public class PgImportTest {
       Partitioner.partition(PgSetupRule.getSqlSessionFactory(), datasetKey);
 
       System.out.println("INDEX & ATTACH " + datasetKey);
-      Partitioner.indexAndAttach(PgSetupRule.getSqlSessionFactory(), datasetKey);
+      Partitioner.attach(PgSetupRule.getSqlSessionFactory(), datasetKey);
       System.out.println("FINISHED " + datasetKey);
       return true;
     }

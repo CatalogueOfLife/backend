@@ -228,7 +228,7 @@ public class InitDbCmd extends AbstractPromptCmd {
 
   public static void setupColPartition(SqlSession session) {
     Partitioner.partition(session, Datasets.COL);
-    Partitioner.indexAndAttach(session, Datasets.COL);
+    Partitioner.attach(session, Datasets.COL);
     Partitioner.createManagedObjects(session, Datasets.COL);
     session.commit();
   }
