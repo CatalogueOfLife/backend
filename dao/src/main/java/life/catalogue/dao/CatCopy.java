@@ -69,12 +69,13 @@ public class CatCopy {
     t.setParentId(targetParent.getId());
     
     // update reference links
+    t.setAccordingToId(lookupByIdReference.apply(t.getAccordingToId()));
     t.setReferenceIds(
         t.getReferenceIds().stream()
             .map(lookupByIdReference)
             .collect(Collectors.toList())
     );
-    
+
     if (t instanceof Taxon) {
       batchSession.getMapper(TaxonMapper.class).create( (Taxon) t);
     } else {
@@ -106,9 +107,13 @@ public class CatCopy {
         });
 
       } else if (EntityType.TREATMENT == type) {
-        // TODO copy treatment
+        // TODO copy
       } else if (EntityType.NAME_RELATION == type) {
-        // TODO copy name rels
+        // TODO copy
+      } else if (EntityType.TAXON_RELATION == type) {
+        // TODO copy
+      } else if (EntityType.TYPE_MATERIAL == type) {
+        // TODO copy
       }
     }
     return orig;

@@ -282,7 +282,6 @@ public class TestEntityGenerator {
   public static Taxon newTaxon(Name n, String id, String parentID) {
     Taxon t = setUserDate(new Taxon());
     t.setStatus(TaxonomicStatus.ACCEPTED);
-    t.setAccordingToId("Foo");
     t.setScrutinizerDate(FuzzyDate.of(2010, 11, 24));
     t.setDatasetKey(n.getDatasetKey());
     t.setLink(URI.create("http://foo.com"));
@@ -290,6 +289,7 @@ public class TestEntityGenerator {
     t.setId(id);
     t.setEnvironments(EnumSet.of(Environment.BRACKISH, Environment.FRESHWATER, Environment.TERRESTRIAL));
     t.setName(n);
+    t.setNamePhrase("Foo");
     t.setOrigin(Origin.SOURCE);
     t.setParentId(parentID);
     t.setRemarks("Foo == Bar");

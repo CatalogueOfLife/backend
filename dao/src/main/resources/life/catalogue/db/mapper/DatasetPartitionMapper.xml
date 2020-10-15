@@ -18,7 +18,7 @@
     CREATE TABLE ${table}_${key} (
       id TEXT PRIMARY KEY,
       id2 TEXT NOT NULL
-    );
+    )
   </update>
 
   <update id="createSerial" parameterType="map">
@@ -27,19 +27,19 @@
   </update>
 
   <update id="createIdSequence" parameterType="map">
-    CREATE SEQUENCE IF NOT EXISTS ${table}_${key}_id_seq START 1;
+    CREATE SEQUENCE IF NOT EXISTS ${table}_${key}_id_seq START 1
   </update>
 
   <update id="updateIdSequence" parameterType="map">
-    SELECT setval('${table}_${key}_id_seq', (SELECT COALESCE(max(id),1) AS id FROM ${table}_${key}));
+    SELECT setval('${table}_${key}_id_seq', (SELECT COALESCE(max(id),1) AS id FROM ${table}_${key}))
   </update>
 
   <delete id="deleteIdSequence" parameterType="map">
-    DROP SEQUENCE IF EXISTS ${table}_${key}_id_seq;
+    DROP SEQUENCE IF EXISTS ${table}_${key}_id_seq
   </delete>
 
   <update id="updateManagedSequence" parameterType="map">
-    SELECT setval('${table}_${key}_id_seq', (SELECT COALESCE(max(id),1) AS id FROM ${table} WHERE dataset_key = #{key}));
+    SELECT setval('${table}_${key}_id_seq', (SELECT COALESCE(max(id),1) AS id FROM ${table} WHERE dataset_key = #{key}))
   </update>
 
   <update id="attachTable" parameterType="map">
@@ -48,6 +48,16 @@
 
   <update id="detachTable" parameterType="map">
     ALTER TABLE ${table} DETACH PARTITION ${table}_${key}
+  </update>
+
+  <update id="createPk" parameterType="map">
+    ALTER TABLE ${table}_${key} ADD PRIMARY KEY (id)
+  </update>
+
+  <update id="createFk" parameterType="map">
+    ALTER TABLE ${table}_${key} ADD FOREIGN KEY (${fk.column}) REFERENCES ${fk.table}_${key}
+    <if test="fk.cascade">ON DELETE CASCADE</if>
+    <if test="fk.defer">DEFERRABLE INITIALLY DEFERRED</if>
   </update>
 
   <select id="updateUsageCounter" parameterType="map" resultType="int">

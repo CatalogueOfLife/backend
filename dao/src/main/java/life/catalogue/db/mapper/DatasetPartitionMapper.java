@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 public interface DatasetPartitionMapper {
 
@@ -12,7 +13,7 @@ public interface DatasetPartitionMapper {
     "idmap_name_usage"
   );
 
-    // order is important !!!
+  // order is important !!!
   List<String> TABLES = Lists.newArrayList(
       "verbatim",
       "reference",
@@ -41,7 +42,65 @@ public interface DatasetPartitionMapper {
     "decision",
     "estimate"
   );
-  
+
+  static class FK {
+    public final String column;
+    public final String table;
+    public final boolean defer;
+    public final boolean cascade;
+
+    FK(String column, String table) {
+      this(column,table,false,true);
+    }
+    FK(String column, String table, boolean defer, boolean cascade) {
+      this.column = column;
+      this.table = table;
+      this.defer = defer;
+      this.cascade = cascade;
+    }
+  }
+
+  // table -> fk
+  // verbatim_key is done automatically for every table and does not need to be included here
+  Map<String, List<FK>> FKS = Map.of(
+    "name", List.of(
+      new FK("published_in_id", "reference")
+    ),
+    "name_rel", List.of(
+      new FK("published_in_id", "reference"),
+      new FK("name_id", "name"),
+      new FK("related_name_id", "name")
+    ),
+    "type_material", List.of(
+      new FK("reference_id", "reference"),
+      new FK("name_id", "name")
+    ),
+    "name_usage", List.of(
+      new FK("according_to_id", "reference"),
+      new FK("parent_id", "name_usage", true, false),
+      new FK("name_id", "name")
+    ),
+    "taxon_rel", List.of(
+      new FK("taxon_id", "name_usage"),
+      new FK("related_taxon_id", "name_usage")
+    ),
+    "distribution", List.of(
+      new FK("reference_id", "reference"),
+      new FK("taxon_id", "name_usage")
+    ),
+    "media", List.of(
+      new FK("reference_id", "reference"),
+      new FK("taxon_id", "name_usage")
+    ),
+    "treatment", List.of(
+      new FK("id", "name_usage")
+    ),
+    "vernacular_name", List.of(
+      new FK("reference_id", "reference"),
+      new FK("taxon_id", "name_usage")
+    )
+  );
+
   /**
    * Creates a new dataset partition for all data tables if not already existing.
    * The tables are not attached to the main partitioned table yet, see attach().
@@ -128,12 +187,29 @@ public interface DatasetPartitionMapper {
    * @param key
    */
   default void attach(int key) {
+    // create PKs
+    TABLES.forEach(t -> createPk(t, key));
+    // this also creates the indices from the partitioned table
     TABLES.forEach(t -> attachTable(t, key));
+    // create FKs
+    // we always have a verbatim_key on every table
+    TABLES.stream()
+      .filter(t -> !t.equalsIgnoreCase("verbatim"))
+      .forEach(t -> createFk(t, key, new FK("verbatim_key", "verbatim")));
+    // custom fks
+    FKS.forEach( (t,fks) -> fks.forEach(fk -> createFk(t, key, fk)));
   }
   
   void attachTable(@Param("table") String table, @Param("key") int key);
 
   void detachTable(@Param("table") String table, @Param("key") int key);
+
+  void createPk(@Param("table") String table, @Param("key") int key);
+
+  void createFk(@Param("table") String table,
+                @Param("key") int key,
+                @Param("fk") FK fk
+  );
 
   /**
    * Attaches a trigger to the name usage partition that tracks the total counts of usages.

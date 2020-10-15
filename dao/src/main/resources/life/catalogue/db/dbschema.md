@@ -12,68 +12,24 @@ and done it manually. So we can as well log changes here.
 ### partition indices
 per dataset via `execSql --sqlfile indices.sql`:
 ```
-ALTER TABLE taxon_rel_{KEY} DROP CONSTRAINT IF EXISTS taxon_rel_{KEY}_pkey;
-ALTER TABLE taxon_rel_{KEY} DROP CONSTRAINT IF EXISTS taxon_rel_{KEY}_reference_id_fk;
-ALTER TABLE taxon_rel_{KEY} DROP CONSTRAINT IF EXISTS taxon_rel_{KEY}_related_taxon_id_fk;
-ALTER TABLE taxon_rel_{KEY} DROP CONSTRAINT IF EXISTS taxon_rel_{KEY}_taxon_id_fk;
-ALTER TABLE taxon_rel_{KEY} DROP CONSTRAINT IF EXISTS taxon_rel_{KEY}_verbatim_key_fk;
 DROP INDEX IF EXISTS taxon_rel_{KEY}_taxon_id_type_idx;
 DROP INDEX IF EXISTS taxon_rel_{KEY}_verbatim_key_idx;
-
-ALTER TABLE distribution_{KEY} DROP CONSTRAINT IF EXISTS distribution_{KEY}_pkey;
-ALTER TABLE distribution_{KEY} DROP CONSTRAINT IF EXISTS distribution_{KEY}_reference_id_fk;
-ALTER TABLE distribution_{KEY} DROP CONSTRAINT IF EXISTS distribution_{KEY}_taxon_id_fk;
-ALTER TABLE distribution_{KEY} DROP CONSTRAINT IF EXISTS distribution_{KEY}_verbatim_key_fk;
 DROP INDEX IF EXISTS distribution_{KEY}_taxon_id_idx;
 DROP INDEX IF EXISTS distribution_{KEY}_verbatim_key_idx;
-
-ALTER TABLE media_{KEY} DROP CONSTRAINT IF EXISTS media_{KEY}_pkey;
-ALTER TABLE media_{KEY} DROP CONSTRAINT IF EXISTS media_{KEY}_reference_id_fk;
-ALTER TABLE media_{KEY} DROP CONSTRAINT IF EXISTS media_{KEY}_taxon_id_fk;
-ALTER TABLE media_{KEY} DROP CONSTRAINT IF EXISTS media_{KEY}_verbatim_key_fk;
 DROP INDEX IF EXISTS media_{KEY}_taxon_id_idx;
 DROP INDEX IF EXISTS media_{KEY}_verbatim_key_idx;
-
-ALTER TABLE treatment_{KEY} DROP CONSTRAINT IF EXISTS treatment_{KEY}_pkey;
-ALTER TABLE treatment_{KEY} DROP CONSTRAINT IF EXISTS treatment_{KEY}_id_fk;
-ALTER TABLE treatment_{KEY} DROP CONSTRAINT IF EXISTS treatment_{KEY}_verbatim_key_fk;
-
-ALTER TABLE vernacular_name_{KEY} DROP CONSTRAINT IF EXISTS vernacular_name_{KEY}_pkey;
-ALTER TABLE vernacular_name_{KEY} DROP CONSTRAINT IF EXISTS vernacular_name_{KEY}_reference_id_fk;
-ALTER TABLE vernacular_name_{KEY} DROP CONSTRAINT IF EXISTS vernacular_name_{KEY}_taxon_id_fk;
-ALTER TABLE vernacular_name_{KEY} DROP CONSTRAINT IF EXISTS vernacular_name_{KEY}_verbatim_key_fk;
 DROP INDEX IF EXISTS vernacular_name_{KEY}_lower_idx;
 DROP INDEX IF EXISTS vernacular_name_{KEY}_taxon_id_idx;
 DROP INDEX IF EXISTS vernacular_name_{KEY}_verbatim_key_idx;
-
-ALTER TABLE name_usage_{KEY} DROP CONSTRAINT IF EXISTS name_usage_{KEY}_name_id_fk;
-ALTER TABLE name_usage_{KEY} DROP CONSTRAINT IF EXISTS name_usage_{KEY}_parent_id_fk;
-ALTER TABLE name_usage_{KEY} DROP CONSTRAINT IF EXISTS name_usage_{KEY}_verbatim_key_fk;
-ALTER TABLE name_usage_{KEY} DROP CONSTRAINT IF EXISTS name_usage_{KEY}_pkey;
 DROP INDEX IF EXISTS name_usage_{KEY}_name_id_idx;
 DROP INDEX IF EXISTS name_usage_{KEY}_parent_id_idx;
 DROP INDEX IF EXISTS name_usage_{KEY}_sector_key_idx;
 DROP INDEX IF EXISTS name_usage_{KEY}_verbatim_key_idx;
-
-ALTER TABLE name_rel_{KEY} DROP CONSTRAINT IF EXISTS name_rel_{KEY}_name_id_fk;
-ALTER TABLE name_rel_{KEY} DROP CONSTRAINT IF EXISTS name_rel_{KEY}_published_in_id_fk;
-ALTER TABLE name_rel_{KEY} DROP CONSTRAINT IF EXISTS name_rel_{KEY}_related_name_id_fk;
-ALTER TABLE name_rel_{KEY} DROP CONSTRAINT IF EXISTS name_rel_{KEY}_verbatim_key_fk;
-ALTER TABLE name_rel_{KEY} DROP CONSTRAINT IF EXISTS name_rel_{KEY}_pkey;
 DROP INDEX IF EXISTS name_rel_{KEY}_name_id_type_idx;
 DROP INDEX IF EXISTS name_rel_{KEY}_verbatim_key_idx;
-
-ALTER TABLE type_material_{KEY} DROP CONSTRAINT IF EXISTS type_material_{KEY}_name_id_fk;
-ALTER TABLE type_material_{KEY} DROP CONSTRAINT IF EXISTS type_material_{KEY}_reference_id_fk;
-ALTER TABLE type_material_{KEY} DROP CONSTRAINT IF EXISTS type_material_{KEY}_verbatim_key_fk;
-ALTER TABLE type_material_{KEY} DROP CONSTRAINT IF EXISTS type_material_{KEY}_pkey;
 DROP INDEX IF EXISTS type_material_{KEY}_name_id_idx;
 DROP INDEX IF EXISTS type_material_{KEY}_reference_id_idx;
 DROP INDEX IF EXISTS type_material_{KEY}_verbatim_key_idx;
-
-ALTER TABLE name_{KEY} DROP CONSTRAINT IF EXISTS name_{KEY}_publishedin_id_fk;
-ALTER TABLE name_{KEY} DROP CONSTRAINT IF EXISTS name_{KEY}_verbatim_key_fk;
-ALTER TABLE name_{KEY} DROP CONSTRAINT IF EXISTS name_{KEY}_pkey;
 DROP INDEX IF EXISTS name_{KEY}_homotypic_name_id_idx;
 DROP INDEX IF EXISTS name_{KEY}_lower_idx;
 DROP INDEX IF EXISTS name_{KEY}_published_in_id_idx;
@@ -81,13 +37,8 @@ DROP INDEX IF EXISTS name_{KEY}_scientific_name_normalized_idx;
 DROP INDEX IF EXISTS name_{KEY}_sector_key_idx;
 DROP INDEX IF EXISTS name_{KEY}_verbatim_key_idx;
 DROP INDEX IF EXISTS name_{KEY}_name_index_id_idx;
-
-ALTER TABLE reference_{KEY} DROP CONSTRAINT IF EXISTS reference_{KEY}_verbatim_key_fk;
-ALTER TABLE reference_{KEY} DROP CONSTRAINT IF EXISTS reference_{KEY}_pkey;
 DROP INDEX IF EXISTS reference_{KEY}_sector_key_idx;
 DROP INDEX IF EXISTS reference_{KEY}_verbatim_key_idx;
-
-ALTER TABLE verbatim_{KEY} DROP CONSTRAINT IF EXISTS verbatim_{KEY}_pkey;
 DROP INDEX IF EXISTS verbatim_{KEY}_issues_idx;
 DROP INDEX IF EXISTS verbatim_{KEY}_terms_idx;
 DROP INDEX IF EXISTS verbatim_{KEY}_type_idx;
@@ -95,17 +46,11 @@ DROP INDEX IF EXISTS verbatim_{KEY}_type_idx;
 
 then once:
 ```
-ALTER TABLE verbatim ADD PRIMARY KEY (dataset_key, id);
 CREATE INDEX ON verbatim USING GIN(issues);
 CREATE INDEX ON verbatim (type);
 CREATE INDEX ON verbatim USING GIN (terms jsonb_path_ops);
-
-ALTER TABLE reference ADD PRIMARY KEY (dataset_key, id);
 CREATE INDEX ON reference (verbatim_key);
 CREATE INDEX ON reference (sector_key);
-ALTER TABLE reference ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
-
-ALTER TABLE name ADD PRIMARY KEY (dataset_key, id);
 CREATE INDEX ON name (sector_key);
 CREATE INDEX ON name (verbatim_key);
 CREATE INDEX ON name (homotypic_name_id);
@@ -113,67 +58,24 @@ CREATE INDEX ON name (name_index_id);
 CREATE INDEX ON name (published_in_id);
 CREATE INDEX ON name (lower(scientific_name));
 CREATE INDEX ON name (scientific_name_normalized);
-ALTER TABLE name ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
-ALTER TABLE name ADD FOREIGN KEY (dataset_key, published_in_id) REFERENCES reference;
-
-ALTER TABLE name_rel ADD PRIMARY KEY (dataset_key, id);
 CREATE INDEX ON name_rel (name_id, type);
 CREATE INDEX ON name_rel (verbatim_key);
-ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
-ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, name_id) REFERENCES name;
-ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, related_name_id) REFERENCES name;
-ALTER TABLE name_rel ADD FOREIGN KEY (dataset_key, published_in_id) REFERENCES reference;
-
-ALTER TABLE type_material ADD PRIMARY KEY (dataset_key, id);
 CREATE INDEX ON type_material (name_id);
 CREATE INDEX ON type_material (reference_id);
 CREATE INDEX ON type_material (verbatim_key);
-ALTER TABLE type_material ADD FOREIGN KEY (dataset_key, name_id) REFERENCES name;
-ALTER TABLE type_material ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
-ALTER TABLE type_material ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
-
-ALTER TABLE name_usage ADD PRIMARY KEY (dataset_key, id);
 CREATE INDEX ON name_usage (name_id);
 CREATE INDEX ON name_usage (parent_id);
 CREATE INDEX ON name_usage (verbatim_key);
 CREATE INDEX ON name_usage (sector_key);
-ALTER TABLE name_usage ADD FOREIGN KEY (dataset_key, name_id) REFERENCES name;
-ALTER TABLE name_usage ADD FOREIGN KEY (dataset_key, parent_id) REFERENCES name_usage;
-ALTER TABLE name_usage ADD FOREIGN KEY (dataset_key, according_to_id) REFERENCES reference;
-ALTER TABLE name_usage ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
-
-ALTER TABLE taxon_rel ADD PRIMARY KEY (dataset_key, id);
+CREATE INDEX ON name_usage (according_to_id);
 CREATE INDEX ON taxon_rel (taxon_id, type);
 CREATE INDEX ON taxon_rel (verbatim_key);
-ALTER TABLE taxon_rel ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage;
-ALTER TABLE taxon_rel ADD FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage;
-ALTER TABLE taxon_rel ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
-ALTER TABLE taxon_rel ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
-
-ALTER TABLE distribution ADD PRIMARY KEY (dataset_key, id);
 CREATE INDEX ON distribution (taxon_id);
 CREATE INDEX ON distribution (verbatim_key);
-ALTER TABLE distribution ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage;
-ALTER TABLE distribution ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
-ALTER TABLE distribution ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
-
-ALTER TABLE media ADD PRIMARY KEY (dataset_key, id);
 CREATE INDEX ON media (taxon_id);
 CREATE INDEX ON media (verbatim_key);
-ALTER TABLE media ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage;
-ALTER TABLE media ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
-ALTER TABLE media ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
-
-ALTER TABLE treatment ADD PRIMARY KEY (dataset_key, id);
-ALTER TABLE treatment ADD FOREIGN KEY (dataset_key, id) REFERENCES name_usage;
-ALTER TABLE treatment ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
-
-ALTER TABLE vernacular_name ADD PRIMARY KEY (dataset_key, id);
 CREATE INDEX ON vernacular_name (taxon_id);
 CREATE INDEX ON vernacular_name (verbatim_key);
-ALTER TABLE vernacular_name ADD FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage;
-ALTER TABLE vernacular_name ADD FOREIGN KEY (dataset_key, reference_id) REFERENCES reference;
-ALTER TABLE vernacular_name ADD FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim;
 ```
 
 ### 2020-10-13 generated doc cols
