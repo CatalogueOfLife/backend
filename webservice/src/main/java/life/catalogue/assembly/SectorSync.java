@@ -4,10 +4,8 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.EstimateDao;
 import life.catalogue.dao.SectorImportDao;
-import life.catalogue.db.mapper.NameMapper;
-import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.ReferenceMapper;
-import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.SectorProcessable;
+import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.decision.EstimateRematcher;
@@ -33,6 +31,18 @@ import java.util.stream.Collectors;
  */
 public class SectorSync extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorSync.class);
+
+  private static final List<Class<? extends SectorProcessable<?>>> SECTOR_MAPPERS = List.of(
+    VernacularNameMapper.class,
+    DistributionMapper.class,
+    MediaMapper.class,
+    NameUsageMapper.class,
+    TypeMaterialMapper.class,
+    NameRelationMapper.class,
+    NameMapper.class,
+    ReferenceMapper.class
+  );
+
   private final SectorImportDao sid;
   private final NameIndex nameIndex;
 
@@ -234,19 +244,11 @@ public class SectorSync extends SectorRunnable {
   }
   
   private void deleteOld() {
-    int count;
     try (SqlSession session = factory.openSession(true)) {
-      NameUsageMapper um = session.getMapper(NameUsageMapper.class);
-      count = um.deleteBySector(sector);
-      LOG.info("Deleted {} existing taxa with their synonyms and related information from sector {}", count, sector);
-  
-      NameMapper nm = session.getMapper(NameMapper.class);
-      count = nm.deleteBySector(sector);
-      LOG.info("Deleted {} names from sector {}", count, sector);
-  
-      ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
-      count = rm.deleteBySector(sector);
-      LOG.info("Deleted {} references from sector {}", count, sector);
+      for (Class<? extends SectorProcessable<?>> m : SECTOR_MAPPERS) {
+        int count = session.getMapper(m).deleteBySector(sector);
+        LOG.info("Deleted {} existing {}s from sector {}", count, m.getSimpleName().replaceAll("Mapper", ""), sector);
+      }
     }
   }
   

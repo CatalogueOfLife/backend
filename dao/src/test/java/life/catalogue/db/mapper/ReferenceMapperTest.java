@@ -3,6 +3,7 @@ package life.catalogue.db.mapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Reference;
 import life.catalogue.api.search.ReferenceSearchRequest;
@@ -47,6 +48,11 @@ public class ReferenceMapperTest extends CRUDDatasetScopedStringTestBase<Referen
   @Test
   public void copyDataset() throws Exception {
     CopyDatasetTestComponent.copy(mapper(), testDataRule.testData.key, true);
+  }
+
+  @Test
+  public void sectorProcessable() throws Exception {
+    SectorProcessableTestComponent.test(mapper(), DSID.of(testDataRule.testData.key, 1));
   }
 
   @Test

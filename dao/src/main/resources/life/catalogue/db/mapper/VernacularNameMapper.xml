@@ -24,6 +24,7 @@
 
   <sql id="COLS">
     dataset_key,
+    sector_key,
     taxon_id,
     <include refid="COLS_COPY"/>
   </sql>
@@ -43,6 +44,7 @@
 
   <sql id="PROPS">
     #{obj.datasetKey},
+    #{obj.sectorKey},
     #{taxonId},
     #{obj.verbatimKey},
     #{obj.name},
@@ -139,5 +141,24 @@
       LEFT JOIN idmap_name_usage_${datasetKey} m ON m.id=v.taxon_id
     </if>
   </insert>
+
+  <select id="processSector" parameterType="map" resultMap="vernacularNameResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE vn.sector_key = #{key.id}
+  </select>
+
+  <delete id="deleteBySector" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    DELETE FROM vernacular_name_${partition}
+    WHERE sector_key=#{key.id} AND dataset_key=#{key.datasetKey}
+  </delete>
+
+  <update id="removeSectorKey" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    UPDATE vernacular_name_${partition} SET sector_key = NULL
+    WHERE sector_key = #{key.id}
+  </update>
 
 </mapper>

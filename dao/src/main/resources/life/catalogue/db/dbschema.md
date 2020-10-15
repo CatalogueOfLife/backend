@@ -9,10 +9,48 @@ We could have used Liquibase, but we would not have trusted the automatic update
 and done it manually. So we can as well log changes here.
 
 ### PROD changes
-### bare names
+### bare names and sectors for all
 https://github.com/CatalogueOfLife/checklistbank/issues/749
 ```
-ALTER TYPE TAXONOMICSTATUS ADD VALUE 'BARE_NAME' AFTER 'MISAPPLIED'; 
+ALTER TYPE TAXONOMICSTATUS ADD VALUE 'BARE_NAME' AFTER 'MISAPPLIED';
+
+-- missing reference_id and name_id indices caused (cascading) deletions from references, usages or name to be really slow
+-- also need to delete orphaned refs 
+CREATE INDEX ON distribution (reference_id);
+CREATE INDEX ON media (reference_id);
+CREATE INDEX ON taxon_rel (reference_id);
+--CREATE INDEX ON type_material (reference_id);
+CREATE INDEX ON vernacular_name (reference_id);
+--CREATE INDEX ON name_usage (according_to_id);
+--CREATE INDEX ON name (published_in_id);
+CREATE INDEX ON name_rel (published_in_id);
+CREATE INDEX ON name_rel (name_id);
+CREATE INDEX ON name_rel (related_name_id);
+CREATE INDEX ON taxon_rel (taxon_id);
+CREATE INDEX ON taxon_rel (related_taxon_id);
+
+-- add sector_key to all entities
+-- https://github.com/CatalogueOfLife/backend/issues/335
+ALTER TABLE name_rel ADD COLUMN sector_key INTEGER;
+CREATE INDEX ON name_rel (sector_key);
+
+CREATE INDEX ON type_material (sector_key);
+
+ALTER TABLE taxon_rel ADD COLUMN sector_key INTEGER;
+CREATE INDEX ON taxon_rel (sector_key);
+
+ALTER TABLE vernacular_name ADD COLUMN sector_key INTEGER;
+CREATE INDEX ON vernacular_name (sector_key);
+
+ALTER TABLE distribution ADD COLUMN sector_key INTEGER;
+CREATE INDEX ON distribution (sector_key);
+
+ALTER TABLE treatment ADD COLUMN sector_key INTEGER;
+CREATE INDEX ON treatment (sector_key);
+CREATE INDEX ON treatment (verbatim_key);
+
+ALTER TABLE media ADD COLUMN sector_key INTEGER;
+CREATE INDEX ON media (sector_key); 
 ```
 
 ### partition indices

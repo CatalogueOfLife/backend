@@ -21,6 +21,7 @@
 
   <sql id="COLS">
     dataset_key,
+    sector_key,
     name_id,
     related_name_id,
     <include refid="COLS_COPY"/>
@@ -37,6 +38,7 @@
 
   <sql id="PROPS">
     #{datasetKey},
+    #{sectorKey},
     #{nameId},
     #{relatedNameId},
     #{verbatimKey},
@@ -95,5 +97,24 @@
       LEFT JOIN idmap_name_${datasetKey} m2 ON m2.id=r.related_name_id
     </if>
   </insert>
+
+  <select id="processSector" parameterType="map" resultMap="nameRelResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE nr.sector_key = #{key.id}
+  </select>
+
+  <delete id="deleteBySector" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    DELETE FROM name_rel_${partition}
+    WHERE sector_key=#{key.id} AND dataset_key=#{key.datasetKey}
+  </delete>
+
+  <update id="removeSectorKey" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    UPDATE name_rel_${partition} SET sector_key = NULL
+    WHERE sector_key = #{key.id}
+  </update>
 
 </mapper>

@@ -21,6 +21,7 @@
 
   <sql id="COLS">
     dataset_key,
+    sector_key,
     taxon_id,
     <include refid="COLS_COPY"/>
   </sql>
@@ -37,6 +38,7 @@
 
   <sql id="PROPS">
     #{obj.datasetKey},
+    #{obj.sectorKey},
     #{taxonId},
     #{obj.verbatimKey},
     #{obj.area},
@@ -104,4 +106,23 @@
     </if>
   </insert>
 
+
+  <select id="processSector" parameterType="map" resultMap="distributionResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE d.sector_key = #{key.id}
+  </select>
+
+  <delete id="deleteBySector" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    DELETE FROM distribution_${partition}
+    WHERE sector_key=#{key.id} AND dataset_key=#{key.datasetKey}
+  </delete>
+
+  <update id="removeSectorKey" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    UPDATE distribution_${partition} SET sector_key = NULL
+    WHERE sector_key = #{key.id}
+  </update>
 </mapper>

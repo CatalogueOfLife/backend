@@ -47,6 +47,11 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   }
 
   @Test
+  public void sectorProcessable() throws Exception {
+    SectorProcessableTestComponent.test(mapper(), DSID.of(testDataRule.testData.key, 1));
+  }
+
+  @Test
   public void getSimple() throws Exception {
     Taxon t = TestEntityGenerator.TAXON1;
     SimpleName sn = mapper().getSimple(t);

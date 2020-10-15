@@ -1,7 +1,9 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.NameRelation;
+import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.NomRelType;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,7 +41,12 @@ public class NameRelationMapperTest extends MapperTestBase<NameRelationMapper> {
     assertEquals(1, outs.size());
     assertEquals(in, nullifyDate(outs.get(0)));
   }
-  
+
+  @Test
+  public void sectorProcessable() throws Exception {
+    SectorProcessableTestComponent.test(mapper(), DSID.of(Datasets.COL, 1));
+  }
+
   @Test
   public void testListByName() throws Exception {
     // NB We have one pre-inserted (apple.sql) NameAct record associated with NAME2 and 3

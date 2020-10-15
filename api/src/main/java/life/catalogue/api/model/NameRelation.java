@@ -7,15 +7,26 @@ import java.util.Objects;
 /**
  * A nomenclatural name relation between two names pointing back in time from the nameId to the relatedNameId.
  */
-public class NameRelation extends DatasetScopedEntity<Integer> implements VerbatimEntity {
-  private Integer verbatimKey;
+public class NameRelation extends DatasetScopedEntity<Integer> implements SectorScopedEntity<Integer>, VerbatimEntity {
   private Integer datasetKey;
+  private Integer sectorKey;
+  private Integer verbatimKey;
   private NomRelType type;
   private String nameId;
   private String relatedNameId;
   private String publishedInId;
   private String remarks;
-  
+
+  @Override
+  public Integer getSectorKey() {
+    return sectorKey;
+  }
+
+  @Override
+  public void setSectorKey(Integer sectorKey) {
+    this.sectorKey = sectorKey;
+  }
+
   @Override
   public Integer getVerbatimKey() {
     return verbatimKey;
@@ -87,7 +98,8 @@ public class NameRelation extends DatasetScopedEntity<Integer> implements Verbat
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     NameRelation that = (NameRelation) o;
-    return Objects.equals(verbatimKey, that.verbatimKey) &&
+    return Objects.equals(sectorKey, that.sectorKey) &&
+        Objects.equals(verbatimKey, that.verbatimKey) &&
         Objects.equals(datasetKey, that.datasetKey) &&
         type == that.type &&
         Objects.equals(nameId, that.nameId) &&
@@ -98,6 +110,6 @@ public class NameRelation extends DatasetScopedEntity<Integer> implements Verbat
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), verbatimKey, datasetKey, type, nameId, relatedNameId, publishedInId, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, datasetKey, type, nameId, relatedNameId, publishedInId, remarks);
   }
 }

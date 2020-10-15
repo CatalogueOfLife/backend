@@ -3,6 +3,7 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.TypeMaterial;
+import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.TypeStatus;
 import org.junit.Test;
 
@@ -31,6 +32,11 @@ public class TypeMaterialMapperTest extends CRUDTestBase<DSID<String>, TypeMater
   @Test
   public void copyDataset() throws Exception {
     CopyDatasetTestComponent.copy(mapper(), datasetKey, true);
+  }
+
+  @Test
+  public void sectorProcessable() throws Exception {
+    SectorProcessableTestComponent.test(mapper(), DSID.of(Datasets.COL, 1));
   }
 
   @Test

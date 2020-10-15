@@ -4,6 +4,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
+import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.MatchType;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
@@ -43,6 +44,11 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
   @Test
   public void copyDataset() throws Exception {
     CopyDatasetTestComponent.copy(mapper(), testDataRule.testData.key, true);
+  }
+
+  @Test
+  public void sectorProcessable() throws Exception {
+    SectorProcessableTestComponent.test(mapper(), DSID.of(testDataRule.testData.key, 1));
   }
 
   @Test

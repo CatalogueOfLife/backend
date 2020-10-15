@@ -7,8 +7,9 @@ import life.catalogue.api.vocab.Sex;
 import javax.validation.constraints.Size;
 import java.util.Objects;
 
-public class VernacularName extends DatasetScopedEntity<Integer> implements Referenced, VerbatimEntity {
-  
+public class VernacularName extends DatasetScopedEntity<Integer> implements SectorScopedEntity<Integer>, Referenced, VerbatimEntity {
+
+  private Integer sectorKey;
   private Integer verbatimKey;
   private String name;
   private String latin;
@@ -18,7 +19,17 @@ public class VernacularName extends DatasetScopedEntity<Integer> implements Refe
   private String area;
   private Sex sex;
   private String referenceId;
-  
+
+  @Override
+  public Integer getSectorKey() {
+    return sectorKey;
+  }
+
+  @Override
+  public void setSectorKey(Integer sectorKey) {
+    this.sectorKey = sectorKey;
+  }
+
   @Override
   public Integer getVerbatimKey() {
     return verbatimKey;
@@ -100,19 +111,20 @@ public class VernacularName extends DatasetScopedEntity<Integer> implements Refe
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     VernacularName that = (VernacularName) o;
-    return Objects.equals(verbatimKey, that.verbatimKey) &&
-            Objects.equals(name, that.name) &&
-            Objects.equals(latin, that.latin) &&
-            Objects.equals(language, that.language) &&
-            country == that.country &&
-            Objects.equals(area, that.area) &&
-            sex == that.sex &&
-            Objects.equals(referenceId, that.referenceId);
+    return Objects.equals(sectorKey, that.sectorKey) &&
+        Objects.equals(verbatimKey, that.verbatimKey) &&
+        Objects.equals(name, that.name) &&
+        Objects.equals(latin, that.latin) &&
+        Objects.equals(language, that.language) &&
+        country == that.country &&
+        Objects.equals(area, that.area) &&
+        sex == that.sex &&
+        Objects.equals(referenceId, that.referenceId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), verbatimKey, name, latin, language, country, area, sex, referenceId);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, name, latin, language, country, area, sex, referenceId);
   }
 
   @Override

@@ -1,21 +1,32 @@
 package life.catalogue.api.model;
 
-import java.util.Objects;
-
 import life.catalogue.api.vocab.DistributionStatus;
 import life.catalogue.api.vocab.Gazetteer;
+
+import java.util.Objects;
 
 /**
  *
  */
-public class Distribution extends DatasetScopedEntity<Integer> implements Referenced, VerbatimEntity {
-  
+public class Distribution extends DatasetScopedEntity<Integer> implements SectorScopedEntity<Integer>, Referenced, VerbatimEntity {
+
+  private Integer sectorKey;
   private Integer verbatimKey;
   private String area;
   private Gazetteer gazetteer;
   private DistributionStatus status;
   private String referenceId;
-  
+
+  @Override
+  public Integer getSectorKey() {
+    return sectorKey;
+  }
+
+  @Override
+  public void setSectorKey(Integer sectorKey) {
+    this.sectorKey = sectorKey;
+  }
+
   @Override
   public Integer getVerbatimKey() {
     return verbatimKey;
@@ -67,7 +78,8 @@ public class Distribution extends DatasetScopedEntity<Integer> implements Refere
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     Distribution that = (Distribution) o;
-    return Objects.equals(verbatimKey, that.verbatimKey) &&
+    return Objects.equals(sectorKey, that.sectorKey) &&
+        Objects.equals(verbatimKey, that.verbatimKey) &&
         Objects.equals(area, that.area) &&
         gazetteer == that.gazetteer &&
         status == that.status &&
@@ -76,7 +88,7 @@ public class Distribution extends DatasetScopedEntity<Integer> implements Refere
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), verbatimKey, area, gazetteer, status, referenceId);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, area, gazetteer, status, referenceId);
   }
   
   @Override

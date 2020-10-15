@@ -1,14 +1,15 @@
 package life.catalogue.api.model;
 
+import life.catalogue.api.vocab.License;
+import life.catalogue.api.vocab.MediaType;
+
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.Objects;
 
-import life.catalogue.api.vocab.License;
-import life.catalogue.api.vocab.MediaType;
+public class Media extends DatasetScopedEntity<Integer> implements SectorScopedEntity<Integer>, Referenced, VerbatimEntity {
 
-public class Media extends DatasetScopedEntity<Integer> implements Referenced, VerbatimEntity {
-  
+  private Integer sectorKey;
   private Integer verbatimKey;
   private URI url;
   private MediaType type;
@@ -19,7 +20,17 @@ public class Media extends DatasetScopedEntity<Integer> implements Referenced, V
   private License license;
   private URI link;
   private String referenceId;
-  
+
+  @Override
+  public Integer getSectorKey() {
+    return sectorKey;
+  }
+
+  @Override
+  public void setSectorKey(Integer sectorKey) {
+    this.sectorKey = sectorKey;
+  }
+
   @Override
   public Integer getVerbatimKey() {
     return verbatimKey;
@@ -110,7 +121,8 @@ public class Media extends DatasetScopedEntity<Integer> implements Referenced, V
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     Media media = (Media) o;
-    return Objects.equals(verbatimKey, media.verbatimKey) &&
+    return Objects.equals(sectorKey, media.sectorKey) &&
+        Objects.equals(verbatimKey, media.verbatimKey) &&
         Objects.equals(url, media.url) &&
         type == media.type &&
         Objects.equals(format, media.format) &&
@@ -124,6 +136,6 @@ public class Media extends DatasetScopedEntity<Integer> implements Referenced, V
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), verbatimKey, url, type, format, title, captured, capturedBy, license, link, referenceId);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, url, type, format, title, captured, capturedBy, license, link, referenceId);
   }
 }

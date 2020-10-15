@@ -7,15 +7,26 @@ import java.util.Objects;
 /**
  * A taxon concept or species interaction relation between two taxa.
  */
-public class TaxonRelation extends DatasetScopedEntity<Integer> implements VerbatimEntity, Referenced {
-  private Integer verbatimKey;
+public class TaxonRelation extends DatasetScopedEntity<Integer> implements SectorEntity, VerbatimEntity, Referenced {
   private Integer datasetKey;
+  private Integer sectorKey;
+  private Integer verbatimKey;
   private TaxRelType type;
   private String taxonId;
   private String relatedTaxonId;
   private String referenceId;
   private String remarks;
-  
+
+  @Override
+  public Integer getSectorKey() {
+    return sectorKey;
+  }
+
+  @Override
+  public void setSectorKey(Integer sectorKey) {
+    this.sectorKey = sectorKey;
+  }
+
   @Override
   public Integer getVerbatimKey() {
     return verbatimKey;
@@ -82,7 +93,8 @@ public class TaxonRelation extends DatasetScopedEntity<Integer> implements Verba
     if (!(o instanceof TaxonRelation)) return false;
     if (!super.equals(o)) return false;
     TaxonRelation that = (TaxonRelation) o;
-    return Objects.equals(verbatimKey, that.verbatimKey) &&
+    return Objects.equals(sectorKey, that.sectorKey) &&
+      Objects.equals(verbatimKey, that.verbatimKey) &&
       Objects.equals(datasetKey, that.datasetKey) &&
       type == that.type &&
       Objects.equals(taxonId, that.taxonId) &&
@@ -93,6 +105,6 @@ public class TaxonRelation extends DatasetScopedEntity<Integer> implements Verba
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), verbatimKey, datasetKey, type, taxonId, relatedTaxonId, referenceId, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, datasetKey, type, taxonId, relatedTaxonId, referenceId, remarks);
   }
 }

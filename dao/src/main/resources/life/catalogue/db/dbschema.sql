@@ -981,8 +981,9 @@ LANGUAGE plpgsql;
 
 CREATE TABLE name_rel (
   id INTEGER NOT NULL,
-  verbatim_key INTEGER,
   dataset_key INTEGER NOT NULL,
+  sector_key INTEGER,
+  verbatim_key INTEGER,
   type NOMRELTYPE NOT NULL,
   created_by INTEGER NOT NULL,
   modified_by INTEGER NOT NULL,
@@ -995,6 +996,7 @@ CREATE TABLE name_rel (
 ) PARTITION BY LIST (dataset_key);
 
 CREATE INDEX ON name_rel (name_id, type);
+CREATE INDEX ON name_rel (sector_key);
 CREATE INDEX ON name_rel (verbatim_key);
 
 CREATE TABLE type_material (
@@ -1023,16 +1025,17 @@ CREATE TABLE type_material (
 ) PARTITION BY LIST (dataset_key);
 
 CREATE INDEX ON type_material (name_id);
-CREATE INDEX ON type_material (reference_id);
+CREATE INDEX ON type_material (sector_key);
 CREATE INDEX ON type_material (verbatim_key);
+CREATE INDEX ON type_material (reference_id);
 
 CREATE TABLE name_usage (
   id TEXT NOT NULL,
-  is_synonym BOOLEAN NOT NULL,
-  extinct BOOLEAN,
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   verbatim_key INTEGER,
+  is_synonym BOOLEAN NOT NULL,
+  extinct BOOLEAN,
   status TAXONOMICSTATUS NOT NULL,
   origin ORIGIN NOT NULL,
   created_by INTEGER NOT NULL,
@@ -1062,8 +1065,9 @@ CREATE INDEX ON name_usage (according_to_id);
 
 CREATE TABLE taxon_rel (
   id INTEGER NOT NULL,
-  verbatim_key INTEGER,
   dataset_key INTEGER NOT NULL,
+  sector_key INTEGER,
+  verbatim_key INTEGER,
   type TAXRELTYPE NOT NULL,
   created_by INTEGER NOT NULL,
   modified_by INTEGER NOT NULL,
@@ -1076,11 +1080,13 @@ CREATE TABLE taxon_rel (
 ) PARTITION BY LIST (dataset_key);
 
 CREATE INDEX ON taxon_rel (taxon_id, type);
+CREATE INDEX ON taxon_rel (sector_key);
 CREATE INDEX ON taxon_rel (verbatim_key);
 
 CREATE TABLE vernacular_name (
   id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL,
+  sector_key INTEGER,
   verbatim_key INTEGER,
   created_by INTEGER NOT NULL,
   modified_by INTEGER NOT NULL,
@@ -1098,11 +1104,13 @@ CREATE TABLE vernacular_name (
 ) PARTITION BY LIST (dataset_key);
 
 CREATE INDEX ON vernacular_name (taxon_id);
+CREATE INDEX ON vernacular_name (sector_key);
 CREATE INDEX ON vernacular_name (verbatim_key);
 
 CREATE TABLE distribution (
   id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL,
+  sector_key INTEGER,
   verbatim_key INTEGER,
   gazetteer GAZETTEER NOT NULL,
   status DISTRIBUTIONSTATUS,
@@ -1116,11 +1124,13 @@ CREATE TABLE distribution (
 ) PARTITION BY LIST (dataset_key);
 
 CREATE INDEX ON distribution (taxon_id);
+CREATE INDEX ON distribution (sector_key);
 CREATE INDEX ON distribution (verbatim_key);
 
 CREATE TABLE treatment (
   id TEXT NOT NULL,
   dataset_key INTEGER NOT NULL,
+  sector_key INTEGER,
   verbatim_key INTEGER NOT NULL,
   format TREATMENTFORMAT,
   created_by INTEGER NOT NULL,
@@ -1130,9 +1140,13 @@ CREATE TABLE treatment (
   document TEXT NOT NULL
 ) PARTITION BY LIST (dataset_key);
 
+CREATE INDEX ON treatment (sector_key);
+CREATE INDEX ON treatment (verbatim_key);
+
 CREATE TABLE media (
   id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL,
+  sector_key INTEGER,
   verbatim_key INTEGER,
   type MEDIATYPE,
   captured DATE,
@@ -1151,6 +1165,7 @@ CREATE TABLE media (
 ) PARTITION BY LIST (dataset_key);
 
 CREATE INDEX ON media (taxon_id);
+CREATE INDEX ON media (sector_key);
 CREATE INDEX ON media (verbatim_key);
 
 

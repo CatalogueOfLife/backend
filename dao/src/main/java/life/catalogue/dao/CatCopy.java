@@ -30,7 +30,7 @@ public class CatCopy {
   private static final Logger LOG = LoggerFactory.getLogger(CatCopy.class);
   
   
-  private static final Map<EntityType, Class<? extends TaxonExtensionMapper<? extends DatasetScopedEntity<Integer>>>> extMapper = new HashMap<>();
+  private static final Map<EntityType, Class<? extends TaxonExtensionMapper<? extends SectorScopedEntity<Integer>>>> extMapper = new HashMap<>();
   static {
     extMapper.put(EntityType.DISTRIBUTION, DistributionMapper.class);
     extMapper.put(EntityType.VERNACULAR, VernacularNameMapper.class);
@@ -85,9 +85,10 @@ public class CatCopy {
     // copy related entities
     for (EntityType type : include) {
       if (t.isTaxon() && extMapper.containsKey(type)) {
-        final TaxonExtensionMapper<DatasetScopedEntity<Integer>> mapper = (TaxonExtensionMapper<DatasetScopedEntity<Integer>>) batchSession.getMapper(extMapper.get(type));
+        final TaxonExtensionMapper<SectorScopedEntity<Integer>> mapper = (TaxonExtensionMapper<SectorScopedEntity<Integer>>) batchSession.getMapper(extMapper.get(type));
         mapper.listByTaxon(orig).forEach(e -> {
           e.setId(null);
+          e.setSectorKey(t.getSectorKey());
           e.setDatasetKey(targetParent.getDatasetKey());
           e.applyUser(user);
           if (e instanceof VerbatimEntity) {
