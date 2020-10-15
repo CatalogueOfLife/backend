@@ -57,6 +57,9 @@
 
   <sql id="SEARCH_WHERE">
     <if test="req != null">
+      <if test="req.sectorDatasetKey != null">
+        JOIN sector s ON s.id=r.sector_key
+      </if>
       <where>
         <if test="req.q != null">
           r.doc @@ plainto_tsquery('simple2', #{req.q})
@@ -71,6 +74,9 @@
             <when test="req.getSectorKeyIsNull()">r.sector_key IS NULL</when>
             <otherwise>r.sector_key IS NOT NULL</otherwise>
           </choose>
+        </if>
+        <if test="req.sectorDatasetKey != null">
+          AND s.subject_dataset_key = #{req.sectorDatasetKey}
         </if>
         <if test="req.issues != null and !req.issues.isEmpty()">
           AND v.issues @>

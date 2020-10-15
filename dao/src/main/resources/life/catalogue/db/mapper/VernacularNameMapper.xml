@@ -62,12 +62,21 @@
 
   <sql id="SEARCH_WHERE">
     <if test="req != null">
+      <if test="req.sectorDatasetKey != null">
+        JOIN sector s ON s.id=vn.sector_key
+      </if>
       <where>
         <if test="req.q != null">
           vn.doc @@ to_tsquery('${req.q}')
         </if>
         <if test="req.language != null">
           AND vn.language = #{req.language}
+        </if>
+        <if test="req.sectorKey != null">
+          AND vn.sector_key = #{req.sectorKey}
+        </if>
+        <if test="req.sectorDatasetKey != null">
+          AND s.subject_dataset_key = #{req.sectorDatasetKey}
         </if>
       </where>
     </if>
