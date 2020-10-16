@@ -278,6 +278,7 @@ public class SectorSync extends SectorRunnable {
       for (Map.Entry<String, String> n : nameIds.entrySet()) {
         for (NameRelation nr : nrm.list(subjectDatasetKey, n.getKey())) {
           if (!relIds.contains((int)nr.getId())) {
+            nr.setDatasetKey(sector.getDatasetKey());
             nr.setNameId(nameIds.get(nr.getNameId()));
             nr.setRelatedNameId(nameIds.get(nr.getRelatedNameId()));
             if (nr.getNameId() != null && nr.getRelatedNameId() != null) {
