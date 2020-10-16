@@ -206,6 +206,9 @@ public class SectorSync extends SectorRunnable {
         .filter(ed -> ed.getMode().equals(EditorialDecision.Mode.BLOCK) && ed.getSubject().getId() != null)
         .map(ed -> ed.getSubject().getId())
         .collect(Collectors.toSet());
+
+    Map<String, TreeCopyHandler.Usage> usageIds;
+    Map<String, String> nameIds;
     try (SqlSession session = factory.openSession(false);
          TreeCopyHandler treeHandler = new TreeCopyHandler(decisions, factory, nameIndex, user, sector, state)
     ){
@@ -214,7 +217,7 @@ public class SectorSync extends SectorRunnable {
       if (sector.getMode() == Sector.Mode.ATTACH) {
         um.processTree(subjectDatasetKey, null, sector.getSubject().getId(), blockedIds, null, true,false)
             .forEach(treeHandler);
-        copyRelations(treeHandler, session);
+
       } else if (sector.getMode() == Sector.Mode.UNION) {
         LOG.info("Traverse taxon tree at {}, ignoring immediate children above rank {}. Blocking {} nodes", sector.getSubject().getId(), sector.getPlaceholderRank(), blockedIds.size());
         // in UNION mode do not attach the subject itself, just its children
@@ -233,31 +236,50 @@ public class SectorSync extends SectorRunnable {
             um.processTree(subjectDatasetKey, null, child.getId(), blockedIds, null, true,false)
                 .forEach(treeHandler);
           }
-          copyRelations(treeHandler, session);
           treeHandler.reset();
         }
 
       } else {
         throw new NotImplementedException("Only attach and union sectors are implemented");
       }
+
+      usageIds= treeHandler.getUsageIds();
+      nameIds = treeHandler.getNameIds();
       // copy handler stats to metrics
       state.setAppliedDecisionCount(treeHandler.decisionCounter);
       state.setIgnoredByReasonCount(Map.copyOf(treeHandler.ignoredCounter));
     }
+
+    // copy name relations
+    copyNameRelations(nameIds);
+
+    // copy taxon relations
+    copyTaxonRelations(usageIds);
   }
 
-  private void copyRelations(TreeCopyHandler handler, SqlSession session){
-    try (SqlSession batchSession = factory.openSession(ExecutorType.BATCH, false)) {
+  private void copyTaxonRelations(Map<String, TreeCopyHandler.Usage> usageIds) {
+    try (SqlSession session = factory.openSession();
+         SqlSession batchSession = factory.openSession(ExecutorType.BATCH, false)
+    ) {
+      // TODO: copy taxon relations
+      LOG.info("Synced {} taxon relations from sector {}", 0, sectorKey);
+    }
+  }
+
+  private void copyNameRelations(Map<String, String> nameIds){
+    try (SqlSession session = factory.openSession();
+         SqlSession batchSession = factory.openSession(ExecutorType.BATCH, false)
+    ) {
       // copy name relations
       NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
       NameRelationMapper nrmWrite = batchSession.getMapper(NameRelationMapper.class);
       int counter = 0;
       IntSet relIds = new IntOpenHashSet();
-      for (Map.Entry<String, String> n : handler.getNameIds().entrySet()) {
+      for (Map.Entry<String, String> n : nameIds.entrySet()) {
         for (NameRelation nr : nrm.list(subjectDatasetKey, n.getKey())) {
           if (!relIds.contains((int)nr.getId())) {
-            nr.setNameId(handler.getNameIds().get(nr.getNameId()));
-            nr.setRelatedNameId(handler.getNameIds().get(nr.getRelatedNameId()));
+            nr.setNameId(nameIds.get(nr.getNameId()));
+            nr.setRelatedNameId(nameIds.get(nr.getRelatedNameId()));
             if (nr.getNameId() != null && nr.getRelatedNameId() != null) {
               nrmWrite.create(nr);
               relIds.add((int)nr.getId());
@@ -272,8 +294,6 @@ public class SectorSync extends SectorRunnable {
       }
       batchSession.commit();
       LOG.info("Synced {} name relations from sector {}", relIds.size(), sectorKey);
-
-      // TODO copy taxon relations
     }
   }
 
