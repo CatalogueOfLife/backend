@@ -63,14 +63,14 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
 
   @GET
   @Path("{key}/settings")
-  public DatasetSettings getSettings(@PathParam("datasetKey") int key) {
+  public DatasetSettings getSettings(@PathParam("key") int key) {
     return dao.getSettings(key);
   }
 
   @PUT
   @Path("{key}/settings")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void putSettings(@PathParam("datasetKey") int key, DatasetSettings settings, @Auth User user) {
+  public void putSettings(@PathParam("key") int key, DatasetSettings settings, @Auth User user) {
     dao.putSettings(key, settings, user.getKey());
   }
 
