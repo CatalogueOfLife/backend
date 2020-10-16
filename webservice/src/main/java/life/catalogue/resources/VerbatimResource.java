@@ -1,14 +1,5 @@
 package life.catalogue.resources;
 
-import java.util.*;
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.UriInfo;
-
-import org.apache.ibatis.session.SqlSession;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
@@ -16,13 +7,22 @@ import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.db.mapper.LogicalOperator;
 import life.catalogue.db.mapper.VerbatimRecordMapper;
+import org.apache.ibatis.session.SqlSession;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.dwc.terms.UnknownTerm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Path("/dataset/{datasetKey}/verbatim")
+import javax.validation.Valid;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriInfo;
+import java.util.*;
+
+@Path("/dataset/{key}/verbatim")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class VerbatimResource {
@@ -41,7 +41,7 @@ public class VerbatimResource {
   private static final Logger LOG = LoggerFactory.getLogger(VerbatimResource.class);
   
   @GET
-  public ResultPage<VerbatimRecord> list(@PathParam("datasetKey") int datasetKey,
+  public ResultPage<VerbatimRecord> list(@PathParam("key") int datasetKey,
                                          @QueryParam("type") List<Term> types,
                                          @QueryParam("termOp") @DefaultValue("AND") LogicalOperator termOp,
                                          @QueryParam("issue") List<Issue> issues,
@@ -75,10 +75,10 @@ public class VerbatimResource {
   }
   
   @GET
-  @Path("{key}")
-  public VerbatimRecord get(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @Context SqlSession session) {
+  @Path("{id}")
+  public VerbatimRecord get(@PathParam("key") int datasetKey, @PathParam("id") int id, @Context SqlSession session) {
     VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
-    return mapper.get(DSID.of(datasetKey, key));
+    return mapper.get(DSID.of(datasetKey, id));
   }
   
 }

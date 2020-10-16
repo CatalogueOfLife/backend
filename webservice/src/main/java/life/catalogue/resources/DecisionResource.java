@@ -19,7 +19,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
-@Path("/dataset/{datasetKey}/decision")
+@Path("/dataset/{key}/decision")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class DecisionResource extends AbstractDatasetScopedResource<Integer, EditorialDecision, DecisionSearchRequest> {
@@ -45,7 +45,7 @@ public class DecisionResource extends AbstractDatasetScopedResource<Integer, Edi
 
   @DELETE
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void deleteByDataset(@PathParam("datasetKey") int projectKey,
+  public void deleteByDataset(@PathParam("key") int projectKey,
                               @QueryParam("datasetKey") Integer datasetKey,
                               @Context SqlSession session, @Auth User user) {
     Preconditions.checkNotNull(datasetKey, "datasetKey parameter is required");
@@ -60,7 +60,7 @@ public class DecisionResource extends AbstractDatasetScopedResource<Integer, Edi
 
   @POST
   @Path("/rematch")
-  public RematcherBase.MatchCounter rematch(@PathParam("datasetKey") int projectKey, DecisionRematchRequest req, @Auth User user) {
+  public RematcherBase.MatchCounter rematch(@PathParam("key") int projectKey, DecisionRematchRequest req, @Auth User user) {
     req.setDatasetKey(projectKey);
     return DecisionRematcher.match(dao, req, user.getKey());
   }

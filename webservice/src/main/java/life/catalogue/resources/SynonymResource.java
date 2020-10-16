@@ -1,16 +1,16 @@
 package life.catalogue.resources;
 
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Synonym;
 import life.catalogue.dao.SynonymDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Path("/dataset/{datasetKey}/synonym")
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+@Path("/dataset/{key}/synonym")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class SynonymResource extends AbstractDatasetScopedResource<String, Synonym, Page> {

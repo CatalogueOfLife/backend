@@ -24,7 +24,7 @@ import java.util.List;
  * Editorial decision patching the metadata of a source dataset.
  * The integer id value of the underlying DSID<Integer> refers to the source dataset key.
  */
-@Path("/dataset/{datasetKey}/patch")
+@Path("/dataset/{key}/patch")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -35,7 +35,7 @@ public class DatasetPatchResource {
 
   @GET
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public List<Dataset> list(@PathParam("datasetKey") int datasetKey, @Context SqlSession session) {
+  public List<Dataset> list(@PathParam("key") int datasetKey, @Context SqlSession session) {
     List<Dataset> patches = new ArrayList<>();
     session.getMapper(DatasetPatchMapper.class).processDataset(datasetKey).forEach(patches::add);
     return patches;
@@ -46,7 +46,7 @@ public class DatasetPatchResource {
    */
   @POST
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public DSID<Integer> create(@PathParam("datasetKey") int datasetKey, Dataset obj, @Auth User user, @Context SqlSession session) {
+  public DSID<Integer> create(@PathParam("key") int datasetKey, Dataset obj, @Auth User user, @Context SqlSession session) {
     obj.applyUser(user);
     session.getMapper(DatasetPatchMapper.class).create(datasetKey, obj);
     session.commit();
@@ -58,14 +58,14 @@ public class DatasetPatchResource {
    */
   @GET
   @Path("{id}")
-  public Dataset get(@PathParam("datasetKey") int datasetKey, @PathParam("id") Integer id, @Context SqlSession session) {
+  public Dataset get(@PathParam("key") int datasetKey, @PathParam("id") Integer id, @Context SqlSession session) {
     return session.getMapper(DatasetPatchMapper.class).get(datasetKey, id);
   }
 
   @PUT
   @Path("{id}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void update(@PathParam("datasetKey") int datasetKey, @PathParam("id") Integer id, @Valid Dataset obj, @Auth User user, @Context SqlSession session) {
+  public void update(@PathParam("key") int datasetKey, @PathParam("id") Integer id, @Valid Dataset obj, @Auth User user, @Context SqlSession session) {
     obj.setKey(id);
     obj.applyUser(user);
     int i = session.getMapper(DatasetPatchMapper.class).update(datasetKey, obj);
@@ -78,7 +78,7 @@ public class DatasetPatchResource {
   @DELETE
   @Path("{id}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void delete(@PathParam("datasetKey") int datasetKey, @PathParam("id") Integer id, @Auth User user, @Context SqlSession session) {
+  public void delete(@PathParam("key") int datasetKey, @PathParam("id") Integer id, @Auth User user, @Context SqlSession session) {
     int i = session.getMapper(DatasetPatchMapper.class).delete(datasetKey, id);
     if (i == 0) {
       throw NotFoundException.notFound("DatasetPatch", new DSIDValue<>(datasetKey, id));

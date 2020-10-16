@@ -5,7 +5,7 @@ import life.catalogue.db.tree.SectorDiffService;
 
 import javax.ws.rs.Path;
 
-@Path("/dataset/{datasetKey}/sector/{key}/diff")
+@Path("/dataset/{key}/sector/{id}/diff")
 @SuppressWarnings("static-method")
 public class SectorDiffResource extends AbstractDiffResource<DSID<Integer>> {
 

@@ -62,13 +62,13 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   }
 
   @GET
-  @Path("{datasetKey}/settings")
+  @Path("{key}/settings")
   public DatasetSettings getSettings(@PathParam("datasetKey") int key) {
     return dao.getSettings(key);
   }
 
   @PUT
-  @Path("{datasetKey}/settings")
+  @Path("{key}/settings")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void putSettings(@PathParam("datasetKey") int key, DatasetSettings settings, @Auth User user) {
     dao.putSettings(key, settings, user.getKey());
@@ -82,21 +82,21 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
    * @param key
    */
   @GET
-  @Path("{datasetKey}/latest")
-  public Dataset getLatestRelease(@PathParam("datasetKey") int key) {
+  @Path("{key}/latest")
+  public Dataset getLatestRelease(@PathParam("key") int key) {
     return dao.latestRelease(key);
   }
 
   @GET
-  @Path("{datasetKey}/assembly")
-  public AssemblyState assemblyState(@PathParam("datasetKey") int key) {
+  @Path("{key}/assembly")
+  public AssemblyState assemblyState(@PathParam("key") int key) {
     return assembly.getState(key);
   }
   
   @GET
-  @Path("{datasetKey}/logo")
+  @Path("{key}/logo")
   @Produces("image/png")
-  public BufferedImage logo(@PathParam("datasetKey") int key, @QueryParam("releaseKey") Integer releaseKey, @QueryParam("size") @DefaultValue("small") ImgConfig.Scale scale) {
+  public BufferedImage logo(@PathParam("key") int key, @QueryParam("releaseKey") Integer releaseKey, @QueryParam("size") @DefaultValue("small") ImgConfig.Scale scale) {
     if (releaseKey != null) {
       return imgService.archiveDatasetLogo(releaseKey, key, scale);
     } else {
@@ -105,76 +105,76 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   }
   
   @POST
-  @Path("{datasetKey}/logo")
+  @Path("{key}/logo")
   @Consumes({MediaType.APPLICATION_OCTET_STREAM,
       MoreMediaTypes.IMG_BMP, MoreMediaTypes.IMG_PNG, MoreMediaTypes.IMG_GIF,
       MoreMediaTypes.IMG_JPG, MoreMediaTypes.IMG_PSD, MoreMediaTypes.IMG_TIFF
   })
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public Response uploadLogo(@PathParam("datasetKey") int key, InputStream img) throws IOException {
+  public Response uploadLogo(@PathParam("key") int key, InputStream img) throws IOException {
     imgService.putDatasetLogo(key, ImageServiceFS.read(img));
     return Response.ok().build();
   }
   
   @DELETE
-  @Path("{datasetKey}/logo")
+  @Path("{key}/logo")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public Response deleteLogo(@PathParam("datasetKey") int key) throws IOException {
+  public Response deleteLogo(@PathParam("key") int key) throws IOException {
     imgService.putDatasetLogo(key, null);
     return Response.ok().build();
   }
 
   @POST
-  @Path("/{datasetKey}/copy")
+  @Path("/{key}/copy")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public Integer copy(@PathParam("datasetKey") int key, @Auth User user) {
+  public Integer copy(@PathParam("key") int key, @Auth User user) {
     return releaseManager.duplicate(key, user);
   }
 
   @POST
-  @Path("/{datasetKey}/release")
+  @Path("/{key}/release")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public Integer release(@PathParam("datasetKey") int key, @Auth User user) {
+  public Integer release(@PathParam("key") int key, @Auth User user) {
     return releaseManager.release(key, user);
   }
 
   @GET
-  @Path("{datasetKey}/editor")
+  @Path("{key}/editor")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public List<User> editors(@PathParam("datasetKey") int key, @Auth User user, @Context SqlSession session) {
+  public List<User> editors(@PathParam("key") int key, @Auth User user, @Context SqlSession session) {
     return session.getMapper(UserMapper.class).datasetEditors(key);
   }
 
   @POST
-  @Path("/{datasetKey}/editor")
+  @Path("/{key}/editor")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void addEditor(@PathParam("datasetKey") int key, int editorKey, @Auth User user) {
+  public void addEditor(@PathParam("key") int key, int editorKey, @Auth User user) {
     dao.addEditor(key, editorKey, user);
   }
 
   @DELETE
-  @Path("/{datasetKey}/editor/{editorKey}")
+  @Path("/{key}/editor/{id}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void removeEditor(@PathParam("key") int key, @PathParam("editorKey") int editorKey, @Auth User user) {
+  public void removeEditor(@PathParam("key") int key, @PathParam("id") int editorKey, @Auth User user) {
     dao.removeEditor(key, editorKey, user);
   }
 
   @GET
-  @Path("/{datasetKey}/source")
-  public List<ProjectSourceDataset> projectSources(@PathParam("datasetKey") int datasetKey, @Context SqlSession session) {
+  @Path("/{key}/source")
+  public List<ProjectSourceDataset> projectSources(@PathParam("key") int datasetKey, @Context SqlSession session) {
     return Lists.newArrayList(session.getMapper(ProjectSourceMapper.class).processDataset(datasetKey));
   }
 
   @GET
-  @Path("/{datasetKey}/source/{key}")
-  public ProjectSourceDataset projectSource(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @Context SqlSession session) {
+  @Path("/{key}/source/{id}")
+  public ProjectSourceDataset projectSource(@PathParam("key") int datasetKey, @PathParam("id") int id, @Context SqlSession session) {
     //TODO: this only works for releases
-    return session.getMapper(ProjectSourceMapper.class).get(key, datasetKey);
+    return session.getMapper(ProjectSourceMapper.class).get(id, datasetKey);
   }
 
   @GET
-  @Path("/{datasetKey}/source/{key}/metrics")
-  public ImportMetrics projectSourceMetrics(@PathParam("datasetKey") int datasetKey, @PathParam("key") int key, @Context SqlSession session) {
+  @Path("/{key}/source/{id}/metrics")
+  public ImportMetrics projectSourceMetrics(@PathParam("key") int datasetKey, @PathParam("id") int id, @Context SqlSession session) {
     ImportMetrics metrics = new ImportMetrics();
     metrics.setAttempt(-1);
     metrics.setDatasetKey(datasetKey);
@@ -184,7 +184,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     // a release? use mother project in that case
     if (DatasetInfoCache.CACHE.origin(datasetKey) == DatasetOrigin.RELEASED) {
       Integer projectKey = DatasetInfoCache.CACHE.sourceProject(datasetKey);
-      for (Sector s : session.getMapper(SectorMapper.class).listByDataset(datasetKey, key)){
+      for (Sector s : session.getMapper(SectorMapper.class).listByDataset(datasetKey, id)){
         if (s.getSyncAttempt() != null) {
           SectorImport m = sim.get(DSID.of(projectKey, s.getId()), s.getSyncAttempt());
           metrics.add(m);
@@ -192,7 +192,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
         }
       }
     } else {
-      for (SectorImport m : sim.list(null, datasetKey, key, null, true, null)) {
+      for (SectorImport m : sim.list(null, datasetKey, id, null, true, null)) {
         metrics.add(m);
         sectorCounter.incrementAndGet();
       }

@@ -12,7 +12,7 @@ public class DSIDValue<T> implements DSID<T> {
   @PathParam("key")
   private Integer datasetKey;
 
-  @PathParam("datasetKey")
+  @PathParam("id")
   private T id;
   
   public DSIDValue() {

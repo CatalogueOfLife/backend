@@ -19,7 +19,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-@Path("/dataset/{datasetKey}/estimate")
+@Path("/dataset/{key}/estimate")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class EstimateResource extends AbstractDatasetScopedResource<Integer, SpeciesEstimate, EstimateSearchRequest> {
@@ -42,7 +42,7 @@ public class EstimateResource extends AbstractDatasetScopedResource<Integer, Spe
 
   @POST
   @Path("/rematch")
-  public RematcherBase.MatchCounter rematch(@PathParam("datasetKey") int projectKey, RematchRequest req, @Auth User user) {
+  public RematcherBase.MatchCounter rematch(@PathParam("key") int projectKey, RematchRequest req, @Auth User user) {
     req.setDatasetKey(projectKey);
     return EstimateRematcher.match(dao, req, user.getKey());
   }

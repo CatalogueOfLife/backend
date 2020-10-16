@@ -19,7 +19,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Set;
 
-@Path("/dataset/{datasetKey}/duplicate")
+@Path("/dataset/{key}/duplicate")
 @Produces(MediaType.APPLICATION_JSON)
 public class DuplicateResource {
   
@@ -31,7 +31,7 @@ public class DuplicateResource {
   }
   
   @GET
-  public List<Duplicate> find(@PathParam("datasetKey") int datasetKey,
+  public List<Duplicate> find(@PathParam("key") int datasetKey,
                               @QueryParam("entity") EntityType entity,
                               @QueryParam("mode") MatchingMode mode,
                               @QueryParam("minSize") Integer minSize,

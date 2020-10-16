@@ -27,7 +27,7 @@ import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.stream.Stream;
 
-@Path("/dataset/{datasetKey}/sector")
+@Path("/dataset/{key}/sector")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
@@ -60,8 +60,8 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
 
   @DELETE
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void deleteByDataset(@QueryParam("datasetKey") int datasetKey,
-                              @PathParam("datasetKey") int catalogueKey,
+  public void deleteByDataset(@PathParam("key") int catalogueKey,
+                              @QueryParam("datasetKey") int datasetKey,
                               @Context SqlSession session, @Auth User user) {
     SectorMapper sm = session.getMapper(SectorMapper.class);
     int counter = 0;
@@ -74,7 +74,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
 
   @GET
   @Path("sync")
-  public ResultPage<SectorImport> list(@PathParam("datasetKey") int datasetKey,
+  public ResultPage<SectorImport> list(@PathParam("key") int datasetKey,
                                        @QueryParam("sectorKey") Integer sectorKey,
                                        @QueryParam("datasetKey") Integer subjectDatasetKey,
                                        @QueryParam("state") List<ImportState> states,
@@ -93,7 +93,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @POST
   @Path("sync")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void sync(@PathParam("datasetKey") int datasetKey, RequestScope request, @Auth User user, @Context SqlSession session) {
+  public void sync(@PathParam("key") int datasetKey, RequestScope request, @Auth User user, @Context SqlSession session) {
     DaoUtils.requireManaged(datasetKey);
     assembly.sync(datasetKey, request, user);
   }
@@ -102,7 +102,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @Override
   @Path("{id}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void delete(@PathParam("datasetKey") int datasetKey, @PathParam("id") Integer id, @Auth User user) {
+  public void delete(@PathParam("key") int datasetKey, @PathParam("id") Integer id, @Auth User user) {
     // an asynchroneous sector deletion will be triggered which also removes catalogue data
     assembly.deleteSector(DSID.of(datasetKey, id), user);
   }
@@ -110,14 +110,14 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @DELETE
   @Path("{id}/sync")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void deleteSync(@PathParam("datasetKey") int datasetKey, @PathParam("id") int id, @Auth User user) {
+  public void deleteSync(@PathParam("key") int datasetKey, @PathParam("id") int id, @Auth User user) {
     DaoUtils.requireManaged(datasetKey);
     assembly.cancel(DSID.of(datasetKey, id), user);
   }
 
   @GET
   @Path("{id}/sync")
-  public SectorImport getLastSyncAttempt(@PathParam("datasetKey") int datasetKey, @PathParam("id") int id,
+  public SectorImport getLastSyncAttempt(@PathParam("key") int datasetKey, @PathParam("id") int id,
                                      @Context SqlSession session) {
     // a release? use mother project in that case
     // this also checks for presence & deletion of the dataset key
@@ -137,7 +137,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
 
   @GET
   @Path("{id}/sync/{attempt}")
-  public SectorImport getSyncAttempt(@PathParam("datasetKey") int datasetKey, @PathParam("id") int id,
+  public SectorImport getSyncAttempt(@PathParam("key") int datasetKey, @PathParam("id") int id,
                                        @PathParam("attempt") int attempt,
                                        @Context SqlSession session) {
     DaoUtils.requireManaged(datasetKey);
@@ -147,7 +147,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @GET
   @Path("{id}/sync/{attempt}/tree")
   @Produces({MediaType.TEXT_PLAIN})
-  public Stream<String> getSyncAttemptTree(@PathParam("datasetKey") int datasetKey,
+  public Stream<String> getSyncAttemptTree(@PathParam("key") int datasetKey,
                                            @PathParam("id") int id,
                                            @PathParam("attempt") int attempt) {
     return fmsDao.getTree(DSID.of(datasetKey, id), attempt);
@@ -156,7 +156,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @GET
   @Path("{id}/sync/{attempt}/names")
   @Produces({MediaType.TEXT_PLAIN})
-  public Stream<String> getSyncAttemptNames(@PathParam("datasetKey") int datasetKey,
+  public Stream<String> getSyncAttemptNames(@PathParam("key") int datasetKey,
                                             @PathParam("id") int id,
                                             @PathParam("attempt") int attempt) {
     return fmsDao.getNames(DSID.of(datasetKey, id), attempt);
@@ -165,7 +165,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @GET
   @Path("{id}/sync/{attempt}/ids")
   @Produces({MediaType.TEXT_PLAIN})
-  public Stream<String> getSyncAttemptNameIds(@PathParam("datasetKey") int datasetKey,
+  public Stream<String> getSyncAttemptNameIds(@PathParam("key") int datasetKey,
                                               @PathParam("id") int id,
                                               @PathParam("attempt") int attempt) {
     return fmsDao.getNameIds(DSID.of(datasetKey, id), attempt);
@@ -173,7 +173,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
 
   @POST
   @Path("/rematch")
-  public RematcherBase.MatchCounter rematch(@PathParam("datasetKey") int projectKey, SectorRematchRequest req, @Auth User user) {
+  public RematcherBase.MatchCounter rematch(@PathParam("key") int projectKey, SectorRematchRequest req, @Auth User user) {
     req.setDatasetKey(projectKey);
     return SectorRematcher.match(dao, req, user.getKey());
   }

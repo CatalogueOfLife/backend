@@ -17,14 +17,14 @@ import java.util.List;
 import java.util.function.Supplier;
 
 @Produces(MediaType.APPLICATION_JSON)
-@Path("/dataset/{datasetKey}/vernacular")
+@Path("/dataset/{key}/vernacular")
 public class VernacularResource {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(VernacularResource.class);
 
   @GET
-  public ResultPage<VernacularNameUsage> search(@PathParam("datasetKey") int datasetKey,
+  public ResultPage<VernacularNameUsage> search(@PathParam("key") int datasetKey,
                                           @BeanParam VernacularSearchRequest query,
                                           @Valid @BeanParam Page page,
                                           @Context SqlSession session) {

@@ -19,7 +19,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
-@Path("/dataset/{datasetKey}/name")
+@Path("/dataset/{key}/name")
 @Produces(MediaType.APPLICATION_JSON)
 public class NameResource extends AbstractDatasetScopedResource<String, Name, Page> {
   @SuppressWarnings("unused")
@@ -34,13 +34,13 @@ public class NameResource extends AbstractDatasetScopedResource<String, Name, Pa
   
   @GET
   @Path("{id}/synonyms")
-  public List<Name> getSynonyms(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
+  public List<Name> getSynonyms(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     return dao.homotypicGroup(datasetKey, id);
   }
 
   @GET
   @Path("{id}/relations")
-  public List<NameRelation> getRelations(@PathParam("datasetKey") int datasetKey,
+  public List<NameRelation> getRelations(@PathParam("key") int datasetKey,
       @PathParam("id") String id, @Context SqlSession session) {
     NameRelationMapper mapper = session.getMapper(NameRelationMapper.class);
     return mapper.list(datasetKey, id);
@@ -48,7 +48,7 @@ public class NameResource extends AbstractDatasetScopedResource<String, Name, Pa
 
   @GET
   @Path("{id}/types")
-  public List<TypeMaterial> getTypeMaterial(@PathParam("datasetKey") int datasetKey,
+  public List<TypeMaterial> getTypeMaterial(@PathParam("key") int datasetKey,
                                          @PathParam("id") String id, @Context SqlSession session) {
     TypeMaterialMapper mapper = session.getMapper(TypeMaterialMapper.class);
     return mapper.listByName(DSID.of(datasetKey, id));
@@ -62,7 +62,7 @@ public class NameResource extends AbstractDatasetScopedResource<String, Name, Pa
 
   @GET
   @Path("orphans")
-  public ResultPage<Name> listOrphans(@PathParam("datasetKey") int datasetKey,
+  public ResultPage<Name> listOrphans(@PathParam("key") int datasetKey,
                                       @QueryParam("before") LocalDateTimeParam before,
                                       @Valid @BeanParam Page page) {
     return dao.listOrphans(datasetKey, before==null ? null : before.get(), page);
@@ -71,7 +71,7 @@ public class NameResource extends AbstractDatasetScopedResource<String, Name, Pa
   @DELETE
   @Path("orphans")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public int delete(@PathParam("datasetKey") int datasetKey,
+  public int delete(@PathParam("key") int datasetKey,
                     @QueryParam("before") LocalDateTimeParam before,
                     @Auth User user) {
     return dao.deleteOrphans(datasetKey, before==null ? null : before.get(), user);

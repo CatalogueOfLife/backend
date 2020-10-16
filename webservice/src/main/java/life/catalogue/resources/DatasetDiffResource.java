@@ -5,7 +5,7 @@ import life.catalogue.db.tree.DatasetDiffService;
 
 import javax.ws.rs.Path;
 
-@Path("/dataset/{datasetKey}/diff")
+@Path("/dataset/{key}/diff")
 @SuppressWarnings("static-method")
 public class DatasetDiffResource extends AbstractDiffResource<Integer> {
 

@@ -1,5 +1,6 @@
 package life.catalogue.resources;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import life.catalogue.WsServerConfig;
 import life.catalogue.common.id.ShortUuid;
 import life.catalogue.common.text.StringUtils;
@@ -27,9 +28,10 @@ import static life.catalogue.api.util.ObjectUtils.coalesce;
  * Old PHP API migrated to the new postgres db and java code.
  * http://webservice.catalogueoflife.org/col/webservice
  */
+@Hidden
 @ApplyFormatFilter
 @Produces({MediaType.TEXT_XML, MediaType.APPLICATION_JSON})
-@Path("/dataset/{datasetKey}/legacy")
+@Path("/dataset/{key}/legacy")
 public class LegacyWebserviceResource {
   static int DEFAULT_LIMIT_TERSE = 100;
   static int DEFAULT_LIMIT_FULL = 10;
@@ -54,7 +56,7 @@ public class LegacyWebserviceResource {
   }
 
   @GET
-  public LResponse searchOrGet(@PathParam("datasetKey") int datasetKey,
+  public LResponse searchOrGet(@PathParam("key") int datasetKey,
                       @QueryParam("id") String id,
                       @QueryParam("name") String name,
                       @QueryParam("response") @DefaultValue("terse") String response,

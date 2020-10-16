@@ -15,7 +15,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
-@Path("/dataset/{datasetKey}/tree")
+@Path("/dataset/{key}/tree")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class TreeResource {
@@ -40,7 +40,7 @@ public class TreeResource {
   }
 
   @GET
-  public ResultPage<TreeNode> root(@PathParam("datasetKey") int datasetKey,
+  public ResultPage<TreeNode> root(@PathParam("key") int datasetKey,
                                    @QueryParam("catalogueKey") @DefaultValue(Datasets.COL +"") int catalogueKey,
                                    @QueryParam("type") TreeNode.Type type,
                                    @QueryParam("extinct") @DefaultValue("true") boolean inclExtinct,
@@ -51,7 +51,7 @@ public class TreeResource {
   
   @GET
   @Path("{id}")
-  public List<TreeNode> classification(@PathParam("datasetKey") int datasetKey,
+  public List<TreeNode> classification(@PathParam("key") int datasetKey,
                                 @PathParam("id") String id,
                                 @QueryParam("catalogueKey") @DefaultValue(Datasets.COL +"") int catalogueKey,
                                 @QueryParam("extinct") @DefaultValue("true") boolean inclExtinct,
@@ -63,7 +63,7 @@ public class TreeResource {
   @DELETE
   @Path("{id}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void deleteRecursively(@PathParam("datasetKey") int datasetKey,
+  public void deleteRecursively(@PathParam("key") int datasetKey,
                                 @PathParam("id") String id,
                                 @Auth User user) {
     dao.deleteRecursively(DSID.of(datasetKey, id), user);
@@ -71,7 +71,7 @@ public class TreeResource {
   
   @GET
   @Path("{id}/children")
-  public ResultPage<TreeNode> children(@PathParam("datasetKey") int datasetKey,
+  public ResultPage<TreeNode> children(@PathParam("key") int datasetKey,
                                        @PathParam("id") String id,
                                        @QueryParam("catalogueKey") @DefaultValue(Datasets.COL +"") int catalogueKey,
                                        @QueryParam("insertPlaceholder") boolean placeholder,

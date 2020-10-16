@@ -33,7 +33,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 @Produces(MediaType.APPLICATION_JSON)
-@Path("/dataset/{datasetKey}/nameusage")
+@Path("/dataset/{key}/nameusage")
 public class NameUsageResource {
 
   @SuppressWarnings("unused")
@@ -55,7 +55,7 @@ public class NameUsageResource {
   }
 
   @GET
-  public ResultPage<NameUsageBase> list(@PathParam("datasetKey") int datasetKey,
+  public ResultPage<NameUsageBase> list(@PathParam("key") int datasetKey,
                                         @QueryParam("q") String q,
                                         @QueryParam("rank") Rank rank,
                                         @Valid Page page,
@@ -77,7 +77,7 @@ public class NameUsageResource {
   @GET
   @RolesAllowed({Roles.ADMIN})
   @Produces({MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_TSV})
-  public Stream<Object[]> exportCsv(@PathParam("datasetKey") int datasetKey,
+  public Stream<Object[]> exportCsv(@PathParam("key") int datasetKey,
                                     @QueryParam("issue") boolean withIssues,
                                     @QueryParam("min") Rank min,
                                     @QueryParam("max") Rank max,
@@ -123,7 +123,7 @@ public class NameUsageResource {
 
   @GET
   @Path("{id}")
-  public NameUsageWrapper getByID(@PathParam("datasetKey") int datasetKey, @PathParam("id") String id) {
+  public NameUsageWrapper getByID(@PathParam("key") int datasetKey, @PathParam("id") String id) {
     NameUsageSearchRequest req = new NameUsageSearchRequest();
     req.addFilter(NameUsageSearchParameter.DATASET_KEY, datasetKey);
     req.addFilter(NameUsageSearchParameter.USAGE_ID, id);
@@ -137,7 +137,7 @@ public class NameUsageResource {
   @GET
   @Timed
   @Path("search")
-  public ResultPage<NameUsageWrapper> searchDataset(@PathParam("datasetKey") int datasetKey,
+  public ResultPage<NameUsageWrapper> searchDataset(@PathParam("key") int datasetKey,
                                                     @BeanParam NameUsageSearchRequest query,
                                                     @Valid @BeanParam Page page,
                                                     @Context UriInfo uri) throws InvalidQueryException {
@@ -151,7 +151,7 @@ public class NameUsageResource {
 
   @POST
   @Path("search")
-  public ResultPage<NameUsageWrapper> searchPOST(@PathParam("datasetKey") int datasetKey,
+  public ResultPage<NameUsageWrapper> searchPOST(@PathParam("key") int datasetKey,
                                                  @Valid NameUsageSearchResource.SearchRequestBody req,
                                                  @Context UriInfo uri) throws InvalidQueryException {
     return searchDataset(datasetKey, req.request, req.page, uri);
@@ -160,7 +160,7 @@ public class NameUsageResource {
   @GET
   @Timed
   @Path("suggest")
-  public NameUsageSuggestResponse suggestDataset(@PathParam("datasetKey") int datasetKey,
+  public NameUsageSuggestResponse suggestDataset(@PathParam("key") int datasetKey,
                                                  @BeanParam NameUsageSuggestRequest query) throws InvalidQueryException {
     if (query.getDatasetKey() != null && !query.getDatasetKey().equals(datasetKey)) {
       throw new IllegalArgumentException("No further datasetKey parameter allowed, suggest already scoped to datasetKey=" + datasetKey);

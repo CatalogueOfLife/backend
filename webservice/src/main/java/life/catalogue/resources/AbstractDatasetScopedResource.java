@@ -1,10 +1,5 @@
 package life.catalogue.resources;
 
-import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-
 import io.dropwizard.auth.Auth;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
@@ -12,6 +7,11 @@ import life.catalogue.dao.DatasetEntityDao;
 import life.catalogue.dw.auth.Roles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.security.RolesAllowed;
+import javax.validation.Valid;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 
 @SuppressWarnings("static-method")
 /**
@@ -33,7 +33,7 @@ public abstract class AbstractDatasetScopedResource<K, T extends DatasetScopedEn
   }
   
   @GET
-  public ResultPage<T> search(@PathParam("datasetKey") int datasetKey,
+  public ResultPage<T> search(@PathParam("key") int datasetKey,
                             @BeanParam R request,
                             @Valid @BeanParam Page page) {
     return searchImpl(datasetKey, request ,page);
@@ -52,7 +52,7 @@ public abstract class AbstractDatasetScopedResource<K, T extends DatasetScopedEn
    */
   @POST
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public K create(@PathParam("datasetKey") int datasetKey, @Valid T obj, @Auth User user) {
+  public K create(@PathParam("key") int datasetKey, @Valid T obj, @Auth User user) {
     obj.setDatasetKey(datasetKey);
     dao.create(obj, user.getKey());
     return obj.getId();
@@ -63,7 +63,7 @@ public abstract class AbstractDatasetScopedResource<K, T extends DatasetScopedEn
    */
   @GET
   @Path("{id}")
-  public T get(@PathParam("datasetKey") int datasetKey, @PathParam("id") K id) {
+  public T get(@PathParam("key") int datasetKey, @PathParam("id") K id) {
     DSIDValue<K> key = new DSIDValue<>(datasetKey, id);
     T obj = dao.get(key);
     if (obj == null) {
@@ -75,7 +75,7 @@ public abstract class AbstractDatasetScopedResource<K, T extends DatasetScopedEn
   @PUT
   @Path("{id}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void update(@PathParam("datasetKey") int datasetKey, @PathParam("id") K id, @Valid T obj, @Auth User user) {
+  public void update(@PathParam("key") int datasetKey, @PathParam("id") K id, @Valid T obj, @Auth User user) {
     obj.setDatasetKey(datasetKey);
     obj.setId(id);
     int i = dao.update(obj, user.getKey());
@@ -87,7 +87,7 @@ public abstract class AbstractDatasetScopedResource<K, T extends DatasetScopedEn
   @DELETE
   @Path("{id}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void delete(@PathParam("datasetKey") int datasetKey, @PathParam("id") K id, @Auth User user) {
+  public void delete(@PathParam("key") int datasetKey, @PathParam("id") K id, @Auth User user) {
     DSIDValue<K> key = new DSIDValue<>(datasetKey, id);
     int i = dao.delete(key, user.getKey());
     if (i == 0) {

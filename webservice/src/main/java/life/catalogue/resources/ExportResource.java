@@ -59,7 +59,7 @@ import java.util.Set;
  *  - DwC simple (single TSV file)
  *  - TextTree
  */
-@Path("/dataset/{datasetKey}/export")
+@Path("/dataset/{key}/export")
 @Produces(MediaType.APPLICATION_JSON)
 public class ExportResource {
   private final DatasetImportDao diDao;
@@ -79,7 +79,7 @@ public class ExportResource {
 
   @POST
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public boolean export(@PathParam("datasetKey") int datasetKey, @Auth User user) {
+  public boolean export(@PathParam("key") int datasetKey, @Auth User user) {
     return exportAC(datasetKey, user);
   }
 
@@ -97,7 +97,7 @@ public class ExportResource {
 
   @GET
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
-  public Response original(@PathParam("datasetKey") int key) {
+  public Response original(@PathParam("key") int key) {
     File source = cfg.normalizer.source(key);
     if (source.exists()) {
       StreamingOutput stream = os -> {
@@ -111,10 +111,10 @@ public class ExportResource {
   }
 
   @GET
-  @Path("{taxonID}")
+  @Path("{id}")
   @Produces(MediaType.TEXT_PLAIN)
-  public Response textTree(@PathParam("datasetKey") int key,
-                           @PathParam("taxonID") String taxonID,
+  public Response textTree(@PathParam("key") int key,
+                           @PathParam("id") String taxonID,
                            @QueryParam("rank") Set<Rank> ranks,
                            @Context SqlSession session) {
     StreamingOutput stream;
@@ -153,17 +153,17 @@ public class ExportResource {
 
   @GET
   @Produces(MediaType.TEXT_PLAIN)
-  public Response textTreeAll(@PathParam("datasetKey") int key,
+  public Response textTreeAll(@PathParam("key") int key,
                               @QueryParam("rank") Set<Rank> ranks,
                               @Context SqlSession session) {
     return textTree(key,null,ranks,session);
   }
                            
   @GET
-  @Path("{taxonID}")
+  @Path("{id}")
   @Produces(MediaType.TEXT_HTML)
-  public Response html(@PathParam("datasetKey") int key,
-                       @PathParam("taxonID") String taxonID,
+  public Response html(@PathParam("key") int key,
+                       @PathParam("id") String taxonID,
                        @QueryParam("rank") Set<Rank> ranks,
                        @QueryParam("full") boolean full) {
     StreamingOutput stream;
@@ -195,9 +195,9 @@ public class ExportResource {
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  @Path("{taxonID}")
-  public Object simpleName(@PathParam("datasetKey") int key,
-                           @PathParam("taxonID") String taxonID,
+  @Path("{id}")
+  public Object simpleName(@PathParam("key") int key,
+                           @PathParam("id") String taxonID,
                            @QueryParam("rank") Set<Rank> ranks,
                            @QueryParam("synonyms") boolean includeSynonyms,
                            @QueryParam("nested") boolean nested,
