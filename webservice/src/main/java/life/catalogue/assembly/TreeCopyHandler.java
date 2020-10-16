@@ -53,6 +53,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   private final Map<RanKnName, Usage> implicits = new HashMap<>();
   private final Map<String, Usage> ids = new HashMap<>();
   private final Map<String, String> refIds = new HashMap<>();
+  private final Map<String, String> nameIds = new HashMap<>();
   final Map<IgnoreReason, Integer> ignoredCounter = new HashMap<>();
   int decisionCounter = 0;
 
@@ -92,6 +93,18 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
 
   public void reset() {
     ids.clear();
+  }
+
+  public Map<String, Usage> getUsageIds() {
+    return ids;
+  }
+
+  public Map<String, String> getRefIds() {
+    return refIds;
+  }
+
+  public Map<String, String> getNameIds() {
+    return nameIds;
   }
 
   static class Usage {
@@ -237,11 +250,12 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     }
 
     // copy usage with all associated information. This assigns a new id !!!
-    DSID<String> orig;
     DSID<String> parentDID = new DSIDValue<>(catalogueKey, parent.id);
-    orig = CatCopy.copyUsage(batchSession, session, u, parentDID, user.getKey(), true, entities, this::lookupReference, this::lookupReference);
-    // remember old to new id mapping
+    String origNameID= u.getName().getId();
+    DSID<String> orig = CatCopy.copyUsage(batchSession, session, u, parentDID, user.getKey(), true, entities, this::lookupReference, this::lookupReference);
+    // remember old to new id mappings
     ids.put(orig.getId(), usage(u));
+    nameIds.put(origNameID, u.getName().getId());
     // counter
     if (u.isTaxon()) {
       state.setTaxonCount(++tCounter);

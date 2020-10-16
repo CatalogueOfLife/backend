@@ -1,5 +1,7 @@
 package life.catalogue.assembly;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.EstimateDao;
@@ -212,7 +214,7 @@ public class SectorSync extends SectorRunnable {
       if (sector.getMode() == Sector.Mode.ATTACH) {
         um.processTree(subjectDatasetKey, null, sector.getSubject().getId(), blockedIds, null, true,false)
             .forEach(treeHandler);
-
+        copyRelations(treeHandler, session);
       } else if (sector.getMode() == Sector.Mode.UNION) {
         LOG.info("Traverse taxon tree at {}, ignoring immediate children above rank {}. Blocking {} nodes", sector.getSubject().getId(), sector.getPlaceholderRank(), blockedIds.size());
         // in UNION mode do not attach the subject itself, just its children
@@ -231,6 +233,7 @@ public class SectorSync extends SectorRunnable {
             um.processTree(subjectDatasetKey, null, child.getId(), blockedIds, null, true,false)
                 .forEach(treeHandler);
           }
+          copyRelations(treeHandler, session);
           treeHandler.reset();
         }
 
@@ -242,7 +245,38 @@ public class SectorSync extends SectorRunnable {
       state.setIgnoredByReasonCount(Map.copyOf(treeHandler.ignoredCounter));
     }
   }
-  
+
+  private void copyRelations(TreeCopyHandler handler, SqlSession session){
+    try (SqlSession batchSession = factory.openSession(ExecutorType.BATCH, false)) {
+      // copy name relations
+      NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
+      NameRelationMapper nrmWrite = batchSession.getMapper(NameRelationMapper.class);
+      int counter = 0;
+      IntSet relIds = new IntOpenHashSet();
+      for (Map.Entry<String, String> n : handler.getNameIds().entrySet()) {
+        for (NameRelation nr : nrm.list(subjectDatasetKey, n.getKey())) {
+          if (!relIds.contains((int)nr.getId())) {
+            nr.setNameId(handler.getNameIds().get(nr.getNameId()));
+            nr.setRelatedNameId(handler.getNameIds().get(nr.getRelatedNameId()));
+            if (nr.getNameId() != null && nr.getRelatedNameId() != null) {
+              nrmWrite.create(nr);
+              relIds.add((int)nr.getId());
+              if (counter++ % 2500 == 0) {
+                batchSession.commit();
+              }
+            } else {
+              LOG.info("Name relation {} outside of synced sector {}", nr.getKey(), sectorKey);
+            }
+          }
+        }
+      }
+      batchSession.commit();
+      LOG.info("Synced {} name relations from sector {}", relIds.size(), sectorKey);
+
+      // TODO copy taxon relations
+    }
+  }
+
   private void deleteOld() {
     try (SqlSession session = factory.openSession(true)) {
       for (Class<? extends SectorProcessable<?>> m : SECTOR_MAPPERS) {

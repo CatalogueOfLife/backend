@@ -109,10 +109,6 @@ public class CatCopy {
 
       } else if (EntityType.TREATMENT == type) {
         // TODO copy
-      } else if (EntityType.NAME_RELATION == type) {
-        // TODO copy
-      } else if (EntityType.TAXON_RELATION == type) {
-        // TODO copy
       } else if (EntityType.TYPE_MATERIAL == type) {
         // TODO copy
       }
