@@ -618,8 +618,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   
   @JsonIgnore
   public boolean isAutonym() {
-    return specificEpithet != null && infraspecificEpithet != null
-        && specificEpithet.equals(infraspecificEpithet);
+    return specificEpithet != null && specificEpithet.equals(infraspecificEpithet);
   }
   
   /**
