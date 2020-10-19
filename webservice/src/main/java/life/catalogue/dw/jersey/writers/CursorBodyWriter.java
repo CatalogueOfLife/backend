@@ -20,7 +20,7 @@ import java.lang.reflect.Type;
  */
 @Produces(MediaType.APPLICATION_JSON)
 @Provider
-public class ConsumerBodyWriter implements MessageBodyWriter<Cursor<?>> {
+public class CursorBodyWriter implements MessageBodyWriter<Cursor<?>> {
   
   @Override
   public boolean isWriteable(Class<?> type, Type type1, Annotation[] antns, MediaType mt) {

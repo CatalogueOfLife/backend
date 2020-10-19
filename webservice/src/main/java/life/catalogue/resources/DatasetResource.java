@@ -1,6 +1,5 @@
 package life.catalogue.resources;
 
-import com.google.common.collect.Lists;
 import io.dropwizard.auth.Auth;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
@@ -9,7 +8,10 @@ import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.assembly.AssemblyState;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.db.mapper.*;
+import life.catalogue.dao.DatasetProjectSourceDao;
+import life.catalogue.db.mapper.SectorImportMapper;
+import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.dw.jersey.filter.DatasetKeyRewriteFilter;
@@ -44,13 +46,15 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetResource.class);
   private final DatasetDao dao;
+  private final DatasetProjectSourceDao sourceDao;
   private final ImageService imgService;
   private final AssemblyCoordinator assembly;
   private final ReleaseManager releaseManager;
 
-  public DatasetResource(SqlSessionFactory factory, DatasetDao dao, ImageService imgService, AssemblyCoordinator assembly, ReleaseManager releaseManager) {
+  public DatasetResource(SqlSessionFactory factory, DatasetDao dao, DatasetProjectSourceDao sourceDao, ImageService imgService, AssemblyCoordinator assembly, ReleaseManager releaseManager) {
     super(Dataset.class, dao, factory);
     this.dao = dao;
+    this.sourceDao = sourceDao;
     this.imgService = imgService;
     this.assembly = assembly;
     this.releaseManager = releaseManager;
@@ -161,15 +165,14 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
 
   @GET
   @Path("/{key}/source")
-  public List<ProjectSourceDataset> projectSources(@PathParam("key") int datasetKey, @Context SqlSession session) {
-    return Lists.newArrayList(session.getMapper(ProjectSourceMapper.class).processDataset(datasetKey));
+  public List<ArchivedDataset> projectSources(@PathParam("key") int datasetKey) {
+    return sourceDao.list(datasetKey);
   }
 
   @GET
   @Path("/{key}/source/{id}")
-  public ProjectSourceDataset projectSource(@PathParam("key") int datasetKey, @PathParam("id") int id, @Context SqlSession session) {
-    //TODO: this only works for releases
-    return session.getMapper(ProjectSourceMapper.class).get(id, datasetKey);
+  public ArchivedDataset projectSource(@PathParam("key") int datasetKey, @PathParam("id") int id, @Context SqlSession session) {
+    return sourceDao.get(datasetKey, id);
   }
 
   @GET

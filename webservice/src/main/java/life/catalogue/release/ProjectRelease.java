@@ -1,7 +1,6 @@
 package life.catalogue.release;
 
 import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DatasetMetadata;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -9,8 +8,8 @@ import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.dao.DatasetProjectSourceDao;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.DatasetPatchMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.ProjectSourceMapper;
 import life.catalogue.es.NameUsageIndexService;
@@ -46,29 +45,13 @@ public class ProjectRelease extends AbstractProjectCopy {
 
     // archive dataset metadata & logos
     updateState(ImportState.ARCHIVING);
+    DatasetProjectSourceDao dao = new DatasetProjectSourceDao(factory);
     try (SqlSession session = factory.openSession(true)) {
-      final Dataset project = session.getMapper(DatasetMapper.class).get(datasetKey);
       ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
-      DatasetPatchMapper dpm = session.getMapper(DatasetPatchMapper.class);
       final AtomicInteger counter = new AtomicInteger(0);
-      psm.processDataset(datasetKey).forEach(d -> {
-        DatasetMetadata patch = dpm.get(datasetKey, d.getKey());
-        if (patch != null) {
-          LOG.info("Apply dataset patch from project {} to {}: {}", datasetKey, d.getKey(), d.getTitle());
-          d.apply(patch);
-        }
-        d.setDatasetKey(newDatasetKey);
-        // build an in project citation?
-        if (settings.has(Setting.RELEASE_SOURCE_CITATION_TEMPLATE)) {
-          try {
-            String citation = CitationUtils.fromTemplate(project, d, settings.getString(Setting.RELEASE_SOURCE_CITATION_TEMPLATE));
-            d.setCitation(citation);
-          } catch (IllegalArgumentException e) {
-            LOG.warn("Failed to create citation for source dataset {} of release {}", d.getKey(), newDatasetKey, e);
-          }
-        }
+      dao.list(datasetKey).forEach(d -> {
         LOG.info("Archive dataset {}: {} for release {}", d.getKey(), d.getTitle(), newDatasetKey);
-        psm.create(d);
+        psm.create(newDatasetKey, d);
         // archive logos
         try {
           imageService.archiveDatasetLogo(newDatasetKey, d.getKey());

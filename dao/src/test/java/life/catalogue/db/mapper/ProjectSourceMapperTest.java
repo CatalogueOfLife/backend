@@ -1,11 +1,10 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.ArchivedDataset;
-import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.Datasets;
 import org.junit.Test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -16,45 +15,38 @@ public class ProjectSourceMapperTest extends MapperTestBase<ProjectSourceMapper>
     super(ProjectSourceMapper.class);
   }
 
-  public static ProjectSourceDataset createProjectSource() {
-    ProjectSourceDataset d = new ProjectSourceDataset();
+  public static ArchivedDataset createProjectSource() {
+    ArchivedDataset d = new ArchivedDataset();
     DatasetMapperTest.populate(d);
+    d.setSourceKey(Datasets.COL);
+    d.setImportAttempt(3);
     return d;
   }
 
-  private DatasetMapper dmapper(){
-    return mapper(DatasetMapper.class);
-  }
-
-
   @Test
-  public void deleteByDataset() throws Exception {
-    mapper().deleteByDataset(Datasets.COL);
+  public void deleteByProject() throws Exception {
+    mapper().deleteByProject(Datasets.COL);
   }
 
   @Test
-  public void projectArchive() throws Exception {
-    ProjectSourceDataset d1 = createProjectSource();
-    d1.setDatasetKey(Datasets.COL);
-    d1.setImportAttempt(3);
-    createDataset(d1);
+  public void listProjectSources() throws Exception {
+    mapper().listProjectSources(Datasets.COL);
+  }
 
-    mapper().create(d1);
+  @Test
+  public void listReleaseSources() throws Exception {
+    mapper().listReleaseSources(Datasets.COL);
+  }
+
+  @Test
+  public void roundtrip() throws Exception {
+    ArchivedDataset d1 = createProjectSource();
+    d1.setKey(100);
+    mapper().create(Datasets.COL, d1);
+
     ArchivedDataset d2 = mapper().get(d1.getKey(), Datasets.COL);
-    assertTrue(d2.equals(d1));
+    assertEquals(d2, d1);
     commit();
-  }
-
-
-  /**
-   * @return created dataset key
-   */
-  private int createDataset(ProjectSourceDataset psd){
-    Dataset d = new Dataset(psd);
-    d.setSourceKey(psd.getSourceKey());
-    dmapper().create(d);
-    psd.setKey(d.getKey());
-    return d.getKey();
   }
 
 }

@@ -20,45 +20,56 @@
     project_source d LEFT JOIN dataset_import di ON d.import_attempt=di.attempt AND d.key=di.dataset_key
   </sql>
 
-
-  <resultMap id="datasetProjectResultMap" type="ProjectSourceDataset" autoMapping="true" extends="life.catalogue.db.mapper.DatasetArchiveMapper.archiveResultMap">
-    <id property="key" column="key"/>
+  <resultMap id="projectSourceResultMap" type="ArchivedDataset" extends="life.catalogue.db.mapper.DatasetArchiveMapper.archiveResultMap">
+    <id property="key" column="key2"/>
+    <result property="importAttempt" column="attempt"/>
   </resultMap>
 
-
-  <select id="processDataset" parameterType="map" resultMap="datasetProjectResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
+  <select id="listProjectSources" parameterType="map" resultMap="projectSourceResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
     WITH src AS (
-      SELECT s.subject_dataset_key AS key, max(s.dataset_import_attempt) AS attempt, d.import_attempt AS curr_attempt
+      SELECT s.subject_dataset_key AS key, max(s.dataset_import_attempt) AS attempt
       FROM sector s
-        JOIN dataset d ON d.key=s.subject_dataset_key
       WHERE s.dataset_key=#{datasetKey}
-      GROUP BY s.subject_dataset_key, d.import_attempt
+      GROUP BY s.subject_dataset_key
     )
-    <!-- current dataset metadata -->
-    SELECT #{datasetKey} AS dataset_key, <include refid="SELECT"/>
-    FROM src, <include refid="life.catalogue.db.mapper.DatasetMapper.FROM"/>
-    WHERE src.key=d.key AND src.attempt=src.curr_attempt
+    <!-- archived dataset metadata -->
+    SELECT <include refid="SELECT"/>
+    FROM src
+      JOIN dataset d2 ON d2.key = src.key
+      LEFT JOIN dataset_archive d ON d.key = src.key AND d.import_attempt = src.attempt
+      LEFT JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.import_attempt
+    WHERE src.attempt != d2.import_attempt
 
     UNION
 
-    <!-- archived dataset metadata for the source (dataset_key IS NULL), not a project -->
-    SELECT #{datasetKey} AS dataset_key, <include refid="SELECT"/>
-    FROM src, <include refid="FROM"/>
-    WHERE d.key=src.key AND d.dataset_key IS NULL AND d.import_attempt=src.attempt AND src.attempt!=src.curr_attempt
+    <!-- latest dataset metadata -->
+    SELECT <include refid="SELECT"/>
+    FROM src
+      JOIN dataset d ON d.key = src.key
+      LEFT JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.import_attempt
+    WHERE src.attempt = d.import_attempt
+
+    ORDER BY 1
   </select>
 
-  <select id="get" resultMap="datasetProjectResultMap">
-    SELECT d.dataset_key, <include refid="SELECT"/>
+  <select id="listReleaseSources" parameterType="map" resultMap="life.catalogue.db.mapper.DatasetArchiveMapper.archiveResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE d.dataset_key = #{datasetKey}
+  </select>
+
+  <select id="get" resultMap="life.catalogue.db.mapper.DatasetArchiveMapper.archiveResultMap">
+    SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE d.key = #{key} AND d.dataset_key = #{datasetKey}
   </select>
 
-  <insert id="create" parameterType="ProjectSourceDataset">
+  <insert id="createInternal" parameterType="life.catalogue.db.mapper.ProjectSourceMapper$DatasetWithProjectKey">
     INSERT INTO project_source (key, dataset_key, import_attempt, <include refid="COLS"/>, source_key, origin,  created, modified)
     VALUES (#{key}, #{datasetKey}, #{importAttempt}, <include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, now(), now())
   </insert>
 
-  <delete id="deleteByDataset" parameterType="map">
+  <delete id="deleteByProject" parameterType="map">
     DELETE FROM project_source WHERE dataset_key = #{datasetKey};
   </delete>
 
