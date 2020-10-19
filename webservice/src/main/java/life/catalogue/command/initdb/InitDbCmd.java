@@ -75,8 +75,6 @@ public class InitDbCmd extends AbstractPromptCmd {
       st.execute("CREATE DATABASE  \"" + cfg.db.database + "\"" +
           " WITH ENCODING UTF8 LC_COLLATE 'C' LC_CTYPE 'C' OWNER " + cfg.db.user + " TEMPLATE template0");
 
-      st.execute("ALTER SCHEMA public OWNER TO " + cfg.db.user);
-
       LOG.info("Use UTC timezone for {}", cfg.db.database);
       st.execute("ALTER DATABASE  \"" + cfg.db.database + "\" SET timezone TO 'UTC'");
     }
