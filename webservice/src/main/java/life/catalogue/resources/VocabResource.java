@@ -11,6 +11,7 @@ import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.TreeNode;
 import life.catalogue.api.model.User;
 import life.catalogue.api.search.NameUsageSearchParameter;
+import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.img.ImgConfig;
 import org.apache.commons.lang3.StringUtils;
@@ -181,27 +182,49 @@ public class VocabResource {
   }
 
   @GET
-  @Path("{name}")
-  public List<Map<String, Object>> values(@PathParam("name") String name) throws IllegalAccessException {
-    if (name != null && vocabs.containsKey(name.toLowerCase())) {
-      return enumList(vocabs.get(name.toLowerCase()));
+  @Path("{vocab}")
+  public List<Map<String, Object>> values(@PathParam("vocab") String vocab) throws IllegalAccessException {
+    if (vocab != null && vocabs.containsKey(vocab.toLowerCase())) {
+      return enumList(vocabs.get(vocab.toLowerCase()));
     }
     throw new NotFoundException();
   }
 
-  private static Map<String, Object> enumFields(Enum entry) throws IllegalAccessException {
+  @GET
+  @Path("{vocab}/{name}")
+  public Optional<Map<String, Object>> value(@PathParam("vocab") String vocab, @PathParam("vocab") String name) {
+    if (vocabs.containsKey(vocab.toLowerCase())) {
+      return VocabularyUtils.lookup(name, vocabs.get(vocab.toLowerCase()))
+        .map(VocabResource::enumFields);
+    }
+    throw new NotFoundException();
+  }
+
+  @GET
+  @Path("country/{code}")
+  public Optional<Map<String, Object>> country(@PathParam("code") String code) {
+    return Country.fromIsoCode(code)
+      .map(VocabResource::enumFields);
+  }
+
+  private static Map<String, Object> enumFields(Enum entry) {
     Map<String, Object> map = new HashMap<>();
-    for (Field f : entry.getDeclaringClass().getDeclaredFields()) {
-      if (!f.isEnumConstant() && !Modifier.isStatic(f.getModifiers()) && !f.getName().equals("$VALUES")) {
-        Object val = FieldUtils.readField(f, entry, true);
-        if (val != null) {
-          if (val instanceof Class) {
-            Class<?> cl = (Class<?>) val;
-            val = cl.getSimpleName();
+    try {
+      for (Field f : entry.getDeclaringClass().getDeclaredFields()) {
+        if (!f.isEnumConstant() && !Modifier.isStatic(f.getModifiers()) && !f.getName().equals("$VALUES")) {
+          Object val = null;
+            val = FieldUtils.readField(f, entry, true);
+          if (val != null) {
+            if (val instanceof Class) {
+              Class<?> cl = (Class<?>) val;
+              val = cl.getSimpleName();
+            }
           }
+          map.put(f.getName(), val);
         }
-        map.put(f.getName(), val);
       }
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
     }
     map.put("name", PermissiveEnumSerde.enumValueName(entry));
     return map;
