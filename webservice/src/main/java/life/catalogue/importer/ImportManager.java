@@ -15,6 +15,7 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.util.PagingUtil;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.assembly.AssemblyCoordinator;
 import life.catalogue.common.concurrent.PBQThreadPoolExecutor;
 import life.catalogue.common.concurrent.StartNotifier;
@@ -320,6 +321,7 @@ public class ImportManager implements Managed {
       }
     }
 
+    // this is a good guy, let it run!
     futures.put(req.datasetKey, exec.submit(createImport(req), req.priority));
     LOG.info("Queued import for dataset {}", req.datasetKey);
     return req;
@@ -409,6 +411,12 @@ public class ImportManager implements Managed {
         throw NotFoundException.notFound(Dataset.class, req.datasetKey);
       }
       DatasetSettings ds = dm.getSettings(req.datasetKey);
+      // clear access URL if its an upload
+      // https://github.com/CatalogueOfLife/backend/issues/881
+      if (req.upload && ds.has(Setting.DATA_ACCESS)) {
+        ds.remove(Setting.DATA_ACCESS);
+        dm.updateSettings(req.datasetKey, ds, req.createdBy);
+      }
       ImportJob job = new ImportJob(req, new DatasetWithSettings(d, ds), cfg, downloader, factory, index, indexService, imgService, sDao,
           new StartNotifier() {
             @Override

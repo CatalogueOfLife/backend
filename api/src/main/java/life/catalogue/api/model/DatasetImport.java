@@ -60,8 +60,11 @@ public class DatasetImport extends ImportMetrics {
     this.origin = origin;
   }
 
-  public boolean isUpload() {
-    return downloadUri == null && origin != DatasetOrigin.RELEASED;
+  public Boolean isUpload() {
+    if (origin == DatasetOrigin.EXTERNAL) {
+      return downloadUri == null;
+    }
+    return null;
   }
 
   public DataFormat getFormat() {

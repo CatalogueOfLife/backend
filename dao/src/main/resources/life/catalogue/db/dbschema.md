@@ -9,7 +9,8 @@ We could have used Liquibase, but we would not have trusted the automatic update
 and done it manually. So we can as well log changes here.
 
 ### PROD changes
-### bare names and sectors for all
+
+### 2020-10-15 bare names and sectors for all
 https://github.com/CatalogueOfLife/checklistbank/issues/749
 ```
 ALTER TYPE TAXONOMICSTATUS ADD VALUE 'BARE_NAME' AFTER 'MISAPPLIED';
@@ -53,7 +54,7 @@ ALTER TABLE media ADD COLUMN sector_key INTEGER;
 CREATE INDEX ON media (sector_key); 
 ```
 
-### partition indices
+### 2020-10-15 partition indices
 per dataset via `execSql --sqlfile indices.sql`:
 ```
 DROP INDEX IF EXISTS taxon_rel_{KEY}_taxon_id_type_idx;
