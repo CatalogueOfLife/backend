@@ -4,50 +4,25 @@ description: |
         The World List of Cycads is a working list of known cycad species names with the primary goal of providing reliable information on the taxonomy of cycads for use by researchers, conservation planners, and others. It is developed in close collaboration with world's foremost cycad experts and published under the auspices of the IUCN's Cycad Specialist Group. The printed edition is published in the proceedings of the International Conference of Cycad Biology, which is held every three years.
 
 # list of publishing organisations
-organisations:         
-  - name: Montgomery Botanical Center
-    department: IUCN / SSC Cycad Specialist Group
-    city: Coral Gables
-    state: FL
-    country: USA
-  - name: New York Botanical Garden
-    city: Bronx NY
-    country: USA
-  - name: Royal Botanic Gardens
-    department: IUCN / SSC Cycad Specialist Group
-    city: Sydney
-    state: New South Wales
-    country: Australia
+organisations:
+  - IUCN / SSC Cycad Specialist Group, Montgomery Botanical Center, Coral Gables, FL, USA
+  - New York Botanical Garden, Bronx NY, USA
+  - Royal Botanic Gardens, Sydney, New South Wales, Australia
 
 # point of contact for questions. Either just a plain email or a name given with email address in angel brackets
 contact:
-  - givenName: Michael
-    familyName: Calonje
-    email: michaelc@montgomerybotanical.org
+  - Michael Calonje <michaelc@montgomerybotanical.org>
 
 # list of authors and/or editors.
-# optionally an ORCID can be appended (orcid: prefix required!) to be included in DOI metadata
 authors:
-  - givenName: Michael
-    familyName: Calonje
-    email: michaelc@montgomerybotanical.org
-    orcid: 0000-0001-9650-3136
-  - givenName: Leonie
-    familyName: Stanberg
-  - givenName: Dennis
-    familyName: Stevenson
-    orcid: 0000-0002-2986-7076
+  - Michael Calonje
+  - Leonie Stanberg
+  - Dennis Stevenson
 
 editors:
-  - givenName: Michael
-    familyName: Calonje
-    email: michaelc@montgomerybotanical.org
-    orcid: 0000-0001-9650-3136
-  - givenName: Leonie
-    familyName: Stanberg
-  - givenName: Dennis
-    familyName: Stevenson
-    orcid: 0000-0002-2986-7076
+  - Michael Calonje
+  - Leonie Stanberg
+  - Dennis Stevenson
 
 # Any commons license, but preferrably CC0, CC-BY or CC-BY-NC
 license: unspecified

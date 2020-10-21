@@ -31,61 +31,67 @@ public class Person {
   public static Person parse(final String originalName) {
     if (originalName == null) return null;
     Person p = new Person();
-    // see if we have brackets at the end, often for roles
-    String brackets = null;
-    String name = originalName;
-    Matcher m = BRACKET_SUFFIX.matcher(name);
-    if (m.find()) {
-      name = m.group(1);
-      brackets = m.group(2);
-    }
+    parse(p, originalName);
+    return p;
+  }
 
-    // email?
-    m = EMAIL.matcher(name);
-    if (m.find()) {
-      name = m.replaceFirst("");
-      p.setEmail(m.group(1));
-    }
-
-    // try with 4 distinct & common patterns
-    m = FULLNAME.matcher(name);
-    if (m.find()) {
-      p.setGivenName(m.group(1));
-      p.setFamilyName(m.group(2));
-    } else {
-
-      m = FULLNAME_REVERSE.matcher(name);
+  static void parse(Person p, final String originalName) {
+    if (originalName != null && p != null) {
+      // see if we have brackets at the end, often for roles
+      String brackets = null;
+      String name = originalName;
+      Matcher m = BRACKET_SUFFIX.matcher(name);
       if (m.find()) {
-        p.setFamilyName(m.group(1));
-        p.setGivenName(m.group(2));
+        name = m.group(1);
+        brackets = m.group(2);
+      }
+
+      // email?
+      m = EMAIL.matcher(name);
+      if (m.find()) {
+        name = m.replaceFirst("");
+        p.setEmail(m.group(1));
+      }
+
+      // try with 4 distinct & common patterns
+      m = FULLNAME.matcher(name);
+      if (m.find()) {
+        p.setGivenName(m.group(1));
+        p.setFamilyName(m.group(2));
       } else {
 
-        m = SHORTNAME.matcher(name);
+        m = FULLNAME_REVERSE.matcher(name);
         if (m.find()) {
-          p.setGivenName(m.group(1));
-          p.setFamilyName(m.group(2));
+          p.setFamilyName(m.group(1));
+          p.setGivenName(m.group(2));
         } else {
 
-          m = SHORTNAME_REVERSE.matcher(name);
+          m = SHORTNAME.matcher(name);
           if (m.find()) {
-            RegexUtils.log(m);
-            p.setFamilyName(m.group(1));
-            p.setGivenName(m.group(2));
+            p.setGivenName(m.group(1));
+            p.setFamilyName(m.group(2));
           } else {
-            // no luck
-            p.setFamilyName(name);
+
+            m = SHORTNAME_REVERSE.matcher(name);
+            if (m.find()) {
+              RegexUtils.log(m);
+              p.setFamilyName(m.group(1));
+              p.setGivenName(m.group(2));
+            } else {
+              // no luck
+              p.setFamilyName(name);
+            }
           }
         }
       }
-    }
-    if (brackets != null) {
-      if (p.getGivenName() == null) {
-        p.setGivenName(brackets);
-      } else {
-        p.setGivenName(p.getGivenName() + " " + brackets);
+      if (brackets != null) {
+        if (p.getGivenName() == null) {
+          p.setGivenName(brackets);
+        } else {
+          p.setGivenName(p.getGivenName() + " " + brackets);
+        }
       }
     }
-    return p;
   }
 
   public static List<Person> parse(List<String> names) {
@@ -93,6 +99,10 @@ public class Person {
   }
 
   public Person() {
+  }
+
+  public Person(String unparsedName) {
+    parse(this, unparsedName);
   }
 
   public Person(String givenName, String familyName) {

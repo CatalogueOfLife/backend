@@ -61,7 +61,7 @@ public class DatasetPager {
                        .get(GPublisher.class);
                    Organisation org = null;
                    if (p != null && p.title != null) {
-                     org = new Organisation(p.title, null, p.city, CountryParser.PARSER.parseOrNull(p.country));
+                     org = new Organisation(p.title, null, p.city, null, CountryParser.PARSER.parseOrNull(p.country));
                    }
                    return org;
                  }

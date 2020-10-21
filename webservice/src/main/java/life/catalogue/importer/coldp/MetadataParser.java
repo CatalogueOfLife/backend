@@ -1,9 +1,9 @@
 package life.catalogue.importer.coldp;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -13,9 +13,11 @@ import life.catalogue.api.jackson.FastutilsSerde;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Person;
+import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.License;
 import life.catalogue.importer.jackson.EnumParserSerde;
+import life.catalogue.parser.CountryParser;
 import life.catalogue.parser.LicenseParser;
 import org.gbif.dwc.terms.TermFactory;
 import org.slf4j.Logger;
@@ -50,6 +52,12 @@ public class MetadataParser {
       EnumParserSerde<License> lserde = new EnumParserSerde<License>(LicenseParser.PARSER);
       addDeserializer(License.class, lserde.new Deserializer());
       addDeserializer(IntSet.class, new FastutilsSerde.SetDeserializer());
+      addDeserializer(Country.class, new JsonDeserializer<Country>(){
+        @Override
+        public Country deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+          return CountryParser.PARSER.parseOrNull(jp.getText());
+        }
+      });
     }
     
     @Override

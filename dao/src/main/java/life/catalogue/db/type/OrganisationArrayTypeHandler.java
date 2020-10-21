@@ -21,13 +21,13 @@ public class OrganisationArrayTypeHandler extends CustomArrayAbstractTypeHandler
 
   @Override
   public String[] toAttributes(Organisation obj) throws SQLException {
-    return new String[]{obj.getName(), obj.getDepartment(), obj.getCity(), obj.getCountry() == null ? null : obj.getCountry().getIso2LetterCode()};
+    return new String[]{obj.getName(), obj.getDepartment(), obj.getCity(), obj.getState(), obj.getCountry() == null ? null : obj.getCountry().getIso2LetterCode()};
   }
 
   @Override
   public Organisation fromAttributes(List<String> cols) throws SQLException {
     if (cols.size() == 4) {
-      return new Organisation(cols.get(0), cols.get(1), cols.get(2), Country.fromIsoCode(cols.get(3)).orElse(null));
+      return new Organisation(cols.get(0), cols.get(1), cols.get(2), cols.get(3), Country.fromIsoCode(cols.get(3)).orElse(null));
     } else {
       // how can that be ?
       throw new TypeException("Failed to parse "+String.join(",", cols)+" to Organisation");

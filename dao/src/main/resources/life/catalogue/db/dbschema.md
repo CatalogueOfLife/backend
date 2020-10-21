@@ -13,7 +13,7 @@ and done it manually. So we can as well log changes here.
 ### 2020-10-21 organisations class 
 https://github.com/CatalogueOfLife/backend/issues/882
 ```
-CREATE TYPE organisation AS (name text, department text, city text, country CHAR(2));
+CREATE TYPE organisation AS (name text, department text, city text, state text, country CHAR(2));
 
 CREATE OR REPLACE FUNCTION organisation_str(organisation[]) RETURNS text AS
 $$
@@ -27,7 +27,7 @@ $$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION text2organisation(text) RETURNS organisation AS
 $$
-SELECT ROW($1, null, null, null)::organisation
+SELECT ROW($1, null, null, null, null)::organisation
 $$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
 
 CREATE CAST (text AS person) WITH FUNCTION text2person;

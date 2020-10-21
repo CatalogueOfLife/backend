@@ -563,7 +563,7 @@ CREATE TYPE simple_name AS (id text, rank rank, name text);
 CREATE TYPE person AS (given text, family text, email text, orcid text);
 
 -- Organisation type for dataset to avoid extra tables
-CREATE TYPE organisation AS (name text, department text, city text, country CHAR(2));
+CREATE TYPE organisation AS (name text, department text, city text, state text, country CHAR(2));
 
 -- immutable person casts to text function to be used in indexes
 CREATE OR REPLACE FUNCTION person_str(person) RETURNS text AS
@@ -594,7 +594,7 @@ $$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION text2organisation(text) RETURNS organisation AS
 $$
-SELECT ROW($1, null, null, null)::organisation
+SELECT ROW($1, null, null, null, null)::organisation
 $$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
 
 CREATE CAST (text AS person) WITH FUNCTION text2person;

@@ -11,6 +11,7 @@ public class Organisation {
   private String name;
   private String department;
   private String city;
+  private String state;
   private Country country;
 
   public static List<Organisation> parse(String... names) {
@@ -29,13 +30,14 @@ public class Organisation {
   }
 
   public Organisation(String name) {
-    this(name, null, null, null);
+    this(name, null, null, null, null);
   }
 
-  public Organisation(String name, String department, String city, Country country) {
+  public Organisation(String name, String department, String city, String state, Country country) {
     this.name = name;
     this.department = department;
     this.city = city;
+    this.state = state;
     this.country = country;
   }
 
@@ -46,6 +48,7 @@ public class Organisation {
     sb.append(name);
     append(sb, department);
     append(sb, city);
+    append(sb, state);
     if (country != null) {
       sb.append(", ");
       sb.append(country.getTitle());
@@ -55,7 +58,7 @@ public class Organisation {
 
   @JsonIgnore
   public boolean isEmpty(){
-    return name == null && department == null && city == null && country == null;
+    return name == null && department == null && city == null && state == null && country == null;
   }
 
   private static void append(StringBuilder sb, String x) {
@@ -89,6 +92,14 @@ public class Organisation {
     this.city = city;
   }
 
+  public String getState() {
+    return state;
+  }
+
+  public void setState(String state) {
+    this.state = state;
+  }
+
   public Country getCountry() {
     return country;
   }
@@ -105,12 +116,13 @@ public class Organisation {
     return Objects.equals(name, that.name) &&
       Objects.equals(department, that.department) &&
       Objects.equals(city, that.city) &&
+      Objects.equals(state, that.state) &&
       country == that.country;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, department, city, country);
+    return Objects.hash(name, department, city, state, country);
   }
 
   @Override
