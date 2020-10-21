@@ -26,8 +26,8 @@ public class OrganisationArrayTypeHandler extends CustomArrayAbstractTypeHandler
 
   @Override
   public Organisation fromAttributes(List<String> cols) throws SQLException {
-    if (cols.size() == 4) {
-      return new Organisation(cols.get(0), cols.get(1), cols.get(2), cols.get(3), Country.fromIsoCode(cols.get(3)).orElse(null));
+    if (cols.size() == 5) {
+      return new Organisation(cols.get(0), cols.get(1), cols.get(2), cols.get(3), Country.fromIsoCode(cols.get(4)).orElse(null));
     } else {
       // how can that be ?
       throw new TypeException("Failed to parse "+String.join(",", cols)+" to Organisation");
