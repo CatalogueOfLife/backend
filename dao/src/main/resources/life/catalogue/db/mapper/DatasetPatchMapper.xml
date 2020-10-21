@@ -57,7 +57,7 @@
     #{obj.type}::datasettype,
     #{obj.title},
     #{obj.description},
-    #{obj.organisations, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
+    #{obj.organisations, typeHandler=life.catalogue.db.type.OrganisationArrayTypeHandler},
     #{obj.contact, typeHandler=life.catalogue.db.type.PersonTypeHandler},
     #{obj.authors, typeHandler=life.catalogue.db.type.PersonArrayTypeHandler},
     #{obj.editors, typeHandler=life.catalogue.db.type.PersonArrayTypeHandler},
