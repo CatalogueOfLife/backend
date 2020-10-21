@@ -27,7 +27,7 @@
     #{type}::datasettype,
     #{title},
     #{description},
-    #{organisations, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
+    #{organisations, typeHandler=life.catalogue.db.type.OrganisationArrayTypeHandler},
     #{contact, typeHandler=life.catalogue.db.type.PersonTypeHandler},
     #{authors, typeHandler=life.catalogue.db.type.PersonArrayTypeHandler},
     #{editors, typeHandler=life.catalogue.db.type.PersonArrayTypeHandler},
@@ -52,7 +52,7 @@
 
   <resultMap id="archiveResultMap" type="ArchivedDataset" autoMapping="true">
     <id property="key" column="key"/>
-    <result property="organisations" column="organisations" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
+    <result property="organisations" column="organisations" typeHandler="life.catalogue.db.type.OrganisationArrayTypeHandler"/>
     <result property="contact" column="contact" typeHandler="life.catalogue.db.type.PersonTypeHandler"/>
     <result property="authors" column="authors" typeHandler="life.catalogue.db.type.PersonArrayTypeHandler"/>
     <result property="editors" column="editors" typeHandler="life.catalogue.db.type.PersonArrayTypeHandler"/>

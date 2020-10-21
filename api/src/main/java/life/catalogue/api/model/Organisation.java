@@ -3,7 +3,9 @@ package life.catalogue.api.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.vocab.Country;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class Organisation {
   private String name;
@@ -11,8 +13,23 @@ public class Organisation {
   private String city;
   private Country country;
 
+  public static List<Organisation> parse(String... names) {
+    return parse(List.of(names));
+  }
+
+  public static List<Organisation> parse(List<String> names) {
+    return names == null ? null : names.stream().map(Organisation::parse).collect(Collectors.toList());
+  }
+
+  public static Organisation parse(String name) {
+    return new Organisation(name);
+  }
 
   public Organisation() {
+  }
+
+  public Organisation(String name) {
+    this(name, null, null, null);
   }
 
   public Organisation(String name, String department, String city, Country country) {

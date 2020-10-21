@@ -1,12 +1,12 @@
 package life.catalogue.parser;
 
-import java.io.IOException;
-import java.util.Optional;
-
 import com.google.common.base.CharMatcher;
 import life.catalogue.common.text.StringUtils;
 import org.gbif.utils.file.csv.CSVReader;
 import org.gbif.utils.file.csv.CSVReaderFactory;
+
+import java.io.IOException;
+import java.util.Optional;
 
 /**
  * A base parser implementation dealing with empty, invisible and punctuation values as empty results.
@@ -37,7 +37,15 @@ abstract class ParserBase<T> implements Parser<T> {
     
     throw new UnparsableException(valueClass, value);
   }
-  
+
+  /**
+   * Parses the value and returns the parsed value or null if the value was empty or the parser fails.
+   * Will never throw UnparsableException
+   */
+  public T parseOrNull(String value) {
+    return SafeParser.parse(this, value).orNull();
+  }
+
   protected CSVReader dictReader(String resourceFilename) throws IOException {
     return CSVReaderFactory.build(getClass().getResourceAsStream("/parser/dicts/" + resourceFilename), "UTF8", ",", null, 0);
   }

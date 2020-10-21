@@ -54,8 +54,8 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     d.setVersion("v123");
     d.setWebsite(URI.create("https://www.gbif.org/dataset/" + d.getVersion()));
     d.setNotes("my notes");
-    d.getOrganisations().add("my org");
-    d.getOrganisations().add("your org");
+    d.getOrganisations().add(new Organisation("my org"));
+    d.getOrganisations().add(new Organisation("your org"));
   }
 
   @Test
@@ -529,7 +529,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     if (author != null) {
       ds.setAuthors(Person.parse(Lists.newArrayList(author.split(";"))));
     }
-    ds.getOrganisations().add(organisation);
+    ds.getOrganisations().add(new Organisation(organisation));
     ds.setDescription(description);
     ds.setType(DatasetType.TAXONOMIC);
     ds.setOrigin(DatasetOrigin.MANAGED);

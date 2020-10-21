@@ -1,15 +1,15 @@
 package life.catalogue.parser;
 
-import java.util.Optional;
-
 import life.catalogue.api.vocab.Country;
 import life.catalogue.common.text.CSVUtils;
+
+import java.util.Optional;
 
 /**
  * CoL country parser wrapping the GBIF country parser
  */
 public class CountryParser extends EnumParser<Country> {
-  public static final Parser<Country> PARSER = new CountryParser();
+  public static final CountryParser PARSER = new CountryParser();
 
   public CountryParser() {
     super("iso3166/country.csv", Country.class);

@@ -559,8 +559,11 @@ CREATE TYPE USER_ROLE AS ENUM (
 -- a simple compound type corresponding to the basics of SimpleName. Often used for building classifications as arrays
 CREATE TYPE simple_name AS (id text, rank rank, name text);
 
--- Person type to avoid extra tables
+-- Person type for dataset to avoid extra tables
 CREATE TYPE person AS (given text, family text, email text, orcid text);
+
+-- Organisation type for dataset to avoid extra tables
+CREATE TYPE organisation AS (name text, department text, city text, country CHAR(2));
 
 -- immutable person casts to text function to be used in indexes
 CREATE OR REPLACE FUNCTION person_str(person) RETURNS text AS
@@ -573,10 +576,29 @@ $$
 SELECT array_to_string($1, ' ')
 $$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
 
+CREATE OR REPLACE FUNCTION organisation_str(organisation[]) RETURNS text AS
+$$
+SELECT array_to_string($1, ' ')
+$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
+
 CREATE OR REPLACE FUNCTION array_str(text[]) RETURNS text AS
 $$
 SELECT array_to_string($1, ' ')
 $$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
+
+-- CUSTOM CASTS
+CREATE OR REPLACE FUNCTION text2person(text) RETURNS person AS
+$$
+SELECT ROW(null, $1, null, null)::person
+$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION text2organisation(text) RETURNS organisation AS
+$$
+SELECT ROW($1, null, null, null)::organisation
+$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
+
+CREATE CAST (text AS person) WITH FUNCTION text2person;
+CREATE CAST (text AS organisation) WITH FUNCTION text2organisation;
 
 
 CREATE TABLE "user" (
@@ -608,7 +630,7 @@ CREATE TABLE dataset (
   title TEXT NOT NULL,
   alias TEXT UNIQUE,
   description TEXT,
-  organisations TEXT[] DEFAULT '{}',
+  organisations organisation[] DEFAULT '{}',
   contact person,
   authors person[],
   editors person[],
@@ -635,7 +657,7 @@ CREATE TABLE dataset (
   doc tsvector GENERATED ALWAYS AS (
       setweight(to_tsvector('simple2', coalesce(alias,'')), 'A') ||
       setweight(to_tsvector('simple2', coalesce(title,'')), 'A') ||
-      setweight(to_tsvector('simple2', coalesce(array_str(organisations), '')), 'B') ||
+      setweight(to_tsvector('simple2', coalesce(organisation_str(organisations), '')), 'B') ||
       setweight(to_tsvector('simple2', coalesce(description,'')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(person_str(contact), '')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(person_str(authors), '')), 'C') ||

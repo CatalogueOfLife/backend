@@ -35,6 +35,12 @@ public class IdConverterTest {
     }
   }
 
+  @Test
+  public void encodeNegative() {
+    System.out.println("|" + IdConverter.LATIN32.encode(-999) + "|");
+    System.out.println("|" + IdConverter.LATIN32.encode(-2147483648)+ "|");
+  }
+
   /**
    * We use the alphabetical sorting
    */

@@ -8,7 +8,7 @@ import java.util.Optional;
  * Parses integers throwing UnparsableException in case the value is not empty but unparsable.
  */
 public class IntegerParser implements Parser<Integer> {
-  public static final Parser<Integer> PARSER = new IntegerParser();
+  public static final IntegerParser PARSER = new IntegerParser();
 
   @Override
   public Optional<Integer> parse(String value) throws UnparsableException {

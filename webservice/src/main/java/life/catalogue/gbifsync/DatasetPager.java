@@ -4,13 +4,12 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.model.Organisation;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.Person;
-import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.DatasetType;
-import life.catalogue.api.vocab.License;
+import life.catalogue.api.vocab.*;
 import life.catalogue.config.GbifConfig;
+import life.catalogue.parser.CountryParser;
 import life.catalogue.parser.LicenseParser;
 import life.catalogue.parser.SafeParser;
 import life.catalogue.parser.UriParser;
@@ -41,7 +40,7 @@ public class DatasetPager {
   final WebTarget datasets;
   final WebTarget publisher;
   final Client client;
-  private final LoadingCache<UUID, String> pCache;
+  private final LoadingCache<UUID, Organisation> pCache;
   
   public DatasetPager(Client client, GbifConfig gbif) {
     this.client = client;
@@ -52,15 +51,19 @@ public class DatasetPager {
     
     pCache = CacheBuilder.newBuilder()
         .maximumSize(1000)
-        .build(new CacheLoader<UUID, String>() {
+        .build(new CacheLoader<UUID, Organisation>() {
                  @Override
-                 public String load(UUID key) throws Exception {
+                 public Organisation load(UUID key) throws Exception {
                    WebTarget pubDetail = publisher.path(key.toString());
                    LOG.info("Retrieve publisher {}", pubDetail.getUri());
                    GPublisher p = pubDetail.request()
                        .accept(MediaType.APPLICATION_JSON_TYPE)
                        .get(GPublisher.class);
-                   return p == null ? null : p.title;
+                   Organisation org = null;
+                   if (p != null && p.title != null) {
+                     org = new Organisation(p.title, null, p.city, CountryParser.PARSER.parseOrNull(p.country));
+                   }
+                   return org;
                  }
                }
         );
@@ -81,7 +84,7 @@ public class DatasetPager {
     return 1 + page.getOffset() / page.getLimit();
   }
   
-  private String publisher(final UUID key) {
+  private Organisation publisher(final UUID key) {
     try {
       return pCache.get(key);
     } catch (ExecutionException e) {
@@ -269,9 +272,10 @@ public class DatasetPager {
   static class GPublisher extends GAgent {
     public UUID key;
     public String title;
-    public String description;
     public String latitude;
     public String longitude;
+    public String city;
+    public String country;
     public List<GContact> contacts;
   }
   

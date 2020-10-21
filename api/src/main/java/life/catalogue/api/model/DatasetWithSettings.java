@@ -170,11 +170,11 @@ public class DatasetWithSettings {
     dataset.setEditors(editors);
   }
 
-  public List<String> getOrganisations() {
+  public List<Organisation> getOrganisations() {
     return dataset.getOrganisations();
   }
 
-  public void setOrganisations(List<String> organisations) {
+  public void setOrganisations(List<Organisation> organisations) {
     dataset.setOrganisations(organisations);
   }
 

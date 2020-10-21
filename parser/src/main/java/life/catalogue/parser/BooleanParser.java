@@ -4,7 +4,7 @@ package life.catalogue.parser;
  * Parses integers throwing UnparsableException in case the value is not empty but unparsable.
  */
 public class BooleanParser extends MapBasedParser<Boolean> {
-  public static final Parser<Boolean> PARSER = new BooleanParser();
+  public static final BooleanParser PARSER = new BooleanParser();
 
   public BooleanParser() {
     super(Boolean.class);

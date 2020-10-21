@@ -50,7 +50,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class StableIdProvider {
   protected final Logger LOG = LoggerFactory.getLogger(StableIdProvider.class);
   // the date we first deployed stable ids in releases - we ignore older ids than this date
-  private final LocalDateTime ID_START_DATE = LocalDateTime.of(2020, 11, 1, 1,1);
+  private final LocalDateTime ID_START_DATE = LocalDateTime.of(2021, 11, 1, 1,1);
 
   private final int datasetKey;
   private final SqlSessionFactory factory;
@@ -172,7 +172,7 @@ public class StableIdProvider {
             release(best.get(0), scores);
           } else {
             // TODO: equal high scores, but potentially non conflicting names. Resolve
-            System.out.println(best);
+            //System.out.println(best);
           }
           best = scores.highest();
         }

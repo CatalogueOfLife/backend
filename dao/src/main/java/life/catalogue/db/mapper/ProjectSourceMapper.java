@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.model.ArchivedDataset;
+import life.catalogue.api.model.Organisation;
 import life.catalogue.api.model.Person;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
@@ -96,7 +97,7 @@ public interface ProjectSourceMapper {
       return dataset.getEditors();
     }
 
-    public List<String> getOrganisations() {
+    public List<Organisation> getOrganisations() {
       return dataset.getOrganisations();
     }
 

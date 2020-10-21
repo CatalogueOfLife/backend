@@ -10,6 +10,52 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2020-10-21 organisations class 
+https://github.com/CatalogueOfLife/backend/issues/882
+```
+CREATE TYPE organisation AS (name text, department text, city text, country CHAR(2));
+
+CREATE OR REPLACE FUNCTION organisation_str(organisation[]) RETURNS text AS
+$$
+SELECT array_to_string($1, ' ')
+$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION text2person(text) RETURNS person AS
+$$
+SELECT ROW(null, $1, null, null)::person
+$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
+
+CREATE OR REPLACE FUNCTION text2organisation(text) RETURNS organisation AS
+$$
+SELECT ROW($1, null, null, null)::organisation
+$$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
+
+CREATE CAST (text AS person) WITH FUNCTION text2person;
+CREATE CAST (text AS organisation) WITH FUNCTION text2organisation;
+
+--
+-- DATASET TABLE
+--
+ALTER TABLE dataset DROP COLUMN doc;
+ALTER TABLE dataset ALTER COLUMN organisations TYPE organisation[] USING organisations::organisation[];
+ALTER TABLE dataset ADD COLUMN doc tsvector GENERATED ALWAYS AS (
+      setweight(to_tsvector('simple2', coalesce(alias,'')), 'A') ||
+      setweight(to_tsvector('simple2', coalesce(title,'')), 'A') ||
+      setweight(to_tsvector('simple2', coalesce(organisation_str(organisations), '')), 'B') ||
+      setweight(to_tsvector('simple2', coalesce(description,'')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(person_str(contact), '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(person_str(authors), '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(person_str(editors), '')), 'C') ||
+      setweight(to_tsvector('simple2', coalesce(gbif_key::text,'')), 'C')
+  ) STORED;
+
+
+-- others
+ALTER TABLE dataset_archive ALTER COLUMN organisations TYPE organisation[] USING organisations::organisation[];
+ALTER TABLE dataset_patch ALTER COLUMN organisations TYPE organisation[] USING organisations::organisation[];
+ALTER TABLE project_source ALTER COLUMN organisations TYPE organisation[] USING organisations::organisation[];
+```
+
 ### 2020-10-15 bare names and sectors for all
 https://github.com/CatalogueOfLife/checklistbank/issues/749
 ```

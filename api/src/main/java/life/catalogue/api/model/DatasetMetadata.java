@@ -35,9 +35,9 @@ public interface DatasetMetadata {
 
   void setEditors(List<Person> editors);
 
-  List<String> getOrganisations();
+  List<Organisation> getOrganisations();
 
-  void setOrganisations(List<String> organisations);
+  void setOrganisations(List<Organisation> organisations);
 
   Person getContact();
 

@@ -2,6 +2,7 @@ package life.catalogue.release;
 
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
+import life.catalogue.api.model.Organisation;
 import life.catalogue.api.model.Person;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Setting;
@@ -24,7 +25,7 @@ public class ProjectReleaseTest {
     Dataset d = new Dataset();
     d.setKey(Datasets.COL);
     d.setTitle("Catalogue of Life");
-    d.setOrganisations(List.of("Species 2000", "ITIS"));
+    d.setOrganisations(Organisation.parse("Species 2000", "ITIS"));
     d.setEditors(List.of(
       new Person("Yuri","Roskov"),
       new Person("Geoff", "Ower"),

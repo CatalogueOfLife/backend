@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
  * Filter that parses dataset keys given as path or query parameters
  * and rewrites them if needed to support conventions to refer to
  *  - the latest public release of a project: {projectKey}LR
+ *  - the latest release candidate of a project, public or private: {projectKey}LR
  */
 @PreMatching
 public class DatasetKeyRewriteFilter implements ContainerRequestFilter {

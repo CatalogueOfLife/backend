@@ -47,7 +47,7 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
   private String title;
   private String alias;
   private String description;
-  private List<String> organisations = Lists.newArrayList();
+  private List<Organisation> organisations = Lists.newArrayList();
   private Person contact;
   private List<Person> authors = Lists.newArrayList();
   private List<Person> editors = Lists.newArrayList();
@@ -189,12 +189,12 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
   }
 
   @Override
-  public List<String> getOrganisations() {
+  public List<Organisation> getOrganisations() {
     return organisations;
   }
   
   @Override
-  public void setOrganisations(List<String> organisations) {
+  public void setOrganisations(List<Organisation> organisations) {
     this.organisations = organisations;
   }
   
