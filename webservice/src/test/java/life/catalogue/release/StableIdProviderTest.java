@@ -36,7 +36,7 @@ public class StableIdProviderTest {
 
   @Before
   public void init() {
-    provider = new StableIdProvider(projectKey,3, PgSetupRule.getSqlSessionFactory());
+    provider = StableIdProvider.withAllReleases(projectKey,3, PgSetupRule.getSqlSessionFactory());
     System.out.println("Create id mapping tables for project " + projectKey);
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
@@ -63,8 +63,7 @@ public class StableIdProviderTest {
       // rufus -> rufa
       assertEquals("E", idm.getUsage(projectKey, "14"));
       // baileyi -> baileii
-      //TODO: is this real?
-      //assertEquals("F", idm.getUsage(projectKey, "15"));
+      assertEquals("3H", idm.getUsage(projectKey, "15"));
     }
   }
 

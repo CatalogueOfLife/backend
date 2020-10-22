@@ -41,7 +41,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     // map ids
     updateState(ImportState.MATCHING);
     matchUnmatchedNames();
-    new StableIdProvider(datasetKey, metrics.getAttempt(), factory).run();
+    StableIdProvider.withNoReleases(datasetKey, metrics.getAttempt(), factory).run();
 
     // archive dataset metadata & logos
     updateState(ImportState.ARCHIVING);

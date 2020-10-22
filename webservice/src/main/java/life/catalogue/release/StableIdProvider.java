@@ -50,7 +50,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class StableIdProvider {
   protected final Logger LOG = LoggerFactory.getLogger(StableIdProvider.class);
   // the date we first deployed stable ids in releases - we ignore older ids than this date
-  private final LocalDateTime ID_START_DATE = LocalDateTime.of(2021, 11, 1, 1,1);
+  private final LocalDateTime ID_START_DATE;
+  private final boolean reuseReleasedIds;
 
   private final int datasetKey;
   private final SqlSessionFactory factory;
@@ -73,10 +74,24 @@ public class StableIdProvider {
   );
 
 
-  public StableIdProvider(int datasetKey, int attempt, SqlSessionFactory factory) {
+  public static StableIdProvider withAllReleases(int datasetKey, int attempt, SqlSessionFactory factory) {
+    return new StableIdProvider(datasetKey, attempt, true, null, factory);
+  }
+
+  public static StableIdProvider withReleasesSince(int datasetKey, int attempt, LocalDateTime since, SqlSessionFactory factory) {
+    return new StableIdProvider(datasetKey, attempt, true, since, factory);
+  }
+
+  public static StableIdProvider withNoReleases(int datasetKey, int attempt, SqlSessionFactory factory) {
+    return new StableIdProvider(datasetKey, attempt, false, null, factory);
+  }
+
+  StableIdProvider(int datasetKey, int attempt, boolean reuseReleasedIds, LocalDateTime ignoreOlderReleases, SqlSessionFactory factory) {
     this.datasetKey = datasetKey;
     this.currAttempt = attempt;
     this.factory = factory;
+    this.ID_START_DATE = ignoreOlderReleases;
+    this.reuseReleasedIds = reuseReleasedIds;
   }
 
   public void run() {
@@ -88,30 +103,32 @@ public class StableIdProvider {
   private void prepare(){
     // populate ids from db
     LOG.info("Prepare stable id provider");
-    try (SqlSession session = factory.openSession(true)) {
-      DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      DatasetSearchRequest dsr = new DatasetSearchRequest();
-      dsr.setReleasedFrom(datasetKey);
-      dsr.setSortBy(DatasetSearchRequest.SortBy.CREATED);
-      dsr.setReverse(true);
-      List<Dataset> releases = dm.search(dsr, null, new Page(0, 100));
-      for (Dataset rel : releases) {
-        if (rel.getCreated().isBefore(ID_START_DATE)) {
-          LOG.info("Ignore old release {} with unstable ids", rel.getKey());
-          continue;
-        }
-        AtomicInteger counter = new AtomicInteger();
-        int attempt = rel.getImportAttempt();
-        attempt2dataset.put(attempt, (int)rel.getKey());
-        session.getMapper(NameUsageMapper.class).processNxIds(rel.getKey()).forEach(sn -> {
-          counter.incrementAndGet();
-          if (sn.getNameIndexId() == null) {
-            LOG.info("Existing release id {}:{} without a names index id. Skip!", rel.getKey(), sn.getId());
-          } else {
-            ids.add(new ReleasedIds.ReleasedId(sn, attempt));
+    if (reuseReleasedIds) {
+      try (SqlSession session = factory.openSession(true)) {
+        DatasetMapper dm = session.getMapper(DatasetMapper.class);
+        DatasetSearchRequest dsr = new DatasetSearchRequest();
+        dsr.setReleasedFrom(datasetKey);
+        dsr.setSortBy(DatasetSearchRequest.SortBy.CREATED);
+        dsr.setReverse(true);
+        List<Dataset> releases = dm.search(dsr, null, new Page(0, 100));
+        for (Dataset rel : releases) {
+          if (ID_START_DATE != null && rel.getCreated().isBefore(ID_START_DATE)) {
+            LOG.info("Ignore old release {} with unstable ids", rel.getKey());
+            continue;
           }
-        });
-        LOG.info("Read {} usages from previous release {}, key={}. Total released ids = {}", counter, rel.getImportAttempt(), rel.getKey(), ids.size());
+          AtomicInteger counter = new AtomicInteger();
+          int attempt = rel.getImportAttempt();
+          attempt2dataset.put(attempt, (int)rel.getKey());
+          session.getMapper(NameUsageMapper.class).processNxIds(rel.getKey()).forEach(sn -> {
+            counter.incrementAndGet();
+            if (sn.getNameIndexId() == null) {
+              LOG.info("Existing release id {}:{} without a names index id. Skip!", rel.getKey(), sn.getId());
+            } else {
+              ids.add(new ReleasedIds.ReleasedId(sn, attempt));
+            }
+          });
+          LOG.info("Read {} usages from previous release {}, key={}. Total released ids = {}", counter, rel.getImportAttempt(), rel.getKey(), ids.size());
+        }
       }
     }
     keySequence.set(ids.maxKey());

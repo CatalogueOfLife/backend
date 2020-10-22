@@ -30,6 +30,11 @@ public class ReleasedIdsTest {
     TimeUnit.SECONDS.sleep(10);
   }
 
+  @Test
+  public void maxFirstKey() throws InterruptedException {
+    init(0);
+    assertEquals(0, ids.maxKey());
+  }
 
   @Test
   public void addRemove() throws InterruptedException {
