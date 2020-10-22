@@ -98,6 +98,7 @@ public class StableIdProvider {
       for (Dataset rel : releases) {
         if (rel.getCreated().isBefore(ID_START_DATE)) {
           LOG.info("Ignore old release {} with unstable ids", rel.getKey());
+          continue;
         }
         AtomicInteger counter = new AtomicInteger();
         int attempt = rel.getImportAttempt();

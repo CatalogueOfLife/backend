@@ -61,12 +61,12 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
 
   private Stats indexDatasetInternal(int datasetKey, boolean clearIndex) {
+    LOG.info("Start indexing dataset {}", datasetKey);
     NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
     Stats stats = new Stats();
     try (SqlSession lockSession = factory.openSession()) {
       // we lock the main dataset tables so they are only accessible by select statements, but not any modifying statements.
       DaoUtils.aquireTableLock(datasetKey, lockSession);
-      LOG.info("Start indexing dataset {}", datasetKey);
       if (clearIndex) {
         LOG.info("Remove dataset {} from index", datasetKey);
         createOrEmptyIndex(datasetKey);

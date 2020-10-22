@@ -33,10 +33,9 @@ $$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
 CREATE CAST (text AS person) WITH FUNCTION text2person;
 CREATE CAST (text AS organisation) WITH FUNCTION text2organisation;
 
---
 -- DATASET TABLE
---
 ALTER TABLE dataset DROP COLUMN doc;
+ALTER TABLE dataset ALTER COLUMN organisations SET DEFAULT NULL;
 ALTER TABLE dataset ALTER COLUMN organisations TYPE organisation[] USING organisations::organisation[];
 ALTER TABLE dataset ADD COLUMN doc tsvector GENERATED ALWAYS AS (
       setweight(to_tsvector('simple2', coalesce(alias,'')), 'A') ||
@@ -48,7 +47,6 @@ ALTER TABLE dataset ADD COLUMN doc tsvector GENERATED ALWAYS AS (
       setweight(to_tsvector('simple2', coalesce(person_str(editors), '')), 'C') ||
       setweight(to_tsvector('simple2', coalesce(gbif_key::text,'')), 'C')
   ) STORED;
-
 
 -- others
 ALTER TABLE dataset_archive ALTER COLUMN organisations TYPE organisation[] USING organisations::organisation[];
