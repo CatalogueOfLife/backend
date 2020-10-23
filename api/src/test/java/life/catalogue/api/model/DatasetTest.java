@@ -51,7 +51,7 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     DatasetMetadata patch = new Dataset();
     patch.setTitle("Grundig");
     patch.setAlias("grr");
-    d.apply(patch);
+    d.applyPatch(patch);
 
     assertEquals("Grundig", d.getTitle());
     assertEquals("grr", d.getAlias());

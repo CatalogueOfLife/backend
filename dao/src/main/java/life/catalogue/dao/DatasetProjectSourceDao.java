@@ -74,17 +74,20 @@ public class DatasetProjectSourceDao {
         DatasetPatchMapper pm = session.getMapper(DatasetPatchMapper.class);
 
         sources = psm.listProjectSources(projectKey);
-        sources.forEach(d -> patch(project, d, pm, settings));
+        sources.forEach(d -> patch(d, project, pm, settings));
       }
     }
     return sources;
   }
 
-  private ArchivedDataset patch(Dataset project, ArchivedDataset d, DatasetPatchMapper pm, DatasetSettings settings){
+  /**
+   * Applies the projects dataset patch if existing to the dataset d
+   */
+  private ArchivedDataset patch(ArchivedDataset d, Dataset project, DatasetPatchMapper pm, DatasetSettings settings){
     Dataset patch = pm.get(project.getKey(), d.getKey());
     if (patch != null) {
       LOG.info("Apply dataset patch from project {} to {}: {}", project.getKey(), d.getKey(), d.getTitle());
-      d.apply(patch);
+      d.applyPatch(patch);
     }
     // build an in project citation?
     if (settings != null && settings.has(Setting.RELEASE_SOURCE_CITATION_TEMPLATE)) {
