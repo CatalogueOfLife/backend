@@ -70,7 +70,9 @@ public class DatasetPatchResource {
     obj.applyUser(user);
     int i = session.getMapper(DatasetPatchMapper.class).update(datasetKey, obj);
     if (i == 0) {
-      throw NotFoundException.notFound("DatasetPatch", new DSIDValue<>(datasetKey, id));
+      // not existing yet, lets allow to create it via PUT
+      obj.setKey(id);
+      create(datasetKey, obj, user, session);
     }
     session.commit();
   }
