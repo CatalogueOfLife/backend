@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -65,13 +64,15 @@ public class DatasetPatchResource {
   @PUT
   @Path("{id}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void update(@PathParam("key") int datasetKey, @PathParam("id") Integer id, @Valid Dataset obj, @Auth User user, @Context SqlSession session) {
+  public void update(@PathParam("key") int datasetKey, @PathParam("id") Integer id, Dataset obj, @Auth User user, @Context SqlSession session) {
+    if (obj.getKey() != null && !obj.getKey().equals(id)) {
+      throw new IllegalArgumentException("Dataset patch does contain different key " + obj.getKey());
+    }
     obj.setKey(id);
     obj.applyUser(user);
     int i = session.getMapper(DatasetPatchMapper.class).update(datasetKey, obj);
     if (i == 0) {
       // not existing yet, lets allow to create it via PUT
-      obj.setKey(id);
       create(datasetKey, obj, user, session);
     }
     session.commit();
