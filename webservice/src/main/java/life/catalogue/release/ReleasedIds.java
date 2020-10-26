@@ -11,6 +11,7 @@ import org.apache.commons.lang3.ArrayUtils;
 public class ReleasedIds {
 
   private int maxKey = 0;
+  private int maxAttempt = 0;
   private final Int2ObjectMap<ReleasedId> byId = new Int2ObjectOpenHashMap<>();
   private final Int2ObjectMap<ReleasedId[]> byNxId = new Int2ObjectOpenHashMap<>();
 
@@ -58,14 +59,30 @@ public class ReleasedIds {
     }
   }
 
-  public IntSet remainingIds(int attempt){
+  /**
+   * @return IDs from the last (=max) attempt.
+   */
+  public IntSet maxAttemptIds(){
     IntSet ids = new IntOpenHashSet();
     for (ReleasedId rid : byId.values()) {
-      if (rid.attempt == attempt) {
+      if (rid.attempt == maxAttempt) {
         ids.add(rid.id);
       }
     }
     return ids;
+  }
+
+  /**
+   * @return number of IDs from the last (=max) attempt.
+   */
+  public int maxAttemptIdCount(){
+    int counter = 0;
+    for (ReleasedId rid : byId.values()) {
+      if (rid.attempt == maxAttempt) {
+        counter++;
+      }
+    }
+    return counter;
   }
 
   void add (ReleasedId id) {
@@ -78,6 +95,10 @@ public class ReleasedIds {
     if (id.id > maxKey) {
       maxKey = id.id;
     }
+    if (id.attempt > maxAttempt) {
+      maxAttempt = id.attempt;
+    }
+
   }
 
   public ReleasedId[] byNxId(int nxId) {
@@ -90,5 +111,9 @@ public class ReleasedIds {
 
   public int maxKey(){
     return maxKey;
+  }
+
+  public int getMaxAttempt() {
+    return maxAttempt;
   }
 }

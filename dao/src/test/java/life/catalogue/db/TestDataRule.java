@@ -232,6 +232,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     try (java.sql.Statement st = session.getConnection().createStatement()) {
       st.execute("TRUNCATE \"user\" CASCADE");
       st.execute("TRUNCATE dataset CASCADE");
+      st.execute("TRUNCATE dataset_archive CASCADE");
       st.execute("TRUNCATE sector CASCADE");
       st.execute("TRUNCATE estimate CASCADE");
       st.execute("TRUNCATE decision CASCADE");
@@ -285,6 +286,9 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
           if (!skipGlobalTable) {
             copyGlobalTable(pgc, "dataset");
+            copyGlobalTable(pgc, "dataset_import");
+            copyGlobalTable(pgc, "dataset_patch");
+            copyGlobalTable(pgc, "dataset_archive");
             copyGlobalTable(pgc, "sector");
             if (copyGlobalTable(pgc, "names_index")) {
               // update names index keys if we added data

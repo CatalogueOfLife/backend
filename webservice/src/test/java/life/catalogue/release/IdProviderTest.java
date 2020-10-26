@@ -38,7 +38,7 @@ public class IdProviderTest {
 
   @Before
   public void init() {
-    provider = IdProvider.withAllReleases(projectKey,3, PgSetupRule.getSqlSessionFactory());
+    provider = IdProvider.withAllReleases(projectKey,PgSetupRule.getSqlSessionFactory());
     System.out.println("Create id mapping tables for project " + projectKey);
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);

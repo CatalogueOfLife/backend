@@ -58,9 +58,9 @@ public class IdProvider {
 
   private final ReleasedIds ids = new ReleasedIds();
   private final Int2IntMap attempt2dataset = new Int2IntOpenHashMap();
-  private final int currAttempt;
   private final AtomicInteger keySequence = new AtomicInteger();
   // id changes in this release
+  private int reused = 0;
   private IntSet resurrected = new IntOpenHashSet();
   private IntSet created = new IntOpenHashSet();
   private IntSet deleted = new IntOpenHashSet();
@@ -74,36 +74,35 @@ public class IdProvider {
   );
 
 
-  public static IdProvider withAllReleases(int datasetKey, int attempt, SqlSessionFactory factory) {
-    return new IdProvider(datasetKey, attempt, true, null, factory);
+  public static IdProvider withAllReleases(int datasetKey, SqlSessionFactory factory) {
+    return new IdProvider(datasetKey, true, null, factory);
   }
 
-  public static IdProvider withReleasesSince(int datasetKey, int attempt, LocalDateTime since, SqlSessionFactory factory) {
-    return new IdProvider(datasetKey, attempt, true, since, factory);
+  public static IdProvider withReleasesSince(int datasetKey, LocalDateTime since, SqlSessionFactory factory) {
+    return new IdProvider(datasetKey, true, since, factory);
   }
 
-  public static IdProvider withNoReleases(int datasetKey, int attempt, SqlSessionFactory factory) {
-    return new IdProvider(datasetKey, attempt, false, null, factory);
+  public static IdProvider withNoReleases(int datasetKey, SqlSessionFactory factory) {
+    return new IdProvider(datasetKey, false, null, factory);
   }
 
-  IdProvider(int datasetKey, int attempt, boolean reuseReleasedIds, LocalDateTime ignoreOlderReleases, SqlSessionFactory factory) {
+  IdProvider(int datasetKey, boolean reuseReleasedIds, LocalDateTime ignoreOlderReleases, SqlSessionFactory factory) {
     this.datasetKey = datasetKey;
-    this.currAttempt = attempt;
     this.factory = factory;
     this.ID_START_DATE = ignoreOlderReleases;
     this.reuseReleasedIds = reuseReleasedIds;
   }
 
   public void run() {
-    LOG.info("Map name usage IDs");
     prepare();
     mapIds();
+    LOG.info("Reused {} stable IDs, resurrected={}, newly created={}, deleted={}", reused, resurrected.size(), created.size(), deleted.size());
   }
 
   private void prepare(){
     // populate ids from db
-    LOG.info("Prepare stable id provider");
     if (reuseReleasedIds) {
+      LOG.info("Use ID provider with stable IDs");
       try (SqlSession session = factory.openSession(true)) {
         DatasetMapper dm = session.getMapper(DatasetMapper.class);
         DatasetSearchRequest dsr = new DatasetSearchRequest();
@@ -130,12 +129,17 @@ public class IdProvider {
           LOG.info("Read {} usages from previous release {}, key={}. Total released ids = {}", counter, rel.getImportAttempt(), rel.getKey(), ids.size());
         }
       }
+      LOG.info("Last release attempt={} with {} IDs", ids.getMaxAttempt(), ids.maxAttemptIdCount());
+    } else {
+      LOG.info("Use ID provider with no previous IDs");
     }
     keySequence.set(ids.maxKey());
     LOG.info("Max existing id = {} ({})", keySequence, encode(keySequence.get()));
   }
 
   private void mapIds(){
+    LOG.info("Map name usage IDs");
+    final int lastRelIds = ids.maxAttemptIdCount();
     AtomicInteger counter = new AtomicInteger();
     try (SqlSession readSession = factory.openSession(true);
          SqlSession writeSession = factory.openSession(false)
@@ -161,7 +165,8 @@ public class IdProvider {
       writeSession.commit();
     }
     // ids remaining from the current attempt will be deleted
-    deleted = ids.remainingIds(currAttempt);
+    deleted = ids.maxAttemptIds();
+    reused = lastRelIds - deleted.size();
   }
 
   private void mapCanonicalGroup(List<SimpleNameWithNidx> group){
@@ -208,7 +213,7 @@ public class IdProvider {
   private void release(ScoreMatrix.ReleaseMatch rm, ScoreMatrix scores){
     rm.name.setCanonicalId(rm.rid.id);
     ids.remove(rm.rid.id);
-    if (rm.rid.attempt != currAttempt) {
+    if (rm.rid.attempt != ids.getMaxAttempt()) {
       resurrected.add(rm.rid.id);
     }
     scores.remove(rm);
