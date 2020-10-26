@@ -32,12 +32,12 @@ public class ProjectReleaseIT {
 
   @Rule
   public final TestRule chain = RuleChain
-    .outerRule(new TestDataRule(StableIdProviderTest.PROJECT_DATA))
+    .outerRule(new TestDataRule(IdProviderTest.PROJECT_DATA))
     .around(matchingRule);
 
   DatasetImportDao diDao;
 
-  final int projectKey = StableIdProviderTest.PROJECT_DATA.key;
+  final int projectKey = IdProviderTest.PROJECT_DATA.key;
   
   @Before
   public void init()  {
@@ -45,7 +45,7 @@ public class ProjectReleaseIT {
   }
   
   @Test
-  @Ignore("Work in progress")
+  @Ignore
   public void release() throws Exception {
     ProjectRelease release = buildRelease();
     release.run();
@@ -78,7 +78,7 @@ public class ProjectReleaseIT {
   }
   
   private ProjectRelease buildRelease() {
-    return ReleaseManager.release(PgSetupRule.getSqlSessionFactory(), matchingRule.getIndex(), NameUsageIndexService.passThru(), diDao, ImageService.passThru(), projectKey, Users.TESTER);
+    return ReleaseManager.release(PgSetupRule.getSqlSessionFactory(), matchingRule.getIndex(), NameUsageIndexService.passThru(), diDao, ImageService.passThru(), projectKey, Users.TESTER, true);
   }
   
   @Test

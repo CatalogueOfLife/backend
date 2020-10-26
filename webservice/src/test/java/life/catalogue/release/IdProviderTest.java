@@ -15,17 +15,19 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class StableIdProviderTest {
+public class IdProviderTest {
 
-  public final static TestDataRule.TestData PROJECT_DATA = new TestDataRule.TestData("project", 3, 2, 2, Map.of(
-    "distribution_3", Map.of("gazetteer", Gazetteer.ISO, "reference_id", "Flade2008")
-  ),3,11,12,13);
+  public final static TestDataRule.TestData PROJECT_DATA = new TestDataRule.TestData("project", 3, 2, 2,
+    Map.of(
+    "distribution_3", Map.of("gazetteer", Gazetteer.ISO, "reference_id", "Flade2008"),
+      "sector", Map.of("created_by", 100, "modified_by", 100)
+    ),3,11,12,13);
   final int projectKey = PROJECT_DATA.key;
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
 
-  StableIdProvider provider;
+  IdProvider provider;
   NameMatchingRule matchingRule = new NameMatchingRule();
 
   @Rule
@@ -36,7 +38,7 @@ public class StableIdProviderTest {
 
   @Before
   public void init() {
-    provider = StableIdProvider.withAllReleases(projectKey,3, PgSetupRule.getSqlSessionFactory());
+    provider = IdProvider.withAllReleases(projectKey,3, PgSetupRule.getSqlSessionFactory());
     System.out.println("Create id mapping tables for project " + projectKey);
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);

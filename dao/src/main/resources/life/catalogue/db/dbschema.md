@@ -10,6 +10,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2020-10-26 project sources not requiring import attempt 
+```
+ALTER TABLE project_source ALTER COLUMN import_attempt DROP NOT NULL;
+```
+
 ### 2020-10-21 organisations class 
 https://github.com/CatalogueOfLife/backend/issues/882
 ```

@@ -28,12 +28,14 @@ public class ProjectRelease extends AbstractProjectCopy {
 
   private final ImageService imageService;
   private final NameIndex nameIndex;
+  private final boolean useStableIDs;
 
   ProjectRelease(SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService, DatasetImportDao diDao, ImageService imageService,
-                 int datasetKey, Dataset release, int userKey) {
+                 int datasetKey, Dataset release, int userKey, boolean useStableIDs) {
     super("releasing", factory, diDao, indexService, userKey, datasetKey, release, true);
     this.imageService = imageService;
     this.nameIndex = nameIndex;
+    this.useStableIDs = useStableIDs;
   }
 
   @Override
@@ -41,7 +43,13 @@ public class ProjectRelease extends AbstractProjectCopy {
     // map ids
     updateState(ImportState.MATCHING);
     matchUnmatchedNames();
-    StableIdProvider.withNoReleases(datasetKey, metrics.getAttempt(), factory).run();
+    IdProvider idProvider;
+    if (useStableIDs) {
+      idProvider = IdProvider.withNoReleases(datasetKey, metrics.getAttempt(), factory);
+    } else {
+      idProvider = IdProvider.withAllReleases(datasetKey, metrics.getAttempt(), factory);
+    }
+    idProvider.run();
 
     // archive dataset metadata & logos
     updateState(ImportState.ARCHIVING);
@@ -50,7 +58,7 @@ public class ProjectRelease extends AbstractProjectCopy {
       ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
       final AtomicInteger counter = new AtomicInteger(0);
       dao.list(datasetKey).forEach(d -> {
-        LOG.info("Archive dataset {}: {} for release {}", d.getKey(), d.getTitle(), newDatasetKey);
+        LOG.info("Archive dataset {}#{} for release {}", d.getKey(), d.getImportAttempt(), newDatasetKey);
         psm.create(newDatasetKey, d);
         // archive logos
         try {

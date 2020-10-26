@@ -21,7 +21,7 @@ public class DWReader extends Reader {
   protected ResolvedParameter getParameters(Type type, List<Annotation> annotations, Operation operation, Consumes classConsumes, Consumes methodConsumes, JsonView jsonViewAnnotation) {
     ResolvedParameter rp = super.getParameters(type, annotations, operation, classConsumes, methodConsumes, jsonViewAnnotation);
     for (Annotation ano : annotations) {
-      if (Auth.class.isInstance(ano)) {
+      if (ano instanceof Auth) {
         rp.parameters.clear();
         rp.formParameters.clear();
         rp.requestBody = null;

@@ -54,7 +54,7 @@ public class ReleaseManager {
    * @return newly created dataset key of the release
    */
   public Integer release(int datasetKey, User user) {
-    return execute(() -> release(factory, nameIndex, indexService, diDao, imageService, datasetKey, user.getKey()));
+    return execute(() -> release(factory, nameIndex, indexService, diDao, imageService, datasetKey, user.getKey(), false));
   }
 
   /**
@@ -101,9 +101,9 @@ public class ReleaseManager {
    * @throws IllegalArgumentException if the dataset is not managed
    */
   public static ProjectRelease release(SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService, DatasetImportDao diDao, ImageService imageService,
-                                       int projectKey, int userKey) {
+                                       int projectKey, int userKey, boolean useStableIDs) {
     Dataset release = createDataset(factory, projectKey, "release", userKey, ProjectRelease::releaseDataset);
-    return new ProjectRelease(factory, nameIndex, indexService, diDao, imageService, projectKey, release, userKey);
+    return new ProjectRelease(factory, nameIndex, indexService, diDao, imageService, projectKey, release, userKey, useStableIDs);
   }
 
   /**

@@ -21,7 +21,6 @@
   </sql>
 
   <resultMap id="projectSourceResultMap" type="ArchivedDataset" extends="life.catalogue.db.mapper.DatasetArchiveMapper.archiveResultMap">
-    <id property="key" column="key2"/>
     <result property="importAttempt" column="attempt"/>
   </resultMap>
 
@@ -47,7 +46,7 @@
     FROM src
       JOIN dataset d ON d.key = src.key
       LEFT JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.import_attempt
-    WHERE src.attempt = d.import_attempt
+    WHERE src.attempt = d.import_attempt OR src.attempt IS NULL
 
     ORDER BY 1
   </select>

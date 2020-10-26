@@ -47,8 +47,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 3) Match all usages in such a group ordered by their status:
  *    First assign ids for accepted, then prov accepted, synonyms, ambiguous syns and finally misapplied names
  */
-public class StableIdProvider {
-  protected final Logger LOG = LoggerFactory.getLogger(StableIdProvider.class);
+public class IdProvider {
+  protected final Logger LOG = LoggerFactory.getLogger(IdProvider.class);
   // the date we first deployed stable ids in releases - we ignore older ids than this date
   private final LocalDateTime ID_START_DATE;
   private final boolean reuseReleasedIds;
@@ -74,19 +74,19 @@ public class StableIdProvider {
   );
 
 
-  public static StableIdProvider withAllReleases(int datasetKey, int attempt, SqlSessionFactory factory) {
-    return new StableIdProvider(datasetKey, attempt, true, null, factory);
+  public static IdProvider withAllReleases(int datasetKey, int attempt, SqlSessionFactory factory) {
+    return new IdProvider(datasetKey, attempt, true, null, factory);
   }
 
-  public static StableIdProvider withReleasesSince(int datasetKey, int attempt, LocalDateTime since, SqlSessionFactory factory) {
-    return new StableIdProvider(datasetKey, attempt, true, since, factory);
+  public static IdProvider withReleasesSince(int datasetKey, int attempt, LocalDateTime since, SqlSessionFactory factory) {
+    return new IdProvider(datasetKey, attempt, true, since, factory);
   }
 
-  public static StableIdProvider withNoReleases(int datasetKey, int attempt, SqlSessionFactory factory) {
-    return new StableIdProvider(datasetKey, attempt, false, null, factory);
+  public static IdProvider withNoReleases(int datasetKey, int attempt, SqlSessionFactory factory) {
+    return new IdProvider(datasetKey, attempt, false, null, factory);
   }
 
-  StableIdProvider(int datasetKey, int attempt, boolean reuseReleasedIds, LocalDateTime ignoreOlderReleases, SqlSessionFactory factory) {
+  IdProvider(int datasetKey, int attempt, boolean reuseReleasedIds, LocalDateTime ignoreOlderReleases, SqlSessionFactory factory) {
     this.datasetKey = datasetKey;
     this.currAttempt = attempt;
     this.factory = factory;

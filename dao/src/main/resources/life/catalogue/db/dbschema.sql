@@ -680,7 +680,6 @@ ALTER TABLE dataset_archive
   DROP COLUMN gbif_publisher_key,
   DROP COLUMN private,
   DROP COLUMN settings;
-ALTER TABLE dataset_archive ALTER COLUMN import_attempt set not null;
 
 
 CREATE TABLE project_source (LIKE dataset_archive);
@@ -688,6 +687,7 @@ ALTER TABLE project_source
   ADD COLUMN dataset_key INTEGER REFERENCES dataset;
 ALTER TABLE project_source ADD UNIQUE (key, dataset_key);
 
+ALTER TABLE dataset_archive ALTER COLUMN import_attempt set not null;
 ALTER TABLE dataset_archive ADD UNIQUE (key, import_attempt);
 
 CREATE TABLE dataset_patch AS SELECT * FROM dataset_archive LIMIT 0;
