@@ -36,12 +36,18 @@ public class ReferenceDao extends DatasetStringEntityDao<Reference, ReferenceMap
   @Override
   public DSID<String> create(Reference r, int user) {
     // build default citation from csl
+    if (r == null) {
+      throw new IllegalArgumentException("No reference given");
+    }
     if (r.getCitation() == null && r.getCsl() != null) {
       r.setCitation(CslUtil.buildCitation(r.getCsl()));
     }
+    if (r.getCitation() == null) {
+      throw new IllegalArgumentException("Empty reference given");
+    }
     return super.create(r, user);
   }
-  
+
   @Override
   protected void updateBefore(Reference r, Reference old, int user, ReferenceMapper mapper, SqlSession session) {
     if (r.getCitation() == null && r.getCsl() != null) {
