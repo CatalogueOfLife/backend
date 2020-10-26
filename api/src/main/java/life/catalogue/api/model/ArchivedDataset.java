@@ -18,10 +18,7 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -31,8 +28,12 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
   private static final List<PropertyDescriptor> METADATA_PROPS;
   static {
     try {
+      Set<String> metadata = Arrays.stream(Introspector.getBeanInfo(DatasetMetadata.class).getMethodDescriptors())
+        .map(m -> m.getMethod().getName())
+        .collect(Collectors.toSet());
+      metadata.remove("getKey");
       METADATA_PROPS = Arrays.stream(Introspector.getBeanInfo(DatasetMetadata.class).getPropertyDescriptors())
-        .filter(p -> !p.getName().equals("key"))
+        .filter(p -> metadata.contains(p.getReadMethod().getName()))
         .collect(Collectors.toUnmodifiableList());
 
     } catch (IntrospectionException e) {
