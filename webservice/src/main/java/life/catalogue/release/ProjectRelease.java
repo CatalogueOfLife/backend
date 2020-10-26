@@ -45,9 +45,9 @@ public class ProjectRelease extends AbstractProjectCopy {
     matchUnmatchedNames();
     IdProvider idProvider;
     if (useStableIDs) {
-      idProvider = IdProvider.withNoReleases(datasetKey, metrics.getAttempt(), factory);
-    } else {
       idProvider = IdProvider.withAllReleases(datasetKey, metrics.getAttempt(), factory);
+    } else {
+      idProvider = IdProvider.withNoReleases(datasetKey, metrics.getAttempt(), factory);
     }
     idProvider.run();
 
