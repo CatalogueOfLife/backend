@@ -1,7 +1,10 @@
 package life.catalogue.es.nu.search;
 
+import life.catalogue.api.search.NameUsageRequest;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.es.InvalidQueryException;
+
+import java.util.Set;
 
 import static life.catalogue.api.search.NameUsageSearchParameter.*;
 
@@ -14,7 +17,9 @@ class RequestValidator {
   }
 
   void validateRequest() {
-    if (request.getContent() == null || request.getContent().isEmpty()) {
+    if (NameUsageRequest.SearchType.EXACT == request.getSearchType()){
+      request.setContent(Set.of(NameUsageSearchRequest.SearchContent.SCIENTIFIC_NAME));
+    } else if (request.getContent() == null || request.getContent().isEmpty()) {
        request.setContentDefault();
     }
     if (request.hasFilter(USAGE_ID)) {

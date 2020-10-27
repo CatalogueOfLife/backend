@@ -14,7 +14,7 @@ import static life.catalogue.api.search.NameUsageSearchRequest.SearchContent.SCI
 class QTranslator {
 
   /**
-   * The extra boost to give to scientific name matches (versus vernacular name or authorship matches), reflecting the fact that, all being
+   * The extra boost to give to scientific name matches (versus authorship matches), reflecting the fact that, all being
    * equal, we'd like to see them higher up in the list of matches.
    */
   public static final Double SCINAME_EXTRA_BOOST = 10.0;

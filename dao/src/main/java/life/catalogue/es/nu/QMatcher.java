@@ -74,19 +74,10 @@ public abstract class QMatcher {
     this.request = request;
   }
 
-  /*
-   * Note about the boost values. You need to experiment, but given a max ngram size of 10 and given a
-   * search term of exactly that length, a prefix query seems to score about as good as an edge ngram
-   * query if you let each letter increase the boost value by 0.1 for prefix queries, while boosting
-   * autocomplete queries by 3.5. So the prefix query will catch up the ngram query by the time the
-   * max ngram size is reached. It's hard to arrive at watertight relevance scores though, because the
-   * effects of TD/IF-scoring are impossible to estimate unless you also know your data really well.
-   */
-
   public Query getAuthorshipQuery() {
     String q = request.getQ().toLowerCase();
     return new DisMaxQuery()
-        .subquery(new StandardAsciiQuery(FLD_AUTHOR, q).withBoost(100.0));
+        .subquery(new StandardAsciiQuery(FLD_AUTHOR, q));
   }
 
   public Query getScientificNameQuery() {
