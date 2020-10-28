@@ -10,6 +10,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2020-10-28 new type status 
+```
+ALTER TYPE TYPESTATUS ADD VALUE 'ISOPARATYPE' AFTER 'ISONEOTYPE';
+```
+
 ### 2020-10-26 project sources not requiring import attempt 
 ```
 ALTER TABLE project_source ALTER COLUMN import_attempt DROP NOT NULL;

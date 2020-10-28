@@ -171,6 +171,11 @@ public enum TypeStatus {
   ISONEOTYPE(NEOTYPE, BOTANICAL),
 
   /**
+   * An isoparatype is any duplicate of a paratype; it is always a specimen.
+   */
+  ISOPARATYPE(PARATYPE, BOTANICAL),
+
+  /**
    * A duplicate of a syntype, compare isotype = duplicate of holotype.
    */
   ISOSYNTYPE(SYNTYPE, BOTANICAL),
