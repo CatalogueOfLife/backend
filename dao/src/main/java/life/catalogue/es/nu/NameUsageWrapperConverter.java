@@ -191,6 +191,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     name.setId(doc.getNameId());
     name.setScientificName(doc.getScientificName());
     name.setNameIndexId(doc.getNameIndexId());
+    nuw.setNameIndexCanonicalId(doc.getNameIndexCanonicalId());
     name.setNomStatus(doc.getNomStatus());
     name.setPublishedInId(doc.getPublishedInId());
     name.setType(doc.getType());
@@ -235,8 +236,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     doc.setSectorDatasetKey(nuw.getSectorDatasetKey());
     doc.setNameId(name.getId());
     doc.setNameIndexId(name.getNameIndexId());
-    //TODO: lookup canonical ID or better even put it into the wrapper !!!
-    doc.setNameIndexCanonicalId(null);
+    doc.setNameIndexCanonicalId(nuw.getNameIndexCanonicalId());
     doc.setNomCode(name.getCode());
     doc.setNomStatus(name.getNomStatus());
     doc.setPublishedInId(name.getPublishedInId());

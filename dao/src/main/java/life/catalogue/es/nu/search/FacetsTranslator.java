@@ -41,7 +41,7 @@ public class FacetsTranslator {
     FilterAggregation filterAgg = new FilterAggregation(getContextFilter());
     globalAgg.nest(FILTER_AGG_LABEL, filterAgg);
     for (NameUsageSearchParameter facet : copy.getFacets()) {
-      String field = NameUsageFieldLookup.INSTANCE.lookup(facet);
+      String field = NameUsageFieldLookup.INSTANCE.lookupSingle(facet);
       // Temporarily remove the filter corresponding to the facet (if any), otherwise the values retrieved for the facet would collapse to
       // those specified by the filter.
       NameUsageSearchRequest temp = copy.copy();

@@ -10,7 +10,10 @@ public class NameUsageFieldLookupTest {
   @Test
   public void lookup() {
     for (NameUsageSearchParameter p : NameUsageSearchParameter.values()) {
-      assertNotNull(NameUsageFieldLookup.INSTANCE.lookup(p));
+      if (p == NameUsageSearchParameter.NAME_INDEX_ID) continue;
+      assertNotNull(NameUsageFieldLookup.INSTANCE.lookupSingle(p));
+      assertEquals(1, NameUsageFieldLookup.INSTANCE.lookup(p).length);
     }
+    assertEquals(2, NameUsageFieldLookup.INSTANCE.lookup(NameUsageSearchParameter.NAME_INDEX_ID).length);
   }
 }

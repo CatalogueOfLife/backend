@@ -26,7 +26,7 @@ class RequestTranslator implements DownwardConverter<NameUsageSuggestRequest, Es
     BoolQuery query = new BoolQuery()
         .filter(new TermQuery("datasetKey", request.getDatasetKey()))
         .must(new QTranslator(request).translate());
-    final String statusField = NameUsageFieldLookup.INSTANCE.lookup(NameUsageSearchParameter.STATUS);
+    final String statusField = NameUsageFieldLookup.INSTANCE.lookupSingle(NameUsageSearchParameter.STATUS);
     // always avoid bare names
     query.filter(new IsNotNullQuery(statusField));
     if (request.isAccepted()) {

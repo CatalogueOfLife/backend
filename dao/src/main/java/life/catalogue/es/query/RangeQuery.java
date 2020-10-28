@@ -8,7 +8,7 @@ import static java.util.Collections.singletonMap;
 public class RangeQuery<T> extends ConstraintQuery<RangeConstraint<T>> {
 
   public static <U> RangeQuery<U> on(NameUsageSearchParameter p) {
-    return new RangeQuery<>(NameUsageFieldLookup.INSTANCE.lookup(p));
+    return new RangeQuery<>(NameUsageFieldLookup.INSTANCE.lookupSingle(p));
   }
 
   private final Map<String, RangeConstraint<T>> range;

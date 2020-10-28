@@ -40,6 +40,8 @@ public enum NameUsageSearchParameter {
 
   /**
    * Searches on the name index id property of the Name which allows to share for same names across and within datasets.
+   * If a canonical, i.e. authorless, names index id is given it will also match all derived name index ids that represents names with an authorship
+   * that have the same canonical id.
    */
   NAME_INDEX_ID(Integer.class),
 

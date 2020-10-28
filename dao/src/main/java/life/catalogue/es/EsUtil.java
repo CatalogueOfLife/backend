@@ -170,7 +170,7 @@ public class EsUtil {
    * @throws IOException
    */
   public static int deleteBareNames(RestClient client, String index, int datasetKey) {
-    String statusField = NameUsageFieldLookup.INSTANCE.lookup(NameUsageSearchParameter.STATUS);
+    String statusField = NameUsageFieldLookup.INSTANCE.lookupSingle(NameUsageSearchParameter.STATUS);
     BoolQuery query = BoolQuery.withFilters(
         new TermQuery("datasetKey", datasetKey),
         new IsNullQuery(statusField));
@@ -199,7 +199,7 @@ public class EsUtil {
   public static int deleteSubtree(RestClient client, String index, DSID<String> root) {
     BoolQuery query = BoolQuery.withFilters(
         new TermQuery("datasetKey", root.getDatasetKey()),
-        new TermQuery(NameUsageFieldLookup.INSTANCE.lookup(NameUsageSearchParameter.TAXON_ID), root.getId()));
+        new TermQuery(NameUsageFieldLookup.INSTANCE.lookupSingle(NameUsageSearchParameter.TAXON_ID), root.getId()));
     return deleteByQuery(client, index, query);
   }
 

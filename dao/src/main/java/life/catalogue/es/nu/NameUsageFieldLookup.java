@@ -36,7 +36,7 @@ public class NameUsageFieldLookup extends EnumMap<NameUsageSearchParameter, Stri
     putSingle(ISSUE, "issues");
     putSingle(ENVIRONMENT, "environments");
     putSingle(NAME_ID, "nameId");
-    putSingle(NAME_INDEX_ID, "nameIndexId");
+    put(NAME_INDEX_ID, new String[]{"nameIndexId", "nameIndexCanonicalId"});
     putSingle(NOM_CODE, "nomCode");
     putSingle(NOM_STATUS, "nomStatus");
     putSingle(PUBLISHED_IN_ID, "publishedInId");
@@ -59,10 +59,17 @@ public class NameUsageFieldLookup extends EnumMap<NameUsageSearchParameter, Stri
     }
   }
 
-  public String lookup(NameUsageSearchParameter param) {
-    String[] fields = get(param);
-    // Currently every NameSearchParameter maps to just one field in the name usage document
-    return fields[0];
+  public String lookupSingle(NameUsageSearchParameter param) {
+    // every NameSearchParameter maps to just one field in the name usage document
+    // with the exception of NAME_INDEX_ID !!!
+    if (param == NAME_INDEX_ID) {
+      throw new IllegalArgumentException("NAME_INDEX_ID maps to multiple fields");
+    }
+    return get(param)[0];
+  }
+
+  public String[] lookup(NameUsageSearchParameter param) {
+    return get(param);
   }
 
   private void putSingle(NameUsageSearchParameter param, String field) {

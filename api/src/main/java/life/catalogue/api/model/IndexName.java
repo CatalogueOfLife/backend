@@ -42,6 +42,23 @@ public class IndexName extends DataEntity<Integer> implements LinneanName, Scien
   public IndexName() {
   }
 
+  public IndexName(IndexName other) {
+    this.key = other.key;
+    this.canonicalId = other.canonicalId;
+    this.scientificName = other.scientificName;
+    this.authorship = other.authorship;
+    this.rank = other.rank;
+    this.uninomial = other.uninomial;
+    this.genus = other.genus;
+    this.infragenericEpithet = other.infragenericEpithet;
+    this.specificEpithet = other.specificEpithet;
+    this.infraspecificEpithet = other.infraspecificEpithet;
+    this.cultivarEpithet = other.cultivarEpithet;
+    this.combinationAuthorship = other.combinationAuthorship;
+    this.basionymAuthorship = other.basionymAuthorship;
+    this.sanctioningAuthor = other.sanctioningAuthor;
+  }
+
   public IndexName(Name n) {
     this.scientificName = n.getScientificName();
     this.authorship = n.getAuthorship();
