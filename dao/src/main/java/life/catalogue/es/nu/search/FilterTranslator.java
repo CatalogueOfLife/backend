@@ -46,7 +46,7 @@ class FilterTranslator {
       }
     }
     BoolQuery query = new BoolQuery();
-    queries.forEach(query::should);
+    queries.forEach(query::should); // should=OR
     return query;
   }
 

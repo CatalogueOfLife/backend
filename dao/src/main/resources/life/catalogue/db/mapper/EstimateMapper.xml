@@ -173,7 +173,7 @@
 
   <select id="countSearch" resultType="int">
     SELECT count(*)
-    FROM <include refid="FROM"/>
+    FROM estimate est
     <if test="req.broken">
       <include refid="JOIN_USAGE"/>
     </if>
