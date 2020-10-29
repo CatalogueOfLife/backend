@@ -55,6 +55,7 @@ public class SectorImportDao {
 
     si.setBareNameCount(mapper.countBareName(datasetKey, key));
     si.setDistributionCount(mapper.countDistribution(datasetKey, key));
+    si.setEstimateCount(mapper.countEstimate(datasetKey, key));
     si.setMediaCount(mapper.countMedia(datasetKey, key));
     si.setNameCount(mapper.countName(datasetKey, key));
     si.setReferenceCount(mapper.countReference(datasetKey, key));

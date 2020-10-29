@@ -39,8 +39,7 @@ public interface DatasetPartitionMapper {
 
   List<String> MANAGED_SERIAL_TABLES = Lists.newArrayList(
     "sector",
-    "decision",
-    "estimate"
+    "decision"
   );
 
   static class FK {
@@ -110,6 +109,9 @@ public interface DatasetPartitionMapper {
   default void create(int key) {
     TABLES.forEach(t -> createTable(t, key));
     SERIAL_TABLES.forEach(t -> createSerial(t, key));
+    // estimates can exist also in non managed datasets, so we need to have an id sequence for them in all datasets
+    // but they are not a partitioned table, treat them special
+    createIdSequence("estimate", key);
   }
   
   void createTable(@Param("table") String table, @Param("key") int key);

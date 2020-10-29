@@ -54,6 +54,7 @@ public class PgImport implements Callable<Boolean> {
   private final AtomicInteger mCounter = new AtomicInteger(0);
   private final AtomicInteger vCounter = new AtomicInteger(0);
   private final AtomicInteger tmCounter = new AtomicInteger(0);
+  private final AtomicInteger eCounter = new AtomicInteger(0);
 
   public PgImport(int attempt, DatasetWithSettings dataset, NeoDb store, SqlSessionFactory sessionFactory, ImporterConfig cfg) {
     this.attempt = attempt;
@@ -83,9 +84,9 @@ public class PgImport implements Callable<Boolean> {
     
     updateMetadata();
 		LOG.info("Completed dataset {} insert with {} verbatim records, " +
-        "{} names, {} taxa, {} synonyms, {} references, {} vernaculars, {} distributions, {} treatments and {} media items",
+        "{} names, {} taxa, {} synonyms, {} references, {} vernaculars, {} distributions, {} treatments, {} species estimates and {} media items",
         dataset.getKey(), verbatimKeys.size(),
-        nCounter, tCounter, sCounter, rCounter, vCounter, diCounter, trCounter, mCounter);
+        nCounter, tCounter, sCounter, rCounter, vCounter, diCounter, trCounter, eCounter, mCounter);
 		return true;
 	}
 
@@ -338,6 +339,7 @@ public class PgImport implements Callable<Boolean> {
       LOG.info("Inserting remaining names and all taxa");
       TreatmentMapper treatmentMapper = session.getMapper(TreatmentMapper.class);
       DistributionMapper distributionMapper = session.getMapper(DistributionMapper.class);
+      EstimateMapper estimateMapper = session.getMapper(EstimateMapper.class);
       MediaMapper mediaMapper = session.getMapper(MediaMapper.class);
       TaxonMapper taxonMapper = session.getMapper(TaxonMapper.class);
       SynonymMapper synMapper = session.getMapper(SynonymMapper.class);
@@ -424,7 +426,16 @@ public class PgImport implements Callable<Boolean> {
               mediaMapper.create(m, acc.getId());
               mCounter.incrementAndGet();
             }
-            
+
+            // insert estimates
+            for (SpeciesEstimate e : u.estimates) {
+              updateVerbatimUserEntity(e);
+              updateReferenceKey(e);
+              e.setTarget(SimpleNameLink.of(acc.getId()));
+              estimateMapper.create(e);
+              eCounter.incrementAndGet();
+            }
+
           }
 
           // commit in batches

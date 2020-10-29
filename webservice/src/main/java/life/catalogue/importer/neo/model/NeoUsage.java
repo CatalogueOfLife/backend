@@ -36,6 +36,7 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
   public List<Distribution> distributions = Lists.newArrayList();
   public List<Media> media = Lists.newArrayList();
   public List<VernacularName> vernacularNames = Lists.newArrayList();
+  public List<SpeciesEstimate> estimates = Lists.newArrayList();
 
   // extra stuff not covered by above for normalizer only
   public Classification classification;

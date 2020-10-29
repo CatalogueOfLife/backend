@@ -143,6 +143,7 @@ public class DatasetImportDao {
   private void updateMetrics(DatasetImportMapper mapper, DatasetImport di, int key) {
     di.setBareNameCount(mapper.countBareName(key));
     di.setDistributionCount(mapper.countDistribution(key));
+    di.setEstimateCount(mapper.countEstimate(key));
     di.setMediaCount(mapper.countMedia(key));
     di.setNameCount(mapper.countName(key));
     di.setReferenceCount(mapper.countReference(key));

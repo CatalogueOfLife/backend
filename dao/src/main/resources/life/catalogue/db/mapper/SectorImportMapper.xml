@@ -119,47 +119,53 @@
     SELECT count(*)
     FROM name_${datasetKey} n
     LEFT JOIN name_usage_${datasetKey} u ON n.id = u.name_id
-    WHERE u.id IS NULL AND n.sector_key=${sectorKey}
+    WHERE u.id IS NULL AND n.sector_key=#{sectorKey}
   </select>
   <select id="countDistribution" resultType="integer">
     SELECT count(*)
     FROM distribution_${datasetKey} x
     JOIN name_usage_${datasetKey} t ON t.id=x.taxon_id
-    WHERE t.sector_key=${sectorKey}
+    WHERE t.sector_key=#{sectorKey}
+  </select>
+  <select id="countEstimate" resultType="integer">
+    SELECT count(*)
+    FROM estimate x
+    JOIN name_usage_${datasetKey} t ON t.id=est.target_id
+    WHERE t.sector_key=#{sectorKey}
   </select>
   <select id="countMedia" resultType="integer">
     SELECT count(*)
     FROM media_${datasetKey} x
       JOIN name_usage_${datasetKey} t ON t.id=x.taxon_id
-    WHERE t.sector_key=${sectorKey}
+    WHERE t.sector_key=#{sectorKey}
   </select>
   <select id="countVernacular" resultType="integer">
     SELECT count(*)
     FROM vernacular_name_${datasetKey} x
       JOIN name_usage_${datasetKey} t ON t.id=x.taxon_id
-    WHERE t.sector_key=${sectorKey}
+    WHERE t.sector_key=#{sectorKey}
   </select>
   <select id="countTreatment" resultType="integer">
     SELECT count(*)
     FROM treatment_${datasetKey} x
       JOIN name_usage_${datasetKey} t ON t.id=x.id
-    WHERE t.sector_key=${sectorKey}
+    WHERE t.sector_key=#{sectorKey}
   </select>
   <select id="countTypeMaterial" resultType="integer">
-    SELECT count(*) FROM type_material_${datasetKey} WHERE sector_key=${sectorKey}
+    SELECT count(*) FROM type_material_${datasetKey} WHERE sector_key=#{sectorKey}
   </select>
 
   <select id="countName" resultType="integer">
-    SELECT count(*) FROM name_${datasetKey} WHERE sector_key=${sectorKey}
+    SELECT count(*) FROM name_${datasetKey} WHERE sector_key=#{sectorKey}
   </select>
   <select id="countReference" resultType="integer">
-    SELECT count(*) FROM reference_${datasetKey} WHERE sector_key=${sectorKey}
+    SELECT count(*) FROM reference_${datasetKey} WHERE sector_key=#{sectorKey}
   </select>
   <select id="countTaxon" resultType="integer">
-    SELECT count(*) FROM name_usage_${datasetKey} WHERE NOT is_synonym AND sector_key=${sectorKey}
+    SELECT count(*) FROM name_usage_${datasetKey} WHERE NOT is_synonym AND sector_key=#{sectorKey}
   </select>
   <select id="countSynonym" resultType="integer">
-    SELECT count(*) FROM name_usage_${datasetKey} WHERE is_synonym AND sector_key=${sectorKey}
+    SELECT count(*) FROM name_usage_${datasetKey} WHERE is_synonym AND sector_key=#{sectorKey}
   </select>
 
   <select id="countIssues" resultType="StringCount">
@@ -167,17 +173,17 @@
     SELECT vn.id, vn.issues
     FROM verbatim_${datasetKey} vn
     JOIN name_${datasetKey} n ON vn.id=n.verbatim_key
-    WHERE n.sector_key=${sectorKey}
+    WHERE n.sector_key=#{sectorKey}
     UNION
     SELECT vt.id, vt.issues
     FROM verbatim_${datasetKey} vt
     JOIN name_usage_${datasetKey} t ON vt.id=t.verbatim_key
-    WHERE t.sector_key=${sectorKey}
+    WHERE t.sector_key=#{sectorKey}
     UNION
     SELECT vr.id, vr.issues
     FROM verbatim_${datasetKey} vr
     JOIN reference_${datasetKey} r ON vr.id=r.verbatim_key
-    WHERE r.sector_key=${sectorKey}
+    WHERE r.sector_key=#{sectorKey}
     )
     SELECT iss AS key, count(*) AS count FROM (
     SELECT unnest(issues) iss FROM issues
@@ -190,95 +196,95 @@
     SELECT gazetteer AS key, count(*) AS count
     FROM distribution_${datasetKey} x
     JOIN name_usage_${datasetKey} u ON u.id=x.taxon_id
-    WHERE u.sector_key=${sectorKey}
+    WHERE u.sector_key=#{sectorKey}
     GROUP BY gazetteer
   </select>
   <select id="countMediaByType" resultType="StringCount">
     SELECT type AS key, count(*) AS count
     FROM media_${datasetKey} x
     JOIN name_usage_${datasetKey} u ON u.id=x.taxon_id
-    WHERE u.sector_key=${sectorKey}
+    WHERE u.sector_key=#{sectorKey}
     GROUP BY type
   </select>
   <select id="countNamesByType" resultType="StringCount">
     SELECT type AS key, count(*) AS count
     FROM name_${datasetKey}
-    WHERE sector_key=${sectorKey}
+    WHERE sector_key=#{sectorKey}
     GROUP BY type
   </select>
   <select id="countNameRelationsByType" resultType="StringCount">
     SELECT r.type AS key, count(*) AS count
     FROM name_rel_${datasetKey} r
     JOIN name_${datasetKey} n ON r.name_id=n.id
-    WHERE n.sector_key=${sectorKey}
+    WHERE n.sector_key=#{sectorKey}
     GROUP BY r.type
   </select>
   <select id="countTaxonRelationsByType" resultType="StringCount">
     SELECT r.type AS key, count(*) AS count
     FROM taxon_rel_${datasetKey} r
       JOIN name_usage_${datasetKey} u ON r.taxon_id=u.id
-    WHERE u.sector_key=${sectorKey}
+    WHERE u.sector_key=#{sectorKey}
     GROUP BY r.type
   </select>
   <select id="countNamesByStatus" resultType="StringCount">
     SELECT nom_status AS key, count(*) AS count
     FROM name_${datasetKey}
-    WHERE sector_key=${sectorKey}
+    WHERE sector_key=#{sectorKey}
     GROUP BY nom_status
   </select>
   <select id="countNamesByCode" resultType="StringCount">
     SELECT code AS key, count(*) AS count
     FROM name_${datasetKey}
-    WHERE sector_key=${sectorKey}
+    WHERE sector_key=#{sectorKey}
     GROUP BY code
   </select>
   <select id="countNamesByRank" resultType="StringCount">
     SELECT rank AS key, count(*) AS count
     FROM name_${datasetKey}
-    WHERE sector_key=${sectorKey}
+    WHERE sector_key=#{sectorKey}
     GROUP BY rank
   </select>
   <select id="countTaxaByRank" resultType="StringCount">
     SELECT n.rank AS key, count(*) AS count
     FROM name_usage_${datasetKey} t JOIN name_${datasetKey} n ON t.name_id=n.id
-    WHERE NOT t.is_synonym AND t.sector_key=${sectorKey}
+    WHERE NOT t.is_synonym AND t.sector_key=#{sectorKey}
     GROUP BY n.rank
   </select>
   <select id="countExtinctTaxaByRank" resultType="StringCount">
     SELECT n.rank AS key, count(*) AS count
     FROM name_usage_${datasetKey} t JOIN name_${datasetKey} n ON t.name_id=n.id
-    WHERE NOT t.is_synonym AND t.sector_key=${sectorKey} AND t.extinct
+    WHERE NOT t.is_synonym AND t.sector_key=#{sectorKey} AND t.extinct
     GROUP BY n.rank
   </select>
   <select id="countSynonymsByRank" resultType="StringCount">
     SELECT n.rank AS key, count(*) AS count
     FROM name_usage_${datasetKey} t JOIN name_${datasetKey} n ON t.name_id=n.id
-    WHERE t.is_synonym AND t.sector_key=${sectorKey}
+    WHERE t.is_synonym AND t.sector_key=#{sectorKey}
     GROUP BY n.rank
   </select>
   <select id="countTypeMaterialByStatus" resultType="StringCount">
     SELECT status AS key, count(*) AS count
     FROM type_material_${datasetKey}
-    WHERE sector_key=${sectorKey}
+    WHERE sector_key=#{sectorKey}
     GROUP BY status
   </select>
   <select id="countUsagesByOrigin" resultType="StringCount">
     SELECT origin AS key, count(*) AS count
     FROM name_usage_${datasetKey}
-    WHERE sector_key=${sectorKey}
+    WHERE sector_key=#{sectorKey}
     GROUP BY origin
   </select>
   <select id="countUsagesByStatus" resultType="StringCount">
     SELECT status AS key, count(*) AS count
     FROM name_usage_${datasetKey}
-    WHERE sector_key=${sectorKey}
+    WHERE sector_key=#{sectorKey}
     GROUP BY status
   </select>
   <select id="countVernacularsByLanguage" resultType="StringCount">
     SELECT language AS key, count(*) AS count
     FROM vernacular_name_${datasetKey} x
     JOIN name_usage_${datasetKey} u ON u.id=x.taxon_id
-    WHERE u.sector_key=${sectorKey}
+    WHERE u.sector_key=#{sectorKey}
     GROUP BY language
   </select>
 </mapper>

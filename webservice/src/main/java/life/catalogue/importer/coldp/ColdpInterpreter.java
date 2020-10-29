@@ -1,12 +1,10 @@
 package life.catalogue.importer.coldp;
 
+import com.google.common.collect.Lists;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.Issue;
-import life.catalogue.api.vocab.Origin;
-import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.api.vocab.TypeStatus;
+import life.catalogue.api.vocab.*;
 import life.catalogue.importer.InterpreterBase;
 import life.catalogue.importer.MappingFlags;
 import life.catalogue.importer.neo.NeoDb;
@@ -20,6 +18,7 @@ import org.gbif.dwc.terms.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -239,6 +238,26 @@ public class ColdpInterpreter extends InterpreterBase {
         ColdpTerm.created,
         ColdpTerm.title,
         ColdpTerm.format);
+  }
+
+  public List<SpeciesEstimate> interpretEstimate(VerbatimRecord rec) {
+    if (rec.hasTerm(ColdpTerm.estimate)) {
+      Integer estimate = SafeParser.parse(IntegerParser.PARSER, rec.get(ColdpTerm.estimate)).orNull();
+      if (estimate != null) {
+        SpeciesEstimate est = new SpeciesEstimate();
+        est.setEstimate(estimate);
+        est.setVerbatimKey(rec.getId());
+        est.setType(SafeParser.parse(EstimateTypeParser.PARSER, rec.get(ColdpTerm.type))
+          .orElse(EstimateType.SPECIES_LIVING, Issue.ESTIMATE_TYPE_INVALID, rec));
+        setReference(est, rec);
+        est.setNote(rec.get(ColdpTerm.remarks));
+        return Lists.newArrayList(est);
+
+      } else {
+        rec.addIssue(Issue.ESTIMATE_INVALID);
+      }
+    }
+    return Collections.emptyList();
   }
 
   Optional<NeoName> interpretName(VerbatimRecord v) {

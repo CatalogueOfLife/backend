@@ -4,7 +4,8 @@ import life.catalogue.api.vocab.EstimateType;
 
 import java.util.Objects;
 
-public class SpeciesEstimate extends DatasetScopedEntity<Integer> {
+public class SpeciesEstimate extends DatasetScopedEntity<Integer> implements VerbatimEntity, Referenced {
+  private Integer verbatimKey;
   private SimpleNameLink target;
   private Integer estimate;
   private EstimateType type = EstimateType.SPECIES_LIVING;
@@ -16,11 +17,22 @@ public class SpeciesEstimate extends DatasetScopedEntity<Integer> {
 
   public SpeciesEstimate(SpeciesEstimate other) {
     super(other);
+    this.verbatimKey = other.verbatimKey;
     this.target = SimpleNameLink.of(other.target);
     this.estimate = other.estimate;
     this.type = other.type;
     this.referenceId = other.referenceId;
     this.note = other.note;
+  }
+
+  @Override
+  public Integer getVerbatimKey() {
+    return verbatimKey;
+  }
+
+  @Override
+  public void setVerbatimKey(Integer verbatimKey) {
+    this.verbatimKey = verbatimKey;
   }
 
   public SimpleNameLink getTarget() {
@@ -70,6 +82,7 @@ public class SpeciesEstimate extends DatasetScopedEntity<Integer> {
     if (!super.equals(o)) return false;
     SpeciesEstimate that = (SpeciesEstimate) o;
     return Objects.equals(target, that.target) &&
+        Objects.equals(verbatimKey, that.verbatimKey) &&
         Objects.equals(estimate, that.estimate) &&
         type == that.type &&
         Objects.equals(referenceId, that.referenceId) &&
@@ -78,7 +91,7 @@ public class SpeciesEstimate extends DatasetScopedEntity<Integer> {
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), target, estimate, type, referenceId, note);
+    return Objects.hash(super.hashCode(), verbatimKey, target, estimate, type, referenceId, note);
   }
   
   @Override

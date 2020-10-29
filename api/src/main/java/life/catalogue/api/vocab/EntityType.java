@@ -14,5 +14,6 @@ public enum EntityType {
   DISTRIBUTION,
   MEDIA,
   VERNACULAR,
-  REFERENCE
+  REFERENCE,
+  ESTIMATE
 }

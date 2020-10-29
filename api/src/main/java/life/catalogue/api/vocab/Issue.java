@@ -360,8 +360,15 @@ public enum Issue {
   UNPARSABLE_TREATMENT(TREATMENT, Level.ERROR,
       "The treatment document could not be read."),
   UNPARSABLE_TREAMENT_FORMAT(TREATMENT, Level.ERROR,
-    "The required treatment format could not be parsed.");
+    "The required treatment format could not be parsed."),
 
+  //
+  // ESTIMATE ISSUES
+  //
+  ESTIMATE_INVALID(ESTIMATE, Level.ERROR,
+      "The species estimate could not be parsed to a positive integer."),
+  ESTIMATE_TYPE_INVALID(ESTIMATE, Level.WARNING,
+      "The species estimate type could not be parsed.");
 
   /**
    * Level of importance.

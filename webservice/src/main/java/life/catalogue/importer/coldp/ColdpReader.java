@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -26,26 +27,32 @@ import java.util.Set;
 public class ColdpReader extends CsvReader {
   private static final Logger LOG = LoggerFactory.getLogger(ColdpReader.class);
   // Synonym and TypeMaterial also have IDs but do not require them as there is no foreign key to them
-  private static Set<ColdpTerm> ID_SCHEMAS = ImmutableSet.of(ColdpTerm.NameUsage, ColdpTerm.Reference, ColdpTerm.Name, ColdpTerm.Taxon);
-  private static Set<ColdpTerm> NAMEID_SCHEMAS = ImmutableSet.of(ColdpTerm.Synonym, ColdpTerm.Taxon, ColdpTerm.NameRelation, ColdpTerm.TypeMaterial);
-  private static Set<ColdpTerm> TAXID_SCHEMAS = ImmutableSet.of(
-    ColdpTerm.Treatment, ColdpTerm.Synonym, ColdpTerm.Distribution, ColdpTerm.Media, ColdpTerm.VernacularName, ColdpTerm.TaxonRelation
-  );
-  private static Set<ColdpTerm> REFID_SCHEMAS = ImmutableSet.of(
-    ColdpTerm.Name,
-    ColdpTerm.NameRelation,
-    ColdpTerm.NameUsage,
-    ColdpTerm.Distribution,
-    ColdpTerm.Synonym,
-    ColdpTerm.Taxon,
-    ColdpTerm.TaxonRelation,
-    ColdpTerm.Treatment,
-    ColdpTerm.TypeMaterial,
-    ColdpTerm.VernacularName
-  );
+  private static final Set<ColdpTerm> ID_SCHEMAS = ImmutableSet.of(ColdpTerm.NameUsage, ColdpTerm.Reference, ColdpTerm.Name, ColdpTerm.Taxon);
+  private static final Set<ColdpTerm> NAMEID_SCHEMAS;
+  private static final Set<ColdpTerm> TAXID_SCHEMAS;
+  private static final Set<ColdpTerm> REFID_SCHEMAS;
   static {
     // make sure we are aware of ColTerms
     TermFactory.instance().registerTermEnum(ColdpTerm.class);
+
+    // discover schemas with foreign key
+    Set<ColdpTerm> refID = new HashSet<>();
+    Set<ColdpTerm> taxID = new HashSet<>();
+    Set<ColdpTerm> nameID = new HashSet<>();
+    ColdpTerm.RESOURCES.forEach((s, terms) -> {
+      if (terms.contains(ColdpTerm.referenceID)) {
+        refID.add(s);
+      }
+      if (terms.contains(ColdpTerm.taxonID)) {
+        taxID.add(s);
+      }
+      if (terms.contains(ColdpTerm.nameID)) {
+        nameID.add(s);
+      }
+    });
+    REFID_SCHEMAS = ImmutableSet.copyOf(refID);
+    TAXID_SCHEMAS = ImmutableSet.copyOf(taxID);
+    NAMEID_SCHEMAS = ImmutableSet.copyOf(nameID);
   }
   
   private File bibtex;

@@ -65,6 +65,7 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(Sector.Mode.class);
     kryo.register(SimpleDecision.class);
     kryo.register(SimpleName.class);
+    kryo.register(SpeciesEstimate.class);
     kryo.register(Synonym.class);
     kryo.register(Taxon.class);
     kryo.register(TaxonRelation.class);
@@ -127,6 +128,7 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(DistributionStatus.class);
     kryo.register(EnumMap.class, new EnumMapSerializer());
     kryo.register(EnumSet.class, new EnumSetSerializer());
+    kryo.register(EstimateType.class);
     kryo.register(Frequency.class);
     kryo.register(Gazetteer.class);
     kryo.register(ImportState.class);

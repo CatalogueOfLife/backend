@@ -64,6 +64,7 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
 
   Integer countBareName(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countDistribution(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+  Integer countEstimate(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countMedia(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countName(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countReference(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
@@ -89,5 +90,4 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
   List<StringCount> countUsagesByOrigin(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   List<StringCount> countUsagesByStatus(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   List<StringCount> countVernacularsByLanguage(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
-  
 }

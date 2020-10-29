@@ -87,6 +87,9 @@ public class NormalizerColdpIT extends NormalizerITBase {
       assertEquals("1001c", t.getId());
 
       assertEquals(3, store.typeMaterial().size());
+
+      t = usageByID("10");
+      assertEquals(2, t.estimates.size());
     }
   }
 

@@ -30,6 +30,7 @@
     ${alias}applied_decision_count,
     ${alias}bare_name_count,
     ${alias}distribution_count,
+    ${alias}estimate_count,
     ${alias}media_count,
     ${alias}name_count,
     ${alias}reference_count,
@@ -82,6 +83,7 @@
     #{imp.appliedDecisionCount},
     #{imp.bareNameCount},
     #{imp.distributionCount},
+    #{imp.estimateCount},
     #{imp.mediaCount},
     #{imp.nameCount},
     #{imp.referenceCount},
@@ -200,6 +202,9 @@
   </select>
   <select id="countDistribution" resultType="integer">
     SELECT count(*) FROM distribution_${key}
+  </select>
+  <select id="countEstimate" resultType="integer">
+    SELECT count(*) FROM estimate WHERE dataset_key = #{key}
   </select>
   <select id="countMedia" resultType="integer">
     SELECT count(*) FROM media_${key}

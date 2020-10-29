@@ -48,6 +48,7 @@ public class ImportMetrics implements ImportAttempt {
   private Integer appliedDecisionCount;
   private Integer bareNameCount;
   private Integer distributionCount;
+  private Integer estimateCount;
   private Integer mediaCount;
   private Integer nameCount;
   private Integer referenceCount;
@@ -186,6 +187,14 @@ public class ImportMetrics implements ImportAttempt {
   
   public void setDistributionCount(Integer distributionCount) {
     this.distributionCount = distributionCount;
+  }
+
+  public Integer getEstimateCount() {
+    return estimateCount;
+  }
+
+  public void setEstimateCount(Integer estimateCount) {
+    this.estimateCount = estimateCount;
   }
 
   public Map<IgnoreReason, Integer> getIgnoredByReasonCount() {
@@ -392,6 +401,7 @@ public class ImportMetrics implements ImportAttempt {
       appliedDecisionCount = sum(appliedDecisionCount, m.appliedDecisionCount);
       bareNameCount = sum(bareNameCount, m.bareNameCount);
       distributionCount = sum(distributionCount, m.distributionCount);
+      estimateCount = sum(estimateCount, m.estimateCount);
       mediaCount = sum(mediaCount, m.mediaCount);
       nameCount = sum(nameCount, m.nameCount);
       referenceCount = sum(referenceCount, m.referenceCount);
@@ -461,6 +471,7 @@ public class ImportMetrics implements ImportAttempt {
       Objects.equals(appliedDecisionCount, that.appliedDecisionCount) &&
       Objects.equals(bareNameCount, that.bareNameCount) &&
       Objects.equals(distributionCount, that.distributionCount) &&
+      Objects.equals(estimateCount, that.estimateCount) &&
       Objects.equals(mediaCount, that.mediaCount) &&
       Objects.equals(nameCount, that.nameCount) &&
       Objects.equals(referenceCount, that.referenceCount) &&
@@ -493,7 +504,8 @@ public class ImportMetrics implements ImportAttempt {
   @Override
   public int hashCode() {
     return Objects.hash(datasetKey, attempt, job, state, started, finished, createdBy, error,
-      nameCount, taxonCount, synonymCount, bareNameCount, referenceCount, typeMaterialCount, distributionCount, mediaCount, treatmentCount, vernacularCount,
+      nameCount, taxonCount, synonymCount, bareNameCount, referenceCount,
+      typeMaterialCount, distributionCount, estimateCount, mediaCount, treatmentCount, vernacularCount,
       sectorCount, ignoredByReasonCount, appliedDecisionCount,
       namesByTypeCount, namesByStatusCount, namesByCodeCount, namesByRankCount, nameRelationsByTypeCount, typeMaterialByStatusCount, distributionsByGazetteerCount,
       vernacularsByLanguageCount, mediaByTypeCount, usagesByOriginCount, usagesByStatusCount,

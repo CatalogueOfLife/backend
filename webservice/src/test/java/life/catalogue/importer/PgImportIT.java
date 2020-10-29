@@ -617,19 +617,29 @@ public class PgImportIT {
       assertEquals(TreatmentFormat.HTML, t.getFormat());
       assertTrue(t.getDocument().startsWith("<div>"));
       assertEquals("Jarvis2007", t.getId());
+
+      EstimateMapper em = session.getMapper(EstimateMapper.class);
+      List<SpeciesEstimate> estimates = em.list(dataset.getKey(), new Page());
+      assertEquals(2, estimates.size());
+      estimates.forEach(est -> {
+        assertTrue(est.getEstimate() > 1000);
+        assertNotNull(est.getReferenceId());
+        assertEquals(dataset.getKey(), est.getDatasetKey());
+      });
     }
   
     DatasetImport di = metrics();
     assertEquals(2, (int) metrics().getTreatmentCount());
     assertEquals(9, (int) di.getDistributionCount());
     assertEquals(1, (int) di.getMediaCount());
-    assertEquals(9, (int) di.getReferenceCount());
+    assertEquals(11, (int) di.getReferenceCount());
     assertEquals(2, (int) di.getVernacularCount());
     assertEquals(23, (int) di.getTaxonCount());
     assertEquals(3, (int) di.getTypeMaterialCount());
     assertEquals(28, (int) di.getNameCount());
-    assertEquals(89, (int) di.getVerbatimCount());
-    
+    assertEquals(93, (int) di.getVerbatimCount());
+    assertEquals(2, (int) di.getEstimateCount());
+
     //assertFalse(metrics().getIssuesCount().containsKey(Issue.PARENT_ID_INVALID));
     assertEquals(5, (int) di.getUsagesByStatusCount().get(TaxonomicStatus.SYNONYM));
     // 1 provisional status taxon

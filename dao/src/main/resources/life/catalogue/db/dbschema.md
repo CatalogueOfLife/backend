@@ -10,6 +10,21 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2020-10-29 estimate imports
+```
+ALTER TABLE dataset_import ADD COLUMN estimate_count INTEGER;
+ALTER TABLE sector_import ADD COLUMN estimate_count INTEGER;
+ALTER TABLE estimate ADD COLUMN verbatim_key INTEGER;
+ALTER TABLE estimate ALTER COLUMN target_name DROP NOT NULL;
+``` 
+
+We also need estimate id sequences on all tables, not just for managed datasets.
+Run the following with the `execSql --sqlfile add-estimate-seq.sql` command using this template:
+
+```
+CREATE SEQUENCE IF NOT EXISTS estimate_{KEY}_id_seq START 1;
+```
+
 ### 2020-10-28 new type status 
 ```
 ALTER TYPE TYPESTATUS ADD VALUE 'ISOPARATYPE' AFTER 'ISONEOTYPE';

@@ -7,6 +7,7 @@
   <sql id="SelectVar">
     ${alias}id AS ${prefix}id,
     ${alias}dataset_key AS ${prefix}dataset_key,
+    ${alias}verbatim_key AS ${prefix}verbatim_key,
     ${alias}target_id AS ${prefix}target_id,
     ${alias}target_name AS ${prefix}target_name,
     ${alias}target_authorship AS ${prefix}target_authorship,
@@ -36,6 +37,7 @@
   </sql>
 
   <sql id="COLS_NO_DATASETKEY">
+    verbatim_key,
     target_id,
     target_name,
     target_authorship,
@@ -51,6 +53,7 @@
 
   <sql id="PROPS">
     #{datasetKey},
+    #{verbatimKey},
     #{target.id},
     #{target.name},
     #{target.authorship},
