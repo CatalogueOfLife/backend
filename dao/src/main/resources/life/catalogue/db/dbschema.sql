@@ -104,6 +104,7 @@ CREATE TYPE GAZETTEER AS ENUM (
   'LONGHURST',
   'TEOW',
   'IHO',
+  'MRGID',
   'TEXT'
 );
 

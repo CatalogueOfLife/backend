@@ -51,6 +51,11 @@ public enum Gazetteer {
     "Sea areas published by the International Hydrographic Organization as boundaries of the major oceans and seas of the world. " +
       "See Limits of Oceans & Seas, Special Publication No. 23 published by the International Hydrographic Organization in 1953."),
 
+  MRGID("Marine Regions Geographic Identifier",
+    "https://www.marineregions.org/gazetteer.php",
+    "Standard, relational list of geographic names developed by VLIZ covering mainly marine names such as seas, sandbanks, ridges, bays or even standard sampling stations used in marine research." +
+      "The geographic cover is global; however the gazetteer is focused on the Belgian Continental Shelf, the Scheldt Estuary and the Southern Bight of the North Sea."),
+
   TEXT("Free Text",
     null,
     "Free text not following any standard");

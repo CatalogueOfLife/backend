@@ -10,6 +10,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2020-10-29 new gazetteer 
+```
+ALTER TYPE GAZETTEER ADD VALUE 'MRGID' AFTER 'IHO';
+```
+
 ### 2020-10-29 estimate imports
 ```
 ALTER TABLE dataset_import ADD COLUMN estimate_count INTEGER;
