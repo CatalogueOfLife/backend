@@ -1,6 +1,8 @@
 # Dataset templates
 Projects offer various [template options](https://data.catalogue.life/catalogue/3/options) to build a title or citation for a release.
 The templates can include lower case variables in curly brackets, e.g `{editors} ({date})`.
+
+## Variables
 In general all dataset properties are allowed as variables:
 
  - key
@@ -40,7 +42,7 @@ that follows after the variable and a comma inside the brackets, e.g. `{created,
 in ChecklistBank as a 4 digit year.
  [All patterns from the java DateTimeFormatter](https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#patterns) are supported.
  
-Examples of classic COL templates:
+## Examples of classic COL templates
 
  - Release Title Template: `Catalogue of Life - {date,MMMM yyyy}`
  - Release Alias Template: `COL{date,yy.M}`
