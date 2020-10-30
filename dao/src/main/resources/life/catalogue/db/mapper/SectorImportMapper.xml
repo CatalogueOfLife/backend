@@ -130,7 +130,7 @@
   <select id="countEstimate" resultType="integer">
     SELECT count(*)
     FROM estimate x
-    JOIN name_usage_${datasetKey} t ON t.id=est.target_id
+    JOIN name_usage_${datasetKey} t ON t.id=x.target_id
     WHERE t.sector_key=#{sectorKey}
   </select>
   <select id="countMedia" resultType="integer">

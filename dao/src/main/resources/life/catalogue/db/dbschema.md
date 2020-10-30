@@ -13,6 +13,9 @@ and done it manually. So we can as well log changes here.
 ### 2020-10-29 new gazetteer 
 ```
 ALTER TYPE GAZETTEER ADD VALUE 'MRGID' AFTER 'IHO';
+ALTER TYPE ENTITYTYPE ADD VALUE 'ESTIMATE';
+ALTER TYPE ISSUE ADD VALUE 'ESTIMATE_INVALID';
+ALTER TYPE ISSUE ADD VALUE 'ESTIMATE_TYPE_INVALID';
 ```
 
 ### 2020-10-29 estimate imports

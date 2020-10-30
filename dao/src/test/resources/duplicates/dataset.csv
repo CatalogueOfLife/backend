@@ -1,3 +1,3 @@
 key,type,title,origin,created_by,modified_by
-3,TAXONOMIC,draft col,EXTERNAL,100,100
-1000,TAXONOMIC,Duplicate Dataset,EXTERNAL,100,100
+3,TAXONOMIC,draft col,MANAGED,100,100
+1000,TAXONOMIC,Duplicate Dataset,MANAGED,100,100
