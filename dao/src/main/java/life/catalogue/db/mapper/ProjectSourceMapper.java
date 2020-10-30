@@ -33,11 +33,19 @@ public interface ProjectSourceMapper {
   void createInternal(DatasetWithProjectKey d);
 
   /**
-   * Retrieves a projects source dataset from the archive by its key and the projects datasetKey.
+   * Retrieves a single released source dataset from the archive
    * @param key the source dataset key
-   * @param datasetKey the project key
+   * @param datasetKey the release dataset key. No project keys allowed!
    */
-  ArchivedDataset get(@Param("key") int key, @Param("datasetKey") int datasetKey);
+  ArchivedDataset getReleaseSource(@Param("key") int key, @Param("datasetKey") int datasetKey);
+
+  /**
+   * Retrieves a single source dataset for a project, reading either from the latest version
+   * or the dataset archive if the last successful sync attempt was older.
+   * @param key the source dataset key
+   * @param datasetKey the project dataset key. No release keys allowed!
+   */
+  ArchivedDataset getProjectSource(@Param("key") int key, @Param("datasetKey") int datasetKey);
 
   /**
    * @param datasetKey the release dataset key
@@ -45,7 +53,8 @@ public interface ProjectSourceMapper {
   List<ArchivedDataset> listReleaseSources(@Param("datasetKey") int datasetKey);
 
   /**
-   * @param datasetKey the project dataset key
+   * Lists all project sources retrieving metadata either from the latest version
+   * or an archived copy depending on the importat attempt of the last sync.
    */
   List<ArchivedDataset> listProjectSources(@Param("datasetKey") int datasetKey);
 

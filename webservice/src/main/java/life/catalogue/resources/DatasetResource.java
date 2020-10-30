@@ -171,8 +171,11 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
 
   @GET
   @Path("/{key}/source/{id}")
-  public ArchivedDataset projectSource(@PathParam("key") int datasetKey, @PathParam("id") int id, @Context SqlSession session) {
-    return sourceDao.get(datasetKey, id);
+  public ArchivedDataset projectSource(@PathParam("key") int datasetKey,
+                                       @PathParam("id") int id,
+                                       @QueryParam("original") boolean original,
+                                       @Context SqlSession session) {
+    return sourceDao.get(datasetKey, id, original);
   }
 
   @GET

@@ -57,7 +57,31 @@
     WHERE d.dataset_key = #{datasetKey}
   </select>
 
-  <select id="get" resultMap="life.catalogue.db.mapper.DatasetArchiveMapper.archiveResultMap">
+  <select id="getProjectSource" resultMap="projectSourceResultMap">
+    WITH src AS (
+      SELECT max(s.dataset_import_attempt) AS attempt
+      FROM sector s
+      WHERE s.dataset_key=#{datasetKey} AND s.subject_dataset_key=#{key}
+    )
+    <!-- archived dataset metadata -->
+    SELECT <include refid="SELECT"/>
+    FROM src
+      JOIN dataset d2 ON d2.key = #{key}
+      LEFT JOIN dataset_archive d ON d.key = #{key} AND d.import_attempt = src.attempt
+      LEFT JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.import_attempt
+    WHERE src.attempt != d2.import_attempt
+
+    UNION
+
+    <!-- latest dataset metadata -->
+    SELECT <include refid="SELECT"/>
+    FROM src
+      JOIN dataset d ON d.key = #{key}
+      LEFT JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.import_attempt
+    WHERE src.attempt = d.import_attempt OR src.attempt IS NULL
+  </select>
+
+  <select id="getReleaseSource" resultMap="life.catalogue.db.mapper.DatasetArchiveMapper.archiveResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE d.key = #{key} AND d.dataset_key = #{datasetKey}

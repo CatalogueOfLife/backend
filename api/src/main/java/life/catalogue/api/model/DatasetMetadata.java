@@ -78,4 +78,29 @@ public interface DatasetMetadata {
   Integer getCompleteness();
 
   void setCompleteness(Integer completeness);
+
+  /**
+   * Creates and returns a shallow copy of the object
+   */
+  static DatasetMetadata copy(DatasetMetadata obj) {
+    DatasetMetadata d = new ArchivedDataset();
+    d.setKey(obj.getKey());
+    d.setTitle(obj.getTitle());
+    d.setAlias(obj.getAlias());
+    d.setDescription(obj.getDescription());
+    d.setAuthors(obj.getAuthors());
+    d.setEditors(obj.getEditors());
+    d.setOrganisations(obj.getOrganisations());
+    d.setContact(obj.getContact());
+    d.setLicense(obj.getLicense());
+    d.setVersion(obj.getVersion());
+    d.setReleased(obj.getReleased());
+    d.setGeographicScope(obj.getGeographicScope());
+    d.setCitation(obj.getCitation());
+    d.setWebsite(obj.getWebsite());
+    d.setGroup(obj.getGroup());
+    d.setConfidence(obj.getConfidence());
+    d.setCompleteness(obj.getCompleteness());
+    return d;
+  }
 }

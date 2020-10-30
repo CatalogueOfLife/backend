@@ -24,18 +24,26 @@ public class DatasetProjectSourceDao {
     this.factory = factory;
   }
 
-  public ArchivedDataset get(int projectKey, int sourceDatasetKey){
+  /**
+   * @param dontPatch if true return the original project source metadata without the patch. This works only for managed datasets, not releases
+   */
+  public ArchivedDataset get(int projectKey, int sourceDatasetKey, boolean dontPatch){
     DatasetOrigin origin = getProjectOrigin(projectKey);
     try (SqlSession session = factory.openSession()) {
       if (DatasetOrigin.MANAGED == origin) {
-        // get latest version with patch applied
-        DatasetMapper dm = session.getMapper(DatasetMapper.class);
-        final Dataset project = dm.get(projectKey);
-        final DatasetSettings settings = dm.getSettings(projectKey);
-        return patch(dm.get(sourceDatasetKey), project, session.getMapper(DatasetPatchMapper.class), settings);
+        ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
+        ArchivedDataset d = psm.getProjectSource(sourceDatasetKey, projectKey);
+        if (!dontPatch) {
+          // get latest version with patch applied
+          DatasetMapper dm = session.getMapper(DatasetMapper.class);
+          final DatasetSettings settings = dm.getSettings(projectKey);
+          final Dataset project = dm.get(projectKey);
+          patch(d, project, session.getMapper(DatasetPatchMapper.class), settings);
+        }
+        return d;
 
       } else if (DatasetOrigin.RELEASED == origin) {
-        return session.getMapper(ProjectSourceMapper.class).get(sourceDatasetKey, projectKey);
+        return session.getMapper(ProjectSourceMapper.class).getReleaseSource(sourceDatasetKey, projectKey);
 
       } else {
         throw new IllegalArgumentException("Dataset "+projectKey+" is not a project");
@@ -82,6 +90,8 @@ public class DatasetProjectSourceDao {
 
   /**
    * Applies the projects dataset patch if existing to the dataset d
+   * @param d dataset to be patched
+   * @return the same dataset instance d as given
    */
   private ArchivedDataset patch(ArchivedDataset d, Dataset project, DatasetPatchMapper pm, DatasetSettings settings){
     Dataset patch = pm.get(project.getKey(), d.getKey());

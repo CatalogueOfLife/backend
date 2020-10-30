@@ -1,6 +1,8 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.ArchivedDataset;
+import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetMetadata;
 import life.catalogue.api.vocab.Datasets;
 import org.junit.Test;
 
@@ -39,12 +41,26 @@ public class ProjectSourceMapperTest extends MapperTestBase<ProjectSourceMapper>
   }
 
   @Test
-  public void roundtrip() throws Exception {
+  public void roundtripProject() throws Exception {
+    ArchivedDataset d1 = new Dataset(createProjectSource());
+    Dataset d = new Dataset(d1);
+    mapper(DatasetMapper.class).create(d);
+    d1.setKey(d.getKey());
+
+    ArchivedDataset d2 = mapper().getProjectSource(d1.getKey(), Datasets.COL);
+    DatasetMetadata m1 = DatasetMetadata.copy(d1);
+    DatasetMetadata m2 = DatasetMetadata.copy(d2);
+    assertEquals(m2, m1);
+    commit();
+  }
+
+  @Test
+  public void roundtripRelease() throws Exception {
     ArchivedDataset d1 = createProjectSource();
     d1.setKey(100);
     mapper().create(Datasets.COL, d1);
 
-    ArchivedDataset d2 = mapper().get(d1.getKey(), Datasets.COL);
+    ArchivedDataset d2 = mapper().getReleaseSource(d1.getKey(), Datasets.COL);
     assertEquals(d2, d1);
     commit();
   }
