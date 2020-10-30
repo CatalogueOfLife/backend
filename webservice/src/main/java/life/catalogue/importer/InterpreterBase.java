@@ -175,7 +175,7 @@ public class InterpreterBase {
       if (distributionStandard != null) {
         gazetteer = distributionStandard;
       } else {
-        gazettPgSetupRuleTest.pgEnumseer = parse(GazetteerParser.PARSER, rec.get(tGazetteer))
+        gazetteer = parse(GazetteerParser.PARSER, rec.get(tGazetteer))
             .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, rec);
       }
       return createDistributions(gazetteer, rec.get(tArea), rec.get(tStatus), rec, addReference);
