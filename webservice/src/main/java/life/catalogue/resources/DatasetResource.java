@@ -100,12 +100,8 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @GET
   @Path("{key}/logo")
   @Produces("image/png")
-  public BufferedImage logo(@PathParam("key") int key, @QueryParam("releaseKey") Integer releaseKey, @QueryParam("size") @DefaultValue("small") ImgConfig.Scale scale) {
-    if (releaseKey != null) {
-      return imgService.archiveDatasetLogo(releaseKey, key, scale);
-    } else {
-      return imgService.datasetLogo(key, scale);
-    }
+  public BufferedImage logo(@PathParam("key") int key, @QueryParam("size") @DefaultValue("small") ImgConfig.Scale scale) {
+    return imgService.datasetLogo(key, scale);
   }
   
   @POST
@@ -176,6 +172,13 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
                                        @QueryParam("original") boolean original,
                                        @Context SqlSession session) {
     return sourceDao.get(datasetKey, id, original);
+  }
+
+  @GET
+  @Path("/{key}/source/{id}/logo")
+  @Produces("image/png")
+  public BufferedImage sourceLogo(@PathParam("key") int datasetKey, @PathParam("id") int id, @QueryParam("size") @DefaultValue("small") ImgConfig.Scale scale) {
+    return imgService.archiveDatasetLogo(datasetKey, id, scale);
   }
 
   @GET
