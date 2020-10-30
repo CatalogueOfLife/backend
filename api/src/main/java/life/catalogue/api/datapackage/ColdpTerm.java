@@ -144,6 +144,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
 
   Distribution(true),
   //taxonID,
+  areaID,
   area,
   gazetteer,
   //status,
@@ -355,6 +356,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
           format)
       ).put(Distribution, ImmutableList.of(
           taxonID,
+          areaID,
           area,
           gazetteer,
           status,
