@@ -572,7 +572,6 @@ public class PgImportIT {
   }
   
   @Test
-  @Ignore("For some reason the latest reference.tsv is not being used in jenkins")
   public void testColdpSpecs() throws Exception {
     normalizeAndImport(COLDP, 0);
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
