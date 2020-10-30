@@ -32,7 +32,7 @@ public class DatasetProjectSourceDao {
         DatasetMapper dm = session.getMapper(DatasetMapper.class);
         final Dataset project = dm.get(projectKey);
         final DatasetSettings settings = dm.getSettings(projectKey);
-        return patch(project, dm.get(sourceDatasetKey), session.getMapper(DatasetPatchMapper.class), settings);
+        return patch(dm.get(sourceDatasetKey), project, session.getMapper(DatasetPatchMapper.class), settings);
 
       } else if (DatasetOrigin.RELEASED == origin) {
         return session.getMapper(ProjectSourceMapper.class).get(sourceDatasetKey, projectKey);
