@@ -42,6 +42,7 @@ public abstract class TreeNode implements DSID<String> {
   private int childCount;
   private List<SpeciesEstimate> estimates;
   private Integer sectorKey;
+  private Integer sectorDatasetKey;
   private Boolean sectorRoot;
   private EditorialDecision decision;
   private Int2IntOpenHashMap datasetSectors;
@@ -179,6 +180,14 @@ public abstract class TreeNode implements DSID<String> {
     this.sectorKey = sectorKey;
   }
 
+  public Integer getSectorDatasetKey() {
+    return sectorDatasetKey;
+  }
+
+  public void setSectorDatasetKey(Integer sectorDatasetKey) {
+    this.sectorDatasetKey = sectorDatasetKey;
+  }
+
   public Boolean getSectorRoot() {
     return sectorRoot;
   }
@@ -208,6 +217,7 @@ public abstract class TreeNode implements DSID<String> {
     return this instanceof PlaceholderNode;
   }
 
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -221,6 +231,7 @@ public abstract class TreeNode implements DSID<String> {
       status == treeNode.status &&
       Objects.equals(estimates, treeNode.estimates) &&
       Objects.equals(sectorKey, treeNode.sectorKey) &&
+      Objects.equals(sectorDatasetKey, treeNode.sectorDatasetKey) &&
       Objects.equals(sectorRoot, treeNode.sectorRoot) &&
       Objects.equals(decision, treeNode.decision) &&
       Objects.equals(datasetSectors, treeNode.datasetSectors);
@@ -228,7 +239,7 @@ public abstract class TreeNode implements DSID<String> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, id, parentId, rank, status, childCount, estimates, sectorKey, sectorRoot, decision, datasetSectors);
+    return Objects.hash(datasetKey, id, parentId, rank, status, childCount, estimates, sectorKey, sectorDatasetKey, sectorRoot, decision, datasetSectors);
   }
 
   @Override

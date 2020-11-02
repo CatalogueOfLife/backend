@@ -176,7 +176,8 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     
     nodes = mapper().children(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.draftID("t3"), null, true, new Page());
     assertEquals(2, nodes.size());
-    
+    valid(nodes);
+
     nodes = mapper().classification(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.draftID("t4"));
     assertEquals(4, nodes.size());
     valid(nodes);
@@ -286,6 +287,16 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     valid(nodes);
     for (TreeNode n : nodes) {
       assertNull(n.getSectorKey());
+      assertNull(n.getSectorDatasetKey());
+    }
+    return nodes;
+  }
+
+  private static List<TreeNode> sectors(List<TreeNode> nodes) {
+    valid(nodes);
+    for (TreeNode n : nodes) {
+      assertNotNull(n.getSectorKey());
+      assertNotNull(n.getSectorDatasetKey());
     }
     return nodes;
   }
