@@ -13,13 +13,21 @@ import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * When creating a new name if the homotypic group key is not yet set the newly created name key will be
  * used to point to the name itself
  */
 public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable<Name>, DatasetPageable<Name>, SectorProcessable<Name>, CopyDataset {
-  
+
+  /**
+   * Selects a number of distinct name from a single dataset by their keys
+   *
+   * @param ids must contain at least one value, not allowed to be empty !!!
+   */
+  List<Name> listByIds(@Param("datasetKey") int datasetKey, @Param("ids") Set<String> ids);
+
   Name getByUsage(@Param("datasetKey") int datasetKey, @Param("usageId") String usageId);
 
   /**
@@ -108,4 +116,5 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
   List<Name> listOrphans(@Param("datasetKey") int datasetKey,
                          @Param("before") @Nullable LocalDateTime before,
                          @Param("page") Page page);
+
 }

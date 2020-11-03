@@ -211,6 +211,14 @@
     WHERE u.id = #{usageId}
   </select>
 
+  <select id="listByIds" resultMap="nameResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE id IN
+    <foreach item="k" index="idx" collection="ids" open="(" separator="," close=")">#{k}</foreach>
+  </select>
+
   <select id="ambiguousRankNameIds" resultType="string">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT id

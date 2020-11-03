@@ -100,10 +100,8 @@
 
   <select id="list" resultMap="taxonResultMap">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE NOT u.is_synonym
     ORDER BY id
     <include refid="life.catalogue.db.Common.limit"/>
@@ -111,10 +109,8 @@
 
   <select id="listRoot" resultMap="taxonResultMap">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE u.parent_id IS NULL AND NOT u.is_synonym
     ORDER BY id
     <include refid="life.catalogue.db.Common.limit"/>
@@ -128,12 +124,18 @@
     ORDER BY id
   </select>
 
+  <select id="listByIds" resultMap="taxonResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE id IN
+    <foreach item="k" index="idx" collection="ids" open="(" separator="," close=")">#{k}</foreach>
+  </select>
+
   <select id="children" resultMap="taxonResultMap">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE u.parent_id = #{key.id} AND NOT u.is_synonym
     <if test="rank != null">
       AND n.rank > #{rank}::rank
@@ -145,10 +147,8 @@
   <select id="classification" resultMap="taxonResultMap">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
     WITH RECURSIVE x AS(
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE u.id = #{key.id}
     UNION
     SELECT

@@ -10,6 +10,7 @@ import org.gbif.nameparser.api.Rank;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Mapper dealing only with accepted name usages, i.e. Taxon instances.
@@ -17,7 +18,14 @@ import java.util.List;
  * Note that {@link DatasetProcessable#deleteByDataset(int)} needs to also delete all synonyms to not break fk constraints.
  */
 public interface TaxonMapper extends CRUD<DSID<String>, Taxon>, DatasetProcessable<Taxon>, DatasetPageable<Taxon> {
-  
+
+  /**
+   * Selects a number of distinct taxa from a single dataset by their keys
+   *
+   * @param ids must contain at least one value, not allowed to be empty !!!
+   */
+  List<Taxon> listByIds(@Param("datasetKey") int datasetKey, @Param("ids") Set<String> ids);
+
   int countRoot(@Param("datasetKey") int datasetKey);
   
   List<Taxon> listRoot(@Param("datasetKey") int datasetKey, @Param("page") Page page);

@@ -137,7 +137,8 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     }
     TaxonInfo info = new TaxonInfo();
     info.setTaxon(taxon);
-    fillTaxonInfo(session, info, null, true, true, true, true, true, false);
+    fillTaxonInfo(session, info, null, true, true, true, true, true,
+      false, true, true, true);
     return info;
   }
 
@@ -148,11 +149,17 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
                                    boolean loadVernacular,
                                    boolean loadMedia,
                                    boolean loadTypeMaterial,
-                                   boolean loadTreatments) {
+                                   boolean loadTreatments,
+                                   boolean loadNameRelations,
+                                   boolean loadConceptRelations,
+                                   boolean loadSpeciesInteractions) {
     Taxon taxon = info.getTaxon();
 
-    // all reference keys so we can select their details at the end
+    // all reference, name and taxon keys so we can select their details at the end
     Set<String> refIds = new HashSet<>(taxon.getReferenceIds());
+    Set<String> nameIds = new HashSet<>();
+    Set<String> taxonIds = new HashSet<>();
+
     refIds.add(taxon.getName().getPublishedInId());
 
     // synonyms
@@ -187,6 +194,36 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       info.getVernacularNames().forEach(d -> refIds.add(d.getReferenceId()));
     }
 
+    if (loadNameRelations) {
+      NameRelationMapper mapper = session.getMapper(NameRelationMapper.class);
+      info.setNameRelations(mapper.list(taxon.getDatasetKey(), taxon.getName().getId()));
+      info.getNameRelations().forEach(r -> {
+        refIds.add(r.getReferenceId());
+        nameIds.add(r.getNameId());
+        nameIds.add(r.getRelatedNameId());
+      });
+    }
+
+    if (loadConceptRelations) {
+      TaxonConceptRelationMapper mapper = session.getMapper(TaxonConceptRelationMapper.class);
+      info.setConceptRelations(mapper.list(taxon.getDatasetKey(), taxon.getName().getId()));
+      info.getConceptRelations().forEach(r -> {
+        refIds.add(r.getReferenceId());
+        taxonIds.add(r.getTaxonId());
+        taxonIds.add(r.getRelatedTaxonId());
+      });
+    }
+
+    if (loadSpeciesInteractions) {
+      SpeciesInteractionMapper mapper = session.getMapper(SpeciesInteractionMapper.class);
+      info.setSpeciesInteractions(mapper.list(taxon.getDatasetKey(), taxon.getName().getId()));
+      info.getSpeciesInteractions().forEach(r -> {
+        refIds.add(r.getReferenceId());
+        taxonIds.add(r.getTaxonId());
+        taxonIds.add(r.getRelatedTaxonId());
+      });
+    }
+
     // add all type material
     if (loadTypeMaterial) {
       TypeMaterialMapper tmm = session.getMapper(TypeMaterialMapper.class);
@@ -203,7 +240,9 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
 
     // make sure we did not add null by accident
     refIds.remove(null);
-    
+    nameIds.remove(null);
+    taxonIds.remove(null);
+
     if (!refIds.isEmpty()) {
       if (refCache == null) {
         ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
@@ -216,6 +255,18 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
           throw new RuntimeException(e);
         }
       }
+    }
+
+    if (!nameIds.isEmpty()) {
+      NameMapper mapper = session.getMapper(NameMapper.class);
+      List<Name> names = mapper.listByIds(taxon.getDatasetKey(), nameIds);
+      info.addNames(names);
+    }
+
+    if (!taxonIds.isEmpty()) {
+      TaxonMapper mapper = session.getMapper(TaxonMapper.class);
+      List<Taxon> taxa = mapper.listByIds(taxon.getDatasetKey(), taxonIds);
+      info.addTaxa(taxa);
     }
   }
   

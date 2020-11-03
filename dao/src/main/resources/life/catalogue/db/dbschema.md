@@ -10,6 +10,137 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2020-11-03 concept rels and species interactions
+```
+DROP TYPE AREASTANDARD;
+ALTER TYPE ENTITYTYPE RENAME VALUE 'TAXON_RELATION' TO 'TAXON_CONCEPT_RELATION';
+ALTER TYPE ENTITYTYPE ADD VALUE 'SPECIES_INTERACTION';
+
+CREATE TYPE SPECIESINTERACTIONTYPE AS ENUM (
+  'RELATED_TO',
+  'CO_OCCURS_WITH',
+  'INTERACTS_WITH',
+  'ADJACENT_TO',
+  'SYMBIONT_OF',
+  'EATS',
+  'EATEN_BY',
+  'KILLS',
+  'KILLED_BY',
+  'PREYS_UPON',
+  'PREYED_UPON_BY',
+  'HOST_OF',
+  'HAS_HOST',
+  'PARASITE_OF',
+  'HAS_PARASITE',
+  'PATHOGEN_OF',
+  'HAS_PATHOGEN',
+  'VECTOR_OF',
+  'HAS_VECTOR',
+  'ENDOPARASITE_OF',
+  'HAS_ENDOPARASITE',
+  'ECTOPARASITE_OF',
+  'HAS_ECTOPARASITE',
+  'HYPERPARASITE_OF',
+  'HAS_HYPERPARASITE',
+  'KLEPTOPARASITE_OF',
+  'HAS_KLEPTOPARASITE',
+  'PARASITOID_OF',
+  'HAS_PARASITOID',
+  'HYPERPARASITOID_OF',
+  'HAS_HYPERPARASITOID',
+  'VISITS',
+  'VISITED_BY',
+  'VISITS_FLOWERS_OF',
+  'FLOWERS_VISITED_BY',
+  'POLLINATES',
+  'POLLINATED_BY',
+  'LAYS_EGGS_ON',
+  'HAS_EGGS_LAYED_ON_BY',
+  'EPIPHYTE_OF',
+  'HAS_EPIPHYTE',
+  'COMMENSALIST_OF',
+  'MUTUALIST_OF'
+);
+
+CREATE TYPE TAXONCONCEPTRELTYPE AS ENUM (
+  'EQUALS',
+  'INCLUDES',
+  'INCLUDED_IN',
+  'OVERLAPS',
+  'EXCLUDES'
+);
+
+ALTER TABLE dataset_import ADD COLUMN species_interactions_by_type_count HSTORE;
+ALTER TABLE dataset_import ADD COLUMN taxon_concept_relations_by_type_count HSTORE;
+ALTER TABLE dataset_import DROP COLUMN taxon_relations_by_type_count;
+
+ALTER TABLE sector_import ADD COLUMN species_interactions_by_type_count HSTORE;
+ALTER TABLE sector_import ADD COLUMN taxon_concept_relations_by_type_count HSTORE;
+ALTER TABLE sector_import DROP COLUMN taxon_relations_by_type_count;
+
+CREATE INDEX ON estimate (dataset_key, target_id);
+CREATE INDEX ON estimate (dataset_key, reference_id);
+
+ALTER TABLE name_rel RENAME COLUMN published_in_id TO reference_id;
+CREATE INDEX ON name_rel (reference_id);
+
+DROP TABLE taxon_rel;
+DROP TYPE TAXRELTYPE;
+
+CREATE TABLE taxon_concept_rel (
+  id INTEGER NOT NULL,
+  dataset_key INTEGER NOT NULL,
+  sector_key INTEGER,
+  verbatim_key INTEGER,
+  type TAXONCONCEPTRELTYPE NOT NULL,
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  taxon_id TEXT NOT NULL,
+  related_taxon_id TEXT NOT NULL,
+  reference_id TEXT,
+  remarks TEXT
+) PARTITION BY LIST (dataset_key);
+
+CREATE INDEX ON taxon_concept_rel (taxon_id, type);
+CREATE INDEX ON taxon_concept_rel (sector_key);
+CREATE INDEX ON taxon_concept_rel (verbatim_key);
+CREATE INDEX ON taxon_concept_rel (reference_id);
+
+CREATE TABLE species_interaction (
+  id INTEGER NOT NULL,
+  dataset_key INTEGER NOT NULL,
+  sector_key INTEGER,
+  verbatim_key INTEGER,
+  type SPECIESINTERACTIONTYPE NOT NULL,
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  taxon_id TEXT NOT NULL,
+  related_taxon_id TEXT,
+  related_taxon_scientific_name TEXT,
+  reference_id TEXT,
+  remarks TEXT
+) PARTITION BY LIST (dataset_key);
+
+CREATE INDEX ON species_interaction (taxon_id, type);
+CREATE INDEX ON species_interaction (sector_key);
+CREATE INDEX ON species_interaction (verbatim_key);
+CREATE INDEX ON species_interaction (reference_id);
+
+CREATE INDEX ON vernacular_name (reference_id);
+CREATE INDEX ON distribution (reference_id);
+CREATE INDEX ON media (reference_id);
+```
+
+and for all data partitions
+```
+CREATE TABLE taxon_concept_rel_{KEY} (LIKE taxon_concept_rel INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+CREATE TABLE species_interaction_{KEY} (LIKE species_interaction INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+``` 
+
 ### 2020-10-29 new gazetteer 
 ```
 ALTER TYPE GAZETTEER ADD VALUE 'MRGID' AFTER 'IHO';
