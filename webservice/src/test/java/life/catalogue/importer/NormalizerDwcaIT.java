@@ -267,7 +267,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       assertEquals(t10.usage.getName().getHomotypicNameId(), t11.usage.getName().getHomotypicNameId());
       
       NeoName nn = nameByID("10");
-      List<NameRelation> rels = store.relations(nn.node);
+      List<NameRelation> rels = store.nameRelations(nn.node);
       assertEquals(1, rels.size());
       assertEquals(NomRelType.BASED_ON, rels.get(0).getType());
     }

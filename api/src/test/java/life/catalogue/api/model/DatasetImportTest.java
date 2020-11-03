@@ -45,9 +45,9 @@ public class DatasetImportTest extends SerdeTestBase<DatasetImport> {
     d.getVerbatimByTermCount().put(ColdpTerm.Name, 641723);
     d.getNameRelationsByTypeCount().put(NomRelType.BASIONYM, 12);
     d.getNameRelationsByTypeCount().put(NomRelType.LATER_HOMONYM, 3);
-    d.getTaxonRelationsByTypeCount().put(TaxRelType.EQUALS, 121);
-    d.getTaxonRelationsByTypeCount().put(TaxRelType.INCLUDES, 7);
-    d.getTaxonRelationsByTypeCount().put(TaxRelType.POLLINATES, 34);
+    d.getTaxonConceptRelationsByTypeCount().put(TaxonConceptRelType.EQUALS, 121);
+    d.getTaxonConceptRelationsByTypeCount().put(TaxonConceptRelType.INCLUDES, 7);
+    d.getSpeciesInteractionsByTypeCount().put(SpeciesInteractionType.POLLINATES, 34);
     return d;
   }
   

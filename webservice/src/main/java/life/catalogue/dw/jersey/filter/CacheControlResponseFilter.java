@@ -10,6 +10,7 @@ import javax.ws.rs.HttpMethod;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
+import javax.ws.rs.core.HttpHeaders;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;
@@ -27,7 +28,7 @@ public class CacheControlResponseFilter implements ContainerResponseFilter {
   // age in seconds
   private static final String CACHE24 = "public, max-age=" + MAX_AGE + ", s-maxage=" + MAX_AGE;
   private static final Pattern DATASET_PATH  = Pattern.compile("dataset/(\\d+)");
-  private static final Set<String> METHODS  = Set.of(HttpMethod.GET, HttpMethod.OPTIONS, HttpMethod.HEAD);
+  private static final Set<String> METHODS  = Set.of(HttpMethod.GET, HttpMethod.HEAD);
   private final IntSet releases = new IntOpenHashSet();
 
   @Override
@@ -58,11 +59,11 @@ public class CacheControlResponseFilter implements ContainerResponseFilter {
   }
 
   private void allowCaching(ContainerResponseContext resp){
-    resp.getHeaders().putSingle("Cache-Control", CACHE24);
+    resp.getHeaders().putSingle(HttpHeaders.CACHE_CONTROL, CACHE24);
   }
 
   private void preventCaching(ContainerResponseContext resp){
-    resp.getHeaders().putSingle("Cache-Control", "must-revalidate,no-cache,no-store");
+    resp.getHeaders().putSingle(HttpHeaders.CACHE_CONTROL, "must-revalidate,no-cache,no-store");
   }
 
   public void addRelease(int datasetKey){

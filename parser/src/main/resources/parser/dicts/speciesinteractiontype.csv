@@ -1,0 +1,15 @@
+associated,ASSOCIATED_WITH
+association,ASSOCIATED_WITH
+eat,EATS
+feeds,EATS
+feeds_on,EATS
+host,HOST_OF
+interact,INTERACTS_WITH
+interacts,INTERACTS_WITH
+parasite,PARASITE_OF
+pathogen,PATHOGEN_OF
+pollinate,POLLINATES
+prey,EATS
+preys,EATS
+preys_on,EATS
+symbiont,SYMBIONT_OF

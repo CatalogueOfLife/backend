@@ -49,9 +49,10 @@
     ${alias}names_by_rank_count,
     ${alias}names_by_status_count,
     ${alias}names_by_type_count,
+    ${alias}species_interactions_by_type_count,
     ${alias}synonyms_by_rank_count,
     ${alias}taxa_by_rank_count,
-    ${alias}taxon_relations_by_type_count,
+    ${alias}taxon_concept_relations_by_type_count,
     ${alias}type_material_by_status_count,
     ${alias}usages_by_origin_count,
     ${alias}usages_by_status_count,
@@ -102,9 +103,10 @@
     #{imp.namesByRankCount, typeHandler=life.catalogue.db.type2.HstoreRankCountTypeHandler}::hstore,
     #{imp.namesByStatusCount, typeHandler=life.catalogue.db.type2.HstoreNomStatusCountTypeHandler}::hstore,
     #{imp.namesByTypeCount, typeHandler=life.catalogue.db.type2.HstoreNameTypeCountTypeHandler}::hstore,
+    #{imp.speciesInteractionsByTypeCount, typeHandler=life.catalogue.db.type2.HstoreSpeciesInteractionCountTypeHandler}::hstore,
     #{imp.synonymsByRankCount, typeHandler=life.catalogue.db.type2.HstoreRankCountTypeHandler}::hstore,
     #{imp.taxaByRankCount, typeHandler=life.catalogue.db.type2.HstoreRankCountTypeHandler}::hstore,
-    #{imp.taxonRelationsByTypeCount, typeHandler=life.catalogue.db.type2.HstoreRankCountTypeHandler}::hstore,
+    #{imp.taxonConceptRelationsByTypeCount, typeHandler=life.catalogue.db.type2.HstoreTaxonConceptRelCountTypeHandler}::hstore,
     #{imp.typeMaterialByStatusCount, typeHandler=life.catalogue.db.type2.HstoreRankCountTypeHandler}::hstore,
     #{imp.usagesByOriginCount, typeHandler=life.catalogue.db.type2.HstoreOriginCountTypeHandler}::hstore,
     #{imp.usagesByStatusCount, typeHandler=life.catalogue.db.type2.HstoreTaxStatusCountTypeHandler}::hstore,
@@ -160,9 +162,10 @@
     <result property="namesByRankCount" column="names_by_rank_count" typeHandler="life.catalogue.db.type2.HstoreRankCountTypeHandler"/>
     <result property="namesByStatusCount" column="names_by_status_count" typeHandler="life.catalogue.db.type2.HstoreNomStatusCountTypeHandler"/>
     <result property="namesByTypeCount" column="names_by_type_count" typeHandler="life.catalogue.db.type2.HstoreNameTypeCountTypeHandler"/>
+    <result property="speciesInteractionsByTypeCount" column="species_interactions_by_type_count" typeHandler="life.catalogue.db.type2.HstoreSpeciesInteractionCountTypeHandler"/>
     <result property="synonymsByRankCount" column="synonyms_by_rank_count" typeHandler="life.catalogue.db.type2.HstoreRankCountTypeHandler"/>
     <result property="taxaByRankCount" column="taxa_by_rank_count" typeHandler="life.catalogue.db.type2.HstoreRankCountTypeHandler"/>
-    <result property="taxonRelationsByTypeCount" column="taxon_relations_by_type_count" typeHandler="life.catalogue.db.type2.HstoreTaxonRelCountTypeHandler"/>
+    <result property="taxonConceptRelationsByTypeCount" column="taxon_concept_relations_by_type_count" typeHandler="life.catalogue.db.type2.HstoreTaxonConceptRelCountTypeHandler"/>
     <result property="typeMaterialByStatusCount" column="type_material_by_status_count" typeHandler="life.catalogue.db.type2.HstoreTypeStatusCountTypeHandler"/>
     <result property="usagesByOriginCount" column="usages_by_origin_count" typeHandler="life.catalogue.db.type2.HstoreOriginCountTypeHandler"/>
     <result property="usagesByStatusCount" column="usages_by_status_count" typeHandler="life.catalogue.db.type2.HstoreTaxStatusCountTypeHandler"/>
@@ -298,9 +301,14 @@
     WHERE t.is_synonym
     GROUP BY n.rank
   </select>
-  <select id="countTaxonRelationsByType" resultType="StringCount">
+  <select id="countSpeciesInteractionsByType" resultType="StringCount">
     SELECT type AS key, count(*) AS count
-    FROM taxon_rel_${key}
+    FROM species_interaction_${key}
+    GROUP BY type
+  </select>
+  <select id="countTaxonConceptRelationsByType" resultType="StringCount">
+    SELECT type AS key, count(*) AS count
+    FROM taxon_concept_rel_${key}
     GROUP BY type
   </select>
   <select id="countUsagesByOrigin" resultType="StringCount">

@@ -66,9 +66,10 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(SimpleDecision.class);
     kryo.register(SimpleName.class);
     kryo.register(SpeciesEstimate.class);
+    kryo.register(SpeciesInteraction.class);
     kryo.register(Synonym.class);
     kryo.register(Taxon.class);
-    kryo.register(TaxonRelation.class);
+    kryo.register(TaxonConceptRelation.class);
     kryo.register(Treatment.class);
     kryo.register(TypeMaterial.class);
     kryo.register(VerbatimRecord.class);
@@ -146,8 +147,9 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(Origin.class);
     kryo.register(Rank.class);
     kryo.register(Sex.class);
+    kryo.register(SpeciesInteractionType.class);
     kryo.register(TaxonomicStatus.class);
-    kryo.register(TaxRelType.class);
+    kryo.register(TaxonConceptRelType.class);
     kryo.register(TreatmentFormat.class);
     kryo.register(TypeStatus.class);
 

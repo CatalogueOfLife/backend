@@ -69,9 +69,10 @@ public class ImportMetrics implements ImportAttempt {
   private Map<NomStatus, Integer> namesByStatusCount = Maps.newHashMap();
   private Map<NameType, Integer> namesByTypeCount = Maps.newHashMap();
   private Map<NomRelType, Integer> nameRelationsByTypeCount = Maps.newHashMap();
+  private Map<SpeciesInteractionType, Integer> speciesInteractionsByTypeCount = Maps.newHashMap();
   private Map<Rank, Integer> synonymsByRankCount = Maps.newHashMap();
   private Map<Rank, Integer> taxaByRankCount = Maps.newHashMap();
-  private Map<TaxRelType, Integer> taxonRelationsByTypeCount = Maps.newHashMap();
+  private Map<TaxonConceptRelType, Integer> taxonConceptRelationsByTypeCount = Maps.newHashMap();
   private Map<TypeStatus, Integer> typeMaterialByStatusCount = Maps.newHashMap();
   private Map<TaxonomicStatus, Integer> usagesByStatusCount = Maps.newHashMap();
   private Map<Origin, Integer> usagesByOriginCount = Maps.newHashMap();
@@ -372,12 +373,20 @@ public class ImportMetrics implements ImportAttempt {
     this.synonymsByRankCount = synonymsByRankCount;
   }
 
-  public Map<TaxRelType, Integer> getTaxonRelationsByTypeCount() {
-    return taxonRelationsByTypeCount;
+  public Map<TaxonConceptRelType, Integer> getTaxonConceptRelationsByTypeCount() {
+    return taxonConceptRelationsByTypeCount;
   }
 
-  public void setTaxonRelationsByTypeCount(Map<TaxRelType, Integer> taxonRelationsByTypeCount) {
-    this.taxonRelationsByTypeCount = taxonRelationsByTypeCount;
+  public void setTaxonConceptRelationsByTypeCount(Map<TaxonConceptRelType, Integer> taxonConceptRelationsByTypeCount) {
+    this.taxonConceptRelationsByTypeCount = taxonConceptRelationsByTypeCount;
+  }
+
+  public Map<SpeciesInteractionType, Integer> getSpeciesInteractionsByTypeCount() {
+    return speciesInteractionsByTypeCount;
+  }
+
+  public void setSpeciesInteractionsByTypeCount(Map<SpeciesInteractionType, Integer> speciesInteractionsByTypeCount) {
+    this.speciesInteractionsByTypeCount = speciesInteractionsByTypeCount;
   }
 
   public Map<Issue, Integer> getIssuesCount() {
@@ -424,7 +433,8 @@ public class ImportMetrics implements ImportAttempt {
       namesByTypeCount = sum(namesByTypeCount, m.namesByTypeCount);
       synonymsByRankCount = sum(synonymsByRankCount, m.synonymsByRankCount);
       taxaByRankCount = sum(taxaByRankCount, m.taxaByRankCount);
-      taxonRelationsByTypeCount = sum(taxonRelationsByTypeCount, m.taxonRelationsByTypeCount);
+      taxonConceptRelationsByTypeCount = sum(taxonConceptRelationsByTypeCount, m.taxonConceptRelationsByTypeCount);
+      speciesInteractionsByTypeCount = sum(speciesInteractionsByTypeCount, m.speciesInteractionsByTypeCount);
       typeMaterialByStatusCount = sum(typeMaterialByStatusCount, m.typeMaterialByStatusCount);
       usagesByOriginCount = sum(usagesByOriginCount, m.usagesByOriginCount);
       usagesByStatusCount = sum(usagesByStatusCount, m.usagesByStatusCount);
@@ -493,7 +503,8 @@ public class ImportMetrics implements ImportAttempt {
       Objects.equals(namesByTypeCount, that.namesByTypeCount) &&
       Objects.equals(synonymsByRankCount, that.synonymsByRankCount) &&
       Objects.equals(taxaByRankCount, that.taxaByRankCount) &&
-      Objects.equals(taxonRelationsByTypeCount, that.taxonRelationsByTypeCount) &&
+      Objects.equals(taxonConceptRelationsByTypeCount, that.taxonConceptRelationsByTypeCount) &&
+      Objects.equals(speciesInteractionsByTypeCount, that.speciesInteractionsByTypeCount) &&
       Objects.equals(typeMaterialByStatusCount, that.typeMaterialByStatusCount) &&
       Objects.equals(usagesByOriginCount, that.usagesByOriginCount) &&
       Objects.equals(usagesByStatusCount, that.usagesByStatusCount) &&
@@ -509,7 +520,7 @@ public class ImportMetrics implements ImportAttempt {
       sectorCount, ignoredByReasonCount, appliedDecisionCount,
       namesByTypeCount, namesByStatusCount, namesByCodeCount, namesByRankCount, nameRelationsByTypeCount, typeMaterialByStatusCount, distributionsByGazetteerCount,
       vernacularsByLanguageCount, mediaByTypeCount, usagesByOriginCount, usagesByStatusCount,
-      taxaByRankCount, extinctTaxaByRankCount, synonymsByRankCount, taxonRelationsByTypeCount, issuesCount);
+      taxaByRankCount, extinctTaxaByRankCount, synonymsByRankCount, taxonConceptRelationsByTypeCount, speciesInteractionsByTypeCount, issuesCount);
   }
 
   @Override

@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-
+import static life.catalogue.dao.DatasetImportDao.countMap;
 public class SectorImportDao {
 
   private static final Logger LOG = LoggerFactory.getLogger(SectorImportDao.class);
@@ -65,22 +65,23 @@ public class SectorImportDao {
     si.setTypeMaterialCount(mapper.countTypeMaterial(datasetKey, key));
     si.setVernacularCount(mapper.countVernacular(datasetKey, key));
 
-    si.setDistributionsByGazetteerCount(DatasetImportDao.countMap(Gazetteer.class, mapper.countDistributionsByGazetteer(datasetKey, key)));
-    si.setExtinctTaxaByRankCount(DatasetImportDao.countMap(DatasetImportDao::parseRank, mapper.countExtinctTaxaByRank(datasetKey, key)));
-    si.setIssuesCount(DatasetImportDao.countMap(Issue.class, mapper.countIssues(datasetKey, key)));
-    si.setMediaByTypeCount(DatasetImportDao.countMap(MediaType.class, mapper.countMediaByType(datasetKey, key)));
-    si.setNameRelationsByTypeCount(DatasetImportDao.countMap(NomRelType.class, mapper.countNameRelationsByType(datasetKey, key)));
-    si.setNamesByCodeCount(DatasetImportDao.countMap(NomCode.class, mapper.countNamesByCode(datasetKey, key)));
-    si.setNamesByRankCount(DatasetImportDao.countMap(DatasetImportDao::parseRank, mapper.countNamesByRank(datasetKey, key)));
-    si.setNamesByStatusCount(DatasetImportDao.countMap(NomStatus.class, mapper.countNamesByStatus(datasetKey, key)));
-    si.setNamesByTypeCount(DatasetImportDao.countMap(NameType.class, mapper.countNamesByType(datasetKey, key)));
-    si.setSynonymsByRankCount(DatasetImportDao.countMap(DatasetImportDao::parseRank, mapper.countSynonymsByRank(datasetKey, key)));
-    si.setTaxaByRankCount(DatasetImportDao.countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(datasetKey, key)));
-    si.setTaxonRelationsByTypeCount(DatasetImportDao.countMap(TaxRelType.class, mapper.countTaxonRelationsByType(datasetKey, key)));
-    si.setTypeMaterialByStatusCount(DatasetImportDao.countMap(TypeStatus.class, mapper.countTypeMaterialByStatus(datasetKey, key)));
-    si.setUsagesByOriginCount(DatasetImportDao.countMap(Origin.class, mapper.countUsagesByOrigin(datasetKey, key)));
-    si.setUsagesByStatusCount(DatasetImportDao.countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(datasetKey, key)));
-    si.setVernacularsByLanguageCount(DatasetImportDao.countMap(mapper.countVernacularsByLanguage(datasetKey, key)));
+    si.setDistributionsByGazetteerCount(countMap(Gazetteer.class, mapper.countDistributionsByGazetteer(datasetKey, key)));
+    si.setExtinctTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countExtinctTaxaByRank(datasetKey, key)));
+    si.setIssuesCount(countMap(Issue.class, mapper.countIssues(datasetKey, key)));
+    si.setMediaByTypeCount(countMap(MediaType.class, mapper.countMediaByType(datasetKey, key)));
+    si.setNameRelationsByTypeCount(countMap(NomRelType.class, mapper.countNameRelationsByType(datasetKey, key)));
+    si.setNamesByCodeCount(countMap(NomCode.class, mapper.countNamesByCode(datasetKey, key)));
+    si.setNamesByRankCount(countMap(DatasetImportDao::parseRank, mapper.countNamesByRank(datasetKey, key)));
+    si.setNamesByStatusCount(countMap(NomStatus.class, mapper.countNamesByStatus(datasetKey, key)));
+    si.setNamesByTypeCount(countMap(NameType.class, mapper.countNamesByType(datasetKey, key)));
+    si.setSpeciesInteractionsByTypeCount(countMap(SpeciesInteractionType.class, mapper.countTaxonConceptRelationsByType(datasetKey, key)));
+    si.setSynonymsByRankCount(countMap(DatasetImportDao::parseRank, mapper.countSynonymsByRank(datasetKey, key)));
+    si.setTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(datasetKey, key)));
+    si.setTaxonConceptRelationsByTypeCount(countMap(TaxonConceptRelType.class, mapper.countSpeciesInteractionsByType(datasetKey, key)));
+    si.setTypeMaterialByStatusCount(countMap(TypeStatus.class, mapper.countTypeMaterialByStatus(datasetKey, key)));
+    si.setUsagesByOriginCount(countMap(Origin.class, mapper.countUsagesByOrigin(datasetKey, key)));
+    si.setUsagesByStatusCount(countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(datasetKey, key)));
+    si.setVernacularsByLanguageCount(countMap(mapper.countVernacularsByLanguage(datasetKey, key)));
   }
 
   public void deleteAll(DSID<Integer> sectorKey) throws IOException {

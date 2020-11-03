@@ -167,7 +167,11 @@ public class ColdpInterpreter extends InterpreterBase {
   }
 
   Optional<NeoRel> interpretTaxonRelations(VerbatimRecord rec) {
-    return interpretRelations(rec, TaxRelTypeParser.PARSER, RelType::from);
+    return interpretRelations(rec, TaxonConceptRelTypeParser.PARSER, RelType::from);
+  }
+
+  Optional<NeoRel> interpretSpeciesInteractions(VerbatimRecord rec) {
+    return interpretRelations(rec, SpeciesInteractionTypeParser.PARSER, RelType::from);
   }
 
   <T extends Enum> Optional<NeoRel> interpretRelations(VerbatimRecord rec, EnumParser<T> parser, Function<T, RelType> typeFunction) {
@@ -175,6 +179,7 @@ public class ColdpInterpreter extends InterpreterBase {
     SafeParser<T> type = SafeParser.parse(parser, rec.get(ColdpTerm.type));
     if (type.isPresent()) {
       rel.setType(typeFunction.apply(type.get()));
+      rel.setRelatedScientificName(rec.get(ColdpTerm.relatedTaxonScientificName));
       rel.setRemarks(rec.get(ColdpTerm.remarks));
       setReference(rel, rec);
       return Optional.of(rel);

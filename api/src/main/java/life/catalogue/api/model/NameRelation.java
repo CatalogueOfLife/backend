@@ -7,14 +7,14 @@ import java.util.Objects;
 /**
  * A nomenclatural name relation between two names pointing back in time from the nameId to the relatedNameId.
  */
-public class NameRelation extends DatasetScopedEntity<Integer> implements SectorScopedEntity<Integer>, VerbatimEntity {
+public class NameRelation extends DatasetScopedEntity<Integer> implements SectorScopedEntity<Integer>, Referenced, VerbatimEntity {
   private Integer datasetKey;
   private Integer sectorKey;
   private Integer verbatimKey;
   private NomRelType type;
   private String nameId;
   private String relatedNameId;
-  private String publishedInId;
+  private String referenceId;
   private String remarks;
 
   @Override
@@ -69,12 +69,12 @@ public class NameRelation extends DatasetScopedEntity<Integer> implements Sector
     this.relatedNameId = key;
   }
   
-  public String getPublishedInId() {
-    return publishedInId;
+  public String getReferenceId() {
+    return referenceId;
   }
   
-  public void setPublishedInId(String publishedInId) {
-    this.publishedInId = publishedInId;
+  public void setReferenceId(String referenceId) {
+    this.referenceId = referenceId;
   }
   
   public String getRemarks() {
@@ -89,7 +89,7 @@ public class NameRelation extends DatasetScopedEntity<Integer> implements Sector
    * @return true if publishedIn or remarks are present
    */
   public boolean isRich() {
-    return publishedInId != null || remarks != null;
+    return referenceId != null || remarks != null;
   }
 
   @Override
@@ -104,12 +104,12 @@ public class NameRelation extends DatasetScopedEntity<Integer> implements Sector
         type == that.type &&
         Objects.equals(nameId, that.nameId) &&
         Objects.equals(relatedNameId, that.relatedNameId) &&
-        Objects.equals(publishedInId, that.publishedInId) &&
+        Objects.equals(referenceId, that.referenceId) &&
         Objects.equals(remarks, that.remarks);
   }
   
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, datasetKey, type, nameId, relatedNameId, publishedInId, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, datasetKey, type, nameId, relatedNameId, referenceId, remarks);
   }
 }

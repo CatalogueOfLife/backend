@@ -219,10 +219,17 @@
     WHERE n.sector_key=#{sectorKey}
     GROUP BY r.type
   </select>
-  <select id="countTaxonRelationsByType" resultType="StringCount">
+  <select id="countSpeciesInteractionsByType" resultType="StringCount">
     SELECT r.type AS key, count(*) AS count
-    FROM taxon_rel_${datasetKey} r
+    FROM species_interaction_${datasetKey} r
       JOIN name_usage_${datasetKey} u ON r.taxon_id=u.id
+    WHERE u.sector_key=#{sectorKey}
+    GROUP BY r.type
+  </select>
+  <select id="countTaxonConceptRelationsByType" resultType="StringCount">
+    SELECT r.type AS key, count(*) AS count
+    FROM taxon_concept_rel_${datasetKey} r
+    JOIN name_usage_${datasetKey} u ON r.taxon_id=u.id
     WHERE u.sector_key=#{sectorKey}
     GROUP BY r.type
   </select>

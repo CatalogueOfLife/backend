@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.SpeciesInteractionMapper">
+
+  <sql id="SELECT">
+    si.id,
+    si.verbatim_key,
+    si.dataset_key,
+    si.type,
+    si.taxon_id,
+    si.related_taxon_id,
+    si.related_taxon_scientific_name,
+    si.reference_id,
+    si.remarks,
+    si.created,
+    si.created_by,
+    si.modified,
+    si.modified_by
+  </sql>
+
+  <sql id="COLS">
+    dataset_key,
+    sector_key,
+    taxon_id,
+    related_taxon_id,
+    <include refid="COLS_COPY"/>
+  </sql>
+
+  <sql id="COLS_COPY">
+    related_taxon_scientific_name,
+    verbatim_key,
+    type,
+    reference_id,
+    remarks,
+    created_by,
+    modified_by
+  </sql>
+
+  <sql id="PROPS">
+    #{datasetKey},
+    #{sectorKey},
+    #{taxonId},
+    #{relatedTaxonId},
+    #{relatedTaxonScientificName},
+    #{verbatimKey},
+    #{type}::SPECIESINTERACTIONTYPE,
+    #{referenceId},
+    #{remarks},
+    #{createdBy},
+    #{modifiedBy}
+  </sql>
+
+  <sql id="FROM">
+    species_interaction_${partition} si
+  </sql>
+
+  <resultMap id="speciesInteractionResultMap" type="SpeciesInteraction" autoMapping="true">
+    <id property="id" column="id"/>
+  </resultMap>
+
+  <select id="list" resultMap="speciesInteractionResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE si.taxon_id = #{taxonId} OR si.related_taxon_id = #{taxonId}
+    ORDER BY si.id
+  </select>
+
+  <select id="processDataset" parameterType="map" resultMap="speciesInteractionResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+  </select>
+
+  <select id="listByType" resultMap="speciesInteractionResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT
+    <include refid="SELECT"/>
+    FROM species_interaction_${partition} nr
+    WHERE si.dataset_key = #{datasetKey}
+      AND si.type=#{type}::SPECIESINTERACTIONTYPE
+      AND si.taxon_id = #{taxonId}
+    ORDER BY si.id
+  </select>
+
+  <insert id="create" parameterType="SpeciesInteraction" useGeneratedKeys="true" keyProperty="id">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    INSERT INTO species_interaction_${partition} (<include refid="COLS"/>, created, modified )
+    VALUES (<include refid="PROPS"/>, now(), now() )
+  </insert>
+
+  <insert id="copyDataset" parameterType="map">
+    INSERT INTO species_interaction_${newDatasetKey} (dataset_key,taxon_id,related_taxon_id,<include refid="COLS_COPY"/>, created, modified)
+    SELECT #{newDatasetKey},coalesce(<if test="mapIds">m1.id2,</if>taxon_id),coalesce(<if test="mapIds">m2.id2,</if>related_taxon_id),<include refid="COLS_COPY"/>, created, modified
+    FROM species_interaction_${datasetKey} r
+    <if test="mapIds">
+      LEFT JOIN idmap_name_usage_${datasetKey} m1 ON m1.id=r.taxon_id
+      LEFT JOIN idmap_name_usage_${datasetKey} m2 ON m2.id=r.related_taxon_id
+    </if>
+  </insert>
+
+  <select id="processSector" parameterType="map" resultMap="speciesInteractionResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE si.sector_key = #{key.id}
+  </select>
+
+  <delete id="deleteBySector" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    DELETE FROM species_interaction_${partition}
+    WHERE sector_key=#{key.id} AND dataset_key=#{key.datasetKey}
+  </delete>
+
+  <update id="removeSectorKey" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    UPDATE species_interaction_${partition} SET sector_key = NULL
+    WHERE sector_key = #{key.id}
+  </update>
+
+</mapper>

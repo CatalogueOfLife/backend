@@ -5,6 +5,7 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.dao.Partitioner;
+import life.catalogue.db.Create;
 import life.catalogue.db.mapper.*;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbUtils;
@@ -19,6 +20,7 @@ import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
@@ -28,6 +30,8 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
@@ -55,6 +59,9 @@ public class PgImport implements Callable<Boolean> {
   private final AtomicInteger vCounter = new AtomicInteger(0);
   private final AtomicInteger tmCounter = new AtomicInteger(0);
   private final AtomicInteger eCounter = new AtomicInteger(0);
+  private int nRelCounter;
+  private int tRelCounter;
+  private int sRelCounter;
 
   public PgImport(int attempt, DatasetWithSettings dataset, NeoDb store, SqlSessionFactory sessionFactory, ImporterConfig cfg) {
     this.attempt = attempt;
@@ -79,14 +86,21 @@ public class PgImport implements Callable<Boolean> {
     insertTypeMaterial();
 
     insertUsages();
-  
+
+    insertUsageRelations();
+
     Partitioner.attach(sessionFactory, dataset.getKey());
     
     updateMetadata();
 		LOG.info("Completed dataset {} insert with {} verbatim records, " +
-        "{} names, {} taxa, {} synonyms, {} references, {} vernaculars, {} distributions, {} treatments, {} species estimates and {} media items",
+        "{} names, {} taxa, {} synonyms, {} references, " +
+        "{} type material, {} vernaculars, {} distributions, {} treatments, {} species estimates, {} media items, " +
+        "{} name relations, {} concept relations, {} species interactions",
         dataset.getKey(), verbatimKeys.size(),
-        nCounter, tCounter, sCounter, rCounter, vCounter, diCounter, trCounter, eCounter, mCounter);
+        nCounter, tCounter, sCounter, rCounter,
+        tmCounter, vCounter, diCounter, trCounter, eCounter, mCounter,
+        nRelCounter, tRelCounter, sRelCounter
+      );
 		return true;
 	}
 
@@ -287,28 +301,11 @@ public class PgImport implements Callable<Boolean> {
    * Go through all neo4j relations and convert them to name acts if the rel type matches
    */
   private void insertNameRelations() {
-    for (RelType rt : RelType.values()) {
-      if (!rt.isNameRel()) continue;
-
-      final AtomicInteger counter = new AtomicInteger(0);
-      try (final SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
-        final NameRelationMapper nameRelationMapper = session.getMapper(NameRelationMapper.class);
-        LOG.debug("Inserting all {} relations", rt);
-        try (Transaction tx = store.getNeo().beginTx()) {
-          store.iterRelations(rt).stream().forEach(rel -> {
-            NameRelation nr = store.toRelation(rel);
-            updateReferenceKey(nr.getPublishedInId(), nr::setPublishedInId);
-            nameRelationMapper.create(updateUser(nr));
-            if (counter.incrementAndGet() % batchSize == 0) {
-              interruptIfCancelled();
-              session.commit();
-            }
-          });
-        }
-        session.commit();
-      }
-      LOG.info("Inserted {} {} relations", counter.get(), rt);
-    }
+    nRelCounter = insertRelations(
+      RelType::isNameRel,
+      NameRelationMapper.class,
+      store::toNameRelation
+    );
   }
 
   private void insertTypeMaterial() {
@@ -459,5 +456,62 @@ public class PgImport implements Callable<Boolean> {
       LOG.debug("Inserted {} names and {} taxa", nCounter, tCounter);
     }
   }
-  
+
+  /**
+   * Go through all neo4j relations and convert them to taxon concept relations or species interactions if the rel type matches
+   */
+  private void insertUsageRelations() {
+    // taxon concept
+    tRelCounter = insertRelations(
+      RelType::isTaxonConceptRel,
+      TaxonConceptRelationMapper.class,
+      store::toConceptRelation
+    );
+
+    // species interactions
+    sRelCounter = insertRelations(
+      RelType::isSpeciesInteraction,
+      SpeciesInteractionMapper.class,
+      store::toSpeciesInteraction
+    );
+  }
+
+  private <T extends DatasetScopedEntity<Integer> & Referenced> int insertRelations (
+    Predicate<RelType> filter,
+    Class<? extends Create<T>> relMapperClass,
+    Function<Relationship, T> creator
+  ) {
+    int total = 0;
+    String type = null;
+    for (RelType rt : RelType.values()) {
+      if (!filter.test(rt)) continue;
+
+      if (type == null && rt.relationClass() != null) {
+        type = rt.relationClass().getSimpleName();
+      }
+      final AtomicInteger counter = new AtomicInteger(0);
+      try (final SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
+        final Create<T> relMapper = session.getMapper(relMapperClass);
+        try (Transaction tx = store.getNeo().beginTx()) {
+          store.iterRelations(rt).stream().forEach(rel -> {
+            T nr = creator.apply(rel);
+            updateReferenceKey(nr);
+            relMapper.create(updateUser(nr));
+            if (counter.incrementAndGet() % batchSize == 0) {
+              interruptIfCancelled();
+              session.commit();
+            }
+          });
+        }
+        session.commit();
+      }
+      LOG.debug("Inserted {} {} relations", counter.get(), rt);
+      total += counter.get();
+    }
+
+    LOG.info("Inserted {} {} relations", total, type);
+    return total;
+  }
+
+
 }

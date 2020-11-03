@@ -1,19 +1,20 @@
 package life.catalogue.api.model;
 
-import life.catalogue.api.vocab.TaxRelType;
+import life.catalogue.api.vocab.SpeciesInteractionType;
 
 import java.util.Objects;
 
 /**
- * A taxon concept or species interaction relation between two taxa.
+ * A species interaction relation between two taxa.
  */
-public class TaxonRelation extends DatasetScopedEntity<Integer> implements SectorEntity, VerbatimEntity, Referenced {
+public class SpeciesInteraction extends DatasetScopedEntity<Integer> implements SectorEntity, VerbatimEntity, Referenced {
   private Integer datasetKey;
   private Integer sectorKey;
   private Integer verbatimKey;
-  private TaxRelType type;
+  private SpeciesInteractionType type;
   private String taxonId;
   private String relatedTaxonId;
+  private String relatedTaxonScientificName;
   private String referenceId;
   private String remarks;
 
@@ -45,11 +46,11 @@ public class TaxonRelation extends DatasetScopedEntity<Integer> implements Secto
     this.datasetKey = datasetKey;
   }
 
-  public TaxRelType getType() {
+  public SpeciesInteractionType getType() {
     return type;
   }
 
-  public void setType(TaxRelType type) {
+  public void setType(SpeciesInteractionType type) {
     this.type = type;
   }
 
@@ -67,6 +68,14 @@ public class TaxonRelation extends DatasetScopedEntity<Integer> implements Secto
 
   public void setRelatedTaxonId(String relatedTaxonId) {
     this.relatedTaxonId = relatedTaxonId;
+  }
+
+  public String getRelatedTaxonScientificName() {
+    return relatedTaxonScientificName;
+  }
+
+  public void setRelatedTaxonScientificName(String relatedTaxonScientificName) {
+    this.relatedTaxonScientificName = relatedTaxonScientificName;
   }
 
   @Override
@@ -90,21 +99,22 @@ public class TaxonRelation extends DatasetScopedEntity<Integer> implements Secto
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof TaxonRelation)) return false;
+    if (!(o instanceof SpeciesInteraction)) return false;
     if (!super.equals(o)) return false;
-    TaxonRelation that = (TaxonRelation) o;
-    return Objects.equals(sectorKey, that.sectorKey) &&
+    SpeciesInteraction that = (SpeciesInteraction) o;
+    return Objects.equals(datasetKey, that.datasetKey) &&
+      Objects.equals(sectorKey, that.sectorKey) &&
       Objects.equals(verbatimKey, that.verbatimKey) &&
-      Objects.equals(datasetKey, that.datasetKey) &&
       type == that.type &&
       Objects.equals(taxonId, that.taxonId) &&
       Objects.equals(relatedTaxonId, that.relatedTaxonId) &&
+      Objects.equals(relatedTaxonScientificName, that.relatedTaxonScientificName) &&
       Objects.equals(referenceId, that.referenceId) &&
       Objects.equals(remarks, that.remarks);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, datasetKey, type, taxonId, relatedTaxonId, referenceId, remarks);
+    return Objects.hash(super.hashCode(), datasetKey, sectorKey, verbatimKey, type, taxonId, relatedTaxonId, relatedTaxonScientificName, referenceId, remarks);
   }
 }

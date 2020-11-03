@@ -27,7 +27,8 @@ public class ImportMetricsTest {
       assertEquals(2000, (int) m.getNameCount());
       assertEquals(456, (int) m.getVernacularCount());
       assertNull(m.getTaxonCount());
-      assertTrue(m.getTaxonRelationsByTypeCount().isEmpty());
+      assertTrue(m.getTaxonConceptRelationsByTypeCount().isEmpty());
+      assertTrue(m.getSpeciesInteractionsByTypeCount().isEmpty());
       assertEquals(3, m.getIssuesCount().size());
       assertEquals(80, (int) m.getIssuesCount().get(Issue.ACCEPTED_NAME_MISSING));
       assertEquals(78, (int) m.getIssuesCount().get(Issue.BASIONYM_ID_INVALID));

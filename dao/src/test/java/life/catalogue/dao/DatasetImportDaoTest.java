@@ -75,7 +75,8 @@ public class DatasetImportDaoTest extends DaoTestBase {
     assertEquals(1, d.getNameRelationsByTypeCount().size());
     assertEquals((Integer) 1, d.getNameRelationsByTypeCount().get(NomRelType.SPELLING_CORRECTION));
 
-    assertEquals( 0, d.getTaxonRelationsByTypeCount().size());
+    assertEquals( 0, d.getSpeciesInteractionsByTypeCount().size());
+    assertEquals( 0, d.getTaxonConceptRelationsByTypeCount().size());
 
     assertEquals(2, d.getVerbatimByTermCount().size());
     assertEquals((Integer) 3, d.getVerbatimByTermCount().get(AcefTerm.AcceptedSpecies));

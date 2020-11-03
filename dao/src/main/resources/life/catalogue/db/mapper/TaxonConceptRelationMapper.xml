@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.TaxonConceptRelationMapper">
+
+  <sql id="SELECT">
+    tc.id,
+    tc.verbatim_key,
+    tc.dataset_key,
+    tc.type,
+    tc.taxon_id,
+    tc.related_taxon_id,
+    tc.reference_id,
+    tc.remarks,
+    tc.created,
+    tc.created_by,
+    tc.modified,
+    tc.modified_by
+  </sql>
+
+  <sql id="COLS">
+    dataset_key,
+    sector_key,
+    taxon_id,
+    related_taxon_id,
+    <include refid="COLS_COPY"/>
+  </sql>
+
+  <sql id="COLS_COPY">
+    verbatim_key,
+    type,
+    reference_id,
+    remarks,
+    created_by,
+    modified_by
+  </sql>
+
+  <sql id="PROPS">
+    #{datasetKey},
+    #{sectorKey},
+    #{taxonId},
+    #{relatedTaxonId},
+    #{verbatimKey},
+    #{type}::TAXONCONCEPTRELTYPE,
+    #{referenceId},
+    #{remarks},
+    #{createdBy},
+    #{modifiedBy}
+  </sql>
+
+  <sql id="FROM">
+    taxon_concept_rel_${partition} tc
+  </sql>
+
+  <resultMap id="tcRelResultMap" type="TaxonConceptRelation" autoMapping="true">
+    <id property="id" column="id"/>
+  </resultMap>
+
+  <select id="list" resultMap="tcRelResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE tc.taxon_id = #{taxonId} OR tc.related_taxon_id = #{taxonId}
+    ORDER BY tc.id
+  </select>
+
+  <select id="processDataset" parameterType="map" resultMap="tcRelResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+  </select>
+
+  <select id="listByType" resultMap="tcRelResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT
+    <include refid="SELECT"/>
+    FROM taxon_concept_rel_${partition} nr
+    WHERE tc.dataset_key = #{datasetKey}
+      AND tc.type=#{type}::TAXONCONCEPTRELTYPE
+      AND tc.taxon_id = #{taxonId}
+    ORDER BY tc.id
+  </select>
+
+  <insert id="create" parameterType="TaxonConceptRelation" useGeneratedKeys="true" keyProperty="id">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    INSERT INTO taxon_concept_rel_${partition} (<include refid="COLS"/>, created, modified )
+    VALUES (<include refid="PROPS"/>, now(), now() )
+  </insert>
+
+  <insert id="copyDataset" parameterType="map">
+    INSERT INTO taxon_concept_rel_${newDatasetKey} (dataset_key,taxon_id,related_taxon_id,<include refid="COLS_COPY"/>, created, modified)
+    SELECT #{newDatasetKey},coalesce(<if test="mapIds">m1.id2,</if>taxon_id),coalesce(<if test="mapIds">m2.id2,</if>related_taxon_id),<include refid="COLS_COPY"/>, created, modified
+    FROM taxon_concept_rel_${datasetKey} r
+    <if test="mapIds">
+      LEFT JOIN idmap_name_usage_${datasetKey} m1 ON m1.id=r.taxon_id
+      LEFT JOIN idmap_name_usage_${datasetKey} m2 ON m2.id=r.related_taxon_id
+    </if>
+  </insert>
+
+  <select id="processSector" parameterType="map" resultMap="tcRelResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE tc.sector_key = #{key.id}
+  </select>
+
+  <delete id="deleteBySector" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    DELETE FROM taxon_concept_rel_${partition}
+    WHERE sector_key=#{key.id} AND dataset_key=#{key.datasetKey}
+  </delete>
+
+  <update id="removeSectorKey" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    UPDATE taxon_concept_rel_${partition} SET sector_key = NULL
+    WHERE sector_key = #{key.id}
+  </update>
+
+</mapper>

@@ -18,17 +18,6 @@ $$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
 
 
 -- all enum types produces via PgSetupRuleTest.pgEnumSql()
-CREATE TYPE AREASTANDARD AS ENUM (
-  'TDWG',
-  'ISO',
-  'FAO',
-  'FAO_FISHING',
-  'LONGHURST',
-  'TEOW',
-  'IHO',
-  'TEXT'
-);
-
 CREATE TYPE CONTINENT AS ENUM (
   'AFRICA',
   'ANTARCTICA',
@@ -82,14 +71,22 @@ CREATE TYPE ENTITYTYPE AS ENUM (
   'NAME',
   'NAME_RELATION',
   'NAME_USAGE',
-  'TAXON_RELATION',
+  'TAXON_CONCEPT_RELATION',
   'TYPE_MATERIAL',
   'TREATMENT',
   'DISTRIBUTION',
   'MEDIA',
   'VERNACULAR',
   'REFERENCE',
-  'ESTIMATE'
+  'ESTIMATE',
+  'SPECIES_INTERACTION'
+);
+
+CREATE TYPE ENVIRONMENT AS ENUM (
+  'BRACKISH',
+  'FRESHWATER',
+  'MARINE',
+  'TERRESTRIAL'
 );
 
 CREATE TYPE ESTIMATETYPE AS ENUM (
@@ -250,13 +247,6 @@ CREATE TYPE LICENSE AS ENUM (
   'CC_BY_NC',
   'UNSPECIFIED',
   'OTHER'
-);
-
-CREATE TYPE ENVIRONMENT AS ENUM (
-  'BRACKISH',
-  'FRESHWATER',
-  'MARINE',
-  'TERRESTRIAL'
 );
 
 CREATE TYPE MATCHINGMODE AS ENUM (
@@ -482,6 +472,60 @@ CREATE TYPE SEX AS ENUM (
   'HERMAPHRODITE'
 );
 
+CREATE TYPE SPECIESINTERACTIONTYPE AS ENUM (
+  'RELATED_TO',
+  'CO_OCCURS_WITH',
+  'INTERACTS_WITH',
+  'ADJACENT_TO',
+  'SYMBIONT_OF',
+  'EATS',
+  'EATEN_BY',
+  'KILLS',
+  'KILLED_BY',
+  'PREYS_UPON',
+  'PREYED_UPON_BY',
+  'HOST_OF',
+  'HAS_HOST',
+  'PARASITE_OF',
+  'HAS_PARASITE',
+  'PATHOGEN_OF',
+  'HAS_PATHOGEN',
+  'VECTOR_OF',
+  'HAS_VECTOR',
+  'ENDOPARASITE_OF',
+  'HAS_ENDOPARASITE',
+  'ECTOPARASITE_OF',
+  'HAS_ECTOPARASITE',
+  'HYPERPARASITE_OF',
+  'HAS_HYPERPARASITE',
+  'KLEPTOPARASITE_OF',
+  'HAS_KLEPTOPARASITE',
+  'PARASITOID_OF',
+  'HAS_PARASITOID',
+  'HYPERPARASITOID_OF',
+  'HAS_HYPERPARASITOID',
+  'VISITS',
+  'VISITED_BY',
+  'VISITS_FLOWERS_OF',
+  'FLOWERS_VISITED_BY',
+  'POLLINATES',
+  'POLLINATED_BY',
+  'LAYS_EGGS_ON',
+  'HAS_EGGS_LAYED_ON_BY',
+  'EPIPHYTE_OF',
+  'HAS_EPIPHYTE',
+  'COMMENSALIST_OF',
+  'MUTUALIST_OF'
+);
+
+CREATE TYPE TAXONCONCEPTRELTYPE AS ENUM (
+  'EQUALS',
+  'INCLUDES',
+  'INCLUDED_IN',
+  'OVERLAPS',
+  'EXCLUDES'
+);
+
 CREATE TYPE TAXONOMICSTATUS AS ENUM (
   'ACCEPTED',
   'PROVISIONALLY_ACCEPTED',
@@ -489,24 +533,6 @@ CREATE TYPE TAXONOMICSTATUS AS ENUM (
   'AMBIGUOUS_SYNONYM',
   'MISAPPLIED',
   'BARE_NAME'
-);
-
-CREATE TYPE TAXRELTYPE AS ENUM (
-  'EQUALS',
-  'INCLUDES',
-  'INCLUDED_IN',
-  'OVERLAPS',
-  'EXCLUDES',
-  'INTERACTS_WITH',
-  'VISITS',
-  'INHABITS',
-  'SYMBIONT_OF',
-  'ASSOCIATED_WITH',
-  'EATS',
-  'POLLINATES',
-  'PARASITE_OF',
-  'PATHOGEN_OF',
-  'HOST_OF'
 );
 
 CREATE TYPE TREATMENTFORMAT AS ENUM (
@@ -558,7 +584,6 @@ CREATE TYPE USER_ROLE AS ENUM (
   'EDITOR',
   'ADMIN'
 );
-
 
 
 -- a simple compound type corresponding to the basics of SimpleName. Often used for building classifications as arrays
@@ -739,9 +764,10 @@ CREATE TABLE dataset_import (
   names_by_rank_count HSTORE,
   names_by_status_count HSTORE,
   names_by_type_count HSTORE,
+  species_interactions_by_type_count HSTORE,
   synonyms_by_rank_count HSTORE,
   taxa_by_rank_count HSTORE,
-  taxon_relations_by_type_count HSTORE,
+  taxon_concept_relations_by_type_count HSTORE,
   type_material_by_status_count HSTORE,
   usages_by_origin_count HSTORE,
   usages_by_status_count HSTORE,
@@ -820,9 +846,10 @@ CREATE TABLE sector_import (
   names_by_rank_count HSTORE,
   names_by_status_count HSTORE,
   names_by_type_count HSTORE,
+  species_interactions_by_type_count HSTORE,
   synonyms_by_rank_count HSTORE,
   taxa_by_rank_count HSTORE,
-  taxon_relations_by_type_count HSTORE,
+  taxon_concept_relations_by_type_count HSTORE,
   type_material_by_status_count HSTORE,
   usages_by_origin_count HSTORE,
   usages_by_status_count HSTORE,
@@ -881,6 +908,8 @@ CREATE TABLE estimate (
   note TEXT,
   PRIMARY KEY (dataset_key, id)
 );
+CREATE INDEX ON estimate (dataset_key, target_id);
+CREATE INDEX ON estimate (dataset_key, reference_id);
 
 CREATE TABLE names_index (
   id SERIAL PRIMARY KEY,
@@ -1021,13 +1050,14 @@ CREATE TABLE name_rel (
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   name_id TEXT NOT NULL,
   related_name_id TEXT NULL,
-  published_in_id TEXT,
+  reference_id TEXT,
   remarks TEXT
 ) PARTITION BY LIST (dataset_key);
 
 CREATE INDEX ON name_rel (name_id, type);
 CREATE INDEX ON name_rel (sector_key);
 CREATE INDEX ON name_rel (verbatim_key);
+CREATE INDEX ON name_rel (reference_id);
 
 CREATE TABLE type_material (
   id TEXT NOT NULL,
@@ -1093,25 +1123,48 @@ CREATE INDEX ON name_usage (verbatim_key);
 CREATE INDEX ON name_usage (sector_key);
 CREATE INDEX ON name_usage (according_to_id);
 
-CREATE TABLE taxon_rel (
+CREATE TABLE taxon_concept_rel (
   id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   verbatim_key INTEGER,
-  type TAXRELTYPE NOT NULL,
+  type TAXONCONCEPTRELTYPE NOT NULL,
   created_by INTEGER NOT NULL,
   modified_by INTEGER NOT NULL,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   taxon_id TEXT NOT NULL,
-  related_taxon_id TEXT NULL,
+  related_taxon_id TEXT NOT NULL,
   reference_id TEXT,
   remarks TEXT
 ) PARTITION BY LIST (dataset_key);
 
-CREATE INDEX ON taxon_rel (taxon_id, type);
-CREATE INDEX ON taxon_rel (sector_key);
-CREATE INDEX ON taxon_rel (verbatim_key);
+CREATE INDEX ON taxon_concept_rel (taxon_id, type);
+CREATE INDEX ON taxon_concept_rel (sector_key);
+CREATE INDEX ON taxon_concept_rel (verbatim_key);
+CREATE INDEX ON taxon_concept_rel (reference_id);
+
+CREATE TABLE species_interaction (
+  id INTEGER NOT NULL,
+  dataset_key INTEGER NOT NULL,
+  sector_key INTEGER,
+  verbatim_key INTEGER,
+  type SPECIESINTERACTIONTYPE NOT NULL,
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  taxon_id TEXT NOT NULL,
+  related_taxon_id TEXT,
+  related_taxon_scientific_name TEXT,
+  reference_id TEXT,
+  remarks TEXT
+) PARTITION BY LIST (dataset_key);
+
+CREATE INDEX ON species_interaction (taxon_id, type);
+CREATE INDEX ON species_interaction (sector_key);
+CREATE INDEX ON species_interaction (verbatim_key);
+CREATE INDEX ON species_interaction (reference_id);
 
 CREATE TABLE vernacular_name (
   id INTEGER NOT NULL,
@@ -1136,6 +1189,7 @@ CREATE TABLE vernacular_name (
 CREATE INDEX ON vernacular_name (taxon_id);
 CREATE INDEX ON vernacular_name (sector_key);
 CREATE INDEX ON vernacular_name (verbatim_key);
+CREATE INDEX ON vernacular_name (reference_id);
 
 CREATE TABLE distribution (
   id INTEGER NOT NULL,
@@ -1156,6 +1210,7 @@ CREATE TABLE distribution (
 CREATE INDEX ON distribution (taxon_id);
 CREATE INDEX ON distribution (sector_key);
 CREATE INDEX ON distribution (verbatim_key);
+CREATE INDEX ON distribution (reference_id);
 
 CREATE TABLE treatment (
   id TEXT NOT NULL,
@@ -1197,6 +1252,7 @@ CREATE TABLE media (
 CREATE INDEX ON media (taxon_id);
 CREATE INDEX ON media (sector_key);
 CREATE INDEX ON media (verbatim_key);
+CREATE INDEX ON media (reference_id);
 
 
 

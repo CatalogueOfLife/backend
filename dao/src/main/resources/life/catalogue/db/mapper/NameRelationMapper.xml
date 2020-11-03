@@ -11,7 +11,7 @@
     nr.type,
     nr.name_id,
     nr.related_name_id,
-    nr.published_in_id,
+    nr.reference_id,
     nr.remarks,
     nr.created,
     nr.created_by,
@@ -30,7 +30,7 @@
   <sql id="COLS_COPY">
     verbatim_key,
     type,
-    published_in_id,
+    reference_id,
     remarks,
     created_by,
     modified_by
@@ -43,7 +43,7 @@
     #{relatedNameId},
     #{verbatimKey},
     #{type}::NOMRELTYPE,
-    #{publishedInId},
+    #{referenceId},
     #{remarks},
     #{createdBy},
     #{modifiedBy}

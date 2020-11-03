@@ -65,9 +65,10 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     m.setNamesByRankCount(mockCount(Rank.class));
     m.setNamesByStatusCount(mockCount(NomStatus.class));
     m.setNamesByTypeCount(mockCount(NameType.class));
+    m.setSpeciesInteractionsByTypeCount(mockCount(SpeciesInteractionType.class));
     m.setSynonymsByRankCount(mockCount(Rank.class));
     m.setTaxaByRankCount(mockCount(Rank.class));
-    m.setTaxonRelationsByTypeCount(mockCount(TaxRelType.class));
+    m.setTaxonConceptRelationsByTypeCount(mockCount(TaxonConceptRelType.class));
     m.setTypeMaterialByStatusCount(mockCount(TypeStatus.class));
     m.setUsagesByOriginCount(mockCount(Origin.class));
     m.setUsagesByStatusCount(mockCount(TaxonomicStatus.class));
@@ -217,9 +218,10 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     assertEquals(1, mapper().countNamesByRank(DATASET11.getKey()).size());
     assertEquals(1, mapper().countNamesByStatus(DATASET11.getKey()).size());
     assertEquals(1, mapper().countNamesByType(DATASET11.getKey()).size());
+    assertEquals(0, mapper().countSpeciesInteractionsByType(DATASET11.getKey()).size());
     assertEquals(1, mapper().countSynonymsByRank(DATASET11.getKey()).size());
     assertEquals(1, mapper().countTaxaByRank(DATASET11.getKey()).size());
-    assertEquals(0, mapper().countTaxonRelationsByType(DATASET11.getKey()).size());
+    assertEquals(0, mapper().countTaxonConceptRelationsByType(DATASET11.getKey()).size());
     assertEquals(0, mapper().countTypeMaterialByStatus(DATASET11.getKey()).size());
     assertEquals(1, mapper().countUsagesByOrigin(DATASET11.getKey()).size());
     assertEquals(2, mapper().countUsagesByStatus(DATASET11.getKey()).size());

@@ -136,8 +136,10 @@ public class ColdpReader extends CsvReader {
     require(ColdpTerm.NameRelation, ColdpTerm.relatedNameID);
     require(ColdpTerm.NameRelation, ColdpTerm.type);
 
-    require(ColdpTerm.TaxonRelation, ColdpTerm.relatedTaxonID);
-    require(ColdpTerm.TaxonRelation, ColdpTerm.type);
+    require(ColdpTerm.TaxonConceptRelation, ColdpTerm.relatedTaxonID);
+    require(ColdpTerm.TaxonConceptRelation, ColdpTerm.type);
+
+    require(ColdpTerm.SpeciesInteraction, ColdpTerm.type);
 
     // either require the scientificName or at least some parsed field
     if (!hasData(nameRowType, ColdpTerm.scientificName)) {

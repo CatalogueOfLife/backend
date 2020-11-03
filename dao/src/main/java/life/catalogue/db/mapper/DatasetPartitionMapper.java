@@ -21,7 +21,8 @@ public interface DatasetPartitionMapper {
       "name_rel",
       "type_material",
       "name_usage",
-      "taxon_rel",
+      "taxon_concept_rel",
+      "species_interaction",
       "distribution",
       "media",
       "treatment",
@@ -31,7 +32,8 @@ public interface DatasetPartitionMapper {
   List<String> SERIAL_TABLES = Lists.newArrayList(
       "verbatim",
       "name_rel",
-      "taxon_rel",
+      "taxon_concept_rel",
+      "species_interaction",
       "distribution",
       "media",
       "vernacular_name"
@@ -66,7 +68,7 @@ public interface DatasetPartitionMapper {
       new FK("published_in_id", "reference")
     ),
     "name_rel", List.of(
-      new FK("published_in_id", "reference"),
+      new FK("reference_id", "reference"),
       new FK("name_id", "name"),
       new FK("related_name_id", "name")
     ),
@@ -79,7 +81,13 @@ public interface DatasetPartitionMapper {
       new FK("parent_id", "name_usage", true, false),
       new FK("name_id", "name")
     ),
-    "taxon_rel", List.of(
+    "taxon_concept_rel", List.of(
+      new FK("reference_id", "reference"),
+      new FK("taxon_id", "name_usage"),
+      new FK("related_taxon_id", "name_usage")
+    ),
+    "species_interaction", List.of(
+      new FK("reference_id", "reference"),
       new FK("taxon_id", "name_usage"),
       new FK("related_taxon_id", "name_usage")
     ),

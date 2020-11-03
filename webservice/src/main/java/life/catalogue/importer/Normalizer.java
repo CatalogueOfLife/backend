@@ -336,7 +336,7 @@ public class Normalizer implements Callable<Boolean> {
         Relationship r1 = (Relationship) row.get("r1");
         Relationship r2 = (Relationship) row.get("r2");
 
-        NameRelation nr1 = store.toRelation(r1);
+        NameRelation nr1 = store.toNameRelation(r1);
 
         // delete the relation with the least info
         Relationship del = nr1.isRich() ? r2 : r1;

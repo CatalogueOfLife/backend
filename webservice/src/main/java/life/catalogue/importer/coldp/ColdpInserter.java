@@ -99,14 +99,23 @@ public class ColdpInserter extends NeoCsvInserter {
         inter::interpretTaxon,
         t -> store.usages().create(t) != null
     );
-    // taxon relations
-    insertRelations(reader, ColdpTerm.TaxonRelation,
+    // taxon concept relations
+    insertRelations(reader, ColdpTerm.TaxonConceptRelation,
       inter::interpretTaxonRelations,
       store.usages(),
       ColdpTerm.taxonID,
       ColdpTerm.relatedTaxonID,
       Issue.TAXON_ID_INVALID
     );
+    // species interactions
+    insertRelations(reader, ColdpTerm.SpeciesInteraction,
+      inter::interpretSpeciesInteractions,
+      store.usages(),
+      ColdpTerm.taxonID,
+      ColdpTerm.relatedTaxonID,
+      Issue.TAXON_ID_INVALID
+    );
+
     // synonyms
     insertEntities(reader, ColdpTerm.Synonym,
         inter::interpretSynonym,

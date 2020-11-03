@@ -212,27 +212,49 @@ public class NeoDb {
   /**
    * @return a collection of all name relations with name key using node ids.
    */
-  public NameRelation toRelation(Relationship r) {
+  public NameRelation toNameRelation(Relationship r) {
     NameRelation nr = new NameRelation();
-    nr.setDatasetKey(datasetKey);
     nr.setType(RelType.valueOf(r.getType().name()).nomRelType);
     nr.setNameId(names.objByNode(r.getStartNode()).getId());
     nr.setRelatedNameId(names.objByNode(r.getEndNode()).getId());
     nr.setRemarks((String) r.getProperty(NeoProperties.NOTE, null));
-    nr.setPublishedInId((String) r.getProperty(NeoProperties.REF_ID, null));
+    return update(r, nr);
+  }
+
+  public TaxonConceptRelation toConceptRelation(Relationship r) {
+    TaxonConceptRelation tr = new TaxonConceptRelation();
+    tr.setType(RelType.valueOf(r.getType().name()).taxRelType);
+    tr.setTaxonId(usages.objByNode(r.getStartNode()).getId());
+    tr.setRelatedTaxonId(usages.objByNode(r.getEndNode()).getId());
+    tr.setRemarks((String) r.getProperty(NeoProperties.NOTE, null));
+    return update(r, tr);
+  }
+
+  public SpeciesInteraction toSpeciesInteraction(Relationship r) {
+    SpeciesInteraction tr = new SpeciesInteraction();
+    tr.setType(RelType.valueOf(r.getType().name()).specInterType);
+    tr.setTaxonId(usages.objByNode(r.getStartNode()).getId());
+    tr.setRelatedTaxonId(usages.objByNode(r.getEndNode()).getId());
+    tr.setRemarks((String) r.getProperty(NeoProperties.NOTE, null));
+    return update(r, tr);
+  }
+
+  private <T extends DatasetScopedEntity<Integer> & VerbatimEntity & Referenced> T update(Relationship r, T obj) {
+    obj.setDatasetKey(datasetKey);
+    obj.setReferenceId((String) r.getProperty(NeoProperties.REF_ID, null));
     if (r.hasProperty(NeoProperties.VERBATIM_KEY)) {
-      nr.setVerbatimKey((Integer) r.getProperty(NeoProperties.VERBATIM_KEY));
+      obj.setVerbatimKey((Integer) r.getProperty(NeoProperties.VERBATIM_KEY));
     }
-    return nr;
+    return obj;
   }
   
   /**
    * @return a collection of all name relations for the given name node with NameRelation.key using node ids.
    */
-  public List<NameRelation> relations(Node nameNode) {
+  public List<NameRelation> nameRelations(Node nameNode) {
     return Iterables.stream(nameNode.getRelationships())
         .filter(r -> RelType.valueOf(r.getType().name()).isNameRel())
-        .map(this::toRelation)
+        .map(this::toNameRelation)
         .collect(Collectors.toList());
   }
   
