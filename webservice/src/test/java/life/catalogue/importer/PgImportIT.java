@@ -637,8 +637,11 @@ public class PgImportIT {
     assertEquals(23, (int) di.getTaxonCount());
     assertEquals(3, (int) di.getTypeMaterialCount());
     assertEquals(28, (int) di.getNameCount());
-    assertEquals(93, (int) di.getVerbatimCount());
+    assertEquals(94, (int) di.getVerbatimCount());
     assertEquals(2, (int) di.getEstimateCount());
+
+    assertEquals(1, di.getTaxonConceptRelationsByTypeCount().size());
+    assertEquals(1, di.getSpeciesInteractionsByTypeCount().size());
 
     //assertFalse(metrics().getIssuesCount().containsKey(Issue.PARENT_ID_INVALID));
     assertEquals(5, (int) di.getUsagesByStatusCount().get(TaxonomicStatus.SYNONYM));

@@ -74,10 +74,10 @@ public class SectorImportDao {
     si.setNamesByRankCount(countMap(DatasetImportDao::parseRank, mapper.countNamesByRank(datasetKey, key)));
     si.setNamesByStatusCount(countMap(NomStatus.class, mapper.countNamesByStatus(datasetKey, key)));
     si.setNamesByTypeCount(countMap(NameType.class, mapper.countNamesByType(datasetKey, key)));
-    si.setSpeciesInteractionsByTypeCount(countMap(SpeciesInteractionType.class, mapper.countTaxonConceptRelationsByType(datasetKey, key)));
+    si.setSpeciesInteractionsByTypeCount(countMap(SpeciesInteractionType.class, mapper.countSpeciesInteractionsByType(datasetKey, key)));
     si.setSynonymsByRankCount(countMap(DatasetImportDao::parseRank, mapper.countSynonymsByRank(datasetKey, key)));
     si.setTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(datasetKey, key)));
-    si.setTaxonConceptRelationsByTypeCount(countMap(TaxonConceptRelType.class, mapper.countSpeciesInteractionsByType(datasetKey, key)));
+    si.setTaxonConceptRelationsByTypeCount(countMap(TaxonConceptRelType.class, mapper.countTaxonConceptRelationsByType(datasetKey, key)));
     si.setTypeMaterialByStatusCount(countMap(TypeStatus.class, mapper.countTypeMaterialByStatus(datasetKey, key)));
     si.setUsagesByOriginCount(countMap(Origin.class, mapper.countUsagesByOrigin(datasetKey, key)));
     si.setUsagesByStatusCount(countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(datasetKey, key)));

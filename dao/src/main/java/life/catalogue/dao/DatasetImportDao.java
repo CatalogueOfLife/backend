@@ -163,10 +163,10 @@ public class DatasetImportDao {
     di.setNamesByRankCount(countMap(DatasetImportDao::parseRank, mapper.countNamesByRank(key)));
     di.setNamesByStatusCount(countMap(NomStatus.class, mapper.countNamesByStatus(key)));
     di.setNamesByTypeCount(countMap(NameType.class, mapper.countNamesByType(key)));
-    di.setSpeciesInteractionsByTypeCount(countMap(SpeciesInteractionType.class, mapper.countTaxonConceptRelationsByType(key)));
+    di.setSpeciesInteractionsByTypeCount(countMap(SpeciesInteractionType.class, mapper.countSpeciesInteractionsByType(key)));
     di.setSynonymsByRankCount(countMap(DatasetImportDao::parseRank, mapper.countSynonymsByRank(key)));
     di.setTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(key)));
-    di.setTaxonConceptRelationsByTypeCount(countMap(TaxonConceptRelType.class, mapper.countSpeciesInteractionsByType(key)));
+    di.setTaxonConceptRelationsByTypeCount(countMap(TaxonConceptRelType.class, mapper.countTaxonConceptRelationsByType(key)));
     di.setTypeMaterialByStatusCount(countMap(TypeStatus.class, mapper.countTypeMaterialByStatus(key)));
     di.setUsagesByOriginCount(countMap(Origin.class, mapper.countUsagesByOrigin(key)));
     di.setUsagesByStatusCount(countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(key)));
