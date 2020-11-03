@@ -46,7 +46,7 @@
     ni.canonical_id AS nameIndexCanonicalId,
     d.gbif_publisher_key AS publisherKey,
     s.subject_dataset_key AS sectorDatasetKey,
-    array_distinct(vbn.issues || vbt.issues || xrel.issues || xdis.issues || xmed.issues || xver.issues || xtyp.issues || nrel.issues) AS issues,
+    array_distinct(vbn.issues || vbt.issues || tcrel.issues || sirel.issues || xdis.issues || xmed.issues || xver.issues || xtyp.issues || nrel.issues) AS issues,
     ed.id AS ed_id, ed.dataset_key AS ed_dataset_key, ed.mode AS ed_mode
     FROM
     <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM"/>
@@ -56,8 +56,11 @@
     LEFT JOIN verbatim_${partition} vbt ON vbt.id=u.verbatim_key
     LEFT JOIN verbatim_${partition} vbn ON vbn.id=n.verbatim_key
     LEFT JOIN (
-      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM taxon_rel_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id GROUP BY x.taxon_id
-    ) xrel ON xrel.taxon_id=u.id
+      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM taxon_concept_rel_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id GROUP BY x.taxon_id
+    ) tcrel ON tcrel.taxon_id=u.id
+    LEFT JOIN (
+      SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM species_interaction_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id GROUP BY x.taxon_id
+    ) sirel ON sirel.taxon_id=u.id
     LEFT JOIN (
       SELECT taxon_id, array_agg_nonull(v.issues) AS issues FROM distribution_${partition} x JOIN verbatim_${partition} v ON x.verbatim_key=v.id GROUP BY x.taxon_id
     ) xdis ON xdis.taxon_id=u.id

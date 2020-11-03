@@ -233,11 +233,15 @@
     CREATE TEMP TABLE IF NOT EXISTS ref_fks_${partition} AS
     SELECT published_in_id AS id FROM name_${partition} WHERE published_in_id IS NOT NULL
       UNION
-    SELECT published_in_id FROM name_rel_${partition} WHERE published_in_id IS NOT NULL
+    SELECT reference_id FROM name_rel_${partition} WHERE reference_id IS NOT NULL
       UNION
     SELECT reference_id FROM type_material_${partition} WHERE reference_id IS NOT NULL
       UNION
     SELECT unnest(reference_ids) FROM name_usage_${partition} WHERE reference_ids IS NOT NULL
+      UNION
+    SELECT reference_id FROM taxon_concept_rel_${partition} WHERE reference_id IS NOT NULL
+      UNION
+    SELECT reference_id FROM species_interaction_${partition} WHERE reference_id IS NOT NULL
       UNION
     SELECT reference_id FROM vernacular_name_${partition} WHERE reference_id IS NOT NULL
       UNION
