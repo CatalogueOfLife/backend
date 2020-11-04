@@ -14,6 +14,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public class DatasetProjectSourceDao {
@@ -38,7 +39,7 @@ public class DatasetProjectSourceDao {
           DatasetMapper dm = session.getMapper(DatasetMapper.class);
           final DatasetSettings settings = dm.getSettings(projectKey);
           final Dataset project = dm.get(projectKey);
-          patch(d, project, session.getMapper(DatasetPatchMapper.class), settings);
+          patch(d, projectKey, project, session.getMapper(DatasetPatchMapper.class), settings);
         }
         return d;
 
@@ -65,8 +66,9 @@ public class DatasetProjectSourceDao {
    * If it points to a live project, the metadata is taken from the dataset archive at the time of the last successful sync attempt
    * and then patched.
    * @param projectKey
+   * @param projectForPatching optional dataset used for building the source citations, if null project is used
    */
-  public List<ArchivedDataset> list(int projectKey){
+  public List<ArchivedDataset> list(int projectKey, @Nullable Dataset projectForPatching){
     DatasetOrigin origin = getProjectOrigin(projectKey);
 
     List<ArchivedDataset> sources;
@@ -77,12 +79,12 @@ public class DatasetProjectSourceDao {
 
       } else {
         // get latest version with patch applied
-        final Dataset project = session.getMapper(DatasetMapper.class).get(projectKey);
+        final Dataset project = projectForPatching != null ? projectForPatching : session.getMapper(DatasetMapper.class).get(projectKey);
         final DatasetSettings settings = session.getMapper(DatasetMapper.class).getSettings(projectKey);
         DatasetPatchMapper pm = session.getMapper(DatasetPatchMapper.class);
 
         sources = psm.listProjectSources(projectKey);
-        sources.forEach(d -> patch(d, project, pm, settings));
+        sources.forEach(d -> patch(d, projectKey, project, pm, settings));
       }
     }
     return sources;
@@ -91,18 +93,19 @@ public class DatasetProjectSourceDao {
   /**
    * Applies the projects dataset patch if existing to the dataset d
    * @param d dataset to be patched
+   * @param settings project settings
    * @return the same dataset instance d as given
    */
-  private ArchivedDataset patch(ArchivedDataset d, Dataset project, DatasetPatchMapper pm, DatasetSettings settings){
-    Dataset patch = pm.get(project.getKey(), d.getKey());
+  private ArchivedDataset patch(ArchivedDataset d, int projectKey, Dataset patchProject, DatasetPatchMapper pm, DatasetSettings settings){
+    Dataset patch = pm.get(projectKey, d.getKey());
     if (patch != null) {
-      LOG.info("Apply dataset patch from project {} to {}: {}", project.getKey(), d.getKey(), d.getTitle());
+      LOG.info("Apply dataset patch from project {} to {}: {}", patchProject.getKey(), d.getKey(), d.getTitle());
       d.applyPatch(patch);
     }
     // build an in project citation?
     if (settings != null && settings.has(Setting.RELEASE_SOURCE_CITATION_TEMPLATE)) {
       try {
-        String citation = CitationUtils.fromTemplate(project, d, settings.getString(Setting.RELEASE_SOURCE_CITATION_TEMPLATE));
+        String citation = CitationUtils.fromTemplate(d, patchProject, settings.getString(Setting.RELEASE_SOURCE_CITATION_TEMPLATE)).trim();
         d.setCitation(citation);
       } catch (IllegalArgumentException e) {
         LOG.warn("Failed to create citation for source dataset {}", d.getKey(), e);

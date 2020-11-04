@@ -162,7 +162,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @GET
   @Path("/{key}/source")
   public List<ArchivedDataset> projectSources(@PathParam("key") int datasetKey) {
-    return sourceDao.list(datasetKey);
+    return sourceDao.list(datasetKey, null);
   }
 
   @GET

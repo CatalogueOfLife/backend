@@ -29,6 +29,7 @@ public class ProjectRelease extends AbstractProjectCopy {
   private final ImageService imageService;
   private final NameIndex nameIndex;
   private final boolean useStableIDs;
+  private final Dataset release;
 
   ProjectRelease(SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService, DatasetImportDao diDao, ImageService imageService,
                  int datasetKey, Dataset release, int userKey, boolean useStableIDs) {
@@ -36,28 +37,18 @@ public class ProjectRelease extends AbstractProjectCopy {
     this.imageService = imageService;
     this.nameIndex = nameIndex;
     this.useStableIDs = useStableIDs;
+    this.release = release;
   }
 
   @Override
   void prepWork() throws Exception {
-    // map ids
-    updateState(ImportState.MATCHING);
-    matchUnmatchedNames();
-    IdProvider idProvider;
-    if (useStableIDs) {
-      idProvider = IdProvider.withAllReleases(datasetKey, factory);
-    } else {
-      idProvider = IdProvider.withNoReleases(datasetKey, factory);
-    }
-    idProvider.run();
-
     // archive dataset metadata & logos
     updateState(ImportState.ARCHIVING);
     DatasetProjectSourceDao dao = new DatasetProjectSourceDao(factory);
     try (SqlSession session = factory.openSession(true)) {
       ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
       final AtomicInteger counter = new AtomicInteger(0);
-      dao.list(datasetKey).forEach(d -> {
+      dao.list(datasetKey, release).forEach(d -> {
         LOG.info("Archive dataset {}#{} for release {}", d.getKey(), d.getImportAttempt(), newDatasetKey);
         psm.create(newDatasetKey, d);
         // archive logos
@@ -70,6 +61,17 @@ public class ProjectRelease extends AbstractProjectCopy {
       });
       LOG.info("Archived metadata for {} source datasets of release {}", counter.get(), newDatasetKey);
     }
+
+    // map ids
+    updateState(ImportState.MATCHING);
+    matchUnmatchedNames();
+    IdProvider idProvider;
+    if (useStableIDs) {
+      idProvider = IdProvider.withAllReleases(datasetKey, factory);
+    } else {
+      idProvider = IdProvider.withNoReleases(datasetKey, factory);
+    }
+    idProvider.run();
 
     // create new dataset "import" metrics in mother project
     updateState(ImportState.ANALYZING);

@@ -161,7 +161,7 @@ public class CitationUtils {
     return null;
   }
 
-  public static String fromTemplate(ArchivedDataset project, ArchivedDataset d, String template){
+  public static String fromTemplate(ArchivedDataset d, ArchivedDataset project, String template){
     if (template != null) {
       return SimpleTemplate.render(template, new ProjectWrapper(d, project));
     }
