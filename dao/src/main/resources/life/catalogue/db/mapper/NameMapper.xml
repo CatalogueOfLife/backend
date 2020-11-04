@@ -215,7 +215,7 @@
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE id IN
+    WHERE n.id IN
     <foreach item="k" index="idx" collection="ids" open="(" separator="," close=")">#{k}</foreach>
   </select>
 
