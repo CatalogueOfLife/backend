@@ -5,9 +5,10 @@ import com.esotericsoftware.kryo.util.Pool;
 import com.google.common.base.Preconditions;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.IndexName;
-import life.catalogue.common.kryo.ApiKryoPool;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
 import org.apache.commons.lang3.ArrayUtils;
+import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.Rank;
 import org.mapdb.DB;
 import org.mapdb.DBException;
 import org.mapdb.DBMaker;
@@ -17,9 +18,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
 
 /**
  * NameIndexStore implementation that is backed by a mapdb using kryo serialization.
@@ -34,15 +34,28 @@ public class NameIndexMapDBStore implements NameIndexStore {
   private Map<String, int[]> names;
   private Map<Integer, IndexName> keys;
 
-  static class NameIndexKryoPool extends ApiKryoPool {
+  /**
+   * We use a separate kryo pool for the names index to avoid too often changes to the serialisation format
+   * that then requires us to rebuilt the names index mapdb file. Register just the needed classes, no more.
+   */
+  static class NameIndexKryoPool extends Pool<Kryo> {
 
     public NameIndexKryoPool(int maximumCapacity) {
-      super(maximumCapacity);
+      super(true, true, maximumCapacity);
     }
 
     @Override
     public Kryo create() {
-      Kryo kryo = super.create();
+      Kryo kryo = new Kryo();
+      kryo.setRegistrationRequired(true);
+      kryo.register(IndexName.class);
+      kryo.register(Authorship.class);
+      kryo.register(Rank.class);
+      kryo.register(LocalDateTime.class);
+      kryo.register(ArrayList.class);
+      kryo.register(HashMap.class);
+      kryo.register(HashSet.class);
+      kryo.register(int[].class);
       return kryo;
     }
   }
