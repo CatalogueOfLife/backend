@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Maps;
 import life.catalogue.api.vocab.*;
 import org.gbif.nameparser.api.NameType;
@@ -285,7 +286,21 @@ public class ImportMetrics implements ImportAttempt {
   public void setNamesByRankCount(Map<Rank, Integer> namesByRankCount) {
     this.namesByRankCount = namesByRankCount;
   }
-  
+
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  public Integer getNameRelationsCount() {
+    return sum(nameRelationsByTypeCount);
+  }
+
+  Integer sum(Map<?, Integer> counts){
+    if (counts == null) return null;
+    int cnt = 0;
+    for (Integer x : counts.values()) {
+      cnt += x;
+    }
+    return cnt;
+  }
+
   public Map<NomRelType, Integer> getNameRelationsByTypeCount() {
     return nameRelationsByTypeCount;
   }
@@ -373,12 +388,22 @@ public class ImportMetrics implements ImportAttempt {
     this.synonymsByRankCount = synonymsByRankCount;
   }
 
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  public Integer getTaxonConceptRelationsCount() {
+    return sum(taxonConceptRelationsByTypeCount);
+  }
+
   public Map<TaxonConceptRelType, Integer> getTaxonConceptRelationsByTypeCount() {
     return taxonConceptRelationsByTypeCount;
   }
 
   public void setTaxonConceptRelationsByTypeCount(Map<TaxonConceptRelType, Integer> taxonConceptRelationsByTypeCount) {
     this.taxonConceptRelationsByTypeCount = taxonConceptRelationsByTypeCount;
+  }
+
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  public Integer getSpeciesInteractionsCount() {
+    return sum(speciesInteractionsByTypeCount);
   }
 
   public Map<SpeciesInteractionType, Integer> getSpeciesInteractionsByTypeCount() {
