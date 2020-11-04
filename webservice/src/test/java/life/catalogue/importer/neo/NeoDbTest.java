@@ -97,7 +97,7 @@ public class NeoDbTest {
     String graphImpl = "Heavy";
     db.getNeo().execute("CALL algo.unionFind('', '',{graph:'" + graphImpl + "'}) YIELD setCount")
         .accept((Result.ResultVisitor<Exception>) row -> {
-          assertEquals(3L, row.getNumber("setCount"));
+          assertEquals(4L, row.getNumber("setCount"));
           return true;
         });
   }
