@@ -17,8 +17,9 @@ public class NeoProperties {
   public static final String RANK = "rank";
   public static final String SCIENTIFIC_NAME = "scientificName";
   public static final String AUTHORSHIP = "authorship";
-  // nomrel props
+  // rel props
   public static final String NOTE = "note";
+  public static final String SCINAME = "sciname";
   public static final String REF_ID = "refid";
   public static final String VERBATIM_KEY = "vkey";
   

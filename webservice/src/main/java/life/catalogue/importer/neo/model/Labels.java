@@ -3,9 +3,10 @@ package life.catalogue.importer.neo.model;
 import org.neo4j.graphdb.Label;
 
 /**
- *
+ * Neo4j labels we use in queries
  */
 public enum Labels implements Label {
+
   /**
    * Applied to nodes that contain a name
    */
@@ -31,5 +32,11 @@ public enum Labels implements Label {
    */
   BASIONYM,
   
-  ROOT
+  ROOT,
+
+  /**
+   * A dummy node that should not exist in postgres, but is needed to create some neo relationships.
+   * E.g. for species interactions with a missing relatedTaxonID.
+   */
+  DEV_NULL
 }

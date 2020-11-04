@@ -129,6 +129,7 @@ public class NeoDbUtils {
     putIfNotNull(props, NeoProperties.VERBATIM_KEY, rel.getVerbatimKey());
     putIfNotNull(props, NeoProperties.REF_ID, rel.getReferenceId());
     putIfNotNull(props, NeoProperties.NOTE, rel.getRemarks());
+    putIfNotNull(props, NeoProperties.SCINAME, rel.getRelatedScientificName());
     return props;
   }
 }

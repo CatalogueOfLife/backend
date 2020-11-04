@@ -56,7 +56,8 @@ public class DwcaInserter extends NeoCsvInserter {
         store.names(),
         DwcaTerm.ID,
         ColDwcTerm.relatedNameUsageID,
-        Issue.NAME_ID_INVALID
+        Issue.NAME_ID_INVALID,
+      true
     );
 
     insertTaxonEntities(reader, GbifTerm.Distribution,

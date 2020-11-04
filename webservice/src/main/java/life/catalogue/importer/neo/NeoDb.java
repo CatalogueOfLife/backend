@@ -86,6 +86,8 @@ public class NeoDb {
 
   private GraphDatabaseService neo;
   private final AtomicInteger neoCounter = new AtomicInteger(0);
+  private Node devNullNode;
+
 
   /**
    * @param mapDb
@@ -112,12 +114,11 @@ public class NeoDb {
       typeMaterial = new MapStore<>(TypeMaterial.class, "tm", mapDb, pool, this::addIssues);
 
       openNeo();
-      
+
       usages = new NeoUsageStore(mapDb, "usages", pool, idGen, this);
       
       names = new NeoNameStore(mapDb, "names", pool, idGen, this);
-  
-  
+
     } catch (Exception e) {
       LOG.error("Failed to initialize a new NeoDB", e);
       close();
@@ -159,6 +160,17 @@ public class NeoDb {
     } catch (KernelException e) {
       LOG.warn("Unable to register neo4j algorithms", e);
     }
+
+    // make sure we have a working devNull node
+    try (Transaction tx = neo.beginTx()) {
+      ResourceIterator<Node> iter = neo.findNodes(Labels.DEV_NULL);
+      if (iter.hasNext()) {
+        devNullNode = iter.next();
+      } else {
+        devNullNode = neo.createNode(Labels.DEV_NULL);
+      }
+      tx.success();
+    }
   }
 
   private void closeNeo() {
@@ -199,6 +211,10 @@ public class NeoDb {
     return usageWithName(usages().nodeByID(usageID));
   }
 
+  public Node getDevNullNode() {
+    return devNullNode;
+  }
+
   public NeoUsage usageWithName(Node usageNode) {
     NeoUsage u = usages().objByNode(usageNode);
     if (u != null) {
@@ -234,7 +250,11 @@ public class NeoDb {
     SpeciesInteraction tr = new SpeciesInteraction();
     tr.setType(RelType.valueOf(r.getType().name()).specInterType);
     tr.setTaxonId(usages.objByNode(r.getStartNode()).getId());
-    tr.setRelatedTaxonId(usages.objByNode(r.getEndNode()).getId());
+    // related id could point to the dummy node - keep those null
+    if (!r.getEndNode().hasLabel(Labels.DEV_NULL)) {
+      tr.setRelatedTaxonId(usages.objByNode(r.getEndNode()).getId());
+    }
+    tr.setRelatedTaxonScientificName((String) r.getProperty(NeoProperties.SCINAME, null));
     tr.setRemarks((String) r.getProperty(NeoProperties.NOTE, null));
     return update(r, tr);
   }

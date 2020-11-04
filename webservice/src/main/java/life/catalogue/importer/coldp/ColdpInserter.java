@@ -88,7 +88,8 @@ public class ColdpInserter extends NeoCsvInserter {
         store.names(),
         ColdpTerm.nameID,
         ColdpTerm.relatedNameID,
-        Issue.NAME_ID_INVALID
+        Issue.NAME_ID_INVALID,
+      true
     );
     interpretTypeMaterial(reader, ColdpTerm.TypeMaterial,
             inter::interpretTypeMaterial
@@ -105,7 +106,8 @@ public class ColdpInserter extends NeoCsvInserter {
       store.usages(),
       ColdpTerm.taxonID,
       ColdpTerm.relatedTaxonID,
-      Issue.TAXON_ID_INVALID
+      Issue.TAXON_ID_INVALID,
+      true
     );
     // species interactions
     insertRelations(reader, ColdpTerm.SpeciesInteraction,
@@ -113,7 +115,8 @@ public class ColdpInserter extends NeoCsvInserter {
       store.usages(),
       ColdpTerm.taxonID,
       ColdpTerm.relatedTaxonID,
-      Issue.TAXON_ID_INVALID
+      Issue.TAXON_ID_INVALID,
+      false
     );
 
     // synonyms

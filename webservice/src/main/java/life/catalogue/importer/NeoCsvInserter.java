@@ -179,16 +179,19 @@ public abstract class NeoCsvInserter implements NeoInserter {
     }
   }
   
-  protected void insertRelations(final CsvReader reader, final Term classTerm,
+  protected void  insertRelations(final CsvReader reader, final Term classTerm,
                                  Function<VerbatimRecord, Optional<NeoRel>> interpret,
                                  NeoCRUDStore<?> entityStore, Term idTerm, Term relatedIdTerm,
-                                 Issue invalidIdIssue
+                                 Issue invalidIdIssue, boolean requireRelatedID
   ) {
     processVerbatim(reader, classTerm, rec -> {
       Optional<NeoRel> opt = interpret.apply(rec);
       if (opt.isPresent()) {
         Node n1 = entityStore.nodeByID(rec.getRaw(idTerm));
         Node n2 = entityStore.nodeByID(rec.getRaw(relatedIdTerm));
+        if (n2 == null && !requireRelatedID) {
+          n2 = store.getDevNullNode();
+        }
         if (n1 != null && n2 != null) {
           store.createNeoRel(n1, n2, opt.get());
           return true;
