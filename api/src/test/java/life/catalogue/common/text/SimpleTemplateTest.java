@@ -124,4 +124,16 @@ public class SimpleTemplateTest {
 
     assertEquals("Hi Clair, Mark, Shreg, Shreg !!!", SimpleTemplate.render("Hi {puppets} !!!", new ListContainer(List.of(clair, mark, shreg, shreg))));
   }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void renderBadDateFormat() {
+    Puppet clair = new Puppet("Clair", null, null);
+    assertEquals("Clair 2020-10-09", SimpleTemplate.render("{name} {born, YMYDhmxswd}", clair));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void renderBadProp() {
+    Puppet clair = new Puppet("Clair", null, null);
+    assertEquals("Clair 2020-10-09", SimpleTemplate.render("{namy} {borny, Y}", clair));
+  }
 }

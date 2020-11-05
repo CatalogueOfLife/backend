@@ -6,7 +6,9 @@ import life.catalogue.api.event.UserPermissionChanged;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.io.DownloadUtil;
+import life.catalogue.common.text.CitationUtils;
 import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
@@ -23,6 +25,9 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
@@ -71,10 +76,43 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   }
 
   public void putSettings(int key, DatasetSettings settings, int userKey) {
+    // verify templates
+    verifySettings(settings);
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       dm.updateSettings(key, settings, userKey);
       session.commit();
+    }
+  }
+
+  static void verifySettings(DatasetSettings ds) throws IllegalArgumentException {
+    Dataset d = new Dataset();
+    d.setKey(1);
+    d.setAlias("alias");
+    d.setTitle("title");
+    d.setOrigin(DatasetOrigin.MANAGED);
+    d.setReleased(LocalDate.now());
+    d.setLogo(URI.create("https://gbif.org"));
+    d.setWebsite(d.getLogo());
+    d.setCreated(LocalDateTime.now());
+    d.setModified(LocalDateTime.now());
+    d.setImported(LocalDateTime.now());
+    // try with all templates, throwing IAE if bad
+    verifySetting(ds, Setting.RELEASE_ALIAS_TEMPLATE, d, null);
+    verifySetting(ds, Setting.RELEASE_TITLE_TEMPLATE, d, null);
+    verifySetting(ds, Setting.RELEASE_CITATION_TEMPLATE, d, null);
+    verifySetting(ds, Setting.RELEASE_SOURCE_CITATION_TEMPLATE, d, d);
+  }
+
+  static void verifySetting(DatasetSettings ds, Setting setting, Dataset d, Dataset d2) throws IllegalArgumentException {
+    try {
+      if (d2 == null) {
+        CitationUtils.fromTemplate(d, ds.getString(setting));
+      } else {
+        CitationUtils.fromTemplate(d, d2, ds.getString(setting));
+      }
+    } catch (RuntimeException e) {
+      throw new IllegalArgumentException("Bad template for " + setting + ": " + e.getMessage(), e);
     }
   }
 

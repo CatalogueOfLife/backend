@@ -42,24 +42,32 @@ public class SimpleTemplate {
    */
   public static String render(String template, Object arg) throws IllegalArgumentException {
     Preconditions.checkNotNull(template);
-    boolean isMap = arg instanceof Map;
-    BeanInfo info = null;
-    Map<?,?> map = null;
-    if (isMap) {
-      map = (Map<?,?>) arg;
-    } else {
-      info = getInfo(arg);
+    try {
+      boolean isMap = arg instanceof Map;
+      BeanInfo info = null;
+      Map<?,?> map = null;
+      if (isMap) {
+        map = (Map<?,?>) arg;
+      } else {
+        info = getInfo(arg);
+      }
+      Matcher matcher = ARG_PATTERN.matcher(template);
+      StringBuffer buffer = new StringBuffer();
+      while (matcher.find()) {
+        matcher.appendReplacement(buffer, isMap ?
+          mapValue(matcher.group(1), matcher.group(2), map) :
+          propertyValue(matcher.group(1), matcher.group(2), info, arg)
+        );
+      }
+      matcher.appendTail(buffer);
+      return buffer.toString();
+
+    } catch (IllegalArgumentException e) {
+      throw e;
+
+    } catch (RuntimeException e) {
+      throw new IllegalArgumentException(e);
     }
-    Matcher matcher = ARG_PATTERN.matcher(template);
-    StringBuffer buffer = new StringBuffer();
-    while (matcher.find()) {
-      matcher.appendReplacement(buffer, isMap ?
-        mapValue(matcher.group(1), matcher.group(2), map) :
-        propertyValue(matcher.group(1), matcher.group(2), info, arg)
-      );
-    }
-    matcher.appendTail(buffer);
-    return buffer.toString();
   }
 
   /**
