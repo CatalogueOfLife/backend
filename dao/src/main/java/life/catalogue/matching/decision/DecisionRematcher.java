@@ -15,11 +15,11 @@ public class DecisionRematcher extends RematcherBase<EditorialDecision, Decision
 
   public static MatchCounter match(DecisionDao dao, DecisionRematchRequest req, int userKey){
     DecisionRematcher rematcher = new DecisionRematcher(dao, req, userKey);
-    return rematcher.match(dao.getFactory());
+    return rematcher.match();
   }
 
   private DecisionRematcher(DecisionDao dao, DecisionRematchRequest req, int userKey) {
-    super(EditorialDecision.class, DecisionMapper.class, req, userKey);
+    super(EditorialDecision.class, DecisionMapper.class, req, userKey, dao.getFactory());
     this.dao = dao;
   }
 

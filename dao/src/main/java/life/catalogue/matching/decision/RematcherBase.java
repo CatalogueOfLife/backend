@@ -1,5 +1,6 @@
 package life.catalogue.matching.decision;
 
+import com.google.common.base.Preconditions;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DatasetScopedEntity;
@@ -7,6 +8,7 @@ import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.db.mapper.BaseDecisionMapper;
+import life.catalogue.db.mapper.DatasetPartitionMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -26,6 +28,7 @@ public abstract class RematcherBase<
   private final String type;
   private final Class<M> mapperClass;
   private MatchingDao mdao;
+  private SqlSessionFactory factory;
   SqlSession session;
   M mapper;
   final int projectKey;
@@ -34,12 +37,18 @@ public abstract class RematcherBase<
 
   MatchCounter counter = new MatchCounter();
 
-  public RematcherBase(Class<T> type, Class<M> mapperClass, R req, int userKey) {
+  public RematcherBase(Class<T> type, Class<M> mapperClass, R req, int userKey, SqlSessionFactory factory) {
     this.userKey = userKey;
     this.req = req;
-    this.projectKey = req.getDatasetKey();
     this.type = type.getSimpleName();
     this.mapperClass = mapperClass;
+    this.factory = factory;
+    // check if dataset key is given and has data partitions
+    Preconditions.checkArgument(req.getDatasetKey() != null, "DatasetKey required for rematching");
+    this.projectKey = req.getDatasetKey();
+    try(SqlSession session = factory.openSession(true)) {
+      Preconditions.checkArgument(session.getMapper(DatasetPartitionMapper.class).exists(projectKey), "DatasetKey required for rematching");
+    }
   }
 
   abstract S toSearchRequest(R req);
@@ -71,12 +80,21 @@ public abstract class RematcherBase<
     public int getTotal() {
       return broken + updated + unchanged;
     }
+
+    @Override
+    public String toString() {
+      return "broken=" + broken +
+        ", updated=" + updated +
+        ", unchanged=" + unchanged;
+    }
   }
 
-  MatchCounter match(SqlSessionFactory factory){
+  MatchCounter match(){
     try(SqlSession session = factory.openSession(true)) {
       this.session = session;
-      DaoUtils.assertMutable(projectKey, "matched", session);
+      if (!req.isAllowImmutableDatasets()) {
+        DaoUtils.assertMutable(projectKey, "matched", session);
+      }
       mdao = new MatchingDao(session);
       mapper = session.getMapper(mapperClass);
       if (req.getId() != null){

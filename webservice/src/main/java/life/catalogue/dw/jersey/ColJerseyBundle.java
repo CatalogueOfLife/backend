@@ -22,7 +22,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
  */
 public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
 
-  DatasetKeyRewriteFilter filter;
+  DatasetKeyRewriteFilter lrFilter;
   CacheControlResponseFilter ccFilter;
 
   @Override
@@ -37,8 +37,8 @@ public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
     
     // response and request filters
     env.jersey().packages(CreatedResponseFilter.class.getPackage().getName());
-    filter = new DatasetKeyRewriteFilter();
-    env.jersey().register(filter);
+    lrFilter = new DatasetKeyRewriteFilter();
+    env.jersey().register(lrFilter);
     ccFilter = new CacheControlResponseFilter();
     env.jersey().register(ccFilter);
 
@@ -51,7 +51,7 @@ public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
 
   // needed to populate the session factory in some filters
   public void setSqlSessionFactory(SqlSessionFactory factory) {
-    filter.setSqlSessionFactory(factory);
+    lrFilter.setSqlSessionFactory(factory);
     try (SqlSession session = factory.openSession()){
       ccFilter.addAll(session.getMapper(DatasetMapper.class).keys(DatasetOrigin.RELEASED));
     }
@@ -61,6 +61,10 @@ public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
   public void datasetChanged(DatasetChanged d){
     if (d.obj!=null && d.obj.getOrigin() == DatasetOrigin.RELEASED) {
       ccFilter.addRelease(d.key);
+      if (d.obj.getSourceKey() != null) {
+        // refresh the latest release (candidate) of the source project
+        lrFilter.refresh(d.obj.getSourceKey());
+      }
     }
   }
 }

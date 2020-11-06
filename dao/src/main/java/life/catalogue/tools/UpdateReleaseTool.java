@@ -3,26 +3,33 @@ package life.catalogue.tools;
 import com.zaxxer.hikari.HikariDataSource;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.dao.DatasetProjectSourceDao;
+import life.catalogue.dao.*;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.ProjectSourceMapper;
+import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.matching.decision.*;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class RegenerateReleaseSourceMetadata implements AutoCloseable {
+public class UpdateReleaseTool implements AutoCloseable {
+  private static final Logger LOG = LoggerFactory.getLogger(UpdateReleaseTool.class);
 
   final SqlSessionFactory factory;
   final HikariDataSource dataSource;
   final Dataset release;
   final Dataset project;
+  final int userKey;
 
-  public RegenerateReleaseSourceMetadata(int releaseKey, PgConfig cfg) {
+  public UpdateReleaseTool(int releaseKey, PgConfig cfg, int userKey) {
     dataSource = cfg.pool();
+    this.userKey = userKey;
     factory = MybatisFactory.configure(dataSource, "tools");
     DatasetInfoCache.CACHE.setFactory(factory);
 
@@ -36,11 +43,40 @@ public class RegenerateReleaseSourceMetadata implements AutoCloseable {
     }
   }
 
-  public void run(){
+  /**
+   * Rebuilds the source metadata from latest patches and templates
+   */
+  public void rebuildSourceMetadata(){
     System.out.printf("%s: %s\n\n", release.getKey(), release.getCitation());
     DatasetProjectSourceDao dao = new DatasetProjectSourceDao(factory);
     //show(dao);
     update(dao);
+  }
+
+  /**
+   * Rematches all sector targets for releases
+   */
+  public void rematchSectorTargets(){
+    System.out.printf("Matching all sector targets of %s: %s\n\n", release.getKey(), release.getTitle());
+
+    NameUsageIndexService indexService = NameUsageIndexService.passThru();
+    EstimateDao edao = new EstimateDao(factory);
+    NameDao ndao = new NameDao(factory, indexService, NameIndexFactory.passThru());
+    TaxonDao tdao = new TaxonDao(factory, ndao, indexService);
+    SectorDao sdao = new SectorDao(factory, indexService, tdao);
+
+    SectorRematchRequest req = new SectorRematchRequest();
+    req.setAllowImmutableDatasets(true);
+    req.setDatasetKey(release.getKey());
+    //req.setId(1134);
+    req.setTarget(true);
+    req.setSubject(false);
+
+    RematcherBase.MatchCounter mc = SectorRematcher.match(sdao, req, userKey);
+    System.out.println("Sectors: " + mc);
+
+    RematcherBase.MatchCounter mc2 = EstimateRematcher.match(edao, req, userKey);
+    System.out.println("Estimates: " + mc2);
   }
 
   void show(DatasetProjectSourceDao dao){
@@ -77,8 +113,8 @@ public class RegenerateReleaseSourceMetadata implements AutoCloseable {
     cfg.database = "col";
     cfg.user = "col";
     cfg.password = "";
-    try (RegenerateReleaseSourceMetadata reg = new RegenerateReleaseSourceMetadata(2230,cfg)) {
-      reg.run();
+    try (UpdateReleaseTool reg = new UpdateReleaseTool(2230,cfg, 101)) { // 101=markus
+      reg.rematchSectorTargets();
     }
   }
 }

@@ -15,11 +15,11 @@ public class SectorRematcher extends RematcherBase<Sector, SectorRematchRequest,
 
   public static MatchCounter match(SectorDao dao, SectorRematchRequest req, int userKey){
     SectorRematcher rematcher = new SectorRematcher(dao, req, userKey);
-    return rematcher.match(dao.getFactory());
+    return rematcher.match();
   }
 
   private SectorRematcher(SectorDao dao, SectorRematchRequest req, int userKey) {
-    super(Sector.class, SectorMapper.class, req, userKey);
+    super(Sector.class, SectorMapper.class, req, userKey, dao.getFactory());
     this.dao = dao;
   }
 

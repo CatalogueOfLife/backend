@@ -1,5 +1,6 @@
 package life.catalogue.matching.decision;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.model.DSID;
 
 import java.util.Objects;
@@ -8,6 +9,7 @@ public class RematchRequest implements DSID<Integer> {
   private Integer id;
   private Integer datasetKey; // project
   private boolean broken;
+  private boolean allowImmutableDatasets = false;
 
   public RematchRequest() {
   }
@@ -44,6 +46,15 @@ public class RematchRequest implements DSID<Integer> {
 
   public void setBroken(boolean broken) {
     this.broken = broken;
+  }
+
+  @JsonIgnore
+  public boolean isAllowImmutableDatasets() {
+    return allowImmutableDatasets;
+  }
+
+  public void setAllowImmutableDatasets(boolean allowImmutableDatasets) {
+    this.allowImmutableDatasets = allowImmutableDatasets;
   }
 
   @Override

@@ -15,11 +15,11 @@ public class EstimateRematcher extends RematcherBase<SpeciesEstimate, RematchReq
 
   public static MatchCounter match(EstimateDao dao, RematchRequest req, int userKey){
     EstimateRematcher rematcher = new EstimateRematcher(dao, req, userKey);
-    return rematcher.match(dao.getFactory());
+    return rematcher.match();
   }
 
   private EstimateRematcher(EstimateDao dao, RematchRequest req, int userKey) {
-    super(SpeciesEstimate.class, EstimateMapper.class, req, userKey);
+    super(SpeciesEstimate.class, EstimateMapper.class, req, userKey, dao.getFactory());
     this.dao = dao;
   }
 

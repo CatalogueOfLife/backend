@@ -6,16 +6,6 @@ public interface IdMapMapper {
   String NAME_TBL = "idmap_name";
   String USAGE_TBL= "idmap_name_usage";
 
-  void createTable(@Param("datasetKey") int datasetKey, @Param("table") String table);
-
-  default void createNameTable(int datasetKey) {
-    createTable(datasetKey, NAME_TBL);
-  }
-
-  default void createUsageTable(int datasetKey) {
-    createTable(datasetKey, USAGE_TBL);
-  }
-
   void insert(@Param("datasetKey") int datasetKey,
               @Param("table") String table,
               @Param("id") String id,

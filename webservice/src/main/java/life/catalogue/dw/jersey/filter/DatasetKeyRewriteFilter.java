@@ -55,7 +55,7 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     .build(k -> lookupLatest(k, false));
   private final LoadingCache<Integer, Integer> latestCandidate = Caffeine.newBuilder()
     .maximumSize(1000)
-    .expireAfterWrite(15, TimeUnit.MINUTES)
+    .expireAfterWrite(60, TimeUnit.MINUTES)
     .build(k -> lookupLatest(k, true));
 
   // we dont use a limited loading cache here as
@@ -160,6 +160,11 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
         return d.getOrigin() == DatasetOrigin.MANAGED;
       }
     });
+  }
+
+  public void refresh(int projectKey) {
+    latestRelease.refresh(projectKey);
+    latestCandidate.refresh(projectKey);
   }
 
   public void setSqlSessionFactory(SqlSessionFactory factory) {
