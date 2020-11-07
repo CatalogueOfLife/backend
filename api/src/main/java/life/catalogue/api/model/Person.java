@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Person {
-  private static final Pattern CAMELCASE = Pattern.compile("\\b([A-Z])([a-z]+)\\b");
+  private static final Pattern CAMELCASE = Pattern.compile("\\b(\\p{Lu})(\\p{Ll}+)\\b");
 
   private static final String GIVEN_NAME = "((?:\\p{Lu}\\p{Ll}+){1,3})";
   private static final String PARTICLES = "(?:al|d[aeiou]?|de[nrmls]?|e|l[ae]s?|[oO]|ter|'?t|v|v[ao]n|zu[rm]?|y)";

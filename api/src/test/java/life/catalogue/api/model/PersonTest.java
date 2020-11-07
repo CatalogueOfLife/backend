@@ -35,6 +35,17 @@ public class PersonTest {
     p = new Person("Simone", "de Beauvoir");
     assertEquals("de Beauvoir S.", p.getName());
 
+    p = new Person("Balázs", "Harrach");
+    assertEquals("Harrach B.", p.getName());
+
+    p = new Person("Karl-Heinz", "Rummenigge");
+    assertEquals("Rummenigge K.-H.", p.getName());
+
+    p = new Person("Jean-Baptise", "Lamour");
+    assertEquals("Lamour J.-B.", p.getName());
+
+    p = new Person("Jean Baptise", "Lamour");
+    assertEquals("Lamour J. B.", p.getName());
   }
 
   @Test
