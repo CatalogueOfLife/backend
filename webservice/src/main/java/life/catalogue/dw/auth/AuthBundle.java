@@ -34,7 +34,7 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
     environment.jersey().register(RolesAllowedDynamicFeature.class);
     
     jwtCodec = new JwtCodec(cfg.jwtKey);
-    idService = new IdentityService(cfg.auth.createAuthenticationProvider(), true);
+    idService = new IdentityService(cfg.auth.createAuthenticationProvider());
     privateFilter = new PrivateFilter();
 
     // authentication - both basic & JWT
@@ -72,12 +72,12 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
 
   @Subscribe
   public void permissionChanged(UserPermissionChanged event){
-    idService.removeFromCache(event.username);
+    idService.invalidate(event.username);
   }
 
   @Subscribe
   public void userChanged(UserChanged event){
-    idService.removeFromCache(event.username);
+    idService.invalidate(event.username);
   }
 
   @Subscribe
