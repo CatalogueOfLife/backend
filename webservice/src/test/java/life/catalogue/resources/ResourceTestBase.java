@@ -15,6 +15,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
 import org.javers.core.diff.Diff;
+import org.junit.Before;
 import org.junit.ClassRule;
 
 import javax.ws.rs.client.WebTarget;
@@ -36,6 +37,10 @@ public class ResourceTestBase {
   @ClassRule
   public static final WsServerRule RULE = new WsServerRule(ResourceHelpers.resourceFilePath("config-test.yaml"));
 
+  @Before
+  public void flushUserCache(){
+    RULE.getServer().getAuthBundle().getIdService().flushCachedUsers();
+  }
 
   public SqlSessionFactory factory() {
     return RULE.getSqlSessionFactory();

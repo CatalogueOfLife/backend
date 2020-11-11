@@ -70,6 +70,10 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
     this.idService.setClient(http);
   }
 
+  public IdentityService getIdService() {
+    return idService;
+  }
+
   @Subscribe
   public void permissionChanged(UserPermissionChanged event){
     idService.invalidate(event.username);

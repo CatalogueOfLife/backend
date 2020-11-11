@@ -2,6 +2,7 @@ package life.catalogue.dw.auth;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.User;
 import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.dw.auth.gbif.GBIFAuthentication;
@@ -22,7 +23,7 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * A SqlSessionFactory and an HttpClient MUST be set before the service is used.
  */
-class IdentityService {
+public class IdentityService {
   private static final Logger LOG = LoggerFactory.getLogger(IdentityService.class);
   
   private SqlSessionFactory sqlSessionFactory;
@@ -66,7 +67,28 @@ class IdentityService {
       return cache(user);
     }
   }
-  
+
+  /**
+   * Creates or updates users as they exit in the cache currently.
+   * This is needed for tests when the same server runs across several tests which can wipe the database
+   * and remove users from the db, but which are still cached.
+   * Dont use this for non testing code!
+   */
+  @VisibleForTesting
+  public void flushCachedUsers() {
+    try (SqlSession session = sqlSessionFactory.openSession(true)) {
+      UserMapper um = session.getMapper(UserMapper.class);
+      for (User u : cache.values()) {
+        User u2 = um.get(u.getKey());
+        if (u2 == null) {
+          um.create(u);
+        } else {
+          um.update(u);
+        }
+      }
+    }
+  }
+
   private User cache(User user) {
     cache.put(user.getUsername(), user);
     return user;
