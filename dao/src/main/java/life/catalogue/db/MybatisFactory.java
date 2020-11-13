@@ -144,6 +144,7 @@ public class MybatisFactory {
     registry.registerAlias("TreeNodeMybatis", TreeNode.TreeNodeMybatis.class);
     registry.registerAlias("UsageDecision", Duplicate.UsageDecision.class);
     registry.registerAlias("DuplicateMybatis", Duplicate.Mybatis.class);
+    registry.registerAlias("NameWithNidx", NameMapper.NameWithNidx.class);
   }
   
   private static void registerTypeHandlers(TypeHandlerRegistry registry) {

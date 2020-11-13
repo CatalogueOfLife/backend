@@ -48,12 +48,6 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
   int deleteBySectorAndRank(@Param("key") DSID<Integer> key, @Param("rank") Rank rank, @Param("nameIds") Collection<String> excludeNameIds);
 
   /**
-   * Lists all distinct name index ids from the names table.
-   */
-  Cursor<Integer> processIndexIds(@Param("datasetKey") int datasetKey,
-                         @Nullable @Param("sectorKey") Integer sectorKey);
-
-  /**
    * Iterates over all names returning the concatenation of scientific name and authorship from the names table.
    */
   Cursor<String> processNameStrings(@Param("datasetKey") int datasetKey,
@@ -64,11 +58,6 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
    */
   Cursor<Name> processSince(@Param("datasetKey") int datasetKey,
                     @Param("since") LocalDateTime since);
-
-  /**
-   * Iterates over all names of a given dataset that have no index name match id.
-   */
-  Cursor<Name> processUnmatched(@Param("datasetKey") int datasetKey);
 
   /**
    * Lists all homotypic names based on the same homotypic name key
@@ -88,17 +77,6 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
    * @param nameId from the names index!
    */
   List<Name> indexGroup(@Param("id") int nameId);
-  
-  /**
-   *
-   * @param datasetKey
-   * @param id
-   * @param nameIndexId
-   */
-  void updateMatch(@Param("datasetKey") int datasetKey, @Param("id") String id,
-                   @Param("nameIndexId") Integer nameIndexId,
-                   @Param("matchType") MatchType matchType
-  );
 
   /**
    * @return true if at least one record for the given dataset exists
@@ -117,4 +95,15 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
                          @Param("before") @Nullable LocalDateTime before,
                          @Param("page") Page page);
 
+  class NameWithNidx extends Name {
+    public Integer namesIndexId;
+    public MatchType namesIndexType;
+  }
+
+  Cursor<NameWithNidx> processDatasetWithNidx(@Param("datasetKey") int datasetKey);
+
+  /**
+   * Same as regular get, but includes a names index mapping
+   */
+  NameWithNidx getWithNidx(DSID<String> key);
 }

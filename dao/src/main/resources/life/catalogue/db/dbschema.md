@@ -10,6 +10,24 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2020-11-12 separate name match table
+```
+CREATE TABLE name_match (
+  dataset_key INTEGER NOT NULL,
+  sector_key INTEGER,
+  type MATCHTYPE
+  index_id INTEGER,
+  name_id TEXT NOT NULL,
+  PRIMARY KEY (dataset_key, name_id)
+);
+CREATE INDEX ON name_match (dataset_key, sector_key);
+CREATE INDEX ON name_match (index_id);
+
+ALTER TABLE name DROP COLUMN name_index_id;
+ALTER TABLE name DROP COLUMN name_index_match_type;
+TRUNCATE names_index RESTART IDENTITY;
+```
+
 ### 2020-11-03 concept rels and species interactions
 ```
 DROP TYPE AREASTANDARD;
@@ -84,9 +102,6 @@ CREATE INDEX ON estimate (dataset_key, reference_id);
 ALTER TABLE name_rel RENAME COLUMN published_in_id TO reference_id;
 CREATE INDEX ON name_rel (reference_id);
 
-DROP TABLE taxon_rel;
-DROP TYPE TAXRELTYPE;
-
 CREATE TABLE taxon_concept_rel (
   id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL,
@@ -137,9 +152,16 @@ CREATE INDEX ON media (reference_id);
 
 and for all data partitions
 ```
+DROP TABLE taxon_rel_{KEY};
 CREATE TABLE taxon_concept_rel_{KEY} (LIKE taxon_concept_rel INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
 CREATE TABLE species_interaction_{KEY} (LIKE species_interaction INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
 ``` 
+
+And then once:
+```
+DROP TABLE taxon_rel;
+DROP TYPE TAXRELTYPE;
+```
 
 ### 2020-10-29 new gazetteer 
 ```

@@ -664,8 +664,6 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setSpecificEpithet("alba");
     n.setInfraspecificEpithet("montana");
     n.setRank(Rank.SUBSPECIES);
-    n.setNameIndexMatchType(MatchType.EXACT);
-    n.setNameIndexId(11);
     n.setCombinationAuthorship(Authorship.yearAuthors("1879", "Smith", "Miller"));
     n.rebuildScientificName();
     n.rebuildAuthorship();

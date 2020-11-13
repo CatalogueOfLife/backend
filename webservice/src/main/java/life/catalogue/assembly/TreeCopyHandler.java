@@ -12,6 +12,7 @@ import life.catalogue.dao.CatCopy;
 import life.catalogue.dao.DatasetEntityDao;
 import life.catalogue.dao.ReferenceDao;
 import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.ReferenceMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.matching.NameIndex;
@@ -200,7 +201,9 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
         n.applyUser(user);
         LOG.debug("Create implicit {} from {}: {}", r, origName.getScientificName(), n);
         nm.create(n);
-  
+        // match name
+        createMatch(n);
+
         Taxon t = new Taxon();
         DatasetEntityDao.newKey(t);
         t.setDatasetKey(catalogueKey);
@@ -256,6 +259,9 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     // remember old to new id mappings
     ids.put(orig.getId(), usage(u));
     nameIds.put(origNameID, u.getName().getId());
+    // match name
+    createMatch(u.getName());
+
     // counter
     if (u.isTaxon()) {
       state.setTaxonCount(++tCounter);
@@ -392,8 +398,6 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
             t.setExtinct(ed.isExtinct());
           }
         }
-        // finally also rematch name - it has changed!
-        rematch(u);
       case REVIEWED:
         // good. nothing to do
     }
@@ -404,12 +408,9 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     }
   }
 
-  private void rematch(NameUsageBase u) {
-    NameMatch match = nameIndex.match(u.getName(), true, false);
-    u.getName().setNameIndexMatchType(match.getType());
-    if (match.hasMatch()) {
-      u.getName().setNameIndexId(match.getName().getKey());
-    }
+  private void createMatch(Name n) {
+    NameMatch m = nameIndex.match(n, true, false);
+    session.getMapper(NameMatchMapper.class).create(n.getDatasetKey(), n.getSectorKey(), n.getId(), m.getNameKey(), m.getType());
   }
 
   private String lookupReference(String refID) {

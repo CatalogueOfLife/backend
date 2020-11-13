@@ -374,7 +374,6 @@ public class TestEntityGenerator {
   public static Name newName(int datasetKey, String id, String scientificName, Rank rank) {
     Name n = setUserDate(new Name());
     n.setId(id);
-    n.setNameIndexId(RandomUtils.randomInt());
     n.setHomotypicNameId(id);
     n.setDatasetKey(datasetKey);
     n.setCombinationAuthorship(createAuthorship());

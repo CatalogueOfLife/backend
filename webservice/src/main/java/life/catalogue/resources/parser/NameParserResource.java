@@ -133,7 +133,6 @@ public class NameParserResource {
       this.taxonomicNote = pnu.getTaxonomicNote();
       this.publishedIn = pnu.getPublishedIn();
       this.issues = issues;
-      pnu.getName().setNameIndexId(null);
     }
 
     public Set<Issue> getIssues() {

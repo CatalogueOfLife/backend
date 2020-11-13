@@ -2,7 +2,6 @@ package life.catalogue.release;
 
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
-import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
@@ -10,7 +9,6 @@ import life.catalogue.common.text.CitationUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetProjectSourceDao;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.ProjectSourceMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
@@ -64,7 +62,6 @@ public class ProjectRelease extends AbstractProjectCopy {
 
     // map ids
     updateState(ImportState.MATCHING);
-    matchUnmatchedNames();
     IdProvider idProvider;
     if (useStableIDs) {
       idProvider = IdProvider.withAllReleases(datasetKey, factory);
@@ -76,29 +73,6 @@ public class ProjectRelease extends AbstractProjectCopy {
     // create new dataset "import" metrics in mother project
     updateState(ImportState.ANALYZING);
     metrics();
-  }
-
-  /**
-   * Makes sure all names are matched to the names index.
-   * When syncing names from other sources the names index match is carried over
-   * so there should really not be any name without a match.
-   * We still make sure here that at least there is no such case in releases.
-   */
-  private void matchUnmatchedNames() {
-    try (SqlSession session = factory.openSession(false)) {
-      AtomicInteger counter = new AtomicInteger();
-      NameMapper nm = session.getMapper(NameMapper.class);
-      nm.processUnmatched(datasetKey).forEach(n -> {
-        NameMatch match = nameIndex.match(n, true, false);
-        if (match.hasMatch()) {
-          nm.updateMatch(datasetKey, n.getId(), match.getName().getKey(), match.getType());
-          if (counter.getAndIncrement() % 1000 == 0) {
-            session.commit();
-          }
-        }
-      });
-      session.commit();
-    }
   }
 
   private void metrics() {

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.NameMatchMapper">
+
+  <select id="processIndexIds" resultType="Integer">
+    SELECT DISTINCT index_id
+    FROM name_match
+    WHERE dataset_key = #{datasetKey}
+    <if test="sectorKey != null">
+      AND sector_key = #{sectorKey}
+    </if>
+  </select>
+
+  <insert id="copyDataset" parameterType="map">
+    INSERT INTO name_match (dataset_key,sector_key,type,index_id,name_id)
+    SELECT #{newDatasetKey},nm.sector_key,nm.type,nm.index_id,coalesce(<if test="mapIds">m.id2,</if>nm.name_id)
+    FROM name_match nm
+    <if test="mapIds">
+      LEFT JOIN idmap_name_${datasetKey} m ON m.id=nm.name_id
+    </if>
+    WHERE nm.dataset_key = #{datasetKey}
+  </insert>
+
+  <delete id="deleteOrphaned" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    DELETE FROM name_match nm
+    WHERE dataset_key=#{datasetKey}
+    <if test="sectorKey != null">
+      AND sector_key = #{sectorKey}
+    </if>
+    AND NOT EXISTS (
+      SELECT NULL
+      FROM name_${partition} n
+      WHERE n.id = nm.name_id
+    )
+  </delete>
+
+  <delete id="deleteBySector" parameterType="map">
+    DELETE FROM name_match
+    WHERE dataset_key=#{key.datasetKey} AND sector_key=#{key.id}
+  </delete>
+
+  <delete id="deleteByDataset" parameterType="map">
+    DELETE FROM name_match
+    WHERE dataset_key=#{datasetKey}
+  </delete>
+
+  <insert id="create" parameterType="Name" useGeneratedKeys="false" keyProperty="id">
+    INSERT INTO name_match (dataset_key,sector_key,type,index_id,name_id)
+    VALUES (#{datasetKey}, #{sectorKey}, #{type}::MATCHTYPE, #{indexId}, #{nameId})
+  </insert>
+
+  <update id="update" parameterType="Name" useGeneratedKeys="false" keyProperty="id">
+    UPDATE name_match SET (type,index_id) = (#{type}::MATCHTYPE, #{indexId})
+    WHERE dataset_key=#{datasetKey} AND name_id = #{nameId}
+  </update>
+
+</mapper>

@@ -101,6 +101,6 @@ public class StringUtilsTest {
     assertNull(StringUtils.lowerCamelCase(null));
     assertEquals("datasetKey", StringUtils.lowerCamelCase(NameUsageSearchParameter.DATASET_KEY));
     assertEquals("extinct", StringUtils.lowerCamelCase(NameUsageSearchParameter.EXTINCT));
-    assertEquals("nameIndexId", StringUtils.lowerCamelCase(NameUsageSearchParameter.NAME_INDEX_ID));
+    assertEquals("publishedInId", StringUtils.lowerCamelCase(NameUsageSearchParameter.PUBLISHED_IN_ID));
   }
 }

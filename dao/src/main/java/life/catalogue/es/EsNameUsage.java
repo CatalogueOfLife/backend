@@ -37,8 +37,6 @@ public class EsNameUsage {
   @Analyzers(STANDARD_ASCII)
   private String authorshipComplete;
   private String nameId;
-  private Integer nameIndexId;
-  private Integer nameIndexCanonicalId;
   private String publishedInId;
   @MapToType(ESDataType.KEYWORD)
   private UUID publisherKey;
@@ -158,22 +156,6 @@ public class EsNameUsage {
 
   public void setNameId(String nameId) {
     this.nameId = nameId;
-  }
-
-  public Integer getNameIndexId() {
-    return nameIndexId;
-  }
-
-  public void setNameIndexId(Integer nameIndexId) {
-    this.nameIndexId = nameIndexId;
-  }
-
-  public Integer getNameIndexCanonicalId() {
-    return nameIndexCanonicalId;
-  }
-
-  public void setNameIndexCanonicalId(Integer nameIndexCanonicalId) {
-    this.nameIndexCanonicalId = nameIndexCanonicalId;
   }
 
   public String getPublishedInId() {
@@ -315,7 +297,7 @@ public class EsNameUsage {
   @Override
   public int hashCode() {
     return Objects.hash(acceptedName, authorship, authorshipComplete, authorshipYear, classification, classificationIds, datasetKey,
-        decisions, documentId, extinct, issues, nameFields, nameId, nameIndexId, nameIndexCanonicalId, nameStrings, nomCode, nomStatus, payload,
+        decisions, documentId, extinct, issues, nameFields, nameId, nameStrings, nomCode, nomStatus, payload,
         publishedInId, publisherKey, rank, scientificName, sectorDatasetKey, sectorKey, status, type, usageId);
   }
 
@@ -345,8 +327,6 @@ public class EsNameUsage {
         && Objects.equals(environments, other.environments)
         && Objects.equals(nameFields, other.nameFields)
         && Objects.equals(nameId, other.nameId)
-        && Objects.equals(nameIndexId, other.nameIndexId)
-        && Objects.equals(nameIndexCanonicalId, other.nameIndexCanonicalId)
         && Objects.equals(nameStrings, other.nameStrings)
         && nomCode == other.nomCode && nomStatus == other.nomStatus
         && Objects.equals(payload, other.payload)

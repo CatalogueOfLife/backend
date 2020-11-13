@@ -15,6 +15,7 @@ import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.parser.NameParser;
 import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.After;
 import org.junit.ClassRule;
@@ -146,6 +147,58 @@ public class NameIndexImplTest {
     // 2 new records
     ni.add(create("Abies", "perma", "1901", "Jones"));
     assertEquals(6, ni.size());
+  }
+
+  /**
+   * match the same name over and over again to make sure we never insert duplicates
+   */
+  @Test
+  public void avoidDuplicates() throws Exception {
+    setupMemory();
+    assertEquals(0, ni.size());
+
+    Name n = new Name();
+    n.setScientificName("Abies alba");
+    n.setGenus("Abies");
+    n.setSpecificEpithet("alba");
+    n.setAuthorship("Mill.");
+    n.setCombinationAuthorship(Authorship.authors("Mill."));
+    n.setRank(Rank.SPECIES);
+    n.setType(NameType.SCIENTIFIC);
+
+    NameMatch m = ni.match(n, true, true);
+    assertEquals(MatchType.INSERTED, m.getType());
+    final Integer idx = m.getName().getKey();
+    final Integer cidx = m.getName().getCanonicalId();
+    assertNotEquals(idx, cidx);
+    assertEquals(2, ni.size());
+
+    m = ni.match(n, true, true);
+    assertEquals(MatchType.EXACT, m.getType());
+    assertEquals(idx, m.getName().getKey());
+    assertEquals(2, ni.size());
+
+    m = ni.match(n, true, false);
+    assertEquals(MatchType.EXACT, m.getType());
+    assertEquals(idx, m.getName().getKey());
+    assertEquals(2, ni.size());
+
+    n.setAuthorship("Miller");
+    n.setCombinationAuthorship(Authorship.authors("Miller"));
+    m = ni.match(n, true, true);
+    assertEquals(MatchType.VARIANT, m.getType());
+    assertEquals(idx, m.getName().getKey());
+    assertEquals(2, ni.size());
+
+    n.setAuthorship("Tesla");
+    n.setCombinationAuthorship(Authorship.authors("Tesla"));
+    m = ni.match(n, true, true);
+    final Integer idxTesla = m.getName().getKey();
+    assertNotEquals(idx, cidx);
+    assertEquals(MatchType.INSERTED, m.getType());
+    assertNotEquals(idx, idxTesla);
+    assertEquals(cidx, m.getName().getCanonicalId());
+    assertEquals(3, ni.size());
   }
 
   @Test

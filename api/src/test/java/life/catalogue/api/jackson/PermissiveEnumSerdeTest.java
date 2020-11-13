@@ -16,7 +16,6 @@ public class PermissiveEnumSerdeTest extends SerdeMapEnumKeyTestBase<NomStatus>{
   public void enumValueName() {
     assertEquals("dataset key", PermissiveEnumSerde.enumValueName(NameUsageSearchParameter.DATASET_KEY));
     assertEquals("extinct", PermissiveEnumSerde.enumValueName(NameUsageSearchParameter.EXTINCT));
-    assertEquals("name index id", PermissiveEnumSerde.enumValueName(NameUsageSearchParameter.NAME_INDEX_ID));
   }
 
 }

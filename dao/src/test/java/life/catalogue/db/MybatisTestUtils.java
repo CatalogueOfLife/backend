@@ -1,6 +1,5 @@
 package life.catalogue.db;
 
-import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
@@ -121,7 +120,6 @@ public class MybatisTestUtils {
     Name n = new Name();
     n.applyUser(TestDataRule.TEST_USER);
     n.setId(id);
-    n.setNameIndexId(RandomUtils.randomInt());
     n.setHomotypicNameId(id);
     n.setDatasetKey(datasetKey);
     n.setUninomial(name);

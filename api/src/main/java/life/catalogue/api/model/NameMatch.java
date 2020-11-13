@@ -23,6 +23,13 @@ public class NameMatch {
     return name;
   }
 
+  /**
+   * @return the matched names key or null if no match exists
+   */
+  public Integer getNameKey() {
+    return name == null ? null : name.getKey();
+  }
+
   public void setName(IndexName n) {
     Preconditions.checkNotNull(n.getKey());
     name=n;

@@ -3,6 +3,7 @@ package life.catalogue.dao;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndex;
@@ -29,16 +30,17 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
   }
 
   @Override
-  public DSID<String> create(Name obj, int user) {
-    // match name if not done yet
-    if (obj.getNameIndexMatchType() == null || obj.getNameIndexId() == null) {
-      NameMatch match = nameIndex.match(obj, true, false);
-      obj.setNameIndexMatchType(match.getType());
-      if (match.hasMatch()) {
-        obj.setNameIndexId(match.getName().getKey());
-      }
-    }
-    return super.create(obj, user);
+  protected void createAfter(Name n, int user, NameMapper mapper, SqlSession session) {
+    // create name match
+    NameMatch m = nameIndex.match(n, true, false);
+    session.getMapper(NameMatchMapper.class).create(n.getDatasetKey(), n.getSectorKey(), n.getId(), m.getNameKey(), m.getType());
+  }
+
+  @Override
+  protected void updateAfter(Name n, Name old, int user, NameMapper mapper, SqlSession session) {
+    // update name match
+    NameMatch m = nameIndex.match(n, true, false);
+    session.getMapper(NameMatchMapper.class).update(n.getDatasetKey(), n.getId(), m.getNameKey(), m.getType());
   }
 
   public Name getBasionym(DSID<String> did) {

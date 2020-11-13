@@ -2,7 +2,6 @@ package life.catalogue.resources;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Taxon;
-import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.NameMapperTest;
@@ -15,7 +14,8 @@ import org.junit.Test;
 import javax.ws.rs.ForbiddenException;
 
 import static life.catalogue.ApiUtils.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class TaxonResourceTest extends ResourceTestBase {
   private final int datasetKey = TestEntityGenerator.DATASET11.getKey();
@@ -42,8 +42,6 @@ public class TaxonResourceTest extends ResourceTestBase {
 
     Taxon t2 = userCreds(base.path(t.getId())).get(Taxon.class);
     assertNotNull(t2);
-    assertEquals(MatchType.INSERTED, t2.getName().getNameIndexMatchType());
-    assertNotNull(t2.getName().getNameIndexId());
 
     // manually created taxa will always be of origin USER
     assertEquals(t.getId(), t2.getId());
@@ -67,8 +65,6 @@ public class TaxonResourceTest extends ResourceTestBase {
     NameMapperTest.removeCreatedProps(t.getName());
     t.setOrigin(Origin.USER);
     TestEntityGenerator.nullifyUserDate(t);
-    t.getName().setNameIndexMatchType(null);
-    t.getName().setNameIndexId(null);
   }
 
   private Taxon createTaxon() {

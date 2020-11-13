@@ -151,9 +151,9 @@ public class PgImportIT {
   void verifyNamesIndexIds(int datasetKey){
     try(SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()){
       NameMapper nm = session.getMapper(NameMapper.class);
-      for (Name n : nm.processDataset(datasetKey)) {
-        assertNotNull(n.getNameIndexId());
-        assertNotNull(n.getNameIndexMatchType());
+      for (NameMapper.NameWithNidx n : nm.processDatasetWithNidx(datasetKey)) {
+        assertNotNull(n.namesIndexId);
+        assertNotNull(n.namesIndexType);
       }
     }
   }

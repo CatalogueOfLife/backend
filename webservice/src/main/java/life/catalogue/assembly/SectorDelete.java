@@ -65,6 +65,7 @@ public class SectorDelete extends SectorRunnable {
       }
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
       NameMapper nm = session.getMapper(NameMapper.class);
+      NameMatchMapper nmm = session.getMapper(NameMatchMapper.class);
 
       // cascading delete removes vernacular, distributions, descriptions, media
       int del = um.deleteSynonymsBySector(sectorKey);
@@ -80,12 +81,14 @@ public class SectorDelete extends SectorRunnable {
       // now also remove the names - they should not be shared by other usages as they also belong to the same sector
       del = nm.deleteBySectorAndRank(sectorKey, Rank.SUBGENUS, nameIds);
       session.commit();
+      // rm matches for those names
+      nmm.deleteOrphaned(sectorKey.getDatasetKey(), sectorKey.getId());
       // TODO: remove refs and name rels
       LOG.info("Deleted {} names below genus level from sector {}", del, sectorKey);
 
       // remove sector from usages, names, refs & type_material
       int count = um.removeSectorKey(sectorKey);
-      session.getMapper(NameMapper.class).removeSectorKey(sectorKey);
+      nm.removeSectorKey(sectorKey);
       session.getMapper(ReferenceMapper.class).removeSectorKey(sectorKey);
       session.getMapper(TypeMaterialMapper.class).removeSectorKey(sectorKey);
       LOG.info("Mark {} existing taxa with their synonyms and related information to not belong to sector {} anymore", count, sectorKey);

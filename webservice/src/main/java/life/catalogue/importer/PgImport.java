@@ -280,12 +280,16 @@ public class PgImport implements Callable<Boolean> {
   private void insertNames() {
     try (final SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
       final NameMapper nameMapper = session.getMapper(NameMapper.class);
+      final NameMatchMapper nameMatchMapper = session.getMapper(NameMatchMapper.class);
       LOG.debug("Inserting all names");
       store.names().all().forEach(n -> {
         n.getName().setDatasetKey(dataset.getKey());
         updateVerbatimUserEntity(n.getName());
         updateReferenceKey(n.getName().getPublishedInId(), n.getName()::setPublishedInId);
         nameMapper.create(n.getName());
+        if (n.namesIndexMatchType != null) {
+          nameMatchMapper.create(n.getDatasetKey(), n.getName().getSectorKey(), n.getName().getId(), n.namesIndexId, n.namesIndexMatchType);
+        }
         if (nCounter.incrementAndGet() % batchSize == 0) {
           interruptIfCancelled();
           session.commit();

@@ -1,0 +1,6 @@
+dataset_key,name_id,type,index_id
+11,http://services.snsb.info/DTNtaxonlists/rest/v0.1/names/DiversityTaxonNames_Insecta/5009538/,EXACT,1
+11,name-1,EXACT,2
+11,name-2,EXACT,3
+11,name-3,EXACT,3
+11,name-4,EXACT,4

@@ -236,6 +236,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       st.execute("TRUNCATE sector CASCADE");
       st.execute("TRUNCATE estimate CASCADE");
       st.execute("TRUNCATE decision CASCADE");
+      st.execute("TRUNCATE name_match CASCADE");
       st.execute("TRUNCATE names_index RESTART IDENTITY");
       session.getConnection().commit();
     }
@@ -290,6 +291,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
             copyGlobalTable(pgc, "dataset_patch");
             copyGlobalTable(pgc, "dataset_archive");
             copyGlobalTable(pgc, "sector");
+            copyGlobalTable(pgc, "name_match");
             if (copyGlobalTable(pgc, "names_index")) {
               // update names index keys if we added data
               session.getMapper(NamesIndexMapper.class).updateSequence();

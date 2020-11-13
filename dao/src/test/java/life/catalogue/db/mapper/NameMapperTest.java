@@ -4,9 +4,6 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.MatchType;
-import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,18 +63,11 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
     mapper().deleteBySectorAndRank(DSID.of(datasetKey, 1), Rank.FAMILY, Set.of("1,2,3", "abc"));
   }
 
-  @Test
-  public void processIndexIds() throws Exception {
-    mapper().processIndexIds(datasetKey, null).forEach(System.out::println);
-  }
-
   @Override
   Name createTestEntity(int dkey) {
     Name n = TestEntityGenerator.newName(dkey, "sk1");
     n.setNomenclaturalNote("nom. illeg.");
     n.setUnparsed("bla bli blub");
-    n.setNameIndexMatchType(MatchType.CANONICAL);
-    n.setNameIndexId(13);
     return n;
   }
   
@@ -89,17 +79,6 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
   public static Name removeCreatedProps(Name n) {
     n.setHomotypicNameId(null);
     return n;
-  }
-
-  private static void removeCreatedProps(Authorship a) {
-    if (a != null) {
-      if (a.getAuthors() != null && a.getAuthors().isEmpty()) {
-        a.setAuthors(null);
-      }
-      if (a.getExAuthors() != null && a.getExAuthors().isEmpty()) {
-        a.setExAuthors(null);
-      }
-    }
   }
 
   @Override
@@ -268,32 +247,6 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
     // we have one ref from the apple.sql
     assertEquals(1, nameMapper.listByReference(REF1.getDatasetKey(), REF1.getId()).size());
     assertEquals(2, nameMapper.listByReference(REF1b.getDatasetKey(), REF1b.getId()).size());
-  }
-
-  @Test
-  public void updateMatches() throws Exception {
-    Integer ints = 1;
-    mapper().updateMatch(datasetKey, NAME1.getId(), ints, MatchType.EXACT);
-    Name n = mapper().get(NAME1);
-    assertEquals(MatchType.EXACT, n.getNameIndexMatchType());
-    assertEquals(ints, n.getNameIndexId());
-
-    ints= 42213;
-    mapper().updateMatch(datasetKey, NAME1.getId(), ints, MatchType.CANONICAL);
-    n = mapper().get(NAME1);
-    assertEquals(MatchType.CANONICAL, n.getNameIndexMatchType());
-    assertEquals(ints, n.getNameIndexId());
-
-    ints = null;
-    mapper().updateMatch(datasetKey, NAME1.getId(), ints, MatchType.NONE);
-    n = mapper().get(NAME1);
-    assertEquals(MatchType.NONE, n.getNameIndexMatchType());
-    assertEquals(ints, n.getNameIndexId());
-
-    mapper().updateMatch(datasetKey, NAME1.getId(), null, null);
-    n = mapper().get(NAME1);
-    assertNull(n.getNameIndexMatchType());
-    assertEquals(ints, n.getNameIndexId());
   }
 
   private static Name newAcceptedName(String scientificName) {

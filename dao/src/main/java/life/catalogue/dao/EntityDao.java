@@ -74,6 +74,7 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
       mapper.create(obj);
       session.commit();
       createAfter(obj, user, mapper, session);
+      session.commit();
       return obj.getKey();
     }
   }
@@ -100,6 +101,7 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
       int changed = mapper.update(obj);
       session.commit();
       updateAfter(obj, old, user, mapper, session);
+      session.commit();
       return changed;
   }
   

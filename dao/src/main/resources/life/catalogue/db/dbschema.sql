@@ -984,7 +984,6 @@ CREATE TABLE name (
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   verbatim_key INTEGER,
-  name_index_match_type MATCHTYPE,
   rank RANK NOT NULL,
   notho NAMEPART,
   code NOMCODE,
@@ -996,7 +995,6 @@ CREATE TABLE name (
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   homotypic_name_id TEXT NOT NULL,
-  name_index_id INTEGER,
   scientific_name TEXT NOT NULL,
   scientific_name_normalized TEXT NOT NULL,
   authorship TEXT,
@@ -1025,7 +1023,6 @@ CREATE TABLE name (
 CREATE INDEX ON name (sector_key);
 CREATE INDEX ON name (verbatim_key);
 CREATE INDEX ON name (homotypic_name_id);
-CREATE INDEX ON name (name_index_id);
 CREATE INDEX ON name (published_in_id);
 CREATE INDEX ON name (lower(scientific_name));
 CREATE INDEX ON name (scientific_name_normalized);
@@ -1037,6 +1034,17 @@ BEGIN
 END
 $$
 LANGUAGE plpgsql;
+
+CREATE TABLE name_match (
+  dataset_key INTEGER NOT NULL,
+  sector_key INTEGER,
+  type MATCHTYPE,
+  index_id INTEGER,
+  name_id TEXT NOT NULL,
+  PRIMARY KEY (dataset_key, name_id)
+);
+CREATE INDEX ON name_match (dataset_key, sector_key);
+CREATE INDEX ON name_match (index_id);
 
 CREATE TABLE name_rel (
   id INTEGER NOT NULL,

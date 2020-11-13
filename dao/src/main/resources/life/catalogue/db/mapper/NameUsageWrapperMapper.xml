@@ -43,7 +43,8 @@
 
   <sql id="taxonSelectFrom">
     <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT"/>,
-    ni.canonical_id AS nameIndexCanonicalId,
+    ni.id AS namesIndexId,
+    ni.canonical_id AS namesIndexCanonicalId,
     d.gbif_publisher_key AS publisherKey,
     s.subject_dataset_key AS sectorDatasetKey,
     array_distinct(vbn.issues || vbt.issues || tcrel.issues || sirel.issues || xdis.issues || xmed.issues || xver.issues || xtyp.issues || nrel.issues) AS issues,
@@ -51,7 +52,8 @@
     FROM
     <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM"/>
     JOIN dataset d ON d.key=u.dataset_key
-    LEFT JOIN names_index ni ON n.name_index_id=ni.id
+    LEFT JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=#{datasetKey}
+    LEFT JOIN names_index ni ON ni.id=nm.index_id
     LEFT JOIN sector s ON s.id=u.sector_key
     LEFT JOIN verbatim_${partition} vbt ON vbt.id=u.verbatim_key
     LEFT JOIN verbatim_${partition} vbn ON vbn.id=n.verbatim_key
@@ -81,13 +83,15 @@
 
   <sql id="bareNameSelectFrom">
     v.issues,
-    ni.canonical_id AS nameIndexCanonicalId,
+    ni.id AS namesIndexId,
+    ni.canonical_id AS namesIndexCanonicalId,
     <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
       <property name="alias" value="n"/>
       <property name="prefix" value="n_"/>
     </include>
     FROM name_${partition} n
-    LEFT JOIN names_index ni ON n.name_index_id=ni.id
+    LEFT JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=#{datasetKey}
+    LEFT JOIN names_index ni ON ni.id=nm.index_id
     LEFT JOIN name_usage_${partition} u ON n.id = u.name_id
     LEFT JOIN verbatim_${partition} v ON v.id= n.verbatim_key
     WHERE u.id IS NULL

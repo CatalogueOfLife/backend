@@ -56,7 +56,6 @@ public class EsNameUsageSerde extends EsReadTestBase {
     docIn.setDatasetKey(472);
     docIn.setNameFields(EnumSet.of(NameField.COMBINATION_EX_AUTHORS, NameField.UNINOMIAL));
     docIn.setNameId("16");
-    docIn.setNameIndexId(56770);
     docIn.setPublishedInId("AMO333");
     docIn.setRank(Rank.SPECIES);
     docIn.setStatus(TaxonomicStatus.ACCEPTED);

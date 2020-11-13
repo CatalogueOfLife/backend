@@ -34,8 +34,6 @@
     ${alias}.dataset_key AS ${prefix}dataset_key,
     ${alias}.sector_key AS ${prefix}sector_key,
     ${alias}.verbatim_key AS ${prefix}verbatim_key,
-    ${alias}.name_index_id AS ${prefix}name_index_id,
-    ${alias}.name_index_match_type AS ${prefix}name_index_match_type,
     ${alias}.homotypic_name_id AS ${prefix}homotypic_name_id,
     ${alias}.published_in_id AS ${prefix}published_in_id,
     ${alias}.published_in_page AS ${prefix}published_in_page,
@@ -68,8 +66,6 @@
 
   <sql id="COLS_COPY">
     ${alias}verbatim_key,
-    ${alias}name_index_id,
-    ${alias}name_index_match_type,
     ${alias}homotypic_name_id,
     ${alias}scientific_name,
     ${alias}scientific_name_normalized,
@@ -110,8 +106,6 @@
     #{sectorKey},
     #{id},
     #{verbatimKey},
-    #{nameIndexId},
-    #{nameIndexMatchType}::MATCHTYPE,
     #{homotypicNameId},
     #{scientificName},
     #{scientificNameNormalized},
@@ -164,6 +158,8 @@
     </association>
   </resultMap>
 
+  <resultMap id="nameIdxResultMap" type="NameWithNidx" autoMapping="true" extends="nameResultMap" />
+
   <select id="count" resultType="integer">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT count(*) FROM name_${partition}
@@ -196,10 +192,8 @@
 
   <select id="get" resultMap="nameResultMap">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE n.id = #{key.id}
   </select>
 
@@ -229,15 +223,6 @@
     </if>
   </select>
 
-  <select id="processIndexIds" resultType="Integer">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT DISTINCT name_index_id
-    FROM <include refid="FROM"/>
-    <if test="sectorKey != null">
-      WHERE sector_key = #{sectorKey}
-    </if>
-  </select>
-
   <select id="processNameStrings" resultType="String">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT concat_ws(' ', scientific_name, authorship)
@@ -258,8 +243,8 @@
 
   <select id="indexGroup" resultMap="nameResultMap">
     SELECT <include refid="SELECT"/>
-    FROM name n
-    WHERE n.name_index_id = #{id}
+    FROM name_match nm JOIN name n ON n.id=nm.name_id AND n.dataset_key=nm.dataset_key
+    WHERE nm.index_id = #{id}
   </select>
 
   <insert id="create" parameterType="Name" useGeneratedKeys="false" keyProperty="id">
@@ -281,13 +266,6 @@
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     UPDATE name_${partition}
     SET (<include refid="COLS"/>, created, modified) = (<include refid="PROPS"/>, now(), now())
-    WHERE id = #{id} AND dataset_key=#{datasetKey}
-  </update>
-
-  <update id="updateMatch" parameterType="map" keyProperty="id">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    UPDATE name_${partition}
-    SET (name_index_id, name_index_match_type, modified) = (#{nameIndexId}, #{matchType}::MATCHTYPE, now())
     WHERE id = #{id} AND dataset_key=#{datasetKey}
   </update>
 
@@ -372,11 +350,18 @@
     WHERE modified &gt; #{since}
   </select>
 
-  <select id="processUnmatched" parameterType="map" resultMap="nameResultMap" resultOrdered="true" fetchSize="5000" resultSetType="FORWARD_ONLY">
+  <select id="processDatasetWithNidx" parameterType="map" resultMap="nameIdxResultMap" resultOrdered="true" fetchSize="5000" resultSetType="FORWARD_ONLY">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT <include refid="SELECT"/>
-    FROM <include refid="FROM"/>
-    WHERE name_index_id IS NULL
+    SELECT <include refid="SELECT"/>, nm.index_id AS namesIndexId, nm.type AS namesIndexType
+    FROM <include refid="FROM"/> LEFT JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=#{datasetKey}
+    ORDER BY rank, scientific_name
+  </select>
+
+  <select id="getWithNidx" parameterType="map" resultMap="nameIdxResultMap" resultOrdered="true" fetchSize="5000" resultSetType="FORWARD_ONLY">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    SELECT <include refid="SELECT"/>, nm.index_id AS namesIndexId, nm.type AS namesIndexType
+    FROM <include refid="FROM"/> LEFT JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=#{key.datasetKey}
+    WHERE n.id = #{key.id}
   </select>
 
 </mapper>

@@ -1,8 +1,12 @@
 package life.catalogue.matching;
 
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.DSIDValue;
+import life.catalogue.api.model.IssueContainer;
+import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.VerbatimRecordMapper;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
@@ -43,7 +47,7 @@ public class DatasetMatcher {
       NameMapper nm = session.getMapper(NameMapper.class);
       int totalBefore = total;
       int updatedBefore = updated;
-      nm.processDataset(datasetKey).forEach(h);
+      nm.processDatasetWithNidx(datasetKey).forEach(h);
       LOG.info("Updated {} out of {} name matches for dataset {}", updated-updatedBefore, total-totalBefore, datasetKey);
       datasets++;
     } catch (Exception e) {
@@ -63,14 +67,14 @@ public class DatasetMatcher {
     return datasets;
   }
 
-  class BulkMatchHandler implements Consumer<Name>, AutoCloseable {
+  class BulkMatchHandler implements Consumer<NameMapper.NameWithNidx>, AutoCloseable {
     private final int datasetKey;
     private final int updatedStart;
     private final int totalStart;
     private final boolean allowInserts;
     private final SqlSession batchSession;
     private final SqlSession session;
-    private final NameMapper nm;
+    private final NameMatchMapper nm;
     private final VerbatimRecordMapper vm;
     private final VerbatimRecordMapper vmGet;
     private final DSIDValue<Integer> key;
@@ -82,21 +86,21 @@ public class DatasetMatcher {
       this.totalStart = total;
       this.batchSession = factory.openSession(ExecutorType.BATCH, false);
       this.session = factory.openSession(false);
-      this.nm = batchSession.getMapper(NameMapper.class);
+      this.nm = batchSession.getMapper(NameMatchMapper.class);
       this.vm = batchSession.getMapper(VerbatimRecordMapper.class);
       this.vmGet = session.getMapper(VerbatimRecordMapper.class);
       key = DSID.of(datasetKey, -1);
     }
   
     @Override
-    public void accept(Name n) {
+    public void accept(NameMapper.NameWithNidx n) {
       total++;
-      Integer oldId = n.getNameIndexId();
+      Integer oldId = n.namesIndexId;
       NameMatch m = ni.match(n, allowInserts, false);
 
       Integer newKey = m.hasMatch() ? m.getName().getKey() : null;
       if (!Objects.equals(oldId, newKey)) {
-        nm.updateMatch(datasetKey, n.getId(), newKey, m.getType());
+        nm.update(datasetKey, n.getId(), newKey, m.getType());
         if (updateIssues) {
           IssueContainer v = n.getVerbatimKey() != null ? vmGet.getIssues(key.id(n.getVerbatimKey())) : null;
           if (v != null) {

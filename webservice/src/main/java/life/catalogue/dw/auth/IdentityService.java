@@ -99,7 +99,7 @@ public class IdentityService {
     passwords.invalidate(username);
   }
 
-  Optional<User> authenticate(String username, String password) {
+  Optional<User> authenticate(final String username, final String password) {
     Optional<User> optUser;
     String cachedPwd = passwords.getIfPresent(username);
     if (cachedPwd == null || !cachedPwd.equals(password)) {
@@ -116,7 +116,7 @@ public class IdentityService {
           // try to find existing user in Col db, otherwise create new one otherwise
           User existing = mapper.getByUsername(user.getUsername());
           if (existing != null) {
-            LOG.info("Update CoL user {} {} with latest GBIF information", user.getUsername(), user.getKey());
+            LOG.debug("Update CoL user {} [{}] with latest GBIF information", existing.getUsername(), existing.getKey());
             user.copyNonGbifData(existing);
             mapper.update(existing);
           } else {

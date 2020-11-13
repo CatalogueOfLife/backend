@@ -4,6 +4,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.model.VerbatimEntity;
+import life.catalogue.api.vocab.MatchType;
 import life.catalogue.importer.neo.NeoDbUtils;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
@@ -19,7 +20,9 @@ public class NeoName implements NeoNode, DSID<String>, VerbatimEntity {
   public Node node;
   public ParsedNameUsage pnu;
   public boolean homotypic = false;
-  
+  public Integer namesIndexId;
+  public MatchType namesIndexMatchType;
+
   public NeoName() {
   }
   
@@ -89,20 +92,21 @@ public class NeoName implements NeoNode, DSID<String>, VerbatimEntity {
   public PropLabel propLabel() {
     return NeoDbUtils.neo4jProps(pnu.getName(), new PropLabel(LABELS));
   }
-  
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    NeoName name1 = (NeoName) o;
-    return homotypic == name1.homotypic &&
-        this.equalNode(name1) &&
-        Objects.equals(pnu, name1.pnu);
+    if (!(o instanceof NeoName)) return false;
+    NeoName neoName = (NeoName) o;
+    return homotypic == neoName.homotypic &&
+      Objects.equals(node, neoName.node) &&
+      Objects.equals(pnu, neoName.pnu) &&
+      Objects.equals(namesIndexId, neoName.namesIndexId) &&
+      namesIndexMatchType == neoName.namesIndexMatchType;
   }
-  
+
   @Override
   public int hashCode() {
-    
-    return Objects.hash(node, pnu, homotypic);
+    return Objects.hash(node, pnu, homotypic, namesIndexId, namesIndexMatchType);
   }
 }

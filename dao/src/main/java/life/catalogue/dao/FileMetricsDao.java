@@ -4,6 +4,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.tree.TextTreePrinter;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -60,12 +61,13 @@ public abstract class FileMetricsDao<K> {
          NamesIdWriter idHandler = new NamesIdWriter(namesIdFile(storeKey, attempt))
     ){
       NameMapper nm = session.getMapper(NameMapper.class);
+      NameMatchMapper nmm = session.getMapper(NameMatchMapper.class);
 
       DSID<Integer> skey = sectorKey(dataKey);
       nm.processNameStrings(skey.getDatasetKey(), skey.getId()).forEach(nHandler);
       LOG.info("Written {} name strings for {} {}-{}", nHandler.counter, type, dataKey, attempt);
 
-      nm.processIndexIds(skey.getDatasetKey(), skey.getId()).forEach(idHandler);
+      nmm.processIndexIds(skey.getDatasetKey(), skey.getId()).forEach(idHandler);
       LOG.info("Written {} names index ids for {} {}-{}", idHandler.counter, type, dataKey, attempt);
     }
   }

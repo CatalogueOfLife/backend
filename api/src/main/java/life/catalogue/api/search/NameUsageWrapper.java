@@ -18,7 +18,6 @@ public class NameUsageWrapper extends SimpleNameClassification {
   private List<SimpleDecision> decisions;
   private Integer sectorDatasetKey;
   private UUID publisherKey;
-  private Integer nameIndexCanonicalId;
 
   public Set<Issue> getIssues() {
     return issues;
@@ -67,31 +66,22 @@ public class NameUsageWrapper extends SimpleNameClassification {
     this.publisherKey = publisherKey;
   }
 
-  public Integer getNameIndexCanonicalId() {
-    return nameIndexCanonicalId;
-  }
-
-  public void setNameIndexCanonicalId(Integer nameIndexCanonicalId) {
-    this.nameIndexCanonicalId = nameIndexCanonicalId;
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof NameUsageWrapper)) return false;
     if (!super.equals(o)) return false;
     NameUsageWrapper that = (NameUsageWrapper) o;
     return Objects.equals(usage, that.usage) &&
-        Objects.equals(issues, that.issues) &&
-        Objects.equals(decisions, that.decisions) &&
-        Objects.equals(sectorDatasetKey, that.sectorDatasetKey) &&
-        Objects.equals(nameIndexCanonicalId, that.nameIndexCanonicalId) &&
-        Objects.equals(publisherKey, that.publisherKey);
+      Objects.equals(issues, that.issues) &&
+      Objects.equals(decisions, that.decisions) &&
+      Objects.equals(sectorDatasetKey, that.sectorDatasetKey) &&
+      Objects.equals(publisherKey, that.publisherKey);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), usage, issues, decisions, sectorDatasetKey, publisherKey, nameIndexCanonicalId);
+    return Objects.hash(super.hashCode(), usage, issues, decisions, sectorDatasetKey, publisherKey);
   }
 
   @Override

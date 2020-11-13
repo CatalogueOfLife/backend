@@ -7,6 +7,7 @@ import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.MatchType;
 import org.apache.ibatis.cursor.Cursor;
 import org.junit.Assert;
 import org.junit.Test;
@@ -47,7 +48,7 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
     d.setGbifPublisherKey(UUID.randomUUID());
     dm.update(d);
 
-    Taxon t = TestEntityGenerator.newTaxon(Datasets.COL);
+    Taxon t = TestEntityGenerator.newTaxon(d.getKey());
     t.getName().setAuthorship("Miller");
 
     NamesIndexMapper nim = mapper(NamesIndexMapper.class);
@@ -61,9 +62,11 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
     in.setCanonicalId(inc.getKey());
     nim.create(in);
 
-    t.getName().setNameIndexId(in.getKey());
     NameMapper nm = mapper(NameMapper.class);
     nm.create(t.getName());
+
+    NameMatchMapper nmm = mapper(NameMatchMapper.class);
+    nmm.create(d.getKey(), t.getSectorKey(), t.getName().getId(), in.getKey(), MatchType.EXACT);
 
     TaxonMapper tm = mapper(TaxonMapper.class);
     tm.create(t);
@@ -99,7 +102,5 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
     assertEquals(s.getId(), wt.getSectorKey());
     assertEquals(TAXON2.getDatasetKey(), w.getSectorDatasetKey());
     assertEquals(d.getGbifPublisherKey(), w.getPublisherKey());
-    assertEquals(inc.getKey(), w.getNameIndexCanonicalId());
-    assertEquals(in.getKey(), wt.getName().getNameIndexId());
   }
 }

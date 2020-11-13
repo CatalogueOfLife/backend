@@ -6,6 +6,7 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
 import org.junit.Assert;
@@ -30,7 +31,9 @@ public class NameDaoTest extends DaoTestBase {
   public void nameMatching() throws Exception {
     Name n = TestEntityGenerator.newName("n2");
     dao.create(n, Users.IMPORTER);
-    assertEquals(MatchType.VARIANT, n.getNameIndexMatchType());
-    assertEquals(match.getKey(), n.getNameIndexId());
+
+    NameMapper.NameWithNidx nidx = mapper(NameMapper.class).getWithNidx(n);
+    assertEquals(MatchType.VARIANT, nidx.namesIndexType);
+    assertEquals(match.getKey(), nidx.namesIndexId);
   }
 }
