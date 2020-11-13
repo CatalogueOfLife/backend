@@ -28,7 +28,7 @@ public class ReleasedIds {
         id1 = -1;
       }
       this.id = id1;
-      this.nxId = sn.getNameIndexId();
+      this.nxId = sn.getNamesIndexId();
       this.attempt = attempt;
     }
 

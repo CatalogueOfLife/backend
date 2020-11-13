@@ -66,7 +66,7 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
     nm.create(t.getName());
 
     NameMatchMapper nmm = mapper(NameMatchMapper.class);
-    nmm.create(d.getKey(), t.getSectorKey(), t.getName().getId(), in.getKey(), MatchType.EXACT);
+    nmm.create(t.getName(), t.getSectorKey(), in.getKey(), MatchType.EXACT);
 
     TaxonMapper tm = mapper(TaxonMapper.class);
     tm.create(t);

@@ -287,8 +287,8 @@ public class PgImport implements Callable<Boolean> {
         updateVerbatimUserEntity(n.getName());
         updateReferenceKey(n.getName().getPublishedInId(), n.getName()::setPublishedInId);
         nameMapper.create(n.getName());
-        if (n.namesIndexMatchType != null) {
-          nameMatchMapper.create(n.getDatasetKey(), n.getName().getSectorKey(), n.getName().getId(), n.namesIndexId, n.namesIndexMatchType);
+        if (n.namesIndexId != null) {
+          nameMatchMapper.create(n.getName(), n.getName().getSectorKey(), n.namesIndexId, n.namesIndexMatchType);
         }
         if (nCounter.incrementAndGet() % batchSize == 0) {
           interruptIfCancelled();

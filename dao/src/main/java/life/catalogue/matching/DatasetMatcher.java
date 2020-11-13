@@ -100,7 +100,13 @@ public class DatasetMatcher {
 
       Integer newKey = m.hasMatch() ? m.getName().getKey() : null;
       if (!Objects.equals(oldId, newKey)) {
-        nm.update(datasetKey, n.getId(), newKey, m.getType());
+        if (oldId == null) {
+          nm.create(n, n.getSectorKey(), newKey, m.getType());
+        } else if (newKey != null){
+          nm.update(n, newKey, m.getType());
+        } else {
+          nm.delete(n);
+        }
         if (updateIssues) {
           IssueContainer v = n.getVerbatimKey() != null ? vmGet.getIssues(key.id(n.getVerbatimKey())) : null;
           if (v != null) {

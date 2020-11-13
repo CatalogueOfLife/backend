@@ -410,7 +410,9 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
 
   private void createMatch(Name n) {
     NameMatch m = nameIndex.match(n, true, false);
-    session.getMapper(NameMatchMapper.class).create(n.getDatasetKey(), n.getSectorKey(), n.getId(), m.getNameKey(), m.getType());
+    if (m.hasMatch()) {
+      session.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), m.getNameKey(), m.getType());
+    }
   }
 
   private String lookupReference(String refID) {

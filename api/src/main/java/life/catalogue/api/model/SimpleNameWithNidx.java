@@ -6,23 +6,23 @@ import java.util.Objects;
 
 public class SimpleNameWithNidx extends SimpleName {
   private Integer canonicalId;
-  private Integer nameIndexId;
-  private MatchType nameIndexMatchType;
+  private Integer namesIndexId;
+  private MatchType namesIndexMatchType;
 
-  public MatchType getNameIndexMatchType() {
-    return nameIndexMatchType;
+  public MatchType getNamesIndexMatchType() {
+    return namesIndexMatchType;
   }
 
-  public void setNameIndexMatchType(MatchType nameIndexMatchType) {
-    this.nameIndexMatchType = nameIndexMatchType;
+  public void setNamesIndexMatchType(MatchType namesIndexMatchType) {
+    this.namesIndexMatchType = namesIndexMatchType;
   }
 
-  public Integer getNameIndexId() {
-    return nameIndexId;
+  public Integer getNamesIndexId() {
+    return namesIndexId;
   }
 
-  public void setNameIndexId(Integer nameIndexId) {
-    this.nameIndexId = nameIndexId;
+  public void setNamesIndexId(Integer namesIndexId) {
+    this.namesIndexId = namesIndexId;
   }
 
   public Integer getCanonicalId() {
@@ -40,12 +40,12 @@ public class SimpleNameWithNidx extends SimpleName {
     if (!super.equals(o)) return false;
     SimpleNameWithNidx that = (SimpleNameWithNidx) o;
     return Objects.equals(canonicalId, that.canonicalId) &&
-      nameIndexMatchType == that.nameIndexMatchType &&
-      Objects.equals(nameIndexId, that.nameIndexId);
+      namesIndexMatchType == that.namesIndexMatchType &&
+      Objects.equals(namesIndexId, that.namesIndexId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), canonicalId, nameIndexMatchType, nameIndexId);
+    return Objects.hash(super.hashCode(), canonicalId, namesIndexMatchType, namesIndexId);
   }
 }

@@ -359,7 +359,7 @@
 
   <select id="getWithNidx" parameterType="map" resultMap="nameIdxResultMap" resultOrdered="true" fetchSize="5000" resultSetType="FORWARD_ONLY">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
-    SELECT <include refid="SELECT"/>, nm.index_id AS namesIndexId, nm.type AS namesIndexType
+    SELECT <include refid="SELECT"/>, nm.index_id AS namesIndexId, coalesce(nm.type,'NONE') AS namesIndexType
     FROM <include refid="FROM"/> LEFT JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=#{key.datasetKey}
     WHERE n.id = #{key.id}
   </select>

@@ -120,7 +120,7 @@ public class IdProvider {
           attempt2dataset.put(attempt, (int)rel.getKey());
           session.getMapper(NameUsageMapper.class).processNxIds(rel.getKey()).forEach(sn -> {
             counter.incrementAndGet();
-            if (sn.getNameIndexId() == null) {
+            if (sn.getNamesIndexId() == null) {
               LOG.info("Existing release id {}:{} without a names index id. Skip!", rel.getKey(), sn.getId());
             } else {
               ids.add(new ReleasedIds.ReleasedId(sn, attempt));
@@ -171,10 +171,10 @@ public class IdProvider {
 
   private void mapCanonicalGroup(List<SimpleNameWithNidx> group){
     // make sure we have the names sorted by their nidx
-    group.sort(Comparator.comparing(SimpleNameWithNidx::getNameIndexId));
+    group.sort(Comparator.comparing(SimpleNameWithNidx::getNamesIndexId));
     // now split the canonical group into subgroups for each nidx to match them individually
-    for (List<SimpleNameWithNidx> idGroup : IterUtils.group(group, Comparator.comparing(SimpleNameWithNidx::getNameIndexId))) {
-      issueIDs(idGroup.get(0).getNameIndexId(), idGroup);
+    for (List<SimpleNameWithNidx> idGroup : IterUtils.group(group, Comparator.comparing(SimpleNameWithNidx::getNamesIndexId))) {
+      issueIDs(idGroup.get(0).getNamesIndexId(), idGroup);
     }
   }
 

@@ -55,27 +55,21 @@ public class NameMatchMapperTest extends MapperTestBase<NameMatchMapper> {
   public void updateMatches() throws Exception {
     NameMapper nm = mapper(NameMapper.class);
     Integer ints = 1;
-    mapper().update(datasetKey, NAME1.getId(), ints, MatchType.EXACT);
+    mapper().update(NAME1, ints, MatchType.EXACT);
     NameMapper.NameWithNidx n = nm.getWithNidx(NAME1);
     assertEquals(MatchType.EXACT, n.namesIndexType);
     assertEquals(ints, n.namesIndexId);
 
     ints= 42213;
-    mapper().update(datasetKey, NAME1.getId(), ints, MatchType.CANONICAL);
+    mapper().update(NAME1, ints, MatchType.CANONICAL);
     n = nm.getWithNidx(NAME1);
     assertEquals(MatchType.CANONICAL, n.namesIndexType);
     assertEquals(ints, n.namesIndexId);
 
-    ints = null;
-    mapper().update(datasetKey, NAME1.getId(), ints, MatchType.NONE);
+    mapper().delete(NAME1);
     n = nm.getWithNidx(NAME1);
     assertEquals(MatchType.NONE, n.namesIndexType);
-    assertEquals(ints, n.namesIndexId);
-
-    mapper().update(datasetKey, NAME1.getId(), null, null);
-    n = nm.getWithNidx(NAME1);
-    assertNull(n.namesIndexType);
-    assertEquals(ints, n.namesIndexId);
+    assertNull(n.namesIndexId);
   }
 
   private static Name newAcceptedName(String scientificName) {

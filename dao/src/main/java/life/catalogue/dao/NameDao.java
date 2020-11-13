@@ -33,14 +33,14 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
   protected void createAfter(Name n, int user, NameMapper mapper, SqlSession session) {
     // create name match
     NameMatch m = nameIndex.match(n, true, false);
-    session.getMapper(NameMatchMapper.class).create(n.getDatasetKey(), n.getSectorKey(), n.getId(), m.getNameKey(), m.getType());
+    session.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), m.getNameKey(), m.getType());
   }
 
   @Override
   protected void updateAfter(Name n, Name old, int user, NameMapper mapper, SqlSession session) {
     // update name match
     NameMatch m = nameIndex.match(n, true, false);
-    session.getMapper(NameMatchMapper.class).update(n.getDatasetKey(), n.getId(), m.getNameKey(), m.getType());
+    session.getMapper(NameMatchMapper.class).update(n, m.getNameKey(), m.getType());
   }
 
   public Name getBasionym(DSID<String> did) {

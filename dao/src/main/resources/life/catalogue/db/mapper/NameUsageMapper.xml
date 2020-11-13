@@ -137,6 +137,8 @@
 
   <resultMap id="simpleNidxResultMap" type="SimpleNameWithNidx" autoMapping="true">
     <id property="id" column="id"/>
+    <result property="namesIndexId" column="index_id" />
+    <result property="namesIndexMatchType" column="type" />
   </resultMap>
 
   <resultMap id="idResultMap" type="UsageNameID" autoMapping="false">
@@ -460,10 +462,11 @@
 
   <select id="processNxIds" parameterType="map" resultMap="simpleNidxResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT u.id, u.status, n.rank, n.name_index_id, ni.canonical_id
+    SELECT u.id, u.status, n.rank, nm.index_id, ni.canonical_id, nm.type
     FROM name_usage_${partition} u
       JOIN name_${partition} n ON n.id=u.name_id
-      LEFT JOIN names_index ni ON ni.id=n.name_index_id
+      LEFT JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=#{datasetKey}
+      LEFT JOIN names_index ni ON ni.id=nm.index_id
     ORDER BY ni.canonical_id, ni.id
   </select>
 

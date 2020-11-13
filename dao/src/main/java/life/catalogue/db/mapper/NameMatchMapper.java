@@ -26,15 +26,27 @@ public interface NameMatchMapper extends CopyDataset {
   Cursor<Integer> processIndexIds(@Param("datasetKey") int datasetKey,
                          @Nullable @Param("sectorKey") Integer sectorKey);
 
-  void update(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId,
-                   @Param("indexId") Integer indexId,
-                   @Param("type") MatchType type
+  /**
+   * @param key the name key
+   */
+  void update(@Param("key") DSID<String> key,
+              @Param("nidx") Integer nidx,
+              @Param("type") MatchType type
   );
 
-  void create(@Param("datasetKey") int datasetKey, @Param("sectorKey") Integer sectorKey, @Param("nameId") String nameId,
-                   @Param("indexId") Integer indexId,
-                   @Param("type") MatchType type
+  /**
+   * @param key the name key
+   */
+  void create(@Param("key") DSID<String> key,
+              @Param("sectorKey") Integer sectorKey,
+              @Param("nidx") Integer nidx,
+              @Param("type") MatchType type
   );
+
+  /**
+   * @param key the name key
+   */
+  void delete(@Param("key") DSID<String> key);
 
   int count(@Param("nidx") int nidx, @Nullable @Param("datasetKey") Integer datasetKey);
 
