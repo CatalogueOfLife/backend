@@ -11,7 +11,7 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
-import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.parser.NameParser;
 import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.Authorship;
@@ -23,7 +23,6 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.File;
-import java.sql.SQLException;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -97,21 +96,18 @@ public class NameIndexImplTest {
     assertEquals(24, ni.size());
   }
 
-  void addApples() throws SQLException {
-    try (SqlSession s = PgSetupRule.getSqlSessionFactory().openSession()) {
-      NameMapper nm = s.getMapper(NameMapper.class);
-      // add all apple records to names index
-      nm.processDataset(TestDataRule.APPLE.key).forEach(n -> {
-        IndexName in = new IndexName(n);
-        ni.add(in);
-      });
+  void setupMemory(boolean erase) throws Exception {
+    if (erase) {
+      try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
+        session.getMapper(NamesIndexMapper.class).truncate();
+      }
     }
-    assertEquals(5, ni.size());
-  }
-
-  void setupMemory() throws Exception {
     ni = NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer).started();
-    assertEquals(4, ni.size());
+    if (erase) {
+      assertEquals(0, ni.size());
+    } else {
+      assertEquals(4, ni.size());
+    }
   }
 
   void setupPersistent(File location) throws Exception {
@@ -120,11 +116,11 @@ public class NameIndexImplTest {
 
   @Test
   public void loadApple() throws Exception {
-    setupMemory();
-    assertMatch(2, "Larus erfundus", Rank.SPECIES);
-    assertMatch(2, "Larus erfunda", Rank.SPECIES);
+    setupMemory(false);
+    assertMatch(4, "Larus erfundus", Rank.SPECIES);
+    assertMatch(4, "Larus erfunda", Rank.SPECIES);
     assertMatch(3, "Larus fusca", Rank.SPECIES);
-    assertMatch(4, "Larus fuscus", Rank.SPECIES);
+    assertMatch(3, "Larus fuscus", Rank.SPECIES);
   }
 
   /**
@@ -132,7 +128,7 @@ public class NameIndexImplTest {
    */
   @Test
   public void add() throws Exception {
-    setupMemory();
+    setupMemory(true);
     ni.add(create("Abies", "krösus-4-par∂atœs"));
     ni.add(create("Abies", "alba"));
     ni.add(create("Abies", "alba", "1873"));
@@ -153,7 +149,7 @@ public class NameIndexImplTest {
    */
   @Test
   public void avoidDuplicates() throws Exception {
-    setupMemory();
+    setupMemory(true);
     assertEquals(0, ni.size());
 
     Name n = new Name();
@@ -202,7 +198,7 @@ public class NameIndexImplTest {
 
   @Test
   public void getCanonical() throws Exception {
-    setupMemory();
+    setupMemory(true);
     ni.add(create("Abies", "alba", null, "Miller"));
     assertEquals(2, ni.size());
 
@@ -217,11 +213,10 @@ public class NameIndexImplTest {
       fIdx.delete();
     }
     setupPersistent(fIdx);
-    addApples();
     ni.add(create("Abies", "alba", null, "Miller"));
     ni.add(create("Abies", "alba", null, "Duller"));
-    assertEquals(8, ni.size());
-    IndexName n = ni.get(8);
+    assertEquals(7, ni.size());
+    IndexName n = ni.get(7);
     assertEquals("Abies alba", n.getScientificName());
     assertEquals("Duller", n.getAuthorship());
 
@@ -267,16 +262,15 @@ public class NameIndexImplTest {
 
     try {
       setupPersistent(fIdx);
-      addApples();
 
-      assertMatch(2, "Larus erfundus", Rank.SPECIES);
+      assertMatch(4, "Larus erfundus", Rank.SPECIES);
 
       System.out.println("RESTART");
-      assertEquals(5, ni.size());
+      assertEquals(4, ni.size());
       ni.stop();
       ni.start();
-      assertEquals(5, ni.size());
-      assertMatch(2, "Larus erfundus", Rank.SPECIES);
+      assertEquals(4, ni.size());
+      assertMatch(4, "Larus erfundus", Rank.SPECIES);
 
       ni.stop();
       try {
@@ -293,14 +287,14 @@ public class NameIndexImplTest {
   
   @Test
   public void insertNewNames() throws Exception {
-    setupMemory();
+    setupMemory(false);
     assertInsert("Larus fundatus", Rank.SPECIES);
     assertInsert("Puma concolor", Rank.SPECIES);
   }
   
   @Test
   public void testLookup() throws Exception {
-    setupMemory();
+    setupMemory(true);
     addTestNames();
 
     assertMatch(4, "Œnanthe 1771", Rank.GENUS);
@@ -353,7 +347,7 @@ public class NameIndexImplTest {
    */
   @Test
   public void testSubgenusLookup() throws Exception {
-    setupMemory();
+    setupMemory(true);
     List<IndexName> names = List.of(
       //2
       iname("Animalia", Rank.KINGDOM),
