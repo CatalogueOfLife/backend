@@ -9,6 +9,7 @@ import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.*;
+import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.NameUsageWrapperMapper;
 import life.catalogue.dw.auth.Roles;
@@ -58,13 +59,18 @@ public class NameUsageResource {
   public ResultPage<NameUsageBase> list(@PathParam("key") int datasetKey,
                                         @QueryParam("q") String q,
                                         @QueryParam("rank") Rank rank,
+                                        @QueryParam("nidx") Integer namesIndexID,
                                         @Valid Page page,
                                         @Context SqlSession session) {
     Page p = page == null ? new Page() : page;
     NameUsageMapper mapper = session.getMapper(NameUsageMapper.class);
     List<NameUsageBase> result;
     Supplier<Integer> count;
-    if (q != null) {
+    if (namesIndexID != null) {
+      result = mapper.listByNamesIndexID(datasetKey, namesIndexID);
+      NameMatchMapper nmm = session.getMapper(NameMatchMapper.class);
+      count = () -> nmm.count(namesIndexID, null);
+    } else if (q != null) {
       result = mapper.listByName(datasetKey, q, rank);
       count = () -> result.size();
     } else {

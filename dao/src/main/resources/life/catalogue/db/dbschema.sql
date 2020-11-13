@@ -1044,6 +1044,7 @@ CREATE TABLE name_match (
   PRIMARY KEY (dataset_key, name_id)
 );
 CREATE INDEX ON name_match (dataset_key, sector_key);
+CREATE INDEX ON name_match (dataset_key, index_id);
 CREATE INDEX ON name_match (index_id);
 
 CREATE TABLE name_rel (

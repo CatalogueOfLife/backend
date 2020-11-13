@@ -187,6 +187,29 @@
     ORDER BY u.id
   </select>
 
+  <select id="listByNamesIndexID" resultMap="usageResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+      JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=#{datasetKey}
+      JOIN names_index ni ON ni.id=nm.index_id
+    WHERE ni.id=#{nidx} OR ni.canonical_id=#{nidx}
+    ORDER BY u.id
+  </select>
+
+  <select id="listByNamesIndexIDGlobal" resultMap="usageResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM name_usage u JOIN name n ON n.id=u.name_id AND n.dataset_key=u.dataset_key
+      LEFT JOIN reference r ON r.id=u.according_to_id AND r.dataset_key=u.dataset_key
+      LEFT JOIN name_usage a ON a.id=u.parent_id AND u.is_synonym AND a.dataset_key=u.dataset_key
+      LEFT JOIN name an ON a.name_id=an.id AND an.dataset_key=u.dataset_key
+      LEFT JOIN reference ar ON ar.id=a.according_to_id AND ar.dataset_key=u.dataset_key
+      JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=u.dataset_key
+      JOIN names_index ni ON ni.id=nm.index_id
+    WHERE ni.id=#{nidx} OR ni.canonical_id=#{nidx}
+    ORDER BY u.id
+  </select>
+
   <select id="listByName" resultMap="usageResultMap">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>

@@ -34,6 +34,10 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   
   List<NameUsageBase> listByNameID(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
 
+  List<NameUsageBase> listByNamesIndexID(@Param("datasetKey") int datasetKey, @Param("nidx") int nidx);
+
+  List<NameUsageBase> listByNamesIndexIDGlobal(@Param("nidx") int nidx);
+
   List<NameUsageBase> listByName(@Param("datasetKey") int datasetKey,
                          @Param("name") String sciname,
                          @Nullable @Param("rank") Rank rank);

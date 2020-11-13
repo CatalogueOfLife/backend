@@ -3,12 +3,16 @@ package life.catalogue.resources;
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.*;
+import life.catalogue.db.mapper.NameMatchMapper;
+import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.es.InvalidQueryException;
 import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.es.NameUsageSuggestionService;
+import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +23,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,6 +40,21 @@ public class NameUsageSearchResource {
   public NameUsageSearchResource(NameUsageSearchService search, NameUsageSuggestionService suggest) {
     this.searchService = search;
     this.suggestService = suggest;
+  }
+
+
+  @GET
+  public ResultPage<NameUsageBase> list(@QueryParam("nidx") Integer namesIndexID,
+                                        @Valid Page page,
+                                        @Context SqlSession session) {
+    Page p = page == null ? new Page() : page;
+    if (namesIndexID == null) {
+      throw new IllegalArgumentException("nidx parameter required");
+    }
+    NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+    NameMatchMapper nmm = session.getMapper(NameMatchMapper.class);
+    List<NameUsageBase> result = num.listByNamesIndexIDGlobal(namesIndexID);
+    return new ResultPage<>(p, result, () -> nmm.count(namesIndexID, null));
   }
 
   @GET

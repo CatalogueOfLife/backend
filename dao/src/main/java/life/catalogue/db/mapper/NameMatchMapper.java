@@ -36,6 +36,8 @@ public interface NameMatchMapper extends CopyDataset {
                    @Param("type") MatchType type
   );
 
+  int count(@Param("nidx") int nidx, @Nullable @Param("datasetKey") Integer datasetKey);
+
   void truncate();
 
 }

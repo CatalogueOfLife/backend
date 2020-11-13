@@ -57,4 +57,12 @@
     WHERE dataset_key=#{datasetKey} AND name_id = #{nameId}
   </update>
 
+  <select id="count" resultType="integer">
+    SELECT count(*)
+    FROM name_match nm JOIN names_index ni ON ni.id=nm.index_id
+    WHERE ni.id=#{nidx} OR ni.canonical_id=#{nidx}
+    <if test="sectorKey != null">
+      AND nm.dataset_key = #{datasetKey}
+    </if>
+  </select>
 </mapper>
