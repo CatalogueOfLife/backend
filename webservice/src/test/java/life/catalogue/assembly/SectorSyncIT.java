@@ -10,10 +10,7 @@ import life.catalogue.api.vocab.Origin;
 import life.catalogue.dao.*;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
-import life.catalogue.db.mapper.DecisionMapper;
-import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.db.mapper.TaxonMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.importer.PgImportRule;
@@ -21,6 +18,7 @@ import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -59,7 +57,7 @@ public class SectorSyncIT {
         DataFormat.ACEF,  14
   );
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();
-  static final IndexName match = new IndexName(TestEntityGenerator.NAME4, 1);
+  static IndexName match;
   static NameIndex nidx;
 
   @ClassRule
@@ -73,6 +71,14 @@ public class SectorSyncIT {
   SectorImportDao siDao;
   TaxonDao tdao;
 
+  public static void setupNamesIndex(SqlSessionFactory factory) {
+    match = new IndexName(TestEntityGenerator.NAME4);
+    try (SqlSession session = factory.openSession(true)) {
+      session.getMapper(NamesIndexMapper.class).create(match);
+    }
+    nidx = NameIndexFactory.fixed(match);
+  }
+
   @Before
   public void init () throws IOException, SQLException {
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
@@ -82,7 +88,7 @@ public class SectorSyncIT {
     dataRule.loadData(true);
     NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
-    nidx = NameIndexFactory.fixed(match);
+    setupNamesIndex(PgSetupRule.getSqlSessionFactory());
   }
   
   

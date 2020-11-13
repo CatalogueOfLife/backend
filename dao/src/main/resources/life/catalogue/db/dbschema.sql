@@ -1039,7 +1039,7 @@ CREATE TABLE name_match (
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   type MATCHTYPE,
-  index_id INTEGER NOT NULL,
+  index_id INTEGER NOT NULL REFERENCES names_index,
   name_id TEXT NOT NULL,
   PRIMARY KEY (dataset_key, name_id)
 );

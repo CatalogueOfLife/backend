@@ -84,6 +84,7 @@ public class ProjectDuplicationIT {
     trg = SectorSyncIT.getByName(Datasets.COL, Rank.CLASS, "Insecta");
     DSID<Integer> s3 = SectorSyncIT.createSector(Sector.Mode.ATTACH, src, trg);
 
+    SectorSyncIT.setupNamesIndex(PgSetupRule.getSqlSessionFactory());
     SectorSyncIT.syncAll(siDao);
 
     // test ProjectDuplication

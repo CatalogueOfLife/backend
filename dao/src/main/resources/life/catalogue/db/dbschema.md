@@ -15,12 +15,13 @@ and done it manually. So we can as well log changes here.
 CREATE TABLE name_match (
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
-  type MATCHTYPE
-  index_id INTEGER,
+  type MATCHTYPE,
+  index_id INTEGER NOT NULL REFERENCES names_index,
   name_id TEXT NOT NULL,
   PRIMARY KEY (dataset_key, name_id)
 );
 CREATE INDEX ON name_match (dataset_key, sector_key);
+CREATE INDEX ON name_match (dataset_key, index_id);
 CREATE INDEX ON name_match (index_id);
 
 ALTER TABLE name DROP COLUMN name_index_id;
