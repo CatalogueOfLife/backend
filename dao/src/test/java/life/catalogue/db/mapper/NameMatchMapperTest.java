@@ -1,6 +1,7 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.vocab.MatchType;
 import org.junit.Before;
@@ -54,17 +55,20 @@ public class NameMatchMapperTest extends MapperTestBase<NameMatchMapper> {
   @Test
   public void updateMatches() throws Exception {
     NameMapper nm = mapper(NameMapper.class);
-    Integer ints = 1;
-    mapper().update(NAME1, ints, MatchType.EXACT);
+    Integer nidx = 1;
+    mapper().update(NAME1, nidx, MatchType.EXACT);
     NameMapper.NameWithNidx n = nm.getWithNidx(NAME1);
     assertEquals(MatchType.EXACT, n.namesIndexType);
-    assertEquals(ints, n.namesIndexId);
+    assertEquals(nidx, n.namesIndexId);
 
-    ints= 42213;
-    mapper().update(NAME1, ints, MatchType.CANONICAL);
+    IndexName in = new IndexName(TestEntityGenerator.NAME4);
+    mapper(NamesIndexMapper.class).create(in);
+    nidx = in.getKey();
+    
+    mapper().update(NAME1, nidx, MatchType.CANONICAL);
     n = nm.getWithNidx(NAME1);
     assertEquals(MatchType.CANONICAL, n.namesIndexType);
-    assertEquals(ints, n.namesIndexId);
+    assertEquals(nidx, n.namesIndexId);
 
     mapper().delete(NAME1);
     n = nm.getWithNidx(NAME1);
