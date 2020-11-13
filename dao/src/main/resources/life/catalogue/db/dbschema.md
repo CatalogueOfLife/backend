@@ -12,6 +12,10 @@ and done it manually. So we can as well log changes here.
 
 ### 2020-11-12 separate name match table
 ```
+ALTER TABLE name DROP COLUMN name_index_id;
+ALTER TABLE name DROP COLUMN name_index_match_type;
+TRUNCATE names_index RESTART IDENTITY CASCADE;
+
 CREATE TABLE name_match (
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
@@ -23,10 +27,6 @@ CREATE TABLE name_match (
 CREATE INDEX ON name_match (dataset_key, sector_key);
 CREATE INDEX ON name_match (dataset_key, index_id);
 CREATE INDEX ON name_match (index_id);
-
-ALTER TABLE name DROP COLUMN name_index_id;
-ALTER TABLE name DROP COLUMN name_index_match_type;
-TRUNCATE names_index RESTART IDENTITY;
 ```
 
 ### 2020-11-03 concept rels and species interactions

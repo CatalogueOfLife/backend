@@ -291,11 +291,11 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
             copyGlobalTable(pgc, "dataset_patch");
             copyGlobalTable(pgc, "dataset_archive");
             copyGlobalTable(pgc, "sector");
-            copyGlobalTable(pgc, "name_match");
             if (copyGlobalTable(pgc, "names_index")) {
               // update names index keys if we added data
               session.getMapper(NamesIndexMapper.class).updateSequence();
             }
+            copyGlobalTable(pgc, "name_match");
           }
 
           for (int key : testData.datasetKeys) {
