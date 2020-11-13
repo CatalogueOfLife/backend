@@ -97,7 +97,7 @@
   </select>
 
   <update id="truncate">
-    TRUNCATE names_index RESTART IDENTITY
+    TRUNCATE names_index RESTART IDENTITY CASCADE
   </update>
 
   <update id="updateSequence">

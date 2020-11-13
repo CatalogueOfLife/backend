@@ -111,6 +111,7 @@ public class NameIndexImplTest {
 
   void setupMemory() throws Exception {
     ni = NameIndexFactory.memory(PgSetupRule.getSqlSessionFactory(), aNormalizer).started();
+    assertEquals(4, ni.size());
   }
 
   void setupPersistent(File location) throws Exception {
@@ -120,8 +121,6 @@ public class NameIndexImplTest {
   @Test
   public void loadApple() throws Exception {
     setupMemory();
-    addApples();
-
     assertMatch(2, "Larus erfundus", Rank.SPECIES);
     assertMatch(2, "Larus erfunda", Rank.SPECIES);
     assertMatch(3, "Larus fusca", Rank.SPECIES);

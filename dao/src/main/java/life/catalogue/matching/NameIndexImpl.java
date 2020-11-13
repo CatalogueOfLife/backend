@@ -16,6 +16,7 @@ import life.catalogue.common.func.Predicates;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.common.text.StringUtils;
+import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.matching.authorship.AuthorComparator;
 import org.apache.ibatis.session.SqlSession;
@@ -63,9 +64,14 @@ public class NameIndexImpl implements NameIndex {
     LOG.info("Loading names from postgres into names index");
     try (SqlSession s = sqlFactory.openSession()) {
       NamesIndexMapper mapper = s.getMapper(NamesIndexMapper.class);
-      mapper.processAll().forEach(this::add);
+      mapper.processAll().forEach(this::addFromPg);
       LOG.info("Loaded {} names from postgres into names index", store.count());
     }
+  }
+
+  private void addFromPg(IndexName name) {
+    final String key = key(name);
+    store.add(key, name);
   }
 
   @Override
@@ -275,9 +281,10 @@ public class NameIndexImpl implements NameIndex {
     LOG.warn("Removing all entries from the names index store");
     store.clear();
     try (SqlSession session = sqlFactory.openSession(true)) {
-      NamesIndexMapper nim = session.getMapper(NamesIndexMapper.class);
+      LOG.info("Truncating all name matches");
+      session.getMapper(NameMatchMapper.class).truncate();
       LOG.warn("Truncating the names index postgres table");
-      nim.truncate();
+      session.getMapper(NamesIndexMapper.class).truncate();
     }
   }
 

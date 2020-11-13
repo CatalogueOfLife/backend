@@ -70,4 +70,8 @@
       AND nm.dataset_key = #{datasetKey}
     </if>
   </select>
+
+  <update id="truncate">
+    TRUNCATE name_match CASCADE
+  </update>
 </mapper>
