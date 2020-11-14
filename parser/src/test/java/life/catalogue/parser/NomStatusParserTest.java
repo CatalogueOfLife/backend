@@ -36,6 +36,13 @@ public class NomStatusParserTest extends ParserTestBase<NomStatus> {
     assertParse(NomStatus.ESTABLISHED, "http://purl.obolibrary.org/obo/NOMEN_0000228");
     assertParse(NomStatus.ESTABLISHED, "NOMEN_228");
 
+    assertParse(NomStatus.NOT_ESTABLISHED, "orthographia");
+    assertParse(NomStatus.NOT_ESTABLISHED, "orth var");
+    assertParse(NomStatus.NOT_ESTABLISHED, "orth. var.");
+    assertParse(NomStatus.NOT_ESTABLISHED, "orth.var.");
+
+    assertParse(NomStatus.CONSERVED, "orth.cons.");
+
     assertUnparsable("NOMEN_0012228");
   }
 

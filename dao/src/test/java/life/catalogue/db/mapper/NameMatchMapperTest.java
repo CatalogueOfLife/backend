@@ -64,7 +64,7 @@ public class NameMatchMapperTest extends MapperTestBase<NameMatchMapper> {
     IndexName in = new IndexName(TestEntityGenerator.NAME4);
     mapper(NamesIndexMapper.class).create(in);
     nidx = in.getKey();
-    
+
     mapper().update(NAME1, nidx, MatchType.CANONICAL);
     n = nm.getWithNidx(NAME1);
     assertEquals(MatchType.CANONICAL, n.namesIndexType);
