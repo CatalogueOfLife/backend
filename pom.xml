@@ -74,7 +74,7 @@
         <kryo-serializers.version>0.45</kryo-serializers.version>
         <kryo.version>5.0.0-RC5</kryo.version>
         <kryo-reflectasm.version>1.11.9</kryo-reflectasm.version>
-        <logstash-logback.version>6.2</logstash-logback.version>
+        <logstash-logback.version>6.4</logstash-logback.version>
         <mapdb.version>3.0.5</mapdb.version>
         <mockito.version>3.1.0</mockito.version>
         <mybatis.version>3.5.2</mybatis.version>

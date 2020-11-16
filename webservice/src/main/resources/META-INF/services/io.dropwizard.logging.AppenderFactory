@@ -1,4 +1,7 @@
 io.dropwizard.logging.ConsoleAppenderFactory
 io.dropwizard.logging.FileAppenderFactory
 io.dropwizard.logging.SyslogAppenderFactory
-life.catalogue.dw.logging.LogstashAppenderFactory
+life.catalogue.dw.logging.LogstashAccessConsoleAppenderFactory
+life.catalogue.dw.logging.LogstashAccessUdpAppenderFactory
+life.catalogue.dw.logging.LogstashConsoleAppenderFactory
+life.catalogue.dw.logging.LogstashUdpAppenderFactory

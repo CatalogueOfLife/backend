@@ -1,3 +1,9 @@
+server:
+  requestLog:
+    type: logback-access
+    appenders:
+      - type: console
+        timeZone: CET
 logging:
   level: INFO
   loggers:
@@ -8,6 +14,7 @@ logging:
     "life.catalogue.db.legacy": INFO
   appenders:
     - type: console
+      timeZone: UTC
 db:
   # set host to null to use the embedded pg server
   host: ${db.host}

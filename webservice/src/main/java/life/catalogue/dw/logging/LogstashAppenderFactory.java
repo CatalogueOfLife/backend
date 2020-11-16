@@ -1,53 +1,32 @@
 package life.catalogue.dw.logging;
 
-import java.util.Map;
-
 import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.spi.DeferredProcessingAware;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.google.common.base.Strings;
 import io.dropwizard.logging.AbstractAppenderFactory;
 import io.dropwizard.logging.async.AsyncAppenderFactory;
 import io.dropwizard.logging.filter.LevelFilterFactory;
 import io.dropwizard.logging.layout.LayoutFactory;
-import net.logstash.logback.appender.LogstashSocketAppender;
+import io.dropwizard.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
 /**
- * Use MDC fields to provide additional logstash fields
+ * An abstract Logstash appender factory using MDC fields to provide additional configurable logstash fields for regular logging.
+ * Apart from MDC fiels this logger adds the following fields to the logstash JSON:
+ *  - environment: any value e.g. prod, dev
+ *  - class: classname of logging class
+ *  - extra: an optional map of further fixed values to add to logs
  */
-@JsonTypeName("logstash")
-public class LogstashAppenderFactory extends AbstractAppenderFactory<ILoggingEvent> {
+abstract class LogstashAppenderFactory<E extends DeferredProcessingAware> extends AbstractAppenderFactory<E> {
   private static final Logger LOG = LoggerFactory.getLogger(LogstashAppenderFactory.class);
 
-  private int port;
-  private String host;
-  private String environment;
-  private Map<String, String> extra;
+  String environment;
+  Map<String, String> extra;
 
-  @JsonProperty
-  public int getPort() {
-    return port;
-  }
-
-  @JsonProperty
-  public void setPort(int port) {
-    this.port = port;
-  }
-
-  @JsonProperty
-  public String getHost() {
-    return host;
-  }
-
-  @JsonProperty
-  public void setHost(String host) {
-    this.host = host;
-  }
-  
   @JsonProperty
   public String getEnvironment() {
     return environment;
@@ -67,25 +46,24 @@ public class LogstashAppenderFactory extends AbstractAppenderFactory<ILoggingEve
   }
 
   @Override
-  public Appender<ILoggingEvent> build(LoggerContext context, String applicationName, LayoutFactory<ILoggingEvent> layoutFactory,
-                                       LevelFilterFactory<ILoggingEvent> levelFilterFactory, AsyncAppenderFactory<ILoggingEvent> asyncAppenderFactory) {
-
-    final LogstashSocketAppender appender = new LogstashSocketAppender();
-    appender.setName("logstash-appender");
+  public Appender<E> build(LoggerContext context, String applicationName, LayoutFactory<E> layoutFactory,
+                                       LevelFilterFactory<E> levelFilterFactory, AsyncAppenderFactory<E> asyncAppenderFactory) {
+    final String customJson = customFieldJson(applicationName);
+    Appender<E> appender = buildAppender(context, customJson);
     appender.setContext(context);
-    appender.setHost(host);
-    appender.setPort(port);
-    appender.setIncludeCallerData(isIncludeCallerData());
-    appender.setCustomFields(customFieldJson(applicationName));
     appender.addFilter(levelFilterFactory.build(threshold));
     getFilterFactories().forEach(f -> appender.addFilter(f.build()));
     appender.start();
 
-    LOG.debug("Created asynchroneous (queue={}, custom={}) logstash appender for env {} {}:{}", getQueueSize(), appender.getCustomFields(), environment ,host, port);
-    return wrapAsync(appender, asyncAppenderFactory);
+    LOG.debug("Created asynchroneous (queue={}, custom={}) {} appender for env {}", getQueueSize(), customJson, appender.getClass().getSimpleName(), environment);
+
+    return appender;
+    //return wrapAsync(appender, asyncAppenderFactory);
   }
 
-  public String customFieldJson(String applicationName) {
+  abstract Appender<E> buildAppender(LoggerContext context, String customJson);
+
+  private String customFieldJson(String applicationName) {
     StringBuilder sb = new StringBuilder();
     sb.append("{")
       .append("\"environment\":\"col");
