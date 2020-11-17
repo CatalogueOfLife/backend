@@ -38,7 +38,7 @@ public class RematchJob extends BackgroundJob {
       keys.remove(Datasets.COL);
       keys.removeIf((IntPredicate) key -> !dpm.exists(key));
       // make sure COL gets processed first so we get low keys for the higher ranks in COL
-      return some(user, factory, ni, ArrayUtils.insert(0, keys.toIntArray(), Datasets.COL));
+      return new RematchJob(user, factory, ni, ArrayUtils.insert(0, keys.toIntArray(), Datasets.COL));
     }
   }
 
@@ -69,6 +69,7 @@ public class RematchJob extends BackgroundJob {
   @Override
   public void execute() {
     LOG.info("Rematching {} datasets with data. Triggered by {}", datasetKeys.length, getUserKey());
+
     DatasetMatcher matcher = new DatasetMatcher(factory, ni, true);
     for (int key : datasetKeys) {
       matcher.match(key, true);

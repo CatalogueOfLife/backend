@@ -4,6 +4,15 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="life.catalogue.db.mapper.NameMatchMapper">
 
+  <select id="exists" resultType="boolean">
+    SELECT exists(
+      SELECT name_id
+      FROM name_match
+      WHERE dataset_key = #{datasetKey}
+      LIMIT 1
+    )
+  </select>
+
   <select id="processIndexIds" resultType="Integer">
     SELECT DISTINCT index_id
     FROM name_match

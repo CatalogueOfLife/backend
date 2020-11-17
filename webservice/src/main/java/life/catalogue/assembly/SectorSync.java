@@ -41,6 +41,7 @@ public class SectorSync extends SectorRunnable {
     NameUsageMapper.class,
     TypeMaterialMapper.class,
     NameRelationMapper.class,
+    NameMatchMapper.class,
     NameMapper.class,
     ReferenceMapper.class
   );

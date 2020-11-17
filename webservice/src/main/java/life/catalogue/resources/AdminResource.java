@@ -101,7 +101,6 @@ public class AdminResource {
     return exec.cancel(key, user.getKey());
   }
 
-
   @GET
   @Path("/assembly")
   public AssemblyState globalState() {

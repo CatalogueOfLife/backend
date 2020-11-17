@@ -41,15 +41,26 @@ public class DatasetMatcher {
    * @return number of names which have a changed match to before
    */
   public void match(int datasetKey, boolean allowInserts) {
+    int totalBefore = total;
+    int updatedBefore = updated;
+
     try (SqlSession session = factory.openSession(false);
          BulkMatchHandler h = new BulkMatchHandler(datasetKey, allowInserts)
     ){
+      NameMatchMapper nmm = session.getMapper(NameMatchMapper.class);
       NameMapper nm = session.getMapper(NameMapper.class);
-      int totalBefore = total;
-      int updatedBefore = updated;
+
+      boolean update = nmm.exists(datasetKey);
+      LOG.info("{} name matches for {}", update ? "Update" : "Create", datasetKey);
       nm.processDatasetWithNidx(datasetKey).forEach(h);
       LOG.info("Updated {} out of {} name matches for dataset {}", updated-updatedBefore, total-totalBefore, datasetKey);
+
+      if (update) {
+        int del = nmm.deleteOrphaned(datasetKey, null);
+        LOG.info("Removed {} orphaned name matches for {}", del, datasetKey);
+      }
       datasets++;
+
     } catch (Exception e) {
       LOG.error("Failed to rematch dataset {}", datasetKey, e);
     }

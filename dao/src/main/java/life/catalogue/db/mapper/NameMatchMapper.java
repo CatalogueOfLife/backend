@@ -3,16 +3,24 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.db.CopyDataset;
+import life.catalogue.db.SectorProcessable;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
 
 import javax.annotation.Nullable;
 
-public interface NameMatchMapper extends CopyDataset {
+/**
+ * WARNING !!!
+ * Only SectorProcessable.deleteBySector is implemented, no others!!!
+ */
+public interface NameMatchMapper extends CopyDataset, SectorProcessable<Integer> {
+
+  /**
+   * @return true if at least one name match for the given dataset exists
+   */
+  boolean exists(@Param("datasetKey") int datasetKey);
 
   int deleteByDataset(@Param("datasetKey") int datasetKey);
-
-  int deleteBySector(@Param("key") DSID<Integer> sectorKey);
 
   /**
    * Removes all matches that have no related name record for the given dataset and optionally sector.

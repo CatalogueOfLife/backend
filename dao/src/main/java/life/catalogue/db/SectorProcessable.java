@@ -17,14 +17,12 @@ public interface SectorProcessable<V> {
 
   /**
    * Deletes all entities from the given sector
-   * @param datasetKey dataset key of the project
    * @param sectorKey sector key of the entities to be deleted
    */
   int deleteBySector(@Param("key") DSID<Integer> sectorKey);
 
   /**
    * Updates all entities for the given sector and sets their sectorKey to NULL
-   * @param datasetKey dataset key of the project
    * @param sectorKey sector key of the entities to be deleted
    */
   int removeSectorKey(@Param("key") DSID<Integer> sectorKey);
