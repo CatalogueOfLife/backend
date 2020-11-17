@@ -94,9 +94,11 @@ abstract class SectorRunnable implements Runnable {
       doWork();
 
       state.setState( ImportState.ANALYZING);
+      LOG.info("Build metrics for sector {}", sectorKey);
       doMetrics();
 
       state.setState( ImportState.INDEXING);
+      LOG.info("Update search index for sector {}", sectorKey);
       updateSearchIndex();
 
       state.setState( ImportState.FINISHED);

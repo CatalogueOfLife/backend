@@ -59,7 +59,23 @@ public class SectorSync extends SectorRunnable {
   
   @Override
   void doWork() throws Exception {
-    sync();
+    state.setState( ImportState.DELETING);
+    relinkForeignChildren();
+    try {
+      deleteOld();
+      checkIfCancelled();
+
+      state.setState(ImportState.INSERTING);
+      processTree();
+      checkIfCancelled();
+
+    } finally {
+      // run these even if we get errors in the main tree copying
+      state.setState( ImportState.MATCHING);
+      rematchForeignChildren();
+      relinkAttachedSectors();
+      rematchEstimates();
+    }
   }
 
   @Override
@@ -93,26 +109,6 @@ public class SectorSync extends SectorRunnable {
         }
       });
       LOG.info("Loaded {} sector subjects for auto blocking", counter);
-    }
-  }
-
-  private void sync() throws InterruptedException {
-    state.setState( ImportState.DELETING);
-    relinkForeignChildren();
-    try {
-      deleteOld();
-      checkIfCancelled();
-  
-      state.setState(ImportState.INSERTING);
-      processTree();
-      checkIfCancelled();
-
-    } finally {
-      // run these even if we get errors in the main tree copying
-      state.setState( ImportState.MATCHING);
-      rematchForeignChildren();
-      relinkAttachedSectors();
-      rematchEstimates();
     }
   }
 

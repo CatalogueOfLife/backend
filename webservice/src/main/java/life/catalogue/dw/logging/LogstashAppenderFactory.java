@@ -18,7 +18,7 @@ import java.util.Map;
  * An abstract Logstash appender factory using MDC fields to provide additional configurable logstash fields for regular logging.
  * Apart from MDC fiels this logger adds the following fields to the logstash JSON:
  *  - environment: any value e.g. prod, dev
- *  - class: classname of logging class
+ *  - application: fixed application name, e.g. ws-server
  *  - extra: an optional map of further fixed values to add to logs
  */
 abstract class LogstashAppenderFactory<E extends DeferredProcessingAware> extends AbstractAppenderFactory<E> {
@@ -56,9 +56,7 @@ abstract class LogstashAppenderFactory<E extends DeferredProcessingAware> extend
     appender.start();
 
     LOG.debug("Created asynchroneous (queue={}, custom={}) {} appender for env {}", getQueueSize(), customJson, appender.getClass().getSimpleName(), environment);
-
-    return appender;
-    //return wrapAsync(appender, asyncAppenderFactory);
+    return wrapAsync(appender, asyncAppenderFactory);
   }
 
   abstract Appender<E> buildAppender(LoggerContext context, String customJson);
@@ -72,7 +70,7 @@ abstract class LogstashAppenderFactory<E extends DeferredProcessingAware> extend
         .append(Strings.nullToEmpty(environment));
     }
     sb.append("\",")
-      .append("\"class\":\"")
+      .append("\"application\":\"")
       .append(applicationName)
       .append("\"");
     if (extra != null) {
