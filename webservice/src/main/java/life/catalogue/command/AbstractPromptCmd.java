@@ -28,14 +28,16 @@ public abstract class AbstractPromptCmd extends ConfiguredCommand<WsServerConfig
   public void configure(Subparser subparser) {
     super.configure(subparser);
     subparser.addArgument("--"+ARG_PROMPT)
-        .setDefault(10)
+        .setDefault(5)
         .dest(ARG_PROMPT)
         .type(Integer.class)
         .required(false)
         .help("Waiting time in seconds for a user prompt to abort db update. Use zero for no prompt");
   }
 
-  public abstract String describeCmd(Namespace namespace, WsServerConfig cfg);
+  public String describeCmd(Namespace namespace, WsServerConfig cfg) {
+    return getDescription();
+  }
 
   public abstract void execute(Bootstrap<WsServerConfig> bootstrap, Namespace namespace, WsServerConfig cfg) throws Exception;
 

@@ -27,9 +27,7 @@ public class RematchJob extends BackgroundJob {
   private final int[] datasetKeys;
 
   public static RematchJob all(User user, SqlSessionFactory factory, NameIndex ni){
-    LOG.warn("Rebuilt names index and rematch all datasets with data");
-    // kill names index
-    ni.reset();
+    LOG.warn("Rematch all datasets with data using the existing names index");
     // load dataset keys to rematch
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
