@@ -178,7 +178,13 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @Path("/{key}/source/{id}/logo")
   @Produces("image/png")
   public BufferedImage sourceLogo(@PathParam("key") int datasetKey, @PathParam("id") int id, @QueryParam("size") @DefaultValue("small") ImgConfig.Scale scale) {
-    return imgService.archiveDatasetLogo(datasetKey, id, scale);
+    DatasetOrigin origin = DatasetInfoCache.CACHE.origin(datasetKey);
+    if (!origin.isProject()) {
+      throw new IllegalArgumentException("Dataset "+datasetKey+" is not a project");
+    } else if (origin == DatasetOrigin.RELEASED) {
+      return imgService.archiveDatasetLogo(id, datasetKey, scale);
+    }
+    return imgService.datasetLogo(id, scale);
   }
 
   @GET
