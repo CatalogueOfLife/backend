@@ -14,7 +14,7 @@ public class UserAgentJsonProvider extends AbstractFieldJsonProvider<IAccessEven
   final static Pattern IN_BRACKETS = Pattern.compile("\\s*\\([^()]+\\)");
 
   public UserAgentJsonProvider() {
-    setFieldName("user-agent");
+    setFieldName("user_agent");
   }
 
   public String[] normalize(String agent) {

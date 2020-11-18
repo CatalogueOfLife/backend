@@ -54,6 +54,7 @@ public class LogstashAccessUdpAppenderFactory extends LogstashAppenderFactory<IA
     layout.setIncludeContext(false);
     // expose User-Agent header
     layout.addProvider(new UserAgentJsonProvider());
+    layout.addProvider(new LoggerNameJsonProvider());
     layout.start();
 
     appender.setLayout(layout);

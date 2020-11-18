@@ -8,7 +8,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
     <artifactId>webservice</artifactId>
-    <name>Clearinghouse backend services (WS)</name>
+    <name>COL backend services (WS)</name>
 
     <properties>
         <mainClass>life.catalogue.WsServer</mainClass>

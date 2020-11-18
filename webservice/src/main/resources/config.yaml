@@ -3,7 +3,7 @@ server:
     type: logback-access
     appenders:
       - type: console
-        timeZone: CET
+        timeZone: UTC
 logging:
   level: INFO
   loggers:

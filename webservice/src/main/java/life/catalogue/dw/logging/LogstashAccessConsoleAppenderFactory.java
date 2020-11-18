@@ -27,6 +27,7 @@ public class LogstashAccessConsoleAppenderFactory extends LogstashAppenderFactor
     enc.setIncludeContext(false);
     // expose User-Agent header
     enc.addProvider(new UserAgentJsonProvider());
+    enc.addProvider(new LoggerNameJsonProvider());
     enc.start();
 
     appender.setEncoder(enc);
