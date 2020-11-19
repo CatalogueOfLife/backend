@@ -73,8 +73,7 @@ public class ImporterResource {
   }
 
   @POST
-  @Path("{key}")
-  @Consumes(MediaType.APPLICATION_JSON)
+  @Path("{key}/reimport")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public ImportRequest reimport(@PathParam("key") int datasetKey, @Auth User user) throws IOException {
     return importManager.submit(ImportRequest.reimport(datasetKey, user.getKey()));
