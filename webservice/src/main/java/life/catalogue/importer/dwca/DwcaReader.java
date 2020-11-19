@@ -43,6 +43,7 @@ import java.util.stream.Stream;
 public class DwcaReader extends CsvReader {
   private static final Logger LOG = LoggerFactory.getLogger(DwcaReader.class);
   private static final String META_FN = "meta.xml";
+  private static final String EML_FN = "eml.xml";
   private static final List<Term> PREFERRED_CORE_TYPES = ImmutableList.of(DwcTerm.Taxon, DwcTerm.Event, DwcTerm.Occurrence);
   private static final XMLInputFactory2 factory;
   
@@ -108,6 +109,11 @@ public class DwcaReader extends CsvReader {
    */
   @Override
   protected void discoverSchemas(String termPrefix) throws IOException {
+    Path eml = resolve(EML_FN);
+    if (Files.exists(eml)) {
+      metadataFile = eml;
+    }
+
     Path meta = resolve(META_FN);
     if (Files.exists(meta)) {
       readFromMeta(meta);
@@ -443,7 +449,12 @@ public class DwcaReader extends CsvReader {
     if (!mappingFlags.isParentNameMapped() && !mappingFlags.isDenormedClassificationMapped()) {
       LOG.warn("No higher classification mapped");
     }
-    
+    // metadata file present?
+    if (metadataFile != null && !Files.exists(metadataFile)) {
+      LOG.warn("Metadata file {} does not exist", metadataFile);
+      metadataFile = null;
+    }
+
     //TODO: validate extensions:
     // vernacular name: vernacularName
     // distribution: some area (locationID, countryCode, etc)

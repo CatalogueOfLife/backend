@@ -702,7 +702,7 @@ public class PgImportIT {
     //normalizeAndImport(URI.create("https://github.com/Sp2000/coldp/archive/master.zip"), COLDP);
     //normalizeAndImport(URI.create("https://github.com/mdoering/data-ina/archive/master.zip"), COLDP);
     //normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/162.tar.gz"), ACEF);
-    normalizeAndImportArchive(new File("/Users/markus/Downloads/Pterophoroidea.zip"), COLDP);
+    normalizeAndImportArchive(new File("/Users/markus/Downloads/data-wcvp-small.zip"), DWCA);
 
     //normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/higher-classification.dwca.zip"), DWCA);
     //normalizeAndImportFolder(new File("/Users/markus/code/col+/data-staphbase/coldp"), COLDP);
