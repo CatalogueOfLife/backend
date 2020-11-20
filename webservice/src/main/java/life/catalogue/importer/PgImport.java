@@ -61,6 +61,7 @@ public class PgImport implements Callable<Boolean> {
   private final int attempt;
   private final DatasetWithSettings dataset;
   private final Map<Integer, Integer> verbatimKeys = new HashMap<>();
+  private LoadingCache<Integer, Set<Issue>> verbatimIssueCache;
   private final Set<String> proParteIds = new HashSet<>();
   private final AtomicInteger nCounter = new AtomicInteger(0);
   private final AtomicInteger tCounter = new AtomicInteger(0);
@@ -83,6 +84,9 @@ public class PgImport implements Callable<Boolean> {
     this.batchSize = cfg.batchSize;
     this.sessionFactory = sessionFactory;
     this.indexService = indexService;
+    verbatimIssueCache = Caffeine.newBuilder()
+      .maximumSize(1000)
+      .build(key -> store.getVerbatim(key).getIssues());
   }
   
   @Override
@@ -364,16 +368,6 @@ public class PgImport implements Callable<Boolean> {
    */
   private void insertUsages() throws InterruptedException {
     try (var indexer = indexService.buildDatasetIndexingHandler(dataset.getKey())) {
-      LoadingCache<Integer, Set<Issue>> verbatimIssueCache = Caffeine.newBuilder()
-        .maximumSize(10000)
-        .build(key -> {
-          VerbatimRecord v = store.getVerbatim(key);
-          if (v == null) {
-            return Collections.emptySet();
-          }
-          return v.getIssues();
-        });
-
       try (SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
         LOG.info("Inserting remaining names and all taxa");
         TreatmentMapper treatmentMapper = session.getMapper(TreatmentMapper.class);
@@ -478,14 +472,8 @@ public class PgImport implements Callable<Boolean> {
             // index into ES
             NameUsageWrapper nuw = new NameUsageWrapper(u.usage);
             nuw.setPublisherKey(dataset.getGbifPublisherKey());
-            nuw.setClassification(parents);
-            Set<Issue> issues = new HashSet<>();
-            for (Integer vk : vKeys) {
-              if (vk != null) {
-                issues.addAll(verbatimIssueCache.get(vk));
-              }
-            }
-            nuw.setIssues(issues);
+            nuw.setClassification(List.copyOf(parents));
+            nuw.setIssues(mergeIssues(vKeys));
             if (u.usage.isSynonym()) {
               SimpleName psn = parents.pop();
               NeoUsage acc = updateNeoUsage(parentsN.peek(), parents, null);
@@ -520,13 +508,21 @@ public class PgImport implements Callable<Boolean> {
           BareName bn = new BareName(nn.getName());
           NameUsageWrapper nuw = new NameUsageWrapper(bn);
           nuw.setPublisherKey(dataset.getGbifPublisherKey());
-          if (nn.getVerbatimKey() != null) {
-            nuw.setIssues(verbatimIssueCache.get(nn.getVerbatimKey()));
-          }
+          nuw.setIssues(mergeIssues(vKeys));
           indexer.accept(nuw);
         }
       }
     }
+  }
+
+  private Set<Issue> mergeIssues(Collection<Integer> vKeys){
+    Set<Issue> issues = EnumSet.noneOf(Issue.class);
+    for (Integer vk : vKeys) {
+      if (vk != null) {
+        issues.addAll(verbatimIssueCache.get(vk));
+      }
+    }
+    return issues;
   }
 
   private NeoName updateNeoName(Node n, Set<Integer> vKeys){
