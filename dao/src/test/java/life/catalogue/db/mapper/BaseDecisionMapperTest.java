@@ -2,8 +2,6 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DatasetScopedEntity;
-import life.catalogue.dao.Partitioner;
-import life.catalogue.db.PgSetupRule;
 import org.junit.Test;
 
 /**
@@ -18,15 +16,7 @@ abstract class BaseDecisionMapperTest<T extends DatasetScopedEntity<Integer>, R,
 
   @Test
   public void copyDataset() throws Exception {
-    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
-    Partitioner.createManagedSequences(PgSetupRule.getSqlSessionFactory(), 999);
-    mapper().copyDataset(datasetKey, 999, false);
-  }
-
-  @Test
-  public void copyDatasetWithMap() throws Exception {
-    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
-    mapper().copyDataset(datasetKey, 999, true);
+    CopyDatasetTestComponent.copy(mapper(), testDataRule.testData.key, true);
   }
 
   T createTestEntityIncId(int datasetKey) {

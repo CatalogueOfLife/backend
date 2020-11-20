@@ -41,6 +41,7 @@
 
   <sql id="COLS">
     dataset_key,
+    target_id,
     <include refid="COLS_NO_DATASETKEY"/>
   </sql>
 
@@ -53,7 +54,6 @@
     subject_code,
     subject_status,
     subject_parent,
-    target_id,
     target_name,
     target_authorship,
     target_rank,
@@ -70,6 +70,7 @@
 
   <sql id="PROPS">
     #{datasetKey},
+    #{target.id},
     #{subjectDatasetKey},
     #{subject.id},
     #{subject.name},
@@ -78,7 +79,6 @@
     #{subject.code}::NOMCODE,
     #{subject.status}::TAXONOMICSTATUS,
     #{subject.parent},
-    #{target.id},
     #{target.name},
     #{target.authorship},
     #{target.rank}::RANK,
@@ -202,9 +202,12 @@
   </insert>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO sector (id, dataset_key, sync_attempt, dataset_import_attempt, <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by )
-    SELECT id, #{newDatasetKey}, sync_attempt, dataset_import_attempt, <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by
-    FROM sector
+    INSERT INTO sector (id, dataset_key, sync_attempt, dataset_import_attempt, target_id, <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by )
+    SELECT s.id, #{newDatasetKey}, sync_attempt, dataset_import_attempt, coalesce(<if test="mapIds">m.id2,</if>s.target_id), <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by
+    FROM sector s
+    <if test="mapIds">
+      LEFT JOIN idmap_name_usage_${datasetKey} m ON m.id=s.target_id
+    </if>
     WHERE dataset_key=#{datasetKey}
   </insert>
 

@@ -33,12 +33,12 @@
 
   <sql id="COLS">
     dataset_key,
+    target_id,
     <include refid="COLS_NO_DATASETKEY"/>
   </sql>
 
   <sql id="COLS_NO_DATASETKEY">
     verbatim_key,
-    target_id,
     target_name,
     target_authorship,
     target_rank,
@@ -53,8 +53,8 @@
 
   <sql id="PROPS">
     #{datasetKey},
-    #{verbatimKey},
     #{target.id},
+    #{verbatimKey},
     #{target.name},
     #{target.authorship},
     #{target.rank}::RANK,
@@ -132,10 +132,13 @@
   </insert>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO estimate (id, dataset_key, <include refid="COLS_NO_DATASETKEY"/>, created, created_by )
-    SELECT id, #{newDatasetKey}, <include refid="COLS_NO_DATASETKEY"/>, created, created_by
-    FROM estimate
-    WHERE dataset_key=#{datasetKey}
+    INSERT INTO estimate (id, dataset_key, target_id, <include refid="COLS_NO_DATASETKEY"/>, created, created_by )
+    SELECT e.id, #{newDatasetKey}, coalesce(<if test="mapIds">m.id2,</if>e.target_id), <include refid="COLS_NO_DATASETKEY"/>, created, created_by
+    FROM estimate e
+    <if test="mapIds">
+      LEFT JOIN idmap_name_usage_${datasetKey} m ON m.id=e.target_id
+    </if>
+    WHERE e.dataset_key=#{datasetKey}
   </insert>
 
   <update id="update" parameterType="SpeciesEstimate">
