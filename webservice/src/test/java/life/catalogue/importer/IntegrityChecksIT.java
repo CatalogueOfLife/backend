@@ -14,6 +14,7 @@ import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.VerbatimRecordMapper;
+import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
@@ -92,7 +93,7 @@ public class IntegrityChecksIT {
       
       // import into postgres
       store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
-      PgImport importer = new PgImport(1, dataset, store, PgSetupRule.getSqlSessionFactory(), icfg);
+      PgImport importer = new PgImport(1, dataset, store, PgSetupRule.getSqlSessionFactory(), icfg, NameUsageIndexService.passThru());
       importer.call();
       
     } catch (Exception e) {

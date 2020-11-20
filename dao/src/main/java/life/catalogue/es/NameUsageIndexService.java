@@ -2,11 +2,13 @@ package life.catalogue.es;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.common.func.BatchConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 
 public interface NameUsageIndexService {
 
@@ -56,6 +58,8 @@ public interface NameUsageIndexService {
    * Indexes an entire dataset from postgres into ElasticSearch using the bulk API.
    */
   Stats indexDataset(int datasetKey);
+
+  BatchConsumer<NameUsageWrapper> buildDatasetIndexingHandler(int datasetKey);
 
   /**
    * Removes an entire dataset from ElasticSearch.
@@ -134,6 +138,17 @@ public interface NameUsageIndexService {
       public Stats indexDataset(int datasetKey) {
         LOG.info("No Elastic Search configured, pass through dataset {}", datasetKey);
         return new Stats();
+      }
+
+      @Override
+      public BatchConsumer<NameUsageWrapper> buildDatasetIndexingHandler(int datasetKey) {
+        LOG.info("No Elastic Search configured, pass through dataset {}", datasetKey);
+        return new BatchConsumer<>(new Consumer<List<NameUsageWrapper>>() {
+          @Override
+          public void accept(List<NameUsageWrapper> nameUsageWrappers) {
+            // don't do nothing
+          }
+        }, 100);
       }
 
       @Override

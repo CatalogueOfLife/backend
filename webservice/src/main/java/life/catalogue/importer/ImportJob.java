@@ -237,15 +237,11 @@ public class ImportJob implements Runnable {
         LOG.info("Writing {} to Postgres!", datasetKey);
         updateState(ImportState.INSERTING);
         store = NeoDbFactory.open(datasetKey, getAttempt(), cfg.normalizer);
-        new PgImport(di.getAttempt(), dataset, store, factory, cfg.importer).call();
+        new PgImport(di.getAttempt(), dataset, store, factory, cfg.importer, indexService).call();
 
         LOG.info("Build import metrics for dataset {}", datasetKey);
         updateState(ImportState.ANALYZING);
         dao.updateMetrics(di, datasetKey);
-  
-        LOG.info("Build search index for dataset {}", datasetKey);
-        updateState(ImportState.INDEXING);
-        indexService.indexDataset(datasetKey);
 
         if (rematchDecisions()) {
           updateState(ImportState.MATCHING);

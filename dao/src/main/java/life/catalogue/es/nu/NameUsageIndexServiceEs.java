@@ -60,6 +60,27 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     return indexDatasetInternal(datasetKey, true);
   }
 
+  @Override
+  public BatchConsumer<NameUsageWrapper> buildDatasetIndexingHandler(int datasetKey) {
+    LOG.info("Start indexing dataset {}", datasetKey);
+    try {
+      LOG.info("Remove dataset {} from index", datasetKey);
+      createOrEmptyIndex(datasetKey);
+
+      NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
+      return new BatchConsumer<>(indexer, BATCH_SIZE) {
+        @Override
+        public void close() {
+          super.close();
+          EsUtil.refreshIndex(client, esConfig.nameUsage.name);
+        }
+      };
+
+    } catch (IOException e) {
+      throw new EsException(e);
+    }
+  }
+
   private Stats indexDatasetInternal(int datasetKey, boolean clearIndex) {
     LOG.info("Start indexing dataset {}", datasetKey);
     NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);

@@ -17,7 +17,7 @@ import java.text.DecimalFormat;
 import java.util.List;
 import java.util.function.Consumer;
 
-class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
+public class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
   
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageIndexer.class);
 

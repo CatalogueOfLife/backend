@@ -1,12 +1,17 @@
 package life.catalogue.importer;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import life.catalogue.api.model.*;
+import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.dao.Partitioner;
 import life.catalogue.db.Create;
 import life.catalogue.db.mapper.*;
+import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbUtils;
 import life.catalogue.importer.neo.model.Labels;
@@ -21,11 +26,13 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,7 +44,11 @@ import java.util.function.Supplier;
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 
 /**
+ * Despite its name the PgImporter not only inserts all data from the neo store into postgres,
+ * but also indexes the data straight into ES to avoid reading it from Postgres again which is painfully slow
+ * because of recursions and large joins.
  *
+ * See also https://github.com/CatalogueOfLife/backend/issues/918
  */
 public class PgImport implements Callable<Boolean> {
   private static final Logger LOG = LoggerFactory.getLogger(PgImport.class);
@@ -45,6 +56,7 @@ public class PgImport implements Callable<Boolean> {
   private final NeoDb store;
   private final int batchSize;
   private final SqlSessionFactory sessionFactory;
+  private final NameUsageIndexService indexService;
   private final int attempt;
   private final DatasetWithSettings dataset;
   private final Map<Integer, Integer> verbatimKeys = new HashMap<>();
@@ -63,12 +75,13 @@ public class PgImport implements Callable<Boolean> {
   private int tRelCounter;
   private int sRelCounter;
 
-  public PgImport(int attempt, DatasetWithSettings dataset, NeoDb store, SqlSessionFactory sessionFactory, ImporterConfig cfg) {
+  public PgImport(int attempt, DatasetWithSettings dataset, NeoDb store, SqlSessionFactory sessionFactory, ImporterConfig cfg, NameUsageIndexService indexService) {
     this.attempt = attempt;
     this.dataset = dataset;
     this.store = store;
     this.batchSize = cfg.batchSize;
     this.sessionFactory = sessionFactory;
+    this.indexService = indexService;
   }
   
   @Override
@@ -210,14 +223,21 @@ public class PgImport implements Callable<Boolean> {
     }
     batchCache.clear();
   }
-  
+
   private <T extends VerbatimEntity & UserManaged & DatasetScoped> T updateVerbatimUserEntity(T ent) {
-    ent.setDatasetKey(dataset.getKey());
-    return updateUser(updateVerbatimEntity(ent));
+    return updateVerbatimUserEntity(ent, null);
   }
-  
-  private <T extends VerbatimEntity> T updateVerbatimEntity(T ent) {
+
+  private <T extends VerbatimEntity & UserManaged & DatasetScoped> T updateVerbatimUserEntity(T ent, Set<Integer> vKeys) {
+    ent.setDatasetKey(dataset.getKey());
+    return updateUser(updateVerbatimEntity(ent, vKeys));
+  }
+
+  private <T extends VerbatimEntity> T updateVerbatimEntity(T ent, @Nullable Set<Integer> vKeys) {
     if (ent != null && ent.getVerbatimKey() != null) {
+      if (vKeys != null) {
+        vKeys.add(ent.getVerbatimKey());
+      }
       ent.setVerbatimKey(verbatimKeys.get(ent.getVerbatimKey()));
     }
     return ent;
@@ -338,131 +358,183 @@ public class PgImport implements Callable<Boolean> {
   }
 
   /**
-   * insert taxa/synonyms with all the rest
+   * insert taxa/synonyms with all the rest.
+   * This also indexes usages into the ES search index!
    */
   private void insertUsages() throws InterruptedException {
-    try (SqlSession session = sessionFactory.openSession(ExecutorType.BATCH,false)) {
-      LOG.info("Inserting remaining names and all taxa");
-      TreatmentMapper treatmentMapper = session.getMapper(TreatmentMapper.class);
-      DistributionMapper distributionMapper = session.getMapper(DistributionMapper.class);
-      EstimateMapper estimateMapper = session.getMapper(EstimateMapper.class);
-      MediaMapper mediaMapper = session.getMapper(MediaMapper.class);
-      TaxonMapper taxonMapper = session.getMapper(TaxonMapper.class);
-      SynonymMapper synMapper = session.getMapper(SynonymMapper.class);
-      VernacularNameMapper vernacularMapper = session.getMapper(VernacularNameMapper.class);
-
-      // iterate over taxonomic tree in depth first order, keeping postgres parent keys
-      // pro parte synonyms will be visited multiple times, remember their name ids!
-      TreeWalker.walkTree(store.getNeo(), new StartEndHandler() {
-        int counter = 0;
-        Stack<String> parentIds = new Stack<>();
-        
-        @Override
-        public void start(Node n) {
-          NeoUsage u = store.usages().objByNode(n);
-          NeoName nn = store.nameByUsage(n);
-          updateVerbatimEntity(u);
-          updateVerbatimEntity(nn);
-          // update share props for taxon or synonym
-          NameUsageBase nu = u.usage;
-          nu.setName(nn.getName());
-          nu.setDatasetKey(dataset.getKey());
-          updateReferenceKey(nu.getAccordingToId(), nu::setAccordingToId);
-          updateReferenceKey(nu.getReferenceIds());
-          updateUser(nu);
-          if (!parentIds.empty()) {
-            // use parent postgres key from stack, but keep it there
-            nu.setParentId(parentIds.peek());
-          } else if (u.isSynonym()) {
-            throw new IllegalStateException("Synonym node " + n.getId() + " without accepted taxon found: " + nn.getName().getScientificName());
-          } else if (!n.hasLabel(Labels.ROOT)) {
-            throw new IllegalStateException("Non root node " + n.getId() + " with an accepted taxon without parent found: " + nn.getName().getScientificName());
+    try (var indexer = indexService.buildDatasetIndexingHandler(dataset.getKey())) {
+      LoadingCache<Integer, Set<Issue>> verbatimIssueCache = Caffeine.newBuilder()
+        .maximumSize(10000)
+        .build(key -> {
+          VerbatimRecord v = store.getVerbatim(key);
+          if (v == null) {
+            return Collections.emptySet();
           }
-  
-          // insert taxon or synonym
-          if (u.isSynonym()) {
-            if (NeoDbUtils.isProParteSynonym(n)) {
-              if (proParteIds.contains(u.getId())){
-                // we had that id before, append a random suffix for further pro parte usage
-                UUID ppID = UUID.randomUUID();
-                u.setId(u.getId() + "-" + ppID);
-              } else {
-                proParteIds.add(u.getId());
+          return v.getIssues();
+        });
+
+      try (SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
+        LOG.info("Inserting remaining names and all taxa");
+        TreatmentMapper treatmentMapper = session.getMapper(TreatmentMapper.class);
+        DistributionMapper distributionMapper = session.getMapper(DistributionMapper.class);
+        EstimateMapper estimateMapper = session.getMapper(EstimateMapper.class);
+        MediaMapper mediaMapper = session.getMapper(MediaMapper.class);
+        TaxonMapper taxonMapper = session.getMapper(TaxonMapper.class);
+        SynonymMapper synMapper = session.getMapper(SynonymMapper.class);
+        VernacularNameMapper vernacularMapper = session.getMapper(VernacularNameMapper.class);
+
+        // iterate over taxonomic tree in depth first order, keeping postgres parent keys
+        // pro parte synonyms will be visited multiple times, remember their name ids!
+        TreeWalker.walkTree(store.getNeo(), new StartEndHandler() {
+          int counter = 0;
+          Stack<SimpleName> parents = new Stack<>();
+
+          @Override
+          public void start(Node n) {
+            NeoUsage u = store.usages().objByNode(n);
+            NeoName nn = store.nameByUsage(n);
+
+            Set<Integer> vKeys = new HashSet<>();
+            updateVerbatimEntity(u, vKeys);
+            updateVerbatimEntity(nn, vKeys);
+
+            // update share props for taxon or synonym
+            NameUsageBase nu = u.usage;
+            nu.setName(nn.getName());
+            nu.setDatasetKey(dataset.getKey());
+            updateReferenceKey(nu.getAccordingToId(), nu::setAccordingToId);
+            updateReferenceKey(nu.getReferenceIds());
+            updateUser(nu);
+            if (!parents.empty()) {
+              // use parent postgres key from stack, but keep it there
+              SimpleName p = parents.peek();
+              nu.setParentId(p == null ? null : p.getId());
+            } else if (u.isSynonym()) {
+              throw new IllegalStateException("Synonym node " + n.getId() + " without accepted taxon found: " + nn.getName().getScientificName());
+            } else if (!n.hasLabel(Labels.ROOT)) {
+              throw new IllegalStateException("Non root node " + n.getId() + " with an accepted taxon without parent found: " + nn.getName().getScientificName());
+            }
+
+            // insert taxon or synonym
+            if (u.isSynonym()) {
+              if (NeoDbUtils.isProParteSynonym(n)) {
+                if (proParteIds.contains(u.getId())) {
+                  // we had that id before, append a random suffix for further pro parte usage
+                  UUID ppID = UUID.randomUUID();
+                  u.setId(u.getId() + "-" + ppID);
+                } else {
+                  proParteIds.add(u.getId());
+                }
+              }
+              synMapper.create(u.getSynonym());
+              sCounter.incrementAndGet();
+
+            } else {
+              taxonMapper.create(updateUser(u.getTaxon()));
+              tCounter.incrementAndGet();
+              Taxon acc = u.getTaxon();
+
+              // push new postgres key onto stack for this taxon as we traverse in depth first
+              // ES indexes only id,rank & name
+              SimpleName p = new SimpleName();
+              p.setId(acc.getId());
+              p.setRank(acc.getName().getRank());
+              p.setName(acc.getName().getScientificName());
+              parents.push(p);
+
+              // insert vernacular
+              for (VernacularName vn : u.vernacularNames) {
+                updateVerbatimUserEntity(vn, vKeys);
+                updateReferenceKey(vn);
+                vernacularMapper.create(vn, acc.getId());
+                vCounter.incrementAndGet();
+              }
+
+              // insert distributions
+              for (Distribution d : u.distributions) {
+                updateVerbatimUserEntity(d, vKeys);
+                updateReferenceKey(d);
+                distributionMapper.create(d, acc.getId());
+                diCounter.incrementAndGet();
+              }
+
+              // insert treatments
+              if (u.treatment != null) {
+                u.treatment.setId(acc.getId());
+                updateVerbatimUserEntity(u.treatment, vKeys);
+                treatmentMapper.create(u.treatment);
+                trCounter.incrementAndGet();
+              }
+
+              // insert media
+              for (Media m : u.media) {
+                updateVerbatimUserEntity(m, vKeys);
+                updateReferenceKey(m);
+                mediaMapper.create(m, acc.getId());
+                mCounter.incrementAndGet();
+              }
+
+              // insert estimates
+              for (SpeciesEstimate e : u.estimates) {
+                updateVerbatimUserEntity(e, vKeys);
+                updateReferenceKey(e);
+                e.setTarget(SimpleNameLink.of(acc.getId()));
+                estimateMapper.create(e);
+                eCounter.incrementAndGet();
+              }
+
+            }
+
+            // commit in batches
+            if (counter++ % batchSize == 0) {
+              interruptIfCancelled();
+              session.commit();
+              LOG.info("Inserted {} names and taxa", counter);
+            }
+
+            // index into ES
+            NameUsageWrapper nuw = new NameUsageWrapper(nu);
+            nuw.setPublisherKey(dataset.getGbifPublisherKey());
+            nuw.setClassification(parents);
+            Set<Issue> issues = new HashSet<>();
+            for (Integer vk : vKeys) {
+              if (vk != null) {
+                issues.addAll(verbatimIssueCache.get(vk));
               }
             }
-            synMapper.create(u.getSynonym());
-            sCounter.incrementAndGet();
-
-          } else {
-            taxonMapper.create(updateUser(u.getTaxon()));
-            tCounter.incrementAndGet();
-            Taxon acc = u.getTaxon();
-
-            // push new postgres key onto stack for this taxon as we traverse in depth first
-            parentIds.push(acc.getId());
-            
-            // insert vernacular
-            for (VernacularName vn : u.vernacularNames) {
-              updateVerbatimUserEntity(vn);
-              updateReferenceKey(vn);
-              vernacularMapper.create(vn, acc.getId());
-              vCounter.incrementAndGet();
-            }
-            
-            // insert distributions
-            for (Distribution d : u.distributions) {
-              updateVerbatimUserEntity(d);
-              updateReferenceKey(d);
-              distributionMapper.create(d, acc.getId());
-              diCounter.incrementAndGet();
-            }
-  
-            // insert treatments
-            if (u.treatment != null) {
-              u.treatment.setId(acc.getId());
-              updateVerbatimUserEntity(u.treatment);
-              treatmentMapper.create(u.treatment);
-              trCounter.incrementAndGet();
-            }
-
-            // insert media
-            for (Media m : u.media) {
-              updateVerbatimUserEntity(m);
-              updateReferenceKey(m);
-              mediaMapper.create(m, acc.getId());
-              mCounter.incrementAndGet();
-            }
-
-            // insert estimates
-            for (SpeciesEstimate e : u.estimates) {
-              updateVerbatimUserEntity(e);
-              updateReferenceKey(e);
-              e.setTarget(SimpleNameLink.of(acc.getId()));
-              estimateMapper.create(e);
-              eCounter.incrementAndGet();
-            }
-
+            nuw.setIssues(issues);
+            //TODO
+            nuw.setDecisions(null);
+            indexer.accept(nuw);
           }
 
-          // commit in batches
-          if (counter++ % batchSize == 0) {
+          @Override
+          public void end(Node n) {
             interruptIfCancelled();
-            session.commit();
-            LOG.info("Inserted {} names and taxa", counter);
+            // remove this key from parent queue if its an accepted taxon
+            if (n.hasLabel(Labels.TAXON)) {
+              parents.pop();
+            }
           }
-        }
-        
-        @Override
-        public void end(Node n) {
-          interruptIfCancelled();
-          // remove this key from parent queue if its an accepted taxon
-          if (n.hasLabel(Labels.TAXON)) {
-            parentIds.pop();
+        });
+        session.commit();
+        LOG.debug("Inserted {} names and {} taxa", nCounter, tCounter);
+      }
+
+      // index bare names
+      try (Transaction tx = store.getNeo().beginTx()) {
+        ResourceIterator<Node> iter = store.bareNames();
+        while (iter.hasNext()) {
+          NeoName nn = store.names().objByNode(iter.next());
+          BareName bn = new BareName(nn.getName());
+          NameUsageWrapper nuw = new NameUsageWrapper(bn);
+          nuw.setPublisherKey(dataset.getGbifPublisherKey());
+          if (nn.getVerbatimKey() != null) {
+            nuw.setIssues(verbatimIssueCache.get(nn.getVerbatimKey()));
           }
+          indexer.accept(nuw);
         }
-      });
-      session.commit();
-      LOG.debug("Inserted {} names and {} taxa", nCounter, tCounter);
+      }
     }
   }
 

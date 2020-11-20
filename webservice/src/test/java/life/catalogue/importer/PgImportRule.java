@@ -12,6 +12,7 @@ import life.catalogue.config.NormalizerConfig;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.UserMapper;
+import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
@@ -162,7 +163,7 @@ public class PgImportRule extends ExternalResource {
       
       // import into postgres
       store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
-      PgImport importer = new PgImport(1, dataset, store, PgSetupRule.getSqlSessionFactory(), icfg);
+      PgImport importer = new PgImport(1, dataset, store, PgSetupRule.getSqlSessionFactory(), icfg, NameUsageIndexService.passThru());
       importer.call();
       
     } catch (Exception e) {

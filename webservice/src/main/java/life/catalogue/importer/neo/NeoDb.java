@@ -40,9 +40,7 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -277,7 +275,18 @@ public class NeoDb {
         .map(this::toNameRelation)
         .collect(Collectors.toList());
   }
-  
+
+
+  /**
+   * Returns an iterator over all bare name nodes.
+   * As we return a resource iterator make sure that there is an open neo transaction when you call this method.
+   */
+  public ResourceIterator<Node> bareNames() {
+    final String query = "MATCH (n:NAME) WHERE NOT (n)<-[:HAS_NAME]-() RETURN DISTINCT n";
+    Result result = neo.execute(query);
+    return result.columnAs("n");
+  }
+
   public List<Node> usagesByName(String scientificName, @Nullable String authorship, @Nullable Rank rank, boolean inclUnranked) {
     List<Node> names = names().nodesByName(scientificName);
     // filter ranks
