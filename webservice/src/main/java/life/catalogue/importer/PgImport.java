@@ -388,32 +388,13 @@ public class PgImport implements Callable<Boolean> {
         TreeWalker.walkTree(store.getNeo(), new StartEndHandler() {
           int counter = 0;
           Stack<SimpleName> parents = new Stack<>();
+          Stack<Node> parentsN = new Stack<>();
 
           @Override
           public void start(Node n) {
-            NeoUsage u = store.usages().objByNode(n);
-            NeoName nn = store.nameByUsage(n);
-
             Set<Integer> vKeys = new HashSet<>();
-            updateVerbatimEntity(u, vKeys);
-            updateVerbatimEntity(nn, vKeys);
 
-            // update share props for taxon or synonym
-            NameUsageBase nu = u.usage;
-            nu.setName(nn.getName());
-            nu.setDatasetKey(dataset.getKey());
-            updateReferenceKey(nu.getAccordingToId(), nu::setAccordingToId);
-            updateReferenceKey(nu.getReferenceIds());
-            updateUser(nu);
-            if (!parents.empty()) {
-              // use parent postgres key from stack, but keep it there
-              SimpleName p = parents.peek();
-              nu.setParentId(p == null ? null : p.getId());
-            } else if (u.isSynonym()) {
-              throw new IllegalStateException("Synonym node " + n.getId() + " without accepted taxon found: " + nn.getName().getScientificName());
-            } else if (!n.hasLabel(Labels.ROOT)) {
-              throw new IllegalStateException("Non root node " + n.getId() + " with an accepted taxon without parent found: " + nn.getName().getScientificName());
-            }
+            NeoUsage u = updateNeoUsage(n, parents, vKeys);
 
             // insert taxon or synonym
             if (u.isSynonym()) {
@@ -441,6 +422,7 @@ public class PgImport implements Callable<Boolean> {
               p.setRank(acc.getName().getRank());
               p.setName(acc.getName().getScientificName());
               parents.push(p);
+              parentsN.push(u.node);
 
               // insert vernacular
               for (VernacularName vn : u.vernacularNames) {
@@ -493,7 +475,7 @@ public class PgImport implements Callable<Boolean> {
             }
 
             // index into ES
-            NameUsageWrapper nuw = new NameUsageWrapper(nu);
+            NameUsageWrapper nuw = new NameUsageWrapper(u.usage);
             nuw.setPublisherKey(dataset.getGbifPublisherKey());
             nuw.setClassification(parents);
             Set<Issue> issues = new HashSet<>();
@@ -503,6 +485,12 @@ public class PgImport implements Callable<Boolean> {
               }
             }
             nuw.setIssues(issues);
+            if (u.usage.isSynonym()) {
+              SimpleName psn = parents.pop();
+              NeoUsage acc = updateNeoUsage(parentsN.peek(), parents, null);
+              parents.push(psn);
+              ((Synonym)u.usage).setAccepted(acc.getTaxon());
+            }
             //TODO
             nuw.setDecisions(null);
             indexer.accept(nuw);
@@ -514,6 +502,7 @@ public class PgImport implements Callable<Boolean> {
             // remove this key from parent queue if its an accepted taxon
             if (n.hasLabel(Labels.TAXON)) {
               parents.pop();
+              parentsN.pop();
             }
           }
         });
@@ -525,7 +514,8 @@ public class PgImport implements Callable<Boolean> {
       try (Transaction tx = store.getNeo().beginTx()) {
         ResourceIterator<Node> iter = store.bareNames();
         while (iter.hasNext()) {
-          NeoName nn = store.names().objByNode(iter.next());
+          Set<Integer> vKeys = new HashSet<>();
+          NeoName nn = updateNeoName(iter.next(), vKeys);
           BareName bn = new BareName(nn.getName());
           NameUsageWrapper nuw = new NameUsageWrapper(bn);
           nuw.setPublisherKey(dataset.getGbifPublisherKey());
@@ -536,6 +526,38 @@ public class PgImport implements Callable<Boolean> {
         }
       }
     }
+  }
+
+  private NeoName updateNeoName(Node n, Set<Integer> vKeys){
+    NeoName nn = store.names().objByNode(n);
+    updateVerbatimEntity(nn, vKeys);
+    nn.getName().setDatasetKey(dataset.getKey());
+    updateReferenceKey(nn.getName().getPublishedInId(), nn.getName()::setPublishedInId);
+    updateUser(nn.getName());
+    return nn;
+  }
+
+  private NeoUsage updateNeoUsage(Node n, Stack<SimpleName> parents, Set<Integer> vKeys){
+    NeoUsage u = store.usages().objByNode(n);
+    NeoName nn = updateNeoName(store.getUsageNameNode(n), vKeys);
+
+    updateVerbatimEntity(u, vKeys);
+    NameUsageBase nu = u.usage;
+    nu.setName(nn.getName());
+    nu.setDatasetKey(dataset.getKey());
+    updateReferenceKey(nu.getAccordingToId(), nu::setAccordingToId);
+    updateReferenceKey(nu.getReferenceIds());
+    updateUser(nu);
+    if (!parents.empty()) {
+      // use parent postgres key from stack, but keep it there
+      SimpleName p = parents.peek();
+      nu.setParentId(p == null ? null : p.getId());
+    } else if (u.isSynonym()) {
+      throw new IllegalStateException("Synonym node " + n.getId() + " without accepted taxon found: " + nn.getName().getScientificName());
+    } else if (!n.hasLabel(Labels.ROOT)) {
+      throw new IllegalStateException("Non root node " + n.getId() + " with an accepted taxon without parent found: " + nn.getName().getScientificName());
+    }
+    return u;
   }
 
   /**

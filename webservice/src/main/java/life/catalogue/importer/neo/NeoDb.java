@@ -908,7 +908,7 @@ public class NeoDb {
     return true;
   }
   
-  private Node getUsageNameNode(Node usage) {
+  public Node getUsageNameNode(Node usage) {
     return usage.getSingleRelationship(RelType.HAS_NAME, Direction.OUTGOING).getOtherNode(usage);
   }
   

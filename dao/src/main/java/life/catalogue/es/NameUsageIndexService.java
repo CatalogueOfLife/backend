@@ -3,9 +3,11 @@ package life.catalogue.es;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.common.func.BatchConsumer;
+import life.catalogue.es.nu.NameUsageWrapperConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
@@ -144,9 +146,18 @@ public interface NameUsageIndexService {
       public BatchConsumer<NameUsageWrapper> buildDatasetIndexingHandler(int datasetKey) {
         LOG.info("No Elastic Search configured, pass through dataset {}", datasetKey);
         return new BatchConsumer<>(new Consumer<List<NameUsageWrapper>>() {
+          final NameUsageWrapperConverter converter = new NameUsageWrapperConverter();
+
           @Override
           public void accept(List<NameUsageWrapper> nameUsageWrappers) {
-            // don't do nothing
+            // convert nu wrappers to make sure
+            try {
+              for (NameUsageWrapper nuw : nameUsageWrappers) {
+                converter.toDocument(nuw);
+              }
+            } catch (IOException e) {
+              throw new RuntimeException(e);
+            }
           }
         }, 100);
       }
