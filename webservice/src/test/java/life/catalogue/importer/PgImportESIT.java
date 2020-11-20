@@ -109,8 +109,11 @@ public class PgImportESIT extends PgImportITBase {
     ), nuw.getClassification());
 
     // test synonym classification
-    req.addFilter(NameUsageSearchParameter.USAGE_ID, "1006-1006-s3");
+    req = new NameUsageSearchRequest();
+    req.addFilter(NameUsageSearchParameter.DATASET_KEY, dataset.getKey());
+    req.setFilter(NameUsageSearchParameter.USAGE_ID, "1006-1006-s3");
     resp = search(req);
+    assertEquals(1, resp.getTotal());
     nuw = resp.getResult().get(0);
     assertEquals("1006-1006-s3", nuw.getUsage().getId());
     assertTrue(nuw.getUsage().isSynonym());
@@ -135,7 +138,22 @@ public class PgImportESIT extends PgImportITBase {
     assertEquals("Leontodon taraxacoides", acc.getName().getScientificName());
     assertEquals("(Vill.) Mérat", acc.getName().getAuthorship());
     assertEquals("Leontodon taraxacoides (Vill.) Mérat", acc.getLabel());
+
+    // test accordingTo
+    req.setFilter(NameUsageSearchParameter.USAGE_ID, "Jarvis2007");
+    resp = search(req);
+    nuw = resp.getResult().get(0);
+    assertEquals("Jarvis2007", nuw.getUsage().getId());
+    assertTrue(nuw.getUsage().isTaxon());
+    assertEquals(Rank.SPECIES, nuw.getUsage().getName().getRank());
+    assertEquals("Gundelia tournefortii", nuw.getUsage().getName().getScientificName());
+    assertEquals("L.", nuw.getUsage().getName().getAuthorship());
+    assertNull(nuw.getUsage().getNamePhrase());
+    assertEquals("Jarvis2007", nuw.getUsage().getAccordingToId());
+    assertEquals("Jarvis, Charlie. Chapter 7: Linnaean Plant Names and their Types (part G), Order out of Chaos. Linnaean Plant Types and their Types, London: Linnaean Society of London in association with the Natural History Museum. pp. 529-556: 555 (2007).", ((NameUsageBase) nuw.getUsage()).getAccordingTo());
+    assertEquals("Gundelia tournefortii L. sensu Jarvis, Charlie. Chapter 7: Linnaean Plant Names and their Types (part G), Order out of Chaos. Linnaean Plant Types and their Types, London: Linnaean Society of London in association with the Natural History Museum. pp. 529-556: 555 (2007).", nuw.getUsage().getLabel());
   }
+
 
   void assertFacetValue(Set<FacetValue<?>> facets, Enum<?> value, int count) {
     for (FacetValue<?> fv : facets) {

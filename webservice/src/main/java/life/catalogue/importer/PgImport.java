@@ -62,6 +62,7 @@ public class PgImport implements Callable<Boolean> {
   private final DatasetWithSettings dataset;
   private final Map<Integer, Integer> verbatimKeys = new HashMap<>();
   private LoadingCache<Integer, Set<Issue>> verbatimIssueCache;
+  private LoadingCache<String, String> citationCache;
   private final Set<String> proParteIds = new HashSet<>();
   private final AtomicInteger nCounter = new AtomicInteger(0);
   private final AtomicInteger tCounter = new AtomicInteger(0);
@@ -85,8 +86,11 @@ public class PgImport implements Callable<Boolean> {
     this.sessionFactory = sessionFactory;
     this.indexService = indexService;
     verbatimIssueCache = Caffeine.newBuilder()
-      .maximumSize(1000)
+      .maximumSize(10000)
       .build(key -> store.getVerbatim(key).getIssues());
+    citationCache = Caffeine.newBuilder()
+      .maximumSize(10000)
+      .build(key -> store.references().get(key).getCitation());
   }
   
   @Override
@@ -389,7 +393,7 @@ public class PgImport implements Callable<Boolean> {
           public void start(Node n) {
             Set<Integer> vKeys = new HashSet<>();
 
-            NeoUsage u = updateNeoUsage(n, parents.isEmpty() ? null : parents.peek(), vKeys);
+            NeoUsage u = fillNeoUsage(n, parents.isEmpty() ? null : parents.peek(), vKeys);
 
             // insert taxon or synonym
             if (u.isSynonym()) {
@@ -471,7 +475,7 @@ public class PgImport implements Callable<Boolean> {
             nuw.setClassification(new ArrayList<>(parents));
             nuw.setIssues(mergeIssues(vKeys));
             if (u.usage.isSynonym()) {
-              NeoUsage acc = updateNeoUsage(parentsN.peek(), parents.peek(), null);
+              NeoUsage acc = fillNeoUsage(parentsN.peek(), parents.peek(), null);
               ((Synonym)u.usage).setAccepted(acc.getTaxon());
               nuw.getClassification().add(new SimpleName(u.usage.getId(), u.usage.getName().getScientificName(), u.usage.getName().getRank()));
             }
@@ -529,7 +533,7 @@ public class PgImport implements Callable<Boolean> {
     return nn;
   }
 
-  private NeoUsage updateNeoUsage(Node n, SimpleName parent, Set<Integer> vKeys){
+  private NeoUsage fillNeoUsage(Node n, SimpleName parent, Set<Integer> vKeys){
     NeoUsage u = store.usages().objByNode(n);
     NeoName nn = updateNeoName(store.getUsageNameNode(n), vKeys);
 
@@ -537,7 +541,11 @@ public class PgImport implements Callable<Boolean> {
     NameUsageBase nu = u.usage;
     nu.setName(nn.getName());
     nu.setDatasetKey(dataset.getKey());
-    updateReferenceKey(nu.getAccordingToId(), nu::setAccordingToId);
+    if (nu.getAccordingToId() != null) {
+      String sec = citationCache.get(nu.getAccordingToId());
+      nu.setAccordingTo(sec);
+      updateReferenceKey(nu.getAccordingToId(), nu::setAccordingToId);
+    }
     updateReferenceKey(nu.getReferenceIds());
     updateUser(nu);
     if (parent != null) {
