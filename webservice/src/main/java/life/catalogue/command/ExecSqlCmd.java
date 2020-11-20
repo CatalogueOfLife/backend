@@ -1,9 +1,8 @@
-package life.catalogue.command.updatedb;
+package life.catalogue.command;
 
 import io.dropwizard.setup.Bootstrap;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.command.AbstractPromptCmd;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.PgConfig;
 import net.sourceforge.argparse4j.inf.Namespace;

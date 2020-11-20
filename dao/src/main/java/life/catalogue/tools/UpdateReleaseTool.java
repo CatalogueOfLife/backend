@@ -80,7 +80,7 @@ public class UpdateReleaseTool implements AutoCloseable {
   }
 
   void show(DatasetProjectSourceDao dao){
-    dao.list(project.getKey(), release).forEach(d -> {
+    dao.list(release.getKey(), release, true).forEach(d -> {
       System.out.printf("%s: %s\n", d.getKey(), d.getCitation());
     });
   }
@@ -88,12 +88,12 @@ public class UpdateReleaseTool implements AutoCloseable {
   void update(DatasetProjectSourceDao dao) {
     try (SqlSession session = factory.openSession(false)) {
       ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
-      int cnt =psm.deleteByProject(release.getKey());
+      int cnt = psm.deleteByProject(release.getKey());
       session.commit();
       System.out.printf("Deleted %s old source metadata records\n", cnt);
 
       AtomicInteger counter = new AtomicInteger(0);
-      dao.list(project.getKey(), release).forEach(d -> {
+      dao.list(release.getKey(), release, true).forEach(d -> {
         counter.incrementAndGet();
         System.out.printf("%s: %s\n", d.getKey(), d.getCitation());
         psm.create(release.getKey(), d);
@@ -109,12 +109,12 @@ public class UpdateReleaseTool implements AutoCloseable {
 
   public static void main(String[] args) {
     PgConfig cfg = new PgConfig();
-    cfg.host = "";
+    cfg.host = "pg1.catalogue.life";
     cfg.database = "col";
     cfg.user = "col";
-    cfg.password = "";
+    cfg.password = "jeK7V19i";
     try (UpdateReleaseTool reg = new UpdateReleaseTool(2230,cfg, 101)) { // 101=markus
-      reg.rematchSectorTargets();
+      reg.rebuildSourceMetadata();
     }
   }
 }

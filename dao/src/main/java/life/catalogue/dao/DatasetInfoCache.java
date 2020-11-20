@@ -10,6 +10,7 @@ import life.catalogue.db.mapper.DatasetMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,6 +49,13 @@ public class DatasetInfoCache {
       if (origin == DatasetOrigin.RELEASED) {
         Preconditions.checkNotNull(sourceKey, "sourceKey is required for release " + key);
       }
+    }
+
+    public DatasetInfo requireOrigin(DatasetOrigin... origins){
+      for (var o : origins) {
+        if (o == this.origin) return this;
+      }
+      throw new IllegalArgumentException("Dataset "+key+" is not of origin " + Arrays.toString(origins));
     }
   }
 

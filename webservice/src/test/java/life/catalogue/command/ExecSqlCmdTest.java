@@ -1,6 +1,5 @@
-package life.catalogue.command.updatedb;
+package life.catalogue.command;
 
-import life.catalogue.command.CmdTestBase;
 import org.junit.Test;
 
 import java.io.File;

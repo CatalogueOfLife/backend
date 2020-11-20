@@ -1,10 +1,9 @@
-package life.catalogue.command.updatedb;
+package life.catalogue.command;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.dropwizard.setup.Bootstrap;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.command.AbstractPromptCmd;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import org.slf4j.Logger;

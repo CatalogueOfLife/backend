@@ -1,6 +1,6 @@
-package life.catalogue.command.initdb;
+package life.catalogue.command;
 
-import life.catalogue.command.initdb.InitDbCmd;
+import life.catalogue.command.InitDbCmd;
 import life.catalogue.command.CmdTestBase;
 import org.junit.Test;
 

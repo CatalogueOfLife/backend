@@ -53,8 +53,8 @@ public interface ProjectSourceMapper {
   List<ArchivedDataset> listReleaseSources(@Param("datasetKey") int datasetKey);
 
   /**
-   * Lists all project sources retrieving metadata either from the latest version
-   * or an archived copy depending on the importat attempt of the last sync.
+   * Lists all project or release sources retrieving metadata either from the latest version
+   * or an archived copy depending on the import attempt of the last sync stored in the sectors.
    */
   List<ArchivedDataset> listProjectSources(@Param("datasetKey") int datasetKey);
 

@@ -1,10 +1,9 @@
-package life.catalogue.command.es;
+package life.catalogue.command;
 
 import com.google.common.base.Preconditions;
 import com.zaxxer.hikari.HikariDataSource;
 import io.dropwizard.setup.Bootstrap;
 import life.catalogue.WsServerConfig;
-import life.catalogue.command.AbstractPromptCmd;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.NameUsageIndexService;

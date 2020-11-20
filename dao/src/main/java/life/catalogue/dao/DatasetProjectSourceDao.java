@@ -3,7 +3,6 @@ package life.catalogue.dao;
 import life.catalogue.api.model.ArchivedDataset;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
-import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -17,6 +16,9 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.util.List;
 
+import static life.catalogue.api.vocab.DatasetOrigin.MANAGED;
+import static life.catalogue.api.vocab.DatasetOrigin.RELEASED;
+
 public class DatasetProjectSourceDao {
   private final Logger LOG = LoggerFactory.getLogger(DatasetProjectSourceDao.class);
   private final SqlSessionFactory factory;
@@ -29,9 +31,9 @@ public class DatasetProjectSourceDao {
    * @param dontPatch if true return the original project source metadata without the patch. This works only for managed datasets, not releases
    */
   public ArchivedDataset get(int projectKey, int sourceDatasetKey, boolean dontPatch){
-    DatasetOrigin origin = getProjectOrigin(projectKey);
+    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(projectKey);
     try (SqlSession session = factory.openSession()) {
-      if (DatasetOrigin.MANAGED == origin) {
+      if (MANAGED == info.origin) {
         ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
         ArchivedDataset d = psm.getProjectSource(sourceDatasetKey, projectKey);
         if (!dontPatch) {
@@ -43,7 +45,7 @@ public class DatasetProjectSourceDao {
         }
         return d;
 
-      } else if (DatasetOrigin.RELEASED == origin) {
+      } else if (RELEASED == info.origin) {
         return session.getMapper(ProjectSourceMapper.class).getReleaseSource(sourceDatasetKey, projectKey);
 
       } else {
@@ -52,38 +54,36 @@ public class DatasetProjectSourceDao {
     }
   }
 
-  private DatasetOrigin getProjectOrigin(int projectKey){
-    DatasetOrigin origin = DatasetInfoCache.CACHE.origin(projectKey);
-    if (!origin.isProject()) {
-      throw new IllegalArgumentException("Dataset "+projectKey+" is not a project");
-    }
-    return origin;
-  }
-
   /**
    * List the source datasets for a project or release.
    * If the key points to a release the patched and archived source metadata is returned.
    * If it points to a live project, the metadata is taken from the dataset archive at the time of the last successful sync attempt
    * and then patched.
-   * @param projectKey
-   * @param projectForPatching optional dataset used for building the source citations, if null project is used
+   * @param datasetKey project or release key
+   * @param projectForPatching optional dataset used for building the source citations, if null master project is used
    */
-  public List<ArchivedDataset> list(int projectKey, @Nullable Dataset projectForPatching){
-    DatasetOrigin origin = getProjectOrigin(projectKey);
-
+  public List<ArchivedDataset> list(int datasetKey, @Nullable Dataset projectForPatching, boolean rebuild){
+    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASED, MANAGED);
     List<ArchivedDataset> sources;
     try (SqlSession session = factory.openSession()) {
       ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
-      if (DatasetOrigin.RELEASED == origin) {
-        sources = psm.listReleaseSources(projectKey);
+      if (RELEASED == info.origin && !rebuild) {
+        sources = psm.listReleaseSources(datasetKey);
 
       } else {
         // get latest version with patch applied
-        final Dataset project = projectForPatching != null ? projectForPatching : session.getMapper(DatasetMapper.class).get(projectKey);
+        final int projectKey = RELEASED == info.origin ? info.sourceKey : datasetKey;
         final DatasetSettings settings = session.getMapper(DatasetMapper.class).getSettings(projectKey);
+        if (settings != null && settings.has(Setting.RELEASE_SOURCE_CITATION_TEMPLATE)) {
+          LOG.debug("Use source citation template >>>{}<<< from project {}", settings.getString(Setting.RELEASE_SOURCE_CITATION_TEMPLATE), projectKey);
+        } else {
+          LOG.warn("No source citation template configured from project {}", projectKey);
+        }
+
+        final Dataset project = projectForPatching != null ? projectForPatching : session.getMapper(DatasetMapper.class).get(datasetKey);
         DatasetPatchMapper pm = session.getMapper(DatasetPatchMapper.class);
 
-        sources = psm.listProjectSources(projectKey);
+        sources = psm.listProjectSources(datasetKey);
         sources.forEach(d -> patch(d, projectKey, project, pm, settings));
       }
     }

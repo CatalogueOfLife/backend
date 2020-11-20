@@ -4,7 +4,7 @@ import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
-import life.catalogue.command.initdb.InitDbCmd;
+import life.catalogue.command.InitDbCmd;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;

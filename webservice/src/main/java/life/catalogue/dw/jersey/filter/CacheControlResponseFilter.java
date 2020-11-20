@@ -28,12 +28,17 @@ public class CacheControlResponseFilter implements ContainerResponseFilter {
   // age in seconds
   private static final String CACHE24 = "public, max-age=" + MAX_AGE + ", s-maxage=" + MAX_AGE;
   private static final Pattern DATASET_PATH  = Pattern.compile("dataset/(\\d+)");
+  private static final Pattern STATIC_PATH  = Pattern.compile("/(vocab|openapi|version)");
   private static final Set<String> METHODS  = Set.of(HttpMethod.GET, HttpMethod.HEAD);
   private final IntSet releases = new IntOpenHashSet();
 
   @Override
   public void filter(ContainerRequestContext req, ContainerResponseContext resp) throws IOException {
     if (req.getMethod() != null && METHODS.contains(req.getMethod())) {
+      if (STATIC_PATH.matcher(req.getUriInfo().getPath()).find()) {
+        allowCaching(resp);
+        return;
+      }
       Matcher m = DATASET_PATH.matcher(req.getUriInfo().getPath());
       if (m.find()) {
         // parsing cannot fail, we have a pattern

@@ -1,4 +1,4 @@
-package life.catalogue.command.initdb;
+package life.catalogue.command;
 
 import com.google.common.collect.ImmutableMap;
 import com.zaxxer.hikari.HikariConfig;
@@ -7,7 +7,6 @@ import io.dropwizard.setup.Bootstrap;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.vocab.*;
-import life.catalogue.command.AbstractPromptCmd;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;

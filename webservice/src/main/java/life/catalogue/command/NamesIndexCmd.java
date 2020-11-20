@@ -1,9 +1,8 @@
-package life.catalogue.command.nidx;
+package life.catalogue.command;
 
 import com.zaxxer.hikari.HikariDataSource;
 import io.dropwizard.setup.Bootstrap;
 import life.catalogue.WsServerConfig;
-import life.catalogue.command.AbstractPromptCmd;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.matching.NameIndex;
 import net.sourceforge.argparse4j.inf.Namespace;
