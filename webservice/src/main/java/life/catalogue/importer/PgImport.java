@@ -90,7 +90,10 @@ public class PgImport implements Callable<Boolean> {
       .build(key -> store.getVerbatim(key).getIssues());
     citationCache = Caffeine.newBuilder()
       .maximumSize(10000)
-      .build(key -> store.references().get(key).getCitation());
+      .build(key -> {
+        Reference r = store.references().get(key);
+        return r == null ? null : r.getCitation();
+      });
   }
   
   @Override

@@ -46,7 +46,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     try (SqlSession session = factory.openSession(true)) {
       ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
       final AtomicInteger counter = new AtomicInteger(0);
-      dao.list(datasetKey, release).forEach(d -> {
+      dao.list(datasetKey, release, false).forEach(d -> {
         LOG.info("Archive dataset {}#{} for release {}", d.getKey(), d.getImportAttempt(), newDatasetKey);
         psm.create(newDatasetKey, d);
         // archive logos

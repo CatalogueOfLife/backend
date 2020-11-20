@@ -109,10 +109,10 @@ public class UpdateReleaseTool implements AutoCloseable {
 
   public static void main(String[] args) {
     PgConfig cfg = new PgConfig();
-    cfg.host = "pg1.catalogue.life";
+    cfg.host = "";
     cfg.database = "col";
     cfg.user = "col";
-    cfg.password = "jeK7V19i";
+    cfg.password = "";
     try (UpdateReleaseTool reg = new UpdateReleaseTool(2230,cfg, 101)) { // 101=markus
       reg.rebuildSourceMetadata();
     }
