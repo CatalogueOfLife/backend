@@ -28,7 +28,7 @@ public class CacheControlResponseFilter implements ContainerResponseFilter {
   // age in seconds
   private static final String CACHE24 = "public, max-age=" + MAX_AGE + ", s-maxage=" + MAX_AGE;
   private static final Pattern DATASET_PATH  = Pattern.compile("dataset/(\\d+)");
-  private static final Pattern STATIC_PATH  = Pattern.compile("/(vocab|openapi|version)");
+  private static final Pattern STATIC_PATH  = Pattern.compile("^(vocab|openapi|version)");
   private static final Set<String> METHODS  = Set.of(HttpMethod.GET, HttpMethod.HEAD);
   private final IntSet releases = new IntOpenHashSet();
 
