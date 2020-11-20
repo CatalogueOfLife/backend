@@ -2,6 +2,7 @@ package life.catalogue.importer;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.Issue;
@@ -117,8 +118,9 @@ public class PgImport implements Callable<Boolean> {
 		return true;
 	}
 
-  private void updateMetadata() {
-    try (SqlSession session = sessionFactory.openSession(false)) {
+	@VisibleForTesting
+  void updateMetadata() {
+    try (SqlSession session = sessionFactory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       DatasetWithSettings old = new DatasetWithSettings(
         dm.get(dataset.getKey()),
@@ -157,7 +159,6 @@ public class PgImport implements Callable<Boolean> {
 
       dm.updateLastImport(dataset.getKey(), attempt);
       LOG.info("Updated last successful import attempt {} for dataset {}: {}", attempt, dataset.getKey(), dataset.getTitle());
-      session.commit();
     }
   }
 
