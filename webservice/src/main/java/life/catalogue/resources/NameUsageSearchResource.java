@@ -60,9 +60,7 @@ public class NameUsageSearchResource {
   @GET
   @Timed
   @Path("search")
-  public ResultPage<NameUsageWrapper> search(@BeanParam NameUsageSearchRequest query,
-      @Valid @BeanParam Page page,
-      @Context UriInfo uri) throws InvalidQueryException {
+  public ResultPage<NameUsageWrapper> search(@BeanParam NameUsageSearchRequest query, @Valid @BeanParam Page page, @Context UriInfo uri) throws InvalidQueryException {
     if (uri != null) {
       query.addFilters(uri.getQueryParameters());
     }
@@ -105,7 +103,10 @@ public class NameUsageSearchResource {
   @GET
   @Timed
   @Path("suggest")
-  public NameUsageSuggestResponse suggest(@BeanParam NameUsageSuggestRequest query) throws InvalidQueryException {
+  public NameUsageSuggestResponse suggest(@BeanParam NameUsageSuggestRequest query, @Context UriInfo uri) throws InvalidQueryException {
+    if (uri != null) {
+      query.addFilters(uri.getQueryParameters());
+    }
     return suggestService.suggest(query);
   }
 }

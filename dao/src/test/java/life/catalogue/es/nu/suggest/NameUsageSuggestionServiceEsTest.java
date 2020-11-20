@@ -28,7 +28,7 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
   public void test01() {
 
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
-    query.setDatasetKey(1);
+    query.setDatasetFilter(1);
     query.setQ("abcde");
     query.setFuzzy(true);
 
@@ -85,7 +85,7 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
   public void test02() {
 
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
-    query.setDatasetKey(1);
+    query.setDatasetFilter(1);
     query.setQ("abcde");
     query.setFuzzy(false);
 
@@ -146,7 +146,7 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
   public void test02b() {
 
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
-    query.setDatasetKey(1);
+    query.setDatasetFilter(1);
     query.setQ("abcde fghij");
 
     Name n = new Name();
@@ -204,7 +204,7 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
   public void test03() {
 
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
-    query.setDatasetKey(1);
+    query.setDatasetFilter(1);
     query.setQ("LARUS FUSCUS FUSCUS (LINNAEUS 1752)");
     query.setFuzzy(true);
 
@@ -254,7 +254,7 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     index(nuw);
 
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
-    query.setDatasetKey(1);
+    query.setDatasetFilter(1);
 
     NameUsageSuggestResponse response;
 
@@ -312,7 +312,7 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
 
     // query
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
-    query.setDatasetKey(1);
+    query.setDatasetFilter(1);
     query.setFuzzy(false);
 
     Name n = new Name();
@@ -385,7 +385,7 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
 
     // query
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
-    query.setDatasetKey(1);
+    query.setDatasetFilter(1);
     query.setFuzzy(true);
 
     Name n = new Name();
@@ -494,7 +494,7 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     indexRaw(nu1, nu2, nu3, nu4);
 
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
-    query.setDatasetKey(1);
+    query.setDatasetFilter(1);
     query.setQ("larus f");
     NameUsageSuggestResponse response = suggest(query);
 
@@ -516,7 +516,7 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     indexRaw(nu1);
 
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
-    query.setDatasetKey(1);
+    query.setDatasetFilter(1);
     query.setQ("larus f");
     NameUsageSuggestResponse response = suggest(query);
 
@@ -539,7 +539,7 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     indexRaw(nu1);
 
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
-    query.setDatasetKey(1);
+    query.setDatasetFilter(1);
     query.setQ("mus");
     NameUsageSuggestResponse response = suggest(query);
 
@@ -565,7 +565,7 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     indexRaw(nu1);
 
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
-    query.setDatasetKey(1);
+    query.setDatasetFilter(1);
     query.setQ("foo");
     NameUsageSuggestResponse response = suggest(query);
 
@@ -598,7 +598,7 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     indexRaw(nu1, nu2);
 
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
-    query.setDatasetKey(1);
+    query.setDatasetFilter(1);
     query.setAccepted(true);
     query.setQ("laru");
     NameUsageSuggestResponse response = suggest(query);

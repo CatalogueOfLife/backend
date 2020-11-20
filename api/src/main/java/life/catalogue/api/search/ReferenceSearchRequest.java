@@ -103,7 +103,7 @@ public class ReferenceSearchRequest {
   
   @JsonIgnore
   public boolean getSectorKeyIsNull() {
-    return NameUsageSearchRequest.IS_NULL.equalsIgnoreCase(sectorKey);
+    return NameUsageRequest.IS_NULL.equalsIgnoreCase(sectorKey);
   }
   
   public SortBy getSortBy() {

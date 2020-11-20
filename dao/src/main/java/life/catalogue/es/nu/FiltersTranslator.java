@@ -1,9 +1,11 @@
-package life.catalogue.es.nu.search;
+package life.catalogue.es.nu;
 
 import life.catalogue.api.search.NameUsageRequest;
-import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.es.InvalidQueryException;
-import life.catalogue.es.query.*;
+import life.catalogue.es.query.BoolQuery;
+import life.catalogue.es.query.NestedQuery;
+import life.catalogue.es.query.Query;
+import life.catalogue.es.query.RangeQuery;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,13 +39,13 @@ import static life.catalogue.api.search.NameUsageSearchRequest.IS_NULL;
  */
 public class FiltersTranslator {
 
-  private final NameUsageSearchRequest request;
+  private final NameUsageRequest request;
 
-  FiltersTranslator(NameUsageSearchRequest request) {
+  public FiltersTranslator(NameUsageRequest request) {
     this.request = request;
   }
 
-  Query translate() throws InvalidQueryException {
+  public Query translate() throws InvalidQueryException {
     List<Query> subqueries = new ArrayList<>();
     if (request.hasFilters()) {
       subqueries.addAll(processDecisionFilters());
@@ -94,4 +96,10 @@ public class FiltersTranslator {
     return Collections.emptyList();
   }
 
+  public static boolean mustGenerateFilters(NameUsageRequest request) {
+    return request.getFilters().size() > 1 ||
+      request.getFilters().size() == 1 && !request.hasFilter(CATALOGUE_KEY) ||
+      request.getMinRank() != null ||
+      request.getMaxRank() != null;
+  }
 }

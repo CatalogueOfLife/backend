@@ -2,11 +2,8 @@ package life.catalogue.es.nu.search;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
+import life.catalogue.api.search.*;
 import life.catalogue.api.search.NameUsageRequest.SearchType;
-import life.catalogue.api.search.NameUsageSearchParameter;
-import life.catalogue.api.search.NameUsageSearchRequest;
-import life.catalogue.api.search.NameUsageSearchResponse;
-import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.es.EsReadTestBase;
@@ -217,7 +214,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     // Define search condition
     NameUsageSearchRequest nsr = new NameUsageSearchRequest();
     nsr.setHighlight(false);
-    nsr.addFilter(NameUsageSearchParameter.ISSUE, NameUsageSearchRequest.IS_NULL);
+    nsr.addFilter(NameUsageSearchParameter.ISSUE, NameUsageRequest.IS_NULL);
 
     // Match
     NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();
@@ -249,7 +246,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
 
     // Define search condition
     NameUsageSearchRequest nsr = new NameUsageSearchRequest();
-    nsr.addFilter(NameUsageSearchParameter.ISSUE, NameUsageSearchRequest.IS_NOT_NULL);
+    nsr.addFilter(NameUsageSearchParameter.ISSUE, NameUsageRequest.IS_NOT_NULL);
 
     // No match
     NameUsageWrapper nuw1 = TestEntityGenerator.newNameUsageTaxonWrapper();

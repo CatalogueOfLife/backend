@@ -147,11 +147,7 @@ public class NameUsageResource {
                                                     @BeanParam NameUsageSearchRequest query,
                                                     @Valid @BeanParam Page page,
                                                     @Context UriInfo uri) throws InvalidQueryException {
-    query.addFilters(uri.getQueryParameters());
-    if (query.hasFilter(NameUsageSearchParameter.DATASET_KEY)) {
-      throw new IllegalArgumentException("No further datasetKey parameter allowed, search already scoped to datasetKey=" + datasetKey);
-    }
-    query.addFilter(NameUsageSearchParameter.DATASET_KEY, datasetKey);
+    checkIllegalDatasetKeyParam(datasetKey, query, uri);
     return searchService.search(query, page);
   }
 
@@ -167,11 +163,18 @@ public class NameUsageResource {
   @Timed
   @Path("suggest")
   public NameUsageSuggestResponse suggestDataset(@PathParam("key") int datasetKey,
-                                                 @BeanParam NameUsageSuggestRequest query) throws InvalidQueryException {
-    if (query.getDatasetKey() != null && !query.getDatasetKey().equals(datasetKey)) {
+                                                 @BeanParam NameUsageSuggestRequest query,
+                                                 @Context UriInfo uri) throws InvalidQueryException {
+    checkIllegalDatasetKeyParam(datasetKey, query, uri);
+    return suggestService.suggest(query);
+  }
+
+  NameUsageRequest checkIllegalDatasetKeyParam(int datasetKey, NameUsageRequest query, UriInfo uri){
+    query.addFilters(uri.getQueryParameters());
+    if (query.hasFilter(NameUsageSearchParameter.DATASET_KEY) && !query.getFilterValue(NameUsageSearchParameter.DATASET_KEY).equals(datasetKey)) {
       throw new IllegalArgumentException("No further datasetKey parameter allowed, suggest already scoped to datasetKey=" + datasetKey);
     }
-    query.setDatasetKey(datasetKey);
-    return suggestService.suggest(query);
+    query.setDatasetFilter(datasetKey);
+    return query;
   }
 }

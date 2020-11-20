@@ -24,7 +24,7 @@ public class CheilanthesTest extends EsReadTestBase {
   public void test01() throws IOException {
     EsTestUtils.indexCheilanthes(this);
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
-    query.setDatasetKey(3);
+    query.setDatasetFilter(3);
     query.setQ("Cheilant");
     query.setFuzzy(true);
     NameUsageSuggestResponse nur = suggest(query);
@@ -57,7 +57,7 @@ public class CheilanthesTest extends EsReadTestBase {
   public void test02() throws IOException {
     EsTestUtils.indexCheilanthes(this);
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
-    query.setDatasetKey(3);
+    query.setDatasetFilter(3);
     query.setQ("Che");
     query.setFuzzy(false);
     NameUsageSuggestResponse nur = suggest(query);

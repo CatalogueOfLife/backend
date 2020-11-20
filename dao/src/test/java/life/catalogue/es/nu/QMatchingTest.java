@@ -1,18 +1,16 @@
 package life.catalogue.es.nu;
 
-import java.io.IOException;
-import java.util.Set;
-import org.junit.Before;
-import org.junit.Test;
 import life.catalogue.api.search.NameUsageRequest.SearchType;
-import life.catalogue.api.search.NameUsageSearchParameter;
-import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.api.search.*;
 import life.catalogue.api.search.NameUsageSearchRequest.SearchContent;
-import life.catalogue.api.search.NameUsageSearchResponse;
-import life.catalogue.api.search.NameUsageSuggestRequest;
-import life.catalogue.api.search.NameUsageSuggestResponse;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.EsTestUtils;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.util.Set;
+
 import static org.junit.Assert.assertEquals;
 
 /*
@@ -38,7 +36,7 @@ public class QMatchingTest extends EsReadTestBase {
     NameUsageSearchResponse nsr = search(searchQuery);
 
     NameUsageSuggestRequest suggestQuery = new NameUsageSuggestRequest();
-    suggestQuery.setDatasetKey(1008);
+    suggestQuery.setDatasetFilter(1008);
     suggestQuery.setQ("Crocodylidae");
     suggestQuery.setLimit(1000);
     NameUsageSuggestResponse nur = suggest(suggestQuery);
@@ -58,7 +56,7 @@ public class QMatchingTest extends EsReadTestBase {
     NameUsageSearchResponse nsr = search(searchQuery);
 
     NameUsageSuggestRequest suggestQuery = new NameUsageSuggestRequest();
-    suggestQuery.setDatasetKey(2020);
+    suggestQuery.setDatasetFilter(2020);
     suggestQuery.setQ("Croco");
     suggestQuery.setLimit(1000);
     NameUsageSuggestResponse nur = suggest(suggestQuery);
@@ -81,7 +79,7 @@ public class QMatchingTest extends EsReadTestBase {
     assertEquals(0, nsr.getTotal());
 
     NameUsageSuggestRequest suggestQuery = new NameUsageSuggestRequest();
-    suggestQuery.setDatasetKey(2020);
+    suggestQuery.setDatasetFilter(2020);
     suggestQuery.setQ("Croco Dundee");
     suggestQuery.setLimit(1000);
     NameUsageSuggestResponse nur = suggest(suggestQuery);
@@ -102,7 +100,7 @@ public class QMatchingTest extends EsReadTestBase {
     NameUsageSearchResponse nsr = search(searchQuery);
 
     NameUsageSuggestRequest suggestQuery = new NameUsageSuggestRequest();
-    suggestQuery.setDatasetKey(123123123);
+    suggestQuery.setDatasetFilter(123123123);
     suggestQuery.setQ("morelety");
     suggestQuery.setLimit(1000);
     suggestQuery.setFuzzy(true);
@@ -125,7 +123,7 @@ public class QMatchingTest extends EsReadTestBase {
     NameUsageSearchResponse nsr = search(searchQuery);
 
     NameUsageSuggestRequest suggestQuery = new NameUsageSuggestRequest();
-    suggestQuery.setDatasetKey(123123123);
+    suggestQuery.setDatasetFilter(123123123);
     suggestQuery.setQ("morelety");
     suggestQuery.setLimit(1000);
     suggestQuery.setFuzzy(false);

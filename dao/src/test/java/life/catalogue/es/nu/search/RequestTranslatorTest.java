@@ -1,5 +1,6 @@
 package life.catalogue.es.nu.search;
 
+import life.catalogue.api.search.NameUsageRequest;
 import life.catalogue.api.search.NameUsageRequest.SearchType;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
@@ -54,7 +55,7 @@ public class RequestTranslatorTest {
     NameUsageSearchRequest req = new NameUsageSearchRequest();
     req.addFilter(NameUsageSearchParameter.DATASET_KEY, 1010);
     req.addFilter(NameUsageSearchParameter.CATALOGUE_KEY, Datasets.COL);
-    req.addFilter(NameUsageSearchParameter.DECISION_MODE, NameUsageSearchRequest.IS_NULL);
+    req.addFilter(NameUsageSearchParameter.DECISION_MODE, NameUsageRequest.IS_NULL);
 
     Query q = RequestTranslator.generateQuery(req);
     assertNotNull(q);

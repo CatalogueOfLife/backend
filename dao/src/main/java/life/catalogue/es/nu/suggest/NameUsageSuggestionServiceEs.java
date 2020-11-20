@@ -1,6 +1,7 @@
 package life.catalogue.es.nu.suggest;
 
 import com.google.common.annotations.VisibleForTesting;
+import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.api.search.NameUsageSuggestResponse;
 import life.catalogue.api.search.NameUsageSuggestion;
@@ -61,7 +62,7 @@ public class NameUsageSuggestionServiceEs extends NameUsageQueryService implemen
     if (StringUtils.isBlank(request.getQ())) {
       throw new IllegalArgumentException("Missing q parameter");
     }
-    if (request.getDatasetKey() == null || request.getDatasetKey() < 1) {
+    if (!request.hasFilter(NameUsageSearchParameter.DATASET_KEY) || (Integer) request.getFilterValue(NameUsageSearchParameter.DATASET_KEY) < 1) {
       throw new IllegalArgumentException("Missing/invalid datasetKey parameter");
     }
   }

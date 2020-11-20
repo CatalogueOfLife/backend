@@ -1,9 +1,8 @@
-package life.catalogue.es.nu.search;
+package life.catalogue.es.nu;
 
+import life.catalogue.api.search.NameUsageRequest;
 import life.catalogue.api.search.NameUsageSearchParameter;
-import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.es.InvalidQueryException;
-import life.catalogue.es.nu.NameUsageFieldLookup;
 import life.catalogue.es.query.*;
 
 import java.util.ArrayList;
@@ -17,15 +16,15 @@ import static life.catalogue.api.search.NameUsageSearchRequest.IS_NULL;
  * Translates a single request parameter into an Elasticsearch query. If the parameter is multi-valued and contains no symbolic values (like
  * _NULL), a terms query will be generated; if it has a mixture of literal and symbolic values, an OR query will generated.
  */
-class FilterTranslator {
+public class FilterTranslator {
 
-  private final NameUsageSearchRequest request;
+  private final NameUsageRequest request;
 
-  FilterTranslator(NameUsageSearchRequest request) {
+  public FilterTranslator(NameUsageRequest request) {
     this.request = request;
   }
 
-  Query translate(NameUsageSearchParameter param) throws InvalidQueryException {
+  public Query translate(NameUsageSearchParameter param) throws InvalidQueryException {
     List<Query> queries = new ArrayList<>();
     String[] fields = NameUsageFieldLookup.INSTANCE.lookup(param);
     for (String field : fields) {

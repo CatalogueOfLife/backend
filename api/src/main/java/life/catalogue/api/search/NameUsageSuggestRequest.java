@@ -8,8 +8,6 @@ import java.util.Objects;
 
 public class NameUsageSuggestRequest extends NameUsageRequest {
 
-  @QueryParam("datasetKey")
-  private Integer datasetKey;
   @QueryParam("accepted")
   private boolean accepted;
   @QueryParam("limit")
@@ -27,14 +25,6 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
 
   public void setAccepted(boolean accepted) {
     this.accepted = accepted;
-  }
-
-  public Integer getDatasetKey() {
-    return datasetKey;
-  }
-
-  public void setDatasetKey(Integer datasetKey) {
-    this.datasetKey = datasetKey;
   }
 
   public Boolean getAccepted() {
@@ -55,14 +45,14 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
 
   @JsonIgnore
   public boolean isEmpty() {
-    return super.isEmpty() && datasetKey == null && !accepted && limit == null;
+    return super.isEmpty() && !accepted && limit == null;
   }
 
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result = prime * result + Objects.hash(accepted, datasetKey, limit);
+    result = prime * result + Objects.hash(accepted, limit);
     return result;
   }
 
@@ -79,7 +69,6 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
     }
     NameUsageSuggestRequest other = (NameUsageSuggestRequest) obj;
     return Objects.equals(accepted, other.accepted) 
-        && Objects.equals(datasetKey, other.datasetKey) 
         && Objects.equals(limit, other.limit);
   }
 
