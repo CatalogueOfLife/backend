@@ -1,8 +1,6 @@
 package life.catalogue.importer;
 
-import life.catalogue.api.model.NameUsageBase;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -22,8 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 import static life.catalogue.api.vocab.DataFormat.COLDP;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * Integration tests of PgImport focussing on a real search index and making sure things get indexed properly.
@@ -88,11 +85,12 @@ public class PgImportESIT extends PgImportITBase {
     facet = resp.getFacets().get(NameUsageSearchParameter.DECISION_MODE);
     assertEquals(0, facet.size());
 
-    // test classification
+    // test subspecies classification
     req.addFilter(NameUsageSearchParameter.USAGE_ID, "1001b");
     resp = search(req);
     assertEquals(1, resp.getTotal());
     NameUsageWrapper nuw = resp.getResult().get(0);
+    assertTrue(nuw.getUsage().isTaxon());
     assertEquals("1001b", nuw.getUsage().getId());
     assertEquals(Rank.SUBSPECIES, nuw.getUsage().getName().getRank());
     assertEquals("Crepis bakeri subsp. cusickii", nuw.getUsage().getName().getScientificName());
@@ -109,6 +107,34 @@ public class PgImportESIT extends PgImportITBase {
       new SimpleName("1001", "Crepis bakeri", Rank.SPECIES),
       new SimpleName("1001b", "Crepis bakeri subsp. cusickii", Rank.SUBSPECIES)
     ), nuw.getClassification());
+
+    // test synonym classification
+    req.addFilter(NameUsageSearchParameter.USAGE_ID, "1006-1006-s3");
+    resp = search(req);
+    nuw = resp.getResult().get(0);
+    assertEquals("1006-1006-s3", nuw.getUsage().getId());
+    assertTrue(nuw.getUsage().isSynonym());
+    assertEquals(Rank.SPECIES, nuw.getUsage().getName().getRank());
+    assertEquals("Leonida taraxacoida", nuw.getUsage().getName().getScientificName());
+    assertEquals("Vill.", nuw.getUsage().getName().getAuthorship());
+    assertEquals("Leonida taraxacoida Vill.", nuw.getUsage().getLabel());
+    assertEquals("1006", ((NameUsageBase) nuw.getUsage()).getParentId());
+    assertEquals(7, nuw.getClassification().size());
+    assertEquals(List.of(
+      new SimpleName("1", "Plantae", Rank.KINGDOM),
+      new SimpleName("10", "Asteraceae", Rank.FAMILY),
+      new SimpleName("20", "Cichorioideae", Rank.SUBFAMILY),
+      new SimpleName("30", "Cichorieae", Rank.TRIBE),
+      new SimpleName("102", "Leontodon", Rank.GENUS),
+      new SimpleName("1006", "Leontodon taraxacoides", Rank.SPECIES),
+      new SimpleName("1006-1006-s3", "Leonida taraxacoida", Rank.SPECIES)
+    ), nuw.getClassification());
+
+    Taxon acc = ((Synonym) nuw.getUsage()).getAccepted();
+    assertEquals("1006", acc.getId());
+    assertEquals("Leontodon taraxacoides", acc.getName().getScientificName());
+    assertEquals("(Vill.) Mérat", acc.getName().getAuthorship());
+    assertEquals("Leontodon taraxacoides (Vill.) Mérat", acc.getLabel());
   }
 
   void assertFacetValue(Set<FacetValue<?>> facets, Enum<?> value, int count) {

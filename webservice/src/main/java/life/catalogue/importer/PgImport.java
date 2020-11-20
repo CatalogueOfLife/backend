@@ -389,7 +389,7 @@ public class PgImport implements Callable<Boolean> {
           public void start(Node n) {
             Set<Integer> vKeys = new HashSet<>();
 
-            NeoUsage u = updateNeoUsage(n, parents, vKeys);
+            NeoUsage u = updateNeoUsage(n, parents.isEmpty() ? null : parents.peek(), vKeys);
 
             // insert taxon or synonym
             if (u.isSynonym()) {
@@ -412,11 +412,7 @@ public class PgImport implements Callable<Boolean> {
 
               // push new postgres key onto stack for this taxon as we traverse in depth first
               // ES indexes only id,rank & name
-              SimpleName p = new SimpleName();
-              p.setId(acc.getId());
-              p.setRank(acc.getName().getRank());
-              p.setName(acc.getName().getScientificName());
-              parents.push(p);
+              parents.push(new SimpleName(acc.getId(), acc.getName().getScientificName(), acc.getName().getRank()));
               parentsN.push(u.node);
 
               // insert vernacular
@@ -472,13 +468,12 @@ public class PgImport implements Callable<Boolean> {
             // index into ES
             NameUsageWrapper nuw = new NameUsageWrapper(u.usage);
             nuw.setPublisherKey(dataset.getGbifPublisherKey());
-            nuw.setClassification(List.copyOf(parents));
+            nuw.setClassification(new ArrayList<>(parents));
             nuw.setIssues(mergeIssues(vKeys));
             if (u.usage.isSynonym()) {
-              SimpleName psn = parents.pop();
-              NeoUsage acc = updateNeoUsage(parentsN.peek(), parents, null);
-              parents.push(psn);
+              NeoUsage acc = updateNeoUsage(parentsN.peek(), parents.peek(), null);
               ((Synonym)u.usage).setAccepted(acc.getTaxon());
+              nuw.getClassification().add(new SimpleName(u.usage.getId(), u.usage.getName().getScientificName(), u.usage.getName().getRank()));
             }
             //TODO
             nuw.setDecisions(null);
@@ -534,7 +529,7 @@ public class PgImport implements Callable<Boolean> {
     return nn;
   }
 
-  private NeoUsage updateNeoUsage(Node n, Stack<SimpleName> parents, Set<Integer> vKeys){
+  private NeoUsage updateNeoUsage(Node n, SimpleName parent, Set<Integer> vKeys){
     NeoUsage u = store.usages().objByNode(n);
     NeoName nn = updateNeoName(store.getUsageNameNode(n), vKeys);
 
@@ -545,10 +540,8 @@ public class PgImport implements Callable<Boolean> {
     updateReferenceKey(nu.getAccordingToId(), nu::setAccordingToId);
     updateReferenceKey(nu.getReferenceIds());
     updateUser(nu);
-    if (!parents.empty()) {
-      // use parent postgres key from stack, but keep it there
-      SimpleName p = parents.peek();
-      nu.setParentId(p == null ? null : p.getId());
+    if (parent != null) {
+      nu.setParentId(parent.getId());
     } else if (u.isSynonym()) {
       throw new IllegalStateException("Synonym node " + n.getId() + " without accepted taxon found: " + nn.getName().getScientificName());
     } else if (!n.hasLabel(Labels.ROOT)) {
