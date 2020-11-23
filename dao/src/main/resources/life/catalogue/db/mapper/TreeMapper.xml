@@ -11,7 +11,7 @@
     t.status,
     t.name_phrase,
     t.extinct,
-    (select count(*) from name_usage_${partition} WHERE parent_id=t.id AND NOT is_synonym) AS child_count,
+    (select count(*) from name_usage_${partition} c WHERE c.parent_id=t.id AND NOT c.is_synonym <if test="_parameter.containsKey('extinct') and !extinct">AND (c.extinct IS NULL OR NOT c.extinct)</if>) AS child_count,
     <include refid="life.catalogue.db.mapper.NameMapper.minimalNameCols">
       <property name="alias" value="n"/>
       <property name="prefix" value=""/>
