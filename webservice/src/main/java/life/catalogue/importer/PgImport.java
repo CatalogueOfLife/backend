@@ -5,6 +5,7 @@ import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.lang.InterruptedRuntimeException;
@@ -375,6 +376,21 @@ public class PgImport implements Callable<Boolean> {
    */
   private void insertUsages() throws InterruptedException {
     try (var indexer = indexService.buildDatasetIndexingHandler(dataset.getKey())) {
+      final Map<String, List<SimpleDecision>> decisions = new HashMap<>();
+      try (SqlSession session = sessionFactory.openSession(true)) {
+        AtomicInteger cnt = new AtomicInteger(0);
+        session.getMapper(DecisionMapper.class).processDecisions(null, dataset.getKey()).forEach(d -> {
+          if (d.getSubject().getId() != null) {
+            if (!decisions.containsKey(d.getSubject().getId())) {
+              decisions.put(d.getSubject().getId(), new ArrayList<>());
+            }
+            decisions.get(d.getSubject().getId()).add(new SimpleDecision(d.getId(), d.getDatasetKey(), d.getMode()));
+            cnt.incrementAndGet();
+          }
+        });
+        LOG.info("Loaded {} decisions for indexing", cnt);
+      }
+
       try (SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
         LOG.info("Inserting remaining names and all taxa");
         TreatmentMapper treatmentMapper = session.getMapper(TreatmentMapper.class);
@@ -482,8 +498,7 @@ public class PgImport implements Callable<Boolean> {
               ((Synonym)u.usage).setAccepted(acc.getTaxon());
               nuw.getClassification().add(new SimpleName(u.usage.getId(), u.usage.getName().getScientificName(), u.usage.getName().getRank()));
             }
-            //TODO
-            nuw.setDecisions(null);
+            nuw.setDecisions(decisions.get(u.getId()));
             indexer.accept(nuw);
           }
 

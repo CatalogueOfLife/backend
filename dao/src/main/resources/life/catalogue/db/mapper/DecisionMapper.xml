@@ -133,8 +133,7 @@
 
 
   <select id="list" resultMap="decisionResultMap">
-    SELECT
-    <include refid="SELECT"/>
+    SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE ed.dataset_key = #{datasetKey}
     ORDER BY ed.id
@@ -157,8 +156,7 @@
   </select>
 
   <select id="search" resultMap="decisionResultMap">
-    SELECT
-    <include refid="SELECT"/>
+    SELECT<include refid="SELECT"/>
     FROM <include refid="FROM"/>
     <include refid="WHERE"/>
     ORDER BY ed.id desc
@@ -166,23 +164,20 @@
   </select>
 
   <select id="processSearch" resultMap="decisionResultMap">
-    SELECT
-    <include refid="SELECT"/>
+    SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     <include refid="WHERE"/>
     ORDER BY ed.id desc
   </select>
 
   <select id="get" resultMap="decisionResultMap">
-    SELECT
-    <include refid="SELECT"/>
+    SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE ed.id = #{key.id} AND ed.dataset_key=#{key.datasetKey}
   </select>
 
   <select id="getBySubject" resultMap="decisionResultMap">
-    SELECT
-    <include refid="SELECT"/>
+    SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE ed.subject_dataset_key = #{subjectDatasetKey}
     AND ed.dataset_key = #{datasetKey}
@@ -210,17 +205,18 @@
   </delete>
 
   <select id="processDataset" parameterType="map" resultMap="decisionResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    SELECT
-    <include refid="SELECT"/>
+    SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE ed.dataset_key=#{datasetKey}
   </select>
 
   <select id="processDecisions" parameterType="map" resultMap="decisionResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    SELECT
-    <include refid="SELECT"/>
+    SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE ed.subject_dataset_key = #{subjectDatasetKey} AND ed.dataset_key = #{datasetKey}
+    WHERE ed.subject_dataset_key = #{subjectDatasetKey}
+    <if test="datasetKey!=null">
+      AND ed.dataset_key = #{datasetKey}
+    </if>
   </select>
 
   <insert id="copyDataset" parameterType="map">

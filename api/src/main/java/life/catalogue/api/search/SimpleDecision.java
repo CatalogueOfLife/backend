@@ -10,7 +10,16 @@ public class SimpleDecision {
   private Integer id;
   private Integer datasetKey;
   private EditorialDecision.Mode mode;
-  
+
+  public SimpleDecision() {
+  }
+
+  public SimpleDecision(Integer id, Integer datasetKey, EditorialDecision.Mode mode) {
+    this.id = id;
+    this.datasetKey = datasetKey;
+    this.mode = mode;
+  }
+
   public Integer getId() {
     return id;
   }
