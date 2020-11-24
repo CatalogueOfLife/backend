@@ -68,7 +68,11 @@ public abstract class AbstractProjectCopy implements Runnable {
   }
 
   void finalWork() throws Exception {
-    // dont do nothing - override if needed
+    // create new dataset "import" metrics in mother project
+    LOG.info("Build import metrics for dataset " + datasetKey);
+    updateState(ImportState.ANALYZING);
+    diDao.updateMetrics(metrics, newDatasetKey);
+    diDao.update(metrics);
   }
 
   @Override
@@ -141,7 +145,7 @@ public abstract class AbstractProjectCopy implements Runnable {
           DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
           DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.deleteTable(t, datasetKey));
         } catch (Exception e) {
-          // avoid any excpetions as it would bring down the finally block
+          // avoid any exceptions as it would bring down the finally block
           LOG.error("Failed to remove id mapping tables for project {}", datasetKey, e);
         }
       }

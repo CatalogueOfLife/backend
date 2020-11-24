@@ -1,6 +1,7 @@
 package life.catalogue.release;
 
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Users;
@@ -13,9 +14,14 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import org.apache.ibatis.session.SqlSession;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
+
+import java.io.File;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -77,6 +83,11 @@ public class ProjectReleaseIT {
       u = num.get(key.id("33"));
       assertEquals("Felis lynx Linnaeus, 1758", u.getLabel());
       assertEquals(homoID, u.getName().getHomotypicNameId());
+
+      // check metrics
+      DatasetImportDao diDao = new DatasetImportDao(release.factory, new File("/tmp"));
+      DatasetImport imp = diDao.getLast(projectKey);
+      assertEquals(25, imp.getUsagesCount());
     }
   }
   

@@ -69,17 +69,11 @@ public class ProjectRelease extends AbstractProjectCopy {
       idProvider = IdProvider.withNoReleases(datasetKey, factory);
     }
     idProvider.run();
-
-    // create new dataset "import" metrics in mother project
-    updateState(ImportState.ANALYZING);
-    metrics();
   }
 
-  private void metrics() {
-    LOG.info("Build import metrics for dataset " + datasetKey);
-    diDao.updateMetrics(metrics, newDatasetKey);
-    diDao.update(metrics);
-
+  @Override
+  void finalWork() throws Exception {
+    super.finalWork();
     // update both the projects and release datasets import attempt pointer
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);

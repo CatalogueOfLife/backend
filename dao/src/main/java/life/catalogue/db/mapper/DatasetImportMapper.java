@@ -18,7 +18,13 @@ import java.util.List;
 public interface DatasetImportMapper extends DatasetProcessable<DatasetImport> {
   
   DatasetImport get(@Param("key") int datasetKey, @Param("attempt") int attempt);
-  
+
+  /**
+   * @param datasetKey
+   * @return Return last import attempt for given dataset or null
+   */
+  DatasetImport last(@Param("key") int datasetKey);
+
   /**
    * Count all imports by their state
    */

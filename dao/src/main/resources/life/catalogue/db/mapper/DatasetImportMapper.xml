@@ -173,25 +173,28 @@
   </resultMap>
 
   <select id="get" resultMap="datasetImportResultMap">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE di.dataset_key=#{key} AND di.attempt=#{attempt}
+  </select>
+
+  <select id="last" resultMap="datasetImportResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE di.dataset_key=#{key}
+    ORDER BY di.attempt DESC, di.started DESC
+    LIMIT 1
   </select>
 
   <select id="count" resultType="integer">
     SELECT count(*)
-    FROM
-    <include refid="FROM"/>
+    FROM <include refid="FROM"/>
     <include refid="WHERE"/>
   </select>
 
   <select id="list" resultMap="datasetImportResultMap">
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     <include refid="WHERE"/>
     ORDER BY di.started DESC, di.attempt DESC, di.dataset_key
     <include refid="life.catalogue.db.Common.limit"/>
