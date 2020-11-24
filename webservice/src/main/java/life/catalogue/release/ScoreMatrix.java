@@ -84,7 +84,7 @@ public class ScoreMatrix {
       next = match(distinctScores.removeInt(0));
     }
     if (!next.isEmpty()) {
-      System.out.println("found "+next.size()+" matches with score " + next.get(0).score);
+      //System.out.println("found "+next.size()+" matches with score " + next.get(0).score);
     }
     return next;
   }

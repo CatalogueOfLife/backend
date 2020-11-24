@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 
 /**
  * WARNING !!!
- * Only SectorProcessable.deleteBySector is implemented, no others!!!
+ * Only SectorProcessable.deleteBySector is implemented, no other methods of SectorProcessable!!!
  */
 public interface NameMatchMapper extends CopyDataset, SectorProcessable<Integer> {
 

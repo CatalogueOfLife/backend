@@ -5,6 +5,7 @@ import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.config.ReleaseIdConfig;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.NameMatchingRule;
@@ -22,6 +23,8 @@ import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -52,7 +55,7 @@ public class ProjectReleaseIT {
   
   @Test
   public void release() throws Exception {
-    ProjectRelease release = buildRelease();
+    ProjectRelease release = buildRelease(Map.of(1, "9999", 17, "A"));
     release.run();
     assertEquals(ImportState.FINISHED, release.getMetrics().getState());
 
@@ -79,6 +82,10 @@ public class ProjectReleaseIT {
       u = num.get(key.id("F"));
       assertEquals("Lynx rufus baileii", u.getLabel());
 
+      // configured id
+      u = num.get(key.id("9999"));
+      assertEquals("Animalia", u.getLabel());
+
       // new id
       u = num.get(key.id("33"));
       assertEquals("Felis lynx Linnaeus, 1758", u.getLabel());
@@ -90,9 +97,16 @@ public class ProjectReleaseIT {
       assertEquals(25, imp.getUsagesCount());
     }
   }
-  
+
   private ProjectRelease buildRelease() {
-    return ReleaseManager.release(PgSetupRule.getSqlSessionFactory(), matchingRule.getIndex(), NameUsageIndexService.passThru(), diDao, ImageService.passThru(), projectKey, Users.TESTER, true);
+    return buildRelease(new HashMap<>());
+  }
+
+  private ProjectRelease buildRelease(Map<Integer, String> idMap) {
+    ReleaseIdConfig cfg = new ReleaseIdConfig();
+    cfg.restart = false;
+    cfg.map = new HashMap<>(idMap);
+    return ReleaseManager.release(PgSetupRule.getSqlSessionFactory(), matchingRule.getIndex(), NameUsageIndexService.passThru(), diDao, ImageService.passThru(), projectKey, Users.TESTER, cfg);
   }
   
   @Test

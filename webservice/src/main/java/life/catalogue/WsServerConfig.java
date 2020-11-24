@@ -7,6 +7,7 @@ import life.catalogue.common.io.Resources;
 import life.catalogue.config.GbifConfig;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
+import life.catalogue.config.ReleaseIdConfig;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.PgDbConfig;
 import life.catalogue.dw.auth.AuthenticationProviderFactory;
@@ -75,11 +76,15 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   @NotNull
   // https://www.dropwizard.io/en/latest/manual/configuration.html#man-configuration-clients-http
   public JerseyClientConfiguration client = new JerseyClientConfiguration();
-  
+
   @Valid
   @NotNull
   public ImgConfig img = new ImgConfig();
-  
+
+  @Valid
+  @NotNull
+  public ReleaseIdConfig release = new ReleaseIdConfig();
+
   /**
    * Names index kvp file to persist map on disk. If empty will use a volatile memory index.
    */

@@ -6,6 +6,7 @@ import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.concurrent.NamedThreadFactory;
+import life.catalogue.config.ReleaseIdConfig;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -40,21 +41,23 @@ public class ReleaseManager {
   private final NameUsageIndexService indexService;
   private final SqlSessionFactory factory;
   private final ImageService imageService;
+  private final ReleaseIdConfig cfg;
   private AbstractProjectCopy job;
 
-  public ReleaseManager(DatasetImportDao diDao, NameIndex nameIndex, NameUsageIndexService indexService, ImageService imageService, SqlSessionFactory factory) {
+  public ReleaseManager(DatasetImportDao diDao, NameIndex nameIndex, NameUsageIndexService indexService, ImageService imageService, SqlSessionFactory factory, ReleaseIdConfig cfg) {
     this.diDao = diDao;
     this.nameIndex = nameIndex;
     this.indexService = indexService;
     this.imageService = imageService;
     this.factory = factory;
+    this.cfg = cfg;
   }
 
   /**
    * @return newly created dataset key of the release
    */
   public Integer release(int datasetKey, User user) {
-    return execute(() -> release(factory, nameIndex, indexService, diDao, imageService, datasetKey, user.getKey(), false));
+    return execute(() -> release(factory, nameIndex, indexService, diDao, imageService, datasetKey, user.getKey(), cfg));
   }
 
   /**
@@ -101,9 +104,9 @@ public class ReleaseManager {
    * @throws IllegalArgumentException if the dataset is not managed
    */
   public static ProjectRelease release(SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService, DatasetImportDao diDao, ImageService imageService,
-                                       int projectKey, int userKey, boolean useStableIDs) {
+                                       int projectKey, int userKey, ReleaseIdConfig cfg) {
     Dataset release = createDataset(factory, projectKey, "release", userKey, ProjectRelease::releaseDataset);
-    return new ProjectRelease(factory, nameIndex, indexService, diDao, imageService, projectKey, release, userKey, useStableIDs);
+    return new ProjectRelease(factory, nameIndex, indexService, diDao, imageService, projectKey, release, userKey, cfg);
   }
 
   /**

@@ -47,6 +47,10 @@ public class ReleasedIds {
     return byId.size();
   }
 
+  public boolean isEmpty() {
+    return byId.isEmpty();
+  }
+
   public void remove(int id) {
     ReleasedId r = byId.remove(id);
     if (r != null) {
@@ -114,6 +118,10 @@ public class ReleasedIds {
 
   public ReleasedId byId(int id) {
     return byId.get(id);
+  }
+
+  public boolean hasId(int id) {
+    return byId.containsKey(id);
   }
 
   public int maxKey(){

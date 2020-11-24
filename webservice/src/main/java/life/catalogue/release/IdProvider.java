@@ -10,6 +10,7 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.id.IdConverter;
 import life.catalogue.common.text.StringUtils;
+import life.catalogue.config.ReleaseIdConfig;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.IdMapMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
@@ -49,13 +50,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class IdProvider {
   protected final Logger LOG = LoggerFactory.getLogger(IdProvider.class);
-  // the date we first deployed stable ids in releases - we ignore older ids than this date
-  private final LocalDateTime ID_START_DATE;
-  private final boolean reuseReleasedIds;
 
   private final int datasetKey;
   private final SqlSessionFactory factory;
-
+  private final ReleaseIdConfig cfg;
+  private final IntSet skip = new IntOpenHashSet();
   private final ReleasedIds ids = new ReleasedIds();
   private final Int2IntMap attempt2dataset = new Int2IntOpenHashMap();
   private final AtomicInteger keySequence = new AtomicInteger();
@@ -75,22 +74,38 @@ public class IdProvider {
 
 
   public static IdProvider withAllReleases(int datasetKey, SqlSessionFactory factory) {
-    return new IdProvider(datasetKey, true, null, factory);
+    ReleaseIdConfig cfg = new ReleaseIdConfig();
+    cfg.restart = false;
+    return new IdProvider(datasetKey, cfg, factory);
   }
 
   public static IdProvider withReleasesSince(int datasetKey, LocalDateTime since, SqlSessionFactory factory) {
-    return new IdProvider(datasetKey, true, since, factory);
+    ReleaseIdConfig cfg = new ReleaseIdConfig();
+    cfg.restart = false;
+    cfg.since = since;
+    return new IdProvider(datasetKey, cfg, factory);
   }
 
   public static IdProvider withNoReleases(int datasetKey, SqlSessionFactory factory) {
-    return new IdProvider(datasetKey, false, null, factory);
+    ReleaseIdConfig cfg = new ReleaseIdConfig();
+    cfg.restart = true;
+    return new IdProvider(datasetKey, cfg, factory);
   }
 
-  IdProvider(int datasetKey, boolean reuseReleasedIds, LocalDateTime ignoreOlderReleases, SqlSessionFactory factory) {
+  public static IdProvider withMap(int datasetKey, SqlSessionFactory factory, Map<Integer, String> nidxMap) {
+    ReleaseIdConfig cfg = new ReleaseIdConfig();
+    cfg.restart = true;
+    cfg.map = nidxMap;
+    return new IdProvider(datasetKey, cfg, factory);
+  }
+
+  public IdProvider(int datasetKey, ReleaseIdConfig cfg, SqlSessionFactory factory) {
     this.datasetKey = datasetKey;
     this.factory = factory;
-    this.ID_START_DATE = ignoreOlderReleases;
-    this.reuseReleasedIds = reuseReleasedIds;
+    this.cfg = cfg;
+    if (cfg.map == null) {
+      cfg.map = new HashMap<>();
+    }
   }
 
   public void run() {
@@ -100,19 +115,20 @@ public class IdProvider {
   }
 
   private void prepare(){
+    if (cfg.restart) {
+      LOG.info("Use ID provider with no previous IDs");
+
     // populate ids from db
-    if (reuseReleasedIds) {
-      LOG.info("Use ID provider with stable IDs");
+    } else {
+      LOG.info("Use ID provider with stable IDs since {}", cfg.since);
       try (SqlSession session = factory.openSession(true)) {
         DatasetMapper dm = session.getMapper(DatasetMapper.class);
         DatasetSearchRequest dsr = new DatasetSearchRequest();
         dsr.setReleasedFrom(datasetKey);
-        dsr.setSortBy(DatasetSearchRequest.SortBy.CREATED);
-        dsr.setReverse(true);
         List<Dataset> releases = dm.search(dsr, null, new Page(0, 1000));
         releases.sort(Comparator.comparing(Dataset::getImportAttempt).reversed());
         for (Dataset rel : releases) {
-          if (ID_START_DATE != null && rel.getCreated().isBefore(ID_START_DATE)) {
+          if (cfg.since != null && rel.getCreated().isBefore(cfg.since)) {
             LOG.info("Ignore old release {} with unstable ids", rel.getKey());
             continue;
           }
@@ -131,11 +147,23 @@ public class IdProvider {
         }
       }
       LOG.info("Last release attempt={} with {} IDs", ids.getMaxAttempt(), ids.maxAttemptIdCount());
-    } else {
-      LOG.info("Use ID provider with no previous IDs");
+
     }
-    keySequence.set(ids.maxKey());
-    LOG.info("Max existing id = {} ({})", keySequence, encode(keySequence.get()));
+    keySequence.set(Math.max(cfg.start, ids.maxKey()));
+    LOG.info("Max existing id = {}. Start ID sequence with {} ({})", ids.maxKey(), keySequence, encode(keySequence.get()));
+
+    // skip preferred ids when auto generating sequence ids
+    var iter = cfg.map.entrySet().iterator();
+    while (iter.hasNext()) {
+      Map.Entry<Integer, String> entry = iter.next();
+      int id = IdConverter.LATIN32.decode(entry.getValue());
+      if (ids.hasId(id)) {
+        LOG.warn("Preferred ID {} already exists in release attempt {}. Skip", entry.getValue(), ids.byId(id).attempt);
+        iter.remove();
+      } else {
+        skip.add(id);
+      }
+    }
   }
 
   private void mapIds(){
@@ -221,7 +249,18 @@ public class IdProvider {
   }
 
   private void issueNewId(SimpleNameWithNidx n) {
-    int id = keySequence.incrementAndGet();
+    int id;
+    if (n.getNamesIndexId() != null && cfg.map.containsKey(n.getNamesIndexId())) {
+      // use a preferred id from the config
+      id = IdConverter.LATIN32.decode(cfg.map.remove(n.getNamesIndexId()));
+
+    } else {
+      // new sequence id
+      do {
+        id = keySequence.incrementAndGet();
+      } while (skip.contains(id));
+    }
+
     n.setCanonicalId(id);
     created.add(id);
   }

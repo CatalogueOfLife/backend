@@ -225,7 +225,7 @@ public class WsServer extends Application<WsServerConfig> {
     AcExporter exporter = new AcExporter(cfg, getSqlSessionFactory());
 
     // release
-    final ReleaseManager releaseManager = new ReleaseManager(diDao, ni, indexService, imgService, getSqlSessionFactory());
+    final ReleaseManager releaseManager = new ReleaseManager(diDao, ni, indexService, imgService, getSqlSessionFactory(), cfg.release);
 
     // diff
     DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), fmdDao);

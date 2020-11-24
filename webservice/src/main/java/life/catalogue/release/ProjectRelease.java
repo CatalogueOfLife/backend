@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.text.CitationUtils;
+import life.catalogue.config.ReleaseIdConfig;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetProjectSourceDao;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -25,17 +26,17 @@ public class ProjectRelease extends AbstractProjectCopy {
   private static final String DEFAULT_ALIAS_TEMPLATE = "{aliasOrTitle}-{date}";
 
   private final ImageService imageService;
+  private final ReleaseIdConfig cfg;
   private final NameIndex nameIndex;
-  private final boolean useStableIDs;
   private final Dataset release;
 
   ProjectRelease(SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService, DatasetImportDao diDao, ImageService imageService,
-                 int datasetKey, Dataset release, int userKey, boolean useStableIDs) {
+                 int datasetKey, Dataset release, int userKey, ReleaseIdConfig cfg) {
     super("releasing", factory, diDao, indexService, userKey, datasetKey, release, true);
     this.imageService = imageService;
     this.nameIndex = nameIndex;
-    this.useStableIDs = useStableIDs;
     this.release = release;
+    this.cfg = cfg;
   }
 
   @Override
@@ -62,12 +63,7 @@ public class ProjectRelease extends AbstractProjectCopy {
 
     // map ids
     updateState(ImportState.MATCHING);
-    IdProvider idProvider;
-    if (useStableIDs) {
-      idProvider = IdProvider.withAllReleases(datasetKey, factory);
-    } else {
-      idProvider = IdProvider.withNoReleases(datasetKey, factory);
-    }
+    IdProvider idProvider = new IdProvider(datasetKey, cfg, factory);
     idProvider.run();
   }
 
