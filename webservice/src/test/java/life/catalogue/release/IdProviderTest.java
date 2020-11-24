@@ -65,7 +65,7 @@ public class IdProviderTest {
       // rufus -> rufa
       assertEquals("E", idm.getUsage(projectKey, "14"));
       // baileyi -> baileii
-      assertEquals("3H", idm.getUsage(projectKey, "15"));
+      assertEquals("F", idm.getUsage(projectKey, "15"));
     }
   }
 
