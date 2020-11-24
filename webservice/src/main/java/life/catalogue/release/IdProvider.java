@@ -160,6 +160,9 @@ public class IdProvider {
       if (ids.hasId(id)) {
         LOG.warn("Preferred ID {} already exists in release attempt {}. Skip", entry.getValue(), ids.byId(id).attempt);
         iter.remove();
+      } else if (skip.contains(id)) {
+        LOG.warn("Preferred ID {} listed multiple times. Skip", entry.getValue());
+        iter.remove();
       } else {
         skip.add(id);
       }

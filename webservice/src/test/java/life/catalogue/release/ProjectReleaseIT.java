@@ -55,7 +55,12 @@ public class ProjectReleaseIT {
   
   @Test
   public void release() throws Exception {
-    ProjectRelease release = buildRelease(Map.of(1, "9999", 17, "A"));
+
+    ProjectRelease release = buildRelease(Map.of(1, "9999", // pref ID out of sequence range
+      17, "A",
+      9999, "A", // duplicate id, test skip
+      9998, "33" // pref ID in sequence range
+    ));
     release.run();
     assertEquals(ImportState.FINISHED, release.getMetrics().getState());
 
@@ -86,8 +91,8 @@ public class ProjectReleaseIT {
       u = num.get(key.id("9999"));
       assertEquals("Animalia", u.getLabel());
 
-      // new id
-      u = num.get(key.id("33"));
+      // new id, 33 should be skipped
+      u = num.get(key.id("34"));
       assertEquals("Felis lynx Linnaeus, 1758", u.getLabel());
       assertEquals(homoID, u.getName().getHomotypicNameId());
 
