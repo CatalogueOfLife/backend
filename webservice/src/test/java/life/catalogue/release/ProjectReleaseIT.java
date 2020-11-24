@@ -45,7 +45,6 @@ public class ProjectReleaseIT {
   }
   
   @Test
-  @Ignore
   public void release() throws Exception {
     ProjectRelease release = buildRelease();
     release.run();
@@ -54,13 +53,17 @@ public class ProjectReleaseIT {
     DSID<String> key = DSID.of(release.newDatasetKey, "");
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+      // canonical match
       NameUsageBase u = num.get(key.id("R"));
       assertEquals("Canis aureus", u.getLabel());
 
+      // authorship match
       u = num.get(key.id("C"));
       final String homoID = u.getName().getHomotypicNameId();
       assertEquals("Lynx lynx (Linnaeus, 1758)", u.getLabel());
       assertEquals(u.getName().getId(), u.getName().getHomotypicNameId());
+
+      // TODO: new authorship matching previous canonical name
 
       // rufus -> rufa
       u = num.get(key.id("E"));

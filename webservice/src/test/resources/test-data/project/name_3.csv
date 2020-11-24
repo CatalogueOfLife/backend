@@ -13,13 +13,13 @@ id,homotypic_name_id,scientific_name,authorship,uninomial,genus,specific_epithet
 14,13,Felis rufa,,,Felis,rufa,,SPECIES,r1,1
 15,,Lynx rufus baileii,,,Lynx,rufus,baileii,SUBSPECIES,r1,1
 16,,Lynx rufus gigas,,,Lynx,rufus,gigas,SUBSPECIES,r1,1
-20,,Canis,Canis,,,,,GENUS,r1,1
-21,,Alopsis,Alopsis,,,,,GENUS,r1,1
-22,,Lupulus,Lupulus,,,,,GENUS,r1,1
+20,,Canis,,Canis,,,,GENUS,r1,1
+21,,Alopsis,,Alopsis,,,,GENUS,r1,1
+22,,Lupulus,,Lupulus,,,,GENUS,r1,1
 23,,Canis adustus,,,Canis,adustus,,SPECIES,r1,1
 24,,Canis argentinus,,,Canis,argentinus,,SPECIES,r1,1
 25,,Canis aureus,,,Canis,aureus,,SPECIES,r1,1
-30,,Urocyon,Urocyon,,,,,GENUS,r1,1
+30,,Urocyon,,Urocyon,,,,GENUS,r1,1
 31,,Urocyon citrinus,,,Urocyon,citrinus,,SPECIES,r1,1
 32,,Urocyon littoralis,,,Urocyon,littoralis,,SPECIES,r1,1
 33,,Urocyon minicephalus,,,Urocyon,minicephalus,,SPECIES,r1,1

@@ -109,7 +109,8 @@ public class IdProvider {
         dsr.setReleasedFrom(datasetKey);
         dsr.setSortBy(DatasetSearchRequest.SortBy.CREATED);
         dsr.setReverse(true);
-        List<Dataset> releases = dm.search(dsr, null, new Page(0, 100));
+        List<Dataset> releases = dm.search(dsr, null, new Page(0, 1000));
+        releases.sort(Comparator.comparing(Dataset::getImportAttempt).reversed());
         for (Dataset rel : releases) {
           if (ID_START_DATE != null && rel.getCreated().isBefore(ID_START_DATE)) {
             LOG.info("Ignore old release {} with unstable ids", rel.getKey());

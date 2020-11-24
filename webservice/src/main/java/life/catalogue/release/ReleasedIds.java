@@ -86,6 +86,13 @@ public class ReleasedIds {
   }
 
   void add (ReleasedId id) {
+    if (byId.containsKey(id.id)) {
+      // ignore already existing ids, but make sure the existing attempt is more recent, i.e. higher!
+      if (byId.get(id.id).attempt < id.attempt) {
+        throw new IllegalStateException("releases need to be sorted by attempt before adding");
+      }
+      return;
+    }
     byId.put(id.id, id);
     if (byNxId.containsKey(id.nxId)) {
       byNxId.put(id.nxId, ArrayUtils.add(byNxId.get(id.nxId), id));
