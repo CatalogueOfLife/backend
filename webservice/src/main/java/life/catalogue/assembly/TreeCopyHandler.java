@@ -11,10 +11,7 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.CatCopy;
 import life.catalogue.dao.DatasetEntityDao;
 import life.catalogue.dao.ReferenceDao;
-import life.catalogue.db.mapper.NameMapper;
-import life.catalogue.db.mapper.NameMatchMapper;
-import life.catalogue.db.mapper.ReferenceMapper;
-import life.catalogue.db.mapper.TaxonMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.parser.NameParser;
 import org.apache.ibatis.session.ExecutorType;
@@ -45,6 +42,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
   private final NameIndex nameIndex;
   private final SqlSession session;
   private final SqlSession batchSession;
+  private final VerbatimSourceMapper vm;
   private final ReferenceMapper rm;
   private final TaxonMapper tm;
   private final NameMapper nm;
@@ -84,6 +82,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     }
     LOG.info("Create implicit taxa for ranks {}", Joiner.on(", ").join(implicitRanks));
 
+    vm = batchSession.getMapper(VerbatimSourceMapper.class);
     rm = batchSession.getMapper(ReferenceMapper.class);
     tm = batchSession.getMapper(TaxonMapper.class);
     nm = batchSession.getMapper(NameMapper.class);
@@ -255,10 +254,13 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     // copy usage with all associated information. This assigns a new id !!!
     DSID<String> parentDID = new DSIDValue<>(catalogueKey, parent.id);
     String origNameID= u.getName().getId();
-    DSID<String> orig = CatCopy.copyUsage(batchSession, session, u, parentDID, user.getKey(), true, entities, this::lookupReference, this::lookupReference);
+    DSID<String> orig = CatCopy.copyUsage(batchSession, u, parentDID, user.getKey(), entities, this::lookupReference, this::lookupReference);
     // remember old to new id mappings
     ids.put(orig.getId(), usage(u));
     nameIds.put(origNameID, u.getName().getId());
+    // track source
+    VerbatimSource v = new VerbatimSource(catalogueKey, u.getId(), sector.getSubjectDatasetKey(), orig.getId());
+    vm.create(v);
     // match name
     createMatch(u.getName());
 

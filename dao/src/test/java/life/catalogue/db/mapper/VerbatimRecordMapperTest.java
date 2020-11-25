@@ -6,8 +6,6 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
-import life.catalogue.dao.Partitioner;
-import life.catalogue.db.PgSetupRule;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
@@ -35,14 +33,7 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
 
   @Test
   public void copyDataset() throws Exception {
-    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
-    mapper().copyDataset(datasetKey, 999, false);
-  }
-
-  @Test
-  public void copyDatasetWithMap() throws Exception {
-    Partitioner.partition(PgSetupRule.getSqlSessionFactory(), 999);
-    mapper().copyDataset(datasetKey, 999, true);
+    CopyDatasetTestComponent.copy(mapper(), datasetKey, true);
   }
 
   @Test

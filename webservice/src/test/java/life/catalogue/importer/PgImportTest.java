@@ -5,6 +5,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.concurrent.ExecutorUtils;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.dao.Partitioner;
@@ -45,10 +46,10 @@ public class PgImportTest {
     public Boolean call() throws Exception {
       System.out.println("START " + datasetKey);
       System.out.println("PARTITION " + datasetKey);
-      Partitioner.partition(PgSetupRule.getSqlSessionFactory(), datasetKey);
+      Partitioner.partition(PgSetupRule.getSqlSessionFactory(), datasetKey, DatasetOrigin.MANAGED);
 
       System.out.println("INDEX & ATTACH " + datasetKey);
-      Partitioner.attach(PgSetupRule.getSqlSessionFactory(), datasetKey);
+      Partitioner.attach(PgSetupRule.getSqlSessionFactory(), datasetKey, DatasetOrigin.MANAGED);
       System.out.println("FINISHED " + datasetKey);
       return true;
     }

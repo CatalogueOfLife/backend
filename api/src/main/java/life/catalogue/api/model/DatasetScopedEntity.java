@@ -36,17 +36,11 @@ public class DatasetScopedEntity<T> extends DataEntity<DSID<T>> implements DSID<
   public DSID<T> getKey() {
     return this;
   }
-  
+
   @Override
   @JsonIgnore
   public void setKey(DSID<T> key) {
-    if (key == null) {
-      setDatasetKey(null);
-      setId(null);
-    } else {
-      setDatasetKey(key.getDatasetKey());
-      setId(key.getId());
-    }
+    DSID.super.setKey(key);
   }
   
   @Override

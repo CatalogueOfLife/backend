@@ -4,9 +4,7 @@ import life.catalogue.api.vocab.Issue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public interface IssueContainer {
   
@@ -15,16 +13,31 @@ public interface IssueContainer {
   Set<Issue> getIssues();
   
   void setIssues(Set<Issue> issues);
-  
-  void addIssue(Issue issue);
-  
-  boolean removeIssue(Issue issue);
-  
-  boolean hasIssue(Issue issue);
+
+  default void addIssue(Issue issue) {
+    getIssues().add(issue);
+  }
+
+  default void addIssues(Issue... issues) {
+    addIssues(Arrays.asList(issues));
+  }
+
+  default void addIssues(Collection<Issue> issues) {
+    getIssues().addAll(issues);
+  }
+
+  default boolean removeIssue(Issue issue) {
+    return getIssues().remove(issue);
+  }
+
+  default boolean hasIssue(Issue issue) {
+    return getIssues().contains(issue);
+  }
   
   default boolean hasIssues() {
     return !getIssues().isEmpty();
   }
+
 
   /**
    * Simple hash map based issue container.

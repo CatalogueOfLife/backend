@@ -99,7 +99,7 @@ public class PgImport implements Callable<Boolean> {
   
   @Override
   public Boolean call() throws InterruptedException, InterruptedRuntimeException {
-    Partitioner.partition(sessionFactory, dataset.getKey());
+    Partitioner.partition(sessionFactory, dataset.getKey(), dataset.getOrigin());
     
     insertVerbatim();
     
@@ -115,7 +115,7 @@ public class PgImport implements Callable<Boolean> {
 
     insertUsageRelations();
 
-    Partitioner.attach(sessionFactory, dataset.getKey());
+    Partitioner.attach(sessionFactory, dataset.getKey(), dataset.getOrigin());
     
     updateMetadata();
 		LOG.info("Completed dataset {} insert with {} verbatim records, " +

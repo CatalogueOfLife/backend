@@ -956,6 +956,18 @@ CREATE INDEX ON verbatim USING GIN(issues);
 CREATE INDEX ON verbatim (type);
 CREATE INDEX ON verbatim USING GIN (terms jsonb_path_ops);
 
+
+CREATE TABLE verbatim_source (
+  id TEXT NOT NULL,
+  dataset_key INTEGER NOT NULL,
+  source_id TEXT,
+  source_dataset_key INTEGER,
+  issues ISSUE[] DEFAULT '{}'
+) PARTITION BY LIST (dataset_key);
+
+CREATE INDEX ON verbatim_source USING GIN(issues);
+
+
 CREATE TABLE reference (
   id TEXT NOT NULL,
   dataset_key INTEGER NOT NULL,

@@ -8,6 +8,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.concurrent.NamedThreadFactory;
 import life.catalogue.config.ReleaseIdConfig;
 import life.catalogue.dao.DaoUtils;
+import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
@@ -38,14 +39,16 @@ public class ReleaseManager {
 
   private final NameIndex nameIndex;
   private final DatasetImportDao diDao;
+  private final DatasetDao dDao;
   private final NameUsageIndexService indexService;
   private final SqlSessionFactory factory;
   private final ImageService imageService;
   private final ReleaseIdConfig cfg;
   private AbstractProjectCopy job;
 
-  public ReleaseManager(DatasetImportDao diDao, NameIndex nameIndex, NameUsageIndexService indexService, ImageService imageService, SqlSessionFactory factory, ReleaseIdConfig cfg) {
+  public ReleaseManager(DatasetImportDao diDao, DatasetDao dDao, NameIndex nameIndex, NameUsageIndexService indexService, ImageService imageService, SqlSessionFactory factory, ReleaseIdConfig cfg) {
     this.diDao = diDao;
+    this.dDao = dDao;
     this.nameIndex = nameIndex;
     this.indexService = indexService;
     this.imageService = imageService;
@@ -57,14 +60,14 @@ public class ReleaseManager {
    * @return newly created dataset key of the release
    */
   public Integer release(int datasetKey, User user) {
-    return execute(() -> release(factory, nameIndex, indexService, diDao, imageService, datasetKey, user.getKey(), cfg));
+    return execute(() -> release(factory, nameIndex, indexService, diDao, dDao, imageService, datasetKey, user.getKey(), cfg));
   }
 
   /**
    * @return newly created dataset key of the copy
    */
   public Integer duplicate(int datasetKey, User user) {
-    return execute(() -> duplicate(factory, indexService, diDao, datasetKey, user.getKey()));
+    return execute(() -> duplicate(factory, indexService, diDao, dDao, datasetKey, user.getKey()));
   }
 
   /**
@@ -103,10 +106,11 @@ public class ReleaseManager {
    *
    * @throws IllegalArgumentException if the dataset is not managed
    */
-  public static ProjectRelease release(SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService, DatasetImportDao diDao, ImageService imageService,
+  public static ProjectRelease release(SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService,
+                                       DatasetImportDao diDao, DatasetDao dDao, ImageService imageService,
                                        int projectKey, int userKey, ReleaseIdConfig cfg) {
     Dataset release = createDataset(factory, projectKey, "release", userKey, ProjectRelease::releaseDataset);
-    return new ProjectRelease(factory, nameIndex, indexService, diDao, imageService, projectKey, release, userKey, cfg);
+    return new ProjectRelease(factory, nameIndex, indexService, diDao, dDao, imageService, projectKey, release, userKey, cfg);
   }
 
   /**
@@ -115,16 +119,16 @@ public class ReleaseManager {
    *
    * @throws IllegalArgumentException if the dataset is not managed
    */
-  public static ProjectDuplication duplicate(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, int projectKey, int userKey) {
+  public static ProjectDuplication duplicate(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao,
+                                             int projectKey, int userKey) {
     Dataset copy = createDataset(factory, projectKey, "duplicate", userKey, ProjectDuplication::copyDataset);
-    return new ProjectDuplication(factory, indexService, diDao, projectKey, copy, userKey);
+    return new ProjectDuplication(factory, indexService, diDao, dDao, projectKey, copy, userKey);
   }
 
   private static Dataset createDataset(SqlSessionFactory factory, int projectKey, String action, int userKey, BiConsumer<Dataset, DatasetSettings> modifier) {
     if (!aquireLock()) {
       throw new IllegalArgumentException("There is a running " + action + " job already");
     }
-
     Dataset copy;
     try (SqlSession session = factory.openSession(true)) {
       // validate project key

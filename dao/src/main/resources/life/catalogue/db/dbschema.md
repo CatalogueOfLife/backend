@@ -12,6 +12,27 @@ and done it manually. So we can as well log changes here.
 
 ### 2020-11-12 separate name match table
 ```
+CREATE TABLE verbatim_source (
+  id TEXT NOT NULL,
+  dataset_key INTEGER NOT NULL,
+  source_id TEXT,
+  source_dataset_key INTEGER,  
+  issues ISSUE[] DEFAULT '{}'
+) PARTITION BY LIST (dataset_key);
+
+CREATE INDEX ON verbatim_source USING GIN(issues);
+```
+
+and for all MANAGED data partitions
+```
+CREATE TABLE verbatim_source_{KEY} (LIKE verbatim_source INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
+ALTER TABLE verbatim_source_{KEY} ADD PRIMARY KEY (id);
+ALTER TABLE verbatim_source_{KEY} ADD FOREIGN KEY (id) REFERENCES name_usage_{KEY} ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE verbatim_source ATTACH PARTITION verbatim_source_{KEY} FOR VALUES IN ( {KEY} );
+```
+
+### 2020-11-12 separate name match table
+```
 ALTER TABLE name DROP COLUMN name_index_id;
 ALTER TABLE name DROP COLUMN name_index_match_type;
 TRUNCATE names_index RESTART IDENTITY CASCADE;

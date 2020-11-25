@@ -1,5 +1,6 @@
 package life.catalogue.release;
 
+import com.google.common.eventbus.EventBus;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.NameUsageBase;
@@ -14,6 +15,7 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.img.ImageService;
 import life.catalogue.importer.PgImportRule;
 import life.catalogue.matching.NameIndexFactory;
 import org.apache.ibatis.session.SqlSession;
@@ -29,6 +31,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
 public class ProjectDuplicationIT {
 
@@ -52,11 +55,14 @@ public class ProjectDuplicationIT {
 
   DatasetImportDao diDao;
   SectorImportDao siDao;
+  DatasetDao dDao;
   TaxonDao tdao;
 
   @Before
   public void init () throws IOException, SQLException {
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
+    EventBus bus = mock(EventBus.class);
+    dDao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, ImageService.passThru(), diDao, NameUsageIndexService.passThru(), null, bus);
     siDao = new SectorImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     NameDao nDao = new NameDao(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru());
     tdao = new TaxonDao(PgSetupRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru());
@@ -99,7 +105,7 @@ public class ProjectDuplicationIT {
       session.commit();
     }
 
-    ProjectDuplication dupe = new ProjectDuplication(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao, Datasets.COL, d, Users.TESTER);
+    ProjectDuplication dupe = new ProjectDuplication(PgSetupRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), diDao, dDao, Datasets.COL, d, Users.TESTER);
     dupe.run();
     assertEquals(ImportState.FINISHED, dupe.getMetrics().getState());
   }

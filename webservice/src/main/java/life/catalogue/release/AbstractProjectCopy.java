@@ -5,6 +5,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.util.LoggingUtils;
+import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.Partitioner;
 import life.catalogue.db.CopyDataset;
@@ -14,6 +15,8 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.LocalDateTime;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 
@@ -25,6 +28,7 @@ public abstract class AbstractProjectCopy implements Runnable {
   protected final Logger LOG = LoggerFactory.getLogger(getClass());
   protected final SqlSessionFactory factory;
   protected final DatasetImportDao diDao;
+  protected final DatasetDao dDao;
   protected final NameUsageIndexService indexService;
   protected final int user;
   protected final int datasetKey;
@@ -36,11 +40,12 @@ public abstract class AbstractProjectCopy implements Runnable {
   protected DatasetSettings settings;
 
 
-  public AbstractProjectCopy(String actionName, SqlSessionFactory factory, DatasetImportDao diDao, NameUsageIndexService indexService,
+  public AbstractProjectCopy(String actionName, SqlSessionFactory factory, DatasetImportDao diDao, DatasetDao dDao, NameUsageIndexService indexService,
                              int userKey, int datasetKey, Dataset newDataset, boolean mapIds) {
     this.actionName = actionName;
     this.factory = factory;
     this.diDao = diDao;
+    this.dDao = dDao;
     this.indexService = indexService;
     this.user = userKey;
     this.mapIds = mapIds;
@@ -82,10 +87,7 @@ public abstract class AbstractProjectCopy implements Runnable {
       LOG.info("{} project {} to new dataset {}", actionName, datasetKey, getNewDatasetKey());
       // prepare new tables
       updateState(ImportState.PROCESSING);
-      Partitioner.partition(factory, newDatasetKey);
-      if (newDatasetOrigin == DatasetOrigin.MANAGED) {
-        Partitioner.createManagedSequences(factory, newDatasetKey);
-      }
+      Partitioner.partition(factory, newDatasetKey, newDatasetOrigin);
       // is an id mapping table needed?
       if (mapIds) {
         LOG.info("Create id mapping tables for project {}", datasetKey);
@@ -107,7 +109,7 @@ public abstract class AbstractProjectCopy implements Runnable {
       copyData();
 
       // build indices and attach partition
-      Partitioner.attach(factory, newDatasetKey);
+      Partitioner.attach(factory, newDatasetKey, newDatasetOrigin);
       Partitioner.createManagedObjects(factory, newDatasetKey);
 
       // subclass specifics
@@ -123,22 +125,21 @@ public abstract class AbstractProjectCopy implements Runnable {
         LOG.error("Error indexing new dataset {} into ES. Source dataset={}", newDatasetKey, datasetKey, e);
       }
 
-      updateState(ImportState.FINISHED);
+      metrics.setState(ImportState.FINISHED);
       LOG.info("Successfully finished {} project {} into dataset {}", actionName,  datasetKey, newDatasetKey);
 
     } catch (Exception e) {
+      metrics.setState(ImportState.FINISHED);
       metrics.setError(Exceptions.getFirstMessage(e));
-      updateState(ImportState.FAILED);
       LOG.error("Error {} project {} into dataset {}", actionName, datasetKey, newDatasetKey, e);
 
-      // cleanup partition which probably is not even attached and delete dataset
-      Partitioner.delete(factory, newDatasetKey);
-      try (SqlSession session = factory.openSession()) {
-        session.getMapper(DatasetMapper.class).delete(newDatasetKey);
-        session.commit();
-      }
+      // cleanup failed remains
+      dDao.delete(newDatasetKey, user);
 
     } finally {
+      metrics.setFinished(LocalDateTime.now());
+      diDao.update(metrics);
+
       if (mapIds) {
         LOG.info("Remove id mapping tables for project {}", datasetKey);
         try (SqlSession session = factory.openSession(true)) {

@@ -1,6 +1,7 @@
 package life.catalogue.db.mapper;
 
 import com.google.common.collect.Lists;
+import life.catalogue.api.vocab.DatasetOrigin;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -27,6 +28,10 @@ public interface DatasetPartitionMapper {
       "media",
       "treatment",
       "vernacular_name"
+  );
+
+  List<String> MANAGED_TABLES = Lists.newArrayList(
+    "verbatim_source"
   );
   
   List<String> SERIAL_TABLES = Lists.newArrayList(
@@ -114,12 +119,17 @@ public interface DatasetPartitionMapper {
    * Indices are not created yet which should happen after the data is inserted.
    * Tables with integer id columns will have their own sequence.
    */
-  default void create(int key) {
+  default void create(int key, DatasetOrigin origin) {
     TABLES.forEach(t -> createTable(t, key));
     SERIAL_TABLES.forEach(t -> createSerial(t, key));
     // estimates can exist also in non managed datasets, so we need to have an id sequence for them in all datasets
     // but they are not a partitioned table, treat them special
     createIdSequence("estimate", key);
+    // things specific to managed datasets only
+    if (origin == DatasetOrigin.MANAGED) {
+      createManagedSequences(key);
+      MANAGED_TABLES.forEach(t -> createTable(t, key));
+    }
   }
   
   void createTable(@Param("table") String table, @Param("key") int key);
@@ -177,6 +187,7 @@ public interface DatasetPartitionMapper {
    */
   default void delete(int key) {
     deleteUsageCounter(key);
+    MANAGED_TABLES.forEach(t -> deleteTable(t, key));
     Lists.reverse(TABLES).forEach(t -> deleteTable(t, key));
     IDMAP_TABLES.forEach(t -> deleteTable(t, key));
   }
@@ -196,7 +207,7 @@ public interface DatasetPartitionMapper {
    *
    * @param key
    */
-  default void attach(int key) {
+  default void attach(int key, DatasetOrigin origin) {
     // create PKs
     TABLES.forEach(t -> createPk(t, key));
     // this also creates the indices from the partitioned table
@@ -208,6 +219,13 @@ public interface DatasetPartitionMapper {
       .forEach(t -> createFk(t, key, new FK("verbatim_key", "verbatim")));
     // custom fks
     FKS.forEach( (t,fks) -> fks.forEach(fk -> createFk(t, key, fk)));
+    // things specific to managed datasets only
+    if (origin == DatasetOrigin.MANAGED) {
+      MANAGED_TABLES.forEach(t -> createPk(t, key));
+      MANAGED_TABLES.forEach(t -> attachTable(t, key));
+      createFk("verbatim_source", key, new FK("id", "name_usage", true, true));
+    }
+
   }
   
   void attachTable(@Param("table") String table, @Param("key") int key);

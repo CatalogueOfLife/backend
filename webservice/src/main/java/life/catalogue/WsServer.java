@@ -224,9 +224,6 @@ public class WsServer extends Application<WsServerConfig> {
     // exporter
     AcExporter exporter = new AcExporter(cfg, getSqlSessionFactory());
 
-    // release
-    final ReleaseManager releaseManager = new ReleaseManager(diDao, ni, indexService, imgService, getSqlSessionFactory(), cfg.release);
-
     // diff
     DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), fmdDao);
     SectorDiffService sDiff = new SectorDiffService(getSqlSessionFactory(), fmsDao);
@@ -250,6 +247,9 @@ public class WsServer extends Application<WsServerConfig> {
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory());
     TreeDao trDao = new TreeDao(getSqlSessionFactory());
     UserDao udao = new UserDao(getSqlSessionFactory(), bus);
+
+    // release
+    final ReleaseManager releaseManager = new ReleaseManager(diDao, ddao, ni, indexService, imgService, getSqlSessionFactory(), cfg.release);
 
     // importer
     importManager = new ImportManager(cfg,

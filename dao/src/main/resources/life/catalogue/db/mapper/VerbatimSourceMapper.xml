@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.VerbatimSourceMapper">
+
+  <sql id="SELECT">
+    v.id,
+    v.dataset_key,
+    v.source_id,
+    v.source_dataset_key,
+    v.issues
+  </sql>
+
+  <sql id="COLS">
+    id,
+    dataset_key,
+    <include refid="COLS_COPY"/>
+  </sql>
+
+  <sql id="COLS_COPY">
+    source_id,
+    source_dataset_key,
+    issues
+  </sql>
+
+  <sql id="PROPS">
+    #{id},
+    #{datasetKey},
+    #{sourceId},
+    #{sourceDatasetKey},
+    #{issues, typeHandler=life.catalogue.db.type.IssueSetTypeHandler}::ISSUE[]
+  </sql>
+
+  <sql id="FROM">
+    verbatim_source_${partition} v
+  </sql>
+
+  <resultMap id="verbatimResultMap" type="VerbatimSource" autoMapping="true">
+    <result property="issues" column="issues" typeHandler="life.catalogue.db.type.IssueSetTypeHandler"/>
+  </resultMap>
+
+  <select id="get" resultMap="verbatimResultMap">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE id = #{key.id}
+  </select>
+
+  <select id="getIssues" resultMap="verbatimResultMap">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    SELECT v.issues
+    FROM <include refid="FROM"/>
+    WHERE id = #{key.id}
+  </select>
+
+  <insert id="create" parameterType="VerbatimSource">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    INSERT INTO verbatim_source_${datasetKey} (<include refid="COLS"/>)
+    VALUES (<include refid="PROPS"/>)
+  </insert>
+
+  <insert id="copyDataset" parameterType="map">
+    INSERT INTO verbatim_source_${newDatasetKey} (id,dataset_key,<include refid="COLS_COPY"/>)
+    SELECT coalesce(<if test="mapIds">m.id2,</if>v.id),#{newDatasetKey},<include refid="COLS_COPY"/>
+    FROM verbatim_source_${datasetKey} v
+    <if test="mapIds">
+      LEFT JOIN idmap_name_usage_${datasetKey} m ON m.id=v.id
+    </if>
+  </insert>
+
+  <update id="update" parameterType="VerbatimSource">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    UPDATE verbatim_source_${partition}
+    SET issues = #{issues, typeHandler=life.catalogue.db.type.IssueSetTypeHandler}::ISSUE[]
+    WHERE id = #{key.id}
+  </update>
+
+  <select id="processDataset" parameterType="map" resultMap="verbatimResultMap" resultOrdered="true" fetchSize="2500" resultSetType="FORWARD_ONLY">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+  </select>
+
+  <delete id="deleteByDataset" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    TRUNCATE verbatim_source_${partition} CASCADE
+  </delete>
+
+</mapper>

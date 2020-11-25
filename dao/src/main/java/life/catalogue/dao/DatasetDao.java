@@ -188,8 +188,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   protected void createAfter(Dataset obj, int user, DatasetMapper mapper, SqlSession session) {
     pullLogo(obj, user);
     if (obj.getOrigin() == DatasetOrigin.MANAGED) {
-      recreatePartition(obj.getKey());
-      Partitioner.createManagedSequences(factory, obj.getKey());
+      recreatePartition(obj.getKey(), obj.getOrigin());
       Partitioner.createManagedObjects(factory, obj.getKey());
     }
     bus.post(DatasetChanged.change(obj));
@@ -205,14 +204,15 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   protected void updateAfter(Dataset obj, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
     pullLogo(obj, user);
     if (obj.getOrigin() == DatasetOrigin.MANAGED && !session.getMapper(DatasetPartitionMapper.class).exists(obj.getKey())) {
-      recreatePartition(obj.getKey());
+      // suspicous. Should there ever be a managed dataset without partitions?
+      recreatePartition(obj.getKey(), obj.getOrigin());
     }
     bus.post(DatasetChanged.change(obj));
   }
 
-  private void recreatePartition(int datasetKey) {
-    Partitioner.partition(factory, datasetKey);
-    Partitioner.attach(factory, datasetKey);
+  private void recreatePartition(int datasetKey, DatasetOrigin origin) {
+    Partitioner.partition(factory, datasetKey, origin);
+    Partitioner.attach(factory, datasetKey, origin);
   }
 
   private void pullLogo(Dataset d, int user) {

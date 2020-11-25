@@ -30,8 +30,6 @@ public class MybatisTestUtils {
   private static final Logger LOG = LoggerFactory.getLogger(MybatisTestUtils.class);
 
   public static void partition(SqlSession session, int datasetKey) {
-    Partitioner.partition(session, datasetKey);
-    Partitioner.attach(session, datasetKey);
     DatasetOrigin origin;
     try {
       origin = DatasetInfoCache.CACHE.origin(datasetKey);
@@ -39,6 +37,8 @@ public class MybatisTestUtils {
       // happens in tests, just treat them as a managed one that needs a counter
       origin = DatasetOrigin.MANAGED;
     }
+    Partitioner.partition(session, datasetKey, origin);
+    Partitioner.attach(session, datasetKey, origin);
     if (origin == DatasetOrigin.MANAGED) {
       LOG.info("Attach usage counter to dataset {}", datasetKey);
       Partitioner.createManagedObjects(session, datasetKey);

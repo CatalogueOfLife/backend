@@ -1,5 +1,7 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -8,7 +10,7 @@ import static life.catalogue.api.vocab.Datasets.COL;
 /**
  * DatasetScopedID: Entity with an ID property scoped within a single dataset.
  */
-public interface DSID<K> extends DatasetScoped {
+public interface DSID<K> extends DatasetScoped, Entity<DSID<K>> {
   
   K getId();
   
@@ -20,6 +22,22 @@ public interface DSID<K> extends DatasetScoped {
   default DSID<K> id(K id) {
     setId(id);
     return this;
+  }
+
+  @JsonIgnore
+  default DSID<K> getKey() {
+    return DSID.of(getDatasetKey(), getId());
+  }
+
+  @JsonIgnore
+  default void setKey(DSID<K> key) {
+    if (key == null) {
+      setDatasetKey(null);
+      setId(null);
+    } else {
+      setDatasetKey(key.getDatasetKey());
+      setId(key.getId());
+    }
   }
 
   /**

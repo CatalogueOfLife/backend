@@ -1,6 +1,7 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.model.DatasetScoped;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -30,9 +31,9 @@ public class Partitioner {
     return partition( (Integer) key.get("datasetKey"));
   }
 
-  public static synchronized void partition(SqlSessionFactory factory, int datasetKey) {
+  public static synchronized void partition(SqlSessionFactory factory, int datasetKey, DatasetOrigin origin) {
     try (SqlSession session = factory.openSession(false)) {
-      partition(session, datasetKey);
+      partition(session, datasetKey, origin);
       session.commit();
     }
   }
@@ -42,26 +43,14 @@ public class Partitioner {
    * To avoid table deadlocks we synchronize this method!
    * See https://github.com/Sp2000/colplus-backend/issues/127
    */
-  public static synchronized void partition(SqlSession session, int datasetKey) {
+  public static synchronized void partition(SqlSession session, int datasetKey, DatasetOrigin origin) {
     interruptIfCancelled();
     LOG.info("Create empty partition for dataset {}", datasetKey);
     DatasetPartitionMapper mapper = session.getMapper(DatasetPartitionMapper.class);
     // first remove if existing
     mapper.delete(datasetKey);
-
     // then create
-    mapper.create(datasetKey);
-  }
-
-  /**
-   * Creates dataset specific sequences for the global non partitioned tables like sector.
-   */
-  public static void createManagedSequences(SqlSessionFactory factory, int datasetKey) {
-    interruptIfCancelled();
-    LOG.info("Create sequences for managed dataset {}", datasetKey);
-    try (SqlSession session = factory.openSession(true)) {
-      session.getMapper(DatasetPartitionMapper.class).createManagedSequences(datasetKey);
-    }
+    mapper.create(datasetKey, origin);
   }
 
   /**
@@ -96,10 +85,10 @@ public class Partitioner {
     session.getMapper(DatasetPartitionMapper.class).delete(datasetKey);
   }
 
-  public static synchronized void attach(SqlSessionFactory factory, int datasetKey) {
+  public static synchronized void attach(SqlSessionFactory factory, int datasetKey, DatasetOrigin origin) {
     try (SqlSession session = factory.openSession(true)) {
       // build indices and add dataset bound constraints
-      attach(session, datasetKey);
+      attach(session, datasetKey, origin);
     }
   }
 
@@ -108,11 +97,11 @@ public class Partitioner {
    * To avoid table deadlocks on the main table we synchronize this method.
    * @param session session with auto commit - no transaction allowed here !!!
    */
-  public static synchronized void attach(SqlSession session, int datasetKey) {
+  public static synchronized void attach(SqlSession session, int datasetKey, DatasetOrigin origin) {
     interruptIfCancelled();
     // attach to main table - this requires an AccessExclusiveLock on all main tables
     // see https://github.com/Sp2000/colplus-backend/issues/387
     LOG.info("Attach partition tables for dataset {}", datasetKey);
-    session.getMapper(DatasetPartitionMapper.class).attach(datasetKey);
+    session.getMapper(DatasetPartitionMapper.class).attach(datasetKey, origin);
   }
 }

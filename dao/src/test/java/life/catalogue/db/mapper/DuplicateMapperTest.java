@@ -6,10 +6,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Duplicate;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Page;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.MatchingMode;
-import life.catalogue.api.vocab.NameCategory;
-import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.vocab.*;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.postgres.AuthorshipNormFunc;
@@ -44,8 +41,8 @@ public class DuplicateMapperTest {
   public static void setup() throws Exception {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       final DatasetPartitionMapper pm = session.getMapper(DatasetPartitionMapper.class);
-      pm.create(datasetKey);
-      pm.attach(datasetKey);
+      pm.create(datasetKey, DatasetOrigin.EXTERNAL);
+      pm.attach(datasetKey, DatasetOrigin.EXTERNAL);
       pm.createManagedSequences(datasetKey);
       pm.createManagedSequences(Datasets.COL);
       session.commit();

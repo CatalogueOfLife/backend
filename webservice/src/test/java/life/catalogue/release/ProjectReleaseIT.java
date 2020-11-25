@@ -1,11 +1,13 @@
 package life.catalogue.release;
 
+import com.google.common.eventbus.EventBus;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.config.ReleaseIdConfig;
+import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.NameMatchingRule;
@@ -28,6 +30,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 
 public class ProjectReleaseIT {
   
@@ -45,12 +48,15 @@ public class ProjectReleaseIT {
     .around(matchingRule);
 
   DatasetImportDao diDao;
+  DatasetDao dDao;
 
   final int projectKey = IdProviderTest.PROJECT_DATA.key;
   
   @Before
   public void init()  {
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
+    EventBus bus = mock(EventBus.class);
+    dDao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, ImageService.passThru(), diDao, NameUsageIndexService.passThru(), null, bus);
   }
   
   @Test
@@ -111,7 +117,7 @@ public class ProjectReleaseIT {
     ReleaseIdConfig cfg = new ReleaseIdConfig();
     cfg.restart = false;
     cfg.map = new HashMap<>(idMap);
-    return ReleaseManager.release(PgSetupRule.getSqlSessionFactory(), matchingRule.getIndex(), NameUsageIndexService.passThru(), diDao, ImageService.passThru(), projectKey, Users.TESTER, cfg);
+    return ReleaseManager.release(PgSetupRule.getSqlSessionFactory(), matchingRule.getIndex(), NameUsageIndexService.passThru(), diDao, dDao, ImageService.passThru(), projectKey, Users.TESTER, cfg);
   }
   
   @Test

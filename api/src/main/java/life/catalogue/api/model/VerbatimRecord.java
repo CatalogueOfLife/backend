@@ -134,29 +134,6 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
   public void setIssues(Set<Issue> issues) {
     this.issues = issues;
   }
-  
-  @Override
-  public void addIssue(Issue issue) {
-    issues.add(issue);
-  }
-  
-  public void addIssues(Issue... issues) {
-    addIssues(Arrays.asList(issues));
-  }
-
-  public void addIssues(Collection<Issue> issues) {
-    this.issues.addAll(issues);
-  }
-  
-  @Override
-  public boolean removeIssue(Issue issue) {
-    return issues.remove(issue);
-  }
-
-  @Override
-  public boolean hasIssue(Issue issue) {
-    return issues.contains(issue);
-  }
 
   /**
    * @return true if at least one term in the DwC namespace exists

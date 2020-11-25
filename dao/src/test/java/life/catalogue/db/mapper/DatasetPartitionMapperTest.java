@@ -3,6 +3,7 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.db.CRUD;
@@ -36,8 +37,13 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
   public void createDelete() {
     // we create the prov-cat partition in the InitMybatisRule
     mapper().delete(Datasets.COL);
-    mapper().create(Datasets.COL);
-    mapper().attach(Datasets.COL);
+    mapper().create(Datasets.COL, DatasetOrigin.MANAGED);
+    mapper().attach(Datasets.COL, DatasetOrigin.MANAGED);
+
+    mapper().delete(Datasets.COL);
+    mapper().create(Datasets.COL, DatasetOrigin.MANAGED);
+    mapper().attach(Datasets.COL, DatasetOrigin.MANAGED);
+
     mapper().delete(Datasets.COL);
   }
 
@@ -87,8 +93,8 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
   public void concurrentAttach() throws Exception {
     
     mapper().delete(Datasets.COL);
-    mapper().create(Datasets.COL);
-    mapper().attach(Datasets.COL);
+    mapper().create(Datasets.COL, DatasetOrigin.MANAGED);
+    mapper().attach(Datasets.COL, DatasetOrigin.MANAGED);
     mapper().delete(Datasets.COL);
   
     // run continuous ref and name imports
@@ -109,10 +115,10 @@ public class DatasetPartitionMapperTest extends MapperTestBase<DatasetPartitionM
       final int datasetKey = TestDataRule.APPLE.key;
       System.out.println("Delete partition " + datasetKey);
       mapper().delete(datasetKey);
-      mapper().create(datasetKey);
+      mapper().create(datasetKey, DatasetOrigin.EXTERNAL);
       commit();
       System.out.println("Try to attach the partition " + datasetKey);
-      mapper().attach(datasetKey);
+      mapper().attach(datasetKey, DatasetOrigin.EXTERNAL);
       commit();
       System.out.println("Attached!!!");
   

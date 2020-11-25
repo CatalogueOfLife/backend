@@ -103,6 +103,12 @@ public class SectorSyncIT {
       return taxa.get(0);
     }
   }
+
+  public static VerbatimSource getSource(DSID<String> key) {
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()) {
+      return session.getMapper(VerbatimSourceMapper.class).get(key);
+    }
+  }
   
   NameUsageBase getByID(String id) {
     return getByID(Datasets.COL, id);
@@ -221,8 +227,12 @@ public class SectorSyncIT {
   }
   
   
-  private void assertHasVerbatimName(NameUsage u) {
-    assertNotNull(u.getName().getVerbatimKey());
+  private void assertHasVerbatimSource(DSID<String> id, String expectedSourceId) {
+    VerbatimSource v = getSource(id);
+    assertEquals(id.getId(), v.getId());
+    assertEquals(id.getDatasetKey(), v.getDatasetKey());
+    assertNotNull(v.getSourceDatasetKey());
+    assertEquals(expectedSourceId, v.getSourceId());
   }
 
   @Test
@@ -249,11 +259,11 @@ public class SectorSyncIT {
   
     Taxon vogelii = (Taxon) getByName(Datasets.COL, Rank.SUBSPECIES, "Astragalus vogelii subsp. vogelii");
     assertEquals(s1, vogelii.getSectorDSID());
-    assertHasVerbatimName(vogelii);
+    assertHasVerbatimSource(vogelii, "5177");
 
     Taxon sp = (Taxon) getByID(vogelii.getParentId());
     assertEquals(Origin.SOURCE, vogelii.getOrigin());
-    assertHasVerbatimName(sp);
+    assertHasVerbatimSource(sp, "5175");
 
     TaxonInfo ti = tdao.getTaxonInfo(sp);
 

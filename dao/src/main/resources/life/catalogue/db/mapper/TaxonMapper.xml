@@ -153,7 +153,7 @@
     UNION
     SELECT
     <include refid="SELECT"/>
-    FROM<include refid="FROM"/>, x
+    FROM <include refid="FROM"/>, x
     WHERE u.id = x.parent_id
     )
     SELECT *
@@ -165,14 +165,13 @@
     <include refid="life.catalogue.db.Common.partitionByKey"/>
     WITH RECURSIVE cl AS (
     SELECT u.id, u.parent_id, n.scientific_name as name, n.authorship, n.rank
-    FROM
-    <include refid="FROM"/>
+    FROM <include refid="FROM"/>
     WHERE u.id = #{key.id}
 
     UNION
 
     SELECT u.id, u.parent_id, n.scientific_name, n.authorship, n.rank
-    FROM<include refid="FROM"/>, cl
+    FROM <include refid="FROM"/>, cl
     WHERE u.id = cl.parent_id
     )
     SELECT *
@@ -204,19 +203,15 @@
 
   <select id="get" resultMap="taxonResultMap" flushCache="true">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE u.id = #{key.id} AND NOT u.is_synonym
   </select>
 
   <select id="processDataset" parameterType="map" resultMap="taxonResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
-    FROM
-    <include refid="FROM"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
     WHERE NOT u.is_synonym
   </select>
 
@@ -286,8 +281,8 @@
     SET dataset_sectors = NULL
     FROM name n
     WHERE n.id=u.name_id
-    AND n.rank &lt; 'GENUS'
-    AND NOT u.is_synonym
+      AND n.rank &lt; 'GENUS'
+      AND NOT u.is_synonym
   </update>
 
 </mapper>

@@ -2,6 +2,7 @@ package life.catalogue.release;
 
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
+import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.es.NameUsageIndexService;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -11,8 +12,9 @@ import org.apache.ibatis.session.SqlSessionFactory;
  */
 public class ProjectDuplication extends AbstractProjectCopy {
 
-  ProjectDuplication(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, int datasetKey, Dataset copy, int userKey) {
-    super("duplicating", factory, diDao, indexService, userKey, datasetKey, copy, false);
+  ProjectDuplication(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao,
+                     int datasetKey, Dataset copy, int userKey) {
+    super("duplicating", factory, diDao, dDao, indexService, userKey, datasetKey, copy, false);
   }
 
   public static void copyDataset(Dataset d, DatasetSettings ds) {
