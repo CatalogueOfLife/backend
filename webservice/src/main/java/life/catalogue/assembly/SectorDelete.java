@@ -23,6 +23,7 @@ import java.util.function.Consumer;
 /**
  * Deletes a sector and all its imports, but keeps synced data of rank above species level by default.
  * Names and taxa of ranks above species are kept, but the sectorKey is removed from all entities that previously belonged to the deleted sector.
+ * At the same time all verbatim source records are removed
  */
 public class SectorDelete extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorDelete.class);
@@ -66,6 +67,7 @@ public class SectorDelete extends SectorRunnable {
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
       NameMapper nm = session.getMapper(NameMapper.class);
       NameMatchMapper nmm = session.getMapper(NameMatchMapper.class);
+      VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
 
       // cascading delete removes vernacular, distributions, descriptions, media
       int del = um.deleteSynonymsBySector(sectorKey);
@@ -85,6 +87,9 @@ public class SectorDelete extends SectorRunnable {
       nmm.deleteOrphaned(sectorKey.getDatasetKey(), sectorKey.getId());
       // TODO: remove refs and name rels
       LOG.info("Deleted {} names below genus level from sector {}", del, sectorKey);
+
+      // remove verbatim sources from remaining usages
+      vsm.deleteBySector(s);
 
       // remove sector from usages, names, refs & type_material
       int count = um.removeSectorKey(sectorKey);

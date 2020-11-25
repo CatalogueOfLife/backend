@@ -70,7 +70,6 @@ public class ProjectRelease extends AbstractProjectCopy {
 
   @Override
   void finalWork() throws Exception {
-    super.finalWork();
     // update both the projects and release datasets import attempt pointer
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);

@@ -23,12 +23,16 @@ CREATE TABLE verbatim_source (
 CREATE INDEX ON verbatim_source USING GIN(issues);
 ```
 
-and for all MANAGED data partitions
+and for all MANAGED data partitions `./exec-sql {YOURFILE} --managed true`
 ```
 CREATE TABLE verbatim_source_{KEY} (LIKE verbatim_source INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING GENERATED);
 ALTER TABLE verbatim_source_{KEY} ADD PRIMARY KEY (id);
 ALTER TABLE verbatim_source_{KEY} ADD FOREIGN KEY (id) REFERENCES name_usage_{KEY} ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE verbatim_source ATTACH PARTITION verbatim_source_{KEY} FOR VALUES IN ( {KEY} );
+
+INSERT INTO verbatim_source_{KEY} (dataset_key, id, source_dataset_key, source_id)
+  SELECT distinct {KEY}, u.id, (terms->>'dwc:datasetID')::int, terms->>'col:ID' FROM name_{KEY} n JOIN name_usage_{KEY} u ON n.id=u.name_id JOIN verbatim_{KEY} v ON n.verbatim_key=v.id
+  WHERE u.sector_key IS NOT NULL;
 ```
 
 ### 2020-11-12 separate name match table

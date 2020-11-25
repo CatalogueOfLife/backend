@@ -87,4 +87,11 @@
     TRUNCATE verbatim_source_${partition} CASCADE
   </delete>
 
+  <delete id="deleteBySector" parameterType="map">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    DELETE FROM verbatim_source_${partition} v
+    USING name_usage_${partition} u
+    WHERE u.id=v.id AND u.sector_key=#{key.id}
+  </delete>
+
 </mapper>

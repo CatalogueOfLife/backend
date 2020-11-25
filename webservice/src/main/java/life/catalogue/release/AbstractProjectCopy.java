@@ -73,11 +73,7 @@ public abstract class AbstractProjectCopy implements Runnable {
   }
 
   void finalWork() throws Exception {
-    // create new dataset "import" metrics in mother project
-    LOG.info("Build import metrics for dataset " + datasetKey);
-    updateState(ImportState.ANALYZING);
-    diDao.updateMetrics(metrics, newDatasetKey);
-    diDao.update(metrics);
+    // dont do nothing - override if needed
   }
 
   @Override
@@ -110,10 +106,14 @@ public abstract class AbstractProjectCopy implements Runnable {
 
       // build indices and attach partition
       Partitioner.attach(factory, newDatasetKey, newDatasetOrigin);
-      Partitioner.createManagedObjects(factory, newDatasetKey);
+      if (newDatasetOrigin == DatasetOrigin.MANAGED) {
+        Partitioner.createManagedObjects(factory, newDatasetKey);
+      }
 
       // subclass specifics
       finalWork();
+
+      metrics();
 
       try {
         // ES index
@@ -155,6 +155,18 @@ public abstract class AbstractProjectCopy implements Runnable {
     }
   }
 
+  private void metrics() {
+    LOG.info("Build import metrics for dataset " + datasetKey);
+    updateState(ImportState.ANALYZING);
+    // update usage counter
+    try (SqlSession session = factory.openSession(true)) {
+      session.getMapper(DatasetPartitionMapper.class).updateUsageCounter(datasetKey);
+    }
+    // create new dataset "import" metrics in mother project
+    diDao.updateMetrics(metrics, newDatasetKey);
+    diDao.update(metrics);
+  }
+
   private void copyData() {
     LOG.info("Copy data into dataset {}", newDatasetKey);
     updateState(ImportState.INSERTING);
@@ -174,6 +186,7 @@ public abstract class AbstractProjectCopy implements Runnable {
       copyTable(TypeMaterial.class, TypeMaterialMapper.class, session);
 
       copyTable(NameUsage.class, NameUsageMapper.class, session);
+      copyTable(VerbatimSource.class, VerbatimSourceMapper.class, session);
 
       copyTable(VernacularName.class, VernacularNameMapper.class, session);
       copyTable(Distribution.class, DistributionMapper.class, session);

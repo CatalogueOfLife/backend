@@ -30,7 +30,7 @@ public interface DatasetPartitionMapper {
       "vernacular_name"
   );
 
-  List<String> MANAGED_TABLES = Lists.newArrayList(
+  List<String> PROJECT_TABLES = Lists.newArrayList(
     "verbatim_source"
   );
   
@@ -128,7 +128,10 @@ public interface DatasetPartitionMapper {
     // things specific to managed datasets only
     if (origin == DatasetOrigin.MANAGED) {
       createManagedSequences(key);
-      MANAGED_TABLES.forEach(t -> createTable(t, key));
+    }
+    // things specific to managed and released datasets only
+    if (origin.isProject()) {
+      PROJECT_TABLES.forEach(t -> createTable(t, key));
     }
   }
   
@@ -187,7 +190,7 @@ public interface DatasetPartitionMapper {
    */
   default void delete(int key) {
     deleteUsageCounter(key);
-    MANAGED_TABLES.forEach(t -> deleteTable(t, key));
+    PROJECT_TABLES.forEach(t -> deleteTable(t, key));
     Lists.reverse(TABLES).forEach(t -> deleteTable(t, key));
     IDMAP_TABLES.forEach(t -> deleteTable(t, key));
   }
@@ -221,8 +224,8 @@ public interface DatasetPartitionMapper {
     FKS.forEach( (t,fks) -> fks.forEach(fk -> createFk(t, key, fk)));
     // things specific to managed datasets only
     if (origin == DatasetOrigin.MANAGED) {
-      MANAGED_TABLES.forEach(t -> createPk(t, key));
-      MANAGED_TABLES.forEach(t -> attachTable(t, key));
+      PROJECT_TABLES.forEach(t -> createPk(t, key));
+      PROJECT_TABLES.forEach(t -> attachTable(t, key));
       createFk("verbatim_source", key, new FK("id", "name_usage", true, true));
     }
 
