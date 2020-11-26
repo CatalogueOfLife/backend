@@ -11,6 +11,7 @@ public class TaxonInfo {
   
   private Taxon taxon;
   private Treatment treatment;
+  private VerbatimSource source;
   private List<Synonym> synonyms;
   private List<Distribution> distributions;
   private List<VernacularName> vernacularNames;
@@ -59,7 +60,15 @@ public class TaxonInfo {
   public void setTaxon(Taxon taxon) {
     this.taxon = taxon;
   }
-  
+
+  public VerbatimSource getSource() {
+    return source;
+  }
+
+  public void setSource(VerbatimSource source) {
+    this.source = source;
+  }
+
   public List<Synonym> getSynonyms() {
     return synonyms;
   }
@@ -201,6 +210,7 @@ public class TaxonInfo {
     TaxonInfo taxonInfo = (TaxonInfo) o;
     return Objects.equals(taxon, taxonInfo.taxon) &&
       Objects.equals(treatment, taxonInfo.treatment) &&
+      Objects.equals(source, taxonInfo.source) &&
       Objects.equals(synonyms, taxonInfo.synonyms) &&
       Objects.equals(distributions, taxonInfo.distributions) &&
       Objects.equals(vernacularNames, taxonInfo.vernacularNames) &&
@@ -216,6 +226,6 @@ public class TaxonInfo {
 
   @Override
   public int hashCode() {
-    return Objects.hash(taxon, treatment, synonyms, distributions, vernacularNames, media, nameRelations, conceptRelations, speciesInteractions, typeMaterial, references, names, taxa);
+    return Objects.hash(taxon, treatment, source, synonyms, distributions, vernacularNames, media, nameRelations, conceptRelations, speciesInteractions, typeMaterial, references, names, taxa);
   }
 }

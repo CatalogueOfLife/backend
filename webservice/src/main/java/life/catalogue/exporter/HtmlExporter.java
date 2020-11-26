@@ -83,7 +83,7 @@ public class HtmlExporter extends NameUsageTreePrinter {
   void writeTaxon() throws IOException {
     // load missing references and other infos
     TaxonDao.fillTaxonInfo(session, writer.info, refCache,
-      false, true, true, false, true, false,
+      false, false, true, true, false, true, false,
       false, false, false);
     writer.taxon();
   }

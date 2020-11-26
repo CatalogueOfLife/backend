@@ -137,13 +137,14 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     }
     TaxonInfo info = new TaxonInfo();
     info.setTaxon(taxon);
-    fillTaxonInfo(session, info, null, true, true, true, true, true,
+    fillTaxonInfo(session, info, null, true, true, true, true, true, true,
       false, true, true, true);
     return info;
   }
 
   public static void fillTaxonInfo(final SqlSession session, final TaxonInfo info,
                                    LoadingCache<String, Reference> refCache,
+                                   boolean loadSource,
                                    boolean loadSynonyms,
                                    boolean loadDistributions,
                                    boolean loadVernacular,
@@ -167,6 +168,11 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       SynonymMapper sm = session.getMapper(SynonymMapper.class);
       info.setSynonyms(sm.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
       info.getSynonyms().forEach(s -> refIds.addAll(s.getReferenceIds()));
+    }
+
+    // source
+    if (loadSource) {
+      info.setSource(session.getMapper(VerbatimSourceMapper.class).get(taxon));
     }
 
     // treatment

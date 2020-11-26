@@ -84,7 +84,7 @@
 
   <delete id="deleteByDataset" parameterType="map">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    TRUNCATE verbatim_source_${partition} CASCADE
+    DELETE FROM verbatim_source_${partition}
   </delete>
 
   <delete id="deleteBySector" parameterType="map">
