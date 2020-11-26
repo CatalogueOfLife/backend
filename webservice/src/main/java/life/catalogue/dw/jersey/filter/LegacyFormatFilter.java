@@ -1,8 +1,5 @@
 package life.catalogue.dw.jersey.filter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
@@ -19,7 +16,6 @@ import java.lang.annotation.Annotation;
 @ApplyFormatFilter
 public class LegacyFormatFilter implements ContainerResponseFilter {
 
-  private static final Logger LOG = LoggerFactory.getLogger(LegacyFormatFilter.class);
   private static final String PARAM  = "format";
 
   @Override
