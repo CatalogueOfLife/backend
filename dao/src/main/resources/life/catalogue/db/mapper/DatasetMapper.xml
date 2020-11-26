@@ -197,8 +197,7 @@
   </select>
 
   <select id="listNeverImported" resultMap="datasetResultMap">
-    SELECT
-    <include refid="SELECT"/>
+    SELECT <include refid="SELECT"/>
     FROM dataset d
       LEFT JOIN dataset_import di ON di.dataset_key=d.key
       LEFT JOIN usage_count uc ON uc.dataset_key=d.key
@@ -231,15 +230,15 @@
 
   <select id="exists" resultType="boolean">
     SELECT EXISTS (
-    SELECT 1 FROM dataset WHERE key = #{key} AND deleted IS NULL
+      SELECT 1 FROM dataset WHERE key = #{key} AND deleted IS NULL
     )
   </select>
 
   <select id="isPrivate" resultType="boolean">
     SELECT EXISTS (
-    SELECT 1 FROM dataset WHERE key = #{key} AND deleted IS NULL
+      SELECT 1 FROM dataset WHERE key = #{key}
     ) AND (
-    SELECT private FROM dataset WHERE key = #{key}
+      SELECT private FROM dataset WHERE key = #{key}
     )
   </select>
 
@@ -311,9 +310,7 @@
   </update>
 
   <update id="update" parameterType="Dataset">
-    UPDATE dataset
-    SET (<include refid="COLS"/>, modified)
-    = (<include refid="PROPS"/>, now())
+    UPDATE dataset SET (<include refid="COLS"/>, modified) = (<include refid="PROPS"/>, now())
     WHERE key = #{key}
   </update>
 

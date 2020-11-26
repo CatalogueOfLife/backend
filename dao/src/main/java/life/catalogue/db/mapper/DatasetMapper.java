@@ -97,7 +97,7 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   boolean exists(@Param("key") int key);
 
   /**
-   * @return true if dataset key exists and belongs to a private dataset
+   * @return true if dataset key exists and belongs to a private dataset. Can be a deleted dataset
    */
   boolean isPrivate(@Param("key") int key);
 
