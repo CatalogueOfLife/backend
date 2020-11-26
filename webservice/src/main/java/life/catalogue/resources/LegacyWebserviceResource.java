@@ -9,7 +9,6 @@ import life.catalogue.db.mapper.legacy.LVernacularMapper;
 import life.catalogue.db.mapper.legacy.model.LError;
 import life.catalogue.db.mapper.legacy.model.LName;
 import life.catalogue.db.mapper.legacy.model.LResponse;
-import life.catalogue.dw.jersey.filter.ApplyFormatFilter;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -29,8 +28,7 @@ import static life.catalogue.api.util.ObjectUtils.coalesce;
  * http://webservice.catalogueoflife.org/col/webservice
  */
 @Hidden
-@ApplyFormatFilter
-@Produces({MediaType.TEXT_XML, MediaType.APPLICATION_JSON})
+@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 @Path("/dataset/{key}/legacy")
 public class LegacyWebserviceResource {
   static int DEFAULT_LIMIT_TERSE = 100;
