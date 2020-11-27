@@ -5,6 +5,7 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Organisation;
 import life.catalogue.api.model.Person;
+import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.io.CompressionUtil;
@@ -55,7 +56,7 @@ public class AcExporterTest {
   
   @Test
   public void export() throws Exception {
-    AcExporter exp = new AcExporter(cfg, PgSetupRule.getSqlSessionFactory());
+    AcExporterJob exp = new AcExporterJob(new ExportRequest(Datasets.COL, DataFormat.COLAC), cfg, PgSetupRule.getSqlSessionFactory());
     // prepare metadata
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
 
@@ -69,7 +70,9 @@ public class AcExporterTest {
       dm.update(d);
     }
     
-    arch = exp.export(Datasets.COL);
+    exp.run();
+
+    arch = exp.getArchive();
     System.out.println("LOGS:\n");
 
     // test decompressed archive
@@ -96,7 +99,6 @@ public class AcExporterTest {
     MybatisTestUtils.populateTestData(TestDataRule.APPLE, false);
     final int key = TestDataRule.APPLE.key;
 
-    AcExporter exp = new AcExporter(cfg, PgSetupRule.getSqlSessionFactory());
     // prepare metadata
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
@@ -108,7 +110,9 @@ public class AcExporterTest {
       dm.update(d);
     }
 
-    arch = exp.export(key);
+    AcExporterJob exp = new AcExporterJob(new ExportRequest(key, DataFormat.COLAC), cfg, PgSetupRule.getSqlSessionFactory());
+    exp.run();
+    arch = exp.getArchive();
     System.out.println("LOGS:\n");
 
     // test decompressed archive

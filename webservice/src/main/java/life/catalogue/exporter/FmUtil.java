@@ -8,7 +8,7 @@ public class FmUtil {
   public static final Version FREEMARKER_VERSION = Configuration.VERSION_2_3_28;
   public static final Configuration FMK = new Configuration(FREEMARKER_VERSION);
   static {
-    FMK.setClassForTemplateLoading(AcExporter.class, "/exporter");
+    FMK.setClassForTemplateLoading(FmUtil.class, "/exporter");
     // see https://freemarker.apache.org/docs/pgui_quickstart_createconfiguration.html
     FMK.setDefaultEncoding("UTF-8");
     FMK.setDateFormat("yyyy-MM-dd");

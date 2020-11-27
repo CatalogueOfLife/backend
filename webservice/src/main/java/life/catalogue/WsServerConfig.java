@@ -22,6 +22,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.io.File;
+import java.net.URI;
 import java.util.Properties;
 
 
@@ -102,6 +103,9 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
    */
   @NotNull
   public File exportDir = new File("/tmp");
+
+  @NotNull
+  public URI downloads;
 
   /**
    * Maximum number of background job to run simultaneously

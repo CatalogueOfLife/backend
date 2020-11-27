@@ -1,6 +1,7 @@
 package life.catalogue.common.concurrent;
 
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -9,12 +10,9 @@ import java.util.concurrent.ConcurrentMap;
  * dataset importer or sector syncs don't work on the same dataset simultaneously.
  */
 public class DatasetLock {
-  public enum ProcessType {
-    IMPORT, SYNC, INDEXING, METRICS, OTHER
-  }
-  private static final ConcurrentMap<Integer, ProcessType> LOCKS = new ConcurrentHashMap<>();
+  private static final ConcurrentMap<Integer, UUID> LOCKS = new ConcurrentHashMap<>();
 
-  public static synchronized boolean lock(int datasetKey, ProcessType process) {
+  public static synchronized boolean lock(int datasetKey, UUID process) {
     if (LOCKS.containsKey(datasetKey)) {
       return false;
     }
@@ -22,11 +20,11 @@ public class DatasetLock {
     return true;
   }
 
-  public static ProcessType unlock(int datasetKey) {
+  public static UUID unlock(int datasetKey) {
     return LOCKS.remove(datasetKey);
   }
 
-  public static Optional<ProcessType> isLocked(int datasetKey) {
+  public static Optional<UUID> isLocked(int datasetKey) {
     return Optional.ofNullable(LOCKS.get(datasetKey));
   }
 }

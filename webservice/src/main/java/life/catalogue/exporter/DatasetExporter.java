@@ -1,0 +1,65 @@
+package life.catalogue.exporter;
+
+import life.catalogue.common.concurrent.DatasetBlockingJob;
+import life.catalogue.common.concurrent.JobPriority;
+import life.catalogue.common.io.CompressionUtil;
+import org.apache.commons.io.FileUtils;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.UUID;
+
+abstract class DatasetExporter extends DatasetBlockingJob {
+  private static final Logger LOG = LoggerFactory.getLogger(DatasetExporter.class);
+
+  protected final SqlSessionFactory factory;
+  protected final ExportRequest req;
+  protected File archive;
+  protected File tmpDir;
+
+  DatasetExporter(ExportRequest req, SqlSessionFactory factory, File exportDir) {
+    super(req.getDatasetKey(), req.getUserKey(), JobPriority.LOW);
+    this.req = req;
+    this.factory = factory;
+    this.archive = archive(exportDir, getKey());
+    this.tmpDir = new File(exportDir, getKey().toString());
+    LOG.info("Created {} job {} for dataset {} to {}", getClass().getSimpleName(), getKey(), datasetKey, archive);
+  }
+
+  static File archive(File exportDir, UUID key) {
+    return new File(exportDir, key.toString().substring(0,2) + "/" + key.toString() + ".zip");
+  }
+
+  public ExportRequest getReq() {
+    return req;
+  }
+
+  public File getArchive() {
+    return archive;
+  }
+
+  @Override
+  public final void runWithLock() throws Exception {
+    FileUtils.forceMkdir(tmpDir);
+    try {
+      export();
+      bundle();
+      LOG.info("Export {} of dataset {} completed", getKey(), datasetKey);
+    } finally {
+      LOG.info("Remove temporary export directory {}", tmpDir.getAbsolutePath());
+      FileUtils.deleteDirectory(tmpDir);
+    }
+  }
+
+  protected void bundle() throws IOException {
+    LOG.info("Bundling archive at {}", archive.getAbsolutePath());
+    FileUtils.forceMkdir(archive.getParentFile());
+    CompressionUtil.zipDir(tmpDir, archive, true);
+  }
+
+  protected abstract void export() throws Exception;
+
+}

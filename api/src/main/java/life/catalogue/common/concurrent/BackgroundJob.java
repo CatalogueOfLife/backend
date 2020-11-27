@@ -56,19 +56,19 @@ public abstract class BackgroundJob implements Runnable {
       LoggingUtils.setJobMDC(key, getClass());
       started = LocalDateTime.now();
       status = JobStatus.RUNNING;
-      LOG.info("Started job {}: {}", key, getClass().getSimpleName());
+      LOG.info("Started {} job {}", getClass().getSimpleName(), key);
       execute();
       status = JobStatus.FINISHED;
-      LOG.info("Finished job {}: {}", key, getClass().getSimpleName());
+      LOG.info("Finished {} job {}", getClass().getSimpleName(), key);
 
     } catch (InterruptedException e) {
       status = JobStatus.CANCELED;
-      LOG.warn("Interrupted job {}: {}", key, getClass().getSimpleName());
+      LOG.warn("Interrupted {} job {}", getClass().getSimpleName(), key);
 
     } catch (Exception e) {
       status = JobStatus.FAILED;
       error = e;
-      LOG.error("Error running job {}: {}", key, getClass().getSimpleName());
+      LOG.error("Error running {} job {}", getClass().getSimpleName(), key, e);
 
     } finally {
       finished = LocalDateTime.now();

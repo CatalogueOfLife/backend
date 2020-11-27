@@ -23,7 +23,7 @@ public class JobExecutor implements AutoCloseable {
 
     private final BackgroundJob task;
 
-    public Runnable getTask() {
+    public BackgroundJob getTask() {
       return task;
     }
 

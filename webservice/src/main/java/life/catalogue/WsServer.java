@@ -17,10 +17,10 @@ import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.vocab.ColDwcTerm;
 import life.catalogue.assembly.AssemblyCoordinator;
-import life.catalogue.command.IndexCmd;
-import life.catalogue.command.InitDbCmd;
 import life.catalogue.command.AddTableCmd;
 import life.catalogue.command.ExecSqlCmd;
+import life.catalogue.command.IndexCmd;
+import life.catalogue.command.InitDbCmd;
 import life.catalogue.common.concurrent.JobExecutor;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.io.DownloadUtil;
@@ -43,6 +43,7 @@ import life.catalogue.es.NameUsageSuggestionService;
 import life.catalogue.es.nu.NameUsageIndexServiceEs;
 import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
 import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
+import life.catalogue.exporter.ExportManager;
 import life.catalogue.gbifsync.GbifSync;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
@@ -51,7 +52,6 @@ import life.catalogue.importer.ImportManager;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.parser.NameParser;
-import life.catalogue.exporter.AcExporter;
 import life.catalogue.release.ReleaseManager;
 import life.catalogue.resources.*;
 import life.catalogue.resources.parser.NameParserResource;
@@ -222,7 +222,7 @@ public class WsServer extends Application<WsServerConfig> {
     final FileMetricsSectorDao fmsDao = new FileMetricsSectorDao(getSqlSessionFactory(), cfg.metricsRepo);
 
     // exporter
-    AcExporter exporter = new AcExporter(cfg, getSqlSessionFactory());
+    ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor);
 
     // diff
     DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), fmdDao);
@@ -290,7 +290,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DocsResource(cfg, OpenApiFactory.build(cfg, env)));
     j.register(new DuplicateResource());
     j.register(new EstimateResource(edao));
-    j.register(new ExportResource(getSqlSessionFactory(), exporter, diDao, cfg));
+    j.register(new DatasetExportResource(getSqlSessionFactory(), exportManager, diDao, cfg));
     j.register(new ImporterResource(importManager, diDao));
     j.register(new LegacyWebserviceResource(getSqlSessionFactory(), cfg));
     j.register(new MatchingResource(ni));

@@ -24,6 +24,7 @@ adminDb:
 normalizer:
   scratchDir: /tmp/colplus/scratch
   archiveDir: /tmp/colplus/archives
+downloads: "http://localhost"
 client:
   timeout: 10000ms
   connectionTimeout: 10000ms
