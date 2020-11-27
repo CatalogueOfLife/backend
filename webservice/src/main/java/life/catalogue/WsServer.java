@@ -283,6 +283,7 @@ public class WsServer extends Application<WsServerConfig> {
       importManager, gbifSync, ni, executor));
     j.register(new DataPackageResource());
     j.register(new DatasetDiffResource(dDiff));
+    j.register(new DatasetExportResource(getSqlSessionFactory(), diDao, cfg));
     j.register(new DatasetImportResource(diDao));
     j.register(new DatasetPatchResource());
     j.register(new DatasetResource(getSqlSessionFactory(), ddao, dsdao, imgService, assembly, releaseManager));
@@ -290,7 +291,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DocsResource(cfg, OpenApiFactory.build(cfg, env)));
     j.register(new DuplicateResource());
     j.register(new EstimateResource(edao));
-    j.register(new DatasetExportResource(getSqlSessionFactory(), exportManager, diDao, cfg));
+    j.register(new ExportResource(exportManager));
     j.register(new ImporterResource(importManager, diDao));
     j.register(new LegacyWebserviceResource(getSqlSessionFactory(), cfg));
     j.register(new MatchingResource(ni));

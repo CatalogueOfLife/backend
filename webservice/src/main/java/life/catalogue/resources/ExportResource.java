@@ -1,12 +1,9 @@
 package life.catalogue.resources;
 
 import io.dropwizard.auth.Auth;
-import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.User;
-import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.exporter.ExportRequest;
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +22,7 @@ public class ExportResource {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(ExportResource.class);
 
-  public ExportResource(SqlSessionFactory factory, ExportManager exportManager, DatasetImportDao diDao, WsServerConfig cfg) {
+  public ExportResource(ExportManager exportManager) {
     this.exportManager = exportManager;
   }
 

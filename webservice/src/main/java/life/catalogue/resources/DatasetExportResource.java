@@ -11,7 +11,6 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.tree.JsonTreePrinter;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.dw.jersey.MoreMediaTypes;
-import life.catalogue.exporter.ExportManager;
 import life.catalogue.exporter.HtmlExporter;
 import life.catalogue.exporter.HtmlExporterSimple;
 import org.apache.commons.io.IOUtils;
@@ -60,15 +59,13 @@ import java.util.Set;
 public class DatasetExportResource {
   private final DatasetImportDao diDao;
   private final SqlSessionFactory factory;
-  private final ExportManager exportManager;
   private final WsServerConfig cfg;
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetExportResource.class);
 
-  public DatasetExportResource(SqlSessionFactory factory, ExportManager exportManager, DatasetImportDao diDao, WsServerConfig cfg) {
+  public DatasetExportResource(SqlSessionFactory factory, DatasetImportDao diDao, WsServerConfig cfg) {
     this.factory = factory;
-    this.exportManager = exportManager;
     this.diDao = diDao;
     this.cfg = cfg;
   }
