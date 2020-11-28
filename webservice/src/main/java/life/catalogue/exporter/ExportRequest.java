@@ -11,7 +11,7 @@ public class ExportRequest {
   private int datasetKey;
   @NotNull
   private DataFormat format = DataFormat.COLDP;
-  private String startID;
+  private String taxonID;
   private Set<String> exclusions;
   private boolean synonyms = true;
   private Rank minRank;
@@ -41,12 +41,12 @@ public class ExportRequest {
     this.format = format;
   }
 
-  public String getStartID() {
-    return startID;
+  public String getTaxonID() {
+    return taxonID;
   }
 
-  public void setStartID(String startID) {
-    this.startID = startID;
+  public void setTaxonID(String taxonID) {
+    this.taxonID = taxonID;
   }
 
   public Set<String> getExclusions() {
@@ -90,13 +90,13 @@ public class ExportRequest {
       synonyms == that.synonyms &&
       userKey == that.userKey &&
       format == that.format &&
-      Objects.equals(startID, that.startID) &&
+      Objects.equals(taxonID, that.taxonID) &&
       Objects.equals(exclusions, that.exclusions) &&
       minRank == that.minRank;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, format, startID, exclusions, synonyms, minRank, userKey);
+    return Objects.hash(datasetKey, format, taxonID, exclusions, synonyms, minRank, userKey);
   }
 }

@@ -67,7 +67,7 @@ abstract class ArchiveExporter extends DatasetExporter {
     }
     try (SqlSession session = factory.openSession()) {
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-      num.processTree(datasetKey, null, req.getStartID(), req.getExclusions(), req.getMinRank(), req.isSynonyms(), true).forEach(u -> {
+      num.processTree(datasetKey, null, req.getTaxonID(), req.getExclusions(), req.getMinRank(), req.isSynonyms(), true).forEach(u -> {
         if (u.isTaxon() && taxonIDs.size() < maxUsageIDs) {
           taxonIDs.add(u.getId());
         }
