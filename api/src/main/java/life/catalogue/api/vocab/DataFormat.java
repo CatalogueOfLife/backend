@@ -34,12 +34,6 @@ public enum DataFormat {
    * and allows to semantically map columns and delimiter formats.
    * See https://github.com/Sp2000/colplus-backend/issues/518
    */
-  PROXY,
-
-  /**
-   * COL Annual Checklist format used to export data to the old mysql database.
-   * Not supported for imports!
-   */
-  COLAC
+  PROXY
   
 }

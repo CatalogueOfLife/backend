@@ -283,7 +283,7 @@ public class WsServer extends Application<WsServerConfig> {
       importManager, gbifSync, ni, executor));
     j.register(new DataPackageResource());
     j.register(new DatasetDiffResource(dDiff));
-    j.register(new DatasetExportResource(getSqlSessionFactory(), diDao, cfg));
+    j.register(new DatasetExportResource(getSqlSessionFactory(), exportManager, diDao, cfg));
     j.register(new DatasetImportResource(diDao));
     j.register(new DatasetPatchResource());
     j.register(new DatasetResource(getSqlSessionFactory(), ddao, dsdao, imgService, assembly, releaseManager));

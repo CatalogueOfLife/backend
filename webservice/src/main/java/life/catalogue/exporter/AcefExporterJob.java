@@ -35,8 +35,8 @@ import java.util.regex.Pattern;
  * Exporter for the old AC schema.
  * Blocks parallel exports of the same dataset.
  */
-public class AcExporterJob extends DatasetExporter {
-  private static final Logger LOG = LoggerFactory.getLogger(AcExporterJob.class);
+public class AcefExporterJob extends DatasetExporter {
+  private static final Logger LOG = LoggerFactory.getLogger(AcefExporterJob.class);
   private static final String EXPORT_SQL = "/exporter/ac-export.sql";
   private static final String COPY_WITH = "CSV HEADER NULL '\\N' DELIMITER E'\\t' QUOTE E'\\f' ENCODING 'UTF8' ";
   private static final Pattern COPY_START = Pattern.compile("^\\s*COPY\\s*\\(");
@@ -44,7 +44,7 @@ public class AcExporterJob extends DatasetExporter {
   private static final Pattern VAR_DATASET_KEY = Pattern.compile("\\{\\{datasetKey}}", Pattern.CASE_INSENSITIVE);
   private final WsServerConfig cfg;
 
-  public AcExporterJob(ExportRequest req, WsServerConfig cfg, SqlSessionFactory factory) {
+  public AcefExporterJob(ExportRequest req, WsServerConfig cfg, SqlSessionFactory factory) {
     super(req, factory, cfg.exportDir);
     this.cfg = cfg;
   }
@@ -56,7 +56,7 @@ public class AcExporterJob extends DatasetExporter {
     PgConnection c = cfg.db.connect();
     c.setAutoCommit(false);
     try {
-      InputStream sql = AcExporterJob.class.getResourceAsStream(EXPORT_SQL);
+      InputStream sql = AcefExporterJob.class.getResourceAsStream(EXPORT_SQL);
       executeAcExportSql(datasetKey, c, new BufferedReader(new InputStreamReader(sql, StandardCharsets.UTF_8)));
 
     } catch (UnsupportedEncodingException e) {

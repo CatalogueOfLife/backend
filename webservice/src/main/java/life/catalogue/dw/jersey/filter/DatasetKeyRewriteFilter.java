@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -105,14 +106,20 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     }
   }
 
-  private String rewriteDatasetKey(String datasetKey) {
+  public Optional<Integer> lookupDatasetKey(String datasetKey) {
     if (StringUtils.hasContent(datasetKey)) {
       Matcher m = LRC_PATTERN.matcher(datasetKey);
       if (m.find()){
-        return releaseKeyFromMatch(m).toString();
+        return Optional.of(releaseKeyFromMatch(m));
       }
     }
-    return datasetKey;
+    return Optional.empty();
+  }
+
+  private String rewriteDatasetKey(String datasetKey) {
+    return lookupDatasetKey(datasetKey)
+      .map(Object::toString)
+      .orElse(datasetKey);
   }
 
   private Integer releaseKeyFromMatch(Matcher m) {

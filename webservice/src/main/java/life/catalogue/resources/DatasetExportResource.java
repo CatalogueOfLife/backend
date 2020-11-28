@@ -1,7 +1,9 @@
 package life.catalogue.resources;
 
+import io.dropwizard.auth.Auth;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.io.Resources;
 import life.catalogue.dao.DatasetImportDao;
@@ -11,6 +13,8 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.tree.JsonTreePrinter;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.exporter.ExportManager;
+import life.catalogue.exporter.ExportRequest;
 import life.catalogue.exporter.HtmlExporter;
 import life.catalogue.exporter.HtmlExporterSimple;
 import org.apache.commons.io.IOUtils;
@@ -20,6 +24,7 @@ import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -29,6 +34,7 @@ import java.io.*;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Stream dataset exports to the user.
@@ -59,19 +65,32 @@ import java.util.Set;
 public class DatasetExportResource {
   private final DatasetImportDao diDao;
   private final SqlSessionFactory factory;
+  private final ExportManager exportManager;
   private final WsServerConfig cfg;
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetExportResource.class);
 
-  public DatasetExportResource(SqlSessionFactory factory, DatasetImportDao diDao, WsServerConfig cfg) {
+  public DatasetExportResource(SqlSessionFactory factory, ExportManager exportManager, DatasetImportDao diDao, WsServerConfig cfg) {
     this.factory = factory;
+    this.exportManager = exportManager;
     this.diDao = diDao;
     this.cfg = cfg;
   }
 
+  @POST
+  public UUID export(@PathParam("key") int key, @Valid ExportRequest req, @Auth User user) {
+    req.setDatasetKey(key);
+    req.setUserKey(user.getKey());
+    return exportManager.sumit(req);
+  }
+
   @GET
-  @Produces(MediaType.APPLICATION_OCTET_STREAM)
+  // there are many unofficial mime types around for zip
+  @Produces({
+    MediaType.APPLICATION_OCTET_STREAM,
+    MoreMediaTypes.APP_ZIP, MoreMediaTypes.APP_ZIP_ALT1, MoreMediaTypes.APP_ZIP_ALT2, MoreMediaTypes.APP_ZIP_ALT3
+  })
   public Response original(@PathParam("key") int key) {
     File source = cfg.normalizer.source(key);
     if (source.exists()) {
@@ -80,7 +99,10 @@ public class DatasetExportResource {
         IOUtils.copy(in, os);
         os.flush();
       };
-      return Response.ok(stream).build();
+
+      return Response.ok(stream)
+        .type(MoreMediaTypes.APP_ZIP)
+        .build();
     }
     throw new NotFoundException(key, "original archive for dataset " + key + " not found");
   }

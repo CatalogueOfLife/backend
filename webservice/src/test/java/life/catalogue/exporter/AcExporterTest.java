@@ -56,7 +56,7 @@ public class AcExporterTest {
   
   @Test
   public void export() throws Exception {
-    AcExporterJob exp = new AcExporterJob(new ExportRequest(Datasets.COL, DataFormat.COLAC), cfg, PgSetupRule.getSqlSessionFactory());
+    AcefExporterJob exp = new AcefExporterJob(new ExportRequest(Datasets.COL, DataFormat.ACEF), cfg, PgSetupRule.getSqlSessionFactory());
     // prepare metadata
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
 
@@ -110,7 +110,7 @@ public class AcExporterTest {
       dm.update(d);
     }
 
-    AcExporterJob exp = new AcExporterJob(new ExportRequest(key, DataFormat.COLAC), cfg, PgSetupRule.getSqlSessionFactory());
+    AcefExporterJob exp = new AcefExporterJob(new ExportRequest(key, DataFormat.ACEF), cfg, PgSetupRule.getSqlSessionFactory());
     exp.run();
     arch = exp.getArchive();
     System.out.println("LOGS:\n");

@@ -35,11 +35,8 @@ public class ExportManager {
       case COLDP:
         job = new DwcaExporter(req, factory, cfg.exportDir);
         break;
-      case DWCA:
-        job = new DwcaExporter(req, factory, cfg.exportDir);
-        break;
-      case COLAC:
-        job = new AcExporterJob(req, cfg, factory);
+      case ACEF:
+        job = new AcefExporterJob(req, cfg, factory);
         break;
 
       default:

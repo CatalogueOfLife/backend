@@ -8,10 +8,9 @@ import java.util.Objects;
 import java.util.Set;
 
 public class ExportRequest {
-
+  private int datasetKey;
   @NotNull
-  private Integer datasetKey;
-  private DataFormat format;
+  private DataFormat format = DataFormat.COLDP;
   private String startID;
   private Set<String> exclusions;
   private boolean synonyms = true;
@@ -26,11 +25,11 @@ public class ExportRequest {
     this.format = format;
   }
 
-  public Integer getDatasetKey() {
+  public int getDatasetKey() {
     return datasetKey;
   }
 
-  public void setDatasetKey(Integer datasetKey) {
+  public void setDatasetKey(int datasetKey) {
     this.datasetKey = datasetKey;
   }
 
