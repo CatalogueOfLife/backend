@@ -25,5 +25,9 @@ public interface NameRelationMapper extends Create<NameRelation>,
    * Returns the list of related names of a given type for a single name on the nameId side of the relation only.
    */
   List<NameRelation> listByType(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId, @Param("type") NomRelType type);
-  
+
+  /**
+   * Returns the list of related names of a given type for a single name on the relatedNameId side of the relation only.
+   */
+  List<NameRelation> listByTypeReverse(@Param("datasetKey") int datasetKey, @Param("relatedNameId") String relatedNameId, @Param("type") NomRelType type);
 }

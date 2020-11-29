@@ -30,8 +30,8 @@ abstract class ArchiveExporter extends DatasetExporter {
   private final int maxUsageIDs = 10000;
 
   protected final Set<String> taxonIDs = new HashSet<>();
-  protected final LoadingCache<String, Reference> refCache;
-  private SqlSession session;
+  protected final LoadingCache<String, String> refCache;
+  protected SqlSession session;
   protected TermWriter writer;
 
   ArchiveExporter(ExportRequest req, SqlSessionFactory factory, File exportDir) {
@@ -43,8 +43,9 @@ abstract class ArchiveExporter extends DatasetExporter {
       .maximumSize(1000)
       .build(new CacheLoader<>() {
         @Override
-        public Reference load(String key) throws Exception {
-          return session.getMapper(ReferenceMapper.class).get(rKey.id(key));
+        public String load(String key) throws Exception {
+          Reference r = session.getMapper(ReferenceMapper.class).get(rKey.id(key));
+          return r == null ? null : r.getCitation();
         }
       });
     LOG.info("Created exporter job {} for dataset {} to {}", getKey(), datasetKey, archive);
@@ -54,11 +55,16 @@ abstract class ArchiveExporter extends DatasetExporter {
   public void export() throws Exception {
     try (SqlSession session = factory.openSession(false)) {
       this.session = session;
+      init(session);
       exportCore();
       exportExtensions();
       closeWriter();
       exportMetadata();
     }
+  }
+
+  protected void init(SqlSession session) {
+
   }
 
   private void exportCore() throws IOException {

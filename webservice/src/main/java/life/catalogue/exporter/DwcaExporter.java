@@ -1,17 +1,19 @@
 package life.catalogue.exporter;
 
-import life.catalogue.api.model.NameUsageBase;
-import life.catalogue.api.model.Synonym;
-import life.catalogue.api.model.Taxon;
-import life.catalogue.api.model.VernacularName;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Environment;
+import life.catalogue.api.vocab.NomRelType;
+import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.common.io.TermWriter;
+import life.catalogue.db.mapper.NameRelationMapper;
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.dwc.terms.Term;
+import org.gbif.nameparser.api.NomCode;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,6 +23,7 @@ import java.util.List;
 public class DwcaExporter extends ArchiveExporter {
 
   private TermWriter writer2;
+  private NameRelationMapper nameRelMapper;
 
   public DwcaExporter(ExportRequest req, SqlSessionFactory factory, File exportDir) {
     super(req, factory, exportDir);
@@ -31,6 +34,11 @@ public class DwcaExporter extends ArchiveExporter {
     req.setDatasetKey(datasetKey);
     req.setUserKey(userKey);
     return new DwcaExporter(req, factory, exportDir);
+  }
+
+  @Override
+  protected void init(SqlSession session) {
+    nameRelMapper = session.getMapper(NameRelationMapper.class);
   }
 
   private void additionalWriter(Term[] terms) {
@@ -48,8 +56,29 @@ public class DwcaExporter extends ArchiveExporter {
   Term[] define(EntityType entity) {
     switch (entity) {
       case NAME_USAGE:
-        additionalWriter(new Term[]{GbifTerm.SpeciesProfile, DwcTerm.taxonID, GbifTerm.isExtinct, GbifTerm.isMarine, GbifTerm.isFreshwater, GbifTerm.isTerrestrial});
-        return new Term[]{DwcTerm.Taxon, DwcTerm.taxonID, DwcTerm.parentNameUsageID, DwcTerm.acceptedNameUsageID, DwcTerm.taxonomicStatus, DwcTerm.taxonRank, DwcTerm.scientificName, DwcTerm.taxonRemarks};
+        additionalWriter(new Term[]{GbifTerm.SpeciesProfile, DwcTerm.taxonID,
+          GbifTerm.isExtinct,
+          GbifTerm.isMarine,
+          GbifTerm.isFreshwater,
+          GbifTerm.isTerrestrial
+        });
+        return new Term[]{DwcTerm.Taxon, DwcTerm.taxonID,
+          DwcTerm.parentNameUsageID,
+          DwcTerm.acceptedNameUsageID,
+          DwcTerm.originalNameUsageID,
+          DwcTerm.taxonomicStatus,
+          DwcTerm.taxonRank,
+          DwcTerm.scientificName,
+          GbifTerm.genericName,
+          DwcTerm.specificEpithet,
+          DwcTerm.infraspecificEpithet,
+          DwcTerm.nameAccordingTo,
+          DwcTerm.namePublishedIn,
+          DwcTerm.nomenclaturalCode,
+          DwcTerm.nomenclaturalStatus,
+          DwcTerm.taxonRemarks,
+          DcTerm.references
+        };
       case VERNACULAR:
         return new Term[]{GbifTerm.VernacularName, DwcTerm.taxonID, DcTerm.language, DwcTerm.vernacularName};
     }
@@ -57,7 +86,25 @@ public class DwcaExporter extends ArchiveExporter {
   }
 
   void write(NameUsageBase u) {
+    Name n = u.getName();
     writer.set(DwcTerm.taxonID, u.getId());
+    writer.set(DwcTerm.taxonomicStatus, u.getStatus());
+    writer.set(DwcTerm.taxonRank, n.getRank());
+    writer.set(DwcTerm.scientificName, u.getLabel());
+    writer.set(DwcTerm.taxonRemarks, u.getRemarks());
+    writer.set(DcTerm.references, u.getLink());
+    if (n.getPublishedInId() != null) {
+      writer.set(DwcTerm.namePublishedIn, refCache.getUnchecked(n.getPublishedInId()));
+    }
+    writer.set(DwcTerm.nameAccordingTo, u.getAccordingTo());
+    if (n.isBinomial()) {
+      writer.set(GbifTerm.genericName, n.getGenus());
+      writer.set(DwcTerm.specificEpithet, n.getSpecificEpithet());
+      writer.set(DwcTerm.infraspecificEpithet, n.getInfraspecificEpithet());
+    }
+    writer.set(DwcTerm.nomenclaturalCode, n.getCode(), NomCode::getAcronym);
+    writer.set(DwcTerm.nomenclaturalStatus, n.getNomStatus(), NomStatus::getBotanicalLabel);
+
     if (u.isSynonym()) {
       writer.set(DwcTerm.acceptedNameUsageID, u.getParentId());
       ((Synonym)u).getAccepted().setExtinct(null); // this removes the dagger symbol from label below !!!
@@ -81,10 +128,9 @@ public class DwcaExporter extends ArchiveExporter {
         t.setExtinct(null); // this removes the dagger symbol from label below !!!
       }
     }
-    writer.set(DwcTerm.taxonomicStatus, u.getStatus());
-    writer.set(DwcTerm.taxonRank, u.getName().getRank());
-    writer.set(DwcTerm.scientificName, u.getLabel());
-    writer.set(DwcTerm.taxonRemarks, u.getRemarks());
+    for (NameRelation rel : nameRelMapper.listByType(datasetKey, n.getId(), NomRelType.BASIONYM)) {
+      writer.set(DwcTerm.originalNameUsageID, rel.getRelatedNameId());
+    }
   }
 
   void write(String taxonID, VernacularName vn) {

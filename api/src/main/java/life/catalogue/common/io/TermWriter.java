@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public class TermWriter implements AutoCloseable {
   private final Term rowType;
@@ -57,12 +58,22 @@ public class TermWriter implements AutoCloseable {
     row[idx]=value;
   }
 
+  public <T> void set(Term term, T value, Function<T, String> converter) {
+    if (value != null) {
+      set(term, converter.apply(value));
+    }
+  }
+
   public void set(Term term, Object value) {
-    set(term, value.toString());
+    if (value != null) {
+      set(term, value.toString());
+    }
   }
 
   public void set(Term term, Enum value) {
-    set(term, value.name());
+    if (value != null) {
+      set(term, value.name());
+    }
   }
 
   @Override

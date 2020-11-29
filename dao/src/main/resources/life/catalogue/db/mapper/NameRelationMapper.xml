@@ -73,12 +73,21 @@
 
   <select id="listByType" resultMap="nameRelResultMap">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
-    SELECT
-    <include refid="SELECT"/>
+    SELECT <include refid="SELECT"/>
     FROM name_rel_${partition} nr
     WHERE nr.dataset_key = #{datasetKey}
     AND nr.type=#{type}::NOMRELTYPE
     AND nr.name_id = #{nameId}
+    ORDER BY nr.id
+  </select>
+
+  <select id="listByTypeReverse" resultMap="nameRelResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM name_rel_${partition} nr
+    WHERE nr.dataset_key = #{datasetKey}
+      AND nr.type=#{type}::NOMRELTYPE
+      AND nr.related_name_id = #{relatedNameId}
     ORDER BY nr.id
   </select>
 

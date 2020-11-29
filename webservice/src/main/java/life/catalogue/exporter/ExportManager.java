@@ -32,7 +32,7 @@ public class ExportManager {
   public UUID sumit(ExportRequest req){
     BackgroundJob job;
     switch (req.getFormat()) {
-      case COLDP:
+      case DWCA:
         job = new DwcaExporter(req, factory, cfg.exportDir);
         break;
       case ACEF:
