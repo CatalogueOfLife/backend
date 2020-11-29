@@ -80,6 +80,7 @@ public class DatasetExportResource {
 
   @POST
   public UUID export(@PathParam("key") int key, @Valid ExportRequest req, @Auth User user) {
+    if (req == null) req = new ExportRequest();
     req.setDatasetKey(key);
     req.setUserKey(user.getKey());
     return exportManager.sumit(req);
