@@ -32,7 +32,7 @@ public class DatasetMapperTest extends CRUDTestBase<Integer, Dataset, DatasetMap
     return d;
   }
 
-  static void populate(Dataset d) {
+  public static void populate(Dataset d) {
     populate((ArchivedDataset)d);
     d.setGbifKey(UUID.randomUUID());
     d.setGbifPublisherKey(UUID.randomUUID());

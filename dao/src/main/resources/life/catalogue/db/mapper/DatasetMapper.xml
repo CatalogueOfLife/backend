@@ -86,6 +86,7 @@
       </if>
       <if test="req.releasedFrom != null">
         AND d.source_key=#{req.releasedFrom}
+        AND d.origin = 'RELEASED'::DATASETORIGIN
       </if>
       <if test="req.format != null">
         AND d.settings @> jsonb_build_object('DATA_FORMAT', #{req.format})

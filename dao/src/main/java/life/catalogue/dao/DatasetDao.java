@@ -6,6 +6,7 @@ import life.catalogue.api.event.UserPermissionChanged;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.text.CitationUtils;
@@ -28,7 +29,9 @@ import java.io.File;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -150,6 +153,19 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   
   @Override
   protected void deleteBefore(Integer key, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
+    if (Datasets.COL == key) {
+      throw new IllegalArgumentException("You cannot delete the COL project");
+    }
+    // old is null as we have set offerChangeHook to false - we only need it here so lets call it manually
+    old = mapper.get(key);
+    if (old != null && old.getOrigin() == DatasetOrigin.MANAGED) {
+      Set<Integer> releases = listReleaseKeys(key, user, mapper);
+      LOG.warn("Deleting project {} with all its {} releases", key, releases.size());
+      for (int rk : releases) {
+        LOG.info("Deleting release {} of project {}", rk, key);
+        delete(rk, user);
+      }
+    }
     // remove decisions, sectors, estimates, dataset patches
     for (Class<DatasetProcessable<?>> mClass : new Class[]{SectorMapper.class, DecisionMapper.class, EstimateMapper.class, DatasetPatchMapper.class}) {
       LOG.info("Delete {}s for dataset {}", mClass.getSimpleName().substring(0, mClass.getSimpleName().length() - 6), key);
@@ -170,6 +186,22 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     session.getMapper(DatasetPartitionMapper.class).deleteManagedSequences(key);
     // now also clear filesystem
     diDao.removeMetrics(key);
+  }
+
+  private Set<Integer> listReleaseKeys(int projectKey, int user, DatasetMapper mapper) {
+    Set<Integer> releases = new HashSet<>();
+    DatasetSearchRequest req = new DatasetSearchRequest();
+    req.setReleasedFrom(projectKey);
+    List<Dataset> resp;
+    Page p = new Page(0, 1000);
+    do {
+      resp = mapper.search(req, user, new Page());
+      for (Dataset r : resp) {
+        releases.add(r.getKey());
+      }
+      p.next();
+    } while (resp.size() == p.getLimit());
+    return releases;
   }
 
   @Override
@@ -193,11 +225,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
     bus.post(DatasetChanged.change(obj));
     session.commit();
-  }
-
-  @Override
-  protected void updateBefore(Dataset obj, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
-    super.updateBefore(obj, old, user, mapper, session);
   }
 
   @Override
