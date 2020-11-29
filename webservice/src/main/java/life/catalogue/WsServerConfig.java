@@ -105,7 +105,7 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   public File exportDir = new File("/tmp");
 
   @NotNull
-  public URI downloads;
+  public URI downloadURI;
 
   /**
    * Maximum number of background job to run simultaneously

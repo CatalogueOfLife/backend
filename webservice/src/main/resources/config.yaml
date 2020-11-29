@@ -25,7 +25,7 @@ db:
 normalizer:
   scratchDir: /tmp/col/scratch
   archiveDir: /tmp/col/archives
-downloads: "http://localhost"
+downloadURI: "http://localhost"
 client:
   timeout: 10000ms
   connectionTimeout: 5000ms

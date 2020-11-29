@@ -26,7 +26,7 @@ public class ExportManager {
 
   public URI archiveURI(UUID key) {
     String path = archiveFiLe(key).getAbsolutePath().substring(cfg.exportDir.getAbsolutePath().length());
-    return cfg.downloads.resolve("/exports" + path);
+    return cfg.downloadURI.resolve("/exports" + path);
   }
 
   public UUID sumit(ExportRequest req){
