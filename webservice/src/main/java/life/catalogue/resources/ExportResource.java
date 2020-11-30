@@ -24,7 +24,7 @@ public class ExportResource {
   @GET
   @Path("{id}")
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
-  public Response getExport(@PathParam("key") UUID key) {
+  public Response getExport(@PathParam("id") UUID key) {
     return Response.status(Response.Status.FOUND)
       .location(exportManager.archiveURI(key))
       .build();

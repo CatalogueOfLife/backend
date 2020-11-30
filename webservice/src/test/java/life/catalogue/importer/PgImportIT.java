@@ -201,7 +201,6 @@ public class PgImportIT extends PgImportITBase {
       List<Reference> out = rm.search(dataset.getKey(), req, new Page());
       assertEquals(1, out.size());
       assertEquals("24", out.get(0).getId());
-  
     }
   }
   
