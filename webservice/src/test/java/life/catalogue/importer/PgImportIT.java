@@ -171,7 +171,7 @@ public class PgImportIT extends PgImportITBase {
       assertIssue(n, Issue.ACCEPTED_ID_INVALID);
       
       // a bare name
-      assertTrue(uMapper.listByNameID(dataset.getKey(), n.getId()).isEmpty());
+      assertTrue(uMapper.listByNameID(dataset.getKey(), n.getId(), new Page()).isEmpty());
       assertNull(tdao.get(key(dataset.getKey(), "s7")));
       
       n = ndao.get(key(dataset.getKey(), "s6"));
@@ -179,7 +179,7 @@ public class PgImportIT extends PgImportITBase {
       assertEquals(Rank.SPECIES, n.getRank());
       assertIssue(n, Issue.SYNONYM_DATA_MOVED);
       
-      List<NameUsageBase> syns = uMapper.listByNameID(dataset.getKey(), n.getId());
+      List<NameUsageBase> syns = uMapper.listByNameID(dataset.getKey(), n.getId(), new Page());
       assertEquals(1, syns.size());
       assertTrue(syns.get(0).isSynonym());
       Synonym s = (Synonym) syns.get(0);
@@ -395,7 +395,7 @@ public class PgImportIT extends PgImportITBase {
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       Name n = ndao.get(key(dataset.getKey(), "9946"));
   
-      List<NameUsageBase> usages = num.listByNameID(n.getDatasetKey(), n.getId());
+      List<NameUsageBase> usages = num.listByNameID(n.getDatasetKey(), n.getId(), new Page());
       assertEquals(2, usages.size());
       for (NameUsageBase u : usages) {
         Synonym s = (Synonym) u;
@@ -420,7 +420,7 @@ public class PgImportIT extends PgImportITBase {
       assertEquals(1, tdao.listRoot(dataset.getKey(), new Page()).getResult().size());
   
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
-      List<NameUsageBase> syns = um.listByNameID(dataset.getKey(), "1006-s3");
+      List<NameUsageBase> syns = um.listByNameID(dataset.getKey(), "1006-s3", new Page());
       assertEquals(1, syns.size());
       Synonym s3 = (Synonym) syns.get(0);
       assertEquals("Leonida taraxacoida Vill.", s3.getName().getLabel());

@@ -1,7 +1,6 @@
 package life.catalogue.matching.decision;
 
 import life.catalogue.api.model.*;
-import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import org.apache.commons.lang3.StringUtils;
@@ -37,7 +36,7 @@ public class MatchingDao {
   List<? extends NameUsage> matchDataset(SimpleName name, int datasetKey) {
     List<NameUsageBase> matches = new ArrayList<>();
     // https://github.com/Sp2000/colplus-backend/issues/283
-    for (NameUsageBase t : uMapper.listByName(datasetKey, name.getName(), name.getRank())) {
+    for (NameUsageBase t : uMapper.listByName(datasetKey, name.getName(), name.getRank(), new Page(0,1000))) {
       // take authorship, code, status and parent as optional filters, i.e. if null accept any value
       if (StringUtils.trimToNull(name.getAuthorship()) != null && !name.getAuthorship().equalsIgnoreCase(t.getName().getAuthorship())) {
         continue;
@@ -83,7 +82,7 @@ public class MatchingDao {
 
   private List<Taxon> matchSector(String name, @Nullable String authorship, @Nullable Rank rank, Sector sector) {
     List<Taxon> matches = new ArrayList<>();
-    for (NameUsage u : uMapper.listByName(sector.getDatasetKey(), name, rank)) {
+    for (NameUsage u : uMapper.listByName(sector.getDatasetKey(), name, rank, new Page(0, 1000))) {
       if (u.isTaxon()) {
         Taxon t = (Taxon) u;
         if (t.getSectorKey() != null && t.getSectorKey().equals(sector.getId())

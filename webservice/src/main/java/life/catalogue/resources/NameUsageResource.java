@@ -67,11 +67,11 @@ public class NameUsageResource {
     List<NameUsageBase> result;
     Supplier<Integer> count;
     if (namesIndexID != null) {
-      result = mapper.listByNamesIndexID(datasetKey, namesIndexID);
+      result = mapper.listByNamesIndexID(datasetKey, namesIndexID, p);
       NameMatchMapper nmm = session.getMapper(NameMatchMapper.class);
-      count = () -> nmm.count(namesIndexID, null);
+      count = () -> nmm.count(namesIndexID, datasetKey);
     } else if (q != null) {
-      result = mapper.listByName(datasetKey, q, rank);
+      result = mapper.listByName(datasetKey, q, rank, p);
       count = () -> result.size();
     } else {
       result = mapper.list(datasetKey, p);

@@ -123,7 +123,7 @@ public class SectorDelete extends SectorRunnable {
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
       for (String nid : nids) {
         usageLoop:
-        for (NameUsageBase u : um.listByNameID(sector.getDatasetKey(), nid)){
+        for (NameUsageBase u : um.listByNameID(sector.getDatasetKey(), nid, new Page(0, 1000))){
           for (SimpleName sn : um.processTreeSimple(sector.getDatasetKey(), sector.getId(), u.getId(), null, Rank.INFRAGENERIC_NAME, false)) {
             if (sn.getRank().higherThan(maxAmbiguousRank)) {
               zoological.add(nid);

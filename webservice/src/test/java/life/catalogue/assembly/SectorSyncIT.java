@@ -98,7 +98,7 @@ public class SectorSyncIT {
   
   public static NameUsageBase getByName(int datasetKey, Rank rank, String name) {
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      List<NameUsageBase> taxa = session.getMapper(NameUsageMapper.class).listByName(datasetKey, name, rank);
+      List<NameUsageBase> taxa = session.getMapper(NameUsageMapper.class).listByName(datasetKey, name, rank, new Page(0,100));
       if (taxa.size() > 1) throw new IllegalStateException("Multiple taxa found for name="+name);
       return taxa.get(0);
     }

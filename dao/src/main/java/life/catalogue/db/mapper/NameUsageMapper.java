@@ -32,15 +32,15 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
 
   List<NameUsageBase> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
   
-  List<NameUsageBase> listByNameID(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId);
+  List<NameUsageBase> listByNameID(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId, @Param("page") Page page);
 
-  List<NameUsageBase> listByNamesIndexID(@Param("datasetKey") int datasetKey, @Param("nidx") int nidx);
+  List<NameUsageBase> listByNamesIndexID(@Param("datasetKey") int datasetKey, @Param("nidx") int nidx, @Param("page") Page page);
 
-  List<NameUsageBase> listByNamesIndexIDGlobal(@Param("nidx") int nidx);
+  List<NameUsageBase> listByNamesIndexIDGlobal(@Param("nidx") int nidx, @Param("page") Page page);
 
   List<NameUsageBase> listByName(@Param("datasetKey") int datasetKey,
                          @Param("name") String sciname,
-                         @Nullable @Param("rank") Rank rank);
+                         @Nullable @Param("rank") Rank rank, @Param("page") Page page);
 
   /**
    * Lists all children (taxon & synonym) of a given parent

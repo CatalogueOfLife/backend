@@ -187,6 +187,7 @@
     FROM <include refid="FROM"/>
     WHERE u.name_id=#{nameId}
     ORDER BY u.id
+    <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="listByNamesIndexID" resultMap="usageResultMap">
@@ -197,6 +198,7 @@
       JOIN names_index ni ON ni.id=nm.index_id
     WHERE ni.id=#{nidx} OR ni.canonical_id=#{nidx}
     ORDER BY u.id
+    <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="listByNamesIndexIDGlobal" resultMap="usageResultMap">
@@ -210,6 +212,7 @@
       JOIN names_index ni ON ni.id=nm.index_id
     WHERE ni.id=#{nidx} OR ni.canonical_id=#{nidx}
     ORDER BY u.id
+    <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="listByName" resultMap="usageResultMap">
@@ -221,6 +224,7 @@
       AND n.rank=#{rank}::rank
     </if>
     ORDER BY u.id
+    <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="children" resultMap="usageResultMap">
