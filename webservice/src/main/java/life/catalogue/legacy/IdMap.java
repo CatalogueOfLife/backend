@@ -79,8 +79,16 @@ public class IdMap implements Managed {
     return map.get(id);
   }
 
+  public int size() {
+    return map.size();
+  }
+
+  public boolean isEmpty() {
+    return map.isEmpty();
+  }
+
   @Override
-  public void start() throws Exception {
+  public void start() throws IOException {
     map = mapDb.hashMap("legacy")
       .keySerializer(Serializer.STRING)
       .valueSerializer(Serializer.STRING)
@@ -92,7 +100,7 @@ public class IdMap implements Managed {
   }
 
   @Override
-  public void stop() throws Exception {
+  public void stop() {
     try {
       if (mapDb != null && !mapDb.isClosed()) {
         mapDb.close();
