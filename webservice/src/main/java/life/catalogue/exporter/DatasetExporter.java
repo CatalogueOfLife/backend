@@ -1,9 +1,14 @@
 package life.catalogue.exporter;
 
+import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.common.concurrent.DatasetBlockingJob;
 import life.catalogue.common.concurrent.JobPriority;
 import life.catalogue.common.io.CompressionUtil;
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.DatasetPartitionMapper;
 import org.apache.commons.io.FileUtils;
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +22,7 @@ abstract class DatasetExporter extends DatasetBlockingJob {
 
   protected final SqlSessionFactory factory;
   protected final ExportRequest req;
+  protected final Dataset dataset;
   protected File archive;
   protected File tmpDir;
 
@@ -26,6 +32,15 @@ abstract class DatasetExporter extends DatasetBlockingJob {
     this.factory = factory;
     this.archive = archive(exportDir, getKey());
     this.tmpDir = new File(exportDir, getKey().toString());
+    try (SqlSession session = factory.openSession(false)) {
+      dataset = session.getMapper(DatasetMapper.class).get(datasetKey);
+      if (dataset == null || dataset.getDeleted() != null) {
+        throw new NotFoundException("Dataset "+datasetKey+" does not exist");
+      }
+      if (!session.getMapper(DatasetPartitionMapper.class).exists(datasetKey)) {
+        throw new IllegalArgumentException("Dataset "+datasetKey+" does not have any data");
+      }
+    }
     LOG.info("Created {} job {} for dataset {} to {}", getClass().getSimpleName(), getKey(), datasetKey, archive);
   }
 

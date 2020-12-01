@@ -53,7 +53,7 @@ public class PgImportIT extends PgImportITBase {
     Name n1006 = ndao.get(key(dataset.getKey(), "1006"));
     assertEquals("Leontodon taraxacoides", n1006.getScientificName());
     
-    List<NameRelation> rels = ndao.relations(dataset.getKey(), n1006.getId());
+    List<NameRelation> rels = ndao.relations(n1006);
     assertEquals(1, rels.size());
     
     Name bas = ndao.getBasionym(key(dataset.getKey(), n1006.getId()));
@@ -355,16 +355,16 @@ public class PgImportIT extends PgImportITBase {
         }
       }
       
-      NameRelationMapper actMapper = session.getMapper(NameRelationMapper.class);
+      NameRelationMapper relMapper = session.getMapper(NameRelationMapper.class);
       // Poa annua has not explicitly declared a basionym
-      assertTrue(actMapper.list(dataset.getKey(), annua.getName().getId()).isEmpty());
+      assertTrue(relMapper.listByName(annua.getName()).isEmpty());
       
       Name reptans1 = ndao.get(key(dataset.getKey(), "7"));
       Name reptans2 = ndao.get(key(dataset.getKey(), "8"));
-      assertEquals(1, actMapper.list(dataset.getKey(), reptans1.getId()).size());
-      assertEquals(1, actMapper.list(dataset.getKey(), reptans2.getId()).size());
+      assertEquals(1, relMapper.listByName(reptans1).size());
+      assertEquals(1, relMapper.listByName(reptans2).size());
       
-      NameRelation act = actMapper.list(dataset.getKey(), reptans1.getId()).get(0);
+      NameRelation act = relMapper.listByName(reptans1).get(0);
       assertEquals(NomRelType.BASIONYM, act.getType());
       assertEquals(reptans1.getId(), act.getNameId());
       assertEquals(reptans2.getId(), act.getRelatedNameId());

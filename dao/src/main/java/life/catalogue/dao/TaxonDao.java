@@ -202,7 +202,8 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
 
     if (loadNameRelations) {
       NameRelationMapper mapper = session.getMapper(NameRelationMapper.class);
-      info.setNameRelations(mapper.list(taxon.getDatasetKey(), taxon.getName().getId()));
+      info.setNameRelations(mapper.listByName(taxon.getName()));
+      info.getNameRelations().addAll(mapper.listByRelatedName(taxon.getName()));
       info.getNameRelations().forEach(r -> {
         refIds.add(r.getReferenceId());
         nameIds.add(r.getNameId());
@@ -212,7 +213,8 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
 
     if (loadConceptRelations) {
       TaxonConceptRelationMapper mapper = session.getMapper(TaxonConceptRelationMapper.class);
-      info.setConceptRelations(mapper.list(taxon.getDatasetKey(), taxon.getName().getId()));
+      info.setConceptRelations(mapper.listByTaxon(taxon));
+      info.getConceptRelations().addAll(mapper.listByRelatedTaxon(taxon));
       info.getConceptRelations().forEach(r -> {
         refIds.add(r.getReferenceId());
         taxonIds.add(r.getTaxonId());
@@ -222,7 +224,8 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
 
     if (loadSpeciesInteractions) {
       SpeciesInteractionMapper mapper = session.getMapper(SpeciesInteractionMapper.class);
-      info.setSpeciesInteractions(mapper.list(taxon.getDatasetKey(), taxon.getName().getId()));
+      info.setSpeciesInteractions(mapper.listByTaxon(taxon));
+      info.getSpeciesInteractions().addAll(mapper.listByRelatedTaxon(taxon));
       info.getSpeciesInteractions().forEach(r -> {
         refIds.add(r.getReferenceId());
         taxonIds.add(r.getTaxonId());

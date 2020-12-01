@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.vocab.NomRelType;
 
 import java.util.Objects;
@@ -16,6 +17,11 @@ public class NameRelation extends DatasetScopedEntity<Integer> implements Sector
   private String relatedNameId;
   private String referenceId;
   private String remarks;
+
+  @JsonIgnore
+  public DSID<String> getNameKey() {
+    return DSID.of(datasetKey, nameId);
+  }
 
   @Override
   public Integer getSectorKey() {

@@ -1,10 +1,7 @@
 package life.catalogue.exporter;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.EntityType;
-import life.catalogue.api.vocab.Environment;
-import life.catalogue.api.vocab.NomRelType;
-import life.catalogue.api.vocab.NomStatus;
+import life.catalogue.api.vocab.*;
 import life.catalogue.common.io.TermWriter;
 import life.catalogue.db.mapper.NameRelationMapper;
 import org.apache.ibatis.session.SqlSession;
@@ -39,6 +36,11 @@ public class DwcaExporter extends ArchiveExporter {
   @Override
   protected void init(SqlSession session) {
     nameRelMapper = session.getMapper(NameRelationMapper.class);
+  }
+
+  @Override
+  void exportMetadata(Dataset d) {
+    //TODO: EML
   }
 
   private void additionalWriter(Term[] terms) {
@@ -80,7 +82,16 @@ public class DwcaExporter extends ArchiveExporter {
           DcTerm.references
         };
       case VERNACULAR:
-        return new Term[]{GbifTerm.VernacularName, DwcTerm.taxonID, DcTerm.language, DwcTerm.vernacularName};
+        return new Term[]{GbifTerm.VernacularName, DwcTerm.taxonID,
+          DcTerm.language,
+          DwcTerm.vernacularName};
+      case DISTRIBUTION:
+        return new Term[]{GbifTerm.Distribution, DwcTerm.taxonID,
+          DwcTerm.occurrenceStatus,
+          DwcTerm.locationID,
+          DwcTerm.locality,
+          DwcTerm.countryCode,
+          DcTerm.source};
     }
     return null;
   }
@@ -128,7 +139,7 @@ public class DwcaExporter extends ArchiveExporter {
         t.setExtinct(null); // this removes the dagger symbol from label below !!!
       }
     }
-    for (NameRelation rel : nameRelMapper.listByType(datasetKey, n.getId(), NomRelType.BASIONYM)) {
+    for (NameRelation rel : nameRelMapper.listByType(n, NomRelType.BASIONYM)) {
       writer.set(DwcTerm.originalNameUsageID, rel.getRelatedNameId());
     }
   }
@@ -137,6 +148,21 @@ public class DwcaExporter extends ArchiveExporter {
     writer.set(DwcTerm.taxonID, taxonID);
     writer.set(DcTerm.language, vn.getLanguage());
     writer.set(DwcTerm.vernacularName, vn.getName());
+  }
+
+  void write(String taxonID, Distribution d) {
+    writer.set(DwcTerm.taxonID, taxonID);
+    writer.set(DwcTerm.occurrenceStatus, d.getStatus());
+    if (d.getGazetteer() == Gazetteer.TEXT) {
+        writer.set(DwcTerm.locality, d.getArea());
+    } else if (d.getGazetteer() == Gazetteer.ISO) {
+        writer.set(DwcTerm.countryCode, d.getArea());
+    } else {
+        writer.set(DwcTerm.locationID, d.getGazetteer().locationID(d.getArea()));
+    }
+    if (d.getReferenceId() != null) {
+      writer.set(DcTerm.source, refCache.getUnchecked(d.getReferenceId()));
+    }
   }
 
   @Override

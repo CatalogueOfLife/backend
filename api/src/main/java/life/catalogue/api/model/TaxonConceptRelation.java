@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.vocab.TaxonConceptRelType;
 
 import java.util.Objects;
@@ -16,6 +17,11 @@ public class TaxonConceptRelation extends DatasetScopedEntity<Integer> implement
   private String relatedTaxonId;
   private String referenceId;
   private String remarks;
+
+  @JsonIgnore
+  public DSID<String> getTaxonKey() {
+    return DSID.of(datasetKey, taxonId);
+  }
 
   @Override
   public Integer getSectorKey() {

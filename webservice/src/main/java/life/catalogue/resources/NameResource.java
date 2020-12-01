@@ -5,7 +5,6 @@ import io.dropwizard.jersey.jsr310.LocalDateTimeParam;
 import life.catalogue.api.model.*;
 import life.catalogue.dao.NameDao;
 import life.catalogue.db.mapper.NameMapper;
-import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.TypeMaterialMapper;
 import life.catalogue.dw.auth.Roles;
 import org.apache.ibatis.session.SqlSession;
@@ -40,10 +39,8 @@ public class NameResource extends AbstractDatasetScopedResource<String, Name, Pa
 
   @GET
   @Path("{id}/relations")
-  public List<NameRelation> getRelations(@PathParam("key") int datasetKey,
-      @PathParam("id") String id, @Context SqlSession session) {
-    NameRelationMapper mapper = session.getMapper(NameRelationMapper.class);
-    return mapper.list(datasetKey, id);
+  public List<NameRelation> getRelations(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    return dao.relations(DSID.of(datasetKey, id));
   }
 
   @GET

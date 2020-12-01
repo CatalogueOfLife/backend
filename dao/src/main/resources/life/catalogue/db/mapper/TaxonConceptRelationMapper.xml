@@ -57,11 +57,19 @@
     <id property="id" column="id"/>
   </resultMap>
 
-  <select id="list" resultMap="tcRelResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+  <select id="listByTaxon" resultMap="tcRelResultMap">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE tc.taxon_id = #{taxonId} OR tc.related_taxon_id = #{taxonId}
+    WHERE tc.taxon_id = #{key.id}
+    ORDER BY tc.id
+  </select>
+
+  <select id="listByRelatedTaxon" resultMap="tcRelResultMap">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE tc.related_taxon_id = #{key.id}
     ORDER BY tc.id
   </select>
 

@@ -4,13 +4,16 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import life.catalogue.api.model.*;
+import life.catalogue.api.search.EstimateSearchRequest;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.common.func.ThrowingBiConsumer;
+import life.catalogue.common.func.ThrowingConsumer;
 import life.catalogue.common.io.TermWriter;
-import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.ReferenceMapper;
-import life.catalogue.db.mapper.TaxonExtensionMapper;
-import life.catalogue.db.mapper.VernacularNameMapper;
+import life.catalogue.db.DatasetProcessable;
+import life.catalogue.db.NameProcessable;
+import life.catalogue.db.TaxonProcessable;
+import life.catalogue.db.mapper.*;
+import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.dwc.terms.Term;
@@ -27,12 +30,14 @@ import java.util.Set;
 abstract class ArchiveExporter extends DatasetExporter {
   private static final Logger LOG = LoggerFactory.getLogger(ArchiveExporter.class);
 
-  private final int maxUsageIDs = 10000;
-
+  protected boolean fullDataset;
+  protected final Set<String> nameIDs = new HashSet<>();
   protected final Set<String> taxonIDs = new HashSet<>();
+  protected final Set<String> refIDs = new HashSet<>();
   protected final LoadingCache<String, String> refCache;
   protected SqlSession session;
   protected TermWriter writer;
+  protected final DSID<String> key = DSID.of(datasetKey, "");
 
   ArchiveExporter(ExportRequest req, SqlSessionFactory factory, File exportDir) {
     super(req, factory, exportDir);
@@ -53,13 +58,17 @@ abstract class ArchiveExporter extends DatasetExporter {
 
   @Override
   public void export() throws Exception {
+    // do we have a full dataset export request?
+    fullDataset = req.isSynonyms() && req.getExclusions().isEmpty() && req.getTaxonID()==null && req.getMinRank()==null;
     try (SqlSession session = factory.openSession(false)) {
       this.session = session;
       init(session);
       exportCore();
-      exportExtensions();
+      exportNameRels();
+      exportTaxonRels();
+      exportReferences();
       closeWriter();
-      exportMetadata();
+      exportMetadata(dataset);
     }
   }
 
@@ -73,58 +82,195 @@ abstract class ArchiveExporter extends DatasetExporter {
     }
     try (SqlSession session = factory.openSession()) {
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-      num.processTree(datasetKey, null, req.getTaxonID(), req.getExclusions(), req.getMinRank(), req.isSynonyms(), true).forEach(u -> {
-        if (u.isTaxon() && taxonIDs.size() < maxUsageIDs) {
-          taxonIDs.add(u.getId());
-        }
-        try {
-          write(u);
-          writer.next();
-        } catch (final IOException e) {
-          throw new RuntimeException(e);
-        }
-      });
+      Cursor<NameUsageBase> cursor;
+      if (fullDataset) {
+        cursor = num.processDataset(datasetKey, null, null);
+      } else {
+        cursor = num.processTree(datasetKey, null, req.getTaxonID(), req.getExclusions(), req.getMinRank(), req.isSynonyms(), true);
+      }
+      cursor.forEach(this::consumeUsage);
+      taxonIDs.remove(null); // can happen
+      nameIDs.remove(null); // can happen
     }
   }
 
-  private void exportExtensions() throws IOException {
+  private void consumeUsage(NameUsageBase u){
+    if (!fullDataset && u.isTaxon()) {
+      taxonIDs.add(u.getId());
+      nameIDs.add(u.getName().getId());
+      refIDs.add(u.getName().getPublishedInId());
+      refIDs.add(u.getAccordingToId());
+      refIDs.addAll(u.getReferenceIds());
+    }
+    try {
+      write(u);
+      writer.next();
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void exportNameRels() throws IOException {
+    new NameRelExporter<NameRelation, NameRelationMapper>()
+      .export(EntityType.NAME_RELATION, NameRelationMapper.class, this::write);
+    new NameRelExporter<TypeMaterial, TypeMaterialMapper>()
+      .export(EntityType.TYPE_MATERIAL, TypeMaterialMapper.class, this::write);
+
+  }
+
+  private void exportTaxonRels() throws IOException {
     exportTaxonExtension(EntityType.VERNACULAR, VernacularNameMapper.class, this::write);
+    exportTaxonExtension(EntityType.DISTRIBUTION, DistributionMapper.class, this::write);
+    exportTaxonExtension(EntityType.MEDIA, MediaMapper.class, this::write);
+    exportEstimates();
+    new TaxonRelExporter<SpeciesInteraction, SpeciesInteractionMapper>()
+      .export(EntityType.SPECIES_INTERACTION, SpeciesInteractionMapper.class, this::write);
+    new TaxonRelExporter<TaxonConceptRelation, TaxonConceptRelationMapper>()
+      .export(EntityType.TAXON_CONCEPT_RELATION, TaxonConceptRelationMapper.class, this::write);
+
   }
 
-  private boolean individually(){
-    return taxonIDs.size() < maxUsageIDs;
-  }
-
-  private <T extends SectorScopedEntity<Integer>> void exportTaxonExtension(EntityType entity, Class<? extends TaxonExtensionMapper<T>> mapperClass, ThrowingBiConsumer<String, T, IOException> writer
-  ) throws IOException {
-    if (newDataFile(define(entity))) {
+  private void exportReferences() throws IOException {
+    if (newDataFile(define(EntityType.REFERENCE))) {
       try (SqlSession session = factory.openSession()) {
-        TaxonExtensionMapper<T> exm = session.getMapper(mapperClass);
-        if (individually()) {
-          var key = DSID.of(datasetKey, "");
-          for (String id : taxonIDs) {
-            for (T x : exm.listByTaxon(key.id(id))) {
-              writer.accept(id, x);
-              this.writer.next();
-            }
-          }
-        } else {
-          exm.processDataset(datasetKey).forEach(x -> {
+        ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
+        if (fullDataset) {
+          rm.processDataset(datasetKey).forEach(r -> {
             try {
-              writer.accept(x.getTaxonID(), x.getObj());
-              this.writer.next();
+              write(r);
+              writer.next();
             } catch (final IOException e) {
               throw new RuntimeException(e);
             }
           });
+        } else {
+          refIDs.remove(null); // can happen
+          for (String id : refIDs) {
+            write(rm.get(key.id(id)));
+            writer.next();
+          }
         }
       }
     }
   }
 
-  private void exportMetadata() {
-
+  private <T extends SectorScopedEntity<Integer> & Referenced> void exportTaxonExtension(EntityType entity, Class<? extends TaxonExtensionMapper<T>> mapperClass, ThrowingBiConsumer<String, T, IOException> consumer) throws IOException {
+    if (newDataFile(define(entity))) {
+      try (SqlSession session = factory.openSession()) {
+        TaxonExtensionMapper<T> exm = session.getMapper(mapperClass);
+        if (fullDataset) {
+          exm.processDataset(datasetKey).forEach(x -> {
+            try {
+              trackRefId(x.getObj());
+              consumer.accept(x.getTaxonID(), x.getObj());
+              this.writer.next();
+            } catch (final IOException e) {
+              throw new RuntimeException(e);
+            }
+          });
+        } else {
+          for (String id : taxonIDs) {
+            for (T x : exm.listByTaxon(key.id(id))) {
+              trackRefId(x);
+              consumer.accept(id, x);
+              this.writer.next();
+            }
+          }
+        }
+      }
+    }
   }
+
+  private class NameRelExporter<T extends DatasetScopedEntity & Referenced, M extends NameProcessable<T> & DatasetProcessable<T>> {
+    void export(EntityType entity, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException {
+      if (newDataFile(define(entity))) {
+        try (SqlSession session = factory.openSession()) {
+          M mapper = session.getMapper(mapperClass);
+          if (fullDataset) {
+            mapper.processDataset(datasetKey).forEach(x -> {
+              try {
+                trackRefId(x);
+                consumer.accept(x);
+                writer.next();
+              } catch (final IOException e) {
+                throw new RuntimeException(e);
+              }
+            });
+          } else {
+            for (String id : nameIDs) {
+              for (T x : mapper.listByName(key.id(id))) {
+                trackRefId(x);
+                consumer.accept(x);
+                writer.next();
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private class TaxonRelExporter<T extends DatasetScopedEntity<Integer> & Referenced, M extends TaxonProcessable<T> & DatasetProcessable<T>> {
+    void export(EntityType entity, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException {
+      if (newDataFile(define(entity))) {
+        try (SqlSession session = factory.openSession()) {
+          M mapper = session.getMapper(mapperClass);
+          if (fullDataset) {
+            mapper.processDataset(datasetKey).forEach(x -> {
+              try {
+                trackRefId(x);
+                consumer.accept(x);
+                writer.next();
+              } catch (final IOException e) {
+                throw new RuntimeException(e);
+              }
+            });
+          } else {
+            for (String id : taxonIDs) {
+              for (T x : mapper.listByTaxon(key.id(id))) {
+                trackRefId(x);
+                consumer.accept(x);
+                writer.next();
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private void exportEstimates() throws IOException {
+    if (newDataFile(define(EntityType.ESTIMATE))) {
+      try (SqlSession session = factory.openSession()) {
+        EstimateMapper mapper = session.getMapper(EstimateMapper.class);
+        if (fullDataset) {
+          mapper.processDataset(datasetKey).forEach(x -> {
+            try {
+              trackRefId(x);
+              write(x);
+              writer.next();
+            } catch (final IOException e) {
+              throw new RuntimeException(e);
+            }
+          });
+        } else {
+          Page page = new Page(0,100);
+          EstimateSearchRequest req = new EstimateSearchRequest();
+          req.setDatasetKey(datasetKey);
+          for (String id : taxonIDs) {
+            req.setId(id);
+            for (SpeciesEstimate x : mapper.search(req, page)) {
+              trackRefId(x);
+              write(x);
+              writer.next();
+            }
+          }
+        }
+      }
+    }
+  }
+
+  abstract void exportMetadata(Dataset d);
 
   private void closeWriter() throws IOException {
     if (writer != null) {
@@ -152,8 +298,41 @@ abstract class ArchiveExporter extends DatasetExporter {
    */
   abstract Term[] define(EntityType entity);
 
-  abstract void write(NameUsageBase u);
+  void write(NameUsageBase u){
 
-  abstract void write(String taxonID, VernacularName vn);
+  }
 
+  void write(Reference r){
+
+  }
+
+  void write(NameRelation rel) {
+  }
+
+  void write(TypeMaterial tm) {
+  }
+
+  void write(TaxonConceptRelation rel) {
+  }
+
+  void write(SpeciesInteraction rel) {
+  }
+
+  void write(String taxonID, VernacularName vn) {
+  }
+
+  void write(String taxonID, Distribution d) {
+  }
+
+  void write(String taxonID, Media m) {
+  }
+
+  void write(SpeciesEstimate e) {
+  }
+
+  private void trackRefId(Referenced referenced) {
+    if (!fullDataset) {
+      refIDs.add(referenced.getReferenceId());
+    }
+  }
 }

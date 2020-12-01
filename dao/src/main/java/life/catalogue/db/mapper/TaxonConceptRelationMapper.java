@@ -1,11 +1,9 @@
 package life.catalogue.db.mapper;
 
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.TaxonConceptRelation;
 import life.catalogue.api.vocab.TaxonConceptRelType;
-import life.catalogue.db.CopyDataset;
-import life.catalogue.db.Create;
-import life.catalogue.db.DatasetProcessable;
-import life.catalogue.db.SectorProcessable;
+import life.catalogue.db.*;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -13,14 +11,14 @@ import java.util.List;
 public interface TaxonConceptRelationMapper extends Create<TaxonConceptRelation>,
                                                     DatasetProcessable<TaxonConceptRelation>,
                                                     SectorProcessable<TaxonConceptRelation>,
+                                                    TaxonProcessable<TaxonConceptRelation>,
                                                     CopyDataset {
   
   /**
-   * Returns the list of taxon concept relations for a single taxon,
-   * regardless which side of the relation the taxon is on.
+   * Returns the list of taxon concept relations for a single taxon on the related side of the relation.
    */
-  List<TaxonConceptRelation> list(@Param("datasetKey") int datasetKey, @Param("taxonId") String taxonId);
-  
+  List<TaxonConceptRelation> listByRelatedTaxon(@Param("key") DSID<String> key);
+
   /**
    * Returns the list of related taxon concepts of a given type for a single taxon on the taxonId side of the relation only.
    */

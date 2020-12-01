@@ -33,7 +33,7 @@ public class SpeciesInteractionMapperTest extends MapperTestBase<SpeciesInteract
     mapper.create(in);
     assertNotNull(in.getKey());
     commit();
-    List<SpeciesInteraction> outs = mapper.list(in.getDatasetKey(), in.getTaxonId());
+    List<SpeciesInteraction> outs = mapper.listByTaxon(in.getTaxonKey());
     assertEquals(1, outs.size());
     assertEquals(in, nullifyDate(outs.get(0)));
   }

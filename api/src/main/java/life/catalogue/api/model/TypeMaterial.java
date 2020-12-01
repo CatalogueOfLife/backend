@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.TypeStatus;
 
@@ -11,219 +12,224 @@ import java.util.Objects;
  */
 public class TypeMaterial extends DatasetScopedEntity<String> implements VerbatimEntity, SectorEntity, Referenced {
 
-    private Integer sectorKey;
-    private Integer verbatimKey;
+  private Integer sectorKey;
+  private Integer verbatimKey;
 
-    /**
-     * The citation generated from the CSL data or the verbatim citation if it could not be parsed
-     * into a structured CSLData object.
-     */
-    private String nameId;
+  /**
+   * The citation generated from the CSL data or the verbatim citation if it could not be parsed
+   * into a structured CSLData object.
+   */
+  private String nameId;
 
-    /**
-     * Material citation of the type material, i.e. type specimen.
-     * The citation is ideally given in the verbatim form as it was used in the original publication of the name or the subsequent designation.
-     * Type material should only be associated with the original name, not with a recombination.
-     */
-    private String citation;
+  /**
+   * Material citation of the type material, i.e. type specimen.
+   * The citation is ideally given in the verbatim form as it was used in the original publication of the name or the subsequent designation.
+   * Type material should only be associated with the original name, not with a recombination.
+   */
+  private String citation;
 
-    /**
-     * The status of the type material, e.g. holotype
-     * Type status should only be associated with the original name, not with a recombination.
-     */
-    private TypeStatus status;
+  /**
+   * The status of the type material, e.g. holotype
+   * Type status should only be associated with the original name, not with a recombination.
+   */
+  private TypeStatus status;
 
-    /**
-     * A referenceID pointing to the Reference table indicating the publication of the type designation.
-     * Most often this is equivalent to the original publishedInID, but for subsequent designations the later reference can be cited.
-     */
-    private String referenceId;
+  /**
+   * A referenceID pointing to the Reference table indicating the publication of the type designation.
+   * Most often this is equivalent to the original publishedInID, but for subsequent designations the later reference can be cited.
+   */
+  private String referenceId;
 
-    private URI link;
+  private URI link;
 
-    private String locality;
+  private String locality;
 
-    private Country country;
+  private Country country;
 
-    /**
-     * WGS84
-     */
-    private Double latitude;
+  /**
+   * WGS84
+   */
+  private Double latitude;
 
-    /**
-     * WGS84
-     */
-    private Double longitude;
+  /**
+   * WGS84
+   */
+  private Double longitude;
 
-    /**
-     * In meters above mean sea level.
-     */
-    private Integer altitude;
-    private String host;
-    private String date;
-    private String collector;
+  /**
+   * In meters above mean sea level.
+   */
+  private Integer altitude;
+  private String host;
+  private String date;
+  private String collector;
 
-    /**
-     * Any informal note about the type.
-     */
-    private String remarks;
+  /**
+   * Any informal note about the type.
+   */
+  private String remarks;
 
-    public Integer getSectorKey() {
-        return sectorKey;
-    }
+  @JsonIgnore
+  public DSID<String> getNameKey() {
+    return DSID.of(getDatasetKey(), nameId);
+  }
 
-    public void setSectorKey(Integer sectorKey) {
-        this.sectorKey = sectorKey;
-    }
+  public Integer getSectorKey() {
+    return sectorKey;
+  }
 
-    @Override
-    public Integer getVerbatimKey() {
-        return verbatimKey;
-    }
+  public void setSectorKey(Integer sectorKey) {
+    this.sectorKey = sectorKey;
+  }
 
-    @Override
-    public void setVerbatimKey(Integer verbatimKey) {
-        this.verbatimKey = verbatimKey;
-    }
+  @Override
+  public Integer getVerbatimKey() {
+    return verbatimKey;
+  }
 
-    public String getNameId() {
-        return nameId;
-    }
+  @Override
+  public void setVerbatimKey(Integer verbatimKey) {
+    this.verbatimKey = verbatimKey;
+  }
 
-    public void setNameId(String nameId) {
-        this.nameId = nameId;
-    }
+  public String getNameId() {
+    return nameId;
+  }
 
-    public String getCitation() {
-        return citation;
-    }
+  public void setNameId(String nameId) {
+    this.nameId = nameId;
+  }
 
-    public void setCitation(String citation) {
-        this.citation = citation;
-    }
+  public String getCitation() {
+    return citation;
+  }
 
-    public TypeStatus getStatus() {
-        return status;
-    }
+  public void setCitation(String citation) {
+    this.citation = citation;
+  }
 
-    public void setStatus(TypeStatus status) {
-        this.status = status;
-    }
+  public TypeStatus getStatus() {
+    return status;
+  }
 
-    public String getLocality() {
-        return locality;
-    }
+  public void setStatus(TypeStatus status) {
+    this.status = status;
+  }
 
-    public void setLocality(String locality) {
-        this.locality = locality;
-    }
+  public String getLocality() {
+    return locality;
+  }
 
-    public Country getCountry() {
-        return country;
-    }
+  public void setLocality(String locality) {
+    this.locality = locality;
+  }
 
-    public void setCountry(Country country) {
-        this.country = country;
-    }
+  public Country getCountry() {
+    return country;
+  }
 
-    public Double getLatitude() {
-        return latitude;
-    }
+  public void setCountry(Country country) {
+    this.country = country;
+  }
 
-    public void setLatitude(Double latitude) {
-        this.latitude = latitude;
-    }
+  public Double getLatitude() {
+    return latitude;
+  }
 
-    public Double getLongitude() {
-        return longitude;
-    }
+  public void setLatitude(Double latitude) {
+    this.latitude = latitude;
+  }
 
-    public void setLongitude(Double longitude) {
-        this.longitude = longitude;
-    }
+  public Double getLongitude() {
+    return longitude;
+  }
 
-    public Integer getAltitude() {
-        return altitude;
-    }
+  public void setLongitude(Double longitude) {
+    this.longitude = longitude;
+  }
 
-    public void setAltitude(Integer altitude) {
-        this.altitude = altitude;
-    }
+  public Integer getAltitude() {
+    return altitude;
+  }
 
-    public String getHost() {
-        return host;
-    }
+  public void setAltitude(Integer altitude) {
+    this.altitude = altitude;
+  }
 
-    public void setHost(String host) {
-        this.host = host;
-    }
+  public String getHost() {
+    return host;
+  }
 
-    public String getDate() {
-        return date;
-    }
+  public void setHost(String host) {
+    this.host = host;
+  }
 
-    public void setDate(String date) {
-        this.date = date;
-    }
+  public String getDate() {
+    return date;
+  }
 
-    public String getCollector() {
-        return collector;
-    }
+  public void setDate(String date) {
+    this.date = date;
+  }
 
-    public void setCollector(String collector) {
-        this.collector = collector;
-    }
+  public String getCollector() {
+    return collector;
+  }
 
-    public String getReferenceId() {
-        return referenceId;
-    }
+  public void setCollector(String collector) {
+    this.collector = collector;
+  }
 
-    public void setReferenceId(String referenceID) {
-        this.referenceId = referenceID;
-    }
+  public String getReferenceId() {
+    return referenceId;
+  }
 
-    public URI getLink() {
-        return link;
-    }
+  public void setReferenceId(String referenceID) {
+    this.referenceId = referenceID;
+  }
 
-    public void setLink(URI link) {
-        this.link = link;
-    }
+  public URI getLink() {
+    return link;
+  }
 
-    public String getRemarks() {
-        return remarks;
-    }
+  public void setLink(URI link) {
+    this.link = link;
+  }
 
-    public void setRemarks(String remarks) {
-        this.remarks = remarks;
-    }
+  public String getRemarks() {
+    return remarks;
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        TypeMaterial that = (TypeMaterial) o;
-        return Objects.equals(sectorKey, that.sectorKey) &&
-            Objects.equals(verbatimKey, that.verbatimKey) &&
-            Objects.equals(nameId, that.nameId) &&
-            Objects.equals(citation, that.citation) &&
-            status == that.status &&
-            Objects.equals(referenceId, that.referenceId) &&
-            Objects.equals(link, that.link) &&
-            Objects.equals(locality, that.locality) &&
-            country == that.country &&
-            Objects.equals(latitude, that.latitude) &&
-            Objects.equals(longitude, that.longitude) &&
-            Objects.equals(altitude, that.altitude) &&
-            Objects.equals(host, that.host) &&
-            Objects.equals(date, that.date) &&
-            Objects.equals(collector, that.collector) &&
-            Objects.equals(remarks, that.remarks);
-    }
+  public void setRemarks(String remarks) {
+    this.remarks = remarks;
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), sectorKey, verbatimKey, nameId, citation, status, referenceId, link, locality, country, latitude, longitude, altitude, host, date, collector, remarks);
-    }
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
+    TypeMaterial that = (TypeMaterial) o;
+    return Objects.equals(sectorKey, that.sectorKey) &&
+      Objects.equals(verbatimKey, that.verbatimKey) &&
+      Objects.equals(nameId, that.nameId) &&
+      Objects.equals(citation, that.citation) &&
+      status == that.status &&
+      Objects.equals(referenceId, that.referenceId) &&
+      Objects.equals(link, that.link) &&
+      Objects.equals(locality, that.locality) &&
+      country == that.country &&
+      Objects.equals(latitude, that.latitude) &&
+      Objects.equals(longitude, that.longitude) &&
+      Objects.equals(altitude, that.altitude) &&
+      Objects.equals(host, that.host) &&
+      Objects.equals(date, that.date) &&
+      Objects.equals(collector, that.collector) &&
+      Objects.equals(remarks, that.remarks);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, nameId, citation, status, referenceId, link, locality, country, latitude, longitude, altitude, host, date, collector, remarks);
+  }
 }

@@ -60,11 +60,19 @@
     <id property="id" column="id"/>
   </resultMap>
 
-  <select id="list" resultMap="speciesInteractionResultMap">
-    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+  <select id="listByTaxon" resultMap="speciesInteractionResultMap">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE si.taxon_id = #{taxonId} OR si.related_taxon_id = #{taxonId}
+    WHERE si.taxon_id = #{key.id}
+    ORDER BY si.id
+  </select>
+
+  <select id="listByRelatedTaxon" resultMap="speciesInteractionResultMap">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE si.related_taxon_id = #{key.id}
     ORDER BY si.id
   </select>
 

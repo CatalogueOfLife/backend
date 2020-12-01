@@ -272,8 +272,9 @@ public class SectorSync extends SectorRunnable {
       NameRelationMapper nrmWrite = batchSession.getMapper(NameRelationMapper.class);
       int counter = 0;
       IntSet relIds = new IntOpenHashSet();
+      var key = DSID.of(subjectDatasetKey, "");
       for (Map.Entry<String, String> n : nameIds.entrySet()) {
-        for (NameRelation nr : nrm.list(subjectDatasetKey, n.getKey())) {
+        for (NameRelation nr : nrm.listByName(key.id(n.getKey()))) {
           if (!relIds.contains((int)nr.getId())) {
             nr.setDatasetKey(sector.getDatasetKey());
             nr.setNameId(nameIds.get(nr.getNameId()));

@@ -37,7 +37,7 @@ public class NameRelationMapperTest extends MapperTestBase<NameRelationMapper> {
     nameRelationMapper.create(in);
     assertNotNull(in.getKey());
     commit();
-    List<NameRelation> outs = nameRelationMapper.list(in.getDatasetKey(), in.getNameId());
+    List<NameRelation> outs = nameRelationMapper.listByName(in.getNameKey());
     assertEquals(1, outs.size());
     assertEquals(in, nullifyDate(outs.get(0)));
   }
@@ -50,18 +50,19 @@ public class NameRelationMapperTest extends MapperTestBase<NameRelationMapper> {
   @Test
   public void testListByName() throws Exception {
     // NB We have one pre-inserted (apple.sql) NameAct record associated with NAME2 and 3
-    assertEquals(0, nameRelationMapper.list(NAME1.getDatasetKey(), NAME1.getId()).size());
-    assertEquals(1, nameRelationMapper.list(NAME2.getDatasetKey(), NAME2.getId()).size());
+    assertEquals(0, nameRelationMapper.listByName(NAME1).size());
+    assertEquals(1, nameRelationMapper.listByName(NAME2).size());
     
     nameRelationMapper.create(newNameRelation());
     nameRelationMapper.create(newNameRelation(NomRelType.BASED_ON));
     nameRelationMapper.create(newNameRelation(NomRelType.CONSERVED));
     commit();
-    List<NameRelation> nas = nameRelationMapper.list(NAME1.getDatasetKey(), NAME1.getId());
+    List<NameRelation> nas = nameRelationMapper.listByName(NAME1);
     
     assertEquals(3, nas.size());
     
-    assertEquals(4, nameRelationMapper.list(NAME2.getDatasetKey(), NAME2.getId()).size());
+    assertEquals(1, nameRelationMapper.listByName(NAME2).size());
+    assertEquals(3, nameRelationMapper.listByRelatedName(NAME2).size());
   }
   
   private static NameRelation newNameRelation(NomRelType type) {

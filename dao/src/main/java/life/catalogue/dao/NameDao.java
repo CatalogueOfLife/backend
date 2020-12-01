@@ -49,15 +49,15 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
     }
   }
 
-  public Name getBasionym(DSID<String> did) {
+  public Name getBasionym(DSID<String> key) {
     try (SqlSession session = factory.openSession(false)) {
       NameRelationMapper rm = session.getMapper(NameRelationMapper.class);
-      List<NameRelation> rels = rm.listByType(did.getDatasetKey(), did.getId(), NomRelType.BASIONYM);
+      List<NameRelation> rels = rm.listByType(key, NomRelType.BASIONYM);
       if (rels.size() == 1) {
         NameMapper nm = session.getMapper(NameMapper.class);
-        return nm.get(new DSIDValue<>(did.getDatasetKey(), rels.get(0).getRelatedNameId()));
+        return nm.get(new DSIDValue<>(key.getDatasetKey(), rels.get(0).getRelatedNameId()));
       } else if (rels.size() > 1) {
-        throw new IllegalStateException("Multiple basionyms found for name " + did.getId());
+        throw new IllegalStateException("Multiple basionyms found for name " + key.getId());
       }
     }
     return null;
@@ -97,20 +97,20 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
   /**
    * Lists all relations for a given name and type
    */
-  public List<NameRelation> relations(int datasetKey, String id, NomRelType type) {
+  public List<NameRelation> relations(DSID<String> key, NomRelType type) {
     try (SqlSession session = factory.openSession(false)) {
       NameRelationMapper rm = session.getMapper(NameRelationMapper.class);
-      return rm.listByType(datasetKey, id, type);
+      return rm.listByType(key, type);
     }
   }
   
   /**
    * Lists all relations for a given name
    */
-  public List<NameRelation> relations(int datasetKey, String id) {
+  public List<NameRelation> relations(DSID<String> key) {
     try (SqlSession session = factory.openSession(false)) {
       NameRelationMapper rm = session.getMapper(NameRelationMapper.class);
-      return rm.list(datasetKey, id);
+      return rm.listByName(key);
     }
   }
   

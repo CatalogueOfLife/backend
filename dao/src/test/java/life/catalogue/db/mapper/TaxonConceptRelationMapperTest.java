@@ -33,7 +33,7 @@ public class TaxonConceptRelationMapperTest  extends MapperTestBase<TaxonConcept
     mapper.create(in);
     assertNotNull(in.getKey());
     commit();
-    List<TaxonConceptRelation> outs = mapper.list(in.getDatasetKey(), in.getTaxonId());
+    List<TaxonConceptRelation> outs = mapper.listByTaxon(in.getTaxonKey());
     assertEquals(1, outs.size());
     assertEquals(in, nullifyDate(outs.get(0)));
   }

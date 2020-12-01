@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import life.catalogue.api.vocab.SpeciesInteractionType;
 
 import java.util.Objects;
@@ -17,6 +18,11 @@ public class SpeciesInteraction extends DatasetScopedEntity<Integer> implements 
   private String relatedTaxonScientificName;
   private String referenceId;
   private String remarks;
+
+  @JsonIgnore
+  public DSID<String> getTaxonKey() {
+    return DSID.of(datasetKey, taxonId);
+  }
 
   @Override
   public Integer getSectorKey() {
