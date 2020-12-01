@@ -48,6 +48,8 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
   // all parameters that contain dataset keys and which we check if they need to be rewritten
   private static final Set<String> QUERY_PARAMS  = Set.of("datasetkey", "cataloguekey", "projectkey", "subjectdatasetkey", "hassourcedataset", "releasedfrom");
   private static final Set<String> METHODS  = Set.of(HttpMethod.GET, HttpMethod.OPTIONS, HttpMethod.HEAD);
+  public static final String ORIGINAL_URI_PROPERTY = "originalRequestURI";
+  public static final String ORIGINAL_DATASET_KEY_PROPERTY = "originalDatasetKey";
 
   private SqlSessionFactory factory;
   private final LoadingCache<Integer, Integer> latestRelease = Caffeine.newBuilder()
@@ -96,6 +98,11 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     if (m.find()) {
       Integer rkey = releaseKeyFromMatch(m);
       builder.replacePath(m.replaceFirst("dataset/" + rkey));
+      if (m.group().endsWith("C")) {
+        req.setProperty(ORIGINAL_DATASET_KEY_PROPERTY, m.group(1)+"LRC");
+      } else {
+        req.setProperty(ORIGINAL_DATASET_KEY_PROPERTY, m.group(1)+"LR");
+      }
     }
 
     // change request
@@ -103,6 +110,7 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     if (!rewritten.equals(original)) {
       LOG.debug("Rewrite URI {} to {}", original, rewritten);
       req.setRequestUri( rewritten );
+      req.setProperty(ORIGINAL_URI_PROPERTY, original);
     }
   }
 

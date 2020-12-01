@@ -91,6 +91,7 @@ public class AdminResource {
 
   @GET
   @Path("/job/{key}")
+  @PermitAll
   public BackgroundJob job(@PathParam("key") UUID key) {
     return exec.getJob(key);
   }

@@ -49,6 +49,7 @@ import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.importer.ImportManager;
+import life.catalogue.legacy.IdMap;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.parser.NameParser;
@@ -278,6 +279,10 @@ public class WsServer extends Application<WsServerConfig> {
     importManager.setAssemblyCoordinator(assembly);
     assembly.setImportManager(importManager);
 
+    // legacy ID map
+    IdMap idMap = new IdMap(cfg.legacyIdMapFile, cfg.legacyIdMapURI);
+    env.lifecycle().manage(idMap);
+
     // resources
     j.register(new AdminResource(getSqlSessionFactory(), assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter,
       importManager, gbifSync, ni, executor));
@@ -293,7 +298,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new EstimateResource(edao));
     j.register(new ExportResource(exportManager));
     j.register(new ImporterResource(importManager, diDao));
-    j.register(new LegacyWebserviceResource(getSqlSessionFactory(), cfg));
+    j.register(new LegacyWebserviceResource(getSqlSessionFactory(), cfg, idMap));
     j.register(new MatchingResource(ni));
     j.register(new NameResource(ndao));
     j.register(new NameUsageResource(searchService, suggestService));

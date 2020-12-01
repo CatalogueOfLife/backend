@@ -2,13 +2,18 @@ package life.catalogue.resources;
 
 import io.swagger.v3.oas.annotations.Hidden;
 import life.catalogue.WsServerConfig;
+import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.id.ShortUuid;
 import life.catalogue.common.text.StringUtils;
+import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.legacy.LNameMapper;
 import life.catalogue.db.mapper.legacy.LVernacularMapper;
 import life.catalogue.db.mapper.legacy.model.LError;
 import life.catalogue.db.mapper.legacy.model.LName;
 import life.catalogue.db.mapper.legacy.model.LResponse;
+import life.catalogue.dw.jersey.filter.DatasetKeyRewriteFilter;
+import life.catalogue.legacy.IdMap;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -17,8 +22,11 @@ import org.slf4j.LoggerFactory;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
 import java.util.List;
 
 import static life.catalogue.api.util.ObjectUtils.coalesce;
@@ -35,15 +43,17 @@ public class LegacyWebserviceResource {
   static int DEFAULT_LIMIT_FULL = 10;
   static int MAX_LIMIT_TERSE = 1000;
   static int MAX_LIMIT_FULL = 100;
+  private final IdMap idMap;
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(LegacyWebserviceResource.class);
   private final SqlSessionFactory factory;
   private final String version;
 
-  public LegacyWebserviceResource(SqlSessionFactory factory, WsServerConfig cfg) {
+  public LegacyWebserviceResource(SqlSessionFactory factory, WsServerConfig cfg, IdMap idMap) {
     this.factory = factory;
     version = cfg.versionString();
+    this.idMap = idMap;
   }
 
   static int calcLimit(boolean full, Integer limitRequested){
@@ -80,6 +90,20 @@ public class LegacyWebserviceResource {
       LOG.error("Legacy API error (ID {})", key, e);
       return new LError(id, name, "Application error (ID "+key+")", version);
     }
+  }
+
+  @GET
+  @Path("{id}")
+  public Response redirect(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context ContainerRequestContext ctx) {
+    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey);
+    if (info.sourceKey != null && info.sourceKey == Datasets.COL && idMap.contains(id)) {
+      String dkey = (String) ctx.getProperty(DatasetKeyRewriteFilter.ORIGINAL_DATASET_KEY_PROPERTY);
+      if (dkey == null) dkey = String.valueOf(datasetKey);
+      return Response.status(Response.Status.MOVED_PERMANENTLY)
+        .location(URI.create("/dataset/" + dkey + "/nameusage/" + idMap.lookup(id)))
+        .build();
+    }
+    throw NotFoundException.notFound("COL Legacy ID", id);
   }
 
   /**

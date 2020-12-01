@@ -3,8 +3,7 @@ package life.catalogue.resources;
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Streams;
-import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.NameUsage;
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
@@ -129,15 +128,8 @@ public class NameUsageResource {
 
   @GET
   @Path("{id}")
-  public NameUsageWrapper getByID(@PathParam("key") int datasetKey, @PathParam("id") String id) {
-    NameUsageSearchRequest req = new NameUsageSearchRequest();
-    req.addFilter(NameUsageSearchParameter.DATASET_KEY, datasetKey);
-    req.addFilter(NameUsageSearchParameter.USAGE_ID, id);
-    ResultPage<NameUsageWrapper> results = searchService.search(req, new Page());
-    if (results.size()==1) {
-      return results.getResult().get(0);
-    }
-    throw NotFoundException.notFound(NameUsage.class, datasetKey, id);
+  public NameUsageBase get(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
+    return session.getMapper(NameUsageMapper.class).get(DSID.of(datasetKey, id));
   }
 
   @GET

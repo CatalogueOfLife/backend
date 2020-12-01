@@ -105,16 +105,27 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   public File exportDir = new File("/tmp");
 
   @NotNull
+  public String exportCss = "https://gitcdn.link/repo/CatalogueOfLife/backend/master/webservice/src/main/resources/exporter/html/catalogue.css";
+
+  @NotNull
   public URI downloadURI;
+
+  /**
+   * Optional URI to a TSV file that contains a mapping of legacy COL IDs to new name usage IDs.
+   * First column must be the legacy ID, second column the new name usage ID.
+   */
+  public URI legacyIdMapURI;
+
+  /**
+   * File to persist legacy id map on disk. If empty will use a volatile memory map.
+   */
+  public File legacyIdMapFile;
 
   /**
    * Maximum number of background job to run simultaneously
    */
   @Min(1)
   public int backgroundJobs = 1;
-
-  @NotNull
-  public String exportCss = "https://gitcdn.link/repo/CatalogueOfLife/backend/master/webservice/src/main/resources/exporter/html/catalogue.css";
 
   @Override
   @JsonIgnore
