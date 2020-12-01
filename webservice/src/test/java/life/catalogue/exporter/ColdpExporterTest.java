@@ -7,11 +7,11 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 
-public class DwcaExporterTest extends ExporterTest {
+public class ColdpExporterTest extends ExporterTest {
 
   @Test
   public void dataset() {
-    DwcaExporter exp = DwcaExporter.dataset(TestDataRule.APPLE.key, Users.TESTER, PgSetupRule.getSqlSessionFactory(), dir);
+    ColdpExporter exp = ColdpExporter.dataset(TestDataRule.APPLE.key, Users.TESTER, PgSetupRule.getSqlSessionFactory(), dir);
     exp.run();
 
     assertTrue(exp.getArchive().exists());

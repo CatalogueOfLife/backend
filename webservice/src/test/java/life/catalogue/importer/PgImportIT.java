@@ -362,7 +362,7 @@ public class PgImportIT extends PgImportITBase {
       Name reptans1 = ndao.get(key(dataset.getKey(), "7"));
       Name reptans2 = ndao.get(key(dataset.getKey(), "8"));
       assertEquals(1, relMapper.listByName(reptans1).size());
-      assertEquals(1, relMapper.listByName(reptans2).size());
+      assertEquals(1, relMapper.listByRelatedName(reptans2).size());
       
       NameRelation act = relMapper.listByName(reptans1).get(0);
       assertEquals(NomRelType.BASIONYM, act.getType());

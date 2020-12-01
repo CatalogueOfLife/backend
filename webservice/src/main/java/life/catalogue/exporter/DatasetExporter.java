@@ -1,5 +1,6 @@
 package life.catalogue.exporter;
 
+import com.google.common.base.Preconditions;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.common.concurrent.DatasetBlockingJob;
@@ -28,7 +29,7 @@ abstract class DatasetExporter extends DatasetBlockingJob {
 
   DatasetExporter(ExportRequest req, SqlSessionFactory factory, File exportDir) {
     super(req.getDatasetKey(), req.getUserKey(), JobPriority.LOW);
-    this.req = req;
+    this.req = Preconditions.checkNotNull(req);
     this.factory = factory;
     this.archive = archive(exportDir, getKey());
     this.tmpDir = new File(exportDir, getKey().toString());

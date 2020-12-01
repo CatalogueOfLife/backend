@@ -1,5 +1,6 @@
 package life.catalogue.exporter;
 
+import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.NomStatus;
@@ -54,7 +55,8 @@ public class ColdpExporter extends ArchiveExporter {
       case VERNACULAR:
         return new Term[]{GbifTerm.VernacularName, DwcTerm.taxonID, DcTerm.language, DwcTerm.vernacularName};
     }
-    return null;
+    //TODO: remove this - for development only
+    return new Term[]{ColdpTerm.Name, DwcTerm.taxonID, ColdpTerm.scientificName, DwcTerm.vernacularName};
   }
 
   void write(NameUsageBase u) {
