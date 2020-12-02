@@ -25,16 +25,16 @@ public class UUIDSerde {
    */
   public static UUID from(String x) {
     if (x == null) return null;
-    // ime_low               = 4*<hexOctet>
-    // time_mid               = 2*<hexOctet>
-    // time_high_and_version  = 2*<hexOctet>
-    // variant_and_sequence   = 2*<hexOctet>
-    // node                   = 6*<hexOctet>
     if (x.contains("-")) {
       return UUID.fromString(x);
     }
     // insert hyphens again
     Matcher m = UUID_PARSER.matcher(x);
+    // ime_low                = 4*<hexOctet>
+    // time_mid               = 2*<hexOctet>
+    // time_high_and_version  = 2*<hexOctet>
+    // variant_and_sequence   = 2*<hexOctet>
+    // node                   = 6*<hexOctet>
     if (m.find()) {
       return UUID.fromString(m.replaceFirst("$1-$2-$3-$4-$5"));
     }
