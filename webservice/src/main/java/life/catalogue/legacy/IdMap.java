@@ -57,6 +57,8 @@ public class IdMap implements Managed {
   }
 
   public static IdMap fromURI(File file, URI tsv) throws IOException {
+    if (tsv == null) return empty(file);
+    
     final URL url = tsv.toURL();
     return new IdMap(file, tsv.toString(), url::openStream);
   }
