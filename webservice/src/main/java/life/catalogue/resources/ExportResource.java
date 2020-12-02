@@ -1,12 +1,13 @@
 package life.catalogue.resources;
 
-import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.jackson.UUIDSerde;
 import life.catalogue.exporter.ExportManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.UUID;
@@ -26,14 +27,10 @@ public class ExportResource {
   @GET
   @Path("{id}")
   @Produces(MediaType.APPLICATION_OCTET_STREAM)
-  public Response getExport(@PathParam("id") String keyStr) {
-    UUID key = UUIDSerde.from(keyStr);
-    if (key != null) {
-      return Response.status(Response.Status.FOUND)
-        .location(exportManager.archiveURI(key))
-        .build();
-    }
-    throw NotFoundException.notFound("Export", keyStr);
+  public Response getExport(@PathParam("id") UUID key) {
+    return Response.status(Response.Status.FOUND)
+      .location(exportManager.archiveURI(key))
+      .build();
   }
 
 }

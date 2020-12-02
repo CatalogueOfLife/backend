@@ -41,7 +41,7 @@ public class UUIDSerde {
     throw new IllegalArgumentException("UUID string must have 32 chars or 36 if hyphens are used");
   }
 
-  static String to(UUID x) {
+  public static String to(UUID x) {
     if (x == null) return null;
     return x.toString().replaceAll("-", "");
   }
