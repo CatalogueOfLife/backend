@@ -1,9 +1,13 @@
 package life.catalogue.legacy;
 
 import io.dropwizard.lifecycle.Managed;
+import life.catalogue.api.exception.UnavailableException;
+import life.catalogue.common.func.ThrowingSupplier;
+import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.UTF8IoUtils;
 import org.apache.commons.io.FileUtils;
 import org.mapdb.DB;
+import org.mapdb.DBException;
 import org.mapdb.DBMaker;
 import org.mapdb.Serializer;
 import org.slf4j.Logger;
@@ -14,20 +18,24 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URL;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class IdMap implements Managed {
   private static final Logger LOG = LoggerFactory.getLogger(IdMap.class);
 
-  private final URI tsv;
+  private final Supplier<InputStream> tsvSupplier;
+  private final String tsvName;
   private final File file;
-  private final DB mapDb;
+  private final DBMaker.Maker dbMaker;
+  private DB mapDb;
   private Map<String, String> map;
 
-  public IdMap(File file, URI tsv) throws IOException {
+  private IdMap(File file, String tsvName, ThrowingSupplier<InputStream, IOException> tsvSupplier) throws IOException {
     this.file = file;
-    this.tsv = tsv;
-    DBMaker.Maker dbMaker;
+    this.tsvName = tsvName;
+    this.tsvSupplier = tsvSupplier;
     if (file == null) {
       LOG.info("Create new memory IdMap");
       dbMaker = DBMaker.memoryDB();
@@ -42,13 +50,25 @@ public class IdMap implements Managed {
         .fileDB(file)
         .fileMmapEnableIfSupported();
     }
-    mapDb = dbMaker.make();
+  }
+
+  public static IdMap empty(File file) throws IOException {
+    return new IdMap(file, "none", null);
+  }
+
+  public static IdMap fromURI(File file, URI tsv) throws IOException {
+    final URL url = tsv.toURL();
+    return new IdMap(file, tsv.toString(), url::openStream);
+  }
+
+  public static IdMap fromResource(File file, String tsvResourceName) throws IOException {
+    return new IdMap(file, tsvResourceName, () -> Resources.stream(tsvResourceName));
   }
 
   public void reload() throws IOException {
-    if (tsv != null) {
-      LOG.info("Reload IdMap from {}", tsv);
-      reload(tsv.toURL().openStream());
+    if (tsvSupplier != null) {
+      LOG.info("Reload IdMap from {}", tsvName);
+      reload(tsvSupplier.get());
     } else {
       LOG.warn("No IdMap source configured");
     }
@@ -59,10 +79,11 @@ public class IdMap implements Managed {
     try (BufferedReader br = UTF8IoUtils.readerFromStream(data)) {
       String line;
       while ((line = br.readLine()) != null) {
-        int index = line.indexOf('\t');
-        if (index<0) continue;
-        String legacyID = line.substring(0, index);
-        String usageID = line.substring(index + 1);
+        int tabIdx = line.indexOf('\t');
+        if (tabIdx<0) continue;
+        String legacyID = line.substring(0, tabIdx);
+        int tabIdx2 = line.indexOf('\t', tabIdx+1);
+        String usageID = line.substring(tabIdx + 1, tabIdx2<0 ? line.length() : tabIdx2);
         if (legacyID.length() > 0 && usageID.length() > 0) {
           map.put(legacyID, usageID);
         }
@@ -87,12 +108,29 @@ public class IdMap implements Managed {
     return map.isEmpty();
   }
 
+  public void clear() {
+    map.clear();
+  }
+
   @Override
   public void start() throws IOException {
-    map = mapDb.hashMap("legacy")
-      .keySerializer(Serializer.STRING)
-      .valueSerializer(Serializer.STRING)
-      .createOrOpen();
+    if (mapDb == null || mapDb.isClosed()) {
+      try {
+        mapDb = dbMaker.make();
+      } catch (DBException.DataCorruption e) {
+        if (file != null) {
+          LOG.warn("IdMap mapdb was corrupt. Remove and rebuild from scratch. {}", e.getMessage());
+          file.delete();
+          mapDb = dbMaker.make();
+        } else {
+          throw e;
+        }
+      }
+      map = mapDb.hashMap("legacy")
+        .keySerializer(Serializer.STRING)
+        .valueSerializer(Serializer.STRING)
+        .createOrOpen();
+    }
     // reload if empty
     if (map.isEmpty()) {
       reload();
@@ -108,5 +146,17 @@ public class IdMap implements Managed {
     } catch (Exception e) {
       LOG.error("Failed to close mapDb for legacy IdMap at {}", file, e);
     }
+  }
+
+  public boolean hasStarted() {
+    try {
+      if (mapDb != null && !mapDb.isClosed()) {
+        map.get("something1234567");
+        return true;
+      }
+    } catch (UnavailableException e) {
+      return false;
+    }
+    return false;
   }
 }

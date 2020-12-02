@@ -212,8 +212,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // name index
     ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE);
-    // to start up quickly for local testing use this instead:
-    //ni = NameIndexFactory.passThru();
+    // we do not start up the index automatically, we need to run 2 apps in parallel during deploys!
     env.lifecycle().manage(ManagedUtils.stopOnly(ni));
     env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));
 
@@ -280,12 +279,13 @@ public class WsServer extends Application<WsServerConfig> {
     assembly.setImportManager(importManager);
 
     // legacy ID map
-    IdMap idMap = new IdMap(cfg.legacyIdMapFile, cfg.legacyIdMapURI);
-    env.lifecycle().manage(idMap);
+    IdMap idMap = IdMap.fromURI(cfg.legacyIdMapFile, cfg.legacyIdMapURI);
+    // we do not start up the map automatically, we need to run 2 apps in parallel during deploys!
+    env.lifecycle().manage(ManagedUtils.stopOnly(idMap));
 
     // resources
     j.register(new AdminResource(getSqlSessionFactory(), assembly, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, cImporter,
-      importManager, gbifSync, ni, executor));
+      importManager, gbifSync, ni, executor, idMap));
     j.register(new DataPackageResource());
     j.register(new DatasetDiffResource(dDiff));
     j.register(new DatasetExportResource(getSqlSessionFactory(), exportManager, diDao, cfg));

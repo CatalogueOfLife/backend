@@ -20,6 +20,7 @@ import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
 import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.importer.ImportManager;
+import life.catalogue.legacy.IdMap;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.RematchJob;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -49,6 +50,7 @@ public class AdminResource {
   private final NameUsageIndexService indexService;
   private final NameIndex ni;
   // managed background processes
+  private final IdMap idMap;
   private final ImportManager importManager;
   private final ContinuousImporter continuousImporter;
   private final GbifSync gbifSync;
@@ -59,7 +61,7 @@ public class AdminResource {
 
   public AdminResource(SqlSessionFactory factory, AssemblyCoordinator assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
                        NameUsageIndexService indexService, ContinuousImporter continuousImporter, ImportManager importManager, GbifSync gbifSync,
-                       NameIndex namesIndex, JobExecutor executor) {
+                       NameIndex namesIndex, JobExecutor executor, IdMap idMap) {
     this.factory = factory;
     this.assembly = assembly;
     this.imgService = imgService;
@@ -72,6 +74,7 @@ public class AdminResource {
     this.importManager = importManager;
     this.namesIndex = namesIndex;
     this.exec = executor;
+    this.idMap = idMap;
   }
   
   public static class BackgroundProcesses {
@@ -151,9 +154,11 @@ public class AdminResource {
       if (back.importer) {
         namesIndex.start();
         importManager.start();
+        idMap.start();
       } else {
         importManager.stop();
         namesIndex.stop();
+        idMap.stop();
       }
     }
   }
