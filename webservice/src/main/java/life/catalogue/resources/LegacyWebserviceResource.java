@@ -93,7 +93,7 @@ public class LegacyWebserviceResource {
 
   @GET
   @Path("{id}")
-  @Produces({MediaType.TEXT_HTML})
+  @Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public Response redirect(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context ContainerRequestContext ctx) {
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey);
     if (info.sourceKey != null && info.sourceKey == Datasets.COL && idMap.contains(id)) {

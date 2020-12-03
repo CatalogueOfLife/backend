@@ -67,13 +67,15 @@ public class IdMap implements Managed {
     return new IdMap(file, tsvResourceName, () -> Resources.stream(tsvResourceName));
   }
 
-  public void reload() throws IOException {
+  public boolean reload() throws IOException {
     if (tsvSupplier != null) {
       LOG.info("Reload IdMap from {}", tsvName);
       reload(tsvSupplier.get());
+      return true;
     } else {
       LOG.warn("No IdMap source configured");
     }
+    return false;
   }
 
   public void reload(InputStream data) throws IOException {

@@ -33,6 +33,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.validation.constraints.Min;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -170,7 +171,13 @@ public class AdminResource {
       m.stop();
     }
   }
-  
+
+  @POST
+  @Path("/reload-idmap")
+  public boolean reloadIdmap(@Auth User user) throws IOException {
+    return idMap.reload();
+  }
+
   @POST
   @Path("/logo-update")
   public BackgroundJob updateAllLogos(@Auth User user) {
