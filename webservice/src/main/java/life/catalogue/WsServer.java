@@ -298,7 +298,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new EstimateResource(edao));
     j.register(new ExportResource(exportManager));
     j.register(new ImporterResource(importManager, diDao));
-    j.register(new LegacyWebserviceResource(getSqlSessionFactory(), cfg, idMap));
+    j.register(new LegacyWebserviceResource(cfg, idMap));
     j.register(new MatchingResource(ni));
     j.register(new NameResource(ndao));
     j.register(new NameUsageResource(searchService, suggestService));

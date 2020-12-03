@@ -12,10 +12,8 @@ import life.catalogue.db.mapper.legacy.LVernacularMapper;
 import life.catalogue.db.mapper.legacy.model.LError;
 import life.catalogue.db.mapper.legacy.model.LName;
 import life.catalogue.db.mapper.legacy.model.LResponse;
-import life.catalogue.dw.jersey.filter.DatasetKeyRewriteFilter;
 import life.catalogue.legacy.IdMap;
 import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,16 +41,17 @@ public class LegacyWebserviceResource {
   static int DEFAULT_LIMIT_FULL = 10;
   static int MAX_LIMIT_TERSE = 1000;
   static int MAX_LIMIT_FULL = 100;
-  private final IdMap idMap;
+
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(LegacyWebserviceResource.class);
-  private final SqlSessionFactory factory;
   private final String version;
+  private final IdMap idMap;
+  private final URI portalURI;
 
-  public LegacyWebserviceResource(SqlSessionFactory factory, WsServerConfig cfg, IdMap idMap) {
-    this.factory = factory;
+  public LegacyWebserviceResource(WsServerConfig cfg, IdMap idMap) {
     version = cfg.versionString();
+    portalURI = cfg.portalURI;
     this.idMap = idMap;
   }
 
@@ -94,13 +93,12 @@ public class LegacyWebserviceResource {
 
   @GET
   @Path("{id}")
+  @Produces({MediaType.TEXT_HTML})
   public Response redirect(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context ContainerRequestContext ctx) {
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey);
     if (info.sourceKey != null && info.sourceKey == Datasets.COL && idMap.contains(id)) {
-      String dkey = (String) ctx.getProperty(DatasetKeyRewriteFilter.ORIGINAL_DATASET_KEY_PROPERTY);
-      if (dkey == null) dkey = String.valueOf(datasetKey);
       return Response.status(Response.Status.MOVED_PERMANENTLY)
-        .location(URI.create("/dataset/" + dkey + "/nameusage/" + idMap.lookup(id)))
+        .location(portalURI.resolve("/data/taxon/" + idMap.lookup(id)))
         .build();
     }
     throw NotFoundException.notFound("COL Legacy ID", id);

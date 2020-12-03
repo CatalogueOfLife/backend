@@ -108,7 +108,10 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   public String exportCss = "https://gitcdn.link/repo/CatalogueOfLife/backend/master/webservice/src/main/resources/exporter/html/catalogue.css";
 
   @NotNull
-  public URI downloadURI;
+  public URI downloadURI = URI.create("https://download.catalogue.life");
+
+  @NotNull
+  public URI portalURI = URI.create("https://www.catalogue.life");
 
   /**
    * Optional URI to a TSV file that contains a mapping of legacy COL IDs to new name usage IDs.

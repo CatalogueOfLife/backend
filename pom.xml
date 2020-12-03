@@ -56,6 +56,7 @@
         <commons-io.version>2.6</commons-io.version>
         <dropwizard.version>2.0.2</dropwizard.version>
         <dwc-api.version>1.28</dwc-api.version>
+        <dwca-io.version>2.9</dwca-io.version>
         <elasticsearch.version>7.4.2</elasticsearch.version>
         <fastutil.version>8.3.0</fastutil.version>
         <gbif-api.version>0.99</gbif-api.version>
@@ -391,6 +392,12 @@
                 <artifactId>name-parser</artifactId>
                 <version>${name-parser.version}</version>
             </dependency>
+            <dependency>
+              <groupId>org.gbif</groupId>
+              <artifactId>dwca-io</artifactId>
+              <version>${dwca-io.version}</version>
+            </dependency>
+
             <!-- mybatis / DB -->
             <dependency>
                 <groupId>org.postgresql</groupId>

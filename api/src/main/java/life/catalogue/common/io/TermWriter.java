@@ -27,7 +27,7 @@ public class TermWriter implements AutoCloseable {
     }
     this.cols = Map.copyOf(map);
 
-    File f = new File(dir, rowType.simpleName() + ".tsv");
+    File f = new File(dir, filename(rowType));
     writer = TabWriter.fromFile(f);
 
     // write header row
@@ -37,6 +37,10 @@ public class TermWriter implements AutoCloseable {
       set(t, t.prefixedName());
     }
     next();
+  }
+
+  public static String filename(Term rowType) {
+    return rowType.simpleName() + ".tsv";
   }
 
   public String next() throws IOException {
