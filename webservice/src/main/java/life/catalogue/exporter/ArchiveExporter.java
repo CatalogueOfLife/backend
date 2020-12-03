@@ -59,7 +59,7 @@ abstract class ArchiveExporter extends DatasetExporter {
   @Override
   public void export() throws Exception {
     // do we have a full dataset export request?
-    fullDataset = req.isSynonyms() && (req.getExclusions() == null || req.getExclusions().isEmpty()) && req.getTaxonID()==null && req.getMinRank()==null;
+    fullDataset = !req.hasFilter();
     try (SqlSession session = factory.openSession(false)) {
       this.session = session;
       init(session);

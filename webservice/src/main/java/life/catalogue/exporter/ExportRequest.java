@@ -81,6 +81,13 @@ public class ExportRequest {
     this.userKey = userKey;
   }
 
+  /**
+   * @return true if any filter has been used apart from the mandatory datasetKey
+   */
+  public boolean hasFilter() {
+    return !synonyms || (exclusions != null && !exclusions.isEmpty()) || taxonID!=null || minRank!=null;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

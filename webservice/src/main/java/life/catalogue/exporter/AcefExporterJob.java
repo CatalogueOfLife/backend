@@ -46,6 +46,9 @@ public class AcefExporterJob extends DatasetExporter {
 
   public AcefExporterJob(ExportRequest req, WsServerConfig cfg, SqlSessionFactory factory) {
     super(req, factory, cfg.exportDir);
+    if (req.hasFilter()) {
+      throw new IllegalArgumentException("ACEF exports cannot have any filters");
+    }
     this.cfg = cfg;
   }
 
