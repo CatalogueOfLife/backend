@@ -19,11 +19,12 @@ import java.util.Map;
 @Provider
 @PreMatching
 public class AcceptHeaderRequestFilter implements ContainerRequestFilter {
-  private final static String ACCEPT_PARAM = "accept";
+  private final static String ACCEPT_PARAM = "_accept";
   private final static Map<String, String> VALUE_MAP = Map.of(
     "xml", MediaType.APPLICATION_XML,
     "json", MediaType.APPLICATION_JSON,
     "text", MediaType.TEXT_PLAIN,
+    "html", MediaType.TEXT_HTML,
     "tsv", MoreMediaTypes.TEXT_TSV,
     "csv", MoreMediaTypes.TEXT_CSV
   );
