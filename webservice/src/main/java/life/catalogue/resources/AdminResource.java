@@ -174,8 +174,9 @@ public class AdminResource {
 
   @POST
   @Path("/reload-idmap")
-  public boolean reloadIdmap(@Auth User user) throws IOException {
-    return idMap.reload();
+  public int reloadIdmap(@Auth User user) throws IOException {
+    idMap.reload();
+    return idMap.size();
   }
 
   @POST
