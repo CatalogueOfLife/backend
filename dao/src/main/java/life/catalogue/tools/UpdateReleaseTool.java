@@ -2,7 +2,10 @@ package life.catalogue.tools;
 
 import com.zaxxer.hikari.HikariDataSource;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.Setting;
+import life.catalogue.common.text.CitationUtils;
 import life.catalogue.dao.*;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.PgConfig;
@@ -10,7 +13,10 @@ import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.ProjectSourceMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
-import life.catalogue.matching.decision.*;
+import life.catalogue.matching.decision.EstimateRematcher;
+import life.catalogue.matching.decision.RematcherBase;
+import life.catalogue.matching.decision.SectorRematchRequest;
+import life.catalogue.matching.decision.SectorRematcher;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -25,6 +31,7 @@ public class UpdateReleaseTool implements AutoCloseable {
   final HikariDataSource dataSource;
   final Dataset release;
   final Dataset project;
+  final DatasetSettings settings;
   final int userKey;
 
   public UpdateReleaseTool(int releaseKey, PgConfig cfg, int userKey) {
@@ -40,6 +47,7 @@ public class UpdateReleaseTool implements AutoCloseable {
         throw new IllegalArgumentException("Dataset key "+releaseKey+" is not a release!");
       }
       project = dm.get(release.getSourceKey());
+      settings = dm.getSettings(project.getKey());
     }
   }
 
@@ -49,8 +57,8 @@ public class UpdateReleaseTool implements AutoCloseable {
   public void rebuildSourceMetadata(){
     System.out.printf("%s: %s\n\n", release.getKey(), release.getCitation());
     DatasetProjectSourceDao dao = new DatasetProjectSourceDao(factory);
-    //show(dao);
-    update(dao);
+    show(dao);
+    //update(dao);
   }
 
   /**
@@ -80,6 +88,12 @@ public class UpdateReleaseTool implements AutoCloseable {
   }
 
   void show(DatasetProjectSourceDao dao){
+    System.out.printf("%s\n", release.getCitation());
+    if (settings.has(Setting.RELEASE_CITATION_TEMPLATE)) {
+      String citation = CitationUtils.fromTemplate(release, settings.getString(Setting.RELEASE_CITATION_TEMPLATE));
+      release.setCitation(citation);
+    }
+    System.out.printf("%s\n", release.getCitation());
     dao.list(release.getKey(), release, true).forEach(d -> {
       System.out.printf("%s: %s\n", d.getKey(), d.getCitation());
     });

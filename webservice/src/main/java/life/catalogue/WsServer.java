@@ -17,10 +17,7 @@ import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.vocab.ColDwcTerm;
 import life.catalogue.assembly.AssemblyCoordinator;
-import life.catalogue.command.AddTableCmd;
-import life.catalogue.command.ExecSqlCmd;
-import life.catalogue.command.IndexCmd;
-import life.catalogue.command.InitDbCmd;
+import life.catalogue.command.*;
 import life.catalogue.common.concurrent.JobExecutor;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.io.DownloadUtil;
@@ -109,10 +106,13 @@ public class WsServer extends Application<WsServerConfig> {
     bootstrap.setObjectMapper(om);
 
     // add some cli commands not accessible via the admin interface
-    bootstrap.addCommand(new InitDbCmd());
-    bootstrap.addCommand(new IndexCmd());
     bootstrap.addCommand(new AddTableCmd());
     bootstrap.addCommand(new ExecSqlCmd());
+    bootstrap.addCommand(new IndexCmd());
+    bootstrap.addCommand(new InitDbCmd());
+    bootstrap.addCommand(new NamesIndexCmd());
+    bootstrap.addCommand(new RebuiltSourceCitationCmd());
+
   }
 
   @Override
