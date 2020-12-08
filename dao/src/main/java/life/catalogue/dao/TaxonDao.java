@@ -157,17 +157,19 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     Taxon taxon = info.getTaxon();
 
     // all reference, name and taxon keys so we can select their details at the end
-    Set<String> refIds = new HashSet<>(taxon.getReferenceIds());
-    Set<String> nameIds = new HashSet<>();
     Set<String> taxonIds = new HashSet<>();
-
+    Set<String> nameIds = new HashSet<>();
+    Set<String> refIds = new HashSet<>(taxon.getReferenceIds());
     refIds.add(taxon.getName().getPublishedInId());
 
     // synonyms
     if (loadSynonyms) {
       SynonymMapper sm = session.getMapper(SynonymMapper.class);
       info.setSynonyms(sm.listByTaxon(taxon.getDatasetKey(), taxon.getId()));
-      info.getSynonyms().forEach(s -> refIds.addAll(s.getReferenceIds()));
+      info.getSynonyms().forEach(s -> {
+        refIds.add(s.getName().getPublishedInId());
+        refIds.addAll(s.getReferenceIds());
+      });
     }
 
     // source
