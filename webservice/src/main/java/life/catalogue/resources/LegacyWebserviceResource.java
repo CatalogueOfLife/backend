@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.ws.rs.*;
-import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -93,13 +92,26 @@ public class LegacyWebserviceResource {
 
   @GET
   @Path("{id}")
-  @Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-  public Response redirect(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context ContainerRequestContext ctx) {
+  @Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_XML})
+  public Response redirectPortal(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    return redirect(datasetKey, id, true);
+  }
+
+  @GET
+  @Path("{id}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response redirectAPI(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    return redirect(datasetKey, id, false);
+  }
+
+  private Response redirect(int datasetKey, String id, boolean portal) {
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey);
     if (info.sourceKey != null && info.sourceKey == Datasets.COL && idMap.contains(id)) {
-      return Response.status(Response.Status.MOVED_PERMANENTLY)
-        .location(portalURI.resolve("/data/taxon/" + idMap.lookup(id)))
-        .build();
+      String newID = idMap.lookup(id);
+      URI target = portal ?
+        portalURI.resolve("/data/taxon/" + newID) :
+        URI.create("/dataset/"+datasetKey+"/nameusage/" + newID);
+      return Response.status(Response.Status.MOVED_PERMANENTLY).location(target).build();
     }
     throw NotFoundException.notFound("COL Legacy ID", id);
   }
