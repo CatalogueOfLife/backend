@@ -24,13 +24,19 @@ public class LegacyFormatRequestFilter implements ContainerRequestFilter {
   public void filter(ContainerRequestContext req) throws IOException {
     if (req.getUriInfo().getPath().contains("/legacy")) {
       MultivaluedMap<String, String> params = req.getUriInfo().getQueryParameters();
-      if (params.containsKey(PARAM) && params.getFirst(PARAM).endsWith("json")) {
+      if ((params.containsKey(PARAM) && params.getFirst(PARAM).endsWith("json"))
+        || (!params.containsKey(PARAM) && acceptJson(req))
+      ) {
         req.getHeaders().putSingle(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
       } else {
         // XML is the legacy default
         req.getHeaders().putSingle(HttpHeaders.ACCEPT, MediaType.APPLICATION_XML);
       }
     }
+  }
 
+  private boolean acceptJson(ContainerRequestContext req){
+    return req.getHeaders().containsKey(HttpHeaders.ACCEPT)
+      && req.getHeaders().getFirst(HttpHeaders.ACCEPT).equals(MediaType.APPLICATION_JSON);
   }
 }
