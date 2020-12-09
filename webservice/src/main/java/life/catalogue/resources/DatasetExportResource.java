@@ -1,8 +1,10 @@
 package life.catalogue.resources;
 
+import com.google.common.collect.Streams;
 import io.dropwizard.auth.Auth;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.io.Resources;
@@ -31,10 +33,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.*;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Stream dataset exports to the user.
@@ -67,6 +67,10 @@ public class DatasetExportResource {
   private final SqlSessionFactory factory;
   private final ExportManager exportManager;
   private final WsServerConfig cfg;
+  private static final Object[][] EXPORT_HEADERS = new Object[1][];
+  static {
+    EXPORT_HEADERS[0] = new Object[]{"ID", "parentID", "status", "rank", "scientificName", "authorship", "label"};
+  }
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetExportResource.class);
@@ -106,6 +110,14 @@ public class DatasetExportResource {
         .build();
     }
     throw new NotFoundException(key, "original archive for dataset " + key + " not found");
+  }
+
+  @GET
+  @Produces(MediaType.TEXT_PLAIN)
+  public Response textTreeAll(@PathParam("key") int key,
+                              @QueryParam("rank") Set<Rank> ranks,
+                              @Context SqlSession session) {
+    return textTree(key,null,ranks,session);
   }
 
   @GET
@@ -149,14 +161,6 @@ public class DatasetExportResource {
     return Response.ok(stream).build();
   }
 
-  @GET
-  @Produces(MediaType.TEXT_PLAIN)
-  public Response textTreeAll(@PathParam("key") int key,
-                              @QueryParam("rank") Set<Rank> ranks,
-                              @Context SqlSession session) {
-    return textTree(key,null,ranks,session);
-  }
-                           
   @GET
   @Path("{id}")
   @Produces(MediaType.TEXT_HTML)
@@ -221,4 +225,29 @@ public class DatasetExportResource {
     }
   }
 
+
+  @GET
+  @Produces({MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_TSV})
+  public Stream<Object[]> exportCsv(@PathParam("key") int datasetKey,
+                                    @QueryParam("min") Rank min,
+                                    @QueryParam("max") Rank max,
+                                    @Context SqlSession session) {
+    NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+    return Stream.concat(
+      Stream.of(EXPORT_HEADERS),
+      Streams.stream(num.processDataset(datasetKey, min, max)).map(this::map)
+    );
+  }
+
+  private Object[] map(NameUsageBase nu){
+    return new Object[]{
+      nu.getId(),
+      nu.getParentId(),
+      nu.getStatus(),
+      nu.getName().getRank(),
+      nu.getName().getScientificName(),
+      nu.getName().getAuthorship(),
+      nu.getLabel()
+    };
+  }
 }

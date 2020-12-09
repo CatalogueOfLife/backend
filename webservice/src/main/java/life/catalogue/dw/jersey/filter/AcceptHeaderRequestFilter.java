@@ -11,7 +11,7 @@ import javax.ws.rs.ext.Provider;
 import java.util.Map;
 
 /**
- * Filter that adds an Accept and Content-Type header with application/json
+ * Filter that adds an Accept header with application/json
  * in case none is given or the value allows any (*).
  *
  * It also allows to set a custom Accept header via an Accept query parameter value.
@@ -19,7 +19,7 @@ import java.util.Map;
 @Provider
 @PreMatching
 public class AcceptHeaderRequestFilter implements ContainerRequestFilter {
-  private final static String ACCEPT_PARAM = "_accept";
+  private final static String ACCEPT_PARAM = "accept";
   private final static Map<String, String> VALUE_MAP = Map.of(
     "xml", MediaType.APPLICATION_XML,
     "json", MediaType.APPLICATION_JSON,
@@ -34,13 +34,9 @@ public class AcceptHeaderRequestFilter implements ContainerRequestFilter {
     if (req.getUriInfo().getQueryParameters().containsKey(ACCEPT_PARAM)) {
       String val = req.getUriInfo().getQueryParameters().getFirst(ACCEPT_PARAM);
       req.getHeaders().putSingle(HttpHeaders.ACCEPT, VALUE_MAP.getOrDefault(val.toLowerCase(), val));
-    } else if (!req.getHeaders().containsKey(HttpHeaders.CONTENT_TYPE) && (
-      !req.getHeaders().containsKey(HttpHeaders.ACCEPT) || req.getHeaders().getFirst(HttpHeaders.ACCEPT).equals("*/*")
-    )) {
+
+    } else if (!req.getHeaders().containsKey(HttpHeaders.ACCEPT) || req.getHeaders().getFirst(HttpHeaders.ACCEPT).equals("*/*")) {
       req.getHeaders().putSingle(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
-      if (req.getLength() > 0) {
-        req.getHeaders().putSingle(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON);
-      }
     }
   }
 

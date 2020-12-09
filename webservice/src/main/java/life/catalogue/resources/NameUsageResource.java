@@ -1,8 +1,6 @@
 package life.catalogue.resources;
 
 import com.codahale.metrics.annotation.Timed;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Streams;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.Page;
@@ -10,9 +8,6 @@ import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.*;
 import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.NameUsageWrapperMapper;
-import life.catalogue.dw.auth.Roles;
-import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.es.InvalidQueryException;
 import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.es.NameUsageSuggestionService;
@@ -21,16 +16,13 @@ import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Path("/dataset/{key}/nameusage")
@@ -38,14 +30,6 @@ public class NameUsageResource {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageResource.class);
-  private static final Joiner COMMA_CAT = Joiner.on(';').skipNulls();
-  private static final Object[][] EXPORT_HEADERS = new Object[1][];
-  private static final Object[][] EXPORT_HEADERS_ISSUES = new Object[1][];
-  static {
-    EXPORT_HEADERS[0] = new Object[]{"ID", "parentID", "status", "rank", "scientificName", "authorship"};
-    EXPORT_HEADERS_ISSUES[0] = Arrays.copyOf(EXPORT_HEADERS[0], 7);
-    EXPORT_HEADERS_ISSUES[0][6] = "issues";
-  }
   private final NameUsageSearchService searchService;
   private final NameUsageSuggestionService suggestService;
 
@@ -77,53 +61,6 @@ public class NameUsageResource {
       count = () -> mapper.count(datasetKey);
     }
     return new ResultPage<>(p, result, count);
-  }
-
-  @GET
-  @RolesAllowed({Roles.ADMIN})
-  @Produces({MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_TSV})
-  public Stream<Object[]> exportCsv(@PathParam("key") int datasetKey,
-                                    @QueryParam("issue") boolean withIssues,
-                                    @QueryParam("min") Rank min,
-                                    @QueryParam("max") Rank max,
-                                    @Context SqlSession session) {
-    if (withIssues) {
-      NameUsageWrapperMapper nuwm = session.getMapper(NameUsageWrapperMapper.class);
-      return Stream.concat(
-        Stream.of(EXPORT_HEADERS_ISSUES),
-        Streams.stream(nuwm.processDatasetUsageWithIssues(datasetKey)).map(this::map)
-      );
-    } else {
-      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-      return Stream.concat(
-        Stream.of(EXPORT_HEADERS),
-        Streams.stream(num.processDataset(datasetKey, min, max)).map(this::map)
-      );
-    }
-  }
-
-  private Object[] map(NameUsageBase nu){
-    return new Object[]{
-      nu.getId(),
-      nu.getParentId(),
-      nu.getStatus(),
-      nu.getName().getRank(),
-      nu.getName().getScientificName(),
-      nu.getName().getAuthorship()
-    };
-  }
-
-  private Object[] map(NameUsageWrapper nuw){
-    NameUsageBase nu = (NameUsageBase) nuw.getUsage();
-    return new Object[]{
-      nu.getId(),
-      nu.getParentId(),
-      nu.getStatus(),
-      nu.getName().getRank(),
-      nu.getName().getScientificName(),
-      nu.getName().getAuthorship(),
-      COMMA_CAT.join(nuw.getIssues())
-    };
   }
 
   @GET
