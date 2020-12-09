@@ -305,7 +305,7 @@ public class PgImportIT extends PgImportITBase {
       // with the designation of the species included in each of these divisions . Paris, 88 pp",
       // pubIn.getCsl().getTitle());
       
-      assertEquals(4, info.getReferences().size());
+      assertEquals(5, info.getReferences().size());
       for (String refId : info.getTaxon().getReferenceIds()) {
         Reference r = info.getReference(refId);
         assertNotNull(r);
