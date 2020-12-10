@@ -6,12 +6,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
-import life.catalogue.api.search.*;
+import life.catalogue.api.search.NameUsageRequest;
+import life.catalogue.api.search.NameUsageSearchParameter;
+import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.es.InvalidQueryException;
 import life.catalogue.es.NameUsageSearchService;
-import life.catalogue.es.NameUsageSuggestionService;
 import org.apache.ibatis.session.SqlSession;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
@@ -35,11 +37,9 @@ public class NameUsageSearchResource {
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageSearchResource.class);
 
   private final NameUsageSearchService searchService;
-  private final NameUsageSuggestionService suggestService;
 
-  public NameUsageSearchResource(NameUsageSearchService search, NameUsageSuggestionService suggest) {
+  public NameUsageSearchResource(NameUsageSearchService search) {
     this.searchService = search;
-    this.suggestService = suggest;
   }
 
 
@@ -86,7 +86,6 @@ public class NameUsageSearchResource {
         @JsonProperty("content") Set<NameUsageSearchRequest.SearchContent> content,
         @JsonProperty("sortBy") NameUsageSearchRequest.SortBy sortBy,
         @JsonProperty("q") String q,
-        @JsonProperty("vernacular") @DefaultValue("false") boolean vernacular,
         @JsonProperty("highlight") @DefaultValue("false") boolean highlight,
         @JsonProperty("reverse") @DefaultValue("false") boolean reverse,
         @JsonProperty("fuzzy") @DefaultValue("false") boolean fuzzy,
@@ -95,18 +94,9 @@ public class NameUsageSearchResource {
         @JsonProperty("type") NameUsageRequest.SearchType searchType,
         @JsonProperty("minRank") Rank minRank,
         @JsonProperty("maxRank") Rank maxRank) {
-      request = new NameUsageSearchRequest(filter, facet, content, vernacular, sortBy, q, highlight, reverse, fuzzy, searchType, minRank, maxRank);
+      request = new NameUsageSearchRequest(filter, facet, content, sortBy, q, highlight, reverse, fuzzy, searchType, minRank, maxRank);
       page = new Page(offset, limit);
     }
   }
 
-  @GET
-  @Timed
-  @Path("suggest")
-  public NameUsageSuggestResponse suggest(@BeanParam NameUsageSuggestRequest query, @Context UriInfo uri) throws InvalidQueryException {
-    if (uri != null) {
-      query.addFilters(uri.getQueryParameters());
-    }
-    return suggestService.suggest(query);
-  }
 }

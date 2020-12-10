@@ -1,14 +1,10 @@
 package life.catalogue.es.nu.suggest;
 
 import com.google.common.annotations.VisibleForTesting;
-import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.api.search.NameUsageSuggestResponse;
 import life.catalogue.api.search.NameUsageSuggestion;
-import life.catalogue.es.EsException;
-import life.catalogue.es.EsNameUsage;
-import life.catalogue.es.EsUtil;
-import life.catalogue.es.NameUsageSuggestionService;
+import life.catalogue.es.*;
 import life.catalogue.es.ddl.Analyzer;
 import life.catalogue.es.nu.NameUsageQueryService;
 import life.catalogue.es.query.EsSearchRequest;
@@ -21,6 +17,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
 
 public class NameUsageSuggestionServiceEs extends NameUsageQueryService implements NameUsageSuggestionService {
 
@@ -60,11 +58,15 @@ public class NameUsageSuggestionServiceEs extends NameUsageQueryService implemen
 
   private static void validateRequest(NameUsageSuggestRequest request) {
     if (StringUtils.isBlank(request.getQ())) {
-      throw new IllegalArgumentException("Missing q parameter");
+      throw invalidRequest("Missing q parameter");
     }
-    if (!request.hasFilter(NameUsageSearchParameter.DATASET_KEY) || (Integer) request.getFilterValue(NameUsageSearchParameter.DATASET_KEY) < 1) {
-      throw new IllegalArgumentException("Missing/invalid datasetKey parameter");
+    if (!request.hasFilter(DATASET_KEY) || request.getFilters().get(DATASET_KEY).size() > 1) {
+      throw invalidRequest("A single dataset key must be specified");
     }
   }
 
+  private static InvalidQueryException invalidRequest(String msg, Object... msgArgs) {
+    msg = "Invalid suggest request. " + String.format(msg, msgArgs);
+    return new InvalidQueryException(msg);
+  }
 }

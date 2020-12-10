@@ -302,7 +302,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new MatchingResource(ni));
     j.register(new NameResource(ndao));
     j.register(new NameUsageResource(searchService, suggestService));
-    j.register(new NameUsageSearchResource(searchService, suggestService));
+    j.register(new NameUsageSearchResource(searchService));
     j.register(new ReferenceResource(rdao));
     j.register(new SectorDiffResource(sDiff));
     j.register(new SectorResource(secdao, tdao, fmsDao, assembly));

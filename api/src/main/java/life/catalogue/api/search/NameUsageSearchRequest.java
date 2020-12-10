@@ -48,7 +48,6 @@ public class NameUsageSearchRequest extends NameUsageRequest {
   public NameUsageSearchRequest(@JsonProperty("filter") Map<NameUsageSearchParameter, @Size(max = 1000) Set<Object>> filters,
       @JsonProperty("facet") Set<NameUsageSearchParameter> facets,
       @JsonProperty("content") Set<SearchContent> content,
-      @JsonProperty("vernacular") boolean vernacular,
       @JsonProperty("sortBy") SortBy sortBy,
       @JsonProperty("q") String q,
       @JsonProperty("highlight") boolean highlight,
