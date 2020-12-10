@@ -23,6 +23,7 @@ aberrancy,ABERRATION
 abt,PHYLUM
 abteilung,PHYLUM
 agamosp,SPECIES
+agamossp,SUBSPECIES
 agamovar,VARIETY
 agg,SPECIES_AGGREGATE
 agglom,SPECIES_AGGREGATE
@@ -123,6 +124,7 @@ nothogenus,GENUS
 nothosect,SECTION
 nothoser,SERIES
 nothospecies,SPECIES
+nothossp,SUBSPECIES
 nothosubgen,SUBGENUS
 nothosubsect,SUBSECTION
 nothosubsp,SUBSPECIES
@@ -131,6 +133,7 @@ nothosubtrib,SUBTRIBE
 nothotaxon,UNRANKED
 nothovar,VARIETY
 nothovariety,VARIETY
+nvar,VARIETY
 o,ORDER
 or,ORDER
 ord,ORDER
