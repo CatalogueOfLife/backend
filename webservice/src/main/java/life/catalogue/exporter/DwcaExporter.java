@@ -41,13 +41,7 @@ public class DwcaExporter extends ArchiveExporter {
   @Override
   protected void init(SqlSession session) {
     nameRelMapper = session.getMapper(NameRelationMapper.class);
-
-    additionalWriter(new Term[]{GbifTerm.SpeciesProfile, DwcTerm.taxonID,
-      GbifTerm.isExtinct,
-      GbifTerm.isMarine,
-      GbifTerm.isFreshwater,
-      GbifTerm.isTerrestrial
-    });
+    additionalWriter(defineSpeciesProfile());
   }
 
   private void additionalWriter(Term[] terms) {
@@ -100,6 +94,15 @@ public class DwcaExporter extends ArchiveExporter {
           DcTerm.source};
     }
     return null;
+  }
+
+  Term[] defineSpeciesProfile() {
+    return new Term[]{GbifTerm.SpeciesProfile, DwcTerm.taxonID,
+      GbifTerm.isExtinct,
+      GbifTerm.isMarine,
+      GbifTerm.isFreshwater,
+      GbifTerm.isTerrestrial
+    };
   }
 
   void write(NameUsageBase u) {
@@ -188,6 +191,8 @@ public class DwcaExporter extends ArchiveExporter {
     for (EntityType type : List.of(EntityType.VERNACULAR, EntityType.DISTRIBUTION)) {
       arch.addExtension(buildArchiveFile(type));
     }
+    arch.addExtension(buildArchiveFile(defineSpeciesProfile()));
+
     File metaFile = new File(tmpDir, "meta.xml");
     MetaDescriptorWriter.writeMetaFile(metaFile, arch);
   }
@@ -200,7 +205,10 @@ public class DwcaExporter extends ArchiveExporter {
   }
 
   private ArchiveFile buildArchiveFile(EntityType type) {
-    Term[] def = define(type);
+    return buildArchiveFile(define(type));
+  }
+
+  private ArchiveFile buildArchiveFile(Term... def) {
     ArchiveFile af = ArchiveFile.buildTabFile();
     af.setArchive(arch);
     af.setEncoding("utf-8");
