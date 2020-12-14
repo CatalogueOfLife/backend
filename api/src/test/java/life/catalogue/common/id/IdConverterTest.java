@@ -37,7 +37,8 @@ public class IdConverterTest {
     }
   }
 
-  @Test
+  //@Test
+  // THis is not a test but a tool to generate mappings between different ID CHARSETS
   public void map32to29() throws Exception {
     final var special = Map.ofEntries(
       Map.entry("A", "N"),

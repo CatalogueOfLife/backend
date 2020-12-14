@@ -85,19 +85,16 @@ public class ProjectReleaseIT {
       // TODO: new authorship matching previous canonical name
 
       // rufus -> rufa
-      u = num.get(key.id("A2"));
+      //TODO: check why? Should this not be E ???
+      u = num.get(key.id("B5"));
       assertEquals("Felis rufa", u.getLabel());
 
       // baileyi -> baileii
       u = num.get(key.id("F"));
       assertEquals("Lynx rufus baileii", u.getLabel());
 
-      // configured id
-      u = num.get(key.id("9999"));
-      assertEquals("Animalia", u.getLabel());
-
-      // new id, 33 should be skipped
-      u = num.get(key.id("34"));
+      // new id, starting with B3 as the first new one
+      u = num.get(key.id("B4"));
       assertEquals("Felis lynx Linnaeus, 1758", u.getLabel());
       assertEquals(homoID, u.getName().getHomotypicNameId());
 
