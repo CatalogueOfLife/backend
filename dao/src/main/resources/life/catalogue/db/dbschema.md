@@ -10,6 +10,14 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2020-12-13 add missing GIN indices
+```
+CREATE INDEX ON dataset USING GIN (doc);
+CREATE INDEX ON vernacular_name USING GIN (doc);
+CREATE INDEX ON reference USING GIN (doc);
+CREATE INDEX ON verbatim USING GIN (doc);
+```
+
 ### 2020-11-12 separate name match table
 ```
 CREATE TABLE verbatim_source (

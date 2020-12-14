@@ -696,9 +696,9 @@ CREATE TABLE dataset (
   ) STORED
 );
 
-CREATE INDEX ON dataset USING gin (f_unaccent(title) gin_trgm_ops);
-CREATE INDEX ON dataset USING gin (f_unaccent(alias) gin_trgm_ops);
-CREATE INDEX ON dataset USING gin(doc);
+CREATE INDEX ON dataset USING GIN (f_unaccent(title) gin_trgm_ops);
+CREATE INDEX ON dataset USING GIN (f_unaccent(alias) gin_trgm_ops);
+CREATE INDEX ON dataset USING GIN (doc);
 
 
 CREATE TABLE dataset_archive (LIKE dataset);
@@ -952,8 +952,9 @@ CREATE TABLE verbatim (
   doc tsvector GENERATED ALWAYS AS (jsonb_to_tsvector('simple2', coalesce(terms,'{}'::jsonb), '["string", "numeric"]')) STORED
 ) PARTITION BY LIST (dataset_key);
 
-CREATE INDEX ON verbatim USING GIN(issues);
 CREATE INDEX ON verbatim (type);
+CREATE INDEX ON verbatim USING GIN (doc);
+CREATE INDEX ON verbatim USING GIN (issues);
 CREATE INDEX ON verbatim USING GIN (terms jsonb_path_ops);
 
 
@@ -989,6 +990,7 @@ CREATE TABLE reference (
 
 CREATE INDEX ON reference (verbatim_key);
 CREATE INDEX ON reference (sector_key);
+CREATE INDEX ON reference USING GIN (doc);
 
 CREATE TABLE name (
   id TEXT NOT NULL,
@@ -1211,6 +1213,7 @@ CREATE INDEX ON vernacular_name (taxon_id);
 CREATE INDEX ON vernacular_name (sector_key);
 CREATE INDEX ON vernacular_name (verbatim_key);
 CREATE INDEX ON vernacular_name (reference_id);
+CREATE INDEX ON vernacular_name USING GIN (doc);
 
 CREATE TABLE distribution (
   id INTEGER NOT NULL,

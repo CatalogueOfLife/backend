@@ -25,7 +25,6 @@ import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -62,11 +61,11 @@ public class ProjectReleaseIT {
   @Test
   public void release() throws Exception {
 
-    ProjectRelease release = buildRelease(Map.of(1, "9999", // pref ID out of sequence range
+    ProjectRelease release = buildRelease();
+    Map.of(1, "9999", // pref ID out of sequence range
       17, "A",
-      9999, "A", // duplicate id, test skip
       9998, "33" // pref ID in sequence range
-    ));
+    );
     release.run();
     assertEquals(ImportState.FINISHED, release.getMetrics().getState());
 
@@ -86,7 +85,7 @@ public class ProjectReleaseIT {
       // TODO: new authorship matching previous canonical name
 
       // rufus -> rufa
-      u = num.get(key.id("E"));
+      u = num.get(key.id("A2"));
       assertEquals("Felis rufa", u.getLabel());
 
       // baileyi -> baileii
@@ -110,13 +109,8 @@ public class ProjectReleaseIT {
   }
 
   private ProjectRelease buildRelease() {
-    return buildRelease(new HashMap<>());
-  }
-
-  private ProjectRelease buildRelease(Map<Integer, String> idMap) {
     ReleaseIdConfig cfg = new ReleaseIdConfig();
     cfg.restart = false;
-    cfg.map = new HashMap<>(idMap);
     return ReleaseManager.release(PgSetupRule.getSqlSessionFactory(), matchingRule.getIndex(), NameUsageIndexService.passThru(), diDao, dDao, ImageService.passThru(), projectKey, Users.TESTER, cfg);
   }
   

@@ -7,10 +7,13 @@ import org.slf4j.LoggerFactory;
 public class IdConverter {
   private static final Logger LOG = LoggerFactory.getLogger(IdConverter.class);
   public static final IdConverter HEX = new IdConverter("0123456789ABCDEF");
+  public static final IdConverter BASE64 = new IdConverter("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
+  public static final IdConverter LATIN36 = new IdConverter("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
   // remove 0O and 1I as they can be ambiguous in some fonts
   public static final IdConverter LATIN32 = new IdConverter("23456789ABCDEFGHJKLMNPQRSTUVWXYZ"); // same as BASE32
-  public static final IdConverter LATIN36 = new IdConverter("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-  public static final IdConverter BASE64 = new IdConverter("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/");
+  // now also remove all vowels to avoid meaningful and especially offending words in any language
+  // See https://github.com/CatalogueOfLife/backend/issues/491
+  public static final IdConverter LATIN29 = new IdConverter("23456789BCDFGHJKLMNPQRSTVWXYZ");
 
   private final char[] chars;
   private final byte[] values; // lookup matrix of char byte -> real byte value

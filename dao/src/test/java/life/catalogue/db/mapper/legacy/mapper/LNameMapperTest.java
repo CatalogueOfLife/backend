@@ -4,10 +4,7 @@ import life.catalogue.db.LookupTables;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.MapperTestBase;
 import life.catalogue.db.mapper.legacy.LNameMapper;
-import life.catalogue.db.mapper.legacy.model.LCommonName;
-import life.catalogue.db.mapper.legacy.model.LHigherName;
-import life.catalogue.db.mapper.legacy.model.LName;
-import life.catalogue.db.mapper.legacy.model.LSpeciesName;
+import life.catalogue.db.mapper.legacy.model.*;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
@@ -107,6 +104,28 @@ public class LNameMapperTest extends MapperTestBase<LNameMapper> {
     assertEquals("leucurus", n.getSpecies());
     assertNull(n.getInfraspecies());
     assertNull(n.getInfraspeciesMarker());
+
+    // genus synonym
+    LSynonym syn = (LSynonym) mapper().getFull(datasetKey, "u11");
+    assertEquals("u11", syn.getId());
+    assertEquals(Rank.GENUS, syn.getRank());
+    assertEquals("Ayresia", syn.getName());
+    assertEquals("Cooper, 1863", syn.getAuthor());
+    assertNull(syn.getGenus());
+    assertNull(syn.getSubgenus());
+    assertNull(syn.getSpecies());
+    assertNull(syn.getInfraspecies());
+    assertNull(syn.getInfraspeciesMarker());
+    var acc = syn.getAcceptedName();
+    assertEquals("u10", acc.getId());
+    assertEquals(Rank.GENUS, acc.getRank());
+    assertEquals("Chromis", acc.getName());
+    assertEquals("Cuvier", acc.getAuthor());
+    assertNull(acc.getGenus());
+    assertNull(acc.getSubgenus());
+    assertNull(acc.getSpecies());
+    assertNull(acc.getInfraspecies());
+    assertNull(acc.getInfraspeciesMarker());
   }
 
   void assertPresent(LHigherName n){

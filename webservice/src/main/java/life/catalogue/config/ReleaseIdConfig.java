@@ -1,7 +1,6 @@
 package life.catalogue.config;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 
 /**
  *
@@ -12,6 +11,4 @@ public class ReleaseIdConfig {
   public LocalDateTime since;
   // id start
   public int start = 0;
-  // map of names index ids to preferred usage ids
-  public Map<Integer, String> map;
 }

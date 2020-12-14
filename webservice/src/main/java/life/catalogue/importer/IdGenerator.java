@@ -19,7 +19,7 @@ public class IdGenerator {
   private static final char PREFIX_PAD_CHAR = 'x';
   
   private final Supplier<Integer> intIdSupplier;
-  private final IdConverter idConverter = IdConverter.LATIN32;
+  private final IdConverter idConverter = IdConverter.LATIN29;
   private String prefix;
   
   public IdGenerator() {

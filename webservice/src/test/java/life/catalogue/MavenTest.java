@@ -27,7 +27,7 @@ public class MavenTest {
       } else {
         y=x-1;
       }
-      System.out.println(x + "  ->  " + IdConverter.LATIN32.encode(y));
+      System.out.println(x + "  ->  " + IdConverter.LATIN29.encode(y));
     }
   }
 }

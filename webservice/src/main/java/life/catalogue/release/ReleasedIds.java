@@ -23,7 +23,7 @@ public class ReleasedIds {
     public ReleasedId(SimpleNameWithNidx sn, int attempt) {
       int id1;
       try {
-        id1 = IdConverter.LATIN32.decode(sn.getId());
+        id1 = IdConverter.LATIN29.decode(sn.getId());
       } catch (IllegalArgumentException e) {
         id1 = -1;
       }
@@ -39,7 +39,7 @@ public class ReleasedIds {
     }
 
     public String id() {
-      return IdConverter.LATIN32.encode(id);
+      return IdConverter.LATIN29.encode(id);
     }
   }
 

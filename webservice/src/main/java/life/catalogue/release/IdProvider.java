@@ -54,7 +54,6 @@ public class IdProvider {
   private final int datasetKey;
   private final SqlSessionFactory factory;
   private final ReleaseIdConfig cfg;
-  private final IntSet skip = new IntOpenHashSet();
   private final ReleasedIds ids = new ReleasedIds();
   private final Int2IntMap attempt2dataset = new Int2IntOpenHashMap();
   private final AtomicInteger keySequence = new AtomicInteger();
@@ -95,7 +94,6 @@ public class IdProvider {
   public static IdProvider withMap(int datasetKey, SqlSessionFactory factory, Map<Integer, String> nidxMap) {
     ReleaseIdConfig cfg = new ReleaseIdConfig();
     cfg.restart = true;
-    cfg.map = nidxMap;
     return new IdProvider(datasetKey, cfg, factory);
   }
 
@@ -103,9 +101,6 @@ public class IdProvider {
     this.datasetKey = datasetKey;
     this.factory = factory;
     this.cfg = cfg;
-    if (cfg.map == null) {
-      cfg.map = new HashMap<>();
-    }
   }
 
   public void run() {
@@ -151,22 +146,6 @@ public class IdProvider {
     }
     keySequence.set(Math.max(cfg.start, ids.maxKey()));
     LOG.info("Max existing id = {}. Start ID sequence with {} ({})", ids.maxKey(), keySequence, encode(keySequence.get()));
-
-    // skip preferred ids when auto generating sequence ids
-    var iter = cfg.map.entrySet().iterator();
-    while (iter.hasNext()) {
-      Map.Entry<Integer, String> entry = iter.next();
-      int id = IdConverter.LATIN32.decode(entry.getValue());
-      if (ids.hasId(id)) {
-        LOG.warn("Preferred ID {} already exists in release attempt {}. Skip", entry.getValue(), ids.byId(id).attempt);
-        iter.remove();
-      } else if (skip.contains(id)) {
-        LOG.warn("Preferred ID {} listed multiple times. Skip", entry.getValue());
-        iter.remove();
-      } else {
-        skip.add(id);
-      }
-    }
   }
 
   private void mapIds(){
@@ -252,18 +231,7 @@ public class IdProvider {
   }
 
   private void issueNewId(SimpleNameWithNidx n) {
-    int id;
-    if (n.getNamesIndexId() != null && cfg.map.containsKey(n.getNamesIndexId())) {
-      // use a preferred id from the config
-      id = IdConverter.LATIN32.decode(cfg.map.remove(n.getNamesIndexId()));
-
-    } else {
-      // new sequence id
-      do {
-        id = keySequence.incrementAndGet();
-      } while (skip.contains(id));
-    }
-
+    int id = keySequence.incrementAndGet();
     n.setCanonicalId(id);
     created.add(id);
   }
@@ -328,7 +296,7 @@ public class IdProvider {
   }
 
   static String encode(int id) {
-    return IdConverter.LATIN32.encode(id);
+    return IdConverter.LATIN29.encode(id);
   }
 
 }

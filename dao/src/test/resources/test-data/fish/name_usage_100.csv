@@ -4,6 +4,7 @@ u2,c2,u1,1,ACCEPTED,,,"{}",false,{},,,
 u3,c3,u2,1,ACCEPTED,,,"{}",false,{},,,
 u4,c4,u3,1,ACCEPTED,,,"{}",false,{},,,
 u10,n10,u4,1,ACCEPTED,,,"{}",false,{MARINE},,,
+u11,n11,u10,1,SYNONYM,,,"{}",false,{},,,
 u100,n100,u10,1,ACCEPTED,,Allen1991,"{}",false,{MARINE},"","",http://fish.org/100
 u101,n101,u100,1,MISAPPLIED,"(non Gilbert, 1905)",,,,,,,http://fish.org/101
 u102,n102,u100,1,PROVISIONALLY_ACCEPTED,,,,,,,,http://fish.org/102
