@@ -50,6 +50,7 @@ public class AdminResource {
   private final ImageService imgService;
   private final NameUsageIndexService indexService;
   private final NameIndex ni;
+  private final ServerSettings settings = new ServerSettings();
   // managed background processes
   private final IdMap idMap;
   private final ImportManager importManager;
@@ -78,10 +79,11 @@ public class AdminResource {
     this.idMap = idMap;
   }
   
-  public static class BackgroundProcesses {
-    public boolean gbifSync;
-    public boolean scheduler;
-    public boolean importer; // import manager & names index
+  public static class ServerSettings {
+    public Boolean maintenance = false;
+    public Boolean gbifSync;
+    public Boolean scheduler;
+    public Boolean importer; // import manager & names index
     @Nullable
     @Min(1)
     public Integer importerThreads;
@@ -113,22 +115,26 @@ public class AdminResource {
   }
 
   @GET
-  @Path("/background")
+  @Path("/settings")
   @PermitAll
-  public BackgroundProcesses getBackground() {
-    BackgroundProcesses back = new BackgroundProcesses();
-    back.scheduler = continuousImporter.hasStarted();
-    back.importer = importManager.hasStarted();
-    back.gbifSync = gbifSync.hasStarted();
-    return back;
+  public ServerSettings getSettings() {
+    settings.scheduler = continuousImporter.hasStarted();
+    settings.importer = importManager.hasStarted();
+    settings.gbifSync = gbifSync.hasStarted();
+    return settings;
   }
   
   @PUT
-  @Path("/background")
-  public void setBackground(BackgroundProcesses back) throws Exception {
-    BackgroundProcesses curr = getBackground();
-    
-    if (curr.gbifSync != back.gbifSync) {
+  @Path("/settings")
+  public synchronized void setSettings(ServerSettings back) throws Exception {
+    ServerSettings curr = getSettings();
+
+    if (back.maintenance != null && curr.maintenance != back.maintenance) {
+      LOG.info("Set maintenance mode={}", back.maintenance);
+      curr.maintenance = back.maintenance;
+    }
+
+    if (back.gbifSync != null && curr.gbifSync != back.gbifSync) {
       if (cfg.gbif.syncFrequency < 1) {
         // we started the server with no syncing, give it a reasonable default in hours
         cfg.gbif.syncFrequency = 6;
@@ -137,7 +143,7 @@ public class AdminResource {
       startStopManaged(gbifSync, back.gbifSync);
     }
     
-    if (curr.scheduler != back.scheduler) {
+    if (back.scheduler != null && curr.scheduler != back.scheduler) {
       if (cfg.importer.continousImportPolling < 1) {
         // we started the server with no polling, give it a reasonable default
         cfg.importer.continousImportPolling = 10;
@@ -146,7 +152,7 @@ public class AdminResource {
       startStopManaged(continuousImporter, back.scheduler);
     }
 
-    if (curr.importer != back.importer) {
+    if (back.importer != null && curr.importer != back.importer) {
       if (back.importerThreads != null && back.importerThreads > 0) {
         cfg.importer.threads = back.importerThreads;
       }
