@@ -45,17 +45,21 @@ public class DecisionResource extends AbstractDatasetScopedResource<Integer, Edi
 
   @DELETE
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void deleteByDataset(@PathParam("key") int projectKey,
+  public int deleteByDataset(@PathParam("key") int projectKey,
                               @QueryParam("datasetKey") Integer datasetKey,
+                              @QueryParam("broken") boolean broken,
                               @Context SqlSession session, @Auth User user) {
     Preconditions.checkNotNull(datasetKey, "datasetKey parameter is required");
     DecisionMapper mapper = session.getMapper(DecisionMapper.class);
     int counter = 0;
     for (EditorialDecision d : mapper.processDecisions(projectKey, datasetKey)) {
-      dao.delete(d.getKey(), user.getKey());
-      counter++;
+      if (!broken || d.getSubject().isBroken()) {
+        dao.delete(d.getKey(), user.getKey());
+        counter++;
+      }
     }
-    LOG.info("Deleted {} decisions for dataset {} in catalogue {}", counter, datasetKey, projectKey);
+    LOG.info("Deleted {}{} decisions for dataset {} in catalogue {}", counter, broken ? " broken" : "", datasetKey, projectKey);
+    return counter;
   }
 
   @POST
