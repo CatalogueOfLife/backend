@@ -1,0 +1,9 @@
+1	Pinaceae
+1	Abies
+1	Abies alba Mill.
+1	Abies nigra
+1	Picea
+1	Picea alba L.
+1	Picea picea
+1	Abies picea
+1	Pinus

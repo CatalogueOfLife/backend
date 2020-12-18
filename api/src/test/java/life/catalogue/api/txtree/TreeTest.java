@@ -13,6 +13,16 @@ import static org.junit.Assert.*;
 public class TreeTest {
 
   @Test
+  public void testVerify() throws Exception {
+    assertTrue(Tree.verify(Resources.stream("txtree/test.txt")));
+    assertTrue(Tree.verify(Resources.stream("txtree/test2.txt")));
+
+    assertFalse(Tree.verify(Resources.stream("txtree/badtree.txt")));
+    assertFalse(Tree.verify(Resources.stream("txtree/notree.txt")));
+    assertFalse(Tree.verify(Resources.stream("txtree/notree2.txt")));
+  }
+
+  @Test
   public void testRead() throws Exception {
     Tree tree = Tree.read(Resources.stream("txtree/test.txt"));
 

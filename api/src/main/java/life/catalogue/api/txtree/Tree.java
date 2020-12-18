@@ -34,7 +34,7 @@ public class Tree implements Iterable<TreeNode> {
       "( *)" +  // indent #1
       "(\\" + SYNONYM_SYMBOL + ")?" +  // #2
       "(\\" + BASIONYM_SYMBOL + ")?" +  // #3
-      "(.+?)" +   // name & author #4
+      "([^\t;]+?)" +   // name & author #4
       "(?: \\[([a-z]+)])?" +  // rank #5
       "(?: +#.*)?" +  // comments
       " *$");
@@ -49,17 +49,25 @@ public class Tree implements Iterable<TreeNode> {
     String line = br.readLine();
     int counter = 0;
     try {
+      int max = 0;
+      int last = 0;
+      int level = 0;
       while (line != null) {
-        int level = 0;
         if (!StringUtils.isBlank(line)) {
           Matcher m = LINE_PARSER.matcher(line);
           if (m.find()) {
             parseRank(m); // make sure we can read all ranks
             level = m.group(1).length();
+            max = Math.max(max, level);
             if (level % 2 != 0) {
               LOG.error("Tree is not indented properly on line {}. Use 2 spaces only: {}", counter, line);
               return false;
             }
+            if (level-last>2) {
+              LOG.error("Tree is indented too much on line {}. Use 2 spaces only: {}", counter, line);
+              return false;
+            }
+            last = level;
           } else {
             LOG.error("Failed to parse Tree on line {}: {}", counter, line);
             return false;
@@ -68,10 +76,16 @@ public class Tree implements Iterable<TreeNode> {
         line = br.readLine();
         counter++;
       }
+      if (max==0 && counter > 10) {
+        LOG.error("Tree is not indented at all");
+        return false;
+      }
+
     } catch (IllegalArgumentException e) {
       LOG.error("Failed to parse Tree on line {}: {}", counter, line, e);
       return false;
     }
+    // should we require some other level than just 0???
     return true;
   }
 
