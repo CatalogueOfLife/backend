@@ -23,7 +23,16 @@ public class MapUtils {
       }
     });
   }
-  
+
+  public static<K> void increment(Map<K, Integer> map, K key) {
+    increment(map, key, 1);
+  }
+
+  public static<K> void increment(Map<K, Integer> map, K key, int inc) {
+    Integer count = map.getOrDefault(key, 0);
+    map.put(key, count + inc);
+  }
+
   /**
    * Order a Map by its values using the given value comparator and return a new {@link LinkedHashMap} which maintains that order.
    *

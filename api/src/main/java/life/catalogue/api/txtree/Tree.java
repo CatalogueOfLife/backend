@@ -51,13 +51,12 @@ public class Tree implements Iterable<TreeNode> {
     try {
       int max = 0;
       int last = 0;
-      int level = 0;
       while (line != null) {
         if (!StringUtils.isBlank(line)) {
           Matcher m = LINE_PARSER.matcher(line);
           if (m.find()) {
             parseRank(m); // make sure we can read all ranks
-            level = m.group(1).length();
+            int level = m.group(1).length();
             max = Math.max(max, level);
             if (level % 2 != 0) {
               LOG.error("Tree is not indented properly on line {}. Use 2 spaces only: {}", counter, line);

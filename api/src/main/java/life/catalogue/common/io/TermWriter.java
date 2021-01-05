@@ -74,6 +74,10 @@ public class TermWriter implements AutoCloseable {
     }
   }
 
+  public void set(Term term, int value) {
+    set(term, Integer.toString(value));
+  }
+
   public void set(Term term, Enum value) {
     if (value != null) {
       set(term, value.name());

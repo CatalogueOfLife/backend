@@ -270,7 +270,7 @@ abstract class ArchiveExporter extends DatasetExporter {
     }
   }
 
-  abstract void exportMetadata(Dataset d);
+  abstract void exportMetadata(Dataset d) throws IOException;
 
   private void closeWriter() throws IOException {
     if (writer != null) {

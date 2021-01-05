@@ -1,9 +1,16 @@
 package life.catalogue.exporter;
 
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.io.TermWriter;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.mapper.NameRelationMapper;
+import life.catalogue.db.mapper.ProjectSourceMapper;
+import life.catalogue.db.mapper.SectorMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.dwc.Archive;
@@ -15,18 +22,26 @@ import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NomCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class DwcaExporter extends ArchiveExporter {
-
+  private static final Logger LOG = LoggerFactory.getLogger(DwcaExporter.class);
+  private static final String EML_FILENAME = "eml.xml";
   private TermWriter writer2;
+  private ProjectSourceMapper projectSourceMapper;
   private NameRelationMapper nameRelMapper;
+  private SectorMapper sectorMapper;
   private final Archive arch = new Archive();
-
+  private final Int2IntMap sector2datasetKeys = new Int2IntOpenHashMap();
   public DwcaExporter(ExportRequest req, SqlSessionFactory factory, File exportDir) {
     super(req, factory, exportDir);
   }
@@ -40,6 +55,8 @@ public class DwcaExporter extends ArchiveExporter {
 
   @Override
   protected void init(SqlSession session) {
+    sectorMapper = session.getMapper(SectorMapper.class);
+    projectSourceMapper = session.getMapper(ProjectSourceMapper.class);
     nameRelMapper = session.getMapper(NameRelationMapper.class);
     additionalWriter(defineSpeciesProfile());
   }
@@ -56,8 +73,36 @@ public class DwcaExporter extends ArchiveExporter {
   }
 
   @Override
-  void exportMetadata(Dataset d) {
-    //TODO: EML
+  void exportMetadata(Dataset d) throws IOException {
+    // main dataset metadata
+    writeEml(d, new File(tmpDir, EML_FILENAME));
+
+    // extract unique source datasets if sectors were given
+    Set<Integer> sourceKeys = new HashSet<>(sector2datasetKeys.values());
+    // for releases and projects also include an EML for each source dataset as defined by all sectors
+    for (Integer key : sourceKeys) {
+      ArchivedDataset src = null;
+      if (DatasetOrigin.MANAGED == d.getOrigin()) {
+        src = projectSourceMapper.getProjectSource(key, datasetKey);
+      } else if (DatasetOrigin.RELEASED == d.getOrigin()) {
+        src = projectSourceMapper.getReleaseSource(key, datasetKey);
+      }
+      if (src == null) {
+        LOG.warn("Skip missing dataset {} for archive metadata", key);
+        return;
+      }
+      File f = new File(tmpDir, String.format("dataset/%s.xml", key));
+      writeEml(projectSourceMapper.getReleaseSource(key, datasetKey), f);
+    }
+  }
+
+  public static void writeEml(ArchivedDataset d, File f) throws IOException {
+    try (Writer w = UTF8IoUtils.writerFromFile(f)) {
+      Template temp = FmUtil.FMK.getTemplate("/dwca/eml.ftl");
+      temp.process(d, w);
+    } catch (TemplateException e) {
+      throw new IOException(e);
+    }
   }
 
   @Override
@@ -68,6 +113,7 @@ public class DwcaExporter extends ArchiveExporter {
           DwcTerm.parentNameUsageID,
           DwcTerm.acceptedNameUsageID,
           DwcTerm.originalNameUsageID,
+          DwcTerm.datasetID,
           DwcTerm.taxonomicStatus,
           DwcTerm.taxonRank,
           DwcTerm.scientificName,
@@ -108,6 +154,15 @@ public class DwcaExporter extends ArchiveExporter {
   void write(NameUsageBase u) {
     Name n = u.getName();
     writer.set(DwcTerm.taxonID, u.getId());
+
+    if (u.getSectorKey() != null) {
+      int sk = u.getSectorKey();
+      if (!sector2datasetKeys.containsKey(sk)) {
+        Sector s = sectorMapper.get(DSID.of(datasetKey, u.getSectorKey()));
+        sector2datasetKeys.put(sk, (int) s.getSubjectDatasetKey());
+      }
+      writer.set(DwcTerm.datasetID, sector2datasetKeys.get(sk));
+    }
 
     if (u.isSynonym()) {
       writer.set(DwcTerm.acceptedNameUsageID, u.getParentId());
@@ -186,7 +241,7 @@ public class DwcaExporter extends ArchiveExporter {
   }
 
   private void addMeta() throws IOException {
-    arch.setMetadataLocation(null); //TODO: add EML
+    arch.setMetadataLocation(EML_FILENAME);
     arch.setCore(buildArchiveFile(EntityType.NAME_USAGE));
     for (EntityType type : List.of(EntityType.VERNACULAR, EntityType.DISTRIBUTION)) {
       arch.addExtension(buildArchiveFile(type));
