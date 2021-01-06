@@ -212,7 +212,10 @@ public enum Issue {
   
   ACCEPTED_NAME_MISSING(NAME_USAGE, Level.ERROR,
       "Synonym lacking an accepted name. These will be treated as bare names in the datastore"),
-  
+
+  PARENT_SPECIES_MISSING(NAME_USAGE, Level.WARNING,
+    "The accepted infraspecific name does not have an accepted species in it's classification."),
+
   TAXONOMIC_STATUS_INVALID(NAME_USAGE, Level.ERROR,
       "dwc:taxonomicStatus could not be interpreted"),
   
@@ -254,7 +257,7 @@ public enum Issue {
   PARENT_NAME_MISMATCH(NAME_USAGE, Level.ERROR,
       "The (accepted) bi/trinomial name does not match the parent genus/species. " +
           "For example the species Picea alba with a parent genus Abies is a mismatch."),
-  
+
   DERIVED_TAXONOMIC_STATUS(NAME_USAGE, Level.WARNING,
       "The taxonomic status was programmatically derived. " +
           "E.g. a synonym made a misapplied name or ambigous synonym based on name annotations."),

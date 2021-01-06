@@ -77,9 +77,11 @@ public class JobExecutor implements AutoCloseable {
   }
 
   public BackgroundJob getJob(UUID key) {
-    ComparableFutureTask f = futures.get(key);
-    if (f != null) {
-      return f.task;
+    if (key!=null) {
+      ComparableFutureTask f = futures.get(key);
+      if (f != null) {
+        return f.task;
+      }
     }
     return null;
   }
