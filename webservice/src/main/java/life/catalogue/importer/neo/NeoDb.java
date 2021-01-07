@@ -571,7 +571,19 @@ public class NeoDb {
       }
     };
   }
-  
+
+  public NeoName addNameIssues(Node node, Issue... issue) {
+    NeoName nn = names.objByNode(node);
+    addIssues(nn, issue);
+    return nn;
+  }
+
+  public NeoUsage addUsageIssues(Node node, Issue... issue) {
+    NeoUsage nu = usages.objByNode(node);
+    addIssues(nu, issue);
+    return nu;
+  }
+
   public void addIssues(VerbatimEntity ent, Issue... issue) {
     addIssues(ent.getVerbatimKey(), issue);
   }

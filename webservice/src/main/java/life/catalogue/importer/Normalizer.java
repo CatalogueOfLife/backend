@@ -92,7 +92,7 @@ public class Normalizer implements Callable<Boolean> {
       store.sync();
       // verify, derive issues and fail before we do expensive matching or even db imports
       checkIfCancelled();
-      verify();
+      validate();
       // matches names and taxon concepts and builds metrics per name/taxon
       checkIfCancelled();
       matchAndCount();
@@ -126,9 +126,10 @@ public class Normalizer implements Callable<Boolean> {
   }
 
   /**
-   * Mostly checks for required attributes so that subsequent postgres imports do not fail.
+   * Mostly checks for required attributes so that subsequent postgres imports do not fail,
+   * but also does further issue flagging.
    */
-  private void verify() {
+  private void validate() {
     store.names().all().forEach(nn -> {
       Name n = nn.getName();
       require(n, n.getId(), "name id");
@@ -194,6 +195,15 @@ public class Normalizer implements Callable<Boolean> {
       @Override
       public void process(Node n) {
         RankedUsage ru = NeoProperties.getRankedUsage(n);
+        // compare with parent rank
+        Node pNode = Traversals.parentOf(n);
+        if (pNode != null && !ru.rank.isUncomparable()) {
+          Rank pRank = NeoProperties.getRank(pNode, Rank.UNRANKED);
+          if (ru.rank == pRank) {
+            store.addUsageIssues(n, Issue.PARENT_NAME_MISMATCH);
+          }
+        }
+
         if (ru.rank.isSpeciesOrBelow()) {
           NeoName nn = store.names().objByNode(ru.nameNode);
           Node gn = Traversals.parentWithRankOf(ru.usageNode, Rank.GENUS);

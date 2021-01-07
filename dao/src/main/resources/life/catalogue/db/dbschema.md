@@ -10,6 +10,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+```
+ALTER TYPE ISSUE ADD VALUE 'PARENT_SPECIES_MISSING' AFTER 'ACCEPTED_NAME_MISSING';
+```
+
+
 ### 2020-12-13 add missing GIN indices
 ```
 CREATE INDEX ON dataset USING GIN (doc);
