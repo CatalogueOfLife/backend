@@ -53,19 +53,22 @@ public class NormalizerColdpIT extends NormalizerITBase {
       assertEquals("Leontodon taraxacoides (Vill.) Mérat", t.usage.getName().getLabel());
       
       parents(t.node, "102", "30", "20", "10", "1");
-      
+
       store.names().all().forEach(n -> {
         VerbatimRecord v = store.getVerbatim(n.getVerbatimKey());
         assertNotNull(v);
-        if (!n.getName().getId().equals("cult")){
-          assertEquals(1, v.getIssues().size());
-        } else {
+        if (n.getName().getId().equals("cult")){
           assertEquals(2, v.getIssues().size());
           assertTrue(v.hasIssue(Issue.INCONSISTENT_NAME));
+        } else if (n.getName().getId().equals("fake")){
+          assertEquals(2, v.getIssues().size());
+          assertTrue(v.hasIssue(Issue.PARENT_SPECIES_MISSING));
+        } else {
+          assertEquals(1, v.getIssues().size());
         }
         assertTrue(v.hasIssue(Issue.NAME_MATCH_NONE));
       });
-  
+
       store.usages().all().forEach(u -> {
         VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
         assertNotNull(v);
@@ -210,8 +213,9 @@ public class NormalizerColdpIT extends NormalizerITBase {
         VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
         assertNotNull(v);
         if (u.getId().equals("fake")) {
-          assertEquals(2, v.getIssues().size());
+          assertEquals(3, v.getIssues().size());
           assertTrue(v.hasIssue(Issue.PARTIAL_DATE));
+          assertTrue(v.hasIssue(Issue.PARENT_SPECIES_MISSING));
 
         } else if(u.getId().equals("cult")) {
           assertEquals(2, v.getIssues().size());
