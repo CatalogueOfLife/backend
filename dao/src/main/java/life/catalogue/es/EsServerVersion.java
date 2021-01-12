@@ -26,7 +26,7 @@ public class EsServerVersion {
     Request request = new Request("GET", "/");
     Response response = executeRequest(client, request);
     HashMap<String, String> data = readFromResponse(response, "version");
-    versionString = data.get("number");
+    versionString = data.get("number").replace("-SNAPSHOT", "");
     version = Arrays.stream(versionString.split("\\.")).mapToInt(Integer::parseInt).toArray();
   }
 
