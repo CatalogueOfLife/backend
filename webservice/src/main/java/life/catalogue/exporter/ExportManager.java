@@ -1,8 +1,13 @@
 package life.catalogue.exporter;
 
+import com.google.common.base.Preconditions;
 import life.catalogue.WsServerConfig;
+import life.catalogue.api.model.DSID;
 import life.catalogue.common.concurrent.BackgroundJob;
 import life.catalogue.common.concurrent.JobExecutor;
+import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.TaxonMapper;
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 import java.io.File;
@@ -30,6 +35,7 @@ public class ExportManager {
   }
 
   public UUID sumit(ExportRequest req){
+    validate(req);
     BackgroundJob job;
     switch (req.getFormat()) {
       case DWCA:
@@ -44,5 +50,18 @@ public class ExportManager {
     }
     executor.submit(job);
     return job.getKey();
+  }
+
+  /**
+   * Makes sure taxonID exists if given
+   */
+  void validate(ExportRequest req) throws IllegalArgumentException {
+    if (req.getTaxonID() != null) {
+      try (SqlSession session = factory.openSession()) {
+        if (session.getMapper(NameUsageMapper.class).getSimple(DSID.of(req.getDatasetKey(), req.getTaxonID())) == null) {
+          throw new IllegalArgumentException("Root taxonID " + req.getTaxonID() + " does not exist in dataset " + req.getDatasetKey());
+        }
+      }
+    }
   }
 }
