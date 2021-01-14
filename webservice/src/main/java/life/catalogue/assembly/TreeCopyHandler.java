@@ -136,11 +136,9 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     for (Map.Entry<String, String> n : nameIds.entrySet()) {
       for (NameRelation nr : nrm.listByName(key.id(n.getKey()))) {
         if (!relIds.contains((int)nr.getId())) {
-          nr.setDatasetKey(sector.getDatasetKey());
+          updateFKs(nr);
           nr.setNameId(nameIds.get(nr.getNameId()));
           nr.setRelatedNameId(nameIds.get(nr.getRelatedNameId()));
-          nr.setVerbatimKey(null);
-          nr.setReferenceId(lookupReference(nr.getReferenceId()));
           if (nr.getNameId() != null && nr.getRelatedNameId() != null) {
             nrmWrite.create(nr);
             relIds.add((int)nr.getId());
@@ -155,6 +153,17 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
     }
     batchSession.commit();
     LOG.info("Synced {} name relations from sector {}", relIds.size(), sector.getKey());
+  }
+
+  private void updateFKs(DatasetScopedEntity<?> obj){
+    obj.setDatasetKey(sector.getDatasetKey());
+    if (obj instanceof VerbatimEntity) {
+      ((VerbatimEntity)obj).setVerbatimKey(null);
+    }
+    if (obj instanceof Referenced) {
+      Referenced r = (Referenced) obj;
+      r.setReferenceId(lookupReference(r.getReferenceId()));
+    }
   }
 
   static class Usage {

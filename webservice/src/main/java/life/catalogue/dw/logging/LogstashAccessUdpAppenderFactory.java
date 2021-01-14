@@ -10,9 +10,11 @@ import net.logstash.logback.layout.LogstashAccessLayout;
 
 /**
  * A console appender that logs the same MDC fields as the UDP logger,
- * but alos logs the basic http access fields using a LogstashAccessEncoder extended with the following fields:
+ * but alos logs the basic http access fields using a LogstashAccessEncoder extended with the following header fields:
  *
- *  - User-Agent header
+ *  - User-Agent
+ *  - Access
+ *  - Origin
  */
 @JsonTypeName("logstash-access")
 public class LogstashAccessUdpAppenderFactory extends LogstashAppenderFactory<IAccessEvent> {
@@ -54,6 +56,9 @@ public class LogstashAccessUdpAppenderFactory extends LogstashAppenderFactory<IA
     layout.setIncludeContext(false);
     // expose User-Agent header
     layout.addProvider(new UserAgentJsonProvider());
+    // expose other standard headers of interest
+    HeaderJsonProvider.addStandardHeaderLogging(layout);
+    // set fixed http.request logger name
     layout.addProvider(new LoggerNameJsonProvider());
     layout.start();
 
