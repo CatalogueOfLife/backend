@@ -142,7 +142,8 @@ public class AssemblyCoordinator implements Managed {
   /**
    * Makes sure the dataset has data and is currently not importing
    */
-  private void assertStableData(Sector s) throws IllegalArgumentException {
+  private void assertStableData(SectorRunnable job) throws IllegalArgumentException {
+    Sector s = job.sector;
     try (SqlSession session = factory.openSession(true)) {
       try {
         //make sure dataset is currently not imported
@@ -151,7 +152,7 @@ public class AssemblyCoordinator implements Managed {
           throw new IllegalArgumentException("Dataset "+s.getSubjectDatasetKey()+" currently being imported. Cannot sync " + s);
         }
         NameMapper nm = session.getMapper(NameMapper.class);
-        if (nm.hasData(s.getSubjectDatasetKey())) {
+        if (!(job instanceof SectorSync) || nm.hasData(s.getSubjectDatasetKey())) {
           return;
         }
       } catch (PersistenceException e) {
@@ -202,7 +203,7 @@ public class AssemblyCoordinator implements Managed {
       // ignore
     
     } else {
-      assertStableData(job.sector);
+      assertStableData(job);
       syncs.put(job.sectorKey, new SectorFuture(job, exec.submit(job)));
       LOG.info("Queued {} for {} targeting {}", job.getClass().getSimpleName(), job.sector, job.sector.getTarget());
     }
