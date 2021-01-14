@@ -139,6 +139,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
           nr.setDatasetKey(sector.getDatasetKey());
           nr.setNameId(nameIds.get(nr.getNameId()));
           nr.setRelatedNameId(nameIds.get(nr.getRelatedNameId()));
+          nr.setVerbatimKey(null);
           nr.setReferenceId(lookupReference(nr.getReferenceId()));
           if (nr.getNameId() != null && nr.getRelatedNameId() != null) {
             nrmWrite.create(nr);
