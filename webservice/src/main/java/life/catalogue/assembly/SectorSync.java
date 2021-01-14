@@ -240,59 +240,12 @@ public class SectorSync extends SectorRunnable {
         throw new NotImplementedException("Only attach and union sectors are implemented");
       }
 
-      usageIds= treeHandler.getUsageIds();
-      nameIds = treeHandler.getNameIds();
+      LOG.info("Sync name & taxon relations from sector {}", sectorKey);
+      treeHandler.copyRelations();
+
       // copy handler stats to metrics
       state.setAppliedDecisionCount(treeHandler.decisionCounter);
       state.setIgnoredByReasonCount(Map.copyOf(treeHandler.ignoredCounter));
-    }
-
-    // copy name relations
-    copyNameRelations(nameIds);
-
-    // copy taxon relations
-    copyTaxonRelations(usageIds);
-  }
-
-  private void copyTaxonRelations(Map<String, TreeCopyHandler.Usage> usageIds) {
-    try (SqlSession session = factory.openSession();
-         SqlSession batchSession = factory.openSession(ExecutorType.BATCH, false)
-    ) {
-      // TODO: copy taxon relations
-      LOG.info("Synced {} taxon relations from sector {}", 0, sectorKey);
-    }
-  }
-
-  private void copyNameRelations(Map<String, String> nameIds){
-    try (SqlSession session = factory.openSession();
-         SqlSession batchSession = factory.openSession(ExecutorType.BATCH, false)
-    ) {
-      // copy name relations
-      NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
-      NameRelationMapper nrmWrite = batchSession.getMapper(NameRelationMapper.class);
-      int counter = 0;
-      IntSet relIds = new IntOpenHashSet();
-      var key = DSID.of(subjectDatasetKey, "");
-      for (Map.Entry<String, String> n : nameIds.entrySet()) {
-        for (NameRelation nr : nrm.listByName(key.id(n.getKey()))) {
-          if (!relIds.contains((int)nr.getId())) {
-            nr.setDatasetKey(sector.getDatasetKey());
-            nr.setNameId(nameIds.get(nr.getNameId()));
-            nr.setRelatedNameId(nameIds.get(nr.getRelatedNameId()));
-            if (nr.getNameId() != null && nr.getRelatedNameId() != null) {
-              nrmWrite.create(nr);
-              relIds.add((int)nr.getId());
-              if (counter++ % 2500 == 0) {
-                batchSession.commit();
-              }
-            } else {
-              LOG.info("Name relation {} outside of synced sector {}", nr.getKey(), sectorKey);
-            }
-          }
-        }
-      }
-      batchSession.commit();
-      LOG.info("Synced {} name relations from sector {}", relIds.size(), sectorKey);
     }
   }
 

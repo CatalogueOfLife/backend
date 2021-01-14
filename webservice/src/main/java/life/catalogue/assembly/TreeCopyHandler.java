@@ -3,6 +3,8 @@ package life.catalogue.assembly;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.IgnoreReason;
@@ -105,6 +107,53 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
 
   public Map<String, String> getNameIds() {
     return nameIds;
+  }
+
+  /**
+   * Copies all name and taxon relations based on ids collected during the accept calls by the tree traversal.
+   */
+  void copyRelations() {
+    // copy name relations
+    copyNameRelations();
+
+    // copy taxon relations
+    copyTaxonRelations();
+  }
+
+  private void copyTaxonRelations() {
+    // TODO: copy taxon relations
+    LOG.info("Synced {} taxon relations from sector {} - NOT IMPLEMENTED", 0, sector.getKey());
+  }
+
+  private void copyNameRelations(){
+    // copy name relations
+    NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
+    NameRelationMapper nrmWrite = batchSession.getMapper(NameRelationMapper.class);
+    int counter = 0;
+    IntSet relIds = new IntOpenHashSet();
+
+    var key = DSID.of(sector.getSubjectDatasetKey(), "");
+    for (Map.Entry<String, String> n : nameIds.entrySet()) {
+      for (NameRelation nr : nrm.listByName(key.id(n.getKey()))) {
+        if (!relIds.contains((int)nr.getId())) {
+          nr.setDatasetKey(sector.getDatasetKey());
+          nr.setNameId(nameIds.get(nr.getNameId()));
+          nr.setRelatedNameId(nameIds.get(nr.getRelatedNameId()));
+          nr.setReferenceId(lookupReference(nr.getReferenceId()));
+          if (nr.getNameId() != null && nr.getRelatedNameId() != null) {
+            nrmWrite.create(nr);
+            relIds.add((int)nr.getId());
+            if (counter++ % 2500 == 0) {
+              batchSession.commit();
+            }
+          } else {
+            LOG.info("Name relation {} outside of synced sector {}", nr.getKey(), sector.getKey());
+          }
+        }
+      }
+    }
+    batchSession.commit();
+    LOG.info("Synced {} name relations from sector {}", relIds.size(), sector.getKey());
   }
 
   static class Usage {

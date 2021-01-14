@@ -34,7 +34,7 @@ public class ExportManager {
     return cfg.downloadURI.resolve("/exports" + path);
   }
 
-  public UUID sumit(ExportRequest req){
+  public UUID sumit(ExportRequest req) throws IllegalArgumentException {
     validate(req);
     BackgroundJob job;
     switch (req.getFormat()) {
