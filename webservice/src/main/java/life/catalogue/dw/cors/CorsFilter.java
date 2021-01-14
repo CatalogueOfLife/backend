@@ -46,7 +46,9 @@ public class CorsFilter implements ContainerRequestFilter, ContainerResponseFilt
       return;
     }
     resp.getHeaders().putSingle(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
-    resp.getHeaders().putSingle(HttpHeaders.VARY, ORIGIN);
+    if (cfg.vary) {
+      resp.getHeaders().putSingle(HttpHeaders.VARY, ORIGIN);
+    }
     if (cfg.exposedHeaders != null) {
       resp.getHeaders().putSingle(ACCESS_CONTROL_EXPOSE_HEADERS, cfg.exposedHeaders);
     }
@@ -59,7 +61,9 @@ public class CorsFilter implements ContainerRequestFilter, ContainerResponseFilt
     Response.ResponseBuilder builder = Response.status(Response.Status.NO_CONTENT);
     String origin = req.getHeaderString(ORIGIN);
     builder.header(ACCESS_CONTROL_ALLOW_ORIGIN, ObjectUtils.coalesce(origin, ANY_ORIGIN));
-    builder.header(HttpHeaders.VARY, ORIGIN);
+    if (cfg.vary) {
+      builder.header(HttpHeaders.VARY, ORIGIN);
+    }
     addHeaderIfRequested(req, builder, ACCESS_CONTROL_REQUEST_METHOD, ACCESS_CONTROL_ALLOW_METHODS, cfg.methods);
     addHeaderIfRequested(req, builder, ACCESS_CONTROL_REQUEST_HEADERS, ACCESS_CONTROL_ALLOW_HEADERS, cfg.headers);
     if (cfg.maxAge > -1) {

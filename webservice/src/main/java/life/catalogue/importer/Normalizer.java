@@ -10,6 +10,7 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.collection.MapUtils;
 import life.catalogue.common.tax.MisappliedNameMatcher;
+import life.catalogue.common.tax.RankUtils;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.importer.acef.AcefInserter;
@@ -190,7 +191,7 @@ public class Normalizer implements Callable<Boolean> {
       }
     });
 
-    // flag PARENT_NAME_MISMATCH & PUBLISHED_BEFORE_GENUS for accepted names
+    // flag PARENT_NAME_MISMATCH, PUBLISHED_BEFORE_GENUS, PARENT_SPECIES_MISSING & CLASSIFICATION_RANK_ORDER_INVALID for accepted names
     store.process(Labels.TAXON, store.batchSize, new NodeBatchProcessor() {
       @Override
       public void process(Node n) {
@@ -199,8 +200,8 @@ public class Normalizer implements Callable<Boolean> {
         Node pNode = Traversals.parentOf(n);
         if (pNode != null && !ru.rank.isUncomparable()) {
           Rank pRank = NeoProperties.getRank(pNode, Rank.UNRANKED);
-          if (ru.rank == pRank) {
-            store.addUsageIssues(n, Issue.PARENT_NAME_MISMATCH);
+          if (ru.rank == pRank || RankUtils.higherThanCodeAgnostic(ru.rank, pRank)) {
+            store.addUsageIssues(n, Issue.CLASSIFICATION_RANK_ORDER_INVALID);
           }
         }
 

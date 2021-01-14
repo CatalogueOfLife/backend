@@ -15,6 +15,7 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.tree.JsonTreePrinter;
 import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.exporter.ExportRequest;
 import life.catalogue.exporter.HtmlExporter;
@@ -91,6 +92,7 @@ public class DatasetExportResource {
   }
 
   @GET
+  @VaryAccept
   // there are many unofficial mime types around for zip
   @Produces({
     MediaType.APPLICATION_OCTET_STREAM,
@@ -113,6 +115,7 @@ public class DatasetExportResource {
   }
 
   @GET
+  @VaryAccept
   @Produces(MediaType.TEXT_PLAIN)
   public Response textTreeAll(@PathParam("key") int key,
                               @QueryParam("rank") Set<Rank> ranks,
@@ -121,6 +124,7 @@ public class DatasetExportResource {
   }
 
   @GET
+  @VaryAccept
   @Path("{id}")
   @Produces(MediaType.TEXT_PLAIN)
   public Response textTree(@PathParam("key") int key,
@@ -162,6 +166,7 @@ public class DatasetExportResource {
   }
 
   @GET
+  @VaryAccept
   @Path("{id}")
   @Produces(MediaType.TEXT_HTML)
   public Response html(@PathParam("key") int key,
@@ -196,6 +201,7 @@ public class DatasetExportResource {
   }
 
   @GET
+  @VaryAccept
   @Produces(MediaType.APPLICATION_JSON)
   @Path("{id}")
   public Object simpleName(@PathParam("key") int key,
@@ -227,6 +233,7 @@ public class DatasetExportResource {
 
 
   @GET
+  @VaryAccept
   @Produces({MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_TSV})
   public Stream<Object[]> exportCsv(@PathParam("key") int datasetKey,
                                     @QueryParam("min") Rank min,

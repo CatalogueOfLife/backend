@@ -15,6 +15,7 @@ import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.dw.jersey.filter.DatasetKeyRewriteFilter;
+import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.img.ImgConfig;
@@ -61,6 +62,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   }
 
   @GET
+  @VaryAccept
   public ResultPage<Dataset> search(@Valid @BeanParam Page page, @BeanParam DatasetSearchRequest req, @Auth Optional<User> user) {
     return dao.search(req, userkey(user), page);
   }

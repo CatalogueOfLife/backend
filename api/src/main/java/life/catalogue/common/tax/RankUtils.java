@@ -34,6 +34,13 @@ public class RankUtils {
   }
 
   /**
+   * Returns true if r1 is a higher rank than r2 and none of the 2 ranks are uncomparable of ambiguous between codes.
+   */
+  public static boolean higherThanCodeAgnostic(Rank r1, Rank r2) {
+    return (!r1.isUncomparable() && !r2.isUncomparable() && r1.higherThan(r2) && !r1.isAmbiguous() && !r2.isAmbiguous());
+  }
+
+  /**
    * The ranks between the given minimum and maximum
    * @param inclusive if true also include the given min and max ranks
    */
