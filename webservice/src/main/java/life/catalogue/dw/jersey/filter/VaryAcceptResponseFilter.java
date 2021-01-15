@@ -9,7 +9,7 @@ import java.io.IOException;
 
 @Provider
 @VaryAccept
-public class VaryResponseFilter implements ContainerResponseFilter {
+public class VaryAcceptResponseFilter implements ContainerResponseFilter {
   
   @Override
   public void filter(ContainerRequestContext request, ContainerResponseContext resp) throws IOException {

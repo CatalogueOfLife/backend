@@ -13,6 +13,8 @@ import static org.gbif.nameparser.api.NomCode.*;
  * @see <a href="http://www.bgbm.org/TDWG/CODATA/Schema/ABCD_2.06/HTML/ABCD_2.06.html#element_NomenclaturalTypeDesignations_Link">Types in ABCD</a>
  * @see <a href="http://www.insdc.org/controlled-vocabulary-typematerial-qualifer">Types in INSDC GenBank</a>
  * @see <a href="http://www1.biologie.uni-hamburg.de/b-online/library/tennessee/nom-type.htm">GLOSSARY OF "TYPE" TERMINOLOGY</a>
+ * @see <a href="https://micropal-basel.unibas.ch/Colls_NMB/GENERALS/COMTYPES.HTML">Compendium of Types</a>
+ * @see <a href="http://mailman.nhm.ku.edu/pipermail/taxacom/2000-November/084885.html">Taxacom discussion, Roger J. Burkhalter based on C.E. Decker DEFINITIONS OF KINDS OF TYPE SPECIMENS (F.B. Horrell in Geological Society of America Bulletin, Vol. 49,1929, p, 219)</a>
  *
  */
 public enum TypeStatus {
@@ -59,7 +61,7 @@ public enum TypeStatus {
    * ICN: The one specimen or illustration indicated as the nomenclatural type by the author(s) of a name of a new species or infraspecific taxon
    * or, when no type was indicated, used by the author(s) when preparing the account of the new taxon (Art. 9.1 and Note 1; see also Art. 9.2).
    */
-  HOLOTYPE(BOTANICAL, ZOOLOGICAL, BACTERIAL),
+  HOLOTYPE(true, BOTANICAL, ZOOLOGICAL, BACTERIAL),
   
   /**
    * A drawing or photograph (also called 'phototype') of a type specimen.
@@ -77,7 +79,7 @@ public enum TypeStatus {
    * in conformity with Art. 9.11 and 9.12, if the name was published without a holotype, 
    * or if the holotype is lost or destroyed, or if a type is found to belong to more than one taxon (Art. 9.3).
    */
-  LECTOTYPE(BOTANICAL, ZOOLOGICAL, BACTERIAL),
+  LECTOTYPE(true, BOTANICAL, ZOOLOGICAL, BACTERIAL),
   
   /**
    * A specimen designated as nomenclatural type subsequent to the publication of the original description
@@ -88,7 +90,7 @@ public enum TypeStatus {
    * ICN: A specimen or illustration selected to serve as nomenclatural type if no original material is extant
    * or as long as it is missing (Art. 9.8 and 9.13; see also Art. 9.16 and 9.19).
    */
-  NEOTYPE(BOTANICAL, ZOOLOGICAL, BACTERIAL),
+  NEOTYPE(true, BOTANICAL, ZOOLOGICAL, BACTERIAL),
 
   /**
    *  ICN Art. 9.4: For the purposes of this Code, original material comprises the following elements:
@@ -105,7 +107,7 @@ public enum TypeStatus {
    *  (d) the isotypes or isosyntypes of the name irrespective of whether such specimens were seen
    *  by either the author of the validating description or diagnosis or the author of the name (but see Art. 7.8, 7.9, and F.3.9).
    */
-  ORIGINAL_MATERIAL(BOTANICAL),
+  ORIGINAL_MATERIAL(true, BOTANICAL),
 
   /**
    * All of the specimens in the type series of a species or infraspecific taxon other than the holotype (and, in botany, isotypes).
@@ -117,7 +119,7 @@ public enum TypeStatus {
    * ICN: Any specimen cited in the protologue that is neither the holotype nor an isotype, nor one of the syntypes
    * if in the protologue two or more specimens were simultaneously designated as types (Art. 9.7).
    */
-  PARATYPE(BOTANICAL, ZOOLOGICAL),
+  PARATYPE(true, BOTANICAL, ZOOLOGICAL),
 
   /**
    * Strain designated as the type for the associated pathovar
@@ -133,7 +135,7 @@ public enum TypeStatus {
    * ICN: Any specimen cited in the protologue when there is no holotype,
    * or any of two or more specimens simultaneously designated in the protologue as types (Art. 9.6).
    */
-  SYNTYPE(BOTANICAL, ZOOLOGICAL),
+  SYNTYPE(true, BOTANICAL, ZOOLOGICAL),
   
   /**
    * One or more specimens collected at the same location as the type series (type locality), regardless of whether they are part of the type series.
@@ -252,24 +254,46 @@ public enum TypeStatus {
    */
   PLASTOTYPE(BOTANICAL, ZOOLOGICAL),
 
-
+  /**
+   * A specimen which was not used in the original description of a species or subspecies,
+   * but which is used for a later description or figure of it.
+   * A specimen illustrated in a publication. These are not type specimens.
+   * Also called hypotype.
+   */
+  PLESIOTYPE(ZOOLOGICAL),
 
   /**
-   * Any other or not interpretable status of the type material cited.
+   * A specimen compared with the type and found to be conspecific with it.
    */
+  HOMOEOTYPE(ZOOLOGICAL),
+
+
+    /**
+     * Any other or not interpretable status of the type material cited.
+     */
   OTHER();
 
   private final TypeStatus base;
   private final NomCode[] codes;
+  private final Boolean primary;
 
-  TypeStatus(TypeStatus base, NomCode... code) {
+  TypeStatus(TypeStatus base, Boolean primary, NomCode... code) {
     this.base = base;
+    this.primary = primary;
     this.codes = code;
     Arrays.sort(codes);
   }
 
+  TypeStatus(TypeStatus base, NomCode... code) {
+    this(base,null, code);
+  }
+
+  TypeStatus(boolean primary, NomCode... code) {
+    this(null, primary, code);
+  }
+
   TypeStatus(NomCode... code) {
-    this(null, code);
+    this(null, false, code);
   }
 
   @Nullable
@@ -294,4 +318,9 @@ public enum TypeStatus {
     return codes == null || Arrays.binarySearch(codes, code) >= 0;
   }
 
+  public boolean isPrimary() {
+    return primary != null ? primary : (
+      base != null && base.isPrimary()
+    );
+  }
 }

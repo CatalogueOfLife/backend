@@ -66,7 +66,7 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
   @Override
   protected void createAfter(User obj, int user, UserMapper mapper, SqlSession session) {
     super.createAfter(obj, user, mapper, session);
-    bus.post(UserChanged.change(obj));
+    bus.post(UserChanged.created(obj));
   }
 
   @Override

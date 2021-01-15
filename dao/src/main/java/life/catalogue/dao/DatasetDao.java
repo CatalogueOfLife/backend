@@ -223,7 +223,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       recreatePartition(obj.getKey(), obj.getOrigin());
       Partitioner.createManagedObjects(factory, obj.getKey());
     }
-    bus.post(DatasetChanged.change(obj));
+    bus.post(DatasetChanged.created(obj));
     session.commit();
   }
 
