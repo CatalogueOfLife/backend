@@ -1,13 +1,11 @@
 package life.catalogue.resources;
 
+import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.exporter.ExportManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.UUID;
@@ -26,7 +24,12 @@ public class ExportResource {
 
   @GET
   @Path("{id}")
-  @Produces(MediaType.APPLICATION_OCTET_STREAM)
+  // there are many unofficial mime types around for zip, support them all
+  @Produces({
+    MediaType.APPLICATION_OCTET_STREAM,
+    MediaType.APPLICATION_JSON, // allow JSON too as this is the API default which will be used when no Accept header is present
+    MoreMediaTypes.APP_ZIP, MoreMediaTypes.APP_ZIP_ALT1, MoreMediaTypes.APP_ZIP_ALT2, MoreMediaTypes.APP_ZIP_ALT3
+  })
   public Response getExport(@PathParam("id") UUID key) {
     return Response.status(Response.Status.FOUND)
       .location(exportManager.archiveURI(key))
