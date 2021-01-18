@@ -58,10 +58,30 @@ public interface NameIndex extends Managed, AutoCloseable {
    */
   void reset();
 
+  /**
+   * @return true if started and ready to be queried
+   */
   boolean hasStarted();
+
+  /**
+   * Makes sure the names index has started and throws an NamesIndexOfflineException otherwise
+   */
+  default NameIndex assertOnline() {
+    if (!hasStarted()) {
+      throw new NamesIndexOfflineException();
+    }
+    return this;
+  }
 
   @Override
   default void close() throws Exception {
     stop();
+  }
+
+  class NamesIndexOfflineException extends IllegalStateException {
+
+    public NamesIndexOfflineException() {
+      super("Names Index is offline");
+    }
   }
 }

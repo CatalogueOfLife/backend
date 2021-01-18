@@ -88,7 +88,7 @@ public class DatasetExportResource {
     if (req == null) req = new ExportRequest();
     req.setDatasetKey(key);
     req.setUserKey(user.getKey());
-    return exportManager.sumit(req);
+    return exportManager.submit(req);
   }
 
   @GET

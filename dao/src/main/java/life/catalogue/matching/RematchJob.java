@@ -52,7 +52,7 @@ public class RematchJob extends BackgroundJob {
     super(user.getKey());
     this.datasetKeys = Preconditions.checkNotNull(datasetKeys);
     this.factory = factory;
-    this.ni = ni;
+    this.ni = ni.assertOnline();
   }
 
   @Override

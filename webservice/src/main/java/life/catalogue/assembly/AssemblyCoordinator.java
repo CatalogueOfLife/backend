@@ -163,8 +163,9 @@ public class AssemblyCoordinator implements Managed {
     LOG.warn("Cannot sync {} which has never been imported", s);
     throw new IllegalArgumentException("Dataset empty. Cannot sync " + s);
   }
-  
+
   public void sync(int catalogueKey, RequestScope request, User user) throws IllegalArgumentException {
+    nameIndex.assertOnline();
     if (request.getSectorKey() != null) {
       syncSector(DSID.of(catalogueKey, request.getSectorKey()), user);
     } else if (request.getDatasetKey() != null) {
@@ -197,6 +198,7 @@ public class AssemblyCoordinator implements Managed {
   }
   
   private synchronized void queueJob(SectorRunnable job) throws IllegalArgumentException {
+    nameIndex.assertOnline();
     // is this sector already syncing?
     if (syncs.containsKey(job.sectorKey)) {
       LOG.info("{} already busy", job.sector);

@@ -31,7 +31,7 @@ public class DatasetMatcher {
    */
   public DatasetMatcher(SqlSessionFactory factory, NameIndex ni, boolean updateIssues) {
     this.factory = factory;
-    this.ni = ni;
+    this.ni = ni.assertOnline();
     this.updateIssues = updateIssues;
   }
   
