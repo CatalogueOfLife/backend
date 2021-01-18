@@ -432,8 +432,7 @@ public class TreeCopyHandler implements Consumer<NameUsageBase>, AutoCloseable {
           if (n2.getCode() != null) {
             n.setCode(n2.getCode());
           }
-          if (n2.getRank() != null && Rank.UNRANKED != n2.getRank()) {
-            // unranked is the default
+          if (n2.getRank() != null) {
             n.setRank(n2.getRank());
           }
           if (n2.getNomStatus() != null) {
