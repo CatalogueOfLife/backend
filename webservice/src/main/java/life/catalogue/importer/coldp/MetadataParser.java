@@ -91,7 +91,8 @@ public class MetadataParser {
   }
 
   /**
-   * Reads the dataset metadata.yaml or metadata.yml from a given folder
+   * Reads the dataset metadata.yaml or metadata.yml from a given folder.
+   * In case of parsing errors an empty optional is returned.
    */
   public static Optional<DatasetWithSettings> readMetadata(Path dir) {
     for (String fn : METADATA_FILENAMES) {
@@ -117,7 +118,7 @@ public class MetadataParser {
         }
         return Optional.of(d);
         
-      } catch (IOException e) {
+      } catch (Exception e) {
         LOG.error("Error reading metadata", e);
       }
     }
