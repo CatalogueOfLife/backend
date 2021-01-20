@@ -50,34 +50,34 @@ public class NameParserResource {
 
     public CRName() {
     }
-  
+
     public CRName(NomCode code, Rank rank, String name, String authorship) {
       this.code = code;
       this.rank = rank;
       this.name = name;
       this.authorship = authorship;
     }
-  
+
     public Rank getRank() {
       return rank;
     }
-  
+
     public void setRank(Rank rank) {
       this.rank = rank;
     }
-  
+
     public NomCode getCode() {
       return code;
     }
-  
+
     public void setCode(NomCode code) {
       this.code = code;
     }
-  
+
     public String getName() {
       return name;
     }
-  
+
     public void setName(String name) {
       this.name = name;
     }
@@ -164,7 +164,7 @@ public class NameParserResource {
   /**
    * Parsing names by uploading a plain UTF-8 text file using one line per scientific name.
    * <pre>
-   * curl -F names=@scientific_names.txt http://apidev.gbif.org/parser/name
+   * curl -F names=@scientific_names.txt http://api.catalogueoflife.org/parser/name
    * </pre>
    */
   @POST
@@ -173,8 +173,7 @@ public class NameParserResource {
                                  @FormDataParam("rank") Rank rank,
                                  @FormDataParam("names") InputStream file) throws UnsupportedEncodingException {
     if (file == null) {
-      LOG.debug("No names file uploaded");
-      return Lists.newArrayList();
+      throw new IllegalArgumentException("No names file uploaded");
     }
     BufferedReader reader = new BufferedReader(new InputStreamReader(file, StandardCharsets.UTF_8));
     return parse(code, rank, reader.lines());
@@ -185,7 +184,7 @@ public class NameParserResource {
    * Parsing names by posting plain text content using one line per scientific name.
    * Make sure to preserve new lines (\n) in the posted data, for example use --data-binary with curl:
    * <pre>
-   * curl POST -H "Content-Type:text/plain" --data-binary @scientific_names.txt http://api.gbif.org/parser/name
+   * curl POST -H "Content-Type:text/plain" --data-binary @scientific_names.txt http://api.catalogueoflife.org/parser/name
    * </pre>
    */
   @POST

@@ -52,6 +52,7 @@ import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.parser.NameParser;
 import life.catalogue.release.ReleaseManager;
 import life.catalogue.resources.*;
+import life.catalogue.resources.parser.MetadataParserResource;
 import life.catalogue.resources.parser.NameParserResource;
 import life.catalogue.resources.parser.ParserResource;
 import life.catalogue.swagger.OpenApiFactory;
@@ -316,6 +317,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // parsers
     j.register(new NameParserResource(getSqlSessionFactory()));
+    j.register(new MetadataParserResource());
     j.register(new ParserResource<>());
 
     // attach listeners to event bus
