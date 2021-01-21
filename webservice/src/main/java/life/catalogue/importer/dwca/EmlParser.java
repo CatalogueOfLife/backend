@@ -32,18 +32,18 @@ public class EmlParser {
   static {
     factory = XMLInputFactory.newInstance();
   }
-  
-  Optional<DatasetWithSettings> parse(Path file) throws IOException {
+
+  public static Optional<DatasetWithSettings> parse(Path file) throws IOException {
     CharsetDetectingStream cds = CharsetDetectingStream.create(Files.newInputStream(file));
     return parse(cds, cds.getCharset());
   }
-  
-  Optional<DatasetWithSettings> parse(InputStream stream) throws IOException {
+
+  public static Optional<DatasetWithSettings> parse(InputStream stream) throws IOException {
     CharsetDetectingStream cds = CharsetDetectingStream.create(stream);
     return parse(cds, cds.getCharset());
   }
-  
-  Optional<DatasetWithSettings> parse(InputStream stream, Charset encoding) {
+
+  public static Optional<DatasetWithSettings> parse(InputStream stream, Charset encoding) {
     try {
       XMLStreamReader parser = factory.createXMLStreamReader(stream, encoding.name());
       

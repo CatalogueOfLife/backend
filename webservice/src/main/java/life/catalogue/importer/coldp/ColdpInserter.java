@@ -2,6 +2,7 @@ package life.catalogue.importer.coldp;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableList;
 import de.undercouch.citeproc.bibtex.BibTeXConverter;
 import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.jackson.ApiModule;
@@ -11,6 +12,7 @@ import life.catalogue.common.csl.CslDataConverter;
 import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
+import life.catalogue.importer.dwca.EmlParser;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.neo.model.NeoUsage;
@@ -32,6 +34,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -46,7 +49,7 @@ public class ColdpInserter extends NeoCsvInserter {
   private static final String BIBTEX_NS = "http://bibtex.org/";
   static final Term BIBTEX_CLASS_TERM = new UnknownTerm(URI.create(BIBTEX_NS), "BibTeX", true);
   static final Term CSLJSON_CLASS_TERM = new UnknownTerm(URI.create("http://citationstyles.org"), "CSL-JSON", true);
-  
+
   private ColdpInterpreter inter;
 
   public ColdpInserter(NeoDb store, Path folder, DatasetSettings settings, ReferenceFactory refFactory) throws IOException {
@@ -308,7 +311,7 @@ public class ColdpInserter extends NeoCsvInserter {
    */
   @Override
   public Optional<DatasetWithSettings> readMetadata() {
-    return MetadataParser.readMetadata(super.folder);
+    return MetadataParser.readMetadata(folder);
   }
   
 }

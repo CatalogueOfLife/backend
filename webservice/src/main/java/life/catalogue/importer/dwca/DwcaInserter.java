@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.ColDwcTerm;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
+import life.catalogue.importer.coldp.MetadataParser;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.reference.ReferenceFactory;
@@ -103,13 +104,12 @@ public class DwcaInserter extends NeoCsvInserter {
    */
   @Override
   public Optional<DatasetWithSettings> readMetadata() {
-    EmlParser parser = new EmlParser();
     Optional<Path> mf = ((DwcaReader)reader).getMetadataFile();
     if (mf.isPresent()) {
       Path metadataPath = mf.get();
       if (Files.exists(metadataPath)) {
         try {
-          return parser.parse(metadataPath);
+          return EmlParser.parse(metadataPath);
           
         } catch (IOException | RuntimeException e) {
           LOG.error("Unable to read dataset metadata from dwc archive: {}", e.getMessage(), e);
@@ -120,7 +120,9 @@ public class DwcaInserter extends NeoCsvInserter {
     } else {
       LOG.info("No dataset metadata available");
     }
-    return Optional.empty();
+
+    // try other metadata formats
+    return MetadataParser.readMetadata(folder);
   }
   
 }

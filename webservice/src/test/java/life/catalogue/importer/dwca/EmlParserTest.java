@@ -15,10 +15,9 @@ import static org.junit.Assert.assertNull;
  *
  */
 public class EmlParserTest {
-  EmlParser parser = new EmlParser();
-  
+
   private DatasetWithSettings read(String name) throws IOException {
-    return parser.parse(getClass().getResourceAsStream("/metadata/" + name)).get();
+    return EmlParser.parse(getClass().getResourceAsStream("/metadata/" + name)).get();
   }
   
   @Test

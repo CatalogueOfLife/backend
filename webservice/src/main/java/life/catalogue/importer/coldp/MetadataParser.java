@@ -16,6 +16,7 @@ import life.catalogue.api.model.Person;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.License;
+import life.catalogue.importer.dwca.EmlParser;
 import life.catalogue.importer.jackson.EnumParserSerde;
 import life.catalogue.parser.CountryParser;
 import life.catalogue.parser.LicenseParser;
@@ -31,9 +32,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * ColDP metadata parser that falls back to EML if no YAML metadata is found.
+ */
 public class MetadataParser {
   private static final Logger LOG = LoggerFactory.getLogger(MetadataParser.class);
   private static final List<String> METADATA_FILENAMES = ImmutableList.of("metadata.yaml", "metadata.yml");
+  private static final List<String> EML_FILENAMES = ImmutableList.of("eml.xml", "metadata.xml");
   private static final ObjectReader DATASET_READER;
   private static final ObjectMapper OM;
   static {
@@ -105,6 +110,18 @@ public class MetadataParser {
         }
       }
     }
+    // also try with EML if none is found
+    for (String fn : EML_FILENAMES) {
+      Path eml = dir.resolve(fn);
+      if (Files.exists(eml)) {
+        try {
+          return EmlParser.parse(eml);
+        } catch (IOException e) {
+          LOG.error("Error reading EML file " + fn, e);
+        }
+      }
+    }
+
     return Optional.empty();
   }
   
