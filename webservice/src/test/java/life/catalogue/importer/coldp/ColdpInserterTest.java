@@ -31,7 +31,7 @@ public class ColdpInserterTest extends InserterBaseTest {
     DatasetWithSettings d = ins.readMetadata().get();
     
     assertNull(d.getType());
-    assertEquals(DataFormat.COLDP, d.getDataFormat());
+    assertNull(d.getDataFormat());
     assertEquals("The full dataset title", d.getTitle());
     assertNotNull(d.getDescription());
     assertEquals(10, d.getOrganisations().size());
