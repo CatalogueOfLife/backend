@@ -105,8 +105,8 @@ public class MetadataParser {
       if (Files.exists(metapath)) {
         try {
           return readMetadata(Files.newInputStream(metapath));
-        } catch (IOException e) {
-          LOG.error("Error reading " + fn, e);
+        } catch (Exception e) {
+          LOG.error("Error reading metadata from " + fn, e);
         }
       }
     }
@@ -125,20 +125,14 @@ public class MetadataParser {
     return Optional.empty();
   }
   
-  public static Optional<DatasetWithSettings> readMetadata(InputStream stream) {
+  public static Optional<DatasetWithSettings> readMetadata(InputStream stream) throws Exception {
     if (stream != null) {
-      try {
-        DatasetWithSettings d = DATASET_READER.readValue(stream);
-        d.setDataFormat(DataFormat.COLDP);
-        if (d.getDescription() != null) {
-          d.setDescription(d.getDescription().trim());
-        }
-        return Optional.of(d);
-        
-      } catch (Exception e) {
-        LOG.error("Error reading metadata", e);
+      DatasetWithSettings d = DATASET_READER.readValue(stream);
+      if (d.getDescription() != null) {
+        d.setDescription(d.getDescription().trim());
       }
-    }
+      return Optional.of(d);
+  }
     return Optional.empty();
   }
 
