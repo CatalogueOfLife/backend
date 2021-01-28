@@ -26,7 +26,9 @@ public class AcceptHeaderRequestFilter implements ContainerRequestFilter {
     "text", MediaType.TEXT_PLAIN,
     "html", MediaType.TEXT_HTML,
     "tsv", MoreMediaTypes.TEXT_TSV,
-    "csv", MoreMediaTypes.TEXT_CSV
+    "csv", MoreMediaTypes.TEXT_CSV,
+    "png", MoreMediaTypes.IMG_PNG,
+    "image", MoreMediaTypes.IMG_PNG
   );
 
   @Override
@@ -34,9 +36,6 @@ public class AcceptHeaderRequestFilter implements ContainerRequestFilter {
     if (req.getUriInfo().getQueryParameters().containsKey(ACCEPT_PARAM)) {
       String val = req.getUriInfo().getQueryParameters().getFirst(ACCEPT_PARAM);
       req.getHeaders().putSingle(HttpHeaders.ACCEPT, VALUE_MAP.getOrDefault(val.toLowerCase(), val));
-
-    } else if (!req.getHeaders().containsKey(HttpHeaders.ACCEPT) || req.getHeaders().getFirst(HttpHeaders.ACCEPT).equals("*/*")) {
-      req.getHeaders().putSingle(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON);
     }
   }
 

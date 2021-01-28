@@ -10,7 +10,14 @@ import java.util.*;
 import static org.junit.Assert.assertEquals;
 
 public class IdConverterTest {
-  
+
+  @Test
+  public void issueExamples() {
+    for (int x : new int[]{18, 1089, 1781089, 4781089, 12781089, 2147483647}) {
+      System.out.println(IdConverter.LATIN29.encode(x));
+    }
+  }
+
   @Test
   public void encode() {
     IdConverter dec = new IdConverter("0123456789");
