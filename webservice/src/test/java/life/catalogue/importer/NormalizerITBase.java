@@ -91,7 +91,7 @@ abstract class NormalizerITBase {
           System.out.println("Use code " + code);
           return Optional.of(code);
         }
-      } catch (IOException e) {
+      } catch (Exception e) {
         e.printStackTrace();
       }
     }

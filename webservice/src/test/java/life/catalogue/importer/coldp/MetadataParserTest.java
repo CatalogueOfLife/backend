@@ -21,7 +21,7 @@ import static org.junit.Assert.*;
 public class MetadataParserTest {
   
   @Test
-  public void cycad(){
+  public void cycad() throws Exception {
     MetadataParser mp = new MetadataParser();
     Optional<DatasetWithSettings> m = mp.readMetadata(Resources.stream("metadata/cycads.yaml"));
     DatasetWithSettings d = m.get();
@@ -57,7 +57,7 @@ public class MetadataParserTest {
   }
 
   @Test
-  public void cycadStrings(){
+  public void cycadStrings() throws Exception {
     MetadataParser mp = new MetadataParser();
     Optional<DatasetWithSettings> m = mp.readMetadata(Resources.stream("metadata/cycadsStrings.yaml"));
     DatasetWithSettings d = m.get();
@@ -91,7 +91,7 @@ public class MetadataParserTest {
   }
 
   @Test
-  public void alucitoidea(){
+  public void alucitoidea() throws Exception {
     MetadataParser mp = new MetadataParser();
     Optional<DatasetWithSettings> m = mp.readMetadata(Resources.stream("metadata/Alucitoidea.yaml"));
     DatasetWithSettings d = m.get();

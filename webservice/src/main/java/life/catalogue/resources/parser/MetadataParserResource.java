@@ -41,7 +41,7 @@ public class MetadataParserResource {
    * Parsing metadata hosted on a URL given as a GET query parameters.
    */
   @GET
-  public Optional<DatasetWithSettings> parseGet(@QueryParam("url") String url) throws IOException {
+  public Optional<DatasetWithSettings> parseGet(@QueryParam("url") String url) throws Exception {
     return MetadataParser.readMetadata(new URL(url).openStream());
   }
   
@@ -55,7 +55,7 @@ public class MetadataParserResource {
   @Consumes({MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML, MediaType.TEXT_PLAIN,
     MediaType.APPLICATION_JSON // we include JSON as this is the default if no Accept header is given
   })
-  public Optional<DatasetWithSettings> parsePost(InputStream data) {
+  public Optional<DatasetWithSettings> parsePost(InputStream data) throws Exception {
     return MetadataParser.readMetadata(data);
   }
   
@@ -67,7 +67,7 @@ public class MetadataParserResource {
    */
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
-  public Optional<DatasetWithSettings> parseFile(@FormDataParam("metadata") InputStream data) throws UnsupportedEncodingException {
+  public Optional<DatasetWithSettings> parseFile(@FormDataParam("metadata") InputStream data) throws Exception {
     if (data == null) {
       throw new IllegalArgumentException("No metadata uploaded");
     }
