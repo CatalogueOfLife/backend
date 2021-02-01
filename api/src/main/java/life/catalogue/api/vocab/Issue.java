@@ -137,16 +137,7 @@ public enum Issue {
   NAME_NOT_UNIQUE(NAME, Level.ERROR,
       "A scientific name has been used to point to another record (synonym->accepted, combination->basionym) " +
           "which is not unique and refers to several records."),
-  
-  NAME_MATCH_INSERTED(NAME, Level.INFO, "The name was never seen before and inserted into the Names Index for the first time"),
 
-  NAME_MATCH_VARIANT(NAME, Level.INFO, "The name matches an orthographic variant of the name, authorship and/or rank " +
-      "already found in the names index and which is considered to be still the same name."),
-  
-  NAME_MATCH_AMBIGUOUS(NAME, Level.WARNING, "Multiple matching names found in the Names Index."),
-  
-  NAME_MATCH_NONE(NAME, Level.WARNING, "Name not found in the Names Index."),
-  
   POTENTIAL_CHRESONYM(NAME, Level.WARNING,
       "A potential chresonym exists in the dataset."),
   

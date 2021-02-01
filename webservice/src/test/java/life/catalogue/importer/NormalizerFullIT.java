@@ -43,7 +43,6 @@ public class NormalizerFullIT extends NormalizerITBase {
       store.names().all().forEach(n -> {
         VerbatimRecord v = store.getVerbatim(n.getVerbatimKey());
         assertNotNull(v);
-        assertTrue(v.hasIssue(Issue.NAME_MATCH_INSERTED));
       });
     }
   
@@ -56,8 +55,6 @@ public class NormalizerFullIT extends NormalizerITBase {
 
         VerbatimRecord v = store.getVerbatim(n.getVerbatimKey());
         assertNotNull(v);
-        assertFalse(v.hasIssue(Issue.NAME_MATCH_NONE));
-        assertFalse(v.hasIssue(Issue.NAME_MATCH_INSERTED));
       });
     }
   }

@@ -307,9 +307,6 @@ public class Normalizer implements Callable<Boolean> {
           }
         }
       }
-      if (m.getType().issue != null) {
-        store.addIssues(nn.getName(), m.getType().issue);
-      }
       counts.get(m.getType()).incrementAndGet();
     });
     LOG.info("Matched all {} names: {}", MapUtils.sumValues(counts), Joiner.on(',').withKeyValueSeparator("=").join(counts));

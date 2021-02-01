@@ -21,18 +21,13 @@ public class DatasetMatcher {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetMatcher.class);
   private final SqlSessionFactory factory;
   private final NameIndex ni;
-  private final boolean updateIssues;
   private int total = 0;
   private int updated = 0;
   private int datasets = 0;
 
-  /**
-   * @param updateIssues if true also updates matching issues in the linked verbatim records
-   */
-  public DatasetMatcher(SqlSessionFactory factory, NameIndex ni, boolean updateIssues) {
+  public DatasetMatcher(SqlSessionFactory factory, NameIndex ni) {
     this.factory = factory;
     this.ni = ni.assertOnline();
-    this.updateIssues = updateIssues;
   }
   
   /**
@@ -118,39 +113,13 @@ public class DatasetMatcher {
         } else {
           nm.delete(n);
         }
-        if (updateIssues) {
-          IssueContainer v = n.getVerbatimKey() != null ? vmGet.getIssues(key.id(n.getVerbatimKey())) : null;
-          if (v != null) {
-            int hash = v.getIssues().hashCode();
-            clearMatchIssues(v);
-            if (m.hasMatch()) {
-              if (m.getType().issue != null) {
-                v.addIssue(m.getType().issue);
-              }
-            } else {
-              v.addIssue(Issue.NAME_MATCH_NONE);
-            }
-            // only update verbatim if issues changed
-            if (hash != v.getIssues().hashCode()) {
-              vm.update(key, v.getIssues());
-            }
-          }
-        }
-        
         if ( (updated++ - updatedStart) % 10000 == 0) {
           batchSession.commit();
           LOG.debug("Updated {} out of {} name matches for dataset {}", updated - updatedStart, total-totalStart, datasetKey);
         }
       }
     }
-    
-    void clearMatchIssues(IssueContainer issues){
-      issues.removeIssue(Issue.NAME_MATCH_NONE);
-      issues.removeIssue(Issue.NAME_MATCH_AMBIGUOUS);
-      issues.removeIssue(Issue.NAME_MATCH_VARIANT);
-      issues.removeIssue(Issue.NAME_MATCH_INSERTED);
-    }
-  
+
     @Override
     public void close() throws Exception {
       batchSession.commit();

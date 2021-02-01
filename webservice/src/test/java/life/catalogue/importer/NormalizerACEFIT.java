@@ -457,8 +457,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
       assertEquals("vector", u.usage.getName().getSpecificEpithet());
 
       VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
-      assertEquals(1, v.getIssues().size());
-      assertTrue(v.getIssues().contains(Issue.NAME_MATCH_NONE));
+      assertEquals(0, v.getIssues().size());
     }
   }
 

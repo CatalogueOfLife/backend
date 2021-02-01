@@ -66,7 +66,6 @@ public class NormalizerColdpIT extends NormalizerITBase {
         } else {
           assertEquals(1, v.getIssues().size());
         }
-        assertTrue(v.hasIssue(Issue.NAME_MATCH_NONE));
       });
 
       store.usages().all().forEach(u -> {
@@ -213,18 +212,17 @@ public class NormalizerColdpIT extends NormalizerITBase {
         VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
         assertNotNull(v);
         if (u.getId().equals("fake")) {
-          assertEquals(3, v.getIssues().size());
+          assertEquals(2, v.getIssues().size());
           assertTrue(v.hasIssue(Issue.PARTIAL_DATE));
           assertTrue(v.hasIssue(Issue.PARENT_SPECIES_MISSING));
 
         } else if(u.getId().equals("cult")) {
-          assertEquals(2, v.getIssues().size());
+          assertEquals(1, v.getIssues().size());
           assertTrue(v.hasIssue(Issue.INCONSISTENT_NAME));
 
         } else {
-          assertEquals(1, v.getIssues().size());
+          assertEquals(0, v.getIssues().size());
         }
-        assertTrue(v.hasIssue(Issue.NAME_MATCH_NONE));
       });
 
       store.references().forEach(r -> {

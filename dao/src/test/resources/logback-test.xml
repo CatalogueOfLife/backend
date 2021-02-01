@@ -16,10 +16,11 @@
 
 	<logger name="org.apache.ibatis" level="INFO" />
 	<logger name="java.sql" level="INFO" />
-	<logger name="life.catalogue.es" level="TRACE" /> <!-- TRACE if you like to see ES queries and responses -->
+  <!--
+	<logger name="life.catalogue.es" level="TRACE" /> <!- - TRACE if you like to see ES queries and responses - - >
 	<logger name="life.catalogue.db" level="DEBUG" />
 	<logger name="life.catalogue.db.mapper" level="DEBUG" />
-
+  -->
 	<root level="INFO">
 		<appender-ref ref="CONSOLE" />
 	</root>

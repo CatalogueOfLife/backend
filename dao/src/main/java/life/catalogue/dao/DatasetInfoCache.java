@@ -39,15 +39,17 @@ public class DatasetInfoCache {
     public final int key;
     public final DatasetOrigin origin;
     public final Integer sourceKey;
-    public final Integer importAttempt;
+    public final Integer importAttempt; // only immutable for releases !!!
 
     DatasetInfo(int key, DatasetOrigin origin, Integer sourceKey, Integer importAttempt) {
       this.key = key;
       this.origin = Preconditions.checkNotNull(origin, "origin is required");
       this.sourceKey = sourceKey;
-      this.importAttempt = importAttempt;
       if (origin == DatasetOrigin.RELEASED) {
         Preconditions.checkNotNull(sourceKey, "sourceKey is required for release " + key);
+        this.importAttempt = Preconditions.checkNotNull(importAttempt, "importAttempt is required for release " + key);
+      } else {
+        this.importAttempt = null;
       }
     }
 
@@ -56,6 +58,14 @@ public class DatasetInfoCache {
         if (o == this.origin) return this;
       }
       throw new IllegalArgumentException("Dataset "+key+" is not of origin " + Arrays.toString(origins));
+    }
+
+    @Override
+    public String toString() {
+      return "DS " + key +
+        " origin=" + origin +
+        " source=" + sourceKey +
+        " attempt=" + importAttempt;
     }
   }
 

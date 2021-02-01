@@ -38,10 +38,7 @@ public class DatasetImportResource {
     // a release? use mother project in that case
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(key);
     if (info.origin == DatasetOrigin.RELEASED) {
-      if (info.importAttempt == null) {
-        // could possibly happen for older releases where do not have any metrics for anymore
-        return Collections.emptyList();
-      }
+      // importAttempt is required for releases
       return List.of(diDao.getAttempt(info.sourceKey, info.importAttempt));
 
     } else {

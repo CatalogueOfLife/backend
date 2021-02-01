@@ -68,7 +68,7 @@ public class RematchJob extends BackgroundJob {
   public void execute() {
     LOG.info("Rematching {} datasets with data. Triggered by {}", datasetKeys.length, getUserKey());
 
-    DatasetMatcher matcher = new DatasetMatcher(factory, ni, true);
+    DatasetMatcher matcher = new DatasetMatcher(factory, ni);
     for (int key : datasetKeys) {
       matcher.match(key, true);
     }
