@@ -58,13 +58,13 @@ public class NormalizerColdpIT extends NormalizerITBase {
         VerbatimRecord v = store.getVerbatim(n.getVerbatimKey());
         assertNotNull(v);
         if (n.getName().getId().equals("cult")){
-          assertEquals(2, v.getIssues().size());
+          assertEquals(1, v.getIssues().size());
           assertTrue(v.hasIssue(Issue.INCONSISTENT_NAME));
         } else if (n.getName().getId().equals("fake")){
-          assertEquals(2, v.getIssues().size());
+          assertEquals(1, v.getIssues().size());
           assertTrue(v.hasIssue(Issue.PARENT_SPECIES_MISSING));
         } else {
-          assertEquals(1, v.getIssues().size());
+          assertEquals(0, v.getIssues().size());
         }
       });
 
