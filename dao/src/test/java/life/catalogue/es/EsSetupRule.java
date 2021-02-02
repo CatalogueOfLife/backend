@@ -18,7 +18,7 @@ import java.util.Arrays;
 public class EsSetupRule extends ExternalResource {
 
   // required version of elastic to work against - will be verified
-  private static final int[] ES_VERSION = new int[] {7, 4};
+  private static final int[] ES_VERSION = new int[] {7};
 
   /**
    * Dataset key used by default for tests.

@@ -879,7 +879,7 @@
 				"synonym": false
 			},
 			"issues": [
-				"NAME_MATCH_VARIANT"
+				"POTENTIAL_CHRESONYM"
 			]
 		},
 		{
@@ -969,7 +969,7 @@
 			},
 			"issues": [
 				"CLASSIFICATION_NOT_APPLIED",
-				"NAME_MATCH_VARIANT"
+				"POTENTIAL_CHRESONYM"
 			]
 		},
 		{
