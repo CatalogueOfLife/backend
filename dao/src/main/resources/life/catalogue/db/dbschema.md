@@ -10,11 +10,43 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+ALTER TABLE verbatim ALTER COLUMN issues TYPE text[] USING issues::text[];
+ALTER TABLE verbatim_source_2241 ALTER COLUMN issues DROP DEFAULT;
+ALTER TABLE verbatim_source_2241 ALTER COLUMN issues TYPE ISSUE[] USING issues::ISSUE[];
+ALTER TABLE verbatim_source_2242 ALTER COLUMN issues DROP DEFAULT;
+ALTER TABLE verbatim_source_2242 ALTER COLUMN issues TYPE ISSUE[] USING issues::ISSUE[];
+ALTER TABLE verbatim_source_2246 ALTER COLUMN issues DROP DEFAULT;
+ALTER TABLE verbatim_source_2246 ALTER COLUMN issues TYPE ISSUE[] USING issues::ISSUE[];
+ALTER TABLE verbatim_source_2252 ALTER COLUMN issues DROP DEFAULT;
+ALTER TABLE verbatim_source_2252 ALTER COLUMN issues TYPE ISSUE[] USING issues::ISSUE[];
+ALTER TABLE verbatim_source_2255 ALTER COLUMN issues DROP DEFAULT;
+ALTER TABLE verbatim_source_2255 ALTER COLUMN issues TYPE ISSUE[] USING issues::ISSUE[];
+
+ALTER TABLE verbatim_source ATTACH PARTITION verbatim_source_2242 FOR VALUES IN ( 2242 );
+ALTER TABLE verbatim_source ATTACH PARTITION verbatim_source_2246 FOR VALUES IN ( 2246 );
+ALTER TABLE verbatim_source ATTACH PARTITION verbatim_source_2252 FOR VALUES IN ( 2252 );
+ALTER TABLE verbatim_source ATTACH PARTITION verbatim_source_2255 FOR VALUES IN ( 2255 );
+
+UPDATE verbatim SET issues = array_remove(array_remove(array_remove(array_remove(issues, 'NAME_MATCH_INSERTED'), 'NAME_MATCH_VARIANT'), 'NAME_MATCH_AMBIGUOUS'), 'NAME_MATCH_NONE')
+WHERE issues && ARRAY['NAME_MATCH_INSERTED', 'NAME_MATCH_VARIANT', 'NAME_MATCH_AMBIGUOUS', 'NAME_MATCH_NONE'];
+
+
 ### 2021-02-01 remove 4 name match issues
 ```
 UPDATE dataset_import SET issues_by_issue_count = delete(issues_by_issue_count, array['NAME_MATCH_INSERTED', 'NAME_MATCH_VARIANT', 'NAME_MATCH_AMBIGUOUS', 'NAME_MATCH_NONE']);
 UPDATE sector_import SET issues_by_issue_count = delete(issues_by_issue_count, array['NAME_MATCH_INSERTED', 'NAME_MATCH_VARIANT', 'NAME_MATCH_AMBIGUOUS', 'NAME_MATCH_NONE']);
-ALTER TABLE verbatim ALTER COLUMN issues TYPE text;
+
+UPDATE verbatim SET issues = array_remove(array_remove(array_remove(array_remove(issues, 'NAME_MATCH_INSERTED'::ISSUE), 'NAME_MATCH_VARIANT'::ISSUE), 'NAME_MATCH_AMBIGUOUS'::ISSUE), 'NAME_MATCH_NONE'::ISSUE)
+ WHERE issues && ARRAY['NAME_MATCH_INSERTED'::ISSUE, 'NAME_MATCH_VARIANT'::ISSUE, 'NAME_MATCH_AMBIGUOUS'::ISSUE, 'NAME_MATCH_NONE'::ISSUE];
+DROP INDEX verbatim_issues_idx;
+ALTER TABLE verbatim ALTER COLUMN issues DROP DEFAULT;
+ALTER TABLE verbatim ALTER COLUMN issues TYPE text[];
+
+UPDATE verbatim_source SET issues = array_remove(array_remove(array_remove(array_remove(issues, 'NAME_MATCH_INSERTED'::ISSUE), 'NAME_MATCH_VARIANT'::ISSUE), 'NAME_MATCH_AMBIGUOUS'::ISSUE), 'NAME_MATCH_NONE'::ISSUE)
+ WHERE issues && ARRAY['NAME_MATCH_INSERTED'::ISSUE, 'NAME_MATCH_VARIANT'::ISSUE, 'NAME_MATCH_AMBIGUOUS'::ISSUE, 'NAME_MATCH_NONE'::ISSUE];
+DROP INDEX verbatim_source_issues_idx;
+ALTER TABLE verbatim_source ALTER COLUMN issues DROP DEFAULT;
+ALTER TABLE verbatim_source ALTER COLUMN issues TYPE text[];
 
 DROP TYPE ISSUE;
 CREATE TYPE ISSUE AS ENUM (
@@ -119,7 +151,11 @@ CREATE TYPE ISSUE AS ENUM (
   'ESTIMATE_TYPE_INVALID'
 );
 
-ALTER TABLE verbatim ALTER COLUMN issues TYPE ISSUE USING issues::ISSUE;
+ALTER TABLE verbatim ALTER COLUMN issues TYPE ISSUE[] USING issues::ISSUE[];
+CREATE INDEX ON verbatim using GIN (issues);
+
+ALTER TABLE verbatim_source ALTER COLUMN issues TYPE ISSUE[] USING issues::ISSUE[];
+CREATE INDEX ON verbatim_source using GIN (issues);
 ```
 
 

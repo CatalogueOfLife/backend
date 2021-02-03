@@ -223,12 +223,11 @@ public interface DatasetPartitionMapper {
     // custom fks
     FKS.forEach( (t,fks) -> fks.forEach(fk -> createFk(t, key, fk)));
     // things specific to managed datasets only
-    if (origin == DatasetOrigin.MANAGED) {
+    if (origin.isProject()) {
       PROJECT_TABLES.forEach(t -> createPk(t, key));
       PROJECT_TABLES.forEach(t -> attachTable(t, key));
       createFk("verbatim_source", key, new FK("id", "name_usage", true, true));
     }
-
   }
   
   void attachTable(@Param("table") String table, @Param("key") int key);
