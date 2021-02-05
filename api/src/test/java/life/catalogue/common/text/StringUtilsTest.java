@@ -1,6 +1,7 @@
 package life.catalogue.common.text;
 
 import life.catalogue.api.search.NameUsageSearchParameter;
+import life.catalogue.common.tax.SciNameNormalizer;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -83,10 +84,10 @@ public class StringUtilsTest {
     assertEquals("†Lachnus bonneti", StringUtils.foldToAscii("†Lachnus bonneti"));
 
     assertEquals("lachs", StringUtils.foldToAscii("łachs"));
+    assertEquals("Coccinella 2-pustulata", StringUtils.foldToAscii("Coccinella 2-puſtulata"));
 
     String test = "ŠŒŽšœžŸ¥µÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ";
     assertEquals("SOEZsoezY¥µAAAAAAAECEEEEIIIIDNOOOOOOUUUUYssaaaaaaaeceeeeiiiidnoooooouuuuyy", StringUtils.foldToAscii(test));
-
   }
 
   @Test
