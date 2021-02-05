@@ -145,6 +145,9 @@ public class StringUtils {
         case 'ß':
           sb.append("ss");
           break;
+        case 'ſ':
+          sb.append("s");
+          break;
         case 'Æ':
           sb.append("AE");
           break;
