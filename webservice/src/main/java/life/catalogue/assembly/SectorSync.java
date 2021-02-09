@@ -52,7 +52,7 @@ public class SectorSync extends SectorRunnable {
   public SectorSync(DSID<Integer> sectorKey, SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService, SectorImportDao sid,
                     Consumer<SectorRunnable> successCallback,
                     BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
-    super(sectorKey, true, factory, indexService, sid, successCallback, errorCallback, user);
+    super(sectorKey, true, true, factory, indexService, sid, successCallback, errorCallback, user);
     this.sid = sid;
     this.nameIndex = nameIndex;
   }

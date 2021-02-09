@@ -7,6 +7,7 @@ import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.License;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.dao.SectorImportDao;
@@ -51,7 +52,7 @@ abstract class SectorRunnable implements Runnable {
   /**
    * @throws IllegalArgumentException if the sectors dataset is not of MANAGED origin
    */
-  SectorRunnable(DSID<Integer> sectorKey, boolean validateSector, SqlSessionFactory factory,
+  SectorRunnable(DSID<Integer> sectorKey, boolean validateSector, boolean validateLicenses, SqlSessionFactory factory,
                  NameUsageIndexService indexService, SectorImportDao sid,
                  Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     this.user = Preconditions.checkNotNull(user);
@@ -67,9 +68,15 @@ abstract class SectorRunnable implements Runnable {
     this.subjectDatasetKey = sector.getSubjectDatasetKey();
     try (SqlSession session = factory.openSession(true)) {
       // make sure the target catalogue is MANAGED and not RELEASED!
-      Dataset d = session.getMapper(DatasetMapper.class).get(sectorKey.getDatasetKey());
-      if (d.getOrigin() != DatasetOrigin.MANAGED) {
-        throw new IllegalArgumentException("Cannot run a " + getClass().getSimpleName() + " against a " + d.getOrigin() + " dataset");
+      Dataset target = session.getMapper(DatasetMapper.class).get(sectorKey.getDatasetKey());
+      if (target.getOrigin() != DatasetOrigin.MANAGED) {
+        throw new IllegalArgumentException("Cannot run a " + getClass().getSimpleName() + " against a " + target.getOrigin() + " dataset");
+      }
+      if (validateLicenses) {
+        Dataset source = session.getMapper(DatasetMapper.class).get(subjectDatasetKey);
+        if (!License.isCompatible(source.getLicense(), target.getLicense())) {
+          throw new IllegalArgumentException("Source license " +source.getLicense()+ " is not compatible with license " +target.getLicense()+ " of project " + sectorKey.getDatasetKey());
+        }
       }
       state = new SectorImport();
       state.setSectorKey(sectorKey.getId());

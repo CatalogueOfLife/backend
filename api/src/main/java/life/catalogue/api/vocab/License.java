@@ -61,4 +61,21 @@ public enum License {
   public boolean isConcrete() {
     return url != null;
   }
+
+  /**
+   * Check if source data under a given license can be used in a target project.
+   * @param source license of the source
+   * @param target license of the project
+   * @return true if the source license is compatible with the target license
+   */
+  public static boolean isCompatible(License source, License target) {
+    if (source == null || target == null || source==UNSPECIFIED || target==UNSPECIFIED || (source==target && source != OTHER)) {
+      return true;
+    }
+    switch (source) {
+      case CC0: return true;
+      case CC_BY: return target==CC_BY_NC;
+    }
+    return false;
+  }
 }
