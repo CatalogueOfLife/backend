@@ -12,12 +12,17 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
  */
 public abstract class NameUsageBase extends DatasetScopedEntity<String> implements NameUsage, SectorEntity {
   public static final char EXTINCT_SYMBOL = '†';
+  private static final Pattern SEC_YEAR = Pattern.compile("^(.{2,50}?[12][7890]\\d\\d\\)?)");
+  private static final Pattern AUTHOR = Pattern.compile("^(?:[a-zA-Z]{1,3}[ '´`’.-]+){0,3}[\\p{L}-]+");
+  private static final Pattern BEGINNING = Pattern.compile("^[\\p{L} '´`’,.-]{6,50}?(?<![, -])\\b(?![-'´`’])");
 
   private Integer sectorKey;
   private Integer verbatimKey;
@@ -115,9 +120,33 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
         sb.append("sensu");
       }
       sb.append(" ");
-      sb.append(accordingTo);
+      sb.append(abbreviate(accordingTo));
     }
     return sb;
+  }
+
+  public static String abbreviate(String citation) {
+    if (citation != null) {
+      Matcher m = SEC_YEAR.matcher(citation);
+      if (m.find()) {
+        citation = m.group();
+      } else {
+        m = AUTHOR.matcher(citation);
+        if (m.find()) {
+          citation = m.group();
+        } else {
+          m = BEGINNING.matcher(citation);
+          if (m.find()) {
+            citation = m.group();
+          }
+        }
+      }
+    }
+    // enforce a max length
+    if (citation.length() > 80) {
+      citation = citation.substring(0, 80)+"…";
+    }
+    return citation;
   }
 
   @Override
