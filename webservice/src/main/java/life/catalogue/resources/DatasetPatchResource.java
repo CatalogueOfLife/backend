@@ -8,11 +8,13 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
 import life.catalogue.db.mapper.DatasetPatchMapper;
 import life.catalogue.dw.auth.Roles;
+import life.catalogue.dw.jersey.MoreMediaTypes;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.security.RolesAllowed;
+import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -26,11 +28,8 @@ import java.util.List;
 @Path("/dataset/{key}/patch")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-@Consumes(MediaType.APPLICATION_JSON)
+@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML})
 public class DatasetPatchResource {
-
-  private static final Logger LOG = LoggerFactory.getLogger(DatasetPatchResource.class);
-
 
   @GET
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})

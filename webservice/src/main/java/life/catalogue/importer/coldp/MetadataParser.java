@@ -14,7 +14,6 @@ import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Person;
 import life.catalogue.api.vocab.Country;
-import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.License;
 import life.catalogue.importer.dwca.EmlParser;
 import life.catalogue.importer.jackson.EnumParserSerde;
@@ -39,20 +38,20 @@ public class MetadataParser {
   private static final Logger LOG = LoggerFactory.getLogger(MetadataParser.class);
   private static final List<String> METADATA_FILENAMES = ImmutableList.of("metadata.yaml", "metadata.yml");
   private static final List<String> EML_FILENAMES = ImmutableList.of("eml.xml", "metadata.xml");
-  private static final ObjectReader DATASET_READER;
+  private static final ObjectReader DATASET_YAML_READER;
   private static final ObjectMapper OM;
   static {
     OM = new ObjectMapper(new YAMLFactory())
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .registerModule(new JavaTimeModule())
-        .registerModule(new ColdpYamlModule());
-    DATASET_READER = OM.readerFor(YamlDataset.class);
+        .registerModule(new ColdpMetadataModule());
+    DATASET_YAML_READER = OM.readerFor(YamlDataset.class);
     
     TermFactory.instance().registerTerm(ColdpInserter.BIBTEX_CLASS_TERM);
     TermFactory.instance().registerTerm(ColdpInserter.CSLJSON_CLASS_TERM);
   }
-  private static  class ColdpYamlModule extends SimpleModule {
-    public ColdpYamlModule() {
+  public static  class ColdpMetadataModule extends SimpleModule {
+    public ColdpMetadataModule() {
       super("ColdpYaml");
       EnumParserSerde<License> lserde = new EnumParserSerde<License>(LicenseParser.PARSER);
       addDeserializer(License.class, lserde.new Deserializer());
@@ -125,9 +124,9 @@ public class MetadataParser {
     return Optional.empty();
   }
   
-  public static Optional<DatasetWithSettings> readMetadata(InputStream stream) throws Exception {
+  public static Optional<DatasetWithSettings> readMetadata(InputStream stream) throws IOException {
     if (stream != null) {
-      DatasetWithSettings d = DATASET_READER.readValue(stream);
+      DatasetWithSettings d = DATASET_YAML_READER.readValue(stream);
       if (d.getDescription() != null) {
         d.setDescription(d.getDescription().trim());
       }

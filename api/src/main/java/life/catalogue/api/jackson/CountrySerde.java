@@ -73,7 +73,8 @@ public class CountrySerde {
     
     @Override
     public Country deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
-      return Country.fromIsoCode(jp.getText()).orElse(null);
+      final String val = jp.getText();
+      return Country.fromIsoCode(val).orElseThrow(() -> new IllegalArgumentException(val + " is no valid 2 or 3 letter ISO country code"));
     }
     
   }

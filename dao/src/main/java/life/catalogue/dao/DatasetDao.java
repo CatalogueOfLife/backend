@@ -1,13 +1,13 @@
 package life.catalogue.dao;
 
+import com.google.common.base.Objects;
 import com.google.common.eventbus.EventBus;
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.UserPermissionChanged;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.Setting;
+import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.api.vocab.*;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.db.DatasetProcessable;
@@ -58,7 +58,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
                     NameUsageIndexService indexService,
                     BiFunction<Integer, String, File> scratchFileFunc,
                     EventBus bus) {
-    super(false, factory, DatasetMapper.class);
+    super(true, factory, DatasetMapper.class);
     this.downloader = downloader;
     this.imgService = imgService;
     this.scratchFileFunc = scratchFileFunc;
@@ -88,6 +88,9 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
   }
 
+  /**
+   * Verifies settings values, in particular the freemarker citation templates
+   */
   static void verifySettings(DatasetSettings ds) throws IllegalArgumentException {
     Dataset d = new Dataset();
     d.setKey(1);
@@ -206,7 +209,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   @Override
   protected void deleteAfter(Integer key, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
-    // clear search index asnychroneously
+    // clear search index asynchroneously
     CompletableFuture.supplyAsync(() -> indexService.deleteDataset(key))
       .exceptionally(e -> {
         LOG.error("Failed to delete ES docs for dataset {}", key, e.getCause());
@@ -217,8 +220,17 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   }
 
   @Override
+  public Integer create(Dataset obj, int user) {
+    // apply some defaults for required fields
+    if (obj.getType() == null) {
+      obj.setType(DatasetType.OTHER);
+    }
+    return super.create(obj, user);
+  }
+
+  @Override
   protected void createAfter(Dataset obj, int user, DatasetMapper mapper, SqlSession session) {
-    pullLogo(obj, user);
+    pullLogo(obj, null, user);
     if (obj.getOrigin() == DatasetOrigin.MANAGED) {
       recreatePartition(obj.getKey(), obj.getOrigin());
       Partitioner.createManagedObjects(factory, obj.getKey());
@@ -228,10 +240,19 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   }
 
   @Override
+  protected void updateBefore(Dataset obj, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
+    // copy all required fields from old copy if missing
+    if (obj.getType() == null) {
+      obj.setType(old.getType());
+    }
+    super.updateBefore(obj, old, user, mapper, session);
+  }
+
+  @Override
   protected void updateAfter(Dataset obj, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
-    pullLogo(obj, user);
+    pullLogo(obj, old, user);
     if (obj.getOrigin() == DatasetOrigin.MANAGED && !session.getMapper(DatasetPartitionMapper.class).exists(obj.getKey())) {
-      // suspicous. Should there ever be a managed dataset without partitions?
+      // suspicious. Should there ever be a managed dataset without partitions?
       recreatePartition(obj.getKey(), obj.getOrigin());
     }
     bus.post(DatasetChanged.change(obj));
@@ -242,8 +263,10 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     Partitioner.attach(factory, datasetKey, origin);
   }
 
-  private void pullLogo(Dataset d, int user) {
-    LogoUpdateJob.updateDatasetAsync(d, factory, downloader, scratchFileFunc, imgService, user);
+  private void pullLogo(Dataset d, Dataset old, int user) {
+    if (old == null || !Objects.equal(d.getLogo(), old.getLogo())) {
+      LogoUpdateJob.updateDatasetAsync(d, factory, downloader, scratchFileFunc, imgService, user);
+    }
   }
 
   public void addEditor(int key, int editorKey, User user) {

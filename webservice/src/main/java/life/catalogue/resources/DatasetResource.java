@@ -1,6 +1,7 @@
 package life.catalogue.resources;
 
 import io.dropwizard.auth.Auth;
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -22,6 +23,7 @@ import life.catalogue.img.ImgConfig;
 import life.catalogue.release.ReleaseManager;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.poi.ss.formula.functions.T;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +61,24 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     this.imgService = imgService;
     this.assembly = assembly;
     this.releaseManager = releaseManager;
+  }
+
+  /**
+   * @return the primary key of the object. Together with the CreatedResponseFilter will return a 201 location
+   */
+  @POST
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  @Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML})
+  public Integer createAlt(@Valid Dataset obj, @Auth User user) {
+    return this.create(obj, user);
+  }
+
+  @PUT
+  @Path("{key}")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  @Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML})
+  public void updateAlt(@PathParam("key") Integer key, Dataset obj, @Auth User user) {
+    this.update(key, obj, user);
   }
 
   @GET
