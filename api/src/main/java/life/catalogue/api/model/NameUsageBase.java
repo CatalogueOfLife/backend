@@ -141,7 +141,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
 
       m = SEC_YEAR.matcher(citation);
       if (m.find()) {
-        sb.append(", ");
+        sb.append(" ");
         sb.append(m.group());
       }
     }
