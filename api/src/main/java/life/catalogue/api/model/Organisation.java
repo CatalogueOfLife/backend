@@ -45,13 +45,12 @@ public class Organisation {
     if (isEmpty()) return null;
 
     StringBuilder sb = new StringBuilder();
-    sb.append(name);
     append(sb, department);
+    append(sb, name);
     append(sb, city);
     append(sb, state);
     if (country != null) {
-      sb.append(", ");
-      sb.append(country.getTitle());
+      append(sb, country.getTitle());
     }
     return sb.toString();
   }
@@ -63,7 +62,9 @@ public class Organisation {
 
   private static void append(StringBuilder sb, String x) {
     if (x != null) {
-      sb.append(", ");
+      if (sb.length() > 0) {
+        sb.append(", ");
+      }
       sb.append(x);
     }
   }

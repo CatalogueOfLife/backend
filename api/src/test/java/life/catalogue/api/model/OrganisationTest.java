@@ -18,5 +18,12 @@ public class OrganisationTest {
 
     o.setCountry(Country.GERMANY);
     assertEquals("BGBM, Germany", o.getLabel());
+
+    o.setDepartment("Abteilung für Bioinformatik");
+    assertEquals("Abteilung für Bioinformatik, BGBM, Germany", o.getLabel());
+
+    o.setCity("Berlin");
+    o.setState("Berlin-Brandenburg");
+    assertEquals("Abteilung für Bioinformatik, BGBM, Berlin, Berlin-Brandenburg, Germany", o.getLabel());
   }
 }
