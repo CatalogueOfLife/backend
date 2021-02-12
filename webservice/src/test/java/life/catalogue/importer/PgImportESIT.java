@@ -151,7 +151,7 @@ public class PgImportESIT extends PgImportITBase {
     assertNull(nuw.getUsage().getNamePhrase());
     assertEquals("Jarvis2007", nuw.getUsage().getAccordingToId());
     assertEquals("Jarvis, Charlie. Chapter 7: Linnaean Plant Names and their Types (part G), Order out of Chaos. Linnaean Plant Types and their Types, London: Linnaean Society of London in association with the Natural History Museum. pp. 529-556: 555 (2007).", ((NameUsageBase) nuw.getUsage()).getAccordingTo());
-    assertEquals("Gundelia tournefortii L. sensu Jarvis, Charlie. Chapter 7: Linnaean Plant Names and their Types (part G), Order out of Chaos. Linnaean Plant Types and their Types, London: Linnaean Society of London in association with the Natural History Museum. pp. 529-556: 555 (2007).", nuw.getUsage().getLabel());
+    assertEquals("Gundelia tournefortii L. sensu Jarvis, 2007", nuw.getUsage().getLabel());
   }
 
 
