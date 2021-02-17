@@ -75,7 +75,9 @@ abstract class SectorRunnable implements Runnable {
       if (validateLicenses) {
         Dataset source = session.getMapper(DatasetMapper.class).get(subjectDatasetKey);
         if (!License.isCompatible(source.getLicense(), target.getLicense())) {
-          throw new IllegalArgumentException("Source license " +source.getLicense()+ " is not compatible with license " +target.getLicense()+ " of project " + sectorKey.getDatasetKey());
+          LOG.warn("Source license {} is not compatible with license {} of project {}", source.getLicense(), target.getLicense(), sectorKey.getDatasetKey());
+          //TODO: activate exception when licensing consultations have been finished
+          //throw new IllegalArgumentException("Source license " +source.getLicense()+ " is not compatible with license " +target.getLicense()+ " of project " + sectorKey.getDatasetKey());
         }
       }
       state = new SectorImport();
