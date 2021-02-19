@@ -85,11 +85,13 @@ public class NormalizerConfig {
    *
    * @param eraseExisting if true deletes previously existing db
    */
-  public GraphDatabaseBuilder newEmbeddedDb(File storeDir, boolean eraseExisting, Integer shellPort) {
+  public GraphDatabaseBuilder newEmbeddedDb(File storeDir, boolean eraseExisting) {
     if (eraseExisting && storeDir.exists()) {
       // erase previous db
       LOG.debug("Removing previous neo4j database from {}", storeDir.getAbsolutePath());
-      FileUtils.deleteQuietly(storeDir);
+      if (!FileUtils.deleteQuietly(storeDir)) {
+        LOG.warn("Unable to remove previous neo4j database from {}", storeDir.getAbsolutePath());
+      }
     }
     GraphDatabaseBuilder builder = new GraphDatabaseFactory()
         .setUserLogProvider(new Slf4jLogProvider())

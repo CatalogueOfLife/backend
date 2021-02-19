@@ -530,10 +530,10 @@ public class PgImportIT extends PgImportITBase {
   @Test
   @Ignore("manual test for debugging entire imports")
   public void testExternalManually() throws Exception {
-    dataset.setCode(NomCode.ZOOLOGICAL);
     dataset.setType(DatasetType.TAXONOMIC);
-  
-    normalizeAndImport(URI.create("https://github.com/Sp2000/coldp/archive/master.zip"), COLDP);
+
+    normalizeAndImport(URI.create("ftp://ftp.ebi.ac.uk/pub/databases/ena/taxonomy/sdwca.zip"), DWCA);
+    //normalizeAndImport(URI.create("https://github.com/Sp2000/coldp/archive/master.zip"), COLDP);
     //normalizeAndImport(URI.create("https://github.com/mdoering/data-ina/archive/master.zip"), COLDP);
     //normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/162.tar.gz"), ACEF);
     //normalizeAndImportArchive(new File("/Users/markus/Downloads/data-wcvp-small.zip"), DWCA);

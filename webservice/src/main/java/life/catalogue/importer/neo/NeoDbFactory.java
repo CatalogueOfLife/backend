@@ -40,7 +40,7 @@ public class NeoDbFactory {
    */
   private static NeoDb create(int datasetKey, int attempt, NormalizerConfig cfg, File storeDir, boolean eraseExisting, DBMaker.Maker dbMaker) {
     try {
-      GraphDatabaseBuilder builder = cfg.newEmbeddedDb(storeDir, eraseExisting, null);
+      GraphDatabaseBuilder builder = cfg.newEmbeddedDb(storeDir, eraseExisting);
       
       // make sure mapdb parent dirs exist
       if (!storeDir.exists()) {

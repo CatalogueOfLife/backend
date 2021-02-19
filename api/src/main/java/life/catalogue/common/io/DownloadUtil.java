@@ -1,9 +1,6 @@
 package life.catalogue.common.io;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -13,6 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -22,6 +20,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.NotSupportedException;
 
 /**
  *
@@ -99,6 +99,9 @@ public class DownloadUtil {
    */
   private boolean downloadIfModifiedSince(final URI url, final ZonedDateTime lastModified, final File downloadTo) throws DownloadException {
     if (url == null) return false;
+    if (url.getScheme().equalsIgnoreCase("ftp")) {
+      return downloadIfModifiedSinceFTP(url, lastModified, downloadTo);
+    }
     
     HttpGet get = new HttpGet(url.toString());
     
@@ -149,7 +152,23 @@ public class DownloadUtil {
       throw new DownloadException(url, e);
     }
   }
-  
+
+  private boolean downloadIfModifiedSinceFTP(final URI url, final ZonedDateTime lastModified, final File downloadTo) throws DownloadException {
+    LOG.debug("Use FTP for {}", url);
+    try {
+      // copy stream to local file
+      downloadTo.getParentFile().mkdirs();
+      try (InputStream stream = url.toURL().openStream();
+           OutputStream fos = new FileOutputStream(downloadTo, false)
+      ) {
+        IOUtils.copy(stream, fos);
+      }
+    } catch (IOException e) {
+      throw new DownloadException(url, e);
+    }
+    return true;
+  }
+
   /**
    * Saves the entity of an http response to a local file, setting the local files
    * modified time to the last modified of the http response.
