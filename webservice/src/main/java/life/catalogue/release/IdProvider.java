@@ -9,8 +9,9 @@ import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.id.IdConverter;
+import life.catalogue.common.io.TabWriter;
 import life.catalogue.common.text.StringUtils;
-import life.catalogue.config.ReleaseIdConfig;
+import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.IdMapMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
@@ -20,6 +21,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -51,9 +54,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class IdProvider {
   protected final Logger LOG = LoggerFactory.getLogger(IdProvider.class);
 
-  private final int datasetKey;
+  private final int projectKey;
+  private final int attempt;
   private final SqlSessionFactory factory;
-  private final ReleaseIdConfig cfg;
+  private final ReleaseConfig cfg;
   private final ReleasedIds ids = new ReleasedIds();
   private final Int2IntMap attempt2dataset = new Int2IntOpenHashMap();
   private final AtomicInteger keySequence = new AtomicInteger();
@@ -63,6 +67,7 @@ public class IdProvider {
   private IntSet created = new IntOpenHashSet();
   private IntSet deleted = new IntOpenHashSet();
   private IdMapMapper idm;
+  private NameUsageMapper num;
   private Map<TaxonomicStatus, Integer> statusOrder = Map.of(
     TaxonomicStatus.ACCEPTED, 1,
     TaxonomicStatus.PROVISIONALLY_ACCEPTED, 2,
@@ -71,28 +76,9 @@ public class IdProvider {
     TaxonomicStatus.MISAPPLIED, 5
   );
 
-
-  public static IdProvider withAllReleases(int datasetKey, SqlSessionFactory factory) {
-    ReleaseIdConfig cfg = new ReleaseIdConfig();
-    cfg.restart = false;
-    return new IdProvider(datasetKey, cfg, factory);
-  }
-
-  public static IdProvider withReleasesSince(int datasetKey, LocalDateTime since, SqlSessionFactory factory) {
-    ReleaseIdConfig cfg = new ReleaseIdConfig();
-    cfg.restart = false;
-    cfg.since = since;
-    return new IdProvider(datasetKey, cfg, factory);
-  }
-
-  public static IdProvider withNoReleases(int datasetKey, SqlSessionFactory factory) {
-    ReleaseIdConfig cfg = new ReleaseIdConfig();
-    cfg.restart = true;
-    return new IdProvider(datasetKey, cfg, factory);
-  }
-
-  public IdProvider(int datasetKey, ReleaseIdConfig cfg, SqlSessionFactory factory) {
-    this.datasetKey = datasetKey;
+  public IdProvider(int projectKey, int attempt, ReleaseConfig cfg, SqlSessionFactory factory) {
+    this.projectKey = projectKey;
+    this.attempt = attempt;
     this.factory = factory;
     this.cfg = cfg;
   }
@@ -100,7 +86,53 @@ public class IdProvider {
   public void run() {
     prepare();
     mapIds();
-    LOG.info("Reused {} stable IDs, resurrected={}, newly created={}, deleted={}", reused, resurrected.size(), created.size(), deleted.size());
+    report();
+    LOG.info("Reused {} stable IDs for project release {}-{}, resurrected={}, newly created={}, deleted={}", projectKey, attempt, reused, resurrected.size(), created.size(), deleted.size());
+  }
+
+  private void report() {
+    try {
+      File dir = cfg.reportDir(projectKey, attempt);
+      dir.mkdirs();
+      reportFile(dir,"deleted.tsv", deleted, true); // read ID from older releases
+      reportFile(dir,"created.tsv", created, false); // read ID from this release & ID mapping
+      reportFile(dir,"resurrected.tsv", deleted, false); // read ID from older releases
+    } catch (IOException e) {
+      LOG.error("Failed to write ID reports for project "+projectKey, e);
+    }
+  }
+
+  private void reportFile(File dir, String filename, IntSet ids, boolean useOldReleases) throws IOException {
+    File f = new File(dir, filename);
+    try(TabWriter tsv = TabWriter.fromFile(f);
+        SqlSession session = factory.openSession(true)
+    ) {
+      idm = session.getMapper(IdMapMapper.class);
+      num = session.getMapper(NameUsageMapper.class);
+      LOG.info("Writing ID report for project release {}-{} of {} IDs to {}", projectKey, attempt, ids.size(), f);
+      ids.stream()
+        .sorted()
+        .forEach(id -> reportId(id, useOldReleases, tsv));
+    }
+  }
+
+  private void reportId(int id, boolean isOld, TabWriter tsv){
+    try {
+      String ID = IdConverter.LATIN29.encode(id);
+      SimpleName sn;
+      if (isOld) {
+        ReleasedId rid = this.ids.byId(id);
+        int datasetKey = attempt2dataset.get(rid.attempt);
+        sn = num.getSimple(DSID.of(datasetKey, ID));
+      } else {
+        // usages do not exist yet in the release - we gotta use the id map and look them up in the project!
+        sn = num.getSimpleByIdMap(DSID.of(projectKey, ID));
+      }
+      tsv.write(new String[]{ID, sn.getRank().toString(), sn.getStatus().toString(), sn.getName(), sn.getAuthorship()});
+
+    } catch (IOException e) {
+      LOG.error("Failed to write ID report for {}", id, e);
+    }
   }
 
   private void prepare(){
@@ -113,7 +145,7 @@ public class IdProvider {
       try (SqlSession session = factory.openSession(true)) {
         DatasetMapper dm = session.getMapper(DatasetMapper.class);
         DatasetSearchRequest dsr = new DatasetSearchRequest();
-        dsr.setReleasedFrom(datasetKey);
+        dsr.setReleasedFrom(projectKey);
         List<Dataset> releases = dm.search(dsr, null, new Page(0, 1000));
         releases.sort(Comparator.comparing(Dataset::getImportAttempt).reversed());
         for (Dataset rel : releases) {
@@ -153,7 +185,7 @@ public class IdProvider {
       final int batchSize = 10000;
       Integer lastCanonID = null;
       List<SimpleNameWithNidx> group = new ArrayList<>();
-      for (SimpleNameWithNidx u : readSession.getMapper(NameUsageMapper.class).processNxIds(datasetKey)) {
+      for (SimpleNameWithNidx u : readSession.getMapper(NameUsageMapper.class).processNxIds(projectKey)) {
         if (lastCanonID != null && !lastCanonID.equals(u.getCanonicalId())) {
           mapCanonicalGroup(group);
           int before = counter.get() / batchSize;
@@ -210,7 +242,7 @@ public class IdProvider {
         if (sn.getCanonicalId() == null) {
           issueNewId(sn);
         }
-        idm.mapUsage(datasetKey, sn.getId(), encode(sn.getCanonicalId()));
+        idm.mapUsage(projectKey, sn.getId(), encode(sn.getCanonicalId()));
       }
     }
   }

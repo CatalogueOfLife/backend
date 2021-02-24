@@ -25,6 +25,8 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
 
   SimpleName getSimple(@Param("key") DSID<String> key);
 
+  SimpleName getSimpleByIdMap(@Param("key") DSID<String> key);
+
   boolean exists(@Param("key") DSID<String> key);
 
   int delete(@Param("key") DSID<String> key);

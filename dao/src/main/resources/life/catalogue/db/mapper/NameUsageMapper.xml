@@ -166,6 +166,14 @@
     WHERE u.id = #{key.id}
   </select>
 
+  <select id="getSimpleByIdMap" resultMap="simpleResultMap">
+    <include refid="life.catalogue.db.Common.partitionByKey"/>
+    SELECT <include refid="SELECT_SIMPLE"/>
+    FROM <include refid="FROM_SIMPLE"/>
+      JOIN idmap_name_usage_${partition} idmap ON idmap.id=u.id
+    WHERE idmap.id2 = #{key.id}
+  </select>
+
   <select id="exists" resultType="boolean">
     <include refid="life.catalogue.db.Common.partitionByKey"/>
     SELECT exists(

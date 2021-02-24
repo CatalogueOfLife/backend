@@ -1,16 +1,20 @@
 package life.catalogue.release;
 
 import life.catalogue.api.vocab.Gazetteer;
+import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.IdMapMapper;
 import org.apache.ibatis.session.SqlSession;
+import org.gbif.utils.file.FileUtils;
 import org.junit.*;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -34,11 +38,14 @@ public class IdProviderTest {
   public final TestRule chain = RuleChain
     .outerRule(new TestDataRule(PROJECT_DATA))
     .around(matchingRule);
+  private ReleaseConfig cfg;
 
 
   @Before
-  public void init() {
-    provider = IdProvider.withAllReleases(projectKey,PgSetupRule.getSqlSessionFactory());
+  public void init() throws IOException {
+    cfg = new ReleaseConfig();
+    cfg.reportDir = FileUtils.createTempDir();
+    provider = new IdProvider(projectKey, 1, cfg, PgSetupRule.getSqlSessionFactory());
     System.out.println("Create id mapping tables for project " + projectKey);
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
@@ -53,6 +60,7 @@ public class IdProviderTest {
       DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
       DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.deleteTable(t, projectKey));
     }
+    org.apache.commons.io.FileUtils.deleteQuietly(cfg.reportDir);
   }
 
   @Test

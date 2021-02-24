@@ -6,7 +6,7 @@ import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.concurrent.NamedThreadFactory;
-import life.catalogue.config.ReleaseIdConfig;
+import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
@@ -43,10 +43,10 @@ public class ReleaseManager {
   private final NameUsageIndexService indexService;
   private final SqlSessionFactory factory;
   private final ImageService imageService;
-  private final ReleaseIdConfig cfg;
+  private final ReleaseConfig cfg;
   private AbstractProjectCopy job;
 
-  public ReleaseManager(DatasetImportDao diDao, DatasetDao dDao, NameIndex nameIndex, NameUsageIndexService indexService, ImageService imageService, SqlSessionFactory factory, ReleaseIdConfig cfg) {
+  public ReleaseManager(DatasetImportDao diDao, DatasetDao dDao, NameIndex nameIndex, NameUsageIndexService indexService, ImageService imageService, SqlSessionFactory factory, ReleaseConfig cfg) {
     this.diDao = diDao;
     this.dDao = dDao;
     this.nameIndex = nameIndex;
@@ -108,7 +108,7 @@ public class ReleaseManager {
    */
   public static ProjectRelease release(SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService,
                                        DatasetImportDao diDao, DatasetDao dDao, ImageService imageService,
-                                       int projectKey, int userKey, ReleaseIdConfig cfg) {
+                                       int projectKey, int userKey, ReleaseConfig cfg) {
     Dataset release = createDataset(factory, projectKey, "release", userKey, ProjectRelease::releaseDataset);
     return new ProjectRelease(factory, nameIndex, indexService, diDao, dDao, imageService, projectKey, release, userKey, cfg);
   }

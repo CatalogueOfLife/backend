@@ -6,7 +6,7 @@ import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.config.ReleaseIdConfig;
+import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TreeRepoRule;
@@ -106,7 +106,7 @@ public class ProjectReleaseIT {
   }
 
   private ProjectRelease buildRelease() {
-    ReleaseIdConfig cfg = new ReleaseIdConfig();
+    ReleaseConfig cfg = new ReleaseConfig();
     cfg.restart = false;
     return ReleaseManager.release(PgSetupRule.getSqlSessionFactory(), matchingRule.getIndex(), NameUsageIndexService.passThru(), diDao, dDao, ImageService.passThru(), projectKey, Users.TESTER, cfg);
   }

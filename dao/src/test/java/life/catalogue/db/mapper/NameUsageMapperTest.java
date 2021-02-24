@@ -17,7 +17,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   

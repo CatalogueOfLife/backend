@@ -6,7 +6,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.text.CitationUtils;
-import life.catalogue.config.ReleaseIdConfig;
+import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetProjectSourceDao;
@@ -27,12 +27,12 @@ public class ProjectRelease extends AbstractProjectCopy {
   private static final String DEFAULT_ALIAS_TEMPLATE = "{aliasOrTitle}-{date}";
 
   private final ImageService imageService;
-  private final ReleaseIdConfig cfg;
+  private final ReleaseConfig cfg;
   private final NameIndex nameIndex;
   private final Dataset release;
 
   ProjectRelease(SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, ImageService imageService,
-                 int datasetKey, Dataset release, int userKey, ReleaseIdConfig cfg) {
+                 int datasetKey, Dataset release, int userKey, ReleaseConfig cfg) {
     super("releasing", factory, diDao, dDao, indexService, userKey, datasetKey, release, true);
     this.imageService = imageService;
     this.nameIndex = nameIndex;
@@ -64,7 +64,7 @@ public class ProjectRelease extends AbstractProjectCopy {
 
     // map ids
     updateState(ImportState.MATCHING);
-    IdProvider idProvider = new IdProvider(datasetKey, cfg, factory);
+    IdProvider idProvider = new IdProvider(datasetKey, metrics.getAttempt(), cfg, factory);
     idProvider.run();
   }
 

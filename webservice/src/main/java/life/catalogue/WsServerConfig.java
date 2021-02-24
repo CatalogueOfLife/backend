@@ -7,7 +7,7 @@ import life.catalogue.common.io.Resources;
 import life.catalogue.config.GbifConfig;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
-import life.catalogue.config.ReleaseIdConfig;
+import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.PgDbConfig;
 import life.catalogue.dw.auth.AuthenticationProviderFactory;
@@ -84,7 +84,7 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
 
   @Valid
   @NotNull
-  public ReleaseIdConfig release = new ReleaseIdConfig();
+  public ReleaseConfig release = new ReleaseConfig();
 
   /**
    * Names index kvp file to persist map on disk. If empty will use a volatile memory index.
@@ -156,6 +156,7 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
     created = metricsRepo.mkdirs() || created;
     created = normalizer.mkdirs() || created;
     created = importer.mkdirs() || created;
+    created = release.mkdirs() || created;
     return created;
   }
 
