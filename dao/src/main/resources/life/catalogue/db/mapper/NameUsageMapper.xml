@@ -215,6 +215,33 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
+  <select id="listRelated" resultType="life.catalogue.api.model.NameUsageBase">
+    SELECT <include refid="SELECT"/>
+    FROM name_usage orig
+      JOIN name_match nmo ON nmo.dataset_key=orig.dataset_key AND nmo.name_id=orig.name_id
+      JOIN names_index ni ON ni.id=nmo.index_id
+      JOIN name_match nm ON nm.index_id=ni.id OR nm.index_id=ni.canonical_id
+    <!-- now join the related usages -->
+    JOIN name n ON nm.name_id=n.id AND nm.dataset_key=n.dataset_key
+    JOIN name_usage u ON u.name_id=n.id AND u.dataset_key=n.dataset_key
+    <if test="publisherKey != null">
+      JOIN dataset d ON d.key=u.dataset_key
+    </if>
+    LEFT JOIN reference r ON r.id=u.according_to_id AND r.dataset_key=u.dataset_key
+    LEFT JOIN name_usage a ON a.id=u.parent_id AND u.is_synonym AND a.dataset_key=u.dataset_key
+    LEFT JOIN name an ON a.name_id=an.id AND an.dataset_key=u.dataset_key
+    LEFT JOIN reference ar ON ar.id=a.according_to_id AND ar.dataset_key=u.dataset_key
+    WHERE orig.dataset_key=#{key.datasetKey} AND orig.id=#{key.id}
+      AND (u.dataset_key!=#{key.datasetKey} OR u.id!=#{key.id})
+    <if test="datasetKeys != null and !datasetKeys.isEmpty()">
+      AND n.dataset_key IN <foreach item="id" collection="datasetKeys" open="(" separator="," close=")">#{id}</foreach>
+    </if>
+    <if test="publisherKey != null">
+      AND d.gbif_publisher_key = #{publisherKey}
+    </if>
+    ORDER BY u.dataset_key, u.id
+  </select>
+
   <select id="listByName" resultMap="usageResultMap">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>

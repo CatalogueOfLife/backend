@@ -91,12 +91,6 @@ public class IdProvider {
     return new IdProvider(datasetKey, cfg, factory);
   }
 
-  public static IdProvider withMap(int datasetKey, SqlSessionFactory factory, Map<Integer, String> nidxMap) {
-    ReleaseIdConfig cfg = new ReleaseIdConfig();
-    cfg.restart = true;
-    return new IdProvider(datasetKey, cfg, factory);
-  }
-
   public IdProvider(int datasetKey, ReleaseIdConfig cfg, SqlSessionFactory factory) {
     this.datasetKey = datasetKey;
     this.factory = factory;

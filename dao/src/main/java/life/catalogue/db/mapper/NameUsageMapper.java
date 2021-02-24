@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Mapper dealing with methods returning the NameUsage interface, i.e. a name in the context of either a Taxon, TaxonVernacularUsage,
@@ -31,7 +32,19 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   int count(@Param("datasetKey") int datasetKey);
 
   List<NameUsageBase> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
-  
+
+  /**
+   * Returns related name usages based on the same name as matched against the names index.
+   *
+   * @param key the key of any name usage
+   * @param datasetKeys optional filter by target dataset keys
+   * @param publisherKey optional filter by a target GBIF publisher key
+   * @return
+   */
+  List<NameUsageBase> listRelated(@Param("key") DSID<String> key,
+                                  @Param("datasetKeys") @Nullable Collection<Integer> datasetKeys,
+                                  @Param("publisherKey") @Nullable UUID publisherKey);
+
   List<NameUsageBase> listByNameID(@Param("datasetKey") int datasetKey, @Param("nameId") String nameId, @Param("page") Page page);
 
   List<NameUsageBase> listByNamesIndexID(@Param("datasetKey") int datasetKey, @Param("nidx") int nidx, @Param("page") Page page);
@@ -40,7 +53,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
 
   List<NameUsageBase> listByName(@Param("datasetKey") int datasetKey,
                          @Param("name") String sciname,
-                         @Nullable @Param("rank") Rank rank, @Param("page") Page page);
+                         @Param("rank") @Nullable Rank rank, @Param("page") Page page);
 
   /**
    * Lists all children (taxon & synonym) of a given parent

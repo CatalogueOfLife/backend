@@ -13,10 +13,7 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
@@ -61,6 +58,14 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
     assertEquals(t.getName().getRank(), sn.getRank());
     assertEquals(t.getName().getScientificName(), sn.getName());
     assertEquals(t.getName().getAuthorship(), sn.getAuthorship());
+  }
+
+  @Test
+  public void listRelated() throws Exception {
+    mapper().listRelated(DSID.of(testDataRule.testData.key, "1"), null, null);
+    mapper().listRelated(DSID.of(testDataRule.testData.key, "1"), null, UUID.randomUUID());
+    mapper().listRelated(DSID.of(testDataRule.testData.key, "1"), List.of(1,2,3), UUID.randomUUID());
+    mapper().listRelated(DSID.of(testDataRule.testData.key, "1"), List.of(1,2,3), null);
   }
 
   @Test

@@ -22,6 +22,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 @Produces(MediaType.APPLICATION_JSON)
@@ -67,6 +68,16 @@ public class NameUsageResource {
   @Path("{id}")
   public NameUsageBase get(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     return session.getMapper(NameUsageMapper.class).get(DSID.of(datasetKey, id));
+  }
+
+  @GET
+  @Path("{id}/related")
+  public List<NameUsageBase> related(@PathParam("key") int datasetKey,
+                                     @PathParam("id") String id,
+                                     @QueryParam("datasetKey") List<Integer> datasetKeys,
+                                     @QueryParam("publisherKey") UUID publisherKey,
+                                     @Context SqlSession session) {
+    return session.getMapper(NameUsageMapper.class).listRelated(DSID.of(datasetKey, id), datasetKeys, publisherKey);
   }
 
   @GET
