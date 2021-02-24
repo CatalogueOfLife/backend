@@ -1,5 +1,7 @@
 package life.catalogue.config;
 
+import org.gbif.utils.file.FileUtils;
+
 import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.nio.file.Path;
@@ -16,7 +18,7 @@ public class ReleaseConfig {
   public int start = 0;
 
   @NotNull
-  public File reportDir;
+  public File reportDir = new File("/tmp/col/release");
 
   public File reportDir(int datasetKey, int attempt) {
     return new File(reportDir, String.valueOf(datasetKey) + "/" + String.valueOf(attempt));
