@@ -181,6 +181,20 @@
     )
   </select>
 
+  <select id="listByRegex" resultMap="simpleResultMap">
+    <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
+    SELECT <include refid="SELECT_SIMPLE"/>
+    FROM <include refid="FROM_SIMPLE"/>
+    WHERE n.scientific_name ~ '${regex}'
+    <if test="rank != null">
+      AND n.rank = #{rank}::RANK
+    </if>
+    <if test="status != null">
+      AND u.status = #{status}::TAXONOMICSTATUS
+    </if>
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
   <select id="list" resultMap="usageResultMap">
     <include refid="life.catalogue.db.Common.partitionByDatasetKey"/>
     SELECT <include refid="SELECT"/>

@@ -9,6 +9,7 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
+import org.gbif.api.vocabulary.TaxonomicStatus;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,6 +67,30 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
     mapper().listRelated(DSID.of(testDataRule.testData.key, "1"), null, UUID.randomUUID());
     mapper().listRelated(DSID.of(testDataRule.testData.key, "1"), List.of(1,2,3), UUID.randomUUID());
     mapper().listRelated(DSID.of(testDataRule.testData.key, "1"), List.of(1,2,3), null);
+  }
+
+  @Test
+  public void listByRegex() throws Exception {
+    List<SimpleName> res = mapper().listByRegex(testDataRule.testData.key, ".", null, null, new Page());
+    assertEquals(4, res.size());
+
+    res = mapper().listByRegex(testDataRule.testData.key, ".", TaxonomicStatus.ACCEPTED, null, new Page());
+    assertEquals(2, res.size());
+
+    res = mapper().listByRegex(testDataRule.testData.key, ".", TaxonomicStatus.ACCEPTED, Rank.GENUS, new Page());
+    assertEquals(0, res.size());
+
+    res = mapper().listByRegex(testDataRule.testData.key, "fus", null, null, new Page());
+    assertEquals(2, res.size());
+
+    res = mapper().listByRegex(testDataRule.testData.key, "^La", null, null, new Page());
+    assertEquals(3, res.size());
+
+    res = mapper().listByRegex(testDataRule.testData.key, "^[A-Za-z]+$", null, null, new Page());
+    assertEquals(0, res.size());
+
+    res = mapper().listByRegex(testDataRule.testData.key, "^[A-Za-z]+\\s", null, null, new Page());
+    assertEquals(4, res.size());
   }
 
   @Test

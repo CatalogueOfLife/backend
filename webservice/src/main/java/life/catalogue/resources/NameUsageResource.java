@@ -1,17 +1,17 @@
 package life.catalogue.resources;
 
 import com.codahale.metrics.annotation.Timed;
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.NameUsageBase;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.ResultPage;
+import com.google.common.base.Preconditions;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
 import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.es.InvalidQueryException;
 import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.es.NameUsageSuggestionService;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.SqlSession;
+import org.gbif.api.vocabulary.TaxonomicStatus;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +24,8 @@ import javax.ws.rs.core.UriInfo;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Path("/dataset/{key}/nameusage")
@@ -78,6 +80,26 @@ public class NameUsageResource {
                                      @QueryParam("publisherKey") UUID publisherKey,
                                      @Context SqlSession session) {
     return session.getMapper(NameUsageMapper.class).listRelated(DSID.of(datasetKey, id), datasetKeys, publisherKey);
+  }
+
+  @GET
+  @Timed
+  @Path("pattern")
+  public List<SimpleName> searchDatasetByRegex(@PathParam("key") int datasetKey,
+                                                  @QueryParam("regex") String regex,
+                                                  @QueryParam("status") TaxonomicStatus status,
+                                                  @QueryParam("rank") Rank rank,
+                                                  @Valid @BeanParam Page page,
+                                                  @Context SqlSession session) {
+    Preconditions.checkArgument(regex != null && regex.length()>2, "Valid regex parameter of at least 3 characters is required");
+    try {
+      Pattern rx = Pattern.compile(regex);
+    } catch (PatternSyntaxException e) {
+      throw new IllegalArgumentException("Regex invalid", e);
+    }
+
+    Page p = page == null ? new Page() : page;
+    return session.getMapper(NameUsageMapper.class).listByRegex(datasetKey, regex, status, rank, p);
   }
 
   @GET

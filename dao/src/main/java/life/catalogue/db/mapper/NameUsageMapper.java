@@ -5,6 +5,7 @@ import life.catalogue.db.CopyDataset;
 import life.catalogue.db.SectorProcessable;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
+import org.gbif.api.vocabulary.TaxonomicStatus;
 import org.gbif.nameparser.api.Rank;
 
 import javax.annotation.Nullable;
@@ -32,6 +33,12 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   int delete(@Param("key") DSID<String> key);
 
   int count(@Param("datasetKey") int datasetKey);
+
+  List<SimpleName> listByRegex(@Param("datasetKey") int datasetKey,
+                               @Param("regex") String regex,
+                               @Param("status") TaxonomicStatus status,
+                               @Param("rank") Rank rank,
+                               @Param("page") Page page);
 
   List<NameUsageBase> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
 
