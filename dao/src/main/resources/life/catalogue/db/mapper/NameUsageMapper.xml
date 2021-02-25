@@ -192,6 +192,7 @@
     <if test="status != null">
       AND u.status = #{status}::TAXONOMICSTATUS
     </if>
+    ORDER BY n.scientific_name
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
