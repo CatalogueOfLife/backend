@@ -14,6 +14,7 @@ import life.catalogue.common.csl.CslUtil;
 import life.catalogue.importer.InserterBaseTest;
 import life.catalogue.importer.NeoInserter;
 import life.catalogue.importer.reference.ReferenceFactory;
+import org.gbif.dwc.terms.BibTexTerm;
 import org.gbif.nameparser.api.NomCode;
 import org.junit.Test;
 

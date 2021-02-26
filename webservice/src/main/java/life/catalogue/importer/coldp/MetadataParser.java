@@ -46,8 +46,6 @@ public class MetadataParser {
         .registerModule(new JavaTimeModule())
         .registerModule(new ColdpMetadataModule());
     DATASET_YAML_READER = OM.readerFor(YamlDataset.class);
-    
-    TermFactory.instance().registerTerm(ColdpInserter.BIBTEX_CLASS_TERM);
     TermFactory.instance().registerTerm(ColdpInserter.CSLJSON_CLASS_TERM);
   }
   public static  class ColdpMetadataModule extends SimpleModule {

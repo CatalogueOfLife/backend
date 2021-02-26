@@ -20,6 +20,8 @@ import life.catalogue.importer.reference.ReferenceFactory;
 import life.catalogue.parser.SafeParser;
 import life.catalogue.parser.TreatmentFormatParser;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.gbif.dwc.terms.BibTexTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.dwc.terms.UnknownTerm;
@@ -46,9 +48,7 @@ import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 public class ColdpInserter extends NeoCsvInserter {
 
   private static final Logger LOG = LoggerFactory.getLogger(ColdpInserter.class);
-  private static final String BIBTEX_NS = "http://bibtex.org/";
-  static final Term BIBTEX_CLASS_TERM = new UnknownTerm(URI.create(BIBTEX_NS), "BibTeX", true);
-  static final Term CSLJSON_CLASS_TERM = new UnknownTerm(URI.create("http://citationstyles.org"), "CSL-JSON", true);
+  static final Term CSLJSON_CLASS_TERM = new UnknownTerm(URI.create("http://citationstyles.org/CSL-JSON"), "CSL-JSON", true);
 
   private ColdpInterpreter inter;
 
@@ -223,7 +223,7 @@ public class ColdpInserter extends NeoCsvInserter {
   }
   
   private Term bibTexTerm(String name) {
-    return TermFactory.instance().findPropertyTerm(BIBTEX_NS + name);
+    return new BibTexTerm(name.trim());
   }
   
   private void insertBibTex(final int datasetKey, File f) {
@@ -234,7 +234,7 @@ public class ColdpInserter extends NeoCsvInserter {
       bc.toItemData(db).forEach((id, cslItem) -> {
         BibTeXEntry bib = db.getEntries().get(new Key(id));
         VerbatimRecord v = new VerbatimRecord();
-        v.setType(BIBTEX_CLASS_TERM);
+        v.setType(BibTexTerm.CLASS_TERM);
         v.setDatasetKey(datasetKey);
         v.setFile(f.getName());
         for (Map.Entry<Key, Value> field : bib.getFields().entrySet()) {

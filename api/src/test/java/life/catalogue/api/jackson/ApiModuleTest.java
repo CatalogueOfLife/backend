@@ -1,5 +1,6 @@
 package life.catalogue.api.jackson;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import life.catalogue.api.model.DSIDValue;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Page;
@@ -9,11 +10,13 @@ import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.vocab.Environment;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import org.gbif.dwc.terms.TermFactory;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,6 +27,48 @@ public class ApiModuleTest {
   @Test
   public void testInit() throws IOException {
     assertNotNull( ApiModule.MAPPER );
+  }
+
+  @Test
+  public void testTermFactory() throws IOException {
+    ObjectMapper map = ApiModule.MAPPER;
+
+    for( String t : List.of(
+      "acef:AcceptedInfraSpecificTaxa",
+      "acef:AcceptedSpecies",
+      "acef:CommonNames",
+      "acef:Distribution",
+      "acef:NameReferencesLinks",
+      "acef:Reference",
+      "acef:Synonyms",
+      "col:Description",
+      "col:Distribution",
+      "col:Media",
+      "col:Name",
+      "col:NameRel",
+      "col:NameRelation",
+      "col:NameUsage",
+      "col:Reference",
+      "col:SpeciesEstimate",
+      "col:SpeciesInteraction",
+      "col:Synonym",
+      "col:Taxon",
+      "col:TypeMaterial",
+      "col:VernacularName",
+      "dwc:Taxon",
+      "gbif:Description",
+      "gbif:Distribution",
+      "gbif:Multimedia",
+      "gbif:Reference",
+      "gbif:VernacularName",
+      "http://bibtex.org/BibTeX",
+      "bib:BibTeX",
+      "http://unknown.org/col/Description",
+      "tt:Tree"
+    )) {
+      System.out.println(t);
+      System.out.println( TermFactory.instance().findTerm(t, true) );
+    }
   }
   
   @Test

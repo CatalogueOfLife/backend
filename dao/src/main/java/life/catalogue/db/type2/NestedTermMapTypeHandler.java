@@ -57,8 +57,8 @@ public class NestedTermMapTypeHandler extends BaseTypeHandler<Map<Term, Map<Term
     if (json != null) {
       try {
         return reader.readValue(json);
-      } catch (IOException e) {
-        throw new SQLException("Cannot deserialize term map from JSON", e);
+      } catch (IOException | RuntimeException e) {
+        throw new SQLException("Cannot deserialize term map from JSON string: " + json, e);
       }
     }
     return null;
@@ -69,7 +69,7 @@ public class NestedTermMapTypeHandler extends BaseTypeHandler<Map<Term, Map<Term
       try {
         return writer.writeValueAsString(tr);
         
-      } catch (IOException e) {
+      } catch (IOException | RuntimeException e) {
         throw new SQLException("Cannot serialize term map into JSON", e);
       }
     }
