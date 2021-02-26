@@ -2,7 +2,10 @@ package life.catalogue.api.jackson;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.deser.std.FromStringDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -59,11 +62,10 @@ public class ApiModule extends SimpleModule {
   }
   
   public ApiModule() {
-    super("ColApi");
-    
+    super("ColApi", new Version(1, 0, 0, null, "org.catalogueoflife", "api"));
+
     // first deserializers
     addDeserializer(Country.class, new CountrySerde.Deserializer());
-    addDeserializer(Term.class, new TermSerde.Deserializer());
     addDeserializer(CSLRefType.class, new CSLRefTypeSerde.Deserializer());
     addDeserializer(URI.class, new URIDeserializer());
     addDeserializer(UUID.class, new UUIDSerde.Deserializer());
@@ -73,17 +75,14 @@ public class ApiModule extends SimpleModule {
 
     // then serializers:
     addSerializer(Country.class, new CountrySerde.Serializer());
-    addSerializer(Term.class, new TermSerde.ValueSerializer());
     addSerializer(CSLRefType.class, new CSLRefTypeSerde.Serializer());
     addSerializer(UUID.class, new UUIDSerde.Serializer());
 
     // then key deserializers
-    addKeyDeserializer(Term.class, new TermSerde.TermKeyDeserializer());
     addKeyDeserializer(Country.class, new CountrySerde.KeyDeserializer());
     addKeyDeserializer(UUID.class, new UUIDSerde.KeyDeserializer());
 
     // then key serializers
-    addKeySerializer(Term.class, new TermSerde.FieldSerializer());
     addKeySerializer(Country.class, new CountrySerde.FieldSerializer());
     addKeySerializer(UUID.class, new UUIDSerde.FieldSerializer());
 
@@ -105,13 +104,20 @@ public class ApiModule extends SimpleModule {
     // required to properly register serdes
     super.setupModule(ctxt);
     ctxt.setMixInAnnotations(Authorship.class, AuthorshipMixIn.class);
+    ctxt.setMixInAnnotations(Term.class, TermMixIn.class);
   }
   
   abstract class AuthorshipMixIn {
     @JsonIgnore
     abstract boolean isEmpty();
   }
-  
+
+  @JsonSerialize(using = TermSerde.Serializer.class, keyUsing = TermSerde.KeySerializer.class)
+  @JsonDeserialize(using = TermSerde.Deserializer.class, keyUsing = TermSerde.KeyDeserializer.class)
+  static abstract class TermMixIn {
+
+  }
+
   static class URIDeserializer extends FromStringDeserializer<URI> {
   
     protected URIDeserializer() {

@@ -21,7 +21,7 @@ public class TermSerde {
   /**
    * Deserializer for {@link Term} in key values.
    */
-  public static class TermKeyDeserializer extends KeyDeserializer {
+  public static class KeyDeserializer extends com.fasterxml.jackson.databind.KeyDeserializer {
 
     @Override
     public Object deserializeKey(String key, DeserializationContext ctxt) throws IOException {
@@ -35,7 +35,7 @@ public class TermSerde {
   /**
    * Serializes a term as its prefixed name string.
    */
-  public static class ValueSerializer extends JsonSerializer<Term> {
+  public static class Serializer extends JsonSerializer<Term> {
 
     @Override
     public void serialize(Term value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
@@ -50,7 +50,7 @@ public class TermSerde {
   /**
    * Serializes a term as its prefixed name string into a json field.
    */
-  public static class FieldSerializer extends JsonSerializer<Term> {
+  public static class KeySerializer extends JsonSerializer<Term> {
 
     @Override
     public void serialize(Term value, JsonGenerator jgen, SerializerProvider provider) throws IOException {

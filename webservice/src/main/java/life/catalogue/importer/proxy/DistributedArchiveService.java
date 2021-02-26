@@ -38,7 +38,7 @@ public class DistributedArchiveService {
     public YamlModule() {
       super("Yaml");
       addDeserializer(Term.class, new TermSerde.Deserializer());
-      addSerializer(Term.class, new TermSerde.ValueSerializer());
+      addSerializer(Term.class, new TermSerde.Serializer());
     }
   }
   

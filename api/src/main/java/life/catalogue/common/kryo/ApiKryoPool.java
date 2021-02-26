@@ -13,6 +13,7 @@ import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.kryo.jdk.JdkImmutableListSerializer;
 import life.catalogue.common.kryo.jdk.JdkImmutableMapSerializer;
 import life.catalogue.common.kryo.jdk.JdkImmutableSetSerializer;
+import org.gbif.dwc.terms.BibTexTerm;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.*;
@@ -161,6 +162,7 @@ public class ApiKryoPool extends Pool<Kryo> {
       kryo.register(cl);
     }
     kryo.register(UnknownTerm.class, new TermSerializer());
+    kryo.register(BibTexTerm.class, new TermSerializer());
     return kryo;
   }
 }
