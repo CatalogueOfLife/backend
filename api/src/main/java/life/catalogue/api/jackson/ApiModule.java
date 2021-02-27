@@ -66,6 +66,7 @@ public class ApiModule extends SimpleModule {
 
     // first deserializers
     addDeserializer(Country.class, new CountrySerde.Deserializer());
+    addDeserializer(Term.class, new TermSerde.Deserializer());
     addDeserializer(CSLRefType.class, new CSLRefTypeSerde.Deserializer());
     addDeserializer(URI.class, new URIDeserializer());
     addDeserializer(UUID.class, new UUIDSerde.Deserializer());
@@ -75,14 +76,17 @@ public class ApiModule extends SimpleModule {
 
     // then serializers:
     addSerializer(Country.class, new CountrySerde.Serializer());
+    addSerializer(Term.class, new TermSerde.Serializer());
     addSerializer(CSLRefType.class, new CSLRefTypeSerde.Serializer());
     addSerializer(UUID.class, new UUIDSerde.Serializer());
 
     // then key deserializers
+    addKeyDeserializer(Term.class, new TermSerde.KeyDeserializer());
     addKeyDeserializer(Country.class, new CountrySerde.KeyDeserializer());
     addKeyDeserializer(UUID.class, new UUIDSerde.KeyDeserializer());
 
     // then key serializers
+    addKeySerializer(Term.class, new TermSerde.KeySerializer());
     addKeySerializer(Country.class, new CountrySerde.FieldSerializer());
     addKeySerializer(UUID.class, new UUIDSerde.FieldSerializer());
 
