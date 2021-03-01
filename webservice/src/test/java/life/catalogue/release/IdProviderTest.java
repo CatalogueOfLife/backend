@@ -60,7 +60,7 @@ public class IdProviderTest {
   class IdTestProvider extends IdProvider {
 
     public IdTestProvider() {
-      super(projectKey, Collections.max(prevIdsByAttempt.keySet())+1, cfg, PgSetupRule.getSqlSessionFactory());
+      super(projectKey, prevIdsByAttempt.isEmpty() ? 1 : Collections.max(prevIdsByAttempt.keySet())+1, cfg, PgSetupRule.getSqlSessionFactory());
     }
 
     @Override
