@@ -1,11 +1,13 @@
 package life.catalogue.release;
 
+import com.google.common.annotations.VisibleForTesting;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
+import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.id.IdConverter;
@@ -23,7 +25,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -83,14 +84,31 @@ public class IdProvider {
     this.cfg = cfg;
   }
 
-  public void run() {
+  public IdReport run() {
     prepare();
     mapIds();
     report();
     LOG.info("Reused {} stable IDs for project release {}-{}, resurrected={}, newly created={}, deleted={}", projectKey, attempt, reused, resurrected.size(), created.size(), deleted.size());
+    return getReport();
   }
 
-  private void report() {
+  public static class IdReport {
+    public final IntSet created;
+    public final IntSet deleted;
+    public final IntSet resurrected;
+
+    IdReport(IntSet created, IntSet deleted, IntSet resurrected) {
+      this.created = created;
+      this.deleted = deleted;
+      this.resurrected = resurrected;
+    }
+  }
+
+  public IdReport getReport() {
+    return new IdReport(created, deleted, resurrected);
+  }
+
+  protected void report() {
     try {
       File dir = cfg.reportDir(projectKey, attempt);
       dir.mkdirs();
@@ -128,9 +146,27 @@ public class IdProvider {
         // usages do not exist yet in the release - we gotta use the id map and look them up in the project!
         sn = num.getSimpleByIdMap(DSID.of(projectKey, ID));
       }
-      tsv.write(new String[]{ID, sn.getRank().toString(), sn.getStatus().toString(), sn.getName(), sn.getAuthorship()});
+      if (sn == null) {
+        LOG.warn("ID {} reported without name usage", id);
+        tsv.write(new String[]{
+          ID,
+          null,
+          null,
+          null,
+          null
+        });
 
-    } catch (IOException e) {
+      } else {
+        tsv.write(new String[]{
+          ID,
+          VocabularyUtils.toString(sn.getRank()),
+          VocabularyUtils.toString(sn.getStatus()),
+          sn.getName(),
+          sn.getAuthorship()
+        });
+      }
+
+    } catch (IOException | RuntimeException e) {
       LOG.error("Failed to write ID report for {}", id, e);
     }
   }
@@ -138,40 +174,50 @@ public class IdProvider {
   private void prepare(){
     if (cfg.restart) {
       LOG.info("Use ID provider with no previous IDs");
-
-    // populate ids from db
+      // populate ids from db
     } else {
       LOG.info("Use ID provider with stable IDs since {}", cfg.since);
-      try (SqlSession session = factory.openSession(true)) {
-        DatasetMapper dm = session.getMapper(DatasetMapper.class);
-        DatasetSearchRequest dsr = new DatasetSearchRequest();
-        dsr.setReleasedFrom(projectKey);
-        List<Dataset> releases = dm.search(dsr, null, new Page(0, 1000));
-        releases.sort(Comparator.comparing(Dataset::getImportAttempt).reversed());
-        for (Dataset rel : releases) {
-          if (cfg.since != null && rel.getCreated().isBefore(cfg.since)) {
-            LOG.info("Ignore old release {} with unstable ids", rel.getKey());
-            continue;
-          }
-          AtomicInteger counter = new AtomicInteger();
-          int attempt = rel.getImportAttempt();
-          attempt2dataset.put(attempt, (int)rel.getKey());
-          session.getMapper(NameUsageMapper.class).processNxIds(rel.getKey()).forEach(sn -> {
-            counter.incrementAndGet();
-            if (sn.getNamesIndexId() == null) {
-              LOG.info("Existing release id {}:{} without a names index id. Skip!", rel.getKey(), sn.getId());
-            } else {
-              ids.add(new ReleasedIds.ReleasedId(sn, attempt));
-            }
-          });
-          LOG.info("Read {} usages from previous release {}, key={}. Total released ids = {}", counter, rel.getImportAttempt(), rel.getKey(), ids.size());
-        }
-      }
+      loadPreviousReleaseIds();
       LOG.info("Last release attempt={} with {} IDs", ids.getMaxAttempt(), ids.maxAttemptIdCount());
-
     }
     keySequence.set(Math.max(cfg.start, ids.maxKey()));
     LOG.info("Max existing id = {}. Start ID sequence with {} ({})", ids.maxKey(), keySequence, encode(keySequence.get()));
+  }
+
+  @VisibleForTesting
+  protected void loadPreviousReleaseIds(){
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      DatasetSearchRequest dsr = new DatasetSearchRequest();
+      dsr.setReleasedFrom(projectKey);
+      List<Dataset> releases = dm.search(dsr, null, new Page(0, 1000));
+      releases.sort(Comparator.comparing(Dataset::getImportAttempt).reversed());
+      for (Dataset rel : releases) {
+        if (cfg.since != null && rel.getCreated().isBefore(cfg.since)) {
+          LOG.info("Ignore old release {} with unstable ids", rel.getKey());
+          continue;
+        }
+        AtomicInteger counter = new AtomicInteger();
+        final int attempt = rel.getImportAttempt();
+        session.getMapper(NameUsageMapper.class).processNxIds(rel.getKey()).forEach(sn -> {
+          counter.incrementAndGet();
+          addReleaseId(rel.getKey(), attempt, sn);
+        });
+        LOG.info("Read {} usages from previous release {}, key={}. Total released ids = {}", counter, rel.getImportAttempt(), rel.getKey(), ids.size());
+      }
+    }
+  }
+
+  @VisibleForTesting
+  protected void addReleaseId(int releaseDatasetKey, int attempt, SimpleNameWithNidx sn){
+    if (!attempt2dataset.containsKey(attempt)) {
+      attempt2dataset.put(attempt, releaseDatasetKey);
+    }
+    if (sn.getNamesIndexId() == null) {
+      LOG.info("Existing release id {}:{} without a names index id. Skip!", releaseDatasetKey, sn.getId());
+    } else {
+      ids.add(new ReleasedIds.ReleasedId(sn, attempt));
+    }
   }
 
   private void mapIds(){
@@ -206,7 +252,8 @@ public class IdProvider {
     reused = lastRelIds - deleted.size();
   }
 
-  private void mapCanonicalGroup(List<SimpleNameWithNidx> group){
+  @VisibleForTesting
+  protected void mapCanonicalGroup(List<SimpleNameWithNidx> group){
     // make sure we have the names sorted by their nidx
     group.sort(Comparator.comparing(SimpleNameWithNidx::getNamesIndexId));
     // now split the canonical group into subgroups for each nidx to match them individually
@@ -225,7 +272,7 @@ public class IdProvider {
       // how many released ids do exist for this names index id?
       ReleasedId[] rids = ids.byNxId(nidx);
       if (rids != null) {
-        ScoreMatrix scores = new ScoreMatrix(names, ids.byNxId(nidx), this::matchScore);
+        ScoreMatrix scores = new ScoreMatrix(names, rids, this::matchScore);
         List<ScoreMatrix.ReleaseMatch> best = scores.highest();
         while (!best.isEmpty()) {
           if (best.size()==1) {

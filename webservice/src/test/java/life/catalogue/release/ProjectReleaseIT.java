@@ -43,13 +43,13 @@ public class ProjectReleaseIT {
 
   @Rule
   public final TestRule chain = RuleChain
-    .outerRule(new TestDataRule(IdProviderTest.PROJECT_DATA))
+    .outerRule(new TestDataRule(IdProviderIT.PROJECT_DATA))
     .around(matchingRule);
 
   DatasetImportDao diDao;
   DatasetDao dDao;
 
-  final int projectKey = IdProviderTest.PROJECT_DATA.key;
+  final int projectKey = IdProviderIT.PROJECT_DATA.key;
   
   @Before
   public void init()  {

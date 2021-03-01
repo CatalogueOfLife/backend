@@ -19,6 +19,7 @@ import java.util.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.reflect.ClassPath;
+import life.catalogue.api.jackson.PermissiveEnumSerde;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.slf4j.Logger;
@@ -29,7 +30,11 @@ public final class VocabularyUtils {
   private static final Logger LOG = LoggerFactory.getLogger(VocabularyUtils.class);
   
   public static final TermFactory TF = TermFactory.instance();
-  
+
+  public static String toString(Enum<?> value) {
+    return value == null ? null : PermissiveEnumSerde.enumValueName(value);
+  }
+
   /**
    * Finds a term using this term factory, removing also - and # which are not removed in the TermFactory itself.
    */

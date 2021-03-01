@@ -1,5 +1,6 @@
 package life.catalogue.release;
 
+import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.NameMatchingRule;
@@ -8,6 +9,8 @@ import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.IdMapMapper;
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.checkerframework.checker.units.qual.A;
 import org.gbif.utils.file.FileUtils;
 import org.junit.*;
 import org.junit.rules.RuleChain;
@@ -15,36 +18,28 @@ import org.junit.rules.TestRule;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class IdProviderTest {
 
-  public final static TestDataRule.TestData PROJECT_DATA = new TestDataRule.TestData("project", 3, 2, 2,
-    Map.of(
-    "distribution_3", Map.of("gazetteer", Gazetteer.ISO, "reference_id", "Flade2008"),
-      "sector", Map.of("created_by", 100, "modified_by", 100)
-    ),3,11,12,13);
-  final int projectKey = PROJECT_DATA.key;
 
   @ClassRule
-  public static PgSetupRule pgSetupRule = new PgSetupRule();
-
-  IdProvider provider;
-  NameMatchingRule matchingRule = new NameMatchingRule();
+  public final static PgSetupRule pgSetupRule = new PgSetupRule();
 
   @Rule
-  public final TestRule chain = RuleChain
-    .outerRule(new TestDataRule(PROJECT_DATA))
-    .around(matchingRule);
-  private ReleaseConfig cfg;
+  public final TestDataRule dataRule = TestDataRule.draft();
+  final int projectKey = dataRule.testData.key;
+
+  ReleaseConfig cfg;
+  Map<Integer, List<SimpleNameWithNidx>> prevIdsByAttempt = new HashMap<>();
 
 
   @Before
   public void init() throws IOException {
     cfg = new ReleaseConfig();
-    provider = new IdProvider(projectKey, 1, cfg, PgSetupRule.getSqlSessionFactory());
     System.out.println("Create id mapping tables for project " + projectKey);
     try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
       DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
@@ -62,19 +57,58 @@ public class IdProviderTest {
     org.apache.commons.io.FileUtils.deleteQuietly(cfg.reportDir);
   }
 
-  @Test
-  public void run() throws Exception {
-    provider.run();
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true)) {
-      IdMapMapper idm = session.getMapper(IdMapMapper.class);
-      assertEquals(25, idm.countUsage(projectKey));
-      assertEquals("R", idm.getUsage(projectKey, "25"));
-      // rufus -> rufa
-      //TODO: check why? Should this not be E ???
-      assertEquals("B5", idm.getUsage(projectKey, "14"));
-      // baileyi -> baileii
-      assertEquals("F", idm.getUsage(projectKey, "15"));
+  class IdTestProvider extends IdProvider {
+
+    public IdTestProvider() {
+      super(projectKey, Collections.max(prevIdsByAttempt.keySet())+1, cfg, PgSetupRule.getSqlSessionFactory());
     }
+
+    @Override
+    protected void report() {
+      // dont report
+    }
+
+    @Override
+    protected void loadPreviousReleaseIds() {
+      // dont do anything. load release ids manually
+      for (Map.Entry<Integer, List<SimpleNameWithNidx>> rel : prevIdsByAttempt.entrySet()) {
+        int attempt = rel.getKey();
+        int datasetKey = 1000 + attempt;
+        for (SimpleNameWithNidx sn : rel.getValue()) {
+          addReleaseId(datasetKey,attempt, sn);
+        }
+      }
+    }
+  }
+
+  @Test
+  public void nothing() throws Exception {
+
+    IdProvider provider = new IdTestProvider();
+    provider.mapCanonicalGroup(new ArrayList<>(List.of()));
+
+    IdProvider.IdReport report = provider.getReport();
+    assertTrue(report.created.isEmpty());
+    assertTrue(report.deleted.isEmpty());
+    assertTrue(report.resurrected.isEmpty());
+
+  }
+
+  @Test
+  public void basic() throws Exception {
+    IdProvider provider = new IdTestProvider();
+    // 1st attempt
+    prevIdsByAttempt.put(1, List.of());
+    // 2nd attempt
+    prevIdsByAttempt.put(2, List.of());
+
+    provider.mapCanonicalGroup(new ArrayList<>(List.of()));
+
+    IdProvider.IdReport report = provider.getReport();
+    assertTrue(report.created.isEmpty());
+    assertTrue(report.deleted.isEmpty());
+    assertTrue(report.resurrected.isEmpty());
+
   }
 
 }
