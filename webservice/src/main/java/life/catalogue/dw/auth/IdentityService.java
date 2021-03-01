@@ -28,6 +28,7 @@ public class IdentityService {
   
   private SqlSessionFactory sqlSessionFactory;
   private final AuthenticationProvider authProvider;
+  private final ConcurrentHashMap<Integer, String> key2username; // never expires, immutable and small footprint
   private final ConcurrentHashMap<String, User> cache; // by username
   private final Cache<String, String> passwords = Caffeine.newBuilder()
     .maximumSize(1000)
@@ -37,6 +38,7 @@ public class IdentityService {
   IdentityService(AuthenticationProvider authProvider) {
     this.authProvider = authProvider;
     this.cache = new ConcurrentHashMap<>();
+    this.key2username = new ConcurrentHashMap<>();
   }
   
   /**
@@ -53,7 +55,21 @@ public class IdentityService {
       ((GBIFAuthentication)authProvider).verifyGbifAuth();
     }
   }
-  
+
+  public User get(int userKey) {
+    if (key2username.containsKey(userKey)) {
+      return get(key2username.get(userKey));
+    }
+    // try to load from DB - if its not there the user has never logged in before and sth is wrong
+    try (SqlSession session = sqlSessionFactory.openSession()) {
+      User user = session.getMapper(UserMapper.class).get(userKey);
+      if (user == null) {
+        throw new IllegalArgumentException("User " + userKey + " does not exist");
+      }
+      return cache(user);
+    }
+  }
+
   User get(String username) {
     if (cache.containsKey(username)) {
       return cache.get(username);
@@ -91,6 +107,7 @@ public class IdentityService {
 
   private User cache(User user) {
     cache.put(user.getUsername(), user);
+    key2username.put(user.getKey(), user.getUsername());
     return user;
   }
 

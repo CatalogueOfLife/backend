@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 /**
  * Authenticates an CoL user via Basic or from an encoded Bearer JWT token
  * and populates the security context. OPTIONS preflight requests are excluded.
+ * The Bearer JWT token can alternatively also be given as a URI query parameter called "token".
  *
  * Otherwise if no authentication is given or it failed a 401 will be send.
  *

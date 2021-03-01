@@ -91,6 +91,11 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
     } else {
       privateFilter.updateCache(event.key, event.obj.isPrivat());
     }
+    // a new dataset, add key to creator
+    if (event.isCreated() && event.obj.getCreatedBy() != null) {
+      User creator = idService.get(event.obj.getCreatedBy());
+      creator.addDataset(event.key);
+    }
   }
 
 }
