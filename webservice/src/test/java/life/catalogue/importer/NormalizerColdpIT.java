@@ -1,5 +1,6 @@
 package life.catalogue.importer;
 
+import life.catalogue.api.datapackage.ColdpTerm;
 import life.catalogue.api.model.NameRelation;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.model.VerbatimRecord;
@@ -10,10 +11,13 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.ParserConfigDao;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
+import life.catalogue.importer.neo.model.RelType;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Test;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.helpers.collection.Iterators;
 
 import java.util.List;
 
@@ -260,6 +264,37 @@ public class NormalizerColdpIT extends NormalizerITBase {
       assertTrue(tt.isExtinct());
       assertNull(tt.getNamePhrase());
       assertEquals("†Anstenoptilia marmarodactyla Dyar, 1902", tt.getLabel());
+    }
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/941
+   */
+  @Test
+  public void basionymIdEqualsTaxonID() throws Exception {
+    normalize(9);
+
+    final String key = "urn:lsid:marinespecies.org:taxname:1252865";
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoName nn = nameByID(key);
+      assertEquals("Paludina longispira", nn.getName().getScientificName());
+      assertEquals("E.A. Smith, 1886", nn.getName().getAuthorship());
+
+      VerbatimRecord v = vByNameID(key);
+      assertTrue(v.getIssues().isEmpty());
+
+      List<Relationship> rels = Iterators.asList( nn.node.getRelationships(RelType.HAS_BASIONYM).iterator() );
+      assertEquals(1, rels.size());
+
+      for (VerbatimRecord vr : store.verbatimList()) {
+        if (vr.getType()== ColdpTerm.NameRelation) {
+          if (vr.getRaw(ColdpTerm.nameID).equals(key)) {
+            assertTrue(vr.hasIssue(Issue.SELF_REFERENCED_RELATION));
+          } else {
+            assertTrue(vr.getIssues().isEmpty());
+          }
+        }
+      }
     }
   }
 }

@@ -1,5 +1,6 @@
 package life.catalogue.importer;
 
+import com.google.common.base.Objects;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.TypeMaterial;
 import life.catalogue.api.model.VerbatimEntity;
@@ -179,16 +180,23 @@ public abstract class NeoCsvInserter implements NeoInserter {
     }
   }
   
-  protected void  insertRelations(final CsvReader reader, final Term classTerm,
+  protected void insertRelations(final CsvReader reader, final Term classTerm,
                                  Function<VerbatimRecord, Optional<NeoRel>> interpret,
                                  NeoCRUDStore<?> entityStore, Term idTerm, Term relatedIdTerm,
                                  Issue invalidIdIssue, boolean requireRelatedID
   ) {
     processVerbatim(reader, classTerm, rec -> {
+      // ignore any relation pointing to itself!
+      String from = rec.getRaw(idTerm);
+      String to = rec.getRaw(relatedIdTerm);
+      if (from != null && from.equals(to)) {
+        rec.addIssue(Issue.SELF_REFERENCED_RELATION);
+        return false;
+      }
       Optional<NeoRel> opt = interpret.apply(rec);
       if (opt.isPresent()) {
-        Node n1 = entityStore.nodeByID(rec.getRaw(idTerm));
-        Node n2 = entityStore.nodeByID(rec.getRaw(relatedIdTerm));
+        Node n1 = entityStore.nodeByID(from);
+        Node n2 = entityStore.nodeByID(to);
         if (n2 == null && !requireRelatedID) {
           n2 = store.getDevNullNode();
         }

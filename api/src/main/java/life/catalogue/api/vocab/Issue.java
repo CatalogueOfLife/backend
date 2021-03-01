@@ -31,7 +31,7 @@ public enum Issue {
   ID_NOT_UNIQUE(ANY, Level.ERROR,
       "A taxon, name or reference with duplicate ids. " +
       "We remove the subsequent records but flag the first record with this issue."),
-  
+
   URL_INVALID(ANY, Level.ERROR,
       "Any of the coldp:link, dc:references, acef:InfraSpeciesURL, acef:SpeciesURL or other terms that are supposed to be URLs cannot be interpreted into a valid URL"),
   
@@ -40,6 +40,10 @@ public enum Issue {
 
   PREVIOUS_LINE_SKIPPED(ANY, Level.WARNING,
       "The CSV record before this one had to be ignored because it had no content or wrong number of columns. Often indicates a serious delimiter problem"),
+
+  SELF_REFERENCED_RELATION(ANY, Level.WARNING,
+    "A taxon or name relation has an identical ID as the related ID and relates to itself. " +
+      "We ignore such self referenced records but flag them with this issue."),
 
   //
   // NAME ISSUES

@@ -5,6 +5,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.collection.IterUtils;
@@ -318,9 +321,11 @@ public class Normalizer implements Callable<Boolean> {
     relinkSynonymChains();
     preferSynonymOverParentRel();
 
+    // deduplicate name relations
+    reduceRedundantNameRels();
+
     // cleanup basionym rels
     cutBasionymChains();
-    reduceRedundantBasionymRels();
 
     // rectify taxonomic status
     rectifyTaxonomicStatus();
@@ -337,10 +342,16 @@ public class Normalizer implements Callable<Boolean> {
     LOG.info("Normalization completed.");
   }
 
-  private void reduceRedundantBasionymRels() {
-    LOG.info("Remove redundant basionym relations");
+  private void reduceRedundantNameRels() {
+    for (NomRelType type : NomRelType.values()) {
+      reduceRedundantNameRels(type);
+    }
+  }
 
-    final String query = "MATCH (n:NAME)-[r1:HAS_BASIONYM]->(b:NAME)<-[r2:HAS_BASIONYM]-(n:NAME)" +
+  private void reduceRedundantNameRels(NomRelType type) {
+    LOG.info("Remove redundant {} relations", type);
+    RelType rt = RelType.from(type);
+    final String query = String.format("MATCH (n:NAME)-[r1:%s]->(b:NAME)<-[r2:%s]-(n:NAME)", rt, rt) +
       "RETURN r1, r2 " +
       "LIMIT 1";
 
@@ -358,13 +369,13 @@ public class Normalizer implements Callable<Boolean> {
         Relationship del = nr1.isRich() ? r2 : r1;
         del.delete();
         counter++;
-        LOG.debug("Deleted redundant basionym relation {}", del);
+        LOG.debug("Deleted redundant {} relation {}", type, del);
 
         result = store.getNeo().execute(query);
       }
       tx.success();
     }
-    LOG.info("{} redundant basionym relation removed", counter);
+    LOG.info("{} redundant {} relations removed", counter, type);
   }
 
   private void removeOrphanSynonyms() {
@@ -485,18 +496,39 @@ public class Normalizer implements Callable<Boolean> {
    */
   private void cutBasionymChains() {
     LOG.info("Cut basionym chains");
-    final String query = "MATCH (x)-[r1:HAS_BASIONYM]->(b1)-[r2:HAS_BASIONYM]->(b2:NAME) " +
-        "RETURN b1, b2, r1, r2 " +
-        "ORDER BY x.id " +
-        "LIMIT 1";
-
     int counter = 0;
+    while (true) {
+      int cut = cutNonOverlappingBasionymChains();
+      if (cut == 0) {
+        break;
+      }
+      counter += cut;
+    }
+    LOG.info("{} basionym chains resolved", counter);
+  }
+
+  private int cutNonOverlappingBasionymChains() {
+    final String query = "MATCH (x)-[r1:HAS_BASIONYM]->(b1)-[r2:HAS_BASIONYM]->(b2:NAME) " +
+      "RETURN x, b1, b2, r1, r2";
+    int counter = 0;
+    LongSet visited = new LongOpenHashSet();
     try (Transaction tx = store.getNeo().beginTx()) {
       Result result = store.getNeo().execute(query);
       while (result.hasNext()) {
         Map<String, Object> row = result.next();
+        Node x = (Node) row.get("x");
         Node b1 = (Node) row.get("b1");
         Node b2 = (Node) row.get("b2");
+
+        // make sure any of the 3 nodes in play have not been visited before
+        // otherwise skip this relationship and wait for the next round
+        if (visited.contains(x.getId()) || visited.contains(b1.getId()) || visited.contains(b2.getId())) {
+          LOG.debug("Skip overlapping relation {}->{}->{}", x.getId(), b1.getId(), b2.getId());
+          continue;
+        }
+        visited.add(x.getId());
+        visited.add(b1.getId());
+        visited.add(b2.getId());
 
         // pick the bad relation to delete.
         // count number of incoming basionym relations = combinations
@@ -519,12 +551,10 @@ public class Normalizer implements Callable<Boolean> {
         LOG.debug("Delete rel {}-{}>{}", bad.getStartNodeId(), bad.getType().name(), bad.getEndNodeId());
         bad.delete();
         counter++;
-
-        result = store.getNeo().execute(query);
       }
       tx.success();
     }
-    LOG.info("{} basionym chains resolved", counter);
+    return counter;
   }
 
   /**

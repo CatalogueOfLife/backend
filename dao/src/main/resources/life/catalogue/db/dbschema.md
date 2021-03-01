@@ -10,6 +10,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2021-03-01 add SELF_REFERENCED_RELATION
+```
+ALTER TYPE ISSUE ADD VALUE 'SELF_REFERENCED_RELATION' AFTER 'PREVIOUS_LINE_SKIPPED';
+```
+
 ### 2021-02-01 remove 4 name match issues
 ```
 UPDATE dataset_import SET issues_by_issue_count = delete(issues_by_issue_count, array['NAME_MATCH_INSERTED', 'NAME_MATCH_VARIANT', 'NAME_MATCH_AMBIGUOUS', 'NAME_MATCH_NONE']);
