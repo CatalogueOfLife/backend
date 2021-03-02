@@ -47,11 +47,7 @@ public class UserResource {
   private static User obfuscate(User u) {
     u.setEmail(null);
     u.setSettings(null);
-    u.setOrcid(null);
     u.setLastLogin(null);
-    u.setCreated(null);
-    u.setDeleted(null);
-    u.setRoles(null);
     return u;
   }
 
