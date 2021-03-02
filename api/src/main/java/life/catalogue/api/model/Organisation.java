@@ -29,6 +29,14 @@ public class Organisation {
   public Organisation() {
   }
 
+  public Organisation(Organisation other) {
+    this.name = other.name;
+    this.department = other.department;
+    this.city = other.city;
+    this.state = other.state;
+    this.country = other.country;
+  }
+
   public Organisation(String name) {
     this(name, null, null, null, null);
   }

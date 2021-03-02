@@ -4,11 +4,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import life.catalogue.common.util.RegexUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.nullsFirst;
 
 public class Person {
   private static final Pattern CAMELCASE = Pattern.compile("\\b(\\p{Lu})(\\p{Ll}+)\\b");
@@ -99,6 +103,13 @@ public class Person {
   }
 
   public Person() {
+  }
+
+  public Person(Person other) {
+    this.givenName = other.givenName;
+    this.familyName = other.familyName;
+    this.email = other.email;
+    this.orcid = other.orcid;
   }
 
   public Person(String unparsedName) {

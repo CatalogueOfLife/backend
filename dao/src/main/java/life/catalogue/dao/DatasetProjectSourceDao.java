@@ -61,6 +61,7 @@ public class DatasetProjectSourceDao {
    * and then patched.
    * @param datasetKey project or release key
    * @param projectForPatching optional dataset used for building the source citations, if null master project is used
+   * @param rebuild if true force to rebuild source metadata and not take it from the source archive
    */
   public List<ArchivedDataset> list(int datasetKey, @Nullable Dataset projectForPatching, boolean rebuild){
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASED, MANAGED);

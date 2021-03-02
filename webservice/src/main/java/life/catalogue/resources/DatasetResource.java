@@ -1,5 +1,6 @@
 package life.catalogue.resources;
 
+import com.google.common.base.Preconditions;
 import io.dropwizard.auth.Auth;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
@@ -10,6 +11,7 @@ import life.catalogue.assembly.AssemblyState;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.DatasetProjectSourceDao;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.UserMapper;
@@ -179,6 +181,20 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void removeEditor(@PathParam("key") int key, @PathParam("id") int editorKey, @Auth User user) {
     dao.removeEditor(key, editorKey, user);
+  }
+
+  @GET
+  @Path("/{key}/contribution")
+  public ProjectContribution projectContribution(@PathParam("key") int datasetKey, @Context SqlSession session) {
+    DatasetInfoCache.DatasetInfo proj = DatasetInfoCache.CACHE.info(datasetKey);
+    proj.requireOrigin(DatasetOrigin.MANAGED);
+
+    ProjectContribution contrib = new ProjectContribution();
+    DatasetMapper dm = session.getMapper(DatasetMapper.class);
+    contrib.add(dm.get(datasetKey));
+    sourceDao.list(datasetKey,null, false).forEach(contrib::add);
+
+    return contrib;
   }
 
   @GET

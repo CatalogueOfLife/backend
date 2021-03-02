@@ -20,9 +20,8 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
   public DatasetTest() {
     super(Dataset.class);
   }
-  
-  @Override
-  public Dataset genTestValue() throws Exception {
+
+  public static Dataset generateTestDataset() {
     Dataset d = new Dataset();
     d.setKey(12345);
     d.setSourceKey(12345);
@@ -42,6 +41,11 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.setContact(Person.parse("foo"));
     d.setNotes("cuzdsghazugbe67wqt6c g cuzdsghazugbe67wqt6c g  nhjs");
     return d;
+  }
+
+  @Override
+  public Dataset genTestValue() throws Exception {
+    return generateTestDataset();
   }
 
   @Test
