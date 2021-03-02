@@ -103,6 +103,12 @@ public class UserResource {
       .collect(Collectors.toList());
   }
 
+  @GET
+  @Path("/dataset/{key}")
+  public boolean isAuthorized(@PathParam("key") int key, @Auth User user) {
+    return user.isAuthorized(key);
+  }
+
   @PUT
   @Path("/{key}/role")
   @RolesAllowed({Roles.ADMIN})
