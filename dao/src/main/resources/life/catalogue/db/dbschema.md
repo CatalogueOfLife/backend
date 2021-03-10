@@ -10,6 +10,21 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2021-03-10 remove match type INSERTED
+```
+UPDATE name_match SET type = 'EXACT' WHERE type = 'INSERTED';
+ALTER TABLE name_match ALTER COLUMN type TYPE text;
+DROP TYPE MATCHTYPE;
+CREATE TYPE MATCHTYPE AS ENUM (
+  'EXACT',
+  'VARIANT',
+  'CANONICAL',
+  'AMBIGUOUS',
+  'NONE'
+);
+ALTER TABLE name_match ALTER COLUMN type TYPE MATCHTYPE USING type::MATCHTYPE;
+```
+
 ### 2021-03-01 add SELF_REFERENCED_RELATION
 ```
 ALTER TYPE ISSUE ADD VALUE 'SELF_REFERENCED_RELATION' AFTER 'PREVIOUS_LINE_SKIPPED';

@@ -1,5 +1,8 @@
 package life.catalogue.release;
 
+import life.catalogue.api.model.SimpleNameWithNidx;
+import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -71,6 +74,13 @@ public class ReleasedIdsTest {
     } else {
       nxId = id % 1000;
     }
-    return new ReleasedId(id, nxId, counter < 100000 ? 1 : 2);
+
+    SimpleNameWithNidx sn = new SimpleNameWithNidx();
+    sn.setCanonicalId(1);
+    sn.setNamesIndexId(nxId);
+    sn.setNamesIndexMatchType(MatchType.EXACT);
+    sn.setStatus(TaxonomicStatus.ACCEPTED);
+    sn.setName("Abies");
+    return new ReleasedId(id, counter < 100000 ? 1 : 2, sn);
   }
 }

@@ -24,6 +24,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
 
   NameUsageBase get(@Param("key") DSID<String> key);
 
+  /**
+   * SimpleName.parent=parentName
+   * @param key
+   * @return
+   */
   SimpleName getSimple(@Param("key") DSID<String> key);
 
   SimpleName getSimpleByIdMap(@Param("key") DSID<String> key);
@@ -202,8 +207,16 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   Cursor<UsageNameID> processTreeIds(@Param("key") DSID<String> key);
 
   /**
-   * Iterate over all usages ordered by their canonical names index id,
-   * but return just the id, status, rank and name index id
+   * Iterate over all usages ordered by their canonical names index id.
+   * Returns not all properties, just the ones needed by the IdProvider:
+   *
+   *   id
+   *   nxId
+   *   matchType
+   *   rank
+   *   authorship
+   *   status
+   *   parent (real name, not id)
    */
   Cursor<SimpleNameWithNidx> processNxIds(@Param("datasetKey") int datasetKey);
 

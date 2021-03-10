@@ -2,15 +2,21 @@ package life.catalogue.release;
 
 import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.api.vocab.Gazetteer;
+import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.common.id.IdConverter;
+import life.catalogue.common.io.TabWriter;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.IdMapMapper;
+import life.catalogue.db.mapper.NameUsageMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.checkerframework.checker.units.qual.A;
+import org.gbif.nameparser.api.Rank;
 import org.gbif.utils.file.FileUtils;
 import org.junit.*;
 import org.junit.rules.RuleChain;
@@ -22,6 +28,8 @@ import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.gbif.nameparser.api.Rank.*;
+import static life.catalogue.api.vocab.TaxonomicStatus.*;
 
 public class IdProviderTest {
 
@@ -35,6 +43,7 @@ public class IdProviderTest {
 
   ReleaseConfig cfg;
   Map<Integer, List<SimpleNameWithNidx>> prevIdsByAttempt = new HashMap<>();
+  List<SimpleNameWithNidx> testNames = new ArrayList<>();
 
 
   @Before
@@ -69,6 +78,12 @@ public class IdProviderTest {
     }
 
     @Override
+    protected void mapIds() {
+      // map ids from test, not from DB
+      mapIds(testNames);
+    }
+
+    @Override
     protected void loadPreviousReleaseIds() {
       // dont do anything. load release ids manually
       for (Map.Entry<Integer, List<SimpleNameWithNidx>> rel : prevIdsByAttempt.entrySet()) {
@@ -79,36 +94,79 @@ public class IdProviderTest {
         }
       }
     }
+
   }
 
   @Test
   public void nothing() throws Exception {
-
     IdProvider provider = new IdTestProvider();
-    provider.mapCanonicalGroup(new ArrayList<>(List.of()));
+    provider.mapIds(new ArrayList<>(List.of()));
 
     IdProvider.IdReport report = provider.getReport();
     assertTrue(report.created.isEmpty());
     assertTrue(report.deleted.isEmpty());
     assertTrue(report.resurrected.isEmpty());
-
   }
 
   @Test
   public void basic() throws Exception {
-    IdProvider provider = new IdTestProvider();
     // 1st attempt
-    prevIdsByAttempt.put(1, List.of());
+    prevIdsByAttempt.put(1, List.of(
+      sn(2, 2, GENUS, "Abies", null, ACCEPTED),
+      sn(10, 10, SPECIES, "Abies alba", null, PROVISIONALLY_ACCEPTED),
+      sn(11, 11, SPECIES, "Abies alba", "Mill.", ACCEPTED),
+      sn(12, 12, SPECIES, "Picea alba ", null, SYNONYM, "Abies alba")
+    ));
     // 2nd attempt
-    prevIdsByAttempt.put(2, List.of());
+    prevIdsByAttempt.put(2, List.of(
+      sn(20, 11, SPECIES, "Abies alba", "Mill", ACCEPTED),
+      sn(13, 13, SPECIES, "Picea alba ", "DC.", SYNONYM, "Abies alba")
+    ));
 
-    provider.mapCanonicalGroup(new ArrayList<>(List.of()));
+    // test names
+    testNames = new ArrayList<>(List.of(
+      sn(10, SPECIES, "Abies alba", null, PROVISIONALLY_ACCEPTED),
+      sn(11, SPECIES, "Abies alba", "Mill.", ACCEPTED),
+      sn(11, SPECIES, "Abies alba", "Mill", SYNONYM, "Abies albi")
+    ));
 
-    IdProvider.IdReport report = provider.getReport();
-    assertTrue(report.created.isEmpty());
-    assertTrue(report.deleted.isEmpty());
-    assertTrue(report.resurrected.isEmpty());
+    IdTestProvider provider = new IdTestProvider();
+    IdProvider.IdReport report = provider.run();
+    assertEquals(1, report.created.size());
+    assertEquals(2, report.deleted.size());
+    assertEquals(2, report.resurrected.size());
 
+    assertID(10, testNames.get(0)); // resurrected
+    assertID(11, testNames.get(1)); // resurrected
+    assertID(21, testNames.get(2)); // different synonym parent
   }
 
+  void assertID(int id, SimpleNameWithNidx n){
+    assertEquals((Integer)id, n.getCanonicalId());
+  }
+  static SimpleNameWithNidx sn(int id, int nidx, Rank rank, String name, String authorship, TaxonomicStatus status){
+    return sn(id, nidx, rank, name, authorship, status, null);
+  }
+  static SimpleNameWithNidx sn(int id, int nidx, Rank rank, String name, String authorship, TaxonomicStatus status, String parent){
+    return sn(IdConverter.LATIN29.encode(id), nidx, rank, name, authorship, status, parent);
+  }
+  static SimpleNameWithNidx sn(int nidx, Rank rank, String name, String authorship, TaxonomicStatus status){
+    return sn(UUID.randomUUID().toString(), nidx, rank, name, authorship, status, null);
+  }
+  static SimpleNameWithNidx sn(int nidx, Rank rank, String name, String authorship, TaxonomicStatus status, String parent){
+    return sn(UUID.randomUUID().toString(), nidx, rank, name, authorship, status, parent);
+  }
+  static SimpleNameWithNidx sn(String id, int nidx, Rank rank, String name, String authorship, TaxonomicStatus status, String parent){
+    SimpleNameWithNidx sn = new SimpleNameWithNidx();
+    sn.setNamesIndexId(nidx);
+    sn.setNamesIndexMatchType(MatchType.EXACT);
+    // simple name
+    sn.setId(id);
+    sn.setRank(rank);
+    sn.setStatus(status);
+    sn.setName(name);
+    sn.setAuthorship(authorship);
+    sn.setParent(parent);
+    return sn;
+  }
 }

@@ -19,11 +19,6 @@ public enum MatchType {
   CANONICAL,
 
   /**
-   * No existing name matching, but the name was newly inserted.
-   */
-  INSERTED,
-  
-  /**
    * The name matched several names and could not be clearly disambiguated.
    * Usually only happens for canonical monomials without authorship.
    */

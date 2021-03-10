@@ -95,7 +95,7 @@ public class NameIndexImpl implements NameIndex {
     if ((!m.hasMatch() || m.getType() == MatchType.CANONICAL) && allowInserts) {
       if (INDEX_NAME_TYPES.contains(name.getType())) {
         m.setName(add(name));
-        m.setType(MatchType.INSERTED);
+        m.setType(MatchType.EXACT);
         LOG.debug("Inserted: {}", m.getName().getLabel());
       } else {
         LOG.debug("Do not insert {} name: {}", name.getType(), name.getLabel());

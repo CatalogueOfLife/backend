@@ -5,9 +5,19 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.model.SimpleNameWithNidx;
+import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.id.IdConverter;
 import org.apache.commons.lang3.ArrayUtils;
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 
+import javax.validation.constraints.NotNull;
+
+/**
+ * Tracks released ids incl historic releases.
+ * Each ID is only represented by the most recent, i.e. highest release attempt.
+ */
 public class ReleasedIds {
 
   private int maxKey = 0;
@@ -19,23 +29,31 @@ public class ReleasedIds {
     public final int id;
     public final int nxId;
     public final int attempt;
+    public final MatchType matchType;
+    public final Rank rank;
+    public final String authorship;
+    public final TaxonomicStatus status;
+    public final String parent;
 
-    public ReleasedId(SimpleNameWithNidx sn, int attempt) {
+    public static ReleasedId create(SimpleNameWithNidx sn, int attempt) {
       int id1;
       try {
         id1 = IdConverter.LATIN29.decode(sn.getId());
       } catch (IllegalArgumentException e) {
         id1 = -1;
       }
-      this.id = id1;
-      this.nxId = sn.getNamesIndexId();
-      this.attempt = attempt;
+      return new ReleasedId(id1, attempt, sn);
     }
 
-    public ReleasedId(int id, int nxId, int attempt) {
+    public ReleasedId(int id, int attempt, SimpleNameWithNidx sn) {
       this.id = id;
-      this.nxId = nxId;
+      this.nxId = sn.getNamesIndexId();
       this.attempt = attempt;
+      this.matchType = sn.getNamesIndexMatchType();
+      this.rank = sn.getRank();
+      this.authorship = sn.getAuthorship();
+      this.status = sn.getStatus();
+      this.parent = sn.getParent();
     }
 
     public String id() {
@@ -51,7 +69,11 @@ public class ReleasedIds {
     return byId.isEmpty();
   }
 
-  public void remove(int id) {
+  public boolean containsId(int i) {
+    return byId.containsKey(i);
+  }
+
+  public void remove(int id) throws IllegalArgumentException {
     ReleasedId r = byId.remove(id);
     if (r != null) {
       ReleasedId[] rids = ArrayUtils.removeAllOccurences(byNxId.get(r.nxId), r);

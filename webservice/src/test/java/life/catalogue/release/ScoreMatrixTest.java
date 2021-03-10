@@ -1,27 +1,50 @@
 package life.catalogue.release;
 
 import life.catalogue.api.model.SimpleNameWithNidx;
+import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.importer.neo.traverse.AcceptedOnlyEvaluator;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
 public class ScoreMatrixTest {
 
-  @Test
-  @Ignore
-  public void aufgaben() {
-    Random rnd = new Random();
-    for (int i=0; i<10; i++) {
-      int x = rnd.nextInt(999);
-      int y = 1 + rnd.nextInt(11);
-      System.out.println(x*y + " / " +y + " = \n\n\n\n\n\n");
-    }
-
+  static ScoreMatrix.ReleaseMatch m(int attempt, int id, TaxonomicStatus status, String authorship) {
+    SimpleNameWithNidx sn = new SimpleNameWithNidx();
+    sn.setCanonicalId(1);
+    sn.setNamesIndexId(1);
+    sn.setNamesIndexMatchType(MatchType.EXACT);
+    sn.setStatus(status);
+    sn.setName("Abies alba");
+    sn.setAuthorship(authorship);
+    ReleasedIds.ReleasedId rid = new ReleasedIds.ReleasedId(id,attempt,sn);
+    ScoreMatrix.ReleaseMatch m = new ScoreMatrix.ReleaseMatch(1,1,1, sn, rid);
+    return m;
   }
+  @Test
+  public void sortReleaseMatch() {
+    var m1 = m(1,14, TaxonomicStatus.ACCEPTED, null);
+    var m2 = m(2,12, TaxonomicStatus.ACCEPTED, "Mill.");
+    var m3 = m(2,12, TaxonomicStatus.SYNONYM, "Mill.");
+    var m4 = m(1,12, TaxonomicStatus.ACCEPTED, "Mill.");
+    var m5 = m(3,22, TaxonomicStatus.ACCEPTED, "Mill.");
+    var m6 = m(1,7, TaxonomicStatus.ACCEPTED, null);
+
+    List<ScoreMatrix.ReleaseMatch> sorted = new ArrayList<>(List.of(m1,m2,m3,m4,m5,m6));
+    Collections.sort(sorted);
+
+    assertEquals(m6, sorted.get(0));
+    assertEquals(m4, sorted.get(1));
+    assertEquals(m2, sorted.get(2));
+    assertEquals(m3, sorted.get(3));
+    assertEquals(m1, sorted.get(4));
+    assertEquals(m5, sorted.get(5));
+  }
+
   @Test
   public void testMatrix() {
     List<SimpleNameWithNidx> names = List.of(
@@ -56,6 +79,7 @@ public class ScoreMatrixTest {
   }
 
   static ReleasedIds.ReleasedId rid(int id, int attempt) {
-    return new ReleasedIds.ReleasedId(id, 1, attempt);
+    var m = m(attempt, id, TaxonomicStatus.ACCEPTED, null);
+    return m.rid;
   }
 }

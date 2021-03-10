@@ -162,7 +162,7 @@ public class NameIndexImplTest {
     n.setType(NameType.SCIENTIFIC);
 
     NameMatch m = ni.match(n, true, true);
-    assertEquals(MatchType.INSERTED, m.getType());
+    assertEquals(MatchType.EXACT, m.getType());
     final Integer idx = m.getName().getKey();
     final Integer cidx = m.getName().getCanonicalId();
     assertNotEquals(idx, cidx);
@@ -190,7 +190,7 @@ public class NameIndexImplTest {
     m = ni.match(n, true, true);
     final Integer idxTesla = m.getName().getKey();
     assertNotEquals(idx, cidx);
-    assertEquals(MatchType.INSERTED, m.getType());
+    assertEquals(MatchType.EXACT, m.getType());
     assertNotEquals(idx, idxTesla);
     assertEquals(cidx, m.getName().getCanonicalId());
     assertEquals(3, ni.size());
@@ -427,8 +427,10 @@ public class NameIndexImplTest {
   }
   
   private NameMatch assertInsert(String name, Rank rank) {
-    NameMatch m = ni.match(name(name, rank), true, false);
-    assertEquals(MatchType.INSERTED, m.getType());
+    NameMatch m = ni.match(name(name, rank), false, false);
+    assertEquals(MatchType.NONE, m.getType());
+    m = ni.match(name(name, rank), true, false);
+    assertEquals(MatchType.EXACT, m.getType());
     return m;
   }
   

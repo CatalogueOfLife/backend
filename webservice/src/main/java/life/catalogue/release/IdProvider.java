@@ -8,6 +8,9 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.util.VocabularyUtils;
+import life.catalogue.api.vocab.MatchType;
+import static life.catalogue.api.vocab.TaxonomicStatus.*;
+
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.id.IdConverter;
@@ -67,8 +70,8 @@ public class IdProvider {
   private IntSet resurrected = new IntOpenHashSet();
   private IntSet created = new IntOpenHashSet();
   private IntSet deleted = new IntOpenHashSet();
-  private IdMapMapper idm;
-  private NameUsageMapper num;
+  protected IdMapMapper idm;
+  protected NameUsageMapper num;
   private Map<TaxonomicStatus, Integer> statusOrder = Map.of(
     TaxonomicStatus.ACCEPTED, 1,
     TaxonomicStatus.PROVISIONALLY_ACCEPTED, 2,
@@ -125,7 +128,6 @@ public class IdProvider {
     try(TabWriter tsv = TabWriter.fromFile(f);
         SqlSession session = factory.openSession(true)
     ) {
-      idm = session.getMapper(IdMapMapper.class);
       num = session.getMapper(NameUsageMapper.class);
       LOG.info("Writing ID report for project release {}-{} of {} IDs to {}", projectKey, attempt, ids.size(), f);
       ids.stream()
@@ -216,22 +218,28 @@ public class IdProvider {
     if (sn.getNamesIndexId() == null) {
       LOG.info("Existing release id {}:{} without a names index id. Skip!", releaseDatasetKey, sn.getId());
     } else {
-      ids.add(new ReleasedIds.ReleasedId(sn, attempt));
+      ids.add(ReleasedIds.ReleasedId.create(sn, attempt));
     }
   }
 
-  private void mapIds(){
+  @VisibleForTesting
+  protected void mapIds(){
+    try (SqlSession readSession = factory.openSession(true)) {
+      mapIds(readSession.getMapper(NameUsageMapper.class).processNxIds(projectKey));
+    }
+  }
+
+  @VisibleForTesting
+  protected void mapIds(Iterable<SimpleNameWithNidx> names){
     LOG.info("Map name usage IDs");
     final int lastRelIds = ids.maxAttemptIdCount();
     AtomicInteger counter = new AtomicInteger();
-    try (SqlSession readSession = factory.openSession(true);
-         SqlSession writeSession = factory.openSession(false)
-    ) {
+    try (SqlSession writeSession = factory.openSession(false)) {
       idm = writeSession.getMapper(IdMapMapper.class);
       final int batchSize = 10000;
       Integer lastCanonID = null;
       List<SimpleNameWithNidx> group = new ArrayList<>();
-      for (SimpleNameWithNidx u : readSession.getMapper(NameUsageMapper.class).processNxIds(projectKey)) {
+      for (SimpleNameWithNidx u : names) {
         if (lastCanonID != null && !lastCanonID.equals(u.getCanonicalId())) {
           mapCanonicalGroup(group);
           int before = counter.get() / batchSize;
@@ -252,8 +260,7 @@ public class IdProvider {
     reused = lastRelIds - deleted.size();
   }
 
-  @VisibleForTesting
-  protected void mapCanonicalGroup(List<SimpleNameWithNidx> group){
+  private void mapCanonicalGroup(List<SimpleNameWithNidx> group){
     // make sure we have the names sorted by their nidx
     group.sort(Comparator.comparing(SimpleNameWithNidx::getNamesIndexId));
     // now split the canonical group into subgroups for each nidx to match them individually
@@ -262,6 +269,9 @@ public class IdProvider {
     }
   }
 
+  /**
+   * Populates sn.canonicalId with either an existing or new int based ID
+   */
   private void issueIDs(Integer nidx, List<SimpleNameWithNidx> names) {
     if (nidx == null) {
       LOG.info("{} usages with no name match, e.g. {} - keep temporary ids", names.size(), names.get(0).getId());
@@ -272,14 +282,17 @@ public class IdProvider {
       // how many released ids do exist for this names index id?
       ReleasedId[] rids = ids.byNxId(nidx);
       if (rids != null) {
+        IntSet ids = new IntOpenHashSet();
         ScoreMatrix scores = new ScoreMatrix(names, rids, this::matchScore);
         List<ScoreMatrix.ReleaseMatch> best = scores.highest();
         while (!best.isEmpty()) {
-          if (best.size()==1) {
-            release(best.get(0), scores);
-          } else {
-            // TODO: equal high scores, but potentially non conflicting names. Resolve
-            //System.out.println(best);
+          // best is sorted, issue as they come but avoid already released ids
+          for (ScoreMatrix.ReleaseMatch m : best) {
+            if (!ids.contains(m.rid.id)) {
+              System.out.println(m.rid);
+              release(m, scores);
+              ids.add(m.rid.id);
+            }
           }
           best = scores.highest();
         }
@@ -295,8 +308,11 @@ public class IdProvider {
   }
 
   private void release(ScoreMatrix.ReleaseMatch rm, ScoreMatrix scores){
-    rm.name.setCanonicalId(rm.rid.id);
+    if (!ids.containsId(rm.rid.id)) {
+      throw new IllegalArgumentException("Cannot release " + rm.rid.id + " which does not exist (anymore)");
+    }
     ids.remove(rm.rid.id);
+    rm.name.setCanonicalId(rm.rid.id);
     if (rm.rid.attempt != ids.getMaxAttempt()) {
       resurrected.add(rm.rid.id);
     }
@@ -310,62 +326,69 @@ public class IdProvider {
   }
 
   /**
+   * For homonyms or names very much alike we must provide a deterministic rule
+   * that selects a stable id based on all previous releases.
+   *
+   * This can happen due to real homonyms, erroneous duplicates in the data
+   * or potentially extensive pro parte synonyms as we have now for some genera like Achorutini Börner, C, 1901.
+   *
+   * We should avoid a major status change from accepted/synonym.
+   * Require an ID change if the status changes even if the name is the same.
+   *
+   * For synonyms the ID is tied to the accepted name.
+   * Change the synonym ID in case the accepted parent changes.
+   * This helps to deal with ids for pro parte synonyms.
+   *
    * @return zero for no match, positive for a match. The higher the better!
    */
-  private int matchScore(SimpleName n, ReleasedId r) {
-    SimpleName rn = load(r);
-    return 1;
-  }
+  private int matchScore(SimpleNameWithNidx n, ReleasedId r) {
+    var dsid = DSID.of(attempt2dataset.get(r.attempt), r.id());
+    if (n.getStatus() != null && r.status != null && n.getStatus().isSynonym() != r.status.isSynonym()) {
+      // major status difference, no match
+      return 0;
+    }
+    // only one is a misapplied name - never match to anything else
+    if (!Objects.equals(n.getStatus(), r.status) && (n.getStatus()==MISAPPLIED || r.status==MISAPPLIED) ) {
+      return 0;
+    }
 
-  private SimpleName load(ReleasedId rid) {
-    return null;
-  }
-
-  /**
-   * Takes several existing ids as candidates and checks whether one matches the given simple name.
-   * It is assumed all ids match the canonical name at least.
-   * Selecting considers authorship and the parent name to select between multiple candidates.
-   *
-   * @param candidates id candidates from any previous release (but not from the current project)
-   * @param nu the name usage to match against
-   * @return the matched id or -1 for no match
-   */
-  private ReleasedId selectID(ReleasedId[] candidates, SimpleName nu) {
-    if (candidates.length == 1) return candidates[0];
-    // select best id from multiple
-    int max = 0;
-    List<ReleasedId> best = new ArrayList<>();
-    for (ReleasedId rid : candidates) {
-      DSID<String> key = DSID.of(attempt2dataset.get(rid.attempt), encode(rid.id));
-      SimpleName sn = null;
-      //TODO: make sure misapplied names never match non misapplied names
-      // names index ids are for NAMES only, not for usage related namePhrase & accordingTo !!!
-      int score = 0;
-      // author 0-2
-      if (nu.getAuthorship() != null && Objects.equals(nu.getAuthorship(), sn.getAuthorship())) {
-        score += 2;
-      } else if (StringUtils.equalsIgnoreCaseAndSpace(nu.getAuthorship(), sn.getAuthorship())) {
-        score += 1;
-      }
-      // parent 0-2
-      if (nu.getParent() != null && Objects.equals(nu.getParent(), sn.getParent())) {
-        score += 2;
-      }
-      if (score > max) {
-        max = score;
-        best.clear();
-        best.add(rid);
-      } else if (score == max) {
-        best.add(rid);
+    if (n.getStatus() != null && n.getStatus().isSynonym()) {
+      // block synonyms with different accepted names aka parent
+      if (!Objects.equals(n.getParent(), r.parent)) {
+        return 0;
       }
     }
-    if (max > 0) {
-      if (best.size() > 1) {
-        LOG.debug("{} ids all matching to {}", Arrays.toString(best.toArray()), nu);
-      }
-      return best.get(0);
+
+    int score = 1;
+    // exact same status
+    if (Objects.equals(n.getStatus(), r.status)) {
+      score += 5;
     }
-    return null;
+    // rank
+    if (Objects.equals(n.getRank(), r.rank)) {
+      score += 10;
+    }
+    // match type
+    score += matchTypeScore(n.getNamesIndexMatchType());
+    score += matchTypeScore(r.matchType);
+
+    // exact same authorship
+    if (Objects.equals(n.getAuthorship(), r.authorship)) {
+      score += 8;
+    }
+    //TODO: make sure misapplied names never match non misapplied names
+    // names index ids are for NAMES only, not for usage related namePhrase & accordingTo !!!
+
+    return score;
+  }
+
+  private int matchTypeScore(MatchType mt) {
+    switch (mt) {
+      case EXACT: return 3;
+      case VARIANT: return 2;
+      case CANONICAL: return 1;
+      default: return 0;
+    }
   }
 
   static String encode(int id) {
