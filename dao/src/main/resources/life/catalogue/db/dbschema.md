@@ -10,8 +10,10 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-### 2021-03-10 remove match type INSERTED
+### 2021-03-11 remove match type INSERTED
 ```
+ALTER TYPE RANK ADD VALUE 'SUBTERCLASS' AFTER 'INFRACLASS';
+
 UPDATE name_match SET type = 'EXACT' WHERE type = 'INSERTED';
 ALTER TABLE name_match ALTER COLUMN type TYPE text;
 DROP TYPE MATCHTYPE;
