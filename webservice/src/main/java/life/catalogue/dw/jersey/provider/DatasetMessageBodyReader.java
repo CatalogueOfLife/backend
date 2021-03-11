@@ -1,40 +1,29 @@
 package life.catalogue.dw.jersey.provider;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import kotlin.Metadata;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.vocab.MetadataFormat;
 import life.catalogue.dw.jersey.MoreMediaTypes;
-import life.catalogue.importer.coldp.ColdpInserter;
 import life.catalogue.importer.coldp.MetadataParser;
 import life.catalogue.importer.dwca.EmlParser;
-import org.apache.poi.ss.formula.functions.T;
-import org.gbif.dwc.terms.TermFactory;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
-import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
 /**
- * @author phaneesh
+ * Dataset body reader that understands YAML, JSON or XML given as EML.
  */
 @Provider
 @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML})
@@ -60,14 +49,23 @@ public class DatasetMessageBodyReader implements MessageBodyReader<Dataset> {
 
   @Override
   public Dataset readFrom(Class<Dataset> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException, WebApplicationException {
+    switch (parseType(mediaType)) {
+      case YAML:
+        return MetadataParser.readMetadata(entityStream).map(DatasetWithSettings::getDataset).orElse(null);
+      case EML:
+        return EmlParser.parse(entityStream).map(DatasetWithSettings::getDataset).orElse(null);
+      default:
+        return DATASET_JSON_READER.readValue(entityStream);
+    }
+  }
+
+  public static MetadataFormat parseType(MediaType mediaType) {
     if (mediaType.getSubtype().toLowerCase().contains("yaml")) {
-      return MetadataParser.readMetadata(entityStream).map(DatasetWithSettings::getDataset).orElse(null);
-
+      return MetadataFormat.YAML;
     } else if (mediaType.getSubtype().equalsIgnoreCase("xml")) {
-      return EmlParser.parse(entityStream).map(DatasetWithSettings::getDataset).orElse(null);
-
+      return MetadataFormat.EML;
     } else {
-      return DATASET_JSON_READER.readValue(entityStream);
+      return MetadataFormat.JSON;
     }
   }
 

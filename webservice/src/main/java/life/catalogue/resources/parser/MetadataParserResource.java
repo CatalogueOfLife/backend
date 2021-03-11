@@ -2,12 +2,16 @@ package life.catalogue.resources.parser;
 
 import com.google.common.collect.Lists;
 import io.dropwizard.auth.Auth;
+import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.QuerySearchRequest;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.MetadataFormat;
 import life.catalogue.dao.ParserConfigDao;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
+import life.catalogue.dw.jersey.provider.DatasetMessageBodyReader;
 import life.catalogue.importer.coldp.MetadataParser;
 import life.catalogue.importer.dwca.EmlParser;
 import life.catalogue.parser.NameParser;
@@ -21,7 +25,11 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Request;
+import javax.ws.rs.core.UriInfo;
 import java.io.*;
 import java.net.URI;
 import java.net.URL;
@@ -34,20 +42,23 @@ import java.util.stream.Stream;
 @Produces(MediaType.APPLICATION_JSON)
 public class MetadataParserResource {
 
-  @SuppressWarnings("unused")
-  private static final Logger LOG = LoggerFactory.getLogger(MetadataParserResource.class);
-
+  private static Optional<DatasetWithSettings> parseAny(InputStream stream, MetadataFormat format) throws Exception {
+    switch (ObjectUtils.coalesce(format, MetadataFormat.YAML)) {
+      case YAML:
+        return MetadataParser.readMetadata(stream);
+      case EML:
+        return EmlParser.parse(stream);
+      default:
+        return Optional.of(ApiModule.MAPPER.readValue(stream, DatasetWithSettings.class));
+    }
+  }
 
   /**
    * Parsing metadata hosted on a URL given as a GET query parameters.
    */
   @GET
-  public Optional<DatasetWithSettings> parseGet(@QueryParam("url") String url, @QueryParam("format") String format) throws Exception {
-    InputStream stream = new URL(url).openStream();
-    if (format != null && format.equalsIgnoreCase("eml")) {
-      return EmlParser.parse(stream);
-    }
-    return MetadataParser.readMetadata(stream);
+  public Optional<DatasetWithSettings> parseGet(@QueryParam("url") String url, @QueryParam("format") MetadataFormat format) throws Exception {
+    return parseAny(new URL(url).openStream(), format);
   }
   
   /**
@@ -57,11 +68,17 @@ public class MetadataParserResource {
    * </pre>
    */
   @POST
-  @Consumes({MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML, MediaType.TEXT_PLAIN,
-    MediaType.APPLICATION_JSON // we include JSON as this is the default if no Accept header is given
+  @Consumes({MediaType.APPLICATION_JSON,
+    MediaType.TEXT_PLAIN,
+    MediaType.APPLICATION_XML, MediaType.TEXT_XML,
+    MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML
   })
-  public Optional<DatasetWithSettings> parsePost(InputStream data) throws Exception {
-    return MetadataParser.readMetadata(data);
+  public Optional<DatasetWithSettings> parsePost(InputStream data, @QueryParam("format") MetadataFormat format, @Context ContainerRequestContext ctx) throws Exception {
+    if (format == null && ctx.getMediaType() != null) {
+      // detect by content type
+      format = DatasetMessageBodyReader.parseType(ctx.getMediaType());
+    }
+    return parseAny(data, format);
   }
   
   /**
@@ -72,11 +89,11 @@ public class MetadataParserResource {
    */
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
-  public Optional<DatasetWithSettings> parseFile(@FormDataParam("metadata") InputStream data) throws Exception {
+  public Optional<DatasetWithSettings> parseFile(@FormDataParam("metadata") InputStream data, @QueryParam("format") MetadataFormat format) throws Exception {
     if (data == null) {
       throw new IllegalArgumentException("No metadata uploaded");
     }
-    return MetadataParser.readMetadata(data);
+    return parseAny(data, format);
   }
 
 }
