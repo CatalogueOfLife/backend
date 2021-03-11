@@ -9,6 +9,7 @@ import life.catalogue.dao.ParserConfigDao;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.importer.coldp.MetadataParser;
+import life.catalogue.importer.dwca.EmlParser;
 import life.catalogue.parser.NameParser;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.NomCode;
@@ -41,8 +42,12 @@ public class MetadataParserResource {
    * Parsing metadata hosted on a URL given as a GET query parameters.
    */
   @GET
-  public Optional<DatasetWithSettings> parseGet(@QueryParam("url") String url) throws Exception {
-    return MetadataParser.readMetadata(new URL(url).openStream());
+  public Optional<DatasetWithSettings> parseGet(@QueryParam("url") String url, @QueryParam("format") String format) throws Exception {
+    InputStream stream = new URL(url).openStream();
+    if (format != null && format.equalsIgnoreCase("eml")) {
+      return EmlParser.parse(stream);
+    }
+    return MetadataParser.readMetadata(stream);
   }
   
   /**
