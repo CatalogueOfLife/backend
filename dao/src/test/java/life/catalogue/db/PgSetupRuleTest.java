@@ -77,6 +77,7 @@ public class PgSetupRuleTest {
     enums.remove(GeoTimeType.class);
     enums.remove(Setting.class);
     enums.remove(IgnoreReason.class);
+    enums.remove(MetadataFormat.class);
     // sort and print
     enums.sort(Comparator.comparing(cl -> BaseEnumSetTypeHandler.pgEnumName(cl)));
     return enums;
