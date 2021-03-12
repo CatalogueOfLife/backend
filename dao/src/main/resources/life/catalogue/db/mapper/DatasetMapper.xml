@@ -250,6 +250,12 @@
     LIMIT 1
   </select>
 
+  <select id="releaseAttempt" resultType="integer">
+    SELECT key FROM dataset
+    WHERE source_key = #{key} AND deleted IS NULL AND import_attempt = #{attempt}
+    LIMIT 1
+  </select>
+
   <select id="get" resultMap="datasetResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>

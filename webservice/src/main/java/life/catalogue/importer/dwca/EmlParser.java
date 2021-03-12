@@ -1,6 +1,7 @@
 package life.catalogue.importer.dwca;
 
 import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.model.Organisation;
 import life.catalogue.api.model.Person;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.CharsetDetectingStream;
@@ -109,19 +110,19 @@ public class EmlParser {
                 break;
               // AGENT PROPS
               case "givenName":
-                agent.firstname = text(text);
+                agent.givenName = text(text);
                 break;
               case "surName":
-                agent.surname = text(text);
+                agent.surName = text(text);
                 break;
               case "organizationName":
-                agent.organization = text(text);
+                agent.organizationName = text(text);
                 break;
               case "electronicMailAddress":
-                agent.email = text(text);
+                agent.electronicMailAddress = text(text);
                 break;
               case "userId":
-                agent.orcid = text(text);
+                agent.userId = text(text);
                 break;
             }
 
@@ -202,46 +203,34 @@ public class EmlParser {
   }
   
   static class Agent {
-    public String firstname;
-    public String surname;
-    public String organization;
-    public String email;
+    public String givenName;
+    public String surName;
+    public String organizationName;
+    public String electronicMailAddress;
     public String url;
-    public String orcid;
+    public String userId;
 
     Optional<Person> person() {
-      if (firstname != null || surname != null || email != null || orcid != null) {
+      if (givenName != null || surName != null || electronicMailAddress != null || userId != null) {
         Person p = new Person();
-        p.setGivenName(firstname);
-        p.setFamilyName(surname);
-        p.setEmail(email);
-        p.setOrcid(orcid);
+        p.setGivenName(givenName);
+        p.setFamilyName(surName);
+        p.setEmail(electronicMailAddress);
+        p.setOrcid(userId);
         return Optional.of(p);
       }
       return Optional.empty();
     }
 
-    Optional<String> name() {
-      StringBuilder sb = new StringBuilder();
-      if (firstname != null)
-        sb.append(firstname);
-      if (surname != null) {
-        if (sb.length() > 0) {
-          sb.append(" ");
-        }
-        sb.append(surname);
-      }
-      if (organization != null) {
-        if (sb.length() > 0) {
-          sb.append(" (");
-          sb.append(organization);
-          sb.append(")");
-        } else {
-          sb.append(organization);
-        }
-      }
-      if (sb.length() > 1) {
-        return Optional.of(sb.toString());
+    Optional<Organisation> organisation() {
+      if (givenName != null || surName != null || electronicMailAddress != null || userId != null) {
+        Organisation o = new Organisation();
+        o.setDepartment(null);
+        o.setName(organizationName);
+        o.setCity(null);
+        o.setState(null);
+        o.setCountry(null);
+        return Optional.of(o);
       }
       return Optional.empty();
     }

@@ -9,6 +9,7 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.text.StringUtils;
+import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -24,10 +25,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.net.URI;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,15 +34,16 @@ import java.util.regex.Pattern;
  * Filter that parses dataset keys given as path or query parameters
  * and rewrites them if needed to support conventions to refer to
  *  - the latest public release of a project: {projectKey}LR
- *  - the latest release candidate of a project, public or private: {projectKey}LR
+ *  - the latest release candidate of a project, public or private: {projectKey}LRC
+ *  - a specific release attempt of a project, public or private: {projectKey}R{attempt}
  */
 @PreMatching
 public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
 
   private static final Logger LOG = LoggerFactory.getLogger(DatasetKeyRewriteFilter.class);
 
-  private static final Pattern LRC_PATTERN  = Pattern.compile("(\\d+)LRC?$");
-  private static final Pattern LRC_PATH = Pattern.compile("dataset/(\\d+)LRC?");
+  private static final Pattern REL_PATTERN = Pattern.compile("(\\d+)(?:LRC?|R(\\d+))$");
+  private static final Pattern REL_PATH = Pattern.compile("dataset/(\\d+)(?:LRC?|R(\\d+))");
   // all parameters that contain dataset keys and which we check if they need to be rewritten
   private static final Set<String> QUERY_PARAMS  = Set.of("datasetkey", "cataloguekey", "projectkey", "subjectdatasetkey", "hassourcedataset", "releasedfrom");
   private static final Set<String> METHODS  = Set.of(HttpMethod.GET, HttpMethod.OPTIONS, HttpMethod.HEAD);
@@ -60,6 +59,33 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     .maximumSize(1000)
     .expireAfterWrite(60, TimeUnit.MINUTES)
     .build(k -> lookupLatest(k, true));
+  private final LoadingCache<ReleaseAttempt, Integer> releaseAttempt = Caffeine.newBuilder()
+    .maximumSize(1000)
+    .expireAfterWrite(7, TimeUnit.DAYS)
+    .build(this::lookupAttempt);
+
+  static class ReleaseAttempt{
+    final int projectKey;
+    final int attempt;
+
+    ReleaseAttempt(int projectKey, int attempt) {
+      this.projectKey = projectKey;
+      this.attempt = attempt;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      ReleaseAttempt that = (ReleaseAttempt) o;
+      return projectKey == that.projectKey && attempt == that.attempt;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(projectKey, attempt);
+    }
+  }
 
   // we dont use a limited loading cache here as
   //  - the primitive map saves a lot of memory and we dont really have many datasets so we can keep them all in memory
@@ -94,7 +120,7 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     }
 
     // rewrite path params
-    Matcher m = LRC_PATH.matcher(req.getUriInfo().getPath());
+    Matcher m = REL_PATH.matcher(req.getUriInfo().getPath());
     if (m.find()) {
       Integer rkey = releaseKeyFromMatch(m);
       builder.replacePath(m.replaceFirst("dataset/" + rkey));
@@ -116,7 +142,7 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
 
   public Optional<Integer> lookupDatasetKey(String datasetKey) {
     if (StringUtils.hasContent(datasetKey)) {
-      Matcher m = LRC_PATTERN.matcher(datasetKey);
+      Matcher m = REL_PATTERN.matcher(datasetKey);
       if (m.find()){
         return Optional.of(releaseKeyFromMatch(m));
       }
@@ -140,11 +166,15 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     }
 
     Integer releaseKey;
-    // candidate requested?
+    // candidate requested? (\\d+)(?:LRC?|R(\\d+))$
     if (m.group().endsWith("C")) {
       releaseKey = latestCandidate.get(projectKey);
-    } else {
+    } else if (m.group().endsWith("R")) {
       releaseKey = latestRelease.get(projectKey);
+    } else {
+      // parsing cannot fail, we have a pattern
+      int attempt = Integer.parseInt(m.group(2));
+      releaseKey = releaseAttempt.get(new ReleaseAttempt(projectKey, attempt));
     }
 
     if (releaseKey == null) {
@@ -161,6 +191,13 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       return dm.latestRelease(projectKey, !candidate);
+    }
+  }
+
+  private Integer lookupAttempt(ReleaseAttempt release) throws NotFoundException {
+    try (SqlSession session = factory.openSession()) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      return dm.releaseAttempt(release.projectKey, release.attempt);
     }
   }
 
