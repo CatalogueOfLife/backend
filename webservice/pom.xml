@@ -344,22 +344,25 @@
 
     <build>
         <defaultGoal>compile exec:java</defaultGoal>
+      <!--
+      -->
         <resources>
           <resource>
-            <directory>src/resources</directory>
+            <directory>src/main/resources</directory>
             <filtering>false</filtering>
             <excludes>
-              <exclude>*.yaml</exclude>
+              <exclude>**/*.yaml</exclude>
             </excludes>
           </resource>
           <resource>
-            <directory>src/resources</directory>
+            <directory>src/main/resources</directory>
             <filtering>true</filtering>
             <includes>
-              <include>*.yaml</include>
+              <include>**/*.yaml</include>
             </includes>
           </resource>
         </resources>
+
 		<testResources>
 			<testResource>
 				<directory>src/test/resources</directory>
