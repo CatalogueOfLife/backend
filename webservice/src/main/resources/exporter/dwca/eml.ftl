@@ -10,21 +10,25 @@
 </#macro>
 
 <#macro person p>
+<#if p.familyName??>
   <individualName>
     <@tag name="givenName" value=p.givenName! />
     <surName>${p.familyName!}</surName>
     <@tag name="electronicMailAddress" value=p.email! />
     <@tag name="userId" value=p.orcid! />
   </individualName>
+</#if>
 </#macro>
 
 <#macro organisation o>
+<#if o.name??>
   <organizationName>${o.name}</organizationName>
   <address>
     <@tag name="city" value=o.city! />
     <@tag name="administrativeArea" value=o.state! />
     <@tag name="country" value=o.country! />
   </address>
+</#if>
 </#macro>
 
 <dataset>
