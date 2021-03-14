@@ -66,7 +66,11 @@ abstract class DatasetExporter extends DatasetBlockingJob {
       LOG.info("Export {} of dataset {} completed", getKey(), datasetKey);
     } finally {
       LOG.info("Remove temporary export directory {}", tmpDir.getAbsolutePath());
-      FileUtils.deleteDirectory(tmpDir);
+      try {
+        FileUtils.deleteDirectory(tmpDir);
+      } catch (IOException e) {
+        LOG.info("Failed to delete temporary export directory {}", tmpDir.getAbsolutePath(), e);
+      }
     }
   }
 
