@@ -46,8 +46,7 @@
   </sql>
 
   <sql id="SEARCH_WHERE">
-    <!-- always hide the names index -->
-    d.deleted IS NULL AND d.key != 1
+    d.deleted IS NULL
     <include refid="PRIVATE">
       <property name="alias" value="d"/>
     </include>
@@ -90,6 +89,9 @@
       </if>
       <if test="req.format != null">
         AND d.settings @> jsonb_build_object('DATA_FORMAT', #{req.format})
+      </if>
+      <if test="req.editor != null">
+        AND d.access_control @> ARRAY[#{req.editor}::int]
       </if>
       <if test="req.modifiedBy != null">
         AND d.modified_by = #{req.modifiedBy}
