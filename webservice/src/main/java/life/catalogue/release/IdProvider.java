@@ -115,15 +115,17 @@ public class IdProvider {
     try {
       File dir = cfg.reportDir(projectKey, attempt);
       dir.mkdirs();
-      reportFile(dir,"deleted.tsv", deleted, true); // read ID from older releases
-      reportFile(dir,"created.tsv", created, false); // read ID from this release & ID mapping
-      reportFile(dir,"resurrected.tsv", deleted, false); // read ID from older releases
+      // read the following IDs from previous releases
+      reportFile(dir,"deleted.tsv", deleted, true);
+      reportFile(dir,"resurrected.tsv", deleted, true);
+      // read ID from this release & ID mapping
+      reportFile(dir,"created.tsv", created, false);
     } catch (IOException e) {
       LOG.error("Failed to write ID reports for project "+projectKey, e);
     }
   }
 
-  private void reportFile(File dir, String filename, IntSet ids, boolean useOldReleases) throws IOException {
+  private void reportFile(File dir, String filename, IntSet ids, boolean previousReleases) throws IOException {
     File f = new File(dir, filename);
     try(TabWriter tsv = TabWriter.fromFile(f);
         SqlSession session = factory.openSession(true)
@@ -132,10 +134,13 @@ public class IdProvider {
       LOG.info("Writing ID report for project release {}-{} of {} IDs to {}", projectKey, attempt, ids.size(), f);
       ids.stream()
         .sorted()
-        .forEach(id -> reportId(id, useOldReleases, tsv));
+        .forEach(id -> reportId(id, previousReleases, tsv));
     }
   }
 
+  /**
+   * @param isOld if true lookup the if from older releases, otherwise from the project using the id map table
+   */
   private void reportId(int id, boolean isOld, TabWriter tsv){
     try {
       String ID = IdConverter.LATIN29.encode(id);
