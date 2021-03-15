@@ -3,6 +3,7 @@ package life.catalogue.dw.health;
 
 import com.codahale.metrics.health.HealthCheck;
 import life.catalogue.es.EsConfig;
+import life.catalogue.es.EsUtil;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
@@ -19,15 +20,11 @@ public class EsHealthCheck extends HealthCheck {
     this.client = client;
     this.cfg = cfg;
   }
-  
-  
+
   @Override
   protected Result check() throws Exception {
     String idxName = cfg.nameUsage.name;
-    Request req = new Request("HEAD", idxName);
-    Response resp = client.performRequest(req);
-
-    if (resp.getStatusLine().getStatusCode() == 200) {
+    if (EsUtil.indexExists(client, idxName)) {
       return Result.healthy("ES index %s exists on %s", idxName, cfg.hosts);
     }
     return Result.unhealthy("Cannot contact ES index %s on %s", idxName, cfg.hosts);

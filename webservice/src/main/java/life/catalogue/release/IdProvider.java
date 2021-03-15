@@ -91,7 +91,7 @@ public class IdProvider {
     prepare();
     mapIds();
     report();
-    LOG.info("Reused {} stable IDs for project release {}-{}, resurrected={}, newly created={}, deleted={}", projectKey, attempt, reused, resurrected.size(), created.size(), deleted.size());
+    LOG.info("Reused {} stable IDs for project release {}-{}, resurrected={}, newly created={}, deleted={}", reused, projectKey, attempt, resurrected.size(), created.size(), deleted.size());
     return getReport();
   }
 
@@ -139,17 +139,22 @@ public class IdProvider {
   private void reportId(int id, boolean isOld, TabWriter tsv){
     try {
       String ID = IdConverter.LATIN29.encode(id);
+      int datasetKey = 0;
       SimpleName sn;
       if (isOld) {
         ReleasedId rid = this.ids.byId(id);
-        int datasetKey = attempt2dataset.get(rid.attempt);
+        datasetKey = attempt2dataset.get(rid.attempt);
         sn = num.getSimple(DSID.of(datasetKey, ID));
       } else {
         // usages do not exist yet in the release - we gotta use the id map and look them up in the project!
         sn = num.getSimpleByIdMap(DSID.of(projectKey, ID));
       }
       if (sn == null) {
-        LOG.warn("ID {} reported without name usage", id);
+        if (isOld) {
+          LOG.warn("Old ID {}-{} [{}] reported without name usage", datasetKey, ID, id);
+        } else {
+          LOG.warn("ID {} [{}] reported without name usage", ID, id);
+        }
         tsv.write(new String[]{
           ID,
           null,
@@ -169,7 +174,7 @@ public class IdProvider {
       }
 
     } catch (IOException | RuntimeException e) {
-      LOG.error("Failed to write ID report for {}", id, e);
+      LOG.error("Failed to report {}ID {}", isOld ? "old ":"", id, e);
     }
   }
 
