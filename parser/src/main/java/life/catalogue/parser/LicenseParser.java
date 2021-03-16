@@ -18,8 +18,8 @@ public class LicenseParser extends EnumParser<License> {
   public LicenseParser() {
     super("license.csv", License.class);
     for (License r : License.values()) {
-      add(r.title, r);
-      add(r.url, r);
+      add(r.getTitle(), r);
+      add(r.getUrl(), r);
     }
   }
 

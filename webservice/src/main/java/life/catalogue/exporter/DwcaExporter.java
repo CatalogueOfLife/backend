@@ -42,6 +42,7 @@ public class DwcaExporter extends ArchiveExporter {
   private SectorMapper sectorMapper;
   private final Archive arch = new Archive();
   private final Int2IntMap sector2datasetKeys = new Int2IntOpenHashMap();
+
   public DwcaExporter(ExportRequest req, SqlSessionFactory factory, File exportDir) {
     super(req, factory, exportDir);
   }

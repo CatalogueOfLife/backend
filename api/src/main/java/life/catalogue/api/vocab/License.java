@@ -48,10 +48,17 @@ public enum License {
     this.url = url;
   }
   
-  public final String title;
-  public final String url;
-  
-  
+  private final String title;
+  private final String url;
+
+  public String getTitle() {
+    return title;
+  }
+
+  public String getUrl() {
+    return url;
+  }
+
   /**
    * Indicates if a license is a concrete license (true) or an abstracted license (false) like
    * UNSPECIFIED.

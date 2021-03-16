@@ -2,6 +2,7 @@ package life.catalogue.exporter;
 
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Person;
+import life.catalogue.api.vocab.License;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
@@ -37,6 +38,7 @@ public class DwcaExporterTest extends ExporterTest {
       d.getAuthors().add(new Person("Max", "Meier", "null@dev.null", "1234-5678-9012-3456"));
       d.getAuthors().add(new Person("Fax", "Feier", null, null));
       d.getEditors().add(new Person("Derek", "Dillinger"));
+      d.setLicense(License.CC0);
       DwcaExporter.writeEml(d, f);
 
       String eml = FileUtils.readFileToString(f, StandardCharsets.UTF_8);

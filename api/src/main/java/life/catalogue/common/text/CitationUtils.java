@@ -69,7 +69,7 @@ public class CitationUtils {
     }
 
     public String getLicense() {
-      return d.getLicense() == null ? null : d.getLicense().title;
+      return d.getLicense() == null ? null : d.getLicense().getTitle();
     }
 
     public String getVersion() {
