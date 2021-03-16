@@ -150,6 +150,9 @@ public class ReleasedIds {
     return maxKey;
   }
 
+  /**
+   * @return the maximum attempt in this list of all releases, i.e. the last or current attempt
+   */
   public int getMaxAttempt() {
     return maxAttempt;
   }

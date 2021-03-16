@@ -72,13 +72,6 @@ public class IdProvider {
   private IntSet deleted = new IntOpenHashSet();
   protected IdMapMapper idm;
   protected NameUsageMapper num;
-  private Map<TaxonomicStatus, Integer> statusOrder = Map.of(
-    TaxonomicStatus.ACCEPTED, 1,
-    TaxonomicStatus.PROVISIONALLY_ACCEPTED, 2,
-    TaxonomicStatus.SYNONYM, 3,
-    TaxonomicStatus.AMBIGUOUS_SYNONYM, 4,
-    TaxonomicStatus.MISAPPLIED, 5
-  );
 
   public IdProvider(int projectKey, int attempt, ReleaseConfig cfg, SqlSessionFactory factory) {
     this.projectKey = projectKey;
@@ -117,7 +110,7 @@ public class IdProvider {
       dir.mkdirs();
       // read the following IDs from previous releases
       reportFile(dir,"deleted.tsv", deleted, true);
-      reportFile(dir,"resurrected.tsv", deleted, true);
+      reportFile(dir,"resurrected.tsv", resurrected, true);
       // read ID from this release & ID mapping
       reportFile(dir,"created.tsv", created, false);
     } catch (IOException e) {
@@ -299,7 +292,6 @@ public class IdProvider {
           // best is sorted, issue as they come but avoid already released ids
           for (ScoreMatrix.ReleaseMatch m : best) {
             if (!ids.contains(m.rid.id)) {
-              System.out.println(m.rid);
               release(m, scores);
               ids.add(m.rid.id);
             }
@@ -323,7 +315,7 @@ public class IdProvider {
     }
     ids.remove(rm.rid.id);
     rm.name.setCanonicalId(rm.rid.id);
-    if (rm.rid.attempt != ids.getMaxAttempt()) {
+    if (rm.rid.attempt < ids.getMaxAttempt()) {
       resurrected.add(rm.rid.id);
     }
     scores.remove(rm);

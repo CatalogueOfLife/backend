@@ -141,16 +141,14 @@ public abstract class AbstractProjectCopy implements Runnable {
       diDao.update(metrics);
 
       if (mapIds) {
-        LOG.warn("ID mapping tables for project {} are not removed for debug purposes !!!", datasetKey);
-
-        //LOG.info("Remove id mapping tables for project {}", datasetKey);
-        //try (SqlSession session = factory.openSession(true)) {
-        //  DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
-        //  DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.deleteTable(t, datasetKey));
-        //} catch (Exception e) {
-        //  // avoid any exceptions as it would bring down the finally block
-        //  LOG.error("Failed to remove id mapping tables for project {}", datasetKey, e);
-        //}
+        LOG.info("Remove id mapping tables for project {}", datasetKey);
+        try (SqlSession session = factory.openSession(true)) {
+          DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
+          DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.deleteTable(t, datasetKey));
+        } catch (Exception e) {
+          // avoid any exceptions as it would bring down the finally block
+          LOG.error("Failed to remove id mapping tables for project {}", datasetKey, e);
+        }
       }
       ReleaseManager.releaseLock();
       LoggingUtils.removeDatasetMDC();
