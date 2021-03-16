@@ -3,91 +3,108 @@
         packageId="col-clb-${key}"  system="http://catalogueoflife.org" scope="system"
   xml:lang="en">
 
-<#macro tag name value>
-<#if value??>
-  <${name}>${value}</${name}>
+<#macro tag name value indent>
+<#if value?has_content>
+<#list 0..<indent as i> </#list><${name}>${value}</${name}>
 </#if>
 </#macro>
 
-<#macro person p>
+<#macro person p indent>
 <#if p.familyName??>
-  <individualName>
-    <@tag name="givenName" value=p.givenName! />
-    <surName>${p.familyName!}</surName>
-    <@tag name="electronicMailAddress" value=p.email! />
-    <@tag name="userId" value=p.orcid! />
-  </individualName>
+<#list 0..<indent as i> </#list><individualName>
+    <@tag name="givenName" value=p.givenName! indent=indent+2 />
+    <@tag name="surName" value=p.familyName! indent=indent+2 />
+    <@tag name="electronicMailAddress" value=p.email! indent=indent+2 />
+    <@tag name="userId" value=p.orcid! indent=indent+2 />
+<#list 0..<indent as i> </#list></individualName>
 </#if>
 </#macro>
 
-<#macro organisation o>
+<#macro organisation o indent>
 <#if o.name??>
-  <organizationName>${o.name}</organizationName>
-  <address>
-    <@tag name="city" value=o.city! />
-    <@tag name="administrativeArea" value=o.state! />
-    <@tag name="country" value=o.country! />
-  </address>
+<#list 0..<indent as i> </#list><organizationName>${o.name}</organizationName>
+<#list 0..<indent as i> </#list><address>
+    <@tag name="city" value=o.city! indent=indent+2 />
+    <@tag name="administrativeArea" value=o.state! indent=indent+2 />
+    <@tag name="country" value=o.country! indent=indent+2 />
+<#list 0..<indent as i> </#list></address>
 </#if>
 </#macro>
 
 <dataset>
-    <@tag name="title" value=title />
-    <creator/>
-    <metadataProvider />
+  <@tag name="title" value=title indent=2 />
+  <#if authors?has_content>
+  <creator>
+    <@person p=authors?first indent=4/>
+  </creator>
+  </#if>
   <#if organisations??>
    <#list organisations as o>
-   <associatedParty>
-    <@organisation o />
-   </associatedParty>
+  <associatedParty>
+    <@organisation o=o indent=4 />
+  </associatedParty>
    </#list>
   </#if>
-  <#if authors??>
-   <#list authors as p>
-   <associatedParty>
-    <@person p />
-    <role>AUTHOR</role>
-   </associatedParty>
+  <#if authors?has_content>
+   <#list authors[1..] as p>
+  <associatedParty>
+    <@person p=p indent=4 />
+    <role>author</role>
+  </associatedParty>
    </#list>
   </#if>
   <#if editors??>
    <#list editors as p>
-   <associatedParty>
-    <@person p />
-    <role>EDITOR</role>
-   </associatedParty>
+  <associatedParty>
+    <@person p=p indent=4 />
+    <role>editor</role>
+  </associatedParty>
    </#list>
   </#if>
-    <@tag name="pubDate" value=released! />
-    <language>ENGLISH</language>
+  <@tag name="pubDate" value=released! indent=4 />
+  <language>ENGLISH</language>
   <#if description??>
-    <abstract>
-      <para>${description}</para>
-    </abstract>
+  <abstract>
+    <para>${description}</para>
+  </abstract>
   </#if>
-    <intellectualRights />
+  <#if license?? && license.isConcrete()>
+  <intellectualRights>
+    <para><ulink url="${license.url}"><citetitle>${license.title}</citetitle></ulink></para>
+  </intellectualRights>
+  </#if>
   <#if website??>
-    <distribution scope="document">
-      <online>
-        <url function="information">${website}</url>
-      </online>
-    </distribution>
+  <distribution scope="document">
+    <online>
+      <url function="information">${website}</url>
+    </online>
+  </distribution>
   </#if>
-
+  <#if geographicScope??>
+  <coverage>
+    <geographicCoverage>
+      <geographicDescription>${geographicScope}</geographicDescription>
+    </geographicCoverage>
+  </coverage>
+  </#if>
   <#if contact??>
-    <contact>
-      <@person contact />
-    </contact>
+  <contact>
+    <@person contact />
+  </contact>
   </#if>
 </dataset>
 
 <additionalMetadata>
-    <metadata>
-      <gbif>
-        <@tag name="citation" value=citation! />
-        <@tag name="resourceLogoUrl" value=logo! />
-      </gbif>
-    </metadata>
+  <metadata>
+    <gbif>
+      <@tag name="citation" value=citation! indent=6 />
+      <@tag name="resourceLogoUrl" value=logo! indent=6 />
+    </gbif>
+    <col>
+      <@tag name="completeness" value=completeness! indent=6 />
+      <@tag name="confidence" value=confidence! indent=6 />
+    </col>
+  </metadata>
 </additionalMetadata>
 
 </eml:eml>
