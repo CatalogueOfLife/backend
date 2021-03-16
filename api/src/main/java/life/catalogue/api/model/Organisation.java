@@ -63,6 +63,31 @@ public class Organisation {
     return sb.toString();
   }
 
+  public String quoteParts() {
+    if (isEmpty()) return null;
+
+    StringBuilder sb = new StringBuilder();
+    quote(sb, department);
+    sb.append(',');
+    quote(sb, name);
+    sb.append(',');
+    quote(sb, city);
+    sb.append(',');
+    quote(sb, state);
+    if (country != null) {
+      sb.append(',');
+      quote(sb, country.getTitle());
+    }
+    return sb.toString();
+  }
+  private static void quote(StringBuilder sb, String x) {
+    sb.append('\"');
+    if (x != null) {
+      sb.append(x);
+    }
+    sb.append('\"');
+  }
+
   @JsonIgnore
   public boolean isEmpty(){
     return name == null && department == null && city == null && state == null && country == null;

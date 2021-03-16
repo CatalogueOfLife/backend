@@ -1,13 +1,18 @@
 package life.catalogue.importer.dwca;
 
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Organisation;
 import life.catalogue.api.model.Person;
+import life.catalogue.api.vocab.Country;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.CharsetDetectingStream;
+import life.catalogue.parser.CountryParser;
 import life.catalogue.parser.DateParser;
+import life.catalogue.parser.LicenseParser;
 import life.catalogue.parser.SafeParser;
 import org.apache.commons.lang3.StringUtils;
+import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +26,10 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Optional;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -78,7 +86,20 @@ public class EmlParser {
               case "creator":
               case "metadataProvider":
               case "contact":
+              case "associatedParty":
                 agent = new Agent();
+                break;
+              case "ulink":
+                String val = parser.getAttributeValue(null, "url");
+                if (val != null) {
+                  try {
+                    url = URI.create(val);
+                  } catch (IllegalArgumentException e) {
+                    LOG.warn("Invalid ulink URL {}", val);
+                    url = null;
+                  }
+                }
+                break;
             }
             break;
           
@@ -108,21 +129,50 @@ public class EmlParser {
                   url = null;
                 }
                 break;
+              case "intellectualRights":
+                if (url != null) {
+                  d.setLicense(LicenseParser.PARSER.parseOrNull(url.toString()));
+                }
+                break;
+
               // AGENT PROPS
+              case "role":
+                agent.role = text(text);
+                break;
+
               case "givenName":
                 agent.givenName = text(text);
                 break;
               case "surName":
                 agent.surName = text(text);
                 break;
-              case "organizationName":
-                agent.organizationName = text(text);
-                break;
               case "electronicMailAddress":
                 agent.electronicMailAddress = text(text);
                 break;
               case "userId":
                 agent.userId = text(text);
+                break;
+
+              case "organizationName":
+                agent.organizationName = text(text);
+                break;
+              case "country":
+                agent.country = text(text);
+                break;
+              case "city":
+                agent.city = text(text);
+                break;
+              case "postalCode":
+                agent.postalCode = text(text);
+                break;
+              case "administrativeArea":
+                agent.administrativeArea = text(text);
+                break;
+              case "deliveryPoint":
+                agent.deliveryPoint = text(text);
+                break;
+              case "onlineUrl":
+                agent.onlineUrl = text(text);
                 break;
             }
 
@@ -150,11 +200,19 @@ public class EmlParser {
                     d.setReleased(fuzzy.toLocalDate());
                   }
                   break;
+                case "geographicDescription":
+                  d.setGeographicScope(text(text));
+                  break;
                 case "creator":
-                  agent.person().ifPresent(d.getAuthors()::add);
+                  agent.role = "CREATOR";
+                  addAgent(agent, d.getDataset());
                   break;
                 case "contact":
-                  agent.person().ifPresent(d::setContact);
+                  agent.role = "CONTACT";
+                  addAgent(agent, d.getDataset());
+                  break;
+                case "associatedParty":
+                  addAgent(agent, d.getDataset());
                   break;
               }
             }
@@ -185,6 +243,7 @@ public class EmlParser {
         }
       }
       parser.close();
+      consolidate(d);
       return Optional.of(d);
       
     } catch (XMLStreamException e) {
@@ -193,7 +252,56 @@ public class EmlParser {
     }
     return Optional.empty();
   }
-  
+
+  private static void consolidate(DatasetWithSettings ds){
+    Dataset d = ds.getDataset();
+    // dedupe orgs, authors and editors
+    d.setOrganisations(
+      d.getOrganisations().stream().distinct().collect(Collectors.toList())
+    );
+    d.setAuthors(
+      d.getAuthors().stream().distinct().collect(Collectors.toList())
+    );
+    d.setEditors(
+      d.getEditors().stream().distinct().collect(Collectors.toList())
+    );
+    // parse out organisation departments if seperated by semicolons
+    for (Organisation o : d.getOrganisations()) {
+      if (o.getDepartment() == null && o.getName() != null) {
+        if (o.getName().contains(";")) {
+          String[] parts = o.getName().split(";", 2);
+          o.setName(parts[0].trim());
+          o.setDepartment(parts[1].trim());
+        }
+      }
+    }
+  }
+
+  private static void addAgent(Agent agent, Dataset d){
+    // require a role!
+    if (agent.role == null) return;
+    switch (agent.role.toUpperCase().trim()) {
+      case "CONTACT":
+      case "POINTOFCONTACT":
+        agent.person().ifPresent(d::setContact);
+        agent.organisation().ifPresent(d.getOrganisations()::add);
+        break;
+      case "AUTHOR":
+      case "CREATOR":
+      case "CONTENTPROVIDER":
+        agent.person().ifPresent(d.getAuthors()::add);
+        agent.organisation().ifPresent(d.getOrganisations()::add);
+        break;
+      case "EDITOR":
+      case "CUSTODIANSTEWARD":
+        agent.person().ifPresent(d.getEditors()::add);
+        agent.organisation().ifPresent(d.getOrganisations()::add);
+        break;
+      default:
+        LOG.debug("Ignore EML agent role {}", agent.role);
+    }
+  }
+
   private static String text(StringBuilder text) {
     return text == null || text.length() < 1 ? null : text.toString();
   }
@@ -203,33 +311,53 @@ public class EmlParser {
   }
   
   static class Agent {
+    private static final Pattern ORCID = Pattern.compile("^(?:https?://orcid.org/|orcid:)?(\\d{4}-\\d{4}-\\d{4}-\\d{4})\\s*$", Pattern.CASE_INSENSITIVE);
+    public String role;
+    public String onlineUrl;
+    public String electronicMailAddress;
+
     public String givenName;
     public String surName;
-    public String organizationName;
-    public String electronicMailAddress;
     public String url;
     public String userId;
 
+    public String organizationName;
+    public String country;
+    public String city;
+    public String postalCode;
+    public String administrativeArea;
+    public String deliveryPoint;
+
     Optional<Person> person() {
-      if (givenName != null || surName != null || electronicMailAddress != null || userId != null) {
+      if (givenName != null || surName != null || electronicMailAddress != null) {
         Person p = new Person();
         p.setGivenName(givenName);
         p.setFamilyName(surName);
         p.setEmail(electronicMailAddress);
-        p.setOrcid(userId);
+        if (userId != null) {
+          // verify ORCID pattern
+          Matcher m = ORCID.matcher(userId);
+          if (m.find()) {
+            p.setOrcid(m.group(1));
+          } else {
+            LOG.debug("UserID {} is not an ORCID", userId);
+          }
+        }
         return Optional.of(p);
       }
       return Optional.empty();
     }
 
     Optional<Organisation> organisation() {
-      if (givenName != null || surName != null || electronicMailAddress != null || userId != null) {
+      if (organizationName != null) {
         Organisation o = new Organisation();
         o.setDepartment(null);
         o.setName(organizationName);
-        o.setCity(null);
-        o.setState(null);
-        o.setCountry(null);
+        o.setCity(city);
+        o.setState(administrativeArea);
+        if (country != null) {
+          o.setCountry(CountryParser.PARSER.parseOrNull(country));
+        }
         return Optional.of(o);
       }
       return Optional.empty();
