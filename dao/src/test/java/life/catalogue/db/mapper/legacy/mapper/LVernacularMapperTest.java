@@ -44,6 +44,18 @@ public class LVernacularMapperTest extends MapperTestBase<LVernacularMapper> {
   @Test
   public void search() throws IOException, SQLException {
     mapper().search(datasetKey, false, "Apfel" ,0 ,2).forEach(this::isVernacular);
+    mapper().search(datasetKey, false, "Apfel'" ,0 ,2).forEach(this::isVernacular);
+    mapper().search(datasetKey, false, "Apfel's" ,0 ,2).forEach(this::isVernacular);
+    mapper().search(datasetKey, false, "Apf\\" ,0 ,2).forEach(this::isVernacular);
+    mapper().search(datasetKey, false, "Apfel\\" ,0 ,2).forEach(this::isVernacular);
+    mapper().search(datasetKey, false, "Ap_el" ,0 ,2).forEach(this::isVernacular);
+
+    mapper().search(datasetKey, true, "Apfel" ,0 ,2).forEach(this::isVernacular);
+    mapper().search(datasetKey, true, "Apfel'" ,0 ,2).forEach(this::isVernacular);
+    mapper().search(datasetKey, true, "Apf\\" ,0 ,2).forEach(this::isVernacular);
+    mapper().search(datasetKey, true, "Apfel's" ,0 ,2).forEach(this::isVernacular);
+    mapper().search(datasetKey, true, "Apfel\\" ,0 ,2).forEach(this::isVernacular);
+    mapper().search(datasetKey, true, "Ap_el" ,0 ,2).forEach(this::isVernacular);
   }
 
   void isVernacular(LName n) {

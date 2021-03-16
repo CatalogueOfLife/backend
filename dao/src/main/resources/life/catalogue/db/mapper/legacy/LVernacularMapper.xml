@@ -24,7 +24,7 @@
   </sql>
 
   <sql id="WHERE">
-    WHERE lower(v.name) LIKE lower(#{name}) <if test="prefix">|| '%'</if>
+    WHERE lower(v.name) LIKE lower(#{name}) <if test="prefix">|| '%'</if> ESCAPE ''
   </sql>
 
   <select id="count" resultType="integer">
