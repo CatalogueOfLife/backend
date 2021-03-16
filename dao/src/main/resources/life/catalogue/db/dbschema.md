@@ -10,6 +10,18 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2021-03-16 like escape function
+```
+CREATE OR REPLACE FUNCTION escape_like(text) RETURNS text AS $$
+SELECT replace(replace(replace($1
+, '\', '\\')  -- must come 1st
+, '%', '\%')
+, '_', '\_');
+$$
+LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+```
+
+
 ### 2021-03-11 remove match type INSERTED
 ```
 ALTER TYPE RANK ADD VALUE 'SUBTERCLASS' AFTER 'INFRACLASS';

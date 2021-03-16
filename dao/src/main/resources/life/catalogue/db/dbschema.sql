@@ -1324,8 +1324,17 @@ $$
 LANGUAGE SQL
 IMMUTABLE PARALLEL SAFE;
 
+-- escapes the 3 special characters in LIKE arguments using the default backslash ESCAPE character
+CREATE OR REPLACE FUNCTION escape_like(text) RETURNS text AS $$
+SELECT replace(replace(replace($1
+         , '\', '\\')  -- must come 1st
+         , '%', '\%')
+         , '_', '\_');
+$$
+LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+
 -- replaces whitespace including tabs, carriage returns and new lines with a single space
-CREATE FUNCTION repl_ws(x text) RETURNS TEXT AS $$
+CREATE OR REPLACE FUNCTION repl_ws(x text) RETURNS TEXT AS $$
   SELECT regexp_replace(x, '\s', ' ', 'g' )
 $$
 LANGUAGE SQL

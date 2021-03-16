@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class LVernacularMapperTest extends MapperTestBase<LVernacularMapper> {
 
@@ -44,18 +45,23 @@ public class LVernacularMapperTest extends MapperTestBase<LVernacularMapper> {
   @Test
   public void search() throws IOException, SQLException {
     mapper().search(datasetKey, false, "Apfel" ,0 ,2).forEach(this::isVernacular);
-    mapper().search(datasetKey, false, "Apfel'" ,0 ,2).forEach(this::isVernacular);
-    mapper().search(datasetKey, false, "Apfel's" ,0 ,2).forEach(this::isVernacular);
-    mapper().search(datasetKey, false, "Apf\\" ,0 ,2).forEach(this::isVernacular);
-    mapper().search(datasetKey, false, "Apfel\\" ,0 ,2).forEach(this::isVernacular);
-    mapper().search(datasetKey, false, "Ap_el" ,0 ,2).forEach(this::isVernacular);
-
     mapper().search(datasetKey, true, "Apfel" ,0 ,2).forEach(this::isVernacular);
-    mapper().search(datasetKey, true, "Apfel'" ,0 ,2).forEach(this::isVernacular);
-    mapper().search(datasetKey, true, "Apf\\" ,0 ,2).forEach(this::isVernacular);
-    mapper().search(datasetKey, true, "Apfel's" ,0 ,2).forEach(this::isVernacular);
-    mapper().search(datasetKey, true, "Apfel\\" ,0 ,2).forEach(this::isVernacular);
-    mapper().search(datasetKey, true, "Ap_el" ,0 ,2).forEach(this::isVernacular);
+
+    assertEquals(1, mapper().search(datasetKey, false, "Apfel" ,0 ,2).size());
+    assertTrue(mapper().search(datasetKey, false, "Apf'" ,0 ,2).isEmpty());
+    assertTrue(mapper().search(datasetKey, false, "Apfel'" ,0 ,2).isEmpty());
+    assertTrue(mapper().search(datasetKey, false, "Apfel's" ,0 ,2).isEmpty());
+    assertTrue(mapper().search(datasetKey, false, "Apf\\" ,0 ,2).isEmpty());
+    assertTrue(mapper().search(datasetKey, false, "Apfel\\" ,0 ,2).isEmpty());
+    assertTrue(mapper().search(datasetKey, false, "Ap_el" ,0 ,2).isEmpty());
+
+    assertEquals(1, mapper().search(datasetKey, true, "Apfel" ,0 ,2).size());
+    assertEquals(1, mapper().search(datasetKey, true, "Apf" ,0 ,2).size());
+    assertTrue(mapper().search(datasetKey, true, "Apfel'" ,0 ,2).isEmpty());
+    assertTrue(mapper().search(datasetKey, true, "Apf\\" ,0 ,2).isEmpty());
+    assertTrue(mapper().search(datasetKey, true, "Apfel's" ,0 ,2).isEmpty());
+    assertTrue(mapper().search(datasetKey, true, "Apfel\\" ,0 ,2).isEmpty());
+    assertTrue(mapper().search(datasetKey, true, "Ap_el" ,0 ,2).isEmpty());
   }
 
   void isVernacular(LName n) {
