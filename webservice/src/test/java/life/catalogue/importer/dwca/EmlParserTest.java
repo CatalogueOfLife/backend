@@ -15,8 +15,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static org.apache.commons.lang3.StringUtils.trimToNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -92,7 +91,7 @@ public class EmlParserTest {
     assertEquals("World Register of Marine Species", d.getTitle());
     assertEquals("An authoritative classification and catalogue of marine names", d.getDescription());
     assertEquals(new Person(null, null, "info@marinespecies.org", null), d.getContact());
-    assertEquals(List.of(pmail("info@marinespecies.org")), d.getAuthors());
+    assertTrue(d.getAuthors().isEmpty());
     assertEquals(List.of(
       p("Vandepitte", "Leen", "leen.vandepitte@vliz.be"),
       p("Horton", "Tammy", "tammy.horton@noc.ac.uk"),
