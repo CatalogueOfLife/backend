@@ -87,6 +87,7 @@ public class EmlParser {
               case "metadataProvider":
               case "contact":
               case "associatedParty":
+              case "personnel":
                 agent = new Agent();
                 break;
               case "ulink":
@@ -212,6 +213,7 @@ public class EmlParser {
                   addAgent(agent, d.getDataset());
                   break;
                 case "associatedParty":
+                case "personnel":
                   addAgent(agent, d.getDataset());
                   break;
               }

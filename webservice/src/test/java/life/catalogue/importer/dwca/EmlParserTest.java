@@ -58,13 +58,14 @@ public class EmlParserTest {
   public void famous() throws Exception {
     DatasetWithSettings d = read("famous.xml");
     Person markus = new Person("Markus", "Döring", "mdoering@gbif.org", "0000-0001-7757-1889");
+    Person bouchard = new Person("Patrice", "Bouchard");
 
     assertEquals("Species named after famous people", d.getTitle());
     assertEquals("A list of species named after famous people including musicians and politicians.", d.getDescription());
     assertEquals("https://github.com/mdoering/famous-organism", d.getWebsite().toString());
     //assertEquals("Species named after famous people", d.getLicense());
     assertEquals(markus, d.getContact());
-    assertEquals(List.of(markus), d.getAuthors());
+    assertEquals(List.of(markus, bouchard), d.getAuthors());
     assertEquals("2017-01-19", d.getReleased().toString());
     assertEquals("http://www.marinespecies.org/aphia.php?p=taxdetails&id=146230", d.getLogo().toString());
     assertEquals("cite my famous dataset", d.getCitation());
