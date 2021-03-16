@@ -228,6 +228,12 @@ public class EmlParser {
                 case "citation":
                   d.setCitation(text(text));
                   break;
+                case "confidence":
+                  d.setConfidence(integer(text));
+                  break;
+                case "completeness":
+                  d.setCompleteness(integer(text));
+                  break;
               }
             }
             break;
@@ -305,7 +311,16 @@ public class EmlParser {
   private static String text(StringBuilder text) {
     return text == null || text.length() < 1 ? null : text.toString();
   }
-  
+
+  private static Integer integer(StringBuilder text) {
+    try {
+      return text == null || text.length() < 1 ? null : Integer.parseInt(text.toString());
+    } catch (NumberFormatException e) {
+      LOG.debug("No integer: {}", text.toString());
+      return null;
+    }
+  }
+
   private static FuzzyDate date(StringBuilder text) {
     return SafeParser.parse(DateParser.PARSER, text.toString()).orNull();
   }
