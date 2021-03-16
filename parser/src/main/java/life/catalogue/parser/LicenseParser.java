@@ -25,17 +25,17 @@ public class LicenseParser extends EnumParser<License> {
 
   @Override
   public Optional<License> parse(String value) throws UnparsableException {
-    if (CC0.matcher(value).find()) {
-      return Optional.of(License.CC0);
+    if (value != null) {
+      if (CC0.matcher(value).find()) {
+        return Optional.of(License.CC0);
 
-    } else if (CCBYNC.matcher(value).find()) {
-      return Optional.of(License.CC_BY_NC);
+      } else if (CCBYNC.matcher(value).find()) {
+        return Optional.of(License.CC_BY_NC);
 
-    } else if (CCBY.matcher(value).find()) {
-      return Optional.of(License.CC_BY);
-
-    } else {
-      return super.parse(value);
+      } else if (CCBY.matcher(value).find()) {
+        return Optional.of(License.CC_BY);
+      }
     }
+    return super.parse(value);
   }
 }
