@@ -297,22 +297,24 @@ public class EmlParser {
       case "AUTHOR":
       case "CREATOR":
       case "CONTENTPROVIDER":
-        agent.person().map(p->{
-          if (p.getName()==null) {
-            return null;
-          }
-          return p;
-        }).ifPresent(d.getAuthors()::add);
+        agent.person().map(EmlParser::nullIfNoName).ifPresent(d.getAuthors()::add);
         agent.organisation().ifPresent(d.getOrganisations()::add);
         break;
       case "EDITOR":
       case "CUSTODIANSTEWARD":
-        agent.person().ifPresent(d.getEditors()::add);
+        agent.person().map(EmlParser::nullIfNoName).ifPresent(d.getEditors()::add);
         agent.organisation().ifPresent(d.getOrganisations()::add);
         break;
       default:
         LOG.debug("Ignore EML agent role {}", agent.role);
     }
+  }
+
+  private static Person nullIfNoName(Person p) {
+    if (p.getName()==null) {
+      return null;
+    }
+    return p;
   }
 
   private static String text(StringBuilder text) {
