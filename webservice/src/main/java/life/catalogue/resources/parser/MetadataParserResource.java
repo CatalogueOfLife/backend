@@ -42,14 +42,14 @@ import java.util.stream.Stream;
 @Produces(MediaType.APPLICATION_JSON)
 public class MetadataParserResource {
 
-  private static Optional<DatasetWithSettings> parseAny(InputStream stream, MetadataFormat format) throws Exception {
+  private static Optional<Dataset> parseAny(InputStream stream, MetadataFormat format) throws Exception {
     switch (ObjectUtils.coalesce(format, MetadataFormat.YAML)) {
       case YAML:
-        return MetadataParser.readMetadata(stream);
+        return MetadataParser.readMetadata(stream).map(DatasetWithSettings::getDataset);
       case EML:
-        return EmlParser.parse(stream);
+        return EmlParser.parse(stream).map(DatasetWithSettings::getDataset);
       default:
-        return Optional.of(ApiModule.MAPPER.readValue(stream, DatasetWithSettings.class));
+        return Optional.of(ApiModule.MAPPER.readValue(stream, Dataset.class));
     }
   }
 
@@ -57,7 +57,7 @@ public class MetadataParserResource {
    * Parsing metadata hosted on a URL given as a GET query parameters.
    */
   @GET
-  public Optional<DatasetWithSettings> parseGet(@QueryParam("url") String url, @QueryParam("format") MetadataFormat format) throws Exception {
+  public Optional<Dataset> parseGet(@QueryParam("url") String url, @QueryParam("format") MetadataFormat format) throws Exception {
     return parseAny(new URL(url).openStream(), format);
   }
   
@@ -73,7 +73,7 @@ public class MetadataParserResource {
     MediaType.APPLICATION_XML, MediaType.TEXT_XML,
     MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML
   })
-  public Optional<DatasetWithSettings> parsePost(InputStream data, @QueryParam("format") MetadataFormat format, @Context ContainerRequestContext ctx) throws Exception {
+  public Optional<Dataset> parsePost(InputStream data, @QueryParam("format") MetadataFormat format, @Context ContainerRequestContext ctx) throws Exception {
     if (format == null && ctx.getMediaType() != null) {
       // detect by content type
       format = DatasetMessageBodyReader.parseType(ctx.getMediaType());
@@ -89,7 +89,7 @@ public class MetadataParserResource {
    */
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
-  public Optional<DatasetWithSettings> parseFile(@FormDataParam("metadata") InputStream data, @QueryParam("format") MetadataFormat format) throws Exception {
+  public Optional<Dataset> parseFile(@FormDataParam("metadata") InputStream data, @QueryParam("format") MetadataFormat format) throws Exception {
     if (data == null) {
       throw new IllegalArgumentException("No metadata uploaded");
     }
