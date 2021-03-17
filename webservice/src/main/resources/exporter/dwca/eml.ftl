@@ -89,7 +89,7 @@
   </#if>
   <#if contact??>
   <contact>
-    <@person contact />
+    <@person contact indent=4 />
   </contact>
   </#if>
 </dataset>

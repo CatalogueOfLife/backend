@@ -204,6 +204,9 @@ public class EmlParser {
                 case "geographicDescription":
                   d.setGeographicScope(text(text));
                   break;
+                case "generalTaxonomicCoverage":
+                  d.setGroup(text(text));
+                  break;
                 case "creator":
                   agent.role = "CREATOR";
                   addAgent(agent, d.getDataset());
