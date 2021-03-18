@@ -1,5 +1,6 @@
 package life.catalogue.importer.coldp;
 
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Organisation;
 import life.catalogue.api.model.Person;
@@ -7,6 +8,7 @@ import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.io.Resources;
+import org.gbif.api.model.registry.Organization;
 import org.gbif.nameparser.api.NomCode;
 import org.junit.Test;
 
@@ -22,8 +24,7 @@ public class MetadataParserTest {
   
   @Test
   public void cycad() throws Exception {
-    MetadataParser mp = new MetadataParser();
-    Optional<DatasetWithSettings> m = mp.readMetadata(Resources.stream("metadata/cycads.yaml"));
+    Optional<DatasetWithSettings> m = MetadataParser.readMetadata(Resources.stream("metadata/cycads.yaml"));
     DatasetWithSettings d = m.get();
     assertEquals("The World List of Cycads, online edition", d.getTitle());
     assertEquals("Cycad List", d.getAlias());
@@ -58,8 +59,7 @@ public class MetadataParserTest {
 
   @Test
   public void cycadStrings() throws Exception {
-    MetadataParser mp = new MetadataParser();
-    Optional<DatasetWithSettings> m = mp.readMetadata(Resources.stream("metadata/cycadsStrings.yaml"));
+    Optional<DatasetWithSettings> m = MetadataParser.readMetadata(Resources.stream("metadata/cycadsStrings.yaml"));
     DatasetWithSettings d = m.get();
     assertEquals("The World List of Cycads, online edition", d.getTitle());
     assertEquals("Cycad List", d.getAlias());
@@ -92,8 +92,7 @@ public class MetadataParserTest {
 
   @Test
   public void alucitoidea() throws Exception {
-    MetadataParser mp = new MetadataParser();
-    Optional<DatasetWithSettings> m = mp.readMetadata(Resources.stream("metadata/Alucitoidea.yaml"));
+    Optional<DatasetWithSettings> m = MetadataParser.readMetadata(Resources.stream("metadata/Alucitoidea.yaml"));
     DatasetWithSettings d = m.get();
 
     Person donald = new Person("Donald","Hobern","dhobern@gmail.com","0000-0001-6492-4016");
@@ -120,5 +119,28 @@ public class MetadataParserTest {
     authors.add(new Person("Cees", "Gielis", null, "0000-0003-0857-1679"));
     assertEquals(authors, d.getAuthors());
     assertTrue(d.getEditors().isEmpty());
+  }
+
+  /**
+   * we try to support simple strings given for person and organisation instead of complex types.
+   */
+  @Test
+  public void simple() throws Exception {
+    Optional<DatasetWithSettings> m = MetadataParser.readMetadata(Resources.stream("metadata/simple-person.yaml"));
+    Dataset d = m.get().getDataset();
+
+    Person rainer = new Person("Rainer","Froese","rainer@mailinator.com",null);
+    Person daniel = new Person("Daniel","Pauly");
+
+    assertEquals(rainer, d.getContact());
+    assertEquals(List.of(rainer, daniel), d.getAuthors());
+
+    Organisation o1 = new Organisation("The WorldFish Center");
+    Organisation o2 = new Organisation("University of British Columbia, Canada");
+    Organisation o3 = new Organisation("Food and Agriculture Organization of the United Nations; Rome; Italy");
+    assertEquals(List.of(o1, o2, o3), d.getOrganisations());
+
+    assertEquals("Fishes", d.getGroup());
+
   }
 }

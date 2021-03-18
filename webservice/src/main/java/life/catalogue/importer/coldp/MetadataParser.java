@@ -90,6 +90,12 @@ public class MetadataParser {
         setAuthors(authorsAndEditors);
       }
     }
+
+    @JsonProperty("taxonomicScope")
+    public void setTaxonomicScope(String scope) {
+      setGroup(scope);
+    }
+
   }
 
   /**

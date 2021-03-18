@@ -2,7 +2,6 @@ package life.catalogue.exporter;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import junit.framework.TestCase;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Person;
@@ -14,7 +13,9 @@ import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
+import org.junit.ClassRule;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.File;
@@ -27,6 +28,11 @@ import static org.junit.Assert.assertFalse;
 
 public class EmlWriterTest {
 
+  @ClassRule
+  public static PgSetupRule pgSetupRule = new PgSetupRule();
+
+  @Rule
+  public TestDataRule testDataRule = TestDataRule.apple();
 
   @Test
   public void eml() throws Exception {

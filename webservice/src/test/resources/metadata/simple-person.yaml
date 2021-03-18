@@ -1,0 +1,70 @@
+title: ColDP Example. The full dataset title
+# a short, hopefully unique name for the dataset
+alias: ColDP Example
+description: |
+  An abstract about the content of this dataset.
+  This can be as many paragraphs as you like in literal style YAML.
+
+# list of publishing organisations
+# Each organisation can use the following properties:
+#   name: name of the organisation, required!
+#   department: subunit within the organisation, sometimes a project (optional)
+#   city: city (optional)
+#   state: state or province (optional)
+#   country: ISO country code (optional)
+
+organisations:
+  - The WorldFish Center
+  - University of British Columbia, Canada
+  - Food and Agriculture Organization of the United Nations; Rome; Italy
+
+# single point of contact for questions
+# person entity with 4 properties:
+#   givenName: first name, optional
+#   familyName: last name. Only required field
+#   email: email address, optional
+#   orcid: orcid id, optional
+
+contact:
+  - Rainer Froese <rainer@mailinator.com>
+
+# list of authors and/or editors. Recommendation is to keep authors empty if editors are given
+# For available person properties see contact above
+# Please provide an ORCID if you can so it can be included in DOI metadata
+authors:
+  - Rainer Froese <rainer@mailinator.com>
+  - Daniel Pauly
+
+editors:
+  - Rainer Froese <rainer@mailinator.com>
+  - Daniel Pauly
+
+# description of the geographical scope of the dataset
+geographicScope: global
+
+# taxonomic scope of the dataset
+taxonomicScope: Fishes
+
+# integer between 1-5 with 5 expressing highest confidence in quality of the data
+confidence: 5
+
+# 0-100 to express the completeness of the dataset in regards to the defined scope
+completeness: 95
+
+# Any commons license, but preferrably CC0, CC-BY or CC-BY-NC
+license: CC0
+
+# version name of this copy
+version: v.48 (06/2018)
+
+# release date of this version in ISO YYYY-MM-DD
+released: 2018-06-01
+
+# link to a website for the dataset if online
+website: https://www.fishbase.org
+
+# URL to large logo image
+logo: https://www.fishbase.de/images/gifs/fblogo_new.gif
+
+# how to cite the dataset
+citation: Froese R. & Pauly D. (eds) (2018). FishBase (version 06/2018).

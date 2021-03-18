@@ -328,10 +328,6 @@ public class ArchivedDataset extends DataEntity<Integer> implements DatasetMetad
     this.group = group;
   }
 
-  public void setTaxonomicScope(String scope) {
-    setGroup(scope);
-  }
-
   @Override
   public Integer getConfidence() {
     return confidence;
