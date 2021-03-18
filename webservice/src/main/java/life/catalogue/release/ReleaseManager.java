@@ -10,6 +10,7 @@ import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
@@ -60,14 +61,14 @@ public class ReleaseManager {
    * @return newly created dataset key of the release
    */
   public Integer release(int datasetKey, User user) {
-    return execute(() -> release(factory, nameIndex, indexService, diDao, dDao, imageService, datasetKey, user.getKey(), cfg));
+    return execute(() -> buildRelease(datasetKey, user.getKey()));
   }
 
   /**
    * @return newly created dataset key of the copy
    */
   public Integer duplicate(int datasetKey, User user) {
-    return execute(() -> duplicate(factory, indexService, diDao, dDao, datasetKey, user.getKey()));
+    return execute(() -> buildDuplication(datasetKey, user.getKey()));
   }
 
   /**
@@ -106,9 +107,7 @@ public class ReleaseManager {
    *
    * @throws IllegalArgumentException if the dataset is not managed
    */
-  public static ProjectRelease release(SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService,
-                                       DatasetImportDao diDao, DatasetDao dDao, ImageService imageService,
-                                       int projectKey, int userKey, ReleaseConfig cfg) {
+  public ProjectRelease buildRelease(final int projectKey, final int userKey) {
     Dataset release = createDataset(factory, projectKey, "release", userKey, ProjectRelease::releaseDataset);
     return new ProjectRelease(factory, nameIndex, indexService, diDao, dDao, imageService, projectKey, release, userKey, cfg);
   }
@@ -119,13 +118,12 @@ public class ReleaseManager {
    *
    * @throws IllegalArgumentException if the dataset is not managed
    */
-  public static ProjectDuplication duplicate(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao,
-                                             int projectKey, int userKey) {
+  public ProjectDuplication buildDuplication(int projectKey, int userKey) {
     Dataset copy = createDataset(factory, projectKey, "duplicate", userKey, ProjectDuplication::copyDataset);
     return new ProjectDuplication(factory, indexService, diDao, dDao, projectKey, copy, userKey);
   }
 
-  private static Dataset createDataset(SqlSessionFactory factory, int projectKey, String action, int userKey, BiConsumer<Dataset, DatasetSettings> modifier) {
+  private Dataset createDataset(SqlSessionFactory factory, int projectKey, String action, int userKey, BiConsumer<Dataset, DatasetSettings> modifier) {
     if (!aquireLock()) {
       throw new IllegalArgumentException("There is a running " + action + " job already");
     }
@@ -153,10 +151,7 @@ public class ReleaseManager {
       try {
         dm.create(copy);
       } catch (PersistenceException e) {
-        PSQLException pe = (PSQLException) e.getCause();
-        // https://www.postgresql.org/docs/12/errcodes-appendix.html
-        // 23505 = unique_violation
-        if (pe.getSQLState().equals("23505")) {
+        if (PgUtils.isUniqueConstraint(e)) {
           // make sure alias is unique - will fail otherwise
           copy.setAlias(null);
           dm.create(copy);
@@ -164,6 +159,9 @@ public class ReleaseManager {
           throw e;
         }
       }
+
+      // copy logo files
+      imageService.copyDatasetLogo(projectKey, copy.getKey());
 
       return copy;
 

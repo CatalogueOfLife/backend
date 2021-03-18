@@ -11,6 +11,8 @@ import life.catalogue.dao.Partitioner;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.img.ImageService;
+import life.catalogue.img.ImageServiceFS;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;

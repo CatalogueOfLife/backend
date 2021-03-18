@@ -12,6 +12,7 @@ import life.catalogue.db.mapper.legacy.LVernacularMapper;
 import life.catalogue.db.mapper.legacy.model.LError;
 import life.catalogue.db.mapper.legacy.model.LName;
 import life.catalogue.db.mapper.legacy.model.LResponse;
+import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.legacy.IdMap;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
@@ -92,6 +93,7 @@ public class LegacyWebserviceResource {
 
   @GET
   @Path("{id}")
+  @VaryAccept
   @Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_XML})
   public Response redirectPortal(@PathParam("key") int datasetKey, @PathParam("id") String id) {
     return redirect(datasetKey, id, true);
@@ -99,6 +101,7 @@ public class LegacyWebserviceResource {
 
   @GET
   @Path("{id}")
+  @VaryAccept
   @Produces(MediaType.APPLICATION_JSON)
   public Response redirectAPI(@PathParam("key") int datasetKey, @PathParam("id") String id) {
     return redirect(datasetKey, id, false);
@@ -111,7 +114,7 @@ public class LegacyWebserviceResource {
       URI target = portal ?
         portalURI.resolve("/data/taxon/" + newID) :
         URI.create("/dataset/"+datasetKey+"/nameusage/" + newID);
-      return Response.status(Response.Status.MOVED_PERMANENTLY).location(target).build();
+      return Response.status(Response.Status.FOUND).location(target).build();
     }
     throw NotFoundException.notFound("COL Legacy ID", id);
   }

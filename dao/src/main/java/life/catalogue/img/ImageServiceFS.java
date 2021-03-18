@@ -41,6 +41,19 @@ public class ImageServiceFS implements ImageService {
   }
 
   @Override
+  public void copyDatasetLogo(int datasetKey, int toDatasetKey) throws IOException {
+    LOG.info("Copy logo for dataset {} to {}", datasetKey, toDatasetKey);
+    for (ImgConfig.Scale scale : ImgConfig.Scale.values()) {
+      Path src = cfg.datasetLogo(datasetKey, scale);
+      if (Files.exists(src)) {
+        Path target = cfg.datasetLogo(toDatasetKey, scale);
+        Files.createDirectories(target.getParent());
+        Files.copy(src, target);
+      }
+    }
+  }
+
+  @Override
   public void archiveDatasetLogo(int releaseKey, int datasetKey) throws IOException {
     Path src = cfg.datasetLogo(datasetKey, ImgConfig.Scale.ORIGINAL);
     if (Files.exists(src)) {

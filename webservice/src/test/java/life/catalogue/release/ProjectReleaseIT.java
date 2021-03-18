@@ -50,12 +50,14 @@ public class ProjectReleaseIT {
   DatasetDao dDao;
 
   final int projectKey = IdProviderIT.PROJECT_DATA.key;
-  
+  ReleaseManager releaseManager;
+
   @Before
   public void init()  {
     diDao = new DatasetImportDao(PgSetupRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     EventBus bus = mock(EventBus.class);
     dDao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, ImageService.passThru(), diDao, NameUsageIndexService.passThru(), null, bus);
+    releaseManager = new ReleaseManager(diDao, dDao, matchingRule.getIndex(), NameUsageIndexService.passThru(), ImageService.passThru(), PgSetupRule.getSqlSessionFactory(), new ReleaseConfig());
   }
   
   @Test
@@ -108,7 +110,7 @@ public class ProjectReleaseIT {
   private ProjectRelease buildRelease() {
     ReleaseConfig cfg = new ReleaseConfig();
     cfg.restart = false;
-    return ReleaseManager.release(PgSetupRule.getSqlSessionFactory(), matchingRule.getIndex(), NameUsageIndexService.passThru(), diDao, dDao, ImageService.passThru(), projectKey, Users.TESTER, cfg);
+    return releaseManager.buildRelease(projectKey, Users.TESTER);
   }
   
   @Test

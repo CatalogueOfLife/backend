@@ -148,7 +148,7 @@ public class CitationUtils {
 
   public static String fromTemplate(Dataset d, DatasetSettings ds, Setting setting, String defaultTemplate){
     String tmpl = defaultTemplate;
-    if (ds.has(setting)) {
+    if (ds != null && ds.has(setting)) {
       tmpl = ds.getString(setting);
     }
     return fromTemplate(d, tmpl);

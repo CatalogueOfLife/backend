@@ -76,7 +76,7 @@ public class DwcaExporter extends ArchiveExporter {
   @Override
   void exportMetadata(Dataset d) throws IOException {
     // main dataset metadata
-    writeEml(d, new File(tmpDir, EML_FILENAME));
+    EmlWriter.write(d, new File(tmpDir, EML_FILENAME));
 
     // extract unique source datasets if sectors were given
     Set<Integer> sourceKeys = new HashSet<>(sector2datasetKeys.values());
@@ -93,16 +93,7 @@ public class DwcaExporter extends ArchiveExporter {
         return;
       }
       File f = new File(tmpDir, String.format("dataset/%s.xml", key));
-      writeEml(projectSourceMapper.getReleaseSource(key, datasetKey), f);
-    }
-  }
-
-  public static void writeEml(ArchivedDataset d, File f) throws IOException {
-    try (Writer w = UTF8IoUtils.writerFromFile(f)) {
-      Template temp = FmUtil.FMK.getTemplate("/dwca/eml.ftl");
-      temp.process(d, w);
-    } catch (TemplateException e) {
-      throw new IOException(e);
+      EmlWriter.write(projectSourceMapper.getReleaseSource(key, datasetKey), f);
     }
   }
 

@@ -75,18 +75,27 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     return this.create(obj, user);
   }
 
+  @GET
+  @VaryAccept
+  public ResultPage<Dataset> search(@Valid @BeanParam Page page, @BeanParam DatasetSearchRequest req, @Auth Optional<User> user) {
+    return dao.search(req, userkey(user), page);
+  }
+
+  @GET
+  @Path("{key}")
+  @Override
+  @VaryAccept
+  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_XML})
+  public Dataset get(@PathParam("key") Integer key) {
+    return super.get(key);
+  }
+
   @PUT
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   @Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML})
   public void updateAlt(@PathParam("key") Integer key, Dataset obj, @Auth User user) {
     this.update(key, obj, user);
-  }
-
-  @GET
-  @VaryAccept
-  public ResultPage<Dataset> search(@Valid @BeanParam Page page, @BeanParam DatasetSearchRequest req, @Auth Optional<User> user) {
-    return dao.search(req, userkey(user), page);
   }
 
   @GET

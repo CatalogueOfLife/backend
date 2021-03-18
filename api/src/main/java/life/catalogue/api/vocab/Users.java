@@ -1,5 +1,7 @@
 package life.catalogue.api.vocab;
 
+import life.catalogue.api.model.User;
+
 /**
  * Constants for user keys mostly.
  */
@@ -11,5 +13,11 @@ public class Users {
   public final static int GBIF_SYNC = 12;
 
   private Users() {
+  }
+
+  public static User user(int key) {
+    User u = new User();
+    u.setKey(key);
+    return u;
   }
 }

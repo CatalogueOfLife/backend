@@ -5,6 +5,7 @@ import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
+import com.google.common.base.Preconditions;
 import io.dropwizard.auth.Auth;
 import org.apache.ibatis.session.SqlSessionFactory;
 import life.catalogue.api.exception.NotFoundException;
@@ -57,6 +58,9 @@ public abstract class AbstractGlobalResource<T extends DataEntity<Integer>> {
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void update(@PathParam("key") Integer key, T obj, @Auth User user) {
+    if (obj==null) {
+      throw new IllegalArgumentException("No update object given for key " + key);
+    }
     obj.setKey(key);
     obj.applyUser(user);
     int i = dao.update(obj, user.getKey());

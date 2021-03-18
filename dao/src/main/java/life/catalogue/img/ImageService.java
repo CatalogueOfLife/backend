@@ -7,6 +7,8 @@ public interface ImageService {
   
   void putDatasetLogo(int datasetKey, BufferedImage img) throws IOException;
 
+  void copyDatasetLogo(int datasetKey, int toDatasetKey) throws IOException;
+
   void archiveDatasetLogo(int releaseKey, int datasetKey) throws IOException;
 
   BufferedImage datasetLogo(int datasetKey, ImgConfig.Scale scale);
@@ -18,6 +20,10 @@ public interface ImageService {
     return new ImageService() {
       @Override
       public void putDatasetLogo(int datasetKey, BufferedImage img) throws IOException {
+      }
+
+      @Override
+      public void copyDatasetLogo(int datasetKey, int toDatasetKey) throws IOException {
       }
 
       @Override

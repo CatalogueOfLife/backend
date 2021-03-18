@@ -10,11 +10,13 @@ import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetProjectSourceDao;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.ProjectSourceMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.NameIndex;
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
@@ -38,6 +40,22 @@ public class ProjectRelease extends AbstractProjectCopy {
     this.nameIndex = nameIndex;
     this.release = release;
     this.cfg = cfg;
+    // we update the dataset metadata again as we only now have access to the release attempt and some citation templates might be using this!
+    try (SqlSession session = factory.openSession(true)) {
+      releaseDataset(release, settings);
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      try {
+        dm.update(release);
+      } catch (PersistenceException e) {
+        if (PgUtils.isUniqueConstraint(e)) {
+          // make sure alias is unique - will fail otherwise
+          release.setAlias(null);
+          dm.create(release);
+        } else {
+          throw e;
+        }
+      }
+    }
   }
 
   @Override
@@ -90,7 +108,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     String title = CitationUtils.fromTemplate(d, ds, Setting.RELEASE_TITLE_TEMPLATE, DEFAULT_TITLE_TEMPLATE);
     d.setTitle(title);
 
-    if (ds.has(Setting.RELEASE_CITATION_TEMPLATE)) {
+    if (ds != null && ds.has(Setting.RELEASE_CITATION_TEMPLATE)) {
       String citation = CitationUtils.fromTemplate(d, ds.getString(Setting.RELEASE_CITATION_TEMPLATE));
       d.setCitation(citation);
     }

@@ -31,7 +31,7 @@ In general all dataset properties are allowed as variables:
  - created
  - modified
  - privat
- - importAttempt
+ - importAttempt  # incremental int for imports & releases
  - gbifKey
  - gbifPublisherKey
  - imported
