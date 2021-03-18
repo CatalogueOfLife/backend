@@ -23,11 +23,13 @@
 <#macro organisation o indent>
 <#if o.name??>
 <#list 0..<indent as i> </#list><organizationName>${o.name}</organizationName>
+<#if o.city?has_content || o.state?has_content || o.country?has_content>
 <#list 0..<indent as i> </#list><address>
     <@tag name="city" value=o.city! indent=indent+2 />
     <@tag name="administrativeArea" value=o.state! indent=indent+2 />
     <@tag name="country" value=o.country! indent=indent+2 />
 <#list 0..<indent as i> </#list></address>
+</#if>
 </#if>
 </#macro>
 
@@ -62,7 +64,7 @@
    </#list>
   </#if>
   <@tag name="pubDate" value=released! indent=4 />
-  <language>ENGLISH</language>
+  <language>english</language>
   <#if description??>
   <abstract>
     <para>${description}</para>
@@ -89,22 +91,28 @@
   </#if>
   <#if contact??>
   <contact>
-    <@person contact indent=4 />
+    <@person p=contact indent=4 />
   </contact>
   </#if>
 </dataset>
 
+<#if citation?has_content || logo?has_content || completeness?has_content || confidence?has_content>
 <additionalMetadata>
   <metadata>
+   <#if citation?has_content || logo?has_content>
     <gbif>
       <@tag name="citation" value=citation! indent=6 />
       <@tag name="resourceLogoUrl" value=logo! indent=6 />
     </gbif>
+   </#if>
+   <#if completeness?has_content || confidence?has_content>
     <col>
       <@tag name="completeness" value=completeness! indent=6 />
       <@tag name="confidence" value=confidence! indent=6 />
     </col>
+   </#if>
   </metadata>
 </additionalMetadata>
+</#if>
 
 </eml:eml>
