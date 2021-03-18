@@ -299,12 +299,10 @@ public class EmlParser {
         break;
       case "AUTHOR":
       case "CREATOR":
-      case "CONTENTPROVIDER":
         agent.person().map(EmlParser::nullIfNoName).ifPresent(d.getAuthors()::add);
         agent.organisation().ifPresent(d.getOrganisations()::add);
         break;
       case "EDITOR":
-      case "CUSTODIANSTEWARD":
         agent.person().map(EmlParser::nullIfNoName).ifPresent(d.getEditors()::add);
         agent.organisation().ifPresent(d.getOrganisations()::add);
         break;

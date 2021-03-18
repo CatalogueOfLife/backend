@@ -93,7 +93,6 @@ public class EmlParserTest {
     assertEquals(new Person(null, null, "info@marinespecies.org", null), d.getContact());
     assertTrue(d.getAuthors().isEmpty());
     assertEquals(List.of(
-      p("Vandepitte", "Leen", "leen.vandepitte@vliz.be"),
       p("Horton", "Tammy", "tammy.horton@noc.ac.uk"),
       p("Kroh", "Andreas", "andreas.kroh@nhm-wien.ac.at"),
       p("Ahyong", "Shane", "Shane.Ahyong@austmus.gov.au"),
@@ -113,7 +112,6 @@ public class EmlParserTest {
     }
     assertEquals(List.of(
       o("WoRMS Editorial Board"),
-      o("Vlaams Instituut voor de Zee","","","Belgium"),
       o("National Oceanography Centre, Southampton; Ocean Biogeochemistry and Ecosystems", "University of Southampton","","","United Kingdom"),
       o("Natural History Museum Vienna","","","Austria"),
       o("Marine Invertebrates", "Australian Museum","","","Australia"),
@@ -122,6 +120,7 @@ public class EmlParserTest {
       o("Departamento de Ciências Biológicas", "Universidade Estadual de Santa Cruz","","","Brazil"),
       o("Faculty of Sciences; Departamento de Biología Animal", "University of Málaga","","","Spain"),
       o("Queensland Museum","","","Australia"),
+      o("Vlaams Instituut voor de Zee","","","Belgium"),
       o("Swedish Museum of Natural History","","","Sweden"),
       o("P. P. Shirshov Institute of Oceanology", "Russian Academy of Sciences","","","Russian Federation"),
       o("Florida Museum of Natural History", "University of Florida","","","United States of America"),
