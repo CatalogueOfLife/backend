@@ -69,7 +69,7 @@ public class DatasetPatchMapperTest extends MapperTestBase<DatasetPatchMapper> {
 
       boolean exists = false;
       for(PropertyDescriptor iProp : metaInfo.getPropertyDescriptors()){
-        if (iProp.getReadMethod().getName().equalsIgnoreCase(prop.getReadMethod().getName())) {
+        if (prop.getReadMethod() != null && iProp.getReadMethod().getName().equalsIgnoreCase(prop.getReadMethod().getName())) {
           exists = true;
           break;
         }
