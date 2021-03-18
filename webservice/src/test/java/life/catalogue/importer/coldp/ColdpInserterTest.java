@@ -8,13 +8,11 @@ import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Person;
 import life.catalogue.api.model.Reference;
-import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.importer.InserterBaseTest;
 import life.catalogue.importer.NeoInserter;
 import life.catalogue.importer.reference.ReferenceFactory;
-import org.gbif.dwc.terms.BibTexTerm;
 import org.gbif.nameparser.api.NomCode;
 import org.junit.Test;
 

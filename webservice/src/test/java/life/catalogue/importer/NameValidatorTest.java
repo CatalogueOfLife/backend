@@ -1,6 +1,5 @@
 package life.catalogue.importer;
 
-import life.catalogue.importer.NameValidator;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;

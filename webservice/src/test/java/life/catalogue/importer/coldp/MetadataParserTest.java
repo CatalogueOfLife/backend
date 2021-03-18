@@ -8,7 +8,6 @@ import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.io.Resources;
-import org.gbif.api.model.registry.Organization;
 import org.gbif.nameparser.api.NomCode;
 import org.junit.Test;
 

@@ -1,7 +1,6 @@
 package life.catalogue.csv;
 
 import life.catalogue.common.io.Resources;
-import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
 import java.io.File;
@@ -11,7 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class ExcelCsvExtractorTest {
 

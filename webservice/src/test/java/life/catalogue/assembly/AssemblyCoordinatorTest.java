@@ -2,7 +2,10 @@ package life.catalogue.assembly;
 
 import com.codahale.metrics.MetricRegistry;
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.RequestScope;
+import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.SimpleNameLink;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.DatasetImportDao;

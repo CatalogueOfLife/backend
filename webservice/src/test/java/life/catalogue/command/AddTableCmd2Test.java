@@ -1,6 +1,5 @@
 package life.catalogue.command;
 
-import life.catalogue.command.AddTableCmd;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import org.junit.ClassRule;

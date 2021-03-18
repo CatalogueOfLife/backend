@@ -1,15 +1,15 @@
 package life.catalogue.importer.acef;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.google.common.collect.ImmutableMap;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.common.io.PathUtils;
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.utils.file.FileUtils;
 import org.junit.Test;
+
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
 

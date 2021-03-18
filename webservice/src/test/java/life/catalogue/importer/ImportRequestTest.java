@@ -1,15 +1,15 @@
 package life.catalogue.importer;
 
+import com.google.common.collect.Lists;
+import life.catalogue.api.vocab.Users;
+import org.junit.Test;
+
 import java.util.List;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.collect.Lists;
-import life.catalogue.importer.ImportRequest;
-import life.catalogue.api.vocab.Users;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class ImportRequestTest {
   

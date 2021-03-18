@@ -1,7 +1,5 @@
 package life.catalogue.command;
 
-import life.catalogue.command.InitDbCmd;
-import life.catalogue.command.CmdTestBase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;

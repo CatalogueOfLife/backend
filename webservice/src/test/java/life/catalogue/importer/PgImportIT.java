@@ -12,7 +12,6 @@ import life.catalogue.importer.neo.model.RankedName;
 import org.apache.ibatis.session.SqlSession;
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.UnknownTerm;
-import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.junit.Ignore;
 import org.junit.Test;

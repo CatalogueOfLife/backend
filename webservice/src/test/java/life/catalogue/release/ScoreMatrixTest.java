@@ -3,13 +3,14 @@ package life.catalogue.release;
 import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.importer.neo.traverse.AcceptedOnlyEvaluator;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class ScoreMatrixTest {
 

@@ -1,35 +1,25 @@
 package life.catalogue.release;
 
 import life.catalogue.api.model.SimpleNameWithNidx;
-import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.id.IdConverter;
-import life.catalogue.common.io.TabWriter;
 import life.catalogue.config.ReleaseConfig;
-import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
-import life.catalogue.db.mapper.IdMapMapper;
-import life.catalogue.db.mapper.NameUsageMapper;
 import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.checkerframework.checker.units.qual.A;
 import org.gbif.nameparser.api.Rank;
-import org.gbif.utils.file.FileUtils;
 import org.junit.*;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+import static life.catalogue.api.vocab.TaxonomicStatus.*;
+import static org.gbif.nameparser.api.Rank.GENUS;
+import static org.gbif.nameparser.api.Rank.SPECIES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.gbif.nameparser.api.Rank.*;
-import static life.catalogue.api.vocab.TaxonomicStatus.*;
 
 public class IdProviderTest {
 

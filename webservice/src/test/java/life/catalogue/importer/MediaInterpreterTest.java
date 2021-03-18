@@ -1,10 +1,10 @@
 package life.catalogue.importer;
 
-import java.net.URI;
-
 import life.catalogue.api.model.Media;
 import life.catalogue.api.vocab.MediaType;
 import org.junit.Test;
+
+import java.net.URI;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertNull;

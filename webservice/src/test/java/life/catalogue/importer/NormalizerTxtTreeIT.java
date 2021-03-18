@@ -1,13 +1,9 @@
 package life.catalogue.importer;
 
-import life.catalogue.api.model.NameRelation;
 import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.Issue;
-import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.dao.ParserConfigDao;
-import life.catalogue.db.PgSetupRule;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RankedUsage;
 import org.gbif.nameparser.api.Authorship;

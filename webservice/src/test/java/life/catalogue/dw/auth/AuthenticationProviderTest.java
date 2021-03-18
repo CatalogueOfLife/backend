@@ -1,10 +1,5 @@
 package life.catalogue.dw.auth;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import javax.validation.Validator;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import io.dropwizard.configuration.ConfigurationSourceProvider;
@@ -12,14 +7,19 @@ import io.dropwizard.configuration.YamlConfigurationFactory;
 import io.dropwizard.jackson.DiscoverableSubtypeResolver;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.jersey.validation.Validators;
-import org.apache.commons.io.FileUtils;
-import org.assertj.core.api.Assertions;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.util.YamlUtils;
 import life.catalogue.dw.auth.gbif.GBIFAuthenticationFactory;
 import life.catalogue.dw.auth.map.MapAuthenticationFactory;
+import org.apache.commons.io.FileUtils;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
+
+import javax.validation.Validator;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class AuthenticationProviderTest {
   

@@ -3,12 +3,8 @@ package life.catalogue.importer.dwca;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Organisation;
 import life.catalogue.api.model.Person;
-import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.License;
 import life.catalogue.parser.CountryParser;
-import org.apache.commons.lang3.StringUtils;
-import org.checkerframework.checker.units.qual.A;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;

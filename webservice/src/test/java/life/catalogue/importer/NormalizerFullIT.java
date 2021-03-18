@@ -2,7 +2,6 @@ package life.catalogue.importer;
 
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
@@ -13,7 +12,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Normalizer that uses a real name index to match.
