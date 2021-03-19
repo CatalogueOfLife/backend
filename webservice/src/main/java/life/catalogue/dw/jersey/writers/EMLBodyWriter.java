@@ -25,7 +25,7 @@ public class EMLBodyWriter implements MessageBodyWriter<ArchivedDataset> {
   
   @Override
   public boolean isWriteable(Class<?> type, Type type1, Annotation[] antns, MediaType mt) {
-    return Cursor.class.isAssignableFrom(type);
+    return ArchivedDataset.class.isAssignableFrom(type);
   }
 
   @Override

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <eml:eml xmlns:eml="eml://ecoinformatics.org/eml-2.1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="eml://ecoinformatics.org/eml-2.1.1 http://rs.gbif.org/schema/eml-gbif-profile/1.1/eml.xsd"
-        packageId="col-clb-${key}"  system="http://catalogueoflife.org" scope="system"
+        packageId="col-clb-${key?c}"  system="http://catalogueoflife.org" scope="system"
   xml:lang="en">
 
 <#macro tag name value indent>

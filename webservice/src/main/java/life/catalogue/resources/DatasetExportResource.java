@@ -8,6 +8,7 @@ import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.io.Resources;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -36,6 +37,7 @@ import javax.ws.rs.core.StreamingOutput;
 import java.io.*;
 import java.util.*;
 import java.util.stream.Stream;
+import java.util.zip.GZIPInputStream;
 
 /**
  * Stream dataset exports to the user.
@@ -146,7 +148,9 @@ public class DatasetExportResource {
     if (attempt != null && taxonID == null && (ranks == null || ranks.isEmpty())) {
       // stream from pre-generated file
       stream = os -> {
-        InputStream in = new FileInputStream(diDao.getFileMetricsDao().treeFile(projectKey, attempt));
+        InputStream in = new GZIPInputStream(
+          new FileInputStream(diDao.getFileMetricsDao().treeFile(projectKey, attempt))
+        );
         IOUtils.copy(in, os);
         os.flush();
       };
