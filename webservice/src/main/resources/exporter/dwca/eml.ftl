@@ -1,3 +1,4 @@
+<#ftl output_format="XML">
 <?xml version="1.0" encoding="utf-8"?>
 <eml:eml xmlns:eml="eml://ecoinformatics.org/eml-2.1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="eml://ecoinformatics.org/eml-2.1.1 http://rs.gbif.org/schema/eml-gbif-profile/1.1/eml.xsd"
         packageId="col-clb-${key?c}"  system="http://catalogueoflife.org" scope="system"
@@ -36,7 +37,7 @@
 <dataset>
   <@tag name="title" value=title indent=2 />
   <#if authors?has_content>
-  <creator>
+  <creator attr="${"'"}">
     <@person p=authors?first indent=4/>
   </creator>
   </#if>

@@ -43,7 +43,7 @@ public class EmlWriterTest {
       Dataset d = dm.get(TestDataRule.APPLE.key);
       d.getAuthors().add(new Person("Max", "Meier", "null@dev.null", "1234-5678-9012-3456"));
       d.getAuthors().add(new Person("Fax", "Feier", null, null));
-      d.getEditors().add(new Person("Derek", "Dillinger"));
+      d.getEditors().add(new Person("Derek & Dan", "Dillinger's"));
       d.setLicense(License.CC0);
       EmlWriter.write(d, f);
 
