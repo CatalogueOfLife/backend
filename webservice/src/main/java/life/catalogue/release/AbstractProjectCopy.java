@@ -5,14 +5,13 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.util.LoggingUtils;
+import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.Partitioner;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.img.ImageService;
-import life.catalogue.img.ImageServiceFS;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -36,6 +35,7 @@ public abstract class AbstractProjectCopy implements Runnable {
   protected final int datasetKey;
   protected final DatasetImport metrics;
   protected final String actionName;
+  protected final Dataset newDataset;
   protected final int newDatasetKey;
   private final DatasetOrigin newDatasetOrigin;
   protected final boolean mapIds;
@@ -43,7 +43,8 @@ public abstract class AbstractProjectCopy implements Runnable {
 
 
   public AbstractProjectCopy(String actionName, SqlSessionFactory factory, DatasetImportDao diDao, DatasetDao dDao, NameUsageIndexService indexService,
-                             int userKey, int datasetKey, Dataset newDataset, boolean mapIds) {
+                             int userKey, int datasetKey, boolean mapIds) {
+    DaoUtils.requireManaged(datasetKey, "Only managed datasets can be duplicated.");
     this.actionName = actionName;
     this.factory = factory;
     this.diDao = diDao;
@@ -54,8 +55,17 @@ public abstract class AbstractProjectCopy implements Runnable {
     this.datasetKey = datasetKey;
     metrics = diDao.createWaiting(datasetKey, this, userKey);
     metrics.setJob(getClass().getSimpleName());
+
+    newDataset = dDao.copy(datasetKey, userKey, this::modifyDataset);
     newDatasetKey = newDataset.getKey();
     newDatasetOrigin = newDataset.getOrigin();
+  }
+
+  protected void modifyDataset(Dataset d, DatasetSettings ds) {
+    d.setTitle(d.getTitle() + " copy");
+    d.setAlias(null); // must be unique
+    d.setGbifKey(null); // must be unique
+    d.setGbifPublisherKey(null);
   }
 
   public int getDatasetKey() {
@@ -136,6 +146,7 @@ public abstract class AbstractProjectCopy implements Runnable {
       LOG.error("Error {} project {} into dataset {}", actionName, datasetKey, newDatasetKey, e);
 
       // cleanup failed remains
+      LOG.info("Remove failed {} dataset {} aka {}-{}", actionName, newDatasetKey, datasetKey, metrics.attempt(), e);
       dDao.delete(newDatasetKey, user);
 
     } finally {
@@ -152,7 +163,6 @@ public abstract class AbstractProjectCopy implements Runnable {
           LOG.error("Failed to remove id mapping tables for project {}", datasetKey, e);
         }
       }
-      ReleaseManager.releaseLock();
       LoggingUtils.removeDatasetMDC();
     }
   }

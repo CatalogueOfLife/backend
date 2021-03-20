@@ -13,15 +13,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 public class ProjectDuplication extends AbstractProjectCopy {
 
   ProjectDuplication(SqlSessionFactory factory, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao,
-                     int datasetKey, Dataset copy, int userKey) {
-    super("duplicating", factory, diDao, dDao, indexService, userKey, datasetKey, copy, false);
-  }
-
-  public static void copyDataset(Dataset d, DatasetSettings ds) {
-    d.setTitle(d.getTitle() + " copy");
-    d.setAlias(null); // must be unique
-    d.setGbifKey(null); // must be unique
-    d.setGbifPublisherKey(null);
-    d.setSourceKey(null);
+                     int datasetKey, int userKey) {
+    super("duplicating", factory, diDao, dDao, indexService, userKey, datasetKey, false);
   }
 }

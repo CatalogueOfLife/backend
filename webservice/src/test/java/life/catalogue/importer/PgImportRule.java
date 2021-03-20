@@ -151,7 +151,7 @@ public class PgImportRule extends ExternalResource {
     // insert trusted dataset
     try {
       SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(true);
-      // this creates a new key, usually above 2000!
+      // this creates a new key, usually above 1000!
       session.getMapper(DatasetMapper.class).createAll(dataset);
       session.commit();
       session.close();

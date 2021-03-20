@@ -306,9 +306,9 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
           runner.runScript(Resources.getResourceAsReader("test-data/sequences.sql"));
         }
 
-        session.commit();
       }
     }
+    session.commit();
   }
 
   private void copyDataset(PgConnection pgc, int key) throws IOException, SQLException {

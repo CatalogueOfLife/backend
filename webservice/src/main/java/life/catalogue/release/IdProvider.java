@@ -203,6 +203,9 @@ public class IdProvider {
           continue;
         }
         AtomicInteger counter = new AtomicInteger();
+        if (rel.getImportAttempt() == null) {
+          throw new IllegalStateException("Release "+rel.getKey()+" of project "+projectKey+" has no importAttempt");
+        }
         final int attempt = rel.getImportAttempt();
         session.getMapper(NameUsageMapper.class).processNxIds(rel.getKey()).forEach(sn -> {
           counter.incrementAndGet();

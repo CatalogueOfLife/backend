@@ -1,9 +1,6 @@
 package life.catalogue.release;
 
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DatasetImport;
-import life.catalogue.api.model.DatasetSettings;
-import life.catalogue.api.model.User;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.concurrent.NamedThreadFactory;
 import life.catalogue.config.ReleaseConfig;
@@ -11,14 +8,12 @@ import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.PgUtils;
-import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.NameIndex;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,9 +29,6 @@ public class ReleaseManager {
   private static final Logger LOG = LoggerFactory.getLogger(ReleaseManager.class);
   private static final ThreadPoolExecutor RELEASE_EXEC = new ThreadPoolExecutor(1, 1, 10, TimeUnit.SECONDS,
       new ArrayBlockingQueue(1), new NamedThreadFactory("col-release"), new ThreadPoolExecutor.DiscardPolicy());
-
-  // we only allow a single release to run at a time
-  private static boolean LOCK = false;
 
   private final NameIndex nameIndex;
   private final DatasetImportDao diDao;
@@ -108,8 +100,7 @@ public class ReleaseManager {
    * @throws IllegalArgumentException if the dataset is not managed
    */
   public ProjectRelease buildRelease(final int projectKey, final int userKey) {
-    Dataset release = createDataset(factory, projectKey, "release", userKey, ProjectRelease::releaseDataset);
-    return new ProjectRelease(factory, nameIndex, indexService, diDao, dDao, imageService, projectKey, release, userKey, cfg);
+    return new ProjectRelease(factory, nameIndex, indexService, diDao, dDao, imageService, projectKey, userKey, cfg);
   }
 
   /**
@@ -119,69 +110,7 @@ public class ReleaseManager {
    * @throws IllegalArgumentException if the dataset is not managed
    */
   public ProjectDuplication buildDuplication(int projectKey, int userKey) {
-    Dataset copy = createDataset(factory, projectKey, "duplicate", userKey, ProjectDuplication::copyDataset);
-    return new ProjectDuplication(factory, indexService, diDao, dDao, projectKey, copy, userKey);
-  }
-
-  private Dataset createDataset(SqlSessionFactory factory, int projectKey, String action, int userKey, BiConsumer<Dataset, DatasetSettings> modifier) {
-    if (!aquireLock()) {
-      throw new IllegalArgumentException("There is a running " + action + " job already");
-    }
-    Dataset copy;
-    try (SqlSession session = factory.openSession(true)) {
-      // validate project key
-      copy = DaoUtils.assertMutable(projectKey, action+"d", session);
-      if (copy.getOrigin() != DatasetOrigin.MANAGED) {
-        throw new IllegalArgumentException("Only managed datasets can be " + action + "d, but origin is " + copy.getOrigin());
-      }
-      // create new dataset based on current metadata
-      copy.setKey(null);
-      copy.setSourceKey(projectKey);
-      copy.setGbifKey(null);
-      copy.setGbifPublisherKey(null);
-      copy.setModifiedBy(userKey);
-      copy.setCreatedBy(userKey);
-
-      DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      if (modifier != null) {
-        DatasetSettings ds = dm.getSettings(projectKey);
-        modifier.accept(copy, ds);
-      }
-
-      try {
-        dm.create(copy);
-      } catch (PersistenceException e) {
-        if (PgUtils.isUniqueConstraint(e)) {
-          // make sure alias is unique - will fail otherwise
-          copy.setAlias(null);
-          dm.create(copy);
-        } else {
-          throw e;
-        }
-      }
-
-      // copy logo files
-      imageService.copyDatasetLogo(projectKey, copy.getKey());
-
-      return copy;
-
-    } catch (Exception e) {
-      LOG.error("Error creating new {} dataset for project {}", action, projectKey, e);
-      releaseLock();
-      throw new RuntimeException(e);
-    }
-  }
-
-  private static synchronized boolean aquireLock(){
-    if (!LOCK) {
-      LOCK = true;
-      return true;
-    }
-    return false;
-  }
-
-  static synchronized void releaseLock(){
-    LOCK = false;
+    return new ProjectDuplication(factory, indexService, diDao, dDao, projectKey, userKey);
   }
 
 }

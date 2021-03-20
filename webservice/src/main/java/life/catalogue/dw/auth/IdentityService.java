@@ -91,7 +91,7 @@ public class IdentityService {
    * Dont use this for non testing code!
    */
   @VisibleForTesting
-  public void flushCachedUsers() {
+  public void persistCachedUsers() {
     try (SqlSession session = sqlSessionFactory.openSession(true)) {
       UserMapper um = session.getMapper(UserMapper.class);
       for (User u : cache.values()) {

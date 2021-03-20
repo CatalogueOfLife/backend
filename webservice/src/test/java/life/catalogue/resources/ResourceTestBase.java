@@ -39,7 +39,7 @@ public class ResourceTestBase {
 
   @Before
   public void flushUserCache(){
-    RULE.getServer().getAuthBundle().getIdService().flushCachedUsers();
+    RULE.getServer().getAuthBundle().getIdService().persistCachedUsers();
   }
 
   public SqlSessionFactory factory() {

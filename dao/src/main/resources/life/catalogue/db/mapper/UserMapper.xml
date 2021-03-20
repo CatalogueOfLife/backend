@@ -9,7 +9,7 @@
     u.email,
     u.roles,
     u.settings,
-    (SELECT array_agg(d.key) FROM dataset d WHERE d.access_control @> ARRAY[u.key] OR d.created_by=u.key) AS datasets,
+    (SELECT array_agg(d.key) FROM dataset d WHERE d.deleted IS NULL AND d.access_control @> ARRAY[u.key] OR d.created_by=u.key) AS datasets,
     u.last_login,
     u.created,
     u.deleted

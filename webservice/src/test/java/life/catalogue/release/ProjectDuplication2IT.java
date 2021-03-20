@@ -34,25 +34,17 @@ import java.sql.SQLException;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
-public class ProjectDuplicationIT {
+public class ProjectDuplication2IT {
 
   public final static PgSetupRule pg = new PgSetupRule();
-  public final static TestDataRule dataRule = TestDataRule.draft();
-  public final static PgImportRule importRule = PgImportRule.create(
-    NomCode.BOTANICAL,
-    DataFormat.ACEF,  1,
-    DataFormat.COLDP, 0,
-    NomCode.ZOOLOGICAL,
-    DataFormat.ACEF,  5, 6
-  );
+  public final static TestDataRule dataRule = TestDataRule.apple();
   public final static TreeRepoRule treeRepoRule = new TreeRepoRule();
 
   @ClassRule
   public final static TestRule chain = RuleChain
     .outerRule(pg)
     .around(dataRule)
-    .around(treeRepoRule)
-    .around(importRule);
+    .around(treeRepoRule);
 
   DatasetImportDao diDao;
   SectorImportDao siDao;
@@ -71,42 +63,11 @@ public class ProjectDuplicationIT {
     releaseManager = new ReleaseManager(diDao, dDao, NameIndexFactory.passThru(), NameUsageIndexService.passThru(), ImageService.passThru(), PgSetupRule.getSqlSessionFactory(), new ReleaseConfig());
   }
 
-  int datasetKey(int key, DataFormat format) {
-    return importRule.datasetKey(key, format);
-  }
-
   @Test
-  public void duplicate() {
-    // prepare a sync
-    NameUsageBase src = SectorSyncIT.getByName(datasetKey(1, DataFormat.ACEF), Rank.ORDER, "Fabales");
-    NameUsageBase trg = SectorSyncIT.getByName(Datasets.COL, Rank.PHYLUM, "Tracheophyta");
-    SectorSyncIT.createSector(Sector.Mode.ATTACH, src, trg);
-
-    src = SectorSyncIT.getByName(datasetKey(5, DataFormat.ACEF), Rank.CLASS, "Insecta");
-    trg = SectorSyncIT.getByName(Datasets.COL, Rank.CLASS, "Insecta");
-    SectorSyncIT.createSector(Sector.Mode.UNION, src, trg);
-
-    src = SectorSyncIT.getByName(datasetKey(6, DataFormat.ACEF), Rank.FAMILY, "Theridiidae");
-    trg = SectorSyncIT.getByName(Datasets.COL, Rank.CLASS, "Insecta");
-    SectorSyncIT.createSector(Sector.Mode.ATTACH, src, trg);
-
-    SectorSyncIT.setupNamesIndex(PgSetupRule.getSqlSessionFactory());
-    SectorSyncIT.syncAll(siDao);
-
-    // create project
-    Dataset d;
-    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()){
-      DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      d = dm.get(Datasets.COL);
-      d.setTitle(d.getTitle() + " copy");
-      d.setKey(1100);
-      d.setAlias(d.getAlias() + " copy");
-      dm.createWithKey(d);
-      session.commit();
-    }
-
-    ProjectDuplication dupe = releaseManager.buildDuplication(d.getKey(), Users.TESTER);
-    dupe.run();
-    assertEquals(ImportState.FINISHED, dupe.getMetrics().getState());
+  public void empty() throws Exception {
+    ProjectDuplication dupl = releaseManager.buildDuplication(Datasets.COL, Users.TESTER);
+    dupl.run();
+    assertEquals(ImportState.FINISHED, dupl.getMetrics().getState());
   }
+
 }

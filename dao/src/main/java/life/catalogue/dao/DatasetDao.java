@@ -11,11 +11,13 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.db.DatasetProcessable;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -26,6 +28,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -33,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
@@ -293,4 +297,47 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     bus.post(new UserPermissionChanged(editor.getUsername()));
   }
 
+  public Dataset copy(int datasetKey, int userKey, BiConsumer<Dataset, DatasetSettings> modifier){
+    Dataset copy;
+
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+
+      copy = dm.get(datasetKey);
+      // create new dataset based on current metadata
+      copy.setSourceKey(datasetKey);
+      copy.setGbifKey(null);
+      copy.setGbifPublisherKey(null);
+      copy.setModifiedBy(userKey);
+      copy.setCreatedBy(userKey);
+
+      if (modifier != null) {
+        DatasetSettings ds = dm.getSettings(datasetKey);
+        modifier.accept(copy, ds);
+      }
+      copy.setKey(null); // make sure we have no key so we create
+    }
+
+    try {
+      create(copy, userKey);
+    } catch (PersistenceException e) {
+      if (PgUtils.isUniqueConstraint(e)) {
+        // make sure alias is unique - will fail otherwise
+        copy.setAlias(null);
+        create(copy, userKey);
+      } else {
+        throw e;
+      }
+    }
+
+    // TODO: copy editor rights
+    // copy logo files
+    try {
+      imgService.copyDatasetLogo(datasetKey, copy.getKey());
+    } catch (IOException e) {
+      LOG.error("Failed to copy logos from dataset {} to dataset {}", datasetKey, copy.getKey(), e);
+    }
+
+    return copy;
+  }
 }

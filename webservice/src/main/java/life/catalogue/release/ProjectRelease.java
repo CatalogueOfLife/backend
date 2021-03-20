@@ -2,11 +2,13 @@ package life.catalogue.release;
 
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
+import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.config.ReleaseConfig;
+import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetProjectSourceDao;
@@ -31,31 +33,36 @@ public class ProjectRelease extends AbstractProjectCopy {
   private final ImageService imageService;
   private final ReleaseConfig cfg;
   private final NameIndex nameIndex;
-  private final Dataset release;
 
   ProjectRelease(SqlSessionFactory factory, NameIndex nameIndex, NameUsageIndexService indexService, DatasetImportDao diDao, DatasetDao dDao, ImageService imageService,
-                 int datasetKey, Dataset release, int userKey, ReleaseConfig cfg) {
-    super("releasing", factory, diDao, dDao, indexService, userKey, datasetKey, release, true);
+                 int datasetKey, int userKey, ReleaseConfig cfg) {
+    super("releasing", factory, diDao, dDao, indexService, userKey, datasetKey, true);
     this.imageService = imageService;
     this.nameIndex = nameIndex;
-    this.release = release;
     this.cfg = cfg;
-    // we update the dataset metadata again as we only now have access to the release attempt and some citation templates might be using this!
-    try (SqlSession session = factory.openSession(true)) {
-      releaseDataset(release, settings);
-      DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      try {
-        dm.update(release);
-      } catch (PersistenceException e) {
-        if (PgUtils.isUniqueConstraint(e)) {
-          // make sure alias is unique - will fail otherwise
-          release.setAlias(null);
-          dm.create(release);
-        } else {
-          throw e;
-        }
-      }
+  }
+
+  @Override
+  protected void modifyDataset(Dataset d, DatasetSettings ds) {
+    super.modifyDataset(d, ds);
+
+    d.setOrigin(DatasetOrigin.RELEASED);
+    final LocalDate today = LocalDate.now();
+    d.setReleased(today);
+    d.setVersion(today.toString());
+
+    String alias = CitationUtils.fromTemplate(d, ds, Setting.RELEASE_ALIAS_TEMPLATE, DEFAULT_ALIAS_TEMPLATE);
+    d.setAlias(alias);
+
+    String title = CitationUtils.fromTemplate(d, ds, Setting.RELEASE_TITLE_TEMPLATE, DEFAULT_TITLE_TEMPLATE);
+    d.setTitle(title);
+
+    if (ds != null && ds.has(Setting.RELEASE_CITATION_TEMPLATE)) {
+      String citation = CitationUtils.fromTemplate(d, ds.getString(Setting.RELEASE_CITATION_TEMPLATE));
+      d.setCitation(citation);
     }
+
+    d.setPrivat(true); // all releases are private candidate releases first
   }
 
   @Override
@@ -66,7 +73,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     try (SqlSession session = factory.openSession(true)) {
       ProjectSourceMapper psm = session.getMapper(ProjectSourceMapper.class);
       final AtomicInteger counter = new AtomicInteger(0);
-      dao.list(datasetKey, release, false).forEach(d -> {
+      dao.list(datasetKey, newDataset, false).forEach(d -> {
         LOG.info("Archive dataset {}#{} for release {}", d.getKey(), d.getImportAttempt(), newDatasetKey);
         psm.create(newDatasetKey, d);
         // archive logos
@@ -94,26 +101,6 @@ public class ProjectRelease extends AbstractProjectCopy {
       dm.updateLastImport(datasetKey, metrics.getAttempt());
       dm.updateLastImport(newDatasetKey, metrics.getAttempt());
     }
-  }
-
-  public static void releaseDataset(Dataset d, DatasetSettings ds) {
-    d.setOrigin(DatasetOrigin.RELEASED);
-    final LocalDate today = LocalDate.now();
-    d.setReleased(today);
-    d.setVersion(today.toString());
-
-    String alias = CitationUtils.fromTemplate(d, ds, Setting.RELEASE_ALIAS_TEMPLATE, DEFAULT_ALIAS_TEMPLATE);
-    d.setAlias(alias);
-
-    String title = CitationUtils.fromTemplate(d, ds, Setting.RELEASE_TITLE_TEMPLATE, DEFAULT_TITLE_TEMPLATE);
-    d.setTitle(title);
-
-    if (ds != null && ds.has(Setting.RELEASE_CITATION_TEMPLATE)) {
-      String citation = CitationUtils.fromTemplate(d, ds.getString(Setting.RELEASE_CITATION_TEMPLATE));
-      d.setCitation(citation);
-    }
-
-    d.setPrivat(true); // all releases are private candidate releases first
   }
 
 }

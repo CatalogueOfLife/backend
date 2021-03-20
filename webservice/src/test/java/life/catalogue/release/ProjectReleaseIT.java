@@ -1,10 +1,10 @@
 package life.catalogue.release;
 
 import com.google.common.eventbus.EventBus;
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.DatasetImport;
-import life.catalogue.api.model.NameUsageBase;
+import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.DatasetDao;
@@ -17,14 +17,13 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import org.apache.ibatis.session.SqlSession;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
 import java.io.File;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -59,7 +58,34 @@ public class ProjectReleaseIT {
     dDao = new DatasetDao(PgSetupRule.getSqlSessionFactory(), null, ImageService.passThru(), diDao, NameUsageIndexService.passThru(), null, bus);
     releaseManager = new ReleaseManager(diDao, dDao, matchingRule.getIndex(), NameUsageIndexService.passThru(), ImageService.passThru(), PgSetupRule.getSqlSessionFactory(), new ReleaseConfig());
   }
-  
+
+  @Test
+  public void releaseMetadata() throws Exception {
+    DatasetSettings ds = new DatasetSettings();
+    ds.put(Setting.RELEASE_ALIAS_TEMPLATE, "CoL{created,yy.M}");
+    ds.put(Setting.RELEASE_TITLE_TEMPLATE, "Catalogue of Life - {created,MMMM yyyy}");
+    ds.put(Setting.RELEASE_CITATION_TEMPLATE, "{editors} ({created,yyyy}). Species 2000 & ITIS Catalogue of Life, {created,ddd MMMM yyyy}. Digital resource at www.catalogueoflife.org. Species 2000: Naturalis, Leiden, the Netherlands. ISSN 2405-8858.");
+
+    Dataset d = new Dataset();
+    d.setKey(Datasets.COL);
+    d.setTitle("Catalogue of Life");
+    d.setOrganisations(Organisation.parse("Species 2000", "ITIS"));
+    d.setEditors(List.of(
+      new Person("Yuri","Roskov"),
+      new Person("Geoff", "Ower"),
+      new Person("Thomas", "Orrell"),
+      new Person("David", "Nicolson")
+    ));
+    d.setCreated(LocalDateTime.of(2020,10,6,  1,1));
+
+    ProjectRelease pr = buildRelease();
+    assertEquals("CoL20.10", pr.newDataset.getAlias());
+    assertEquals("Catalogue of Life - October 2020", pr.newDataset.getTitle());
+    assertEquals("Roskov Y., Ower G., Orrell T., Nicolson D. (eds.) (2020). Species 2000 & ITIS Catalogue of Life, 6th October 2020. Digital resource at www.catalogueoflife.org. Species 2000: Naturalis, Leiden, the Netherlands. ISSN 2405-8858.",
+      pr.newDataset.getCitation()
+    );
+  }
+
   @Test
   public void release() throws Exception {
 
@@ -114,6 +140,7 @@ public class ProjectReleaseIT {
   }
   
   @Test
+  @Ignore("We deactivated the blocking of parallel releases. This runs anyways in an executor with limited threads")
   public void releaseConcurrently() throws Exception {
     Thread t1 = new Thread(buildRelease());
     t1.start();
