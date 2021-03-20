@@ -45,8 +45,8 @@ public class ProjectRelease extends AbstractProjectCopy {
   @Override
   protected void modifyDataset(Dataset d, DatasetSettings ds) {
     super.modifyDataset(d, ds);
-
     d.setOrigin(DatasetOrigin.RELEASED);
+
     final LocalDate today = LocalDate.now();
     d.setReleased(today);
     d.setVersion(today.toString());

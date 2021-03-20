@@ -62,10 +62,11 @@ public abstract class AbstractProjectCopy implements Runnable {
   }
 
   protected void modifyDataset(Dataset d, DatasetSettings ds) {
-    d.setTitle(d.getTitle() + " copy");
     d.setAlias(null); // must be unique
     d.setGbifKey(null); // must be unique
     d.setGbifPublisherKey(null);
+    // use the current attempt which gets written into the dataset table only at the end of the (successful) job
+    d.setImportAttempt(metrics.getAttempt());
   }
 
   public int getDatasetKey() {

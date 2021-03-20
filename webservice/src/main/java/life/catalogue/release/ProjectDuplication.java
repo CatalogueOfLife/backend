@@ -16,4 +16,10 @@ public class ProjectDuplication extends AbstractProjectCopy {
                      int datasetKey, int userKey) {
     super("duplicating", factory, diDao, dDao, indexService, userKey, datasetKey, false);
   }
+
+  @Override
+  protected void modifyDataset(Dataset d, DatasetSettings ds) {
+    super.modifyDataset(d, ds);
+    d.setTitle(d.getTitle() + " copy");
+  }
 }

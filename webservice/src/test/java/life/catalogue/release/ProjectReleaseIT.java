@@ -13,6 +13,7 @@ import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.TestDataRule;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
@@ -22,6 +23,7 @@ import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
 import java.io.File;
+import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -61,26 +63,37 @@ public class ProjectReleaseIT {
 
   @Test
   public void releaseMetadata() throws Exception {
-    DatasetSettings ds = new DatasetSettings();
-    ds.put(Setting.RELEASE_ALIAS_TEMPLATE, "CoL{created,yy.M}");
-    ds.put(Setting.RELEASE_TITLE_TEMPLATE, "Catalogue of Life - {created,MMMM yyyy}");
-    ds.put(Setting.RELEASE_CITATION_TEMPLATE, "{editors} ({created,yyyy}). Species 2000 & ITIS Catalogue of Life, {created,ddd MMMM yyyy}. Digital resource at www.catalogueoflife.org. Species 2000: Naturalis, Leiden, the Netherlands. ISSN 2405-8858.");
+    try(SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(false)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
 
-    Dataset d = new Dataset();
-    d.setKey(Datasets.COL);
-    d.setTitle("Catalogue of Life");
-    d.setOrganisations(Organisation.parse("Species 2000", "ITIS"));
-    d.setEditors(List.of(
-      new Person("Yuri","Roskov"),
-      new Person("Geoff", "Ower"),
-      new Person("Thomas", "Orrell"),
-      new Person("David", "Nicolson")
-    ));
-    d.setCreated(LocalDateTime.of(2020,10,6,  1,1));
+      DatasetSettings ds = dm.getSettings(projectKey);
+      ds.put(Setting.RELEASE_ALIAS_TEMPLATE, "CoL{created,yy.M}");
+      ds.put(Setting.RELEASE_TITLE_TEMPLATE, "Catalogue of Life - Release {importAttempt}, {created,MMMM yyyy}");
+      ds.put(Setting.RELEASE_CITATION_TEMPLATE, "{editors} ({created,yyyy}). Species 2000 & ITIS Catalogue of Life, {created,ddd MMMM yyyy}. Digital resource at www.catalogueoflife.org. Species 2000: Naturalis, Leiden, the Netherlands. ISSN 2405-8858.");
+
+      Dataset d = dm.get(projectKey);
+      d.setTitle("Catalogue of Life");
+      d.setOrganisations(Organisation.parse("Species 2000", "ITIS"));
+      d.setEditors(List.of(
+        new Person("Yuri","Roskov"),
+        new Person("Geoff", "Ower"),
+        new Person("Thomas", "Orrell"),
+        new Person("David", "Nicolson")
+      ));
+
+      dm.updateAll(new DatasetWithSettings(d, ds));
+      session.commit();
+
+      // update created to a fixed point in time for testing - needs JDBC
+      Connection c = session.getConnection();
+      var st = c.createStatement();
+      st.execute("UPDATE dataset SET created = '2020-10-06 01:01:00' WHERE key = " + d.getKey());
+      c.commit();
+    }
 
     ProjectRelease pr = buildRelease();
     assertEquals("CoL20.10", pr.newDataset.getAlias());
-    assertEquals("Catalogue of Life - October 2020", pr.newDataset.getTitle());
+    assertEquals("Catalogue of Life - Release 4, October 2020", pr.newDataset.getTitle());
     assertEquals("Roskov Y., Ower G., Orrell T., Nicolson D. (eds.) (2020). Species 2000 & ITIS Catalogue of Life, 6th October 2020. Digital resource at www.catalogueoflife.org. Species 2000: Naturalis, Leiden, the Netherlands. ISSN 2405-8858.",
       pr.newDataset.getCitation()
     );
