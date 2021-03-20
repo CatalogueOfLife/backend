@@ -37,7 +37,7 @@
 <dataset>
   <@tag name="title" value=title indent=2 />
   <#if authors?has_content>
-  <creator attr="${"'"}">
+  <creator>
     <@person p=authors?first indent=4/>
   </creator>
   </#if>
