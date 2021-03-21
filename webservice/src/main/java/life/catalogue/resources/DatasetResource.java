@@ -195,9 +195,6 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @GET
   @Path("/{key}/contribution")
   public ProjectContribution projectContribution(@PathParam("key") int datasetKey, @Context SqlSession session) {
-    DatasetInfoCache.DatasetInfo proj = DatasetInfoCache.CACHE.info(datasetKey);
-    proj.requireOrigin(DatasetOrigin.MANAGED);
-
     ProjectContribution contrib = new ProjectContribution();
     DatasetMapper dm = session.getMapper(DatasetMapper.class);
     contrib.add(dm.get(datasetKey));
