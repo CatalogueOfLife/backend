@@ -6,10 +6,10 @@ description: |
 
 # single point of contact for questions
 contact:
-  - givenName: Donald
-    familyName: Hobern
-    email: dhobern@gmail.com
-    orcid: 0000-0001-6492-4016
+  givenName: Donald
+  familyName: Hobern
+  email: dhobern@gmail.com
+  orcid: 0000-0001-6492-4016
 
 # list of authors and editors.
 # Please provide an ORCID if you can so it can be included in DOI metadata

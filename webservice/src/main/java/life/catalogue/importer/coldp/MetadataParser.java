@@ -10,6 +10,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.jackson.FastutilsSerde;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.model.Organisation;
 import life.catalogue.api.model.Person;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.License;
@@ -26,9 +27,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * ColDP metadata parser that falls back to EML if no YAML metadata is found.
@@ -45,12 +45,80 @@ public class MetadataParser {
   static class YamlDataset extends DatasetWithSettings {
 
     @JsonProperty("contact")
-    public void setContactList(List<Person> contacts) {
-      if (contacts == null || contacts.isEmpty()) {
-        setContact(null);
+    public void setContact(Object contact) {
+      if (contact instanceof List) {
+        List<?> contacts = (List)contact;
+        if (!contacts.isEmpty()) {
+          setContact(parsePerson(contacts.get(0)));
+        }
       } else {
-        setContact(contacts.get(0));
+        setContact(parsePerson(contact));
       }
+    }
+
+    @JsonProperty("authors")
+    public void setAuthorsAlt(Object authors) {
+      super.setAuthors(parsePersons(authors));
+    }
+
+    @JsonProperty("editors")
+    public void setEditorsAlt(Object editors) {
+      super.setEditors(parsePersons(editors));
+    }
+
+    @JsonProperty("organisations")
+    public void setOrgsAlt(List<?> orgs) {
+      List<Organisation> organisations = new ArrayList<>();
+      if (orgs != null) {
+        for (Object org : orgs) {
+          if (org != null) {
+            if (org instanceof Organisation) {
+              organisations.add((Organisation)org);
+            } else if (org instanceof String) {
+              organisations.add(new Organisation((String)org));
+            } else if (org instanceof Map) {
+              organisations.add(YamlMapper.MAPPER.convertValue(org, Organisation.class));
+            }
+          }
+        }
+      }
+      setOrganisations(organisations);
+    }
+
+    List<Person> parsePersons(Object obj) {
+      if (obj != null) {
+        if (obj instanceof List) {
+          List<Person> persons = new ArrayList<>();
+          for (Object o : (List) obj) {
+            Person p = parsePerson(o);
+            if (p != null) {
+              persons.add(p);
+            }
+          }
+          return persons;
+
+        } else {
+          Person p = parsePerson(obj);
+          if (p != null) return List.of(p);
+        }
+      }
+      return null;
+    }
+
+    Person parsePerson(Object obj) {
+      if (obj != null) {
+        if (obj instanceof Person) {
+          return (Person)obj;
+
+        } else if (obj instanceof String) {
+          return new Person((String)obj);
+
+        } else if (obj instanceof Map) {
+          return YamlMapper.MAPPER.convertValue(obj, Person.class);
+
+        }
+      }
+      return null;
     }
 
     @JsonProperty("authorsAndEditors")

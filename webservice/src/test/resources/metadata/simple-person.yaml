@@ -25,8 +25,7 @@ organisations:
 #   email: email address, optional
 #   orcid: orcid id, optional
 
-contact:
-  - Rainer Froese <rainer@mailinator.com>
+contact: Rainer Froese <rainer@mailinator.com>
 
 # list of authors and/or editors. Recommendation is to keep authors empty if editors are given
 # For available person properties see contact above
