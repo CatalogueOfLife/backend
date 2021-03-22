@@ -48,4 +48,9 @@ public class SimpleNameWithNidx extends SimpleName {
   public int hashCode() {
     return Objects.hash(super.hashCode(), canonicalId, namesIndexMatchType, namesIndexId);
   }
+
+  @Override
+  public String toString() {
+    return "NIDX " + canonicalId + "-" +namesIndexId+ " ("+ namesIndexMatchType + ")";
+  }
 }

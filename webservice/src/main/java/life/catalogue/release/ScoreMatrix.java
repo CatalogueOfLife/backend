@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 public class ScoreMatrix {
-  private static final int DELETED = -1;
+  private static final int DELETED_N = -1;
+  private static final int DELETED_R = -2;
   private final int lenN;
   private final int lenR;
   // first dimension=names idx, second=candidates idx
@@ -80,9 +81,9 @@ public class ScoreMatrix {
     final List<ReleaseMatch> next = new ArrayList<>();
     for (int ni=0; ni<lenN; ni++) {
       // we only mark the first row or column as deleted - so just check those
-      if (scores[ni][0] != DELETED) {
+      if (scores[ni][0] != -1 && scores[ni][0] != -3) {
         for (int ri=0; ri<lenR; ri++) {
-          if (scores[0][ri] != DELETED && scores[ni][ri] == highscore) {
+          if (scores[0][ri] != -2 && scores[0][ri] != -3 && scores[ni][ri] == highscore) {
             next.add(new ReleaseMatch(ni, ri, highscore, names.get(ni), releasedIds[ri]));
           }
         }
@@ -110,8 +111,20 @@ public class ScoreMatrix {
   }
 
   public void remove(ReleaseMatch rm){
-    scores[rm.namesIdx][0] = DELETED;
-    scores[0][rm.relIdx] = DELETED;
+    // we mark only the first rows or columns
+    // the first row & column, 0/0, represents both so we must be able to distinguish between row or column markup
+    // for this we add up both
+    if (rm.namesIdx==0) {
+      scores[rm.namesIdx][0] = Math.min(scores[rm.namesIdx][0], 0) + DELETED_N;
+    } else {
+      scores[rm.namesIdx][0] = DELETED_N;
+    }
+
+    if (rm.relIdx == 0) {
+      scores[0][rm.relIdx] = Math.min(scores[0][rm.relIdx], 0) + DELETED_R;
+    } else {
+      scores[0][rm.relIdx] = DELETED_R;
+    }
   }
 
   public void printMatrix(){

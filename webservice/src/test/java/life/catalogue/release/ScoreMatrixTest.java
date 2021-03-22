@@ -8,9 +8,9 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 public class ScoreMatrixTest {
 
@@ -71,6 +71,45 @@ public class ScoreMatrixTest {
       m = sm.highest();
     }
     assertEquals(0, score);
+  }
+
+  @Test
+  public void test2x2Matrix() {
+    List<SimpleNameWithNidx> names = List.of(
+      sn(1), sn(2)
+    );
+    ReleasedIds.ReleasedId[] rids = new ReleasedIds.ReleasedId[2];
+    rids[0] = rid(1,2);
+    rids[1] = rid(2,2);
+    AtomicInteger sc = new AtomicInteger(10);
+    var sm = new ScoreMatrix(names, rids, (sn, rid) -> {
+      if (Integer.parseInt(sn.getId()) == rid.id) {
+        return 0;
+      }
+      return sc.getAndIncrement();
+    });
+    sm.printMatrix();
+
+    var matches = sm.highest();
+    assertEquals(1, matches.size());
+    var m = matches.get(0);
+    assertEquals(11, m.score);
+    assertEquals(1, m.rid.id);
+    assertEquals("2", m.name.getId());
+    sm.remove(m);
+    sm.printMatrix();
+
+    matches = sm.highest();
+    assertEquals(1, matches.size());
+    m = matches.get(0);
+    assertEquals(10, m.score);
+    assertEquals(2, m.rid.id);
+    assertEquals("1", m.name.getId());
+    sm.remove(m);
+    sm.printMatrix();
+
+    matches = sm.highest();
+    assertTrue(matches.isEmpty());
   }
 
   static SimpleNameWithNidx sn(int id) {
