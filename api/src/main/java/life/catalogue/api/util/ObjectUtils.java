@@ -2,6 +2,8 @@ package life.catalogue.api.util;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.function.Function;
+
 /**
  *
  */
@@ -52,6 +54,13 @@ public class ObjectUtils {
       throw new IllegalArgumentException(message);
     }
     return obj;
+  }
+
+  public static <X, T> X getIfNotNull(T obj, Function<T, X> accessor) {
+    if (obj == null) {
+      return null;
+    }
+    return accessor.apply(obj);
   }
 
   public static boolean anyNonBlank(final String... values) {

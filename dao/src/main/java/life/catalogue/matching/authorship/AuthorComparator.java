@@ -1,6 +1,7 @@
 package life.catalogue.matching.authorship;
 
 import life.catalogue.api.model.ScientificName;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.Equality;
 import org.apache.commons.lang3.StringUtils;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.util.List;
 
+import static life.catalogue.api.util.ObjectUtils.getIfNotNull;
 import static life.catalogue.common.tax.AuthorshipNormalizer.Author;
 
 /**
@@ -43,7 +45,7 @@ public class AuthorComparator {
     Equality result = compareAuthorteam(a1, a2, minCommonSubstring, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP);
     if (result != Equality.EQUAL) {
       // if authors are not the same we allow a positive year comparison to override it as author comparison is very difficult
-      Equality yresult = new YearComparator(a1.getYear(), a2.getYear()).compare();
+      Equality yresult = new YearComparator(getIfNotNull(a1, Authorship::getYear), getIfNotNull(a2, Authorship::getYear)).compare();
       if (yresult != Equality.UNKNOWN) {
         result = yresult;
       }
