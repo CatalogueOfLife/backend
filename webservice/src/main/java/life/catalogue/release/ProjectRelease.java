@@ -18,10 +18,12 @@ import life.catalogue.db.mapper.ProjectSourceMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.NameIndex;
+import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -103,4 +105,13 @@ public class ProjectRelease extends AbstractProjectCopy {
     }
   }
 
+  @Override
+  void onError() {
+    // remove reports
+    File dir = cfg.reportDir(datasetKey, metrics.getAttempt());
+    if (dir.exists()) {
+      LOG.debug("Remove release report {}-{} for failed dataset {}", datasetKey, metrics.attempt(), newDatasetKey);
+      FileUtils.deleteQuietly(dir);
+    }
+  }
 }

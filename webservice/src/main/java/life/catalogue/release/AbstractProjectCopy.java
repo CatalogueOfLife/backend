@@ -89,6 +89,13 @@ public abstract class AbstractProjectCopy implements Runnable {
     // dont do nothing - override if needed
   }
 
+  /**
+   * Called in case the job fails to run specific cleanups in subclasses
+   */
+  void onError() {
+    // dont do nothing - override if needed
+  }
+
   @Override
   public void run() {
     LoggingUtils.setDatasetMDC(datasetKey, getClass());
@@ -142,13 +149,14 @@ public abstract class AbstractProjectCopy implements Runnable {
       LOG.info("Successfully finished {} project {} into dataset {}", actionName,  datasetKey, newDatasetKey);
 
     } catch (Exception e) {
-      metrics.setState(ImportState.FINISHED);
+      metrics.setState(ImportState.FAILED);
       metrics.setError(Exceptions.getFirstMessage(e));
       LOG.error("Error {} project {} into dataset {}", actionName, datasetKey, newDatasetKey, e);
 
       // cleanup failed remains
       LOG.info("Remove failed {} dataset {} aka {}-{}", actionName, newDatasetKey, datasetKey, metrics.attempt(), e);
       dDao.delete(newDatasetKey, user);
+      onError();
 
     } finally {
       metrics.setFinished(LocalDateTime.now());
