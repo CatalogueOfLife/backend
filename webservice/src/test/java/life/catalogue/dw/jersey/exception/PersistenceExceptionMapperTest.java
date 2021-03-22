@@ -11,6 +11,8 @@ import org.junit.Test;
 
 import javax.ws.rs.core.Response;
 
+import java.util.UUID;
+
 import static org.junit.Assert.*;
 
 public class PersistenceExceptionMapperTest extends MapperTestBase<DecisionMapper> {
@@ -70,8 +72,45 @@ public class PersistenceExceptionMapperTest extends MapperTestBase<DecisionMappe
       assertEquals(400, resp.getStatus());
       ErrorMessage obj = (ErrorMessage) resp.getEntity();
       assertEquals(400, (int)obj.getCode());
-      assertEquals("Dataset already exists", obj.getMessage());
+      assertEquals("Dataset with key='999' already exists", obj.getMessage());
       assertNull(obj.getDetails());
+    }
+  }
+
+  @Test
+  public void uniqueAlias() throws Exception {
+    Dataset d = DatasetMapperTest.create();
+    d.setGbifKey(null);
+    d.setAlias(null);
+    testUnique(d, null);
+
+    d.setAlias("uniqAli");
+    testUnique(d, "Dataset with alias='uniqAli' already exists");
+
+    d.setAlias(null);
+    UUID gbif = UUID.randomUUID();
+    d.setGbifKey(gbif);
+    testUnique(d, "Dataset with gbif_key='"+gbif+"' already exists");
+  }
+
+  void testUnique(Dataset d, String expected) throws Exception {
+    mapper(DatasetMapper.class).create(d);
+    commit();
+
+    try {
+      mapper(DatasetMapper.class).create(d);
+      assertNull("No unique error expected", expected);
+
+    } catch (PersistenceException e) {
+      PersistenceExceptionMapper map = new PersistenceExceptionMapper();
+      Response resp = map.toResponse(e);
+      assertNotNull(resp);
+      assertEquals(400, resp.getStatus());
+      ErrorMessage obj = (ErrorMessage) resp.getEntity();
+      assertEquals(400, (int)obj.getCode());
+      assertEquals(expected, obj.getMessage());
+      assertNull(obj.getDetails());
+      commit();
     }
   }
 
