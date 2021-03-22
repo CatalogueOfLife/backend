@@ -9,6 +9,8 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.MatchType;
+
+import static java.util.Comparator.*;
 import static life.catalogue.api.vocab.TaxonomicStatus.*;
 
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -246,7 +248,7 @@ public class IdProvider {
       Integer lastCanonID = null;
       List<SimpleNameWithNidx> group = new ArrayList<>();
       for (SimpleNameWithNidx u : names) {
-        if (lastCanonID != null && !lastCanonID.equals(u.getCanonicalId())) {
+        if (!Objects.equals(lastCanonID, u.getCanonicalId()) && !group.isEmpty()) {
           mapCanonicalGroup(group);
           int before = counter.get() / batchSize;
           int after = counter.addAndGet(group.size()) / batchSize;
@@ -268,7 +270,7 @@ public class IdProvider {
 
   private void mapCanonicalGroup(List<SimpleNameWithNidx> group){
     // make sure we have the names sorted by their nidx
-    group.sort(Comparator.comparing(SimpleNameWithNidx::getNamesIndexId));
+    group.sort(Comparator.comparing(SimpleNameWithNidx::getNamesIndexId, nullsLast(naturalOrder())));
     // now split the canonical group into subgroups for each nidx to match them individually
     for (List<SimpleNameWithNidx> idGroup : IterUtils.group(group, Comparator.comparing(SimpleNameWithNidx::getNamesIndexId))) {
       issueIDs(idGroup.get(0).getNamesIndexId(), idGroup);
