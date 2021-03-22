@@ -5,8 +5,6 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import life.catalogue.api.jackson.FastutilsSerde;
@@ -16,7 +14,8 @@ import life.catalogue.api.model.Person;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.License;
 import life.catalogue.importer.dwca.EmlParser;
-import life.catalogue.importer.jackson.EnumParserSerde;
+import life.catalogue.jackson.EnumParserSerde;
+import life.catalogue.jackson.YamlMapper;
 import life.catalogue.parser.CountryParser;
 import life.catalogue.parser.LicenseParser;
 import org.gbif.dwc.terms.TermFactory;
@@ -39,36 +38,8 @@ public class MetadataParser {
   private static final List<String> METADATA_FILENAMES = ImmutableList.of("metadata.yaml", "metadata.yml");
   private static final List<String> EML_FILENAMES = ImmutableList.of("eml.xml", "metadata.xml");
   private static final ObjectReader DATASET_YAML_READER;
-  private static final ObjectMapper OM;
   static {
-    OM = new ObjectMapper(new YAMLFactory())
-        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        .registerModule(new JavaTimeModule())
-        .registerModule(new ColdpMetadataModule());
-    DATASET_YAML_READER = OM.readerFor(YamlDataset.class);
-    TermFactory.instance().registerTerm(ColdpInserter.CSLJSON_CLASS_TERM);
-  }
-  public static  class ColdpMetadataModule extends SimpleModule {
-    public ColdpMetadataModule() {
-      super("ColdpYaml");
-      EnumParserSerde<License> lserde = new EnumParserSerde<License>(LicenseParser.PARSER);
-      addDeserializer(License.class, lserde.new Deserializer());
-      addDeserializer(IntSet.class, new FastutilsSerde.SetDeserializer());
-      addDeserializer(Country.class, new JsonDeserializer<Country>(){
-        @Override
-        public Country deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-          return CountryParser.PARSER.parseOrNull(jp.getText());
-        }
-      });
-    }
-    
-    @Override
-    public void setupModule(SetupContext ctxt) {
-      // default enum serde
-      ctxt.addDeserializers(new PermissiveEnumSerde.PermissiveEnumDeserializers());
-      ctxt.addDeserializers(new PermissiveEnumSerde.PermissiveEnumDeserializers());
-      super.setupModule(ctxt);
-    }
+    DATASET_YAML_READER = YamlMapper.MAPPER.readerFor(YamlDataset.class);
   }
 
   static class YamlDataset extends DatasetWithSettings {

@@ -10,6 +10,7 @@ import life.catalogue.api.vocab.MetadataFormat;
 import life.catalogue.dw.jersey.MoreMediaTypes;
 import life.catalogue.importer.coldp.MetadataParser;
 import life.catalogue.importer.dwca.EmlParser;
+import life.catalogue.jackson.YamlMapper;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.WebApplicationException;
@@ -34,7 +35,7 @@ public class DatasetMessageBodyReader implements MessageBodyReader<Dataset> {
     ObjectMapper OM = new ObjectMapper()
       .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
       .registerModule(new JavaTimeModule())
-      .registerModule(new MetadataParser.ColdpMetadataModule());
+      .registerModule(new YamlMapper.ColdpMetadataModule());
     DATASET_JSON_READER = OM.readerFor(Dataset.class);
   }
 

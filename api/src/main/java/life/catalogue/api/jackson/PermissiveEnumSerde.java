@@ -44,7 +44,7 @@ public class PermissiveEnumSerde {
     return val.name().toLowerCase().replaceAll("_+", " ");
   }
 
-  static class PermissiveEnumSerializers extends Serializers.Base {
+  public static class PermissiveEnumSerializers extends Serializers.Base {
     private final Function<Enum<?>, String> mapper;
     private final Predicate<Class> predicate;
 

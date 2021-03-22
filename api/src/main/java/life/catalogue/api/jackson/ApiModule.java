@@ -30,7 +30,7 @@ import java.util.UUID;
  */
 public class ApiModule extends SimpleModule {
 
-  public static final ObjectMapper  MAPPER = configureMapper(new ObjectMapper());
+  public static final ObjectMapper MAPPER = configureMapper(new ObjectMapper());
 
   static {
     // register new term enums

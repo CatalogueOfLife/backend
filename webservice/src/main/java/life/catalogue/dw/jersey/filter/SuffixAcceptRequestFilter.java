@@ -27,6 +27,7 @@ public class SuffixAcceptRequestFilter implements ContainerRequestFilter {
   private final static Map<String, String> SUFFICES = Map.of(
     "xml", MediaType.APPLICATION_XML,
     "json", MediaType.APPLICATION_JSON,
+    "yaml", MoreMediaTypes.TEXT_YAML,
     "txt", MediaType.TEXT_PLAIN,
     "html", MediaType.TEXT_HTML,
     "tsv", MoreMediaTypes.TEXT_TSV,

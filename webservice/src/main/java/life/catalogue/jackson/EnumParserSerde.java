@@ -1,4 +1,4 @@
-package life.catalogue.importer.jackson;
+package life.catalogue.jackson;
 
 import java.io.IOException;
 import java.util.Optional;
