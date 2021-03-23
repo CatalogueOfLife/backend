@@ -1,10 +1,7 @@
 package life.catalogue.release;
 
 import com.google.common.annotations.VisibleForTesting;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.ints.*;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.util.VocabularyUtils;
@@ -15,8 +12,10 @@ import static life.catalogue.api.vocab.TaxonomicStatus.*;
 
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.collection.IterUtils;
+import life.catalogue.common.collection.MapUtils;
 import life.catalogue.common.id.IdConverter;
 import life.catalogue.common.io.TabWriter;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -25,11 +24,13 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.release.ReleasedIds.ReleasedId;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -72,6 +73,7 @@ public class IdProvider {
   private IntSet resurrected = new IntOpenHashSet();
   private IntSet created = new IntOpenHashSet();
   private IntSet deleted = new IntOpenHashSet();
+  private final SortedMap<String, List<InstableName>> instable = new TreeMap<>();
   protected IdMapMapper idm;
   protected NameUsageMapper num;
 
@@ -88,6 +90,19 @@ public class IdProvider {
     report();
     LOG.info("Reused {} stable IDs for project release {}-{}, resurrected={}, newly created={}, deleted={}", reused, projectKey, attempt, resurrected.size(), created.size(), deleted.size());
     return getReport();
+  }
+  public static class InstableName {
+    public final boolean del;
+    public final String label;
+
+    public InstableName(boolean del, SimpleName sn) {
+      this.del = del;
+      this.label = sn.toString();
+    }
+
+    public boolean isDel() {
+      return del;
+    }
   }
 
   public static class IdReport {
@@ -111,16 +126,37 @@ public class IdProvider {
       File dir = cfg.reportDir(projectKey, attempt);
       dir.mkdirs();
       // read the following IDs from previous releases
-      reportFile(dir,"deleted.tsv", deleted, true);
-      reportFile(dir,"resurrected.tsv", resurrected, true);
+      reportFile(dir,"deleted.tsv", deleted, true, true);
+      reportFile(dir,"resurrected.tsv", resurrected, true, false);
       // read ID from this release & ID mapping
-      reportFile(dir,"created.tsv", created, false);
+      reportFile(dir,"created.tsv", created, false, false);
+      // clear instable names, removing the ones with just deletions
+      instable.entrySet().removeIf(entry -> entry.getValue().parallelStream().allMatch(n -> n.del));
+      try(Writer writer = UTF8IoUtils.writerFromFile(new File(dir, "unstable.txt"))) {
+        for (var entry : instable.entrySet()) {
+          writer.write(entry.getKey() + "\n");
+          entry.getValue().sort(Comparator.comparing(InstableName::isDel));
+          entry.getValue().forEach(n -> writeInstableName(writer, n));
+        }
+      }
     } catch (IOException e) {
       LOG.error("Failed to write ID reports for project "+projectKey, e);
     }
   }
 
-  private void reportFile(File dir, String filename, IntSet ids, boolean previousReleases) throws IOException {
+  private void writeInstableName(Writer writer, InstableName n) {
+    try {
+      writer.write(' ');
+      writer.write(n.del ? '-' : '+');
+      writer.write(' ');
+      writer.write(n.label);
+      writer.write('\n');
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void reportFile(File dir, String filename, IntSet ids, boolean previousReleases, boolean deletion) throws IOException {
     File f = new File(dir, filename);
     try(TabWriter tsv = TabWriter.fromFile(f);
         SqlSession session = factory.openSession(true)
@@ -129,14 +165,15 @@ public class IdProvider {
       LOG.info("Writing ID report for project release {}-{} of {} IDs to {}", projectKey, attempt, ids.size(), f);
       ids.stream()
         .sorted()
-        .forEach(id -> reportId(id, previousReleases, tsv));
+        .forEach(id -> reportId(id, previousReleases, tsv, deletion));
     }
   }
 
   /**
    * @param isOld if true lookup the if from older releases, otherwise from the project using the id map table
+   * @param deletion
    */
-  private void reportId(int id, boolean isOld, TabWriter tsv){
+  private void reportId(int id, boolean isOld, TabWriter tsv, boolean deletion){
     try {
       String ID = IdConverter.LATIN29.encode(id);
       int datasetKey = 0;
@@ -171,6 +208,14 @@ public class IdProvider {
           sn.getName(),
           sn.getAuthorship()
         });
+        // populate instable names report
+        // expects deleted names to come first, so we can avoid adding many created ids for those which have not also been deleted
+        if (deletion) {
+          instable.putIfAbsent(sn.getName(), new ArrayList<>());
+        }
+        if (instable.containsKey(sn.getName())) {
+          instable.get(sn.getName()).add(new InstableName(deletion, sn));
+        }
       }
 
     } catch (IOException | RuntimeException e) {

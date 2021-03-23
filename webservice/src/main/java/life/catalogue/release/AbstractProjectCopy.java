@@ -106,10 +106,13 @@ public abstract class AbstractProjectCopy implements Runnable {
       Partitioner.partition(factory, newDatasetKey, newDatasetOrigin);
       // is an id mapping table needed?
       if (mapIds) {
-        LOG.info("Create id mapping tables for project {}", datasetKey);
+        LOG.info("Create clean id mapping tables for project {}", datasetKey);
         try (SqlSession session = factory.openSession(true)) {
           DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
-          DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.createIdMapTable(t, datasetKey));
+          DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> {
+            dmp.deleteTable(t, datasetKey);
+            dmp.createIdMapTable(t, datasetKey);
+          });
         }
       }
 
